@@ -6,6 +6,7 @@
 
 namespace extension_tabs_module_constants {
 
+const char kActiveKey[] = "active";
 const char kAllFramesKey[] = "allFrames";
 const char kBypassCache[] = "bypassCache";
 const char kCodeKey[] = "code";
@@ -27,9 +28,11 @@ const char kOldWindowIdKey[] = "oldWindowId";
 const char kPinnedKey[] = "pinned";
 const char kPopulateKey[] = "populate";
 const char kQualityKey[] = "quality";
+const char kHighlightedKey[] = "highlighted";
 const char kSelectedKey[] = "selected";
 const char kStatusKey[] = "status";
 const char kTabIdKey[] = "tabId";
+const char kTabIdsKey[] = "tabIds";
 const char kTabsKey[] = "tabs";
 const char kTabUrlKey[] = "tabUrl";
 const char kTitleKey[] = "title";
@@ -40,6 +43,7 @@ const char kWindowClosing[] = "isWindowClosing";
 const char kWidthKey[] = "width";
 const char kWindowIdKey[] = "windowId";
 const char kWindowTypeKey[] = "type";
+const char kWindowTypeLongKey[] = "windowType";
 
 const char kFormatValueJpeg[] = "jpeg";
 const char kFormatValuePng[] = "png";
@@ -64,10 +68,12 @@ const char kNoCrashBrowserError[] =
 const char kNoCurrentWindowError[] = "No current window";
 const char kNoLastFocusedWindowError[] = "No last-focused window";
 const char kWindowNotFoundError[] = "No window with id: *.";
+const char kTabIndexNotFoundError[] = "No tab at index: *.";
 const char kTabNotFoundError[] = "No tab with id: *.";
 const char kTabStripNotEditableError[] =
     "Tabs cannot be edited right now (user may be dragging a tab).";
 const char kNoSelectedTabError[] = "No selected tab";
+const char kNoHighlightedTabError[] = "No highlighted tab";
 const char kIncognitoModeIsDisabled[] = "Incognito mode is disabled.";
 const char kInvalidUrlError[] = "Invalid url: \"*\".";
 const char kInternalVisibleTabCaptureError[] =

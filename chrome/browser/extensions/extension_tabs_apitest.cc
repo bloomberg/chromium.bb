@@ -108,6 +108,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabRelativeURLs) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabQuery) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "query.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabHighlight) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "highlight.html")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCrashBrowser) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crash.html")) << message_;

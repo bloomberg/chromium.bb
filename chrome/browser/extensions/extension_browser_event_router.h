@@ -68,6 +68,9 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                                 TabContentsWrapper* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
+  virtual void TabSelectionChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripSelectionModel& old_model) OVERRIDE;
   virtual void TabMoved(TabContentsWrapper* contents, int from_index,
                         int to_index) OVERRIDE;
   virtual void TabChangedAt(TabContentsWrapper* contents, int index,

@@ -11,6 +11,7 @@
 namespace extension_tabs_module_constants {
 
 // Keys used in serializing tab data & events.
+extern const char kActiveKey[];
 extern const char kAllFramesKey[];
 extern const char kBypassCache[];
 extern const char kCodeKey[];
@@ -31,9 +32,11 @@ extern const char kOldWindowIdKey[];
 extern const char kPinnedKey[];
 extern const char kPopulateKey[];
 extern const char kQualityKey[];
+extern const char kHighlightedKey[];
 extern const char kSelectedKey[];
 extern const char kStatusKey[];
 extern const char kTabIdKey[];
+extern const char kTabIdsKey[];
 extern const char kTabsKey[];
 extern const char kTabUrlKey[];
 extern const char kTitleKey[];
@@ -45,6 +48,7 @@ extern const char kWidthKey[];
 extern const char kWindowIdKey[];
 extern const char kIncognitoKey[];
 extern const char kWindowTypeKey[];
+extern const char kWindowTypeLongKey[];
 
 // Value consts.
 extern const char kCanOnlyMoveTabsWithinNormalWindowsError[];
@@ -65,8 +69,10 @@ extern const char kNoCrashBrowserError[];
 extern const char kNoCurrentWindowError[];
 extern const char kNoLastFocusedWindowError[];
 extern const char kWindowNotFoundError[];
+extern const char kTabIndexNotFoundError[];
 extern const char kTabNotFoundError[];
 extern const char kTabStripNotEditableError[];
+extern const char kNoHighlightedTabError[];
 extern const char kNoSelectedTabError[];
 extern const char kIncognitoModeIsDisabled[];
 extern const char kInvalidUrlError[];

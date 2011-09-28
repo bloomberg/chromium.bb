@@ -145,11 +145,13 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetCurrentTabFunction>();
   RegisterFunction<GetSelectedTabFunction>();
   RegisterFunction<GetAllTabsInWindowFunction>();
+  RegisterFunction<QueryTabsFunction>();
+  RegisterFunction<HighlightTabsFunction>();
   RegisterFunction<CreateTabFunction>();
   RegisterFunction<UpdateTabFunction>();
-  RegisterFunction<MoveTabFunction>();
+  RegisterFunction<MoveTabsFunction>();
   RegisterFunction<ReloadTabFunction>();
-  RegisterFunction<RemoveTabFunction>();
+  RegisterFunction<RemoveTabsFunction>();
   RegisterFunction<DetectTabLanguageFunction>();
   RegisterFunction<CaptureVisibleTabFunction>();
   RegisterFunction<TabsExecuteScriptFunction>();

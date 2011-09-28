@@ -13,7 +13,7 @@ chrome.test.runTests([
   },
 
   function create() {
-    chrome.tabs.create({"windowId" : firstWindowId, "selected" : false},
+    chrome.tabs.create({"windowId" : firstWindowId, "active" : false},
                        pass(function(tab){
       assertEq(1, tab.index);
       assertEq(firstWindowId, tab.windowId);
@@ -26,7 +26,7 @@ chrome.test.runTests([
   function createInOtherWindow() {
     chrome.windows.create({}, pass(function(win) {
       // Create a tab in the older window.
-      chrome.tabs.create({"windowId" : firstWindowId, "selected" : false},
+      chrome.tabs.create({"windowId" : firstWindowId, "active" : false},
                          pass(function(tab) {
         assertEq(firstWindowId, tab.windowId);
       }));
@@ -45,9 +45,9 @@ chrome.test.runTests([
   },
 
   function createSelected() {
-    chrome.tabs.create({"windowId" : firstWindowId, "selected" : true},
+    chrome.tabs.create({"windowId" : firstWindowId, "active" : true},
                        pass(function(tab) {
-      assertTrue(tab.selected);
+      assertTrue(tab.active && tab.selected);
       chrome.tabs.getSelected(firstWindowId, pass(function(selectedTab) {
         assertEq(tab.id, selectedTab.id);
       }));
@@ -70,7 +70,7 @@ chrome.test.runTests([
   function createWindowWithExistingTab() {
     // Create a tab in the old window
     chrome.tabs.create({"windowId" : firstWindowId, "url": pageUrl('a'),
-                        "selected" : false},
+                        "active" : false},
                        pass(function(tab) {
       assertEq(firstWindowId, tab.windowId);
       assertEq(pageUrl('a'), tab.url);

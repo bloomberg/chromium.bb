@@ -28,6 +28,7 @@ void TabStripModelObserver::ActiveTabChanged(TabContentsWrapper* old_contents,
 }
 
 void TabStripModelObserver::TabSelectionChanged(
+    TabStripModel* tab_strip_model,
     const TabStripSelectionModel& model) {
 }
 

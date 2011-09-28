@@ -77,10 +77,12 @@ class TabStripModelObserver {
                                 int index,
                                 bool user_gesture);
 
-  // Sent when the selection changes. More precisely when selected tabs, anchor
-  // tab or active tab change. |old_model| is a snapshot of the selection model
-  // before the change. See also ActiveTabChanged for details.
-  virtual void TabSelectionChanged(const TabStripSelectionModel& old_model);
+  // Sent when the selection changes in |tab_strip_model|. More precisely when
+  // selected tabs, anchor tab or active tab change. |old_model| is a snapshot
+  // of the selection model before the change. See also ActiveTabChanged for
+  // details.
+  virtual void TabSelectionChanged(TabStripModel* tab_strip_model,
+                                   const TabStripSelectionModel& old_model);
 
   // The specified TabContents at |from_index| was moved to |to_index|.
   virtual void TabMoved(TabContentsWrapper* contents,

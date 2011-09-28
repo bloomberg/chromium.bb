@@ -73,6 +73,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void TabDetachedAt(TabContentsWrapper* contents,
                              int model_index) OVERRIDE;
   virtual void TabSelectionChanged(
+      TabStripModel* tab_strip_model,
       const TabStripSelectionModel& old_model) OVERRIDE;
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_model_index,

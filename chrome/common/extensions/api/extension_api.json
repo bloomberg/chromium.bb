@@ -1335,7 +1335,9 @@
           "id": {"type": "integer", "minimum": 0, "description": "The ID of the tab. Tab IDs are unique within a browser session."},
           "index": {"type": "integer", "minimum": 0, "description": "The zero-based index of the tab within its window."},
           "windowId": {"type": "integer", "minimum": 0, "description": "The ID of the window the tab is contained within."},
-          "selected": {"type": "boolean", "description": "Whether the tab is selected."},
+          "selected": {"type": "boolean", "description": "Whether the tab is selected.", "nodoc": true},
+          "highlighted": {"type": "boolean", "description": "Whether the tab is highlighted."},
+          "active": {"type": "boolean", "description": "Whether the tab is active in its window."},
           "pinned": {"type": "boolean", "description": "Whether the tab is pinned."},
           "url": {"type": "string", "description": "The URL the tab is displaying."},
           "title": {"type": "string", "optional": true, "description": "The title of the tab. This may not be available if the tab is loading."},
@@ -1437,8 +1439,9 @@
       },
       {
         "name": "getSelected",
+        "nodoc": true,
         "type": "function",
-        "description": "Gets the tab that is selected in the specified window.",
+        "description": "Deprecated. Please use query({'active': true}). Gets the tab that is selected in the specified window.",
         "parameters": [
           {
             "type": "integer",
@@ -1459,7 +1462,8 @@
       {
         "name": "getAllInWindow",
         "type": "function",
-        "description": "Gets details about all tabs in the specified window.",
+        "nodoc": true,
+        "description": "Deprecated. Please use query({'windowId': windowId}). Gets details about all tabs in the specified window.",
         "parameters": [
           {
             "type": "integer",
@@ -1503,7 +1507,13 @@
                 "optional": true,
                 "description": "The URL to navigate the tab to initially. Fully-qualified URLs must include a scheme (i.e. 'http://www.google.com', not 'www.google.com'). Relative URLs will be relative to the current page within the extension. Defaults to the New Tab Page."
               },
+              "active": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tab should become the active tab in the window. Defaults to <var>true</var>"
+              },
               "selected": {
+                "nodoc": true,
                 "type": "boolean",
                 "optional": true,
                 "description": "Whether the tab should become the selected tab in the window. Defaults to <var>true</var>"
@@ -1530,6 +1540,109 @@
         ]
       },
       {
+        "name": "query",
+        "type": "function",
+        "description": "Gets all tabs that have the specified properties, or all tabs if no properties are specified.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "queryInfo",
+            "properties": {
+              "active": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tabs are active in their windows."
+              },
+              "pinned": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tabs are pinned."
+              },
+              "highlighted": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tabs are highlighted."
+              },
+              "status": {
+                "type": "string",
+                "optional": true,
+                "enum": ["loading", "complete"],
+                "description": "Whether the tabs have completed loading."
+              },
+              "title": {
+                "type": "string",
+                "optional": true,
+                "description": "Match page titles against a pattern."
+              },
+              "url": {
+                "type": "string",
+                "optional": true,
+                "description": "Match tabs against a URL pattern."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "The ID of the parent window."
+              },
+              "windowType": {
+                "type": "string",
+                "optional": true,
+                "enum": ["normal", "popup", "panel", "app"],
+                "description": "The type of window the tabs are in."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "Tab"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "highlight",
+        "type": "function",
+        "description": "Highlights the given tabs.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "highlightInfo",
+            "properties": {
+               "windowId": {
+                 "type": "integer",
+                 "description": "The window that contains the tabs."
+               },
+               "tabs": {
+                 "description": "One or more tab indices to highlight.",
+                 "choices": [
+                   {"type": "array", "items": {"type": "integer", "minimum": 0}},
+                   {"type": "integer"}
+                 ]
+               }
+             }
+           },
+           {
+             "type": "function",
+             "name": "callback",
+             "parameters": [
+               {
+                 "name": "window",
+                 "$ref": "Window",
+                 "description": "Contains details about the window whose tabs were highlighted."
+               }
+             ]
+           }
+        ]
+      },
+      {
         "name": "update",
         "type": "function",
         "description": "Modifies the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
@@ -1549,7 +1662,18 @@
                 "optional": true,
                 "description": "A URL to navigate the tab to."
               },
+              "active": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tab should be active."
+              },
+              "highlighted": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Adds or removes the tab from the current selection."
+              },
               "selected": {
+                "nodoc": true,
                 "type": "boolean",
                 "optional": true,
                 "description": "Whether the tab should be selected."
@@ -1579,9 +1703,16 @@
       {
         "name": "move",
         "type": "function",
-        "description": "Moves a tab to a new position within its window, or to a new window. Note that tabs can only be moved to and from normal (window.type === \"normal\") windows.",
+        "description": "Moves one or more tabs to a new position within its window, or to a new window. Note that tabs can only be moved to and from normal (window.type === \"normal\") windows.",
         "parameters": [
-          {"type": "integer", "name": "tabId", "minimum": 0},
+          {
+            "name": "tabIds",
+            "description": "The tab or list of tabs to move.",
+            "choices": [
+              {"type": "integer", "minimum": 0},
+              {"type": "array", "items": {"type": "integer", "minimum": 0}}
+            ]
+          },
           {
             "type": "object",
             "name": "moveProperties",
@@ -1605,9 +1736,12 @@
             "optional": true,
             "parameters": [
               {
-                "name": "tab",
-                "$ref": "Tab",
-                "description": "Details about the moved tab."
+                "name": "tabs",
+                "description": "Details about the moved tabs.",
+                "choices": [
+                  {"$ref": "Tab"},
+                  {"type": "array", "items": {"$ref": "Tab"}}
+                ]
               }
             ]
           }
@@ -1637,9 +1771,16 @@
       {
         "name": "remove",
         "type": "function",
-        "description": "Closes a tab. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
+        "description": "Closes one or more tabs. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
         "parameters": [
-          {"type": "integer", "name": "tabId", "minimum": 0},
+          {
+            "name": "tabIds",
+            "description": "The tab or list of tabs to close.",
+            "choices": [
+              {"type": "integer", "minimum": 0},
+              {"type": "array", "items": {"type": "integer", "minimum": 0}}
+            ]
+          },
           {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       },
@@ -1653,7 +1794,7 @@
             "name": "tabId",
             "minimum": 0,
             "optional": true,
-            "description": "Defaults to the selected tab of the <a href='windows.html#current-window'>current window</a>."
+            "description": "Defaults to the active tab of the <a href='windows.html#current-window'>current window</a>."
           },
           {
             "type": "function",
@@ -1671,7 +1812,7 @@
       {
         "name": "captureVisibleTab",
         "type": "function",
-        "description": "Captures the visible area of the currently selected tab in the specified window. You must have <a href='manifest.html#permissions'>host permission</a> for the URL displayed by the tab.",
+        "description": "Captures the visible area of the currently active tab in the specified window. You must have <a href='manifest.html#permissions'>host permission</a> for the URL displayed by the tab.",
         "parameters": [
           {
             "type": "integer",
@@ -1714,7 +1855,7 @@
         "type": "function",
         "description": "Injects JavaScript code into a page. For details, see the <a href='content_scripts.html#pi'>programmatic injection</a> section of the content scripts doc.",
         "parameters": [
-          {"type": "integer", "name": "tabId", "optional": true, "description": "The ID of the tab in which to run the script; defaults to the selected tab of the current window."},
+          {"type": "integer", "name": "tabId", "optional": true, "description": "The ID of the tab in which to run the script; defaults to the active tab of the current window."},
           {
             "type": "object",
             "name": "details",
@@ -1739,7 +1880,7 @@
         "type": "function",
         "description": "Injects CSS into a page. For details, see the <a href='content_scripts.html#pi'>programmatic injection</a> section of the content scripts doc.",
         "parameters": [
-          {"type": "integer", "name": "tabId", "optional": true, "description": "The ID of the tab in which to insert the CSS; defaults to the selected tab of the current window."},
+          {"type": "integer", "name": "tabId", "optional": true, "description": "The ID of the tab in which to insert the CSS; defaults to the active tab of the current window."},
           {
             "type": "object",
             "name": "details",
@@ -1827,14 +1968,15 @@
       },
       {
         "name": "onSelectionChanged",
+        "nodoc": true,
         "type": "function",
-        "description": "Fired when the selected tab in a window changes.",
+        "description": "Deprecated. Please use onActiveChanged.",
         "parameters": [
           {
             "type": "integer",
             "name": "tabId",
             "minimum": 0,
-            "description": "The ID of the tab that has become selected."
+            "description": "The ID of the tab that has become active."
           },
           {
             "type": "object",
@@ -1844,6 +1986,54 @@
                 "type": "integer",
                 "minimum": 0,
                 "description": "The ID of the window the selected tab changed inside of."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onActiveChanged",
+        "type": "function",
+        "description": "Fires when the selected tab in a window changes.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "minimum": 0,
+            "description": "The ID of the tab that has become active."
+          },
+          {
+            "type": "object",
+            "name": "selectInfo",
+            "properties": {
+              "windowId": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The ID of the window the selected tab changed inside of."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onHighlightChanged",
+        "type": "function",
+        "description": "Fired when the highlighted or selected tabs in a window changes.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "selectInfo",
+            "properties": {
+              "windowId": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The window whose tabs changed."
+              },
+              "tabIds": {
+                "type": "array",
+                "name": "tabIds",
+                "items": {"type": "integer", "minimum": 0},
+                "description": "All highlighted tabs in the window."
               }
             }
           }

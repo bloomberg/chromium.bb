@@ -1028,7 +1028,8 @@ void TabStripGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
   ReStack();
 }
 
-void TabStripGtk::TabSelectionChanged(const TabStripSelectionModel& old_model) {
+void TabStripGtk::TabSelectionChanged(TabStripModel* tab_strip_model,
+                                      const TabStripSelectionModel& old_model) {
   // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
   // a different size to the selected ones.
   bool tiny_tabs = current_unselected_width_ != current_selected_width_;

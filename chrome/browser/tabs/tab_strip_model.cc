@@ -247,7 +247,7 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
     // |old_model| is stored after calling DecrementFrom().
     if (was_selected) {
       FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                        TabSelectionChanged(old_model));
+                        TabSelectionChanged(this, old_model));
     }
   }
   return removed_contents;
@@ -1225,7 +1225,7 @@ void TabStripModel::NotifyIfActiveOrSelectionChanged(
 
   if (!selection_model().Equals(old_model)) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabSelectionChanged(old_model));
+                      TabSelectionChanged(this, old_model));
   }
 }
 

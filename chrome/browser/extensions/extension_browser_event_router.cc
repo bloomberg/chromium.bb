@@ -345,7 +345,40 @@ void ExtensionBrowserEventRouter::ActiveTabChanged(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
+  // The onTabSelectionChanged event has been deprecated by onActiveChanged.
   DispatchEvent(new_contents->profile(), events::kOnTabSelectionChanged,
+                json_args);
+  DispatchEvent(new_contents->profile(), events::kOnTabActiveChanged,
+                json_args);
+}
+
+void ExtensionBrowserEventRouter::TabSelectionChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripSelectionModel& old_model) {
+  TabStripSelectionModel::SelectedIndices new_selection =
+      tab_strip_model->selection_model().selected_indices();
+  ListValue* all = new ListValue();
+
+  for (size_t i = 0; i < new_selection.size(); ++i) {
+    int index = new_selection[i];
+    int tab_id = ExtensionTabUtil::GetTabId(
+        tab_strip_model->GetTabContentsAt(index)->tab_contents());
+    all->Append(Value::CreateIntegerValue(tab_id));
+  }
+
+  ListValue args;
+  DictionaryValue* select_info = new DictionaryValue();
+
+  select_info->Set(tab_keys::kWindowIdKey, Value::CreateIntegerValue(
+      ExtensionTabUtil::GetWindowIdOfTabStripModel(tab_strip_model)));
+
+  select_info->Set(tab_keys::kTabIdsKey, all);
+  args.Append(select_info);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+
+  DispatchEvent(tab_strip_model->profile(), events::kOnTabHighlightChanged,
                 json_args);
 }
 

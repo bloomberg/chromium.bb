@@ -114,7 +114,8 @@ class TabStripGtk : public TabStripModelObserver,
                                 TabContentsWrapper* new_contents,
                                 int index,
                                 bool user_gesture);
-  virtual void TabSelectionChanged(const TabStripSelectionModel& old_model);
+  virtual void TabSelectionChanged(TabStripModel* tab_strip_model,
+                                   const TabStripSelectionModel& old_model);
   virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                             TabChangeType change_type);
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,

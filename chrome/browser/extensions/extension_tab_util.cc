@@ -20,6 +20,16 @@ int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
 }
 
+int ExtensionTabUtil::GetWindowIdOfTabStripModel(
+    const TabStripModel* tab_strip_model) {
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end(); ++it) {
+    if ((*it)->tabstrip_model() == tab_strip_model)
+      return GetWindowId(*it);
+  }
+  return -1;
+}
+
 // TODO(sky): this function should really take a TabContentsWrapper.
 int ExtensionTabUtil::GetTabId(const TabContents* tab_contents) {
   const TabContentsWrapper* tab =
@@ -36,6 +46,17 @@ int ExtensionTabUtil::GetWindowIdOfTab(const TabContents* tab_contents) {
   const TabContentsWrapper* tab =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
   return tab ? tab->restore_tab_helper()->window_id().id() : -1;
+}
+
+// Return the type name for a browser window type.
+std::string ExtensionTabUtil::GetWindowTypeText(const Browser* browser) {
+  if (browser->is_type_popup())
+    return keys::kWindowTypeValuePopup;
+  if (browser->is_type_panel())
+    return keys::kWindowTypeValuePanel;
+  if (browser->is_app())
+    return keys::kWindowTypeValueApp;
+  return keys::kWindowTypeValueNormal;
 }
 
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
@@ -72,8 +93,12 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const TabContents* contents,
                      ExtensionTabUtil::GetWindowIdOfTab(contents));
   result->SetString(keys::kUrlKey, contents->GetURL().spec());
   result->SetString(keys::kStatusKey, GetTabStatusText(is_loading));
+  result->SetBoolean(keys::kActiveKey,
+                     tab_strip && tab_index == tab_strip->active_index());
   result->SetBoolean(keys::kSelectedKey,
                      tab_strip && tab_index == tab_strip->active_index());
+  result->SetBoolean(keys::kHighlightedKey,
+                   tab_strip && tab_strip->IsTabSelected(tab_index));
   result->SetBoolean(keys::kPinnedKey,
                      tab_strip && tab_strip->IsTabPinned(tab_index));
   result->SetString(keys::kTitleKey, contents->GetTitle());
@@ -97,17 +122,6 @@ DictionaryValue* ExtensionTabUtil::CreateTabValueActive(
   DictionaryValue* result = ExtensionTabUtil::CreateTabValue(contents);
   result->SetBoolean(keys::kSelectedKey, active);
   return result;
-}
-
-// Return the type name for a browser window type.
-static std::string GetWindowTypeText(const Browser* browser) {
-  if (browser->is_type_popup())
-    return keys::kWindowTypeValuePopup;
-  if (browser->is_type_panel())
-    return keys::kWindowTypeValuePanel;
-  if (browser->is_app())
-    return keys::kWindowTypeValueApp;
-  return keys::kWindowTypeValueNormal;
 }
 
 // if |populate| is true, each window gets a list property |tabs| which contains

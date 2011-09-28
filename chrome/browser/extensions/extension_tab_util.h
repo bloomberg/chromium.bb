@@ -23,12 +23,14 @@ class ListValue;
 class ExtensionTabUtil {
  public:
   static int GetWindowId(const Browser* browser);
+  static int GetWindowIdOfTabStripModel(const TabStripModel* tab_strip_model);
   static int GetTabId(const TabContents* tab_contents);
   static bool GetTabIdFromArgument(const base::ListValue &args,
                                    int argument_index,
                                    int *tab_id, std::string* error_message);
   static std::string GetTabStatusText(bool is_loading);
   static int GetWindowIdOfTab(const TabContents* tab_contents);
+  static std::string GetWindowTypeText(const Browser* browser);
   static base::ListValue* CreateTabList(const Browser* browser);
   static base::DictionaryValue* CreateTabValue(
       const TabContents* tab_contents);

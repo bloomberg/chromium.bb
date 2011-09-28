@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -127,6 +128,53 @@ bool IsCrashURL(const GURL& url) {
   return (fixed_url.SchemeIs(chrome::kChromeUIScheme) &&
           (fixed_url.host() == chrome::kChromeUIBrowserCrashHost ||
            fixed_url.host() == chrome::kChromeUICrashHost));
+}
+
+// Reads the |value| as either a single integer value or a list of integers.
+bool ReadOneOrMoreIntegers(
+    Value* value, std::vector<int>* result) {
+  if (value->IsType(Value::TYPE_INTEGER)) {
+    int tab_id;
+    if (!value->GetAsInteger(&tab_id))
+      return false;
+    result->push_back(tab_id);
+    return true;
+
+  } else if (value->IsType(Value::TYPE_LIST)) {
+    ListValue* tabs = static_cast<ListValue*>(value);
+    for (size_t i = 0; i < tabs->GetSize(); ++i) {
+      int tab_id;
+      if (!tabs->GetInteger(i, &tab_id))
+        return false;
+      result->push_back(tab_id);
+    }
+    return true;
+  }
+  return false;
+}
+
+// A three state enum to distinguish between when a boolean query argument is
+// set or not.
+enum QueryArg {
+  NOT_SET = -1,
+  MATCH_FALSE,
+  MATCH_TRUE
+};
+
+bool MatchesQueryArg(QueryArg arg, bool value) {
+  if (arg == NOT_SET)
+    return true;
+
+  return (arg == MATCH_TRUE && value) || (arg == MATCH_FALSE && !value);
+}
+
+QueryArg ParseBoolQueryArg(base::DictionaryValue* query, const char* key) {
+  if (query->HasKey(key)) {
+    bool value = false;
+    CHECK(query->GetBoolean(key, &value));
+    return value ? MATCH_TRUE : MATCH_FALSE;
+  }
+  return NOT_SET;
 }
 
 }  // namespace
@@ -561,6 +609,92 @@ bool GetAllTabsInWindowFunction::RunImpl() {
   return true;
 }
 
+bool QueryTabsFunction::RunImpl() {
+  DictionaryValue* query = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query));
+
+  QueryArg active = ParseBoolQueryArg(query, keys::kActiveKey);
+  QueryArg pinned = ParseBoolQueryArg(query, keys::kPinnedKey);
+  QueryArg selected = ParseBoolQueryArg(query, keys::kHighlightedKey);
+
+  QueryArg loading = NOT_SET;
+  if (query->HasKey(keys::kStatusKey)) {
+    std::string status;
+    EXTENSION_FUNCTION_VALIDATE(query->GetString(keys::kStatusKey, &status));
+    loading = (status == keys::kStatusValueLoading) ? MATCH_TRUE : MATCH_FALSE;
+  }
+
+  URLPattern url_pattern(URLPattern::SCHEME_ALL, "<all_urls>");
+  if (query->HasKey(keys::kUrlKey)) {
+    std::string value;
+    EXTENSION_FUNCTION_VALIDATE(query->GetString(keys::kUrlKey, &value));
+    url_pattern = URLPattern(URLPattern::SCHEME_ALL, value);
+  }
+
+  std::string title;
+  if (query->HasKey(keys::kTitleKey))
+    EXTENSION_FUNCTION_VALIDATE(
+        query->GetString(keys::kTitleKey, &title));
+
+  int window_id = -1;
+  if (query->HasKey(keys::kWindowIdKey))
+    EXTENSION_FUNCTION_VALIDATE(
+        query->GetInteger(keys::kWindowIdKey, &window_id));
+
+  std::string window_type;
+  if (query->HasKey(keys::kWindowTypeLongKey))
+    EXTENSION_FUNCTION_VALIDATE(
+        query->GetString(keys::kWindowTypeLongKey, &window_type));
+
+  ListValue* result = new ListValue();
+  for (BrowserList::const_iterator browser = BrowserList::begin();
+       browser != BrowserList::end(); ++browser) {
+    if (!profile()->IsSameProfile((*browser)->profile()))
+      continue;
+
+    if (!(*browser)->window())
+      continue;
+
+    if (window_id >= 0 && window_id != ExtensionTabUtil::GetWindowId(*browser))
+      continue;
+
+    if (!window_type.empty() &&
+        window_type != ExtensionTabUtil::GetWindowTypeText(*browser))
+      continue;
+
+    TabStripModel* tab_strip = (*browser)->tabstrip_model();
+    for (int i = 0; i < tab_strip->count(); ++i) {
+      const TabContents* tab_contents =
+          tab_strip->GetTabContentsAt(i)->tab_contents();
+
+      if (!MatchesQueryArg(selected, tab_strip->IsTabSelected(i)))
+        continue;
+
+      if (!MatchesQueryArg(active, i == tab_strip->active_index()))
+        continue;
+
+      if (!MatchesQueryArg(pinned, tab_strip->IsTabPinned(i)))
+        continue;
+
+      if (!title.empty() && !MatchPattern(tab_contents->GetTitle(),
+                                          UTF8ToUTF16(title)))
+        continue;
+
+      if (!url_pattern.MatchesURL(tab_contents->GetURL()))
+        continue;
+
+      if (!MatchesQueryArg(loading, tab_contents->IsLoading()))
+        continue;
+
+      result->Append(ExtensionTabUtil::CreateTabValue(
+          tab_contents, tab_strip, i));
+    }
+  }
+
+  result_.reset(result);
+  return true;
+}
+
 bool CreateTabFunction::RunImpl() {
   DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
@@ -605,11 +739,17 @@ bool CreateTabFunction::RunImpl() {
   }
 
   // Default to foreground for the new tab. The presence of 'selected' property
-  // will override this default.
-  bool selected = true;
+  // will override this default. This property is deprecated ('active' should
+  // be used instead).
+  bool active = true;
   if (args->HasKey(keys::kSelectedKey))
-    EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kSelectedKey,
-                                                 &selected));
+    EXTENSION_FUNCTION_VALIDATE(
+        args->GetBoolean(keys::kSelectedKey, &active));
+
+  // The 'active' property has replaced the 'selected' property.
+  if (args->HasKey(keys::kActiveKey))
+    EXTENSION_FUNCTION_VALIDATE(
+        args->GetBoolean(keys::kActiveKey, &active));
 
   // Default to not pinning the tab. Setting the 'pinned' property to true
   // will override this default.
@@ -640,18 +780,18 @@ bool CreateTabFunction::RunImpl() {
 
   index = std::min(std::max(index, -1), tab_strip->count());
 
-  int add_types = selected ? TabStripModel::ADD_ACTIVE :
+  int add_types = active ? TabStripModel::ADD_ACTIVE :
                              TabStripModel::ADD_NONE;
   add_types |= TabStripModel::ADD_FORCE_INDEX;
   if (pinned)
     add_types |= TabStripModel::ADD_PINNED;
   browser::NavigateParams params(browser, url, PageTransition::LINK);
-  params.disposition = selected ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+  params.disposition = active ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
   params.tabstrip_add_types = add_types;
   browser::Navigate(&params);
 
-  if (selected)
+  if (active)
     params.target_contents->view()->SetInitialFocus();
 
   // Return data about the newly created tab.
@@ -690,6 +830,64 @@ bool GetCurrentTabFunction::RunImpl() {
   if (contents)
     result_.reset(ExtensionTabUtil::CreateTabValue(contents));
 
+  return true;
+}
+
+bool HighlightTabsFunction::RunImpl() {
+  DictionaryValue* info = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &info));
+
+  // Get the window id from the params.
+  int window_id = -1;
+  EXTENSION_FUNCTION_VALIDATE(
+      info->GetInteger(keys::kWindowIdKey, &window_id));
+
+  Browser* browser = GetBrowserInProfileWithId(
+      profile(), window_id, include_incognito(), &error_);
+
+  if (!browser || !browser->window()) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kWindowNotFoundError, base::IntToString(window_id));
+    return false;
+  }
+
+  TabStripModel* tabstrip = browser->tabstrip_model();
+  TabStripSelectionModel selection;
+  int active_index = -1;
+
+  Value* tab_value = NULL;
+  EXTENSION_FUNCTION_VALIDATE(info->Get(keys::kTabsKey, &tab_value));
+
+  std::vector<int> tab_indices;
+  EXTENSION_FUNCTION_VALIDATE(ReadOneOrMoreIntegers(tab_value, &tab_indices));
+
+  // Create a new selection model as we read the list of tab indices.
+  for (size_t i = 0; i < tab_indices.size(); ++i) {
+    int index = tab_indices[i];
+
+    // Make sure the index is in range.
+    if (!tabstrip->ContainsIndex(index)) {
+      error_ = ExtensionErrorUtils::FormatErrorMessage(
+          keys::kTabIndexNotFoundError, base::IntToString(index));
+      return false;
+    }
+
+    // By default, we make the first tab in the list active.
+    if (active_index == -1)
+      active_index = index;
+
+    selection.AddIndexToSelection(index);
+  }
+
+  // Make sure they actually specified tabs to select.
+  if (selection.empty()) {
+    error_ = keys::kNoHighlightedTabError;
+    return false;
+  }
+
+  selection.set_active(active_index);
+  browser->tabstrip_model()->SetSelectionFromModel(selection);
+  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, true));
   return true;
 }
 
@@ -790,20 +988,32 @@ bool UpdateTabFunction::RunImpl() {
       DCHECK_EQ(url.spec(), contents->tab_contents()->GetURL().spec());
   }
 
-  bool selected = false;
-  // TODO(rafaelw): Setting |selected| from js doesn't make much sense.
+  bool active = false;
+  // TODO(rafaelw): Setting |active| from js doesn't make much sense.
   // Move tab selection management up to window.
-  if (update_props->HasKey(keys::kSelectedKey)) {
+  if (update_props->HasKey(keys::kSelectedKey))
     EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
-        keys::kSelectedKey,
-        &selected));
-    if (selected) {
-      if (tab_strip->active_index() != tab_index) {
-        tab_strip->ActivateTabAt(tab_index, false);
-        DCHECK_EQ(contents, tab_strip->GetActiveTabContents());
-      }
-      contents->tab_contents()->Focus();
+        keys::kSelectedKey, &active));
+
+  // The 'active' property has replaced 'selected'.
+  if (update_props->HasKey(keys::kActiveKey))
+    EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
+        keys::kActiveKey, &active));
+
+  if (active) {
+    if (tab_strip->active_index() != tab_index) {
+      tab_strip->ActivateTabAt(tab_index, false);
+      DCHECK_EQ(contents, tab_strip->GetActiveTabContents());
     }
+    contents->tab_contents()->Focus();
+  }
+
+  bool highlighted = false;
+  if (update_props->HasKey(keys::kHighlightedKey)) {
+    EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
+        keys::kHighlightedKey, &highlighted));
+    if (highlighted != tab_strip->IsTabSelected(tab_index))
+      tab_strip->ToggleSelectionAt(tab_index);
   }
 
   bool pinned = false;
@@ -865,9 +1075,13 @@ void UpdateTabFunction::OnExecuteCodeFinished(int request_id,
   Release();  // balanced in Execute()
 }
 
-bool MoveTabFunction::RunImpl() {
-  int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
+bool MoveTabsFunction::RunImpl() {
+  Value* tab_value = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &tab_value));
+
+  std::vector<int> tab_ids;
+  EXTENSION_FUNCTION_VALIDATE(ReadOneOrMoreIntegers(tab_value, &tab_ids));
+
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
@@ -876,86 +1090,103 @@ bool MoveTabFunction::RunImpl() {
       keys::kIndexKey, &new_index));
   EXTENSION_FUNCTION_VALIDATE(new_index >= 0);
 
-  Browser* source_browser = NULL;
-  TabStripModel* source_tab_strip = NULL;
-  TabContentsWrapper* contents = NULL;
-  int tab_index = -1;
-  if (!GetTabById(tab_id, profile(), include_incognito(),
-                  &source_browser, &source_tab_strip, &contents,
-                  &tab_index, &error_))
-    return false;
-
-  // Don't let the extension move the tab if the user is dragging tabs.
-  if (!source_browser->IsTabStripEditable()) {
-    error_ = keys::kTabStripNotEditableError;
-    return false;
-  }
-
-  if (update_props->HasKey(keys::kWindowIdKey)) {
-    Browser* target_browser;
-    int window_id;
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
-        keys::kWindowIdKey, &window_id));
-    target_browser = GetBrowserInProfileWithId(profile(), window_id,
-                                               include_incognito(), &error_);
-    if (!target_browser)
+  ListValue tab_values;
+  for (size_t i = 0; i < tab_ids.size(); ++i) {
+    Browser* source_browser = NULL;
+    TabStripModel* source_tab_strip = NULL;
+    TabContentsWrapper* contents = NULL;
+    int tab_index = -1;
+    if (!GetTabById(tab_ids[i], profile(), include_incognito(),
+                    &source_browser, &source_tab_strip, &contents,
+                    &tab_index, &error_))
       return false;
 
-    if (!target_browser->IsTabStripEditable()) {
+    // Don't let the extension move the tab if the user is dragging tabs.
+    if (!source_browser->IsTabStripEditable()) {
       error_ = keys::kTabStripNotEditableError;
       return false;
     }
 
-    if (!target_browser->is_type_tabbed()) {
-      error_ = keys::kCanOnlyMoveTabsWithinNormalWindowsError;
-      return false;
-    }
+    // Insert the tabs one after another.
+    new_index += i;
 
-    if (target_browser->profile() != source_browser->profile()) {
-      error_ = keys::kCanOnlyMoveTabsWithinSameProfileError;
-      return false;
-    }
+    if (update_props->HasKey(keys::kWindowIdKey)) {
+      Browser* target_browser;
+      int window_id;
+      EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
+          keys::kWindowIdKey, &window_id));
+      target_browser = GetBrowserInProfileWithId(profile(), window_id,
+                                                 include_incognito(), &error_);
+      if (!target_browser)
+        return false;
 
-    // If windowId is different from the current window, move between windows.
-    if (ExtensionTabUtil::GetWindowId(target_browser) !=
-        ExtensionTabUtil::GetWindowId(source_browser)) {
-      TabStripModel* target_tab_strip = target_browser->tabstrip_model();
-      contents = source_tab_strip->DetachTabContentsAt(tab_index);
-      if (!contents) {
-        error_ = ExtensionErrorUtils::FormatErrorMessage(
-            keys::kTabNotFoundError, base::IntToString(tab_id));
+      if (!target_browser->IsTabStripEditable()) {
+        error_ = keys::kTabStripNotEditableError;
         return false;
       }
 
-      // Clamp move location to the last position.
-      // This is ">" because it can append to a new index position.
-      if (new_index > target_tab_strip->count())
-        new_index = target_tab_strip->count();
+      if (!target_browser->is_type_tabbed()) {
+        error_ = keys::kCanOnlyMoveTabsWithinNormalWindowsError;
+        return false;
+      }
 
-      target_tab_strip->InsertTabContentsAt(new_index, contents,
-                                            TabStripModel::ADD_NONE);
+      if (target_browser->profile() != source_browser->profile()) {
+        error_ = keys::kCanOnlyMoveTabsWithinSameProfileError;
+        return false;
+      }
 
-      if (has_callback())
-        result_.reset(ExtensionTabUtil::CreateTabValue(contents->tab_contents(),
-            target_tab_strip, new_index));
+      // If windowId is different from the current window, move between windows.
+      if (ExtensionTabUtil::GetWindowId(target_browser) !=
+          ExtensionTabUtil::GetWindowId(source_browser)) {
+        TabStripModel* target_tab_strip = target_browser->tabstrip_model();
+        contents = source_tab_strip->DetachTabContentsAt(tab_index);
+        if (!contents) {
+          error_ = ExtensionErrorUtils::FormatErrorMessage(
+              keys::kTabNotFoundError, base::IntToString(tab_ids[i]));
+          return false;
+        }
 
-      return true;
+        // Clamp move location to the last position.
+        // This is ">" because it can append to a new index position.
+        if (new_index > target_tab_strip->count())
+          new_index = target_tab_strip->count();
+
+        target_tab_strip->InsertTabContentsAt(
+            new_index, contents, TabStripModel::ADD_NONE);
+
+        if (has_callback())
+          tab_values.Append(ExtensionTabUtil::CreateTabValue(
+              contents->tab_contents(), target_tab_strip, new_index));
+
+        continue;
+      }
     }
+
+    // Perform a simple within-window move.
+    // Clamp move location to the last position.
+    // This is ">=" because the move must be to an existing location.
+    if (new_index >= source_tab_strip->count())
+      new_index = source_tab_strip->count() - 1;
+
+    if (new_index != tab_index)
+      source_tab_strip->MoveTabContentsAt(tab_index, new_index, false);
+
+    if (has_callback())
+      tab_values.Append(ExtensionTabUtil::CreateTabValue(
+          contents->tab_contents(), source_tab_strip, new_index));
   }
 
-  // Perform a simple within-window move.
-  // Clamp move location to the last position.
-  // This is ">=" because the move must be to an existing location.
-  if (new_index >= source_tab_strip->count())
-    new_index = source_tab_strip->count() - 1;
+  if (!has_callback())
+    return true;
 
-  if (new_index != tab_index)
-    source_tab_strip->MoveTabContentsAt(tab_index, new_index, false);
-
-  if (has_callback())
-    result_.reset(ExtensionTabUtil::CreateTabValue(contents->tab_contents(),
-                                                   source_tab_strip,
-                                                   new_index));
+  // Only return the results as an array if there are multiple tabs.
+  if (tab_ids.size() > 1) {
+    result_.reset(tab_values.DeepCopy());
+  } else if (tab_ids.size() == 1) {
+    Value* value = NULL;
+    CHECK(tab_values.Get(0, &value));
+    result_.reset(value->DeepCopy());
+  }
   return true;
 }
 
@@ -1014,28 +1245,33 @@ bool ReloadTabFunction::RunImpl() {
   return true;
 }
 
-bool RemoveTabFunction::RunImpl() {
-  int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
+bool RemoveTabsFunction::RunImpl() {
+  Value* tab_value = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &tab_value));
 
-  Browser* browser = NULL;
-  TabContentsWrapper* contents = NULL;
-  if (!GetTabById(tab_id, profile(), include_incognito(),
-                  &browser, NULL, &contents, NULL, &error_))
-    return false;
+  std::vector<int> tab_ids;
+  EXTENSION_FUNCTION_VALIDATE(ReadOneOrMoreIntegers(tab_value, &tab_ids));
 
-  // Don't let the extension remove a tab if the user is dragging tabs around.
-  if (!browser->IsTabStripEditable()) {
-    error_ = keys::kTabStripNotEditableError;
-    return false;
+  for (size_t i = 0; i < tab_ids.size(); ++i) {
+    Browser* browser = NULL;
+    TabContentsWrapper* contents = NULL;
+    if (!GetTabById(tab_ids[i], profile(), include_incognito(),
+                    &browser, NULL, &contents, NULL, &error_))
+      return false;
+
+    // Don't let the extension remove a tab if the user is dragging tabs around.
+    if (!browser->IsTabStripEditable()) {
+      error_ = keys::kTabStripNotEditableError;
+      return false;
+    }
+
+    // Close the tab in this convoluted way, since there's a chance that the tab
+    // is being dragged, or we're in some other nested event loop. This code
+    // path should ensure that the tab is safely closed under such
+    // circumstances, whereas |Browser::CloseTabContents()| does not.
+    RenderViewHost* render_view_host = contents->render_view_host();
+    render_view_host->delegate()->Close(render_view_host);
   }
-
-  // Close the tab in this convoluted way, since there's a chance that the tab
-  // is being dragged, or we're in some other nested event loop. This code path
-  // should ensure that the tab is safely closed under such circumstances,
-  // whereas |Browser::CloseTabContents()| does not.
-  RenderViewHost* render_view_host = contents->render_view_host();
-  render_view_host->delegate()->Close(render_view_host);
   return true;
 }
 

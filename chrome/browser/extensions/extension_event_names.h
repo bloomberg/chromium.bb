@@ -11,9 +11,11 @@
 namespace extension_event_names {
 
 // Tabs.
+extern const char kOnTabActiveChanged[];
 extern const char kOnTabAttached[];
 extern const char kOnTabCreated[];
 extern const char kOnTabDetached[];
+extern const char kOnTabHighlightChanged[];
 extern const char kOnTabMoved[];
 extern const char kOnTabRemoved[];
 extern const char kOnTabSelectionChanged[];

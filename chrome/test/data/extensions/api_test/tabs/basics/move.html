@@ -6,15 +6,15 @@ var secondWindowId;
 var moveTabIds = {};
 
 chrome.test.runTests([
-  // Do a series of moves so that we get the following
+  // Do a series of moves and removes so that we get the following
   //
   // Before:
   //  Window1: (newtab),a,b,c,d,e
   //  Window2: (newtab)
   //
   // After:
-  //  Window1: (newtab),a,e,c
-  //  Window2: b,(newtab),d
+  //  Window1: (newtab),a
+  //  Window2: b,(newtab)
   function setupLetterPages() {
     var pages = ["chrome://newtab/", pageUrl('a'), pageUrl('b'),
                    pageUrl('c'), pageUrl('d'), pageUrl('e')];
@@ -75,6 +75,33 @@ chrome.test.runTests([
     chrome.tabs.remove(moveTabIds["d"], pass(function() {
       chrome.tabs.getAllInWindow(secondWindowId,
                                  pass(function(tabs) {
+        assertEq(2, tabs.length);
+        assertEq(pageUrl("b"), tabs[0].url);
+        assertEq("chrome://newtab/", tabs[1].url);
+      }));
+    }));
+  },
+
+  function moveMultipleTabs() {
+    chrome.tabs.move([moveTabIds['e'], moveTabIds['c']],
+                     {windowId: secondWindowId, index: 1},
+                     pass(function(tabsA) {
+      assertEq(2, tabsA.length);
+      assertEq(secondWindowId, tabsA[0].windowId);
+      assertEq(pageUrl('e'), tabsA[0].url);
+      assertEq(1, tabsA[0].index);
+      assertEq(secondWindowId, tabsA[1].windowId);
+      assertEq(pageUrl('c'), tabsA[1].url);
+      assertEq(2, tabsA[1].index);
+      chrome.tabs.query({windowId: secondWindowId}, pass(function(tabsB) {
+        assertEq(4, tabsB.length);
+      }));
+    }));
+  },
+
+  function removeMultipleTabs() {
+    chrome.tabs.remove([moveTabIds['e'], moveTabIds['c']], pass(function() {
+      chrome.tabs.query({windowId: secondWindowId}, pass(function(tabs) {
         assertEq(2, tabs.length);
         assertEq(pageUrl("b"), tabs[0].url);
         assertEq("chrome://newtab/", tabs[1].url);

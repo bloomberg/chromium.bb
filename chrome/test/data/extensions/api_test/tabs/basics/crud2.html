@@ -28,8 +28,8 @@ chrome.test.runTests([
         assertEq(secondWindowId, tabs[i].windowId);
         assertEq(i, tabs[i].index);
 
-        // The first tab should be selected
-        assertEq((i == 0), tabs[i].selected);
+        // The first tab should be active
+        assertEq((i == 0), tabs[i].active && tabs[i].selected);
       }
       assertEq("about:blank", tabs[0].url);
       assertEq("chrome://newtab/", tabs[1].url);
@@ -50,26 +50,27 @@ chrome.test.runTests([
 
   function updateSelect() {
     chrome.tabs.getAllInWindow(secondWindowId, pass(function(tabs) {
-      assertEq(true, tabs[0].selected);
-      assertEq(false, tabs[1].selected);
-      assertEq(false, tabs[2].selected);
+      assertEq(true, tabs[0].active && tabs[0].selected);
+      assertEq(false, tabs[1].active || tabs[1].selected);
+      assertEq(false, tabs[2].active || tabs[2].selected);
+
       // Select tab[1].
-      chrome.tabs.update(tabs[1].id, {selected: true},
+      chrome.tabs.update(tabs[1].id, {active: true},
                          pass(function(tab1){
         // Check update of tab[1].
-        chrome.test.assertEq(true, tab1.selected);
+        chrome.test.assertEq(true, tab1.active);
         chrome.tabs.getAllInWindow(secondWindowId, pass(function(tabs) {
-          assertEq(true, tabs[1].selected);
-          assertEq(false, tabs[2].selected);
+          assertEq(true, tabs[1].active && tabs[1].selected);
+          assertEq(false, tabs[2].active || tabs[2].selected);
           // Select tab[2].
           chrome.tabs.update(tabs[2].id,
-                             {selected: true},
+                             {active: true},
                              pass(function(tab2){
             // Check update of tab[2].
-            chrome.test.assertEq(true, tab2.selected);
+            chrome.test.assertEq(true, tab2.active);
             chrome.tabs.getAllInWindow(secondWindowId, pass(function(tabs) {
-              assertEq(false, tabs[1].selected);
-              assertEq(true, tabs[2].selected);
+              assertEq(false, tabs[1].active || tabs[1].selected);
+              assertEq(true, tabs[2].active && tabs[2].selected);
             }));
           }));
         }));

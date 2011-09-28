@@ -75,10 +75,20 @@ class GetAllTabsInWindowFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.getAllInWindow")
 };
+class QueryTabsFunction : public SyncExtensionFunction {
+  virtual ~QueryTabsFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.query")
+};
 class CreateTabFunction : public SyncExtensionFunction {
   virtual ~CreateTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.create")
+};
+class HighlightTabsFunction : public SyncExtensionFunction {
+  virtual ~HighlightTabsFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.highlight")
 };
 class UpdateTabFunction : public AsyncExtensionFunction,
                           public TabContentsObserver {
@@ -93,8 +103,8 @@ class UpdateTabFunction : public AsyncExtensionFunction,
                              const std::string& error);
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };
-class MoveTabFunction : public SyncExtensionFunction {
-  virtual ~MoveTabFunction() {}
+class MoveTabsFunction : public SyncExtensionFunction {
+  virtual ~MoveTabsFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.move")
 };
@@ -103,8 +113,8 @@ class ReloadTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.reload")
 };
-class RemoveTabFunction : public SyncExtensionFunction {
-  virtual ~RemoveTabFunction() {}
+class RemoveTabsFunction : public SyncExtensionFunction {
+  virtual ~RemoveTabsFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.remove")
 };

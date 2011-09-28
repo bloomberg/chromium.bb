@@ -358,7 +358,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     s->user_gesture = user_gesture;
     states_.push_back(s);
   }
-  virtual void TabSelectionChanged(const TabStripSelectionModel& old_model) {
+  virtual void TabSelectionChanged(TabStripModel* tab_strip_model,
+                                   const TabStripSelectionModel& old_model) {
     if (!log_tab_selection_changed())
       return;
 
