@@ -36,8 +36,7 @@ MessageBoxView::MessageBoxView(int dialog_flags,
       prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
-      message_width_(message_width),
-      ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)) {
+      message_width_(message_width) {
   Init(dialog_flags, default_prompt);
 }
 
@@ -48,8 +47,7 @@ MessageBoxView::MessageBoxView(int dialog_flags,
       prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
-      message_width_(kDefaultMessageWidth),
-      ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)) {
+      message_width_(kDefaultMessageWidth) {
   Init(dialog_flags, default_prompt);
 }
 

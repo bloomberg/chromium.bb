@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/task.h"
 #include "views/view.h"
 
 namespace views {
@@ -91,8 +90,6 @@ class VIEWS_EXPORT MessageBoxView : public View {
 
   // Maximum width of the message label.
   int message_width_;
-
-  ScopedRunnableMethodFactory<MessageBoxView> focus_grabber_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBoxView);
 };
