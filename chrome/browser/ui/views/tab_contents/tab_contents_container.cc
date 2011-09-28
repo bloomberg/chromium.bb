@@ -18,9 +18,48 @@
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsContainer, public:
 
+TabContentsContainer::TabContentsContainer()
+    : native_container_(NULL),
+      tab_contents_(NULL) {
+  set_id(VIEW_ID_TAB_CONTAINER);
+}
+
 TabContentsContainer::~TabContentsContainer() {
   if (tab_contents_)
     RemoveObservers();
+}
+
+void TabContentsContainer::ChangeTabContents(TabContents* contents) {
+  if (tab_contents_) {
+    native_container_->DetachContents(tab_contents_);
+    tab_contents_->WasHidden();
+    RemoveObservers();
+  }
+  tab_contents_ = contents;
+  // When detaching the last tab of the browser ChangeTabContents is invoked
+  // with NULL. Don't attempt to do anything in that case.
+  if (tab_contents_) {
+    RenderWidgetHostViewChanged(tab_contents_->GetRenderWidgetHostView());
+    native_container_->AttachContents(tab_contents_);
+    AddObservers();
+  }
+}
+
+void TabContentsContainer::TabContentsFocused(TabContents* tab_contents) {
+  native_container_->TabContentsFocused(tab_contents);
+}
+
+void TabContentsContainer::SetFastResize(bool fast_resize) {
+  native_container_->SetFastResize(fast_resize);
+}
+
+void TabContentsContainer::SetReservedContentsRect(
+    const gfx::Rect& reserved_rect) {
+  cached_reserved_rect_ = reserved_rect;
+  if (tab_contents_ && tab_contents_->GetRenderWidgetHostView()) {
+    tab_contents_->GetRenderWidgetHostView()->set_reserved_contents_rect(
+        reserved_rect);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,8 +83,66 @@ void TabContentsContainer::Observe(int type,
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsContainer, View overrides:
 
+void TabContentsContainer::Layout() {
+  if (native_container_) {
+    native_container_->GetView()->SetBounds(0, 0, width(), height());
+    native_container_->GetView()->Layout();
+  }
+}
+
 void TabContentsContainer::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+}
+
+#if defined(HAVE_XINPUT2)
+bool TabContentsContainer::OnMousePressed(const views::MouseEvent& event) {
+  DCHECK(tab_contents_);
+  if (event.flags() & (ui::EF_LEFT_BUTTON_DOWN |
+                       ui::EF_RIGHT_BUTTON_DOWN |
+                       ui::EF_MIDDLE_BUTTON_DOWN)) {
+    return false;
+  }
+  // It is necessary to look at the native event to determine what special
+  // button was pressed.
+  views::NativeEvent native_event = event.native_event();
+  if (!native_event)
+    return false;
+
+  int button = 0;
+  switch (native_event->type) {
+    case ButtonPress: {
+      button = native_event->xbutton.button;
+      break;
+    }
+    case GenericEvent: {
+      XIDeviceEvent* xievent =
+          static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+      button = xievent->detail;
+      break;
+    }
+    default:
+      break;
+  }
+  switch (button) {
+    case 8:
+      tab_contents_->controller().GoBack();
+      return true;
+    case 9:
+      tab_contents_->controller().GoForward();
+      return true;
+  }
+
+  return false;
+}
+#endif
+
+void TabContentsContainer::ViewHierarchyChanged(bool is_add,
+                                                views::View* parent,
+                                                views::View* child) {
+  if (is_add && child == this) {
+    native_container_ = NativeTabContentsContainer::CreateNativeContainer(this);
+    AddChildView(native_container_->GetView());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,6 +163,13 @@ void TabContentsContainer::AddObservers() {
 
 void TabContentsContainer::RemoveObservers() {
   registrar_.RemoveAll();
+}
+
+void TabContentsContainer::RenderViewHostChanged(RenderViewHost* old_host,
+                                                 RenderViewHost* new_host) {
+  if (new_host)
+    RenderWidgetHostViewChanged(new_host->view());
+  native_container_->RenderViewHostChanged(old_host, new_host);
 }
 
 void TabContentsContainer::TabContentsDestroyed(TabContents* contents) {
