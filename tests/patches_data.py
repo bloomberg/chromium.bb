@@ -11,15 +11,14 @@ class RAW(object):
       '===================================================================\n'
       '--- chrome/file.cc\t(revision 74690)\n'
       '+++ chrome/file.cc\t(working copy)\n'
-      '@@ -80,10 +80,13 @@\n'
-      ' // Foo\n'
-      ' // Bar\n'
-      ' void foo() {\n'
-      '-   return bar;\n'
-      '+   return foo;\n'
-      ' }\n'
-      ' \n'
-      ' \n')
+      '@@ -3,6 +3,7 @@ bb\n'
+      ' ccc\n'
+      ' dd\n'
+      ' e\n'
+      '+FOO!\n'
+      ' ff\n'
+      ' ggg\n'
+      ' hh\n')
 
   NEW = (
       '--- /dev/null\n'
@@ -170,6 +169,16 @@ class GIT(object):
       '+++ b/natsort_test.py\n'
       '@@ -0,0 +1,1 @@\n'
       '+#!/usr/bin/env python\n')
+
+  # To make sure the subdirectory was created as needed.
+  NEW_SUBDIR = (
+      'diff --git a/new_dir/subdir/new_file b/new_dir/subdir/new_file\n'
+      'new file mode 100644\n'
+      '--- /dev/null\n'
+      '+++ b/new_dir/subdir/new_file\n'
+      '@@ -0,0 +1,2 @@\n'
+      '+A new file\n'
+      '+should exist.\n')
 
   NEW_MODE = (
       'diff --git a/natsort_test.py b/natsort_test.py\n'

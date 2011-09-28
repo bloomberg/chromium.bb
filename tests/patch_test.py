@@ -113,25 +113,32 @@ class PatchTest(unittest.TestCase):
 
   def testRelPath(self):
     patches = patch.PatchSet([
-        patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, []),
-        patch.FilePatchDiff(
-            'tools\\clang_check/README.chromium', GIT.DELETE, []),
-        patch.FilePatchDiff('tools/run_local_server.sh', GIT.RENAME, []),
+        patch.FilePatchDiff('pp', GIT.COPY, []),
         patch.FilePatchDiff(
             'chromeos\\views/webui_menu_widget.h', GIT.RENAME_PARTIAL, []),
-        patch.FilePatchDiff('pp', GIT.COPY, []),
+        patch.FilePatchDiff('tools/run_local_server.sh', GIT.RENAME, []),
+        patch.FilePatchBinary('bar', 'data', [], is_new=False),
+        patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, []),
         patch.FilePatchDiff('foo', GIT.NEW, []),
         patch.FilePatchDelete('other/place/foo', True),
-        patch.FilePatchBinary('bar', 'data', [], is_new=False),
+        patch.FilePatchDiff(
+            'tools\\clang_check/README.chromium', GIT.DELETE, []),
     ])
     expected = [
-        'chrome/file.cc', 'tools/clang_check/README.chromium',
+        'pp',
+        'chromeos/views/webui_menu_widget.h',
         'tools/run_local_server.sh',
-        'chromeos/views/webui_menu_widget.h', 'pp', 'foo',
-        'other/place/foo', 'bar']
+        'bar',
+        'chrome/file.cc',
+        'foo',
+        'other/place/foo',
+        'tools/clang_check/README.chromium',
+    ]
     self.assertEquals(expected, patches.filenames)
-    orig_name = patches.patches[0].filename
-    orig_source_name = patches.patches[0].source_filename or orig_name
+
+    # Test patch #4.
+    orig_name = patches.patches[4].filename
+    orig_source_name = patches.patches[4].source_filename or orig_name
     patches.set_relpath(os.path.join('a', 'bb'))
     expected = [os.path.join('a', 'bb', x) for x in expected]
     self.assertEquals(expected, patches.filenames)
@@ -148,7 +155,7 @@ class PatchTest(unittest.TestCase):
         line = line.replace(orig_name, new_name)
       header.append(line)
     header = ''.join(header)
-    self.assertEquals(header, patches.patches[0].diff_header)
+    self.assertEquals(header, patches.patches[4].diff_header)
 
   def testRelPathEmpty(self):
     patches = patch.PatchSet([

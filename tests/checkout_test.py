@@ -21,65 +21,15 @@ import checkout
 import patch
 import subprocess2
 from tests import fake_repos
+from tests.patches_data import GIT, RAW
 
 
 # pass -v to enable it.
 DEBUGGING = False
 
-# A naked patch.
-NAKED_PATCH = ("""\
---- svn_utils_test.txt
-+++ svn_utils_test.txt
-@@ -3,6 +3,7 @@ bb
- ccc
- dd
- e
-+FOO!
- ff
- ggg
- hh
-""")
-
-# A patch generated from git.
-GIT_PATCH = ("""\
-diff --git a/svn_utils_test.txt b/svn_utils_test.txt
-index 0e4de76..8320059 100644
---- a/svn_utils_test.txt
-+++ b/svn_utils_test.txt
-@@ -3,6 +3,7 @@ bb
- ccc
- dd
- e
-+FOO!
- ff
- ggg
- hh
-""")
-
 # A patch that will fail to apply.
-BAD_PATCH = ("""\
-diff --git a/svn_utils_test.txt b/svn_utils_test.txt
-index 0e4de76..8320059 100644
---- a/svn_utils_test.txt
-+++ b/svn_utils_test.txt
-@@ -3,7 +3,8 @@ bb
- ccc
- dd
-+FOO!
- ff
- ggg
- hh
-""")
-
-PATCH_ADD = ("""\
-diff --git a/new_dir/subdir/new_file b/new_dir/subdir/new_file
-new file mode 100644
---- /dev/null
-+++ b/new_dir/subdir/new_file
-@@ -0,0 +1,2 @@
-+A new file
-+should exist.
-""")
+BAD_PATCH = ''.join(
+    [l for l in GIT.PATCH.splitlines(True) if l.strip() != 'e'])
 
 
 class FakeRepos(fake_repos.FakeReposBase):
@@ -95,7 +45,7 @@ class FakeRepos(fake_repos.FakeReposBase):
     fs['trunk/codereview.settings'] = (
         '# Test data\n'
         'bar: pouet\n')
-    fs['trunk/svn_utils_test.txt'] = (
+    fs['trunk/chrome/file.cc'] = (
         'a\n'
         'bb\n'
         'ccc\n'
@@ -149,12 +99,12 @@ class BaseTest(fake_repos.FakeReposTestBase):
 
   def get_patches(self):
     return patch.PatchSet([
-        patch.FilePatchDiff(
-            'svn_utils_test.txt', GIT_PATCH, []),
         # TODO(maruel): Test with is_new == False.
         patch.FilePatchBinary('bin_file', '\x00', [], is_new=True),
+        patch.FilePatchDiff(
+            'chrome/file.cc', GIT.PATCH, []),
+        patch.FilePatchDiff('new_dir/subdir/new_file', GIT.NEW_SUBDIR, []),
         patch.FilePatchDelete('extra', False),
-        patch.FilePatchDiff('new_dir/subdir/new_file', PATCH_ADD, []),
     ])
 
   def get_trunk(self, modified):
@@ -167,8 +117,8 @@ class BaseTest(fake_repos.FakeReposTestBase):
         tree[f] = v
 
     if modified:
-      content_lines = tree['svn_utils_test.txt'].splitlines(True)
-      tree['svn_utils_test.txt'] = ''.join(
+      content_lines = tree['chrome/file.cc'].splitlines(True)
+      tree['chrome/file.cc'] = ''.join(
           content_lines[0:5] + ['FOO!\n'] + content_lines[5:])
       del tree['extra']
       tree['new_dir/subdir/new_file'] = 'A new file\nshould exist.\n'
@@ -187,8 +137,8 @@ class BaseTest(fake_repos.FakeReposTestBase):
     patches = self.get_patches()
     co.apply_patch(patches)
     self.assertEquals(
-        ['bin_file', 'extra', 'new_dir/subdir/new_file', 'svn_utils_test.txt'],
-        sorted(patches.filenames))
+        ['bin_file', 'chrome/file.cc', 'new_dir/subdir/new_file', 'extra'],
+        patches.filenames)
 
     if git:
       # Hackish to verify _branches() internal function.
@@ -225,10 +175,10 @@ class BaseTest(fake_repos.FakeReposTestBase):
   def _check_exception(self, co, err_msg):
     co.prepare(None)
     try:
-      co.apply_patch([patch.FilePatchDiff('svn_utils_test.txt', BAD_PATCH, [])])
+      co.apply_patch([patch.FilePatchDiff('chrome/file.cc', BAD_PATCH, [])])
       self.fail()
     except checkout.PatchApplicationFailed, e:
-      self.assertEquals(e.filename, 'svn_utils_test.txt')
+      self.assertEquals(e.filename, 'chrome/file.cc')
       self.assertEquals(e.status, err_msg)
 
   def _log(self):
@@ -315,10 +265,10 @@ class SvnCheckout(SvnBaseTest):
     self._check_exception(
         self._get_co(True),
         'While running patch -p1 --forward --force;\n'
-        'patching file svn_utils_test.txt\n'
+        'patching file chrome/file.cc\n'
         'Hunk #1 FAILED at 3.\n'
         '1 out of 1 hunk FAILED -- saving rejects to file '
-        'svn_utils_test.txt.rej\n')
+        'chrome/file.cc.rej\n')
 
   def testSvnProps(self):
     co = self._get_co(False)
@@ -327,21 +277,21 @@ class SvnCheckout(SvnBaseTest):
       # svn:ignore can only be applied to directories.
       svn_props = [('svn:ignore', 'foo')]
       co.apply_patch(
-          [patch.FilePatchDiff('svn_utils_test.txt', NAKED_PATCH, svn_props)])
+          [patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, svn_props)])
       self.fail()
     except checkout.PatchApplicationFailed, e:
-      self.assertEquals(e.filename, 'svn_utils_test.txt')
+      self.assertEquals(e.filename, 'chrome/file.cc')
       self.assertEquals(
           e.status,
-          'While running svn propset svn:ignore foo svn_utils_test.txt '
+          'While running svn propset svn:ignore foo chrome/file.cc '
           '--non-interactive;\n'
-          'patching file svn_utils_test.txt\n'
-          'svn: Cannot set \'svn:ignore\' on a file (\'svn_utils_test.txt\')\n')
+          'patching file chrome/file.cc\n'
+          'svn: Cannot set \'svn:ignore\' on a file (\'chrome/file.cc\')\n')
     co.prepare(None)
     svn_props = [('svn:eol-style', 'LF'), ('foo', 'bar')]
     co.apply_patch(
-        [patch.FilePatchDiff('svn_utils_test.txt', NAKED_PATCH, svn_props)])
-    filepath = os.path.join(self.root_dir, self.name, 'svn_utils_test.txt')
+        [patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, svn_props)])
+    filepath = os.path.join(self.root_dir, self.name, 'chrome/file.cc')
     # Manually verify the properties.
     props = subprocess2.check_output(
         ['svn', 'proplist', filepath],
@@ -388,11 +338,11 @@ class SvnCheckout(SvnBaseTest):
     patches = self.get_patches()
     co.apply_patch(patches)
     self.assertEquals(
-        ['bin_file', 'extra', 'new_dir/subdir/new_file', 'svn_utils_test.txt'],
-        sorted(patches.filenames))
+        ['bin_file', 'chrome/file.cc', 'new_dir/subdir/new_file', 'extra'],
+        patches.filenames)
     # *.txt = svn:eol-style=LF in subversion_config/config.
     out = subprocess2.check_output(
-        ['svn', 'pget', 'svn:eol-style', 'svn_utils_test.txt'],
+        ['svn', 'pget', 'svn:eol-style', 'chrome/file.cc'],
         cwd=co.project_path)
     self.assertEquals('LF\n', out)
 
@@ -464,18 +414,18 @@ class GitSvnCheckout(SvnBaseTest):
     try:
       svn_props = [('foo', 'bar')]
       co.apply_patch(
-          [patch.FilePatchDiff('svn_utils_test.txt', NAKED_PATCH, svn_props)])
+          [patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, svn_props)])
       self.fail()
     except patch.UnsupportedPatchFormat, e:
-      self.assertEquals(e.filename, 'svn_utils_test.txt')
+      self.assertEquals(e.filename, 'chrome/file.cc')
       self.assertEquals(
           e.status,
-          'Cannot apply svn property foo to file svn_utils_test.txt.')
+          'Cannot apply svn property foo to file chrome/file.cc.')
     co.prepare(None)
     # svn:eol-style is ignored.
     svn_props = [('svn:eol-style', 'LF')]
     co.apply_patch(
-        [patch.FilePatchDiff('svn_utils_test.txt', NAKED_PATCH, svn_props)])
+        [patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, svn_props)])
 
   def testProcess(self):
     co = lambda x: checkout.SvnCheckout(
@@ -518,8 +468,8 @@ class RawCheckout(SvnBaseTest):
     patches = self.get_patches()
     co.apply_patch(patches)
     self.assertEquals(
-        ['bin_file', 'extra', 'new_dir/subdir/new_file', 'svn_utils_test.txt'],
-        sorted(patches.filenames))
+        ['bin_file', 'chrome/file.cc', 'new_dir/subdir/new_file', 'extra'],
+        patches.filenames)
 
     # Verify that the patch is applied even for read only checkout.
     self.assertTree(self.get_trunk(True), root)
@@ -546,10 +496,10 @@ class RawCheckout(SvnBaseTest):
   def testException(self):
     self._check_exception(
         self._get_co(True),
-        'patching file svn_utils_test.txt\n'
+        'patching file chrome/file.cc\n'
         'Hunk #1 FAILED at 3.\n'
         '1 out of 1 hunk FAILED -- saving rejects to file '
-        'svn_utils_test.txt.rej\n')
+        'chrome/file.cc.rej\n')
 
   def testProcess(self):
     co = lambda x: checkout.SvnCheckout(
