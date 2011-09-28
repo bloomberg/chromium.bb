@@ -32,24 +32,24 @@ AutoHidingDesktopBarGtk::AutoHidingDesktopBarGtk(Observer* observer)
 }
 
 void AutoHidingDesktopBarGtk::UpdateWorkArea(const gfx::Rect& work_area) {
-  NOTIMPLEMENTED();
+  // TODO(prasadt): Not implemented yet.
 }
 
 bool AutoHidingDesktopBarGtk::IsEnabled(
     AutoHidingDesktopBar::Alignment alignment) {
-  NOTIMPLEMENTED();
+  // TODO(prasadt): Not implemented yet.
   return false;
 }
 
 int AutoHidingDesktopBarGtk::GetThickness(
     AutoHidingDesktopBar::Alignment alignment) const {
-  NOTIMPLEMENTED();
+  // TODO(prasadt): Not implemented yet.
   return 0;
 }
 
 AutoHidingDesktopBar::Visibility AutoHidingDesktopBarGtk::GetVisibility(
     AutoHidingDesktopBar::Alignment alignment) const {
-  NOTIMPLEMENTED();
+  // TODO(prasadt): Not implemented yet.
   return AutoHidingDesktopBar::HIDDEN;
 }
 

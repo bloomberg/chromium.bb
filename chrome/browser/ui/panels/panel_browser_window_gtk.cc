@@ -10,6 +10,28 @@
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 
+namespace {
+
+// RGB values for titlebar in draw attention state. A shade of orange.
+const int kDrawAttentionR = 0xfa;
+const int kDrawAttentionG = 0x98;
+const int kDrawAttentionB = 0x3a;
+const float kDrawAttentionRFraction = kDrawAttentionR / 255.0;
+const float kDrawAttentionGFraction = kDrawAttentionG / 255.0;
+const float kDrawAttentionBFraction = kDrawAttentionB / 255.0;
+
+// Delay before click on a titlebar is allowed to minimize the panel after
+// the 'draw attention' mode has been cleared.
+const base::TimeDelta kSuspendMinimizeOnClickIntervalMs =
+    base::TimeDelta::FromMilliseconds(500);
+
+// Markup for title text in draw attention state. Set to color white.
+const char* const kDrawAttentionTitleMarkupPrefix =
+    "<span fgcolor='#ffffff'>";
+const char* const kDrawAttentionTitleMarkupSuffix = "</span>";
+
+}
+
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
                                       const gfx::Rect& bounds) {
   PanelBrowserWindowGtk* panel_browser_window_gtk =
@@ -29,7 +51,8 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
       panel_(panel),
       bounds_(bounds),
       restored_height_(bounds.height()),
-      window_size_known_(false) {
+      window_size_known_(false),
+      is_drawing_attention_(false) {
 }
 
 PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
@@ -61,6 +84,8 @@ void PanelBrowserWindowGtk::Init() {
   // minimize etc. can only be done from the panel UI.
   gtk_window_set_skip_taskbar_hint(window(), TRUE);
 
+  g_signal_connect(titlebar_widget(), "focus-in-event",
+                   G_CALLBACK(OnFocusInThunk), this);
   g_signal_connect(titlebar_widget(), "button-press-event",
                    G_CALLBACK(OnTitlebarButtonPressEventThunk), this);
   g_signal_connect(titlebar_widget(), "button-release-event",
@@ -129,6 +154,49 @@ void PanelBrowserWindowGtk::ShowSettingsMenu(GtkWidget* widget,
     settings_menu_.reset(new MenuGtk(this, settings_menu_model_.get()));
   }
   settings_menu_->PopupForWidget(widget, event->button, event->time);
+}
+
+void PanelBrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
+                                            GtkWidget* widget,
+                                            GdkEventExpose* event) {
+  BrowserWindowGtk::DrawCustomFrame(cr, widget, event);
+
+  if (is_drawing_attention_) {
+    cairo_set_source_rgb(cr, kDrawAttentionRFraction,
+                         kDrawAttentionGFraction,
+                         kDrawAttentionBFraction);
+
+    GdkRectangle dest_rectangle = GetTitlebarRectForDrawAttention();
+    GdkRegion* dest_region = gdk_region_rectangle(&dest_rectangle);
+
+    gdk_region_intersect(dest_region, event->region);
+    gdk_cairo_region(cr, dest_region);
+
+    cairo_clip(cr);
+    cairo_paint(cr);
+    gdk_region_destroy(dest_region);
+  }
+}
+
+BrowserWindowGtk::TitleDecoration PanelBrowserWindowGtk::GetWindowTitle(
+    std::string* title) const {
+  if (is_drawing_attention_) {
+    std::string title_original;
+    BrowserWindowGtk::TitleDecoration title_decoration =
+        BrowserWindowGtk::GetWindowTitle(&title_original);
+    DCHECK_EQ(BrowserWindowGtk::PLAIN_TEXT, title_decoration);
+    gchar* title_escaped = g_markup_escape_text(title_original.c_str(), -1);
+    gchar* title_with_markup = g_strconcat(kDrawAttentionTitleMarkupPrefix,
+                                           title_escaped,
+                                           kDrawAttentionTitleMarkupSuffix,
+                                           NULL);
+    *title = title_with_markup;
+    g_free(title_escaped);
+    g_free(title_with_markup);
+    return BrowserWindowGtk::PANGO_MARKUP;
+  } else {
+    return BrowserWindowGtk::GetWindowTitle(title);
+  }
 }
 
 void PanelBrowserWindowGtk::ShowPanel() {
@@ -233,11 +301,23 @@ void PanelBrowserWindowGtk::PanelTabContentsFocused(TabContents* tab_contents) {
 }
 
 void PanelBrowserWindowGtk::DrawAttention() {
-  NOTIMPLEMENTED();
+  // Don't draw attention for active panel.
+  if (is_drawing_attention_ || IsActive())
+    return;
+
+  is_drawing_attention_ = true;
+  // Bring up the titlebar to get people's attention.
+  if (panel_->expansion_state() == Panel::MINIMIZED)
+    panel_->SetExpansionState(Panel::TITLE_ONLY);
+
+  GdkRectangle rect = GetTitlebarRectForDrawAttention();
+  gdk_window_invalidate_rect(GTK_WIDGET(window())->window, &rect, TRUE);
+
+  UpdateTitleBar();
 }
 
 bool PanelBrowserWindowGtk::IsDrawingAttention() const {
-  return false;
+  return is_drawing_attention_;
 }
 
 bool PanelBrowserWindowGtk::PreHandlePanelKeyboardEvent(
@@ -374,6 +454,23 @@ void PanelBrowserWindowGtk::CleanupDragDrop() {
   }
 }
 
+GdkRectangle PanelBrowserWindowGtk::GetTitlebarRectForDrawAttention() const {
+  GdkRectangle rect;
+  rect.x = 0;
+  rect.y = 0;
+  // We get the window width and not the titlebar_widget() width because we'd
+  // like for the window borders on either side of the title bar to be the same
+  // color.
+  rect.width = GTK_WIDGET(window())->allocation.width;
+  rect.height = titlebar_widget()->allocation.height;
+
+  return rect;
+}
+
+int PanelBrowserWindowGtk::TitleOnlyHeight() const {
+  return titlebar_widget()->allocation.height;
+}
+
 gboolean PanelBrowserWindowGtk::OnTitlebarButtonPressEvent(
     GtkWidget* widget, GdkEventButton* event) {
   // Every button press ensures either a button-release-event or a drag-fail
@@ -400,6 +497,10 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
 
   Panel::ExpansionState new_expansion_state;
   if (panel_->expansion_state() == Panel::EXPANDED) {
+    if (base::Time::Now() < disableMinimizeUntilTime_)
+      return TRUE;
+
+    restored_height_ = bounds_.height();
     new_expansion_state = Panel::MINIMIZED;
   } else {
     new_expansion_state = Panel::EXPANDED;
@@ -407,6 +508,20 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
   panel_->SetExpansionState(new_expansion_state);
 
   return TRUE;
+}
+
+gboolean PanelBrowserWindowGtk::OnFocusIn(GtkWidget* widget,
+                                          GdkEventFocus* event) {
+  if (!is_drawing_attention_)
+    return FALSE;
+
+  is_drawing_attention_ = false;
+  UpdateTitleBar();
+  panel_->SetExpansionState(Panel::EXPANDED);
+
+  disableMinimizeUntilTime_ =
+      base::Time::Now() + kSuspendMinimizeOnClickIntervalMs;
+  return FALSE;
 }
 
 void PanelBrowserWindowGtk::OnDragBegin(GtkWidget* widget,

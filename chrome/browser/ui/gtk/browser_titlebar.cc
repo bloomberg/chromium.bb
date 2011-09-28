@@ -599,8 +599,16 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
     return;
 
   // Get the page title and elide it to the available space.
-  string16 title = browser_window_->browser()->GetWindowTitleForCurrentTab();
-  gtk_label_set_text(GTK_LABEL(app_mode_title_), UTF16ToUTF8(title).c_str());
+  std::string title;
+  BrowserWindowGtk::TitleDecoration title_decoration =
+      browser_window_->GetWindowTitle(&title);
+
+  if (title_decoration == BrowserWindowGtk::PANGO_MARKUP) {
+    gtk_label_set_markup(GTK_LABEL(app_mode_title_), title.c_str());
+  } else {
+    DCHECK_EQ(BrowserWindowGtk::PLAIN_TEXT, title_decoration);
+    gtk_label_set_text(GTK_LABEL(app_mode_title_), title.c_str());
+  }
 
   if (browser_window_->browser()->is_app()) {
     switch (browser_window_->browser()->type()) {

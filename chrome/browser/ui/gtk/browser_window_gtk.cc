@@ -1001,8 +1001,7 @@ gfx::NativeWindow BrowserWindowGtk::ShowHTMLDialog(
 
 void BrowserWindowGtk::UserChangedTheme() {
   SetBackgroundColor();
-  gdk_window_invalidate_rect(GTK_WIDGET(window_)->window,
-      &GTK_WIDGET(window_)->allocation, TRUE);
+  InvalidateWindow();
   UpdateWindowShape(bounds_.width(), bounds_.height());
 }
 
@@ -1259,8 +1258,7 @@ void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   is_active_ = is_active;
   if (changed) {
     SetBackgroundColor();
-    gdk_window_invalidate_rect(GTK_WIDGET(window_)->window,
-                               &GTK_WIDGET(window_)->allocation, TRUE);
+    InvalidateWindow();
     // For some reason, the above two calls cause the window shape to be
     // lost so reset it.
     UpdateWindowShape(bounds_.width(), bounds_.height());
@@ -1900,6 +1898,11 @@ gfx::Size BrowserWindowGtk::GetNonClientFrameSize() const {
                    render_area_floating_container_->allocation.height);
 }
 
+void BrowserWindowGtk::InvalidateWindow() {
+  gdk_window_invalidate_rect(GTK_WIDGET(window_)->window,
+                             &GTK_WIDGET(window_)->allocation, TRUE);
+}
+
 void BrowserWindowGtk::SaveWindowPosition() {
   // Browser::SaveWindowPlacement is used for session restore.
   ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
@@ -2363,6 +2366,13 @@ void BrowserWindowGtk::ShowSettingsMenu(GtkWidget* widget,
                                         GdkEventButton* event) {
   // Nothing to do. Panel window will override this.
 }
+
+BrowserWindowGtk::TitleDecoration BrowserWindowGtk::GetWindowTitle(
+    std::string* title) const {
+  *title = UTF16ToUTF8(browser()->GetWindowTitleForCurrentTab());
+  return PLAIN_TEXT;
+}
+
 
 // static
 bool BrowserWindowGtk::GetCustomFramePrefDefault() {

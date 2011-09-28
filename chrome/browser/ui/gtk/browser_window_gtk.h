@@ -48,6 +48,11 @@ class BrowserWindowGtk : public BrowserWindow,
                          public ui::ActiveWindowWatcherX::Observer,
                          public InfoBarContainer::Delegate {
  public:
+  enum TitleDecoration {
+    PANGO_MARKUP,
+    PLAIN_TEXT
+  };
+
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
 
@@ -58,6 +63,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // Shows the settings menu when the settings button, if present, is clicked.
   // This is currently only used in panel window.
   virtual void ShowSettingsMenu(GtkWidget* widget, GdkEventButton* event);
+
+  // Allows for a derived class to decorate title text with pango markup.
+  // Returns the type of text used for title.
+  virtual TitleDecoration GetWindowTitle(std::string* title) const;
 
   // Overridden from BrowserWindow
   virtual void Show();
@@ -252,6 +261,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // Called when the window size changed.
   virtual void OnSizeChanged(int width, int height);
 
+  // Draws the normal custom frame using theme_frame.
+  virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
+                               GdkEventExpose* event);
+
   // Returns the size of the window frame around the client content area.
   gfx::Size GetNonClientFrameSize() const;
 
@@ -310,6 +323,9 @@ class BrowserWindowGtk : public BrowserWindow,
   // Triggers relayout of the content.
   void UpdateCustomFrame();
 
+  // Invalidate window to force repaint.
+  void InvalidateWindow();
+
   // Set the bounds of the current window. If |exterior| is true, set the size
   // of the window itself, otherwise set the bounds of the web contents.
   // If |move| is true, set the position of the window, otherwise leave the
@@ -334,9 +350,6 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // Draws the tab image as the frame so we can write legible text.
   void DrawPopupFrame(cairo_t* cr, GtkWidget* widget, GdkEventExpose* event);
-
-  // Draws the normal custom frame using theme_frame.
-  void DrawCustomFrame(cairo_t* cr, GtkWidget* widget, GdkEventExpose* event);
 
   // The background frame image needs to be offset by the size of the top of
   // the window to the top of the tabs when the full skyline isn't displayed

@@ -30,6 +30,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void ShowSettingsMenu(GtkWidget* widget,
                                 GdkEventButton* event) OVERRIDE;
+  virtual TitleDecoration GetWindowTitle(std::string* title) const OVERRIDE;
 
  protected:
   // BrowserWindowGtk overrides
@@ -42,6 +43,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void SetGeometryHints() OVERRIDE;
   virtual bool UseCustomFrame() OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
+  virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
+                               GdkEventExpose* event) OVERRIDE;
 
   // Overridden from NativePanel:
   virtual void ShowPanel() OVERRIDE;
@@ -106,14 +109,15 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   void EndDrag(bool canceled);
   void CleanupDragDrop();
 
-  int TitleOnlyHeight() const {
-    return titlebar_widget()->allocation.height;
-  }
+  GdkRectangle GetTitlebarRectForDrawAttention() const;
+  int TitleOnlyHeight() const;
 
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
                        OnTitlebarButtonPressEvent, GdkEventButton*);
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
                        OnTitlebarButtonReleaseEvent, GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean, OnFocusIn,
+                       GdkEventFocus*);
 
   // drag-begin is emitted when the drag is started. We connect so that we can
   // set the drag icon to a transparent pixbuf.
@@ -164,6 +168,18 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   // False until the window has been allocated and sized.
   bool window_size_known_;
+
+  // Indicates that the panel is currently drawing attention.
+  bool is_drawing_attention_;
+
+  // Disable ExpansionState changes on mouse click for a short duration.
+  // This is needed in case the window gains focus as result of mouseDown while
+  // being already expanded and drawing attention - in this case, we don't
+  // want to minimize it on subsequent mouseUp.
+  // We use time interval because the window may gain focus in various ways
+  // (via keyboard for example) which are not distinguishable at this point.
+  // Apparently this disable interval is not affecting the user in other cases.
+  base::Time disableMinimizeUntilTime_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };
