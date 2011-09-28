@@ -139,7 +139,7 @@ void TestOpen() {
     file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
     pp_error = ppb_file_system->Open(file_system, kSize,
                                      PP_BlockUntilComplete());
-    ppb_core->ReleaseResource(file_system);
+    PPBCore()->ReleaseResource(file_system);
     EXPECT(pp_error == PP_ERROR_BLOCKS_MAIN_THREAD);
 #endif
 
