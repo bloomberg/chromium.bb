@@ -575,6 +575,12 @@ void GLES2GetProgramInfoCHROMIUM(
     GLuint program, GLsizei bufsize, GLsizei* size, void* info) {
   gles2::GetGLContext()->GetProgramInfoCHROMIUM(program, bufsize, size, info);
 }
+GLuint GLES2CreateStreamTextureCHROMIUM(GLuint texture) {
+  return gles2::GetGLContext()->CreateStreamTextureCHROMIUM(texture);
+}
+void GLES2DestroyStreamTextureCHROMIUM(GLuint texture) {
+  gles2::GetGLContext()->DestroyStreamTextureCHROMIUM(texture);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

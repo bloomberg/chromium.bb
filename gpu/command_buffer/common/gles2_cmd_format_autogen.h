@@ -9015,9 +9015,57 @@ COMPILE_ASSERT(sizeof(Placeholder447CHROMIUM) == 4,
 COMPILE_ASSERT(offsetof(Placeholder447CHROMIUM, header) == 0,
                OffsetOf_Placeholder447CHROMIUM_header_not_0);
 
-struct Placeholder451CHROMIUM {
-  typedef Placeholder451CHROMIUM ValueType;
-  static const CommandId kCmdId = kPlaceholder451CHROMIUM;
+struct CreateStreamTextureCHROMIUM {
+  typedef CreateStreamTextureCHROMIUM ValueType;
+  static const CommandId kCmdId = kCreateStreamTextureCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef GLuint Result;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLuint _client_id, uint32 _result_shm_id, uint32 _result_shm_offset) {
+    SetHeader();
+    client_id = _client_id;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(
+      void* cmd, GLuint _client_id, uint32 _result_shm_id,
+      uint32 _result_shm_offset) {
+    static_cast<ValueType*>(
+        cmd)->Init(_client_id, _result_shm_id, _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 client_id;
+  uint32 result_shm_id;
+  uint32 result_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(CreateStreamTextureCHROMIUM) == 16,
+               Sizeof_CreateStreamTextureCHROMIUM_is_not_16);
+COMPILE_ASSERT(offsetof(CreateStreamTextureCHROMIUM, header) == 0,
+               OffsetOf_CreateStreamTextureCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(CreateStreamTextureCHROMIUM, client_id) == 4,
+               OffsetOf_CreateStreamTextureCHROMIUM_client_id_not_4);
+COMPILE_ASSERT(offsetof(CreateStreamTextureCHROMIUM, result_shm_id) == 8,
+               OffsetOf_CreateStreamTextureCHROMIUM_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(CreateStreamTextureCHROMIUM, result_shm_offset) == 12,
+               OffsetOf_CreateStreamTextureCHROMIUM_result_shm_offset_not_12);
+
+struct DestroyStreamTextureCHROMIUM {
+  typedef DestroyStreamTextureCHROMIUM ValueType;
+  static const CommandId kCmdId = kDestroyStreamTextureCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   static uint32 ComputeSize() {
@@ -9028,52 +9076,26 @@ struct Placeholder451CHROMIUM {
     header.SetCmd<ValueType>();
   }
 
-  void Init() {
+  void Init(GLuint _texture) {
     SetHeader();
+    texture = _texture;
   }
 
-  void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
+  void* Set(void* cmd, GLuint _texture) {
+    static_cast<ValueType*>(cmd)->Init(_texture);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
+  uint32 texture;
 };
 
-COMPILE_ASSERT(sizeof(Placeholder451CHROMIUM) == 4,
-               Sizeof_Placeholder451CHROMIUM_is_not_4);
-COMPILE_ASSERT(offsetof(Placeholder451CHROMIUM, header) == 0,
-               OffsetOf_Placeholder451CHROMIUM_header_not_0);
-
-struct Placeholder452CHROMIUM {
-  typedef Placeholder452CHROMIUM ValueType;
-  static const CommandId kCmdId = kPlaceholder452CHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init() {
-    SetHeader();
-  }
-
-  void* Set(void* cmd) {
-    static_cast<ValueType*>(cmd)->Init();
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-};
-
-COMPILE_ASSERT(sizeof(Placeholder452CHROMIUM) == 4,
-               Sizeof_Placeholder452CHROMIUM_is_not_4);
-COMPILE_ASSERT(offsetof(Placeholder452CHROMIUM, header) == 0,
-               OffsetOf_Placeholder452CHROMIUM_header_not_0);
+COMPILE_ASSERT(sizeof(DestroyStreamTextureCHROMIUM) == 8,
+               Sizeof_DestroyStreamTextureCHROMIUM_is_not_8);
+COMPILE_ASSERT(offsetof(DestroyStreamTextureCHROMIUM, header) == 0,
+               OffsetOf_DestroyStreamTextureCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(DestroyStreamTextureCHROMIUM, texture) == 4,
+               OffsetOf_DestroyStreamTextureCHROMIUM_texture_not_4);
 
 struct Placeholder453CHROMIUM {
   typedef Placeholder453CHROMIUM ValueType;

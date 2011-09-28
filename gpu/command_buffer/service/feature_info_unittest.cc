@@ -60,6 +60,7 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_.feature_flags().enable_texture_half_float_linear);
   EXPECT_FALSE(info_.feature_flags().chromium_webglsl);
   EXPECT_FALSE(info_.feature_flags().oes_egl_image_external);
+  EXPECT_FALSE(info_.feature_flags().chromium_stream_texture);
 }
 
 TEST_F(FeatureInfoTest, InitializeNoExtensions) {
@@ -425,6 +426,14 @@ TEST_F(FeatureInfoTest, InitializeOES_EGL_image_external) {
       GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES));
   EXPECT_TRUE(info_.validators()->g_l_state.IsValid(
       GL_TEXTURE_BINDING_EXTERNAL_OES));
+}
+
+TEST_F(FeatureInfoTest, InitializeCHROMIUM_stream_texture) {
+  SetupInitExpectations("GL_CHROMIUM_stream_texture");
+  info_.Initialize(NULL);
+  EXPECT_THAT(info_.extensions(),
+              HasSubstr("GL_CHROMIUM_stream_texture"));
+  EXPECT_TRUE(info_.feature_flags().chromium_stream_texture);
 }
 
 }  // namespace gles2

@@ -303,7 +303,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_TRUE(info_->IsNotComplete());
   EXPECT_EQ(static_cast<GLenum>(0), info_->GetColorAttachmentFormat());
 
-  tex_manager.SetInfoTarget(tex_info1, GL_TEXTURE_2D);
+  tex_manager.SetInfoTarget(&feature_info, tex_info1, GL_TEXTURE_2D);
   tex_manager.SetLevelInfo(
       &feature_info, tex_info1, GL_TEXTURE_2D, kLevel1,
       kFormat1, kWidth1, kHeight1, kDepth, kBorder, kFormat1, kType);
@@ -325,7 +325,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   TextureManager::TextureInfo* tex_info2 =
       tex_manager.GetTextureInfo(kTextureClient2Id);
   ASSERT_TRUE(tex_info2 != NULL);
-  tex_manager.SetInfoTarget(tex_info2, GL_TEXTURE_2D);
+  tex_manager.SetInfoTarget(&feature_info, tex_info2, GL_TEXTURE_2D);
   tex_manager.SetLevelInfo(
       &feature_info, tex_info2, GL_TEXTURE_2D, kLevel2,
       kFormat2, kWidth2, kHeight2, kDepth, kBorder, kFormat2, kType);

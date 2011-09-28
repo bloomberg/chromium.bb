@@ -1268,5 +1268,9 @@ void GetMultipleIntegervCHROMIUM(
 void GetProgramInfoCHROMIUM(
     GLuint program, GLsizei bufsize, GLsizei* size, void* info);
 
+GLuint CreateStreamTextureCHROMIUM(GLuint texture);
+
+void DestroyStreamTextureCHROMIUM(GLuint texture);
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

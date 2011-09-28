@@ -2630,5 +2630,28 @@ void GLES2Implementation::GetProgramInfoCHROMIUM(
   memcpy(info, &result[0], result.size());
 }
 
+GLuint GLES2Implementation::CreateStreamTextureCHROMIUM(GLuint texture) {
+  GPU_CLIENT_LOG("[" << this << "] CreateStreamTextureCHROMIUM("
+      << texture << ")");
+  TRACE_EVENT0("gpu", "GLES2::CreateStreamTextureCHROMIUM");
+  typedef CreateStreamTextureCHROMIUM::Result Result;
+  Result* result = GetResultAs<Result*>();
+  *result = GL_ZERO;
+
+  helper_->CreateStreamTextureCHROMIUM(texture,
+                                       result_shm_id(),
+                                       result_shm_offset());
+  WaitForCmd();
+
+  return *result;
+}
+
+void GLES2Implementation::DestroyStreamTextureCHROMIUM(GLuint texture) {
+  GPU_CLIENT_LOG("[" << this << "] DestroyStreamTextureCHROMIUM("
+      << texture << ")");
+  TRACE_EVENT0("gpu", "GLES2::DestroyStreamTextureCHROMIUM");
+  helper_->DestroyStreamTextureCHROMIUM(texture);
+}
+
 }  // namespace gles2
 }  // namespace gpu

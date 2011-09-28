@@ -43,7 +43,8 @@ class TextureManager {
           npot_(false),
           has_been_bound_(false),
           framebuffer_attachment_count_(0),
-          owned_(true) {
+          owned_(true),
+          stream_texture_(false) {
     }
 
     GLenum min_filter() const {
@@ -65,6 +66,10 @@ class TextureManager {
     // True if this texture meets all the GLES2 criteria for rendering.
     // See section 3.8.2 of the GLES2 spec.
     bool CanRender(const FeatureInfo* feature_info) const;
+
+    bool CanRenderTo() const {
+      return !stream_texture_ && target_ != GL_TEXTURE_EXTERNAL_OES;
+    }
 
     // The service side OpenGL id of the texture.
     GLuint service_id() const {
@@ -143,6 +148,14 @@ class TextureManager {
     void DetachFromFramebuffer() {
       DCHECK(framebuffer_attachment_count_ > 0);
       --framebuffer_attachment_count_;
+    }
+
+    void SetStreamTexture(bool stream_texture) {
+      stream_texture_ = stream_texture;
+    }
+
+    int IsStreamTexture() {
+      return stream_texture_;
     }
 
    private:
@@ -254,6 +267,9 @@ class TextureManager {
     // it.
     bool owned_;
 
+    // Whether this is a special streaming texture.
+    bool stream_texture_;
+
     DISALLOW_COPY_AND_ASSIGN(TextureInfo);
   };
 
@@ -300,10 +316,10 @@ class TextureManager {
   // Parameters:
   //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP
   //   max_levels: The maximum levels this type of target can have.
-  void SetInfoTarget(TextureInfo* info, GLenum target) {
-    DCHECK(info);
-    info->SetTarget(target, MaxLevelsForTarget(target));
-  }
+  void SetInfoTarget(
+      const FeatureInfo* feature_info,
+      TextureInfo* info,
+      GLenum target);
 
   // Set the info for a particular level in a TexureInfo.
   void SetLevelInfo(

@@ -338,6 +338,11 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_EXTERNAL_OES);
   }
 
+  if (ext.Desire("GL_CHROMIUM_stream_texture")) {
+    AddExtensionString("GL_CHROMIUM_stream_texture");
+    feature_flags_.chromium_stream_texture = true;
+  }
+
   // TODO(gman): Add support for these extensions.
   //     GL_OES_depth32
   //     GL_OES_element_index_uint

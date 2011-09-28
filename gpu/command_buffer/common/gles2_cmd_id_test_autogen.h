@@ -407,10 +407,12 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_GetProgramInfoCHROMIUM_kCmdId_mismatch);
   COMPILE_ASSERT(Placeholder447CHROMIUM::kCmdId == 447,
                  GLES2_Placeholder447CHROMIUM_kCmdId_mismatch);
-  COMPILE_ASSERT(Placeholder451CHROMIUM::kCmdId == 451,
-                 GLES2_Placeholder451CHROMIUM_kCmdId_mismatch);
-  COMPILE_ASSERT(Placeholder452CHROMIUM::kCmdId == 452,
-                 GLES2_Placeholder452CHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(CreateStreamTextureCHROMIUM::kCmdId == 451,
+                 GLES2_CreateStreamTextureCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(DestroyStreamTextureCHROMIUM::kCmdId == 452,
+                 GLES2_DestroyStreamTextureCHROMIUM_kCmdId_mismatch);
+  COMPILE_ASSERT(Placeholder453CHROMIUM::kCmdId == 453,
+                 GLES2_Placeholder453CHROMIUM_kCmdId_mismatch);
 }
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_ID_TEST_AUTOGEN_H_

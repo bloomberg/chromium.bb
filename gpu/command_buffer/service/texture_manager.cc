@@ -441,11 +441,11 @@ bool TextureManager::Initialize(const FeatureInfo* feature_info) {
 
   FeatureInfo temp_feature_info;
   default_texture_2d_ = TextureInfo::Ref(new TextureInfo(ids[1]));
-  SetInfoTarget(default_texture_2d_, GL_TEXTURE_2D);
+  SetInfoTarget(feature_info, default_texture_2d_, GL_TEXTURE_2D);
   default_texture_2d_->SetLevelInfo(&temp_feature_info,
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   default_texture_cube_map_ = TextureInfo::Ref(new TextureInfo(ids[3]));
-  SetInfoTarget(default_texture_cube_map_, GL_TEXTURE_CUBE_MAP);
+  SetInfoTarget(feature_info, default_texture_cube_map_, GL_TEXTURE_CUBE_MAP);
   for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
     default_texture_cube_map_->SetLevelInfo(
       &temp_feature_info, GLES2Util::IndexToGLFaceTarget(ii),
@@ -461,7 +461,9 @@ bool TextureManager::Initialize(const FeatureInfo* feature_info) {
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
     default_texture_external_oes_ = TextureInfo::Ref(
         new TextureInfo(external_ids[0]));
-    SetInfoTarget(default_texture_external_oes_, GL_TEXTURE_EXTERNAL_OES);
+    SetInfoTarget(feature_info,
+                  default_texture_external_oes_,
+                  GL_TEXTURE_EXTERNAL_OES);
     default_texture_external_oes_->SetLevelInfo(
         &temp_feature_info, GL_TEXTURE_EXTERNAL_OES, 0,
         GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -493,6 +495,19 @@ bool TextureManager::ValidForTarget(
            !GLES2Util::IsNPOT(depth))) &&
          (target != GL_TEXTURE_CUBE_MAP || (width == height && depth == 1)) &&
          (target != GL_TEXTURE_2D || (depth == 1));
+}
+
+void TextureManager::SetInfoTarget(
+    const FeatureInfo* feature_info,
+    TextureInfo* info, GLenum target) {
+  DCHECK(info);
+  if (!info->CanRender(feature_info)) {
+    --num_unrenderable_textures_;
+  }
+  info->SetTarget(target, MaxLevelsForTarget(target));
+  if (!info->CanRender(feature_info)) {
+    ++num_unrenderable_textures_;
+  }
 }
 
 void TextureManager::SetLevelInfo(

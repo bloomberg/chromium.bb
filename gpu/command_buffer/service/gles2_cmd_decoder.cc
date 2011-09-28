@@ -34,6 +34,8 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
+#include "gpu/command_buffer/service/stream_texture.h"
+#include "gpu/command_buffer/service/stream_texture_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -481,6 +483,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
 #endif
 
+  virtual void SetStreamTextureManager(StreamTextureManager* manager);
   virtual bool GetServiceTextureId(uint32 client_texture_id,
                                    uint32* service_texture_id);
 
@@ -1288,6 +1291,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
 #endif
 
+  StreamTextureManager* stream_texture_manager_;
+
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
   bool back_buffer_has_depth_;
@@ -1670,6 +1675,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       offscreen_target_stencil_format_(0),
       offscreen_target_samples_(0),
       offscreen_saved_color_format_(0),
+      stream_texture_manager_(NULL),
       back_buffer_color_format_(0),
       back_buffer_has_depth_(false),
       back_buffer_has_stencil_(false),
@@ -2129,6 +2135,9 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
         state_dirty_ = true;
       }
       GLuint service_id = info->service_id();
+      if (info->IsStreamTexture() && stream_texture_manager_) {
+        stream_texture_manager_->DestroyStreamTexture(service_id);
+      }
       glDeleteTextures(1, &service_id);
       RemoveTextureInfo(client_ids[ii]);
     }
@@ -2301,6 +2310,10 @@ void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
 }
 #endif
 
+void GLES2DecoderImpl::SetStreamTextureManager(StreamTextureManager* manager) {
+  stream_texture_manager_ = manager;
+}
+
 bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
                                            uint32* service_texture_id) {
   TextureManager::TextureInfo* texture =
@@ -2426,7 +2439,8 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
     TextureManager::TextureInfo* info =
         new_parent_impl->CreateTextureInfo(new_parent_texture_id, service_id);
     info->SetNotOwned();
-    new_parent_impl->texture_manager()->SetInfoTarget(info, GL_TEXTURE_2D);
+    new_parent_impl->texture_manager()->SetInfoTarget(feature_info_,
+                                                      info, GL_TEXTURE_2D);
 
     parent_ = new_parent_impl->AsWeakPtr();
 
@@ -2865,8 +2879,13 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
                "glBindTexture: texture bound to more than 1 target.");
     return;
   }
+  if (info->IsStreamTexture() && target != GL_TEXTURE_EXTERNAL_OES) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glBindTexture: illegal target for stream texture.");
+    return;
+  }
   if (info->target() == 0) {
-    texture_manager()->SetInfoTarget(info, target);
+    texture_manager()->SetInfoTarget(feature_info_, info, target);
   }
   glBindTexture(target, info->service_id());
   TextureUnit& unit = texture_units_[active_texture_unit_];
@@ -2880,6 +2899,13 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
       break;
     case GL_TEXTURE_EXTERNAL_OES:
       unit.bound_texture_external_oes = info;
+      if (info->IsStreamTexture()) {
+        DCHECK(stream_texture_manager_);
+        StreamTexture* stream_tex =
+            stream_texture_manager_->LookupStreamTexture(info->service_id());
+        if (stream_tex)
+          stream_tex->Update();
+      }
       break;
     default:
       NOTREACHED();  // Validation should prevent us getting here.
@@ -6883,6 +6909,84 @@ bool GLES2DecoderImpl::WasContextLost() {
     }
   }
   return false;
+}
+
+error::Error GLES2DecoderImpl::HandleCreateStreamTextureCHROMIUM(
+    uint32 immediate_data_size,
+    const gles2::CreateStreamTextureCHROMIUM& c) {
+  if (!feature_info_->feature_flags().chromium_stream_texture) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glOpenStreamTextureCHROMIUM: "
+               "not supported.");
+    return error::kNoError;
+  }
+
+  uint32 client_id = c.client_id;
+  typedef gles2::CreateStreamTextureCHROMIUM::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+
+  *result = GL_ZERO;
+  TextureManager::TextureInfo* info =
+      texture_manager()->GetTextureInfo(client_id);
+  if (!info) {
+    SetGLError(GL_INVALID_VALUE,
+               "glCreateStreamTextureCHROMIUM: "
+               "bad texture id.");
+    return error::kNoError;
+  }
+
+  if (info->IsStreamTexture()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glCreateStreamTextureCHROMIUM: "
+               "is already a stream texture.");
+    return error::kNoError;
+  }
+
+  if (info->target() && info->target() != GL_TEXTURE_EXTERNAL_OES) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glCreateStreamTextureCHROMIUM: "
+               "is already bound to incompatible target.");
+    return error::kNoError;
+  }
+
+  if (!stream_texture_manager_)
+    return error::kInvalidArguments;
+
+  GLuint object_id = stream_texture_manager_->CreateStreamTexture(
+      info->service_id(), client_id);
+
+  if (object_id) {
+    info->SetStreamTexture(true);
+  } else {
+    SetGLError(GL_OUT_OF_MEMORY,
+               "glCreateStreamTextureCHROMIUM: "
+               "failed to create platform texture.");
+  }
+
+  *result = object_id;
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleDestroyStreamTextureCHROMIUM(
+    uint32 immediate_data_size,
+    const gles2::DestroyStreamTextureCHROMIUM& c) {
+  GLuint client_id = c.texture;
+  TextureManager::TextureInfo* info =
+      texture_manager()->GetTextureInfo(client_id);
+  if (info && info->IsStreamTexture()) {
+    if (!stream_texture_manager_)
+      return error::kInvalidArguments;
+
+    stream_texture_manager_->DestroyStreamTexture(info->service_id());
+    info->SetStreamTexture(false);
+    texture_manager()->SetInfoTarget(feature_info_, info, 0);
+  } else {
+    SetGLError(GL_INVALID_VALUE,
+               "glDestroyStreamTextureCHROMIUM: bad texture id.");
+  }
+
+  return error::kNoError;
 }
 
 // Include the auto-generated part of this file. We split this because it means

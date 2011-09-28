@@ -2572,14 +2572,6 @@ error::Error GLES2DecoderImpl::HandlePlaceholder447CHROMIUM(
     uint32 immediate_data_size, const gles2::Placeholder447CHROMIUM& c) {
   return error::kUnknownCommand;
 }
-error::Error GLES2DecoderImpl::HandlePlaceholder451CHROMIUM(
-    uint32 immediate_data_size, const gles2::Placeholder451CHROMIUM& c) {
-  return error::kUnknownCommand;
-}
-error::Error GLES2DecoderImpl::HandlePlaceholder452CHROMIUM(
-    uint32 immediate_data_size, const gles2::Placeholder452CHROMIUM& c) {
-  return error::kUnknownCommand;
-}
 error::Error GLES2DecoderImpl::HandlePlaceholder453CHROMIUM(
     uint32 immediate_data_size, const gles2::Placeholder453CHROMIUM& c) {
   return error::kUnknownCommand;

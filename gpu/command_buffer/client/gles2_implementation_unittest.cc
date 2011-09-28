@@ -1802,6 +1802,43 @@ TEST_F(GLES2ImplementationStrictSharedTest, CanNotDeleteIdsWeDidNotCreate) {
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
 }
 
+TEST_F(GLES2ImplementationTest, CreateStreamTextureCHROMIUM) {
+  const GLuint kTextureId = 123;
+  const GLuint kResult = 456;
+  const uint32 kResultOffset = 0;
+
+  struct Cmds {
+    CreateStreamTextureCHROMIUM create_stream;
+  };
+
+  Cmds expected;
+  expected.create_stream.Init(kTextureId, kTransferBufferId, kResultOffset);
+
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemoryAtOffset(kResultOffset, kResult))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  GLuint handle = gl_->CreateStreamTextureCHROMIUM(kTextureId);
+  EXPECT_EQ(handle, kResult);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, DestroyStreamTextureCHROMIUM) {
+  const GLuint kTextureHandle = 456;
+
+  struct Cmds {
+    DestroyStreamTextureCHROMIUM destroy_stream;
+  };
+
+  Cmds expected;
+  expected.destroy_stream.Init(kTextureHandle);
+
+  gl_->DestroyStreamTextureCHROMIUM(kTextureHandle);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

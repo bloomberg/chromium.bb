@@ -1228,5 +1228,18 @@
     c.Init(program, bucket_id);
   }
 
+  void CreateStreamTextureCHROMIUM(
+      GLuint client_id, uint32 result_shm_id, uint32 result_shm_offset) {
+    gles2::CreateStreamTextureCHROMIUM& c =
+        GetCmdSpace<gles2::CreateStreamTextureCHROMIUM>();
+    c.Init(client_id, result_shm_id, result_shm_offset);
+  }
+
+  void DestroyStreamTextureCHROMIUM(GLuint texture) {
+    gles2::DestroyStreamTextureCHROMIUM& c =
+        GetCmdSpace<gles2::DestroyStreamTextureCHROMIUM>();
+    c.Init(texture);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

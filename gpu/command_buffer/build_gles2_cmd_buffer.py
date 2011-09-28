@@ -220,8 +220,8 @@ GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
 GL_APICALL void         GL_APIENTRY glPlaceholder447CHROMIUM (void);
-GL_APICALL void         GL_APIENTRY glPlaceholder451CHROMIUM (void);
-GL_APICALL void         GL_APIENTRY glPlaceholder452CHROMIUM (void);
+GL_APICALL GLuint       GL_APIENTRY glCreateStreamTextureCHROMIUM (GLuint texture);
+GL_APICALL void         GL_APIENTRY glDestroyStreamTextureCHROMIUM (GLuint texture);
 GL_APICALL void         GL_APIENTRY glPlaceholder453CHROMIUM (void);
 """
 
@@ -426,8 +426,8 @@ _CMD_ID_TABLE = {
   'ResizeCHROMIUM':                                            448,
   'GetRequestableExtensionsCHROMIUM':                          449,
   'RequestExtensionCHROMIUM':                                  450,
-  'Placeholder451CHROMIUM':                                    451,
-  'Placeholder452CHROMIUM':                                    452,
+  'CreateStreamTextureCHROMIUM':                               451,
+  'DestroyStreamTextureCHROMIUM':                              452,
   'Placeholder453CHROMIUM':                                    453,
   'GetMultipleIntegervCHROMIUM':                               454,
   'GetProgramInfoCHROMIUM':                                    455,
@@ -1753,16 +1753,23 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
-  'Placeholder451CHROMIUM': {
-    'type': 'UnknownCommand',
+  'CreateStreamTextureCHROMIUM':  {
+    'type': 'Custom',
+    'cmd_args': 'GLuint client_id, void* result',
+    'result': ['GLuint'],
+    'immediate': False,
+    'impl_func': False,
+    'expectation': False,
     'extension': True,
     'chromium': True,
-  },
-  'Placeholder452CHROMIUM': {
-    'type': 'UnknownCommand',
+   },
+  'DestroyStreamTextureCHROMIUM':  {
+    'type': 'Custom',
+    'impl_func': False,
+    'expectation': False,
     'extension': True,
     'chromium': True,
-  },
+   },
   'Placeholder453CHROMIUM': {
     'type': 'UnknownCommand',
     'extension': True,

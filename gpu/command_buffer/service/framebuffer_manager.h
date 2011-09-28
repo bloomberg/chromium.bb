@@ -37,6 +37,7 @@ class FramebufferManager {
       virtual bool cleared() const = 0;
       virtual void set_cleared() = 0;
       virtual bool IsTexture(TextureManager::TextureInfo* texture) const = 0;
+      virtual bool CanRenderTo() const = 0;
     };
 
     explicit FramebufferInfo(GLuint service_id);

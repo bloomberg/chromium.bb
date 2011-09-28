@@ -47,6 +47,10 @@ class RenderbufferAttachment
     return false;
   }
 
+  virtual bool CanRenderTo() const {
+    return true;
+  }
+
   RenderbufferManager::RenderbufferInfo* render_buffer() const {
     return render_buffer_.get();
   }
@@ -109,6 +113,10 @@ class TextureAttachment
 
   TextureManager::TextureInfo* texture() const {
     return texture_.get();
+  }
+
+  virtual bool CanRenderTo() const {
+    return texture_->CanRenderTo();
   }
 
  private:
@@ -201,6 +209,9 @@ bool FramebufferManager::FramebufferInfo::IsNotComplete() const {
        it != attachments_.end(); ++it) {
     Attachment* attachment = it->second;
     if (attachment->width() == 0 || attachment->height() == 0) {
+      return true;
+    }
+    if (!attachment->CanRenderTo()) {
       return true;
     }
   }
