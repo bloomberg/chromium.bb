@@ -6,6 +6,8 @@
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
+#elif defined(USE_X11)
+#include <cairo/cairo.h>
 #endif
 
 #include <algorithm>
