@@ -34,5 +34,11 @@
            'outputs': [
                       ]
           },
+          {'name': 'PPP_Printing_IsScalingDisabled',
+           'inputs': [['instance', 'PP_Instance'],
+                     ],
+           'outputs': [['result', 'int32_t'],  # PP_Bool
+                      ]
+          },
          ]
 }

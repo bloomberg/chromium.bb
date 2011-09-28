@@ -187,6 +187,10 @@ class PppPrintingRpcClient {
   static NaClSrpcError PPP_Printing_End(
       NaClSrpcChannel* channel,
       PP_Instance instance);
+  static NaClSrpcError PPP_Printing_IsScalingDisabled(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t* result);
 
  private:
   PppPrintingRpcClient();

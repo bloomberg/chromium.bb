@@ -329,6 +329,20 @@ static void PPP_Printing_EndDispatcher(
   );
 }
 
+static void PPP_Printing_IsScalingDisabledDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PppPrintingRpcServer::PPP_Printing_IsScalingDisabled(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPP_Scrollbar_ValueChangedDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -431,6 +445,7 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_Printing_Begin:iC:i", PPP_Printing_BeginDispatcher },
   { "PPP_Printing_PrintPages:iCi:i", PPP_Printing_PrintPagesDispatcher },
   { "PPP_Printing_End:i:", PPP_Printing_EndDispatcher },
+  { "PPP_Printing_IsScalingDisabled:i:i", PPP_Printing_IsScalingDisabledDispatcher },
   { "PPP_Scrollbar_ValueChanged:iii:", PPP_Scrollbar_ValueChangedDispatcher },
   { "PPP_Scrollbar_OverlayChanged:iii:", PPP_Scrollbar_OverlayChangedDispatcher },
   { "PPP_Selection_GetSelectedText:ii:C", PPP_Selection_GetSelectedTextDispatcher },

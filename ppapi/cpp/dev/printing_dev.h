@@ -27,6 +27,7 @@ class Printing_Dev {
   virtual Resource PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
                               uint32_t page_range_count) = 0;
   virtual void PrintEnd() = 0;
+  virtual bool IsPrintScalingDisabled() = 0;
 
  private:
   Instance* associated_instance_;

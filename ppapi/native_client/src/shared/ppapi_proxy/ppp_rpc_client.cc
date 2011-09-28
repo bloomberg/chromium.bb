@@ -362,6 +362,22 @@ NaClSrpcError PppPrintingRpcClient::PPP_Printing_End(
   return retval;
 }
 
+NaClSrpcError PppPrintingRpcClient::PPP_Printing_IsScalingDisabled(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t* result)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Printing_IsScalingDisabled:i:i",
+      instance,
+      result
+  );
+  if (retval == NACL_SRPC_RESULT_INTERNAL)
+    ppapi_proxy::CleanUpAfterDeadNexe(instance);
+  return retval;
+}
+
 NaClSrpcError PppScrollbarRpcClient::PPP_Scrollbar_ValueChanged(
     NaClSrpcChannel* channel,
     PP_Instance instance,

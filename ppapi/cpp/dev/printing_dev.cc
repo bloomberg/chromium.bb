@@ -49,11 +49,22 @@ void End(PP_Instance instance) {
     static_cast<Printing_Dev*>(object)->PrintEnd();
 }
 
+PP_Bool IsScalingDisabled(PP_Instance instance) {
+  void* object =
+      pp::Instance::GetPerInstanceObject(instance, kPPPPrintingInterface);
+  if (!object)
+    return PP_FALSE;
+  bool return_value =
+      static_cast<Printing_Dev*>(object)->IsPrintScalingDisabled();
+  return PP_FromBool(return_value);
+}
+
 const PPP_Printing_Dev ppp_printing = {
   &QuerySupportedFormats,
   &Begin,
   &PrintPages,
-  &End
+  &End,
+  &IsScalingDisabled
 };
 
 }  // namespace

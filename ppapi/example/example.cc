@@ -328,16 +328,8 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
   }
 
   // Print interfaces.
-  // TODO(mball,dmichael) Replace this with the PPP_PRINTING_DEV_USE_0_4 version
-  virtual PP_PrintOutputFormat_Dev* QuerySupportedPrintOutputFormats(
-      uint32_t* format_count) {
-    pp::Memory_Dev memory;
-    PP_PrintOutputFormat_Dev* format =
-        static_cast<PP_PrintOutputFormat_Dev*>(
-            memory.MemAlloc(sizeof(PP_PrintOutputFormat_Dev)));
-    *format = PP_PRINTOUTPUTFORMAT_RASTER;
-    *format_count = 1;
-    return format;
+  virtual uint32_t QuerySupportedPrintOutputFormats() {
+    return PP_PRINTOUTPUTFORMAT_RASTER;
   }
 
   virtual int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) {
@@ -376,6 +368,10 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
 
   virtual void PrintEnd() {
     print_settings_valid_ = false;
+  }
+
+  virtual bool IsScalingDisabled() {
+    return false;
   }
 
   void OnFlush() {

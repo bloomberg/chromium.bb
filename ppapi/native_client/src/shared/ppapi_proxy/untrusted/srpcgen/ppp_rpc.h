@@ -207,6 +207,11 @@ class PppPrintingRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Instance instance);
+  static void PPP_Printing_IsScalingDisabled(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t* result);
 
  private:
   PppPrintingRpcServer();

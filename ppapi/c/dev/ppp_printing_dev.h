@@ -23,7 +23,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PrintOrientation_Dev, 4);
 typedef enum {
   PP_PRINTOUTPUTFORMAT_RASTER     = 1u << 0,
   PP_PRINTOUTPUTFORMAT_PDF        = 1u << 1,
-  PP_PRINTOUTPUTFORMAT_POSTSCRIPT = 1u << 2
+  PP_PRINTOUTPUTFORMAT_POSTSCRIPT = 1u << 2,
+  PP_PRINTOUTPUTFORMAT_EMF        = 1u << 3
 } PP_PrintOutputFormat_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PrintOutputFormat_Dev, 4);
 
@@ -48,8 +49,8 @@ struct PP_PrintPageNumberRange_Dev {
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PrintPageNumberRange_Dev, 8);
 
 /* Interface for the plugin to implement printing. */
-#define PPP_PRINTING_DEV_INTERFACE_0_4 "PPP_Printing(Dev);0.4"
-#define PPP_PRINTING_DEV_INTERFACE PPP_PRINTING_DEV_INTERFACE_0_4
+#define PPP_PRINTING_DEV_INTERFACE_0_5 "PPP_Printing(Dev);0.5"
+#define PPP_PRINTING_DEV_INTERFACE PPP_PRINTING_DEV_INTERFACE_0_5
 
 struct PPP_Printing_Dev {
   /**
@@ -83,6 +84,12 @@ struct PPP_Printing_Dev {
 
   /** Ends the print session. Further calls to PrintPage will fail. */
   void (*End)(PP_Instance instance);
+
+  /**
+   *  Returns true if the current content should be printed into the full page
+   *  and not scaled down to fit within the printer's printable area.
+   */
+  PP_Bool (*IsScalingDisabled)(PP_Instance instance);
 };
 
 #endif  /* PPAPI_C_DEV_PPP_PRINTING_DEV_H_ */
