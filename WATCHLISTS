@@ -37,7 +37,9 @@
       'filepath': 'chrome/browser/resources/.*',
     },
     'chromeos_login': {
-      'filepath': 'chrome/browser/chromeos/login/.*',
+      'filepath': 'chrome/browser/chromeos/login/.*|'\
+                  'chrome/browser/ui/webui/chromeos/login/.*|'\
+                  'chrome/browser/resources/chromeos/login/.*',
     },
     'content': {
       'filepath': 'content/.*',
@@ -138,6 +140,10 @@
     },
     'chromeos': {
       'filepath': 'chrome/browser/chromeos/.*',
+    },
+    'chromeos_webui': {
+      'filepath': 'chrome/browser/ui/webui/chromeos/.*|'\
+                  'chrome/browser/resources/chromeos/.*',
     },
     'npapi_headers': {
       'filepath': 'third_party/npapi/bindings/.*',
@@ -264,7 +270,6 @@
     'base': ['brettw-cc@chromium.org'],
     'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
-    'chromeos_login': ['nkostylev+cc@chromium.org'],
     'content': ['jam@chromium.org', 'joi+watch-content@chromium.org',
                 'darin-cc@chromium.org',
                 'dpranke+watch-content@chromium.org'],
@@ -301,7 +306,9 @@
     'gpu': ['apatrick@chromium.org'],
     'locale_settings': ['finnur+watch@chromium.org'],
     'options_dialog_content': ['finnur+watch@chromium.org'],
-    'chromeos': ['davemoore+watch@chromium.org, stevenjb@chromium.org'],
+    'chromeos': ['davemoore+watch@chromium.org', 'stevenjb@chromium.org',
+                 'nkostylev+watch@chromium.org'],
+    'chromeos_webui': ['nkostylev+watch@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
     'remoting': ['ajwong+watch@chromium.org', 'dmaclach+watch@chromium.org',
                  'garykac+watch@chromium.org', 'hclam+watch@chromium.org',
