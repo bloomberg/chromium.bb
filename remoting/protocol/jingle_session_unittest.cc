@@ -747,7 +747,7 @@ TEST_F(JingleSessionTest, TestUdpChannel) {
 
 // Send packets of different size to get the latency for sending data
 // using sockets from JingleSession.
-TEST_F(JingleSessionTest, TestSpeed) {
+FLAKY_TEST_F(JingleSessionTest, TestSpeed) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
   scoped_refptr<ChannelSpeedTester> tester;
