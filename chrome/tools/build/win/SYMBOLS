@@ -5,4 +5,5 @@ libGLESv2.pdb
 mini_installer.pdb
 nacl64_exe.pdb
 ppGoogleNaClPluginChrome.pdb
+remoting_host_plugin.pdb
 setup.pdb
