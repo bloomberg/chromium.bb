@@ -181,7 +181,8 @@ class AccessibilityMacUITest : public UITest {
   scoped_nsobject<NSArray> observedNotifications_;
 };
 
-TEST_F(AccessibilityMacUITest, TestInitialPageNotifications) {
+// Timing out frequently. http://crbug.com/98388
+TEST_F(AccessibilityMacUITest, DISABLED_TestInitialPageNotifications) {
   // Browse to a new page.
   GURL tree_url(
       "data:text/html,<html><head><title>Accessibility Mac Test</title></head>"
