@@ -24,6 +24,13 @@ using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_VideoCapture_API;
 
+namespace {
+
+// Maximum number of buffers to actually allocate.
+const uint32_t kMaxBuffers = 20;
+
+}  // namespace
+
 namespace webkit {
 namespace ppapi {
 
@@ -83,7 +90,8 @@ int32_t PPB_VideoCapture_Impl::StartCapture(
   }
   DCHECK(buffers_.empty());
 
-  buffer_count_hint_ = std::min(buffer_count, 1U);
+  // Clamp the buffer count to between 1 and |kMaxBuffers|.
+  buffer_count_hint_ = std::min(std::max(buffer_count, 1U), kMaxBuffers);
   media::VideoCapture::VideoCaptureCapability capability = {
     requested_info.width,
     requested_info.height,
@@ -211,6 +219,7 @@ void PPB_VideoCapture_Impl::OnBufferReady(
       size_t size = std::min(static_cast<size_t>(buffers_[i].buffer->size()),
           buffer->buffer_size);
       memcpy(buffers_[i].data, buffer->memory_pointer, size);
+      buffers_[i].in_use = true;
       platform_video_capture_->FeedBuffer(buffer);
       ppp_videocapture_->OnBufferReady(pp_instance(), pp_resource(), i);
       return;
