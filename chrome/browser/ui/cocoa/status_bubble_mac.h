@@ -12,8 +12,8 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "googleurl/src/gurl.h"
 
@@ -121,10 +121,10 @@ class StatusBubbleMac : public StatusBubble {
   void SetFrameAvoidingMouse(NSRect window_frame, const gfx::Point& mouse_pos);
 
   // The timer factory used for show and hide delay timers.
-  ScopedRunnableMethodFactory<StatusBubbleMac> timer_factory_;
+  base::WeakPtrFactory<StatusBubbleMac> timer_factory_;
 
   // The timer factory used for the expansion delay timer.
-  ScopedRunnableMethodFactory<StatusBubbleMac> expand_timer_factory_;
+  base::WeakPtrFactory<StatusBubbleMac> expand_timer_factory_;
 
   // Calculate the appropriate frame for the status bubble window. If
   // |expanded_width|, use entire width of parent frame.

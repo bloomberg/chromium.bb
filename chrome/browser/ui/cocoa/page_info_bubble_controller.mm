@@ -4,10 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/page_info_bubble_controller.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
-#include "base/task.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/page_info_model.h"
@@ -100,27 +101,27 @@ class PageInfoModelBubbleBridge : public PageInfoModelObserver {
  public:
   PageInfoModelBubbleBridge()
       : controller_(nil),
-        ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   }
 
   // PageInfoModelObserver implementation.
   virtual void OnPageInfoModelChanged() OVERRIDE {
     // Check to see if a layout has already been scheduled.
-    if (!task_factory_.empty())
+    if (weak_ptr_factory_.HasWeakPtrs())
       return;
 
     // Delay performing layout by a second so that all the animations from
     // InfoBubbleWindow and origin updates from BaseBubbleController finish, so
     // that we don't all race trying to change the frame's origin.
     //
-    // Using ScopedRunnableMethodFactory is superior here to |-performSelector:|
-    // because it will not retain its target; if the child outlives its parent,
-    // zombies get left behind (http://crbug.com/59619). This will also cancel
-    // the scheduled Tasks if the controller (and thus this bridge) get
-    // destroyed before the message can be delivered.
+    // Using MessageLoop is superior here to |-performSelector:| because it will
+    // not retain its target; if the child outlives its parent, zombies get left
+    // behind (http://crbug.com/59619). This will cancel the scheduled task if
+    // the controller (and thus this bridge) get destroyed before the message
+    // can be delivered.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        task_factory_.NewRunnableMethod(
-            &PageInfoModelBubbleBridge::PerformLayout),
+        base::Bind(&PageInfoModelBubbleBridge::PerformLayout,
+                   weak_ptr_factory_.GetWeakPtr()),
         1000 /* milliseconds */);
   }
 
@@ -140,8 +141,7 @@ class PageInfoModelBubbleBridge : public PageInfoModelObserver {
 
   PageInfoBubbleController* controller_;  // weak
 
-  // Factory that vends RunnableMethod tasks for scheduling layout.
-  ScopedRunnableMethodFactory<PageInfoModelBubbleBridge> task_factory_;
+  base::WeakPtrFactory<PageInfoModelBubbleBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoModelBubbleBridge);
 };

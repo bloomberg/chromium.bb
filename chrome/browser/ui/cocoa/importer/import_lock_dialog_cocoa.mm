@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "chrome/browser/importer/importer_host.h"
@@ -27,13 +28,10 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
   [lock_alert setMessageText:l10n_util::GetNSStringWithFixup(
       IDS_IMPORTER_LOCK_TITLE)];
 
-  if ([lock_alert runModal] == NSAlertFirstButtonReturn) {
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        importer_host, &ImporterHost::OnImportLockDialogEnd, true));
-  } else {
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        importer_host, &ImporterHost::OnImportLockDialogEnd, false));
-  }
+  bool is_continue = [lock_alert runModal] == NSAlertFirstButtonReturn;
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&ImporterHost::OnImportLockDialogEnd,
+                 importer_host, is_continue));
   UserMetrics::RecordAction(UserMetricsAction("ImportLockDialogCocoa_Shown"));
 }
 

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
@@ -88,11 +89,10 @@ void SearchEngineDialogControllerBridge::OnTemplateURLServiceChanged() {
   searchEnginesModel_->AddObserver(bridge_.get());
 
   if (searchEnginesModel_->loaded()) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(
-            bridge_.get(),
-            &SearchEngineDialogControllerBridge::OnTemplateURLServiceChanged));
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(
+            &SearchEngineDialogControllerBridge::OnTemplateURLServiceChanged,
+            bridge_.get()));
   } else {
     searchEnginesModel_->Load();
   }

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/first_run_dialog.h"
 
+#include "base/bind.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/ref_counted.h"
 #import "base/memory/scoped_nsobject.h"
@@ -187,10 +188,8 @@ void ShowFirstRunDialog(Profile* profile,
   // Therefore the main MessageLoop is run so things work.
 
   scoped_refptr<FirstRunShowBridge> bridge(new FirstRunShowBridge(self));
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(bridge.get(),
-                        &FirstRunShowBridge::ShowDialog));
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&FirstRunShowBridge::ShowDialog, bridge.get()));
   MessageLoop::current()->Run();
 }
 

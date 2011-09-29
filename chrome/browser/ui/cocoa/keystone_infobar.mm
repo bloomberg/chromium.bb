@@ -8,9 +8,10 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #import "chrome/browser/mac/keystone_glue.h"
@@ -62,7 +63,7 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool can_expire_;
 
   // Used to delay the expiration of the info bar.
-  ScopedRunnableMethodFactory<KeystonePromotionInfoBarDelegate> method_factory_;
+  base::WeakPtrFactory<KeystonePromotionInfoBarDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KeystonePromotionInfoBarDelegate);
 };
@@ -72,11 +73,11 @@ KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
     : ConfirmInfoBarDelegate(tab_contents),
       profile_(Profile::FromBrowserContext(tab_contents->browser_context())),
       can_expire_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   const int kCanExpireOnNavigationAfterMilliseconds = 8 * 1000;
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &KeystonePromotionInfoBarDelegate::SetCanExpire),
+      base::Bind(&KeystonePromotionInfoBarDelegate::SetCanExpire,
+                 weak_ptr_factory_.GetWeakPtr()),
       kCanExpireOnNavigationAfterMilliseconds);
 }
 

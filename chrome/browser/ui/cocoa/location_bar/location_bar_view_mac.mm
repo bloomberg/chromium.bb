@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -92,7 +93,7 @@ LocationBarViewMac::LocationBarViewMac(
       browser_(browser),
       toolbar_model_(toolbar_model),
       transition_(PageTransition::TYPED | PageTransition::FROM_ADDRESS_BAR),
-      first_run_bubble_(this) {
+      weak_ptr_factory_(this) {
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     DCHECK_EQ(i, content_setting_decorations_.size());
     ContentSettingsType type = static_cast<ContentSettingsType>(i);
@@ -116,9 +117,9 @@ LocationBarViewMac::~LocationBarViewMac() {
 void LocationBarViewMac::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   // We need the browser window to be shown before we can show the bubble, but
   // we get called before that's happened.
-  Task* task = first_run_bubble_.NewRunnableMethod(
-      &LocationBarViewMac::ShowFirstRunBubbleInternal, bubble_type);
-  MessageLoop::current()->PostTask(FROM_HERE, task);
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&LocationBarViewMac::ShowFirstRunBubbleInternal,
+          weak_ptr_factory_.GetWeakPtr(), bubble_type));
 }
 
 void LocationBarViewMac::ShowFirstRunBubbleInternal(

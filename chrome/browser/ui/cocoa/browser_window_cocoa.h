@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/common/notification_registrar.h"
@@ -138,7 +138,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   NotificationRegistrar registrar_;
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us
-  ScopedRunnableMethodFactory<Browser> confirm_close_factory_;
+  base::WeakPtrFactory<Browser> confirm_close_factory_;
   scoped_nsobject<NSString> pending_window_title_;
   ui::WindowShowState initial_show_state_;
 };

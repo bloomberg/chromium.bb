@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -399,11 +400,9 @@ void BrowserWindowCocoa::ShowThemeInstallBubble() {
 void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {
   // Call InProgressDownloadResponse asynchronously to avoid a crash when the
   // browser window is closed here (http://crbug.com/44454).
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      confirm_close_factory_.NewRunnableMethod(
-          &Browser::InProgressDownloadResponse,
-          true));
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&Browser::InProgressDownloadResponse,
+                 confirm_close_factory_.GetWeakPtr(), true));
 }
 
 gfx::NativeWindow BrowserWindowCocoa::ShowHTMLDialog(

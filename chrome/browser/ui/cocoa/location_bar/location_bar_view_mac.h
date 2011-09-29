@@ -13,6 +13,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -223,7 +224,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   NotificationRegistrar registrar_;
 
   // Used to schedule a task for the first run info bubble.
-  ScopedRunnableMethodFactory<LocationBarViewMac> first_run_bubble_;
+  base::WeakPtrFactory<LocationBarViewMac> weak_ptr_factory_;
 
   // Used to change the visibility of the star decoration.
   BooleanPrefMember edit_bookmarks_enabled_;

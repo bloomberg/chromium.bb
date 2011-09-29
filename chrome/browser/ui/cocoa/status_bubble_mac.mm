@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
@@ -169,8 +170,9 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
     ExpandBubble();
   } else if (original_url_text.length() > status.length()) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        expand_timer_factory_.NewRunnableMethod(
-            &StatusBubbleMac::ExpandBubble), kExpandHoverDelay);
+        base::Bind(&StatusBubbleMac::ExpandBubble,
+                   expand_timer_factory_.GetWeakPtr()),
+        kExpandHoverDelay);
   }
 }
 
@@ -510,17 +512,16 @@ void StatusBubbleMac::StartTimer(int64 delay_ms) {
   // There can only be one running timer.
   CancelTimer();
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      timer_factory_.NewRunnableMethod(&StatusBubbleMac::TimerFired),
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::Bind(&StatusBubbleMac::TimerFired, timer_factory_.GetWeakPtr()),
       delay_ms);
 }
 
 void StatusBubbleMac::CancelTimer() {
   DCHECK([NSThread isMainThread]);
 
-  if (!timer_factory_.empty())
-    timer_factory_.RevokeAll();
+  if (timer_factory_.HasWeakPtrs())
+    timer_factory_.InvalidateWeakPtrs();
 }
 
 void StatusBubbleMac::TimerFired() {
@@ -587,7 +588,7 @@ void StatusBubbleMac::StartHiding() {
 
 void StatusBubbleMac::CancelExpandTimer() {
   DCHECK([NSThread isMainThread]);
-  expand_timer_factory_.RevokeAll();
+  expand_timer_factory_.InvalidateWeakPtrs();
 }
 
 // Get the current location of the mouse in screen coordinates. To make this
