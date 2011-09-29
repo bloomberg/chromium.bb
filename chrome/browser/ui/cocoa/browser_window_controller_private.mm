@@ -542,10 +542,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)shouldShowDetachedBookmarkBar {
-  // NTP4 never detaches the bookmark bar.
-  if (NewTabUI::NTP4Enabled())
-    return NO;
-
   DCHECK(browser_.get());
   TabContentsWrapper* tab = browser_->GetSelectedTabContentsWrapper();
   return (tab && tab->bookmark_tab_helper()->ShouldShowBookmarkBar() &&
