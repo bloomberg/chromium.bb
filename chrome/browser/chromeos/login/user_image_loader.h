@@ -30,6 +30,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
     // for later use.
     virtual void OnImageLoaded(const std::string& username,
                                const SkBitmap& image,
+                               int image_index,
                                bool should_save_image) = 0;
 
    protected:
@@ -42,6 +43,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
   // |should_save_image| is passed to OnImageLoaded handler.
   void Start(const std::string& username,
              const std::string& filepath,
+             int image_index,
              bool should_save_image);
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
@@ -51,12 +53,14 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   // Contains attributes we need to know about each image we decode.
   struct ImageInfo {
-    ImageInfo(const std::string& username, bool should_save)
+    ImageInfo(const std::string& username, int image_index, bool should_save)
         : username(username),
+          image_index(image_index),
           should_save_image(should_save) {
     }
 
     std::string username;
+    int image_index;
     bool should_save_image;
   };
 

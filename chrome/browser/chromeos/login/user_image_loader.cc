@@ -27,10 +27,11 @@ UserImageLoader::~UserImageLoader() {
 
 void UserImageLoader::Start(const std::string& username,
                             const std::string& filename,
+                            int image_index,
                             bool should_save_image) {
   target_message_loop_ = MessageLoop::current();
 
-  ImageInfo image_info(username, should_save_image);
+  ImageInfo image_info(username, image_index, should_save_image);
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
                           NewRunnableMethod(this,
@@ -93,6 +94,7 @@ void UserImageLoader::NotifyDelegate(const SkBitmap& image,
   if (delegate_) {
     delegate_->OnImageLoaded(image_info.username,
                              image,
+                             image_info.image_index,
                              image_info.should_save_image);
   }
 }

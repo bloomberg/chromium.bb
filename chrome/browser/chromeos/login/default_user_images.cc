@@ -118,9 +118,12 @@ const int kDefaultImageResources[] = {
 
 const int kDefaultImagesCount = arraysize(kDefaultImageResources);
 
+// The order and the values of these constants are important for histograms
+// of different Chrome OS versions to be merged smoothly.
 const int kHistogramImageFromCamera = kDefaultImagesCount;
 const int kHistogramImageFromFile = kDefaultImagesCount + 1;
 const int kHistogramImageOld = kDefaultImagesCount + 2;
-const int kHistogramImagesCount = kDefaultImagesCount + 3;
+const int kHistogramImageFromProfile = kDefaultImagesCount + 3;
+const int kHistogramImagesCount = kDefaultImagesCount + 4;
 
 }  // namespace chromeos

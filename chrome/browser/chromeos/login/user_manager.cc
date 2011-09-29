@@ -54,6 +54,10 @@ const char kUserOAuthTokenStatus[] = "OAuthTokenStatus";
 // depends on that and it's hard to figure out what).
 const char kGuestUser[] = "";
 
+// Names of nodes with info about user image.
+const char kImagePathNodeName[] = "path";
+const char kImageIndexNodeName[] = "index";
+
 base::LazyInstance<UserManager> g_user_manager(base::LINKER_INITIALIZED);
 
 // Stores user's OAuthTokenStatus in local state. Runs on UI thread.
@@ -93,13 +97,18 @@ UserManager::OAuthTokenStatus GetOAuthTokenStatusFromLocalState(
   return UserManager::OAUTH_TOKEN_STATUS_UNKNOWN;
 }
 
-// Stores path to the image in local state. Runs on UI thread.
-void SavePathToLocalState(const std::string& username,
-                          const std::string& image_path) {
+// Stores path to the image and its index in local state. Runs on UI thread.
+void SaveImageToLocalState(const std::string& username,
+                           const std::string& image_path,
+                           int image_index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate images_update(local_state, kUserImages);
-  images_update->SetWithoutPathExpansion(username, new StringValue(image_path));
+  base::DictionaryValue* image_properties = new base::DictionaryValue();
+  image_properties->Set(kImagePathNodeName, new StringValue(image_path));
+  image_properties->Set(kImageIndexNodeName,
+                        new base::FundamentalValue(image_index));
+  images_update->SetWithoutPathExpansion(username, image_properties);
   DVLOG(1) << "Saving path to user image in Local State.";
   local_state->SavePersistentPrefs();
   UserManager::Get()->NotifyLocalStateChanged();
@@ -111,10 +120,11 @@ void SavePathToLocalState(const std::string& username,
 }
 
 // Saves image to file with specified path. Runs on FILE thread.
-// Posts task for saving image path to local state on UI thread.
+// Posts task for saving image info to local state on UI thread.
 void SaveImageToFile(const SkBitmap& image,
                      const FilePath& image_path,
-                     const std::string& username) {
+                     const std::string& username,
+                     int image_index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<unsigned char> encoded_image;
   if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, true, &encoded_image)) {
@@ -132,8 +142,8 @@ void SaveImageToFile(const SkBitmap& image,
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableFunction(&SavePathToLocalState,
-                          username, image_path.value()));
+      NewRunnableFunction(&SaveImageToLocalState,
+                          username, image_path.value(), image_index));
 }
 
 // Deletes user's image file. Runs on FILE thread.
@@ -325,28 +335,56 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
         user.set_email(email);
         user.set_oauth_token_status(GetOAuthTokenStatusFromLocalState(email));
 
-        std::string image_path;
-        // Get account image path.
-        if (prefs_images &&
-            prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
-          int default_image_id = kDefaultImagesCount;
-          if (IsDefaultImagePath(image_path, &default_image_id)) {
-            DCHECK(default_image_id >= 0);
-            DCHECK(default_image_id < kDefaultImagesCount);
-            int resource_id = kDefaultImageResources[default_image_id];
-            user.SetImage(
-                *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                    resource_id),
-                default_image_id);
-          } else {
-            UserImages::const_iterator image_it = user_images_.find(email);
-            if (image_it == user_images_.end()) {
-              // Insert the default image so we don't send another request if
-              // GetUsers is called twice.
-              user_images_[email] = user.image();
-              image_loader_->Start(email, image_path, false);
+        if (prefs_images) {
+          // Get account image path.
+          // TODO(avayvod): Reading image path as a string is here for
+          // backward compatibility.
+          std::string image_path;
+          base::DictionaryValue* image_properties;
+          if (prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
+            int default_image_id = kDefaultImagesCount;
+            if (IsDefaultImagePath(image_path, &default_image_id)) {
+              DCHECK(default_image_id >= 0);
+              DCHECK(default_image_id < kDefaultImagesCount);
+              int resource_id = kDefaultImageResources[default_image_id];
+              user.SetImage(
+                  *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                      resource_id),
+                  default_image_id);
             } else {
-              user.SetImage(image_it->second, User::kExternalImageIndex);
+              UserImages::const_iterator image_it = user_images_.find(email);
+              if (image_it == user_images_.end()) {
+                // Insert the default image so we don't send another request if
+                // GetUsers is called twice.
+                user_images_[email] = user.image();
+                image_loader_->Start(
+                    email, image_path, User::kExternalImageIndex, false);
+              } else {
+                user.SetImage(image_it->second, User::kExternalImageIndex);
+              }
+            }
+          } else if (prefs_images->GetDictionaryWithoutPathExpansion(
+                         email, &image_properties)) {
+            int image_index = User::kInvalidImageIndex;
+            image_properties->GetString(kImagePathNodeName, &image_path);
+            image_properties->GetInteger(kImageIndexNodeName, &image_index);
+            if (image_index >= 0 && image_index < kDefaultImagesCount) {
+              int resource_id = kDefaultImageResources[image_index];
+              user.SetImage(
+                  *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                      resource_id),
+                  image_index);
+            } else if (image_index == User::kExternalImageIndex ||
+                       image_index == User::kProfileImageIndex) {
+              UserImages::const_iterator image_it = user_images_.find(email);
+              if (image_it == user_images_.end()) {
+                // Insert the default image so we don't send another request if
+                // GetUsers is called twice.
+                user_images_[email] = user.image();
+                image_loader_->Start(email, image_path, image_index, false);
+              } else {
+                user.SetImage(image_it->second, image_index);
+              }
             }
           }
         }
@@ -519,17 +557,19 @@ void UserManager::SetUserImage(const std::string& username,
   if (logged_in_user_.email() == username)
     logged_in_user_.SetImage(image, default_image_index);
   if (should_save_image)
-    SaveUserImage(username, image);
+    SaveUserImage(username, image, default_image_index);
 }
 
 void UserManager::LoadLoggedInUserImage(const FilePath& path) {
   if (logged_in_user_.email().empty())
     return;
-  image_loader_->Start(logged_in_user_.email(), path.value(), true);
+  image_loader_->Start(
+      logged_in_user_.email(), path.value(), User::kExternalImageIndex, true);
 }
 
 void UserManager::SaveUserImage(const std::string& username,
-                                const SkBitmap& image) {
+                                const SkBitmap& image,
+                                int image_index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FilePath image_path = GetImagePathForUser(username);
   DVLOG(1) << "Saving user image to " << image_path.value();
@@ -538,7 +578,7 @@ void UserManager::SaveUserImage(const std::string& username,
       BrowserThread::FILE,
       FROM_HERE,
       NewRunnableFunction(&SaveImageToFile,
-                          image, image_path, username));
+                          image, image_path, username, image_index));
 }
 
 void UserManager::SaveUserOAuthStatus(const std::string& username,
@@ -554,8 +594,9 @@ UserManager::OAuthTokenStatus UserManager::GetUserOAuthStatus(
 }
 
 void UserManager::SaveUserImagePath(const std::string& username,
-                                    const std::string& image_path) {
-  SavePathToLocalState(username, image_path);
+                                    const std::string& image_path,
+                                    int image_index) {
+  SaveImageToLocalState(username, image_path, image_index);
 }
 
 void UserManager::SetDefaultUserImage(const std::string& username) {
@@ -569,7 +610,7 @@ void UserManager::SetDefaultUserImage(const std::string& username) {
   SkBitmap user_image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       resource_id);
 
-  SavePathToLocalState(username, user_image_path);
+  SaveImageToLocalState(username, user_image_path, image_id);
   SetLoggedInUserImage(user_image, image_id);
 }
 
@@ -595,9 +636,10 @@ int UserManager::GetUserDefaultImageIndex(const std::string& username) {
 
 void UserManager::OnImageLoaded(const std::string& username,
                                 const SkBitmap& image,
+                                int image_index,
                                 bool should_save_image) {
   DVLOG(1) << "Loaded image for " << username;
-  SetUserImage(username, image, User::kExternalImageIndex, should_save_image);
+  SetUserImage(username, image, image_index, should_save_image);
 }
 
 bool UserManager::IsLoggedInAsGuest() const {

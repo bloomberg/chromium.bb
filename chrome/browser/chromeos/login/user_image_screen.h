@@ -53,6 +53,9 @@ class UserImageScreen: public WizardScreen,
   virtual void OnDownloadSuccess(const SkBitmap& profile_image) OVERRIDE;
 
  private:
+  // Common method that handles setting photo or profile image.
+  void OnNonDefaultImageSelected(const SkBitmap& image, int image_index);
+
   CameraController camera_controller_;
 
   NotificationRegistrar registrar_;

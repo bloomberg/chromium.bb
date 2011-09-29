@@ -445,7 +445,8 @@ void PhotoCaptureObserver::OnCapturingStopped(
   user_manager->AddObserver(this);
   user_manager->SetLoggedInUserImage(
       photo, chromeos::UserManager::User::kExternalImageIndex);
-  user_manager->SaveUserImage(user.email(), photo);
+  user_manager->SaveUserImage(
+      user.email(), photo, chromeos::UserManager::User::kExternalImageIndex);
 }
 
 void PhotoCaptureObserver::LocalStateChanged(

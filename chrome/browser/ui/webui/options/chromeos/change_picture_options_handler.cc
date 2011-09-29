@@ -170,14 +170,14 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
 
   UserManager* user_manager = UserManager::Get();
   const UserManager::User& user = user_manager->logged_in_user();
-  int user_image_index = UserManager::User::kExternalImageIndex;
+  int user_image_index = user.default_image_index();
 
   if (StartsWithASCII(image_url, chrome::kChromeUIUserImageURL, false)) {
     DCHECK(!previous_image_.empty());
 
-    user_manager->SetLoggedInUserImage(previous_image_,
-                                       UserManager::User::kExternalImageIndex);
-    user_manager->SaveUserImage(user.email(), previous_image_);
+    user_manager->SetLoggedInUserImage(previous_image_, user_image_index);
+    user_manager->SaveUserImage(
+        user.email(), previous_image_, user_image_index);
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               kHistogramImageOld,
                               kHistogramImagesCount);
@@ -190,7 +190,8 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     user_manager->SetLoggedInUserImage(*image, user_image_index);
     user_manager->SaveUserImagePath(
         user_manager->logged_in_user().email(),
-        GetDefaultImagePath(user_image_index));
+        GetDefaultImagePath(user_image_index),
+        user_image_index);
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               user_image_index,
                               kHistogramImagesCount);
@@ -217,7 +218,8 @@ void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
 
   user_manager->SetLoggedInUserImage(photo,
                                      UserManager::User::kExternalImageIndex);
-  user_manager->SaveUserImage(user.email(), photo);
+  user_manager->SaveUserImage(
+      user.email(), photo, UserManager::User::kExternalImageIndex);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);

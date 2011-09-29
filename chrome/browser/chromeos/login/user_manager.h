@@ -138,7 +138,8 @@ class UserManager : public UserImageLoader::Delegate,
   // and sends LOGIN_USER_IMAGE_CHANGED notification about the image
   // changed via NotificationService.
   void SaveUserImage(const std::string& username,
-                     const SkBitmap& image);
+                     const SkBitmap& image,
+                     int image_index);
 
   // Saves user's oauth token status in local state preferences.
   void SaveUserOAuthStatus(const std::string& username,
@@ -151,7 +152,8 @@ class UserManager : public UserImageLoader::Delegate,
   // Sends LOGIN_USER_IMAGE_CHANGED notification about the image changed
   // via NotificationService.
   void SaveUserImagePath(const std::string& username,
-                         const std::string& image_path);
+                         const std::string& image_path,
+                         int image_index);
 
   // Returns the index of user's default image or |kInvalidImageIndex|
   // if some error occurs (like Local State corruption).
@@ -160,6 +162,7 @@ class UserManager : public UserImageLoader::Delegate,
   // chromeos::UserImageLoader::Delegate implementation.
   virtual void OnImageLoaded(const std::string& username,
                              const SkBitmap& image,
+                             int image_index,
                              bool save_image);
 
   // NotificationObserver implementation.

@@ -42,6 +42,9 @@ extern const int kHistogramImageFromCamera;
 // image from camera/file.
 extern const int kHistogramImageOld;
 
+// Image index to be used in histograms when user image is taken from profile.
+extern const int kHistogramImageFromProfile;
+
 // Number of possible user image indices to be used in histograms.
 extern const int kHistogramImagesCount;
 

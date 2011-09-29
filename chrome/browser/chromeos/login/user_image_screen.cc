@@ -110,7 +110,8 @@ void UserImageScreen::StopCamera() {
   camera_controller_.Stop();
 }
 
-void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
+void UserImageScreen::OnNonDefaultImageSelected(const SkBitmap& image,
+                                                int image_index) {
   camera_controller_.Stop();
 
   UserManager* user_manager = UserManager::Get();
@@ -119,20 +120,23 @@ void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
   const UserManager::User& user = user_manager->logged_in_user();
   DCHECK(!user.email().empty());
 
-  user_manager->SetLoggedInUserImage(image,
-                                     UserManager::User::kExternalImageIndex);
-  user_manager->SaveUserImage(user.email(), image);
+  user_manager->SetLoggedInUserImage(image, image_index);
+  user_manager->SaveUserImage(user.email(), image, image_index);
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
+}
 
+void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
+  OnNonDefaultImageSelected(image, UserManager::User::kExternalImageIndex);
   UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);
 }
 
 void UserImageScreen::OnProfileImageSelected(const SkBitmap& image) {
-  // TODO(avayvod): Save profile image differently to allow for its update
-  // later on login.
-  OnPhotoTaken(image);
+  OnNonDefaultImageSelected(image, UserManager::User::kProfileImageIndex);
+  UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
+                            kHistogramImageFromProfile,
+                            kHistogramImagesCount);
 }
 
 void UserImageScreen::OnDefaultImageSelected(int index) {
@@ -149,7 +153,8 @@ void UserImageScreen::OnDefaultImageSelected(int index) {
   user_manager->SetLoggedInUserImage(*image, index);
   user_manager->SaveUserImagePath(
       user.email(),
-      GetDefaultImagePath(static_cast<size_t>(index)));
+      GetDefaultImagePath(index),
+      index);
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
   UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
