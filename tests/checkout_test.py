@@ -40,6 +40,11 @@ class FakeRepos(fake_repos.FakeReposBase):
          '--non-interactive', '--no-auth-cache',
          '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
     assert os.path.isdir(os.path.join(self.svn_checkout, '.svn'))
+    self._commit_svn(self._tree_1())
+    self._commit_svn(self._tree_2())
+
+  @staticmethod
+  def _tree_1():
     fs = {}
     fs['trunk/origin'] = 'svn@1'
     fs['trunk/codereview.settings'] = (
@@ -63,11 +68,26 @@ class FakeRepos(fake_repos.FakeReposBase):
         'ooo\n'
         'pp\n'
         'q\n')
-    self._commit_svn(fs)
+    return fs
+
+  @classmethod
+  def _tree_2(cls):
+    fs = cls._tree_1()
     fs['trunk/origin'] = 'svn@2\n'
     fs['trunk/extra'] = 'dummy\n'
     fs['trunk/bin_file'] = '\x00'
-    self._commit_svn(fs)
+    fs['trunk/chromeos/views/DOMui_menu_widget.h'] = (
+      '// Copyright (c) 2010\n'
+      '// Use of this source code\n'
+      '// found in the LICENSE file.\n'
+      '\n'
+      '#ifndef DOM\n'
+      '#define DOM\n'
+      '#pragma once\n'
+      '\n'
+      '#include <string>\n'
+      '#endif\n')
+    return fs
 
   def populateGit(self):
     raise NotImplementedError()
@@ -100,11 +120,10 @@ class BaseTest(fake_repos.FakeReposTestBase):
 
   def get_patches(self):
     return patch.PatchSet([
+        patch.FilePatchDiff('new_dir/subdir/new_file', GIT.NEW_SUBDIR, []),
+        patch.FilePatchDiff('chrome/file.cc', GIT.PATCH, []),
         # TODO(maruel): Test with is_new == False.
         patch.FilePatchBinary('bin_file', '\x00', [], is_new=True),
-        patch.FilePatchDiff(
-            'chrome/file.cc', GIT.PATCH, []),
-        patch.FilePatchDiff('new_dir/subdir/new_file', GIT.NEW_SUBDIR, []),
         patch.FilePatchDelete('extra', False),
     ])
 
@@ -200,6 +219,35 @@ class BaseTest(fake_repos.FakeReposTestBase):
     expected = [(expected_co, p) for p in ps.patches]
     self.assertEquals(len(expected), len(results))
     self.assertEquals(expected, results)
+
+  def _check_move(self, co):
+    """Makes sure file moves are handled correctly."""
+    co.prepare(None)
+    patchset = patch.PatchSet([
+        patch.FilePatchDelete('chromeos/views/DOMui_menu_widget.h', False),
+        patch.FilePatchDiff(
+          'chromeos/views/webui_menu_widget.h', GIT.RENAME_PARTIAL, []),
+    ])
+    co.apply_patch(patchset)
+    # Make sure chromeos/views/DOMui_menu_widget.h is deleted and
+    # chromeos/views/webui_menu_widget.h is correctly created.
+    root = os.path.join(self.root_dir, self.name)
+    tree = self.get_trunk(False)
+    del tree['chromeos/views/DOMui_menu_widget.h']
+    tree['chromeos/views/webui_menu_widget.h'] = (
+        '// Copyright (c) 2011\n'
+        '// Use of this source code\n'
+        '// found in the LICENSE file.\n'
+        '\n'
+        '#ifndef WEB\n'
+        '#define WEB\n'
+        '#pragma once\n'
+        '\n'
+        '#include <string>\n'
+        '#endif\n')
+    #print patchset[0].get()
+    #print fake_repos.read_tree(root)
+    self.assertTree(tree, root)
 
 
 class SvnBaseTest(BaseTest):
@@ -349,6 +397,9 @@ class SvnCheckout(SvnBaseTest):
   def testPrepare(self):
     self._test_prepare(self._get_co(None))
 
+  def testMove(self):
+    self._check_move(self._get_co(None))
+
 
 class GitSvnCheckout(SvnBaseTest):
   name = 'foo.git'
@@ -419,6 +470,9 @@ class GitSvnCheckout(SvnBaseTest):
     co.prepare = prepare
     self._test_prepare(co)
 
+  def testMove(self):
+    self._check_move(self._get_co(None))
+
 
 class RawCheckout(SvnBaseTest):
   def setUp(self):
@@ -482,6 +536,9 @@ class RawCheckout(SvnBaseTest):
     self._test_prepare(co)
     self.assertEquals([], revs)
 
+  def testMove(self):
+    self._check_move(self._get_co(None))
+
 
 class ReadOnlyCheckout(SvnBaseTest):
   # Use SvnCheckout as the backed since it support read-only checkouts too.
@@ -512,6 +569,9 @@ class ReadOnlyCheckout(SvnBaseTest):
 
   def testPrepare(self):
     self._test_prepare(self._get_co(None))
+
+  def testMove(self):
+    self._check_move(self._get_co(None))
 
 
 if __name__ == '__main__':

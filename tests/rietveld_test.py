@@ -82,7 +82,7 @@ class RietveldTest(unittest.TestCase):
     if hasattr(p, 'patchlevel'):
       self.assertEquals(p.patchlevel, patchlevel)
     if diff:
-      self.assertEquals(p.get(), diff)
+      self.assertEquals(p.get(True), diff)
     if hasattr(p, 'svn_properties'):
       self.assertEquals(p.svn_properties, svn_properties)
 
@@ -103,9 +103,9 @@ class RietveldTest(unittest.TestCase):
     ]
     patches = self.rietveld.get_patch(123, 456)
     self.assertEquals(2, len(patches.patches))
-    self._check_patch(patches.patches[0], 'foo', RAW.NEW, is_new=True)
     # TODO(maruel): svn sucks.
-    self._check_patch(patches.patches[1], 'file_a', RAW.NEW_NOT_NULL)
+    self._check_patch(patches.patches[0], 'file_a', RAW.NEW_NOT_NULL)
+    self._check_patch(patches.patches[1], 'foo', RAW.NEW, is_new=True)
 
   def test_get_patch_add(self):
     self.requests = [

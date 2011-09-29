@@ -13,6 +13,7 @@ import fnmatch
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -137,10 +138,21 @@ class RawCheckout(CheckoutBase):
             with open(filepath, 'wb') as f:
               f.write(p.get())
           else:
+            if p.source_filename:
+              if not p.is_new:
+                raise PatchApplicationFailed(
+                    p.filename,
+                    'File has a source filename specified but is not new')
+              # Copy the file first.
+              if os.path.isfile(filepath):
+                raise PatchApplicationFailed(
+                    p.filename, 'File exist but was about to be overwriten')
+              shutil.copy2(
+                  os.path.join(self.project_path, p.source_filename), filepath)
             if p.diff_hunks:
               stdout = subprocess2.check_output(
-                  ['patch', '-p%s' % p.patchlevel],
-                  stdin=p.get(),
+                  ['patch', '-u', '--binary', '-p%s' % p.patchlevel],
+                  stdin=p.get(False),
                   stderr=subprocess2.STDOUT,
                   cwd=self.project_path)
             elif p.is_new and not os.path.exists(filepath):
@@ -293,10 +305,21 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
             with open(filepath, 'wb') as f:
               f.write(p.get())
           else:
+            if p.source_filename:
+              if not p.is_new:
+                raise PatchApplicationFailed(
+                    p.filename,
+                    'File has a source filename specified but is not new')
+              # Copy the file first.
+              if os.path.isfile(filepath):
+                raise PatchApplicationFailed(
+                    p.filename, 'File exist but was about to be overwriten')
+              shutil.copy2(
+                  os.path.join(self.project_path, p.source_filename), filepath)
             if p.diff_hunks:
               cmd = ['patch', '-p%s' % p.patchlevel, '--forward', '--force']
               stdout += subprocess2.check_output(
-                  cmd, stdin=p.get(), cwd=self.project_path)
+                  cmd, stdin=p.get(False), cwd=self.project_path)
             elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file if it doesn't
               # exist.
@@ -434,11 +457,18 @@ class GitCheckoutBase(CheckoutBase):
       self._check_call_git(
           ['checkout', '-b', self.working_branch,
             '%s/%s' % (self.remote, self.remote_branch), '--quiet'])
-    for p in patches:
+    for index, p in enumerate(patches):
       try:
         stdout = ''
         if p.is_delete:
-          stdout += self._check_output_git(['rm', p.filename])
+          if (not os.path.exists(p.filename) and
+              any(p1.source_filename == p.filename for p1 in patches[0:index])):
+            # The file could already be deleted if a prior patch with file
+            # rename was already processed. To be sure, look at all the previous
+            # patches to see if they were a file rename.
+            pass
+          else:
+            stdout += self._check_output_git(['rm', p.filename])
         else:
           dirname = os.path.dirname(p.filename)
           full_dir = os.path.join(self.project_path, dirname)
@@ -452,7 +482,7 @@ class GitCheckoutBase(CheckoutBase):
             # No need to do anything special with p.is_new or if not
             # p.diff_hunks. git apply manages all that already.
             stdout += self._check_output_git(
-                ['apply', '--index', '-p%s' % p.patchlevel], stdin=p.get())
+                ['apply', '--index', '-p%s' % p.patchlevel], stdin=p.get(True))
           for prop in p.svn_properties:
             # Ignore some known auto-props flags through .subversion/config,
             # bails out on the other ones.

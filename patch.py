@@ -32,6 +32,7 @@ class FilePatchBase(object):
   is_new = False
 
   def __init__(self, filename):
+    assert self.__class__ is not FilePatchBase
     self.filename = self._process_filename(filename)
     # Set when the file is copied or moved.
     self.source_filename = None
@@ -50,9 +51,6 @@ class FilePatchBase(object):
             filename, 'Filename can\'t start with \'%s\'.' % i)
     return filename
 
-  def get(self):  # pragma: no coverage
-    raise NotImplementedError('Nothing to grab')
-
   def set_relpath(self, relpath):
     if not relpath:
       return
@@ -69,6 +67,27 @@ class FilePatchBase(object):
     """Shortcut function to raise UnsupportedPatchFormat."""
     raise UnsupportedPatchFormat(self.filename, msg)
 
+  def __str__(self):
+    # Use a status-like board.
+    out = ''
+    if self.is_binary:
+      out += 'B'
+    else:
+      out += ' '
+    if self.is_delete:
+      out += 'D'
+    else:
+      out += ' '
+    if self.is_new:
+      out += 'N'
+    else:
+      out += ' '
+    if self.source_filename:
+      out += 'R'
+    else:
+      out += ' '
+    return out + '  %s->%s' % (self.source_filename, self.filename)
+
 
 class FilePatchDelete(FilePatchBase):
   """Deletes a file."""
@@ -77,9 +96,6 @@ class FilePatchDelete(FilePatchBase):
   def __init__(self, filename, is_binary):
     super(FilePatchDelete, self).__init__(filename)
     self.is_binary = is_binary
-
-  def get(self):
-    raise NotImplementedError('Nothing to grab')
 
 
 class FilePatchBinary(FilePatchBase):
@@ -111,9 +127,18 @@ class FilePatchDiff(FilePatchBase):
       self._verify_git_header()
     else:
       self._verify_svn_header()
+    if self.source_filename and not self.is_new:
+      self._fail('If source_filename is set, is_new must be also be set')
 
-  def get(self):
-    return self.diff_header + self.diff_hunks
+  def get(self, for_git):
+    if for_git or not self.source_filename:
+      return self.diff_header + self.diff_hunks
+    else:
+      # patch is stupid. It patches the source_filename instead so get rid of
+      # any source_filename reference if needed.
+      return (
+          self.diff_header.replace(self.source_filename, self.filename) +
+          self.diff_hunks)
 
   def set_relpath(self, relpath):
     old_filename = self.filename
@@ -264,6 +289,7 @@ class FilePatchDiff(FilePatchBase):
                 (match.group(1), line))
       return
 
+    # Ignore "deleted file mode 100644" since it's not needed.
     match = re.match(r'^new(| file) mode (\d{6})$', line)
     if match:
       mode = match.group(2)
@@ -356,9 +382,22 @@ class PatchSet(object):
   """A list of FilePatch* objects."""
 
   def __init__(self, patches):
-    self.patches = patches
-    for p in self.patches:
+    for p in patches:
       assert isinstance(p, FilePatchBase)
+
+    def key(p):
+      """Sort by ordering of application.
+
+      File move are first.
+      Deletes are last.
+      """
+      if p.source_filename:
+        return (p.is_delete, p.source_filename, p.filename)
+      else:
+        # tuple are always greater than string, abuse that fact.
+        return (p.is_delete, (p.filename,), p.filename)
+
+    self.patches = sorted(patches, key=key)
 
   def set_relpath(self, relpath):
     """Used to offset the patch into a subdirectory."""
@@ -368,6 +407,9 @@ class PatchSet(object):
   def __iter__(self):
     for patch in self.patches:
       yield patch
+
+  def __getitem__(self, key):
+    return self.patches[key]
 
   @property
   def filenames(self):

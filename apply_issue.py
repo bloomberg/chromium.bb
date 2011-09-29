@@ -40,7 +40,7 @@ def main():
       help='Rietveld server')
   options, args = parser.parse_args()
   logging.basicConfig(
-      format='%(levelname)s %(filename)s(%(lineno)d): %(message)s',
+      format='%(levelname)5s %(module)11s(%(lineno)4d): %(message)s',
       level=[logging.WARNING, logging.INFO, logging.DEBUG][
           min(2, options.verbose)])
   if args:
@@ -56,7 +56,8 @@ def main():
     logging.info('Using patchset %d' % options.patchset)
   # Download the patch.
   patchset = obj.get_patch(options.issue, options.patchset)
-
+  for patch in patchset.patches:
+    logging.info(patch)
   scm_type = scm.determine_scm(options.root_dir)
   if scm_type == 'svn':
     scm_obj = checkout.SvnCheckout(options.root_dir, None, None, None, None)

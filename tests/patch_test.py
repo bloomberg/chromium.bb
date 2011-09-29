@@ -40,7 +40,10 @@ class PatchTest(unittest.TestCase):
     if hasattr(p, 'patchlevel'):
       self.assertEquals(p.patchlevel, patchlevel)
     if diff:
-      self.assertEquals(p.get(), diff)
+      if is_binary:
+        self.assertEquals(p.get(), diff)
+      else:
+        self.assertEquals(p.get(True), diff)
     if hasattr(p, 'svn_properties'):
       self.assertEquals(p.svn_properties, svn_properties)
 
@@ -97,19 +100,29 @@ class PatchTest(unittest.TestCase):
     hunks = ''.join(lines[4:])
     self.assertEquals(header, p.diff_header)
     self.assertEquals(hunks, p.diff_hunks)
-    self.assertEquals(RAW.PATCH, p.get())
+    self.assertEquals(RAW.PATCH, p.get(True))
+    self.assertEquals(RAW.PATCH, p.get(False))
 
   def testValidSvnNew(self):
     p = patch.FilePatchDiff('chrome/file.cc', RAW.MINIMAL_NEW, [])
     self.assertEquals(RAW.MINIMAL_NEW, p.diff_header)
     self.assertEquals('', p.diff_hunks)
-    self.assertEquals(RAW.MINIMAL_NEW, p.get())
+    self.assertEquals(RAW.MINIMAL_NEW, p.get(True))
+    self.assertEquals(RAW.MINIMAL_NEW, p.get(False))
 
   def testValidSvnDelete(self):
     p = patch.FilePatchDiff('chrome/file.cc', RAW.MINIMAL_DELETE, [])
     self.assertEquals(RAW.MINIMAL_DELETE, p.diff_header)
     self.assertEquals('', p.diff_hunks)
-    self.assertEquals(RAW.MINIMAL_DELETE, p.get())
+    self.assertEquals(RAW.MINIMAL_DELETE, p.get(True))
+    self.assertEquals(RAW.MINIMAL_DELETE, p.get(False))
+
+  def testValidSvnRename(self):
+    p = patch.FilePatchDiff('file_b', RAW.MINIMAL_RENAME, [])
+    self.assertEquals(RAW.MINIMAL_RENAME, p.diff_header)
+    self.assertEquals('', p.diff_hunks)
+    self.assertEquals(RAW.MINIMAL_RENAME, p.get(True))
+    self.assertEquals('--- file_b\n+++ file_b\n', p.get(False))
 
   def testRelPath(self):
     patches = patch.PatchSet([
@@ -176,7 +189,8 @@ class PatchTest(unittest.TestCase):
     ])
     expected = ['chrome/file.cc', 'other/place/foo']
     self.assertEquals(expected, patches.filenames)
-    self.assertEquals(RAW.PATCH, patches.patches[0].get())
+    self.assertEquals(RAW.PATCH, patches.patches[0].get(True))
+    self.assertEquals(RAW.PATCH, patches.patches[0].get(False))
 
   def testDelete(self):
     p = patch.FilePatchDiff('tools/clang_check/README.chromium', RAW.DELETE, [])
@@ -227,6 +241,25 @@ class PatchTest(unittest.TestCase):
         p, 'wtf2', GIT.COPY_PARTIAL, source_filename='wtf', is_git_diff=True,
         patchlevel=1, is_new=True)
 
+  def testGitCopyPartialAsSvn(self):
+    p = patch.FilePatchDiff('wtf2', GIT.COPY_PARTIAL, [])
+    # TODO(maruel): Improve processing.
+    diff = (
+        'diff --git a/wtf2 b/wtf22\n'
+        'similarity index 98%\n'
+        'copy from wtf2\n'
+        'copy to wtf22\n'
+        'index 79fbaf3..3560689 100755\n'
+        '--- a/wtf2\n'
+        '+++ b/wtf22\n'
+        '@@ -1,4 +1,4 @@\n'
+        '-#!/usr/bin/env python\n'
+        '+#!/usr/bin/env python1.3\n'
+        ' # Copyright (c) 2010 The Chromium Authors. All rights reserved.\n'
+        ' # blah blah blah as\n'
+        ' # found in the LICENSE file.\n')
+    self.assertEquals(diff, p.get(False))
+
   def testGitNewExe(self):
     p = patch.FilePatchDiff('natsort_test.py', GIT.NEW_EXE, [])
     self._check_patch(
@@ -239,24 +272,42 @@ class PatchTest(unittest.TestCase):
         p, 'natsort_test.py', GIT.NEW_MODE, is_new=True, is_git_diff=True,
         patchlevel=1)
 
+  def testPatchsetOrder(self):
+    # Deletes must be last.
+    # File renames/move/copy must be first.
+    patches = [
+        patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, []),
+        patch.FilePatchDiff(
+            'tools\\clang_check/README.chromium', GIT.DELETE, []),
+        patch.FilePatchDiff('tools/run_local_server.sh', GIT.RENAME, []),
+        patch.FilePatchDiff(
+            'chromeos\\views/webui_menu_widget.h', GIT.RENAME_PARTIAL, []),
+        patch.FilePatchDiff('pp', GIT.COPY, []),
+        patch.FilePatchDiff('foo', GIT.NEW, []),
+        patch.FilePatchDelete('other/place/foo', True),
+        patch.FilePatchBinary('bar', 'data', [], is_new=False),
+    ]
+    expected = [
+        'pp',
+        'chromeos/views/webui_menu_widget.h',
+        'tools/run_local_server.sh',
+        'bar',
+        'chrome/file.cc',
+        'foo',
+        'other/place/foo',
+        'tools/clang_check/README.chromium',
+    ]
+    patchset = patch.PatchSet(patches)
+    self.assertEquals(expected, patchset.filenames)
+
 
 class PatchTestFail(unittest.TestCase):
   # All patches that should throw.
   def testFilePatchDelete(self):
-    p = patch.FilePatchDelete('foo', False)
-    try:
-      p.get()
-      self.fail()
-    except NotImplementedError:
-      pass
+    self.assertFalse(hasattr(patch.FilePatchDelete('foo', False), 'get'))
 
   def testFilePatchDeleteBin(self):
-    p = patch.FilePatchDelete('foo', True)
-    try:
-      p.get()
-      self.fail()
-    except NotImplementedError:
-      pass
+    self.assertFalse(hasattr(patch.FilePatchDelete('foo', True), 'get'))
 
   def testFilePatchDiffBad(self):
     try:
