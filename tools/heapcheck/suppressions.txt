@@ -1641,3 +1641,9 @@
    ...
    fun:ExtensionSettingsStorageTest*
 }
+{
+   bug_98568
+   Heapcheck:Leak
+   ...
+   fun:WebDragDestGtkTest_NoTabContentsWrapper_Test::TestBody
+}
