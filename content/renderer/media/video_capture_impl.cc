@@ -42,6 +42,7 @@ VideoCaptureImpl::VideoCaptureImpl(
       ml_proxy_(ml_proxy),
       device_id_(0),
       video_type_(media::VideoFrame::I420),
+      device_info_available_(false),
       state_(kStopped) {
   DCHECK(filter);
   memset(&current_params_, 0, sizeof(current_params_));
@@ -162,11 +163,17 @@ void VideoCaptureImpl::DoStartCapture(
     return;
   }
 
+  handler->OnStarted(this);
   clients_[handler] = capability;
   if (capability.resolution_fixed) {
     master_clients_.push_back(handler);
-    if (master_clients_.size() > 1)
+    if (master_clients_.size() > 1) {
+      // TODO(wjia): OnStarted might be called twice if VideoCaptureImpl will
+      // receive kStarted from browser process later.
+      if (device_info_available_)
+        handler->OnDeviceInfoReceived(this, device_info_);
       return;
+    }
   }
 
   if (state_ == kStarted) {
@@ -182,8 +189,10 @@ void VideoCaptureImpl::DoStartCapture(
                  << new_params_.width << ", " << new_params_.height << ") "
                  << "during started, try to restart.";
       StopDevice();
+    } else {
+      if (device_info_available_)
+        handler->OnDeviceInfoReceived(this, device_info_);
     }
-    handler->OnStarted(this);
     return;
   }
 
@@ -196,7 +205,6 @@ void VideoCaptureImpl::DoStartCapture(
                  << new_params_.width << ", " << new_params_.height << ") "
                  << ", already in stopping.";
     }
-    handler->OnStarted(this);
     return;
   }
 
@@ -349,10 +357,6 @@ void VideoCaptureImpl::DoStateChanged(const media::VideoCapture::State& state) {
 
   switch (state) {
     case media::VideoCapture::kStarted:
-      for (ClientInfo::iterator it = clients_.begin();
-           it != clients_.end(); it++) {
-        it->first->OnStarted(this);
-      }
       break;
     case media::VideoCapture::kStopped:
       state_ = kStopped;
@@ -388,6 +392,8 @@ void VideoCaptureImpl::DoDeviceInfoReceived(
     const media::VideoCaptureParams& device_info) {
   DCHECK(ml_proxy_->BelongsToCurrentThread());
 
+  device_info_ = device_info;
+  device_info_available_ = true;
   for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); it++) {
     it->first->OnDeviceInfoReceived(this, device_info);
   }
@@ -410,6 +416,7 @@ void VideoCaptureImpl::DoDelegateAdded(int32 device_id) {
 void VideoCaptureImpl::StopDevice() {
   DCHECK(ml_proxy_->BelongsToCurrentThread());
 
+  device_info_available_ = false;
   if (state_ == kStarted) {
     state_ = kStopping;
     Send(new VideoCaptureHostMsg_Stop(device_id_));
@@ -440,9 +447,6 @@ void VideoCaptureImpl::StartCaptureInternal() {
 
   Send(new VideoCaptureHostMsg_Start(device_id_, current_params_));
   state_ = kStarted;
-  for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); it++) {
-    it->first->OnStarted(this);
-  }
 }
 
 void VideoCaptureImpl::AddDelegateOnIOThread() {

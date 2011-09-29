@@ -113,6 +113,10 @@ class VideoCaptureImpl
   // starts with StartCapture and ends with StopCapture.
   media::VideoCaptureParams current_params_;
 
+  // The information about the device sent from browser process side.
+  media::VideoCaptureParams device_info_;
+  bool device_info_available_;
+
   // The parameter will be used in next capture session.
   media::VideoCaptureParams new_params_;
   State state_;
