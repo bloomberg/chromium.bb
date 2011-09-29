@@ -959,9 +959,9 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
       initialization_complete_(false) {
   if (provider_) {
     // Read initial policy.
-    policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider));
+    policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider_));
     registrar_.Init(provider_, this);
-    initialization_complete_ = provider->IsInitializationComplete();
+    initialization_complete_ = provider_->IsInitializationComplete();
   } else {
     initialization_complete_ = true;
   }

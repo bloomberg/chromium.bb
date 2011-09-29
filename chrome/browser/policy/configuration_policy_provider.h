@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "policy/configuration_policy_type.h"
 
@@ -60,8 +61,8 @@ class ConfigurationPolicyProvider {
   virtual bool IsInitializationComplete() const;
 
  protected:
-  // Decodes the value tree and writes the configuration to |result|.
-  void ApplyPolicyValueTree(const DictionaryValue* policies, PolicyMap* result);
+  // Sends a policy update notification to observers.
+  void NotifyPolicyUpdated();
 
   const PolicyDefinitionList* policy_definition_list() const {
     return policy_definition_list_;
@@ -70,19 +71,16 @@ class ConfigurationPolicyProvider {
  private:
   friend class ConfigurationPolicyObserverRegistrar;
 
-  // Temporarily needed for access to ApplyPolicyValueTree as long as we need
-  // to support old-style policy.
-  friend class UserPolicyCache;
-
-  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer) = 0;
+  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer);
   virtual void RemoveObserver(
-      ConfigurationPolicyProvider::Observer* observer) = 0;
+      ConfigurationPolicyProvider::Observer* observer);
 
   // Contains the default mapping from policy values to the actual names.
   const ConfigurationPolicyProvider::PolicyDefinitionList*
       policy_definition_list_;
 
- private:
+  ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
+
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
 };
 

@@ -19,7 +19,8 @@ AsynchronousPolicyLoader::AsynchronousPolicyLoader(
       origin_loop_(MessageLoop::current()),
       stopped_(false) {}
 
-void AsynchronousPolicyLoader::Init() {
+void AsynchronousPolicyLoader::Init(const base::Closure& callback) {
+  updates_callback_ = callback;
   policy_.reset(delegate_->Load());
   // Initialization can happen early when the file thread is not yet available,
   // but the subclass of the loader must do some of their initialization on the
@@ -37,9 +38,6 @@ void AsynchronousPolicyLoader::Init() {
 void AsynchronousPolicyLoader::Stop() {
   if (!stopped_) {
     stopped_ = true;
-    FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
-                      observer_list_,
-                      OnProviderGoingAway());
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &AsynchronousPolicyLoader::StopOnFileThread));
@@ -73,16 +71,6 @@ void AsynchronousPolicyLoader::Reload() {
     DictionaryValue* new_policy = delegate_->Load();
     PostUpdatePolicyTask(new_policy);
   }
-}
-
-void AsynchronousPolicyLoader::AddObserver(
-    ConfigurationPolicyProvider::Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void AsynchronousPolicyLoader::RemoveObserver(
-    ConfigurationPolicyProvider::Observer* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 void AsynchronousPolicyLoader::CancelReloadTask() {
@@ -143,10 +131,9 @@ void AsynchronousPolicyLoader::UpdatePolicy(DictionaryValue* new_policy_raw) {
   scoped_ptr<DictionaryValue> new_policy(new_policy_raw);
   DCHECK(policy_.get());
   if (!policy_->Equals(new_policy.get())) {
-    policy_.reset(new_policy.release());
-    FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
-                      observer_list_,
-                      OnUpdatePolicy());
+    policy_.swap(new_policy);
+    if (!stopped_)
+      updates_callback_.Run();
   }
 }
 

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_POLICY_ASYNCHRONOUS_POLICY_LOADER_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
@@ -27,18 +27,17 @@ class AsynchronousPolicyLoader
   AsynchronousPolicyLoader(AsynchronousPolicyProvider::Delegate* delegate,
                            int reload_interval_minutes);
 
-  // Triggers initial policy load.
-  virtual void Init();
+  // Triggers initial policy load, and installs |callback| as the callback to
+  // invoke on policy updates.
+  virtual void Init(const base::Closure& callback);
 
   // Reloads policy, sending notification of changes if necessary. Must be
   // called on the file thread.
   virtual void Reload();
 
-  // Stops any pending reload tasks.
+  // Stops any pending reload tasks. Updates callbacks won't be performed
+  // anymore once the loader is stopped.
   virtual void Stop();
-
-  void AddObserver(ConfigurationPolicyProvider::Observer* observer);
-  void RemoveObserver(ConfigurationPolicyProvider::Observer* observer);
 
   const DictionaryValue* policy() const { return policy_.get(); }
 
@@ -111,7 +110,8 @@ class AsynchronousPolicyLoader
   // True if Stop has been called.
   bool stopped_;
 
-  ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
+  // Callback to invoke on policy updates.
+  base::Closure updates_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyLoader);
 };

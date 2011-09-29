@@ -28,11 +28,6 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   virtual bool IsInitializationComplete() const OVERRIDE;
 
  private:
-  // ConfigurationPolicyProvider overrides:
-  virtual void AddObserver(
-      ConfigurationPolicyProvider::Observer* observer) OVERRIDE {}
-  virtual void RemoveObserver(
-      ConfigurationPolicyProvider::Observer* observer) OVERRIDE {}
 
   PolicyMap policy_map_;
   bool initialization_complete_;

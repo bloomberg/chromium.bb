@@ -4,8 +4,6 @@
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
-#include "chrome/browser/policy/policy_map.h"
-
 namespace policy {
 
 // Class ConfigurationPolicyProvider.
@@ -15,25 +13,28 @@ ConfigurationPolicyProvider::ConfigurationPolicyProvider(
     : policy_definition_list_(policy_list) {
 }
 
-ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {}
+ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_,
+                    OnProviderGoingAway());
+}
 
 bool ConfigurationPolicyProvider::IsInitializationComplete() const {
   return true;
 }
 
-void ConfigurationPolicyProvider::ApplyPolicyValueTree(
-    const DictionaryValue* policies,
-    PolicyMap* result) {
-  const PolicyDefinitionList* policy_list(policy_definition_list());
-  for (const PolicyDefinitionList::Entry* i = policy_list->begin;
-       i != policy_list->end; ++i) {
-    Value* value;
-    if (policies->Get(i->name, &value) && value->IsType(i->value_type))
-      result->Set(i->policy_type, value->DeepCopy());
-  }
+void ConfigurationPolicyProvider::NotifyPolicyUpdated() {
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_,
+                    OnUpdatePolicy());
+}
 
-  // TODO(mnissler): Handle preference overrides once |ConfigurationPolicyStore|
-  // supports it.
+void ConfigurationPolicyProvider::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ConfigurationPolicyProvider::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 // Class ConfigurationPolicyObserverRegistrar.

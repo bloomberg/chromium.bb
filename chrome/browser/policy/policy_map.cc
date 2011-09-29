@@ -46,6 +46,17 @@ void PolicyMap::CopyFrom(const PolicyMap& other) {
   }
 }
 
+void PolicyMap::LoadFrom(
+    const DictionaryValue* policies,
+    const ConfigurationPolicyProvider::PolicyDefinitionList* list) {
+  const ConfigurationPolicyProvider::PolicyDefinitionList::Entry* entry;
+  for (entry = list->begin; entry != list->end; ++entry) {
+    Value* value;
+    if (policies->Get(entry->name, &value) && value->IsType(entry->value_type))
+      Set(entry->policy_type, value->DeepCopy());
+  }
+}
+
 bool PolicyMap::Equals(const PolicyMap& other) const {
   return other.map_.size() == map_.size() &&
       std::equal(map_.begin(), map_.end(), other.map_.begin(), MapEntryEquals);

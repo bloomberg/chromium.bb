@@ -4,7 +4,9 @@
 
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 
+#include "base/bind.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
+#include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 
@@ -13,29 +15,23 @@ AsynchronousPolicyProvider::AsynchronousPolicyProvider(
     scoped_refptr<AsynchronousPolicyLoader> loader)
     : ConfigurationPolicyProvider(policy_list),
       loader_(loader) {
-  loader_->Init();
+  loader_->Init(
+      base::Bind(&AsynchronousPolicyProvider::NotifyPolicyUpdated,
+                 base::Unretained(this)));
 }
 
 AsynchronousPolicyProvider::~AsynchronousPolicyProvider() {
   DCHECK(CalledOnValidThread());
+  // |loader_| won't invoke its callback anymore after Stop(), therefore
+  // Unretained(this) is safe in the ctor.
   loader_->Stop();
 }
 
 bool AsynchronousPolicyProvider::Provide(PolicyMap* map) {
   DCHECK(CalledOnValidThread());
   DCHECK(loader_->policy());
-  ApplyPolicyValueTree(loader_->policy(), map);
+  map->LoadFrom(loader_->policy(), policy_definition_list());
   return true;
-}
-
-void AsynchronousPolicyProvider::AddObserver(
-    ConfigurationPolicyProvider::Observer* observer) {
-  loader_->AddObserver(observer);
-}
-
-void AsynchronousPolicyProvider::RemoveObserver(
-    ConfigurationPolicyProvider::Observer* observer) {
-  loader_->RemoveObserver(observer);
 }
 
 scoped_refptr<AsynchronousPolicyLoader> AsynchronousPolicyProvider::loader() {

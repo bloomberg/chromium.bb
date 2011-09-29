@@ -18,9 +18,6 @@ CloudPolicyProviderImpl::CloudPolicyProviderImpl(
 CloudPolicyProviderImpl::~CloudPolicyProviderImpl() {
   for (ListType::iterator i = caches_.begin(); i != caches_.end(); ++i)
     (*i)->RemoveObserver(this);
-
-  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
-                    observer_list_, OnProviderGoingAway());
 }
 
 bool CloudPolicyProviderImpl::Provide(PolicyMap* result) {
@@ -30,16 +27,6 @@ bool CloudPolicyProviderImpl::Provide(PolicyMap* result) {
 
 bool CloudPolicyProviderImpl::IsInitializationComplete() const {
   return initialization_complete_;
-}
-
-void CloudPolicyProviderImpl::AddObserver(
-    ConfigurationPolicyProvider::Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void CloudPolicyProviderImpl::RemoveObserver(
-    ConfigurationPolicyProvider::Observer* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 void CloudPolicyProviderImpl::OnCacheUpdate(CloudPolicyCacheBase* cache) {
@@ -130,8 +117,7 @@ void CloudPolicyProviderImpl::RecombineCachesAndMaybeTriggerUpdate() {
 
   // Trigger a notification if there was a change.
   combined_.Swap(&newly_combined);
-  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
-                    observer_list_, OnUpdatePolicy());
+  NotifyPolicyUpdated();
 }
 
 }  // namespace policy

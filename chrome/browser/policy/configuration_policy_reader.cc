@@ -103,7 +103,7 @@ ConfigurationPolicyReader::ConfigurationPolicyReader(
   if (provider_) {
     // Read initial policy.
     policy_keeper_.reset(
-        new ConfigurationPolicyStatusKeeper(provider, policy_level));
+        new ConfigurationPolicyStatusKeeper(provider_, policy_level));
     registrar_.Init(provider_, this);
   }
 }
@@ -166,7 +166,9 @@ ConfigurationPolicyReader*
 
 DictionaryValue* ConfigurationPolicyReader::GetPolicyStatus(
     ConfigurationPolicyType policy) const {
-  return policy_keeper_->GetPolicyStatus(policy);
+  if (policy_keeper_.get())
+    return policy_keeper_->GetPolicyStatus(policy);
+  return NULL;
 }
 
 ConfigurationPolicyReader::ConfigurationPolicyReader()

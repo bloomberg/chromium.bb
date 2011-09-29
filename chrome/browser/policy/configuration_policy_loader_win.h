@@ -25,8 +25,8 @@ class ConfigurationPolicyLoaderWin
 
  protected:
   // AsynchronousPolicyLoader overrides:
-  virtual void InitOnFileThread();
-  virtual void StopOnFileThread();
+  virtual void InitOnFileThread() OVERRIDE;
+  virtual void StopOnFileThread() OVERRIDE;
 
  private:
   // Updates the watchers and schedules the reload task if appropriate.
@@ -36,7 +36,7 @@ class ConfigurationPolicyLoaderWin
   void Reload();
 
   // ObjectWatcher::Delegate overrides:
-  virtual void OnObjectSignaled(HANDLE object);
+  virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
 
   base::WaitableEvent user_policy_changed_event_;
   base::WaitableEvent machine_policy_changed_event_;

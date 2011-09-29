@@ -13,8 +13,6 @@
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/dummy_cloud_policy_provider.h"
-#include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -371,14 +369,7 @@ CloudPolicyDataStore::UserAffiliation
 
 // static
 BrowserPolicyConnector* BrowserPolicyConnector::CreateForTests() {
-  const ConfigurationPolicyProvider::PolicyDefinitionList*
-      policy_list = ConfigurationPolicyPrefStore::
-          GetChromePolicyDefinitionList();
-  return new BrowserPolicyConnector(
-      new policy::DummyConfigurationPolicyProvider(policy_list),
-      new policy::DummyConfigurationPolicyProvider(policy_list),
-      new policy::DummyCloudPolicyProvider(policy_list),
-      new policy::DummyCloudPolicyProvider(policy_list));
+  return new BrowserPolicyConnector(NULL, NULL, NULL, NULL);
 }
 
 // static
@@ -397,29 +388,29 @@ ConfigurationPolicyProvider*
         policy_list,
         config_dir_path.Append(FILE_PATH_LITERAL("managed")));
   } else {
-    return new DummyConfigurationPolicyProvider(policy_list);
+    return NULL;
   }
 #else
-  return new DummyConfigurationPolicyProvider(policy_list);
+  return NULL;
 #endif
 }
 
 // static
 ConfigurationPolicyProvider*
     BrowserPolicyConnector::CreateRecommendedPlatformProvider() {
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
   FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     return new ConfigDirPolicyProvider(
         policy_list,
         config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
   } else {
-    return new DummyConfigurationPolicyProvider(policy_list);
+    return NULL;
   }
 #else
-  return new DummyConfigurationPolicyProvider(policy_list);
+  return NULL;
 #endif
 }
 

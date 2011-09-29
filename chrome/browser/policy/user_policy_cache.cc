@@ -11,9 +11,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/cloud_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
@@ -141,10 +139,9 @@ void UserPolicyCache::MaybeDecodeOldstylePolicy(
         result.Set(named_value->name(), decoded_value);
     }
   }
-  // Hack: Let one of the providers do the transformation from DictionaryValue
-  // to PolicyMap, since they have the required code anyway.
-  g_browser_process->browser_policy_connector()->GetManagedCloudProvider()->
-      ApplyPolicyValueTree(&result, mandatory);
+  mandatory->LoadFrom(
+      &result,
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList());
 }
 
 Value* UserPolicyCache::DecodeIntegerValue(

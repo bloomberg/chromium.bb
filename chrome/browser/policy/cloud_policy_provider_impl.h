@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/observer_list.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -25,10 +24,6 @@ class CloudPolicyProviderImpl : public CloudPolicyProvider,
   // ConfigurationPolicyProvider implementation.
   virtual bool Provide(PolicyMap* result) OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
-  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer)
-      OVERRIDE;
-  virtual void RemoveObserver(ConfigurationPolicyProvider::Observer* observer)
-      OVERRIDE;
 
   // CloudPolicyCacheBase::Observer implementation.
   virtual void OnCacheUpdate(CloudPolicyCacheBase* cache) OVERRIDE;
@@ -64,9 +59,6 @@ class CloudPolicyProviderImpl : public CloudPolicyProvider,
 
   // Whether all caches are fully initialized.
   bool initialization_complete_;
-
-  // Provider observers that are registered with this provider.
-  ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
 
   // The currently valid combination of all the maps in |caches_|. Will be
   // applied as is on call of Provide.

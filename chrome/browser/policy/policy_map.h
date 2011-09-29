@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/values.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "policy/configuration_policy_type.h"
 
 namespace policy {
@@ -35,6 +36,12 @@ class PolicyMap {
 
   void Swap(PolicyMap* other);
   void CopyFrom(const PolicyMap& other);
+
+  // Loads the values in |policies| into this PolicyMap, mapped to their
+  // corresponding policy type. The policies to load, and their types, are
+  // listed in |list|.
+  void LoadFrom(const DictionaryValue* policies,
+                const ConfigurationPolicyProvider::PolicyDefinitionList* list);
 
   bool Equals(const PolicyMap& other) const;
   bool empty() const;

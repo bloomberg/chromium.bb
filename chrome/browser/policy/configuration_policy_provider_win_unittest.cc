@@ -25,13 +25,13 @@ using base::win::RegKey;
 
 namespace policy {
 
+namespace {
+
 const wchar_t kUnitTestRegistrySubKey[] = L"SOFTWARE\\Chromium Unit Tests";
 const wchar_t kUnitTestMachineOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKLM Override";
 const wchar_t kUnitTestUserOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
-
-namespace {
 
 // Holds policy type, corresponding policy name string and a valid value for use
 // in parametrized value tests.

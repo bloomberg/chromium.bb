@@ -48,12 +48,6 @@ class AsynchronousPolicyProvider
   scoped_refptr<AsynchronousPolicyLoader> loader_;
 
  private:
-  // ConfigurationPolicyProvider overrides:
-  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer)
-      OVERRIDE;
-  virtual void RemoveObserver(ConfigurationPolicyProvider::Observer* observer)
-      OVERRIDE;
-
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyProvider);
 };
 
