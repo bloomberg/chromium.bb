@@ -74,7 +74,6 @@ class KeyboardWidget
 
   // Show the keyboard for the target widget. The events from the keyboard will
   // be sent to |widget|.
-  // TODO(sad): Allow specifying the type of keyboard to show.
   void ShowKeyboardForWidget(views::Widget* widget);
 
   // Updates the bounds to reflect the current screen/desktop bounds.
