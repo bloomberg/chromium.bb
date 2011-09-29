@@ -16,6 +16,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
@@ -119,6 +121,11 @@ void AvatarMenuModel::RebuildMenu() {
   for (size_t i = 0; i < count; ++i) {
     Item* item = new Item(i, profile_info_->GetAvatarIconOfProfileAtIndex(i));
     item->name = profile_info_->GetNameOfProfileAtIndex(i);
+    item->sync_state = profile_info_->GetUserNameOfProfileAtIndex(i);
+    if (item->sync_state.empty()) {
+      item->sync_state = l10n_util::GetStringUTF16(
+          IDS_PROFILES_LOCAL_PROFILE_STATE);
+    }
     if (browser_) {
       FilePath path = profile_info_->GetPathOfProfileAtIndex(i);
       item->active = browser_->profile()->GetPath() == path;

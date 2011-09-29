@@ -26,6 +26,8 @@ class ProfileInfoInterface {
 
   virtual FilePath GetPathOfProfileAtIndex(size_t index) const = 0;
 
+  virtual string16 GetUserNameOfProfileAtIndex(size_t index) const = 0;
+
   virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
       size_t index) const = 0;
 

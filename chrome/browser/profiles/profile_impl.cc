@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
@@ -59,6 +60,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -1513,7 +1515,11 @@ void ProfileImpl::Observe(int type,
         }
       } else if (*pref_name_in == prefs::kGoogleServicesUsername) {
         ProfileManager* profile_manager = g_browser_process->profile_manager();
-        profile_manager->RegisterProfileName(this);
+        ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+        size_t index = cache.GetIndexOfProfileWithPath(GetPath());
+        std::string user_name =
+            GetPrefs()->GetString(prefs::kGoogleServicesUsername);
+        cache.SetUserNameOfProfileAtIndex(index, UTF8ToUTF16(user_name));
       } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
           GetHostZoomMap()->set_default_zoom_level(
               prefs->GetDouble(prefs::kDefaultZoomLevel));

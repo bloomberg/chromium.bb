@@ -25,6 +25,7 @@
 namespace {
 
 const char kNameKey[] = "name";
+const char kUserNameKey[] = "user_name";
 const char kAvatarIconKey[] = "avatar_icon";
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 
@@ -160,6 +161,12 @@ FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
   return user_data_dir_.Append(base_name);
 }
 
+string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(size_t index) const {
+  string16 user_name;
+  GetInfoForProfileAtIndex(index)->GetString(kUserNameKey, &user_name);
+  return user_name;
+}
+
 const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
     size_t index) const {
   int resource_id = GetDefaultAvatarIconResourceIDAtIndex(
@@ -183,6 +190,14 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
                                                const string16& name) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kNameKey, name);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,
+                                                   const string16& user_name) {
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetString(kUserNameKey, user_name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 }

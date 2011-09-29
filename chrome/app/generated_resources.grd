@@ -8685,6 +8685,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Customize User...
         </message>
       </if>
+      <message name="IDS_PROFILES_LOCAL_PROFILE_STATE" desc="This is displayed underneath the profile name for profiles that are not signed into sync.">
+        Local user
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CONNECT_BUTTON_LABEL" desc="The label that appears on the profile connect button in the options dialog when the user has not connected a Google Account to their profile.">
           Enable these features...

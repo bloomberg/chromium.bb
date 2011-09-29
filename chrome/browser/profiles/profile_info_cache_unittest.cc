@@ -103,6 +103,11 @@ TEST_F(ProfileInfoCacheUnittests, MutateProfile) {
   EXPECT_EQ(new_name, GetCache()->GetNameOfProfileAtIndex(1));
   EXPECT_NE(new_name, GetCache()->GetNameOfProfileAtIndex(0));
 
+  string16 new_user_name = ASCIIToUTF16("user_name");
+  GetCache()->SetUserNameOfProfileAtIndex(1, new_user_name);
+  EXPECT_EQ(new_user_name, GetCache()->GetUserNameOfProfileAtIndex(1));
+  EXPECT_NE(new_user_name, GetCache()->GetUserNameOfProfileAtIndex(0));
+
   size_t new_icon_index = 3;
   GetCache()->SetAvatarIconOfProfileAtIndex(1, new_icon_index);
   // Not much to test.
