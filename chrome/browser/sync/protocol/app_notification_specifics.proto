@@ -1,0 +1,45 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for app notifications.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+import "sync.proto";
+
+// Properties of ann app notification.
+
+// An App Notification, to be delivered from Chrome Apps to the
+// Chrome browser through the Notification API.
+message AppNotificationSpecifics {
+  // Globally unique id.
+  optional string guid = 1;
+  // Metadata, not shown directly to the user.
+  // The unique App Id, as created by the webstore and used to 
+  // delegate messages to the applications. This is defined as 32 characters
+  optional string app_id = 2;
+  // Timestamp when the message was created in milliseconds.
+  // This is seperate from ctime as this is only set by the application.
+  optional int64 creation_timestamp_ms = 3;
+
+  // Payload - these fields are visible to the user content is defined by the
+  // app. The fields are described in:
+  // chrome/browser/extensions/app_notification.h
+  optional string title = 4;
+  optional string body_text = 5;
+  optional string link_url = 6;
+  optional string link_text = 7;
+}
+
+extend EntitySpecifics {
+  optional AppNotificationSpecifics app_notification = 45184;
+}
