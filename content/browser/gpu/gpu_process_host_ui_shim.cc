@@ -25,6 +25,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/size.h"
 #endif
+
 namespace {
 
 // One of the linux specific headers defines this as a macro.
@@ -159,20 +160,14 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #endif
 
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
-                        OnAcceleratedSurfaceNew)
-#endif
-
 #if defined(OS_MACOSX) || defined(TOUCH_UI)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
+                        OnAcceleratedSurfaceNew)
 #endif
 
 #if defined(TOUCH_UI)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
-                        OnAcceleratedSurfaceNew)
-
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
                         OnAcceleratedSurfaceRelease)
 #endif
@@ -249,21 +244,43 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
   RenderWidgetHostView* view = host->view();
   if (!view)
     return;
-#if defined(OS_MACOSX)
-  view->AcceleratedSurfaceSetIOSurface(params.window,
-                                       params.width,
-                                       params.height,
-                                       params.identifier);
-#elif defined(TOUCH_UI)
-  uint64 surface_id = params.identifier;
-  TransportDIB::Handle surface_handle;
 
+  uint64 surface_id = params.surface_id;
+  TransportDIB::Handle surface_handle = TransportDIB::DefaultHandleValue();
+
+#if defined(OS_MACOSX)
+  if (params.create_transport_dib) {
+    scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
+    if (shared_memory->CreateAnonymous(params.width * params.height * 4)) {
+      // Create a local handle for RWHVMac to map the SHM.
+      TransportDIB::Handle local_handle;
+      if (!shared_memory->ShareToProcess(0 /* pid, not needed */,
+                                         &local_handle)) {
+        local_handle = TransportDIB::DefaultHandleValue();
+      } else {
+        view->AcceleratedSurfaceSetTransportDIB(params.window,
+                                                params.width,
+                                                params.height,
+                                                local_handle);
+        // Create a remote handle for the GPU process to map the SHM.
+        if (!shared_memory->ShareToProcess(0 /* pid, not needed */,
+                                           &surface_handle)) {
+          surface_handle = TransportDIB::DefaultHandleValue();
+        }
+      }
+    }
+  } else {
+    view->AcceleratedSurfaceSetIOSurface(params.window,
+                                         params.width,
+                                         params.height,
+                                         surface_id);
+  }
+#elif defined(TOUCH_UI)
   view->AcceleratedSurfaceNew(
       params.width, params.height, &surface_id, &surface_handle);
-
+#endif
   Send(new AcceleratedSurfaceMsg_NewACK(
       params.route_id, surface_id, surface_handle));
-#endif
 }
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
@@ -285,8 +302,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       // Parameters needed to formulate an acknowledgment.
       params.renderer_id,
       params.route_id,
-      host_id_,
-      params.swap_buffers_count);
+      host_id_);
 #elif defined(TOUCH_UI)
   // view must send ACK message after next composite
   view->AcceleratedSurfaceBuffersSwapped(

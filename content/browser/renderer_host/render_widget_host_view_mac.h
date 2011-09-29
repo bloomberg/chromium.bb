@@ -266,8 +266,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       uint64 surface_id,
       int renderer_id,
       int32 route_id,
-      int gpu_host_id,
-      uint64 swap_buffers_count) OVERRIDE;
+      int gpu_host_id) OVERRIDE;
   virtual void GpuRenderingStateDidChange() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
@@ -317,8 +316,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // process a notion of how quickly the browser is able to keep up with it.
   void AcknowledgeSwapBuffers(int renderer_id,
                               int32 route_id,
-                              int gpu_host_id,
-                              uint64 swap_buffers_count);
+                              int gpu_host_id);
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
@@ -362,6 +360,12 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
 
  private:
+  // If the window is at the root of the plugin container hierachy,
+  // we need to update the geometry manually.
+  void UpdatePluginGeometry(gfx::PluginWindowHandle window,
+                            int32 width,
+                            int32 height);
+
   // Returns whether this render view is a popup (autocomplete window).
   bool IsPopup() const;
 

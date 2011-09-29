@@ -119,6 +119,7 @@
     'common/gpu/gpu_messages.h',
     'common/gpu/gpu_process_launch_causes.h',
     'common/gpu/gpu_watchdog.h',
+    'common/gpu/image_transport_surface.h',
     'common/gpu/media/gpu_video_decode_accelerator.cc',
     'common/gpu/media/gpu_video_decode_accelerator.h',
     'common/gpu/transport_texture.cc',
@@ -275,6 +276,10 @@
       'sources!': [
         'common/process_watcher_posix.cc',
       ],
+      'sources': [
+        'common/gpu/image_transport_surface.cc',
+        'common/gpu/image_transport_surface_mac.cc',
+      ],
       'link_settings': {
         'mac_bundle_resources': [
           'common/common.sb',
@@ -294,7 +299,7 @@
     }],
     ['touchui==1', {
       'sources': [
-        'common/gpu/image_transport_surface_linux.h',
+        'common/gpu/image_transport_surface.cc',
         'common/gpu/image_transport_surface_linux.cc',
       ],
       'include_dirs': [

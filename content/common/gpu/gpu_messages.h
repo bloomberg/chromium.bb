@@ -20,6 +20,7 @@
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/surface/transport_dib.h"
 
 #define IPC_MESSAGE_START GpuMsgStart
 
@@ -37,7 +38,9 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
   IPC_STRUCT_MEMBER(int32, width)
   IPC_STRUCT_MEMBER(int32, height)
-  IPC_STRUCT_MEMBER(uint64, identifier)
+  IPC_STRUCT_MEMBER(uint64, surface_id)
+  IPC_STRUCT_MEMBER(bool, create_transport_dib)
+  IPC_STRUCT_MEMBER(int32, route_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
@@ -46,7 +49,14 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
   IPC_STRUCT_MEMBER(uint64, surface_id)
   IPC_STRUCT_MEMBER(int32, route_id)
-  IPC_STRUCT_MEMBER(uint64, swap_buffers_count)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
+  IPC_STRUCT_MEMBER(int32, renderer_id)
+  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
+  IPC_STRUCT_MEMBER(uint64, identifier)
+  IPC_STRUCT_MEMBER(int32, route_id)
 IPC_STRUCT_END()
 #endif
 
@@ -56,7 +66,7 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
   IPC_STRUCT_MEMBER(int32, render_view_id)
   IPC_STRUCT_MEMBER(int32, width)
   IPC_STRUCT_MEMBER(int32, height)
-  IPC_STRUCT_MEMBER(uint64, identifier)
+  IPC_STRUCT_MEMBER(uint64, surface_id)
   IPC_STRUCT_MEMBER(int32, route_id)
 IPC_STRUCT_END()
 
@@ -65,7 +75,6 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32, render_view_id)
   IPC_STRUCT_MEMBER(uint64, surface_id)
   IPC_STRUCT_MEMBER(int32, route_id)
-  IPC_STRUCT_MEMBER(uint64, swap_buffers_count)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
@@ -156,7 +165,7 @@ IPC_MESSAGE_CONTROL2(GpuMsg_ResizeViewACK,
                      int32 /* command_buffer_id */)
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
 // Tells the GPU process that it's safe to start rendering to the surface.
 IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
                     uint64 /* surface_id */,
@@ -168,16 +177,6 @@ IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_BuffersSwappedACK)
 #endif
 
 #if defined(OS_MACOSX)
-// Tells the GPU process that the browser process handled the swap
-// buffers request with the given number. Note that it is possible
-// for the browser process to coalesce frames; it is not guaranteed
-// that every GpuHostMsg_AcceleratedSurfaceBuffersSwapped message
-// will result in a buffer swap on the browser side.
-IPC_MESSAGE_CONTROL3(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
-                     int /* renderer_id */,
-                     int32 /* route_id */,
-                     uint64 /* swap_buffers_count */)
-
 // Requests the GPU process to destroy the command buffer and remove the
 // associated route. Further messages to this command buffer will result in a
 // channel error.
@@ -263,9 +262,7 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceNew,
 // should cause the browser to redraw the compositor's contents.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                      GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
-#endif
 
-#if defined(TOUCH_UI)
 // Tells the browser to release whatever resources are associated with
 // the given surface. The browser must send an ACK once this operation
 // is complete.

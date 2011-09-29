@@ -78,23 +78,6 @@ class GpuCommandBufferStub
 
   void ViewResized();
 
-#if defined(OS_MACOSX)
-  // Called only by the GpuChannel.
-  void AcceleratedSurfaceBuffersSwapped(uint64 swap_buffers_count);
-
-  // Needed only on Mac OS X, which does not render into an on-screen
-  // window and therefore requires the backing store to be resized
-  // manually. Returns an opaque identifier for the new backing store.
-  // There are two versions of this method: one for use with the IOSurface
-  // available in Mac OS X 10.6; and, one for use with the
-  // TransportDIB-based version used on Mac OS X 10.5.
-  virtual TransportDIB::Handle SetWindowSizeForTransportDIB(
-      const gfx::Size& size);
-  virtual void SetTransportDIBAllocAndFree(
-      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-      Callback1<TransportDIB::Id>::Type* deallocator);
-#endif
-
  private:
   void Destroy();
 
@@ -183,19 +166,6 @@ class GpuCommandBufferStub
   // Zero or more video decoders owned by this stub, keyed by their
   // decoder_route_id.
   IDMap<GpuVideoDecodeAccelerator, IDMapOwnPointer> video_decoders_;
-
-#if defined(OS_MACOSX)
-  // To prevent the GPU process from overloading the browser process,
-  // we need to track the number of swap buffers calls issued and
-  // acknowledged per on-screen context, and keep the GPU from getting
-  // too far ahead of the browser. Note that this
-  // is also predicated on a flow control mechanism between the
-  // renderer and GPU processes.
-  uint64 swap_buffers_count_;
-  uint64 acknowledged_swap_buffers_count_;
-  scoped_ptr<AcceleratedSurface> accelerated_surface_;
-  scoped_ptr<Callback0::Type> wrapped_swap_buffers_callback_;
-#endif
 
   ScopedRunnableMethodFactory<GpuCommandBufferStub> task_factory_;
 

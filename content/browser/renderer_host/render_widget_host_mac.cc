@@ -65,6 +65,6 @@ void RenderWidgetHost::OnAcceleratedSurfaceBuffersSwapped(
     // updating of accelerated plugins as well. However, if we add support
     // for composited plugins then this is not necessary.
     view_->AcceleratedSurfaceBuffersSwapped(window, surface_id,
-                                            0, 0, 0, 0);
+                                            0, 0, 0);
   }
 }

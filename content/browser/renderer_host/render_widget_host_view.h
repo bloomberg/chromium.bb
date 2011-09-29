@@ -255,18 +255,16 @@ class RenderWidgetHostView {
       int32 height,
       TransportDIB::Handle transport_dib) = 0;
   // |window| and |surface_id| indicate which accelerated surface's
-  // buffers swapped. |renderer_id|, |route_id| and
-  // |swap_buffers_count| are used to formulate a reply to the GPU
-  // process to prevent it from getting too far ahead. They may all be
-  // zero, in which case no flow control is enforced; this case is
-  // currently used for accelerated plugins.
+  // buffers swapped. |renderer_id| and |route_id| are used to formulate
+  // a reply to the GPU process to prevent it from getting too far ahead.
+  // They may all be zero, in which case no flow control is enforced;
+  // this case is currently used for accelerated plugins.
   virtual void AcceleratedSurfaceBuffersSwapped(
       gfx::PluginWindowHandle window,
       uint64 surface_id,
       int renderer_id,
       int32 route_id,
-      int gpu_host_id,
-      uint64 swap_buffers_count) = 0;
+      int gpu_host_id) = 0;
   virtual void GpuRenderingStateDidChange() = 0;
 #endif
 

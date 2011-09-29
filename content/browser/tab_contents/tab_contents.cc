@@ -1835,13 +1835,6 @@ WebPreferences TabContents::GetWebkitPrefs() {
     web_prefs.accelerated_2d_canvas_enabled = false;
   }
 
-#if defined(OS_MACOSX)
-  // Disable accelerated compositing if IOSurface's are not supported,
-  // as is the case in 10.5.
-  if (!IOSurfaceSupport::Initialize())
-      web_prefs.accelerated_compositing_enabled = false;
-#endif
-
 #if defined(TOUCH_UI)
   web_prefs.force_compositing_mode = true;
 #endif

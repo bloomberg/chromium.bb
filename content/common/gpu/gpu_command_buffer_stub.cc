@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,8 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-#if defined(TOUCH_UI)
-#include "content/common/gpu/image_transport_surface_linux.h"
+#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#include "content/common/gpu/image_transport_surface.h"
 #endif
 
 GpuCommandBufferStub::GpuCommandBufferStub(
@@ -48,10 +48,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
       watchdog_(watchdog),
-#if defined(OS_MACOSX)
-      swap_buffers_count_(0),
-      acknowledged_swap_buffers_count_(0),
-#endif
       task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   if (share_group) {
     context_group_ = share_group->context_group_;
@@ -124,21 +120,6 @@ bool GpuCommandBufferStub::IsScheduled() {
   return !scheduler_.get() || scheduler_->IsScheduled();
 }
 
-#if defined(OS_MACOSX)
-
-TransportDIB::Handle GpuCommandBufferStub::SetWindowSizeForTransportDIB(
-    const gfx::Size& size) {
-  return accelerated_surface_->SetTransportDIBSize(size);
-}
-
-void GpuCommandBufferStub::SetTransportDIBAllocAndFree(
-    Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-    Callback1<TransportDIB::Id>::Type* deallocator) {
-  accelerated_surface_->SetTransportDIBAllocAndFree(allocator, deallocator);
-}
-
-#endif  // OS_MACOSX
-
 void GpuCommandBufferStub::Destroy() {
   // The scheduler has raw references to the decoder and the command buffer so
   // destroy it before those.
@@ -153,10 +134,6 @@ void GpuCommandBufferStub::Destroy() {
 
   context_ = NULL;
   surface_ = NULL;
-
-#if defined(OS_MACOSX)
-  accelerated_surface_.reset();
-#endif
 }
 
 void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
@@ -199,7 +176,7 @@ void GpuCommandBufferStub::OnInitialize(
   decoder_->set_engine(scheduler_.get());
 
   if (handle_) {
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) || defined(OS_MACOSX)
     if (software_) {
       OnInitializeFailed(reply_message);
       return;
@@ -209,12 +186,10 @@ void GpuCommandBufferStub::OnInitialize(
         channel_->gpu_channel_manager(),
         render_view_id_,
         renderer_id_,
-        route_id_);
+        route_id_,
+        handle_);
 #elif defined(OS_WIN) || defined(OS_LINUX)
     surface_ = gfx::GLSurface::CreateViewGLSurface(software_, handle_);
-#elif defined(OS_MACOSX)
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(software_,
-                                                        gfx::Size(1, 1));
 #endif
   } else {
     surface_ = gfx::GLSurface::CreateOffscreenGLSurface(software_,
@@ -234,27 +209,6 @@ void GpuCommandBufferStub::OnInitialize(
     OnInitializeFailed(reply_message);
     return;
   }
-
-#if defined(OS_MACOSX)
-  // On Mac OS X since we can not render on-screen we don't even
-  // attempt to create a view based GLContext. The only difference
-  // between "on-screen" and "off-screen" rendering on this platform
-  // is whether we allocate an AcceleratedSurface, which transmits the
-  // rendering results back to the browser.
-  if (handle_) {
-    accelerated_surface_.reset(new AcceleratedSurface());
-
-    // Note that although the GLContext is passed to Initialize and the
-    // GLContext will later be owned by the decoder, AcceleratedSurface does
-    // not hold on to the reference. It simply extracts the underlying GL
-    // context in order to share the namespace with another context.
-    if (!accelerated_surface_->Initialize(context_.get(), false)) {
-      LOG(ERROR) << "Failed to initialize AcceleratedSurface.";
-      OnInitializeFailed(reply_message);
-      return;
-    }
-  }
-#endif
 
   // Initialize the decoder with either the view or pbuffer GLContext.
   if (!decoder_->Initialize(surface_.get(),
@@ -281,15 +235,10 @@ void GpuCommandBufferStub::OnInitialize(
   scheduler_->SetScheduledCallback(
       NewCallback(channel_, &GpuChannel::OnScheduled));
 
-#if defined(OS_MACOSX)
-  decoder_->SetSwapBuffersCallback(
-      NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
-#endif
-
-  // On TOUCH_UI, the ImageTransportSurface handles co-ordinating the
-  // resize with the browser process. The ImageTransportSurface sets it's
-  // own resize callback, so we shouldn't do it here.
-#if !defined(TOUCH_UI)
+  // On platforms that use an ImageTransportSurface, the surface
+  // handles co-ordinating the resize with the browser process. The
+  // surface sets it's own resize callback, so we shouldn't do it here.
+#if !defined(TOUCH_UI) && !defined(OS_MACOSX)
   if (handle_ != gfx::kNullPluginWindow) {
     decoder_->SetResizeCallback(
         NewCallback(this, &GpuCommandBufferStub::OnResize));
@@ -490,100 +439,16 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
   Send(reply_message);
 }
 
-#if defined(OS_MACOSX)
-void GpuCommandBufferStub::OnSwapBuffers() {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSwapBuffers");
-
-  DCHECK(decoder_.get());
-  DCHECK(decoder_->GetGLContext());
-  DCHECK(decoder_->GetGLContext()->IsCurrent(decoder_->GetGLSurface()));
-
-  ++swap_buffers_count_;
-
-  if (accelerated_surface_.get()) {
-    accelerated_surface_->SwapBuffers();
-  }
-
-  if (handle_) {
-    // To swap on OSX, we have to send a message to the browser to get the
-    // context put onscreen.
-    GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-    params.renderer_id = renderer_id_;
-    params.render_view_id = render_view_id_;
-    params.window = handle_;
-    params.surface_id = GetSurfaceId();
-    params.route_id = route_id();
-    params.swap_buffers_count = swap_buffers_count_;
-    gpu_channel_manager->Send(
-        new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
-    scheduler_->SetScheduled(false);
-  }
-}
-
-uint64 GpuCommandBufferStub::GetSurfaceId() {
-  if (!accelerated_surface_.get())
-    return 0;
-  return accelerated_surface_->GetSurfaceId();
-}
-#endif
-
 void GpuCommandBufferStub::OnCommandProcessed() {
   if (watchdog_)
     watchdog_->CheckArmed();
 }
 
-#if defined(OS_MACOSX)
-void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
-    uint64 swap_buffers_count) {
-  TRACE_EVENT1("gpu",
-               "GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped",
-               "frame", swap_buffers_count);
-  DCHECK(handle_ != gfx::kNullPluginWindow);
-
-  // Multiple swapbuffers may get consolidated together into a single
-  // AcceleratedSurfaceBuffersSwapped call. Upstream code listening to the
-  // GpuCommandBufferMsg_SwapBuffers expects to be called one time for every
-  // swap. So, send one SwapBuffers message for every outstanding swap.
-  uint64 delta = swap_buffers_count - acknowledged_swap_buffers_count_;
-  acknowledged_swap_buffers_count_ = swap_buffers_count;
-
-  for(uint64 i = 0; i < delta; i++) {
-    // Wake up the GpuScheduler to start doing work again. When the scheduler
-    // wakes up, it will send any deferred echo acknowledgements, triggering
-    // associated swapbuffer callbacks.
-    scheduler_->SetScheduled(true);
-  }
-}
-#endif  // defined(OS_MACOSX)
-
 void GpuCommandBufferStub::OnResize(gfx::Size size) {
   if (handle_ == gfx::kNullPluginWindow)
     return;
 
-#if defined(OS_MACOSX)
-  GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-
-  // On Mac, we need to tell the browser about the new IOSurface handle,
-  // asynchronously.
-  uint64 new_backing_store = accelerated_surface_->SetSurfaceSize(size);
-  if (new_backing_store) {
-    GpuHostMsg_AcceleratedSurfaceNew_Params params;
-    params.renderer_id = renderer_id_;
-    params.render_view_id = render_view_id_;
-    params.window = handle_;
-    params.width = size.width();
-    params.height = size.height();
-    params.identifier = new_backing_store;
-    gpu_channel_manager->Send(
-        new GpuHostMsg_AcceleratedSurfaceNew(params));
-  } else {
-    // TODO(kbr): figure out what to do here. It wouldn't be difficult
-    // to support the compositor on 10.5, but the performance would be
-    // questionable.
-    NOTREACHED();
-  }
-#elif defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
 
   // On Windows, Linux, we need to coordinate resizing of onscreen
@@ -598,7 +463,7 @@ void GpuCommandBufferStub::OnResize(gfx::Size size) {
                                 size));
 
   scheduler_->SetScheduled(false);
-#endif // defined(OS_MACOSX)
+#endif  // defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
 }
 
 void GpuCommandBufferStub::ViewResized() {

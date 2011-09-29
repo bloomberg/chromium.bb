@@ -65,8 +65,6 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_ResizeViewACK, OnResizeViewACK);
 #endif
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
-                        OnAcceleratedSurfaceBuffersSwappedACK)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
 #endif
@@ -154,15 +152,6 @@ void GpuChannelManager::OnResizeViewACK(int32 renderer_id,
 }
 
 #if defined(OS_MACOSX)
-void GpuChannelManager::OnAcceleratedSurfaceBuffersSwappedACK(
-    int renderer_id, int32 route_id, uint64 swap_buffers_count) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
-    return;
-  scoped_refptr<GpuChannel> channel = iter->second;
-  channel->AcceleratedSurfaceBuffersSwapped(route_id, swap_buffers_count);
-}
-
 void GpuChannelManager::OnDestroyCommandBuffer(
     int renderer_id, int32 renderer_view_id) {
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);

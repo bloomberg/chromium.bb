@@ -79,8 +79,6 @@ class GpuChannelManager : public IPC::Channel::Listener,
   void OnResizeViewACK(int32 renderer_id, int32 command_buffer_route_id);
 
 #if defined(OS_MACOSX)
-  void OnAcceleratedSurfaceBuffersSwappedACK(
-      int renderer_id, int32 route_id, uint64 swap_buffers_count);
   void OnDestroyCommandBuffer(int renderer_id, int32 renderer_view_id);
 #endif
 

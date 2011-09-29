@@ -811,17 +811,10 @@ AcceleratedPluginView* RenderWidgetHostViewMac::ViewForPluginWindowHandle(
   return it->second;
 }
 
-void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
+void RenderWidgetHostViewMac::UpdatePluginGeometry(
     gfx::PluginWindowHandle window,
     int32 width,
-    int32 height,
-    uint64 io_surface_identifier) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  plugin_container_manager_.SetSizeAndIOSurface(window,
-                                                width,
-                                                height,
-                                                io_surface_identifier);
-
+    int32 height) {
   if (plugin_container_manager_.IsRootContainer(window)) {
     // Fake up a WebPluginGeometry for the root window to set the
     // container's size; we will never get a notification from the
@@ -837,6 +830,19 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
   }
 }
 
+void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    uint64 io_surface_identifier) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  plugin_container_manager_.SetSizeAndIOSurface(window,
+                                                width,
+                                                height,
+                                                io_surface_identifier);
+  UpdatePluginGeometry(window, width, height);
+}
+
 void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
     gfx::PluginWindowHandle window,
     int32 width,
@@ -847,6 +853,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
                                                    width,
                                                    height,
                                                    transport_dib);
+  UpdatePluginGeometry(window, width, height);
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
@@ -854,11 +861,9 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     uint64 surface_id,
     int renderer_id,
     int32 route_id,
-    int gpu_host_id,
-    uint64 swap_buffers_count) {
-  TRACE_EVENT1("browser",
-      "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped",
-      "frameNum", swap_buffers_count);
+    int gpu_host_id) {
+  TRACE_EVENT0("browser",
+      "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AcceleratedPluginView* view = ViewForPluginWindowHandle(window);
   DCHECK(view);
@@ -874,8 +879,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   if (renderer_id != 0 || route_id != 0) {
     AcknowledgeSwapBuffers(renderer_id,
                            route_id,
-                           gpu_host_id,
-                           swap_buffers_count);
+                           gpu_host_id);
   }
 }
 
@@ -911,10 +915,8 @@ void RenderWidgetHostViewMac::HandleDelayedGpuViewHiding() {
 void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
     int renderer_id,
     int32 route_id,
-    int gpu_host_id,
-    uint64 swap_buffers_count) {
-  TRACE_EVENT1("gpu", "RenderWidgetHostViewMac::AcknowledgeSwapBuffers",
-      "swap_buffers_count", swap_buffers_count);
+    int gpu_host_id) {
+  TRACE_EVENT0("gpu", "RenderWidgetHostViewMac::AcknowledgeSwapBuffers");
   // Called on the display link thread. Hand actual work off to the IO thread,
   // because |GpuProcessHost::Get()| can only be called there.
   // Currently, this is never called for plugins.
@@ -937,16 +939,13 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
         FROM_HERE,
         NewRunnableFunction(&GpuProcessHostUIShim::SendToGpuHost,
                             gpu_host_id,
-                            new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
-                                renderer_id,
-                                route_id,
-                                swap_buffers_count)));
+                            new AcceleratedSurfaceMsg_BuffersSwappedACK(
+                                route_id)));
   } else {
     GpuProcessHost::SendOnIO(
         gpu_host_id,
         content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-        new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
-            renderer_id, route_id, swap_buffers_count));
+        new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
   }
 }
 

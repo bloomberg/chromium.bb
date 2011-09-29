@@ -223,14 +223,6 @@ GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32 route_id) {
 }
 
 #if defined(OS_MACOSX)
-void GpuChannel::AcceleratedSurfaceBuffersSwapped(
-    int32 route_id, uint64 swap_buffers_count) {
-  GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
-  if (stub == NULL)
-    return;
-  stub->AcceleratedSurfaceBuffersSwapped(swap_buffers_count);
-}
-
 void GpuChannel::DestroyCommandBufferByViewId(int32 render_view_id) {
   // This responds to a message from the browser process to destroy the command
   // buffer when the window with a GpuScheduler is closed (see
