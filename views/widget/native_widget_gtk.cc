@@ -678,10 +678,12 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
           GDK_WINDOW_XID(window_contents_->window),
           gfx::Size(width, height));
     }
-    if (compositor_.get())
-      delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
-      delegate_->AsWidget()->GetRootView()->
-          SetFillsBoundsOpaquely(!transparent_);
+    if (compositor_.get()) {
+      View* root_view = delegate_->AsWidget()->GetRootView();
+      root_view->SetPaintToLayer(true);
+      compositor_->SetRootLayer(root_view->layer());
+      root_view->SetFillsBoundsOpaquely(!transparent_);
+    }
   }
 
   delegate_->OnNativeWidgetCreated();

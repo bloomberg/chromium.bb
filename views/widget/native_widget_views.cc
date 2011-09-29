@@ -131,13 +131,6 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
 
   view_ = new internal::NativeWidgetView(this);
   view_->SetBoundsRect(params.bounds);
-#if !defined(USE_AURA)
-  // TODO(beng): re-enable this once we have a consolidated layer tree.
-  view_->SetPaintToLayer(true);
-  if (View::get_use_acceleration_when_possible())
-    view_->SetFillsBoundsOpaquely(!params.transparent);
-#endif
-
   view_->SetVisible(params.type == Widget::InitParams::TYPE_CONTROL);
 
   // With the default NATIVE_WIDGET_OWNS_WIDGET ownership, the
@@ -150,7 +143,10 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
 
   if (parent_view)
     parent_view->AddChildView(view_);
-
+  view_->SetPaintToLayer(true);
+  if (View::get_use_acceleration_when_possible())
+    view_->SetFillsBoundsOpaquely(!params.transparent);
+  view_->SetBoundsRect(params.bounds);
   // TODO(beng): SetInitParams().
 }
 

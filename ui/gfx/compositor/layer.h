@@ -65,6 +65,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   // Removes a Layer from this Layer.
   void Remove(Layer* child);
 
+  // Moves a child to the end of the child list.
+  void MoveToFront(Layer* child);
+
   // Returns the child Layers.
   const std::vector<Layer*>& children() { return children_; }
 

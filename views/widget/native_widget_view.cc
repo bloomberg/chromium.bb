@@ -5,6 +5,7 @@
 #include "views/widget/native_widget_view.h"
 
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/compositor/layer.h"
 
 namespace views {
 namespace internal {
@@ -55,9 +56,12 @@ std::string NativeWidgetView::PrintViewGraph(bool first) {
 void NativeWidgetView::ViewHierarchyChanged(bool is_add,
                                             View* parent,
                                             View* child) {
-  if (is_add && child == this && !sent_create_) {
-    sent_create_ = true;
-    delegate()->OnNativeWidgetCreated();
+  if (is_add && child == this)  {
+    GetAssociatedWidget()->GetRootView()->UpdateParentLayers();
+    if (!sent_create_) {
+      sent_create_ = true;
+      delegate()->OnNativeWidgetCreated();
+    }
   }
 }
 
@@ -148,22 +152,11 @@ void NativeWidgetView::MoveLayerToParent(ui::Layer* parent_layer,
   }
 }
 
-void NativeWidgetView::DestroyLayerRecurse() {
-  GetAssociatedWidget()->GetRootView()->DestroyLayerRecurse();
-  View::DestroyLayerRecurse();
-}
-
-void NativeWidgetView::UpdateLayerBounds(const gfx::Point& offset) {
-  View::UpdateLayerBounds(offset);
-  if (!layer()) {
-    gfx::Point new_offset(offset.x() + x(), offset.y() + y());
-    GetAssociatedWidget()->GetRootView()->UpdateLayerBounds(new_offset);
-  }
-}
-
-void NativeWidgetView::CreateLayerIfNecessary() {
-  View::CreateLayerIfNecessary();
-  GetAssociatedWidget()->GetRootView()->CreateLayerIfNecessary();
+void NativeWidgetView::UpdateChildLayerBounds(const gfx::Point& offset) {
+  gfx::Point new_offset(offset.x() + x(), offset.y() + y());
+  View::UpdateChildLayerBounds(new_offset);
+  if (!layer())
+    GetAssociatedWidget()->GetRootView()->UpdateChildLayerBounds(new_offset);
 }
 
 }  // namespace internal

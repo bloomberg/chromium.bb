@@ -118,8 +118,6 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
                                     View* child) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual const ui::Compositor* GetCompositor() const OVERRIDE;
-  virtual ui::Compositor* GetCompositor() OVERRIDE;
   virtual void CalculateOffsetToAncestorWithLayer(
       gfx::Point* offset,
       ui::Layer** layer_parent) OVERRIDE;
