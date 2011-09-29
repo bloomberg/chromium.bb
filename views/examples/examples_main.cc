@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/i18n/icu_util.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -165,6 +166,8 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
 
   ui::RegisterPathProvider();
+  bool icu_result = icu_util::Initialize();
+  CHECK(icu_result);
   ui::ResourceBundle::InitSharedInstance("en-US");
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
