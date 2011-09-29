@@ -409,8 +409,11 @@ IEVersion GetIEVersion() {
       case 8:
         ie_version = IE_8;
         break;
+      case 9:
+        ie_version = IE_9;
+        break;
       default:
-        ie_version = major_version >= 9 ? IE_9 : IE_UNSUPPORTED;
+        ie_version = (major_version >= 10) ? IE_10 : IE_UNSUPPORTED;
         break;
     }
   }
@@ -513,8 +516,8 @@ bool GetModuleVersion(HMODULE module, uint32* high, uint32* low) {
       // Copy data as VerQueryValue tries to modify the data. This causes
       // exceptions and heap corruption errors if debugger is attached.
       scoped_array<char> data(new char[version_resource_size]);
-      memcpy(data.get(), readonly_resource_data, version_resource_size);
       if (data.get()) {
+        memcpy(data.get(), readonly_resource_data, version_resource_size);
         VS_FIXEDFILEINFO* ver_info = NULL;
         UINT info_size = 0;
         if (VerQueryValue(data.get(), L"\\",

@@ -162,6 +162,7 @@ typedef enum IEVersion {
   IE_7,
   IE_8,
   IE_9,
+  IE_10,
 };
 
 // The renderer to be used for a page.  Values for Chrome also convey the

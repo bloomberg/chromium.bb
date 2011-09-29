@@ -257,8 +257,8 @@ END_MSG_MAP()
       UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.IEVersion",
                                   GetIEVersion(),
                                   IE_INVALID,
-                                  IE_9,
-                                  IE_9 + 1);
+                                  IE_10,
+                                  IE_10 + 1);
     }
 
     return S_OK;
