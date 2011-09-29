@@ -12,7 +12,7 @@ SpellCheckHostMetrics::SpellCheckHostMetrics()
       spellchecked_word_count_(0),
       suggestion_show_count_(0),
       replaced_word_count_(0),
-      start_time_(base::Time::Now()) {
+      start_time_(base::TimeTicks::Now()) {
   const uint64 kHistogramTimerDurationInMinutes = 30;
   recording_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMinutes(kHistogramTimerDurationInMinutes),
@@ -64,7 +64,10 @@ void SpellCheckHostMetrics::OnHistogramTimerExpired() {
   if (0 < spellchecked_word_count_) {
     // Collects word checking rate, which is represented
     // as a word count per hour.
-    base::TimeDelta since_start = base::Time::Now() - start_time_;
+    base::TimeDelta since_start = base::TimeTicks::Now() - start_time_;
+    // This shouldn't happen since OnHistogramTimerExpired() is called on
+    // a 30 minute interval. If the time was 0 we will end up dividing by zero.
+    CHECK_NE(0, since_start.InSeconds());
     size_t checked_words_per_hour = spellchecked_word_count_ *
         base::TimeDelta::FromHours(1).InSeconds() / since_start.InSeconds();
     UMA_HISTOGRAM_COUNTS("SpellCheck.CheckedWordsPerHour",

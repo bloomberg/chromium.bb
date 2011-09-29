@@ -56,9 +56,9 @@ class SpellCheckHostMetrics {
   // attempt to be uploaded via UMA
   void RecordSuggestionStats(int delta);
 
+ private:
   void OnHistogramTimerExpired();
 
- private:
   // Records various counters without changing their values.
   void RecordWordCounts();
 
@@ -71,7 +71,7 @@ class SpellCheckHostMetrics {
   // Number of misspelled words replaced by a user.
   int replaced_word_count_;
   // Time when first spellcheck happened.
-  base::Time start_time_;
+  base::TimeTicks start_time_;
   // Set of checked words in the hashed form.
   base::hash_set<std::string> checked_word_hashes_;
   base::RepeatingTimer<SpellCheckHostMetrics> recording_timer_;
