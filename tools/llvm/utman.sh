@@ -76,28 +76,14 @@ readonly BINUTILS_TARGET=arm-pc-nacl
 readonly REAL_CROSS_TARGET=pnacl
 readonly NACL64_TARGET=x86_64-nacl
 
-readonly TC_ROOT="${NACL_ROOT}/toolchain"
-readonly PNACL_ROOT="${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${HOST_ARCH}_${LIBMODE}"
-readonly PNACL_BIN="${PNACL_ROOT}/bin"
 readonly DRIVER_DIR="${NACL_ROOT}/tools/llvm/driver"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
 
-readonly BASE_INSTALL_DIR="${PNACL_ROOT}/pkg"
-readonly NEWLIB_INSTALL_DIR="${BASE_INSTALL_DIR}/newlib"
-readonly GLIBC_INSTALL_DIR="${BASE_INSTALL_DIR}/glibc"
-readonly LLVM_INSTALL_DIR="${BASE_INSTALL_DIR}/llvm"
-readonly LLVM_GCC_INSTALL_DIR="${BASE_INSTALL_DIR}/llvm-gcc"
-readonly LIBSTDCPP_INSTALL_DIR="${BASE_INSTALL_DIR}/libstdcpp"
-readonly BINUTILS_INSTALL_DIR="${BASE_INSTALL_DIR}/binutils"
-readonly SYSROOT_DIR="${PNACL_ROOT}/sysroot"
-readonly LDSCRIPTS_DIR="${PNACL_ROOT}/ldscripts"
-readonly GCC_VER="4.2.1"
 
-readonly NNACL_ROOT="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86_newlib"
-readonly NNACL_GLIBC_ROOT="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
-
-readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
+readonly NNACL_BASE="${NACL_ROOT}/toolchain/${SCONS_BUILD_PLATFORM}_x86"
+readonly NNACL_NEWLIB_ROOT="${NNACL_BASE}_newlib"
+readonly NNACL_GLIBC_ROOT="${NNACL_BASE}"
 
 readonly MAKE_OPTS="-j${UTMAN_CONCURRENCY} VERBOSE=1"
 
@@ -107,27 +93,29 @@ readonly NONEXISTENT_PATH="/going/down/the/longest/road/to/nowhere"
 # Leave this blank, it will be filled during processing.
 SPECULATIVE_REBUILD_SET=""
 
-# The directory in which we we keep src dirs (from hg repos)
-# and objdirs. These should be ABSOLUTE paths.
-
-readonly TC_SRC="${NACL_ROOT}/hg"
-readonly TC_BUILD="${TC_ROOT}/hg-build-${LIBMODE}"
+readonly PNACL_ROOT="${NACL_ROOT}/pnacl"
 
 # The location of Mercurial sources (absolute)
-readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
+readonly PNACL_HG_ROOT="${NACL_ROOT}/hg"
+readonly TC_SRC_UPSTREAM="${PNACL_HG_ROOT}/upstream"
 readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
 readonly TC_SRC_LLVM_GCC="${TC_SRC_UPSTREAM}/llvm-gcc"
-readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
-readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
-readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/libstdc++-v3"
-readonly TC_SRC_GOOGLE_PERFTOOLS="${TC_SRC}/google-perftools"
+readonly TC_SRC_BINUTILS="${PNACL_HG_ROOT}/binutils"
+readonly TC_SRC_NEWLIB="${PNACL_HG_ROOT}/newlib"
+readonly TC_SRC_COMPILER_RT="${PNACL_HG_ROOT}/compiler-rt"
+readonly TC_SRC_GOOGLE_PERFTOOLS="${PNACL_HG_ROOT}/google-perftools"
 
 # LLVM sources (svn)
-readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
-readonly TC_SRC_LLVM_GCC_MASTER="${TC_SRC}/llvm-gcc-master"
-readonly TC_SRC_CLANG="${TC_SRC}/clang"
-readonly TC_SRC_DRAGONEGG="${TC_SRC}/dragonegg"
+readonly PNACL_SVN_ROOT="${NACL_ROOT}/hg"
+readonly TC_SRC_LLVM_MASTER="${PNACL_SVN_ROOT}/llvm-master"
+readonly TC_SRC_LLVM_GCC_MASTER="${PNACL_SVN_ROOT}/llvm-gcc-master"
+readonly TC_SRC_CLANG="${PNACL_SVN_ROOT}/clang"
+readonly TC_SRC_DRAGONEGG="${PNACL_SVN_ROOT}/dragonegg"
+
+# Git sources
+readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
+readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/pnacl-gcc"
 
 # Unfortunately, binutils/configure generates this untracked file
 # in the binutils source directory
@@ -136,13 +124,14 @@ readonly BINUTILS_MESS="${TC_SRC_BINUTILS}/binutils-2.20/opcodes/i386-tbl.h"
 readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
 readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
 readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
-readonly NACL_SYS_TS="${TC_SRC}/nacl.sys.timestamp"
+readonly NACL_HEADERS_TS="${PNACL_HG_ROOT}/nacl.sys.timestamp"
 readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
 
 # The location of each project. These should be absolute paths.
 # If a tool below depends on a certain libc, then the build
 # directory should have ${LIBMODE} in it to distinguish them.
 
+readonly TC_BUILD="${NACL_ROOT}/toolchain/hg-build-${LIBMODE}"
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_LLVM_GCC="${TC_BUILD}/llvm-gcc"
 readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils"
@@ -154,41 +143,57 @@ readonly TC_BUILD_GOOGLE_PERFTOOLS="${TC_BUILD}/google-perftools"
 
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
-# PNaCl toolchain locations (absolute!)
-readonly PNACL_TOOLCHAIN_ROOT="${PNACL_ROOT}"
+# PNaCl toolchain installation directories (absolute paths)
+readonly TOOLCHAIN_LABEL="pnacl_${BUILD_PLATFORM}_${HOST_ARCH}_${LIBMODE}"
+readonly INSTALL_ROOT="${NACL_ROOT}/toolchain/${TOOLCHAIN_LABEL}"
+readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 
-readonly PNACL_SDK_ROOT="${PNACL_TOOLCHAIN_ROOT}/sdk"
-readonly PNACL_SDK_INCLUDE="${PNACL_SDK_ROOT}/include"
-readonly PNACL_SDK_LIB="${PNACL_SDK_ROOT}/lib"
+# SDK
+readonly INSTALL_SDK_ROOT="${INSTALL_ROOT}/sdk"
+readonly INSTALL_SDK_INCLUDE="${INSTALL_SDK_ROOT}/include"
+readonly INSTALL_SDK_LIB="${INSTALL_SDK_ROOT}/lib"
 
 # The pattern `lib-${platform}' is implicit in verify() and sdk().
-readonly PNACL_LIB_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib"
-readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib-arm"
-readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib-x86-32"
-readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/lib-x86-64"
+readonly INSTALL_LIB="${INSTALL_ROOT}/lib"
+readonly INSTALL_LIB_ARM="${INSTALL_ROOT}/lib-arm"
+readonly INSTALL_LIB_X8632="${INSTALL_ROOT}/lib-x86-32"
+readonly INSTALL_LIB_X8664="${INSTALL_ROOT}/lib-x86-64"
 
 # PNaCl client-translators (sandboxed) binary locations
-readonly PNACL_SB_ROOT="${PNACL_ROOT}/tools-sb"
-readonly PNACL_SB_X8632="${PNACL_SB_ROOT}/x8632"
-readonly PNACL_SB_X8664="${PNACL_SB_ROOT}/x8664"
-readonly PNACL_SB_UNIVERSAL="${PNACL_SB_ROOT}/universal"
+readonly INSTALL_SB_TOOLS="${INSTALL_ROOT}/tools-sb"
+readonly INSTALL_SB_TOOLS_X8632="${INSTALL_SB_TOOLS}/x8632"
+readonly INSTALL_SB_TOOLS_X8664="${INSTALL_SB_TOOLS}/x8664"
+readonly INSTALL_SB_TOOLS_UNIVERSAL="${INSTALL_SB_TOOLS}/universal"
+
+# Component installation directories
+readonly INSTALL_PKG="${INSTALL_ROOT}/pkg"
+readonly NEWLIB_INSTALL_DIR="${INSTALL_PKG}/newlib"
+readonly GLIBC_INSTALL_DIR="${INSTALL_PKG}/glibc"
+readonly LLVM_INSTALL_DIR="${INSTALL_PKG}/llvm"
+readonly LLVM_GCC_INSTALL_DIR="${INSTALL_PKG}/llvm-gcc"
+readonly LIBSTDCPP_INSTALL_DIR="${INSTALL_PKG}/libstdcpp"
+readonly BINUTILS_INSTALL_DIR="${INSTALL_PKG}/binutils"
+readonly BFD_PLUGIN_DIR="${BINUTILS_INSTALL_DIR}/lib/bfd-plugins"
+readonly SYSROOT_DIR="${INSTALL_ROOT}/sysroot"
+readonly LDSCRIPTS_DIR="${INSTALL_ROOT}/ldscripts"
+readonly LLVM_GCC_VER="4.2.1"
 
 # Location of PNaCl gcc/g++/as
-readonly PNACL_GCC="${PNACL_BIN}/pnacl-gcc"
-readonly PNACL_GPP="${PNACL_BIN}/pnacl-g++"
-readonly PNACL_AR="${PNACL_BIN}/pnacl-ar"
-readonly PNACL_RANLIB="${PNACL_BIN}/pnacl-ranlib"
-readonly PNACL_AS="${PNACL_BIN}/pnacl-as"
-readonly PNACL_LD="${PNACL_BIN}/pnacl-ld"
-readonly PNACL_NM="${PNACL_BIN}/pnacl-nm"
-readonly PNACL_TRANSLATE="${PNACL_BIN}/pnacl-translate"
-readonly PNACL_READELF="${PNACL_BIN}/readelf"
-readonly PNACL_SIZE="${PNACL_BIN}/size"
-readonly PNACL_STRIP="${PNACL_BIN}/pnacl-strip"
+readonly PNACL_GCC="${INSTALL_BIN}/pnacl-gcc"
+readonly PNACL_GPP="${INSTALL_BIN}/pnacl-g++"
+readonly PNACL_AR="${INSTALL_BIN}/pnacl-ar"
+readonly PNACL_RANLIB="${INSTALL_BIN}/pnacl-ranlib"
+readonly PNACL_AS="${INSTALL_BIN}/pnacl-as"
+readonly PNACL_LD="${INSTALL_BIN}/pnacl-ld"
+readonly PNACL_NM="${INSTALL_BIN}/pnacl-nm"
+readonly PNACL_TRANSLATE="${INSTALL_BIN}/pnacl-translate"
+readonly PNACL_READELF="${INSTALL_BIN}/readelf"
+readonly PNACL_SIZE="${INSTALL_BIN}/size"
+readonly PNACL_STRIP="${INSTALL_BIN}/pnacl-strip"
 
-readonly PNACL_AS_ARM="${PNACL_BIN}/pnacl-arm-as"
-readonly PNACL_AS_X8632="${PNACL_BIN}/pnacl-i686-as"
-readonly PNACL_AS_X8664="${PNACL_BIN}/pnacl-x86_64-as"
+readonly PNACL_AS_ARM="${INSTALL_BIN}/pnacl-arm-as"
+readonly PNACL_AS_X8632="${INSTALL_BIN}/pnacl-i686-as"
+readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-x86_64-as"
 
 # For a production (release) build, we want the sandboxed
 # translator to only contain the code needed to handle
@@ -262,7 +267,7 @@ readonly CROSS_TARGET_AR=${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-ar
 readonly CROSS_TARGET_NM=${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-nm
 readonly CROSS_TARGET_RANLIB=\
 ${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-ranlib
-readonly ILLEGAL_TOOL=${PNACL_BIN}/pnacl-illegal
+readonly ILLEGAL_TOOL=${INSTALL_BIN}/pnacl-illegal
 
 # NOTE: we do not expect the assembler or linker to be used for libs
 #       hence the use of ILLEGAL_TOOL.
@@ -578,6 +583,7 @@ checkout-all() {
   hg-checkout-newlib
   hg-checkout-compiler-rt
   hg-checkout-google-perftools
+  git-sync
 }
 
 hg-checkout-upstream() {
@@ -635,11 +641,30 @@ hg-clean() {
 
   if [ $CONFIRM_TEXT == "YES" ]; then
     StepBanner "HG-CLEAN" "Cleaning Mercurial repositories"
-    rm -rf "${TC_SRC}"
+    rm -rf "${PNACL_HG_ROOT}"
   else
     StepBanner "HG-CLEAN" "Clean cancelled by user"
   fi
 }
+
+git-sync() {
+  local gitbase="${PNACL_GIT_ROOT}"
+
+  mkdir -p "${gitbase}"
+  cp "${PNACL_ROOT}"/gclient_template "${gitbase}/.gclient"
+
+  if ! [ -d "${gitbase}/dummydir" ]; then
+    spushd "${gitbase}"
+    gclient update
+    spopd
+  fi
+
+  cp "${PNACL_ROOT}"/DEPS "${gitbase}"/dummydir
+  spushd "${gitbase}"
+  gclient update
+  spopd
+}
+
 
 #@-------------------------------------------------------------------------
 
@@ -647,7 +672,7 @@ hg-clean() {
 #@                         (your untrusted build will not be modified)
 download-trusted() {
   StepBanner "DOWNLOAD-TRUSTED" "Downloading trusted toolchains"
-  local installdir="${PNACL_ROOT}"
+  local installdir="${INSTALL_ROOT}"
   local tmpdir="${installdir}-backup"
   local dldir="${installdir}-downloaded"
 
@@ -718,7 +743,7 @@ everything() {
 
 #@ everything            - Checkout everything from the repositories
 everything-hg() {
-  mkdir -p "${PNACL_ROOT}"
+  mkdir -p "${INSTALL_ROOT}"
 
   checkout-all
 
@@ -728,7 +753,7 @@ everything-hg() {
 
 #@ everything-post-hg does everything AFTER hg setup
 everything-post-hg() {
-  mkdir -p "${PNACL_ROOT}"
+  mkdir -p "${INSTALL_ROOT}"
   # This is needed to build misc-tools and run ARM tests.
   # We check this early so that there are no surprises later, and we can
   # handle all user interaction early.
@@ -778,8 +803,8 @@ everything-translator() {
 glibc() {
   StepBanner "GLIBC" "Copying glibc from NNaCl toolchain"
 
-  mkdir -p "${PNACL_X8632_ROOT}"
-  mkdir -p "${PNACL_X8664_ROOT}"
+  mkdir -p "${INSTALL_LIB_X8632}"
+  mkdir -p "${INSTALL_LIB_X8664}"
   mkdir -p "${GLIBC_INSTALL_DIR}"
 
   # Files in: lib/gcc/${NACL64_TARGET}/4.4.3/[32]/
@@ -798,33 +823,33 @@ glibc() {
 
   for lib in ${LIBS1} ; do
     cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/32/"${lib} \
-       "${PNACL_X8632_ROOT}"
+       "${INSTALL_LIB_X8632}"
     cp -a "${NNACL_GLIBC_ROOT}/lib/gcc/${NACL64_TARGET}/4.4.3/"${lib} \
-       "${PNACL_X8664_ROOT}"
+       "${INSTALL_LIB_X8664}"
   done
 
   for lib in ${LIBS2} ; do
     cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib32/"${lib} \
-          "${PNACL_X8632_ROOT}"
+          "${INSTALL_LIB_X8632}"
     cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/"${lib} \
-          "${PNACL_X8664_ROOT}"
+          "${INSTALL_LIB_X8664}"
   done
 
   # Copy linker scripts
   # We currently only depend on elf[64]_nacl.x,
   # elf[64]_nacl.xs, and elf[64]_nacl.x.static.
   cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/ldscripts/elf_nacl.x"* \
-        "${PNACL_X8632_ROOT}"
+        "${INSTALL_LIB_X8632}"
   cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/ldscripts/elf64_nacl.x"* \
-        "${PNACL_X8664_ROOT}"
+        "${INSTALL_LIB_X8664}"
 
   # ld-nacl have different sonames across 32/64.
   # Create symlinks to make them look the same.
   # TODO(pdox): Can this be fixed in glibc?
-  ln -sf "ld-2.9.so" "${PNACL_X8632_ROOT}"/ld-nacl-x86-32.so.1
-  ln -sf "ld-2.9.so" "${PNACL_X8632_ROOT}"/ld-nacl-x86-64.so.1
-  ln -sf "ld-2.9.so" "${PNACL_X8664_ROOT}"/ld-nacl-x86-32.so.1
-  ln -sf "ld-2.9.so" "${PNACL_X8664_ROOT}"/ld-nacl-x86-64.so.1
+  ln -sf "ld-2.9.so" "${INSTALL_LIB_X8632}"/ld-nacl-x86-32.so.1
+  ln -sf "ld-2.9.so" "${INSTALL_LIB_X8632}"/ld-nacl-x86-64.so.1
+  ln -sf "ld-2.9.so" "${INSTALL_LIB_X8664}"/ld-nacl-x86-32.so.1
+  ln -sf "ld-2.9.so" "${INSTALL_LIB_X8664}"/ld-nacl-x86-64.so.1
 
   # Copy the glibc headers
   cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/include \
@@ -912,14 +937,14 @@ fast-clean() {
 }
 
 binutils-mess-hide() {
-  local messtmp="${TC_SRC}/binutils.tmp"
+  local messtmp="${PNACL_HG_ROOT}/binutils.tmp"
   if [ -f "${BINUTILS_MESS}" ] ; then
     mv "${BINUTILS_MESS}" "${messtmp}"
   fi
 }
 
 binutils-mess-unhide() {
-  local messtmp="${TC_SRC}/binutils.tmp"
+  local messtmp="${PNACL_HG_ROOT}/binutils.tmp"
   if [ -f "${messtmp}" ] ; then
     mv "${messtmp}" "${BINUTILS_MESS}"
   fi
@@ -937,14 +962,14 @@ clean-build() {
 
 #+ clean-install         - Clean install directories
 clean-install() {
-  rm -rf "${PNACL_ROOT}"
+  rm -rf "${INSTALL_ROOT}"
 }
 
 #+ libs-clean            - Removes the library directories
 libs-clean() {
-  StepBanner "LIBS-CLEAN" "Cleaning ${PNACL_TOOLCHAIN_ROOT}/libs-*"
-  rm -rf "${PNACL_LIB_ROOT}"/*
-  rm -rf "${PNACL_LIB_ROOT}"-*/*
+  StepBanner "LIBS-CLEAN" "Cleaning ${INSTALL_ROOT}/libs-*"
+  rm -rf "${INSTALL_LIB}"/*
+  rm -rf "${INSTALL_LIB}"-*/*
 }
 
 
@@ -977,14 +1002,15 @@ prune() {
   # but we are currently doing a debug build and not pruning
   # as aggressively as we could.
   local ACCEPTABLE_SIZE=300
-  local dir_size_before=$(get_dir_size_in_mb ${PNACL_ROOT})
+  local dir_size_before=$(get_dir_size_in_mb ${INSTALL_ROOT})
 
-  SubBanner "Size before: ${PNACL_ROOT} ${dir_size_before}MB"
+  SubBanner "Size before: ${INSTALL_ROOT} ${dir_size_before}MB"
   echo "removing some static libs we do not have any use for"
   rm  -f "${NEWLIB_INSTALL_DIR}"/lib/lib*.a
 
   echo "stripping binaries (llvm-gcc, llvm, binutils)"
-  strip "${LLVM_GCC_INSTALL_DIR}"/libexec/gcc/${CROSS_TARGET_ARM}/${GCC_VER}/c*
+  strip \
+    "${LLVM_GCC_INSTALL_DIR}"/libexec/gcc/${CROSS_TARGET_ARM}/${LLVM_GCC_VER}/c*
   strip "${BINUTILS_INSTALL_DIR}"/bin/*
   if ! strip "${LLVM_INSTALL_DIR}"/bin/* ; then
     echo "NOTE: some failures during stripping are expected"
@@ -997,19 +1023,19 @@ prune() {
   rm -rf "${LLVM_INSTALL_DIR}"/include/llvm*
 
   echo "removing .pyc files"
-  rm -f "${PNACL_BIN}"/*.pyc
+  rm -f "${INSTALL_BIN}"/*.pyc
 
   if ${LIBMODE_GLIBC}; then
     echo "remove pnacl_cache directory"
-    rm -rf "${PNACL_LIB_ROOT}"/pnacl_cache
-    rm -rf "${PNACL_SDK_LIB}"/pnacl_cache
+    rm -rf "${INSTALL_LIB}"/pnacl_cache
+    rm -rf "${INSTALL_SDK_LIB}"/pnacl_cache
   fi
 
   echo "remove driver log"
-  rm -f "${PNACL_ROOT}"/driver.log
+  rm -f "${INSTALL_ROOT}"/driver.log
 
-  local dir_size_after=$(get_dir_size_in_mb "${PNACL_ROOT}")
-  SubBanner "Size after: ${PNACL_ROOT} ${dir_size_after}MB"
+  local dir_size_after=$(get_dir_size_in_mb "${INSTALL_ROOT}")
+  SubBanner "Size after: ${INSTALL_ROOT} ${dir_size_after}MB"
 
   if [[ ${dir_size_after} -gt ${ACCEPTABLE_SIZE} ]] ; then
     # TODO(pdox): Move this to the buildbot script so that
@@ -1030,7 +1056,7 @@ tarball() {
   local tarball="$1"
   StepBanner "TARBALL" "Creating tar ball ${tarball}"
 
-  tar zcf "${tarball}" -C "${PNACL_ROOT}" .
+  tar zcf "${tarball}" -C "${INSTALL_ROOT}" .
 }
 
 
@@ -1427,8 +1453,8 @@ build-libgcc_eh() {
   spopd
 
   StepBanner "libgcc_eh-${arch}" "installing"
-  mkdir -p "${PNACL_LIB_ROOT}-${arch}"
-  cp "${objdir}"/gcc/libgcc_eh.a "${PNACL_LIB_ROOT}-${arch}"
+  mkdir -p "${INSTALL_LIB}-${arch}"
+  cp "${objdir}"/gcc/libgcc_eh.a "${INSTALL_LIB}-${arch}"
 }
 
 #+ build-compiler-rt - build/install llvm's replacement for libgcc.a
@@ -1455,14 +1481,14 @@ build-compiler-rt() {
   StepBanner "compiler rt" "install all"
   ls -l */libgcc.a
 
-  mkdir -p "${PNACL_ARM_ROOT}"
-  cp arm/libgcc.a "${PNACL_ARM_ROOT}/"
+  mkdir -p "${INSTALL_LIB_ARM}"
+  cp arm/libgcc.a "${INSTALL_LIB_ARM}/"
 
-  mkdir -p "${PNACL_X8632_ROOT}"
-  cp x86-32/libgcc.a "${PNACL_X8632_ROOT}/"
+  mkdir -p "${INSTALL_LIB_X8632}"
+  cp x86-32/libgcc.a "${INSTALL_LIB_X8632}/"
 
-  mkdir -p "${PNACL_X8664_ROOT}"
-  cp x86-64/libgcc.a "${PNACL_X8664_ROOT}/"
+  mkdir -p "${INSTALL_LIB_X8664}"
+  cp x86-64/libgcc.a "${INSTALL_LIB_X8664}/"
   spopd
 }
 
@@ -1487,14 +1513,14 @@ build-compiler-rt-bitcode() {
 
 
   StepBanner "compiler rt bitcode" "install"
-  rm -f "${PNACL_ARM_ROOT}/libgcc.a" \
-        "${PNACL_X8632_ROOT}/libgcc.a" \
-        "${PNACL_X8664_ROOT}/libgcc.a" \
-        "${PNACL_LIB_ROOT}/libgcc.a"
+  rm -f "${INSTALL_LIB_ARM}/libgcc.a" \
+        "${INSTALL_LIB_X8632}/libgcc.a" \
+        "${INSTALL_LIB_X8664}/libgcc.a" \
+        "${INSTALL_LIB}/libgcc.a"
 
-  mkdir -p "${PNACL_LIB_ROOT}"
+  mkdir -p "${INSTALL_LIB}"
   ls -l bitcode/libgcc.a
-  cp bitcode/libgcc.a "${PNACL_LIB_ROOT}"
+  cp bitcode/libgcc.a "${INSTALL_LIB}"
 
   spopd
 }
@@ -1630,15 +1656,15 @@ libstdcpp-install() {
 
   # install headers (=install-data)
   # for good measure make sure we do not keep any old headers
-  rm -rf "${PNACL_ROOT}/include/c++"
+  rm -rf "${INSTALL_ROOT}/include/c++"
   RunWithLog llvm-gcc.install_libstdcpp \
     make \
     "${STD_ENV_FOR_LIBSTDCPP[@]}" \
     ${MAKE_OPTS} install-data
 
   # Install bitcode library
-  mkdir -p "${PNACL_LIB_ROOT}"
-  cp "${objdir}/src/.libs/libstdc++.a" "${PNACL_LIB_ROOT}"
+  mkdir -p "${INSTALL_LIB}"
+  cp "${objdir}/src/.libs/libstdc++.a" "${INSTALL_LIB}"
 
   spopd
 }
@@ -1656,11 +1682,11 @@ misc-tools() {
       naclsdk_validate=0 \
       sysinfo=0 \
       sel_ldr
-    rm -rf  "${PNACL_ROOT}/tools-arm"
-    mkdir "${PNACL_ROOT}/tools-arm"
+    rm -rf  "${INSTALL_ROOT}/tools-arm"
+    mkdir "${INSTALL_ROOT}/tools-arm"
     local sconsdir="scons-out/opt-${SCONS_BUILD_PLATFORM}-arm"
     cp "${sconsdir}/obj/src/trusted/service_runtime/sel_ldr" \
-       "${PNACL_ROOT}/tools-arm"
+       "${INSTALL_ROOT}/tools-arm"
   else
     StepBanner "MISC-ARM" "Skipping ARM sel_ldr (No trusted ARM toolchain)"
   fi
@@ -1672,10 +1698,10 @@ misc-tools() {
       targetplatform=arm \
       sysinfo=0 \
       arm-ncval-core
-    rm -rf  "${PNACL_ROOT}/tools-x86"
-    mkdir "${PNACL_ROOT}/tools-x86"
+    rm -rf  "${INSTALL_ROOT}/tools-x86"
+    mkdir "${INSTALL_ROOT}/tools-x86"
     cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/\
-arm-ncval-core ${PNACL_ROOT}/tools-x86
+arm-ncval-core ${INSTALL_ROOT}/tools-x86
   else
     StepBanner "MISC-ARM" "Skipping ARM validator (Not yet supported on Mac)"
   fi
@@ -1985,7 +2011,7 @@ llvm-sb-setup-jit() {
   esac
 
   local naclgcc_root="";
-  naclgcc_root=${NNACL_GLIBC_ROOT}
+  naclgcc_root="${NNACL_GLIBC_ROOT}"
 
   LLVM_SB_EXTRA_CONFIG_FLAGS="--enable-jit --disable-optimized"
 
@@ -2046,7 +2072,7 @@ llvm-sb-configure() {
   StepBanner "LLVM-SB" "Configure ${LLVM_SB_ARCH} ${LLVM_SB_MODE}"
   local srcdir="${TC_SRC_LLVM}"
   local objdir="${LLVM_SB_OBJDIR}"
-  local installdir="${PNACL_SB_ROOT}/${LLVM_SB_ARCH}/${LLVM_SB_MODE}"
+  local installdir="${INSTALL_SB_TOOLS}/${LLVM_SB_ARCH}/${LLVM_SB_MODE}"
   local targets=""
   case ${LLVM_SB_ARCH} in
     x8632) targets=x86 ;;
@@ -2147,11 +2173,11 @@ install-naclgcc-tool() {
   local mode=$2
   local name=$3
 
-  local bindir="${PNACL_SB_ROOT}/${arch}/${mode}/bin"
+  local bindir="${INSTALL_SB_TOOLS}/${arch}/${mode}/bin"
   local tarch=x8632
   mv "${bindir}/${name}" "${bindir}/${name}.${tarch}.nexe"
 
-  local bindir_tarch="${PNACL_SB_ROOT}/${tarch}/${mode}/bin"
+  local bindir_tarch="${INSTALL_SB_TOOLS}/${tarch}/${mode}/bin"
   local nexe="${bindir}/${name}.${tarch}.nexe"
   mkdir -p "${bindir_tarch}"
   cp -f "${nexe}" "${bindir_tarch}/${name}"
@@ -2164,7 +2190,7 @@ translate-and-install-sb-tool() {
 
   # Translate bitcode program into an actual native executable.
   # If arch = universal, we need to translate and install multiple times.
-  local bindir="${PNACL_SB_ROOT}/${arch}/${mode}/bin"
+  local bindir="${INSTALL_SB_TOOLS}/${arch}/${mode}/bin"
   local pexe="${bindir}/${name}.pexe"
 
   # Rename to .pexe
@@ -2207,7 +2233,7 @@ translate-and-install-sb-tool() {
 
   for tarch in ${arches}; do
     local nexe="${bindir}/${name}.${tarch}.nexe"
-    local bindir_tarch="${PNACL_SB_ROOT}/${tarch}/${mode}/bin"
+    local bindir_tarch="${INSTALL_SB_TOOLS}/${tarch}/${mode}/bin"
     mkdir -p "${bindir_tarch}"
     ${installer} "${nexe}" "${bindir_tarch}/${name}"
   done
@@ -2271,9 +2297,9 @@ google-perftools-install() {
   RunWithLog google-perftools.install \
     make install
 
-  mkdir -p "${PNACL_LIB_ROOT}"
+  mkdir -p "${INSTALL_LIB}"
   cp "${TC_BUILD_GOOGLE_PERFTOOLS}"/install/lib/libtcmalloc_minimal.a \
-    "${PNACL_LIB_ROOT}"
+    "${INSTALL_LIB}"
   spopd
 }
 
@@ -2399,7 +2425,7 @@ binutils-sb-configure() {
   StepBanner "BINUTILS-SB" "Configure ${BINUTILS_SB_ARCH} ${BINUTILS_SB_MODE}"
   local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${BINUTILS_SB_OBJDIR}"
-  local installdir="${PNACL_SB_ROOT}/${BINUTILS_SB_ARCH}/${BINUTILS_SB_MODE}"
+  local installdir="${INSTALL_SB_TOOLS}/${BINUTILS_SB_ARCH}/${BINUTILS_SB_MODE}"
 
   case ${BINUTILS_SB_ARCH} in
     x8632) targets=i686-pc-nacl ;;
@@ -2472,7 +2498,7 @@ binutils-sb-install() {
   spopd
 
   # First rename and *strip* the installed file. (Beware for debugging).
-  local installdir="${PNACL_SB_ROOT}/${BINUTILS_SB_ARCH}/${BINUTILS_SB_MODE}"
+  local installdir="${INSTALL_SB_TOOLS}/${BINUTILS_SB_ARCH}/${BINUTILS_SB_MODE}"
   ${PNACL_STRIP} "${installdir}/bin/${BINUTILS_TARGET}-ld" \
     -o "${installdir}/bin/ld"
   # Remove old file plus a redundant file.
@@ -2504,7 +2530,7 @@ install-translators() {
     exit -1
   fi
 
-  if ! [ -d "${PNACL_SDK_ROOT}" ]; then
+  if ! [ -d "${INSTALL_SDK_ROOT}" ]; then
     echo "ERROR: SDK must be installed to build translators."
     echo "You can install the SDK by running: $0 sdk"
     exit -1
@@ -2549,27 +2575,27 @@ prune-translator-install() {
 
   StepBanner "PRUNE" "Pruning translator installs (${srpc_kind})"
 
-  spushd "${PNACL_SB_X8632}/${srpc_kind}"
+  spushd "${INSTALL_SB_TOOLS_X8632}/${srpc_kind}"
   rm -rf include lib nacl share
   rm -rf bin/llvm-config bin/tblgen
   spopd
 
-  spushd "${PNACL_SB_X8664}/${srpc_kind}"
+  spushd "${INSTALL_SB_TOOLS_X8664}/${srpc_kind}"
   rm -rf include lib nacl64 share
   rm -rf bin/llvm-config bin/tblgen
   spopd
 
   if ! ${SBTC_PRODUCTION}; then
-    rm -rf "${PNACL_SB_UNIVERSAL}"
+    rm -rf "${INSTALL_SB_TOOLS_UNIVERSAL}"
   fi
 
   echo "Stripping tools-sb nexes"
   for arch in ${SBTC_BUILD_WITH_PNACL} ; do
-    ${PNACL_STRIP} "${PNACL_SB_ROOT}/${arch}/${srpc_kind}"/bin/*
+    ${PNACL_STRIP} "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}"/bin/*
   done
 
   echo "remove driver log"
-  rm -f "${PNACL_ROOT}"/driver.log
+  rm -f "${INSTALL_ROOT}"/driver.log
 
   echo "Done"
 }
@@ -2720,7 +2746,7 @@ newlib-install() {
   rm -f "${sys_include}/pthread.h"
 
   StepBanner "NEWLIB" "copying libraries"
-  local destdir="${PNACL_LIB_ROOT}"
+  local destdir="${INSTALL_LIB}"
   # We only install libc/libg/libm
   mkdir -p "${destdir}"
   cp ${objdir}/${REAL_CROSS_TARGET}/newlib/lib[cgm].a "${destdir}"
@@ -2752,14 +2778,14 @@ sdk() {
 #+ sdk-clean             - Clean sdk stuff
 sdk-clean() {
   StepBanner "SDK" "Clean"
-  rm -rf "${PNACL_SDK_ROOT}"
+  rm -rf "${INSTALL_SDK_ROOT}"
 
   # clean scons obj dirs
   rm -rf scons-out/nacl-*-pnacl*
 }
 
 sdk-headers() {
-  mkdir -p "${PNACL_SDK_INCLUDE}"
+  mkdir -p "${INSTALL_SDK_INCLUDE}"
 
   local extra_flags=""
   local neutral_platform="x86-32"
@@ -2773,12 +2799,12 @@ sdk-headers() {
       ${extra_flags} \
       platform=${neutral_platform} \
       install_headers \
-      includedir="$(PosixToSysPath "${PNACL_SDK_INCLUDE}")"
+      includedir="$(PosixToSysPath "${INSTALL_SDK_INCLUDE}")"
 }
 
 sdk-libs() {
   StepBanner "SDK" "Install libraries"
-  mkdir -p "${PNACL_SDK_LIB}"
+  mkdir -p "${INSTALL_SDK_LIB}"
 
   local extra_flags=""
   local neutral_platform="x86-32"
@@ -2792,7 +2818,7 @@ sdk-libs() {
       ${extra_flags} \
       platform=${neutral_platform} \
       install_lib_portable \
-      libdir="$(PosixToSysPath "${PNACL_SDK_LIB}")"
+      libdir="$(PosixToSysPath "${INSTALL_SDK_LIB}")"
 
   for platform in arm x86-32 x86-64; do
     # There are currently no platform libs in the glibc build.
@@ -2806,7 +2832,7 @@ sdk-libs() {
       ${extra_flags} \
       platform=${platform} \
       install_lib_platform \
-      libdir="$(PosixToSysPath "${PNACL_SDK_LIB}-${platform}")"
+      libdir="$(PosixToSysPath "${INSTALL_SDK_LIB}-${platform}")"
   done
 }
 
@@ -2817,12 +2843,12 @@ sdk-verify() {
   StepBanner "SDK" "Verify"
 
   # Verify bitcode libraries
-  SubBanner "VERIFY: ${PNACL_SDK_LIB}"
-  for i in ${PNACL_SDK_LIB}/*.a ; do
+  SubBanner "VERIFY: ${INSTALL_SDK_LIB}"
+  for i in ${INSTALL_SDK_LIB}/*.a ; do
     verify-archive-llvm "$i"
   done
 
-  for i in ${PNACL_SDK_LIB}/*.pso ; do
+  for i in ${INSTALL_SDK_LIB}/*.pso ; do
     verify-pso "$i"
   done
 
@@ -2832,13 +2858,13 @@ sdk-verify() {
       continue
     fi
 
-    SubBanner "VERIFY: ${PNACL_SDK_LIB}-${platform}"
+    SubBanner "VERIFY: ${INSTALL_SDK_LIB}-${platform}"
 
-    for i in ${PNACL_SDK_LIB}-${platform}/*.o ; do
+    for i in ${INSTALL_SDK_LIB}-${platform}/*.o ; do
       verify-object-${platform} "$i"
     done
 
-    for i in ${PNACL_SDK_LIB}-${platform}/*.a ; do
+    for i in ${INSTALL_SDK_LIB}-${platform}/*.a ; do
       verify-archive-${platform} "$i"
     done
   done
@@ -2880,7 +2906,7 @@ newlib-nacl-headers() {
       "${NEWLIB_INCLUDE_DIR}"
 
   # Record the header install time
-  ts-touch "${NACL_SYS_TS}"
+  ts-touch "${NACL_HEADERS_TS}"
 }
 
 #+ newlib-nacl-headers-check - Make sure the newlib nacl headers haven't
@@ -2901,7 +2927,7 @@ newlib-nacl-headers-check() {
     return 0
   fi
 
-  if ts-dir-changed "${NACL_SYS_TS}" "${NEWLIB_INCLUDE_DIR}"; then
+  if ts-dir-changed "${NACL_HEADERS_TS}" "${NEWLIB_INCLUDE_DIR}"; then
     echo ""
     echo "*******************************************************************"
     echo "*                            ERROR                                *"
@@ -2933,39 +2959,39 @@ driver() {
 # The driver is a simple python script which changes its behavior
 # depending on the name it is invoked as.
 driver-install() {
-  StepBanner "DRIVER" "Installing driver adaptors to ${PNACL_BIN}"
-  mkdir -p "${PNACL_BIN}"
-  rm -f "${PNACL_BIN}"/pnacl-*
+  StepBanner "DRIVER" "Installing driver adaptors to ${INSTALL_BIN}"
+  mkdir -p "${INSTALL_BIN}"
+  rm -f "${INSTALL_BIN}"/pnacl-*
 
   spushd "${DRIVER_DIR}"
-  cp driver_tools.py "${PNACL_BIN}"
-  cp artools.py "${PNACL_BIN}"
-  cp ldtools.py "${PNACL_BIN}"
-  cp pathtools.py "${PNACL_BIN}"
+  cp driver_tools.py "${INSTALL_BIN}"
+  cp artools.py "${INSTALL_BIN}"
+  cp ldtools.py "${INSTALL_BIN}"
+  cp pathtools.py "${INSTALL_BIN}"
   for t in pnacl-*; do
     local name=$(basename "$t")
-    cp "${t}" "${PNACL_BIN}/${name/.py}"
+    cp "${t}" "${INSTALL_BIN}/${name/.py}"
     if ${BUILD_PLATFORM_WIN}; then
-      cp redirect.bat "${PNACL_BIN}/${name/.py}.bat"
+      cp redirect.bat "${INSTALL_BIN}/${name/.py}.bat"
     fi
   done
   spopd
 
   # Tell the driver the library mode
-  touch "${PNACL_BIN}"/${LIBMODE}.cfg
+  touch "${INSTALL_BIN}"/${LIBMODE}.cfg
 
   # Install readelf and size
   cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-readelf" \
-        "${PNACL_BIN}/readelf"
+        "${INSTALL_BIN}/readelf"
   cp -a "${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-size" \
-        "${PNACL_BIN}/size"
+        "${INSTALL_BIN}/size"
 
   # On windows, copy the cygwin DLLs needed by the driver tools
   if ${BUILD_PLATFORM_WIN}; then
     StepBanner "DRIVER" "Copying cygwin libraries"
     local deps="gcc_s-1 iconv-2 win1 intl-8 stdc++-6 z"
     for name in ${deps}; do
-      cp "/bin/cyg${name}.dll" "${PNACL_BIN}"
+      cp "/bin/cyg${name}.dll" "${INSTALL_BIN}"
     done
   fi
 }
@@ -2981,7 +3007,7 @@ driver-install() {
 ######################################################################
 
 RecordRevisionInfo() {
-  svn info > "${PNACL_ROOT}/REV"
+  svn info > "${INSTALL_ROOT}/REV"
 }
 
 ######################################################################
@@ -3194,8 +3220,8 @@ verify() {
   StepBanner "VERIFY"
 
   # Verify bitcode libraries
-  SubBanner "VERIFY: ${PNACL_LIB_ROOT}"
-  for i in ${PNACL_LIB_ROOT}/*.a ; do
+  SubBanner "VERIFY: ${INSTALL_LIB}"
+  for i in ${INSTALL_LIB}/*.a ; do
     verify-archive-llvm "$i"
   done
 
@@ -3205,13 +3231,13 @@ verify() {
       continue
     fi
 
-    SubBanner "VERIFY: ${PNACL_LIB_ROOT}-${platform}"
+    SubBanner "VERIFY: ${INSTALL_LIB}-${platform}"
     # There are currently no .o files here
-    #for i in "${PNACL_LIB_ROOT}-${platform}"/*.o ; do
+    #for i in "${INSTALL_LIB}-${platform}"/*.o ; do
     #  verify-object-${platform} "$i"
     #done
 
-    for i in "${PNACL_LIB_ROOT}-${platform}"/*.a ; do
+    for i in "${INSTALL_LIB}-${platform}"/*.a ; do
       verify-archive-${platform} "$i"
     done
   done
@@ -3237,14 +3263,14 @@ verify-triple-build() {
 
   StepBanner "VERIFY" "Verifying triple build for ${arch}"
 
-  local archdir="${PNACL_SB_ROOT}/${arch}/${mode}"
+  local archdir="${INSTALL_SB_TOOLS}/${arch}/${mode}"
   local archllc="${archdir}/bin/llc"
   local pexe
 
   if ${SBTC_PRODUCTION} ; then
     pexe="${archdir}/bin/llc.pexe"
   else
-    pexe="${PNACL_SB_ROOT}/universal/${mode}/bin/llc.pexe"
+    pexe="${INSTALL_SB_TOOLS}/universal/${mode}/bin/llc.pexe"
   fi
   assert-file "${archllc}" "sandboxed llc for ${arch} does not exist"
   assert-file "${pexe}"    "llc.pexe does not exist"
@@ -3385,7 +3411,7 @@ track-translator-size() {
 print-size-of-sb-tool() {
   local platform=$1
   local tool=$2
-  local bin_dir="${PNACL_SB_ROOT}/${platform}/srpc/bin"
+  local bin_dir="${INSTALL_SB_TOOLS}/${platform}/srpc/bin"
   local tool_size_string=$(${PNACL_SIZE} -B "${bin_dir}/${tool}" | \
     grep '[0-9]\+')
   set -- ${tool_size_string}
@@ -3502,7 +3528,7 @@ function-completions() {
 ######################################################################
 ######################################################################
 
-mkdir -p "${PNACL_ROOT}"
+mkdir -p "${INSTALL_ROOT}"
 PackageCheck
 
 if [ $# = 0 ]; then set -- help; fi  # Avoid reference to undefined $1.
