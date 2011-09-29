@@ -39,7 +39,7 @@ TEST_F(AutofillProfileTest, PreviewSummaryString) {
   // Case 0a/empty name and address, so the first two fields of the rest of the
   // data is used: "Hollywood, CA"
   AutofillProfile profile00;
-  autofill_test::SetProfileInfo(&profile00, "", "Mitchell", "",
+  autofill_test::SetProfileInfo(&profile00, "", "", "",
       "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA", "91601", "US",
       "16505678910");
   EXPECT_TRUE(UpdateProfileLabel(&profile00));
@@ -48,7 +48,7 @@ TEST_F(AutofillProfileTest, PreviewSummaryString) {
 
   // Case 1: "<address>" without line 2.
   AutofillProfile profile1;
-  autofill_test::SetProfileInfo(&profile1, "", "Mitchell", "",
+  autofill_test::SetProfileInfo(&profile1, "", "", "",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "", "Hollywood", "CA",
       "91601", "US", "16505678910");
   EXPECT_TRUE(UpdateProfileLabel(&profile1));
@@ -57,7 +57,7 @@ TEST_F(AutofillProfileTest, PreviewSummaryString) {
 
   // Case 1a: "<address>" with line 2.
   AutofillProfile profile1a;
-  autofill_test::SetProfileInfo(&profile1a, "", "Mitchell", "",
+  autofill_test::SetProfileInfo(&profile1a, "", "", "",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "16505678910");
   EXPECT_TRUE(UpdateProfileLabel(&profile1a));
@@ -71,8 +71,8 @@ TEST_F(AutofillProfileTest, PreviewSummaryString) {
       "91601", "US", "16505678910");
   EXPECT_TRUE(UpdateProfileLabel(&profile2));
   string16 summary2 = profile2.Label();
-  // Summary does include full name which is empty if the first name is empty.
-  EXPECT_EQ(ASCIIToUTF16("Hollywood, CA"), summary2);
+  // Summary includes full name, to the maximal extent available.
+  EXPECT_EQ(ASCIIToUTF16("Mitchell Morrison, Hollywood"), summary2);
 
   // Case 3: "<lastname>, <address>"
   AutofillProfile profile3;
@@ -81,7 +81,7 @@ TEST_F(AutofillProfileTest, PreviewSummaryString) {
       "Hollywood", "CA", "91601", "US", "16505678910");
   EXPECT_TRUE(UpdateProfileLabel(&profile3));
   string16 summary3 = profile3.Label();
-  EXPECT_EQ(ASCIIToUTF16("123 Zoo St., Hollywood"), summary3);
+  EXPECT_EQ(ASCIIToUTF16("Mitchell Morrison, 123 Zoo St."), summary3);
 
   // Case 4: "<firstname>"
   AutofillProfile profile4;

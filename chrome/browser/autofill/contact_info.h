@@ -27,8 +27,6 @@ class NameInfo : public FormGroup {
   virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NameInfoTest, TestSetFullName);
-
   // FormGroup:
   virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
 

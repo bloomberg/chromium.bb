@@ -84,11 +84,9 @@ void NameInfo::SetInfo(AutofillFieldType type, const string16& value) {
 }
 
 string16 NameInfo::FullName() const {
-  if (first_.empty())
-    return string16();
-
   std::vector<string16> full_name;
-  full_name.push_back(first_);
+  if (!first_.empty())
+    full_name.push_back(first_);
 
   if (!middle_.empty())
     full_name.push_back(middle_);
