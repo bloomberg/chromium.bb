@@ -190,10 +190,13 @@ void PromiseWriterTask::Run() {
     DCHECK(dropData_->url.is_valid());
     NSString* urlStr = SysUTF8ToNSString(dropData_->url.spec());
     NSURL* url = [NSURL URLWithString:urlStr];
-    // If NSURL creation failed, check for a badly-escaped javascript URL.
+    // If NSURL creation failed, check for a badly-escaped JavaScript URL.
+    // Strip out any existing escapes and then re-escape uniformly.
     if (!url && urlStr && dropData_->url.SchemeIs(chrome::kJavaScriptScheme)) {
-      NSString *escapedStr =
-        [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+      NSString* unEscapedStr = [urlStr
+          stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+      NSString* escapedStr = [unEscapedStr
+          stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
       url = [NSURL URLWithString:escapedStr];
     }
     [url writeToPasteboard:pboard];
