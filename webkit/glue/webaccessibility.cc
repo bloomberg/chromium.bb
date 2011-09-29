@@ -345,7 +345,7 @@ WebAccessibility::~WebAccessibility() {
 #ifndef NDEBUG
 std::string WebAccessibility::DebugString(bool recursive,
                                           int render_routing_id,
-                                          int notification) {
+                                          int notification) const {
   std::string result;
   static int indent = 0;
 
@@ -728,6 +728,9 @@ std::string WebAccessibility::DebugString(bool recursive,
       case ATTR_ARIA_READONLY:
         result += " aria_readonly=" + value;
         break;
+    case ATTR_CAN_SET_VALUE:
+        result += " can_set_value=" + value;
+        break;
     }
   }
 
@@ -776,6 +779,8 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     bool_attributes[ATTR_ARIA_READONLY] = true;
   if (src.isButtonStateMixed())
     bool_attributes[ATTR_BUTTON_MIXED] = true;
+  if (src.canSetValueAttribute())
+    bool_attributes[ATTR_CAN_SET_VALUE] = true;
   if (src.accessibilityDescription().length())
     string_attributes[ATTR_DESCRIPTION] = src.accessibilityDescription();
   if (src.hasComputedStyle())

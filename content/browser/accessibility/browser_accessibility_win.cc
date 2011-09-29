@@ -2472,6 +2472,11 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   if (mixed)
     ia_state_|= STATE_SYSTEM_MIXED;
 
+  bool editable = false;
+  GetBoolAttribute(WebAccessibility::ATTR_CAN_SET_VALUE, &editable);
+  if (editable)
+    ia2_state_ |= IA2_STATE_EDITABLE;
+
   string16 html_tag;
   GetStringAttribute(WebAccessibility::ATTR_HTML_TAG, &html_tag);
   ia_role_ = 0;

@@ -765,8 +765,12 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (BOOL)accessibilityIsAttributeSettable:(NSString*)attribute {
   if ([attribute isEqualToString:NSAccessibilityFocusedAttribute])
     return GetState(browserAccessibility_, WebAccessibility::STATE_FOCUSABLE);
-  if ([attribute isEqualToString:NSAccessibilityValueAttribute])
-    return !GetState(browserAccessibility_, WebAccessibility::STATE_READONLY);
+  if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
+    bool canSetValue = false;
+    browserAccessibility_->GetBoolAttribute(
+        WebAccessibility::ATTR_CAN_SET_VALUE, &canSetValue);
+    return canSetValue;
+  }
   return NO;
 }
 

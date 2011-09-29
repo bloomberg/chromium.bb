@@ -233,6 +233,9 @@ struct WebAccessibility {
 
     // ARIA readonly flag.
     ATTR_ARIA_READONLY,
+
+    // Writeable attributes
+    ATTR_CAN_SET_VALUE,
   };
 
   // Empty constructor, for serialization.
@@ -250,7 +253,7 @@ struct WebAccessibility {
 #ifndef NDEBUG
   std::string DebugString(bool recursive,
                           int render_routing_id,
-                          int notification_type);
+                          int notification_type) const;
 #endif
 
  private:

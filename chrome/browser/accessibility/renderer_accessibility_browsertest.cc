@@ -64,6 +64,8 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
                       const WebAccessibility::StringAttribute attr);
   int GetIntAttr(const WebAccessibility& node,
                  const WebAccessibility::IntAttribute attr);
+  bool GetBoolAttr(const WebAccessibility& node,
+                   const WebAccessibility::BoolAttribute attr);
 };
 
 void RendererAccessibilityBrowserTest::SetUpInProcessBrowserTestFixture() {
@@ -107,6 +109,19 @@ int RendererAccessibilityBrowserTest::GetIntAttr(
     return iter->second;
   else
     return -1;
+}
+
+// Convenience method to get the value of a particular WebAccessibility
+// node boolean attribute.
+bool RendererAccessibilityBrowserTest::GetBoolAttr(
+    const WebAccessibility& node,
+    const WebAccessibility::BoolAttribute attr) {
+  std::map<WebAccessibility::BoolAttribute, bool>::const_iterator iter =
+      node.bool_attributes.find(attr);
+  if (iter != node.bool_attributes.end())
+    return iter->second;
+  else
+    return false;
 }
 
 IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
@@ -416,6 +431,25 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
                           WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX));
   EXPECT_EQ(2, GetIntAttr(cell4,
                           WebAccessibility::ATTR_TABLE_CELL_COLUMN_SPAN));
+}
+
+IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
+                       CrossPlatformWritableElement) {
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<div role='textbox' tabindex=0>"
+      " Some text"
+      "</div>";
+  GURL url(url_str);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  const WebAccessibility& tree = GetWebAccessibilityTree();
+
+  ASSERT_EQ(1U, tree.children.size());
+  const WebAccessibility& textbox = tree.children[0];
+
+  EXPECT_EQ(
+      true, GetBoolAttr(textbox, WebAccessibility::ATTR_CAN_SET_VALUE));
 }
 
 }  // namespace
