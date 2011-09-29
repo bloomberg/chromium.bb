@@ -1204,7 +1204,8 @@ void NativeWidgetGtk::ShowWithWindowState(ui::WindowShowState show_state) {
 }
 
 bool NativeWidgetGtk::IsVisible() const {
-  return GTK_WIDGET_VISIBLE(GetNativeView());
+  return GTK_WIDGET_VISIBLE(GetNativeView()) && (GetWidget()->is_top_level() ||
+      GetWidget()->GetTopLevelWidget()->IsVisible());
 }
 
 void NativeWidgetGtk::Activate() {

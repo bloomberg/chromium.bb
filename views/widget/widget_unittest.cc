@@ -306,6 +306,65 @@ TEST_F(WidgetTest, ChangeActivation) {
   top2->CloseNow();
 }
 
+// Tests visibility of child widgets.
+TEST_F(WidgetTest, Visibility) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+#if defined(TOOLKIT_USES_GTK)
+  NativeWidgetGtk* native_widget =
+      static_cast<NativeWidgetGtk*>(toplevel->native_widget());
+  gfx::NativeView parent = native_widget->window_contents();
+#else
+  gfx::NativeView parent = toplevel->GetNativeView();
+#endif
+  Widget* child = CreateChildPlatformWidget(parent);
+
+  EXPECT_FALSE(toplevel->IsVisible());
+  EXPECT_FALSE(child->IsVisible());
+
+  child->Show();
+
+  EXPECT_FALSE(toplevel->IsVisible());
+  EXPECT_FALSE(child->IsVisible());
+
+  toplevel->Show();
+
+  EXPECT_TRUE(toplevel->IsVisible());
+  EXPECT_TRUE(child->IsVisible());
+
+  toplevel->CloseNow();
+  // |child| should be automatically destroyed with |toplevel|.
+}
+
+// Tests visibility of synthetic child widgets.
+TEST_F(WidgetTest, Visibility_Synthetic) {
+  // Create a hierarchy consisting of a desktop platform native widget,
+  // a toplevel NativeWidgetViews and a chlid NativeWidgetViews.
+  Widget* desktop = CreateTopLevelPlatformWidget();
+  desktop->Show();
+
+  widget_views_delegate().set_default_parent_view(desktop->GetRootView());
+  Widget* toplevel = CreateTopLevelNativeWidgetViews(); // Will be parented
+                                                        // automatically to
+                                                        // |toplevel|.
+
+  Widget* child = CreateChildNativeWidgetViewsWithParent(toplevel);
+
+  EXPECT_FALSE(toplevel->IsVisible());
+  EXPECT_FALSE(child->IsVisible());
+
+  child->Show();
+
+  EXPECT_FALSE(toplevel->IsVisible());
+  EXPECT_FALSE(child->IsVisible());
+
+  toplevel->Show();
+
+  EXPECT_TRUE(toplevel->IsVisible());
+  EXPECT_TRUE(child->IsVisible());
+
+  desktop->CloseNow();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget ownership tests.
 //
@@ -713,6 +772,10 @@ TEST_F(WidgetObserverTest, VisibilityChange) {
 
   Widget* child1 = NewWidget();
   Widget* child2 = NewWidget();
+
+  toplevel->Show();
+  child1->Show();
+  child2->Show();
 
   reset();
 

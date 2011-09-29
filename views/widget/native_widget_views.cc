@@ -138,6 +138,8 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
     view_->SetFillsBoundsOpaquely(!params.transparent);
 #endif
 
+  view_->SetVisible(params.type == Widget::InitParams::TYPE_CONTROL);
+
   // With the default NATIVE_WIDGET_OWNS_WIDGET ownership, the
   // deletion of either of the NativeWidgetViews or NativeWidgetView
   // (e.g. via View hierarchy destruction) will delete the other.
@@ -389,7 +391,8 @@ void NativeWidgetViews::ShowMaximizedWithBounds(
 }
 
 bool NativeWidgetViews::IsVisible() const {
-  return view_->IsVisible();
+  return view_->IsVisible() && (GetWidget()->is_top_level() ||
+                                GetWidget()->GetTopLevelWidget()->IsVisible());
 }
 
 void NativeWidgetViews::Activate() {
