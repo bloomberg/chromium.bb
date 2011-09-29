@@ -116,7 +116,10 @@ bool GLContextEGL::IsCurrent(GLSurface* surface) {
 
   bool native_context_is_current = context_ == eglGetCurrentContext();
 
-  DCHECK(native_context_is_current == (GetCurrent() == this));
+  // If our context is current then our notion of which GLContext is
+  // current must be correct. On the other hand, third-party code
+  // using OpenGL might change the current context.
+  DCHECK(!native_context_is_current || (GetCurrent() == this));
 
   if (!native_context_is_current)
     return false;
