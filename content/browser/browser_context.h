@@ -29,6 +29,7 @@ class ChromeBlobStorageContext;
 class DownloadManager;
 class FilePath;
 class GeolocationPermissionContext;
+class SpeechInputPreferences;
 class HostZoomMap;
 class SSLHostState;
 class WebKitContext;
@@ -85,6 +86,10 @@ class BrowserContext {
 
   // Returns the geolocation permission context for this context.
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
+
+  // Returns the speech input preferences. SpeechInputPreferences is a
+  // ref counted class, so callers should take a reference if needed.
+  virtual SpeechInputPreferences* GetSpeechInputPreferences() = 0;
 
   // Returns true if the last time this context was open it was exited cleanly.
   // This doesn't belong here; http://crbug.com/90737

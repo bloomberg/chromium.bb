@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "content/browser/content_browser_client.h"
+#include "content/browser/speech/speech_input_preferences.h"
 #include "content/common/speech_input_messages.h"
 
 namespace speech_input {
@@ -104,9 +105,14 @@ int SpeechInputDispatcherHost::SpeechInputCallers::request_id(int id) {
 
 SpeechInputManager* SpeechInputDispatcherHost::manager_;
 
-SpeechInputDispatcherHost::SpeechInputDispatcherHost(int render_process_id)
+SpeechInputDispatcherHost::SpeechInputDispatcherHost(
+    int render_process_id,
+    net::URLRequestContextGetter* context_getter,
+    SpeechInputPreferences* speech_input_preferences)
     : render_process_id_(render_process_id),
-      may_have_pending_requests_(false) {
+      may_have_pending_requests_(false),
+      context_getter_(context_getter),
+      speech_input_preferences_(speech_input_preferences) {
   // This is initialized by Browser. Do not add any non-trivial
   // initialization here, instead do it lazily when required (e.g. see the
   // method |manager()|) or add an Init() method.
@@ -155,7 +161,9 @@ void SpeechInputDispatcherHost::OnStartRecognition(
                               render_process_id_,
                               params.render_view_id, params.element_rect,
                               params.language, params.grammar,
-                              params.origin_url);
+                              params.origin_url,
+                              context_getter_.get(),
+                              speech_input_preferences_.get());
 }
 
 void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,

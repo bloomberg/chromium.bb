@@ -64,6 +64,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_input_manager.h"
+#include "chrome/browser/speech/chrome_speech_input_preferences.h"
 #include "chrome/browser/spellchecker/spellcheck_profile.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -446,9 +447,6 @@ void ProfileImpl::DoFinalInit() {
       g_browser_process->metrics_service()->recording_active())
     GetSpellCheckProfile()->StartRecordingMetrics(
         GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
-
-  speech_input::ChromeSpeechInputManager::GetInstance()->set_censor_results(
-      prefs->GetBoolean(prefs::kSpeechInputCensorResults));
 
   FilePath cookie_path = GetPath();
   cookie_path = cookie_path.Append(chrome::kCookieFilename);
@@ -1089,10 +1087,18 @@ HostZoomMap* ProfileImpl::GetHostZoomMap() {
 }
 
 GeolocationPermissionContext* ProfileImpl::GetGeolocationPermissionContext() {
-  if (!geolocation_permission_context_.get())
+  if (!geolocation_permission_context_.get()) {
     geolocation_permission_context_ =
         new ChromeGeolocationPermissionContext(this);
+  }
   return geolocation_permission_context_.get();
+}
+
+SpeechInputPreferences* ProfileImpl::GetSpeechInputPreferences() {
+  if (!speech_input_preferences_.get()) {
+    speech_input_preferences_ = new ChromeSpeechInputPreferences(GetPrefs());
+  }
+  return speech_input_preferences_.get();
 }
 
 UserStyleSheetWatcher* ProfileImpl::GetUserStyleSheetWatcher() {
@@ -1492,9 +1498,8 @@ void ProfileImpl::Observe(int type,
           process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
         }
       } else if (*pref_name_in == prefs::kSpeechInputCensorResults) {
-        speech_input::ChromeSpeechInputManager::GetInstance()->
-            set_censor_results(prefs->GetBoolean(
-                prefs::kSpeechInputCensorResults));
+        GetSpeechInputPreferences()->set_censor_results(prefs->GetBoolean(
+            prefs::kSpeechInputCensorResults));
       } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
         clear_local_state_on_exit_ =
             prefs->GetBoolean(prefs::kClearSiteDataOnExit);

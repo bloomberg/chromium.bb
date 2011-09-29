@@ -6,8 +6,6 @@
 
 #include "base/time.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/content_browser_client.h"
-#include "content/common/content_client.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using media::AudioInputController;
@@ -59,6 +57,7 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
                                    int caller_id,
                                    const std::string& language,
                                    const std::string& grammar,
+                                   net::URLRequestContextGetter* context_getter,
                                    bool censor_results,
                                    const std::string& hardware_info,
                                    const std::string& origin_url)
@@ -69,6 +68,7 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
       censor_results_(censor_results),
       hardware_info_(hardware_info),
       origin_url_(origin_url),
+      context_getter_(context_getter),
       codec_(AudioEncoder::CODEC_FLAC),
       encoder_(NULL),
       endpointer_(kAudioSampleRate),
@@ -224,13 +224,9 @@ void SpeechRecognizer::HandleOnData(string* data) {
     // This was the first audio packet recorded, so start a request to the
     // server to send the data and inform the delegate.
     delegate_->DidStartReceivingAudio(caller_id_);
-    // Deprecated; see http://crbug.com/92366
-    net::URLRequestContextGetter* context_getter =
-        content::GetContentClient()->browser()->
-            GetDefaultRequestContextDeprecatedCrBug64339();
-    request_.reset(new SpeechRecognitionRequest(context_getter, this));
-    request_->Start(language_, grammar_, censor_results_, hardware_info_,
-                    origin_url_, encoder_->mime_type());
+    request_.reset(new SpeechRecognitionRequest(context_getter_.get(), this));
+    request_->Start(language_, grammar_, censor_results_,
+                    hardware_info_, origin_url_, encoder_->mime_type());
   }
 
   string encoded_data;

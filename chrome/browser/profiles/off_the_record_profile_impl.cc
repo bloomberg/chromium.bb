@@ -421,6 +421,10 @@ GeolocationPermissionContext*
   return profile_->GetGeolocationPermissionContext();
 }
 
+SpeechInputPreferences* OffTheRecordProfileImpl::GetSpeechInputPreferences() {
+  return profile_->GetSpeechInputPreferences();
+}
+
 UserStyleSheetWatcher* OffTheRecordProfileImpl::GetUserStyleSheetWatcher() {
   return profile_->GetUserStyleSheetWatcher();
 }

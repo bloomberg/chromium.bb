@@ -36,6 +36,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/speech/chrome_speech_input_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -637,6 +638,12 @@ TestingProfile::GetGeolocationPermissionContext() {
         new ChromeGeolocationPermissionContext(this);
   }
   return geolocation_permission_context_.get();
+}
+
+SpeechInputPreferences* TestingProfile::GetSpeechInputPreferences() {
+  if (!speech_input_preferences_.get())
+    speech_input_preferences_ = new ChromeSpeechInputPreferences(GetPrefs());
+  return speech_input_preferences_.get();
 }
 
 HostZoomMap* TestingProfile::GetHostZoomMap() {

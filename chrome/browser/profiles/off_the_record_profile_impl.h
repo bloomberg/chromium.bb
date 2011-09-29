@@ -83,6 +83,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
+  virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
   virtual FindBarState* GetFindBarState() OVERRIDE;
   virtual bool HasProfileSyncService() const OVERRIDE;

@@ -2037,6 +2037,8 @@
         'browser/simple_message_box.h',
         'browser/speech/chrome_speech_input_manager.cc',
         'browser/speech/chrome_speech_input_manager.h',
+        'browser/speech/chrome_speech_input_preferences.cc',
+        'browser/speech/chrome_speech_input_preferences.h',
         'browser/speech/speech_input_bubble.cc',
         'browser/speech/speech_input_bubble.h',
         'browser/speech/speech_input_bubble_controller.cc',

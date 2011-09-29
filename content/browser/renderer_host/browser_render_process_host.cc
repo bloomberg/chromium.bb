@@ -381,7 +381,9 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new PepperFileMessageFilter(id(), browser_context()));
   channel_->AddFilter(
       new PepperMessageFilter(&browser_context()->GetResourceContext()));
-  channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
+  channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(
+      id(), browser_context()->GetRequestContext(),
+      browser_context()->GetSpeechInputPreferences()));
   channel_->AddFilter(
       new FileSystemDispatcherHost(browser_context()->GetRequestContext(),
                                    browser_context()->GetFileSystemContext()));

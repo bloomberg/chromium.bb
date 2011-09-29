@@ -84,6 +84,7 @@ class PromoResourceService;
 class ProtocolHandlerRegistry;
 class SQLitePersistentCookieStore;
 class SSLConfigServiceManager;
+class SpeechInputPreferences;
 class SpellCheckHost;
 class TemplateURLFetcher;
 class TokenService;
@@ -203,6 +204,7 @@ class Profile : public content::BrowserContext {
   virtual const content::ResourceContext& GetResourceContext() = 0;
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
+  virtual SpeechInputPreferences* GetSpeechInputPreferences() = 0;
   virtual quota::QuotaManager* GetQuotaManager() = 0;
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual WebKitContext* GetWebKitContext() = 0;

@@ -43,6 +43,7 @@ class ShellBrowserContext : public BrowserContext {
   virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
   virtual GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
+  virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
   virtual WebKitContext* GetWebKitContext() OVERRIDE;
@@ -63,6 +64,7 @@ class ShellBrowserContext : public BrowserContext {
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
+  scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;

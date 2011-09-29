@@ -18,6 +18,7 @@
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/ssl/ssl_host_state.h"
+#include "content/browser/speech/speech_input_preferences.h"
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_resource_context.h"
 #include "content/shell/shell_url_request_context_getter.h"
@@ -54,6 +55,23 @@ class ShellGeolocationPermissionContext : public GeolocationPermissionContext {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellGeolocationPermissionContext);
+};
+
+class ShellSpeechInputPreferences : public SpeechInputPreferences {
+ public:
+  ShellSpeechInputPreferences() {
+  }
+
+  // SpeechInputPreferences implementation.
+  virtual bool censor_results() const OVERRIDE {
+    return false;
+  }
+
+  virtual void set_censor_results(bool censor_results) OVERRIDE {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShellSpeechInputPreferences);
 };
 
 }  // namespace
@@ -158,6 +176,12 @@ GeolocationPermissionContext*
         new ShellGeolocationPermissionContext();
   }
   return geolocation_permission_context_;
+}
+
+SpeechInputPreferences* ShellBrowserContext::GetSpeechInputPreferences() {
+  if (!speech_input_preferences_.get())
+    speech_input_preferences_ = new ShellSpeechInputPreferences();
+  return speech_input_preferences_.get();
 }
 
 bool ShellBrowserContext::DidLastSessionExitCleanly()  {

@@ -5,13 +5,13 @@
 #include "content/browser/speech/speech_input_manager.h"
 
 #include "content/browser/browser_thread.h"
+#include "content/browser/speech/speech_input_preferences.h"
 #include "media/audio/audio_manager.h"
 
 namespace speech_input {
 
 SpeechInputManager::SpeechInputManager()
     : can_report_metrics_(false),
-      censor_results_(true),
       recording_caller_id_(0) {
 }
 
@@ -52,7 +52,9 @@ void SpeechInputManager::StartRecognition(
     const gfx::Rect& element_rect,
     const std::string& language,
     const std::string& grammar,
-    const std::string& origin_url) {
+    const std::string& origin_url,
+    net::URLRequestContextGetter* context_getter,
+    SpeechInputPreferences* speech_input_prefs) {
   DCHECK(!HasPendingRequest(caller_id));
 
   ShowRecognitionRequested(
@@ -62,7 +64,8 @@ void SpeechInputManager::StartRecognition(
   SpeechInputRequest* request = &requests_[caller_id];
   request->delegate = delegate;
   request->recognizer = new SpeechRecognizer(
-      this, caller_id, language, grammar, censor_results(),
+      this, caller_id, language, grammar, context_getter,
+      speech_input_prefs->censor_results(),
       request_info_, can_report_metrics_ ? origin_url : "");
   request->is_active = false;
 

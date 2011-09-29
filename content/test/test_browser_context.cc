@@ -61,6 +61,10 @@ TestBrowserContext::GetGeolocationPermissionContext() {
   return NULL;
 }
 
+SpeechInputPreferences* TestBrowserContext::GetSpeechInputPreferences() {
+  return NULL;
+}
+
 bool TestBrowserContext::DidLastSessionExitCleanly() {
   return true;
 }

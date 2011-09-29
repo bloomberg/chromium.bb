@@ -14,6 +14,8 @@
 #include "content/common/speech_input_result.h"
 #include "ui/gfx/rect.h"
 
+class SpeechInputPreferences;
+
 namespace speech_input {
 
 // This is the gatekeeper for speech recognition in the browser process. It
@@ -58,7 +60,9 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
                                 const gfx::Rect& element_rect,
                                 const std::string& language,
                                 const std::string& grammar,
-                                const std::string& origin_url);
+                                const std::string& origin_url,
+                                net::URLRequestContextGetter* context_getter,
+                                SpeechInputPreferences* speech_input_prefs);
   virtual void CancelRecognition(int caller_id);
   virtual void CancelAllRequestsWithDelegate(Delegate* delegate);
   virtual void StopRecording(int caller_id);
@@ -74,10 +78,6 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
                                  SpeechRecognizer::ErrorCode error);
   virtual void DidCompleteEnvironmentEstimation(int caller_id);
   virtual void SetInputVolume(int caller_id, float volume, float noise_volume);
-
-  void set_censor_results(bool censor) { censor_results_ = censor; }
-
-  bool censor_results() { return censor_results_; }
 
  protected:
   // The pure virtual methods are used for displaying the current state of
@@ -144,7 +144,6 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
   SpeechRecognizerMap requests_;
   std::string request_info_;
   bool can_report_metrics_;
-  bool censor_results_;
   int recording_caller_id_;
 };
 

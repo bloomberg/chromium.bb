@@ -57,6 +57,7 @@
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/speech/speech_input_preferences.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -1829,6 +1830,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       PrefService* prefs = profile_->GetPrefs();
       const bool censor = !prefs->GetBoolean(prefs::kSpeechInputCensorResults);
       prefs->SetBoolean(prefs::kSpeechInputCensorResults, censor);
+      profile_->GetSpeechInputPreferences()->set_censor_results(censor);
       break;
     }
 

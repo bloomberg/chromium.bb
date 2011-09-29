@@ -59,7 +59,9 @@ class FakeSpeechInputManager : public SpeechInputManager {
                                 const gfx::Rect& element_rect,
                                 const std::string& language,
                                 const std::string& grammar,
-                                const std::string& origin_url) {
+                                const std::string& origin_url,
+                                net::URLRequestContextGetter* context_getter,
+                                SpeechInputPreferences* speech_input_prefs) {
     VLOG(1) << "StartRecognition invoked.";
     EXPECT_EQ(0, caller_id_);
     EXPECT_EQ(NULL, delegate_);

@@ -46,6 +46,7 @@ class HostContentSettingsMap;
 class PrefService;
 class ProfileDependencyManager;
 class ProfileSyncService;
+class SpeechInputPreferences;
 class TemplateURLService;
 class TestingPrefService;
 class ThemeService;
@@ -220,6 +221,7 @@ class TestingProfile : public Profile {
   virtual FindBarState* GetFindBarState();
   virtual HostContentSettingsMap* GetHostContentSettingsMap();
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
+  virtual SpeechInputPreferences* GetSpeechInputPreferences();
   virtual HostZoomMap* GetHostZoomMap();
   virtual bool HasProfileSyncService() const;
   virtual std::wstring GetName();
@@ -364,6 +366,8 @@ class TestingProfile : public Profile {
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
+
+  scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
 
   // Find bar state.  Created lazily by GetFindBarState().
   scoped_ptr<FindBarState> find_bar_state_;

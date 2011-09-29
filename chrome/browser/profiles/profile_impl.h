@@ -25,6 +25,7 @@ class ExtensionPrefValueMap;
 class ExtensionSettings;
 class NetPrefObserver;
 class PrefService;
+class SpeechInputPreferences;
 class SpellCheckProfile;
 
 #if defined(OS_CHROMEOS)
@@ -43,101 +44,109 @@ class ProfileImpl : public Profile,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Profile implementation.
-  virtual std::string GetProfileName();
-  virtual FilePath GetPath();
-  virtual bool IsOffTheRecord();
-  virtual Profile* GetOffTheRecordProfile();
-  virtual void DestroyOffTheRecordProfile();
-  virtual bool HasOffTheRecordProfile();
-  virtual Profile* GetOriginalProfile();
-  virtual ChromeAppCacheService* GetAppCacheService();
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
-  virtual history::TopSites* GetTopSites();
-  virtual history::TopSites* GetTopSitesWithoutCreating();
-  virtual VisitedLinkMaster* GetVisitedLinkMaster();
-  virtual UserScriptMaster* GetUserScriptMaster();
-  virtual SSLHostState* GetSSLHostState();
-  virtual ExtensionService* GetExtensionService();
-  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager();
-  virtual ExtensionProcessManager* GetExtensionProcessManager();
-  virtual ExtensionMessageService* GetExtensionMessageService();
-  virtual ExtensionEventRouter* GetExtensionEventRouter();
-  virtual ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy();
-  virtual FaviconService* GetFaviconService(ServiceAccessType sat);
-  virtual HistoryService* GetHistoryService(ServiceAccessType sat);
-  virtual HistoryService* GetHistoryServiceWithoutCreating();
-  virtual AutocompleteClassifier* GetAutocompleteClassifier();
-  virtual history::ShortcutsBackend* GetShortcutsBackend();
-  virtual WebDataService* GetWebDataService(ServiceAccessType sat);
-  virtual WebDataService* GetWebDataServiceWithoutCreating();
-  virtual PasswordStore* GetPasswordStore(ServiceAccessType sat);
-  virtual PrefService* GetPrefs();
-  virtual PrefService* GetOffTheRecordPrefs();
-  virtual TemplateURLFetcher* GetTemplateURLFetcher();
-  virtual DownloadManager* GetDownloadManager();
-  virtual fileapi::FileSystemContext* GetFileSystemContext();
-  virtual quota::QuotaManager* GetQuotaManager();
-  virtual bool HasCreatedDownloadManager() const;
-  virtual net::URLRequestContextGetter* GetRequestContext();
+  // content::BrowserContext implementation:
+  virtual FilePath GetPath() OVERRIDE;
+  virtual SSLHostState* GetSSLHostState() OVERRIDE;
+  virtual DownloadManager* GetDownloadManager() OVERRIDE;
+  virtual bool HasCreatedDownloadManager() const OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
-      int renderer_child_id);
-  virtual net::URLRequestContextGetter* GetRequestContextForMedia();
-  virtual net::URLRequestContextGetter* GetRequestContextForExtensions();
+      int renderer_child_id) OVERRIDE;
+  virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
+  virtual const content::ResourceContext& GetResourceContext() OVERRIDE;
+  virtual HostZoomMap* GetHostZoomMap() OVERRIDE;
+  virtual GeolocationPermissionContext*
+      GetGeolocationPermissionContext() OVERRIDE;
+  virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
+  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
+  virtual WebKitContext* GetWebKitContext() OVERRIDE;
+  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
+  virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
+  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
+
+  // Profile implementation:
+  virtual std::string GetProfileName() OVERRIDE;
+  virtual bool IsOffTheRecord() OVERRIDE;
+  virtual Profile* GetOffTheRecordProfile() OVERRIDE;
+  virtual void DestroyOffTheRecordProfile() OVERRIDE;
+  virtual bool HasOffTheRecordProfile() OVERRIDE;
+  virtual Profile* GetOriginalProfile() OVERRIDE;
+  virtual history::TopSites* GetTopSites() OVERRIDE;
+  virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
+  virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
+  virtual UserScriptMaster* GetUserScriptMaster() OVERRIDE;
+  virtual ExtensionService* GetExtensionService() OVERRIDE;
+  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() OVERRIDE;
+  virtual ExtensionProcessManager* GetExtensionProcessManager() OVERRIDE;
+  virtual ExtensionMessageService* GetExtensionMessageService() OVERRIDE;
+  virtual ExtensionEventRouter* GetExtensionEventRouter() OVERRIDE;
+  virtual ExtensionSpecialStoragePolicy*
+      GetExtensionSpecialStoragePolicy() OVERRIDE;
+  virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;
+  virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
+  virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
+  virtual AutocompleteClassifier* GetAutocompleteClassifier() OVERRIDE;
+  virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
+  virtual WebDataService* GetWebDataService(ServiceAccessType sat) OVERRIDE;
+  virtual WebDataService* GetWebDataServiceWithoutCreating() OVERRIDE;
+  virtual PasswordStore* GetPasswordStore(ServiceAccessType sat) OVERRIDE;
+  virtual PrefService* GetPrefs() OVERRIDE;
+  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
+  virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
+  virtual net::URLRequestContextGetter*
+      GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(
-      const std::string& app_id);
-  virtual const content::ResourceContext& GetResourceContext();
-  virtual void RegisterExtensionWithRequestContexts(const Extension* extension);
+      const std::string& app_id) OVERRIDE;
+  virtual void RegisterExtensionWithRequestContexts(
+      const Extension* extension) OVERRIDE;
   virtual void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
-      const extension_misc::UnloadedExtensionReason reason);
-  virtual net::SSLConfigService* GetSSLConfigService();
-  virtual HostContentSettingsMap* GetHostContentSettingsMap();
-  virtual HostZoomMap* GetHostZoomMap();
-  virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
-  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();
-  virtual FindBarState* GetFindBarState();
-  virtual bool HasProfileSyncService() const;
-  virtual bool DidLastSessionExitCleanly();
-  virtual BookmarkModel* GetBookmarkModel();
-  virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
-  virtual bool IsSameProfile(Profile* profile);
-  virtual base::Time GetStartTime() const;
-  virtual SpellCheckHost* GetSpellCheckHost();
-  virtual void ReinitializeSpellCheckHost(bool force);
-  virtual WebKitContext* GetWebKitContext();
-  virtual void MarkAsCleanShutdown();
-  virtual void InitExtensions(bool extensions_enabled);
-  virtual void InitPromoResources();
-  virtual void InitRegisteredProtocolHandlers();
-  virtual FilePath last_selected_directory();
-  virtual void set_last_selected_directory(const FilePath& path);
-  virtual ProfileSyncService* GetProfileSyncService();
+      const extension_misc::UnloadedExtensionReason reason) OVERRIDE;
+  virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
+  virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
+  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
+  virtual FindBarState* GetFindBarState() OVERRIDE;
+  virtual bool HasProfileSyncService() const OVERRIDE;
+  virtual bool DidLastSessionExitCleanly() OVERRIDE;
+  virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
+  virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
+  virtual bool IsSameProfile(Profile* profile) OVERRIDE;
+  virtual base::Time GetStartTime() const OVERRIDE;
+  virtual SpellCheckHost* GetSpellCheckHost() OVERRIDE;
+  virtual void ReinitializeSpellCheckHost(bool force) OVERRIDE;
+  virtual void MarkAsCleanShutdown() OVERRIDE;
+  virtual void InitExtensions(bool extensions_enabled) OVERRIDE;
+  virtual void InitPromoResources() OVERRIDE;
+  virtual void InitRegisteredProtocolHandlers() OVERRIDE;
+  virtual FilePath last_selected_directory() OVERRIDE;
+  virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
+  virtual ProfileSyncService* GetProfileSyncService() OVERRIDE;
   virtual ProfileSyncService* GetProfileSyncService(
-      const std::string& cros_user);
-  virtual TokenService* GetTokenService();
+      const std::string& cros_user) OVERRIDE;
+  virtual TokenService* GetTokenService() OVERRIDE;
   void InitSyncService(const std::string& cros_user);
-  virtual ChromeBlobStorageContext* GetBlobStorageContext();
-  virtual ExtensionInfoMap* GetExtensionInfoMap();
-  virtual PromoCounter* GetInstantPromoCounter();
-  virtual ChromeURLDataManager* GetChromeURLDataManager();
-  virtual chrome_browser_net::Predictor* GetNetworkPredictor();
-  virtual void DeleteTransportSecurityStateSince(base::Time time);
+  virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
+  virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
+  virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
+  virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
+  virtual void DeleteTransportSecurityStateSince(base::Time time) OVERRIDE;
 
 #if defined(OS_CHROMEOS)
-  virtual void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia);
-  virtual void OnLogin();
-  virtual void SetupChromeOSEnterpriseExtensionObserver();
-  virtual void InitChromeOSPreferences();
+  virtual void ChangeAppLocale(const std::string& locale,
+                               AppLocaleChangedVia) OVERRIDE;
+  virtual void OnLogin() OVERRIDE;
+  virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE;
+  virtual void InitChromeOSPreferences() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 
-  virtual PrefProxyConfigTracker* GetProxyConfigTracker();
-  virtual prerender::PrerenderManager* GetPrerenderManager();
+  virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
+  virtual prerender::PrerenderManager* GetPrerenderManager() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   friend class Profile;
@@ -224,6 +233,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<GeolocationPermissionContext>
       geolocation_permission_context_;
+  scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
   scoped_ptr<FindBarState> find_bar_state_;
   scoped_refptr<ChromeDownloadManagerDelegate> download_manager_delegate_;

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/speech/speech_input_manager.h"
+#include "net/url_request/url_request_context_getter.h"
 
 struct SpeechInputHostMsg_StartRecognition_Params;
 
@@ -21,7 +22,10 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
  public:
   class SpeechInputCallers;
 
-  explicit SpeechInputDispatcherHost(int render_process_id);
+  SpeechInputDispatcherHost(
+      int render_process_id,
+      net::URLRequestContextGetter* context_getter,
+      SpeechInputPreferences* speech_input_preferences);
 
   // SpeechInputManager::Delegate methods.
   virtual void SetRecognitionResult(int caller_id,
@@ -52,6 +56,9 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
 
   int render_process_id_;
   bool may_have_pending_requests_;  // Set if we received any speech IPC request
+
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
 
   static SpeechInputManager* manager_;
 

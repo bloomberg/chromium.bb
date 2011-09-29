@@ -17,6 +17,10 @@
 #include "content/common/content_export.h"
 #include "media/audio/audio_input_controller.h"
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace speech_input {
 
 // Records audio, sends recorded audio to server and translates server response
@@ -83,6 +87,7 @@ class CONTENT_EXPORT SpeechRecognizer
                    int caller_id,
                    const std::string& language,
                    const std::string& grammar,
+                   net::URLRequestContextGetter* context_getter,
                    bool censor_results,
                    const std::string& hardware_info,
                    const std::string& origin_url);
@@ -139,6 +144,7 @@ class CONTENT_EXPORT SpeechRecognizer
 
   scoped_ptr<SpeechRecognitionRequest> request_;
   scoped_refptr<media::AudioInputController> audio_controller_;
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
   AudioEncoder::Codec codec_;
   scoped_ptr<AudioEncoder> encoder_;
   Endpointer endpointer_;
