@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-// TODO(avi): remove when not needed
-#include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
@@ -95,8 +93,7 @@ void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 
 bool TabbedPane::AcceleratorPressed(const views::Accelerator& accelerator) {
   // We only accept Ctrl+Tab keyboard events.
-  DCHECK(accelerator.key_code() ==
-      ui::VKEY_TAB && accelerator.IsCtrlDown());
+  DCHECK(accelerator.key_code() == ui::VKEY_TAB && accelerator.IsCtrlDown());
 
   int tab_count = GetTabCount();
   if (tab_count <= 1)
@@ -126,10 +123,10 @@ void TabbedPane::OnFocus() {
       selected_tab->GetWidget()->NotifyAccessibilityEvent(
           selected_tab, ui::AccessibilityTypes::EVENT_FOCUS, true);
     }
-  }
-  else
+  } else {
     View::OnFocus();  // Will focus the RootView window (so we still get
                       // keyboard messages).
+  }
 }
 
 void TabbedPane::OnPaintFocusBorder(gfx::Canvas* canvas) {
