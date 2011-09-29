@@ -84,9 +84,15 @@ merge-bot() {
   ${UTMAN} clean
   ${UTMAN} untrusted_sdk pnaclsdk.tgz
 
-  echo "@@@BUILD_STEP archive_toolchain@@@"
-  ${GSUTIL} cp pnaclsdk.tgz \
-    ${GSBASE}/${BUILDBOT_BUILDNUMBER}/pnaclsdk.tgz
+  #echo "@@@BUILD_STEP archive_toolchain@@@"
+  #${GSUTIL} cp pnaclsdk.tgz \
+  #  ${GSBASE}/${BUILDBOT_BUILDNUMBER}/pnaclsdk.tgz
+
+  # For now, run all these on a single bot, since the waterfall
+  # won't behave correctly otherwise.
+  scons-bot
+  spec2k-x86-bot
+  spec2k-arm-bot
 }
 
 download-toolchain() {
@@ -105,19 +111,19 @@ download-toolchain() {
 }
 
 scons-bot() {
-  download-toolchain
+  #download-toolchain
   local concurrency=8
   FAIL_FAST=false ${PNACL_SCRIPT} mode-test-all ${concurrency}
 }
 
 spec2k-x86-bot() {
-  download-toolchain
+  #download-toolchain
   CLOBBER=no ${SPEC2K_SCRIPT} pnacl-x8632
   CLOBBER=no ${SPEC2K_SCRIPT} pnacl-x8664
 }
 
 spec2k-arm-bot() {
-  download-toolchain
+  #download-toolchain
   CLOBBER=no ${SPEC2K_SCRIPT} pnacl-arm
 }
 
