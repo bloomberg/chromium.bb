@@ -19,4 +19,7 @@ void InitCrashProcessInfo();
 // Is Breakpad enabled?
 bool IsCrashReporterEnabled();
 
+// Call on clean process shutdown.
+void DestructCrashReporter();
+
 #endif  // CHROME_APP_BREAKPAD_MAC_H_

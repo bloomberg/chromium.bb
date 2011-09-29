@@ -16,5 +16,8 @@ bool IsCrashReporterEnabled() {
 void InitCrashProcessInfo() {
 }
 
+void DestructCrashReporter() {
+}
+
 void InitCrashReporter() {
 }
