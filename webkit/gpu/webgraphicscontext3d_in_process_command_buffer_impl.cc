@@ -22,6 +22,7 @@
 #include "base/message_loop.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -205,6 +206,8 @@ const int32 kTransferBufferSize = 1024 * 1024;
 static base::LazyInstance<
     std::set<WebGraphicsContext3DInProcessCommandBufferImpl*> >
         g_all_shared_contexts(base::LINKER_INITIALIZED);
+static base::LazyInstance<base::Lock>
+    g_all_shared_contexts_lock(base::LINKER_INITIALIZED);
 
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
@@ -281,7 +284,16 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
 #endif
 }
 
+// In the normal command buffer implementation, all commands are passed over IPC
+// to the gpu process where they are fed to the GLES2Decoder from a single
+// thread. In layout tests, any thread could call this function. GLES2Decoder,
+// and in particular the GL implementations behind it, are not generally
+// threadsafe, so we guard entry points with a mutex.
+static base::LazyInstance<base::Lock>
+    g_decoder_lock(base::LINKER_INITIALIZED);
+
 void GLInProcessContext::PumpCommands() {
+  base::AutoLock lock(g_decoder_lock.Get());
   decoder_->MakeCurrent();
   gpu_scheduler_->PutChanged();
   ::gpu::CommandBuffer::State state = command_buffer_->GetState();
@@ -587,6 +599,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
+  base::AutoLock a(g_all_shared_contexts_lock.Get());
   g_all_shared_contexts.Pointer()->erase(this);
 }
 
@@ -602,7 +615,6 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view,
     bool render_directly_to_web_view) {
-
   // Convert WebGL context creation attributes into GLInProcessContext / EGL
   // size requests.
   const int alpha_size = attributes.alpha ? 8 : 0;
@@ -639,6 +651,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
   }
 
   WebGraphicsContext3DInProcessCommandBufferImpl* context_group = NULL;
+  base::AutoLock lock(g_all_shared_contexts_lock.Get());
   if (attributes.shareResources)
     context_group = g_all_shared_contexts.Pointer()->empty() ?
         NULL : *g_all_shared_contexts.Pointer()->begin();
