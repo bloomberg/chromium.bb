@@ -235,7 +235,8 @@ cr.define('options', function() {
       };
       var separator = {
         countryCode: '',
-        name: '---'
+        name: '---',
+        disabled: true
       }
       countries.unshift(emptyCountry, defaultCountry, separator);
 
@@ -243,6 +244,7 @@ cr.define('options', function() {
       var countryList = $('country');
       for (var i = 0; i < countries.length; i++) {
         var country = new Option(countries[i].name, countries[i].countryCode);
+        country.disabled = countries[i].disabled;
         countryList.appendChild(country)
       }
     },
