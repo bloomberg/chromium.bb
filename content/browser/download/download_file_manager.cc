@@ -372,7 +372,7 @@ void DownloadFileManager::RenameCompletingDownloadFile(
   }
 
   // Rename the file, overwriting if necessary.
-  net::Error rename_error = download_file->Rename(full_path);
+  net::Error rename_error = download_file->Rename(new_path);
   if (net::OK != rename_error) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
