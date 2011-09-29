@@ -149,7 +149,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // occurs before the enterprise policy is read.  We are guaranteed that the
   // enterprise policy is pushed at least once, we we delay the connect call.
   if (!initial_policy_received_) {
-    LOG(INFO) << "Delaying connect until initial policy is read.";
+    VLOG(1) << "Delaying connect until initial policy is read.";
     delayed_connect_.reset(
         task_factory_.NewRunnableMethod(&ChromotingInstance::Connect, config));
     return;
@@ -166,7 +166,8 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
                                      view_proxy_, rectangle_decoder_.get(),
                                      input_handler_.get(), NULL));
 
-  LOG(INFO) << "Connecting.";
+  LOG(INFO) << "Connecting to " << config.host_jid
+            << ". Local jid: " << config.local_jid << ".";
 
   // Setup the XMPP Proxy.
   ChromotingScriptableObject* scriptable_object = GetScriptableObject();
@@ -179,7 +180,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // Kick off the connection.
   client_->Start(xmpp_proxy);
 
-  LOG(INFO) << "Connection status: Initializing";
+  VLOG(1) << "Connection status: Initializing";
   GetScriptableObject()->SetConnectionInfo(STATUS_INITIALIZING,
                                            QUALITY_UNKNOWN);
 }

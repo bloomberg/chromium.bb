@@ -266,14 +266,14 @@ void JingleSessionManager::OnJingleInfo(
     for (size_t i = 0; i < stun_hosts.size(); ++i) {
       stun_servers += stun_hosts[i].ToString() + "; ";
     }
-    LOG(INFO) << "Configuring with relay token: " << token
-              << ", relays: " << JoinString(relay_hosts, ';')
-              << ", stun: " << stun_servers;
+    VLOG(1) << "Configuring with relay token: " << token
+            << ", relays: " << JoinString(relay_hosts, ';')
+            << ", stun: " << stun_servers;
     http_port_allocator_->SetRelayToken(token);
     http_port_allocator_->SetStunHosts(stun_hosts);
     http_port_allocator_->SetRelayHosts(relay_hosts);
   } else {
-    LOG(INFO) << "Jingle info found but no port allocator.";
+    LOG(WARNING) << "Jingle info found but no port allocator.";
   }
 
   listener_->OnSessionManagerInitialized();

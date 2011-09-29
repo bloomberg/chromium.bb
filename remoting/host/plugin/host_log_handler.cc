@@ -52,7 +52,7 @@ void HostLogHandler::RegisterLoggingScriptObject(
     HostNPScriptObject* script_object) {
   base::AutoLock lock(g_logging_lock);
 
-  LOG(INFO) << "Registering log handler scriptable object";
+  VLOG(1) << "Registering log handler scriptable object";
 
   // Register this script object as the one that will handle all logging calls
   // and display them to the user.
@@ -75,7 +75,7 @@ void HostLogHandler::UnregisterLoggingScriptObject(
   g_has_logging_scriptable_object = false;
   g_logging_scriptable_object = NULL;
 
-  LOG(INFO) << "Unregistering log handler scriptable object";
+  VLOG(1) << "Unregistering log handler scriptable object";
 }
 
 // static

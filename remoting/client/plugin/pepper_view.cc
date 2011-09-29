@@ -45,7 +45,7 @@ void PepperView::Paint() {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   if (is_static_fill_) {
-    LOG(INFO) << "Static filling " << static_fill_color_;
+    VLOG(1) << "Static filling " << static_fill_color_;
     pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
                         pp::Size(graphics2d_.size().width(),
                                  graphics2d_.size().height()),
@@ -258,8 +258,8 @@ bool PepperView::SetPluginSize(const gfx::Size& plugin_size) {
   // Allocate the backing store to save the desktop image.
   if ((backing_store_.get() == NULL) ||
       (backing_store_->size() != pp_size)) {
-    LOG(INFO) << "Allocate backing store: "
-              << plugin_size.width() << " x " << plugin_size.height();
+    VLOG(1) << "Allocate backing store: "
+            << plugin_size.width() << " x " << plugin_size.height();
     backing_store_.reset(
         new pp::ImageData(instance_, pp::ImageData::GetNativeImageDataFormat(),
                           pp_size, false));
@@ -306,10 +306,8 @@ void PepperView::AllocateFrame(media::VideoFrame::Format format,
 void PepperView::ReleaseFrame(media::VideoFrame* frame) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  if (frame) {
-    LOG(WARNING) << "Frame released.";
+  if (frame)
     frame->Release();
-  }
 }
 
 void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,

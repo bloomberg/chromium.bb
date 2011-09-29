@@ -472,7 +472,7 @@ void HostNPScriptObject::FinishConnect(
   register_request_.reset(register_request.release());
 
   // Create the Host.
-  LOG(INFO) << "Connecting with NAT state: " << nat_traversal_enabled_;
+  LOG(INFO) << "NAT state: " << nat_traversal_enabled_;
   host_ = ChromotingHost::Create(
       &host_context_, host_config_, desktop_environment_.get(),
       access_verifier.release(), nat_traversal_enabled_);

@@ -66,9 +66,9 @@ void PepperSessionManager::OnJingleInfo(
   transport_config_.stun_server = stun_hosts[0].ToString();
   transport_config_.relay_server = relay_hosts[0];
   transport_config_.relay_token = relay_token;
-  LOG(INFO) << "STUN server: " << transport_config_.stun_server
-            << " Relay server: " << transport_config_.relay_server
-            << " Relay token: " << transport_config_.relay_token;
+  VLOG(1) << "STUN server: " << transport_config_.stun_server
+          << " Relay server: " << transport_config_.relay_server
+          << " Relay token: " << transport_config_.relay_token;
 
   listener_->OnSessionManagerInitialized();
 }

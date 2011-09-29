@@ -250,7 +250,7 @@ void ChromotingClient::BeginSessionResponse(
     return;
   }
 
-  LOG(INFO) << "BeginSessionResponse received";
+  VLOG(1) << "BeginSessionResponse received";
 
   // Inform the connection that the client has been authenticated. This will
   // enable the communication channels.

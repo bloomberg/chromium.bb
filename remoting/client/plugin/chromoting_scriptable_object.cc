@@ -231,7 +231,7 @@ void ChromotingScriptableObject::SetConnectionInfo(ConnectionStatus status,
   int status_index = property_names_[kStatusAttribute];
   int quality_index = property_names_[kQualityAttribute];
 
-  LOG(INFO) << "Connection status is updated: " << status;
+  VLOG(1) << "Connection status is updated: " << status;
 
   if (properties_[status_index].attribute.AsInt() != status ||
       properties_[quality_index].attribute.AsInt() != quality) {
@@ -269,7 +269,7 @@ void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
     SignalDesktopSizeChange();
   }
 
-  LOG(INFO) << "Update desktop size to: " << width << " x " << height;
+  VLOG(1) << "Update desktop size to: " << width << " x " << height;
 }
 
 void ChromotingScriptableObject::SignalLoginChallenge() {
@@ -398,8 +398,8 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
     return Var();
   }
 
-  LOG(INFO) << "Connecting to host.";
-  VLOG(1) << "client_jid: " << client_jid << ", host_jid: " << host_jid
+  VLOG(1) << "Connecting to host. "
+          << "client_jid: " << client_jid << ", host_jid: " << host_jid
           << ", access_code: " << access_code;
   ClientConfig config;
   config.local_jid = client_jid;
@@ -413,8 +413,7 @@ Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
 
 Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
                                              Var* exception) {
-  LOG(INFO) << "Disconnecting from host.";
-
+  VLOG(1) << "Disconnecting from host.";
   instance_->Disconnect();
   return Var();
 }
@@ -438,7 +437,7 @@ Var ChromotingScriptableObject::DoSubmitLogin(const std::vector<Var>& args,
   }
   std::string password = args[1].AsString();
 
-  LOG(INFO) << "Submitting login info to host.";
+  VLOG(1) << "Submitting login info to host.";
   instance_->SubmitLoginInfo(username, password);
   return Var();
 }
@@ -455,7 +454,7 @@ Var ChromotingScriptableObject::DoSetScaleToFit(const std::vector<Var>& args,
     return Var();
   }
 
-  LOG(INFO) << "Setting scale-to-fit.";
+  VLOG(1) << "Setting scale-to-fit.";
   instance_->SetScaleToFit(args[0].AsBool());
   return Var();
 }
