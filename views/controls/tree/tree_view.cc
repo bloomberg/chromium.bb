@@ -366,9 +366,9 @@ LRESULT TreeView::OnNotify(int w_param, LPNMHDR l_param) {
         if (info->item.mask & TVIF_CHILDREN)
           info->item.cChildren = model_->GetChildCount(details->node);
         if (info->item.mask & TVIF_TEXT) {
-          std::wstring text = details->node->GetTitle();
           DCHECK(info->item.cchTextMax);
 
+          string16 text = details->node->GetTitle();
           // Adjust the string direction if such adjustment is required.
           base::i18n::AdjustStringForLocaleDirection(&text);
 
