@@ -95,4 +95,4 @@ then
   fi
 fi
 
-find "$base_dir" -iname "*.pyc" -delete
+find "$base_dir" -iname "*.pyc" -exec rm {} \;
