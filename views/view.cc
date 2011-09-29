@@ -1483,7 +1483,7 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
     }
   }
 
-  if (is_add && child == this && layer() && !layer()->parent())
+  if (is_add && layer() && !layer()->parent())
     UpdateParentLayer();
 
   ViewHierarchyChanged(is_add, parent, child);
