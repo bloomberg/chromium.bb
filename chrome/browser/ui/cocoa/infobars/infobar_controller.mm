@@ -34,10 +34,6 @@ const float kAnimateCloseDuration = 0.12;
 // Sets |label_| based on |labelPlaceholder_|, sets |labelPlaceholder_| to nil.
 - (void)initializeLabel;
 
-// Asks the container controller to remove the infobar for this delegate.  This
-// call will trigger a notification that starts the infobar animating closed.
-- (void)removeSelf;
-
 // Performs final cleanup after an animation is finished or stopped, including
 // notifying the InfoBarDelegate that the infobar was closed and removing the
 // infobar from its container, if necessary.
@@ -105,6 +101,10 @@ const float kAnimateCloseDuration = 0.12;
   return YES;
 }
 
+- (BOOL)isOwned {
+  return !!owner_;
+}
+
 // Called when someone clicks on the ok button.
 - (void)ok:(id)sender {
   // Subclasses must override this method if they do not hide the ok button.
@@ -119,10 +119,15 @@ const float kAnimateCloseDuration = 0.12;
 
 // Called when someone clicks on the close button.
 - (void)dismiss:(id)sender {
-  if (delegate_)
-    delegate_->InfoBarDismissed();
-
+  if (![self isOwned])
+    return;
+  delegate_->InfoBarDismissed();
   [self removeSelf];
+}
+
+- (void)removeSelf {
+  DCHECK(owner_);
+  owner_->infobar_tab_helper()->RemoveInfoBar(delegate_);
 }
 
 - (AnimatableView*)animatableView {
@@ -165,10 +170,6 @@ const float kAnimateCloseDuration = 0.12;
   // currently-running animations, so do not set |infoBarClosing_| until after
   // starting the animation.
   infoBarClosing_ = YES;
-
-  // The owner called this method to close the infobar, so there will
-  // be no need to forward future remove events to the owner.
-  owner_ = NULL;
 }
 
 - (void)addAdditionalControls {
@@ -176,7 +177,7 @@ const float kAnimateCloseDuration = 0.12;
 }
 
 - (void)infobarWillClose {
-  // Default implementation does nothing.
+  owner_ = NULL;
 }
 
 - (void)removeButtons {
@@ -188,6 +189,20 @@ const float kAnimateCloseDuration = 0.12;
   [cancelButton_ removeFromSuperview];
   cancelButton_ = nil;
   [label_.get() setFrame:labelFrame];
+}
+
+- (void)disablePopUpMenu:(NSMenu*)menu {
+  // Remove the menu if visible.
+  [menu cancelTracking];
+
+  // If the menu is re-opened, prevent queries to update items.
+  [menu setDelegate:nil];
+
+  // Prevent target/action messages to the controller.
+  for (NSMenuItem* item in [menu itemArray]) {
+    [item setEnabled:NO];
+    [item setTarget:nil];
+  }
 }
 
 @end
@@ -206,16 +221,6 @@ const float kAnimateCloseDuration = 0.12;
       replaceSubview:labelPlaceholder_ with:label_.get()];
   labelPlaceholder_ = nil;  // Now released.
   [label_.get() setDelegate:self];
-}
-
-- (void)removeSelf {
-  // TODO(rohitrao): This method can be called even if the infobar has already
-  // been removed and |delegate_| is NULL.  Is there a way to rewrite the code
-  // so that inner event loops don't cause us to try and remove the infobar
-  // twice?  http://crbug.com/54253
-  if (owner_)
-    owner_->infobar_tab_helper()->RemoveInfoBar(delegate_);
-  owner_ = NULL;
 }
 
 - (void)cleanUpAfterAnimation:(BOOL)finished {
@@ -298,20 +303,12 @@ const float kAnimateCloseDuration = 0.12;
 // is called by the InfobarTextField on its delegate (the
 // LinkInfoBarController).
 - (void)linkClicked {
+  if (![self isOwned])
+    return;
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (delegate_ &&
-      delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition)) {
-    // Call |-removeSelf| on the outermost runloop to force a delay. As shown in
-    // <http://crbug.com/87201>, the second click event can be delivered after
-    // the animation finishes (and this gets released and deallocated), which
-    // leads to zombie messaging. Unfortunately, the order between the animation
-    // finishing and the click event being delivered is nondeterministic, so
-    // this hack is the best that can be done.
-    [self performSelector:@selector(removeSelf)
-               withObject:nil
-               afterDelay:0.0];
-  }
+  if (delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition))
+    [self removeSelf];
 }
 
 @end
@@ -324,13 +321,17 @@ const float kAnimateCloseDuration = 0.12;
 
 // Called when someone clicks on the "OK" button.
 - (IBAction)ok:(id)sender {
-  if (delegate_ && delegate_->AsConfirmInfoBarDelegate()->Accept())
+  if (![self isOwned])
+    return;
+  if (delegate_->AsConfirmInfoBarDelegate()->Accept())
     [self removeSelf];
 }
 
 // Called when someone clicks on the "Cancel" button.
 - (IBAction)cancel:(id)sender {
-  if (delegate_ && delegate_->AsConfirmInfoBarDelegate()->Cancel())
+  if (![self isOwned])
+    return;
+  if (delegate_->AsConfirmInfoBarDelegate()->Cancel())
     [self removeSelf];
 }
 
@@ -429,10 +430,11 @@ const float kAnimateCloseDuration = 0.12;
 // is called by the InfobarTextField on its delegate (the
 // LinkInfoBarController).
 - (void)linkClicked {
+  if (![self isOwned])
+    return;
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (delegate_ &&
-      delegate_->AsConfirmInfoBarDelegate()->LinkClicked(disposition))
+  if (delegate_->AsConfirmInfoBarDelegate()->LinkClicked(disposition))
     [self removeSelf];
 }
 

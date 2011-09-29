@@ -108,26 +108,6 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 
 }  // namespace TranslateInfoBarUtilities
 
-namespace {
-
-// Helper to close and disable popup menus when the infobar closes.
-// Disabling the popup button would cause a distracting visual change.
-void DisablePopUpMenu(NSMenu *menu) {
-  // Remove the menu if visible.
-  [menu cancelTracking];
-
-  // If the menu is re-opened, prevent queries to update items.
-  [menu setDelegate:nil];
-
-  // Prevent target/action messages to the controller.
-  for (NSMenuItem* item in [menu itemArray]) {
-    [item setEnabled:NO];
-    [item setTarget:nil];
-  }
-}
-
-}  // namespace
-
 // TranslateInfoBarDelegate views specific method:
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   TranslateInfoBarControllerBase* infobar_controller = NULL;
@@ -492,9 +472,9 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 }
 
 - (void)infobarWillClose {
-  DisablePopUpMenu([fromLanguagePopUp_ menu]);
-  DisablePopUpMenu([toLanguagePopUp_ menu]);
-  DisablePopUpMenu([optionsPopUp_ menu]);
+  [self disablePopUpMenu:[fromLanguagePopUp_ menu]];
+  [self disablePopUpMenu:[toLanguagePopUp_ menu]];
+  [self disablePopUpMenu:[optionsPopUp_ menu]];
   [super infobarWillClose];
 }
 
@@ -520,47 +500,42 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 
 // Called when "Translate" button is clicked.
 - (IBAction)ok:(id)sender {
-  // The delegate may be NULL if the infobar was closed.
+  if (![self isOwned])
+    return;
   TranslateInfoBarDelegate* delegate = [self delegate];
-  if (delegate) {
-    TranslateInfoBarDelegate::Type state = delegate->type();
-    DCHECK(state == TranslateInfoBarDelegate::BEFORE_TRANSLATE ||
-           state == TranslateInfoBarDelegate::TRANSLATION_ERROR);
-    delegate->Translate();
-  }
+  TranslateInfoBarDelegate::Type state = delegate->type();
+  DCHECK(state == TranslateInfoBarDelegate::BEFORE_TRANSLATE ||
+         state == TranslateInfoBarDelegate::TRANSLATION_ERROR);
+  delegate->Translate();
   UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
 }
 
 // Called when someone clicks on the "Nope" button.
 - (IBAction)cancel:(id)sender {
-  // The delegate may be NULL if the infobar was closed.
+  if (![self isOwned])
+    return;
   TranslateInfoBarDelegate* delegate = [self delegate];
-  if (delegate) {
-    DCHECK(delegate->type() == TranslateInfoBarDelegate::BEFORE_TRANSLATE);
-    delegate->TranslationDeclined();
-    UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
-  }
-  [super dismiss:nil];
+  DCHECK(delegate->type() == TranslateInfoBarDelegate::BEFORE_TRANSLATE);
+  delegate->TranslationDeclined();
+  UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
+  [super removeSelf];
 }
 
 - (void)messageButtonPressed:(id)sender {
-  // The delegate may be NULL if the infobar was closed.
-  TranslateInfoBarDelegate* delegate = [self delegate];
-  if (delegate)
-    delegate->MessageInfoBarButtonPressed();
+  if (![self isOwned])
+    return;
+  [self delegate]->MessageInfoBarButtonPressed();
 }
 
 - (IBAction)showOriginal:(id)sender {
-  // The delegate may be NULL if the infobar was closed.
-  TranslateInfoBarDelegate* delegate = [self delegate];
-  if (delegate)
-    delegate->RevertTranslation();
+  if (![self isOwned])
+    return;
+  [self delegate]->RevertTranslation();
 }
 
 // Called when any of the language drop down menus are changed.
 - (void)languageMenuChanged:(id)item {
-  // The delegate may be NULL if the infobar was closed.
-  if (![self delegate])
+  if (![self isOwned])
     return;
   if ([item respondsToSelector:@selector(tag)]) {
     int cmd = [item tag];
@@ -579,6 +554,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 
 // Called when the options menu is changed.
 - (void)optionsMenuChanged:(id)item {
+  if (![self isOwned])
+    return;
   if ([item respondsToSelector:@selector(tag)]) {
     int cmd = [item tag];
     // Danger Will Robinson! : This call can release the infobar (e.g. invoking

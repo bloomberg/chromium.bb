@@ -137,6 +137,8 @@ void ExtensionInfoBar::OnDelegateDeleted() {
 }
 
 void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
+  if (!owned())
+    return;  // We're closing; don't call anything, it might access the owner.
   const Extension* extension = GetDelegate()->extension_host()->extension();
   if (!extension->ShowConfigureContextMenus())
     return;
@@ -148,7 +150,6 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
       new ExtensionContextMenuModel(extension, browser, NULL);
   DCHECK_EQ(source, menu_);
   RunMenuAt(options_menu_contents.get(), menu_, views::MenuItemView::TOPLEFT);
-  // TODO(pkasting): this may be deleted after rewrite.
 }
 
 ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() {

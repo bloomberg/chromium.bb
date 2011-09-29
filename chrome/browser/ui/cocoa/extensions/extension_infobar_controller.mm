@@ -228,6 +228,11 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
            object:window_];
 }
 
+- (void)infobarWillClose {
+  [self disablePopUpMenu:contextMenu_.get()];
+  [super infobarWillClose];
+}
+
 - (void)extensionViewFrameChanged {
   [self adjustExtensionViewSize];
 

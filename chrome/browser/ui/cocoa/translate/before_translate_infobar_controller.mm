@@ -106,16 +106,16 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 
 // This is called when the "Never Translate [language]" button is pressed.
 - (void)neverTranslate:(id)sender {
-  TranslateInfoBarDelegate* delegate = [self delegate];
-  if (delegate)
-    delegate->NeverTranslatePageLanguage();
+  if (![self isOwned])
+    return;
+  [self delegate]->NeverTranslatePageLanguage();
 }
 
 // This is called when the "Always Translate [language]" button is pressed.
 - (void)alwaysTranslate:(id)sender {
-  TranslateInfoBarDelegate* delegate = [self delegate];
-  if (delegate)
-    delegate->AlwaysTranslatePageLanguage();
+  if (![self isOwned])
+    return;
+  [self delegate]->AlwaysTranslatePageLanguage();
 }
 
 - (bool)verifyLayout {

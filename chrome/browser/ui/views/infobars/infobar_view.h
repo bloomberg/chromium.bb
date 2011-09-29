@@ -51,16 +51,19 @@ class InfoBarView : public InfoBar,
   static views::Label* CreateLabel(const string16& text);
 
   // Creates a link with the appropriate font and color for an infobar.
+  // NOTE: Subclasses must ignore link clicks if we're unowned.
   static views::Link* CreateLink(const string16& text,
                                  views::LinkListener* listener,
                                  const SkColor& background_color);
 
   // Creates a menu button with an infobar-specific appearance.
+  // NOTE: Subclasses must ignore button presses if we're unowned.
   static views::MenuButton* CreateMenuButton(
       const string16& text,
       views::ViewMenuDelegate* menu_delegate);
 
   // Creates a text button with an infobar-specific appearance.
+  // NOTE: Subclasses must ignore button presses if we're unowned.
   static views::TextButton* CreateTextButton(views::ButtonListener* listener,
                                              const string16& text,
                                              bool needs_elevation);
@@ -72,6 +75,8 @@ class InfoBarView : public InfoBar,
                                     View* child) OVERRIDE;
 
   // views::ButtonListener:
+  // NOTE: This must not be called if we're unowned.  (Subclasses should ignore
+  // calls to ButtonPressed() in this case.)
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
@@ -88,8 +93,9 @@ class InfoBarView : public InfoBar,
   // Convenience getter.
   const InfoBarContainer::Delegate* container_delegate() const;
 
-  // Show a menu at the specified position. By invoking this InfobarView ensures
-  // the menu is destroyed at the appropriate time.
+  // Shows a menu at the specified position.
+  // NOTE: This must not be called if we're unowned.  (Subclasses should ignore
+  // calls to RunMenu() in this case.)
   void RunMenuAt(ui::MenuModel* menu_model,
                  views::MenuButton* button,
                  views::MenuItemView::AnchorPosition anchor);

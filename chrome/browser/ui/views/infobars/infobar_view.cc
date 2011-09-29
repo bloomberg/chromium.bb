@@ -68,6 +68,10 @@ InfoBarView::InfoBarView(TabContentsWrapper* owner, InfoBarDelegate* delegate)
 }
 
 InfoBarView::~InfoBarView() {
+  // We should have closed any open menus in PlatformSpecificHide(), then
+  // subclasses' RunMenu() functions should have prevented opening any new ones
+  // once we became unowned.
+  DCHECK(!menu_runner_.get());
 }
 
 // static
@@ -259,12 +263,9 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
 
 void InfoBarView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
+  DCHECK(owned());  // Subclasses should never call us while we're closing.
   if (sender == close_button_) {
-    // If we're not owned, we're already closing, so don't call
-    // InfoBarDismissed(), since this can lead to us double-recording
-    // dismissals.
-    if (delegate() && owned())
-      delegate()->InfoBarDismissed();
+    delegate()->InfoBarDismissed();
     RemoveSelf();
   }
 }
@@ -294,16 +295,15 @@ const InfoBarContainer::Delegate* InfoBarView::container_delegate() const {
 void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
                             views::MenuButton* button,
                             views::MenuItemView::AnchorPosition anchor) {
+  DCHECK(owned());  // We'd better not open any menus while we're closing.
   views::MenuModelAdapter adapter(menu_model);
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(button, &screen_point);
   menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
-  // Ignore the result as we know we can only get here after the menu has
-  // closed.
+  // Ignore the result since we don't need to handle a deleted menu specially.
   ignore_result(menu_runner_->RunMenuAt(
       GetWidget(), button, gfx::Rect(screen_point, button->size()), anchor,
       views::MenuRunner::HAS_MNEMONICS));
-  // TODO(pkasting): this may be deleted after rewrite.
 }
 
 void InfoBarView::PlatformSpecificShow(bool animate) {
@@ -327,10 +327,10 @@ void InfoBarView::PlatformSpecificShow(bool animate) {
 }
 
 void InfoBarView::PlatformSpecificHide(bool animate) {
-  // We're being removed. Cancel any menus we may have open.  Because we are
-  // deleted after a delay and after our delegate is deleted we have to
-  // explicitly cancel the menu rather than relying on the destructor to cancel
-  // the menu.
+  // Cancel any menus we may have open.  It doesn't make sense to leave them
+  // open while we're hidden, and if we're going to become unowned, we can't
+  // allow the user to choose any options and potentially call functions that
+  // try to access the owner.
   menu_runner_.reset();
 
   // It's possible to be called twice (once with |animate| true and once with it

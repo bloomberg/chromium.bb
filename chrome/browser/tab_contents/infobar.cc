@@ -103,10 +103,8 @@ void InfoBar::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void InfoBar::RemoveSelf() {
-  // |owner_| can be NULL here, e.g. because the user clicks the close button
-  // when the infobar is already closing.
-  if (delegate_ && owner_)
-    owner_->infobar_tab_helper()->RemoveInfoBar(delegate_);
+  DCHECK(owner_);
+  owner_->infobar_tab_helper()->RemoveInfoBar(delegate_);
 }
 
 void InfoBar::SetBarTargetHeight(int height) {

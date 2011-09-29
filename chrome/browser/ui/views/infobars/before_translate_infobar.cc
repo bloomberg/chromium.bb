@@ -161,6 +161,8 @@ int BeforeTranslateInfoBar::ContentMinimumWidth() const {
 
 void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
                                            const views::Event& event) {
+  if (!owned())
+    return;  // We're closing; don't call anything, it might access the owner.
   TranslateInfoBarDelegate* delegate = GetDelegate();
   if (sender == accept_button_) {
     delegate->Translate();
@@ -186,6 +188,8 @@ void BeforeTranslateInfoBar::OriginalLanguageChanged() {
 }
 
 void BeforeTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
+  if (!owned())
+    return;  // We're closing; don't call anything, it might access the owner.
   ui::MenuModel* menu_model = NULL;
   views::MenuButton* button = NULL;
   views::MenuItemView::AnchorPosition anchor = views::MenuItemView::TOPLEFT;
@@ -199,5 +203,4 @@ void BeforeTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
     anchor = views::MenuItemView::TOPRIGHT;
   }
   RunMenuAt(menu_model, button, anchor);
-  // TODO(pkasting): this may be deleted after rewrite.
 }

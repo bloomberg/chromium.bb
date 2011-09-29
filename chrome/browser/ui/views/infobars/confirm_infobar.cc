@@ -98,6 +98,8 @@ void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
 
 void ConfirmInfoBar::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
+  if (!owned())
+    return;  // We're closing; don't call anything, it might access the owner.
   ConfirmInfoBarDelegate* delegate = GetDelegate();
   if ((ok_button_ != NULL) && sender == ok_button_) {
     if (delegate->Accept())
@@ -122,6 +124,8 @@ int ConfirmInfoBar::ContentMinimumWidth() const {
 }
 
 void ConfirmInfoBar::LinkClicked(views::Link* source, int event_flags) {
+  if (!owned())
+    return;  // We're closing; don't call anything, it might access the owner.
   DCHECK(link_ != NULL);
   DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(

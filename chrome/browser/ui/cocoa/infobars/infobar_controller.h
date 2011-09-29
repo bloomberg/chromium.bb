@@ -48,14 +48,26 @@ class TabContentsWrapper;
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
                  owner:(TabContentsWrapper*)owner;
 
+// Returns YES if the infobar is owned.  If this is NO, it is not safe to call
+// any delegate functions, since they might attempt to access the owner.  Code
+// should generally just do nothing at all in this case (once we're closing, all
+// controls can safely just go dead).
+- (BOOL)isOwned;
+
 // Called when someone clicks on the OK or Cancel buttons.  Subclasses
 // must override if they do not hide the buttons.
 - (void)ok:(id)sender;
 - (void)cancel:(id)sender;
 
-// Called when someone clicks on the close button.  Dismisses the
-// infobar without taking any action.
+// Called when someone clicks on the close button.  Dismisses the infobar
+// without taking any action.
+// NOTE: Subclasses should not call this to close the infobar as it will lead to
+// errors in stat counting.  Call -removeSelf instead.
 - (IBAction)dismiss:(id)sender;
+
+// Asks the container controller to remove the infobar for this delegate.  This
+// call will trigger a notification that starts the infobar animating closed.
+- (void)removeSelf;
 
 // Returns a pointer to this controller's view, cast as an AnimatableView.
 - (AnimatableView*)animatableView;
@@ -84,6 +96,12 @@ class TabContentsWrapper;
 @property(nonatomic, assign) id<InfoBarContainer> containerController;
 @property(nonatomic, readonly) InfoBarDelegate* delegate;
 
+@end
+
+@interface InfoBarController (Protected)
+// Closes and disables the provided menu.  Subclasses should call this for each
+// popup menu in -infobarWillClose.
+- (void)disablePopUpMenu:(NSMenu*)menu;
 @end
 
 /////////////////////////////////////////////////////////////////////////

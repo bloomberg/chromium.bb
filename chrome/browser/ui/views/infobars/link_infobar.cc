@@ -73,6 +73,8 @@ void LinkInfoBar::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 }
 
 void LinkInfoBar::LinkClicked(views::Link* source, int event_flags) {
+  if (!owned())
+    return;  // We're closing; don't call anything, it might access the owner.
   DCHECK(link_ != NULL);
   DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(
