@@ -30,7 +30,7 @@ DesktopLayoutManager::~DesktopLayoutManager() {
 void DesktopLayoutManager::OnWindowResized() {
   gfx::Rect fullscreen_bounds =
       gfx::Rect(owner_->bounds().width(), owner_->bounds().height());
-  toplevel_window_container_->SetBounds(fullscreen_bounds, 0);
+  toplevel_window_container_->SetBounds(fullscreen_bounds);
 
   background_widget_->SetBounds(fullscreen_bounds);
 

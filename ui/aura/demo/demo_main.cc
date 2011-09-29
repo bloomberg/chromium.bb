@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
   aura::Window window1(&window_delegate1);
   window1.set_id(1);
   window1.Init();
-  window1.SetBounds(gfx::Rect(100, 100, 400, 400), 0);
+  window1.SetBounds(gfx::Rect(100, 100, 400, 400));
   window1.SetVisibility(aura::Window::VISIBILITY_SHOWN);
   window1.SetParent(NULL);
 
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
   aura::Window window2(&window_delegate2);
   window2.set_id(2);
   window2.Init();
-  window2.SetBounds(gfx::Rect(200, 200, 350, 350), 0);
+  window2.SetBounds(gfx::Rect(200, 200, 350, 350));
   window2.SetVisibility(aura::Window::VISIBILITY_SHOWN);
   window2.SetParent(NULL);
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
   aura::Window window3(&window_delegate3);
   window3.set_id(3);
   window3.Init();
-  window3.SetBounds(gfx::Rect(10, 10, 50, 50), 0);
+  window3.SetBounds(gfx::Rect(10, 10, 50, 50));
   window3.SetVisibility(aura::Window::VISIBILITY_SHOWN);
   window3.SetParent(&window2);
 

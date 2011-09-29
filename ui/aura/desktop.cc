@@ -52,7 +52,7 @@ void Desktop::Init() {
   window_->Init();
   compositor()->SetRootLayer(window_->layer());
   toplevel_window_container_->Init();
-  toplevel_window_container_->SetBounds(gfx::Rect(0, 0, 1280, 1024), 0);
+  toplevel_window_container_->SetBounds(gfx::Rect(0, 0, 1280, 1024));
   toplevel_window_container_->SetVisibility(aura::Window::VISIBILITY_SHOWN);
   toplevel_window_container_->SetParent(window_.get());
 }
@@ -88,7 +88,7 @@ bool Desktop::OnKeyEvent(const KeyEvent& event) {
 
 void Desktop::OnHostResized(const gfx::Size& size) {
   gfx::Rect bounds(window_->bounds().origin(), size);
-  window_->SetBounds(bounds, 0);
+  window_->SetBounds(bounds);
   compositor_->WidgetSizeChanged(size);
 }
 

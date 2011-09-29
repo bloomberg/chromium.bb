@@ -28,10 +28,6 @@ class VIEWS_EXPORT LayerPropertySetter {
   // layer. Ownership returns to caller.
   static LayerPropertySetter* CreateDefaultSetter();
 
-  // Creates a LayerPropertySetter that animates changes. Ownership returns to
-  // caller.
-  static LayerPropertySetter* CreateAnimatingSetter();
-
   virtual ~LayerPropertySetter() {}
 
   // Invoked when the LayerPropertySetter is to be used for a particular Layer.

@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_animator.h"
 
 namespace views {
 
@@ -48,48 +47,6 @@ void DefaultSetter::SetBounds(ui::Layer* layer, const gfx::Rect& bounds) {
   layer->SetBounds(bounds);
 }
 
-// AnimatingSetter -------------------------------------------------------------
-
-class AnimatingSetter : public LayerPropertySetter {
- public:
-  AnimatingSetter();
-
-  // LayerPropertySetter:
-  virtual void Installed(ui::Layer* layer) OVERRIDE;
-  virtual void Uninstalled(ui::Layer* layer) OVERRIDE;
-  virtual void SetTransform(ui::Layer* layer,
-                            const ui::Transform& transform) OVERRIDE;
-  virtual void SetBounds(ui::Layer* layer, const gfx::Rect& bounds) OVERRIDE;
-
- private:
-  scoped_ptr<ui::LayerAnimator> animator_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimatingSetter);
-};
-
-AnimatingSetter::AnimatingSetter() {
-}
-
-void AnimatingSetter::Installed(ui::Layer* layer) {
-  animator_.reset(new ui::LayerAnimator(layer));
-}
-
-void AnimatingSetter::Uninstalled(ui::Layer* layer) {
-  animator_.reset();
-}
-
-void AnimatingSetter::SetTransform(ui::Layer* layer,
-                                   const ui::Transform& transform) {
-  animator_->AnimateTransform(transform);
-}
-
-void AnimatingSetter::SetBounds(ui::Layer* layer, const gfx::Rect& bounds) {
-  if (bounds.size() == animator_->layer()->bounds().size())
-    animator_->AnimateToPoint(bounds.origin());
-  else
-    animator_->StopAnimatingToPoint();
-}
-
 }  // namespace
 
 // LayerPropertySetter ---------------------------------------------------------
@@ -97,11 +54,6 @@ void AnimatingSetter::SetBounds(ui::Layer* layer, const gfx::Rect& bounds) {
 // static
 LayerPropertySetter* LayerPropertySetter::CreateDefaultSetter() {
   return new DefaultSetter;
-}
-
-// static
-LayerPropertySetter* LayerPropertySetter::CreateAnimatingSetter() {
-  return new AnimatingSetter();
 }
 
 }  // namespace views

@@ -46,7 +46,7 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
         gfx::Point new_origin(event->location());
         new_origin.Offset(-mouse_down_offset_.x(), -mouse_down_offset_.y());
         new_origin.Offset(target->bounds().x(), target->bounds().y());
-        target->SetBounds(gfx::Rect(new_origin, target->bounds().size()), 0);
+        target->SetBounds(gfx::Rect(new_origin, target->bounds().size()));
         return true;
       }
       break;

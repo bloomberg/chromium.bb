@@ -59,7 +59,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->set_user_data(this);
   window_->Init();
   delegate_->OnNativeWidgetCreated();
-  window_->SetBounds(params.bounds, 0);
+  window_->SetBounds(params.bounds);
   window_->SetParent(params.parent);
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
@@ -218,11 +218,11 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
 }
 
 void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
-  window_->SetBounds(bounds, 0);
+  window_->SetBounds(bounds);
 }
 
 void NativeWidgetAura::SetSize(const gfx::Size& size) {
-  window_->SetBounds(gfx::Rect(window_->bounds().origin(), size), 0);
+  window_->SetBounds(gfx::Rect(window_->bounds().origin(), size));
 }
 
 void NativeWidgetAura::SetBoundsConstrained(const gfx::Rect& bounds,

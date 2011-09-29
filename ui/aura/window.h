@@ -18,6 +18,7 @@
 class SkCanvas;
 
 namespace ui {
+class Animation;
 class Compositor;
 class Layer;
 }
@@ -78,8 +79,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void SetLayoutManager(LayoutManager* layout_manager);
 
   // Changes the bounds of the window.
-  void SetBounds(const gfx::Rect& bounds, int anim_ms);
-  const gfx::Rect& bounds() const { return bounds_; }
+  void SetBounds(const gfx::Rect& new_bounds);
+  const gfx::Rect& bounds() const;
 
   // Marks the a portion of window as needing to be painted.
   void SchedulePaintInRect(const gfx::Rect& rect);
@@ -151,6 +152,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns true if this window has a mouse capture.
   bool HasCapture();
 
+  // Returns an animation configured with the default duration. All animations
+  // should use this. Caller owns returned value.
+  static ui::Animation* CreateDefaultAnimation();
+
  protected:
   // Returns the RootWindow or NULL if we don't yet have a RootWindow.
   virtual internal::RootWindow* GetRoot();
@@ -167,9 +172,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   Visibility visibility_;
 
   scoped_ptr<ui::Layer> layer_;
-
-  // Bounds of the window in the desktop's coordinate system.
-  gfx::Rect bounds_;
 
   // The Window's parent.
   // TODO(beng): Implement NULL-ness for toplevels.

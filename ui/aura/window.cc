@@ -13,6 +13,7 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/animation/multi_animation.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
@@ -84,21 +85,24 @@ void Window::SetLayoutManager(LayoutManager* layout_manager) {
   layout_manager_.reset(layout_manager);
 }
 
-void Window::SetBounds(const gfx::Rect& bounds, int anim_ms) {
-  // TODO: support anim_ms
+void Window::SetBounds(const gfx::Rect& new_bounds) {
   // TODO: funnel this through the Desktop.
-  bool was_move = bounds_.size() == bounds.size();
-  gfx::Rect old_bounds = bounds_;
-  bounds_ = bounds;
-  layer_->SetBounds(bounds);
+  gfx::Rect old_bounds = bounds();
+  bool was_move = old_bounds.size() == new_bounds.size();
+  layer_->SetBounds(new_bounds);
+
   if (layout_manager_.get())
     layout_manager_->OnWindowResized();
   if (delegate_)
-    delegate_->OnBoundsChanged(old_bounds, bounds_);
+    delegate_->OnBoundsChanged(old_bounds, new_bounds);
   if (was_move)
     SchedulePaintInRect(gfx::Rect());
   else
     SchedulePaint();
+}
+
+const gfx::Rect& Window::bounds() const {
+  return layer_->bounds();
 }
 
 void Window::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -231,12 +235,21 @@ bool Window::HasCapture() {
   return root && root->capture_window() == this;
 }
 
+// static
+ui::Animation* Window::CreateDefaultAnimation() {
+  std::vector<ui::MultiAnimation::Part> parts;
+  parts.push_back(ui::MultiAnimation::Part(200, ui::Tween::LINEAR));
+  ui::MultiAnimation* multi_animation = new ui::MultiAnimation(parts);
+  multi_animation->set_continuous(false);
+  return multi_animation;
+}
+
 internal::RootWindow* Window::GetRoot() {
   return parent_ ? parent_->GetRoot() : NULL;
 }
 
 void Window::SchedulePaint() {
-  SchedulePaintInRect(gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
+  SchedulePaintInRect(gfx::Rect(0, 0, bounds().width(), bounds().height()));
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {

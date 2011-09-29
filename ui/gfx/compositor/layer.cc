@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/animation/animation.h"
+#include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/point3.h"
 
@@ -86,18 +88,43 @@ bool Layer::Contains(const Layer* other) const {
   return false;
 }
 
-void Layer::SetTransform(const ui::Transform& transform) {
-  transform_ = transform;
+void Layer::SetAnimation(Animation* animation) {
+  if (animation) {
+    if (!animator_.get())
+      animator_.reset(new LayerAnimator(this));
+    animation->Start();
+    animator_->SetAnimation(animation);
+  } else {
+    animator_.reset();
+  }
+}
 
-  if (parent() && fills_bounds_opaquely_)
-    parent()->RecomputeHole();
+void Layer::SetTransform(const ui::Transform& transform) {
+  StopAnimatingIfNecessary(LayerAnimator::TRANSFORM);
+  if (animator_.get() && animator_->IsRunning()) {
+    animator_->AnimateTransform(transform);
+    return;
+  }
+  SetTransformImmediately(transform);
 }
 
 void Layer::SetBounds(const gfx::Rect& bounds) {
-  bounds_ = bounds;
+  StopAnimatingIfNecessary(LayerAnimator::LOCATION);
+  if (animator_.get() && animator_->IsRunning() &&
+      bounds.size() == bounds_.size()) {
+    animator_->AnimateToPoint(bounds.origin());
+    return;
+  }
+  SetBoundsImmediately(bounds);
+}
 
-  if (parent() && fills_bounds_opaquely_)
-    parent()->RecomputeHole();
+void Layer::SetOpacity(float opacity) {
+  StopAnimatingIfNecessary(LayerAnimator::OPACITY);
+  if (animator_.get() && animator_->IsRunning()) {
+    animator_->AnimateOpacity(opacity);
+    return;
+  }
+  SetOpacityImmediately(opacity);
 }
 
 void Layer::SetVisible(bool visible) {
@@ -235,28 +262,6 @@ void Layer::DrawTree() {
     children_.at(i)->DrawTree();
 }
 
-void Layer::SetOpacity(float alpha) {
-  bool was_opaque = GetCombinedOpacity() == 1.0f;
-  opacity_ = alpha;
-  bool is_opaque = GetCombinedOpacity() == 1.0f;
-
-  // If our opacity has changed we need to recompute our hole, our parent's hole
-  // and the holes of all our descendants.
-  if (was_opaque != is_opaque) {
-    if (parent_)
-      parent_->RecomputeHole();
-    std::queue<Layer*> to_process;
-    to_process.push(this);
-    while (!to_process.empty()) {
-      Layer* current = to_process.front();
-      to_process.pop();
-      current->RecomputeHole();
-      for (size_t i = 0; i < current->children_.size(); ++i)
-        to_process.push(current->children_.at(i));
-    }
-  }
-}
-
 float Layer::GetCombinedOpacity() const {
   float opacity = opacity_;
   Layer* current = this->parent_;
@@ -350,6 +355,77 @@ bool Layer::GetTransformRelativeTo(const Layer* ancestor,
                                static_cast<float>(p->bounds().y()));
   }
   return p == ancestor;
+}
+
+void Layer::StopAnimatingIfNecessary(
+    LayerAnimator::AnimationProperty property) {
+  if (!animator_.get() || !animator_->IsRunning() ||
+      !animator_->got_initial_tick()) {
+    return;
+  }
+
+  if (property != LayerAnimator::LOCATION &&
+      animator_->IsAnimating(LayerAnimator::LOCATION)) {
+    SetBoundsImmediately(
+        gfx::Rect(animator_->GetTargetPoint(), bounds_.size()));
+  }
+  if (property != LayerAnimator::OPACITY &&
+      animator_->IsAnimating(LayerAnimator::OPACITY)) {
+    SetOpacityImmediately(animator_->GetTargetOpacity());
+  }
+  if (property != LayerAnimator::TRANSFORM &&
+      animator_->IsAnimating(LayerAnimator::TRANSFORM)) {
+    SetTransformImmediately(animator_->GetTargetTransform());
+  }
+  animator_.reset();
+}
+
+void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
+  bounds_ = bounds;
+
+  if (parent() && fills_bounds_opaquely_)
+    parent()->RecomputeHole();
+}
+
+void Layer::SetTransformImmediately(const ui::Transform& transform) {
+  transform_ = transform;
+
+  if (parent() && fills_bounds_opaquely_)
+    parent()->RecomputeHole();
+}
+
+void Layer::SetOpacityImmediately(float opacity) {
+  bool was_opaque = GetCombinedOpacity() == 1.0f;
+  opacity_ = opacity;
+  bool is_opaque = GetCombinedOpacity() == 1.0f;
+
+  // If our opacity has changed we need to recompute our hole, our parent's hole
+  // and the holes of all our descendants.
+  if (was_opaque != is_opaque) {
+    if (parent_)
+      parent_->RecomputeHole();
+    std::queue<Layer*> to_process;
+    to_process.push(this);
+    while (!to_process.empty()) {
+      Layer* current = to_process.front();
+      to_process.pop();
+      current->RecomputeHole();
+      for (size_t i = 0; i < current->children_.size(); ++i)
+        to_process.push(current->children_.at(i));
+    }
+  }
+}
+
+void Layer::SetBoundsFromAnimator(const gfx::Rect& bounds) {
+  SetBoundsImmediately(bounds);
+}
+
+void Layer::SetTransformFromAnimator(const Transform& transform) {
+  SetTransformImmediately(transform);
+}
+
+void Layer::SetOpacityFromAnimator(float opacity) {
+  SetOpacityImmediately(opacity);
 }
 
 }  // namespace ui

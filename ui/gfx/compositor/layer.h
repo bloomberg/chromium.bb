@@ -8,17 +8,22 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/layer_animator_delegate.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 
 class SkCanvas;
 
 namespace ui {
 
+class Animation;
 class Compositor;
 class Texture;
 
@@ -30,7 +35,7 @@ class Texture;
 // NOTE: unlike Views, each Layer does *not* own its children views. If you
 // delete a Layer and it has children, the parent of each child layer is set to
 // NULL, but the children are not deleted.
-class COMPOSITOR_EXPORT Layer {
+class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
  public:
   enum LayerType {
     LAYER_HAS_NO_TEXTURE = 0,
@@ -70,6 +75,17 @@ class COMPOSITOR_EXPORT Layer {
   // Returns true if this Layer contains |other| somewhere in its children.
   bool Contains(const Layer* other) const;
 
+  // Sets the animation to use for changes to opacity, position or transform.
+  // That is, if you invoke this with non-NULL |animation| is started and any
+  // changes to opacity, position or transform are animated between the current
+  // value and target value. If the current animation is NULL or completed,
+  // changes are immediate. If the opacity, transform or bounds are changed
+  // and the animation is part way through, the animation is canceled and
+  // the bounds, opacity and transfrom and set to the target value.
+  // Layer takes ownership of |animation| and installs it's own delegate on the
+  // animation.
+  void SetAnimation(Animation* animation);
+
   // The transform, relative to the parent.
   void SetTransform(const ui::Transform& transform);
   const ui::Transform& transform() const { return transform_; }
@@ -77,6 +93,11 @@ class COMPOSITOR_EXPORT Layer {
   // The bounds, relative to the parent.
   void SetBounds(const gfx::Rect& bounds);
   const gfx::Rect& bounds() const { return bounds_; }
+
+  // The opacity of the layer. The opacity is applied to each pixel of the
+  // texture (resulting alpha = opacity * alpha).
+  float opacity() const { return opacity_; }
+  void SetOpacity(float opacity);
 
   // Sets |visible_|. The Layer is drawn by Draw() only when visible_ is true.
   bool visible() const { return visible_; }
@@ -146,9 +167,6 @@ class COMPOSITOR_EXPORT Layer {
   // (e.g. the GPU process on TOUCH_UI).
   bool layer_updated_externally() const { return layer_updated_externally_; }
 
-  float opacity() const { return opacity_; }
-  void SetOpacity(float alpha);
-
  private:
   // TODO(vollick): Eventually, if a non-leaf node has an opacity of less than
   // 1.0, we'll render to a separate texture, and then apply the alpha.
@@ -189,6 +207,22 @@ class COMPOSITOR_EXPORT Layer {
   // should have valid alpha.
   bool has_valid_alpha_channel() const { return !layer_updated_externally_; }
 
+  // If the animation is running and has progressed, it is stopped and all
+  // properties that are animated (except |property|) are immediately set to
+  // their target value.
+  void StopAnimatingIfNecessary(LayerAnimator::AnimationProperty property);
+
+  // Following are invoked from the animation or if no animation exists to
+  // update the values immediately.
+  void SetBoundsImmediately(const gfx::Rect& bounds);
+  void SetTransformImmediately(const ui::Transform& transform);
+  void SetOpacityImmediately(float opacity);
+
+  // LayerAnimatorDelegate overrides:
+  virtual void SetBoundsFromAnimator(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetTransformFromAnimator(const Transform& transform) OVERRIDE;
+  virtual void SetOpacityFromAnimator(float opacity) OVERRIDE;
+
   const LayerType type_;
 
   Compositor* compositor_;
@@ -217,6 +251,8 @@ class COMPOSITOR_EXPORT Layer {
   float opacity_;
 
   LayerDelegate* delegate_;
+
+  scoped_ptr<LayerAnimator> animator_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

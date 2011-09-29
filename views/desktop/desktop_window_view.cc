@@ -167,8 +167,6 @@ void DesktopWindowView::CreateTestWindow(const string16& title,
     static_cast<NativeWidgetViews*>(window->native_widget())->GetView()->
         SetTransform(transform);
   }
-  static_cast<NativeWidgetViews*>(window->native_widget())->GetView()->
-      SetLayerPropertySetter(LayerPropertySetter::CreateAnimatingSetter());
 }
 
 void DesktopWindowView::AddObserver(DesktopWindowView::Observer* observer) {

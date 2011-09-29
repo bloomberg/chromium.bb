@@ -10,55 +10,72 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/tween.h"
 #include "ui/gfx/compositor/compositor_export.h"
-#include "ui/gfx/point.h"
+
+namespace gfx {
+class Point;
+}
 
 namespace ui {
 
+class Animation;
 class Layer;
-class MultiAnimation;
+class LayerAnimatorDelegate;
 class Transform;
 
 // LayerAnimator manages animating various properties of a Layer.
 class COMPOSITOR_EXPORT LayerAnimator : public ui::AnimationDelegate {
  public:
+  // Types of properties that can be animated.
+  enum AnimationProperty {
+    LOCATION,
+    OPACITY,
+    TRANSFORM,
+  };
+
   explicit LayerAnimator(Layer* layer);
   virtual ~LayerAnimator();
 
-  ui::Layer* layer() { return layer_; }
+  // Sets the animation to use. LayerAnimator takes ownership of the animation.
+  void SetAnimation(Animation* animation);
 
-  // Sets the duration (in ms) and type of animation. This does not effect
-  // existing animations, only newly created animations.
-  void SetAnimationDurationAndType(int duration, ui::Tween::Type tween_type);
+  ui::Layer* layer() { return layer_; }
 
   // Animates the layer to the specified point. The point is relative to the
   // parent layer.
   void AnimateToPoint(const gfx::Point& target);
-  void StopAnimatingToPoint() {
-    StopAnimating(LOCATION);
-  }
 
-  // Animates the transform from from the current transform to |transform|.
+  // Animates the transform from the current transform to |transform|.
   void AnimateTransform(const Transform& transform);
-  void StopAnimatingTransform() {
-    StopAnimating(TRANSFORM);
-  }
+
+  // Animates the opacity from the current opacity to |target_opacity|.
+  void AnimateOpacity(float target_opacity);
+
+  // Returns the target value for the specified type. If the specified property
+  // is not animating, the current value is returned.
+  gfx::Point GetTargetPoint();
+  float GetTargetOpacity();
+  ui::Transform GetTargetTransform();
+
+  // Returns true if animating |property|.
+  bool IsAnimating(AnimationProperty property) const;
+
+  // Returns true if the animation is running.
+  bool IsRunning() const;
+
+  // Returns true if the animation has progressed at least once since
+  // SetAnimation() was invoked.
+  bool got_initial_tick() const { return got_initial_tick_; }
 
   // AnimationDelegate:
   virtual void AnimationProgressed(const Animation* animation) OVERRIDE;
   virtual void AnimationEnded(const Animation* animation) OVERRIDE;
 
  private:
-  // Types of properties that can be animated.
-  enum AnimationProperty {
-    LOCATION,
-    TRANSFORM
-  };
-
   // Parameters used when animating the location.
   struct LocationParams {
     int start_x;
@@ -67,35 +84,31 @@ class COMPOSITOR_EXPORT LayerAnimator : public ui::AnimationDelegate {
     int target_y;
   };
 
-  // Parameters used whe animating the transform.
+  // Parameters used when animating the transform.
   struct TransformParams {
-    // TODO: make 4x4 whe Transform is updated.
     SkMScalar start[16];
     SkMScalar target[16];
   };
 
+  // Parameters used when animating the opacity.
+  struct OpacityParams {
+    float start;
+    float target;
+  };
+
   union Params {
     LocationParams location;
+    OpacityParams opacity;
     TransformParams transform;
   };
 
-  // Used for tracking the animation of a particular property.
-  struct Element {
-    Params params;
-    ui::MultiAnimation* animation;
-  };
-
-  typedef std::map<AnimationProperty, Element> Elements;
+  typedef std::map<AnimationProperty, Params> Elements;
 
   // Stops animating the specified property. This does not set the property
   // being animated to its final value.
   void StopAnimating(AnimationProperty property);
 
-  // Creates an animation.
-  ui::MultiAnimation* CreateAndStartAnimation();
-
-  // Returns an iterator into |elements_| that matches the specified animation.
-  Elements::iterator GetElementByAnimation(const ui::MultiAnimation* animation);
+  LayerAnimatorDelegate* delegate();
 
   // The layer.
   Layer* layer_;
@@ -103,11 +116,9 @@ class COMPOSITOR_EXPORT LayerAnimator : public ui::AnimationDelegate {
   // Properties being animated.
   Elements elements_;
 
-  // Duration in ms for newly created animations.
-  int duration_in_ms_;
+  scoped_ptr<ui::Animation> animation_;
 
-  // Type of animation for newly created animations.
-  ui::Tween::Type animation_type_;
+  bool got_initial_tick_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };
