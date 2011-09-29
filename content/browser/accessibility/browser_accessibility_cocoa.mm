@@ -21,7 +21,6 @@
 // this object.
 extern "C" void NSAccessibilityUnregisterUniqueIdForUIElement(id element);
 
-typedef WebAccessibility::IntAttribute IntAttribute;
 typedef WebAccessibility::StringAttribute StringAttribute;
 
 namespace {
@@ -183,6 +182,8 @@ static const AttributeToMethodNameEntry attributeToMethodNameContainer[] = {
   { NSAccessibilityEnabledAttribute, @"enabled" },
   { NSAccessibilityFocusedAttribute, @"focused" },
   { NSAccessibilityHelpAttribute, @"help" },
+  { NSAccessibilityMaxValueAttribute, @"maxValue" },
+  { NSAccessibilityMinValueAttribute, @"minValue" },
   { NSAccessibilityNumberOfCharactersAttribute, @"numberOfCharacters" },
   { NSAccessibilityParentAttribute, @"parent" },
   { NSAccessibilityPositionAttribute, @"position" },
@@ -198,7 +199,14 @@ static const AttributeToMethodNameEntry attributeToMethodNameContainer[] = {
   { NSAccessibilityValueAttribute, @"value" },
   { NSAccessibilityVisibleCharacterRangeAttribute, @"visibleCharacterRange" },
   { NSAccessibilityWindowAttribute, @"window" },
+  { @"AXAccessKey", @"accessKey" },
+  { @"AXARIAAtomic", @"ariaAtomic" },
+  { @"AXARIABusy", @"ariaBusy" },
+  { @"AXARIALive", @"ariaLive" },
+  { @"AXARIARelevant", @"ariaRelevant" },
   { @"AXLoaded", @"loaded" },
+  { @"AXLoadingProgress", @"loadingProgress" },
+  { @"AXRequired", @"required" },
   { @"AXVisited", @"visited" },
 };
 
@@ -260,6 +268,38 @@ NSDictionary* attributeToMethodNameMap = nil;
   }
 
   [super dealloc];
+}
+
+- (NSString*)accessKey {
+  return NSStringForStringAttribute(
+      browserAccessibility_->string_attributes(),
+      WebAccessibility::ATTR_ACCESS_KEY);
+}
+
+- (NSNumber*)ariaAtomic {
+  bool boolValue = false;
+  browserAccessibility_->GetBoolAttribute(
+      WebAccessibility::ATTR_LIVE_ATOMIC, &boolValue);
+  return [NSNumber numberWithBool:boolValue];
+}
+
+- (NSNumber*)ariaBusy {
+  bool boolValue = false;
+  browserAccessibility_->GetBoolAttribute(
+      WebAccessibility::ATTR_LIVE_BUSY, &boolValue);
+  return [NSNumber numberWithBool:boolValue];
+}
+
+- (NSString*)ariaLive {
+  return NSStringForStringAttribute(
+      browserAccessibility_->string_attributes(),
+      WebAccessibility::ATTR_LIVE_STATUS);
+}
+
+- (NSString*)ariaRelevant {
+  return NSStringForStringAttribute(
+      browserAccessibility_->string_attributes(),
+      WebAccessibility::ATTR_LIVE_RELEVANT);
 }
 
 // Returns an array of BrowserAccessibilityCocoa objects, representing the
@@ -350,16 +390,37 @@ NSDictionary* attributeToMethodNameMap = nil;
   return [NSNumber numberWithBool:YES];
 }
 
+- (NSNumber*)loadingProgress {
+  float floatValue = 0.0;
+  browserAccessibility_->GetFloatAttribute(
+      WebAccessibility::ATTR_DOC_LOADING_PROGRESS, &floatValue);
+  return [NSNumber numberWithFloat:floatValue];
+}
+
+- (NSNumber*)maxValue {
+  float floatValue = 0.0;
+  browserAccessibility_->GetFloatAttribute(
+      WebAccessibility::ATTR_MAX_VALUE_FOR_RANGE, &floatValue);
+  return [NSNumber numberWithFloat:floatValue];
+}
+
+- (NSNumber*)minValue {
+  float floatValue = 0.0;
+  browserAccessibility_->GetFloatAttribute(
+      WebAccessibility::ATTR_MIN_VALUE_FOR_RANGE, &floatValue);
+  return [NSNumber numberWithFloat:floatValue];
+}
+
+- (NSNumber*)numberOfCharacters {
+  return [NSNumber numberWithInt:browserAccessibility_->value().length()];
+}
+
 // The origin of this accessibility object in the page's document.
 // This is relative to webkit's top-left origin, not Cocoa's
 // bottom-left origin.
 - (NSPoint)origin {
   return NSMakePoint(browserAccessibility_->location().x(),
                      browserAccessibility_->location().y());
-}
-
-- (NSNumber*)numberOfCharacters {
-  return [NSNumber numberWithInt:browserAccessibility_->value().length()];
 }
 
 - (id)parent {
@@ -375,6 +436,11 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (NSValue*)position {
   return [NSValue valueWithPoint:[delegate_ accessibilityPointInScreen:self]];
+}
+
+- (NSNumber*)required {
+  return [NSNumber numberWithBool:
+      !GetState(browserAccessibility_, WebAccessibility::STATE_REQUIRED)];
 }
 
 // Returns a string indicating the role of this object.
@@ -456,22 +522,28 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 // Returns a subrole based upon the role.
 - (NSString*) subrole {
-  // TODO: support attachments
-  // TODO: support lists -> NSAccessibilityContentListSubrole ||
-  //                        NSAccessibilityDefinitionListSubrole
-
   WebAccessibility::Role browserAccessibilityRole =
-      static_cast<WebAccessibility::Role>( browserAccessibility_->role());
-
+      static_cast<WebAccessibility::Role>(browserAccessibility_->role());
   if (browserAccessibilityRole == WebAccessibility::ROLE_TEXT_FIELD &&
       GetState(browserAccessibility_, WebAccessibility::STATE_PROTECTED)) {
     return @"AXSecureTextField";
   }
 
+  NSString* htmlTag = NSStringForStringAttribute(
+      browserAccessibility_->string_attributes(),
+      WebAccessibility::ATTR_HTML_TAG);
+
+  if (browserAccessibilityRole == WebAccessibility::ROLE_LIST) {
+    if ([htmlTag isEqualToString:@"ul"] ||
+        [htmlTag isEqualToString:@"ol"]) {
+      return @"AXContentList";
+    } else if ([htmlTag isEqualToString:@"dl"]) {
+      return @"AXDefinitionList";
+    }
+  }
 
   std::map<WebAccessibility::Role, NSString*>::iterator it =
       webAccessibilityToNativeSubrole.find(browserAccessibilityRole);
-
   if (it != webAccessibilityToNativeSubrole.end())
     return it->second;
   else
@@ -527,9 +599,24 @@ NSDictionary* attributeToMethodNameMap = nil;
     return @"";
   } else if ([role isEqualToString:NSAccessibilityCheckBoxRole] ||
              [role isEqualToString:NSAccessibilityRadioButtonRole]) {
-    return [NSNumber numberWithInt:GetState(
-        browserAccessibility_, WebAccessibility::STATE_CHECKED) ? 1 : 0];
+    int checkOrRadioValue = GetState(
+        browserAccessibility_, WebAccessibility::STATE_CHECKED) ? 1 : 0;
+    bool mixed = false;
+    browserAccessibility_->GetBoolAttribute(
+        WebAccessibility::ATTR_BUTTON_MIXED, &mixed);
+    if (mixed)
+      checkOrRadioValue = 2;
+    return [NSNumber numberWithInt:checkOrRadioValue];
+  } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
+             [role isEqualToString:NSAccessibilitySliderRole] ||
+             [role isEqualToString:NSAccessibilityScrollBarRole]) {
+    float floatValue;
+    if (browserAccessibility_->GetFloatAttribute(
+            WebAccessibility::ATTR_VALUE_FOR_RANGE, &floatValue)) {
+      return [NSNumber numberWithFloat:floatValue];
+    }
   }
+
   return base::SysUTF16ToNSString(browserAccessibility_->value());
 }
 
@@ -721,6 +808,8 @@ NSDictionary* attributeToMethodNameMap = nil;
       NSAccessibilityValueAttribute,
       NSAccessibilityWindowAttribute,
       NSAccessibilityURLAttribute,
+      @"AXAccessKey",
+      @"AXRequired",
       @"AXVisited",
       nil];
 
@@ -732,7 +821,10 @@ NSDictionary* attributeToMethodNameMap = nil;
         NSAccessibilityRowsAttribute,
         nil]];
   } else if ([role isEqualToString:@"AXWebArea"]) {
-    [ret addObject:@"AXLoaded"];
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        @"AXLoaded",
+        @"AXLoadingProgress",
+        nil]];
   } else if ([role isEqualToString:NSAccessibilityTextFieldRole] ||
              [role isEqualToString:NSAccessibilityTextAreaRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
@@ -744,6 +836,30 @@ NSDictionary* attributeToMethodNameMap = nil;
         nil]];
   } else if ([role isEqualToString:NSAccessibilityTabGroupRole]) {
     [ret addObject:NSAccessibilityTabsAttribute];
+  } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
+             [role isEqualToString:NSAccessibilitySliderRole] ||
+             [role isEqualToString:NSAccessibilityScrollBarRole]) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        NSAccessibilityMaxValueAttribute,
+        NSAccessibilityMinValueAttribute,
+        nil]];
+  }
+
+  // Live regions.
+  string16 s;
+  if (browserAccessibility_->GetStringAttribute(
+          WebAccessibility::ATTR_LIVE_STATUS, &s)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        @"AXARIALive",
+        @"AXARIARelevant",
+        nil]];
+  }
+  if (browserAccessibility_->GetStringAttribute(
+          WebAccessibility::ATTR_CONTAINER_LIVE_STATUS, &s)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        @"AXARIAAtomic",
+        @"AXARIABusy",
+        nil]];
   }
 
   return ret;
