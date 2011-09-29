@@ -24,7 +24,9 @@ typedef RenderViewHost* RenderViewHostIdentifier;
   // Our associated TabContents. Weak reference.
   TabContents* tabContents_;
 
-  // The TabContentsWrapper for the TabContents member above. Weak reference.
+  // The TabContentsWrapper for |tab_contents_|.
+  // Weak reference; may be NULL if the contents aren't contained in a wrapper
+  // (e.g. WebUI dialogs).
   TabContentsWrapper* tab_;
 
   // Updated asynchronously during a drag to tell us whether or not we should

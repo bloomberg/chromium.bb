@@ -49,8 +49,10 @@ class WebDropTarget : public ui::DropTarget {
  private:
   // Our associated TabContents.
   TabContents* tab_contents_;
-  // The TabContentsWrapper for the TabContents member defined above.
-  // Weak reference.
+
+  // The TabContentsWrapper for |tab_contents_|.
+  // Weak reference; may be NULL if the contents aren't contained in a wrapper
+  // (e.g. WebUI dialogs).
   TabContentsWrapper* tab_;
 
   // We keep track of the render view host we're dragging over.  If it changes

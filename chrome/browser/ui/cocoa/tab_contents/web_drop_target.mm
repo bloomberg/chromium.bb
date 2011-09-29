@@ -85,13 +85,12 @@ using WebKit::WebDragOperationsMask;
     return NSDragOperationNone;
   }
 
-  if (!tab_) {
+  if (!tab_)
     tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tabContents_);
-    DCHECK(tab_);
-  }
+
   // If the tab is showing the bookmark manager, send BookmarkDrag events
   BookmarkTabHelper::BookmarkDrag* dragDelegate =
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate();
+      tab_ ? tab_->bookmark_tab_helper()->GetBookmarkDragDelegate() : NULL;
   BookmarkNodeData dragData;
   if(dragDelegate && dragData.ReadFromDragClipboard())
     dragDelegate->OnDragEnter(dragData);
@@ -150,10 +149,9 @@ using WebKit::WebDragOperationsMask;
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
 
-  DCHECK(tab_);
   // If the tab is showing the bookmark manager, send BookmarkDrag events
   BookmarkTabHelper::BookmarkDrag* dragDelegate =
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate();
+      tab_ ? tab_->bookmark_tab_helper()->GetBookmarkDragDelegate() : NULL;
   BookmarkNodeData dragData;
   if(dragDelegate && dragData.ReadFromDragClipboard())
     dragDelegate->OnDragOver(dragData);
@@ -178,10 +176,9 @@ using WebKit::WebDragOperationsMask;
     return NO;
   }
 
-  DCHECK(tab_);
   // If the tab is showing the bookmark manager, send BookmarkDrag events
   BookmarkTabHelper::BookmarkDrag* dragDelegate =
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate();
+      tab_ ? tab_->bookmark_tab_helper()->GetBookmarkDragDelegate() : NULL;
   BookmarkNodeData dragData;
   if(dragDelegate && dragData.ReadFromDragClipboard())
     dragDelegate->OnDrop(dragData);

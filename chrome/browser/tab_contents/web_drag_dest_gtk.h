@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -34,6 +35,8 @@ class WebDragDestGtk {
   void DragLeave();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebDragDestGtkTest, NoTabContentsWrapper);
+
   // Called when a system drag crosses over the render view. As there is no drag
   // enter event, we treat it as an enter event (and not a regular motion event)
   // when |context_| is NULL.
@@ -58,14 +61,19 @@ class WebDragDestGtk {
                        gint, gint, guint);
 
   TabContents* tab_contents_;
-  // The TabContentsWrapper for the TabContents member defined above.
-  // Weak reference.
+
+  // The TabContentsWrapper for |tab_contents_|.
+  // Weak reference; may be NULL if the contents aren't contained in a wrapper
+  // (e.g. WebUI dialogs).
   TabContentsWrapper* tab_;
+
   // The render view.
   GtkWidget* widget_;
+
   // The current drag context for system drags over our render view, or NULL if
   // there is no system drag or the system drag is not over our render view.
   GdkDragContext* context_;
+
   // The data for the current drag, or NULL if |context_| is NULL.
   scoped_ptr<WebDropData> drop_data_;
 

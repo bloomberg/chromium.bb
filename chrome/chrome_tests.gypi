@@ -1533,6 +1533,7 @@
         'browser/tab_contents/render_view_context_menu_unittest.cc',
         'browser/tab_contents/thumbnail_generator_unittest.cc',
         'browser/tab_contents/web_contents_unittest.cc',
+        'browser/tab_contents/web_drag_dest_gtk_unittest.cc',
         'browser/tabs/pinned_tab_codec_unittest.cc',
         'browser/tabs/pinned_tab_service_unittest.cc',
         'browser/tabs/pinned_tab_test_utils.cc',

@@ -90,11 +90,9 @@ void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
 void WebDragDestGtk::DragLeave() {
   tab_contents_->render_view_host()->DragTargetDragLeave();
 
-  DCHECK(tab_);
-  if (tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
+  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
     tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragLeave(
         bookmark_drag_data_);
-  }
 }
 
 gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
@@ -105,10 +103,9 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
   // the constructor. We cannot do that as the WebDragDestGtk object is
   // created during the construction of the TabContents object.
   // The TabContentsWrapper is created much later.
-  if (!tab_) {
+  if (!tab_)
     tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
-    DCHECK(tab_);
-  }
+
   if (context_ != context) {
     context_ = context;
     drop_data_.reset(new WebDropData);
@@ -144,8 +141,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
             gtk_util::ClientPoint(widget_),
             gtk_util::ScreenPoint(widget_),
             gtk_util::GdkDragActionToWebDragOp(context->actions));
-    DCHECK(tab_);
-    if (tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
+    if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
       tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragOver(
           bookmark_drag_data_);
     drag_over_time_ = time;
@@ -252,13 +248,11 @@ void WebDragDestGtk::OnDragDataReceived(
             gtk_util::ScreenPoint(widget_),
             gtk_util::GdkDragActionToWebDragOp(context->actions));
 
-    DCHECK(tab_);
     // This is non-null if tab_contents_ is showing an ExtensionWebUI with
     // support for (at the moment experimental) drag and drop extensions.
-    if (tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
+    if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
       tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragEnter(
           bookmark_drag_data_);
-    }
     drag_over_time_ = time;
   }
 }
@@ -288,10 +282,9 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
       DragTargetDrop(gtk_util::ClientPoint(widget_),
                      gtk_util::ScreenPoint(widget_));
 
-  DCHECK(tab_);
   // This is non-null if tab_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
-  if (tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
+  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
     tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDrop(
         bookmark_drag_data_);
 
