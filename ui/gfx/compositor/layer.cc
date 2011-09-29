@@ -20,7 +20,7 @@ Layer::Layer(Compositor* compositor)
       compositor_(compositor),
       parent_(NULL),
       visible_(true),
-      fills_bounds_opaquely_(false),
+      fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL) {
@@ -31,7 +31,7 @@ Layer::Layer(Compositor* compositor, LayerType type)
       compositor_(compositor),
       parent_(NULL),
       visible_(true),
-      fills_bounds_opaquely_(false),
+      fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL) {

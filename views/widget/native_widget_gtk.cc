@@ -680,6 +680,8 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
     }
     if (compositor_.get())
       delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
+      delegate_->AsWidget()->GetRootView()->
+          SetFillsBoundsOpaquely(!transparent_);
   }
 
   delegate_->OnNativeWidgetCreated();

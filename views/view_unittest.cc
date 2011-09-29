@@ -2687,6 +2687,7 @@ TEST_F(ViewLayerTest, MultipleOpaqueLayers) {
 
   View* child_view2 = new View;
   child_view2->SetPaintToLayer(true);
+  child_view2->SetFillsBoundsOpaquely(false);
   child_view2->SetBounds(150, 150, 200, 200);
   parent_view->AddChildView(child_view2);
 

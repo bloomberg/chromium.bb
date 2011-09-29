@@ -115,7 +115,6 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
 
 #if defined(TOUCH_UI)
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(true);
   registrar_.Add(this,
                  chrome::NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED,
                  NotificationService::AllSources());

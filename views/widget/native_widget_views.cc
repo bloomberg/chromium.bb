@@ -134,6 +134,8 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
 #if !defined(USE_AURA)
   // TODO(beng): re-enable this once we have a consolidated layer tree.
   view_->SetPaintToLayer(true);
+  if (View::get_use_acceleration_when_possible())
+    view_->SetFillsBoundsOpaquely(!params.transparent);
 #endif
 
   // With the default NATIVE_WIDGET_OWNS_WIDGET ownership, the

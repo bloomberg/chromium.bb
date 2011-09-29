@@ -14,7 +14,7 @@ namespace views {
 namespace internal {
 
 LayerHelper::LayerHelper()
-    : fills_bounds_opaquely_(false),
+    : fills_bounds_opaquely_(true),
       paint_to_layer_(false),
       property_setter_explicitly_set_(false),
       needs_paint_all_(true) {
