@@ -45,10 +45,6 @@ const char kRestoreOnStartup[] = "session.restore_on_startup";
 // are only restored on startup if kRestoreOnStartup is 4.
 const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
 
-// A bool pref to used to determine if the sync promo should be expanded or
-// collapsed.
-const char kSyncPromoExpanded[] = "profile.sync_promo_expanded";
-
 // The application locale.
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state
 // and user's profile.  Global property determines locale of login screen,

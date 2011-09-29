@@ -115,6 +115,10 @@
       <include name="IDR_BUGREPORT_JS" file="resources\bug_report.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
+      <if expr="not pp_ifdef('chromeos')">
+        <include name="IDR_SYNC_PROMO_JS" file="resources\sync_promo.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_SYNC_PROMO_HTML" file="resources\sync_promo.html" flattenhtml="true" type="BINDATA" />
+      </if>
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_ACTIVE_DOWNLOADS_HTML" file="resources\active_downloads.html" flattenhtml="true" type="BINDATA" />

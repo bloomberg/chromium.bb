@@ -189,10 +189,6 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
                             "",
                             PrefService::UNSYNCABLE_PREF);
 #endif
-
-  prefs->RegisterBooleanPref(prefs::kSyncPromoExpanded,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
 }
 
 // static

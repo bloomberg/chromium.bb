@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_sync_setup_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
@@ -210,8 +209,7 @@ NewTabUI::NewTabUI(TabContents* contents)
 
   if (!GetProfile()->IsOffTheRecord()) {
     PrefService* pref_service = GetProfile()->GetPrefs();
-    if (!NewTabSyncSetupHandler::ShouldShowSyncPromo())
-      AddMessageHandler((new NTPLoginHandler())->Attach(this));
+    AddMessageHandler((new NTPLoginHandler())->Attach(this));
     AddMessageHandler((new ShownSectionsHandler(pref_service))->Attach(this));
     AddMessageHandler((new browser_sync::ForeignSessionHandler())->
         Attach(this));
@@ -232,10 +230,6 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
     }
   }
-
-  // Add the sync setup handler for the sync promo UI.
-  scoped_ptr<SyncSetupHandler> handler(new NewTabSyncSetupHandler());
-  AddMessageHandler(handler.release()->Attach(this));
 
   // Initializing the CSS and HTML can require some CPU, so do it after
   // we've hooked up the most visited handler.  This allows the DB query

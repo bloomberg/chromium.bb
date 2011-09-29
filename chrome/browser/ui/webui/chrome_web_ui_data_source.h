@@ -28,6 +28,9 @@ class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
   // Adds a name and its equivaled localized string to our dictionary.
   void AddLocalizedString(const std::string& name, int ids);
 
+  // Add strings from |localized_strings| to our dictionary.
+  void AddLocalizedStrings(const DictionaryValue& localized_strings);
+
   // Sets the path which will return the JSON strings.
   void set_json_path(const std::string& path) { json_path_ = path; }
 

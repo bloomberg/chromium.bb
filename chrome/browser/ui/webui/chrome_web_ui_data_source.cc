@@ -36,6 +36,11 @@ void ChromeWebUIDataSource::AddLocalizedString(const std::string& name,
   localized_strings_.SetString(name, l10n_util::GetStringUTF16(ids));
 }
 
+void ChromeWebUIDataSource::AddLocalizedStrings(
+    const DictionaryValue& localized_strings) {
+  localized_strings_.MergeDictionary(&localized_strings);
+}
+
 std::string ChromeWebUIDataSource::GetMimeType(const std::string& path) const {
   if (EndsWith(path, ".js", false))
     return "application/javascript";

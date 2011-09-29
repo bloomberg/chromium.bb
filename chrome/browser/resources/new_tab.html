@@ -63,8 +63,6 @@ chrome.send('getApps');
 <link rel="stylesheet" href="ntp/apps.css">
 <link rel="stylesheet" href="shared/css/menu.css">
 <link rel="stylesheet" href="chrome://resources/css/throbber.css">
-<link rel="stylesheet" href="sync_setup_overlay.css">
-<link rel="stylesheet" href="new_tab_sync_promo.css">
 <script>
 
 /**
@@ -127,22 +125,6 @@ if ('mode' in hashParams) {
 </head>
 <body class="loading"
       i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-
-<div id="sync-promo" class="collapsed" hidden>
-  <div id="sync-promo-login-status">
-    <div id="sync-promo-login-status-cell">
-      <span id="sync-promo-login-status-msg"></span>
-      <img id="login-status-avatar-icon" hidden>
-    </div>
-  </div>
-  <div id="sync-promo-contents">
-    <include src="sync_setup_overlay.html">
-  </div>
-  <div id="sync-promo-toggle">
-    <input id="sync-promo-toggle-button" type="image"
-        src="sync_promo_minimize.png">
-  </div>
-</div>
 
 <div id="attribution" class="attribution nolayout">
   <div i18n-content="attributionintro"></div>
@@ -324,10 +306,6 @@ i18nTemplate.process(document, templateData);
 <script src="ntp/apps.js"></script>
 
 <script src="chrome://resources/js/cr/event_target.js"></script>
-<!-- TODO(sail): Refactor options_page and remove this include. -->
-<script src="options/options_page.js"></script>
-<script src="sync_setup_overlay.js"></script>
-<script src="new_tab_sync_promo.js"></script>
 
 <script>
   cr.ui.decorate('menu', cr.ui.Menu);
