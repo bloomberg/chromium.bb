@@ -13,6 +13,7 @@ set -e
 THISDIR=$(dirname "${0}")
 LOGS_DIR=$THISDIR/waterfall.tmp
 WATERFALL_PAGE="http://build.chromium.org/p/chromium.memory/builders"
+WATERFALL_FYI_PAGE="http://build.chromium.org/p/chromium.memory.fyi/builders"
 
 download() {
   # Download a file.
@@ -52,14 +53,14 @@ fetch_logs() {
   mkdir "$LOGS_DIR"
 
   echo "Fetching the list of builders..."
-  download $WATERFALL_PAGE "$LOGS_DIR/builders"
+  download $1 "$LOGS_DIR/builders"
   SLAVES=$(grep "<a href=\"builders\/" "$LOGS_DIR/builders" | \
            sed "s/.*<a href=\"builders\///" | sed "s/\".*//" | \
            sort | uniq)
 
   for S in $SLAVES
   do
-    SLAVE_URL=$WATERFALL_PAGE/$S
+    SLAVE_URL=$1/$S
     SLAVE_NAME=$(echo $S | sed -e "s/%20/ /g" -e "s/%28/(/g" -e "s/%29/)/g")
     echo -n "Fetching builds by slave '${SLAVE_NAME}'"
     download $SLAVE_URL "$LOGS_DIR/slave_${S}"
@@ -141,7 +142,8 @@ match_gtest_excludes() {
 
 if [ "$1" = "fetch" ]
 then
-  fetch_logs
+  fetch_logs $WATERFALL_PAGE
+  fetch_logs $WATERFALL_FYI_PAGE
 elif [ "$1" = "match" ]
 then
   match_suppressions
