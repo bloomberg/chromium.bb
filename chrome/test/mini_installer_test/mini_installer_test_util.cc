@@ -93,7 +93,6 @@ void MiniInstallerTestUtil::SendEnterKeyToWindow() {
 
 void MiniInstallerTestUtil::VerifyProcessLaunch(
     const wchar_t* process_name, bool expected_status) {
-  LOG(INFO) << "Verifying process is launched: " << process_name;
   int timer = 0, wait_time = 60000;
   if (!expected_status)
     wait_time = 8000;
