@@ -92,7 +92,7 @@ class CheckoutBase(object):
     """
     raise NotImplementedError()
 
-  def apply_patch(self, patches):
+  def apply_patch(self, patches, post_processors=None):
     """Applies a patch and returns the list of modified files.
 
     This function should throw patch.UnsupportedPatchFormat or
@@ -117,8 +117,9 @@ class RawCheckout(CheckoutBase):
     """Stubbed out."""
     pass
 
-  def apply_patch(self, patches):
+  def apply_patch(self, patches, post_processors=None):
     """Ignores svn properties."""
+    post_processors = post_processors or self.post_processors or []
     for p in patches:
       try:
         stdout = ''
@@ -145,7 +146,7 @@ class RawCheckout(CheckoutBase):
             elif p.is_new and not os.path.exists(filepath):
               # There is only a header. Just create the file.
               open(filepath, 'w').close()
-        for post in (self.post_processors or []):
+        for post in post_processors:
           post(self, p)
       except OSError, e:
         raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
@@ -261,7 +262,8 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
           (self.project_name, self.project_path))
     return self._revert(revision)
 
-  def apply_patch(self, patches):
+  def apply_patch(self, patches, post_processors=None):
+    post_processors = post_processors or self.post_processors or []
     for p in patches:
       try:
         # It is important to use credentials=False otherwise credentials could
@@ -314,7 +316,7 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
                   params = value.split('=', 1)
                 stdout += self._check_output_svn(
                     ['propset'] + params + [p.filename], credentials=False)
-        for post in (self.post_processors or []):
+        for post in post_processors:
           post(self, p)
       except OSError, e:
         raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
@@ -418,13 +420,14 @@ class GitCheckoutBase(CheckoutBase):
       if self.working_branch in branches:
         self._call_git(['branch', '-D', self.working_branch])
 
-  def apply_patch(self, patches):
+  def apply_patch(self, patches, post_processors=None):
     """Applies a patch on 'working_branch' and switch to it.
 
     Also commits the changes on the local branch.
 
     Ignores svn properties and raise an exception on unexpected ones.
     """
+    post_processors = post_processors or self.post_processors or []
     # It this throws, the checkout is corrupted. Maybe worth deleting it and
     # trying again?
     if self.remote_branch:
@@ -461,7 +464,7 @@ class GitCheckoutBase(CheckoutBase):
                   p.filename,
                   'Cannot apply svn property %s to file %s.' % (
                         prop[0], p.filename))
-        for post in (self.post_processors or []):
+        for post in post_processors:
           post(self, p)
       except OSError, e:
         raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
@@ -693,9 +696,11 @@ class GitSvnCheckout(GitSvnCheckoutBase):
 
 class ReadOnlyCheckout(object):
   """Converts a checkout into a read-only one."""
-  def __init__(self, checkout):
+  def __init__(self, checkout, post_processors=None):
     super(ReadOnlyCheckout, self).__init__()
     self.checkout = checkout
+    self.post_processors = (post_processors or []) + (
+        self.checkout.post_processors or [])
 
   def prepare(self, revision):
     return self.checkout.prepare(revision)
@@ -703,8 +708,9 @@ class ReadOnlyCheckout(object):
   def get_settings(self, key):
     return self.checkout.get_settings(key)
 
-  def apply_patch(self, patches):
-    return self.checkout.apply_patch(patches)
+  def apply_patch(self, patches, post_processors=None):
+    return self.checkout.apply_patch(
+        patches, post_processors or self.post_processors)
 
   def commit(self, message, user):  # pylint: disable=R0201
     logging.info('Would have committed for %s with message: %s' % (

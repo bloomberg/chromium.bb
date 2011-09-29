@@ -77,6 +77,7 @@ class FakeRepos(fake_repos.FakeReposBase):
 class BaseTest(fake_repos.FakeReposTestBase):
   name = 'foo'
   FAKE_REPOS_CLASS = FakeRepos
+  is_read_only = False
 
   def setUp(self):
     # Need to enforce subversion_config first.
@@ -126,7 +127,8 @@ class BaseTest(fake_repos.FakeReposTestBase):
 
   def _check_base(self, co, root, git, expected):
     read_only = isinstance(co, checkout.ReadOnlyCheckout)
-    assert not read_only == bool(expected)
+    self.assertEquals(not read_only, bool(expected))
+    self.assertEquals(read_only, self.is_read_only)
     if not read_only:
       self.FAKE_REPOS.svn_dirty = True
 
@@ -145,7 +147,7 @@ class BaseTest(fake_repos.FakeReposTestBase):
       # pylint: disable=W0212
       self.assertEquals(
           (['master', 'working_branch'], 'working_branch'),
-          co.checkout._branches())
+          co._branches())
 
     # Verify that the patch is applied even for read only checkout.
     self.assertTree(self.get_trunk(True), root)
@@ -193,7 +195,10 @@ class BaseTest(fake_repos.FakeReposTestBase):
     ps = self.get_patches()
     results = []
     co.apply_patch(ps)
-    expected = [(co, p) for p in ps.patches]
+    expected_co = getattr(co, 'checkout', co)
+    # Because of ReadOnlyCheckout.
+    expected = [(expected_co, p) for p in ps.patches]
+    self.assertEquals(len(expected), len(results))
     self.assertEquals(expected, results)
 
 
@@ -238,32 +243,23 @@ class SvnBaseTest(BaseTest):
 
 
 class SvnCheckout(SvnBaseTest):
-  def _get_co(self, read_only):
-    if read_only:
-      return checkout.ReadOnlyCheckout(
-          checkout.SvnCheckout(
-              self.root_dir, self.name, None, None, self.svn_url))
-    else:
-      return checkout.SvnCheckout(
-          self.root_dir, self.name, self.usr, self.pwd, self.svn_url)
+  def _get_co(self, post_processors):
+    self.assertNotEqual(False, post_processors)
+    return checkout.SvnCheckout(
+        self.root_dir, self.name, self.usr, self.pwd, self.svn_url,
+        post_processors)
 
-  def _check(self, read_only, expected):
-    root = os.path.join(self.root_dir, self.name)
-    self._check_base(self._get_co(read_only), root, False, expected)
-
-  def testAllRW(self):
+  def testAll(self):
     expected = {
         'author': self.FAKE_REPOS.USERS[0][0],
         'revprops': [('realauthor', self.FAKE_REPOS.USERS[1][0])]
     }
-    self._check(False, expected)
-
-  def testAllRO(self):
-    self._check(True, None)
+    root = os.path.join(self.root_dir, self.name)
+    self._check_base(self._get_co(None), root, False, expected)
 
   def testException(self):
     self._check_exception(
-        self._get_co(True),
+        self._get_co(None),
         'While running patch -p1 --forward --force;\n'
         'patching file chrome/file.cc\n'
         'Hunk #1 FAILED at 3.\n'
@@ -271,7 +267,7 @@ class SvnCheckout(SvnBaseTest):
         'chrome/file.cc.rej\n')
 
   def testSvnProps(self):
-    co = self._get_co(False)
+    co = self._get_co(None)
     co.prepare(None)
     try:
       # svn:ignore can only be applied to directories.
@@ -313,7 +309,8 @@ class SvnCheckout(SvnBaseTest):
     expected = {
         'revprops': [('commit-bot', 'user1@example.com')],
     }
-    self._check(False, expected)
+    root = os.path.join(self.root_dir, self.name)
+    self._check_base(self._get_co(None), root, False, expected)
 
   def testWithRevPropsSupportNotCommitBot(self):
     # Add the hook that will commit in a way that removes the race condition.
@@ -331,7 +328,7 @@ class SvnCheckout(SvnBaseTest):
     self._check_base(co, root, False, expected)
 
   def testAutoProps(self):
-    co = self._get_co(False)
+    co = self._get_co(None)
     co.svn_config = checkout.SvnConfig(
         os.path.join(ROOT_DIR, 'subversion_config'))
     co.prepare(None)
@@ -347,52 +344,32 @@ class SvnCheckout(SvnBaseTest):
     self.assertEquals('LF\n', out)
 
   def testProcess(self):
-    co = lambda x: checkout.SvnCheckout(
-        self.root_dir, self.name,
-        None, None,
-        self.svn_url,
-        x)
-    self._test_process(co)
+    self._test_process(self._get_co)
 
   def testPrepare(self):
-    co = checkout.SvnCheckout(
-        self.root_dir, self.name,
-        None, None,
-        self.svn_url)
-    self._test_prepare(co)
+    self._test_prepare(self._get_co(None))
 
 
 class GitSvnCheckout(SvnBaseTest):
   name = 'foo.git'
 
-  def _get_co(self, read_only):
-    co = checkout.GitSvnCheckout(
+  def _get_co(self, post_processors):
+    self.assertNotEqual(False, post_processors)
+    return checkout.GitSvnCheckout(
         self.root_dir, self.name[:-4],
         self.usr, self.pwd,
-        self.svn_base, self.svn_trunk)
-    if read_only:
-      co = checkout.ReadOnlyCheckout(co)
-    else:
-      # Hack to simplify testing.
-      co.checkout = co
-    return co
+        self.svn_base, self.svn_trunk, post_processors)
 
-  def _check(self, read_only, expected):
-    root = os.path.join(self.root_dir, self.name)
-    self._check_base(self._get_co(read_only), root, True, expected)
-
-  def testAllRO(self):
-    self._check(True, None)
-
-  def testAllRW(self):
+  def testAll(self):
     expected = {
         'author': self.FAKE_REPOS.USERS[0][0],
     }
-    self._check(False, expected)
+    root = os.path.join(self.root_dir, self.name)
+    self._check_base(self._get_co(None), root, True, expected)
 
   def testGitSvnPremade(self):
     # Test premade git-svn clone. First make a git-svn clone.
-    git_svn_co = self._get_co(True)
+    git_svn_co = self._get_co(None)
     revision = git_svn_co.prepare(None)
     self.assertEquals(self.previous_log['revision'], revision)
     # Then use GitSvnClone to clone it to lose the git-svn connection and verify
@@ -406,10 +383,10 @@ class GitSvnCheckout(SvnBaseTest):
 
   def testException(self):
     self._check_exception(
-        self._get_co(True), 'fatal: corrupt patch at line 12\n')
+        self._get_co(None), 'fatal: corrupt patch at line 12\n')
 
   def testSvnProps(self):
-    co = self._get_co(False)
+    co = self._get_co(None)
     co.prepare(None)
     try:
       svn_props = [('foo', 'bar')]
@@ -428,17 +405,18 @@ class GitSvnCheckout(SvnBaseTest):
         [patch.FilePatchDiff('chrome/file.cc', RAW.PATCH, svn_props)])
 
   def testProcess(self):
-    co = lambda x: checkout.SvnCheckout(
-        self.root_dir, self.name,
-        None, None,
-        self.svn_url, x)
-    self._test_process(co)
+    self._test_process(self._get_co)
 
   def testPrepare(self):
-    co = checkout.SvnCheckout(
-        self.root_dir, self.name,
-        None, None,
-        self.svn_url)
+    co = self._get_co(None)
+    # TODO(maruel): Cheat here until prepare(revision != None) implemented.
+    co.old_prepare = co.prepare
+    def prepare(rev):
+      # Basically, test that it is broken.
+      self.assertEquals(1, rev)
+      self.assertEquals(2, co.old_prepare(None))
+      return 1
+    co.prepare = prepare
     self._test_prepare(co)
 
 
@@ -450,15 +428,14 @@ class RawCheckout(SvnBaseTest):
         self.root_dir, self.name, None, None, self.svn_url)
     self.base_co.prepare(None)
 
-  def _get_co(self, read_only):
-    co = checkout.RawCheckout(self.root_dir, self.name, None)
-    if read_only:
-      return checkout.ReadOnlyCheckout(co)
-    return co
+  def _get_co(self, post_processors):
+    self.assertNotEqual(False, post_processors)
+    return checkout.RawCheckout(self.root_dir, self.name, post_processors)
 
-  def _check(self, read_only):
+  def testAll(self):
+    # Can't use self._check_base() since it's too different.
     root = os.path.join(self.root_dir, self.name)
-    co = self._get_co(read_only)
+    co = self._get_co(None)
 
     # A copy of BaseTest._check_base()
     self.assertEquals(root, co.project_path)
@@ -473,47 +450,68 @@ class RawCheckout(SvnBaseTest):
 
     # Verify that the patch is applied even for read only checkout.
     self.assertTree(self.get_trunk(True), root)
-    if read_only:
-      revision = co.commit(u'msg', self.FAKE_REPOS.USERS[1][0])
-      self.assertEquals('FAKE', revision)
-    else:
-      try:
-        co.commit(u'msg', self.FAKE_REPOS.USERS[1][0])
-        self.fail()
-      except NotImplementedError:
-        pass
+    try:
+      co.commit(u'msg', self.FAKE_REPOS.USERS[1][0])
+      self.fail()
+    except NotImplementedError:
+      pass
     self.assertTree(self.get_trunk(True), root)
     # Verify that prepare() is a no-op.
     self.assertEquals(None, co.prepare(None))
     self.assertTree(self.get_trunk(True), root)
 
-  def testAllRW(self):
-    self._check(False)
-
-  def testAllRO(self):
-    self._check(True)
-
   def testException(self):
     self._check_exception(
-        self._get_co(True),
+        self._get_co(None),
         'patching file chrome/file.cc\n'
         'Hunk #1 FAILED at 3.\n'
         '1 out of 1 hunk FAILED -- saving rejects to file '
         'chrome/file.cc.rej\n')
 
   def testProcess(self):
-    co = lambda x: checkout.SvnCheckout(
-        self.root_dir, self.name,
-        None, None,
-        self.svn_url, x)
-    self._test_process(co)
+    self._test_process(self._get_co)
 
   def testPrepare(self):
-    co = checkout.SvnCheckout(
-        self.root_dir, self.name,
-        None, None,
-        self.svn_url)
+    # RawCheckout doesn't support prepare() but emulate it.
+    co = self._get_co(None)
+    revs = [1]
+    def prepare(asked):
+      self.assertEquals(1, asked)
+      return revs.pop(0)
+    co.prepare = prepare
     self._test_prepare(co)
+    self.assertEquals([], revs)
+
+
+class ReadOnlyCheckout(SvnBaseTest):
+  # Use SvnCheckout as the backed since it support read-only checkouts too.
+  is_read_only = True
+
+  def _get_co(self, post_processors):
+    self.assertNotEqual(False, post_processors)
+    return checkout.ReadOnlyCheckout(
+        checkout.SvnCheckout(
+            self.root_dir, self.name, None, None, self.svn_url, None),
+        post_processors)
+
+  def testAll(self):
+    root = os.path.join(self.root_dir, self.name)
+    self._check_base(self._get_co(None), root, False, None)
+
+  def testException(self):
+    self._check_exception(
+        self._get_co(None),
+        'While running patch -p1 --forward --force;\n'
+        'patching file chrome/file.cc\n'
+        'Hunk #1 FAILED at 3.\n'
+        '1 out of 1 hunk FAILED -- saving rejects to file '
+        'chrome/file.cc.rej\n')
+
+  def testProcess(self):
+    self._test_process(self._get_co)
+
+  def testPrepare(self):
+    self._test_prepare(self._get_co(None))
 
 
 if __name__ == '__main__':
