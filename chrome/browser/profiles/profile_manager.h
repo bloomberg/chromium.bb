@@ -178,6 +178,8 @@ class ProfileManager : public base::NonThreadSafe,
   // for testing. If |addToCache|, add to ProfileInfoCache as well.
   void RegisterTestingProfile(Profile* profile, bool addToCache);
 
+  const FilePath& user_data_dir() const { return user_data_dir_; }
+
  protected:
   // Does final initial actions.
   virtual void DoFinalInit(Profile* profile, bool go_off_the_record);
