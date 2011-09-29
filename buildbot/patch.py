@@ -176,15 +176,15 @@ class GerritPatch(Patch):
       dryrun: If true, do not actually commit anything to Gerrit.
 
     """
-    msg = ('"The Commit Queue failed to submit your change. '
-            'This is most likely due to an owner of your repo overriding the '
-            'Commit Queue and committing a change that conflicts with yours. '
-            'Please rebase and re-upload your change to re-submit."')
+    msg = ('The Commit Queue failed to submit your change. '
+           'This is most likely due to an owner of your repo overriding the '
+           'Commit Queue and committing a change that conflicts with yours. '
+           'Please rebase and re-upload your change to re-submit.')
     msg = self.ConstructErrorMessage(msg)
 
     cmd = helper.GetGerritReviewCommand(
-        ['--verified=-1', '-m', msg, '%s,%s' % (self.gerrit_number,
-                                                self.patch_number)])
+        ['--verified=-1', '-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number,
+                                                         self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
 
   def HandleCouldNotVerify(self, helper, dryrun=False):
@@ -199,14 +199,14 @@ class GerritPatch(Patch):
       dryrun: If true, do not actually commit anything to Gerrit.
 
     """
-    msg = ('"The Commit Queue failed to verify your change. '
-            'If you believe this happened in error, you can remove the '
-            'chrome-bot reviewer from your review by hitting the |X| next to '
-            'its name.  Your change will then get automatically retried."')
+    msg = ('The Commit Queue failed to verify your change. '
+           'If you believe this happened in error, you can remove the '
+           'chrome-bot reviewer from your review by hitting the |X| next to '
+           'its name.  Your change will then get automatically retried.')
     msg = self.ConstructErrorMessage(msg)
     cmd = helper.GetGerritReviewCommand(
-        ['--verified=-1', '-m', msg, '%s,%s' % (self.gerrit_number,
-                                                self.patch_number)])
+        ['--verified=-1', '-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number,
+                                                         self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
 
   def HandleCouldNotApply(self, helper, dryrun=False):
@@ -219,12 +219,12 @@ class GerritPatch(Patch):
       helper: Instance of gerrit_helper for the gerrit instance.
       dryrun: If true, do not actually commit anything to Gerrit.
     """
-    msg = ('"The Commit Queue failed to apply your change cleanly. '
-            'Please re-sync, rebase, and re-upload your change."')
+    msg = ('The Commit Queue failed to apply your change cleanly. '
+           'Please re-sync, rebase, and re-upload your change.')
     msg = self.ConstructErrorMessage(msg)
     cmd = helper.GetGerritReviewCommand(
-        ['--verified=-1', '-m', msg, '%s,%s' % (self.gerrit_number,
-                                                self.patch_number)])
+        ['--verified=-1', '-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number,
+                                                         self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
 
   def Submit(self, helper, dryrun=False):
