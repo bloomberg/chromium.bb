@@ -46,7 +46,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   // a Compositor.
   explicit Layer(Compositor* compositor);
   Layer(Compositor* compositor, LayerType type);
-  ~Layer();
+  virtual ~Layer();
 
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
   // to locate it. Returns NULL if the Layer is not attached to a compositor.
