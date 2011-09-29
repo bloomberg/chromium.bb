@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,8 @@ int GetIEMajorVersion() {
       return 8;
     case IE_9:
       return 9;
+    case IE_10:
+      return 10;
     case IE_INVALID:
     case NON_IE:
     case IE_UNSUPPORTED:

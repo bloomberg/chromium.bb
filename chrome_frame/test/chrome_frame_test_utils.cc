@@ -417,6 +417,8 @@ IEVersion GetInstalledIEVersion() {
       return IE_8;
     case '9':
       return IE_9;
+    case '10':
+      return IE_10;
     default:
       break;
   }
