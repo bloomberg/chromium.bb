@@ -140,8 +140,12 @@ BookmarkModel::~BookmarkModel() {
 
 // static
 void BookmarkModel::RegisterUserPrefs(PrefService* prefs) {
+  // Don't sync this, as otherwise, due to a limitation in sync, it
+  // will cause a deadlock (see http://crbug.com/97955).  If we truly
+  // want to sync the expanded state of folders, it should be part of
+  // bookmark sync itself (i.e., a property of the sync folder nodes).
   prefs->RegisterListPref(prefs::kBookmarkEditorExpandedNodes, new ListValue,
-                          PrefService::SYNCABLE_PREF);
+                          PrefService::UNSYNCABLE_PREF);
 }
 
 void BookmarkModel::Cleanup() {
