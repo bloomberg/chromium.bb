@@ -11,7 +11,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "grit/shared_resources.h"
 #include "grit/shared_resources_map.h"

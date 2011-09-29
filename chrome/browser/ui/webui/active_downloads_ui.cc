@@ -36,7 +36,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"

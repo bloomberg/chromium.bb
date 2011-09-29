@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 
 #include <ctype.h>
+
 #include <string>
+#include <vector>
 
 #include "base/base64.h"
 #if !defined(OS_CHROMEOS)

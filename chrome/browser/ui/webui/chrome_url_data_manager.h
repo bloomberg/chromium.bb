@@ -7,11 +7,12 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "base/task.h"
-#include "content/browser/browser_thread.h"
 
 class ChromeURLDataManagerBackend;
 class FilePath;

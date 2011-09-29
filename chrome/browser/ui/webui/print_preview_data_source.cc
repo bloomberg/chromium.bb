@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/print_preview_data_source.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -14,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -23,7 +23,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace{
+namespace {
 
 #if defined(OS_MACOSX)
 // U+0028 U+21E7 U+2318 U+0050 U+0029 in UTF8

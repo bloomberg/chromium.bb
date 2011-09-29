@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 
+#include <string>
+#include <vector>
+
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/bindings_policy.h"
 
 static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor(base::LINKER_INITIALIZED);
@@ -21,8 +23,7 @@ ConstrainedHtmlUI::ConstrainedHtmlUI(TabContents* contents)
 ConstrainedHtmlUI::~ConstrainedHtmlUI() {
 }
 
-void ConstrainedHtmlUI::RenderViewCreated(
-    RenderViewHost* render_view_host) {
+void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
   ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
@@ -55,8 +56,7 @@ void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {
   delegate->OnDialogCloseFromWebUI();
 }
 
-ConstrainedHtmlUIDelegate*
-    ConstrainedHtmlUI::GetConstrainedDelegate() {
+ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::GetConstrainedDelegate() {
   ConstrainedHtmlUIDelegate** property =
       GetPropertyAccessor().GetProperty(tab_contents()->property_bag());
   return property ? *property : NULL;

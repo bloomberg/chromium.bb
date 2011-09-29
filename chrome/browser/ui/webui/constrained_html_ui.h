@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_CONSTRAINED_HTML_UI_H_
 #pragma once
 
-#include <vector>
-
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "content/browser/tab_contents/constrained_window.h"
 #include "content/common/property_bag.h"
 
+class ConstrainedWindow;
 class HtmlDialogUIDelegate;
 class Profile;
 class RenderViewHost;

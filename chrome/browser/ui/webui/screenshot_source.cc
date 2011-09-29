@@ -8,11 +8,15 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/task.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+
+#if defined(OS_CHROMEOS)
 #include "content/browser/browser_thread.h"
+#endif
 
 static const char kCurrentScreenshotFilename[] = "current";
 #if defined(OS_CHROMEOS)

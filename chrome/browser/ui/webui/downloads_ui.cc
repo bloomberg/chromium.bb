@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
@@ -26,8 +25,8 @@
 
 namespace {
 
-ChromeWebUIDataSource *CreateDownloadsUIHTMLSource() {
-  ChromeWebUIDataSource *source =
+ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
+  ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIDownloadsHost);
 
   source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);

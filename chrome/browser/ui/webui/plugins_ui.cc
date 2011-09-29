@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"

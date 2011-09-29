@@ -76,7 +76,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   virtual void Kill() OVERRIDE;
   virtual bool ReadRawData(net::IOBuffer* buf,
                            int buf_size,
-                           int *bytes_read) OVERRIDE;
+                           int* bytes_read) OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
 

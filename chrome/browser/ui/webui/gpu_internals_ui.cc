@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/gpu_internals_ui.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -63,12 +65,12 @@ class GpuMessageHandler
                               const Value* value);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GpuMessageHandler);
-
   // Cache the Singleton for efficiency.
   GpuDataManager* gpu_data_manager_;
 
   Callback0::Type* gpu_info_update_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuMessageHandler);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

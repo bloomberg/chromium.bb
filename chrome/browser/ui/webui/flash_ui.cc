@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webui/flash_ui.h"
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -17,7 +21,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"

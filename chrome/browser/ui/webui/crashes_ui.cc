@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/crashes_ui.h"
 
+#include <vector>
+
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/utf_string_conversions.h"
@@ -15,7 +17,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"

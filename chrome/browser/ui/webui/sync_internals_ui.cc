@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
 #include "grit/sync_internals_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

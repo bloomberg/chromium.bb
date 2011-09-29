@@ -25,14 +25,16 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/browser/ui/webui/fileicon_source_chromeos.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/gfx/image/image.h"
+
+#if !defined(OS_MACOSX)
+#include "content/browser/browser_thread.h"
+#endif
 
 namespace {
 

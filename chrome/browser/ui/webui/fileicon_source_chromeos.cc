@@ -17,7 +17,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/component_extension_resources.h"
 #include "grit/component_extension_resources_map.h"
@@ -253,4 +252,3 @@ std::string FileIconSourceCros::GetMimeType(
     const std::string& url) const {
   return "image/png";
 }
-

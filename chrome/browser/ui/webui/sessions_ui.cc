@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/sessions_ui.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"

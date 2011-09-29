@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/metrics/field_trial.h"  // TODO(joi): Remove after the trial ends.
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -36,7 +35,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"

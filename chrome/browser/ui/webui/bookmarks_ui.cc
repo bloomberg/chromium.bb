@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"

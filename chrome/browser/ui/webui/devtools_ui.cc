@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/devtools_ui.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -24,7 +26,7 @@ std::string PathWithoutParams(const std::string& path) {
       .path().substr(1);
 }
 
-}
+}  // namespace
 
 class DevToolsDataSource : public ChromeURLDataManager::DataSource {
  public:
