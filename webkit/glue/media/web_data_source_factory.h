@@ -30,7 +30,7 @@ class WebDataSourceFactory : public media::AsyncDataSourceFactoryBase {
   WebDataSourceFactory(MessageLoop* render_loop, WebKit::WebFrame* frame,
                        media::MediaLog* media_log,
                        FactoryFunction factory_function,
-                       WebDataSourceBuildObserverHack* build_observer);
+                       const WebDataSourceBuildObserverHack& build_observer);
   virtual ~WebDataSourceFactory();
 
   // DataSourceFactory method.
@@ -40,7 +40,7 @@ class WebDataSourceFactory : public media::AsyncDataSourceFactoryBase {
   // AsyncDataSourceFactoryBase methods.
   virtual bool AllowRequests() const;
   virtual AsyncDataSourceFactoryBase::BuildRequest* CreateRequest(
-      const std::string& url, BuildCallback* callback);
+      const std::string& url, const BuildCallback& callback);
 
  private:
   class BuildRequest;
@@ -49,7 +49,7 @@ class WebDataSourceFactory : public media::AsyncDataSourceFactoryBase {
   WebKit::WebFrame* frame_;
   scoped_refptr<media::MediaLog> media_log_;
   FactoryFunction factory_function_;
-  WebDataSourceBuildObserverHack* build_observer_;
+  WebDataSourceBuildObserverHack build_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataSourceFactory);
 };

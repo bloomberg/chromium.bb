@@ -13,9 +13,9 @@ namespace webkit_glue {
 class WebDataSourceFactory::BuildRequest
     : public media::AsyncDataSourceFactoryBase::BuildRequest {
  public:
-  BuildRequest(const std::string& url, BuildCallback* callback,
+  BuildRequest(const std::string& url, const BuildCallback& callback,
                WebDataSource* data_source,
-               WebDataSourceBuildObserverHack* build_observer);
+               const WebDataSourceBuildObserverHack& build_observer);
   virtual ~BuildRequest();
 
  protected:
@@ -26,7 +26,7 @@ class WebDataSourceFactory::BuildRequest
   void InitDone(media::PipelineStatus status);
 
   scoped_refptr<WebDataSource> data_source_;
-  WebDataSourceBuildObserverHack* build_observer_;
+  WebDataSourceBuildObserverHack build_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BuildRequest);
 };
@@ -36,7 +36,7 @@ WebDataSourceFactory::WebDataSourceFactory(
     WebKit::WebFrame* frame,
     media::MediaLog* media_log,
     FactoryFunction factory_function,
-    WebDataSourceBuildObserverHack* build_observer)
+    const WebDataSourceBuildObserverHack& build_observer)
     : render_loop_(render_loop),
       frame_(frame),
       media_log_(media_log),
@@ -61,7 +61,7 @@ bool WebDataSourceFactory::AllowRequests() const {
 
 media::AsyncDataSourceFactoryBase::BuildRequest*
 WebDataSourceFactory::CreateRequest(const std::string& url,
-                                    BuildCallback* callback) {
+                                    const BuildCallback& callback) {
   WebDataSource* data_source = factory_function_(render_loop_, frame_,
                                                  media_log_);
 
@@ -71,9 +71,9 @@ WebDataSourceFactory::CreateRequest(const std::string& url,
 
 WebDataSourceFactory::BuildRequest::BuildRequest(
     const std::string& url,
-    BuildCallback* callback,
+    const BuildCallback& callback,
     WebDataSource* data_source,
-    WebDataSourceBuildObserverHack* build_observer)
+    const WebDataSourceBuildObserverHack& build_observer)
     : AsyncDataSourceFactoryBase::BuildRequest(url, callback),
       data_source_(data_source),
       build_observer_(build_observer) {
@@ -98,8 +98,8 @@ void WebDataSourceFactory::BuildRequest::InitDone(
   data_source = (status == media::PIPELINE_OK) ? data_source_ : NULL;
   data_source_ = NULL;
 
-  if (build_observer_ && data_source.get()) {
-    build_observer_->Run(data_source.get());
+  if (!build_observer_.is_null() && data_source.get()) {
+    build_observer_.Run(data_source.get());
   }
 
   RequestComplete(status, data_source);

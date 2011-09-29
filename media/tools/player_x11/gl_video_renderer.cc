@@ -6,6 +6,7 @@
 
 #include <X11/Xutil.h>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
@@ -22,13 +23,11 @@ GlVideoRenderer::GlVideoRenderer(Display* display, Window window,
 
 GlVideoRenderer::~GlVideoRenderer() {}
 
-void GlVideoRenderer::OnStop(media::FilterCallback* callback) {
+void GlVideoRenderer::OnStop(const base::Closure& callback) {
   glXMakeCurrent(display_, 0, NULL);
   glXDestroyContext(display_, gl_context_);
-  if (callback) {
-    callback->Run();
-    delete callback;
-  }
+  if (!callback.is_null())
+    callback.Run();
 }
 
 static GLXContext InitGLContext(Display* display, Window window) {
@@ -231,7 +230,7 @@ bool GlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
 
 void GlVideoRenderer::OnFrameAvailable() {
   main_message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &GlVideoRenderer::PaintOnMainThread));
+      base::Bind(&GlVideoRenderer::PaintOnMainThread, this));
 }
 
 void GlVideoRenderer::PaintOnMainThread() {

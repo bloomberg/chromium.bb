@@ -8,11 +8,21 @@
 
 namespace media {
 
+// static
+const size_t DataSource::kReadError = static_cast<size_t>(-1);
+
 void ResetAndRunCB(FilterStatusCB* cb, PipelineStatus status) {
-  DCHECK(cb);
+  DCHECK(!cb->is_null());
   FilterStatusCB tmp_cb(*cb);
   cb->Reset();
   tmp_cb.Run(status);
+}
+
+void ResetAndRunCB(base::Closure* cb) {
+  DCHECK(!cb->is_null());
+  base::Closure tmp_cb(*cb);
+  cb->Reset();
+  tmp_cb.Run();
 }
 
 Filter::Filter() : host_(NULL) {}
@@ -29,28 +39,24 @@ FilterHost* Filter::host() {
   return host_;
 }
 
-void Filter::Play(FilterCallback* callback) {
-  DCHECK(callback);
-  callback->Run();
-  delete callback;
+void Filter::Play(const base::Closure& callback) {
+  DCHECK(!callback.is_null());
+  callback.Run();
 }
 
-void Filter::Pause(FilterCallback* callback) {
-  DCHECK(callback);
-  callback->Run();
-  delete callback;
+void Filter::Pause(const base::Closure& callback) {
+  DCHECK(!callback.is_null());
+  callback.Run();
 }
 
-void Filter::Flush(FilterCallback* callback) {
-  DCHECK(callback);
-  callback->Run();
-  delete callback;
+void Filter::Flush(const base::Closure& callback) {
+  DCHECK(!callback.is_null());
+  callback.Run();
 }
 
-void Filter::Stop(FilterCallback* callback) {
-  DCHECK(callback);
-  callback->Run();
-  delete callback;
+void Filter::Stop(const base::Closure& callback) {
+  DCHECK(!callback.is_null());
+  callback.Run();
 }
 
 void Filter::SetPlaybackRate(float playback_rate) {}

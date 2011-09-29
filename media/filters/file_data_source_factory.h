@@ -15,7 +15,7 @@ class MEDIA_EXPORT FileDataSourceFactory : public DataSourceFactory {
   virtual ~FileDataSourceFactory();
 
   // DataSourceFactory methods.
-  virtual void Build(const std::string& url, BuildCallback* callback);
+  virtual void Build(const std::string& url, const BuildCallback& callback);
   virtual DataSourceFactory* Clone() const;
 
  private:

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "media/base/media_log.h"
@@ -116,7 +117,8 @@ class BufferedResourceLoaderTest : public testing::Test {
                                                  loader_.get()));
     loader_->Start(
         NewCallback(this, &BufferedResourceLoaderTest::StartCallback),
-        NewCallback(this, &BufferedResourceLoaderTest::NetworkCallback),
+        base::Bind(&BufferedResourceLoaderTest::NetworkCallback,
+                   base::Unretained(this)),
         view_->mainFrame());
   }
 

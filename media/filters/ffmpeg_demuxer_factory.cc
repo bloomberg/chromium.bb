@@ -9,19 +9,6 @@
 
 namespace media {
 
-static void DemuxerInitDone(DemuxerFactory::BuildCallback* cb,
-                            const scoped_refptr<FFmpegDemuxer>& demuxer,
-                            PipelineStatus status) {
-  scoped_ptr<DemuxerFactory::BuildCallback> callback(cb);
-  if (status != PIPELINE_OK) {
-    callback->Run(status, static_cast<Demuxer*>(NULL));
-    return;
-  }
-
-  callback->Run(PIPELINE_OK, demuxer.get());
-}
-
-
 FFmpegDemuxerFactory::FFmpegDemuxerFactory(
     DataSourceFactory* data_source_factory,
     MessageLoop* loop)
@@ -29,47 +16,36 @@ FFmpegDemuxerFactory::FFmpegDemuxerFactory(
 
 FFmpegDemuxerFactory::~FFmpegDemuxerFactory() {}
 
-// This class is a one-off whose raison d'etre is the lack of
-// currying functionality in base/callback_old.h's machinery.  Once
-// {DataSource,Demuxer}Factory::BuildCallback are migrated to the new
-// base/callback.h machinery these should be removed and replaced
-// with currying calls to base::Bind().
-class DemuxerCallbackAsDataSourceCallback
-    : public DataSourceFactory::BuildCallback {
- public:
-  DemuxerCallbackAsDataSourceCallback(DemuxerFactory::BuildCallback* cb,
-                                      MessageLoop* loop)
-      : cb_(cb), loop_(loop) {
-    DCHECK(cb_.get() && loop_);
+static void DemuxerInitDone(const DemuxerFactory::BuildCallback& cb,
+                            const scoped_refptr<FFmpegDemuxer>& demuxer,
+                            PipelineStatus status) {
+  if (status != PIPELINE_OK) {
+    cb.Run(status, NULL);
+    return;
   }
+  cb.Run(PIPELINE_OK, demuxer.get());
+}
 
-  virtual ~DemuxerCallbackAsDataSourceCallback() {}
-
-  virtual void RunWithParams(
-      const Tuple2<PipelineStatus, DataSource*>& params) {
-    PipelineStatus status = params.a;
-    DataSource* data_source = params.b;
-    if (status != PIPELINE_OK) {
-      cb_->Run(status, static_cast<Demuxer*>(NULL));
-      return;
-    }
-    DCHECK(data_source);
-    scoped_refptr<FFmpegDemuxer> demuxer = new FFmpegDemuxer(loop_);
-    demuxer->Initialize(
-        data_source,
-        base::Bind(&DemuxerInitDone, cb_.release(), demuxer));
+static void InitializeDemuxerBasedOnDataSourceStatus(
+    const DemuxerFactory::BuildCallback& cb,
+    MessageLoop* loop,
+    PipelineStatus status, DataSource* data_source) {
+  if (status != PIPELINE_OK) {
+    cb.Run(status, NULL);
+    return;
   }
+  DCHECK(data_source);
+  scoped_refptr<FFmpegDemuxer> demuxer = new FFmpegDemuxer(loop);
+  demuxer->Initialize(
+      data_source,
+      base::Bind(&DemuxerInitDone, cb, demuxer));
+}
 
- private:
-  scoped_ptr<DemuxerFactory::BuildCallback> cb_;
-  MessageLoop* loop_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DemuxerCallbackAsDataSourceCallback);
-};
-
-void FFmpegDemuxerFactory::Build(const std::string& url, BuildCallback* cb) {
+void FFmpegDemuxerFactory::Build(const std::string& url,
+                                 const BuildCallback& cb) {
   data_source_factory_->Build(
-      url, new DemuxerCallbackAsDataSourceCallback(cb, loop_));
+      url,
+      base::Bind(&InitializeDemuxerBasedOnDataSourceStatus, cb, loop_));
 }
 
 DemuxerFactory* FFmpegDemuxerFactory::Clone() const {

@@ -15,7 +15,7 @@ class NullVideoRenderer : public VideoRendererBase {
 
   // VideoRendererBase implementation.
   virtual bool OnInitialize(VideoDecoder* decoder);
-  virtual void OnStop(FilterCallback* callback);
+  virtual void OnStop(const base::Closure& callback);
   virtual void OnFrameAvailable();
 
  private:

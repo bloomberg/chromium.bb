@@ -25,7 +25,7 @@
 
 #include <deque>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/seekable_buffer.h"
@@ -36,9 +36,6 @@ class Buffer;
 
 class MEDIA_EXPORT AudioRendererAlgorithmBase {
  public:
-  // Used to simplify callback declarations.
-  typedef Callback0::Type RequestReadCallback;
-
   AudioRendererAlgorithmBase();
   virtual ~AudioRendererAlgorithmBase();
 
@@ -47,7 +44,7 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
                           int sample_rate,
                           int sample_bits,
                           float initial_playback_rate,
-                          RequestReadCallback* callback);
+                          const base::Closure& callback);
 
   // Implement this strategy method in derived classes. Tries to fill |length|
   // bytes of |dest| with possibly scaled data from our |queue_|. Returns the
@@ -105,7 +102,7 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   float playback_rate_;
 
   // Used to request more data.
-  scoped_ptr<RequestReadCallback> request_read_callback_;
+  base::Closure request_read_callback_;
 
   // Queued audio data.
   SeekableBuffer queue_;

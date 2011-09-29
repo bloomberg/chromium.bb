@@ -33,14 +33,14 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   virtual ~AudioRendererBase();
 
   // Filter implementation.
-  virtual void Play(FilterCallback* callback);
-  virtual void Pause(FilterCallback* callback);
-  virtual void Stop(FilterCallback* callback);
+  virtual void Play(const base::Closure& callback);
+  virtual void Pause(const base::Closure& callback);
+  virtual void Stop(const base::Closure& callback);
 
   virtual void Seek(base::TimeDelta time, const FilterStatusCB& cb);
 
   // AudioRenderer implementation.
-  virtual void Initialize(AudioDecoder* decoder, FilterCallback* callback);
+  virtual void Initialize(AudioDecoder* decoder, const base::Closure& callback);
   virtual bool HasEnded();
 
  protected:
@@ -126,7 +126,7 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   base::TimeDelta last_fill_buffer_time_;
 
   // Filter callbacks.
-  scoped_ptr<FilterCallback> pause_callback_;
+  base::Closure pause_callback_;
   FilterStatusCB seek_cb_;
 
   base::TimeDelta seek_timestamp_;

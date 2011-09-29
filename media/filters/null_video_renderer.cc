@@ -13,9 +13,8 @@ bool NullVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   return true;
 }
 
-void NullVideoRenderer::OnStop(media::FilterCallback* callback) {
-  callback->Run();
-  delete callback;
+void NullVideoRenderer::OnStop(const base::Closure& callback) {
+  callback.Run();
 }
 
 void NullVideoRenderer::OnFrameAvailable() {

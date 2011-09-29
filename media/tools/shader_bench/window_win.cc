@@ -4,7 +4,6 @@
 
 #include "media/tools/shader_bench/window.h"
 
-#include "base/task.h"
 #include "media/tools/shader_bench/painter.h"
 
 namespace media {
@@ -81,11 +80,12 @@ gfx::PluginWindowHandle Window::PluginWindow() {
   return window_handle_;
 }
 
-void Window::Start(int limit, Task* done_task, Painter* painter) {
+void Window::Start(int limit, const base::Closure& callback,
+                   Painter* painter) {
   running_ = true;
   count_ = 0;
   limit_ = limit;
-  done_task_ = done_task;
+  callback_ = callback;
   painter_ = painter;
 
   SetWindowLongPtr(window_handle_, GWL_USERDATA,
@@ -108,10 +108,10 @@ void Window::OnPaint() {
     count_++;
   } else {
     running_ = false;
-    if (done_task_) {
+    if (!callback_.is_null()) {
       ShowWindow(window_handle_, SW_HIDE);
-      done_task_->Run();
-      delete done_task_;
+      callback_.Run();
+      callback_.Reset();
     }
   }
 }

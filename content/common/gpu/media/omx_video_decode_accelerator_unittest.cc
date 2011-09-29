@@ -25,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/stl_util.h"

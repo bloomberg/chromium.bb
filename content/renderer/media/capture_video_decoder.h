@@ -32,16 +32,17 @@ class CaptureVideoDecoder
   virtual ~CaptureVideoDecoder();
 
   // Filter implementation.
-  virtual void Play(media::FilterCallback* callback) OVERRIDE;
+  virtual void Play(const base::Closure& callback) OVERRIDE;
   virtual void Seek(base::TimeDelta time,
                     const media::FilterStatusCB& cb) OVERRIDE;
-  virtual void Pause(media::FilterCallback* callback) OVERRIDE;
-  virtual void Stop(media::FilterCallback* callback) OVERRIDE;
+  virtual void Pause(const base::Closure& callback) OVERRIDE;
+  virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // Decoder implementation.
-  virtual void Initialize(media::DemuxerStream* demuxer_stream,
-                          media::FilterCallback* filter_callback,
-                          media::StatisticsCallback* stat_callback) OVERRIDE;
+  virtual void Initialize(
+      media::DemuxerStream* demuxer_stream,
+      const base::Closure& filter_callback,
+      const media::StatisticsCallback& stat_callback) OVERRIDE;
   virtual void ProduceVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame) OVERRIDE;
   virtual gfx::Size natural_size() OVERRIDE;
@@ -70,15 +71,16 @@ class CaptureVideoDecoder
     kPaused
   };
 
-  void PlayOnDecoderThread(media::FilterCallback* callback);
+  void PlayOnDecoderThread(const base::Closure& callback);
   void SeekOnDecoderThread(base::TimeDelta time,
                            const media::FilterStatusCB& cb);
-  void PauseOnDecoderThread(media::FilterCallback* callback);
-  void StopOnDecoderThread(media::FilterCallback* callback);
+  void PauseOnDecoderThread(const base::Closure& callback);
+  void StopOnDecoderThread(const base::Closure& callback);
 
-  void InitializeOnDecoderThread(media::DemuxerStream* demuxer_stream,
-                                 media::FilterCallback* filter_callback,
-                                 media::StatisticsCallback* stat_callback);
+  void InitializeOnDecoderThread(
+      media::DemuxerStream* demuxer_stream,
+      const base::Closure& filter_callback,
+      const media::StatisticsCallback& stat_callback);
   void ProduceVideoFrameOnDecoderThread(
       scoped_refptr<media::VideoFrame> video_frame);
 
@@ -92,8 +94,8 @@ class CaptureVideoDecoder
   media::VideoCapture::VideoCaptureCapability capability_;
   DecoderState state_;
   std::deque<scoped_refptr<media::VideoFrame> > available_frames_;
-  media::FilterCallback* pending_stop_cb_;
-  scoped_ptr<media::StatisticsCallback> statistics_callback_;
+  base::Closure pending_stop_cb_;
+  media::StatisticsCallback statistics_callback_;
 
   media::VideoCaptureSessionId video_stream_id_;
   media::VideoCapture* capture_engine_;

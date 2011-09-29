@@ -4,6 +4,7 @@
 
 #include "webkit/glue/webmediaplayer_proxy.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "media/base/pipeline_status.h"
@@ -48,11 +49,10 @@ void WebMediaPlayerProxy::SetVideoRenderer(
   video_renderer_ = video_renderer;
 }
 
-WebDataSourceBuildObserverHack* WebMediaPlayerProxy::GetBuildObserver() {
-  if (!build_observer_.get())
-    build_observer_.reset(NewCallback(this,
-                                      &WebMediaPlayerProxy::AddDataSource));
-  return build_observer_.get();
+WebDataSourceBuildObserverHack WebMediaPlayerProxy::GetBuildObserver() {
+  if (build_observer_.is_null())
+    build_observer_ = base::Bind(&WebMediaPlayerProxy::AddDataSource, this);
+  return build_observer_;
 }
 
 void WebMediaPlayerProxy::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {

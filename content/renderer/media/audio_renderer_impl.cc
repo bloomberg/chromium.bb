@@ -168,7 +168,7 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
   }
 }
 
-void AudioRendererImpl::Pause(media::FilterCallback* callback) {
+void AudioRendererImpl::Pause(const base::Closure& callback) {
   AudioRendererBase::Pause(callback);
   base::AutoLock auto_lock(lock_);
   if (stopped_)
@@ -192,7 +192,7 @@ void AudioRendererImpl::Seek(base::TimeDelta time,
 }
 
 
-void AudioRendererImpl::Play(media::FilterCallback* callback) {
+void AudioRendererImpl::Play(const base::Closure& callback) {
   AudioRendererBase::Play(callback);
   base::AutoLock auto_lock(lock_);
   if (stopped_)

@@ -75,9 +75,9 @@ class AudioRendererImpl
   // Methods called on pipeline thread ----------------------------------------
   // media::Filter implementation.
   virtual void SetPlaybackRate(float rate);
-  virtual void Pause(media::FilterCallback* callback);
+  virtual void Pause(const base::Closure& callback);
   virtual void Seek(base::TimeDelta time, const media::FilterStatusCB& cb);
-  virtual void Play(media::FilterCallback* callback);
+  virtual void Play(const base::Closure& callback);
 
   // media::AudioRenderer implementation.
   virtual void SetVolume(float volume);

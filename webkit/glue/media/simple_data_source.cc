@@ -4,6 +4,7 @@
 
 #include "webkit/glue/media/simple_data_source.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "media/base/filter_host.h"
@@ -37,7 +38,7 @@ media::DataSourceFactory* SimpleDataSource::CreateFactory(
     MessageLoop* render_loop,
     WebKit::WebFrame* frame,
     media::MediaLog* media_log,
-    WebDataSourceBuildObserverHack* build_observer) {
+    const WebDataSourceBuildObserverHack& build_observer) {
   return new WebDataSourceFactory(render_loop, frame, media_log,
                                   &NewSimpleDataSource, build_observer);
 }
@@ -68,17 +69,15 @@ void SimpleDataSource::set_host(media::FilterHost* host) {
   }
 }
 
-void SimpleDataSource::Stop(media::FilterCallback* callback) {
+void SimpleDataSource::Stop(const base::Closure& callback) {
   base::AutoLock auto_lock(lock_);
   state_ = STOPPED;
-  if (callback) {
-    callback->Run();
-    delete callback;
-  }
+  if (!callback.is_null())
+    callback.Run();
 
   // Post a task to the render thread to cancel loading the resource.
   render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &SimpleDataSource::CancelTask));
+                         base::Bind(&SimpleDataSource::CancelTask, this));
 }
 
 void SimpleDataSource::Initialize(
@@ -104,7 +103,7 @@ void SimpleDataSource::Initialize(
 
     // Post a task to the render thread to start loading the resource.
     render_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &SimpleDataSource::StartTask));
+        base::Bind(&SimpleDataSource::StartTask, this));
   }
 }
 
@@ -116,22 +115,20 @@ void SimpleDataSource::CancelInitialize() {
 
   // Post a task to the render thread to cancel loading the resource.
   render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &SimpleDataSource::CancelTask));
+      base::Bind(&SimpleDataSource::CancelTask, this));
 }
 
 void SimpleDataSource::Read(int64 position,
                             size_t size,
                             uint8* data,
-                            ReadCallback* read_callback) {
+                            const DataSource::ReadCallback& read_callback) {
   DCHECK_GE(size_, 0);
   if (position >= size_) {
-    read_callback->RunWithParams(Tuple1<size_t>(0));
-    delete read_callback;
+    read_callback.Run(0);
   } else {
     size_t copied = std::min(size, static_cast<size_t>(size_ - position));
     memcpy(data, data_.c_str() + position, copied);
-    read_callback->RunWithParams(Tuple1<size_t>(copied));
-    delete read_callback;
+    read_callback.Run(copied);
   }
 }
 

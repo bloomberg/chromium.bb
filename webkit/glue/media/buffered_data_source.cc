@@ -4,6 +4,7 @@
 
 #include "webkit/glue/media/buffered_data_source.h"
 
+#include "base/bind.h"
 #include "media/base/filter_host.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
@@ -34,7 +35,7 @@ media::DataSourceFactory* BufferedDataSource::CreateFactory(
     MessageLoop* render_loop,
     WebKit::WebFrame* frame,
     media::MediaLog* media_log,
-    WebDataSourceBuildObserverHack* build_observer) {
+    const WebDataSourceBuildObserverHack& build_observer) {
   return new WebDataSourceFactory(render_loop, frame, media_log,
                                   &NewBufferedDataSource, build_observer);
 }
@@ -50,7 +51,6 @@ BufferedDataSource::BufferedDataSource(
       frame_(frame),
       loader_(NULL),
       network_activity_(false),
-      read_callback_(NULL),
       read_position_(0),
       read_size_(0),
       read_buffer_(NULL),
@@ -113,7 +113,7 @@ void BufferedDataSource::Initialize(const std::string& url,
 
   // Post a task to complete the initialization task.
   render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &BufferedDataSource::InitializeTask));
+      base::Bind(&BufferedDataSource::InitializeTask, this));
 }
 
 void BufferedDataSource::CancelInitialize() {
@@ -123,66 +123,61 @@ void BufferedDataSource::CancelInitialize() {
   initialize_cb_.Reset();
 
   render_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &BufferedDataSource::CleanupTask));
+      FROM_HERE, base::Bind(&BufferedDataSource::CleanupTask, this));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // media::Filter implementation.
-void BufferedDataSource::Stop(media::FilterCallback* callback) {
+void BufferedDataSource::Stop(const base::Closure& callback) {
   {
     base::AutoLock auto_lock(lock_);
     stop_signal_received_ = true;
   }
-  if (callback) {
-    callback->Run();
-    delete callback;
-  }
+  if (!callback.is_null())
+    callback.Run();
 
   render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &BufferedDataSource::CleanupTask));
+      base::Bind(&BufferedDataSource::CleanupTask, this));
 }
 
 void BufferedDataSource::SetPlaybackRate(float playback_rate) {
-  render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &BufferedDataSource::SetPlaybackRateTask,
-                        playback_rate));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &BufferedDataSource::SetPlaybackRateTask, this, playback_rate));
 }
 
 void BufferedDataSource::SetPreload(media::Preload preload) {
-  render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &BufferedDataSource::SetPreloadTask,
-                        preload));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &BufferedDataSource::SetPreloadTask, this, preload));
 }
 
 void BufferedDataSource::SetBitrate(int bitrate) {
-  render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &BufferedDataSource::SetBitrateTask, bitrate));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &BufferedDataSource::SetBitrateTask, this, bitrate));
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // media::DataSource implementation.
-void BufferedDataSource::Read(int64 position, size_t size, uint8* data,
-                              media::DataSource::ReadCallback* read_callback) {
+void BufferedDataSource::Read(
+    int64 position, size_t size, uint8* data,
+    const media::DataSource::ReadCallback& read_callback) {
   VLOG(1) << "Read: " << position << " offset, " << size << " bytes";
-  DCHECK(read_callback);
+  DCHECK(!read_callback.is_null());
 
   {
     base::AutoLock auto_lock(lock_);
-    DCHECK(!read_callback_.get());
+    DCHECK(read_callback_.is_null());
 
     if (stop_signal_received_ || stopped_on_render_loop_) {
-      read_callback->RunWithParams(
-          Tuple1<size_t>(static_cast<size_t>(media::DataSource::kReadError)));
-      delete read_callback;
+      read_callback.Run(kReadError);
       return;
     }
 
-    read_callback_.reset(read_callback);
+    read_callback_ = read_callback;
   }
 
-  render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &BufferedDataSource::ReadTask,
-                        position, static_cast<int>(size), data));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &BufferedDataSource::ReadTask, this,
+      position, static_cast<int>(size), data));
 }
 
 bool BufferedDataSource::GetSize(int64* size_out) {
@@ -230,7 +225,7 @@ void BufferedDataSource::InitializeTask() {
     loader_ = CreateResourceLoader(0, kPositionNotSpecified);
     loader_->Start(
         NewCallback(this, &BufferedDataSource::HttpInitialStartCallback),
-        NewCallback(this, &BufferedDataSource::NetworkEventCallback),
+        base::Bind(&BufferedDataSource::NetworkEventCallback, this),
         frame_);
   } else {
     // For all other protocols, assume they support range request. We fetch
@@ -240,7 +235,7 @@ void BufferedDataSource::InitializeTask() {
                                    kPositionNotSpecified);
     loader_->Start(
         NewCallback(this, &BufferedDataSource::NonHttpInitialStartCallback),
-        NewCallback(this, &BufferedDataSource::NetworkEventCallback),
+        base::Bind(&BufferedDataSource::NetworkEventCallback, this),
         frame_);
   }
 }
@@ -255,7 +250,7 @@ void BufferedDataSource::ReadTask(
     if (stopped_on_render_loop_)
       return;
 
-    DCHECK(read_callback_.get());
+    DCHECK(!read_callback_.is_null());
   }
 
   // Saves the read parameters.
@@ -282,7 +277,7 @@ void BufferedDataSource::CleanupTask() {
     // before registering a new |read_callback_| (which is cleared below).
     stopped_on_render_loop_ = true;
 
-    if (read_callback_.get())
+    if (!read_callback_.is_null())
       DoneRead_Locked(net::ERR_FAILED);
   }
 
@@ -304,7 +299,7 @@ void BufferedDataSource::RestartLoadingTask() {
   {
     // If there's no outstanding read then return early.
     base::AutoLock auto_lock(lock_);
-    if (!read_callback_.get())
+    if (read_callback_.is_null())
       return;
   }
 
@@ -313,7 +308,7 @@ void BufferedDataSource::RestartLoadingTask() {
   loader_->UpdateDeferStrategy(strategy);
   loader_->Start(
       NewCallback(this, &BufferedDataSource::PartialReadStartCallback),
-      NewCallback(this, &BufferedDataSource::NetworkEventCallback),
+      base::Bind(&BufferedDataSource::NetworkEventCallback, this),
       frame_);
 }
 
@@ -389,17 +384,16 @@ void BufferedDataSource::DoneRead_Locked(int error) {
   VLOG(1) << "DoneRead: " << error << " bytes";
 
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(read_callback_.get());
+  DCHECK(!read_callback_.is_null());
   lock_.AssertAcquired();
 
   if (error >= 0) {
-    read_callback_->RunWithParams(Tuple1<size_t>(error));
+    read_callback_.Run(static_cast<size_t>(error));
   } else {
-    read_callback_->RunWithParams(
-        Tuple1<size_t>(static_cast<size_t>(media::DataSource::kReadError)));
+    read_callback_.Run(kReadError);
   }
 
-  read_callback_.reset();
+  read_callback_.Reset();
   read_position_ = 0;
   read_size_ = 0;
   read_buffer_ = 0;
@@ -455,7 +449,7 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
                                    kPositionNotSpecified);
     loader_->Start(
         NewCallback(this, &BufferedDataSource::HttpInitialStartCallback),
-        NewCallback(this, &BufferedDataSource::NetworkEventCallback),
+        base::Bind(&BufferedDataSource::NetworkEventCallback, this),
         frame_);
     return;
   }
@@ -583,7 +577,7 @@ void BufferedDataSource::ReadCallback(int error) {
     if (error == net::ERR_CACHE_MISS && cache_miss_retries_left_ > 0) {
       cache_miss_retries_left_--;
       render_loop_->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &BufferedDataSource::RestartLoadingTask));
+          base::Bind(&BufferedDataSource::RestartLoadingTask, this));
       return;
     }
   }

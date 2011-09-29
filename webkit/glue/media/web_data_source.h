@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_MEDIA_WEB_DATA_SOURCE_H_
 #define WEBKIT_GLUE_MEDIA_WEB_DATA_SOURCE_H_
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline_status.h"
 
@@ -52,7 +52,7 @@ class WebDataSource : public media::DataSource {
 // on them at shutdown. Once cancellation is added to DataSource and pause
 // support in Demuxers cancel pending reads, Proxy shouldn't have to keep
 // a WebDataSource list or call Abort().
-typedef Callback1<WebDataSource*>::Type WebDataSourceBuildObserverHack;
+typedef base::Callback<void(WebDataSource*)> WebDataSourceBuildObserverHack;
 
 }  // namespace webkit_glue
 

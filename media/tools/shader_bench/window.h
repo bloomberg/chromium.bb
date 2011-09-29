@@ -1,20 +1,21 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef MEDIA_TOOLS_SHADER_BENCH_WINDOW_H_
 #define MEDIA_TOOLS_SHADER_BENCH_WINDOW_H_
 
+#include "base/callback.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Painter;
-class Task;
 
 namespace media {
 
 class Window {
  public:
   Window(int width, int height);
+  ~Window();
 
   // Creates and returns a handle to a native window of the given dimensions.
   gfx::NativeWindow CreateNativeWindow(int width, int height);
@@ -24,7 +25,7 @@ class Window {
 
   // Kicks off frame painting with the given limit, painter, and
   // callback to run when painting task is complete.
-  void Start(int limit, Task* done_task, Painter* painter);
+  void Start(int limit, const base::Closure& callback, Painter* painter);
 
   // Called when window is expected to paint self.
   void OnPaint();
@@ -33,9 +34,9 @@ class Window {
   void MainLoop();
 
  private:
-  // Task to run when frame painting is completed. Will be deleted after
+  // Closure to run when frame painting is completed. Will be reset after
   // running.
-  Task* done_task_;
+  base::Closure callback_;
 
   // Reference to painter Window uses to paint frames.
   Painter* painter_;

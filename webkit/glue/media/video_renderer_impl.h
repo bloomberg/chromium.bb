@@ -32,7 +32,7 @@ class VideoRendererImpl : public WebVideoRenderer {
  protected:
   // VideoRendererBase implementation.
   virtual bool OnInitialize(media::VideoDecoder* decoder) OVERRIDE;
-  virtual void OnStop(media::FilterCallback* callback) OVERRIDE;
+  virtual void OnStop(const base::Closure& callback) OVERRIDE;
   virtual void OnFrameAvailable() OVERRIDE;
 
  private:

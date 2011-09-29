@@ -28,7 +28,7 @@ class MEDIA_EXPORT ChunkDemuxerFactory : public DemuxerFactory {
   virtual ~ChunkDemuxerFactory();
 
   // DemuxerFactory methods.
-  virtual void Build(const std::string& url, BuildCallback* cb);
+  virtual void Build(const std::string& url, const BuildCallback& cb);
   virtual DemuxerFactory* Clone() const;
 
  private:

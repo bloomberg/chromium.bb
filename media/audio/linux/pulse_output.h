@@ -22,6 +22,7 @@
 #include <pulse/pulseaudio.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "media/audio/audio_io.h"
 #include "media/base/channel_layout.h"
@@ -119,7 +120,7 @@ class PulseAudioOutputStream : public AudioOutputStream {
 
   // Allows us to run tasks on the PulseAudioOutputStream instance which are
   // bound by its lifetime.
-  ScopedRunnableMethodFactory<PulseAudioOutputStream> method_factory_;
+  base::WeakPtrFactory<PulseAudioOutputStream> weak_factory_;
 
   // Callback to audio data source.
   AudioSourceCallback* source_callback_;

@@ -10,24 +10,23 @@
 
 namespace media {
 
-static void DoInitDone(DemuxerFactory::BuildCallback* cb,
+static void DoInitDone(const DemuxerFactory::BuildCallback& cb,
                        const scoped_refptr<Demuxer>& demuxer,
                        PipelineStatus status) {
-  scoped_ptr<DemuxerFactory::BuildCallback> callback(cb);
   if (status != PIPELINE_OK) {
-    callback->Run(status, static_cast<Demuxer*>(NULL));
+    cb.Run(status, static_cast<Demuxer*>(NULL));
     return;
   }
 
-  callback->Run(status, demuxer);
+  cb.Run(status, demuxer);
 }
 
 static void InitDone(MessageLoop* message_loop,
-                     DemuxerFactory::BuildCallback* cb,
+                     const DemuxerFactory::BuildCallback& cb,
                      const scoped_refptr<Demuxer>& demuxer,
                      PipelineStatus status) {
   message_loop->PostTask(FROM_HERE,
-                         NewRunnableFunction(&DoInitDone, cb, demuxer, status));
+                         base::Bind(&DoInitDone, cb, demuxer, status));
 }
 
 ChunkDemuxerFactory::ChunkDemuxerFactory(const std::string& url,
@@ -41,7 +40,8 @@ ChunkDemuxerFactory::ChunkDemuxerFactory(const std::string& url,
 
 ChunkDemuxerFactory::~ChunkDemuxerFactory() {}
 
-void ChunkDemuxerFactory::Build(const std::string& url, BuildCallback* cb) {
+void ChunkDemuxerFactory::Build(const std::string& url,
+                                const BuildCallback& cb) {
   // Check to see if this is the URL we are looking for. If not delegate
   // building to the delegate factory.
   if (url != url_) {
@@ -52,8 +52,7 @@ void ChunkDemuxerFactory::Build(const std::string& url, BuildCallback* cb) {
   scoped_refptr<ChunkDemuxer> demuxer(new ChunkDemuxer(client_));
   // Call Init() on demuxer. Note that ownership is being passed to the
   // callback here.
-  demuxer->Init(base::Bind(&InitDone, MessageLoop::current(), cb,
-                           scoped_refptr<Demuxer>(demuxer.get())));
+  demuxer->Init(base::Bind(&InitDone, MessageLoop::current(), cb, demuxer));
 }
 
 DemuxerFactory* ChunkDemuxerFactory::Clone() const {

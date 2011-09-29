@@ -5,9 +5,9 @@
 #include "media/base/composite_filter.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "media/base/callback.h"
 
 namespace media {
 
@@ -46,10 +46,9 @@ CompositeFilter::CompositeFilter(MessageLoop* message_loop)
     : state_(kCreated),
       sequence_index_(0),
       message_loop_(message_loop),
-      status_(PIPELINE_OK) {
+      status_(PIPELINE_OK),
+      weak_ptr_factory_(this) {
   DCHECK(message_loop);
-  runnable_factory_.reset(
-      new ScopedRunnableMethodFactory<CompositeFilter>(this));
 }
 
 CompositeFilter::~CompositeFilter() {
@@ -81,75 +80,71 @@ FilterHost* CompositeFilter::host() {
   return host_impl_.get() ? host_impl_->host() : NULL;
 }
 
-void CompositeFilter::Play(FilterCallback* play_callback) {
+void CompositeFilter::Play(const base::Closure& play_callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  scoped_ptr<FilterCallback> callback(play_callback);
   if (IsOperationPending()) {
     SendErrorToHost(PIPELINE_ERROR_OPERATION_PENDING);
-    callback->Run();
+    play_callback.Run();
     return;
   } else if (state_ == kPlaying) {
-    callback->Run();
+    play_callback.Run();
     return;
   } else if (!host() || (state_ != kPaused && state_ != kCreated)) {
     SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-    callback->Run();
+    play_callback.Run();
     return;
   }
 
   ChangeState(kPlayPending);
-  callback_.reset(callback.release());
+  callback_ = play_callback;
   StartSerialCallSequence();
 }
 
-void CompositeFilter::Pause(FilterCallback* pause_callback) {
+void CompositeFilter::Pause(const base::Closure& pause_callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  scoped_ptr<FilterCallback> callback(pause_callback);
   if (IsOperationPending()) {
     SendErrorToHost(PIPELINE_ERROR_OPERATION_PENDING);
-    callback->Run();
+    pause_callback.Run();
     return;
   } else if (state_ == kPaused) {
-    callback->Run();
+    pause_callback.Run();
     return;
   } else if (!host() || state_ != kPlaying) {
     SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-    callback->Run();
+    pause_callback.Run();
     return;
   }
 
   ChangeState(kPausePending);
-  callback_.reset(callback.release());
+  callback_ = pause_callback;
   StartSerialCallSequence();
 }
 
-void CompositeFilter::Flush(FilterCallback* flush_callback) {
+void CompositeFilter::Flush(const base::Closure& flush_callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  scoped_ptr<FilterCallback> callback(flush_callback);
   if (IsOperationPending()) {
     SendErrorToHost(PIPELINE_ERROR_OPERATION_PENDING);
-    callback->Run();
+    flush_callback.Run();
     return;
   } else if (!host() || (state_ != kCreated && state_ != kPaused)) {
     SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-    callback->Run();
+    flush_callback.Run();
     return;
   }
 
   ChangeState(kFlushPending);
-  callback_.reset(callback.release());
+  callback_ = flush_callback;
   StartParallelCallSequence();
 }
 
-void CompositeFilter::Stop(FilterCallback* stop_callback) {
+void CompositeFilter::Stop(const base::Closure& stop_callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  scoped_ptr<FilterCallback> callback(stop_callback);
   if (!host()) {
     SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-    callback->Run();
+    stop_callback.Run();
     return;
   } else if (state_ == kStopped) {
-    callback->Run();
+    stop_callback.Run();
     return;
   }
 
@@ -174,11 +169,11 @@ void CompositeFilter::Stop(FilterCallback* stop_callback) {
       break;
     default:
       SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-      callback->Run();
+      stop_callback.Run();
       return;
   }
 
-  callback_.reset(callback.release());
+  callback_ = stop_callback;
   if (state_ == kStopPending) {
     StartSerialCallSequence();
   }
@@ -254,7 +249,7 @@ void CompositeFilter::StartParallelCallSequence() {
 }
 
 void CompositeFilter::CallFilter(scoped_refptr<Filter>& filter,
-                                 FilterCallback* callback) {
+                                 const base::Closure& callback) {
   switch (state_) {
     case kPlayPending:
       filter->Play(callback);
@@ -273,27 +268,24 @@ void CompositeFilter::CallFilter(scoped_refptr<Filter>& filter,
                    base::Bind(&CompositeFilter::OnStatusCB, this, callback));
       break;
     default:
-      delete callback;
+
       ChangeState(kError);
       DispatchPendingCallback(PIPELINE_ERROR_INVALID_STATE);
   }
 }
 
 void CompositeFilter::DispatchPendingCallback(PipelineStatus status) {
-  DCHECK((status_cb_.is_null() && callback_.get()) ||
-         (!status_cb_.is_null() && !callback_.get()));
+  DCHECK(status_cb_.is_null() ^ callback_.is_null());
 
   if (!status_cb_.is_null()) {
     ResetAndRunCB(&status_cb_, status);
     return;
   }
 
-  if (callback_.get()) {
+  if (!callback_.is_null()) {
     if (status != PIPELINE_OK)
       SendErrorToHost(status);
-
-    scoped_ptr<FilterCallback> callback(callback_.release());
-    callback->Run();
+    ResetAndRunCB(&callback_);
   }
 }
 
@@ -405,31 +397,29 @@ void CompositeFilter::SendErrorToHost(PipelineStatus error) {
     host_impl_.get()->host()->SetError(error);
 }
 
-FilterCallback* CompositeFilter::NewThreadSafeCallback(
+base::Closure CompositeFilter::NewThreadSafeCallback(
     void (CompositeFilter::*method)()) {
-  return TaskToCallbackAdapter::NewCallback(
-      NewRunnableFunction(&CompositeFilter::OnCallback,
-                          message_loop_,
-                          runnable_factory_->NewRunnableMethod(method)));
+  return base::Bind(&CompositeFilter::OnCallback,
+                    message_loop_,
+                    base::Bind(method, weak_ptr_factory_.GetWeakPtr()));
 }
 
 // This method is intentionally static so that no reference to the composite
 // is needed to call it. This method may be called by other threads and we
 // don't want those threads to gain ownership of this composite by having a
-// reference to it. |task| will contain a weak reference to the composite
+// reference to it. |closure| will contain a weak reference to the composite
 // so that the reference can be cleared if the composite is destroyed before
 // the callback is called.
 // static
 void CompositeFilter::OnCallback(MessageLoop* message_loop,
-                                 CancelableTask* task) {
+                                 const base::Closure& closure) {
   if (MessageLoop::current() != message_loop) {
     // Posting callback to the proper thread.
-    message_loop->PostTask(FROM_HERE, task);
+    message_loop->PostTask(FROM_HERE, closure);
     return;
   }
 
-  task->Run();
-  delete task;
+  closure.Run();
 }
 
 bool CompositeFilter::CanForwardError() {
@@ -437,18 +427,18 @@ bool CompositeFilter::CanForwardError() {
 }
 
 bool CompositeFilter::IsOperationPending() const {
-  DCHECK(!(callback_.get() && !status_cb_.is_null()));
+  DCHECK(callback_.is_null() || status_cb_.is_null());
 
-  return callback_.get() || !status_cb_.is_null();
+  return !callback_.is_null() || !status_cb_.is_null();
 }
 
-void CompositeFilter::OnStatusCB(FilterCallback* callback,
+void CompositeFilter::OnStatusCB(const base::Closure& callback,
                                  PipelineStatus status) {
   if (status != PIPELINE_OK)
     SetError(status);
 
-  callback->Run();
-  delete callback;
+  callback.Run();
+
 }
 
 void CompositeFilter::SetError(PipelineStatus error) {
@@ -465,7 +455,7 @@ void CompositeFilter::SetError(PipelineStatus error) {
 
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &CompositeFilter::SetError, error));
+        base::Bind(&CompositeFilter::SetError, this, error));
     return;
   }
 

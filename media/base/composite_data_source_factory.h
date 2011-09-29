@@ -29,7 +29,7 @@ class MEDIA_EXPORT CompositeDataSourceFactory
   // AsyncDataSourceFactoryBase methods.
   virtual bool AllowRequests() const;
   virtual AsyncDataSourceFactoryBase::BuildRequest* CreateRequest(
-      const std::string& url, BuildCallback* callback);
+      const std::string& url, const BuildCallback& callback);
 
  private:
   class BuildRequest;

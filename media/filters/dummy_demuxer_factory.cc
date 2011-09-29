@@ -16,11 +16,11 @@ DummyDemuxerFactory::DummyDemuxerFactory(bool has_video, bool has_audio)
 
 DummyDemuxerFactory::~DummyDemuxerFactory() {}
 
-void DummyDemuxerFactory::Build(const std::string& url, BuildCallback* cb) {
+void DummyDemuxerFactory::Build(const std::string& url,
+                                const BuildCallback& cb) {
   scoped_refptr<DummyDemuxer> demuxer =
       new DummyDemuxer(has_video_, has_audio_);
-  scoped_ptr<DemuxerFactory::BuildCallback> callback(cb);
-  callback->Run(PIPELINE_OK, demuxer.get());
+  cb.Run(PIPELINE_OK, demuxer.get());
 }
 
 DemuxerFactory* DummyDemuxerFactory::Clone() const {

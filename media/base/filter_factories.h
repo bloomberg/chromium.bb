@@ -7,7 +7,7 @@
 
 #include<string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
@@ -19,12 +19,12 @@ class DataSource;
 class MEDIA_EXPORT DataSourceFactory {
  public:
   // Ownership of the DataSource is transferred through this callback.
-  typedef Callback2<PipelineStatus, DataSource*>::Type BuildCallback;
+  typedef base::Callback<void(PipelineStatus, DataSource*)> BuildCallback;
 
   virtual ~DataSourceFactory();
 
   // Builds a DataSource for |url| and returns it via |callback|.
-  virtual void Build(const std::string& url, BuildCallback* callback) = 0;
+  virtual void Build(const std::string& url, const BuildCallback& callback) = 0;
 
   // Makes a copy of this factory.
   // NOTE: Pending requests are not cloned.
@@ -37,12 +37,12 @@ class Demuxer;
 class MEDIA_EXPORT DemuxerFactory {
  public:
   // Ownership of the Demuxer is transferred through this callback.
-  typedef Callback2<PipelineStatus, Demuxer*>::Type BuildCallback;
+  typedef base::Callback<void(PipelineStatus, Demuxer*)> BuildCallback;
 
   virtual ~DemuxerFactory();
 
   // Builds a Demuxer for |url| and returns it via |callback|.
-  virtual void Build(const std::string& url, BuildCallback* callback) = 0;
+  virtual void Build(const std::string& url, const BuildCallback& callback) = 0;
 
   // Makes a copy of this factory.
   // NOTE: Pending requests are not cloned.

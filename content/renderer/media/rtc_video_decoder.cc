@@ -6,9 +6,10 @@
 
 #include <deque>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "media/base/callback.h"
 #include "media/base/demuxer.h"
 #include "media/base/filter_host.h"
 #include "media/base/filters.h"
@@ -21,7 +22,6 @@ using media::CopyUPlane;
 using media::CopyVPlane;
 using media::CopyYPlane;
 using media::DemuxerStream;
-using media::FilterCallback;
 using media::FilterStatusCB;
 using media::kNoTimestamp;
 using media::Limits;
@@ -41,15 +41,14 @@ RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
 RTCVideoDecoder::~RTCVideoDecoder() {}
 
 void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 FilterCallback* filter_callback,
-                                 StatisticsCallback* stat_callback) {
+                                 const base::Closure& filter_callback,
+                                 const StatisticsCallback& stat_callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &RTCVideoDecoder::Initialize,
-                          make_scoped_refptr(demuxer_stream),
-                          filter_callback, stat_callback));
+        base::Bind(&RTCVideoDecoder::Initialize, this,
+                   make_scoped_refptr(demuxer_stream),
+                   filter_callback, stat_callback));
     return;
   }
 
@@ -61,14 +60,12 @@ void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
 
   state_ = kNormal;
 
-  filter_callback->Run();
-  delete filter_callback;
+  filter_callback.Run();
 
   // TODO(acolwell): Implement stats.
-  delete stat_callback;
 }
 
-void RTCVideoDecoder::Play(FilterCallback* callback) {
+void RTCVideoDecoder::Play(const base::Closure& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
                              NewRunnableMethod(this,
@@ -82,7 +79,7 @@ void RTCVideoDecoder::Play(FilterCallback* callback) {
   VideoDecoder::Play(callback);
 }
 
-void RTCVideoDecoder::Pause(FilterCallback* callback) {
+void RTCVideoDecoder::Pause(const base::Closure& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
                             NewRunnableMethod(this,
@@ -98,7 +95,7 @@ void RTCVideoDecoder::Pause(FilterCallback* callback) {
   VideoDecoder::Pause(callback);
 }
 
-void RTCVideoDecoder::Stop(FilterCallback* callback) {
+void RTCVideoDecoder::Stop(const base::Closure& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
                             NewRunnableMethod(this,

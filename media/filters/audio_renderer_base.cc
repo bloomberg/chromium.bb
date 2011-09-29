@@ -28,39 +28,37 @@ AudioRendererBase::~AudioRendererBase() {
   DCHECK(!algorithm_.get());
 }
 
-void AudioRendererBase::Play(FilterCallback* callback) {
+void AudioRendererBase::Play(const base::Closure& callback) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPaused, state_);
-  scoped_ptr<FilterCallback> c(callback);
   state_ = kPlaying;
-  callback->Run();
+  callback.Run();
 }
 
-void AudioRendererBase::Pause(FilterCallback* callback) {
+void AudioRendererBase::Pause(const base::Closure& callback) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPlaying, state_);
-  pause_callback_.reset(callback);
+  pause_callback_ = callback;
   state_ = kPaused;
 
   // We'll only pause when we've finished all pending reads.
   if (pending_reads_ == 0) {
-    pause_callback_->Run();
-    pause_callback_.reset();
+    pause_callback_.Run();
+    pause_callback_.Reset();
   } else {
     state_ = kPaused;
   }
 }
 
-void AudioRendererBase::Stop(FilterCallback* callback) {
+void AudioRendererBase::Stop(const base::Closure& callback) {
   OnStop();
   {
     base::AutoLock auto_lock(lock_);
     state_ = kStopped;
     algorithm_.reset(NULL);
   }
-  if (callback) {
-    callback->Run();
-    delete callback;
+  if (!callback.is_null()) {
+    callback.Run();
   }
 }
 
@@ -83,11 +81,10 @@ void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
 }
 
 void AudioRendererBase::Initialize(AudioDecoder* decoder,
-                                   FilterCallback* callback) {
+                                   const base::Closure& callback) {
   DCHECK(decoder);
-  DCHECK(callback);
+  DCHECK(!callback.is_null());
   DCHECK_EQ(kUninitialized, state_);
-  scoped_ptr<FilterCallback> c(callback);
   decoder_ = decoder;
 
   // Use base::Unretained() as the decoder doesn't need to ref us.
@@ -96,8 +93,7 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
                  base::Unretained(this)));
 
   // Create a callback so our algorithm can request more reads.
-  AudioRendererAlgorithmBase::RequestReadCallback* cb =
-      NewCallback(this, &AudioRendererBase::ScheduleRead_Locked);
+  base::Closure cb = base::Bind(&AudioRendererBase::ScheduleRead_Locked, this);
 
   // Construct the algorithm.
   algorithm_.reset(new AudioRendererAlgorithmOLA());
@@ -113,13 +109,13 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   // Give the subclass an opportunity to initialize itself.
   if (!OnInitialize(bits_per_channel, channel_layout, sample_rate)) {
     host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
-    callback->Run();
+    callback.Run();
     return;
   }
 
   // Finally, execute the start callback.
   state_ = kPaused;
-  callback->Run();
+  callback.Run();
 }
 
 bool AudioRendererBase::HasEnded() {
@@ -168,9 +164,9 @@ void AudioRendererBase::ConsumeAudioSamples(scoped_refptr<Buffer> buffer_in) {
     }
   } else if (state_ == kPaused && pending_reads_ == 0) {
     // No more pending reads!  We're now officially "paused".
-    if (pause_callback_.get()) {
-      pause_callback_->Run();
-      pause_callback_.reset();
+    if (!pause_callback_.is_null()) {
+      pause_callback_.Run();
+      pause_callback_.Reset();
     }
   }
 }

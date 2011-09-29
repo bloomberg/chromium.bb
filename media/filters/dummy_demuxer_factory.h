@@ -18,7 +18,7 @@ class MEDIA_EXPORT DummyDemuxerFactory : public DemuxerFactory {
   virtual ~DummyDemuxerFactory();
 
   // DemuxerFactory methods.
-  virtual void Build(const std::string& url, BuildCallback* cb) OVERRIDE;
+  virtual void Build(const std::string& url, const BuildCallback& cb) OVERRIDE;
   virtual DemuxerFactory* Clone() const OVERRIDE;
 
  private:

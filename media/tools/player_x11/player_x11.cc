@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
-#include "media/base/callback.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"
@@ -190,9 +189,9 @@ void PeriodicalUpdate(
     }
   }
 
-  message_loop->PostDelayedTask(FROM_HERE,
-      NewRunnableFunction(PeriodicalUpdate, make_scoped_refptr(pipeline),
-                          message_loop, audio_only), 10);
+  message_loop->PostDelayedTask(FROM_HERE, base::Bind(
+      PeriodicalUpdate, make_scoped_refptr(pipeline),
+      message_loop, audio_only), 10);
 }
 
 int main(int argc, char** argv) {
@@ -251,9 +250,8 @@ int main(int argc, char** argv) {
     // Check if video is present.
     audio_only = !pipeline->HasVideo();
 
-    message_loop.PostTask(FROM_HERE,
-        NewRunnableFunction(PeriodicalUpdate, pipeline,
-                            &message_loop, audio_only));
+    message_loop.PostTask(FROM_HERE, base::Bind(
+        PeriodicalUpdate, pipeline, &message_loop, audio_only));
     message_loop.Run();
   } else{
     std::cout << "Pipeline initialization failed..." << std::endl;

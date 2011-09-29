@@ -18,11 +18,9 @@ bool WtlVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   return true;
 }
 
-void WtlVideoRenderer::OnStop(media::FilterCallback* callback) {
-  if (callback) {
-    callback->Run();
-    delete callback;
-  }
+void WtlVideoRenderer::OnStop(const base::Closure& callback) {
+  if (!callback.is_null())
+    callback.Run();
 }
 
 void WtlVideoRenderer::OnFrameAvailable() {

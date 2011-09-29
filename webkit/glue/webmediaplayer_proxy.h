@@ -36,7 +36,7 @@ class WebMediaPlayerProxy
   // Methods for Filter -> WebMediaPlayerImpl communication.
   void Repaint();
   void SetVideoRenderer(scoped_refptr<WebVideoRenderer> video_renderer);
-  WebDataSourceBuildObserverHack* GetBuildObserver();
+  WebDataSourceBuildObserverHack GetBuildObserver();
 
   // Methods for WebMediaPlayerImpl -> Filter communication.
   void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect);
@@ -103,7 +103,7 @@ class WebMediaPlayerProxy
   base::Lock data_sources_lock_;
   typedef std::list<scoped_refptr<WebDataSource> > DataSourceList;
   DataSourceList data_sources_;
-  scoped_ptr<WebDataSourceBuildObserverHack> build_observer_;
+  WebDataSourceBuildObserverHack build_observer_;
 
   scoped_refptr<WebVideoRenderer> video_renderer_;
 

@@ -27,7 +27,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -61,16 +60,16 @@ enum Preload {
 };
 
 // Used for completing asynchronous methods.
-typedef Callback0::Type FilterCallback;
 typedef base::Callback<void(PipelineStatus)> FilterStatusCB;
 
-// This function copies |cb|, calls Reset() on |cb|, and then calls Run()
+// This function copies |*cb|, calls Reset() on |*cb|, and then calls Run()
 // on the copy. This is used in the common case where you need to clear
 // a callback member variable before running the callback.
 MEDIA_EXPORT void ResetAndRunCB(FilterStatusCB* cb, PipelineStatus status);
+MEDIA_EXPORT void ResetAndRunCB(base::Closure* cb);
 
 // Used for updating pipeline statistics.
-typedef Callback1<const PipelineStatistics&>::Type StatisticsCallback;
+typedef base::Callback<void(const PipelineStatistics&)> StatisticsCallback;
 
 class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
  public:
@@ -87,22 +86,22 @@ class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
   // The pipeline has resumed playback.  Filters can continue requesting reads.
   // Filters may implement this method if they need to respond to this call.
   // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Play(FilterCallback* callback);
+  virtual void Play(const base::Closure& callback);
 
   // The pipeline has paused playback.  Filters should stop buffer exchange.
   // Filters may implement this method if they need to respond to this call.
   // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Pause(FilterCallback* callback);
+  virtual void Pause(const base::Closure& callback);
 
   // The pipeline has been flushed.  Filters should return buffer to owners.
   // Filters may implement this method if they need to respond to this call.
   // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Flush(FilterCallback* callback);
+  virtual void Flush(const base::Closure& callback);
 
   // The pipeline is being stopped either as a result of an error or because
   // the client called Stop().
   // TODO(boliu): Check that callback is not NULL in subclasses.
-  virtual void Stop(FilterCallback* callback);
+  virtual void Stop(const base::Closure& callback);
 
   // The pipeline playback rate has been changed.  Filters may implement this
   // method if they need to respond to this call.
@@ -132,8 +131,8 @@ class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
 
 class MEDIA_EXPORT DataSource : public Filter {
  public:
-  typedef Callback1<size_t>::Type ReadCallback;
-  static const size_t kReadError = static_cast<size_t>(-1);
+  typedef base::Callback<void(size_t)> ReadCallback;
+  static const size_t kReadError;
 
   // Reads |size| bytes from |position| into |data|. And when the read is done
   // or failed, |read_callback| is called with the number of bytes read or
@@ -141,7 +140,8 @@ class MEDIA_EXPORT DataSource : public Filter {
   // TODO(hclam): should change |size| to int! It makes the code so messy
   // with size_t and int all over the place..
   virtual void Read(int64 position, size_t size,
-                    uint8* data, ReadCallback* read_callback) = 0;
+                    uint8* data,
+                    const DataSource::ReadCallback& read_callback) = 0;
 
   // Returns true and the file size, false if the file size could not be
   // retrieved.
@@ -164,8 +164,8 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   // Initialize a VideoDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // stats_callback is used to update global pipeline statistics.
-  virtual void Initialize(DemuxerStream* stream, FilterCallback* callback,
-                          StatisticsCallback* stats_callback) = 0;
+  virtual void Initialize(DemuxerStream* stream, const base::Closure& callback,
+                          const StatisticsCallback& stats_callback) = 0;
 
   // Renderer provides an output buffer for Decoder to write to. These buffers
   // will be recycled to renderer via the permanent callback.
@@ -212,8 +212,8 @@ class MEDIA_EXPORT AudioDecoder : public Filter {
   // Initialize a AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // stats_callback is used to update global pipeline statistics.
-  virtual void Initialize(DemuxerStream* stream, FilterCallback* callback,
-                          StatisticsCallback* stats_callback) = 0;
+  virtual void Initialize(DemuxerStream* stream, const base::Closure& callback,
+                          const StatisticsCallback& stats_callback) = 0;
 
   // Renderer provides an output buffer for Decoder to write to. These buffers
   // will be recycled to renderer via the permanent callback.
@@ -249,8 +249,8 @@ class MEDIA_EXPORT VideoRenderer : public Filter {
  public:
   // Initialize a VideoRenderer with the given VideoDecoder, executing the
   // callback upon completion.
-  virtual void Initialize(VideoDecoder* decoder, FilterCallback* callback,
-                          StatisticsCallback* stats_callback) = 0;
+  virtual void Initialize(VideoDecoder* decoder, const base::Closure& callback,
+                          const StatisticsCallback& stats_callback) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream
   // buffer.
@@ -262,7 +262,8 @@ class MEDIA_EXPORT AudioRenderer : public Filter {
  public:
   // Initialize a AudioRenderer with the given AudioDecoder, executing the
   // callback upon completion.
-  virtual void Initialize(AudioDecoder* decoder, FilterCallback* callback) = 0;
+  virtual void Initialize(AudioDecoder* decoder,
+                          const base::Closure& callback) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream
   // buffer.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,6 +8,7 @@
 // correct rate.  We always pass in a very large destination buffer with the
 // expectation that FillBuffer() will fill as much as it can but no more.
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "media/base/data_buffer.h"
 #include "media/filters/audio_renderer_algorithm_ola.h"
@@ -37,7 +38,8 @@ TEST(AudioRendererAlgorithmOLATest, FillBuffer_NormalRate) {
   MockDataProvider mock;
   AudioRendererAlgorithmOLA algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 1.0f,
-                       NewCallback(&mock, &MockDataProvider::Read));
+                       base::Bind(&MockDataProvider::Read,
+                                  base::Unretained(&mock)));
 
   // We won't reply to any read requests.
   EXPECT_CALL(mock, Read()).Times(AnyNumber());
@@ -58,7 +60,8 @@ TEST(AudioRendererAlgorithmOLATest, FillBuffer_DoubleRate) {
   MockDataProvider mock;
   AudioRendererAlgorithmOLA algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 2.0f,
-                       NewCallback(&mock, &MockDataProvider::Read));
+                       base::Bind(&MockDataProvider::Read,
+                                  base::Unretained(&mock)));
 
   // We won't reply to any read requests.
   EXPECT_CALL(mock, Read()).Times(AnyNumber());
@@ -94,7 +97,8 @@ TEST(AudioRendererAlgorithmOLATest, FillBuffer_HalfRate) {
   MockDataProvider mock;
   AudioRendererAlgorithmOLA algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 0.5f,
-                       NewCallback(&mock, &MockDataProvider::Read));
+                       base::Bind(&MockDataProvider::Read,
+                                  base::Unretained(&mock)));
 
   // We won't reply to any read requests.
   EXPECT_CALL(mock, Read()).Times(AnyNumber());
@@ -130,7 +134,8 @@ TEST(AudioRendererAlgorithmOLATest, FillBuffer_QuarterRate) {
   MockDataProvider mock;
   AudioRendererAlgorithmOLA algorithm;
   algorithm.Initialize(kChannels, kSampleRate, kSampleBits, 0.25f,
-                       NewCallback(&mock, &MockDataProvider::Read));
+                       base::Bind(&MockDataProvider::Read,
+                                  base::Unretained(&mock)));
 
   // We won't reply to any read requests.
   EXPECT_CALL(mock, Read()).Times(AnyNumber());

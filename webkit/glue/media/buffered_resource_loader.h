@@ -49,8 +49,6 @@ class BufferedResourceLoader
     kThresholdDefer,
   };
 
-  typedef Callback0::Type NetworkEventCallback;
-
   // |url| - URL for the resource to be loaded.
   // |first_byte_position| - First byte to start loading from,
   // |kPositionNotSpecified| for not specified.
@@ -76,7 +74,7 @@ class BufferedResourceLoader
   // |event_callback| is called when the response is completed, data is
   // received, the request is suspended or resumed.
   virtual void Start(net::CompletionCallback* callback,
-                     NetworkEventCallback* event_callback,
+                     const base::Closure& event_callback,
                      WebKit::WebFrame* frame);
 
   // Stop this loader, cancels and request and release internal buffer.
@@ -260,7 +258,7 @@ class BufferedResourceLoader
   bool single_origin_;
 
   // Callback method that listens to network events.
-  scoped_ptr<NetworkEventCallback> event_callback_;
+  base::Closure event_callback_;
 
   // Members used during request start.
   scoped_ptr<net::CompletionCallback> start_callback_;

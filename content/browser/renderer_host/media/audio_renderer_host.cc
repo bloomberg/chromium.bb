@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
@@ -402,7 +403,7 @@ void AudioRendererHost::DeleteEntries() {
 void AudioRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
   if (!entry->pending_close) {
     entry->controller->Close(
-        NewRunnableMethod(this, &AudioRendererHost::OnStreamClosed, entry));
+        base::Bind(&AudioRendererHost::OnStreamClosed, this, entry));
     entry->pending_close = true;
   }
 }

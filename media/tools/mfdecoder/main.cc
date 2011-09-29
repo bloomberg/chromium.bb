@@ -17,6 +17,7 @@
 
 #include "base/at_exit.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -407,12 +408,14 @@ static void RepaintTask(media::MFDecoder* decoder, HWND video_window,
       int64 delta = (end-start).InMilliseconds();
       MessageLoopForUI::current()->PostDelayedTask(
           FROM_HERE,
-          NewRunnableFunction(&RepaintTask, decoder, video_window, device),
-                              std::max<int64>(0L, 30-delta));
+          base::Bind(&RepaintTask, base::Unretained(decoder),
+                     video_window, device),
+          std::max<int64>(0L, 30-delta));
     } else {
       MessageLoopForUI::current()->PostTask(
           FROM_HERE,
-          NewRunnableFunction(&RepaintTask, decoder, video_window, device));
+          base::Bind(&RepaintTask, base::Unretained(decoder),
+                     video_window, device));
     }
   }
 }
@@ -532,11 +535,9 @@ int main(int argc, char** argv) {
   MessageLoopForUI message_loop;
 
   // The device is NULL if DXVA2 is not enabled.
-  MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                        NewRunnableFunction(&RepaintTask,
-                                                            decoder.get(),
-                                                            video_window,
-                                                            device.get()));
+  MessageLoopForUI::current()->PostTask(FROM_HERE, base::Bind(
+      &RepaintTask, base::Unretained(decoder.get()),
+      video_window, device.get()));
   MessageLoopForUI::current()->Run(NULL);
 
   printf("Decoding finished\n");

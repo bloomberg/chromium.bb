@@ -29,7 +29,7 @@ class BufferedDataSource : public WebDataSource {
       MessageLoop* render_loop,
       WebKit::WebFrame* frame,
       media::MediaLog* media_log,
-      WebDataSourceBuildObserverHack* build_observer);
+      const WebDataSourceBuildObserverHack& build_observer);
 
   BufferedDataSource(MessageLoop* render_loop,
                      WebKit::WebFrame* frame,
@@ -39,14 +39,14 @@ class BufferedDataSource : public WebDataSource {
 
   // media::Filter implementation.
   virtual void set_host(media::FilterHost* host);
-  virtual void Stop(media::FilterCallback* callback);
+  virtual void Stop(const base::Closure& callback);
   virtual void SetPlaybackRate(float playback_rate);
 
   // media::DataSource implementation.
   // Called from demuxer thread.
   virtual void Read(int64 position, size_t size,
                     uint8* data,
-                    media::DataSource::ReadCallback* read_callback);
+                    const media::DataSource::ReadCallback& read_callback);
   virtual bool GetSize(int64* size_out);
   virtual bool IsStreaming();
   virtual void SetPreload(media::Preload preload);
@@ -163,7 +163,7 @@ class BufferedDataSource : public WebDataSource {
   media::PipelineStatusCB initialize_cb_;
 
   // Read parameters received from the Read() method call.
-  scoped_ptr<media::DataSource::ReadCallback> read_callback_;
+  media::DataSource::ReadCallback read_callback_;
   int64 read_position_;
   int read_size_;
   uint8* read_buffer_;

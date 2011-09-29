@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,11 +24,12 @@ AudioRendererAlgorithmBase::AudioRendererAlgorithmBase()
 
 AudioRendererAlgorithmBase::~AudioRendererAlgorithmBase() {}
 
-void AudioRendererAlgorithmBase::Initialize(int channels,
-                                            int sample_rate,
-                                            int sample_bits,
-                                            float initial_playback_rate,
-                                            RequestReadCallback* callback) {
+void AudioRendererAlgorithmBase::Initialize(
+    int channels,
+    int sample_rate,
+    int sample_bits,
+    float initial_playback_rate,
+    const base::Closure& callback) {
   DCHECK_GT(channels, 0);
   DCHECK_LE(channels, 8) << "We only support <= 8 channel audio.";
   DCHECK_GT(sample_rate, 0);
@@ -37,12 +38,12 @@ void AudioRendererAlgorithmBase::Initialize(int channels,
   DCHECK_GT(sample_bits, 0);
   DCHECK_LE(sample_bits, 32) << "We only support 8, 16, 32 bit audio.";
   DCHECK_EQ(sample_bits % 8, 0) << "We only support 8, 16, 32 bit audio.";
-  DCHECK(callback);
+  DCHECK(!callback.is_null());
 
   channels_ = channels;
   sample_rate_ = sample_rate;
   sample_bytes_ = sample_bits / 8;
-  request_read_callback_.reset(callback);
+  request_read_callback_ = callback;
 
   set_playback_rate(initial_playback_rate);
 }
@@ -50,7 +51,7 @@ void AudioRendererAlgorithmBase::Initialize(int channels,
 void AudioRendererAlgorithmBase::FlushBuffers() {
   // Clear the queue of decoded packets (releasing the buffers).
   queue_.Clear();
-  request_read_callback_->Run();
+  request_read_callback_.Run();
 }
 
 base::TimeDelta AudioRendererAlgorithmBase::GetTime() {
@@ -64,7 +65,7 @@ void AudioRendererAlgorithmBase::EnqueueBuffer(Buffer* buffer_in) {
 
   // If we still don't have enough data, request more.
   if (!IsQueueFull())
-    request_read_callback_->Run();
+    request_read_callback_.Run();
 }
 
 float AudioRendererAlgorithmBase::playback_rate() {
@@ -92,7 +93,7 @@ void AudioRendererAlgorithmBase::AdvanceInputPosition(uint32 bytes) {
   queue_.Seek(bytes);
 
   if (!IsQueueFull())
-    request_read_callback_->Run();
+    request_read_callback_.Run();
 }
 
 uint32 AudioRendererAlgorithmBase::CopyFromInput(uint8* dest, uint32 bytes) {

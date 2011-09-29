@@ -4,7 +4,6 @@
 
 #include "media/tools/shader_bench/window.h"
 
-#include "base/task.h"
 #include "media/tools/shader_bench/painter.h"
 
 #include <gdk/gdkx.h>
@@ -41,11 +40,12 @@ gfx::PluginWindowHandle Window::PluginWindow() {
   return GDK_WINDOW_XWINDOW(GTK_WIDGET(window_handle_)->window);
 }
 
-void Window::Start(int limit, Task* done_task, Painter* painter) {
+void Window::Start(int limit, const base::Closure& callback,
+                   Painter* painter) {
   running_ = true;
   count_ = 0;
   limit_ = limit;
-  done_task_ = done_task;
+  callback_ = callback;
   painter_ = painter;
 
   gtk_signal_connect(GTK_OBJECT(window_handle_),
@@ -72,9 +72,9 @@ void Window::OnPaint() {
     gtk_widget_queue_draw(GTK_WIDGET(window_handle_));
   } else {
     running_ = false;
-    if (done_task_) {
-      done_task_->Run();
-      delete done_task_;
+    if (!callback_.is_null()) {
+      callback_.Run();
+      callback_.Reset();
     }
     gtk_main_quit();
   }

@@ -42,18 +42,18 @@ class SimpleDataSource
       MessageLoop* render_loop,
       WebKit::WebFrame* frame,
       media::MediaLog* media_log,
-      WebDataSourceBuildObserverHack* build_observer);
+      const WebDataSourceBuildObserverHack& build_observer);
 
   SimpleDataSource(MessageLoop* render_loop, WebKit::WebFrame* frame);
   virtual ~SimpleDataSource();
 
   // media::Filter implementation.
   virtual void set_host(media::FilterHost* host);
-  virtual void Stop(media::FilterCallback* callback);
+  virtual void Stop(const base::Closure& callback);
 
   // media::DataSource implementation.
   virtual void Read(int64 position, size_t size,
-                    uint8* data, ReadCallback* read_callback);
+                    uint8* data, const DataSource::ReadCallback& read_callback);
   virtual bool GetSize(int64* size_out);
   virtual bool IsStreaming();
   virtual void SetPreload(media::Preload preload);

@@ -17,7 +17,7 @@ class WtlVideoRenderer : public media::VideoRendererBase {
  protected:
   // VideoRendererBase implementation.
   virtual bool OnInitialize(media::VideoDecoder* decoder);
-  virtual void OnStop(media::FilterCallback* callback);
+  virtual void OnStop(const base::Closure& callback);
   virtual void OnFrameAvailable();
 
  private:

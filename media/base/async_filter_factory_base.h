@@ -54,7 +54,7 @@ class MEDIA_EXPORT AsyncDataSourceFactoryBase : public DataSourceFactory {
   // DataSourceFactory method.
   // Derived classes should not overload this Build() method. AllowRequests() &
   // CreateRequest() should be implemented instead.
-  virtual void Build(const std::string& url, BuildCallback* callback);
+  virtual void Build(const std::string& url, const BuildCallback& callback);
 
   // DataSourceFactory method.
   // Clone() must be implemented by derived classes.
@@ -66,12 +66,12 @@ class MEDIA_EXPORT AsyncDataSourceFactoryBase : public DataSourceFactory {
  protected:
   class MEDIA_EXPORT BuildRequest {
    public:
-    BuildRequest(const std::string& url, BuildCallback* callback);
+    BuildRequest(const std::string& url, const BuildCallback& callback);
     virtual ~BuildRequest();
 
-    typedef Callback1<BuildRequest*>::Type RequestDoneCallback;
+    typedef base::Callback<void(BuildRequest*)> RequestDoneCallback;
     // Starts the build request.
-    void Start(RequestDoneCallback* done_callback);
+    void Start(const RequestDoneCallback& done_callback);
 
     // Derived objects call this method to indicate that the build request
     // has completed. If the build was successful |status| should be set to
@@ -95,8 +95,8 @@ class MEDIA_EXPORT AsyncDataSourceFactoryBase : public DataSourceFactory {
 
    private:
     std::string url_;
-    scoped_ptr<BuildCallback> callback_;
-    scoped_ptr<RequestDoneCallback> done_callback_;
+    BuildCallback callback_;
+    RequestDoneCallback done_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(BuildRequest);
   };
@@ -108,13 +108,11 @@ class MEDIA_EXPORT AsyncDataSourceFactoryBase : public DataSourceFactory {
   // Implemented by derived class. Called by Build() to allow derived objects
   // to create their own custom BuildRequest implementations.
   virtual BuildRequest* CreateRequest(const std::string& url,
-                                      BuildCallback* callback) = 0;
+                                      const BuildCallback& callback) = 0;
 
  private:
-  void RunAndDestroyCallback(PipelineStatus status,
-                             BuildCallback* callback) const;
+  void ReportError(PipelineStatus error, const BuildCallback& callback) const;
 
-  typedef Callback1<BuildRequest*>::Type RequestDoneCallback;
   void BuildRequestDone(BuildRequest* request);
 
   base::Lock lock_;

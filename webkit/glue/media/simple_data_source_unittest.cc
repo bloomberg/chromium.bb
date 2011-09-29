@@ -141,7 +141,8 @@ class SimpleDataSourceTest : public testing::Test {
       EXPECT_CALL(*this, ReadCallback(1));
       data_source_->Read(
           i, 1, buffer,
-          NewCallback(this, &SimpleDataSourceTest::ReadCallback));
+          base::Bind(&SimpleDataSourceTest::ReadCallback,
+                     base::Unretained(this)));
       EXPECT_EQ(static_cast<uint8>(data_[i]), buffer[0]);
     }
   }

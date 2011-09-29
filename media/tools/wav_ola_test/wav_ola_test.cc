@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string>
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -122,8 +122,7 @@ int main(int argc, const char** argv) {
 
   // Instantiate dummy class and callback to feed data to |ola|.
   Dummy guy(input.get(), &ola, window_size);
-  AudioRendererAlgorithmOLA::RequestReadCallback* cb =
-      NewCallback(&guy, &Dummy::ReadDataForAlg);
+  base::Closure cb = base::Bind(&Dummy::ReadDataForAlg, base::Unretained(&guy));
   ola.Initialize(wav.channels,
                  wav.sample_rate,
                  wav.bit_rate,

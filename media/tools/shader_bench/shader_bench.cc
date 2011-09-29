@@ -8,11 +8,11 @@
 #include <stdlib.h>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
-#include "media/base/callback.h"
 #include "media/base/video_frame.h"
 #include "media/tools/shader_bench/cpu_color_painter.h"
 #include "media/tools/shader_bench/gpu_color_painter.h"
@@ -82,7 +82,7 @@ void TestFinished() {
 
 void RunTest(media::Window* window, Painter* painter) {
   g_start_ = base::TimeTicks::HighResNow();
-  window->Start(kNumFramesToPaint, NewRunnableFunction(&TestFinished), painter);
+  window->Start(kNumFramesToPaint, base::Bind(&TestFinished), painter);
 }
 
 int main(int argc, char** argv) {

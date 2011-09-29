@@ -4,7 +4,7 @@
 
 #include "media/base/composite_data_source_factory.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -14,7 +14,7 @@ namespace media {
 class CompositeDataSourceFactory::BuildRequest
     : public AsyncDataSourceFactoryBase::BuildRequest {
  public:
-  BuildRequest(const std::string& url, BuildCallback* callback,
+  BuildRequest(const std::string& url, const BuildCallback& callback,
                const FactoryList& factories);
   ~BuildRequest();
 
@@ -58,13 +58,13 @@ bool CompositeDataSourceFactory::AllowRequests() const {
 
 AsyncDataSourceFactoryBase::BuildRequest*
 CompositeDataSourceFactory::CreateRequest(const std::string& url,
-                                          BuildCallback* callback) {
+                                          const BuildCallback& callback) {
   return new BuildRequest(url, callback, factories_);
 }
 
 CompositeDataSourceFactory::BuildRequest::BuildRequest(
     const std::string& url,
-    BuildCallback* callback,
+    const BuildCallback& callback,
     const FactoryList& factories)
     : AsyncDataSourceFactoryBase::BuildRequest(url, callback),
       factories_(factories){
@@ -83,7 +83,8 @@ void CompositeDataSourceFactory::BuildRequest::CallNextFactory() {
   DataSourceFactory* factory = factories_.front();
   factories_.pop_front();
 
-  factory->Build(url(), NewCallback(this, &BuildRequest::OnBuildDone));
+  factory->Build(url(), base::Bind(&BuildRequest::OnBuildDone,
+                                   base::Unretained(this)));
 }
 
 void CompositeDataSourceFactory::BuildRequest::OnBuildDone(

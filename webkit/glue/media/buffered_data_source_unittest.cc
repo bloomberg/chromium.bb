@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/test/test_timeouts.h"
 #include "media/base/media_log.h"
 #include "media/base/mock_callback.h"
@@ -74,7 +75,7 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
   }
 
   MOCK_METHOD3(Start, void(net::CompletionCallback* read_callback,
-                           NetworkEventCallback* network_callback,
+                           const base::Closure& network_callback,
                            WebFrame* frame));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD4(Read, void(int64 position, int read_size, uint8* buffer,
@@ -113,7 +114,7 @@ class BufferedDataSourceTest : public testing::Test {
     EXPECT_CALL(*data_source_, CreateResourceLoader(_, _))
         .WillOnce(Return(loader_.get()));
 
-    EXPECT_CALL(*loader_, Start(NotNull(), NotNull(), NotNull()))
+    EXPECT_CALL(*loader_, Start(NotNull(), _, NotNull()))
         .WillOnce(
             DoAll(Assign(&error_, start_error),
                   Invoke(this,
@@ -225,12 +226,11 @@ class BufferedDataSourceTest : public testing::Test {
 
   void InvokeStartCallback(
       net::CompletionCallback* callback,
-      BufferedResourceLoader::NetworkEventCallback* network_callback,
+      const base::Closure& network_callback,
       WebFrame* frame) {
     callback->RunWithParams(Tuple1<int>(error_));
     delete callback;
-    // TODO(hclam): Save this callback.
-    delete network_callback;
+    // TODO(hclam): Save network_callback.
   }
 
   void InvokeReadCallback(int64 position, int size, uint8* buffer,
@@ -256,7 +256,8 @@ class BufferedDataSourceTest : public testing::Test {
 
     data_source_->Read(
         position, size, buffer_,
-        NewCallback(this, &BufferedDataSourceTest::ReadCallback));
+        base::Bind(&BufferedDataSourceTest::ReadCallback,
+                   base::Unretained(this)));
     message_loop_->RunAllPending();
 
     // Make sure data is correct.
@@ -271,7 +272,8 @@ class BufferedDataSourceTest : public testing::Test {
     EXPECT_CALL(*loader_, Read(position, size, NotNull(), NotNull()));
     data_source_->Read(
         position, size, buffer_,
-        NewCallback(this, &BufferedDataSourceTest::ReadCallback));
+        base::Bind(&BufferedDataSourceTest::ReadCallback,
+                   base::Unretained(this)));
     message_loop_->RunAllPending();
 
     // Now expect the read to return after aborting the data source.
@@ -305,7 +307,7 @@ class BufferedDataSourceTest : public testing::Test {
         .WillOnce(Return(new_loader));
 
     // 3. Then the new loader will be started.
-    EXPECT_CALL(*new_loader, Start(NotNull(), NotNull(), NotNull()))
+    EXPECT_CALL(*new_loader, Start(NotNull(), _, NotNull()))
         .WillOnce(DoAll(Assign(&error_, start_error),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeStartCallback)));
@@ -329,7 +331,8 @@ class BufferedDataSourceTest : public testing::Test {
 
     data_source_->Read(
         position, size, buffer_,
-        NewCallback(this, &BufferedDataSourceTest::ReadCallback));
+        base::Bind(&BufferedDataSourceTest::ReadCallback,
+                   base::Unretained(this)));
     message_loop_->RunAllPending();
 
     // Make sure data is correct.
@@ -356,7 +359,8 @@ class BufferedDataSourceTest : public testing::Test {
 
     data_source_->Read(
         position, size, buffer_,
-        NewCallback(this, &BufferedDataSourceTest::ReadCallback));
+        base::Bind(&BufferedDataSourceTest::ReadCallback,
+                   base::Unretained(this)));
 
     message_loop_->RunAllPending();
   }
@@ -366,7 +370,7 @@ class BufferedDataSourceTest : public testing::Test {
     NiceMock<MockBufferedResourceLoader>* new_loader =
         new NiceMock<MockBufferedResourceLoader>();
 
-    EXPECT_CALL(*new_loader, Start(NotNull(), NotNull(), NotNull()))
+    EXPECT_CALL(*new_loader, Start(NotNull(), _, NotNull()))
         .WillOnce(DoAll(Assign(&error_, net::OK),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeStartCallback)));
@@ -406,7 +410,8 @@ class BufferedDataSourceTest : public testing::Test {
 
     data_source_->Read(
         position, size, buffer_,
-        NewCallback(this, &BufferedDataSourceTest::ReadCallback));
+        base::Bind(&BufferedDataSourceTest::ReadCallback,
+                   base::Unretained(this)));
 
     message_loop_->RunAllPending();
 
@@ -509,6 +514,11 @@ TEST_F(BufferedDataSourceTest, ReadFailed) {
   StopDataSource();
 }
 
+// Helper that sets |*value| to true.  Useful for binding into a Closure.
+static void SetTrue(bool* value) {
+  *value = true;
+}
+
 // This test makes sure that Stop() does not require a task to run on
 // |message_loop_| before it calls its callback. This prevents accidental
 // introduction of a pipeline teardown deadlock. The pipeline owner blocks
@@ -518,16 +528,11 @@ TEST_F(BufferedDataSourceTest, ReadFailed) {
 TEST_F(BufferedDataSourceTest, StopDoesNotUseMessageLoopForCallback) {
   InitializeDataSource(kFileUrl, net::OK, true, 1024, LOADED);
 
-  // Create a callback that lets us verify that it was called before
-  // Stop() returns. This is to make sure that the callback does not
-  // require |message_loop_| to execute tasks before being called.
-  media::MockCallback* stop_callback = media::NewExpectedCallback();
+  // Stop() the data source, using a callback that lets us verify that it was
+  // called before Stop() returns. This is to make sure that the callback does
+  // not require |message_loop_| to execute tasks before being called.
   bool stop_done_called = false;
-  ON_CALL(*stop_callback, RunWithParams(_))
-      .WillByDefault(Assign(&stop_done_called, true));
-
-  // Stop() the data source like normal.
-  data_source_->Stop(stop_callback);
+  data_source_->Stop(base::Bind(&SetTrue, &stop_done_called));
 
   // Verify that the callback was called inside the Stop() call.
   EXPECT_TRUE(stop_done_called);
@@ -550,8 +555,8 @@ TEST_F(BufferedDataSourceTest, AbortDuringPendingRead) {
   // message loop to run.
   data_source_->Read(
       0, 10, buffer_,
-      NewCallback(static_cast<BufferedDataSourceTest*>(this),
-                  &BufferedDataSourceTest::ReadCallback));
+      base::Bind(&BufferedDataSourceTest::ReadCallback,
+                 base::Unretained(static_cast<BufferedDataSourceTest*>(this))));
 
   // Call Abort() with the read pending.
   EXPECT_CALL(*this, ReadCallback(-1));
@@ -562,8 +567,8 @@ TEST_F(BufferedDataSourceTest, AbortDuringPendingRead) {
   EXPECT_CALL(*this, ReadCallback(-1));
   data_source_->Read(
       0, 10, buffer_,
-      NewCallback(static_cast<BufferedDataSourceTest*>(this),
-                  &BufferedDataSourceTest::ReadCallback));
+      base::Bind(&BufferedDataSourceTest::ReadCallback,
+                 base::Unretained(static_cast<BufferedDataSourceTest*>(this))));
 
   // Stop() the data source like normal.
   data_source_->Stop(media::NewExpectedCallback());

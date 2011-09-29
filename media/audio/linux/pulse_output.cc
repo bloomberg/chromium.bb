@@ -144,7 +144,7 @@ PulseAudioOutputStream::PulseAudioOutputStream(const AudioParameters& params,
       stream_stopped_(true),
       write_callback_handled_(false),
       message_loop_(message_loop),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       source_callback_(NULL) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK(manager_);
@@ -284,10 +284,9 @@ void PulseAudioOutputStream::WaitForWriteRequest() {
   write_callback_handled_ = false;
   pa_mainloop_iterate(pa_mainloop_, 1, NULL);
   if (!write_callback_handled_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &PulseAudioOutputStream::WaitForWriteRequest));
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &PulseAudioOutputStream::WaitForWriteRequest,
+        weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -345,17 +344,15 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
   if (bytes_written < requested_bytes) {
     // We weren't able to buffer enough data to fulfill the request.  Try to
     // fulfill the rest of the request later.
-    message_loop_->PostTask(
-        FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &PulseAudioOutputStream::FulfillWriteRequest,
-            requested_bytes - bytes_written));
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &PulseAudioOutputStream::FulfillWriteRequest,
+        weak_factory_.GetWeakPtr(),
+        requested_bytes - bytes_written));
   } else {
     // Continue playback.
-    message_loop_->PostTask(
-        FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &PulseAudioOutputStream::WaitForWriteRequest));
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &PulseAudioOutputStream::WaitForWriteRequest,
+        weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -389,10 +386,9 @@ void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
   stream_stopped_ = false;
 
   // Start playback.
-  message_loop_->PostTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &PulseAudioOutputStream::WaitForWriteRequest));
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &PulseAudioOutputStream::WaitForWriteRequest,
+      weak_factory_.GetWeakPtr()));
 }
 
 void PulseAudioOutputStream::Stop() {

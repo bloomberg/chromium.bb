@@ -114,9 +114,9 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     message_loop_->RunAllPending();
   }
 
-  media::StatisticsCallback* NewStatisticsCallback() {
-    return NewCallback(&statistics_callback_object_,
-                       &media::MockStatisticsCallback::OnStatistics);
+  media::StatisticsCallback NewStatisticsCallback() {
+    return base::Bind(&media::MockStatisticsCallback::OnStatistics,
+                      base::Unretained(&statistics_callback_object_));
   }
 
   // Fixture members.

@@ -5,7 +5,6 @@
 #include "remoting/base/encoder_vp8.h"
 
 #include "base/logging.h"
-#include "media/base/callback.h"
 #include "media/base/yuv_convert.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"

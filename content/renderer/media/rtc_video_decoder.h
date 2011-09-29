@@ -30,16 +30,17 @@ class RTCVideoDecoder
   virtual ~RTCVideoDecoder();
 
   // Filter implementation.
-  virtual void Play(media::FilterCallback* callback) OVERRIDE;
+  virtual void Play(const base::Closure& callback) OVERRIDE;
   virtual void Seek(base::TimeDelta time,
                     const media::FilterStatusCB& cb) OVERRIDE;
-  virtual void Pause(media::FilterCallback* callback) OVERRIDE;
-  virtual void Stop(media::FilterCallback* callback) OVERRIDE;
+  virtual void Pause(const base::Closure& callback) OVERRIDE;
+  virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // Decoder implementation.
-  virtual void Initialize(media::DemuxerStream* demuxer_stream,
-                          media::FilterCallback* filter_callback,
-                          media::StatisticsCallback* stat_callback) OVERRIDE;
+  virtual void Initialize(
+      media::DemuxerStream* demuxer_stream,
+      const base::Closure& filter_callback,
+      const media::StatisticsCallback& stat_callback) OVERRIDE;
   virtual void ProduceVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame) OVERRIDE;
   virtual gfx::Size natural_size() OVERRIDE;

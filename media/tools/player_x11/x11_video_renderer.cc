@@ -9,6 +9,7 @@
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/Xcomposite.h>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
@@ -79,15 +80,12 @@ X11VideoRenderer::X11VideoRenderer(Display* display, Window window,
 
 X11VideoRenderer::~X11VideoRenderer() {}
 
-void X11VideoRenderer::OnStop(media::FilterCallback* callback) {
-  if (image_) {
+void X11VideoRenderer::OnStop(const base::Closure& callback) {
+  if (image_)
     XDestroyImage(image_);
-  }
   XRenderFreePicture(display_, picture_);
-  if (callback) {
-    callback->Run();
-    delete callback;
-  }
+  if (!callback.is_null())
+    callback.Run();
 }
 
 bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
@@ -129,7 +127,7 @@ bool X11VideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
 
 void X11VideoRenderer::OnFrameAvailable() {
   main_message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &X11VideoRenderer::PaintOnMainThread));
+      base::Bind(&X11VideoRenderer::PaintOnMainThread, this));
 }
 
 void X11VideoRenderer::PaintOnMainThread() {

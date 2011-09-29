@@ -45,7 +45,7 @@
 // This class is not threadsafe.
 //
 // TODO(ajwong): Is it even worth bothering with gmock here?
-// TODO(ajwong): Move MockFilterCallback here and merge the implementation
+// TODO(ajwong): Move MockCallback here and merge the implementation
 // differences.
 
 #ifndef MEDIA_BASE_MOCK_TASK_H_
