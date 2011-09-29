@@ -1,0 +1,64 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#sync-setup-overlay {
+  width: 100%;
+}
+
+#sync-setup-login {
+  margin-left: auto;
+  margin-right: auto;
+  width: 800px;
+}
+
+#sync-setup-configure {
+  margin-left: auto;
+  margin-right: auto;
+  width: 600px;
+}
+
+#sync-setup-login-promo-column {
+  display: block;
+  float: left;
+  width: 500px;
+}
+
+#sync-setup-login-content-column {
+  float: right;
+  width: 275px;
+}
+
+#promo-title {
+  display: block;
+  margin-top: 33px;
+  margin-bottom: 64px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 185%;
+  font-weight: normal;
+}
+
+#promo-message-title {
+  font-size: 125%;
+}
+
+#promo-message-body {
+  font-size: 85%;
+  margin-top: 8px;
+  margin-bottom: 28px;
+}
+
+#promo-skip {
+  clear: both;
+  display: block;
+  padding-top: 85px;
+  text-align: center;
+}
+
+#promo-skip-message {
+  font-size: 85%;
+}

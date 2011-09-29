@@ -1,221 +1,247 @@
 <div id="sync-setup-overlay" class="page" hidden>
   <div id="sync-setup-login" hidden>
-    <h1 i18n-content="syncSetupOverlayTitle"></h1>
-    <div class="content-area">
-      <div>
-        <!-- top-blurb-error's reset state is handled differently from most
-             elements. Instead of being [hidden] it is visibility:hidden so it
-             still takes up space. But it is also [hidden] when we display the
-             captcha, so when it is reset, it needs to be shown. -->
-        <div id="top-blurb-error"
-            class="reset-shown reset-visibility-hidden">
-          <span id="error-signing-in" i18n-content="errorSigningIn"></span>
-          <span id="error-custom" hidden></span>
-        </div>
-        <form id="gaia-login-form">
-          <div id="gaia-login-box">
-            <table id="content-table" cellspacing="0"
-                cellpadding="5" width="75%" border="0" align="center">
-              <tr>
-                <td valign="top" style="text-align:center" nowrap="nowrap"
-                    bgcolor="#e8eefa">
-                  <div>
-                    <table id="gaia-table" align="center" border="0"
-                        cellpadding="1" cellspacing="0">
-                      <tr>
-                        <td colspan="2" align="center">
-                          <table>
-                            <tr>
-                              <td>
-                                <span id="gaia-account-text-prefix"
-                                    i18n-content="signinPrefix"></span>
-                              </td>
-                              <td id="gaia-logo" valign="top">
-                                <img src="chrome://resources/images/google-transparent.png" alt="Google">
-                              </td>
-                              <td valign="middle">
-                                <span id="gaia-account-text"
-                                    i18n-content="signinSuffix"></span>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td colspan="2" align="center"> </td>
-                      </tr>
-                      <tr id="email-row" class="reset-shown">
-                        <td nowrap="nowrap">
-                          <div class="end-aligned">
-                            <span i18n-content="emailLabel">
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <input id="gaia-email" type="text" name="email"
-                              size="18" value=""
-                              class="reset-enabled reset-shown reset-value"
-                              autocomplete="off">
-                          <span id="email-readonly" class="reset-hidden"
-                              hidden></span>
-                        </td>
-                      </tr>
-                      <tr id="access-code-label-row"
-                          class="access-code-row reset-hidden" hidden>
-                        <td colspan="2">
-                          <span i18n-content="enterAccessCode"></span>
-                        </td>
-                      </tr>
-                      <tr id="access-code-help-row"
-                          class="access-code-row reset-hidden" hidden>
-                        <td colspan="2">
-                          <a i18n-values="href:getAccessCodeURL"
-                              i18n-content="getAccessCodeHelp" target="_blank">
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td></td>
-                        <td>
-                          <div id="errormsg-0-email"
-                              class="errormsg reset-hidden"
-                              i18n-content="cannotBeBlank"
-                              hidden>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr id="password-row" class="reset-shown">
-                        <td class="end-aligned">
-                          <span i18n-content="passwordLabel"></span>
-                        </td>
-                        <td>
-                          <input id="gaia-passwd" type="password" name="passwd"
-                              size="18" class="reset-enabled reset-value"
-                              autocomplete="off">
-                        </td>
-                      </tr>
-                      <tr id="access-code-input-row"
-                          class="access-code-row reset-hidden" hidden>
-                        <td colspan="2">
-                          <input id="access-code" type="password"
-                              name="accessCode" size="18"
-                              class="reset-enabled reset-value">
-                        </td>
-                      </tr>
-                      <tr>
-                        <td></td>
-                        <td>
-                          <div class="error-msg-spacer">
-                            <div id="errormsg-0-password"
+    <h1 id="promo-title" i18n-content="promoTitle" hidden></h1>
+    <div id="sync-setup-login-promo-column" hidden>
+      <div id="promo-message-title">
+        <span i18n-content="promoMessageTitle"></span>
+      </div>
+      <div id="promo-message-body">
+        <span i18n-values=".innerHTML:promoMessageBody"></span>
+        <a i18n-content="promoLearnMore"></a>
+      </div>
+      <img src="chrome://theme/IRD_SYNC_PROMO_INFO_GRAPHIC">
+    </div>
+
+    <div id="sync-setup-login-content-column">
+      <h1 id="sync-setup-overlay-title"
+          i18n-content="syncSetupOverlayTitle"></h1>
+      <div class="content-area">
+        <div>
+          <!-- top-blurb-error's reset state is handled differently from most
+               elements. Instead of being [hidden] it is visibility:hidden so it
+               still takes up space. But it is also [hidden] when we display the
+               captcha, so when it is reset, it needs to be shown. -->
+          <div id="top-blurb-error"
+              class="reset-shown reset-visibility-hidden">
+            <span id="error-signing-in" i18n-content="errorSigningIn"></span>
+            <span id="error-custom" hidden></span>
+          </div>
+          <form id="gaia-login-form">
+            <div id="gaia-login-box">
+              <table id="content-table" cellspacing="0"
+                  cellpadding="5" width="75%" border="0" align="center">
+                <tr>
+                  <td valign="top" style="text-align:center" nowrap="nowrap"
+                      bgcolor="#e8eefa">
+                    <div>
+                      <table id="gaia-table" align="center" border="0"
+                          cellpadding="1" cellspacing="0">
+                        <tr>
+                          <td colspan="2" align="center">
+                            <table>
+                              <tr>
+                                <td>
+                                  <span id="gaia-account-text-prefix"
+                                      i18n-content="signinPrefix"></span>
+                                </td>
+                                <td id="gaia-logo" valign="top">
+                                  <img src="chrome://resources/images/google-transparent.png" alt="Google">
+                                </td>
+                                <td valign="middle">
+                                  <span id="gaia-account-text"
+                                      i18n-content="signinSuffix"></span>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" align="center"> </td>
+                        </tr>
+                        <tr id="email-row" class="reset-shown">
+                          <td nowrap="nowrap">
+                            <div class="end-aligned">
+                              <span i18n-content="emailLabel">
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <input id="gaia-email" type="text" name="email"
+                                size="18" value=""
+                                class="reset-enabled reset-shown reset-value"
+                                autocomplete="off">
+                            <span id="email-readonly" class="reset-hidden"
+                                hidden></span>
+                          </td>
+                        </tr>
+                        <tr id="access-code-label-row"
+                            class="access-code-row reset-hidden" hidden>
+                          <td colspan="2">
+                            <span i18n-content="enterAccessCode"></span>
+                          </td>
+                        </tr>
+                        <tr id="access-code-help-row"
+                            class="access-code-row reset-hidden" hidden>
+                          <td colspan="2">
+                            <a i18n-values="href:getAccessCodeURL"
+                                i18n-content="getAccessCodeHelp"
+                                target="_blank">
+                            </a>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td></td>
+                          <td>
+                            <div id="errormsg-0-email"
                                 class="errormsg reset-hidden"
                                 i18n-content="cannotBeBlank"
                                 hidden>
                             </div>
-                            <div id="errormsg-1-password"
-                                class="errormsg reset-hidden"
-                                hidden>
-                              <span i18n-content="invalidCredentials"></span>
-                              <!-- Brackets are intentional -->
-                              [<a i18n-values="href:invalidPasswordHelpURL"
-                                   target="_blank">?</a>]
-                            </div>
-                            <div id="errormsg-0-access-code"
-                                class="errormsg reset-hidden"
-                                i18n-content="invalidAccessCode"
-                                hidden>
-                            </div>
-                            <div id="asp-warning-div"
-                                 class="errormsg reset-hidden"
-                                 hidden>
-                              <span i18n-values=".innerHTML:aspWarningText"></span>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td colspan="2">
-                          <div id="captcha-div" class="reset-hidden" hidden>
-                            <div id="captcha-instructions"
-                                i18n-content="captchaInstructions"
-                                class="bottom-padded-cell">
-                            </div>
-                            <div class="bottom-padded-cell">
-                              <div id="captcha-wrapper">
-                                <div id="captcha-image"></div>
+                          </td>
+                        </tr>
+                        <tr id="password-row" class="reset-shown">
+                          <td class="end-aligned">
+                            <span i18n-content="passwordLabel"></span>
+                          </td>
+                          <td>
+                            <input id="gaia-passwd" type="password"
+                                name="passwd" size="18"
+                                class="reset-enabled reset-value"
+                                autocomplete="off">
+                          </td>
+                        </tr>
+                        <tr id="access-code-input-row"
+                            class="access-code-row reset-hidden" hidden>
+                          <td colspan="2">
+                            <input id="access-code" type="password"
+                                name="accessCode" size="18"
+                                class="reset-enabled reset-value">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td></td>
+                          <td>
+                            <div class="error-msg-spacer">
+                              <div id="errormsg-0-password"
+                                  class="errormsg reset-hidden"
+                                  i18n-content="cannotBeBlank"
+                                  hidden>
+                              </div>
+                              <div id="errormsg-1-password"
+                                  class="errormsg reset-hidden"
+                                  hidden>
+                                <span i18n-content="invalidCredentials"></span>
+                                <!-- Brackets are intentional -->
+                                [<a i18n-values="href:invalidPasswordHelpURL"
+                                     target="_blank">?</a>]
+                              </div>
+                              <div id="errormsg-0-access-code"
+                                  class="errormsg reset-hidden"
+                                  i18n-content="invalidAccessCode"
+                                  hidden>
+                              </div>
+                              <div id="asp-warning-div"
+                                   class="errormsg reset-hidden"
+                                   hidden>
+                                <span i18n-values=".innerHTML:aspWarningText">
+                                </span>
                               </div>
                             </div>
-                            <div>
-                              <input id="captcha-value" type="text"
-                                  name="captchaValue" size="18" value=""
-                                  class="reset-disabled">
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td colspan="2" align="center">
-                          <div id="errormsg-0-connection"
-                              class="errormsg reset-hidden"
-                              i18n-content="couldNotConnect"
-                              hidden>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr id="action-area">
-                        <td colspan="2">
-                          <table align="center" cellpadding="0"
-                              cellspacing="0">
-                            <tr>
-                              <td>
-                                <div id="logging-in-throbber" class="throbber">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <div id="captcha-div" class="reset-hidden" hidden>
+                              <div id="captcha-instructions"
+                                  i18n-content="captchaInstructions"
+                                  class="bottom-padded-cell">
+                              </div>
+                              <div class="bottom-padded-cell">
+                                <div id="captcha-wrapper">
+                                  <div id="captcha-image"></div>
                                 </div>
-                              </td>
-                              <td class="no-vertical-padding">
-                                <input id="sign-in" type="submit"
-                                    i18n-content="signin">
-                                </button>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr id="ga-fprow">
-                        <td colspan="2" height="16.0"
-                            align="center" valign="bottom">
-                          <a i18n-values="href:cannotAccessAccountURL"
-                              target="_blank"
-                              i18n-content="cannotAccessAccount">
-                          </a>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td id="create-account-cell" colspan="2" height="16.0"
-                            align="center" valign="bottom">
-                          <div id="create-account-div">
-                            <a i18n-values="href:createNewAccountURL"
-                                i18n-content="createAccount" target="_blank">
+                              </div>
+                              <div>
+                                <input id="captcha-value" type="text"
+                                    name="captchaValue" size="18" value=""
+                                    class="reset-disabled">
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" align="center">
+                            <div id="errormsg-0-connection"
+                                class="errormsg reset-hidden"
+                                i18n-content="couldNotConnect"
+                                hidden>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr id="action-area">
+                          <td colspan="2">
+                            <table align="center" cellpadding="0"
+                                cellspacing="0">
+                              <tr>
+                                <td>
+                                  <div id="logging-in-throbber"
+                                       class="throbber">
+                                  </div>
+                                </td>
+                                <td class="no-vertical-padding">
+                                  <input id="sign-in" type="submit"
+                                      i18n-content="signin">
+                                  </button>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr id="ga-fprow">
+                          <td colspan="2" height="16.0"
+                              align="center" valign="bottom">
+                            <a i18n-values="href:cannotAccessAccountURL"
+                                target="_blank"
+                                i18n-content="cannotAccessAccount">
                             </a>
-                          </div>
-                       </td>
-                      </tr>
-                    </table>
-                  </div>
-                </td>
-              </tr>
-            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td id="create-account-cell" colspan="2" height="16.0"
+                              align="center" valign="bottom">
+                            <div id="create-account-div">
+                              <a i18n-values="href:createNewAccountURL"
+                                  i18n-content="createAccount" target="_blank">
+                              </a>
+                            </div>
+                         </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </form>
+        </div>
+        <div>
+          <div id="cancel-space-no-captcha" colspan="2">
           </div>
-        </form>
+        </div>
       </div>
-      <div>
-        <div id="cancel-space-no-captcha" colspan="2">
+      <div class="action-area">
+        <div class="button-strip">
+          <button id="sync-setup-cancel" type="reset" i18n-content="cancel">
+          </button>
         </div>
       </div>
     </div>
-    <div class="action-area">
-      <div class="button-strip">
-        <button id="sync-setup-cancel" type="reset" i18n-content="cancel">
-        </button>
+    <div id="promo-skip" hidden>
+      <div>
+        <span id="promo-skip-message" i18n-content="promoSkipMessage"></span>
       </div>
+      <button id="promo-skip-button" type="reset"
+              i18n-content="promoSkipButton">
     </div>
   </div>
   <div id="sync-setup-configure" hidden>

@@ -223,6 +223,14 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_RECOVER,
                       ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
                           chrome::kSyncGoogleDashboardURL))));
+  localized_strings->SetString(
+      "promoTitle",
+      GetStringFUTF16(IDS_SYNC_PROMO_TITLE,
+                      GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString(
+      "promoMessageTitle",
+      GetStringFUTF16(IDS_SYNC_PROMO_MESSAGE_TITLE,
+                      GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 
   static OptionsStringResource resources[] = {
     { "syncSetupOverlayTitle", IDS_SYNC_SETUP_TITLE },
@@ -294,6 +302,11 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
     { "encryptAllOption", IDS_SYNC_ENCRYPT_ALL_DATA },
     { "aspWarningText", IDS_SYNC_ASP_PASSWORD_WARNING_TEXT },
+    { "promoPageTitle", IDS_NEW_TAB_TITLE},
+    { "promoMessageBody", IDS_SYNC_PROMO_MESSAGE_BODY},
+    { "promoLearnMore", IDS_LEARN_MORE},
+    { "promoSkipMessage", IDS_SYNC_PROMO_SKIP_MESSAGE},
+    { "promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

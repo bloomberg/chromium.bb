@@ -31,7 +31,19 @@ cr.define('sync_promo', function() {
     // Initializes the page.
     initializePage: function() {
       options.SyncSetupOverlay.prototype.initializePage.call(this);
+
+      // Hide parts of the login UI and show the promo UI.
+      this.hideOuterLoginUI_();
+      $('promo-title').hidden = false;
+      $('sync-setup-login-promo-column').hidden = false;
+      $('promo-skip').hidden = false;
+
       chrome.send('InitializeSyncPromo');
+
+      var self = this;
+      $('promo-skip-button').addEventListener('click', function() {
+        self.closeOverlay_();
+      });
     },
   };
 

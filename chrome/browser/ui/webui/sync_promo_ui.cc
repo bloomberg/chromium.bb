@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/sync_promo_handler.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -48,14 +49,18 @@ SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   AddMessageHandler(handler);
   handler->Attach(this);
 
+  // Set up the chrome://theme/ source.
+  Profile* profile = Profile::FromBrowserContext(contents->browser_context());
+  ThemeSource* theme = new ThemeSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(theme);
+
   // Set up the sync promo source.
   SyncPromoUIHTMLSource* html_source =
       new SyncPromoUIHTMLSource();
   html_source->set_json_path(kStringsJsFile);
   html_source->add_resource_path(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
   html_source->set_default_resource(IDR_SYNC_PROMO_HTML);
-  Profile::FromBrowserContext(contents->browser_context())->
-      GetChromeURLDataManager()->AddDataSource(html_source);
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
 bool SyncPromoUI::ShouldShowSyncPromo() {

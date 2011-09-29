@@ -813,6 +813,15 @@ cr.define('options', function() {
     showSetupUI_: function() {
       chrome.send('SyncSetupShowSetupUI');
     },
+
+    /**
+     * Hides the outer elements of the login UI. This is used by the sync promo
+     * to customize the look of the login box.
+     */
+    hideOuterLoginUI_: function() {
+      $('sync-setup-overlay-title').hidden = true;
+      $('sync-setup-cancel').hidden = true;
+    }
   };
 
   SyncSetupOverlay.showErrorUI = function() {

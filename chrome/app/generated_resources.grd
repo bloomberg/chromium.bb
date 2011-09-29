@@ -10112,6 +10112,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <!-- Sync promo page chrome://syncpromo -->
+      <message name="IDS_SYNC_PROMO_TITLE" desc="The title at the top of the sync promo">
+        Welcome To <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      </message>
+      <message name="IDS_SYNC_PROMO_MESSAGE_TITLE" desc="The first part of the sync promo message.">
+        Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account
+      </message>
+      <message name="IDS_SYNC_PROMO_MESSAGE_BODY" desc="The body of the sync promo message. This is followed by a learn more link.">
+        Automatically &lt;strong&gt; back up &lt;/strong&gt; and &lt;strong&gt; sync &lt;/strong&gt; your bookmarks and settings.
+      </message>
+      <message name="IDS_SYNC_PROMO_SKIP_MESSAGE" desc="The text at the bottom to let the user skip the sync promo.">
+        or
+      </message>
+      <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The button at the bottom to let the user skip the sync promo.">
+        Skip setup for now
+      </message>
+
       <!-- Translate Info Bar -->
       <message name="IDS_TRANSLATE_INFOBAR_OPTIONS" desc="Text to show for the translate infobar options menu button">
         Options
