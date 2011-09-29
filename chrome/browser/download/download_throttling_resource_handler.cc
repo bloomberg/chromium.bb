@@ -34,7 +34,6 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
       next_handler_(next_handler),
       request_allowed_(false),
       tmp_buffer_length_(0),
-      ignore_on_read_complete_(in_complete),
       request_closed_(false) {
   download_stats::RecordDownloadCount(
       download_stats::INITIATED_BY_NAVIGATION_COUNT);
@@ -120,11 +119,6 @@ bool DownloadThrottlingResourceHandler::OnWillRead(int request_id,
 bool DownloadThrottlingResourceHandler::OnReadCompleted(int request_id,
                                                         int* bytes_read) {
   DCHECK(!request_closed_);
-  if (ignore_on_read_complete_) {
-    // See comments above definition for details on this.
-    ignore_on_read_complete_ = false;
-    return true;
-  }
   if (!*bytes_read)
     return true;
 

@@ -51,6 +51,8 @@
         'shell/shell_content_renderer_client.h',
         'shell/shell_content_utility_client.cc',
         'shell/shell_content_utility_client.h',
+        'shell/shell_download_manager_delegate.cc',
+        'shell/shell_download_manager_delegate.h',
         'shell/shell_main.cc',
         'shell/shell_resource_context.cc',
         'shell/shell_resource_context.h',

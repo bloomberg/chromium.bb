@@ -12,7 +12,6 @@
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_status_updater.h"
-#include "content/browser/download/mock_download_manager_delegate.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/geolocation/geolocation_permission_context.h"
 #include "content/browser/host_zoom_map.h"
@@ -20,6 +19,7 @@
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/speech/speech_input_preferences.h"
 #include "content/shell/shell_browser_main.h"
+#include "content/shell/shell_download_manager_delegate.h"
 #include "content/shell/shell_resource_context.h"
 #include "content/shell/shell_url_request_context_getter.h"
 #include "webkit/database/database_tracker.h"
@@ -121,9 +121,10 @@ DownloadManager* ShellBrowserContext::GetDownloadManager()  {
   if (!download_manager_.get()) {
     download_status_updater_.reset(new DownloadStatusUpdater());
 
-    download_manager_delegate_.reset(new MockDownloadManagerDelegate());
-    download_manager_ = new DownloadManager(download_manager_delegate_.get(),
+    download_manager_delegate_ = new ShellDownloadManagerDelegate();
+    download_manager_ = new DownloadManager(download_manager_delegate_,
                                             download_status_updater_.get());
+    download_manager_delegate_->SetDownloadManager(download_manager_.get());
     download_manager_->Init(this);
   }
   return download_manager_.get();
@@ -158,7 +159,8 @@ const ResourceContext& ShellBrowserContext::GetResourceContext()  {
   if (!resource_context_.get()) {
     resource_context_.reset(new ShellResourceContext(
         static_cast<ShellURLRequestContextGetter*>(GetRequestContext()),
-        GetBlobStorageContext()));
+        GetBlobStorageContext(),
+        GetDownloadManager()->GetNextIdThunk()));
   }
   return *resource_context_.get();
 }

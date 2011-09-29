@@ -145,6 +145,12 @@ bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
     // Done buffering, send the pending ResponseStarted event.
     if (!CompleteResponseStarted(request_id, true))
       return false;
+
+    // The next handler might have paused the request in OnResponseStarted.
+    ResourceDispatcherHostRequestInfo* info =
+        ResourceDispatcherHost::InfoForRequest(request_);
+    if (info->pause_count())
+      return true;
   } else if (wait_for_plugins_) {
     return true;
   }

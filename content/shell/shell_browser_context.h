@@ -23,6 +23,7 @@ namespace content {
 
 class ResourceContext;
 class ShellBrowserMainParts;
+class ShellDownloadManagerDelegate;
 
 class ShellBrowserContext : public BrowserContext {
  public:
@@ -59,7 +60,7 @@ class ShellBrowserContext : public BrowserContext {
   scoped_ptr<ResourceContext> resource_context_;
   scoped_ptr<SSLHostState> ssl_host_state_;
   scoped_ptr<DownloadStatusUpdater> download_status_updater_;
-  scoped_ptr<DownloadManagerDelegate> download_manager_delegate_;
+  scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
   scoped_refptr<HostZoomMap> host_zoom_map_;

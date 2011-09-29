@@ -8,6 +8,8 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_process_sub_thread.h"
+#include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/save_file_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/page_transition_types.h"
 #include "content/shell/shell.h"
@@ -35,6 +37,8 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 
   browser_context_.reset();
 
+  resource_dispatcher_host_->download_file_manager()->Shutdown();
+  resource_dispatcher_host_->save_file_manager()->Shutdown();
   resource_dispatcher_host_->Shutdown();
   io_thread_.reset();
   cache_thread_.reset();

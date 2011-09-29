@@ -88,12 +88,6 @@ class DownloadThrottlingResourceHandler
   scoped_refptr<net::IOBuffer> tmp_buffer_;
   int tmp_buffer_length_;
 
-  // If true the next call to OnReadCompleted is ignored. This is used if we're
-  // paused during a call to OnReadCompleted. Pausing during OnReadCompleted
-  // results in two calls to OnReadCompleted for the same data. This make sure
-  // we ignore one of them.
-  bool ignore_on_read_complete_;
-
   // Have we received OnRequestClosed()?  If so, we shouldn't act on
   // CancelDownload()/ContinueDownload().
   bool request_closed_;

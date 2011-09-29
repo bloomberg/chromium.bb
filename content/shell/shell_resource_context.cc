@@ -11,9 +11,11 @@ namespace content {
 
 ShellResourceContext::ShellResourceContext(
     ShellURLRequestContextGetter* getter,
-    ChromeBlobStorageContext* blob_storage_context)
+    ChromeBlobStorageContext* blob_storage_context,
+    DownloadManager::GetNextIdThunkType next_download_id_thunk)
     : getter_(getter),
-      blob_storage_context_(blob_storage_context) {
+      blob_storage_context_(blob_storage_context),
+      next_download_id_thunk_(next_download_id_thunk) {
 }
 
 ShellResourceContext::~ShellResourceContext() {
@@ -27,6 +29,7 @@ void ShellResourceContext::InitializeInternal() {
   set_request_context(getter_->GetURLRequestContext());
   set_host_resolver(getter_->host_resolver());
   set_blob_storage_context(blob_storage_context_);
+  set_next_download_id_thunk(next_download_id_thunk_);
 }
 
 }  // namespace content
