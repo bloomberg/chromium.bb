@@ -333,6 +333,19 @@ STD_ENV_FOR_NEWLIB=(
   LD_FOR_TARGET="${ILLEGAL_TOOL}"
   STRIP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
+STD_ENV_FOR_NEWLIB_CLANG=(
+  CFLAGS_FOR_TARGET="--pnacl-arm-bias"
+  CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
+  CC_FOR_TARGET="${PNACL_CLANG}"
+  GCC_FOR_TARGET="${PNACL_CLANG}"
+  CXX_FOR_TARGET="${PNACL_CLANGPP}"
+  AR_FOR_TARGET="${PNACL_AR}"
+  NM_FOR_TARGET="${PNACL_NM}"
+  RANLIB_FOR_TARGET="${PNACL_RANLIB}"
+  OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
+  AS_FOR_TARGET="${ILLEGAL_TOOL}"
+  LD_FOR_TARGET="${ILLEGAL_TOOL}"
+  STRIP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
 # Note: the result of this function this needs to be 'eval'ed
 #       there seems to be no better way to copy arrays
@@ -775,9 +788,8 @@ clang-libs() {
   libs-clean
 
   # NOTE: no support for glibc and clang at this point
-  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2290
   # sysroot
-  # clang-newlib
+  clang-newlib
   clang-build-compiler-rt
   # NOTE: this currently depends on "llvm-gcc arm"
   clang-build-libgcc_eh arm
@@ -2703,22 +2715,33 @@ prune-translator-install() {
 
 #+ newlib                - Build and install newlib in bitcode.
 newlib() {
-  StepBanner "NEWLIB (BITCODE)"
+  newlib-generic STD_ENV_FOR_NEWLIB
+}
+
+#+ clang-newlib         - Build and install newlib in bitcode with Clang.
+clang-newlib() {
+  newlib-generic STD_ENV_FOR_NEWLIB_CLANG
+}
+
+#+ newlib-generic - Build and install newlib in bitcode using build env.
+newlib-generic() {
+  local build_env=$1
+  StepBanner "NEWLIB (BITCODE) ${build_env}"
 
   if newlib-needs-configure; then
     newlib-clean
-    newlib-configure
+    newlib-configure-generic ${build_env}
   else
     SkipBanner "NEWLIB" "configure"
   fi
 
   if newlib-needs-make; then
-    newlib-make
+    newlib-make-generic ${build_env}
   else
     SkipBanner "NEWLIB" "make"
   fi
 
-  newlib-install
+  newlib-install-generic ${build_env}
 }
 
 #+ newlib-clean  - Clean bitcode newlib.
@@ -2738,20 +2761,34 @@ newlib-needs-configure() {
 
 #+ newlib-configure - Configure bitcode Newlib
 newlib-configure() {
-  StepBanner "NEWLIB" "Configure"
-  newlib-configure-common "${TC_BUILD_NEWLIB}"
+  newlib-configure-generic STD_ENV_FOR_NEWLIB
+}
+
+#+ clang-newlib-configure - Configure bitcode Newlib with Clang
+clang-newlib-configure() {
+  newlib-configure-generic STD_ENV_FOR_NEWLIB_CLANG
+}
+
+#+ newlib-configure - Configure bitcode Newlib using build env.
+newlib-configure-generic() {
+  local build_env=$1
+  StepBanner "NEWLIB" "Configure ${build_env}"
+
+  newlib-configure-common ${build_env} "${TC_BUILD_NEWLIB}"
 }
 
 newlib-configure-common() {
+  local -a build_env
+  eval $(copy-array-by-reference-cmd $1 build_env)
   local srcdir="${TC_SRC_NEWLIB}"
-  local objdir="$1"
+  local objdir="$2"
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
   RunWithLog newlib.configure \
     env -i \
     PATH="/usr/bin:/bin" \
-    "${STD_ENV_FOR_NEWLIB[@]}" \
+    "${build_env[@]}" \
     ${srcdir}/newlib-trunk/configure \
         --disable-multilib \
         --prefix="${NEWLIB_INSTALL_DIR}" \
@@ -2777,13 +2814,27 @@ newlib-needs-make() {
 
 #+ newlib-make   - Make bitcode Newlib
 newlib-make() {
-  StepBanner "NEWLIB" "Make"
-  newlib-make-common "${TC_BUILD_NEWLIB}"
+  newlib-make-generic STD_ENV_FOR_NEWLIB
+}
+
+#+ clang-newlib-make   - Make bitcode Newlib with Clang.
+clang-newlib-make() {
+  newlib-make-generic STD_ENV_FOR_NEWLIB_CLANG
+}
+
+#+ newlib-make-generic   - Make bitcode Newlib using build env.
+newlib-make-generic() {
+  local build_env=$1
+  StepBanner "NEWLIB" "Make ${build_env}"
+
+  newlib-make-common ${build_env} "${TC_BUILD_NEWLIB}"
 }
 
 newlib-make-common() {
+  local -a build_env
+  eval $(copy-array-by-reference-cmd $1 build_env)
   local srcdir="${TC_SRC_NEWLIB}"
-  local objdir="$1"
+  local objdir="$2"
 
   ts-touch-open "${objdir}"
 
@@ -2791,7 +2842,7 @@ newlib-make-common() {
   RunWithLog newlib.make \
     env -i PATH="/usr/bin:/bin" \
     make \
-      "${STD_ENV_FOR_NEWLIB[@]}" \
+      "${build_env[@]}" \
       ${MAKE_OPTS}
   spopd
 
@@ -2799,10 +2850,22 @@ newlib-make-common() {
 
 }
 
-#+ newlib-bitcde-install    - Install Bitcode Newlib
+#+ newlib-install    - Install Bitcode Newlib
 newlib-install() {
-  StepBanner "NEWLIB" "Install"
+  newlib-install-generic STD_ENV_FOR_NEWLIB
+}
 
+#+ clang-newlib-install    - Install Bitcode Newlib with Clang.
+clang-newlib-install() {
+  newlib-install-generic STD_ENV_FOR_NEWLIB_CLANG
+}
+
+#+ newlib-install-generic - Install Bitcode Newlib using build env.
+newlib-install-generic() {
+  StepBanner "NEWLIB" "Install ${1}"
+
+  local -a build_env
+  eval $(copy-array-by-reference-cmd $1 build_env)
   local objdir="${TC_BUILD_NEWLIB}"
 
   spushd "${objdir}"
@@ -2812,7 +2875,7 @@ newlib-install() {
   RunWithLog newlib.install \
     env -i PATH="/usr/bin:/bin" \
       make \
-      "${STD_ENV_FOR_NEWLIB[@]}" \
+      "${build_env[@]}" \
       install ${MAKE_OPTS}
 
   ###########################################################
