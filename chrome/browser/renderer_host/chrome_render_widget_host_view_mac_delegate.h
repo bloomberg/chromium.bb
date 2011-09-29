@@ -8,14 +8,21 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/memory/scoped_ptr.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_delegate.h"
 
 class RenderWidgetHost;
+
+namespace ChromeRenderWidgetHostViewMacDelegateInternal {
+class SpellCheckRenderViewObserver;
+}
 
 @interface ChromeRenderWidgetHostViewMacDelegate
     : NSObject<RenderWidgetHostViewMacDelegate> {
  @private
   RenderWidgetHost* render_widget_host_;  // weak
+  scoped_ptr<ChromeRenderWidgetHostViewMacDelegateInternal::
+      SpellCheckRenderViewObserver> spelling_observer_;
 
   // If the viewport is scrolled all the way to the left or right.
   // Used for history swiping.

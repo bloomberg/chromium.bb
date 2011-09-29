@@ -60,7 +60,7 @@ typedef NSUInteger NSEventSwipeTrackingOptions;
 - (void)spellCheckEnabled:(BOOL)enabled checked:(BOOL)checked;
 @end
 
-namespace {
+namespace ChromeRenderWidgetHostViewMacDelegateInternal {
 
 // Filters the message sent to RenderViewHost to know if spellchecking is
 // enabled or not for the currently focused element.
@@ -73,8 +73,18 @@ class SpellCheckRenderViewObserver : public RenderViewHostObserver {
         view_delegate_(view_delegate) {
   }
 
+  virtual ~SpellCheckRenderViewObserver() {
+  }
+
  private:
   // RenderViewHostObserver implementation.
+  virtual void RenderViewHostDestroyed() OVERRIDE {
+    // The parent implementation destroys the observer, scoping the lifetime of
+    // the observer to the RenderViewHost. Since this class is acting as a
+    // bridge to the view for the delegate below, and is owned by that delegate,
+    // undo the scoping by not calling through to the parent implementation.
+  }
+
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SpellCheckRenderViewObserver, message)
@@ -92,7 +102,7 @@ class SpellCheckRenderViewObserver : public RenderViewHostObserver {
   ChromeRenderWidgetHostViewMacDelegate* view_delegate_;
 };
 
-}  // namespace
+}  // namespace ChromeRenderWidgetHostViewMacDelegateInternal
 
 @implementation ChromeRenderWidgetHostViewMacDelegate
 
@@ -104,8 +114,10 @@ class SpellCheckRenderViewObserver : public RenderViewHostObserver {
     view_id_util::SetID(native_view, VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
     if (render_widget_host_->IsRenderView()) {
-      new SpellCheckRenderViewObserver(
-          static_cast<RenderViewHost*>(render_widget_host_), self);
+      spelling_observer_.reset(
+          new ChromeRenderWidgetHostViewMacDelegateInternal::
+              SpellCheckRenderViewObserver(
+                  static_cast<RenderViewHost*>(render_widget_host_), self));
     }
   }
   return self;
