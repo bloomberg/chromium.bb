@@ -263,6 +263,10 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
     // Chrome Frame never wants Chrome to start up with a First Run UI.
     command_line->AppendSwitch(switches::kNoFirstRun);
 
+    // Chrome Frame never wants to run background extensions since they
+    // interfere with in-use updates.
+    command_line->AppendSwitch(switches::kDisableBackgroundMode);
+
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
 
     // Disable the "Whoa! Chrome has crashed." dialog, because that isn't very

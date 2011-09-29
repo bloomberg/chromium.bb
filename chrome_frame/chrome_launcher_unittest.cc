@@ -19,6 +19,7 @@ TEST(ChromeLauncher, IsValidCommandLine) {
 
   CommandLine good(FilePath(L"dummy.exe"));
   good.AppendSwitch(switches::kNoFirstRun);  // in whitelist
+  good.AppendSwitch(switches::kDisableBackgroundMode);  // in whitelist
   good.AppendSwitchASCII(switches::kUserDataDir, "foo");  // in whitelist
 
   EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
@@ -55,6 +56,7 @@ TEST(ChromeLauncher, TrimWhiteSpace) {
 
 TEST(ChromeLauncher, IsValidArgument) {
   EXPECT_TRUE(chrome_launcher::IsValidArgument(L"--chrome-frame"));
+  EXPECT_TRUE(chrome_launcher::IsValidArgument(L"--disable-background-mode"));
   EXPECT_FALSE(chrome_launcher::IsValidArgument(L"--invalid-arg"));
 
   EXPECT_TRUE(chrome_launcher::IsValidArgument(L"--chrome-frame="));
