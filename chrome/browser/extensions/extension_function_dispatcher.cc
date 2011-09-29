@@ -43,6 +43,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_settings_api.h"
 #include "chrome/browser/extensions/extension_sidebar_api.h"
+#include "chrome/browser/extensions/extension_speech_input_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_tts_api.h"
@@ -297,6 +298,11 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetIconSidebarFunction>();
   RegisterFunction<SetTitleSidebarFunction>();
   RegisterFunction<ShowSidebarFunction>();
+
+  // Speech input.
+  RegisterFunction<StartSpeechInputFunction>();
+  RegisterFunction<StopSpeechInputFunction>();
+  RegisterFunction<IsRecordingSpeechInputFunction>();
 
 #if defined(TOOLKIT_VIEWS)
   // Input.

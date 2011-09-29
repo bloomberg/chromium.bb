@@ -326,6 +326,7 @@ var chrome = chrome || {};
       "experimental.rlz",
       "experimental.savePage",
       "experimental.sidebar",
+      "experimental.speechInput",
       "experimental.webNavigation",
       "experimental.webRequest",
       "fileBrowserHandler",

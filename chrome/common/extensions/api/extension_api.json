@@ -528,6 +528,166 @@
     ]
   },
   {
+    "namespace": "experimental.speechInput",
+    "types": [
+      {
+        "id": "StartOptions",
+        "type": "object",
+        "description": "Object describing the options used for speech recognition.",
+        "properties": {
+          "language": {
+            "type": "string",
+            "optional": true,
+            "description": "BCP-47 language code of the language to recognize. When set to 'auto' or not defined defaults to user's most preferred content language. Will use 'en-US' if not supported or invalid."
+          },
+          "grammar": {
+            "type": "string",
+            "description": "Name of the grammar to use. Defaults to 'builtin:search'.",
+            "optional": true
+          },
+          "filterProfanities": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Enable or disable profanity filtering. Will use the default Chrome filtering settings if not provided."
+          }
+        }
+      },
+      {
+        "id": "Error",
+        "type": "object",
+        "description": "Object describing a speech input error.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": ["noDevicesAvailable", "unableToStart", "noSpeechHeard", "noResults", "captureError", "networkError", "internalError", "requestDenied"],
+            "description": "Code identifying the error case."
+          }
+        }
+      },
+      {
+        "id": "ResultHypothesis",
+        "type": "object",
+        "description": "Object describing a speech recognition hypothesis.",
+        "properties": {
+          "utterance": {
+            "type": "string",
+            "description": "Text of this hypothesis."
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Confidence of the hypothesis. Rated from 0 (lowest) to 1 (highest)."
+          }
+        }
+      },
+      {
+        "id": "SpeechResultEvent",
+        "type": "object",
+        "description": "Object containing the recognition results.",
+        "properties": {
+          "hypotheses": {
+            "type": "array",
+            "optional": true,
+            "description": "Array of zero or more objects describing the stable candidate hypotheses sorted by decreasing likelihood.",
+            "items": { "$ref": "ResultHypothesis" }
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "start",
+        "type": "function",
+        "description": "Request to start recording as a new speech recognition session.",
+        "parameters": [
+          {
+            "name": "options",
+            "$ref": "StartOptions",
+            "optional": true,
+            "description": "Options used for this speech recognition session."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Called when the speech recognition session has successfully started recording.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "stop",
+        "type": "function",
+        "description": "Request to stop an ongoing speech recognition session.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Called when the audio recording has stopped and any pending recognition results have been completed.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "isRecording",
+        "type": "function",
+        "description": "Determine if the API is currently recording audio as part of a speech recognition session.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "result",
+                "type": "boolean",
+                "description": "Flag set to true if the API is currently recording for speech recognition."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onError",
+        "type": "function",
+        "description": "Called in case of an error in speech recognition.",
+        "parameters": [
+          {
+            "name": "error",
+            "$ref": "Error",
+            "description": "Error being reported."
+          }
+        ]
+      },
+      {
+        "name": "onSoundStart",
+        "type": "function",
+        "description": "Called when the system starts detecting sound in the input data.",
+        "parameters": []
+      },
+      {
+        "name": "onSoundEnd",
+        "type": "function",
+        "description": "Called when the system detects enough silence to consider the ongoing input has ended.",
+        "parameters": []
+      },
+      {
+        "name": "onResult",
+        "type": "function",
+        "description": "Called when speech recognition results are available.",
+        "parameters": [
+          {
+            "name": "event",
+            "$ref": "SpeechResultEvent",
+            "description": "Object containing the speech recognition results."
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "tts",
     "types": [
       {

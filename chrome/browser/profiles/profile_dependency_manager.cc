@@ -10,6 +10,7 @@
 
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/extensions/extension_speech_input_manager.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -43,6 +44,7 @@ void AssertFactoriesBuilt() {
     SessionServiceFactory::GetInstance();
     TabRestoreServiceFactory::GetInstance();
     TemplateURLServiceFactory::GetInstance();
+    ExtensionSpeechInputManager::InitializeFactory();
 
     g_initialized = true;
   }
