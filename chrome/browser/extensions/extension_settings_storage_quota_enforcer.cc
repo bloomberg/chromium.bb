@@ -45,8 +45,12 @@ void Free(
 }  // namespace
 
 ExtensionSettingsStorageQuotaEnforcer::ExtensionSettingsStorageQuotaEnforcer(
-    size_t quota_bytes, size_t max_keys, ExtensionSettingsStorage* delegate)
+    size_t quota_bytes,
+    size_t quota_bytes_per_setting,
+    size_t max_keys,
+    ExtensionSettingsStorage* delegate)
     : quota_bytes_(quota_bytes),
+      quota_bytes_per_setting_(quota_bytes_per_setting),
       max_keys_(max_keys),
       delegate_(delegate),
       used_total_(0) {
@@ -90,6 +94,7 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
   Allocate(key, value, &new_used_total, &new_used_per_setting);
 
   if (new_used_total > quota_bytes_ ||
+      new_used_per_setting[key] > quota_bytes_per_setting_ ||
       new_used_per_setting.size() > max_keys_) {
     return Result(kExceededQuotaErrorMessage);
   }
@@ -113,6 +118,10 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
     Value* value;
     values.GetWithoutPathExpansion(*it, &value);
     Allocate(*it, *value, &new_used_total, &new_used_per_setting);
+
+    if (new_used_per_setting[*it] > quota_bytes_per_setting_) {
+      return Result(kExceededQuotaErrorMessage);
+    }
   }
 
   if (new_used_total > quota_bytes_ ||

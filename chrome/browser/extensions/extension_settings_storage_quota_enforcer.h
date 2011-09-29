@@ -10,12 +10,13 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
 
-// Enforces a quota size in bytes and a maximum number of setting keys for a
-// delegate storage area.
+// Enforces total quota and a per-setting quota in bytes, and a maximum number
+// of setting keys, for a delegate storage area.
 class ExtensionSettingsStorageQuotaEnforcer : public ExtensionSettingsStorage {
  public:
   ExtensionSettingsStorageQuotaEnforcer(
       size_t quota_bytes,
+      size_t quota_bytes_per_setting,
       size_t max_keys,
       // Ownership taken.
       ExtensionSettingsStorage* delegate);
@@ -35,6 +36,9 @@ class ExtensionSettingsStorageQuotaEnforcer : public ExtensionSettingsStorage {
  private:
   // The storage quota in bytes.
   size_t const quota_bytes_;
+
+  // The quota per individual setting in bytes.
+  size_t const quota_bytes_per_setting_;
 
   // The maximum number of settings keys allowed.
   size_t const max_keys_;
