@@ -421,6 +421,10 @@
       'nacl_sdk',
       'translate',
 
+      # TODO(nirnimesh): Re-enable when 'Google Chrome' bots have a build
+      # newer than 16.0.895.1000. (09/29/2011)
+      '-multiprofile',
+
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
