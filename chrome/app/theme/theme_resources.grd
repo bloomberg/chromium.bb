@@ -111,6 +111,7 @@
       <include name="IDR_EXTENSIONS_RATING_STAR_OFF" file="extensions_rating_star_off.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_RATING_STAR_ON" file="extensions_rating_star_on.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_SECTION" file="extensions_section.png" type="BINDATA" />
+      <include name="IDR_EXTENSIONS_SECTION_SMALL" file="extensions_section_small.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT" file="find_next.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT_H" file="find_next_h.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT_P" file="find_next_d.png" type="BINDATA" />
