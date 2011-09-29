@@ -652,7 +652,6 @@ void ChromeContentRendererClient::DidCreateScriptContext(
 
 void ChromeContentRendererClient::WillReleaseScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> context, int world_id) {
-  LOG(ERROR) << RenderThread::current();
   ExtensionBindingsContext::HandleV8ContextReleased(
       frame,
       context,
