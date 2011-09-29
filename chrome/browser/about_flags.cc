@@ -378,6 +378,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableArchives)
   },
+  {
+    "enable-bluetooth",
+    IDS_FLAGS_ENABLE_BLUETOOTH_NAME,
+    IDS_FLAGS_ENABLE_BLUETOOTH_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableBluetooth)
+  },
 #endif
   {
     "memory-widget",

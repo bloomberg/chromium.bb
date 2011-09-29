@@ -4309,6 +4309,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_VIEWS_DESKTOP_DESCRIPTION" desc="Description of the 'Disable desktop' lab.">
         Uses the Views Desktop environment for Chrome.
       </message>
+      <message name="IDS_FLAGS_ENABLE_BLUETOOTH_NAME" desc="Name of the 'Bluetooth' lab.">
+        Bluetooth
+      </message>
+      <message name="IDS_FLAGS_ENABLE_BLUETOOTH_DESCRIPTION" desc="Description of the 'Bluetooth' lab.">
+        Enable Chrome OS Bluetooth support.
+      </message>
       <message name="IDS_FLAGS_MEMORY_WIDGET_NAME" desc="Name of the 'Show memory status' lab.">
         Show memory status
       </message>
