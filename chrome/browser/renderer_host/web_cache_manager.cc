@@ -146,8 +146,15 @@ void WebCacheManager::SetGlobalSizeLimit(size_t bytes) {
 
 void WebCacheManager::ClearCache() {
   // Tell each renderer process to clear the cache.
-  ClearRendederCache(active_renderers_);
-  ClearRendederCache(inactive_renderers_);
+  ClearRendederCache(active_renderers_, INSTANTLY);
+  ClearRendederCache(inactive_renderers_, INSTANTLY);
+}
+
+void WebCacheManager::ClearCacheOnNavigation() {
+  // Tell each renderer process to clear the cache when a tab is reloaded or
+  // the user navigates to a new website.
+  ClearRendederCache(active_renderers_, ON_NAVIGATION);
+  ClearRendederCache(inactive_renderers_, ON_NAVIGATION);
 }
 
 void WebCacheManager::Observe(int type,
@@ -321,12 +328,14 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
   }
 }
 
-void WebCacheManager::ClearRendederCache(const std::set<int>& renderers) {
+void WebCacheManager::ClearRendederCache(
+    const std::set<int>& renderers,
+    WebCacheManager::ClearCacheOccasion occasion) {
   std::set<int>::const_iterator iter = renderers.begin();
   for (; iter != renderers.end(); ++iter) {
     RenderProcessHost* host = RenderProcessHost::FromID(*iter);
     if (host)
-      host->Send(new ChromeViewMsg_ClearCache());
+      host->Send(new ChromeViewMsg_ClearCache(occasion == ON_NAVIGATION));
   }
 }
 

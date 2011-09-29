@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_webrequest_time_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -1496,5 +1497,10 @@ bool WebRequestEventHandled::RunImpl() {
       profile(), extension_id(), event_name, sub_event_name, request_id,
       response.release());
 
+  return true;
+}
+
+bool WebRequestHandlerBehaviorChanged::RunImpl() {
+  WebCacheManager::GetInstance()->ClearCacheOnNavigation();
   return true;
 }

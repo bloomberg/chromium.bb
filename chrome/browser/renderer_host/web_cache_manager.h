@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,6 +69,10 @@ class WebCacheManager : public NotificationObserver {
 
   // Clears all in-memory caches.
   void ClearCache();
+
+  // Clears all in-memory caches when a tab is reloaded or the user navigates
+  // to a different website.
+  void ClearCacheOnNavigation();
 
   // NotificationObserver implementation:
   virtual void Observe(int type,
@@ -179,8 +183,17 @@ class WebCacheManager : public NotificationObserver {
   // allocations according to |strategy|.
   void EnactStrategy(const AllocationStrategy& strategy);
 
+  enum ClearCacheOccasion {
+    // Instructs to clear the cache instantly.
+    INSTANTLY,
+    // Instructs to clear the cache when a navigation takes place (this
+    // includes reloading a tab).
+    ON_NAVIGATION
+  };
+
   // Inform all |renderers| to clear their cache.
-  void ClearRendederCache(const std::set<int>& renderers);
+  void ClearRendederCache(const std::set<int>& renderers,
+                          ClearCacheOccasion occation);
 
   // Check to see if any active renderers have fallen inactive.
   void FindInactiveRenderers();

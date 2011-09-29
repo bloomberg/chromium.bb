@@ -361,6 +361,7 @@ void FactoryRegistry::ResetFunctions() {
   // WebRequest.
   RegisterFunction<WebRequestAddEventListener>();
   RegisterFunction<WebRequestEventHandled>();
+  RegisterFunction<WebRequestHandlerBehaviorChanged>();
 
   // Preferences.
   RegisterFunction<GetPreferenceFunction>();

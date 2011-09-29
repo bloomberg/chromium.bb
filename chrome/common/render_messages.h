@@ -138,7 +138,8 @@ IPC_MESSAGE_CONTROL3(ChromeViewMsg_SetCacheCapacities,
                      size_t /* capacity */)
 
 // Tells the renderer to clear the cache.
-IPC_MESSAGE_CONTROL0(ChromeViewMsg_ClearCache)
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_ClearCache,
+                     bool /* on_navigation */)
 
 // Tells the renderer to dump as much memory as it can, perhaps because we
 // have memory pressure or the renderer is (or will be) paged out.  This

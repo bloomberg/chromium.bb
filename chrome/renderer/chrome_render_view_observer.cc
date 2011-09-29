@@ -16,6 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
+#include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/external_host_bindings.h"
@@ -198,11 +199,13 @@ GURL StripRef(const GURL& url) {
 ChromeRenderViewObserver::ChromeRenderViewObserver(
     RenderView* render_view,
     ContentSettingsObserver* content_settings,
+    ChromeRenderProcessObserver* chrome_render_process_observer,
     ExtensionDispatcher* extension_dispatcher,
     TranslateHelper* translate_helper)
     : RenderViewObserver(render_view),
-      content_settings_(content_settings),
+      chrome_render_process_observer_(chrome_render_process_observer),
       extension_dispatcher_(extension_dispatcher),
+      content_settings_(content_settings),
       translate_helper_(translate_helper),
       phishing_classifier_(NULL),
       last_indexed_page_id_(-1),
@@ -336,6 +339,10 @@ void ChromeRenderViewObserver::OnSetAllowRunningInsecureContent(bool allow) {
 }
 
 void ChromeRenderViewObserver::Navigate(const GURL& url) {
+  // Execute cache clear operations that were postponed until a navigation
+  // event (including tab reload).
+  if (chrome_render_process_observer_)
+    chrome_render_process_observer_->ExecutePendingClearCache();
   AboutHandler::MaybeHandle(url);
 }
 

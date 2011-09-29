@@ -16,6 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
 
+class ChromeRenderProcessObserver;
 class ContentSettingsObserver;
 class DomAutomationController;
 class ExtensionDispatcher;
@@ -43,6 +44,7 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   ChromeRenderViewObserver(
       RenderView* render_view,
       ContentSettingsObserver* content_settings,
+      ChromeRenderProcessObserver* chrome_render_process_observer,
       ExtensionDispatcher* extension_dispatcher,
       TranslateHelper* translate_helper);
   virtual ~ChromeRenderViewObserver();
@@ -171,9 +173,12 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
   scoped_ptr<WebUIJavaScript> webui_javascript_;
 
+  // Owned by ChromeContentRendererClient and outlive us.
+  ChromeRenderProcessObserver* chrome_render_process_observer_;
+  ExtensionDispatcher* extension_dispatcher_;
+
   // Have the same lifetime as us.
   ContentSettingsObserver* content_settings_;
-  ExtensionDispatcher* extension_dispatcher_;
   TranslateHelper* translate_helper_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
 

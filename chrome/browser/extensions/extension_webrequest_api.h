@@ -370,4 +370,11 @@ class WebRequestEventHandled : public SyncIOThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.webRequest.eventHandled");
 };
 
+class WebRequestHandlerBehaviorChanged : public AsyncExtensionFunction {
+ public:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.webRequest.handlerBehaviorChanged");
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_H_

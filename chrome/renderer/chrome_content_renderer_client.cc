@@ -243,7 +243,8 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
   TranslateHelper* translate = new TranslateHelper(render_view, autofill_agent);
   new ChromeRenderViewObserver(
-      render_view, content_settings, extension_dispatcher_.get(), translate);
+      render_view, content_settings, chrome_observer_.get(),
+      extension_dispatcher_.get(), translate);
 
   // Used only for testing/automation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(

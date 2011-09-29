@@ -196,7 +196,8 @@ bool ChromeRenderProcessObserver::is_incognito_process_ = false;
 
 ChromeRenderProcessObserver::ChromeRenderProcessObserver(
     chrome::ChromeContentRendererClient* client)
-    : client_(client) {
+    : client_(client),
+      clear_cache_pending_(false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableWatchdog)) {
     // TODO(JAR): Need to implement renderer IO msgloop watchdog.
@@ -314,8 +315,12 @@ void ChromeRenderProcessObserver::OnSetCacheCapacities(size_t min_dead_capacity,
       min_dead_capacity, max_dead_capacity, capacity);
 }
 
-void ChromeRenderProcessObserver::OnClearCache() {
-  WebCache::clear();
+void ChromeRenderProcessObserver::OnClearCache(bool on_navigation) {
+  if (on_navigation) {
+    clear_cache_pending_ = true;
+  } else {
+    WebCache::clear();
+  }
 }
 
 void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
@@ -408,4 +413,11 @@ void ChromeRenderProcessObserver::OnPurgeMemory() {
 
   if (client_)
     client_->OnPurgeMemory();
+}
+
+void ChromeRenderProcessObserver::ExecutePendingClearCache() {
+  if (clear_cache_pending_) {
+    clear_cache_pending_ = false;
+    WebCache::clear();
+  }
 }
