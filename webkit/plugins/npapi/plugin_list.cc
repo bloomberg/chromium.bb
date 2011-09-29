@@ -323,21 +323,28 @@ bool PluginList::ParseMimeTypes(
 
 PluginList::PluginList()
     : plugins_need_refresh_(true),
-      group_definitions_(kGroupDefinitions),
-      num_group_definitions_(ARRAYSIZE_UNSAFE(kGroupDefinitions)),
       default_plugin_enabled_(false) {
   PlatformInit();
-  AddHardcodedPluginGroups(&plugin_groups_);
+  AddHardcodedPluginGroups(kGroupDefinitions,
+                           ARRAYSIZE_UNSAFE(kGroupDefinitions));
 }
 
 PluginList::PluginList(const PluginGroupDefinition* definitions,
                        size_t num_definitions)
     : plugins_need_refresh_(true),
-      group_definitions_(definitions),
-      num_group_definitions_(num_definitions),
       default_plugin_enabled_(false) {
   // Don't do platform-dependend initialization in unit tests.
-  AddHardcodedPluginGroups(&plugin_groups_);
+  AddHardcodedPluginGroups(definitions, num_definitions);
+}
+
+PluginGroup* PluginList::CreatePluginGroup(
+      const webkit::WebPluginInfo& web_plugin_info) const {
+  for (size_t i = 0; i < hardcoded_plugin_groups_.size(); ++i) {
+    const PluginGroup* group = hardcoded_plugin_groups_[i];
+    if (group->Match(web_plugin_info))
+      return new PluginGroup(*group);
+  }
+  return PluginGroup::FromWebPluginInfo(web_plugin_info);
 }
 
 void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
@@ -410,7 +417,6 @@ void PluginList::LoadPlugins() {
   }
 
   ScopedVector<PluginGroup> new_plugin_groups;
-  AddHardcodedPluginGroups(&new_plugin_groups);
   // Do the actual loading of the plugins.
   LoadPluginsInternal(&new_plugin_groups);
 
@@ -636,7 +642,7 @@ PluginGroup* PluginList::GetPluginGroup(
       }
     }
   }
-  PluginGroup* group = PluginGroup::FromWebPluginInfo(web_plugin_info);
+  PluginGroup* group = CreatePluginGroup(web_plugin_info);
   group->AddPlugin(web_plugin_info);
   return group;
 }
@@ -649,10 +655,12 @@ string16 PluginList::GetPluginGroupName(const std::string& identifier) {
   return string16();
 }
 
-void PluginList::AddHardcodedPluginGroups(ScopedVector<PluginGroup>* groups) {
-  for (size_t i = 0; i < num_group_definitions_; ++i) {
-    groups->push_back(
-        PluginGroup::FromPluginGroupDefinition(group_definitions_[i]));
+void PluginList::AddHardcodedPluginGroups(
+    const PluginGroupDefinition* group_definitions,
+    size_t num_group_definitions) {
+  for (size_t i = 0; i < num_group_definitions; ++i) {
+    hardcoded_plugin_groups_->push_back(
+        PluginGroup::FromPluginGroupDefinition(group_definitions[i]));
   }
 }
 
@@ -667,7 +675,7 @@ PluginGroup* PluginList::AddToPluginGroups(
     }
   }
   if (!group) {
-    group = PluginGroup::FromWebPluginInfo(web_plugin_info);
+    group = CreatePluginGroup(web_plugin_info);
     std::string identifier = group->identifier();
     // If the identifier is not unique, use the full path. This means that we
     // probably won't be able to search for this group by identifier, but at

@@ -204,31 +204,37 @@ class PluginList {
   friend struct base::DefaultLazyInstanceTraits<PluginList>;
   FRIEND_TEST_ALL_PREFIXES(PluginGroupTest, PluginGroupDefinition);
 
-  // Constructors are private for singletons
+  // Constructors are private for singletons.
   PluginList();
 
-  // Creates PluginGroups for the static group definitions, and adds them to
-  // the list of PluginGroups.
-  void AddHardcodedPluginGroups(ScopedVector<PluginGroup>* groups);
+  // Creates PluginGroups for the hardcoded group definitions, and stores them
+  // in |hardcoded_plugin_groups_|.
+  void AddHardcodedPluginGroups(const PluginGroupDefinition* group_definitions,
+                                size_t num_group_definitions);
 
-  // Implements all IO dependant operations of the LoadPlugins method so that
-  // test classes can mock these out. Return value false means LoadPlugins
-  // should not go on with the loading.
+  // Creates a new PluginGroup either from a hardcoded group definition, or from
+  // the plug-in information.
+  // Caller takes ownership of the returned PluginGroup.
+  PluginGroup* CreatePluginGroup(
+      const webkit::WebPluginInfo& web_plugin_info) const;
+
+  // Implements all IO dependent operations of the LoadPlugins method so that
+  // test classes can mock these out.
   virtual void LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups);
 
-  // Load all plugins from the default plugins directory
+  // Load all plugins from the default plugins directory.
   void LoadPlugins();
 
   // Load all plugins from a specific directory.
-  // |plugins| is updated with loaded plugin information.
+  // |plugin_groups| is updated with loaded plugin information.
   // |visited_plugins| is updated with paths to all plugins that were considered
-  //   (including those we didn't load)
+  // (including those we didn't load).
   void LoadPluginsFromDir(const FilePath& path,
                           ScopedVector<PluginGroup>* plugin_groups,
                           std::set<FilePath>* visited_plugins);
 
   // Returns true if we should load the given plugin, or false otherwise.
-  // plugins is the list of plugins we have crawled in the current plugin
+  // |plugins| is the list of plugins we have crawled in the current plugin
   // loading run.
   bool ShouldLoadPlugin(const webkit::WebPluginInfo& info,
                         ScopedVector<PluginGroup>* plugins);
@@ -288,12 +294,12 @@ class PluginList {
   // Holds information about internal plugins.
   std::vector<InternalPlugin> internal_plugins_;
 
-  // Hardcoded plugin group definitions.
-  const PluginGroupDefinition* const group_definitions_;
-  const size_t num_group_definitions_;
-
   // Holds the currently available plugin groups.
   ScopedVector<PluginGroup> plugin_groups_;
+
+  // Holds the hardcoded definitions of well-known plug-ins.
+  // This should only be modified during construction of the PluginList.
+  ScopedVector<PluginGroup> hardcoded_plugin_groups_;
 
   // Callback that is invoked whenever the PluginList will reload the plugins.
   base::Closure will_load_plugins_callback_;

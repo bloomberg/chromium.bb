@@ -57,8 +57,8 @@ class PluginListTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    plugin_list_.AddPluginToLoad(foo_plugin_);
     plugin_list_.AddPluginToLoad(bar_plugin_);
+    plugin_list_.AddPluginToLoad(foo_plugin_);
   }
 
   PluginGroup* AddToPluginGroups(const WebPluginInfo& plugin) {
@@ -115,11 +115,11 @@ TEST_F(PluginListTest, HardcodedGroups) {
   plugin_list_.GetPluginGroups(true, &groups);
   ASSERT_EQ(2u, groups.size());
   EXPECT_EQ(1u, groups[0].web_plugin_infos().size());
-  EXPECT_TRUE(groups[0].ContainsPlugin(FilePath(kFooPath)));
-  EXPECT_EQ(kFooIdentifier, groups[0].identifier());
+  EXPECT_TRUE(groups[0].ContainsPlugin(FilePath(kBarPath)));
+  EXPECT_EQ("bar.plugin", groups[0].identifier());
   EXPECT_EQ(1u, groups[1].web_plugin_infos().size());
-  EXPECT_TRUE(groups[1].ContainsPlugin(FilePath(kBarPath)));
-  EXPECT_EQ("bar.plugin", groups[1].identifier());
+  EXPECT_TRUE(groups[1].ContainsPlugin(FilePath(kFooPath)));
+  EXPECT_EQ(kFooIdentifier, groups[1].identifier());
 }
 
 }  // namespace npapi
