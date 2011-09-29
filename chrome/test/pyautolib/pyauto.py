@@ -3159,11 +3159,37 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Creates a new multi-profiles user, and then opens and shows a new
     tabbed browser window with the new profile.
 
+    This is equivalent to 'Add new user' action with multi-profiles.
+
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     cmd_dict = {  # Prepare command for the json interface
       'command': 'OpenNewBrowserWindowWithNewProfile'
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def GetMultiProfileInfo(self):
+    """Fetch info about all multi-profile users.
+
+    Returns:
+      A dictionary.
+      Sample:
+      {
+        'enabled': True,
+        'profiles': [{'name': 'First user',
+                      'path': '/tmp/.org.chromium.Chromium.Tyx17X/Default'},
+                     {'name': 'User 1',
+                      'path': '/tmp/.org.chromium.Chromium.Tyx17X/profile_1'}],
+      }
+
+      Profiles will be listed in the same order as visible in preferences.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetMultiProfileInfo'
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 

@@ -67,6 +67,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -1385,13 +1386,37 @@ void TestingAutomationProvider::GetDownloadDirectory(
   }
 }
 
-// Sample json input: { "command": OpenNewBrowserWindowWithNewProfile" }
+// Sample json input: { "command": "OpenNewBrowserWindowWithNewProfile" }
 // Sample output: {}
 void TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile(
     base::DictionaryValue* args, IPC::Message* reply_message) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   new BrowserOpenedWithNewProfileNotificationObserver(this, reply_message);
   profile_manager->CreateMultiProfileAsync();
+}
+
+// Sample json input: { "command": "GetMultiProfileInfo" }
+// See GetMultiProfileInfo() in pyauto.py for sample output.
+void TestingAutomationProvider::GetMultiProfileInfo(
+    base::DictionaryValue* args, IPC::Message* reply_message) {
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  const ProfileInfoCache& profile_info_cache =
+      profile_manager->GetProfileInfoCache();
+  return_value->SetBoolean("enabled",
+      profile_manager->IsMultipleProfilesEnabled());
+
+  ListValue* profiles = new ListValue;
+  for (size_t index = 0; index < profile_info_cache.GetNumberOfProfiles();
+       ++index) {
+    DictionaryValue* item = new DictionaryValue;
+    item->SetString("name", profile_info_cache.GetNameOfProfileAtIndex(index));
+    item->SetString("path",
+                    profile_info_cache.GetPathOfProfileAtIndex(index).value());
+    profiles->Append(item);
+  }
+  return_value->Set("profiles", profiles);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 void TestingAutomationProvider::OpenNewBrowserWindowOfType(
@@ -2270,6 +2295,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetBrowserInfo;
   handler_map["OpenNewBrowserWindowWithNewProfile"] =
       &TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile;
+  handler_map["GetMultiProfileInfo"] =
+      &TestingAutomationProvider::GetMultiProfileInfo;
   handler_map["GetProcessInfo"] =
       &TestingAutomationProvider::GetProcessInfo;
 #if defined(OS_CHROMEOS)

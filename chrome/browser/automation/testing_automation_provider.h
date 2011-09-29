@@ -396,6 +396,12 @@ class TestingAutomationProvider : public AutomationProvider,
       base::DictionaryValue* args,
       IPC::Message* reply_message);
 
+  // Get info about multi-profile users.
+  // Uses the JSON interface for input/output.
+  void GetMultiProfileInfo(
+      base::DictionaryValue* args,
+      IPC::Message* reply_message);
+
   // Get info about the chromium/chrome in use.
   // This includes things like version, executable name, executable path.
   // Uses the JSON interface for input/output.
