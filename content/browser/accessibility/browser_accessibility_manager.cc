@@ -43,10 +43,8 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::CreateEmptyDocument(
     BrowserAccessibilityFactory* factory) {
   // Use empty document to process notifications
   webkit_glue::WebAccessibility empty_document;
-  // Renderer id's always start at 1000 as determined by webkit. Boot strap
-  // our ability to reuse BrowserAccessibility instances.
-  empty_document.id = 1000;
-  empty_document.role = WebAccessibility::ROLE_WEB_AREA;
+  empty_document.id = 0;
+  empty_document.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
   empty_document.state = state;
   return BrowserAccessibilityManager::Create(
       parent_view, empty_document, delegate, factory);
@@ -114,6 +112,13 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromRendererID(
   return GetFromChildID(child_id);
 }
 
+void BrowserAccessibilityManager::GotFocus() {
+  if (!focus_)
+    return;
+
+  NotifyAccessibilityEvent(ViewHostMsg_AccEvent::FOCUS_CHANGED, focus_);
+}
+
 void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {
   child_id_map_.erase(child_id);
 
@@ -130,96 +135,43 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
   for (uint32 index = 0; index < params.size(); index++) {
     const ViewHostMsg_AccessibilityNotification_Params& param = params[index];
 
-    switch (param.notification_type) {
-      // Notifications where children are included.
-      case ViewHostMsg_AccEvent::CHILDREN_CHANGED:
-      case ViewHostMsg_AccEvent::LIVE_REGION_CHANGED:
-        OnSimpleAccessibilityNotification(
-            param.acc_obj, param.notification_type, true);
-        break;
+    // Update the tree.
+    UpdateNode(param.acc_tree, param.includes_children);
 
-      case ViewHostMsg_AccEvent::FOCUS_CHANGED:
-        OnAccessibilityObjectFocusChange(param.acc_obj);
-        break;
+    // Find the node corresponding to the id that's the target of the
+    // notification (which may not be the root of the update tree).
+    base::hash_map<int32, int32>::iterator iter =
+        renderer_id_to_child_id_map_.find(param.id);
+    if (iter == renderer_id_to_child_id_map_.end()) {
+      continue;
+    }
+    int32 child_id = iter->second;
+    BrowserAccessibility* node = GetFromChildID(child_id);
+    if (!node) {
+      NOTREACHED();
+      continue;
+    }
 
-      case ViewHostMsg_AccEvent::LOAD_COMPLETE:
-        OnAccessibilityObjectLoadComplete(param.acc_obj);
-        break;
+    if (param.notification_type == ViewHostMsg_AccEvent::FOCUS_CHANGED) {
+      SetFocus(node, false);
 
-      // All other notifications: the node is updated, but
-      // children are not included.
-      case ViewHostMsg_AccEvent::ACTIVE_DESCENDANT_CHANGED:
-      case ViewHostMsg_AccEvent::ALERT:
-      case ViewHostMsg_AccEvent::CHECK_STATE_CHANGED:
-      case ViewHostMsg_AccEvent::LAYOUT_COMPLETE:
-      case ViewHostMsg_AccEvent::MENU_LIST_VALUE_CHANGED:
-      case ViewHostMsg_AccEvent::OBJECT_HIDE:
-      case ViewHostMsg_AccEvent::OBJECT_SHOW:
-      case ViewHostMsg_AccEvent::ROW_COLLAPSED:
-      case ViewHostMsg_AccEvent::ROW_COUNT_CHANGED:
-      case ViewHostMsg_AccEvent::ROW_EXPANDED:
-      case ViewHostMsg_AccEvent::SCROLLED_TO_ANCHOR:
-      case ViewHostMsg_AccEvent::SELECTED_CHILDREN_CHANGED:
-      case ViewHostMsg_AccEvent::SELECTED_TEXT_CHANGED:
-      case ViewHostMsg_AccEvent::TEXT_INSERTED:
-      case ViewHostMsg_AccEvent::TEXT_REMOVED:
-      case ViewHostMsg_AccEvent::VALUE_CHANGED:
-        OnSimpleAccessibilityNotification(
-            param.acc_obj, param.notification_type, false);
-        break;
+      // Don't send a native focus event if the window itself doesn't
+      // have focus.
+      if (delegate_ && !delegate_->HasFocus())
+        continue;
+    }
 
-      default:
-        DCHECK(0);
+    // Send the notification event to the operating system.
+    NotifyAccessibilityEvent(param.notification_type, node);
+
+    // Set initial focus when a page is loaded.
+    if (param.notification_type == ViewHostMsg_AccEvent::LOAD_COMPLETE) {
+      if (!focus_)
+        SetFocus(root_, false);
+      if (!delegate_ || delegate_->HasFocus())
+        NotifyAccessibilityEvent(ViewHostMsg_AccEvent::FOCUS_CHANGED, focus_);
     }
   }
-}
-
-void BrowserAccessibilityManager::OnSimpleAccessibilityNotification(
-    const WebAccessibility& acc_obj,
-    int notification_type,
-    bool include_children) {
-  BrowserAccessibility* new_browser_acc =
-      UpdateNode(acc_obj, include_children);
-  if (!new_browser_acc)
-    return;
-
-  NotifyAccessibilityEvent(notification_type, new_browser_acc);
-}
-
-void BrowserAccessibilityManager::OnAccessibilityObjectFocusChange(
-  const WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateNode(acc_obj, false);
-  if (!new_browser_acc)
-    return;
-
-  SetFocus(new_browser_acc, false);
-  if (delegate_ && delegate_->HasFocus()) {
-    GotFocus();
-  } else if (!delegate_) {
-    // Mac currently does not have a BrowserAccessibilityDelegate.
-    NotifyAccessibilityEvent(ViewHostMsg_AccEvent::FOCUS_CHANGED, focus_);
-  }
-}
-
-void BrowserAccessibilityManager::OnAccessibilityObjectLoadComplete(
-  const WebAccessibility& acc_obj) {
-  SetFocus(NULL, false);
-
-  root_ = UpdateNode(acc_obj, true);
-  if (!focus_)
-    SetFocus(root_, false);
-
-  NotifyAccessibilityEvent(ViewHostMsg_AccEvent::LOAD_COMPLETE, root_);
-  if (delegate_ && delegate_->HasFocus())
-    GotFocus();
-}
-
-void BrowserAccessibilityManager::GotFocus() {
-  // TODO(ctguil): Remove when tree update logic handles focus changes.
-  if (!focus_)
-    return;
-
-  NotifyAccessibilityEvent(ViewHostMsg_AccEvent::FOCUS_CHANGED, focus_);
 }
 
 gfx::NativeView BrowserAccessibilityManager::GetParentView() {
@@ -260,18 +212,29 @@ gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
   return gfx::Rect();
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::UpdateNode(
+void BrowserAccessibilityManager::UpdateNode(
     const WebAccessibility& src,
     bool include_children) {
-  base::hash_map<int32, int32>::iterator iter =
-      renderer_id_to_child_id_map_.find(src.id);
-  if (iter == renderer_id_to_child_id_map_.end())
-    return NULL;
+  BrowserAccessibility* current = NULL;
+  if (src.role == WebAccessibility::ROLE_ROOT_WEB_AREA) {
+    // As an exceptional case, there can only be one root of the tree, so
+    // if we get a new root, replace the current root no matter what the
+    // current root's renderer ID is.
+    current = root_;
+    renderer_id_to_child_id_map_.erase(current->renderer_id());
+    renderer_id_to_child_id_map_[src.id] = current->child_id();
+  } else {
+    // Otherwise, replace the node based on its renderer ID.
+    base::hash_map<int32, int32>::iterator iter =
+        renderer_id_to_child_id_map_.find(src.id);
+    if (iter != renderer_id_to_child_id_map_.end()) {
+      int32 child_id = iter->second;
+      current = GetFromChildID(child_id);
+    }
+  }
 
-  int32 child_id = iter->second;
-  BrowserAccessibility* current = GetFromChildID(child_id);
   if (!current)
-    return NULL;
+    return;
 
   if (!include_children) {
     DCHECK_EQ(0U, src.children.size());
@@ -282,7 +245,7 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateNode(
         current->index_in_parent(),
         src);
     current->SendNodeUpdateEvents();
-    return current;
+    return;
   }
 
   BrowserAccessibility* current_parent = current->parent();
@@ -305,8 +268,6 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateNode(
 
   if (!focus_ || !focus_->instance_active())
     SetFocus(root_, false);
-
-  return current;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(

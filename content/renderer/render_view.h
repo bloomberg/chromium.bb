@@ -32,7 +32,6 @@
 #include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
@@ -71,6 +70,7 @@ class PrintWebViewHelper;
 class RenderViewObserver;
 class RenderViewVisitor;
 class RenderWidgetFullscreenPepper;
+class RendererAccessibility;
 class SkBitmap;
 class SpeechInputDispatcher;
 class WebPluginDelegateProxy;
@@ -115,8 +115,6 @@ class ResourceFetcher;
 }
 
 namespace WebKit {
-class WebAccessibilityCache;
-class WebAccessibilityObject;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebDataSource;
@@ -692,18 +690,6 @@ class RenderView : public RenderWidget,
 
   typedef std::map<GURL, double> HostZoomLevels;
 
-  // Identifies an accessibility notification from webkit.
-  struct RendererAccessibilityNotification {
-   public:
-    bool ShouldIncludeChildren();
-
-    // The webkit glue id of the accessibility object.
-    int32 id;
-
-    // The accessibility notification type.
-    WebKit::WebAccessibilityNotification type;
-  };
-
   enum ErrorPageType {
     DNS_ERROR,
     HTTP_404,
@@ -756,9 +742,6 @@ class RenderView : public RenderWidget,
   // Sends a message and runs a nested message loop.
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
 
-  // Send queued accessibility notifications from the renderer to the browser.
-  void SendPendingAccessibilityNotifications();
-
   // Called when the "pinned to left/right edge" state needs to be updated.
   void UpdateScrollState(WebKit::WebFrame* frame);
 
@@ -767,8 +750,6 @@ class RenderView : public RenderWidget,
   // The documentation for these functions should be in
   // render_messages_internal.h for the message that the function is handling.
 
-  void OnAccessibilityDoDefaultAction(int acc_obj_id);
-  void OnAccessibilityNotificationsAck();
   void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnAsyncFileOpened(base::PlatformFileError error_code,
@@ -825,7 +806,6 @@ class RenderView : public RenderWidget,
   void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnFindReplyAck();
-  void OnEnableAccessibility();
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,
@@ -852,7 +832,6 @@ class RenderView : public RenderWidget,
                            bool notify_result);
   void OnSelectAll();
   void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
-  void OnSetAccessibilityFocus(int acc_obj_id);
   void OnSetActive(bool active);
   void OnSetAltErrorPageURL(const GURL& gurl);
   void OnSetBackground(const SkBitmap& background);
@@ -1150,8 +1129,6 @@ class RenderView : public RenderWidget,
 
   // Helper objects ------------------------------------------------------------
 
-  ScopedRunnableMethodFactory<RenderView> accessibility_method_factory_;
-
   RendererWebCookieJarImpl cookie_jar_;
 
   // The next group of objects all implement RenderViewObserver, so are deleted
@@ -1176,25 +1153,12 @@ class RenderView : public RenderWidget,
   // MediaStreamImpl attached to this view; lazily initialized.
   scoped_refptr<MediaStreamImpl> media_stream_impl_;
 
-  // Handles accessibility requests into the renderer side, as well as
-  // maintains the cache and other features of the accessibility tree.
-  scoped_ptr<WebKit::WebAccessibilityCache> accessibility_;
-
-  // Collect renderer accessibility notifications until they are ready to be
-  // sent to the browser.
-  std::vector<RendererAccessibilityNotification>
-      pending_accessibility_notifications_;
-
-  // Set if we are waiting for a accessibility notification ack.
-  bool accessibility_ack_pending_;
-
-  // True if verbose logging of accessibility events is on.
-  bool accessibility_logging_;
-
   // Dispatches all P2P socket used by the renderer.
   content::P2PSocketDispatcher* p2p_socket_dispatcher_;
 
   DevToolsAgent* devtools_agent_;
+
+  RendererAccessibility* renderer_accessibility_;
 
   // Misc ----------------------------------------------------------------------
 

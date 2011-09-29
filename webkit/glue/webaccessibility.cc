@@ -9,7 +9,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityRole.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAttribute.h"
@@ -32,7 +31,6 @@
 
 using base::DoubleToString;
 using base::IntToString;
-using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityRole;
 using WebKit::WebAccessibilityObject;
 
@@ -329,14 +327,13 @@ uint32 ConvertState(const WebAccessibilityObject& o) {
 
 WebAccessibility::WebAccessibility()
     : id(-1),
-      role(ROLE_NONE),
+      role(ROLE_UNKNOWN),
       state(-1) {
 }
 
 WebAccessibility::WebAccessibility(const WebKit::WebAccessibilityObject& src,
-                                   WebKit::WebAccessibilityCache* cache,
                                    bool include_children) {
-  Init(src, cache, include_children);
+  Init(src, include_children);
 }
 
 WebAccessibility::~WebAccessibility() {
@@ -479,6 +476,7 @@ std::string WebAccessibility::DebugString(bool recursive,
     case ROLE_RADIO_BUTTON: result += " RADIO_BUTTON"; break;
     case ROLE_RADIO_GROUP: result += " RADIO_GROUP"; break;
     case ROLE_REGION: result += " REGION"; break;
+    case ROLE_ROOT_WEB_AREA: result += " ROOT_WEB_AREA"; break;
     case ROLE_ROW: result += " ROW"; break;
     case ROLE_ROW_HEADER: result += " ROW_HEADER"; break;
     case ROLE_RULER: result += " RULER"; break;
@@ -759,12 +757,12 @@ std::string WebAccessibility::DebugString(bool recursive,
 #endif  // ifndef NDEBUG
 
 void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
-                            WebKit::WebAccessibilityCache* cache,
                             bool include_children) {
   name = src.title();
   role = ConvertRole(src.roleValue());
   state = ConvertState(src);
   location = src.boundingBoxRect();
+  id = src.axID();
 
   if (src.valueDescription().length())
     value = src.valueDescription();
@@ -940,7 +938,7 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
             i % column_count, i / column_count);
         int cell_id = -1;
         if (!cell.isNull()) {
-          cell_id = cache->addOrGetId(cell);
+          cell_id = cell.axID();
           if (unique_cell_id_set.find(cell_id) == unique_cell_id_set.end()) {
             unique_cell_id_set.insert(cell_id);
             unique_cell_ids.push_back(cell_id);
@@ -960,16 +958,13 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     int_attributes[ATTR_TABLE_CELL_ROW_SPAN] = src.cellRowSpan();
   }
 
-  // Add the source object to the cache and store its id.
-  id = cache->addOrGetId(src);
-
   if (include_children) {
     // Recursively create children.
     int child_count = src.childCount();
     std::set<int32> child_ids;
     for (int i = 0; i < child_count; ++i) {
       WebAccessibilityObject child = src.childAt(i);
-      int32 child_id = cache->addOrGetId(child);
+      int32 child_id = child.axID();
 
       // The child may be invalid due to issues in webkit accessibility code.
       // Don't add children that are invalid thus preventing a crash.
@@ -994,7 +989,7 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
       // As an exception, also add children of an iframe element.
       // https://bugs.webkit.org/show_bug.cgi?id=57066
       if (is_iframe || IsParentUnignoredOf(src, child)) {
-        children.push_back(WebAccessibility(child, cache, include_children));
+        children.push_back(WebAccessibility(child, include_children));
       } else {
         indirect_child_ids.push_back(child_id);
       }

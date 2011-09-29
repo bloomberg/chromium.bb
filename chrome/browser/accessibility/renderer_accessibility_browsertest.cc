@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
   EXPECT_STREQ(
       "text/html", GetAttr(tree, WebAccessibility::ATTR_DOC_MIMETYPE).c_str());
   EXPECT_STREQ("Accessibility Test", UTF16ToUTF8(tree.name).c_str());
-  EXPECT_EQ(WebAccessibility::ROLE_WEB_AREA, tree.role);
+  EXPECT_EQ(WebAccessibility::ROLE_ROOT_WEB_AREA, tree.role);
 
   // Check properites of the BODY element.
   ASSERT_EQ(1U, tree.children.size());

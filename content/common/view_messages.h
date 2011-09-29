@@ -461,8 +461,15 @@ IPC_STRUCT_BEGIN(ViewHostMsg_AccessibilityNotification_Params)
   // Type of notification.
   IPC_STRUCT_MEMBER(ViewHostMsg_AccEvent::Value, notification_type)
 
+  // ID of the node that the notification applies to.
+  IPC_STRUCT_MEMBER(int, id)
+
   // The accessibility node tree.
-  IPC_STRUCT_MEMBER(webkit_glue::WebAccessibility, acc_obj)
+  IPC_STRUCT_MEMBER(webkit_glue::WebAccessibility, acc_tree)
+
+  // Whether children are included in this tree, otherwise it's just an
+  // update to this one node and existing children are left in place.
+  IPC_STRUCT_MEMBER(bool, includes_children)
 IPC_STRUCT_END()
 
 

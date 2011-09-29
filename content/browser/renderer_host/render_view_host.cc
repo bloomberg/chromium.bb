@@ -1306,7 +1306,7 @@ void RenderViewHost::OnAccessibilityNotifications(
 
       if (param.notification_type == ViewHostMsg_AccEvent::LOAD_COMPLETE &&
           save_accessibility_tree_for_testing_) {
-        accessibility_tree_ = param.acc_obj;
+        accessibility_tree_ = param.acc_tree;
       }
     }
 
@@ -1409,4 +1409,3 @@ void RenderViewHost::OnWebUISend(const GURL& source_url,
                                  const base::ListValue& args) {
   delegate_->WebUISend(this, source_url, name, args);
 }
-

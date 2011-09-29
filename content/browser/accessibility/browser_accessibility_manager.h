@@ -126,27 +126,11 @@ class BrowserAccessibilityManager {
       BrowserAccessibilityFactory* factory);
 
  private:
-  // Type is a ViewHostMsg_AccessibilityNotification_Type::int.
-  // We pass it as int so that we don't include the render message declaration
-  // header here.
-  void OnSimpleAccessibilityNotification(
-      const WebAccessibility& acc_obj,
-      int type,
-      bool include_children);
-
-  void OnAccessibilityObjectFocusChange(
-      const WebAccessibility& acc_obj);
-  void OnAccessibilityObjectLoadComplete(
-      const WebAccessibility& acc_obj);
-
   // Update an accessibility node with an updated WebAccessibility node
   // received from the renderer process. When |include_children| is true
   // the node's children will also be updated, otherwise only the node
-  // itself is updated. Returns the updated node or NULL if no node was
-  // updated.
-  BrowserAccessibility* UpdateNode(
-      const WebAccessibility& src,
-      bool include_children);
+  // itself is updated.
+  void UpdateNode(const WebAccessibility& src, bool include_children);
 
   // Recursively build a tree of BrowserAccessibility objects from
   // the WebAccessibility tree received from the renderer process.

@@ -50,7 +50,6 @@ struct AttributeToMethodNameEntry {
 };
 
 static const MapEntry roles[] = {
-  { WebAccessibility::ROLE_NONE, NSAccessibilityUnknownRole },
   { WebAccessibility::ROLE_ALERT, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_ALERT_DIALOG, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_ANNOTATION, NSAccessibilityUnknownRole },
@@ -114,6 +113,7 @@ static const MapEntry roles[] = {
   { WebAccessibility::ROLE_RADIO_BUTTON, NSAccessibilityRadioButtonRole },
   { WebAccessibility::ROLE_RADIO_GROUP, NSAccessibilityRadioGroupRole },
   { WebAccessibility::ROLE_REGION, NSAccessibilityGroupRole },
+  { WebAccessibility::ROLE_ROOT_WEB_AREA, @"AXWebArea" },
   { WebAccessibility::ROLE_ROW, NSAccessibilityRowRole },
   { WebAccessibility::ROLE_ROW_HEADER, @"AXCell" },
   { WebAccessibility::ROLE_RULER, NSAccessibilityRulerRole },

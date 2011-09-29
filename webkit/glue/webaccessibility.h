@@ -13,7 +13,6 @@
 #include "ui/gfx/rect.h"
 
 namespace WebKit {
-class WebAccessibilityCache;
 class WebAccessibilityObject;
 }
 
@@ -24,12 +23,16 @@ namespace webkit_glue {
 // the renderer process to the browser process.
 struct WebAccessibility {
  public:
-  // An alphabetical enumeration of accessibility roles.
+  // An enumeration of accessibility roles.
   enum Role {
-    ROLE_NONE = 0,
+    ROLE_UNKNOWN = 0,
 
-    ROLE_UNKNOWN,
+    // Used by Chromium to distinguish between the root of the tree
+    // for this page, and a web area for a frame within this page.
+    ROLE_ROOT_WEB_AREA,
 
+    // These roles all directly correspond to WebKit accessibility roles,
+    // keep these alphabetical.
     ROLE_ALERT,
     ROLE_ALERT_DIALOG,
     ROLE_ANNOTATION,
@@ -242,10 +245,8 @@ struct WebAccessibility {
   WebAccessibility();
 
   // Construct from a WebAccessibilityObject. Recursively creates child
-  // nodes as needed to complete the tree. Adds |src| to |cache| and
-  // stores its cache ID.
+  // nodes as needed to complete the tree.
   WebAccessibility(const WebKit::WebAccessibilityObject& src,
-                   WebKit::WebAccessibilityCache* cache,
                    bool include_children);
 
   ~WebAccessibility();
@@ -259,7 +260,6 @@ struct WebAccessibility {
  private:
   // Initialize an already-created struct, same as the constructor above.
   void Init(const WebKit::WebAccessibilityObject& src,
-            WebKit::WebAccessibilityCache* cache,
             bool include_children);
 
   // Returns true if |ancestor| is the first unignored parent of |child|,

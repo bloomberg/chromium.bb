@@ -63,6 +63,7 @@
 #include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_view_visitor.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/renderer_accessibility.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/speech_input_dispatcher.h"
@@ -79,7 +80,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -138,7 +138,6 @@
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form_dom_manager.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
@@ -163,7 +162,6 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
-using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityNotification;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebApplicationCacheHost;
@@ -243,7 +241,6 @@ using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::ResourceFetcher;
-using webkit_glue::WebAccessibility;
 
 //-----------------------------------------------------------------------------
 
@@ -272,61 +269,6 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   result->reserve(urls.size());
   for (size_t i = 0; i < urls.size(); ++i)
     result->push_back(urls[i]);
-}
-
-static bool WebAccessibilityNotificationToViewHostMsg(
-    WebAccessibilityNotification notification,
-    ViewHostMsg_AccEvent::Value* type) {
-  switch (notification) {
-    case WebKit::WebAccessibilityNotificationActiveDescendantChanged:
-      *type = ViewHostMsg_AccEvent::ACTIVE_DESCENDANT_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationCheckedStateChanged:
-      *type = ViewHostMsg_AccEvent::CHECK_STATE_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationChildrenChanged:
-      *type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
-      *type = ViewHostMsg_AccEvent::FOCUS_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationLayoutComplete:
-      *type = ViewHostMsg_AccEvent::LAYOUT_COMPLETE;
-      break;
-    case WebKit::WebAccessibilityNotificationLiveRegionChanged:
-      *type = ViewHostMsg_AccEvent::LIVE_REGION_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationLoadComplete:
-      *type = ViewHostMsg_AccEvent::LOAD_COMPLETE;
-      break;
-    case WebKit::WebAccessibilityNotificationMenuListValueChanged:
-      *type = ViewHostMsg_AccEvent::MENU_LIST_VALUE_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationRowCollapsed:
-      *type = ViewHostMsg_AccEvent::ROW_COLLAPSED;
-      break;
-    case WebKit::WebAccessibilityNotificationRowCountChanged:
-      *type = ViewHostMsg_AccEvent::ROW_COUNT_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationRowExpanded:
-      *type = ViewHostMsg_AccEvent::ROW_EXPANDED;
-      break;
-    case WebKit::WebAccessibilityNotificationScrolledToAnchor:
-      *type = ViewHostMsg_AccEvent::SCROLLED_TO_ANCHOR;
-      break;
-    case WebKit::WebAccessibilityNotificationSelectedChildrenChanged:
-      *type = ViewHostMsg_AccEvent::SELECTED_CHILDREN_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationSelectedTextChanged:
-      *type = ViewHostMsg_AccEvent::SELECTED_TEXT_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationValueChanged:
-      *type = ViewHostMsg_AccEvent::VALUE_CHANGED;
-      break;
-    default:
-      return false;
-  }
-  return true;
 }
 
 // If |data_source| is non-null and has a NavigationState associated with it,
@@ -381,15 +323,13 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       cached_has_main_frame_horizontal_scrollbar_(false),
       cached_has_main_frame_vertical_scrollbar_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(accessibility_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
       speech_input_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
-      accessibility_ack_pending_(false),
-      accessibility_logging_(false),
       p2p_socket_dispatcher_(NULL),
       devtools_agent_(NULL),
+      renderer_accessibility_(NULL),
       session_storage_namespace_id_(session_storage_namespace_id),
       handling_select_range_(false) {
   routing_id_ = routing_id;
@@ -435,12 +375,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 
   host_window_ = parent_hwnd;
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableAccessibility))
-    WebAccessibilityCache::enableAccessibility();
-  if (command_line.HasSwitch(switches::kEnableAccessibilityLogging))
-    accessibility_logging_ = true;
-
 #if defined(ENABLE_P2P_APIS)
   p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
 #endif
@@ -452,6 +386,9 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 
   devtools_agent_ = new DevToolsAgent(this);
 
+  renderer_accessibility_ = new RendererAccessibility(this);
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableMediaStream)) {
     media_stream_impl_ = new MediaStreamImpl(
         RenderThread::current()->video_capture_impl_manager());
@@ -552,16 +489,6 @@ void RenderView::AddObserver(RenderViewObserver* observer) {
 void RenderView::RemoveObserver(RenderViewObserver* observer) {
   observer->set_render_view(NULL);
   observers_.RemoveObserver(observer);
-}
-
-bool RenderView::RendererAccessibilityNotification::ShouldIncludeChildren() {
-  typedef ViewHostMsg_AccessibilityNotification_Params params;
-  if (type == WebKit::WebAccessibilityNotificationChildrenChanged ||
-      type == WebKit::WebAccessibilityNotificationLoadComplete ||
-      type == WebKit::WebAccessibilityNotificationLiveRegionChanged) {
-    return true;
-  }
-  return false;
 }
 
 WebKit::WebView* RenderView::webview() const {
@@ -729,12 +656,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnableAccessibility, OnEnableAccessibility)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityFocus, OnSetAccessibilityFocus)
-    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityDoDefaultAction,
-                        OnAccessibilityDoDefaultAction)
-    IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
-                        OnAccessibilityNotificationsAck)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
     IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
                         OnPpapiBrokerChannelCreated)
@@ -1270,13 +1191,6 @@ void RenderView::UpdateURL(WebFrame* frame) {
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
   navigation_state->set_transition_type(PageTransition::LINK);
-
-  // Check if the navigation was within the same page, in which case we don't
-  // want to clear the accessibility cache.
-  if (accessibility_.get() && !navigation_state->was_within_same_page()) {
-    accessibility_.reset();
-    pending_accessibility_notifications_.clear();
-  }
 }
 
 // Tell the embedding application that the title of the active page has changed
@@ -1598,43 +1512,6 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
   RenderThread::RecordUserMetrics(name);
 }
 
-void RenderView::SendPendingAccessibilityNotifications() {
-  if (!accessibility_.get())
-    return;
-
-  if (pending_accessibility_notifications_.empty())
-    return;
-
-  // Send all pending accessibility notifications.
-  std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
-  for (size_t i = 0; i < pending_accessibility_notifications_.size(); i++) {
-    RendererAccessibilityNotification& notification =
-        pending_accessibility_notifications_[i];
-    WebAccessibilityObject obj = accessibility_->getObjectById(notification.id);
-    if (!obj.isValid())
-      continue;
-
-    ViewHostMsg_AccessibilityNotification_Params param;
-    WebAccessibilityNotificationToViewHostMsg(
-        pending_accessibility_notifications_[i].type, &param.notification_type);
-    param.acc_obj = WebAccessibility(
-        obj, accessibility_.get(), notification.ShouldIncludeChildren());
-    notifications.push_back(param);
-
-#ifndef NDEBUG
-    if (accessibility_logging_) {
-      LOG(INFO) << "Accessibility update:\n"
-                << param.acc_obj.DebugString(true,
-                    routing_id_,
-                    pending_accessibility_notifications_[i].type);
-    }
-#endif
-  }
-  pending_accessibility_notifications_.clear();
-  Send(new ViewHostMsg_AccessibilityNotifications(routing_id_, notifications));
-  accessibility_ack_pending_ = true;
-}
-
 bool RenderView::handleCurrentKeyboardEvent() {
   if (edit_commands_.empty())
     return false;
@@ -1858,14 +1735,6 @@ void RenderView::focusPrevious() {
 void RenderView::focusedNodeChanged(const WebNode& node) {
   Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, IsEditableNode(node)));
 
-  if (WebAccessibilityCache::accessibilityEnabled() && node.isNull()) {
-    // TODO(ctguil): Make WebKit send this notification.
-    // When focus is cleared notify accessibility that the document is focused.
-    postAccessibilityNotification(
-        webview()->accessibilityObject(),
-        WebKit::WebAccessibilityNotificationFocusedUIElementChanged);
-  }
-
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
 }
 
@@ -1879,6 +1748,12 @@ int RenderView::historyBackListCount() {
 
 int RenderView::historyForwardListCount() {
   return history_list_length_ - historyBackListCount() - 1;
+}
+
+void RenderView::postAccessibilityNotification(
+    const WebAccessibilityObject& obj,
+    WebAccessibilityNotification notification) {
+  renderer_accessibility_->PostAccessibilityNotification(obj, notification);
 }
 
 void RenderView::didUpdateInspectorSetting(const WebString& key,
@@ -3740,56 +3615,6 @@ void RenderView::OnMediaPlayerActionAt(const gfx::Point& location,
     webview()->performMediaPlayerAction(action, location);
 }
 
-void RenderView::OnEnableAccessibility() {
-  if (WebAccessibilityCache::accessibilityEnabled())
-    return;
-
-  WebAccessibilityCache::enableAccessibility();
-
-  if (webview()) {
-    // It's possible that the webview has already loaded a webpage without
-    // accessibility being enabled. Initialize the browser's cached
-    // accessibility tree by sending it a 'load complete' notification.
-    postAccessibilityNotification(
-        webview()->accessibilityObject(),
-        WebKit::WebAccessibilityNotificationLoadComplete);
-  }
-}
-
-void RenderView::OnSetAccessibilityFocus(int acc_obj_id) {
-  if (!accessibility_.get())
-    return;
-
-  WebAccessibilityObject obj = accessibility_->getObjectById(acc_obj_id);
-  WebAccessibilityObject root = webview()->accessibilityObject();
-  if (!obj.isValid() || !root.isValid())
-    return;
-
-  // By convention, calling SetFocus on the root of the tree should clear the
-  // current focus. Otherwise set the focus to the new node.
-  if (accessibility_->addOrGetId(obj) == accessibility_->addOrGetId(root))
-    webview()->clearFocusedNode();
-  else
-    obj.setFocused(true);
-}
-
-void RenderView::OnAccessibilityDoDefaultAction(int acc_obj_id) {
-  if (!accessibility_.get())
-    return;
-
-  WebAccessibilityObject obj = accessibility_->getObjectById(acc_obj_id);
-  if (!obj.isValid())
-    return;
-
-  obj.performDefaultAction();
-}
-
-void RenderView::OnAccessibilityNotificationsAck() {
-  DCHECK(accessibility_ack_pending_);
-  accessibility_ack_pending_ = false;
-  SendPendingAccessibilityNotifications();
-}
-
 void RenderView::OnGetAllSavableResourceLinksForCurrentPage(
     const GURL& page_url) {
   // Prepare list to storage all savable resource links.
@@ -4098,72 +3923,6 @@ void RenderView::OnPluginImeCompositionCompleted(const string16& text,
   }
 }
 #endif  // OS_MACOSX
-
-void RenderView::postAccessibilityNotification(
-    const WebAccessibilityObject& obj,
-    WebAccessibilityNotification notification) {
-  if (!accessibility_.get() && webview()) {
-    // Create and initialize our accessibility cache
-    accessibility_.reset(WebAccessibilityCache::create());
-    accessibility_->initialize(webview());
-
-    // Load complete should be our first notification sent. Send it manually
-    // in cases where we don't get it first to avoid focus problems.
-    // TODO(ctguil): Investigate if a different notification is a WebCore bug.
-    if (notification != WebKit::WebAccessibilityNotificationLoadComplete) {
-      postAccessibilityNotification(accessibility_->getObjectById(1000),
-          WebKit::WebAccessibilityNotificationLoadComplete);
-    }
-  }
-
-  if (!accessibility_->isCached(obj)) {
-    // The browser doesn't know about objects that are not in the cache. Send a
-    // children change for the first accestor that actually is in the cache.
-    WebAccessibilityObject parent = obj;
-    while (parent.isValid() && !accessibility_->isCached(parent))
-      parent = parent.parentObject();
-
-    DCHECK(parent.isValid() && accessibility_->isCached(parent));
-    if (!parent.isValid())
-      return;
-    postAccessibilityNotification(
-        parent, WebKit::WebAccessibilityNotificationChildrenChanged);
-
-    // The parent's children change takes care of the child's children change.
-    if (notification == WebKit::WebAccessibilityNotificationChildrenChanged)
-      return;
-  }
-
-  // Add the accessibility object to our cache and ensure it's valid.
-  RendererAccessibilityNotification acc_notification;
-  acc_notification.id = accessibility_->addOrGetId(obj);
-  acc_notification.type = notification;
-  if (acc_notification.id < 0)
-    return;
-
-  ViewHostMsg_AccEvent::Value temp;
-  if (!WebAccessibilityNotificationToViewHostMsg(notification, &temp))
-    return;
-
-  // Discard duplicate accessibility notifications.
-  for (uint32 i = 0; i < pending_accessibility_notifications_.size(); i++) {
-    if (pending_accessibility_notifications_[i].id == acc_notification.id &&
-        pending_accessibility_notifications_[i].type == acc_notification.type) {
-      return;
-    }
-  }
-  pending_accessibility_notifications_.push_back(acc_notification);
-
-  if (!accessibility_ack_pending_ && accessibility_method_factory_.empty()) {
-    // When no accessibility notifications are in-flight post a task to send
-    // the notifications to the browser. We use PostTask so that we can queue
-    // up additional notifications.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        accessibility_method_factory_.NewRunnableMethod(
-            &RenderView::SendPendingAccessibilityNotifications));
-  }
-}
 
 void RenderView::OnSetEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {

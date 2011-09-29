@@ -193,7 +193,9 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   text.name = L"new text";
   ViewHostMsg_AccessibilityNotification_Params param;
   param.notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
-  param.acc_obj = text;
+  param.acc_tree = text;
+  param.includes_children = true;
+  param.id = text.id;
   std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
   notifications.push_back(param);
   manager->OnAccessibilityNotifications(notifications);
@@ -263,7 +265,9 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   root.children.clear();
   ViewHostMsg_AccessibilityNotification_Params param;
   param.notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
-  param.acc_obj = root;
+  param.acc_tree = root;
+  param.includes_children = true;
+  param.id = root.id;
   std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
   notifications.push_back(param);
   manager->OnAccessibilityNotifications(notifications);

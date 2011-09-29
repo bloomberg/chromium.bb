@@ -2542,6 +2542,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state_|= STATE_SYSTEM_READONLY;
       break;
     case WebAccessibility::ROLE_DOCUMENT:
+    case WebAccessibility::ROLE_ROOT_WEB_AREA:
     case WebAccessibility::ROLE_WEB_AREA:
       ia_role_ = ROLE_SYSTEM_DOCUMENT;
       ia_state_|= STATE_SYSTEM_READONLY;

@@ -231,7 +231,9 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
   msg->notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
-  msg->acc_obj = tree2_root;
+  msg->acc_tree = tree2_root;
+  msg->includes_children = true;
+  msg->id = tree2_root.id;
   manager->OnAccessibilityNotifications(params);
 
   // There should be 5 objects now: the 4 from the new tree, plus the
@@ -435,7 +437,9 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
   msg->notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
-  msg->acc_obj = tree2_container;
+  msg->acc_tree = tree2_container;
+  msg->includes_children = true;
+  msg->id = tree2_container.id;
   manager->OnAccessibilityNotifications(params);
 
   // There should be 9 objects now: the 8 from the new tree, plus the
@@ -538,7 +542,9 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
   msg->notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
-  msg->acc_obj = tree2_1;
+  msg->acc_tree = tree2_1;
+  msg->includes_children = true;
+  msg->id = tree2_1.id;
   manager->OnAccessibilityNotifications(params);
 
   // There should be 4 objects now.
@@ -560,17 +566,17 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
 
   // Verify the root is as we expect by default.
   BrowserAccessibility* root = manager->GetRoot();
-  EXPECT_EQ(1000, root->renderer_id());
-  EXPECT_EQ(WebAccessibility::ROLE_WEB_AREA, root->role());
+  EXPECT_EQ(0, root->renderer_id());
+  EXPECT_EQ(WebAccessibility::ROLE_ROOT_WEB_AREA, root->role());
   EXPECT_EQ(WebAccessibility::STATE_BUSY, root->state());
 
   // Tree with a child textfield.
   WebAccessibility tree1_1;
-  tree1_1.id = 1000;
-  tree1_1.role = WebAccessibility::ROLE_WEB_AREA;
+  tree1_1.id = 1;
+  tree1_1.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
 
   WebAccessibility tree1_2;
-  tree1_2.id = 1001;
+  tree1_2.id = 2;
   tree1_2.role = WebAccessibility::ROLE_TEXT_FIELD;
 
   tree1_1.children.push_back(tree1_2);
@@ -580,44 +586,47 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
   msg->notification_type = ViewHostMsg_AccEvent::LOAD_COMPLETE;
-  msg->acc_obj = tree1_1;
-
+  msg->acc_tree = tree1_1;
+  msg->includes_children = true;
+  msg->id = tree1_1.id;
   manager->OnAccessibilityNotifications(params);
 
   // Save for later comparison.
-  BrowserAccessibility* acc1_2 = manager->GetFromRendererID(1001);
+  BrowserAccessibility* acc1_2 = manager->GetFromRendererID(2);
 
   // Verify the root has not changed.
   EXPECT_EQ(root, manager->GetRoot());
 
   // And the proper child remains.
   EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, acc1_2->role());
-  EXPECT_EQ(1001, acc1_2->renderer_id());
+  EXPECT_EQ(2, acc1_2->renderer_id());
 
   // Tree with a child button.
   WebAccessibility tree2_1;
-  tree2_1.id = 1000;
-  tree2_1.role = WebAccessibility::ROLE_WEB_AREA;
+  tree2_1.id = 1;
+  tree2_1.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
 
   WebAccessibility tree2_2;
-  tree2_2.id = 1002;
+  tree2_2.id = 3;
   tree2_2.role = WebAccessibility::ROLE_BUTTON;
 
   tree2_1.children.push_back(tree2_2);
 
-  msg->acc_obj = tree2_1;
+  msg->acc_tree = tree2_1;
+  msg->includes_children = true;
+  msg->id = tree2_1.id;
 
   // Fire another load complete.
   manager->OnAccessibilityNotifications(params);
 
-  BrowserAccessibility* acc2_2 = manager->GetFromRendererID(1002);
+  BrowserAccessibility* acc2_2 = manager->GetFromRendererID(3);
 
   // Verify the root has not changed.
   EXPECT_EQ(root, manager->GetRoot());
 
   // And the new child exists.
   EXPECT_EQ(WebAccessibility::ROLE_BUTTON, acc2_2->role());
-  EXPECT_EQ(1002, acc2_2->renderer_id());
+  EXPECT_EQ(3, acc2_2->renderer_id());
 
   // Ensure we properly cleaned up.
   manager.reset();
