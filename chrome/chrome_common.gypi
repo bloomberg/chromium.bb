@@ -172,6 +172,8 @@
         'common/mac/objc_zombie.mm',
         'common/metrics_helpers.cc',
         'common/metrics_helpers.h',
+        'common/metrics_log_manager.cc',
+        'common/metrics_log_manager.h',
         'common/multi_process_lock.h',
         'common/multi_process_lock_linux.cc',
         'common/multi_process_lock_mac.cc',

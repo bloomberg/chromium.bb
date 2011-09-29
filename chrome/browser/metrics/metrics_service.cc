@@ -49,10 +49,7 @@
 //
 // When the browser shuts down, there will typically be a fragment of an ongoing
 // log that has not yet been transmitted.  At shutdown time, that fragment
-// is closed (including snapshotting histograms), and converted to text.  Note
-// that memory stats are not gathered during shutdown, as gathering *might* be
-// too time consuming.  The textual representation of the fragment of the
-// ongoing log is then stored persistently as a string in the PrefServices, for
+// is closed (including snapshotting histograms), and persisted, for
 // potential transmission during a future run of the product.
 //
 // There are two slightly abnormal shutdown conditions.  There is a
@@ -82,7 +79,6 @@
 //    INIT_TASK_SCHEDULED,    // Waiting for deferred init tasks to complete.
 //    INIT_TASK_DONE,         // Waiting for timer to send initial log.
 //    INITIAL_LOG_READY,      // Initial log generated, and waiting for reply.
-//    SEND_OLD_INITIAL_LOGS,  // Sending unsent logs from previous session.
 //    SENDING_OLD_LOGS,       // Sending unsent logs from previous session.
 //    SENDING_CURRENT_LOGS,   // Sending standard current logs as they accrue.
 //
@@ -109,17 +105,12 @@
 // prepared for transmission.  It is also the case that any previously unsent
 // logs have been loaded into instance variables for possible transmission.
 //
-//    SEND_OLD_INITIAL_LOGS,  // Sending unsent logs from previous session.
-// This state indicates that the initial log for this session has been
-// successfully sent and it is now time to send any "initial logs" that were
-// saved from previous sessions.  Most commonly, there are none, but all old
-// logs that were "initial logs" must be sent before this state is exited.
-//
 //    SENDING_OLD_LOGS,       // Sending unsent logs from previous session.
-// This state indicates that there are no more unsent initial logs, and now any
-// ongoing logs from previous sessions should be transmitted.  All such logs
-// will be transmitted before exiting this state, and proceeding with ongoing
-// logs from the current session (see next state).
+// This state indicates that the initial log for this session has been
+// successfully sent and it is now time to send any logs that were
+// saved from previous sessions.  All such logs will be transmitted before
+// exiting this state, and proceeding with ongoing logs from the current session
+// (see next state).
 //
 //    SENDING_CURRENT_LOGS,   // Sending standard current logs as they accrue.
 // Current logs are being accumulated.  Typically every 20 minutes a log is
@@ -131,19 +122,16 @@
 // and remain in the latter until shutdown.
 //
 // The one unusual case is when the user asks that we stop logging.  When that
-// happens, any pending (transmission in progress) log is pushed into the list
-// of old unsent logs (the appropriate list, depending on whether it is an
-// initial log, or an ongoing log).  An addition, any log that is currently
-// accumulating is also finalized, and pushed into the unsent log list.  With
-// those pushes performed, we regress back to the SEND_OLD_INITIAL_LOGS state in
-// case the user enables log recording again during this session.  This way
-// anything we have "pushed back" will be sent automatically if/when we progress
-// back to SENDING_CURRENT_LOG state.
+// happens, any staged (transmission in progress) log is persisted, and any log
+// log that is currently accumulating is also finalized and persisted.  We then
+// regress back to the SEND_OLD_LOGS state in case the user enables log
+// recording again during this session.  This way anything we have persisted
+// will be sent automatically if/when we progress back to SENDING_CURRENT_LOG
+// state.
 //
-// Also note that whenever the member variables containing unsent logs are
-// modified (i.e., when we send an old log), we mirror the list of logs into
-// the PrefServices.  This ensures that IF we crash, we won't start up and
-// retransmit our old logs again.
+// Also note that whenever we successfully send an old log, we mirror the list
+// of logs into the PrefService. This ensures that IF we crash, we won't start
+// up and retransmit our old logs again.
 //
 // Due to race conditions, it is always possible that a log file could be sent
 // twice.  For example, if a log file is sent, but not yet acknowledged by
@@ -156,14 +144,12 @@
 
 #include "chrome/browser/metrics/metrics_service.h"
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"  // For WriteInto().
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -173,6 +159,7 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
+#include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
 #include "chrome/browser/net/network_stats.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -184,6 +171,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
+#include "chrome/common/metrics_log_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/load_notification_details.h"
@@ -204,21 +192,6 @@
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #endif
-
-namespace {
-MetricsService::LogRecallStatus MakeRecallStatusHistogram(
-    MetricsService::LogRecallStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogRecall", status,
-                            MetricsService::END_RECALL_STATUS);
-  return status;
-}
-
-// TODO(ziadh): Remove this when done with experiment.
-void MakeStoreStatusHistogram(MetricsService::LogStoreStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogStore2", status,
-                            MetricsService::END_STORE_STATUS);
-}
-}  // namespace
 
 using base::Time;
 
@@ -246,26 +219,6 @@ static const int kUploadLogAvoidRetransmitSize = 50000;
 
 // Interval, in seconds, between state saves.
 static const int kSaveStateInterval = 5 * 60;  // five minutes
-
-// The number of "initial" logs we're willing to save, and hope to send during
-// a future Chrome session.  Initial logs contain crash stats, and are pretty
-// small.
-static const size_t kMaxInitialLogsPersisted = 20;
-
-// The number of ongoing logs we're willing to save persistently, and hope to
-// send during a this or future sessions.  Note that each log may be pretty
-// large, as presumably the related "initial" log wasn't sent (probably nothing
-// was, as the user was probably off-line).  As a result, the log probably kept
-// accumulating while the "initial" log was stalled (pending_), and couldn't be
-// sent.  As a result, we don't want to save too many of these mega-logs.
-// A "standard shutdown" will create a small log, including just the data that
-// was not yet been transmitted, and that is normal (to have exactly one
-// ongoing_log_ at startup).
-static const size_t kMaxOngoingLogsPersisted = 8;
-
-// We append (2) more elements to persisted lists: the size of the list and a
-// checksum of the elements.
-static const size_t kChecksumEntryCount = 2;
 
 // static
 MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
@@ -419,6 +372,8 @@ MetricsService::MetricsService()
   base::Closure callback = base::Bind(&MetricsService::StartScheduledUpload,
                                       base::Unretained(this));
   scheduler_.reset(new MetricsReportingScheduler(callback));
+  log_manager_.set_log_serializer(new MetricsLogSerializer());
+  log_manager_.set_max_ongoing_log_store_size(kUploadLogAvoidRetransmitSize);
 }
 
 MetricsService::~MetricsService() {
@@ -472,10 +427,10 @@ void MetricsService::SetRecording(bool enabled) {
     SetUpNotifications(&registrar_, this);
   } else {
     registrar_.RemoveAll();
-    PushPendingLogsToUnsentLists();
-    DCHECK(!pending_log());
-    if (state_ > INITIAL_LOG_READY && unsent_logs())
-      state_ = SEND_OLD_INITIAL_LOGS;
+    PushPendingLogsToPersistentStorage();
+    DCHECK(!log_manager_.has_staged_log());
+    if (state_ > INITIAL_LOG_READY && log_manager_.has_unsent_logs())
+      state_ = SENDING_OLD_LOGS;
   }
   recording_active_ = enabled;
 }
@@ -536,7 +491,7 @@ void MetricsService::SetUpNotifications(NotificationRegistrar* registrar,
 void MetricsService::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  DCHECK(current_log_);
+  DCHECK(log_manager_.current_log());
   DCHECK(IsSingleThreaded());
 
   if (!CanLogNotification(type, source, details))
@@ -544,7 +499,8 @@ void MetricsService::Observe(int type,
 
   switch (type) {
     case content::NOTIFICATION_USER_ACTION:
-        current_log_->RecordUserAction(*Details<const char*>(details).ptr());
+         log_manager_.current_log()->RecordUserAction(
+             *Details<const char*>(details).ptr());
       break;
 
     case chrome::NOTIFICATION_BROWSER_OPENED:
@@ -596,7 +552,7 @@ void MetricsService::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_OMNIBOX_OPENED_URL: {
-      MetricsLog* current_log = current_log_->AsMetricsLog();
+      MetricsLog* current_log = log_manager_.current_log()->AsMetricsLog();
       DCHECK(current_log);
       current_log->RecordOmniboxOpenedURL(
           *Details<AutocompleteLog>(details).ptr());
@@ -616,8 +572,9 @@ void MetricsService::Observe(int type,
 
   HandleIdleSinceLastTransmission(false);
 
-  if (current_log_)
-    DVLOG(1) << "METRICS: NUMBER OF EVENTS = " << current_log_->num_events();
+  if (log_manager_.current_log())
+    DVLOG(1) << "METRICS: NUMBER OF EVENTS = "
+             << log_manager_.current_log()->num_events();
 }
 
 void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
@@ -830,10 +787,10 @@ void MetricsService::SaveLocalState() {
 // Recording control methods
 
 void MetricsService::StartRecording() {
-  if (current_log_)
+  if (log_manager_.current_log())
     return;
 
-  current_log_ = new MetricsLog(client_id_, session_id_);
+  log_manager_.BeginLoggingWithLog(new MetricsLog(client_id_, session_id_));
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
@@ -851,69 +808,52 @@ void MetricsService::StartRecording() {
 }
 
 void MetricsService::StopRecording() {
-  if (!current_log_)
+  if (!log_manager_.current_log())
     return;
 
   // TODO(jar): Integrate bounds on log recording more consistently, so that we
   // can stop recording logs that are too big much sooner.
-  if (current_log_->num_events() >= kEventLimit) {
+  if (log_manager_.current_log()->num_events() > kEventLimit) {
     UMA_HISTOGRAM_COUNTS("UMA.Discarded Log Events",
-                         current_log_->num_events());
-    current_log_->CloseLog();
-    delete current_log_;
-    current_log_ = NULL;
+                         log_manager_.current_log()->num_events());
+    log_manager_.DiscardCurrentLog();
     StartRecording();  // Start trivial log to hold our histograms.
   }
 
-  current_log_->set_hardware_class(hardware_class_);  // Adds to ongoing logs.
+  // Adds to ongoing logs.
+  log_manager_.current_log()->set_hardware_class(hardware_class_);
 
   // Put incremental data (histogram deltas, and realtime stats deltas) at the
   // end of all log transmissions (initial log handles this separately).
   // RecordIncrementalStabilityElements only exists on the derived
   // MetricsLog class.
-  MetricsLog* current_log = current_log_->AsMetricsLog();
+  MetricsLog* current_log = log_manager_.current_log()->AsMetricsLog();
   DCHECK(current_log);
   current_log->RecordIncrementalStabilityElements();
   RecordCurrentHistograms();
 
-  current_log_->CloseLog();
-  pending_log_ = current_log_;
-  current_log_ = NULL;
+  log_manager_.StageCurrentLogForUpload();
 }
 
-void MetricsService::PushPendingLogsToUnsentLists() {
+void MetricsService::PushPendingLogsToPersistentStorage() {
   if (state_ < INITIAL_LOG_READY)
     return;  // We didn't and still don't have time to get plugin list etc.
 
-  if (pending_log()) {
-    PreparePendingLogText();
+  if (log_manager_.has_staged_log()) {
     if (state_ == INITIAL_LOG_READY) {
       // We may race here, and send second copy of initial log later.
-      unsent_initial_logs_.push_back(compressed_log_);
-      state_ = SEND_OLD_INITIAL_LOGS;
+      log_manager_.StoreStagedLogAsUnsent(MetricsLogManager::INITIAL_LOG);
+      state_ = SENDING_OLD_LOGS;
     } else {
       // TODO(jar): Verify correctness in other states, including sending unsent
       // initial logs.
-      PushPendingLogTextToUnsentOngoingLogs();
+      log_manager_.StoreStagedLogAsUnsent(MetricsLogManager::ONGOING_LOG);
     }
-    DiscardPendingLog();
   }
-  DCHECK(!pending_log());
+  DCHECK(!log_manager_.has_staged_log());
   StopRecording();
-  PreparePendingLogText();
-  PushPendingLogTextToUnsentOngoingLogs();
-  DiscardPendingLog();
+  log_manager_.StoreStagedLogAsUnsent(MetricsLogManager::ONGOING_LOG);
   StoreUnsentLogs();
-}
-
-void MetricsService::PushPendingLogTextToUnsentOngoingLogs() {
-  if (compressed_log_.length() >
-      static_cast<size_t>(kUploadLogAvoidRetransmitSize)) {
-    UMA_HISTOGRAM_COUNTS("UMA.Large Accumulated Log Not Persisted",
-                         static_cast<int>(compressed_log_.length()));
-    return;
-  }
-  unsent_ongoing_logs_.push_back(compressed_log_);
 }
 
 //------------------------------------------------------------------------------
@@ -998,20 +938,20 @@ void MetricsService::OnHistogramSynchronizationDone() {
     return;
   }
 
-  MakePendingLog();
+  MakeStagedLog();
 
-  // MakePendingLog should have put something in the pending log, if it didn't,
-  // we skip this upload and hope things work out next time.
-  if (!pending_log()) {
+  // MakeStagedLog should have prepared log text; if it didn't, skip this
+  // upload and hope things work out next time.
+  if (log_manager_.staged_log_text().empty()) {
     scheduler_->UploadCancelled();
     return;
   }
 
-  PrepareFetchWithPendingLog();
+  PrepareFetchWithStagedLog();
 
   if (!current_fetch_.get()) {
     // Compression failed, and log discarded :-/.
-    DiscardPendingLog();
+    log_manager_.DiscardStagedLog();
     scheduler_->UploadCancelled();
     // TODO(jar): If compression failed, we should have created a tiny log and
     // compressed that, so that we can signal that we're losing logs.
@@ -1027,8 +967,8 @@ void MetricsService::OnHistogramSynchronizationDone() {
 }
 
 
-void MetricsService::MakePendingLog() {
-  if (pending_log())
+void MetricsService::MakeStagedLog() {
+  if (log_manager_.has_staged_log())
     return;
 
   switch (state_) {
@@ -1043,23 +983,13 @@ void MetricsService::MakePendingLog() {
       // from us.
       PrepareInitialLog();
       DCHECK(state_ == INIT_TASK_DONE);
-      RecallUnsentLogs();
+      log_manager_.LoadPersistedUnsentLogs();
       state_ = INITIAL_LOG_READY;
       break;
 
-    case SEND_OLD_INITIAL_LOGS:
-      if (!unsent_initial_logs_.empty()) {
-        compressed_log_ = unsent_initial_logs_.back();
-        unsent_initial_logs_.pop_back();
-        break;
-      }
-      state_ = SENDING_OLD_LOGS;
-      // Fall through.
-
     case SENDING_OLD_LOGS:
-      if (!unsent_ongoing_logs_.empty()) {
-        compressed_log_ = unsent_ongoing_logs_.back();
-        unsent_ongoing_logs_.pop_back();
+      if (log_manager_.has_unsent_logs()) {
+        log_manager_.StageNextStoredLogForUpload();
         break;
       }
       state_ = SENDING_CURRENT_LOGS;
@@ -1075,7 +1005,7 @@ void MetricsService::MakePendingLog() {
       return;
   }
 
-  DCHECK(pending_log());
+  DCHECK(log_manager_.has_staged_log());
 }
 
 void MetricsService::PrepareInitialLog() {
@@ -1085,187 +1015,35 @@ void MetricsService::PrepareInitialLog() {
   log->set_hardware_class(hardware_class_);  // Adds to initial log.
   log->RecordEnvironment(plugins_, profile_dictionary_.get());
 
-  // Histograms only get written to current_log_, so setup for the write.
-  MetricsLogBase* save_log = current_log_;
-  current_log_ = log;
-  RecordCurrentHistograms();  // Into current_log_... which is really log.
-  current_log_ = save_log;
+  // Histograms only get written to the current log, so make the new log current
+  // before writing them.
+  log_manager_.PauseCurrentLog();
+  log_manager_.BeginLoggingWithLog(log);
+  RecordCurrentHistograms();
 
-  log->CloseLog();
-  DCHECK(!pending_log());
-  pending_log_ = log;
-}
-
-// static
-MetricsService::LogRecallStatus MetricsService::RecallUnsentLogsHelper(
-    const ListValue& list,
-    std::vector<std::string>* local_list) {
-  DCHECK(local_list->empty());
-  if (list.GetSize() == 0)
-    return MakeRecallStatusHistogram(LIST_EMPTY);
-  if (list.GetSize() < 3)
-    return MakeRecallStatusHistogram(LIST_SIZE_TOO_SMALL);
-
-  // The size is stored at the beginning of the list.
-  int size;
-  bool valid = (*list.begin())->GetAsInteger(&size);
-  if (!valid)
-    return MakeRecallStatusHistogram(LIST_SIZE_MISSING);
-
-  // Account for checksum and size included in the list.
-  if (static_cast<unsigned int>(size) !=
-      list.GetSize() - kChecksumEntryCount)
-    return MakeRecallStatusHistogram(LIST_SIZE_CORRUPTION);
-
-  base::MD5Context ctx;
-  base::MD5Init(&ctx);
-  std::string encoded_log;
-  std::string decoded_log;
-  for (ListValue::const_iterator it = list.begin() + 1;
-       it != list.end() - 1; ++it) {  // Last element is the checksum.
-    valid = (*it)->GetAsString(&encoded_log);
-    if (!valid) {
-      local_list->clear();
-      return MakeRecallStatusHistogram(LOG_STRING_CORRUPTION);
-    }
-
-    base::MD5Update(&ctx, encoded_log);
-
-    if (!base::Base64Decode(encoded_log, &decoded_log)) {
-      local_list->clear();
-      return MakeRecallStatusHistogram(DECODE_FAIL);
-    }
-    local_list->push_back(decoded_log);
-  }
-
-  // Verify checksum.
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &ctx);
-  std::string recovered_md5;
-  // We store the hash at the end of the list.
-  valid = (*(list.end() - 1))->GetAsString(&recovered_md5);
-  if (!valid) {
-    local_list->clear();
-    return MakeRecallStatusHistogram(CHECKSUM_STRING_CORRUPTION);
-  }
-  if (recovered_md5 != base::MD5DigestToBase16(digest)) {
-    local_list->clear();
-    return MakeRecallStatusHistogram(CHECKSUM_CORRUPTION);
-  }
-  return MakeRecallStatusHistogram(RECALL_SUCCESS);
-}
-void MetricsService::RecallUnsentLogs() {
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-
-  const ListValue* unsent_initial_logs = local_state->GetList(
-      prefs::kMetricsInitialLogs);
-  RecallUnsentLogsHelper(*unsent_initial_logs, &unsent_initial_logs_);
-
-  const ListValue* unsent_ongoing_logs = local_state->GetList(
-      prefs::kMetricsOngoingLogs);
-  RecallUnsentLogsHelper(*unsent_ongoing_logs, &unsent_ongoing_logs_);
-}
-
-// static
-void MetricsService::StoreUnsentLogsHelper(
-    const std::vector<std::string>& local_list,
-    const size_t kMaxLocalListSize,
-    ListValue* list) {
-  list->Clear();
-  size_t start = 0;
-  if (local_list.size() > kMaxLocalListSize)
-    start = local_list.size() - kMaxLocalListSize;
-  DCHECK(start <= local_list.size());
-  if (local_list.size() == start)
-    return;
-
-  // Store size at the beginning of the list.
-  list->Append(Value::CreateIntegerValue(local_list.size() - start));
-
-  base::MD5Context ctx;
-  base::MD5Init(&ctx);
-  std::string encoded_log;
-  for (std::vector<std::string>::const_iterator it = local_list.begin() + start;
-       it != local_list.end(); ++it) {
-    // We encode the compressed log as Value::CreateStringValue() expects to
-    // take a valid UTF8 string.
-    if (!base::Base64Encode(*it, &encoded_log)) {
-      MakeStoreStatusHistogram(ENCODE_FAIL);
-      list->Clear();
-      return;
-    }
-    base::MD5Update(&ctx, encoded_log);
-    list->Append(Value::CreateStringValue(encoded_log));
-  }
-
-  // Append hash to the end of the list.
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &ctx);
-  list->Append(Value::CreateStringValue(base::MD5DigestToBase16(digest)));
-  DCHECK(list->GetSize() >= 3);  // Minimum of 3 elements (size, data, hash).
-  MakeStoreStatusHistogram(STORE_SUCCESS);
+  DCHECK(!log_manager_.has_staged_log());
+  log_manager_.StageCurrentLogForUpload();
+  log_manager_.ResumePausedLog();
 }
 
 void MetricsService::StoreUnsentLogs() {
   if (state_ < INITIAL_LOG_READY)
     return;  // We never Recalled the prior unsent logs.
 
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-
-  {
-    ListPrefUpdate update(local_state, prefs::kMetricsInitialLogs);
-    ListValue* unsent_initial_logs = update.Get();
-    StoreUnsentLogsHelper(unsent_initial_logs_, kMaxInitialLogsPersisted,
-                          unsent_initial_logs);
-  }
-
-  {
-    ListPrefUpdate update(local_state, prefs::kMetricsOngoingLogs);
-    ListValue* unsent_ongoing_logs = update.Get();
-    StoreUnsentLogsHelper(unsent_ongoing_logs_, kMaxOngoingLogsPersisted,
-                          unsent_ongoing_logs);
-  }
+  log_manager_.PersistUnsentLogs();
 }
 
-void MetricsService::PreparePendingLogText() {
-  DCHECK(pending_log());
-  if (!compressed_log_.empty())
-    return;
-  int text_size = pending_log_->GetEncodedLogSize();
-
-  std::string pending_log_text;
-  // Leave room for the NULL terminator.
-  pending_log_->GetEncodedLog(WriteInto(&pending_log_text, text_size + 1),
-                              text_size);
-
-  if (Bzip2Compress(pending_log_text, &compressed_log_)) {
-    // Allow security conscious users to see all metrics logs that we send.
-    VLOG(1) << "COMPRESSED FOLLOWING METRICS LOG: " << pending_log_text;
-  } else {
-    LOG(DFATAL) << "Failed to compress log for transmission.";
-    // We can't discard the logs as other caller functions expect that
-    // |compressed_log_| not be empty. We can detect this failure at the server
-    // after we transmit.
-    compressed_log_ = "Unable to compress!";
-    MakeStoreStatusHistogram(COMPRESS_FAIL);
-    return;
-  }
-}
-
-void MetricsService::PrepareFetchWithPendingLog() {
-  DCHECK(pending_log());
+void MetricsService::PrepareFetchWithStagedLog() {
+  DCHECK(!log_manager_.staged_log_text().empty());
   DCHECK(!current_fetch_.get());
-  PreparePendingLogText();
-  DCHECK(!compressed_log_.empty());
 
   current_fetch_.reset(new URLFetcher(GURL(WideToUTF16(server_url_)),
                                       URLFetcher::POST,
                                       this));
   current_fetch_->set_request_context(
       g_browser_process->system_request_context());
-  current_fetch_->set_upload_data(kMetricsType, compressed_log_);
+  current_fetch_->set_upload_data(kMetricsType,
+                                  log_manager_.staged_log_text());
 }
 
 static const char* StatusToString(const net::URLRequestStatus& status) {
@@ -1312,10 +1090,11 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
   bool discard_log = false;
 
   if (!upload_succeeded &&
-      (compressed_log_.length() >
+      (log_manager_.staged_log_text().length() >
           static_cast<size_t>(kUploadLogAvoidRetransmitSize))) {
-    UMA_HISTOGRAM_COUNTS("UMA.Large Rejected Log was Discarded",
-                         static_cast<int>(compressed_log_.length()));
+    UMA_HISTOGRAM_COUNTS(
+        "UMA.Large Rejected Log was Discarded",
+        static_cast<int>(log_manager_.staged_log_text().length()));
     discard_log = true;
   } else if (response_code == 400) {
     // Bad syntax.  Retransmission won't work.
@@ -1331,10 +1110,9 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
     VLOG(1) << "METRICS RESPONSE DATA: " << data;
     switch (state_) {
       case INITIAL_LOG_READY:
-        state_ = SEND_OLD_INITIAL_LOGS;
+        state_ = SENDING_OLD_LOGS;
         break;
 
-      case SEND_OLD_INITIAL_LOGS:
       case SENDING_OLD_LOGS:
         // Store the updated list to disk now that the removed log is uploaded.
         StoreUnsentLogs();
@@ -1348,14 +1126,14 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
         break;
     }
 
-    DiscardPendingLog();
+    log_manager_.DiscardStagedLog();
     // Since we sent a log, make sure our in-memory state is recorded to disk.
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
     if (local_state)
       local_state->ScheduleSavePersistentPrefs();
 
-    if (unsent_logs())
+    if (log_manager_.has_unsent_logs())
       DCHECK(state_ < SENDING_CURRENT_LOGS);
   }
 
@@ -1363,7 +1141,8 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
 
-  scheduler_->UploadFinished(server_is_healthy, unsent_logs());
+  scheduler_->UploadFinished(server_is_healthy,
+                             log_manager_.has_unsent_logs());
 
   // Collect network stats if UMA upload succeeded.
   if (server_is_healthy && io_thread_)
@@ -1373,11 +1152,11 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
 void MetricsService::LogBadResponseCode() {
   VLOG(1) << "Verify your metrics logs are formatted correctly.  Verify server "
              "is active at " << server_url_;
-  if (!pending_log()) {
+  if (!log_manager_.has_staged_log()) {
     VLOG(1) << "METRICS: Recorder shutdown during log transmission.";
   } else {
     VLOG(1) << "METRICS: transmission retry being scheduled for "
-            << compressed_log_;
+            << log_manager_.staged_log_text();
   }
 }
 
@@ -1417,7 +1196,7 @@ void MetricsService::LogWindowChange(int type,
   }
 
   // TODO(brettw) we should have some kind of ID for the parent.
-  current_log_->RecordWindowEvent(window_type, controller_id, 0);
+  log_manager_.current_log()->RecordWindowEvent(window_type, controller_id, 0);
 }
 
 void MetricsService::LogLoadComplete(int type,
@@ -1433,11 +1212,11 @@ void MetricsService::LogLoadComplete(int type,
 
   const Details<LoadNotificationDetails> load_details(details);
   int controller_id = window_map_[details.map_key()];
-  current_log_->RecordLoadEvent(controller_id,
-                                load_details->url(),
-                                load_details->origin(),
-                                load_details->session_index(),
-                                load_details->load_time());
+  log_manager_.current_log()->RecordLoadEvent(controller_id,
+                                              load_details->url(),
+                                              load_details->origin(),
+                                              load_details->session_index(),
+                                              load_details->load_time());
 }
 
 void MetricsService::IncrementPrefValue(const char* path) {

@@ -57,6 +57,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/metrics_log_manager.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome_frame/bind_status_callback_impl.h"
@@ -250,14 +251,6 @@ MetricsService::MetricsService()
 
 MetricsService::~MetricsService() {
   SetRecording(false);
-  if (pending_log_) {
-    delete pending_log_;
-    pending_log_ = NULL;
-  }
-  if (current_log_) {
-    delete current_log_;
-    current_log_ = NULL;
-  }
 }
 
 void MetricsService::InitializeMetricsState() {
@@ -369,36 +362,36 @@ void MetricsService::SetReporting(bool enable) {
 
 void MetricsService::StartRecording() {
   DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
-  if (current_log_)
+  if (log_manager_.current_log())
     return;
 
-  current_log_ = new MetricsLogBase(client_id_, session_id_,
-                                    GetVersionString());
+  log_manager_.BeginLoggingWithLog(new MetricsLogBase(client_id_, session_id_,
+                                                      GetVersionString()));
   if (state_ == INITIALIZED)
     state_ = ACTIVE;
 }
 
 void MetricsService::StopRecording(bool save_log) {
   DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
-  if (!current_log_)
+  if (!log_manager_.current_log())
     return;
 
   // Put incremental histogram deltas at the end of all log transmissions.
-  // Don't bother if we're going to discard current_log_.
+  // Don't bother if we're going to discard current_log.
   if (save_log) {
     CrashMetricsReporter::GetInstance()->RecordCrashMetrics();
     RecordCurrentHistograms();
   }
 
-  if (save_log) {
-    pending_log_ = current_log_;
-  }
-  current_log_ = NULL;
+  if (save_log)
+    log_manager_.StageCurrentLogForUpload();
+  else
+    log_manager_.DiscardCurrentLog();
 }
 
 void MetricsService::MakePendingLog() {
   DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
-  if (pending_log())
+  if (log_manager_.has_staged_log())
     return;
 
   switch (state_) {
@@ -416,29 +409,13 @@ void MetricsService::MakePendingLog() {
       return;
   }
 
-  DCHECK(pending_log());
+  DCHECK(log_manager_.has_staged_log());
 }
 
 bool MetricsService::TransmissionPermitted() const {
   // If the user forbids uploading that's their business, and we don't upload
   // anything.
   return user_permits_upload_;
-}
-
-std::string MetricsService::PrepareLogSubmissionString() {
-  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
-
-  MakePendingLog();
-  DCHECK(pending_log());
-  if (pending_log_== NULL) {
-    return std::string();
-  }
-
-  pending_log_->CloseLog();
-  std::string pending_log_text = pending_log_->GetEncodedLogString();
-  DCHECK(!pending_log_text.empty());
-  DiscardPendingLog();
-  return pending_log_text;
 }
 
 bool MetricsService::UploadData() {
@@ -453,23 +430,20 @@ bool MetricsService::UploadData() {
     return false;
   }
 
-  std::string pending_log_text = PrepareLogSubmissionString();
-  DCHECK(!pending_log_text.empty());
-
-  // Allow security conscious users to see all metrics logs that we send.
-  VLOG(1) << "METRICS LOG: " << pending_log_text;
+  MakePendingLog();
+  DCHECK(log_manager_.has_staged_log());
 
   bool ret = true;
 
-  if (!Bzip2Compress(pending_log_text, &compressed_log_)) {
+  if (log_manager_.staged_log_text().empty()) {
     NOTREACHED() << "Failed to compress log for transmission.";
     ret = false;
   } else {
     HRESULT hr = ChromeFrameMetricsDataUploader::UploadDataHelper(
-        compressed_log_);
+        log_manager_.staged_log_text());
     DCHECK(SUCCEEDED(hr));
   }
-  DiscardPendingLog();
+  log_manager_.DiscardStagedLog();
 
   currently_uploading = 0;
   return ret;

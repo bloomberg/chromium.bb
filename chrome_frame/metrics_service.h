@@ -103,9 +103,6 @@ class MetricsService : public MetricsServiceBase {
     return reporting_active_;
   }
 
-  // Convert pending_log_ to XML in pending_log_text_ for transmission.
-  std::string PrepareLogSubmissionString();
-
   // Upload pending data to the server by converting it to XML and compressing
   // it. Returns true on success.
   bool UploadData();

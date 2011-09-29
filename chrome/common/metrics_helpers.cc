@@ -4,12 +4,6 @@
 
 #include "chrome/common/metrics_helpers.h"
 
-#if defined(USE_SYSTEM_LIBBZ2)
-#include <bzlib.h>
-#else
-#include "third_party/bzip2/bzlib.h"
-#endif
-
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
@@ -21,6 +15,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/metrics_log_manager.h"
 #include "googleurl/src/gurl.h"
 #include "libxml/xmlwriter.h"
 
@@ -416,79 +411,21 @@ void MetricsLogBase::RecordHistogramDelta(
 
 
 // MetricsServiceBase
-MetricsServiceBase::MetricsServiceBase()
-    : pending_log_(NULL),
-      compressed_log_(),
-      current_log_(NULL) {
+MetricsServiceBase::MetricsServiceBase() {
 }
 
 MetricsServiceBase::~MetricsServiceBase() {
-  if (pending_log_) {
-    delete pending_log_;
-    pending_log_ = NULL;
-  }
-  if (current_log_) {
-    delete current_log_;
-    current_log_ = NULL;
-  }
-}
-
-// This implementation is based on the Firefox MetricsService implementation.
-bool MetricsServiceBase::Bzip2Compress(const std::string& input,
-                                       std::string* output) {
-  bz_stream stream = {0};
-  // As long as our input is smaller than the bzip2 block size, we should get
-  // the best compression.  For example, if your input was 250k, using a block
-  // size of 300k or 500k should result in the same compression ratio.  Since
-  // our data should be under 100k, using the minimum block size of 100k should
-  // allocate less temporary memory, but result in the same compression ratio.
-  int result = BZ2_bzCompressInit(&stream,
-                                  1,   // 100k (min) block size
-                                  0,   // quiet
-                                  0);  // default "work factor"
-  if (result != BZ_OK) {  // out of memory?
-    return false;
-  }
-
-  output->clear();
-
-  stream.next_in = const_cast<char*>(input.data());
-  stream.avail_in = static_cast<int>(input.size());
-  // NOTE: we don't need a BZ_RUN phase since our input buffer contains
-  //       the entire input
-  do {
-    output->resize(output->size() + 1024);
-    stream.next_out = &((*output)[stream.total_out_lo32]);
-    stream.avail_out = static_cast<int>(output->size()) - stream.total_out_lo32;
-    result = BZ2_bzCompress(&stream, BZ_FINISH);
-  } while (result == BZ_FINISH_OK);
-  if (result != BZ_STREAM_END)  // unknown failure?
-    return false;
-  result = BZ2_bzCompressEnd(&stream);
-  DCHECK(result == BZ_OK);
-
-  output->resize(stream.total_out_lo32);
-
-  return true;
-}
-
-void MetricsServiceBase::DiscardPendingLog() {
-  if (pending_log_) {  // Shutdown might have deleted it!
-    delete pending_log_;
-    pending_log_ = NULL;
-  }
-  compressed_log_.clear();
 }
 
 void MetricsServiceBase::RecordCurrentHistograms() {
-  DCHECK(current_log_);
+  DCHECK(log_manager_.current_log());
   TransmitAllHistograms(base::Histogram::kNoFlags, true);
 }
 
 void MetricsServiceBase::TransmitHistogramDelta(
       const base::Histogram& histogram,
       const base::Histogram::SampleSet& snapshot) {
-  current_log_->RecordHistogramDelta(histogram, snapshot);
+  log_manager_.current_log()->RecordHistogramDelta(histogram, snapshot);
 }
 
 void MetricsServiceBase::InconsistencyDetected(int problem) {
