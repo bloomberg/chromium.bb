@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_notification_types.h"
@@ -73,9 +74,9 @@ void BackgroundModeManager::BackgroundModeData::ExecuteCommand(int item) {
       // Do nothing. This is just a label.
       break;
     default:
-      Browser* browser = GetBrowserWindow();
+      // Launch the app associated with this item.
       const Extension* extension = applications_->GetExtension(item);
-      browser->OpenApplicationTab(profile_, extension, NEW_FOREGROUND_TAB);
+      BackgroundModeManager::LaunchBackgroundApplication(profile_, extension);
       break;
   }
 }
@@ -226,6 +227,18 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // profile should be added to the status icon if one currently exists.
   if (in_background_mode_ && status_icon_)
     UpdateStatusTrayIconContextMenu();
+}
+
+// static
+void BackgroundModeManager::LaunchBackgroundApplication(
+    Profile* profile,
+    const Extension* extension) {
+  ExtensionService* service = profile->GetExtensionService();
+  extension_misc::LaunchContainer launch_container =
+      service->extension_prefs()->GetLaunchContainer(
+          extension, ExtensionPrefs::LAUNCH_REGULAR);
+  Browser::OpenApplication(profile, extension, launch_container,
+                           NEW_FOREGROUND_TAB);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

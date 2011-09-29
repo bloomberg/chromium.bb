@@ -684,8 +684,13 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
                                          WindowOpenDisposition disposition) {
   Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
   TabContents* contents = NULL;
-  if (!browser)
-    return contents;
+  if (!browser) {
+    // No browser for this profile, need to open a new one.
+    browser = Browser::Create(profile);
+    browser->window()->Show();
+    // There's no current tab in this browser window, so add a new one.
+    disposition = NEW_FOREGROUND_TAB;
+  }
 
   // Check the prefs for overridden mode.
   ExtensionService* extension_service = profile->GetExtensionService();

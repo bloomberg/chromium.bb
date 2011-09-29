@@ -52,6 +52,9 @@ class BackgroundModeManager
 
   virtual void RegisterProfile(Profile* profile);
 
+  static void LaunchBackgroundApplication(Profile* profile,
+                                          const Extension* extension);
+
  private:
   friend class TestBackgroundModeManager;
   friend class BackgroundModeManagerTest;

@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background/background_application_list_model.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/command_updater.h"
@@ -903,13 +904,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   BackgroundApplicationListModel applications(profile);
   DCHECK(tag >= 0 &&
          tag < static_cast<int>(applications.size()));
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser) {
-    Browser::OpenEmptyWindow(profile);
-    browser = BrowserList::GetLastActive();
-  }
   const Extension* extension = applications.GetExtension(tag);
-  browser->OpenApplicationTab(profile, extension, NEW_FOREGROUND_TAB);
+  BackgroundModeManager::LaunchBackgroundApplication(profile, extension);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
