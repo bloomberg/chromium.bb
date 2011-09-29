@@ -114,7 +114,7 @@ void ExamplesMain::SetStatus(const std::string& status) {
 }
 
 void ExamplesMain::AddExample(ExampleBase* example) {
-  tabbed_pane_->AddTab(UTF8ToWide(example->example_title()),
+  tabbed_pane_->AddTab(UTF8ToUTF16(example->example_title()),
                        example->GetExampleView());
 }
 

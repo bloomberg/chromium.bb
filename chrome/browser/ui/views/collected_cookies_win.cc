@@ -212,10 +212,10 @@ void CollectedCookiesWin::Init() {
   layout->AddView(tabbed_pane);
   // NOTE: the panes need to be added after the tabbed_pane has been added to
   // its parent.
-  std::wstring label_allowed = UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL));
-  std::wstring label_blocked = UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_TAB_LABEL));
+  string16 label_allowed = l10n_util::GetStringUTF16(
+      IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL);
+  string16 label_blocked = l10n_util::GetStringUTF16(
+      IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_TAB_LABEL);
   tabbed_pane->AddTab(label_allowed, CreateAllowedPane());
   tabbed_pane->AddTab(label_blocked, CreateBlockedPane());
   tabbed_pane->SelectTabAt(0);

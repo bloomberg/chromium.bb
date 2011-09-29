@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_
 #define VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_
 #pragma once
+
+#include "base/string16.h"
 
 namespace views {
 
@@ -17,12 +19,12 @@ class NativeTabbedPaneWrapper {
  public:
   // The TabbedPane calls this when it is destroyed to clean up the wrapper
   // object.
-  virtual ~NativeTabbedPaneWrapper() { }
+  virtual ~NativeTabbedPaneWrapper() {}
 
   // Adds a new tab at the end of this TabbedPane with the specified |title|.
   // |contents| is the view displayed when the tab is selected and is owned by
   // the TabbedPane.
-  virtual void AddTab(const std::wstring& title, View* contents) = 0;
+  virtual void AddTab(const string16& title, View* contents) = 0;
 
   // Adds a new tab at the specified |index| with the specified |title|.
   // |contents| is the view displayed when the tab is selected and is owned by
@@ -31,7 +33,7 @@ class NativeTabbedPaneWrapper {
   // |select_if_first_tab| you need to explicitly invoke SelectTabAt, otherwise
   // the tabbed pane will not have a valid selection.
   virtual void AddTabAtIndex(int index,
-                             const std::wstring& title,
+                             const string16& title,
                              View* contents,
                              bool select_if_first_tab) = 0;
 

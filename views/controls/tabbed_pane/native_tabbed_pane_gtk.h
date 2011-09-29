@@ -23,9 +23,9 @@ class NativeTabbedPaneGtk : public NativeControlGtk,
   virtual void CreateNativeControl() OVERRIDE;
 
   // NativeTabbedPaneWrapper:
-  virtual void AddTab(const std::wstring& title, View* contents) OVERRIDE;
+  virtual void AddTab(const string16& title, View* contents) OVERRIDE;
   virtual void AddTabAtIndex(int index,
-                             const std::wstring& title,
+                             const string16& title,
                              View* contents,
                              bool select_if_first_tab) OVERRIDE;
   virtual View* RemoveTabAtIndex(int index) OVERRIDE;
@@ -43,7 +43,7 @@ class NativeTabbedPaneGtk : public NativeControlGtk,
 
  private:
   void DoAddTabAtIndex(int index,
-                       const std::wstring& title,
+                       const string16& title,
                        View* contents,
                        bool select_if_first_tab);
 

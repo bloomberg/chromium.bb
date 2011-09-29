@@ -695,8 +695,8 @@ void FocusTraversalTest::InitContentView() {
   style_tab_->set_id(kStyleContainerID);
   content_view_->AddChildView(style_tab_);
   style_tab_->SetBounds(10, y, 210, 100);
-  style_tab_->AddTab(L"Style", contents);
-  style_tab_->AddTab(L"Other", new View());
+  style_tab_->AddTab(ASCIIToUTF16("Style"), contents);
+  style_tab_->AddTab(ASCIIToUTF16("Other"), new View());
 
   // Right bottom box with search.
   contents = new View();
@@ -938,7 +938,7 @@ TEST_F(FocusManagerTest, FAILS_FocusNativeControls) {
   content_view_->AddChildView(textfield);
   content_view_->AddChildView(tabbed_pane);
 
-  tabbed_pane->AddTab(L"Awesome textfield", textfield2);
+  tabbed_pane->AddTab(ASCIIToUTF16("Awesome textfield"), textfield2);
 
   // Simulate the native view getting the native focus (such as by user click).
   FocusNativeView(textfield->TestGetNativeControlView());
@@ -1049,8 +1049,8 @@ TEST_F(FocusManagerTest, ContainsView) {
   content_view_->AddChildView(tabbed_pane);
   // Adding a View inside a TabbedPane to test the case of nested root view.
 
-  tabbed_pane->AddTab(L"Awesome tab", nested_tabbed_pane);
-  nested_tabbed_pane->AddTab(L"Awesomer tab", tab_button);
+  tabbed_pane->AddTab(ASCIIToUTF16("Awesome tab"), nested_tabbed_pane);
+  nested_tabbed_pane->AddTab(ASCIIToUTF16("Awesomer tab"), tab_button);
 
   EXPECT_TRUE(GetFocusManager()->ContainsView(view));
   EXPECT_TRUE(GetFocusManager()->ContainsView(tabbed_pane));
@@ -1739,7 +1739,7 @@ TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
 
   NativeButtonDtorTracked* button = new NativeButtonDtorTracked(L"button",
                                                                 &dtor_tracker_);
-  tabbed_pane->AddTab(L"Awesome tab", button);
+  tabbed_pane->AddTab(ASCIIToUTF16("Awesome tab"), button);
 
   // Close the window.
   window_->Close();

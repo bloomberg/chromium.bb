@@ -38,13 +38,13 @@ View* TabbedPane::GetSelectedTab() {
   return native_tabbed_pane_->GetSelectedTab();
 }
 
-void TabbedPane::AddTab(const std::wstring& title, View* contents) {
+void TabbedPane::AddTab(const string16& title, View* contents) {
   native_tabbed_pane_->AddTab(title, contents);
   PreferredSizeChanged();
 }
 
 void TabbedPane::AddTabAtIndex(int index,
-                               const std::wstring& title,
+                               const string16& title,
                                View* contents,
                                bool select_if_first_tab) {
   native_tabbed_pane_->AddTabAtIndex(index, title, contents,

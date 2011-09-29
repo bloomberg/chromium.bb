@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
@@ -68,9 +69,9 @@ class TabbedPaneTest : public testing::Test,
 // Tests that TabbedPane::GetPreferredSize() and TabbedPane::Layout().
 TEST_F(TabbedPaneTest, SizeAndLayout) {
   View* child1 = new FixedSizeView(gfx::Size(20, 10));
-  tabbed_pane_->AddTab(L"tab1", child1);
+  tabbed_pane_->AddTab(ASCIIToUTF16("tab1"), child1);
   View* child2 = new FixedSizeView(gfx::Size(5, 5));
-  tabbed_pane_->AddTab(L"tab2", child2);
+  tabbed_pane_->AddTab(ASCIIToUTF16("tab2"), child2);
   tabbed_pane_->SelectTabAt(0);
 
   // Check that the preferred size is larger than the largest child.
@@ -94,14 +95,14 @@ TEST_F(TabbedPaneTest, SizeAndLayout) {
 
 TEST_F(TabbedPaneTest, AddRemove) {
   View* tab0 = new View;
-  tabbed_pane_->AddTab(L"tab0", tab0);
+  tabbed_pane_->AddTab(ASCIIToUTF16("tab0"), tab0);
   EXPECT_EQ(tab0, tabbed_pane_->GetSelectedTab());
   EXPECT_EQ(0, tabbed_pane_->GetSelectedTabIndex());
 
   // Add more 3 tabs.
-  tabbed_pane_->AddTab(L"tab1", new View);
-  tabbed_pane_->AddTab(L"tab2", new View);
-  tabbed_pane_->AddTab(L"tab3", new View);
+  tabbed_pane_->AddTab(ASCIIToUTF16("tab1"), new View);
+  tabbed_pane_->AddTab(ASCIIToUTF16("tab2"), new View);
+  tabbed_pane_->AddTab(ASCIIToUTF16("tab3"), new View);
   EXPECT_EQ(4, tabbed_pane_->GetTabCount());
 
   // Note: AddTab() doesn't select a tab if the tabbed pane isn't empty.
@@ -118,7 +119,7 @@ TEST_F(TabbedPaneTest, AddRemove) {
   // tab.
   EXPECT_EQ(2, tabbed_pane_->GetSelectedTabIndex());
 
-  tabbed_pane_->AddTabAtIndex(0, L"tab4", new View, true);
+  tabbed_pane_->AddTabAtIndex(0, ASCIIToUTF16("tab4"), new View, true);
 
   // Assert that even adding a new tab, the tabbed pane doesn't change the
   // selection, i.e., it doesn't select the new one.

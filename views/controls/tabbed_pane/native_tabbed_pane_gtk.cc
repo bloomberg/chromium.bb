@@ -47,12 +47,12 @@ void NativeTabbedPaneGtk::CreateNativeControl() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabbedPaneGtk, NativeTabbedPaneWrapper implementation:
 
-void NativeTabbedPaneGtk::AddTab(const std::wstring& title, View* contents) {
+void NativeTabbedPaneGtk::AddTab(const string16& title, View* contents) {
   AddTabAtIndex(GetTabCount(), title, contents, true);
 }
 
 void NativeTabbedPaneGtk::AddTabAtIndex(int index,
-                                        const std::wstring& title,
+                                        const string16& title,
                                         View* contents,
                                         bool select_if_first_tab) {
   DCHECK(native_view());
@@ -146,7 +146,7 @@ FocusTraversable* NativeTabbedPaneGtk::GetFocusTraversable() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabbedPaneGtk, private:
 void NativeTabbedPaneGtk::DoAddTabAtIndex(int index,
-                                          const std::wstring& title,
+                                          const string16& title,
                                           View* contents,
                                           bool select_if_first_tab) {
   int tab_count = GetTabCount();
@@ -175,7 +175,7 @@ void NativeTabbedPaneGtk::DoAddTabAtIndex(int index,
   GtkWidget* parent = gtk_widget_get_parent(page);
   gtk_container_remove(GTK_CONTAINER(parent), page);
 
-  GtkWidget* label = gtk_label_new(WideToUTF8(title).c_str());
+  GtkWidget* label = gtk_label_new(UTF16ToUTF8(title).c_str());
   gtk_widget_show(label);
   gtk_notebook_insert_page(GTK_NOTEBOOK(native_view()),
                            page,

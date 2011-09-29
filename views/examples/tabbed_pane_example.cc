@@ -35,8 +35,8 @@ void TabbedPaneExample::CreateExampleView(views::View* container) {
   layout->AddView(tabbed_pane_);
 
   // Create a few tabs with a button first.
-  AddButton(L"Tab 1");
-  AddButton(L"Tab 2");
+  AddButton("Tab 1");
+  AddButton("Tab 2");
 
   // Add control buttons horizontally.
   const int button_column = 1;
@@ -56,10 +56,10 @@ void TabbedPaneExample::CreateExampleView(views::View* container) {
 void TabbedPaneExample::ButtonPressed(views::Button* sender,
                                       const views::Event& event) {
   if (sender == add_) {
-    AddButton(L"Added");
+    AddButton("Added");
   } else if (sender == add_at_) {
     const std::wstring label = L"Added at 1";
-    tabbed_pane_->AddTabAtIndex(1, label,
+    tabbed_pane_->AddTabAtIndex(1, WideToUTF16Hack(label),
                                 new views::TextButton(NULL, label), true);
   } else if (sender == remove_at_) {
     if (tabbed_pane_->GetTabCount() > 1)
@@ -82,9 +82,9 @@ void TabbedPaneExample::PrintStatus() {
                            tabbed_pane_->GetSelectedTabIndex());
 }
 
-void TabbedPaneExample::AddButton(const std::wstring& label) {
-  views::TextButton* button = new views::TextButton(NULL, label);
-  tabbed_pane_->AddTab(label, button);
+void TabbedPaneExample::AddButton(const std::string& label) {
+  views::TextButton* button = new views::TextButton(NULL, ASCIIToWide(label));
+  tabbed_pane_->AddTab(ASCIIToUTF16(label), button);
 }
 
 }  // namespace examples

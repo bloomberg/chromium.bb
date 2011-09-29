@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
@@ -130,11 +131,12 @@ NativeTabbedPaneWin::~NativeTabbedPaneWin() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabbedPaneWin, NativeTabbedPaneWrapper implementation:
 
-void NativeTabbedPaneWin::AddTab(const std::wstring& title, View* contents) {
+void NativeTabbedPaneWin::AddTab(const string16& title, View* contents) {
   AddTabAtIndex(static_cast<int>(tab_views_.size()), title, contents, true);
 }
 
-void NativeTabbedPaneWin::AddTabAtIndex(int index, const std::wstring& title,
+void NativeTabbedPaneWin::AddTabAtIndex(int index,
+                                        const string16& title,
                                         View* contents,
                                         bool select_if_first_tab) {
   DCHECK(index <= static_cast<int>(tab_views_.size()));
@@ -163,8 +165,7 @@ void NativeTabbedPaneWin::AddTabAtIndex(int index, const std::wstring& title,
   }
 }
 
-void NativeTabbedPaneWin::AddNativeTab(int index,
-                                       const std::wstring &title) {
+void NativeTabbedPaneWin::AddNativeTab(int index, const string16& title) {
   TCITEM tcitem;
   tcitem.mask = TCIF_TEXT;
 
@@ -174,7 +175,7 @@ void NativeTabbedPaneWin::AddNativeTab(int index,
     tcitem.mask |= TCIF_RTLREADING;
   }
 
-  tcitem.pszText = const_cast<wchar_t*>(title.c_str());
+  tcitem.pszText = const_cast<wchar_t*>(UTF16ToWide(title).c_str());
   int result = TabCtrl_InsertItem(native_view(), index, &tcitem);
   DCHECK(result != -1);
 }

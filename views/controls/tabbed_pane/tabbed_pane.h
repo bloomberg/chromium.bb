@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/string16.h"
 #include "views/view.h"
 
 namespace views {
@@ -41,7 +42,7 @@ class VIEWS_EXPORT TabbedPane : public View {
   // Adds a new tab at the end of this TabbedPane with the specified |title|.
   // |contents| is the view displayed when the tab is selected and is owned by
   // the TabbedPane.
-  void AddTab(const std::wstring& title, View* contents);
+  void AddTab(const string16& title, View* contents);
 
   // Adds a new tab at |index| with |title|.
   // |contents| is the view displayed when the tab is selected and is owned by
@@ -50,7 +51,7 @@ class VIEWS_EXPORT TabbedPane : public View {
   // |select_if_first_tab| you need to explicitly invoke SelectTabAt, otherwise
   // the tabbed pane will not have a valid selection.
   void AddTabAtIndex(int index,
-                     const std::wstring& title,
+                     const string16& title,
                      View* contents,
                      bool select_if_first_tab);
 
