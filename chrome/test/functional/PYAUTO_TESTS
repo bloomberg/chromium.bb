@@ -138,11 +138,6 @@
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
-      # crbug.com/95141
-      '-enterprise.EnterpriseTest.testDisable3DAPI',
-      # crbug.com/96896
-      '-enterprise.EnterpriseTest.testDisabledPlugins',
-      '-enterprise.EnterpriseTest.testEnabledPlugins',
       # crbug.com/96934
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # Some download test fails on win official builder, only thru buildbot
@@ -454,6 +449,17 @@
       '-gpu.GpuTest.testGpuWithVideo',
       # Preloaded extensions affect process count: crbug.com/94350
       '-process_count',
+	  
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      # crbug.com/95141
+      '-enterprise.EnterpriseTest.testDisable3DAPI',
+      # crbug.com/98500
+      '-enterprise.EnterpriseTestReverse.testAlwaysAuthorizePluginsDisabled',
+      # crbug.com/96896
+      '-enterprise.EnterpriseTest.testDisabledPlugins',
+      '-enterprise.EnterpriseTest.testEnabledPlugins',
     ],
 
     'mac': [
@@ -484,6 +490,8 @@
       # ==================================================
       # crbug.com/95035
       '-enterprise.EnterpriseTestReverse.testEnable3DAPI',
+      # crbug.com/98500
+      '-enterprise.EnterpriseTestReverse.testAlwaysAuthorizePluginsDisabled',
     ],
 
     'chromeos': [
