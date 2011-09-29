@@ -462,6 +462,7 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
     // chrome_content_client.cc ChromeContentClient::SandboxPlugin
     g_ChangeWindowMessageFilterEx(parent, WM_MOUSEWHEEL, MSGFLT_ALLOW, NULL);
     g_ChangeWindowMessageFilterEx(parent, WM_GESTURE, MSGFLT_ALLOW, NULL);
+    g_ChangeWindowMessageFilterEx(parent, WM_APPCOMMAND, MSGFLT_ALLOW, NULL);
     ::RemovePropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp);
   }
   ::SetParent(window, parent);

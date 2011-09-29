@@ -368,6 +368,7 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
       // Per-window message filters required on Win7 or later must be added to:
       // render_widget_host_view_win.cc RenderWidgetHostViewWin::ReparentWindow
       g_ChangeWindowMessageFilter(WM_MOUSEWHEEL, MSGFLT_ADD);
+      g_ChangeWindowMessageFilter(WM_APPCOMMAND, MSGFLT_ADD);
     }
     policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
   } else {
