@@ -4628,6 +4628,12 @@
    ...
    fun:*ExtensionSettingsStorageTest*
 }
+{
+   bug_98568
+   Memcheck:Leak
+   ...
+   fun:_ZN44WebDragDestGtkTest_NoTabContentsWrapper_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
