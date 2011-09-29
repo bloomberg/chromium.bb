@@ -13,6 +13,10 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/os_compat_android.h"
+#endif
+
 namespace base {
 
 TEST(DirReaderPosixUnittest, Read) {

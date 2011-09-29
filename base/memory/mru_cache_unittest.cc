@@ -267,5 +267,5 @@ TEST(MRUCacheTest, HashingMRUCache) {
   EXPECT_EQ(two.value, cache.Get("Second")->second.value);
   cache.ShrinkToSize(1);
   EXPECT_EQ(two.value, cache.Get("Second")->second.value);
-  EXPECT_EQ(cache.end(), cache.Get("First"));
+  EXPECT_TRUE(cache.Get("First") == cache.end());
 }
