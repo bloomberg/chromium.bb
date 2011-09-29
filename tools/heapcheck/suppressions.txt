@@ -1635,3 +1635,9 @@
    fun:ExtensionContentSettingsStore::GetEffectiveContentSetting
    fun:ExtensionContentSettingsStoreTest_*
 }
+{
+   bug_98538
+   Heapcheck:Leak
+   ...
+   fun:ExtensionSettingsStorageTest*
+}

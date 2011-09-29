@@ -4622,6 +4622,12 @@
    fun:vorbis_decode_frame
    fun:avcodec_decode_audio3
 }
+{
+   bug_98538
+   Memcheck:Leak
+   ...
+   fun:*ExtensionSettingsStorageTest*
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
