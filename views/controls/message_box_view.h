@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "views/view.h"
 
 namespace views {
@@ -37,7 +38,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
   views::Textfield* text_box() { return prompt_field_; }
 
   // Returns user entered data in the prompt field.
-  std::wstring GetInputText();
+  string16 GetInputText();
 
   // Returns true if a checkbox is selected, false otherwise. (And false if
   // the message box has no checkbox.)

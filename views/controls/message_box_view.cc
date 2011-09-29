@@ -53,10 +53,8 @@ MessageBoxView::MessageBoxView(int dialog_flags,
 
 MessageBoxView::~MessageBoxView() {}
 
-std::wstring MessageBoxView::GetInputText() {
-  if (prompt_field_)
-    return UTF16ToWideHack(prompt_field_->text());
-  return std::wstring();
+string16 MessageBoxView::GetInputText() {
+  return prompt_field_ ? prompt_field_->text() : string16();
 }
 
 bool MessageBoxView::IsCheckBoxSelected() {

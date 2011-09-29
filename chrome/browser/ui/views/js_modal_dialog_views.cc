@@ -109,7 +109,7 @@ bool JSModalDialogViews::Cancel() {
 }
 
 bool JSModalDialogViews::Accept() {
-  parent_->OnAccept(WideToUTF16Hack(message_box_view_->GetInputText()),
+  parent_->OnAccept(message_box_view_->GetInputText(),
                     message_box_view_->IsCheckBoxSelected());
   return true;
 }
