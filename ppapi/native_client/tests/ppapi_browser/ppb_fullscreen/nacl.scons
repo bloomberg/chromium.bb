@@ -46,7 +46,8 @@ env.AddNodeToTestSuite(
     # New PPB_Fullscreen_Dev implementation only allows transitions to
     # fullscreen after a user gesture. Until PPB_Testing has the capabilities
     # to trigger those, we cannot test this automatically.
-    # TODO(polina): update the test to work manually with the new
-    # implementation while we are sorting out the above issue.
+    # The test can still be run manually. Once it pauses at
+    # TestSetFullscreenTrue, click on the purple square to generate a user
+    # gesture needed to trigger fullscreen testing.
     #is_broken=(env.PPAPIBrowserTesterIsBroken() or env.Bit('host_mac')))
     is_broken=True)

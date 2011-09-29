@@ -14,7 +14,9 @@
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
@@ -35,9 +37,19 @@ PP_Size kSize1920x1200 = PP_MakeSize(1920, 1200);   // WUXGA: 24" HP, 17" MB Pro
 PP_Size kSize2560x1600 = PP_MakeSize(2560, 1600);   // WQXGA: 30" HP Monitor
 PP_Size kSize2560x2048 = PP_MakeSize(2560, 2048);   // QSXGA
 
-bool IsSizeRange(PP_Size size, PP_Size min_size, PP_Size max_size) {
+bool IsSizeInRange(PP_Size size, PP_Size min_size, PP_Size max_size) {
   return (min_size.width <= size.width && size.width <= max_size.width &&
           min_size.height <= size.height && size.height <= max_size.height);
+}
+
+bool IsSizeEqual(PP_Size size, PP_Size expected) {
+  return IsSizeInRange(size, expected, expected);
+}
+
+bool IsRectEqual(PP_Rect position, PP_Rect expected) {
+  return (position.point.x == expected.point.x &&
+          position.point.y == expected.point.y &&
+          IsSizeEqual(position.size, expected.size));
 }
 
 PP_Resource g_graphics2d = kInvalidResource;
@@ -77,32 +89,19 @@ void TestIsFullscreenFalse() {
 
 // Test
 //   PP_Bool (*SetFullscreen)(PP_Instance instance, PP_Bool fullscreen);
-
 bool g_fullscreen_pending = false;
+bool g_normal_pending = false;
 
-// TODO(polina): investigate:
-// -- this error
-//    ERROR:render_widget_fullscreen_pepper.cc(142)] Not implemented reached in
-//    virtual void<unnamed>::PepperWidget::setFocus(bool)
-// -- flakiness: when running manually, sometimes the screen goes black after
-// this function, sometimes only after the 2nd call or not at all.
-// Sometimes TestIsFullscreenTrue fails on false after this completes in
-// DidChangeView because another DidChangeView with non-fullscreen
-// position/clip gets fired *before* TestSetFullscreenFalse is called.
 void TestSetFullscreenTrue() {
   printf("--- TestSetFullscreenTrue\n");
   const PPB_Fullscreen_Dev* ppb = PPBFullscreenDev();
   if (ppb->IsFullscreen(pp_instance()) == PP_FALSE) {
-    EXPECT(CreateGraphics2D(&g_graphics2d));
-    // The transition is asynchronous and ends at the next DidChangeView().
-    g_fullscreen_pending = true;
-    EXPECT(ppb->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
-    EXPECT(ppb->IsFullscreen(pp_instance()) == PP_FALSE);
-    // No 2D or 3D device can be bound during transition.
-    EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
-    EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) ==
-           PP_FALSE);
-    // The transition ends at the next DidChangeView().
+    // Transition to fullscreen.
+    // This can only be done when processing a user gesture -
+    // see HandleInputEvent().
+    EXPECT(PPBInputEvent()->
+           RequestInputEvents(pp_instance(),
+                              PP_INPUTEVENT_CLASS_MOUSE) == PP_OK);
   } else {
     // No change.
     EXPECT(ppb->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
@@ -113,14 +112,25 @@ void TestSetFullscreenTrue() {
 
 void TestSetFullscreenFalse() {
   printf("--- TestSetFullscreenFalse\n");
-  EXPECT(CreateGraphics2D(&g_graphics2d));
-  // The transition is syncrhonous.
-  EXPECT(PPBFullscreenDev()->SetFullscreen(pp_instance(), PP_FALSE) == PP_TRUE);
-  EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
-  // 2D and 3D device can be bound right away.
-  EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) == PP_TRUE);
-  PPBCore()->ReleaseResource(g_graphics2d);
-  TEST_PASSED;
+  const PPB_Fullscreen_Dev* ppb = PPBFullscreenDev();
+  if (ppb->IsFullscreen(pp_instance()) == PP_TRUE) {
+    // Transition out of fullscreen.
+    EXPECT(CreateGraphics2D(&g_graphics2d));
+    // The transition is asynchronous and ends at the next DidChangeView().
+    g_normal_pending = true;
+    EXPECT(ppb->SetFullscreen(pp_instance(), PP_FALSE) == PP_TRUE);
+    EXPECT(ppb->IsFullscreen(pp_instance()) == PP_TRUE);
+    // No 2D or 3D device can be bound during transition.
+    EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
+    EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) ==
+           PP_FALSE);
+    // The transition ends at the next DidChangeView().
+  } else {
+    // No change.
+    EXPECT(ppb->SetFullscreen(pp_instance(), PP_FALSE) == PP_TRUE);
+    EXPECT(ppb->IsFullscreen(pp_instance()) == PP_FALSE);
+    TEST_PASSED;
+  }
 }
 
 // Test
@@ -129,7 +139,7 @@ void TestSetFullscreenFalse() {
 void TestGetScreenSizeHelper(PP_Size min_size, PP_Size max_size) {
   PP_Size size = PP_MakeSize(0, 0);
   EXPECT(PPBFullscreenDev()->GetScreenSize(pp_instance(), &size) == PP_TRUE);
-  EXPECT(IsSizeRange(size, min_size, max_size));
+  EXPECT(IsSizeInRange(size, min_size, max_size));
 }
 
 void TestGetScreenSize() {
@@ -151,6 +161,38 @@ void TestGetScreenSize1920x1200() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PPP_InputEvent
+////////////////////////////////////////////////////////////////////////////////
+
+// Fullscreen transition requests are only possible when processing a user
+// gesture (e.g. mouse click).
+PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource event) {
+  PP_InputEvent_Type event_type = PPBInputEvent()->GetType(event);
+  if (event_type != PP_INPUTEVENT_TYPE_MOUSEDOWN &&
+      event_type != PP_INPUTEVENT_TYPE_MOUSEUP)
+    return PP_FALSE;  // Not a mouse click.
+  printf("--- PPP_InputEvent::HandleInputEvent\n");
+  // We got the user gesture we needed, no need to handle events anymore.
+  PPBInputEvent()->ClearInputEventRequest(pp_instance(),
+                                          PP_INPUTEVENT_CLASS_MOUSE);
+  EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
+  EXPECT(CreateGraphics2D(&g_graphics2d));
+  g_fullscreen_pending = true;
+  EXPECT(PPBFullscreenDev()->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
+  EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
+  // No 2D or 3D device can be bound during transition.
+  EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
+  EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) ==
+         PP_FALSE);
+  // The transition ends at the next DidChangeView().
+  return PP_FALSE;
+}
+
+const PPP_InputEvent ppp_input_event_interface = {
+    &HandleInputEvent
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // PPP_Instance
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -160,17 +202,23 @@ PP_Size GetScreenSize() {
   return screen_size;
 }
 
-bool IsFullscreenView(const PP_Rect* position, const PP_Rect* clip) {
+bool HasMidScreen(const PP_Rect* position) {
   static PP_Size screen_size = GetScreenSize();
-  return (position->point.x == 0 && position->point.y == 0 &&
-          position->size.width == screen_size.width &&
-          position->size.height == screen_size.height &&
-          clip->point.x == 0 && clip->point.y == 0 &&
-          clip->size.width == screen_size.width &&
-          clip->size.height == screen_size.height);
+  static int32_t mid_x = screen_size.width / 2;
+  static int32_t mid_y = screen_size.height / 2;
+  PP_Point origin = position->point;
+  PP_Size size = position->size;
+  return (origin.x < mid_x && mid_x < origin.x + size.width &&
+          origin.y < mid_y && mid_y < origin.y + size.height);
 }
 
-// DidChangeView completes transition to fullscreen mode.
+// DidChangeView completes transition to/from fullscreen mode.
+// In fact, we get two of them when going to fullscreen, one when the plugin
+// is placed in the middle of the window and one when the window is resized,
+// placing the plugin in the middle of the screen.
+// The size of the plugin is not affected.
+bool g_saw_first_didchangeview = false;
+PP_Rect g_normal_position = PP_MakeRectFromXYWH(0, 0, 0, 0);
 void DidChangeView(PP_Instance instance,
                    const struct PP_Rect* position,
                    const struct PP_Rect* clip) {
@@ -182,15 +230,40 @@ void DidChangeView(PP_Instance instance,
          position->size.width, position->size.height,
          clip->point.x, clip->point.y,
          clip->size.width, clip->size.height);
-  if (!g_fullscreen_pending || !IsFullscreenView(position, clip))
-    return;
-  g_fullscreen_pending = false;
-  EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_TRUE);
-  EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
-  // We should now be able to bind 2D and 3D devices.
-  EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) == PP_TRUE);
-  PPBCore()->ReleaseResource(g_graphics2d);
-  PostTestMessage("TestSetFullscreenTrue", "PASSED");
+  // Remember the original position on the first DidChangeView.
+  if (g_normal_position.size.width == 0 && g_normal_position.size.height == 0) {
+    g_normal_position = PP_MakeRectFromXYWH(position->point.x,
+                                            position->point.y,
+                                            position->size.width,
+                                            position->size.height);
+  }
+
+  const char* test = NULL;
+  if (g_fullscreen_pending && !g_saw_first_didchangeview) {
+    g_saw_first_didchangeview = true;
+    EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_TRUE);
+    EXPECT(IsSizeEqual(position->size, g_normal_position.size));
+    // Wait for the 2nd DidChangeView.
+  } else if (g_fullscreen_pending) {
+    test = "TestSetFullscreenTrue";
+    g_fullscreen_pending = false;
+    g_saw_first_didchangeview = false;  // Reset.
+    EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_TRUE);
+    EXPECT(HasMidScreen(position));
+    EXPECT(IsSizeEqual(position->size, g_normal_position.size));
+  } else if (g_normal_pending) {
+    test = "TestSetFullscreenFalse";
+    g_normal_pending = false;
+    EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
+    EXPECT(IsRectEqual(*position, g_normal_position));
+  }
+  if (test != NULL) {
+    // We should now be able to bind 2D and 3D devices.
+    EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
+    EXPECT(PPBInstance()->BindGraphics(pp_instance(), g_graphics2d) == PP_TRUE);
+    PPBCore()->ReleaseResource(g_graphics2d);
+    PostTestMessage(test, "PASSED");
+  }
 }
 
 const PPP_Instance ppp_instance_interface = {
@@ -216,4 +289,6 @@ void SetupTests() {
 
 void SetupPluginInterfaces() {
   RegisterPluginInterface(PPP_INSTANCE_INTERFACE, &ppp_instance_interface);
+  RegisterPluginInterface(PPP_INPUT_EVENT_INTERFACE,
+                          &ppp_input_event_interface);
 }
