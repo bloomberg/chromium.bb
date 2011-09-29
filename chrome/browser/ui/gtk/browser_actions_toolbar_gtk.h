@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/memory/linked_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
@@ -215,7 +215,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
 
   NotificationRegistrar registrar_;
 
-  ScopedRunnableMethodFactory<BrowserActionsToolbarGtk> method_factory_;
+  base::WeakPtrFactory<BrowserActionsToolbarGtk> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsToolbarGtk);
 };

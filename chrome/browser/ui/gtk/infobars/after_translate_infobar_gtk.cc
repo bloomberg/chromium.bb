@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/gtk/infobars/after_translate_infobar_gtk.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -17,7 +18,7 @@ AfterTranslateInfoBar::AfterTranslateInfoBar(
     TabContentsWrapper* owner,
     TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(owner, delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 AfterTranslateInfoBar::~AfterTranslateInfoBar() {
@@ -80,8 +81,11 @@ void AfterTranslateInfoBar::OnOriginalLanguageModified(GtkWidget* sender) {
   // Setting the language will lead to a new translation that is going to close
   // the infobar.  This is not OK to do this from the signal handler, so we'll
   // defer it.
-  MessageLoop::current()->PostTask(FROM_HERE, method_factory_.NewRunnableMethod(
-      &AfterTranslateInfoBar::SetOriginalLanguage, index));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AfterTranslateInfoBar::SetOriginalLanguage,
+                 weak_factory_.GetWeakPtr(),
+                 index));
 }
 
 void AfterTranslateInfoBar::OnTargetLanguageModified(GtkWidget* sender) {
@@ -90,8 +94,11 @@ void AfterTranslateInfoBar::OnTargetLanguageModified(GtkWidget* sender) {
     return;
 
   // See comment in OnOriginalLanguageModified on why we use a task.
-  MessageLoop::current()->PostTask(FROM_HERE, method_factory_.NewRunnableMethod(
-      &AfterTranslateInfoBar::SetTargetLanguage, index));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AfterTranslateInfoBar::SetTargetLanguage,
+                 weak_factory_.GetWeakPtr(),
+                 index));
 }
 
 void AfterTranslateInfoBar::OnRevertPressed(GtkWidget* sender) {

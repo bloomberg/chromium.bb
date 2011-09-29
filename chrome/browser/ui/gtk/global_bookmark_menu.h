@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/ui/gtk/global_menu_owner.h"
@@ -116,7 +117,7 @@ class GlobalBookmarkMenu : public GlobalMenuOwner,
 
   ui::OwnedWidgetGtk bookmark_menu_;
 
-  ScopedRunnableMethodFactory<GlobalBookmarkMenu> method_factory_;
+  base::WeakPtrFactory<GlobalBookmarkMenu> weak_factory_;
 
   // In order to appropriately update items in the bookmark menu, without
   // forcing a rebuild, map the model's nodes to menu items.

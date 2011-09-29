@@ -7,6 +7,7 @@
 #include <dlfcn.h>
 #include <gtk/gtk.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -28,7 +29,7 @@ GlobalBookmarkMenu::GlobalBookmarkMenu(Browser* browser)
     : browser_(browser),
       profile_(browser->profile()),
       default_favicon_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(profile_);
 
   default_favicon_ = GtkThemeService::GetDefaultFavicon(true);
@@ -53,10 +54,11 @@ void GlobalBookmarkMenu::Init(GtkWidget* bookmark_menu,
 }
 
 void GlobalBookmarkMenu::RebuildMenuInFuture() {
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(&GlobalBookmarkMenu::RebuildMenu));
+      base::Bind(&GlobalBookmarkMenu::RebuildMenu,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void GlobalBookmarkMenu::RebuildMenu() {

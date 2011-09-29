@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -139,7 +140,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       slide_animation_(this),
       last_allocation_width_(-1),
       throbbing_widget_(NULL),
-      method_factory_(this),
+      weak_factory_(this),
       bookmark_bar_state_(BookmarkBar::DETACHED),
       max_height_(0) {
   Profile* profile = browser->profile();
@@ -1442,9 +1443,9 @@ void BookmarkBarGtk::OnParentSizeAllocate(GtkWidget* widget,
   // gtk_widget_queue_draw by itself does not work, despite that it claims to
   // be asynchronous.
   if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &BookmarkBarGtk::PaintEventBox));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&BookmarkBarGtk::PaintEventBox, weak_factory_.GetWeakPtr()));
   }
 }
 

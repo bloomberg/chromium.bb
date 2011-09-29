@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -229,8 +230,9 @@ void BookmarkBubbleGtk::OnFolderChanged(GtkWidget* widget) {
     // signal.  Since showing the editor also closes the bubble, delay this
     // so that GTK can unwind.  Specifically gtk_menu_shell_button_release
     // will run, and we need to keep the combo box alive until then.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        factory_.NewRunnableMethod(&BookmarkBubbleGtk::ShowEditor));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&BookmarkBubbleGtk::ShowEditor, factory_.GetWeakPtr()));
   }
 }
 

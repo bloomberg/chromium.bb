@@ -19,6 +19,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "content/common/notification_observer.h"
@@ -111,7 +112,7 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
 
   // We need to push some things on the back of the message loop, so we have
   // a factory attached to our instance to manage task lifetimes.
-  ScopedRunnableMethodFactory<BookmarkBubbleGtk> factory_;
+  base::WeakPtrFactory<BookmarkBubbleGtk> factory_;
 
   // Whether the bubble is creating or editing an existing bookmark.
   bool newly_bookmarked_;

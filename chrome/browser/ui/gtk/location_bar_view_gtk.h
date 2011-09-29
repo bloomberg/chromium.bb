@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -198,7 +199,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
     // The label's default requisition (cached so we can animate accordingly).
     GtkRequisition label_req_;
 
-    ScopedRunnableMethodFactory<ContentSettingImageViewGtk> method_factory_;
+    base::WeakPtrFactory<ContentSettingImageViewGtk> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(ContentSettingImageViewGtk);
   };
@@ -412,7 +413,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   PageTransition::Type transition_;
 
   // Used to schedule a task for the first run bubble.
-  ScopedRunnableMethodFactory<LocationBarViewGtk> first_run_bubble_;
+  base::WeakPtrFactory<LocationBarViewGtk> first_run_bubble_;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (font size / color). This is used for popups.

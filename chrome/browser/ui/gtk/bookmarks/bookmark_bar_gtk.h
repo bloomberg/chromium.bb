@@ -12,6 +12,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -408,7 +409,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // Tracks whether bookmarks can be modified.
   BooleanPrefMember edit_bookmarks_enabled_;
 
-  ScopedRunnableMethodFactory<BookmarkBarGtk> method_factory_;
+  base::WeakPtrFactory<BookmarkBarGtk> weak_factory_;
 
   BookmarkBar::State bookmark_bar_state_;
 

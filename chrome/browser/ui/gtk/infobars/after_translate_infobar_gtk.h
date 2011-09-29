@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_INFOBARS_AFTER_TRANSLATE_INFOBAR_GTK_H_
 #pragma once
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/gtk/infobars/translate_infobar_base_gtk.h"
 
 class TranslateInfoBarDelegate;
@@ -33,7 +33,7 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase {
   void SetOriginalLanguage(size_t language_index);
   void SetTargetLanguage(size_t language_index);
 
-  ScopedRunnableMethodFactory<AfterTranslateInfoBar> method_factory_;
+  base::WeakPtrFactory<AfterTranslateInfoBar> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AfterTranslateInfoBar);
 };

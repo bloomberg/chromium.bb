@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -376,7 +377,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
       resize_animation_(this),
       desired_width_(0),
       start_width_(0),
-      method_factory_(this) {
+      weak_factory_(this) {
   ExtensionService* extension_service = profile_->GetExtensionService();
   // The |extension_service| can be NULL in Incognito.
   if (!extension_service)
@@ -815,8 +816,10 @@ void BrowserActionsToolbarGtk::OnSetFocus(GtkWidget* widget,
   // call stack.
   if (!popup || popup->being_inspected())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&BrowserActionsToolbarGtk::HidePopup));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&BrowserActionsToolbarGtk::HidePopup,
+                 weak_factory_.GetWeakPtr()));
 }
 
 gboolean BrowserActionsToolbarGtk::OnGripperMotionNotify(
