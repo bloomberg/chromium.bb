@@ -119,7 +119,7 @@ void ShowCryptoModulePasswordDialog(const std::string& module_name,
                             bool retry,
                             CryptoModulePasswordReason reason,
                             const std::string& server,
-                            CryptoModulePasswordCallback* callback) {
+                            const CryptoModulePasswordCallback& callback) {
   // TODO(saintlou):
   NOTIMPLEMENTED();
 }

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 
 namespace crypto {
@@ -34,7 +34,7 @@ enum CryptoModulePasswordReason {
   kCryptoModulePasswordCertExport,
 };
 
-typedef Callback1<const char*>::Type CryptoModulePasswordCallback;
+typedef base::Callback<void(const char*)> CryptoModulePasswordCallback;
 
 // Display a dialog, prompting the user to authenticate to unlock
 // |module|. |reason| describes the purpose of the authentication and
@@ -44,7 +44,7 @@ void ShowCryptoModulePasswordDialog(const std::string& module_name,
                             bool retry,
                             CryptoModulePasswordReason reason,
                             const std::string& server,
-                            CryptoModulePasswordCallback* callback);
+                            const CryptoModulePasswordCallback& callback);
 
 // Returns a CryptoModuleBlockingPasswordDelegate to open a dialog and block
 // until returning. Should only be used on a worker thread.
@@ -59,7 +59,7 @@ crypto::CryptoModuleBlockingPasswordDelegate*
 void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
                             browser::CryptoModulePasswordReason reason,
                             const std::string& server,
-                            Callback0::Type* callback);
+                            const base::Closure& callback);
 
 // Asynchronously unlock the |cert|'s module, if necessary.  |callback| is
 // called when done (regardless if module was successfully unlocked or not).
@@ -67,7 +67,7 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
 void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
                                browser::CryptoModulePasswordReason reason,
                                const std::string& server,
-                               Callback0::Type* callback);
+                               const base::Closure& callback);
 
 }  // namespace browser
 

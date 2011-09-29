@@ -7,8 +7,8 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "crypto/crypto_module_blocking_password_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -43,12 +43,15 @@ class CryptoModuleBlockingDialogDelegate
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!event_.IsSignaled());
     event_.Reset();
+
     if (BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            NewRunnableMethod(this,
-                              &CryptoModuleBlockingDialogDelegate::ShowDialog,
-                              slot_name,
-                              retry))) {
+            base::Bind(&CryptoModuleBlockingDialogDelegate::ShowDialog,
+                       // We block on event_ until the task completes, so
+                       // there's no need to ref-count.
+                       base::Unretained(this),
+                       slot_name,
+                       retry))) {
       event_.Wait();
     }
     *cancelled = cancelled_;
@@ -60,7 +63,8 @@ class CryptoModuleBlockingDialogDelegate
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ShowCryptoModulePasswordDialog(
         slot_name, retry, reason_, server_,
-        NewCallback(this, &CryptoModuleBlockingDialogDelegate::GotPassword));
+        base::Bind(&CryptoModuleBlockingDialogDelegate::GotPassword,
+                   base::Unretained(this)));
   }
   void GotPassword(const char* password) {
     if (password)
@@ -81,11 +85,12 @@ class CryptoModuleBlockingDialogDelegate
 // TODO(mattm): change into a constrained dialog.
 class CryptoModulePasswordDialog {
  public:
-  CryptoModulePasswordDialog(const std::string& slot_name,
-                             bool retry,
-                             browser::CryptoModulePasswordReason reason,
-                             const std::string& server,
-                             browser::CryptoModulePasswordCallback* callback);
+  CryptoModulePasswordDialog(
+      const std::string& slot_name,
+      bool retry,
+      browser::CryptoModulePasswordReason reason,
+      const std::string& server,
+      const browser::CryptoModulePasswordCallback& callback);
 
   virtual ~CryptoModulePasswordDialog() {}
 
@@ -95,7 +100,7 @@ class CryptoModulePasswordDialog {
   CHROMEGTK_CALLBACK_1(CryptoModulePasswordDialog, void, OnResponse, int);
   CHROMEGTK_CALLBACK_0(CryptoModulePasswordDialog, void, OnWindowDestroy);
 
-  scoped_ptr<browser::CryptoModulePasswordCallback> callback_;
+  browser::CryptoModulePasswordCallback callback_;
 
   GtkWidget* dialog_;
   GtkWidget* password_entry_;
@@ -108,7 +113,7 @@ CryptoModulePasswordDialog::CryptoModulePasswordDialog(
     bool retry,
     browser::CryptoModulePasswordReason reason,
     const std::string& server,
-    browser::CryptoModulePasswordCallback* callback)
+    const browser::CryptoModulePasswordCallback& callback)
     : callback_(callback) {
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE).c_str(),
@@ -192,9 +197,9 @@ void CryptoModulePasswordDialog::Show() {
 void CryptoModulePasswordDialog::OnResponse(GtkWidget* dialog,
                                             int response_id) {
   if (response_id == GTK_RESPONSE_ACCEPT)
-    callback_->Run(gtk_entry_get_text(GTK_ENTRY(password_entry_)));
+    callback_.Run(gtk_entry_get_text(GTK_ENTRY(password_entry_)));
   else
-    callback_->Run(static_cast<const char*>(NULL));
+    callback_.Run(static_cast<const char*>(NULL));
 
   // This will cause gtk to zero out the buffer.  (see
   // gtk_entry_buffer_normal_delete_text:
@@ -209,16 +214,14 @@ void CryptoModulePasswordDialog::OnWindowDestroy(GtkWidget* widget) {
 
 }  // namespace
 
-// Every post-task we do blocks, so there's no need to ref-count.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(CryptoModuleBlockingDialogDelegate);
-
 namespace browser {
 
-void ShowCryptoModulePasswordDialog(const std::string& slot_name,
-                                    bool retry,
-                                    CryptoModulePasswordReason reason,
-                                    const std::string& server,
-                                    CryptoModulePasswordCallback* callback) {
+void ShowCryptoModulePasswordDialog(
+    const std::string& slot_name,
+    bool retry,
+    CryptoModulePasswordReason reason,
+    const std::string& server,
+    const CryptoModulePasswordCallback& callback) {
   (new CryptoModulePasswordDialog(slot_name, retry, reason, server,
                                   callback))->Show();
 }

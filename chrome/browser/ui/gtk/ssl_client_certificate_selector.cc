@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -376,7 +377,8 @@ void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
       cert,
       browser::kCryptoModulePasswordClientAuth,
       cert_request_info_->host_and_port,
-      NewCallback(this, &SSLClientCertificateSelector::Unlocked));
+      base::Bind(&SSLClientCertificateSelector::Unlocked,
+                 base::Unretained(this)));
 }
 
 void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,

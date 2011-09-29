@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"  // for FileAccessProvider
 #include "base/memory/scoped_vector.h"
 #include "base/safe_strerror_posix.h"
@@ -566,8 +567,8 @@ void CertificateManagerHandler::ExportPersonalPasswordSelected(
       selected_cert_list_[0].get(),
       browser::kCryptoModulePasswordCertExport,
       "",  // unused.
-      NewCallback(this,
-                  &CertificateManagerHandler::ExportPersonalSlotsUnlocked));
+      base::Bind(&CertificateManagerHandler::ExportPersonalSlotsUnlocked,
+                 base::Unretained(this)));
 }
 
 void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
@@ -671,8 +672,8 @@ void CertificateManagerHandler::ImportPersonalFileRead(
       modules,
       browser::kCryptoModulePasswordCertImport,
       "",  // unused.
-      NewCallback(this,
-                  &CertificateManagerHandler::ImportPersonalSlotUnlocked));
+      base::Bind(&CertificateManagerHandler::ImportPersonalSlotUnlocked,
+                 base::Unretained(this)));
 }
 
 void CertificateManagerHandler::ImportPersonalSlotUnlocked() {

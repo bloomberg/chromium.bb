@@ -11,7 +11,7 @@ namespace browser {
 void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
                             browser::CryptoModulePasswordReason reason,
                             const std::string& host,
-                            Callback0::Type* callback) {
+                            const base::Closure& callback) {
   // TODO(bulach): implement me.
   NOTREACHED();
 }
@@ -19,7 +19,7 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
 void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
                                browser::CryptoModulePasswordReason reason,
                                const std::string& host,
-                               Callback0::Type* callback) {
+                               const base::Closure& callback) {
   // TODO(bulach): implement me.
   NOTREACHED();
 }
