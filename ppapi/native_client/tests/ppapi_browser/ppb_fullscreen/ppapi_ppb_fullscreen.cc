@@ -99,12 +99,13 @@ void TestSetFullscreenTrue() {
     // Transition to fullscreen.
     // This can only be done when processing a user gesture -
     // see HandleInputEvent().
+    EXPECT(ppb->SetFullscreen(pp_instance(), PP_TRUE) == PP_FALSE);
     EXPECT(PPBInputEvent()->
            RequestInputEvents(pp_instance(),
                               PP_INPUTEVENT_CLASS_MOUSE) == PP_OK);
   } else {
     // No change.
-    EXPECT(ppb->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
+    EXPECT(ppb->SetFullscreen(pp_instance(), PP_TRUE) == PP_FALSE);
     EXPECT(ppb->IsFullscreen(pp_instance()) == PP_TRUE);
     TEST_PASSED;
   }
@@ -117,8 +118,10 @@ void TestSetFullscreenFalse() {
     // Transition out of fullscreen.
     EXPECT(CreateGraphics2D(&g_graphics2d));
     // The transition is asynchronous and ends at the next DidChangeView().
-    g_normal_pending = true;
     EXPECT(ppb->SetFullscreen(pp_instance(), PP_FALSE) == PP_TRUE);
+    g_normal_pending = true;
+    // Transition is pending, so repeated requests fail.
+    EXPECT(ppb->SetFullscreen(pp_instance(), PP_FALSE) == PP_FALSE);
     EXPECT(ppb->IsFullscreen(pp_instance()) == PP_TRUE);
     // No 2D or 3D device can be bound during transition.
     EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);
@@ -127,7 +130,7 @@ void TestSetFullscreenFalse() {
     // The transition ends at the next DidChangeView().
   } else {
     // No change.
-    EXPECT(ppb->SetFullscreen(pp_instance(), PP_FALSE) == PP_TRUE);
+    EXPECT(ppb->SetFullscreen(pp_instance(), PP_FALSE) == PP_FALSE);
     EXPECT(ppb->IsFullscreen(pp_instance()) == PP_FALSE);
     TEST_PASSED;
   }
@@ -177,8 +180,10 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource event) {
                                           PP_INPUTEVENT_CLASS_MOUSE);
   EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
   EXPECT(CreateGraphics2D(&g_graphics2d));
-  g_fullscreen_pending = true;
   EXPECT(PPBFullscreenDev()->SetFullscreen(pp_instance(), PP_TRUE) == PP_TRUE);
+  g_fullscreen_pending = true;
+  // Transition is pending, so repeated requests fail.
+  EXPECT(PPBFullscreenDev()->SetFullscreen(pp_instance(), PP_TRUE) == PP_FALSE);
   EXPECT(PPBFullscreenDev()->IsFullscreen(pp_instance()) == PP_FALSE);
   // No 2D or 3D device can be bound during transition.
   EXPECT(PPBGraphics2D()->IsGraphics2D(g_graphics2d) == PP_TRUE);

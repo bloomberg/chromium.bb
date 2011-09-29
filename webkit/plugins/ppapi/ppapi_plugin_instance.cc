@@ -931,7 +931,7 @@ bool PluginInstance::IsFullscreenOrPending() {
   return desired_fullscreen_state_;
 }
 
-void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
+bool PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
 
@@ -939,7 +939,16 @@ void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
   // to (i.e. if we're already switching to fullscreen but the fullscreen
   // container isn't ready yet, don't do anything more).
   if (fullscreen == IsFullscreenOrPending())
-    return;
+    return false;
+
+  // The browser will allow us to go into fullscreen mode only when processing
+  // a user gesture. This is guaranteed to work with in-process plugins and
+  // out-of-process syncronous proxies, but might be an issue with Flash when
+  // it switches over from PPB_FlashFullscreen.
+  // TODO(polina, bbudge): make this work with asynchronous proxies.
+  WebFrame* frame = container_->element().document().frame();
+  if (fullscreen && !frame->isProcessingUserGesture())
+    return false;
 
   // Unbind current 2D or 3D graphics context.
   BindGraphics(pp_instance(), 0);
@@ -956,6 +965,7 @@ void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
     MessageLoop::current()->PostTask(
         FROM_HERE, NewRunnableMethod(this, &PluginInstance::ReportGeometry));
   }
+  return true;
 }
 
 void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
@@ -1560,8 +1570,7 @@ PP_Bool PluginInstance::FlashIsFullscreen(PP_Instance instance) {
 
 PP_Bool PluginInstance::SetFullscreen(PP_Instance instance,
                                       PP_Bool fullscreen) {
-  SetFullscreen(PP_ToBool(fullscreen), true);
-  return PP_TRUE;
+  return PP_FromBool(SetFullscreen(PP_ToBool(fullscreen), true));
 }
 
 PP_Bool PluginInstance::FlashSetFullscreen(PP_Instance instance,

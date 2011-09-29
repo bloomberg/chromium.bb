@@ -80,6 +80,8 @@ std::string TestFullscreen::TestNormalToFullscreenToNormal() {
 
   // 1. Switch to fullscreen.
   // This is only allowed within a context of a user gesture (e.g. mouse click).
+  if (screen_mode_.SetFullscreen(true))
+    return ReportError("SetFullscreen(true) outside of user gesture", true);
   // The transition is asynchronous and ends at the next DidChangeView().
   // No graphics devices can be bound while in transition.
   instance_->RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
@@ -96,8 +98,8 @@ std::string TestFullscreen::TestNormalToFullscreenToNormal() {
     return ReportError("BindGraphics() in fullscreen", false);
 
   // 2. Stay in fullscreen. No change.
-  if (!screen_mode_.SetFullscreen(true))
-    return ReportError("SetFullscreen(true) in fullscreen", false);
+  if (screen_mode_.SetFullscreen(true))
+    return ReportError("SetFullscreen(true) in fullscreen", true);
   if (!screen_mode_.IsFullscreen())
     return ReportError("IsFullscreen() in fullscreen^2", false);
 
@@ -107,6 +109,9 @@ std::string TestFullscreen::TestNormalToFullscreenToNormal() {
   normal_pending_ = true;
   if (!screen_mode_.SetFullscreen(false))
     return ReportError("SetFullscreen(false) in fullscreen", false);
+  // Normal is now pending, so repeated requests should fail.
+  if (screen_mode_.SetFullscreen(false))
+    return ReportError("SetFullscreen(false) in normal pending", true);
   if (instance_->BindGraphics(graphics2d_normal_))
     return ReportError("BindGraphics() in normal transition", true);
   if (!screen_mode_.IsFullscreen())
@@ -121,8 +126,8 @@ std::string TestFullscreen::TestNormalToFullscreenToNormal() {
     return ReportError("BindGraphics() in normal", false);
 
   // 4. Stay in normal. No change.
-  if (!screen_mode_.SetFullscreen(false))
-    return ReportError("SetFullscreen(false) in normal", false);
+  if (screen_mode_.SetFullscreen(false))
+    return ReportError("SetFullscreen(false) in normal", true);
   if (screen_mode_.IsFullscreen())
     return ReportError("IsFullscreen() in normal^2", true);
 
@@ -147,6 +152,12 @@ bool TestFullscreen::HandleInputEvent(const pp::InputEvent& event) {
   fullscreen_pending_ = true;
   if (!screen_mode_.SetFullscreen(true)) {
     FailFullscreenTest(ReportError("SetFullscreen(true) in normal", false));
+    return false;
+  }
+  // Fullscreen is now pending, so repeated requests should fail.
+  if (screen_mode_.SetFullscreen(true)) {
+    FailFullscreenTest(
+        ReportError("SetFullscreen(true) in fullscreen pending", true));
     return false;
   }
   // No graphics devices can be bound while in transition.
