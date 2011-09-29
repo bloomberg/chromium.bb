@@ -301,15 +301,6 @@ class ContentBrowserClient {
   // This can be called on any thread.
   virtual FilePath GetDefaultDownloadDirectory() = 0;
 
-  // Returns the "default" request context. There is no such thing in the world
-  // of multiple profiles, and all calls to this need to be removed.
-  virtual net::URLRequestContextGetter*
-      GetDefaultRequestContextDeprecatedCrBug64339() = 0;
-
-  // Returns the system request context, a context tied to no browser context.
-  // This is called on the UI thread.
-  virtual net::URLRequestContextGetter* GetSystemRequestContext() = 0;
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type) = 0;

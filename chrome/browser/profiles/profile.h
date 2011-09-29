@@ -20,10 +20,6 @@ namespace base {
 class Time;
 }
 
-namespace chrome {
-class ChromeContentBrowserClient;
-}
-
 namespace chromeos {
 class LibCrosServiceLibraryImpl;
 class ResetDefaultProxyConfigServiceTask;
@@ -154,7 +150,6 @@ class Profile : public content::BrowserContext {
     friend class SyncTest;
     friend class Toolbar5Importer;
     friend class TranslateManager;
-    friend class chrome::ChromeContentBrowserClient;
     friend class chromeos::LibCrosServiceLibraryImpl;
     friend class chromeos::ResetDefaultProxyConfigServiceTask;
 

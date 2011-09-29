@@ -271,16 +271,6 @@ FilePath ShellContentBrowserClient::GetDefaultDownloadDirectory() {
   return FilePath();
 }
 
-net::URLRequestContextGetter*
-ShellContentBrowserClient::GetDefaultRequestContextDeprecatedCrBug64339() {
-  return NULL;
-}
-
-net::URLRequestContextGetter*
-ShellContentBrowserClient::GetSystemRequestContext() {
-  return NULL;
-}
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int ShellContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {
