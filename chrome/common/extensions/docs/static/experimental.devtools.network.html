@@ -41,8 +41,8 @@ loaded:</p>
 chrome.experimental.devtools.network.onRequestFinished.addListener(
     function(request) {
       if (request.response.bodySize > 40*1024)
-      experimental.chrome.devtools.console.addMessage(
-          experimental.chrome.devtools.console.Severity.Warning,
+      chrome.experimental.devtools.console.addMessage(
+          chrome.experimental.devtools.console.Severity.Warning,
           "Large image: " + request.request.url);
 });
 </pre>
