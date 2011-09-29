@@ -63,8 +63,7 @@ void Layer::Add(Layer* child) {
   child->parent_ = this;
   children_.push_back(child);
 
-  if (child->fills_bounds_opaquely())
-    RecomputeHole();
+  RecomputeHole();
 }
 
 void Layer::Remove(Layer* child) {
@@ -74,8 +73,7 @@ void Layer::Remove(Layer* child) {
   children_.erase(i);
   child->parent_ = NULL;
 
-  if (child->fills_bounds_opaquely())
-    RecomputeHole();
+  RecomputeHole();
 
   child->DropTextures();
 }
@@ -221,35 +219,13 @@ void Layer::Draw() {
   texture_draw_params.opacity = combined_opacity;
   texture_draw_params.has_valid_alpha_channel = has_valid_alpha_channel();
 
-  hole_rect_ = hole_rect_.Intersect(
-      gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
-  if (hole_rect_.IsEmpty()) {
-    DrawRegion(texture_draw_params,
-               gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
-  } else {
-    // Top (above the hole).
-    DrawRegion(texture_draw_params, gfx::Rect(0,
-                                              0,
-                                              bounds_.width(),
-                                              hole_rect_.y()));
-    // Left (of the hole).
-    DrawRegion(texture_draw_params, gfx::Rect(0,
-                                              hole_rect_.y(),
-                                              hole_rect_.x(),
-                                              hole_rect_.height()));
-    // Right (of the hole).
-    DrawRegion(texture_draw_params, gfx::Rect(
-        hole_rect_.right(),
-        hole_rect_.y(),
-        bounds_.width() - hole_rect_.right(),
-        hole_rect_.height()));
+  std::vector<gfx::Rect> regions_to_draw;
+  PunchHole(gfx::Rect(gfx::Point(), bounds().size()), hole_rect_,
+            &regions_to_draw);
 
-    // Bottom (below the hole).
-    DrawRegion(texture_draw_params, gfx::Rect(
-        0,
-        hole_rect_.bottom(),
-        bounds_.width(),
-        bounds_.height() - hole_rect_.bottom()));
+  for (size_t i = 0; i < regions_to_draw.size(); ++i) {
+    if (!regions_to_draw[i].IsEmpty())
+      texture_->Draw(texture_draw_params, regions_to_draw[i]);
   }
 }
 
@@ -270,12 +246,6 @@ float Layer::GetCombinedOpacity() const {
     current = current->parent_;
   }
   return opacity;
-}
-
-void Layer::DrawRegion(const ui::TextureDrawParams& params,
-                       const gfx::Rect& region_to_draw) {
-  if (!region_to_draw.IsEmpty())
-    texture_->Draw(params, region_to_draw);
 }
 
 void Layer::UpdateLayerCanvas() {
@@ -301,21 +271,93 @@ void Layer::RecomputeHole() {
   if (type_ == LAYER_HAS_NO_TEXTURE)
     return;
 
-  // If there are no opaque child layers, hole_rect_ should remain empty.
+  // Reset to default.
   hole_rect_ = gfx::Rect();
 
+  // 1) We cannot do any hole punching if any child has a transform.
   for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->fills_bounds_opaquely() &&
-        children_[i]->GetCombinedOpacity() == 1.0f &&
-        !children_[i]->transform().HasChange()) {
+    if (children_[i]->transform().HasChange() && children_[i]->visible())
+      return;
+  }
+
+  // 2) Find the largest hole.
+  for (size_t i = 0; i < children_.size(); ++i) {
+    // Ignore non-opaque and hidden children.
+    if (!children_[i]->IsCompletelyOpaque() || !children_[i]->visible())
+      continue;
+
+    if (children_[i]->bounds().size().GetArea() > hole_rect_.size().GetArea()) {
       hole_rect_ = children_[i]->bounds();
-      break;
     }
   }
 
-  // Free up texture memory if the hole fills bounds of layer
+  // 3) Make sure hole does not intersect with non-opaque children.
+  for (size_t i = 0; i < children_.size(); ++i) {
+    // Ignore opaque and hidden children.
+    if (children_[i]->IsCompletelyOpaque() || !children_[i]->visible())
+      continue;
+
+    // Ignore non-intersecting children.
+    if (!hole_rect_.Intersects(children_[i]->bounds()))
+      continue;
+
+    // Compute surrounding fragments.
+    std::vector<gfx::Rect> fragments;
+    PunchHole(hole_rect_, children_[i]->bounds(), &fragments);
+
+    // Pick the largest surrounding fragment as the new hole.
+    hole_rect_ = fragments[0];
+    for (size_t j = 1; j < fragments.size(); ++j) {
+      if (fragments[j].size().GetArea() > hole_rect_.size().GetArea()) {
+        hole_rect_ = fragments[j];
+      }
+    }
+    DCHECK(!hole_rect_.IsEmpty());
+  }
+
+  // 4) Free up texture memory if the hole fills bounds of layer.
   if (!ShouldDraw() && !layer_updated_externally_)
     texture_ = NULL;
+}
+
+bool Layer::IsCompletelyOpaque() const {
+  return fills_bounds_opaquely() && GetCombinedOpacity() == 1.0f;
+}
+
+// static
+void Layer::PunchHole(const gfx::Rect& rect,
+                      const gfx::Rect& region_to_punch_out,
+                      std::vector<gfx::Rect>* sides) {
+  gfx::Rect trimmed_rect = rect.Intersect(region_to_punch_out);
+
+  if (trimmed_rect.IsEmpty()) {
+    sides->push_back(rect);
+    return;
+  }
+
+  // Top (above the hole).
+  sides->push_back(gfx::Rect(rect.x(),
+                             rect.y(),
+                             rect.width(),
+                             trimmed_rect.y() - rect.y()));
+
+  // Left (of the hole).
+  sides->push_back(gfx::Rect(rect.x(),
+                             trimmed_rect.y(),
+                             trimmed_rect.x() - rect.x(),
+                             trimmed_rect.height()));
+
+  // Right (of the hole).
+  sides->push_back(gfx::Rect(trimmed_rect.right(),
+                             trimmed_rect.y(),
+                             rect.right() - trimmed_rect.right(),
+                             trimmed_rect.height()));
+
+  // Bottom (below the hole).
+  sides->push_back(gfx::Rect(rect.x(),
+                             trimmed_rect.bottom(),
+                             rect.width(),
+                             rect.bottom() - trimmed_rect.bottom()));
 }
 
 void Layer::DropTextures() {

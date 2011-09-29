@@ -140,23 +140,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   // repaint.
   void SchedulePaint(const gfx::Rect& invalid_rect);
 
-  // Draws the layer with hole if hole is non empty.
-  // hole looks like:
-  //
-  //  layer____________________________
-  //  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
-  //  |xxxxxxxxxxxxx top xxxxxxxxxxxxxx|
-  //  |________________________________|
-  //  |xxxxx|                    |xxxxx|
-  //  |xxxxx|      Hole Rect     |xxxxx|
-  //  |left | (not composited)   |right|
-  //  |_____|____________________|_____|
-  //  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
-  //  |xxxxxxxxxx bottom xxxxxxxxxxxxxx|
-  //  |________________________________|
-  //
-  // Legend:
-  //   composited area: x
+  // Does drawing for the layer.
   void Draw();
 
   // Draws a tree of Layers, by calling Draw() on each in the hierarchy starting
@@ -174,10 +158,6 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   // use the combined result, but this is only temporary.
   float GetCombinedOpacity() const;
 
-  // calls Texture::Draw only if the region to be drawn is non empty
-  void DrawRegion(const ui::TextureDrawParams& params,
-                  const gfx::Rect& region_to_draw);
-
   // Called during the Draw() pass to freshen the Layer's contents from the
   // delegate.
   void UpdateLayerCanvas();
@@ -190,6 +170,28 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   // Note: For simplicity's sake, currently a hole is only created if the child
   // view has no transform with respect to its parent.
   void RecomputeHole();
+
+  // Returns true if the layer paints every pixel (fills_bounds_opaquely)
+  // and the alpha of the layer is 1.0f.
+  bool IsCompletelyOpaque() const;
+
+  // Determines the regions that don't intersect |rect| and places the
+  // result in |sides|.
+  //
+  //  rect_____________________________
+  //  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+  //  |xxxxxxxxxxxxx top xxxxxxxxxxxxxx|
+  //  |________________________________|
+  //  |xxxxx|                    |xxxxx|
+  //  |xxxxx|region_to_punch_out |xxxxx|
+  //  |left |                    |right|
+  //  |_____|____________________|_____|
+  //  |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|
+  //  |xxxxxxxxxx bottom xxxxxxxxxxxxxx|
+  //  |________________________________|
+  static void PunchHole(const gfx::Rect& rect,
+                        const gfx::Rect& region_to_punch_out,
+                        std::vector<gfx::Rect>* sides);
 
   // Drop all textures for layers below and including this one. Called when
   // the layer is removed from a hierarchy. Textures will be re-generated if
