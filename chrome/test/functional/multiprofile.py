@@ -45,7 +45,7 @@ class MultiprofileTest(pyauto.PyUITest):
         msg='New browser window did not open')
     info = self.GetBrowserInfo()
     new_profile_window = info['windows'][1]
-    self.assertEqual('profile_1', new_profile_window['profile_path'])
+    self.assertEqual('Profile 1', new_profile_window['profile_path'])
     self.assertEqual(1, len(new_profile_window['tabs']))
     self.assertEqual('chrome://newtab/', new_profile_window['tabs'][0]['url'])
 
