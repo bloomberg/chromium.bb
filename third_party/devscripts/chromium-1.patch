@@ -1,6 +1,6 @@
---- licensecheck.pl.orig	2011-09-22 10:51:25.934402455 -0700
-+++ licensecheck.pl	2011-09-22 10:45:54.585545044 -0700
-@@ -241,6 +241,12 @@ my @files = ();
+--- licensecheck.pl.orig	2011-09-29 22:37:51.668584727 +0100
++++ licensecheck.pl	2011-09-29 21:15:10.238581840 +0100
+@@ -241,6 +241,12 @@
  my @find_args = ();
  my $files_count = @ARGV;
  
@@ -13,7 +13,7 @@
  push @find_args, qw(-maxdepth 1) unless $opt_recursive;
  push @find_args, qw(-follow -type f -print);
  
-@@ -277,10 +277,6 @@
+@@ -277,10 +283,6 @@
      while (<F>) {
          last if ($. > $opt_lines);
          $content .= $_;
@@ -24,7 +24,7 @@
      }
      close(F);
  
-@@ -298,7 +294,6 @@
+@@ -298,7 +300,6 @@
  
      $license = parselicense($content);
      print "$file: ";
@@ -32,7 +32,7 @@
      print $license . "\n";
      print "  [Copyright: " . $copyright . "]\n"
        if $copyright and $opt_copyright;
-@@ -398,15 +393,11 @@
+@@ -398,15 +399,11 @@
  	$gplver = " (v$1 or later)";
      }
  
@@ -49,7 +49,7 @@
  	$license = "GENERATED FILE";
      }
  
-@@ -414,20 +405,12 @@
+@@ -414,20 +411,12 @@
  	$license = "LGPL$gplver$extrainfo $license";
      }
  
@@ -72,7 +72,7 @@
  	$license = "GPL (unversioned/unknown version) $license";
      }
  
-@@ -437,7 +420,7 @@
+@@ -437,7 +426,7 @@
  	$license = "QPL $license";
      }
  
@@ -81,7 +81,7 @@
  	$license = "MIT/X11 (BSD like) $license";
      } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files \(the Software\), to deal in the Software/) {
  	$license = "MIT/X11 (BSD like) $license";
-@@ -448,15 +431,19 @@
+@@ -448,15 +437,21 @@
      }
  
      if ($licensetext =~ /THIS SOFTWARE IS PROVIDED .*AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY/) {
@@ -101,10 +101,12 @@
 +        $license = "BSD-like $license";
 +    } elsif ($licensetext =~ /BSD terms apply/) {
 +        $license = "BSD-like $license";
++    } elsif ($licensetext =~ /GOVERNED BY A BSD-STYLE SOURCE LICENSE/) {
++        $license = "BSD-like $license";
      }
  
      if ($licensetext =~ /Mozilla Public License Version ([^ ]+)/) {
-@@ -495,7 +482,7 @@
+@@ -495,7 +490,7 @@
  	$license = "SGI Free Software License B $license";
      }
  
@@ -113,7 +115,7 @@
  	$license = "Public domain";
      }
  
-@@ -503,6 +490,10 @@
+@@ -503,6 +498,10 @@
  	$license = "CDDL " . ($1 ? "(v$2) " : '') . $license;
      }
  
@@ -124,7 +126,7 @@
      if ($licensetext =~ /Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license \(the \"Software\"\)/ or
  	$licensetext =~ /Boost Software License([ ,-]+Version ([^ ]+)?(\.))/i) {
  	$license = "BSL " . ($1 ? "(v$2) " : '') . $license;
-@@ -515,18 +506,8 @@
+@@ -515,18 +514,8 @@
      if ($licensetext =~ /The origin of this software must not be misrepresented.*Altered source versions must be plainly marked as such.*This notice may not be removed or altered from any source distribution/ or
          $licensetext =~ /see copyright notice in zlib\.h/) {
  	$license = "zlib/libpng $license";

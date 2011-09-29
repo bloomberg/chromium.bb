@@ -342,9 +342,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/smhasher/src': [
         'UNKNOWN',
     ],
-    'third_party/speex/include/speex/speex_types.h': [
-        'UNKNOWN',
-    ],
     'third_party/sqlite': [
         'UNKNOWN',
     ],

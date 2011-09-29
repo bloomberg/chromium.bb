@@ -450,6 +450,8 @@ sub parselicense($) {
         $license = "BSD-like $license";
     } elsif ($licensetext =~ /BSD terms apply/) {
         $license = "BSD-like $license";
+    } elsif ($licensetext =~ /GOVERNED BY A BSD-STYLE SOURCE LICENSE/) {
+        $license = "BSD-like $license";
     }
 
     if ($licensetext =~ /Mozilla Public License Version ([^ ]+)/) {
