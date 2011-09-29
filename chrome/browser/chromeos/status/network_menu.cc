@@ -91,31 +91,6 @@ namespace chromeos {
 
 class NetworkMenuModel : public ui::MenuModel {
  public:
-  struct NetworkInfo {
-    NetworkInfo() : need_passphrase(false),
-                    remembered(true),
-                    auto_connect(true) {
-    }
-    ~NetworkInfo() {}
-
-    // "ethernet" | "wifi" | "cellular" | "other".
-    std::string network_type;
-    // "connected" | "connecting" | "disconnected" | "error".
-    std::string status;
-    // status message or error message, empty if unknown status.
-    std::string message;
-    // IP address (if network is active, empty otherwise)
-    std::string ip_address;
-    // Remembered passphrase.
-    std::string passphrase;
-    // true if the network requires a passphrase.
-    bool need_passphrase;
-    // true if the network is currently remembered.
-    bool remembered;
-    // true if the network is auto connect (meaningful for Wifi only).
-    bool auto_connect;
-  };
-
   struct MenuItem {
     MenuItem()
         : type(ui::MenuModel::TYPE_SEPARATOR),
@@ -867,7 +842,6 @@ void VPNMenuModel::InitMenuItems(bool is_browser_mode,
   const VirtualNetworkVector& virtual_networks = cros->virtual_networks();
   const VirtualNetwork* active_vpn = cros->virtual_network();
 
-  bool separator_added = false;
   string16 label;
 
   for (size_t i = 0; i < virtual_networks.size(); ++i) {
@@ -879,14 +853,6 @@ void VPNMenuModel::InitMenuItems(bool is_browser_mode,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
     } else {
       label = UTF8ToUTF16(vpn->name());
-    }
-
-    // First add a separator if necessary.
-    if (!separator_added) {
-      separator_added = true;
-      if (!menu_items_.empty()) {  // Don't add if first menu item.
-        menu_items_.push_back(MenuItem());  // Separator
-      }
     }
 
     int flag = FLAG_VPN;

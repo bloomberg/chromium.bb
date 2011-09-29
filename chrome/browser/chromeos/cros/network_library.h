@@ -558,7 +558,12 @@ class Network {
   class TestApi {
    public:
     explicit TestApi(Network* network) : network_(network) {}
-    void SetConnected(bool connected) { network_->set_connected(connected); }
+    void SetConnected(bool connected) {
+      network_->set_connected(connected);
+    }
+    void SetConnecting(bool connecting) {
+      network_->set_connecting(connecting);
+    }
    private:
     Network* network_;
   };

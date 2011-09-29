@@ -261,7 +261,7 @@ class NetworkIcon {
 
   // Sets up the various badges:
   // top_left: Cellular Roaming
-  // top_right: Unused
+  // top_right: libcros warning
   // bottom_left: VPN
   // bottom_right: disconnected / secure / technology / warning
   void SetBadges(const Network* network) {
@@ -299,6 +299,9 @@ class NetworkIcon {
       default:
         break;
     }
+    // Display warning badge if cros is not loaded.
+    if (is_status_bar_&& !CrosLibrary::Get()->load_error_string().empty())
+      top_right_badge_ = rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING);
   }
 
   // Clears any previous state then sets the base icon and badges.
@@ -482,25 +485,10 @@ void NetworkMenuIcon::SetConnectingIcon(const Network* network,
 // Sets up the icon and badges for GenerateBitmap().
 void NetworkMenuIcon::SetIconAndText(string16* text) {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  DCHECK(cros);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   icon_->ClearIconAndBadges();
-
-  // Display warning badge if cros is not loaded.
-  if (!cros || !CrosLibrary::Get()->EnsureLoaded()) {
-    icon_->set_icon(GetBitmap(BARS, 0));
-    icon_->set_bottom_right_badge(
-        rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING));
-    if (text) {
-      if (mode_ == MENU_MODE) {
-        *text = l10n_util::GetStringUTF16(
-            IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
-      } else {
-        *text = l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE);
-      }
-    }
-    return;
-  }
 
   // If we are connecting to a network, display that.
   connecting_network_ = GetConnectingNetwork();
@@ -522,8 +510,12 @@ void NetworkMenuIcon::SetIconAndText(string16* text) {
     return;
   }
 
-  // If we are not connecting to a network, show the active network.
-  const Network* network = cros->active_network();
+  // If not connecting to a network, show the active or connected network.
+  const Network* network;
+  if (mode_ == DROPDOWN_MODE && cros->connected_network())
+    network = cros->connected_network();
+  else
+    network = cros->active_network();
   if (network) {
     bool animating = false;
     last_network_type_ = network->type();
@@ -532,8 +524,8 @@ void NetworkMenuIcon::SetIconAndText(string16* text) {
     icon_->UpdateIcon(network);
     // Overlay the VPN badge if connecting to a VPN.
     if (network->type() != TYPE_VPN && cros->virtual_network()) {
-      const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
       if (cros->virtual_network()->connecting()) {
+        const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
         double animation = GetAnimation();
         animating = true;
         // Even though this is the only place we use vpn_connecting_badge_,

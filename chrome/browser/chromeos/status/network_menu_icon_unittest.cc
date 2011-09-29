@@ -12,12 +12,12 @@
 
 namespace {
 
-bool CompareBitmaps(const SkBitmap& a, const SkBitmap& b) {
+bool CompareTwoBitmaps(const SkBitmap& a, const SkBitmap& b, int log_level) {
   CHECK(!a.empty());
   CHECK(!b.empty());
   if (a.getSize() != b.getSize()) {
-    LOG(WARNING) << "Mistmatched size: "
-                 << a.getSize() << " != " << b.getSize();
+    VLOG(log_level) << "Mistmatched size: "
+                    << a.getSize() << " != " << b.getSize();
     return false;
   }
   size_t bytes = a.getSize();
@@ -27,25 +27,25 @@ bool CompareBitmaps(const SkBitmap& a, const SkBitmap& b) {
   const char* pixb = static_cast<const char*>(b.getPixels());
   if (!pixa || !pixb) {
     if (!pixa)
-      LOG(WARNING) << "getPixels() returned NULL for LHS";
+      VLOG(log_level) << "getPixels() returned NULL for LHS";
     if (!pixb)
-      LOG(WARNING) << "getPixels() returned NULL for RHS";
+      VLOG(log_level) << "getPixels() returned NULL for RHS";
     return false;
   }
   size_t width = a.width();
   size_t height = a.height();
   size_t bpp = a.bytesPerPixel();
   if (width * height * bpp != bytes) {
-    LOG(WARNING) << "Width: " << width << " x Height: " << height
-                 << " x bpp: " << bpp << " != Size: " << bytes;
+    VLOG(log_level) << "Width: " << width << " x Height: " << height
+                    << " x bpp: " << bpp << " != Size: " << bytes;
     return false;
   }
   for (int y=0; y<a.height(); ++y) {
     for (int x=0; x<a.width(); ++x) {
       for (size_t i = 0; i<bpp; ++i) {
         if (*pixa++ != *pixb++) {
-          LOG(WARNING) << "Icon: " << width << " x " << height << " x " << bpp
-                       << ", Mismatch at: " << x << "," << y << ":" << i;
+          VLOG(log_level) << "Icon: " << width << "x" << height << "x" << bpp
+                          << ", Mismatch at: " << x << "," << y << ":" << i;
           return false;
         }
       }
@@ -116,10 +116,17 @@ class NetworkMenuIconTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
   }
 
+ protected:
   void SetConnected(Network* network, bool connected) {
     Network::TestApi test_network(network);
     test_network.SetConnected(connected);
   }
+
+  void SetConnecting(Network* network, bool connecting) {
+    Network::TestApi test_network(network);
+    test_network.SetConnecting(connecting);
+  }
+
   void SetActive(Network* network, bool active) {
     if (active) {
       cros_->SetActiveNetwork(network->type(), network->service_path());
@@ -127,17 +134,36 @@ class NetworkMenuIconTest : public testing::Test {
       cros_->SetActiveNetwork(network->type(), "");
     }
   }
+
   void SetStrength(WirelessNetwork* network, int strength) {
     WirelessNetwork::TestApi test_network(network);
     test_network.SetStrength(strength);
   }
+
   void SetEncryption(WifiNetwork* network, ConnectionSecurity encryption) {
     WifiNetwork::TestApi test_network(network);
     test_network.SetEncryption(encryption);
   }
+
   void SetRoamingState(CellularNetwork* network, NetworkRoamingState roaming) {
     CellularNetwork::TestApi test_network(network);
     test_network.SetRoamingState(roaming);
+  }
+
+  bool CompareBitmaps(const SkBitmap& icon, const SkBitmap& base) {
+    if (CompareTwoBitmaps(icon, base, 1))
+      return true;
+    EXPECT_FALSE(CompareTwoBitmaps(icon, ethernet_connected_bitmap_, 2));
+    EXPECT_FALSE(CompareTwoBitmaps(icon, ethernet_disconnected_bitmap_, 2));
+    EXPECT_FALSE(CompareTwoBitmaps(icon, wifi_connected_100_bitmap_, 2));
+    EXPECT_FALSE(CompareTwoBitmaps(icon, wifi_encrypted_50_bitmap_, 2));
+    EXPECT_FALSE(CompareTwoBitmaps(icon, wifi_disconnected_bitmap_, 2));
+    EXPECT_FALSE(CompareTwoBitmaps(icon, wifi_connecting_bitmap_, 2));
+    EXPECT_FALSE(CompareTwoBitmaps(icon, cellular_connected_100_bitmap_, 2));
+    EXPECT_FALSE(CompareTwoBitmaps(icon, cellular_roaming_50_bitmap_, 2));
+    EXPECT_FALSE(CompareTwoBitmaps(icon, cellular_disconnected_bitmap_, 2));
+    EXPECT_FALSE(CompareTwoBitmaps(icon, cellular_connecting_bitmap_, 2));
+    return false;
   }
 
   ScopedStubCrosEnabler cros_stub_;
@@ -244,20 +270,19 @@ class TestNetworkMenuIcon : public NetworkMenuIcon {
 
 // Default relevent stub state:
 //  eth1: connected (active ethernet)
-//  wifi1: connected, strength 100 (active wifi)
-//  wifi2: connecting
-//  wifi3: disconnected, WEP
-//  cellular1: connecting, activated, roaming (active cellular)
+//  wifi1: connected (active wifi)
+//  cellular1: connected  (active cellular)
 // See network_library_unit_test.cc for more info.
 
 TEST_F(NetworkMenuIconTest, StatusIconMenuMode) {
   TestNetworkMenuIcon menu_icon(NetworkMenuIcon::MENU_MODE);
   SkBitmap icon;
 
-  // Set up the initial network state.
+  // Set cellular1 to connecting.
   CellularNetwork* cellular1 = cros_->FindCellularNetworkByPath("cellular1");
   ASSERT_NE(static_cast<const Network*>(NULL), cellular1);
   SetRoamingState(cellular1, ROAMING_STATE_HOME);  // Clear romaing state
+  SetConnecting(cellular1, true);
 
   // For MENU_MODE, we always display the connecting icon (cellular1).
   icon = menu_icon.GetIconAndText(NULL);
@@ -281,30 +306,36 @@ TEST_F(NetworkMenuIconTest, StatusIconDropdownMode) {
   TestNetworkMenuIcon menu_icon(NetworkMenuIcon::DROPDOWN_MODE);
   SkBitmap icon;
 
-  // Start with the default stub network state.
+  // Set wifi1 to connecting.
+  WifiNetwork* wifi1 = cros_->FindWifiNetworkByPath("wifi1");
+  ASSERT_NE(static_cast<const Network*>(NULL), wifi1);
+  SetConnecting(wifi1, true);
 
   // For DROPDOWN_MODE, we prioritize the connected network (ethernet).
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareBitmaps(icon, ethernet_connected_bitmap_));
 
-  // Set ethernet to disconnected+inactive; wifi icon should be shown.
+  // Set ethernet to inactive/disconnected.
   Network* ethernet = cros_->FindNetworkByPath("eth1");
   ASSERT_NE(static_cast<const Network*>(NULL), ethernet);
   SetActive(ethernet, false);
   SetConnected(ethernet, false);
 
+  // Icon should now be cellular connected icon.
   icon = menu_icon.GetIconAndText(NULL);
-  EXPECT_TRUE(CompareBitmaps(icon, wifi_connected_100_bitmap_));
+  EXPECT_TRUE(CompareBitmaps(icon, cellular_connected_100_bitmap_));
 
-  // Set wifi2 to active; wifi connecting icon should be shown.
-  WifiNetwork* wifi1 = cros_->FindWifiNetworkByPath("wifi1");
-  WifiNetwork* wifi2 = cros_->FindWifiNetworkByPath("wifi2");
-  ASSERT_NE(static_cast<const Network*>(NULL), wifi2);
-  SetConnected(wifi1, false);
-  SetActive(wifi2, true);
-
+  // Set cellular1 to disconnected; Icon should now be wifi connecting icon.
+  CellularNetwork* cellular1 = cros_->FindCellularNetworkByPath("cellular1");
+  ASSERT_NE(static_cast<const Network*>(NULL), cellular1);
+  SetConnected(cellular1, false);
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareBitmaps(icon, wifi_connecting_bitmap_));
+
+  // Set wifi1 to connected. Icon should now be wifi connected icon.
+  SetConnected(wifi1, true);
+  icon = menu_icon.GetIconAndText(NULL);
+  EXPECT_TRUE(CompareBitmaps(icon, wifi_connected_100_bitmap_));
 }
 
 }  // namespace chromeos

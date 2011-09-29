@@ -144,20 +144,32 @@ class NetworkLibraryStubTest : public testing::Test {
 };
 
 // Default stub state:
-// eth1: connected
+// vpn1: disconnected, L2TP/IPsec + PSK
+// vpn2: disconnected, L2TP/IPsec + user cert
+// vpn3: disconnected, OpenVpn
+// eth1: connected (active network)
 // wifi1: connected
-// wifi2: connecting
+// wifi2: disconnected
 // wifi3: disconnected, WEP
 // wifi4: disconnected, 8021x
 // wifi5: disconnected
 // wifi6: disconnected
-// cellular1: connecting, activated, roaming
-// cellular2: disconnected, activated, not roaming
-// vpn1: disconnected, L2TP/IPsec + PSK
-// vpn2: connected, L2TP/IPsec + user cert
-// vpn3: disconnected, OpenVpn
+// cellular1: connected, activated, not roaming
+// cellular2: disconnected, activated, roaming
 
 TEST_F(NetworkLibraryStubTest, NetworkLibraryAccessors) {
+  // Set up state.
+  // Set wifi2->connecting for these tests.
+  WifiNetwork* wifi2 = cros_->FindWifiNetworkByPath("wifi2");
+  ASSERT_NE(static_cast<const Network*>(NULL), wifi2);
+  Network::TestApi test_wifi2(wifi2);
+  test_wifi2.SetConnecting(true);
+  // Set cellular1->connecting for these tests.
+  CellularNetwork* cellular1 = cros_->FindCellularNetworkByPath("cellular1");
+  ASSERT_NE(static_cast<const Network*>(NULL), cellular1);
+  Network::TestApi test_cellular1(cellular1);
+  test_cellular1.SetConnecting(true);
+
   // Ethernet
   ASSERT_NE(static_cast<const EthernetNetwork*>(NULL),
             cros_->ethernet_network());
@@ -187,26 +199,24 @@ TEST_F(NetworkLibraryStubTest, NetworkLibraryAccessors) {
   EXPECT_EQ(2U, cros_->cellular_networks().size());
 
   // VPN
-  ASSERT_NE(static_cast<const VirtualNetwork*>(NULL), cros_->virtual_network());
-  EXPECT_EQ("vpn2", cros_->virtual_network()->service_path());
-  EXPECT_NE(static_cast<const VirtualNetwork*>(NULL),
-            cros_->FindVirtualNetworkByPath("vpn1"));
-  EXPECT_TRUE(cros_->virtual_network_connected());
-  EXPECT_FALSE(cros_->virtual_network_connecting());
+  ASSERT_EQ(static_cast<const VirtualNetwork*>(NULL), cros_->virtual_network());
   EXPECT_EQ(3U, cros_->virtual_networks().size());
 
   // Active network and global state
   EXPECT_TRUE(cros_->Connected());
-  EXPECT_TRUE(cros_->Connecting());
+  ASSERT_NE(static_cast<const Network*>(NULL), cros_->active_network());
   EXPECT_EQ("eth1", cros_->active_network()->service_path());
+  ASSERT_NE(static_cast<const Network*>(NULL), cros_->connected_network());
   EXPECT_EQ("eth1", cros_->connected_network()->service_path());
   // The "wifi1" is connected, so we do not return "wifi2" for the connecting
   // network. There is no conencted cellular network, so "cellular1" is
   // returned by connecting_network().
+  EXPECT_TRUE(cros_->Connecting());
+  ASSERT_NE(static_cast<const Network*>(NULL), cros_->connecting_network());
   EXPECT_EQ("cellular1", cros_->connecting_network()->service_path());
 }
 
-TEST_F(NetworkLibraryStubTest, NetworkConnect) {
+TEST_F(NetworkLibraryStubTest, NetworkConnectWifi) {
   WifiNetwork* wifi1 = cros_->FindWifiNetworkByPath("wifi1");
   ASSERT_NE(static_cast<const WifiNetwork*>(NULL), wifi1);
   EXPECT_TRUE(wifi1->connected());
@@ -215,6 +225,17 @@ TEST_F(NetworkLibraryStubTest, NetworkConnect) {
   EXPECT_TRUE(cros_->CanConnectToNetwork(wifi1));
   cros_->ConnectToWifiNetwork(wifi1);
   EXPECT_TRUE(wifi1->connected());
+}
+
+TEST_F(NetworkLibraryStubTest, NetworkConnectVPN) {
+  VirtualNetwork* vpn1 = cros_->FindVirtualNetworkByPath("vpn1");
+  EXPECT_NE(static_cast<const VirtualNetwork*>(NULL), vpn1);
+  EXPECT_FALSE(vpn1->connected());
+  EXPECT_TRUE(cros_->CanConnectToNetwork(vpn1));
+  cros_->ConnectToVirtualNetwork(vpn1);
+  EXPECT_TRUE(vpn1->connected());
+  ASSERT_NE(static_cast<const VirtualNetwork*>(NULL), cros_->virtual_network());
+  EXPECT_EQ("vpn1", cros_->virtual_network()->service_path());
 }
 
 // TODO(stevenjb): Test remembered networks.

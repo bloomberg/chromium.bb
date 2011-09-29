@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/time_formatting.h"
@@ -1724,6 +1725,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
                               CellularDataPlanVector* data_plan_vector);
 
   // Network list management functions.
+  void ClearActiveNetwork(ConnectionType type);
   void UpdateActiveNetwork(Network* network);
   void AddNetwork(Network* network);
   void DeleteNetwork(Network* network);
@@ -1737,6 +1739,9 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   void DeleteDeviceFromDeviceObserversMap(const std::string& device_path);
 
   // Profile management functions.
+  void AddProfile(const std::string& profile_path,
+                  NetworkProfileType profile_type);
+  NetworkProfile* GetProfileForType(NetworkProfileType type);
   void SetProfileType(Network* network, NetworkProfileType type);
   void SetProfileTypeFromPath(Network* network);
   std::string GetProfilePath(NetworkProfileType type);
@@ -1744,7 +1749,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // Notifications.
   void NotifyNetworkManagerChanged(bool force_update);
   void SignalNetworkManagerObservers();
-  void NotifyNetworkChanged(Network* network);
+  void NotifyNetworkChanged(const Network* network);
   void NotifyNetworkDeviceChanged(NetworkDevice* device, PropertyIndex index);
   void NotifyCellularDataPlanChanged();
   void NotifyPinOperationCompleted(PinOperationError error);
@@ -1781,9 +1786,6 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
 
   // List of profiles.
   NetworkProfileList profile_list_;
-
-  // List of networks to move to the user profile once logged in.
-  std::list<std::string> user_networks_;
 
   // A service path based map of all Networks.
   NetworkMap network_map_;
@@ -1857,6 +1859,10 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
 
   // Type of pending SIM operation, SIM_OPERATION_NONE otherwise.
   SimOperationType sim_operation_;
+
+ private:
+  // List of networks to move to the user profile once logged in.
+  std::list<std::string> user_networks_;
 
   // Delayed task to notify a network change.
   CancelableTask* notify_task_;
@@ -2418,6 +2424,7 @@ void NetworkLibraryImplBase::ConnectToVirtualNetwork(VirtualNetwork* vpn) {
 // 2. Start the connection.
 void NetworkLibraryImplBase::NetworkConnectStartWifi(
     WifiNetwork* wifi, NetworkProfileType profile_type) {
+  DCHECK(!wifi->connection_started());
   // This will happen if a network resets, gets out of range or is forgotten.
   if (wifi->user_passphrase_ != wifi->passphrase_ ||
       wifi->passphrase_required())
@@ -2475,7 +2482,7 @@ void NetworkLibraryImplBase::NetworkConnectStart(
     std::string profile_path = GetProfilePath(profile_type);
     if (!profile_path.empty()) {
       if (profile_path != network->profile_path())
-        network->SetProfilePath(profile_path);
+        SetProfileType(network, profile_type);
     } else if (profile_type == PROFILE_USER) {
       // The user profile was specified but is not available (i.e. pre-login).
       // Add this network to the list of networks to move to the user profile
@@ -2515,16 +2522,8 @@ void NetworkLibraryImplBase::NetworkConnectCompleted(
   if (!network->save_credentials())
     network->EraseCredentials();
 
-  // Update local cache and notify listeners.
-  if (network->type() == TYPE_WIFI) {
-    active_wifi_ = static_cast<WifiNetwork*>(network);
-  } else if (network->type() == TYPE_CELLULAR) {
-    active_cellular_ = static_cast<CellularNetwork*>(network);
-  } else if (network->type() == TYPE_VPN) {
-    active_virtual_ = static_cast<VirtualNetwork*>(network);
-  } else {
-    LOG(ERROR) << "Network of unexpected type: " << network->type();
-  }
+  ClearActiveNetwork(network->type());
+  UpdateActiveNetwork(network);
 
   // Notify observers.
   NotifyNetworkManagerChanged(true);  // Forced update.
@@ -2732,35 +2731,12 @@ bool NetworkLibraryImplBase::SetActiveNetwork(
     return false;
   }
 
-  // Clear any existing active network matching |type|.
-  for (NetworkMap::iterator iter = network_map_.begin();
-       iter != network_map_.end(); ++iter) {
-    Network* other = iter->second;
-    if (other->type() == type)
-      other->set_is_active(false);
-  }
-  switch (type) {
-    case TYPE_ETHERNET:
-      ethernet_ = NULL;
-      break;
-    case TYPE_WIFI:
-      active_wifi_ = NULL;
-      break;
-    case TYPE_CELLULAR:
-      active_cellular_ = NULL;
-      break;
-    case TYPE_VPN:
-      active_virtual_ = NULL;
-      break;
-    default:
-      break;
-  }
+  ClearActiveNetwork(type);
 
   if (!network)
     return true;
 
   // Set |network| to active.
-  network->set_is_active(true);
   UpdateActiveNetwork(network);
   return true;
 }
@@ -2776,6 +2752,7 @@ bool NetworkLibraryImplBase::SetActiveNetwork(
 // This relies on services being requested from flimflam in priority order,
 // and the updates getting processed and received in order.
 void NetworkLibraryImplBase::UpdateActiveNetwork(Network* network) {
+  network->set_is_active(true);
   ConnectionType type(network->type());
   if (type == TYPE_ETHERNET) {
     if (ethernet_enabled()) {
@@ -2808,6 +2785,32 @@ void NetworkLibraryImplBase::UpdateActiveNetwork(Network* network) {
       active_virtual_ = static_cast<VirtualNetwork*>(network);
       VLOG(2) << "Active virtual -> " << active_virtual_->name();
     }
+  }
+}
+
+void NetworkLibraryImplBase::ClearActiveNetwork(ConnectionType type) {
+  // Clear any existing active network matching |type|.
+  for (NetworkMap::iterator iter = network_map_.begin();
+       iter != network_map_.end(); ++iter) {
+    Network* other = iter->second;
+    if (other->type() == type)
+      other->set_is_active(false);
+  }
+  switch (type) {
+    case TYPE_ETHERNET:
+      ethernet_ = NULL;
+      break;
+    case TYPE_WIFI:
+      active_wifi_ = NULL;
+      break;
+    case TYPE_CELLULAR:
+      active_cellular_ = NULL;
+      break;
+    case TYPE_VPN:
+      active_virtual_ = NULL;
+      break;
+    default:
+      break;
   }
 }
 
@@ -2987,6 +2990,35 @@ void NetworkLibraryImplBase::DeleteDevice(const std::string& device_path) {
 
 ////////////////////////////////////////////////////////////////////////////
 
+void NetworkLibraryImplBase::AddProfile(
+    const std::string& profile_path, NetworkProfileType profile_type) {
+  profile_list_.push_back(NetworkProfile(profile_path, profile_type));
+  // Check to see if we connected to any networks before a user profile was
+  // available (i.e. before login), but unchecked the "Share" option (i.e.
+  // the desired pofile is the user profile). Move these networks to the
+  // user profile when it becomes available.
+  if (profile_type == PROFILE_USER && !user_networks_.empty()) {
+    for (std::list<std::string>::iterator iter2 = user_networks_.begin();
+         iter2 != user_networks_.end(); ++iter2) {
+      Network* network = FindNetworkByPath(*iter2);
+      if (network && network->profile_path() != profile_path)
+        network->SetProfilePath(profile_path);
+    }
+    user_networks_.clear();
+  }
+}
+
+NetworkLibraryImplBase::NetworkProfile*
+NetworkLibraryImplBase::GetProfileForType(NetworkProfileType type) {
+  for (NetworkProfileList::iterator iter = profile_list_.begin();
+       iter != profile_list_.end(); ++iter) {
+    NetworkProfile& profile = *iter;
+    if (profile.type == type)
+      return &profile;
+  }
+  return NULL;
+}
+
 void NetworkLibraryImplBase::SetProfileType(
     Network* network, NetworkProfileType type) {
   if (type == PROFILE_NONE) {
@@ -3023,12 +3055,9 @@ void NetworkLibraryImplBase::SetProfileTypeFromPath(Network* network) {
 
 std::string NetworkLibraryImplBase::GetProfilePath(NetworkProfileType type) {
   std::string profile_path;
-  for (NetworkProfileList::iterator iter = profile_list_.begin();
-       iter != profile_list_.end(); ++iter) {
-    NetworkProfile& profile = *iter;
-    if (profile.type == type)
-      profile_path = profile.path;
-  }
+  NetworkProfile* profile = GetProfileForType(type);
+  if (profile)
+    profile_path = profile->path;
   return profile_path;
 }
 
@@ -3048,7 +3077,7 @@ void NetworkLibraryImplBase::NotifyNetworkManagerChanged(bool force_update) {
     // Signal observers now.
     SignalNetworkManagerObservers();
   } else {
-    // Schedule a deleayed signal to limit the frequency of notifications.
+    // Schedule a delayed signal to limit the frequency of notifications.
     notify_task_ = NewRunnableMethod(
         this, &NetworkLibraryImplBase::SignalNetworkManagerObservers);
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, notify_task_,
@@ -3068,7 +3097,7 @@ void NetworkLibraryImplBase::SignalNetworkManagerObservers() {
   }
 }
 
-void NetworkLibraryImplBase::NotifyNetworkChanged(Network* network) {
+void NetworkLibraryImplBase::NotifyNetworkChanged(const Network* network) {
   DCHECK(network);
   VLOG(2) << "Network changed: " << network->name();
   NetworkObserverMap::const_iterator iter = network_observers_.find(
@@ -3077,7 +3106,7 @@ void NetworkLibraryImplBase::NotifyNetworkChanged(Network* network) {
     FOR_EACH_OBSERVER(NetworkObserver,
                       *(iter->second),
                       OnNetworkChanged(this, network));
-  } else {
+  } else if (IsCros()) {
     LOG(ERROR) << "Unexpected signal for unobserved network: "
                << network->name();
   }
@@ -3146,7 +3175,7 @@ void NetworkLibraryImplBase::GetTpmInfo() {
       // For now, use a hard coded, well known slot instead.
       const char kHardcodedTpmSlot[] = "0";
       tpm_slot_ = kHardcodedTpmSlot;
-    } else {
+    } else if (IsCros()) {
       LOG(WARNING) << "TPM token not ready";
     }
   }
@@ -4340,20 +4369,7 @@ void NetworkLibraryImplCros::UpdateRememberedNetworks(
       profile_type = PROFILE_SHARED;
     else
       profile_type = PROFILE_USER;
-    profile_list_.push_back(NetworkProfile(profile_path, profile_type));
-    // Check to see if we connected to any networks before a user profile was
-    // available (i.e. before login), but unchecked the "Share" option (i.e.
-    // the desired pofile is the user profile). Move these networks to the
-    // user profile when it becomes available.
-    if (profile_type == PROFILE_USER && !user_networks_.empty()) {
-      for (std::list<std::string>::iterator iter2 = user_networks_.begin();
-           iter2 != user_networks_.end(); ++iter2) {
-        Network* network = FindNetworkByPath(*iter2);
-        if (network && network->profile_path() != profile_path)
-          network->SetProfilePath(profile_path);
-      }
-      user_networks_.clear();
-    }
+    AddProfile(profile_path, profile_type);
   }
 }
 
@@ -4634,7 +4650,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
       const std::string& network_id) OVERRIDE {}
   virtual void SetCellularDataRoamingAllowed(bool new_value) OVERRIDE {}
   virtual bool IsCellularAlwaysInRoaming() OVERRIDE { return false; }
-  virtual void RequestNetworkScan() OVERRIDE {}
+  virtual void RequestNetworkScan() OVERRIDE;
 
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) OVERRIDE;
 
@@ -4656,7 +4672,9 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   virtual void SetIPConfig(const NetworkIPConfig& ipconfig) OVERRIDE;
 
  private:
-  void AddStubNetwork(Network* network);
+  void AddStubNetwork(Network* network, NetworkProfileType profile_type);
+  void AddStubRememberedNetwork(Network* network);
+  void ConnectToNetwork(Network* network);
 
   std::string ip_address_;
   std::string hardware_address_;
@@ -4664,6 +4682,8 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   std::string pin_;
   bool pin_required_;
   bool pin_entered_;
+  int64 connect_delay_ms_;
+  int network_priority_order_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplStub);
 };
@@ -4675,22 +4695,15 @@ NetworkLibraryImplStub::NetworkLibraryImplStub()
       hardware_address_("01:23:45:67:89:ab"),
       pin_(""),
       pin_required_(false),
-      pin_entered_(false) {
+      pin_entered_(false),
+      connect_delay_ms_(0),
+      network_priority_order_(0) {
 }
 
 NetworkLibraryImplStub::~NetworkLibraryImplStub() {
 }
 
-void NetworkLibraryImplStub::AddStubNetwork(Network* network) {
-  AddNetwork(network);
-  UpdateActiveNetwork(network);
-}
-
 void NetworkLibraryImplStub::Init() {
-  // Delete any existing networks (in case we call this more than once, e.g.
-  // from tests).
-  DeleteNetworks();
-
   is_locked_ = false;
 
   // Devices
@@ -4705,41 +4718,43 @@ void NetworkLibraryImplStub::Init() {
   cellular->imsi_ = "123456789012345";
   device_map_["cellular"] = cellular;
 
-  // Networks
-  DeleteNetworks();
+  // Profiles
+  AddProfile("default", PROFILE_SHARED);
+  AddProfile("user", PROFILE_USER);
 
+  // Networks
   // If these change, the expectations in network_library_unittest and
   // network_menu_icon_unittest need to be changed also.
-  ethernet_ = new EthernetNetwork("eth1");
-  ethernet_->set_name("Fake Ethernet");
-  ethernet_->set_connected(true);
-  ethernet_->set_is_active(true);
-  AddStubNetwork(ethernet_);
+
+  // Networks are added in priority order.
+  network_priority_order_ = 0;
+
+  Network* ethernet = new EthernetNetwork("eth1");
+  ethernet->set_name("Fake Ethernet");
+  ethernet->set_is_active(true);
+  ethernet->set_connected(true);
+  AddStubNetwork(ethernet, PROFILE_NONE);
 
   WifiNetwork* wifi1 = new WifiNetwork("wifi1");
-  wifi1->set_name("Fake WiFi1 Connected");
+  wifi1->set_name("Fake WiFi1");
   wifi1->set_strength(100);
-  wifi1->set_connected(true);
   wifi1->set_is_active(true);
+  wifi1->set_connected(true);
   wifi1->set_encryption(SECURITY_NONE);
-  wifi1->set_profile_type(PROFILE_SHARED);
-  AddStubNetwork(wifi1);
+  AddStubNetwork(wifi1, PROFILE_NONE);
 
   WifiNetwork* wifi2 = new WifiNetwork("wifi2");
-  wifi2->set_name("Fake WiFi2 Connecting");
+  wifi2->set_name("Fake WiFi2");
   wifi2->set_strength(70);
-  wifi2->set_connecting(true);
   wifi2->set_encryption(SECURITY_NONE);
-  wifi2->set_profile_type(PROFILE_SHARED);
-  AddStubNetwork(wifi2);
+  AddStubNetwork(wifi2, PROFILE_SHARED);
 
   WifiNetwork* wifi3 = new WifiNetwork("wifi3");
   wifi3->set_name("Fake WiFi3 Encrypted with a long name");
   wifi3->set_strength(60);
   wifi3->set_encryption(SECURITY_WEP);
   wifi3->set_passphrase_required(true);
-  wifi3->set_profile_type(PROFILE_USER);
-  AddStubNetwork(wifi3);
+  AddStubNetwork(wifi3, PROFILE_USER);
 
   WifiNetwork* wifi4 = new WifiNetwork("wifi4");
   wifi4->set_name("Fake WiFi4 802.1x");
@@ -4749,39 +4764,38 @@ void NetworkLibraryImplStub::Init() {
   wifi4->SetEAPMethod(EAP_METHOD_PEAP);
   wifi4->SetEAPIdentity("nobody@google.com");
   wifi4->SetEAPPassphrase("password");
-  AddStubNetwork(wifi4);
+  AddStubNetwork(wifi4, PROFILE_NONE);
 
   WifiNetwork* wifi5 = new WifiNetwork("wifi5");
   wifi5->set_name("Fake WiFi5 UTF-8 SSID ");
   wifi5->SetSsid("Fake WiFi5 UTF-8 SSID \u3042\u3044\u3046");
   wifi5->set_strength(25);
-  AddStubNetwork(wifi5);
+  AddStubNetwork(wifi5, PROFILE_NONE);
 
   WifiNetwork* wifi6 = new WifiNetwork("wifi6");
   wifi6->set_name("Fake WiFi6 latin-1 SSID ");
   wifi6->SetSsid("Fake WiFi6 latin-1 SSID \xc0\xcb\xcc\xd6\xfb");
   wifi6->set_strength(20);
-  AddStubNetwork(wifi6);
+  AddStubNetwork(wifi6, PROFILE_NONE);
 
   CellularNetwork* cellular1 = new CellularNetwork("cellular1");
-  cellular1->set_name("Fake Cellular1 Connecting");
-  cellular1->set_strength(70);
-  cellular1->set_connecting(true);
+  cellular1->set_name("Fake Cellular1");
+  cellular1->set_strength(100);
   cellular1->set_is_active(true);
+  cellular1->set_connected(true);
   cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
   cellular1->set_payment_url(std::string("http://www.google.com"));
   cellular1->set_usage_url(std::string("http://www.google.com"));
   cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
-  cellular1->set_roaming_state(ROAMING_STATE_ROAMING);
-  AddStubNetwork(cellular1);
+  AddStubNetwork(cellular1, PROFILE_NONE);
 
   CellularNetwork* cellular2 = new CellularNetwork("cellular2");
   cellular2->set_name("Fake Cellular2");
   cellular2->set_strength(50);
-  cellular2->set_connected(false);
   cellular2->set_activation_state(ACTIVATION_STATE_ACTIVATED);
   cellular2->set_network_technology(NETWORK_TECHNOLOGY_UMTS);
-  AddStubNetwork(cellular2);
+  cellular2->set_roaming_state(ROAMING_STATE_ROAMING);
+  AddStubNetwork(cellular2, PROFILE_NONE);
 
   CellularDataPlan* base_plan = new CellularDataPlan();
   base_plan->plan_name = "Base plan";
@@ -4800,65 +4814,158 @@ void NetworkLibraryImplStub::Init() {
   data_plan_vector->push_back(paid_plan);
   UpdateCellularDataPlan(cellular1->service_path(), data_plan_vector);
 
-  // VPNs
   VirtualNetwork* vpn1 = new VirtualNetwork("vpn1");
   vpn1->set_name("Fake VPN1");
   vpn1->set_server_hostname("vpn1server.fake.com");
   vpn1->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_PSK);
   vpn1->set_username("VPN User 1");
-  AddStubNetwork(vpn1);
+  AddStubNetwork(vpn1, PROFILE_USER);
 
   VirtualNetwork* vpn2 = new VirtualNetwork("vpn2");
   vpn2->set_name("Fake VPN2");
   vpn2->set_server_hostname("vpn2server.fake.com");
   vpn2->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
   vpn2->set_username("VPN User 2");
-  vpn2->set_connected(true);
-  vpn2->set_is_active(true);
-  AddStubNetwork(vpn2);
+  AddStubNetwork(vpn2, PROFILE_USER);
 
   VirtualNetwork* vpn3 = new VirtualNetwork("vpn3");
   vpn3->set_name("Fake VPN3");
   vpn3->set_server_hostname("vpn3server.fake.com");
   vpn3->set_provider_type(PROVIDER_TYPE_OPEN_VPN);
-  AddStubNetwork(vpn3);
-
-  // Remembered Networks
-  DeleteRememberedNetworks();
-  NetworkProfile profile("default", PROFILE_SHARED);
-  profile.services.insert("wifi2");
-  profile.services.insert("vpn2");
-  profile_list_.push_back(profile);
-  WifiNetwork* remembered_wifi2 = new WifiNetwork("wifi2");
-  remembered_wifi2->set_name("Fake WiFi 2");
-  remembered_wifi2->set_encryption(SECURITY_WEP);
-  AddRememberedNetwork(remembered_wifi2);
-  VirtualNetwork* remembered_vpn2 = new VirtualNetwork("vpn2");
-  remembered_vpn2->set_name("Fake VPN Provider 2");
-  remembered_vpn2->set_server_hostname("vpn2server.fake.com");
-  remembered_vpn2->set_provider_type(
-      PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
-  remembered_vpn2->set_connected(true);
-  AddRememberedNetwork(remembered_vpn2);
+  AddStubNetwork(vpn3, PROFILE_USER);
 
   wifi_scanning_ = false;
   offline_mode_ = false;
+}
+
+////////////////////////////////////////////////////////////////////////////
+// NetworkLibraryImplStub private methods.
+
+void NetworkLibraryImplStub::AddStubNetwork(
+    Network* network, NetworkProfileType profile_type) {
+  network->priority_order_ = network_priority_order_++;
+  network->CalculateUniqueId();
+  if (!network->unique_id().empty())
+    network_unique_id_map_[network->unique_id()] = network;
+  AddNetwork(network);
+  UpdateActiveNetwork(network);
+  SetProfileType(network, profile_type);
+  AddStubRememberedNetwork(network);
+}
+
+// Add a remembered network to the appropriate profile if specified.
+void NetworkLibraryImplStub::AddStubRememberedNetwork(Network* network) {
+  if (network->profile_type() == PROFILE_NONE)
+    return;
+
+  Network* remembered = FindRememberedFromNetwork(network);
+  if (remembered) {
+    // This network is already in the rememebred list. Check to see if the
+    // type has changed.
+    if (remembered->profile_type() == network->profile_type())
+      return;  // Same type, nothing to do.
+    // Delete the existing remembered network from the previous profile.
+    DeleteRememberedNetwork(remembered->service_path());
+    remembered = NULL;
+  }
+
+  NetworkProfile* profile = GetProfileForType(network->profile_type());
+  if (profile) {
+    profile->services.insert(network->service_path());
+  } else {
+    LOG(ERROR) << "No profile type: " << network->profile_type();
+    return;
+  }
+
+  if (network->type() == TYPE_WIFI) {
+    WifiNetwork* remembered_wifi = new WifiNetwork(network->service_path());
+    remembered_wifi->set_encryption(remembered_wifi->encryption());
+    remembered = remembered_wifi;
+  } else if (network->type() == TYPE_VPN) {
+    VirtualNetwork* remembered_vpn =
+        new VirtualNetwork(network->service_path());
+    remembered_vpn->set_server_hostname("vpnserver.fake.com");
+    remembered_vpn->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
+    remembered = remembered_vpn;
+  }
+  if (remembered) {
+    remembered->set_name(network->name());
+    remembered->set_unique_id(network->unique_id());
+    // AddRememberedNetwork will insert the network into the matching profile
+    // and set the profile type + path.
+    AddRememberedNetwork(remembered);
+  }
+}
+
+void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
+  // Set connected state.
+  network->set_connected(true);
+  network->set_connection_started(false);
+
+  // Make the connected network the highest priority network.
+  // Set all other networks of the same type to disconnected + inactive;
+  int old_priority_order = network->priority_order_;
+  network->priority_order_ = 0;
+  for (NetworkMap::iterator iter = network_map_.begin();
+       iter != network_map_.end(); ++iter) {
+    Network* other = iter->second;
+    if (other == network)
+      continue;
+    if (other->priority_order_ < old_priority_order)
+      other->priority_order_++;
+    if (other->type() == network->type()) {
+      other->set_is_active(false);
+      other->set_connected(false);
+    }
+  }
+
+  // Remember connected network.
+  if (network->profile_type() == PROFILE_NONE) {
+    NetworkProfileType profile_type = PROFILE_USER;
+    if (network->type() == TYPE_WIFI) {
+      WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
+      if (!wifi->encrypted())
+        profile_type = PROFILE_SHARED;
+    }
+    SetProfileType(network, profile_type);
+  }
+  AddStubRememberedNetwork(network);
+
+  // Call Completed and signal observers.
+  NetworkConnectCompleted(network, CONNECT_SUCCESS);
+  SignalNetworkManagerObservers();
+  NotifyNetworkChanged(network);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // NetworkLibraryImplBase implementation.
 
 void NetworkLibraryImplStub::CallConnectToNetwork(Network* network) {
-  network->set_connected(true);
-  NetworkConnectCompleted(network, CONNECT_SUCCESS);
+  // Immediately set the network to active to mimic flimflam's behavior.
+  SetActiveNetwork(network->type(), network->service_path());
+  // If a delay has been set (i.e. we are interactive), delay the call to
+  // ConnectToNetwork (but signal observers since we changed connecting state).
+  if (connect_delay_ms_) {
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&NetworkLibraryImplStub::ConnectToNetwork,
+                   base::Unretained(this), network),
+        connect_delay_ms_);
+    SignalNetworkManagerObservers();
+    NotifyNetworkChanged(network);
+  } else {
+    ConnectToNetwork(network);
+  }
 }
 
 void NetworkLibraryImplStub::CallRequestWifiNetworkAndConnect(
     const std::string& ssid, ConnectionSecurity security) {
   WifiNetwork* wifi = new WifiNetwork(ssid);
+  wifi->set_name(ssid);
   wifi->set_encryption(security);
   AddNetwork(wifi);
   ConnectToWifiNetworkUsingConnectData(wifi);
+  SignalNetworkManagerObservers();
 }
 
 void NetworkLibraryImplStub::CallRequestVirtualNetworkAndConnect(
@@ -4866,10 +4973,12 @@ void NetworkLibraryImplStub::CallRequestVirtualNetworkAndConnect(
     const std::string& server_hostname,
     ProviderType provider_type) {
   VirtualNetwork* vpn = new VirtualNetwork(service_name);
+  vpn->set_name(service_name);
   vpn->set_server_hostname(server_hostname);
   vpn->set_provider_type(provider_type);
   AddNetwork(vpn);
   ConnectToVirtualNetworkUsingConnectData(vpn);
+  SignalNetworkManagerObservers();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -4915,6 +5024,13 @@ void NetworkLibraryImplStub::UnblockPin(const std::string& puk,
   NotifyPinOperationCompleted(PIN_ERROR_NONE);
 }
 
+void NetworkLibraryImplStub::RequestNetworkScan() {
+  // This is triggered by user interaction, so set a network conenct delay.
+  const int kConnectDelayMs = 4 * 1000;
+  connect_delay_ms_ = kConnectDelayMs;
+  SignalNetworkManagerObservers();
+}
+
 bool NetworkLibraryImplStub::GetWifiAccessPoints(
     WifiAccessPointVector* result) {
   *result = WifiAccessPointVector();
@@ -4923,13 +5039,17 @@ bool NetworkLibraryImplStub::GetWifiAccessPoints(
 
 void NetworkLibraryImplStub::DisconnectFromNetwork(const Network* network) {
   // Update the network state here since no network manager in stub impl.
-  (const_cast<Network*>(network))->set_connected(false);
+  Network* modify_network = const_cast<Network*>(network);
+  modify_network->set_is_active(false);
+  modify_network->set_connected(false);
   if (network == active_wifi_)
     active_wifi_ = NULL;
   else if (network == active_cellular_)
     active_cellular_ = NULL;
   else if (network == active_virtual_)
     active_virtual_ = NULL;
+  SignalNetworkManagerObservers();
+  NotifyNetworkChanged(network);
 }
 
 NetworkIPConfigVector NetworkLibraryImplStub::GetIPConfigs(
