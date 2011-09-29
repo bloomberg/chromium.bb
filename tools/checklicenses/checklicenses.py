@@ -327,9 +327,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/pylib': [
         'UNKNOWN',
     ],
-    'third_party/qcms': [
-        'UNKNOWN',
-    ],
     'third_party/scons-2.0.1/engine/SCons': [
         'UNKNOWN',
     ],
