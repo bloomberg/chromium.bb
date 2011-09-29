@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
@@ -175,7 +174,7 @@ void NativeTabbedPaneWin::AddNativeTab(int index, const string16& title) {
     tcitem.mask |= TCIF_RTLREADING;
   }
 
-  tcitem.pszText = const_cast<wchar_t*>(UTF16ToWide(title).c_str());
+  tcitem.pszText = const_cast<wchar_t*>(title.c_str());
   int result = TabCtrl_InsertItem(native_view(), index, &tcitem);
   DCHECK(result != -1);
 }
