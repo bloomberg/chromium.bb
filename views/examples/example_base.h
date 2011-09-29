@@ -22,14 +22,13 @@ class ExampleBase {
  public:
   virtual ~ExampleBase();
 
-  // Returns the view containing this example controls.
-  // This view is added as a tab to the example application.
-  views::View* GetExampleView() { return container_; }
-
   // Sub-classes should creates and add the views to the given parent.
   virtual void CreateExampleView(views::View* parent) = 0;
 
   const std::string& example_title() const { return example_title_; }
+
+  // This view is added as a tab to the example application.
+  views::View* example_view() { return container_; }
 
  protected:
   ExampleBase(ExamplesMain* main, const char* title);
@@ -43,7 +42,7 @@ class ExampleBase {
   }
 
  private:
-  // The runner actually running this test.
+  // The runner actually running this example.
   ExamplesMain* main_;
 
   // Name of the example - used for the title of the tab.

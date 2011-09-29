@@ -92,7 +92,7 @@ void BubbleExample::ButtonPressed(views::Button* sender,
     fade_bubble_->client_view()->AsBubbleView()->set_animation_delegate(this);
     fade_bubble_->client_view()->AsBubbleView()->StartFade();
   }
-  GetExampleView()->SchedulePaint();
+  example_view()->SchedulePaint();
 }
 
 views::Widget* BubbleExample::AddBubbleButton(const BubbleConfig& config) {
@@ -107,7 +107,7 @@ views::Widget* BubbleExample::AddBubbleButton(const BubbleConfig& config) {
   params.delegate = new ExampleBubbleDelegateView(config, bubble_widget);
   params.transparent = true;
   params.bounds = config.bound;
-  params.parent = GetExampleView()->GetWidget()->GetNativeView();
+  params.parent = example_view()->GetWidget()->GetNativeView();
   bubble_widget->Init(params);
   bubble_widget->client_view()->AsBubbleView()->AddChildView(bubble_message);
   return bubble_widget;
