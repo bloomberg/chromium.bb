@@ -305,7 +305,7 @@
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
       # crbug.com/81271
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
+      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',	
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # Flaky: crosbug.com/14394
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
@@ -480,9 +480,6 @@
       # ==================================================
       # crbug.com/95035
       '-enterprise.EnterpriseTestReverse.testEnable3DAPI',
-      # crbug.com/98500
-      '-enterprise.EnterpriseTestReverse.testAlwaysAuthorizePluginsDisabled',
-
     ],
 
     'chromeos': [
