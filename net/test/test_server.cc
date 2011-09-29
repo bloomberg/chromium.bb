@@ -280,10 +280,6 @@ void TestServer::Init(const FilePath& document_root) {
                        .Append(FILE_PATH_LITERAL("data"))
                        .Append(FILE_PATH_LITERAL("ssl"))
                        .Append(FILE_PATH_LITERAL("certificates"));
-
-  // TODO(battre) Remove this after figuring out why the TestServer is flaky.
-  // http://crbug.com/96594
-  log_to_console_ = true;
 }
 
 bool TestServer::SetPythonPath() {
