@@ -24,63 +24,6 @@ static const int kContinueWindowHideTimeoutMs = 60 * 1000;
 
 namespace remoting {
 
-// UIThreadProxy proxies DesktopEnvironment method calls to the UI
-// thread. This is neccessary so that DesktopEnvironment can be
-// deleted synchronously even while there are pending tasks on the
-// message queue.
-//
-// TODO(sergeyu): Merge this code with remoting::TaskThreadProxy. The
-// problem solved by this class is very simular to the one solved by
-// ScopedRunnableMethodFactory. The main difference is that this class
-// is thread-safe. Change the interface to make it look more like
-// ScopedRunnableMethodFactory and rename it to avoid confusion with
-// MessageLoopProxy.
-class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
- public:
-  explicit UIThreadProxy(base::MessageLoopProxy* message_loop)
-      : message_loop_(message_loop) {
-  }
-
-  // TODO(sergeyu): Rename this method.
-  void Detach() {
-    DCHECK(message_loop_->BelongsToCurrentThread());
-    message_loop_ = NULL;
-  }
-
-  void CallOnUIThread(const tracked_objects::Location& from_here,
-                      const base::Closure& closure) {
-    scoped_refptr<base::MessageLoopProxy> message_loop = message_loop_;
-    if (message_loop) {
-      message_loop->PostTask(from_here, base::Bind(
-          &UIThreadProxy::CallClosure, this, closure));
-    }
-  }
-
-  void CallOnUIThreadDelayed(const tracked_objects::Location& from_here,
-                             const base::Closure& closure,
-                             int delay_ms) {
-    scoped_refptr<base::MessageLoopProxy> message_loop = message_loop_;
-    if (message_loop) {
-      message_loop->PostDelayedTask(from_here, base::Bind(
-          &UIThreadProxy::CallClosure, this, closure), delay_ms);
-    }
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<UIThreadProxy>;
-
-  virtual ~UIThreadProxy() { }
-
-  void CallClosure(const base::Closure& closure) {
-    if (message_loop_)
-      closure.Run();
-  }
-
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(UIThreadProxy);
-};
-
 // static
 DesktopEnvironment* DesktopEnvironment::Create(ChromotingHostContext* context) {
   scoped_ptr<Capturer> capturer(Capturer::Create());
@@ -125,7 +68,7 @@ DesktopEnvironment::DesktopEnvironment(ChromotingHostContext* context,
       local_input_monitor_(local_input_monitor),
       is_monitoring_local_inputs_(false),
       continue_timer_state_(INACTIVE),
-      proxy_(new UIThreadProxy(context->ui_message_loop())) {
+      ui_thread_proxy_(context->ui_message_loop()) {
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
@@ -139,21 +82,21 @@ void DesktopEnvironment::Shutdown() {
   ShowContinueWindow(false);
   StartContinueWindowTimer(false);
 
-  proxy_->Detach();
+  ui_thread_proxy_.Detach();
 }
 
 void DesktopEnvironment::OnConnect(const std::string& username) {
-  proxy_->CallOnUIThread(FROM_HERE, base::Bind(
+  ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
       &DesktopEnvironment::ProcessOnConnect, base::Unretained(this), username));
 }
 
 void DesktopEnvironment::OnLastDisconnect() {
-  proxy_->CallOnUIThread(FROM_HERE, base::Bind(
+  ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
       &DesktopEnvironment::ProcessOnLastDisconnect, base::Unretained(this)));
 }
 
 void DesktopEnvironment::OnPause(bool pause) {
-  proxy_->CallOnUIThread(FROM_HERE, base::Bind(
+  ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
       &DesktopEnvironment::ProcessOnPause, base::Unretained(this), pause));
 }
 
@@ -221,7 +164,7 @@ void DesktopEnvironment::StartContinueWindowTimer(bool start) {
   if (start && continue_timer_state_ == INACTIVE) {
     continue_timer_target_time_ = base::Time::Now() +
         base::TimeDelta::FromMilliseconds(kContinueWindowShowTimeoutMs);
-    proxy_->CallOnUIThreadDelayed(
+    ui_thread_proxy_.PostDelayedTask(
         FROM_HERE, base::Bind(&DesktopEnvironment::ContinueWindowTimerFunc,
                               base::Unretained(this)),
         kContinueWindowShowTimeoutMs);
@@ -249,7 +192,7 @@ void DesktopEnvironment::ContinueWindowTimerFunc() {
       ShowContinueWindow(true);
       continue_timer_target_time_ = base::Time::Now() +
           base::TimeDelta::FromMilliseconds(kContinueWindowHideTimeoutMs);
-      proxy_->CallOnUIThreadDelayed(
+      ui_thread_proxy_.PostDelayedTask(
           FROM_HERE, base::Bind(&DesktopEnvironment::ContinueWindowTimerFunc,
                                 base::Unretained(this)),
           kContinueWindowHideTimeoutMs);

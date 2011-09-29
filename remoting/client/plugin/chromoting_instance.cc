@@ -24,7 +24,6 @@
 #include "ppapi/cpp/rect.h"
 // TODO(wez): Remove this when crbug.com/86353 is complete.
 #include "ppapi/cpp/private/var_private.h"
-#include "remoting/base/task_thread_proxy.h"
 #include "remoting/base/util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_client.h"
@@ -71,11 +70,9 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       scale_to_fit_(false),
       enable_client_nat_traversal_(false),
       initial_policy_received_(false),
-      task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      thread_proxy_(new ScopedThreadProxy(plugin_message_loop_)) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
-
-  log_proxy_ = new TaskThreadProxy(MessageLoop::current());
 
   // Resister this instance to handle debug log messsages.
   RegisterLoggingInstance();
@@ -86,7 +83,7 @@ ChromotingInstance::~ChromotingInstance() {
 
   // Detach the log proxy so we don't log anything else to the UI.
   // This needs to be done before the instance is unregistered for logging.
-  log_proxy_->Detach();
+  thread_proxy_->Detach();
 
   // Unregister this instance so that debug log messages will no longer be sent
   // to it. This will stop all logging in all Chromoting instances.
@@ -106,6 +103,10 @@ ChromotingInstance::~ChromotingInstance() {
   if (view_proxy_.get()) {
     view_proxy_->Detach();
   }
+
+  // Delete |thread_proxy_| before we detach |plugin_message_loop_|,
+  // otherwise ScopedThreadProxy may DCHECK when destroying.
+  thread_proxy_.reset();
 
   plugin_message_loop_->Detach();
 }
@@ -150,8 +151,10 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // enterprise policy is pushed at least once, we we delay the connect call.
   if (!initial_policy_received_) {
     VLOG(1) << "Delaying connect until initial policy is read.";
-    delayed_connect_.reset(
-        task_factory_.NewRunnableMethod(&ChromotingInstance::Connect, config));
+    // base::Unretained() is safe here because |delayed_connect_| is
+    // used only with |thread_proxy_|.
+    delayed_connect_ = base::Bind(&ChromotingInstance::Connect,
+                                  base::Unretained(this), config);
     return;
   }
 
@@ -395,11 +398,11 @@ bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
     if (g_logging_instance) {
       std::string message = remoting::GetTimestampString();
       message += (str.c_str() + message_start);
-      // |log_proxy_| is safe to use here because we detach the proxy before
+      // |thread_proxy_| is safe to use here because we detach it before
       // tearing down the |g_logging_instance|.
-      g_logging_instance->log_proxy_->Call(
-          base::Bind(&ChromotingInstance::ProcessLogToUI,
-                     base::Unretained(g_logging_instance), message));
+      g_logging_instance->thread_proxy_->PostTask(
+          FROM_HERE, base::Bind(&ChromotingInstance::ProcessLogToUI,
+                                base::Unretained(g_logging_instance), message));
     }
   }
 
@@ -514,8 +517,10 @@ void ChromotingInstance::HandlePolicyUpdate(const std::string policy_json) {
   initial_policy_received_ = true;
   enable_client_nat_traversal_ = traversal_policy;
 
-  if (delayed_connect_.get())
-    plugin_message_loop_->PostTask(FROM_HERE, delayed_connect_.release());
+  if (!delayed_connect_.is_null()) {
+    thread_proxy_->PostTask(FROM_HERE, delayed_connect_);
+    delayed_connect_.Reset();
+  }
 }
 
 }  // namespace remoting

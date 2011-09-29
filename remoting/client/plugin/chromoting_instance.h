@@ -19,6 +19,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/private/instance_private.h"
+#include "remoting/base/scoped_thread_proxy.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
@@ -47,7 +48,6 @@ class JingleThread;
 class PepperView;
 class PepperViewProxy;
 class RectangleUpdateDecoder;
-class TaskThreadProxy;
 
 struct ClientConfig;
 
@@ -139,9 +139,6 @@ class ChromotingInstance : public pp::InstancePrivate {
   // True if scale to fit is enabled.
   bool scale_to_fit_;
 
-  // A refcounted class to perform thread-switching for logging tasks.
-  scoped_refptr<TaskThreadProxy> log_proxy_;
-
   // PepperViewProxy is refcounted and used to interface between chromoting
   // objects and PepperView and perform thread switching. It wraps around
   // |view_| and receives method calls on chromoting threads. These method
@@ -173,8 +170,8 @@ class ChromotingInstance : public pp::InstancePrivate {
   // settings.
   bool initial_policy_received_;
 
-  ScopedRunnableMethodFactory<ChromotingInstance> task_factory_;
-  scoped_ptr<Task> delayed_connect_;
+  scoped_ptr<ScopedThreadProxy> thread_proxy_;
+  base::Closure delayed_connect_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingInstance);
 };

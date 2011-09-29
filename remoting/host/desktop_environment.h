@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "remoting/base/scoped_thread_proxy.h"
 
 namespace remoting {
 
@@ -22,7 +23,6 @@ class Curtain;
 class DisconnectWindow;
 class EventExecutor;
 class LocalInputMonitor;
-class UIThreadProxy;
 
 class DesktopEnvironment {
  public:
@@ -114,7 +114,7 @@ class DesktopEnvironment {
   ContinueTimerState continue_timer_state_;
   base::Time continue_timer_target_time_;
 
-  scoped_refptr<UIThreadProxy> proxy_;
+  ScopedThreadProxy ui_thread_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopEnvironment);
 };
