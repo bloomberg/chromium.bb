@@ -651,16 +651,19 @@ TextButton::~TextButton() {
 
 void TextButton::SetIcon(const SkBitmap& icon) {
   icon_ = icon;
+  SchedulePaint();
 }
 
 void TextButton::SetHoverIcon(const SkBitmap& icon) {
   icon_hover_ = icon;
   has_hover_icon_ = true;
+  SchedulePaint();
 }
 
 void TextButton::SetPushedIcon(const SkBitmap& icon) {
   icon_pushed_ = icon;
   has_pushed_icon_ = true;
+  SchedulePaint();
 }
 
 gfx::Size TextButton::GetPreferredSize() {
