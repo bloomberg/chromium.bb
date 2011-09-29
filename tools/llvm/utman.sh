@@ -181,6 +181,8 @@ readonly LLVM_GCC_VER="4.2.1"
 # Location of PNaCl gcc/g++/as
 readonly PNACL_GCC="${INSTALL_BIN}/pnacl-gcc"
 readonly PNACL_GPP="${INSTALL_BIN}/pnacl-g++"
+readonly PNACL_CLANG="${INSTALL_BIN}/pnacl-clang"
+readonly PNACL_CLANGPP="${INSTALL_BIN}/pnacl-clang++"
 readonly PNACL_AR="${INSTALL_BIN}/pnacl-ar"
 readonly PNACL_RANLIB="${INSTALL_BIN}/pnacl-ranlib"
 readonly PNACL_AS="${INSTALL_BIN}/pnacl-as"
@@ -294,6 +296,29 @@ STD_ENV_FOR_LIBSTDCPP=(
   LD_FOR_TARGET="${ILLEGAL_TOOL}"
   OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
+STD_ENV_FOR_LIBSTDCPP_CLANG=(
+  CC_FOR_BUILD="${CC}"
+  CC="${PNACL_CLANG}"
+  CXX="${PNACL_CLANGPP}"
+  RAW_CXX_FOR_TARGET="${PNACL_CLANGPP}"
+  LD="${ILLEGAL_TOOL}"
+  CFLAGS="--pnacl-arm-bias"
+  CPPFLAGS="--pnacl-arm-bias"
+  CXXFLAGS="--pnacl-arm-bias"
+  CFLAGS_FOR_TARGET="--pnacl-arm-bias"
+  CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
+  CC_FOR_TARGET="${PNACL_CLANG}"
+  GCC_FOR_TARGET="${PNACL_CLANG}"
+  CXX_FOR_TARGET="${PNACL_CLANGPP}"
+  AR="${PNACL_AR}"
+  AR_FOR_TARGET="${PNACL_AR}"
+  NM_FOR_TARGET="${PNACL_NM}"
+  RANLIB="${PNACL_RANLIB}"
+  RANLIB_FOR_TARGET="${PNACL_RANLIB}"
+  AS_FOR_TARGET="${ILLEGAL_TOOL}"
+  LD_FOR_TARGET="${ILLEGAL_TOOL}"
+  OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
+
 STD_ENV_FOR_NEWLIB=(
   CFLAGS_FOR_TARGET="--pnacl-arm-bias"
   CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
@@ -307,6 +332,17 @@ STD_ENV_FOR_NEWLIB=(
   AS_FOR_TARGET="${ILLEGAL_TOOL}"
   LD_FOR_TARGET="${ILLEGAL_TOOL}"
   STRIP_FOR_TARGET="${ILLEGAL_TOOL}" )
+
+
+# Note: the result of this function this needs to be 'eval'ed
+#       there seems to be no better way to copy arrays
+copy-array-by-reference-cmd() {
+  echo -n "$2"          # dst name
+  echo -n '=( ${'
+  echo -n "$1"          # src name
+  echo -n '[@]} )'
+}
+
 
 # The gold plugin that we use is documented at
 # http://llvm.org/docs/GoldPlugin.html
@@ -733,6 +769,24 @@ libc() {
   fi
 }
 
+
+#@ clang-libs            - install native libs and build bitcode libs with clang
+clang-libs() {
+  libs-clean
+
+  # NOTE: no support for glibc and clang at this point
+  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2290
+  # sysroot
+  # clang-newlib
+  clang-build-compiler-rt
+  # NOTE: this currently depends on "llvm-gcc arm"
+  clang-build-libgcc_eh arm
+  clang-build-libgcc_eh x86-32
+  clang-build-libgcc_eh x86-64
+
+  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2289
+  # clang-libstdcpp
+}
 
 #@ everything            - Build and install untrusted SDK. no translator
 everything() {
@@ -1413,15 +1467,41 @@ llvm-gcc-make() {
   spopd
 }
 
+#+ llvm-gcc-install    - Install GCC stage 1
+llvm-gcc-install() {
+  llvm-gcc-setup "$@"
+  StepBanner "LLVM-GCC" "Install ${LLVM_GCC_ARCH}"
+
+  local objdir="${LLVM_GCC_BUILD_DIR}"
+  spushd "${objdir}"
+
+  RunWithLog llvm-pregcc-${LLVM_GCC_ARCH}.install \
+       env -i PATH=/usr/bin/:/bin \
+              CC="${CC}" \
+              CXX="${CXX}" \
+              CFLAGS="-Dinhibit_libc" \
+              make ${MAKE_OPTS} install
+
+  spopd
+}
+
+#########################################################################
+#########################################################################
+#     < LIBGCC_EH >
+#########################################################################
+#########################################################################
+
 #+ build-libgcc_eh - build/install libgcc_eh
-build-libgcc_eh() {
+build-libgcc_eh_generic() {
   # TODO(pdox): This process needs some major renovation.
   # We are using the llvm-gcc ARM build directory, but varying '-arch'
   # to get different versions of libgcc_eh.
 
   # NOTE: For simplicity we piggyback the libgcc_eh build onto a preconfigured
   #       objdir. So, to be safe, you have to run gcc-stage1-make first
-  local arch=$1
+  local -a build_env
+  eval $(copy-array-by-reference-cmd $1 build_env)
+  local arch=$2
   local srcdir="${TC_SRC_LLVM_GCC}"
   local objdir="${TC_BUILD_LLVM_GCC}-arm"
   spushd "${objdir}"/gcc
@@ -1438,14 +1518,14 @@ build-libgcc_eh() {
   #       'ATTRIBUTE_UNUSED' which is used to mark unused function
   #       parameters.
   #       The arguments were gleaned from build logs.
-  StepBanner "libgcc_eh-${arch}" "building"
+  StepBanner "libgcc_eh-${arch}" "building ($1)"
   local flags
   flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
   flags+=" -DATTRIBUTE_UNUSED= -DHOST_BITS_PER_INT=32 -Dinhibit_libc"
   flags+=" -DIN_GCC -DCROSS_DIRECTORY_STRUCTURE "
   RunWithLog libgcc_eh.${arch}.make \
        env -i PATH=/usr/bin/:/bin \
-              "${STD_ENV_FOR_LIBSTDCPP[@]}" \
+              "${build_env[@]}" \
               "INCLUDES=-I${srcdir}/include -I${srcdir}/gcc -I." \
               "LIBGCC2_CFLAGS=${flags}" \
               "AR_CREATE_FOR_TARGET=${PNACL_AR} rc" \
@@ -1457,13 +1537,38 @@ build-libgcc_eh() {
   cp "${objdir}"/gcc/libgcc_eh.a "${INSTALL_LIB}-${arch}"
 }
 
+#+ build-libgcc_eh - build/install libgcc_eh
+build-libgcc_eh() {
+  build-libgcc_eh_generic STD_ENV_FOR_LIBSTDCPP "$@"
+}
+
+#+ clang-build-libgcc_eh - build/install libgcc_eh with clang
+clang-build-libgcc_eh() {
+  build-libgcc_eh_generic STD_ENV_FOR_LIBSTDCPP_CLANG "$@"
+}
+
+#########################################################################
+#########################################################################
+#     < COMPILER-RT >
+#########################################################################
+#########################################################################
+
+STD_ENV_FOR_COMPILER_RT=(
+  CC="${PNACL_GCC}"
+  AR="${PNACL_AR}" )
+
+STD_ENV_FOR_COMPILER_RT_CLANG=(
+  CC="${PNACL_CLANG}"
+  AR="${PNACL_AR}" )
+
 #+ build-compiler-rt - build/install llvm's replacement for libgcc.a
-build-compiler-rt() {
+build-compiler-rt-generic() {
+  local -a build_env
+  eval $(copy-array-by-reference-cmd $1 build_env)
   src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
   mkdir -p "${TC_BUILD_COMPILER_RT}"
   spushd "${TC_BUILD_COMPILER_RT}"
-
-  StepBanner "COMPILER-RT (LIBGCC)"
+  StepBanner "COMPILER-RT (LIBGCC) ($1)"
   for arch in arm x86-32 x86-64; do
     StepBanner "compiler rt" "build ${arch}"
     rm -rf "${arch}"
@@ -1471,9 +1576,8 @@ build-compiler-rt() {
     spushd "${arch}"
     RunWithLog libgcc.${arch}.make \
         make -j ${UTMAN_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
+          "${build_env[@]}" \
           "SRC_DIR=${src}" \
-          "CC=${PNACL_GCC}" \
-          "AR=${PNACL_AR}" \
           "CFLAGS=-arch ${arch} --pnacl-allow-translate -O3 -fPIC"
     spopd
   done
@@ -1492,9 +1596,20 @@ build-compiler-rt() {
   spopd
 }
 
-#+ build-compiler-rt-bitcode - build/install llvm's replacement for libgcc.a
+#+ build-compiler-rt - build/install llvm's replacement for libgcc.a
+build-compiler-rt() {
+  build-compiler-rt-generic STD_ENV_FOR_COMPILER_RT
+}
+
+#+ clang-build-compiler-rt - build/install llvm's replacement for
+#                            libgcc.a using clang
+clang-build-compiler-rt() {
+  build-compiler-rt-generic STD_ENV_FOR_COMPILER_RT_CLANG
+}
+
+#+ bitcode-build-compiler-rt - build/install llvm's replacement for libgcc.a
 #                              as bitcode - this is EXPERIMENTAL
-build-compiler-rt-bitcode() {
+bitcode-build-compiler-rt() {
   src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
   mkdir -p "${TC_BUILD_COMPILER_RT}"
   spushd "${TC_BUILD_COMPILER_RT}"
@@ -1521,24 +1636,6 @@ build-compiler-rt-bitcode() {
   mkdir -p "${INSTALL_LIB}"
   ls -l bitcode/libgcc.a
   cp bitcode/libgcc.a "${INSTALL_LIB}"
-
-  spopd
-}
-
-#+ llvm-gcc-install    - Install GCC stage 1
-llvm-gcc-install() {
-  llvm-gcc-setup "$@"
-  StepBanner "LLVM-GCC" "Install ${LLVM_GCC_ARCH}"
-
-  local objdir="${LLVM_GCC_BUILD_DIR}"
-  spushd "${objdir}"
-
-  RunWithLog llvm-pregcc-${LLVM_GCC_ARCH}.install \
-       env -i PATH=/usr/bin/:/bin \
-              CC="${CC}" \
-              CXX="${CXX}" \
-              CFLAGS="-Dinhibit_libc" \
-              make ${MAKE_OPTS} install
 
   spopd
 }
