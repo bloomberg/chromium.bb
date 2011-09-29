@@ -24,7 +24,10 @@ InputEventData::InputEventData()
       wheel_ticks(PP_MakeFloatPoint(0.0f, 0.0f)),
       wheel_scroll_by_page(false),
       key_code(0),
-      character_text() {
+      character_text(),
+      composition_target_segment(-1),
+      composition_selection_start(0),
+      composition_selection_end(0) {
 }
 
 InputEventData::~InputEventData() {
@@ -102,5 +105,27 @@ PP_Var InputEventImpl::GetCharacterText() {
       data_.character_text);
 }
 
-}  // namespace ppapi
+uint32_t InputEventImpl::GetIMESegmentNumber() {
+  if (data_.composition_segment_offsets.empty())
+    return 0;
+  return data_.composition_segment_offsets.size() - 1;
+}
 
+uint32_t InputEventImpl::GetIMESegmentOffset(uint32_t index) {
+  if (index >= data_.composition_segment_offsets.size())
+    return 0;
+  return data_.composition_segment_offsets[index];
+}
+
+int32_t InputEventImpl::GetIMETargetSegment() {
+  return data_.composition_target_segment;
+}
+
+void InputEventImpl::GetIMESelection(uint32_t* start, uint32_t* end) {
+  if (start)
+    *start = data_.composition_selection_start;
+  if (end)
+    *end = data_.composition_selection_end;
+}
+
+}  // namespace ppapi

@@ -49,16 +49,11 @@ uint32_t IMEInputEvent_Dev::GetSegmentNumber() const {
       pp_resource());
 }
 
-std::pair<uint32_t, uint32_t>
-IMEInputEvent_Dev::GetSegmentAt(uint32_t index) const {
-  std::pair<uint32_t, uint32_t> range(0, 0);
+uint32_t IMEInputEvent_Dev::GetSegmentOffset(uint32_t index) const {
   if (!has_interface<PPB_IMEInputEvent_Dev>())
-    return range;
-  get_interface<PPB_IMEInputEvent_Dev>()->GetSegmentAt(pp_resource(),
-                                                       index,
-                                                       &range.first,
-                                                       &range.second);
-  return range;
+    return 0;
+  return get_interface<PPB_IMEInputEvent_Dev>()->GetSegmentOffset(pp_resource(),
+                                                                  index);
 }
 
 int32_t IMEInputEvent_Dev::GetTargetSegment() const {

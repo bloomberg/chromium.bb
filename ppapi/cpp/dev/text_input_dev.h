@@ -21,7 +21,6 @@ class TextInput_Dev {
 
   void SetTextInputType(PP_TextInput_Type type);
   void UpdateCaretPosition(const Rect& caret, const Rect& bounding_box);
-  void ConfirmCompositionText();
   void CancelCompositionText();
 
  private:

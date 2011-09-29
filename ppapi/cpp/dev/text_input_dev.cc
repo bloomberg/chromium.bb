@@ -40,13 +40,6 @@ void TextInput_Dev::UpdateCaretPosition(const Rect& caret,
       instance_->pp_instance(), &caret.pp_rect(), &bounding_box.pp_rect());
 }
 
-void TextInput_Dev::ConfirmCompositionText() {
-  if (!has_interface<PPB_TextInput_Dev>())
-    return;
-  get_interface<PPB_TextInput_Dev>()->ConfirmCompositionText(
-      instance_->pp_instance());
-}
-
 void TextInput_Dev::CancelCompositionText() {
   if (!has_interface<PPB_TextInput_Dev>())
     return;

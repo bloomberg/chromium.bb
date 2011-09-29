@@ -19,6 +19,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/dev/pp_video_capture_dev.h"
+#include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
@@ -44,6 +45,7 @@
 
 IPC_ENUM_TRAITS(PP_InputEvent_Type)
 IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
+IPC_ENUM_TRAITS(PP_TextInput_Type)
 IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 
@@ -113,6 +115,10 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::InputEventData)
   IPC_STRUCT_TRAITS_MEMBER(wheel_scroll_by_page)
   IPC_STRUCT_TRAITS_MEMBER(key_code)
   IPC_STRUCT_TRAITS_MEMBER(character_text)
+  IPC_STRUCT_TRAITS_MEMBER(composition_segment_offsets)
+  IPC_STRUCT_TRAITS_MEMBER(composition_target_segment)
+  IPC_STRUCT_TRAITS_MEMBER(composition_selection_start)
+  IPC_STRUCT_TRAITS_MEMBER(composition_selection_end)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::PPB_URLRequestInfo_Data)
@@ -921,6 +927,17 @@ IPC_SYNC_MESSAGE_ROUTED3_1(
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
                            PP_Instance /* instance */,
                            uint32 /* result */)
+
+// PPB_TextInput.
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBTextInput_SetTextInputType,
+                    PP_Instance /* instance */,
+                    PP_TextInput_Type /* type */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBTextInput_UpdateCaretPosition,
+                    PP_Instance /* instance */,
+                    PP_Rect /* caret */,
+                    PP_Rect /* bounding_box */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBTextInput_CancelCompositionText,
+                    PP_Instance /* instance */)
 
 // PPB_URLLoader.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLLoader_Create,

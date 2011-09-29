@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_ime_input_event_dev.idl modified Thu Sep 15 17:06:09 2011. */
+/* From dev/ppb_ime_input_event_dev.idl modified Wed Sep 21 12:31:56 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_IME_INPUT_EVENT_DEV_H_
 #define PPAPI_C_DEV_PPB_IME_INPUT_EVENT_DEV_H_
@@ -58,30 +58,24 @@ struct PPB_IMEInputEvent_Dev {
    */
   uint32_t (*GetSegmentNumber)(PP_Resource ime_event);
   /**
-   * GetSegmentAt() returns the start and the end position of the index-th
-   * segment in the composition text. The positions are given by byte-offsets
-   * (not character-offsets) of the string returned by GetText(). The range of
-   * the segment extends from start (inclusive) to end (exclusive). They satisfy
-   * 0 <= start < end <= (byte-length of GetText()). When the event is not
-   * COMPOSITION_UPDATE or index >= GetSegmentNumber(), the function returns
-   * PP_FALSE and nothing else happens.
+   * GetSegmentOffset() returns the position of the index-th segmentation point
+   * in the composition text. The position is given by a byte-offset (not a
+   * character-offset) of the string returned by GetText(). It always satisfies
+   * 0=GetSegmentOffset(0) < ... < GetSegmentOffset(i) < GetSegmentOffset(i+1)
+   * < ... < GetSegmentOffset(GetSegmentNumber())=(byte-length of GetText()).
+   * Note that [GetSegmentOffset(i), GetSegmentOffset(i+1)) represents the range
+   * of the i-th segment, and hence GetSegmentNumber() can be a valid argument
+   * to this function instead of an off-by-1 error.
    *
    * @param[in] ime_event A <code>PP_Resource</code> corresponding to an IME
    * event.
    *
    * @param[in] index An integer indicating a segment.
    *
-   * @param[out] start The start position of the index-th segment.
-   *
-   * @param[out] end The end position of the index-th segment.
-   *
-   * @return PP_TRUE when the start and the end position is successfully
-   * obtained, and PP_FALSE otherwise.
+   * @return The byte-offset of the segmentation point. If the event is not
+   * COMPOSITION_UPDATE or index is out of range, returns 0.
    */
-  PP_Bool (*GetSegmentAt)(PP_Resource ime_event,
-                          uint32_t index,
-                          uint32_t* start,
-                          uint32_t* end);
+  uint32_t (*GetSegmentOffset)(PP_Resource ime_event, uint32_t index);
   /**
    * GetTargetSegment() returns the index of the current target segment of
    * composition.

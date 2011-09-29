@@ -302,9 +302,9 @@ WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
     case PP_INPUTEVENT_TYPE_CHAR:
       web_input_event.reset(BuildCharEvent(event));
       break;
-    case PP_INPUTEVENT_TYPE_COMPOSITION_START:
-    case PP_INPUTEVENT_TYPE_COMPOSITION_UPDATE:
-    case PP_INPUTEVENT_TYPE_COMPOSITION_END:
+    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_START:
+    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE:
+    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END:
     case PP_INPUTEVENT_TYPE_IME_TEXT:
       // TODO(kinaba) implement in WebKit an event structure to handle
       // composition events.
