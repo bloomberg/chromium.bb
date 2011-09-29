@@ -95,9 +95,13 @@ get-upstream() {
 #+ merge-all             - Merge everything
 merge-all() {
   if [ $# -ne 1 ]; then
-    Fatal "Please specify revision"
+    Fatal "Please specify revision or 'tip'"
   fi
-  MERGE_REVISION=$1
+  if [ "$1" == "tip" ]; then
+    MERGE_REVISION=$(get-tip-revision)
+  else
+    MERGE_REVISION=$1
+  fi
 
   set-master-revision
   get-upstream
@@ -120,12 +124,25 @@ merge-all() {
     dump-diff-diff
   fi
 
+  final-banner
+}
+
+final-banner() {
   echo "********************************************************************"
-  echo "The llvm and llvm-gcc working directories are now in a merged state."
+  echo "The hg/upstream working directory is now in a merged state."
   echo "Before you commit and push, you should build PNaCl and run all tests."
   echo ""
-  echo "Expect lots of bugs. You may need to fix and rebuild several times."
-  echo "When you are confident all tests are passing, you can commit and push."
+  echo "1) Set the default LLVM_PROJECT_REV to ${MERGE_REVISION} (in utman.sh)"
+  echo ""
+  echo "2) Build PNaCl:"
+  echo "     UTMAN_MERGE_TESTING=true tools/llvm/utman.sh everything-translator"
+  echo ""
+  echo "3) Run all tests:"
+  echo "     tools/llvm/utman-test.sh test-all"
+  echo ""
+  echo "Depending on the size of the merge, there may be lots of bugs. You may"
+  echo "need to fix and rebuild several times. When you are confident all tests"
+  echo "are passing, you can commit and push."
   echo "********************************************************************"
 }
 
