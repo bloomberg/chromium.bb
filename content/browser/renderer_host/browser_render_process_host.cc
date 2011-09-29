@@ -563,7 +563,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableWebAudio,
     switches::kDisableWebSockets,
     switches::kEnableAccessibilityLogging,
-    switches::kEnableAdaptive,
     switches::kEnableDCHECK,
     switches::kEnableGPUServiceLogging,
     switches::kEnableGPUClientLogging,

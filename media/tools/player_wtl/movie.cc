@@ -11,7 +11,6 @@
 #include "media/base/media_log.h"
 #include "media/base/message_loop_factory_impl.h"
 #include "media/base/pipeline_impl.h"
-#include "media/filters/adaptive_demuxer.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
@@ -20,7 +19,6 @@
 #include "media/filters/null_audio_renderer.h"
 #include "media/tools/player_wtl/wtl_renderer.h"
 
-using media::AdaptiveDemuxerFactory;
 using media::AudioRendererImpl;
 using media::FFmpegAudioDecoder;
 using media::FFmpegDemuxerFactory;
@@ -72,8 +70,8 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
 
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());
-  collection->SetDemuxerFactory(new AdaptiveDemuxerFactory(
-      new FFmpegDemuxerFactory(new FileDataSourceFactory(), pipeline_loop)));
+  collection->SetDemuxerFactory(new FFmpegDemuxerFactory(
+      new FileDataSourceFactory(), pipeline_loop));
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
       message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
   collection->AddVideoDecoder(new FFmpegVideoDecoder(

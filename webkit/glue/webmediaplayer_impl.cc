@@ -17,7 +17,6 @@
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/video_frame.h"
-#include "media/filters/adaptive_demuxer.h"
 #include "media/filters/chunk_demuxer_factory.h"
 #include "media/filters/dummy_demuxer_factory.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -190,27 +189,8 @@ bool WebMediaPlayerImpl::Initialize(
     data_source_factory->AddFactory(simple_data_source_factory.release());
   }
 
-  scoped_ptr<media::DemuxerFactory> demuxer_factory(
-      new media::FFmpegDemuxerFactory(data_source_factory.release(),
-                                      pipeline_message_loop));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdaptive)) {
-    demuxer_factory.reset(new media::AdaptiveDemuxerFactory(
-        demuxer_factory.release()));
-
-    std::string sourceUrl;
-
-    // TODO(acolwell): Uncomment once WebKit changes are checked in.
-    // https://bugs.webkit.org/show_bug.cgi?id=64731
-    //sourceUrl = GetClient()->sourceURL().spec();
-
-    if (!sourceUrl.empty()) {
-      demuxer_factory.reset(
-          new media::ChunkDemuxerFactory(sourceUrl,
-                                         demuxer_factory.release(),
-                                         proxy_));
-    }
-  }
-  filter_collection_->SetDemuxerFactory(demuxer_factory.release());
+  filter_collection_->SetDemuxerFactory(new media::FFmpegDemuxerFactory(
+      data_source_factory.release(), pipeline_message_loop));
 
   // Add in the default filter factories.
   filter_collection_->AddAudioDecoder(new media::FFmpegAudioDecoder(
