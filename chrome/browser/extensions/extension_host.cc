@@ -586,9 +586,11 @@ void ExtensionHost::HandleMouseActivate() {
 void ExtensionHost::RunFileChooser(
     RenderViewHost* render_view_host,
     const ViewHostMsg_RunFileChooser_Params& params) {
-  // This object is destroyed when the file selection is performed or
-  // cancelled.
-  FileSelectHelper* file_select_helper = new FileSelectHelper(profile());
+  // FileSelectHelper adds a reference to itself and only releases it after
+  // sending the result message. It won't be destroyed when this reference
+  // goes out of scope.
+  scoped_refptr<FileSelectHelper> file_select_helper(
+      new FileSelectHelper(profile()));
   file_select_helper->RunFileChooser(render_view_host,
                                      GetAssociatedTabContents(),
                                      params);

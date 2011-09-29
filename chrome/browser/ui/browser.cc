@@ -2380,11 +2380,11 @@ void Browser::RunFileChooserHelper(
     TabContents* tab, const ViewHostMsg_RunFileChooser_Params& params) {
   Profile* profile =
       Profile::FromBrowserContext(tab->browser_context());
-
-  // This object is destroyed when the file selection is performed or
-  // cancelled.
-  FileSelectHelper* file_select_helper = new FileSelectHelper(profile);
-
+  // FileSelectHelper adds a reference to itself and only releases it after
+  // sending the result message. It won't be destroyed when this reference
+  // goes out of scope.
+  scoped_refptr<FileSelectHelper> file_select_helper(
+      new FileSelectHelper(profile));
   file_select_helper->RunFileChooser(tab->render_view_host(), tab, params);
 }
 
@@ -2400,11 +2400,11 @@ void Browser::EnumerateDirectoryHelper(TabContents* tab, int request_id,
 
   Profile* profile =
       Profile::FromBrowserContext(tab->browser_context());
-
-  // This object is destroyed when the enumeration is performed or
-  // cancelled.
-  FileSelectHelper* file_select_helper = new FileSelectHelper(profile);
-
+  // FileSelectHelper adds a reference to itself and only releases it after
+  // sending the result message. It won't be destroyed when this reference
+  // goes out of scope.
+  scoped_refptr<FileSelectHelper> file_select_helper(
+      new FileSelectHelper(profile));
   file_select_helper->EnumerateDirectory(request_id,
                                          tab->render_view_host(),
                                          path);

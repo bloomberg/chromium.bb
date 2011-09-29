@@ -25,11 +25,11 @@ struct ViewHostMsg_RunFileChooser_Params;
 // (via the ExtensionHost class). It implements both the initialisation
 // and listener functions for file-selection dialogs.
 class FileSelectHelper
-    : public SelectFileDialog::Listener,
+    : public base::RefCountedThreadSafe<FileSelectHelper>,
+      public SelectFileDialog::Listener,
       public NotificationObserver {
  public:
   explicit FileSelectHelper(Profile* profile);
-  virtual ~FileSelectHelper();
 
   // Show the file chooser dialog.
   void RunFileChooser(RenderViewHost* render_view_host,
@@ -42,6 +42,9 @@ class FileSelectHelper
                           const FilePath& path);
 
  private:
+  friend class base::RefCountedThreadSafe<FileSelectHelper>;
+  virtual ~FileSelectHelper();
+
   // Utility class which can listen for directory lister events and relay
   // them to the main object with the correct tracking id.
   class DirectoryListerDispatchDelegate
@@ -66,6 +69,15 @@ class FileSelectHelper
     DISALLOW_COPY_AND_ASSIGN(DirectoryListerDispatchDelegate);
   };
 
+  void RunFileChooserOnFileThread(
+      const ViewHostMsg_RunFileChooser_Params& params);
+  void RunFileChooserOnUIThread(
+      const ViewHostMsg_RunFileChooser_Params& params);
+
+  // Cleans up and releases this instance. This must be called after the last
+  // callback is received from the file chooser dialog.
+  void RunFileChooserEnd();
+
   // SelectFileDialog::Listener overrides.
   virtual void FileSelected(
       const FilePath& path, int index, void* params) OVERRIDE;
@@ -89,6 +101,10 @@ class FileSelectHelper
       const net::DirectoryLister::DirectoryListerData& data);
   virtual void OnListDone(int id, int error);
 
+  // Cleans up and releases this instance. This must be called after the last
+  // callback is received from the enumeration code.
+  void EnumerateDirectoryEnd();
+
   // Helper method to get allowed extensions for select file dialog from
   // the specified accept types as defined in the spec:
   //   http://whatwg.org/html/number-state.html#attr-input-accept
@@ -98,12 +114,14 @@ class FileSelectHelper
   // Profile used to set/retrieve the last used directory.
   Profile* profile_;
 
-  // The RenderViewHost for the page showing a file dialog (may only be one
-  // such dialog).
+  // The RenderViewHost and TabContents for the page showing a file dialog
+  // (may only be one such dialog).
   RenderViewHost* render_view_host_;
+  TabContents* tab_contents_;
 
   // Dialog box used for choosing files to upload from file form fields.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
+  scoped_ptr<SelectFileDialog::FileTypeInfo> select_file_types_;
 
   // The type of file dialog last shown.
   SelectFileDialog::Type dialog_type_;

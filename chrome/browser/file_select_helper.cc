@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -45,7 +46,9 @@ struct FileSelectHelper::ActiveDirectoryEnumeration {
 FileSelectHelper::FileSelectHelper(Profile* profile)
     : profile_(profile),
       render_view_host_(NULL),
+      tab_contents_(NULL),
       select_file_dialog_(),
+      select_file_types_(),
       dialog_type_(SelectFileDialog::SELECT_OPEN_FILE) {
 }
 
@@ -81,10 +84,9 @@ void FileSelectHelper::FileSelected(const FilePath& path,
   std::vector<FilePath> files;
   files.push_back(path);
   render_view_host_->FilesSelectedInChooser(files);
-  // We are done with this showing of the dialog.
-  render_view_host_ = NULL;
+
   // No members should be accessed from here on.
-  delete this;
+  RunFileChooserEnd();
 }
 
 void FileSelectHelper::MultiFilesSelected(const std::vector<FilePath>& files,
@@ -95,10 +97,9 @@ void FileSelectHelper::MultiFilesSelected(const std::vector<FilePath>& files,
     return;
 
   render_view_host_->FilesSelectedInChooser(files);
-  // We are done with this showing of the dialog.
-  render_view_host_ = NULL;
+
   // No members should be accessed from here on.
-  delete this;
+  RunFileChooserEnd();
 }
 
 void FileSelectHelper::FileSelectionCanceled(void* params) {
@@ -109,10 +110,8 @@ void FileSelectHelper::FileSelectionCanceled(void* params) {
   // empty vector.
   render_view_host_->FilesSelectedInChooser(std::vector<FilePath>());
 
-  // We are done with this showing of the dialog.
-  render_view_host_ = NULL;
   // No members should be accessed from here on.
-  delete this;
+  RunFileChooserEnd();
 }
 
 void FileSelectHelper::StartNewEnumeration(const FilePath& path,
@@ -164,8 +163,8 @@ void FileSelectHelper::OnListDone(int id, int error) {
     entry->rvh_->FilesSelectedInChooser(entry->results_);
   else
     entry->rvh_->DirectoryEnumerationFinished(id, entry->results_);
-  // No members should be accessed from here on.
-  delete this;
+
+  EnumerateDirectoryEnd();
 }
 
 SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
@@ -243,11 +242,43 @@ void FileSelectHelper::RunFileChooser(
     TabContents* tab_contents,
     const ViewHostMsg_RunFileChooser_Params& params) {
   DCHECK(!render_view_host_);
+  DCHECK(!tab_contents_);
   render_view_host_ = render_view_host;
+  tab_contents_ = tab_contents;
   notification_registrar_.RemoveAll();
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderWidgetHost>(render_view_host));
+      Source<RenderWidgetHost>(render_view_host_));
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      Source<TabContents>(tab_contents_));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&FileSelectHelper::RunFileChooserOnFileThread, this, params));
+
+  // Because this class returns notifications to the RenderViewHost, it is
+  // difficult for callers to know how long to keep a reference to this
+  // instance. We AddRef() here to keep the instance alive after we return
+  // to the caller, until the last callback is received from the file dialog.
+  // At that point, we must call RunFileChooserEnd().
+  AddRef();
+}
+
+void FileSelectHelper::RunFileChooserOnFileThread(
+    const ViewHostMsg_RunFileChooser_Params& params) {
+  select_file_types_.reset(
+      GetFileTypesFromAcceptType(params.accept_types));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&FileSelectHelper::RunFileChooserOnUIThread, this, params));
+}
+
+void FileSelectHelper::RunFileChooserOnUIThread(
+    const ViewHostMsg_RunFileChooser_Params& params) {
+  if (!render_view_host_ || !tab_contents_)
+    return;
 
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);
@@ -269,8 +300,6 @@ void FileSelectHelper::RunFileChooser(
       dialog_type_ = SelectFileDialog::SELECT_OPEN_FILE;  // Prevent warning.
       NOTREACHED();
   }
-  scoped_ptr<SelectFileDialog::FileTypeInfo> file_types(
-      GetFileTypesFromAcceptType(params.accept_types));
   FilePath default_file_name = params.default_file_name;
   if (default_file_name.empty())
     default_file_name = profile_->last_selected_directory();
@@ -278,29 +307,68 @@ void FileSelectHelper::RunFileChooser(
   gfx::NativeWindow owning_window =
       platform_util::GetTopLevel(render_view_host_->view()->GetNativeView());
 
-  select_file_dialog_->SelectFile(dialog_type_,
-                                  params.title,
-                                  default_file_name,
-                                  file_types.get(),
-                                  file_types.get() ? 1 : 0,  // 1-based index.
-                                  FILE_PATH_LITERAL(""),
-                                  tab_contents,
-                                  owning_window,
-                                  NULL);
+  select_file_dialog_->SelectFile(
+      dialog_type_,
+      params.title,
+      default_file_name,
+      select_file_types_.get(),
+      select_file_types_.get() ? 1 : 0,  // 1-based index.
+      FILE_PATH_LITERAL(""),
+      tab_contents_,
+      owning_window,
+      NULL);
+
+  select_file_types_.reset();
+}
+
+// This method is called when we receive the last callback from the file
+// chooser dialog. Perform any cleanup and release the reference we added
+// in RunFileChooser().
+void FileSelectHelper::RunFileChooserEnd() {
+  render_view_host_ = NULL;
+  tab_contents_ = NULL;
+  Release();
 }
 
 void FileSelectHelper::EnumerateDirectory(int request_id,
                                           RenderViewHost* render_view_host,
                                           const FilePath& path) {
   DCHECK_NE(kFileSelectEnumerationId, request_id);
+
+  // Because this class returns notifications to the RenderViewHost, it is
+  // difficult for callers to know how long to keep a reference to this
+  // instance. We AddRef() here to keep the instance alive after we return
+  // to the caller, until the last callback is received from the enumeration
+  // code. At that point, we must call EnumerateDirectoryEnd().
+  AddRef();
   StartNewEnumeration(path, request_id, render_view_host);
+}
+
+// This method is called when we receive the last callback from the enumeration
+// code. Perform any cleanup and release the reference we added in
+// EnumerateDirectory().
+void FileSelectHelper::EnumerateDirectoryEnd() {
+  Release();
 }
 
 void FileSelectHelper::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
-  DCHECK(Source<RenderWidgetHost>(source).ptr() == render_view_host_);
-  render_view_host_ = NULL;
+  switch (type) {
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
+      DCHECK(Source<RenderWidgetHost>(source).ptr() == render_view_host_);
+      render_view_host_ = NULL;
+      break;
+    }
+
+    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
+      DCHECK(Source<TabContents>(source).ptr() == tab_contents_);
+      tab_contents_ = NULL;
+      break;
+    }
+
+    default:
+      NOTREACHED();
+  }
 }
 
