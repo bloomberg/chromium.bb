@@ -522,6 +522,15 @@ void FilterDisabledTests() {
 
     // Not supported in ChromeFrame as we use IE's network stack.
     "URLRequestTest.NetworkDelegateProxyError",
+
+    // URLRequestAutomationJob needs to support NeedsAuth.
+    // http://crbug.com/98446
+    "URLRequestTestHTTP.NetworkDelegateOnAuthRequiredSyncNoAction",
+    "URLRequestTestHTTP.NetworkDelegateOnAuthRequiredSyncSetAuth",
+    "URLRequestTestHTTP.NetworkDelegateOnAuthRequiredSyncCancel",
+    "URLRequestTestHTTP.NetworkDelegateOnAuthRequiredAsyncNoAction",
+    "URLRequestTestHTTP.NetworkDelegateOnAuthRequiredAsyncSetAuth",
+    "URLRequestTestHTTP.NetworkDelegateOnAuthRequiredAsyncCancel",
   };
 
   std::string filter("-");  // All following filters will be negative.
