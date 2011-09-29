@@ -6,6 +6,8 @@
 #define CONTENT_APP_STARTUP_HELPER_WIN_H_
 #pragma once
 
+#include "content/common/content_export.h"
+
 class CommandLine;
 
 namespace sandbox {
@@ -17,7 +19,8 @@ struct SandboxInterfaceInfo;
 namespace content {
 
 // Initializes the sandbox code and turns on DEP.
-void InitializeSandboxInfo(sandbox::SandboxInterfaceInfo* sandbox_info);
+CONTENT_EXPORT void InitializeSandboxInfo(
+    sandbox::SandboxInterfaceInfo* sandbox_info);
 
 // Register the invalid param handler and pure call handler to be able to
 // notify breakpad when it happens.
