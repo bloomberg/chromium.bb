@@ -37,12 +37,13 @@ static inline void getcpuid(int info_type, int info[4]) {
         : "a"(info_type)
                 );
 #else
-  // We can use cpuid instruction without saving ebx on gcc x86-64 because it
+  // We can use cpuid instruction without pushing ebx on gcc x86-64 because it
   // does not use ebx (or rbx) as a GOT register.
   asm volatile (
       "cpuid            \n\t"
       : "=a"(info[0]), "=r"(info[1]), "=c"(info[2]), "=d"(info[3])
       : "a"(info_type)
+      : "%rbx"
   );
 #endif
 }
