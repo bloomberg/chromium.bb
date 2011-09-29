@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/content_settings_pattern.h"
 
 namespace content_settings {
 
@@ -54,7 +55,7 @@ base::Value* ExtensionProvider::GetContentSettingValue(
 void ExtensionProvider::GetAllContentSettingsRules(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    Rules* content_setting_rules) const {
+    std::vector<Rule>* content_setting_rules) const {
   return extensions_settings_->GetContentSettingsForContentType(
       content_type, resource_identifier, incognito_, content_setting_rules);
 }

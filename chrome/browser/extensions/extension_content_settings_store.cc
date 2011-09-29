@@ -7,9 +7,11 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
+#include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/extension_content_settings_api_constants.h"
 #include "chrome/browser/extensions/extension_content_settings_helpers.h"
@@ -18,6 +20,8 @@
 namespace helpers = extension_content_settings_helpers;
 namespace keys = extension_content_settings_api_constants;
 
+using content_settings::Rule;
+using content_settings::RuleIterator;
 using content_settings::OriginIdentifierValueMap;
 using content_settings::ResourceIdentifier;
 using content_settings::ValueToContentSetting;
@@ -228,23 +232,18 @@ void ExtensionContentSettingsStore::AddRules(
     ContentSettingsType type,
     const ResourceIdentifier& identifier,
     const OriginIdentifierValueMap* map,
-    content_settings::ProviderInterface::Rules* rules) {
-  OriginIdentifierValueMap::EntryList::const_iterator it;
-  for (it = map->begin(); it != map->end(); ++it) {
-    if (it->content_type == type && it->identifier == identifier) {
-      ContentSetting setting = ValueToContentSetting(it->value.get());
-      DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-      rules->push_back(content_settings::ProviderInterface::Rule(
-          it->primary_pattern, it->secondary_pattern, setting));
-    }
-  }
+    std::vector<Rule>* rules) {
+  scoped_ptr<RuleIterator> rule(
+      map->GetRuleIterator(type, identifier));
+  while (rule->HasNext())
+    rules->push_back(rule->Next());
 }
 
 void ExtensionContentSettingsStore::GetContentSettingsForContentType(
     ContentSettingsType type,
     const content_settings::ResourceIdentifier& identifier,
     bool incognito,
-    content_settings::ProviderInterface::Rules* rules) const {
+    std::vector<Rule>* rules) const {
   base::AutoLock lock(lock_);
   ExtensionEntryMap::const_iterator ext_it;
   for (ext_it = entries_.begin(); ext_it != entries_.end(); ++ext_it) {
@@ -258,7 +257,7 @@ void ExtensionContentSettingsStore::GetContentSettingsForContentType(
       AddRules(type, identifier,
                GetValueMap(ext_it->first,
                            kExtensionPrefsScopeIncognitoSessionOnly),
-                rules);
+               rules);
     } else {
       AddRules(type, identifier,
                GetValueMap(ext_it->first,
@@ -276,23 +275,30 @@ base::ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
   if (!map)
     return NULL;
   base::ListValue* settings = new base::ListValue();
-  OriginIdentifierValueMap::EntryList::const_iterator it;
+  OriginIdentifierValueMap::EntryMap::const_iterator it;
   for (it = map->begin(); it != map->end(); ++it) {
-    base::DictionaryValue* setting_dict = new base::DictionaryValue();
-    setting_dict->SetString(keys::kPrimaryPatternKey,
-                            it->primary_pattern.ToString());
-    setting_dict->SetString(keys::kSecondaryPatternKey,
-                            it->secondary_pattern.ToString());
-    setting_dict->SetString(
-        keys::kContentSettingsTypeKey,
-        helpers::ContentSettingsTypeToString(it->content_type));
-    setting_dict->SetString(keys::kResourceIdentifierKey,
-                            it->identifier);
-    ContentSetting setting = ValueToContentSetting(it->value.get());
-    DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-    setting_dict->SetString(keys::kContentSettingKey,
-                            helpers::ContentSettingToString(setting));
-    settings->Append(setting_dict);
+    scoped_ptr<RuleIterator> rule_iterator(
+        map->GetRuleIterator(it->first.content_type,
+                             it->first.resource_identifier));
+    while (rule_iterator->HasNext()) {
+      const Rule& rule =
+          rule_iterator->Next();
+      base::DictionaryValue* setting_dict = new base::DictionaryValue();
+      setting_dict->SetString(keys::kPrimaryPatternKey,
+                              rule.primary_pattern.ToString());
+      setting_dict->SetString(keys::kSecondaryPatternKey,
+                              rule.secondary_pattern.ToString());
+      setting_dict->SetString(
+          keys::kContentSettingsTypeKey,
+          helpers::ContentSettingsTypeToString(it->first.content_type));
+      setting_dict->SetString(keys::kResourceIdentifierKey,
+                              it->first.resource_identifier);
+      DCHECK_NE(CONTENT_SETTING_DEFAULT, rule.content_setting);
+      setting_dict->SetString(
+          keys::kContentSettingKey,
+          helpers::ContentSettingToString(rule.content_setting));
+      settings->Append(setting_dict);
+    }
   }
   return settings;
 }

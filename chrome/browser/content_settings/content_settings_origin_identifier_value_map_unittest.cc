@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/content_settings/content_settings_rule.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -108,7 +109,7 @@ TEST(OriginIdentifierValueMapTest, SetDeleteValue) {
 
 TEST(OriginIdentifierValueMapTest, Clear) {
   content_settings::OriginIdentifierValueMap map;
-  EXPECT_EQ(map.begin(), map.end());
+  EXPECT_TRUE(map.empty());
 
   // Set two values.
   map.SetValue(
@@ -123,7 +124,7 @@ TEST(OriginIdentifierValueMapTest, Clear) {
       CONTENT_SETTINGS_TYPE_COOKIES,
       "",
       Value::CreateIntegerValue(1));
-  EXPECT_NE(map.begin(), map.end());
+  EXPECT_FALSE(map.empty());
   int actual_value;
   EXPECT_TRUE(map.GetValue(GURL("http://www.google.com"),
                            GURL("http://www.google.com"),
@@ -133,7 +134,7 @@ TEST(OriginIdentifierValueMapTest, Clear) {
 
   // Clear the map.
   map.clear();
-  EXPECT_EQ(map.begin(), map.end());
+  EXPECT_TRUE(map.empty());
   EXPECT_EQ(NULL, map.GetValue(GURL("http://www.google.com"),
                                GURL("http://www.google.com"),
                                CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -169,4 +170,44 @@ TEST(OriginIdentifierValueMapTest, ListEntryPrecedences) {
                            CONTENT_SETTINGS_TYPE_COOKIES,
                            "")->GetAsInteger(&actual_value));
   EXPECT_EQ(2, actual_value);
+}
+
+TEST(OriginIdentifierValueMapTest, IterateEmpty) {
+  content_settings::OriginIdentifierValueMap map;
+  scoped_ptr<content_settings::RuleIterator> rule_iterator(
+      map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, ""));
+  EXPECT_FALSE(rule_iterator->HasNext());
+}
+
+TEST(OriginIdentifierValueMapTest, IterateNonempty) {
+  // Verify the precedence order.
+  content_settings::OriginIdentifierValueMap map;
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("[*.]google.com");
+  ContentSettingsPattern sub_pattern =
+      ContentSettingsPattern::FromString("sub.google.com");
+  map.SetValue(
+      pattern,
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES,
+      "",
+      Value::CreateIntegerValue(1));
+  map.SetValue(
+      sub_pattern,
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_COOKIES,
+      "",
+      Value::CreateIntegerValue(2));
+
+  scoped_ptr<content_settings::RuleIterator> rule_iterator(
+      map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, ""));
+  ASSERT_TRUE(rule_iterator->HasNext());
+  content_settings::Rule rule = rule_iterator->Next();
+  EXPECT_EQ(sub_pattern, rule.primary_pattern);
+  EXPECT_EQ(2, rule.content_setting);
+
+  ASSERT_TRUE(rule_iterator->HasNext());
+  rule = rule_iterator->Next();
+  EXPECT_EQ(pattern, rule.primary_pattern);
+  EXPECT_EQ(1, rule.content_setting);
 }

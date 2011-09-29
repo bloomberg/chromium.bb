@@ -83,7 +83,7 @@ class ExtensionContentSettingsStore
       ContentSettingsType type,
       const content_settings::ResourceIdentifier& identifier,
       bool incognito,
-      content_settings::ProviderInterface::Rules* rules) const;
+      std::vector<content_settings::Rule>* rules) const;
 
   // Serializes all content settings set by the extension with ID |extension_id|
   // and returns them as a ListValue. The caller takes ownership of the returned
@@ -139,7 +139,7 @@ class ExtensionContentSettingsStore
   static void AddRules(ContentSettingsType type,
                        const content_settings::ResourceIdentifier& identifier,
                        const content_settings::OriginIdentifierValueMap* map,
-                       content_settings::ProviderInterface::Rules* rules);
+                       std::vector<content_settings::Rule>* rules);
 
   void NotifyOfContentSettingChanged(const std::string& extension_id,
                                      bool incognito);

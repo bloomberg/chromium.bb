@@ -22,44 +22,43 @@ class Value;
 
 namespace content_settings {
 
+class RuleIterator;
+
 class OriginIdentifierValueMap {
  public:
   typedef std::string ResourceIdentifier;
-
-  struct Entry {
-    Entry(const ContentSettingsPattern& primary_pattern,
-          const ContentSettingsPattern& secondary_pattern,
-          ContentSettingsType content_type,
-          ResourceIdentifier identifier,
-          base::Value* value);
-    ~Entry();
-
-    ContentSettingsPattern primary_pattern;
-    ContentSettingsPattern secondary_pattern;
+  struct EntryMapKey {
     ContentSettingsType content_type;
-    ResourceIdentifier identifier;
-    linked_ptr<base::Value> value;
+    ResourceIdentifier resource_identifier;
+    EntryMapKey(ContentSettingsType content_type,
+                ResourceIdentifier resource_identifier);
+    bool operator<(const OriginIdentifierValueMap::EntryMapKey& other) const;
   };
 
-  typedef std::list<Entry> EntryList;
+  struct PatternPair {
+    ContentSettingsPattern primary_pattern;
+    ContentSettingsPattern secondary_pattern;
+    PatternPair(ContentSettingsPattern primary_pattern,
+                ContentSettingsPattern secondary_pattern);
+    bool operator<(const OriginIdentifierValueMap::PatternPair& other) const;
+  };
 
-  typedef EntryList::const_iterator const_iterator;
+  typedef std::map<PatternPair, linked_ptr<base::Value> > Rules;
+  typedef std::map<EntryMapKey, Rules> EntryMap;
 
-  typedef EntryList::iterator iterator;
-
-  EntryList::iterator begin() {
+  EntryMap::iterator begin() {
     return entries_.begin();
   }
 
-  EntryList::iterator end() {
+  EntryMap::iterator end() {
     return entries_.end();
   }
 
-  EntryList::const_iterator begin() const {
+  EntryMap::const_iterator begin() const {
     return entries_.begin();
   }
 
-  EntryList::const_iterator end() const {
+  EntryMap::const_iterator end() const {
     return entries_.end();
   }
 
@@ -67,9 +66,11 @@ class OriginIdentifierValueMap {
     return size() == 0u;
   }
 
-  size_t size() const {
-    return entries_.size();
-  }
+  size_t size() const;
+
+  // Caller takes ownership of the iterator.
+  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
+                                ResourceIdentifier resource_identifier) const;
 
   OriginIdentifierValueMap();
   ~OriginIdentifierValueMap();
@@ -103,32 +104,16 @@ class OriginIdentifierValueMap {
 
   // Deletes the map entry at the passed position. The method returns the
   // position of the next entry in the map.
-  EntryList::iterator erase(EntryList::iterator entry);
+  EntryMap::iterator erase(EntryMap::iterator entry);
 
   // Clears all map entries.
   void clear();
 
  private:
-  // Finds the list entry for the given |primary_pattern|,
-  // |secondary_pattern|, |content_type|, |resource_identifier| tuple and
-  // returns the iterator of the list entry. If no entry is found for the passed
-  // parameters then the end of list iterator is returned.
-  EntryList::iterator FindEntry(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier);
-
-  EntryList entries_;
+  EntryMap entries_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginIdentifierValueMap);
 };
-
-// Compares two origin value map entries and tests if the item, top-level-frame
-// pattern pair of the first entry has a higher precedences then the pattern
-// pair of the second entry.
-bool operator>(const OriginIdentifierValueMap::Entry& first,
-               const OriginIdentifierValueMap::Entry& second);
 
 }  // namespace content_settings
 

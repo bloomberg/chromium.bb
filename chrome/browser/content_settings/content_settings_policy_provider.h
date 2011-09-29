@@ -101,7 +101,7 @@ class PolicyProvider : public ObservableProvider,
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      Rules* content_setting_rules) const;
+      std::vector<Rule>* content_setting_rules) const;
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type);

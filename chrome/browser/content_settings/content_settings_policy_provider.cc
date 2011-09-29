@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -493,28 +494,17 @@ base::Value* PolicyProvider::GetContentSettingValue(
 void PolicyProvider::GetAllContentSettingsRules(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    Rules* content_setting_rules) const {
+    std::vector<Rule>* content_setting_rules) const {
   DCHECK_NE(RequiresResourceIdentifier(content_type),
             resource_identifier.empty());
   DCHECK(content_setting_rules);
   content_setting_rules->clear();
 
-  const OriginIdentifierValueMap* map_to_return = &value_map_;
-
   base::AutoLock auto_lock(lock_);
-  for (OriginIdentifierValueMap::const_iterator entry = map_to_return->begin();
-       entry != map_to_return->end();
-       ++entry) {
-    if (entry->content_type == content_type &&
-        entry->identifier == resource_identifier) {
-      ContentSetting setting = ValueToContentSetting(entry->value.get());
-      DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-      Rule new_rule(entry->primary_pattern,
-                    entry->secondary_pattern,
-                    setting);
-      content_setting_rules->push_back(new_rule);
-    }
-  }
+  scoped_ptr<RuleIterator> rule(
+      value_map_.GetRuleIterator(content_type, resource_identifier));
+  while (rule->HasNext())
+    content_setting_rules->push_back(rule->Next());
 }
 
 void PolicyProvider::ClearAllContentSettingsRules(

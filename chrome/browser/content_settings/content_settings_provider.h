@@ -11,15 +11,16 @@
 #define NO_RESOURCE_IDENTIFIER ""
 
 #include <string>
-#include <vector>
 
 #include "base/values.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/content_settings_pattern.h"
 
+class ContentSettingsPattern;
 class GURL;
 
 namespace content_settings {
+
+struct Rule;
 
 typedef std::string ResourceIdentifier;
 
@@ -49,19 +50,6 @@ class DefaultProviderInterface {
 
 class ProviderInterface {
  public:
-  struct Rule {
-    Rule();
-    Rule(const ContentSettingsPattern& primary_pattern,
-         const ContentSettingsPattern& secondary_pattern,
-         ContentSetting setting);
-
-    ContentSettingsPattern primary_pattern;
-    ContentSettingsPattern secondary_pattern;
-    ContentSetting content_setting;
-  };
-
-  typedef std::vector<Rule> Rules;
-
   virtual ~ProviderInterface() {}
 
   // Returns a single ContentSetting which applies to a given |primary_url|,
@@ -107,7 +95,7 @@ class ProviderInterface {
 
   // For a given content type, returns all content setting rules with a
   // non-default setting, mapped to their actual settings.
-  // |content_settings_rules| must be non-NULL. If this provider was created for
+  // |content_setting_rules| must be non-NULL. If this provider was created for
   // the incognito profile, it will only return those settings differing
   // from the corresponding regular provider. For ContentSettingsTypes that
   // require a resource identifier to be specified, the |resource_identifier|
@@ -117,7 +105,7 @@ class ProviderInterface {
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      Rules* content_setting_rules) const = 0;
+      std::vector<Rule>* content_setting_rules) const = 0;
 
   // Resets all content settings for the given |content_type| to
   // CONTENT_SETTING_DEFAULT. For content types that require a resource

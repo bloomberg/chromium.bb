@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 
 #include "base/scoped_ptr.h"
+#include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,7 +14,7 @@ using ::testing::Mock;
 
 namespace {
 
-void CheckRule(const content_settings::ProviderInterface::Rule& rule,
+void CheckRule(const content_settings::Rule& rule,
                const ContentSettingsPattern& primary_pattern,
                const ContentSettingsPattern& secondary_pattern,
                ContentSetting setting) {
@@ -162,7 +163,7 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
 
 TEST_F(ExtensionContentSettingsStoreTest, GetAllSettings) {
   bool incognito = false;
-  content_settings::ProviderInterface::Rules rules;
+  std::vector<content_settings::Rule> rules;
   store()->GetContentSettingsForContentType(
       CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
   ASSERT_EQ(0u, rules.size());

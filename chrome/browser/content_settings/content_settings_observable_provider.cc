@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 
+#include "chrome/common/content_settings_pattern.h"
+
 namespace content_settings {
 
 // ////////////////////////////////////////////////////////////////////////////

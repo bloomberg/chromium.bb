@@ -50,7 +50,7 @@ class ExtensionProvider : public ObservableProvider,
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      Rules* content_setting_rules) const OVERRIDE;
+      std::vector<Rule>* content_setting_rules) const OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(ContentSettingsType content_type)
       OVERRIDE {}

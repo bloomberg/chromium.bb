@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -474,7 +475,7 @@ Value* PrefProvider::GetContentSettingValue(
 void PrefProvider::GetAllContentSettingsRules(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    Rules* content_setting_rules) const {
+    std::vector<Rule>* content_setting_rules) const {
   DCHECK(content_setting_rules);
   content_setting_rules->clear();
 
@@ -482,19 +483,10 @@ void PrefProvider::GetAllContentSettingsRules(
       is_incognito_ ? &incognito_value_map_ : &value_map_;
 
   base::AutoLock auto_lock(lock_);
-  for (OriginIdentifierValueMap::const_iterator entry = map_to_return->begin();
-       entry != map_to_return->end();
-       ++entry) {
-    if (entry->content_type == content_type &&
-        entry->identifier == resource_identifier) {
-      ContentSetting setting = ValueToContentSetting(entry->value.get());
-      DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-      Rule new_rule(entry->primary_pattern,
-                    entry->secondary_pattern,
-                    setting);
-      content_setting_rules->push_back(new_rule);
-    }
-  }
+  scoped_ptr<RuleIterator> rule(
+      map_to_return->GetRuleIterator(content_type, resource_identifier));
+  while (rule->HasNext())
+    content_setting_rules->push_back(rule->Next());
 }
 
 void PrefProvider::SetContentSetting(
@@ -556,15 +548,22 @@ void PrefProvider::ClearAllContentSettingsRules(
 
   {
     base::AutoLock auto_lock(lock_);
-    OriginIdentifierValueMap::iterator entry(map_to_modify->begin());
+    OriginIdentifierValueMap::EntryMap::iterator entry(map_to_modify->begin());
     while (entry != map_to_modify->end()) {
-      if (entry->content_type == content_type) {
-        UpdatePref(
-            entry->primary_pattern,
-            entry->secondary_pattern,
-            entry->content_type,
-            entry->identifier,
-            CONTENT_SETTING_DEFAULT);
+      if (entry->first.content_type == content_type) {
+        scoped_ptr<RuleIterator> rule_iterator(
+            map_to_modify->GetRuleIterator(
+                entry->first.content_type,
+                entry->first.resource_identifier));
+        while (rule_iterator->HasNext()) {
+          const Rule& rule = rule_iterator->Next();
+          UpdatePref(
+              rule.primary_pattern,
+              rule.secondary_pattern,
+              entry->first.content_type,
+              entry->first.resource_identifier,
+              CONTENT_SETTING_DEFAULT);
+        }
         // Delete current |entry| and set |entry| to the next value map entry.
         entry = map_to_modify->erase(entry);
       } else {

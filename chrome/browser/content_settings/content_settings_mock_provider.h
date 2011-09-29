@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/common/content_settings_pattern.h"
 
 namespace content_settings {
 
@@ -78,7 +79,7 @@ class MockProvider : public ProviderInterface {
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      Rules* content_setting_rules) const {}
+      std::vector<Rule>* content_setting_rules) const {}
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) {}
