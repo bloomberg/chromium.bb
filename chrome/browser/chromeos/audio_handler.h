@@ -19,6 +19,9 @@ class AudioMixer;
 
 class AudioHandler {
  public:
+  static void Initialize();
+  static void Shutdown();
+  // GetInstance returns NULL if not initialized or if already shutdown.
   static AudioHandler* GetInstance();
 
   // Is the mixer initialized?

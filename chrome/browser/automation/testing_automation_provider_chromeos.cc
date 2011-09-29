@@ -1091,11 +1091,16 @@ void TestingAutomationProvider::SetReleaseTrack(DictionaryValue* args,
 
 void TestingAutomationProvider::GetVolumeInfo(DictionaryValue* args,
                                               IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  if (!audio_handler) {
+    reply.SendError("AudioHandler not initialized.");
+    return;
+  }
   return_value->SetDouble("volume", audio_handler->GetVolumePercent());
   return_value->SetBoolean("is_mute", audio_handler->IsMuted());
-  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+  reply.SendSuccess(return_value.get());
 }
 
 void TestingAutomationProvider::SetVolume(DictionaryValue* args,
@@ -1106,8 +1111,11 @@ void TestingAutomationProvider::SetVolume(DictionaryValue* args,
     reply.SendError("Invalid or missing args.");
     return;
   }
-
   chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  if (!audio_handler) {
+    reply.SendError("AudioHandler not initialized.");
+    return;
+  }
   audio_handler->SetVolumePercent(volume_percent);
   reply.SendSuccess(NULL);
 }
@@ -1120,8 +1128,11 @@ void TestingAutomationProvider::SetMute(DictionaryValue* args,
     reply.SendError("Invalid or missing args.");
     return;
   }
-
   chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
+  if (!audio_handler) {
+    reply.SendError("AudioHandler not initialized.");
+    return;
+  }
   audio_handler->SetMuted(mute);
   reply.SendSuccess(NULL);
 }

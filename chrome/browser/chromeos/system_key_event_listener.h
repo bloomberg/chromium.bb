@@ -32,6 +32,9 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
    public:
     virtual void OnCapsLockChange(bool enabled) = 0;
   };
+  static void Initialize();
+  static void Shutdown();
+  // GetInstance returns NULL if not initialized or if already shutdown.
   static SystemKeyEventListener* GetInstance();
 
   // WmMessageListener::Observer:
@@ -50,6 +53,8 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
 
   SystemKeyEventListener();
   virtual ~SystemKeyEventListener();
+
+  AudioHandler* GetAudioHandler() const;
 
 #if defined(TOUCH_UI)
   // MessageLoopForUI::Observer overrides.
@@ -105,10 +110,6 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
 
   // Base X ID for events from the XKB extension.
   int xkb_event_base_;
-
-  // AudioHandler is a Singleton class we are just caching a pointer to here,
-  // and we do not own the pointer.
-  AudioHandler* const audio_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemKeyEventListener);
 };

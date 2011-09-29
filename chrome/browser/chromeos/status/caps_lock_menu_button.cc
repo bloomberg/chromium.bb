@@ -43,11 +43,13 @@ CapsLockMenuButton::CapsLockMenuButton(StatusAreaHost* host)
       IDR_STATUSBAR_CAPS_LOCK));
   UpdateTooltip();
   UpdateUIFromCurrentCapsLock(input_method::XKeyboard::CapsLockIsEnabled());
-  SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
+  if (SystemKeyEventListener::GetInstance())
+    SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
 }
 
 CapsLockMenuButton::~CapsLockMenuButton() {
-  SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
+  if (SystemKeyEventListener::GetInstance())
+    SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

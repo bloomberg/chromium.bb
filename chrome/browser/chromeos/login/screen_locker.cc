@@ -832,10 +832,6 @@ void ScreenLocker::Init() {
   lock_window->set_toplevel_focus_widget(
       static_cast<views::NativeWidgetGtk*>(lock_widget_->native_widget())->
           window_contents());
-
-  // Create the SystemKeyEventListener so it can listen for system keyboard
-  // messages regardless of focus while screen locked.
-  SystemKeyEventListener::GetInstance();
 }
 
 void ScreenLocker::OnLoginFailure(const LoginFailure& error) {

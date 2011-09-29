@@ -23,7 +23,31 @@ namespace {
 // finer resolution in the higher volumes).
 const double kVolumeBias = 0.5;
 
+static AudioHandler* g_audio_handler = NULL;
+
 }  // namespace
+
+// static
+void AudioHandler::Initialize() {
+  CHECK(!g_audio_handler);
+  g_audio_handler = new AudioHandler();
+}
+
+// static
+void AudioHandler::Shutdown() {
+  // We may call Shutdown without calling Initialize, e.g. if we exit early.
+  if (g_audio_handler) {
+    delete g_audio_handler;
+    g_audio_handler = NULL;
+  }
+}
+
+// static
+AudioHandler* AudioHandler::GetInstance() {
+  VLOG_IF(1, !g_audio_handler)
+      << "AudioHandler::GetInstance() called with NULL global instance.";
+  return g_audio_handler;
+}
 
 bool AudioHandler::IsInitialized() {
   return mixer_->IsInitialized();
@@ -87,11 +111,6 @@ double AudioHandler::PercentToVolumeDb(double volume_percent) const {
 
   return pow(volume_percent / 100.0, kVolumeBias) *
       (max_volume_db - min_volume_db) + min_volume_db;
-}
-
-// static
-AudioHandler* AudioHandler::GetInstance() {
-  return Singleton<AudioHandler>::get();
 }
 
 }  // namespace chromeos

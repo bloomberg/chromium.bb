@@ -127,6 +127,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/brightness_observer.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
@@ -1801,6 +1802,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
 #if defined(OS_CHROMEOS)
   metrics->StartExternalMetrics();
 
+  // Initialize the audio handler on ChromeOS.
+  chromeos::AudioHandler::Initialize();
+
   // Initialize the brightness observer so that we'll display an onscreen
   // indication of brightness changes during login.
   static chromeos::BrightnessObserver* brightness_observer =
@@ -1810,7 +1814,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
 
   // Listen for system key events so that the user will be able to adjust the
   // volume on the login screen.
-  chromeos::SystemKeyEventListener::GetInstance();
+  chromeos::SystemKeyEventListener::Initialize();
 
   // Listen for XI_HierarchyChanged events.
   chromeos::XInputHierarchyChangedEventListener::GetInstance();
@@ -2020,6 +2024,15 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   ThreadWatcherList::StopWatchingAll();
 
   g_browser_process->metrics_service()->Stop();
+
+#if defined(OS_CHROMEOS)
+  // The XInput2 event listener needs to be shut down earlier than when
+  // Singletons are finally destroyed in AtExitManager.
+  chromeos::XInputHierarchyChangedEventListener::GetInstance()->Stop();
+
+  chromeos::SystemKeyEventListener::Shutdown();
+  chromeos::AudioHandler::Shutdown();
+#endif
 
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.
