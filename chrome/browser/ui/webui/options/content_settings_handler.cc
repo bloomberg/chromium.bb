@@ -273,7 +273,6 @@ void ContentSettingsHandler::GetLocalizedValues(
 }
 
 void ContentSettingsHandler::Initialize() {
-  const HostContentSettingsMap* settings_map = GetContentSettingsMap();
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_CREATED,
       NotificationService::AllSources());
@@ -285,7 +284,7 @@ void ContentSettingsHandler::Initialize() {
   UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      Source<HostContentSettingsMap>(settings_map));
+      NotificationService::AllSources());
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       NotificationService::AllSources());
