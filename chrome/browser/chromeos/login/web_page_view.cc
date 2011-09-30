@@ -93,7 +93,7 @@ void WizardWebPageViewTabContents::DidFinishLoad(
 
 void WebPageDomView::SetTabContentsDelegate(
     TabContentsDelegate* delegate) {
-  tab_contents_->set_delegate(delegate);
+  dom_contents_->tab_contents()->set_delegate(delegate);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

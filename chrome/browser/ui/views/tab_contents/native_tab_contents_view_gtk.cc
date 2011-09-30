@@ -16,6 +16,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
@@ -251,7 +255,15 @@ void NativeTabContentsViewGtk::PositionConstrainedWindows(
     gtk_widget_size_request(widget, &requisition);
 
     int child_x = std::max(half_view_width - (requisition.width / 2), 0);
-    PositionChild(widget, child_x, 0, 0, 0);
+    int child_y = 0;
+
+#if defined(OS_CHROMEOS)
+    // TODO(ivankr): this is a hack to display proxy authentication dialog
+    // centered during the sign-in phase. See http://crosbug/20819.
+    if (!chromeos::UserManager::Get()->user_is_logged_in())
+      child_y = std::max(view_size.height() / 2 - (requisition.height / 2), 0);
+#endif
+    PositionChild(widget, child_x, child_y, 0, 0);
   }
 }
 

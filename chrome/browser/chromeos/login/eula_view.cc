@@ -456,9 +456,12 @@ void EulaView::LinkClicked(views::Link* source, int event_flags) {
 static bool PublishTitleIfReady(const TabContents* contents,
                                 DOMView* eula_view,
                                 views::Label* eula_label) {
-  if (contents != eula_view->tab_contents())
+  if (!eula_view->dom_contents())
     return false;
-  eula_label->SetText(UTF16ToWide(eula_view->tab_contents()->GetTitle()));
+  TabContents* tab_contents = eula_view->dom_contents()->tab_contents();
+  if (contents != tab_contents)
+    return false;
+  eula_label->SetText(UTF16ToWide(tab_contents->GetTitle()));
   return true;
 }
 
@@ -486,7 +489,7 @@ void EulaView::LoadEulaView(DOMView* eula_view,
   eula_view->Init(profile,
                   SiteInstance::CreateSiteInstanceForURL(profile, eula_url));
   eula_view->LoadURL(eula_url);
-  eula_view->tab_contents()->set_delegate(this);
+  eula_view->dom_contents()->tab_contents()->set_delegate(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

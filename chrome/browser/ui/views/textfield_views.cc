@@ -27,8 +27,9 @@ void TextfieldViews::SetText(const std::wstring& text) {
 
 TextfieldsUI* TextfieldViews::web_ui() {
   TextfieldsUI* web_ui = NULL;
-  if (tab_contents_.get() && tab_contents_->web_ui()) {
-    web_ui = static_cast<TextfieldsUI*>(tab_contents_->web_ui());
+  if (dom_contents_.get()) {
+    web_ui = static_cast<TextfieldsUI*>(
+        dom_contents_->tab_contents()->web_ui());
   }
   return web_ui;
 }

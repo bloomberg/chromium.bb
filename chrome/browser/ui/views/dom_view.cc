@@ -15,7 +15,7 @@
 const char DOMView::kViewClassName[] =
     "browser/ui/views/DOMView";
 
-DOMView::DOMView() : tab_contents_(NULL), initialized_(false) {
+DOMView::DOMView() : initialized_(false) {
   set_focusable(true);
 }
 
@@ -33,10 +33,11 @@ bool DOMView::Init(Profile* profile, SiteInstance* instance) {
     return true;
 
   initialized_ = true;
-  tab_contents_.reset(CreateTabContents(profile, instance));
+  TabContents* tab_contents = CreateTabContents(profile, instance);
+  dom_contents_.reset(new TabContentsWrapper(tab_contents));
 
   renderer_preferences_util::UpdateFromSystemSettings(
-        tab_contents_->GetMutableRendererPrefs(), profile);
+        tab_contents->GetMutableRendererPrefs(), profile);
 
   // Attach the native_view now if the view is already added to Widget.
   if (GetWidget())
@@ -52,8 +53,8 @@ TabContents* DOMView::CreateTabContents(Profile* profile,
 
 void DOMView::LoadURL(const GURL& url) {
   DCHECK(initialized_);
-  tab_contents_->controller().LoadURL(url, GURL(), PageTransition::START_PAGE,
-                                      std::string());
+  dom_contents_->tab_contents()->controller().LoadURL(
+      url, GURL(), PageTransition::START_PAGE, std::string());
 }
 
 bool DOMView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
@@ -64,7 +65,7 @@ bool DOMView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 }
 
 void DOMView::OnFocus() {
-  tab_contents_->Focus();
+  dom_contents_->tab_contents()->Focus();
 }
 
 void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
@@ -72,7 +73,7 @@ void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
   // Attach the native_view when this is added to Widget if
   // the native view has not been attached yet and tab_contents_ exists.
   views::NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
-  if (is_add && GetWidget() && !native_view() && tab_contents_.get())
+  if (is_add && GetWidget() && !native_view() && dom_contents_.get())
     AttachTabContents();
   else if (!is_add && child == this && native_view())
     Detach();
@@ -80,12 +81,12 @@ void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
 
 void DOMView::AttachTabContents() {
   if (views::Widget::IsPureViews()) {
-    TabContentsViewViews* widget =
-        static_cast<TabContentsViewViews*>(tab_contents_->view());
+    TabContentsViewViews* widget = static_cast<TabContentsViewViews*>(
+        dom_contents_->tab_contents()->view());
     views::NativeWidgetViews* nwv =
         static_cast<views::NativeWidgetViews*>(widget->native_widget());
     AttachToView(nwv->GetView());
   } else {
-    Attach(tab_contents_->GetNativeView());
+    Attach(dom_contents_->tab_contents()->GetNativeView());
   }
 }

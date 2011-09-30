@@ -60,13 +60,13 @@ void LoginHtmlDialog::Show() {
   } else {
     views::Widget::CreateWindowWithParent(html_view, parent_window_);
   }
+  html_view->InitDialog();
   if (bubble_frame_view_) {
     bubble_frame_view_->StartThrobber();
     notification_registrar_.Add(
         this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-        Source<TabContents>(html_view->tab_contents()));
+        Source<TabContents>(html_view->dom_contents()->tab_contents()));
   }
-  html_view->InitDialog();
   html_view->GetWidget()->Show();
   is_open_ = true;
 }

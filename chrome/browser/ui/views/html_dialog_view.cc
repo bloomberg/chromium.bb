@@ -238,20 +238,21 @@ void HtmlDialogView::InitDialog() {
   // Now Init the DOMView. This view runs in its own process to render the html.
   DOMView::Init(profile(), NULL);
 
-  tab_contents_->set_delegate(this);
+  TabContents* tab_contents = dom_contents_->tab_contents();
+  tab_contents->set_delegate(this);
 
   // Set the delegate. This must be done before loading the page. See
   // the comment above HtmlDialogUI in its header file for why.
-  HtmlDialogUI::GetPropertyAccessor().SetProperty(tab_contents_->property_bag(),
-                                                  this);
+  HtmlDialogUI::GetPropertyAccessor().SetProperty(
+      tab_contents->property_bag(), this);
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-      Source<TabContents>(tab_contents()));
+      Source<TabContents>(tab_contents));
   notification_registrar_.Add(
       this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      Source<TabContents>(tab_contents()));
+      Source<TabContents>(tab_contents));
 
   DOMView::LoadURL(GetDialogContentURL());
 }

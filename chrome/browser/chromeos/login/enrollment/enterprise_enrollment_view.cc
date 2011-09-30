@@ -90,8 +90,8 @@ void EnterpriseEnrollmentView::Init() {
       profile, SiteInstance::CreateSiteInstanceForURL(profile, url));
 
   enrollment_page_view_->LoadURL(url);
-  actor_ = static_cast<EnterpriseEnrollmentUI*>(
-      enrollment_page_view_->tab_contents()->web_ui())->GetActor();
+  actor_ = static_cast<EnterpriseEnrollmentUI*>(enrollment_page_view_->
+      dom_contents()->tab_contents()->web_ui())->GetActor();
   actor_->SetController(controller_);
 }
 

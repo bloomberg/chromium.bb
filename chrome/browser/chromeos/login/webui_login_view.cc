@@ -138,10 +138,11 @@ void WebUILoginView::Init() {
   AddChildView(webui_login_);
   webui_login_->Init(ProfileManager::GetDefaultProfile(), NULL);
   webui_login_->SetVisible(true);
-  webui_login_->tab_contents()->set_delegate(this);
 
-  tab_watcher_.reset(new TabFirstRenderWatcher(webui_login_->tab_contents(),
-                                               this));
+  TabContents* tab_contents = webui_login_->dom_contents()->tab_contents();
+  tab_contents->set_delegate(this);
+
+  tab_watcher_.reset(new TabFirstRenderWatcher(tab_contents, this));
 }
 
 std::string WebUILoginView::GetClassName() const {
@@ -157,7 +158,7 @@ bool WebUILoginView::AcceleratorPressed(
   if (!webui_login_)
     return true;
 
-  WebUI* web_ui = webui_login_->tab_contents()->web_ui();
+  WebUI* web_ui = webui_login_->dom_contents()->tab_contents()->web_ui();
   if (web_ui) {
     base::StringValue accel_name(entry->second);
     web_ui->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
@@ -191,7 +192,7 @@ void WebUILoginView::LoadURL(const GURL & url) {
 }
 
 WebUI* WebUILoginView::GetWebUI() {
-  return webui_login_->tab_contents()->web_ui();
+  return webui_login_->dom_contents()->tab_contents()->web_ui();
 }
 
 void WebUILoginView::SetStatusAreaEnabled(bool enable) {
@@ -376,7 +377,8 @@ bool WebUILoginView::TakeFocus(bool reverse) {
 
 void WebUILoginView::ReturnFocus(bool reverse) {
   // Return the focus to the web contents.
-  webui_login_->tab_contents()->FocusThroughTabTraversal(reverse);
+  webui_login_->dom_contents()->tab_contents()->
+      FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
 }
 

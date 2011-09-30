@@ -153,8 +153,8 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
-  rwhv_bounds =
-      html_view->tab_contents()->GetRenderWidgetHostView()->GetViewBounds();
+  rwhv_bounds = html_view->dom_contents()->tab_contents()->
+      GetRenderWidgetHostView()->GetViewBounds();
   EXPECT_LT(0, rwhv_bounds.width());
   EXPECT_LT(0, rwhv_bounds.height());
   EXPECT_GE(set_bounds.width(), rwhv_bounds.width());
@@ -169,8 +169,8 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
-  rwhv_bounds =
-      html_view->tab_contents()->GetRenderWidgetHostView()->GetViewBounds();
+  rwhv_bounds = html_view->dom_contents()->tab_contents()->
+      GetRenderWidgetHostView()->GetViewBounds();
   EXPECT_LT(0, rwhv_bounds.width());
   EXPECT_LT(0, rwhv_bounds.height());
   EXPECT_GE(set_bounds.width(), rwhv_bounds.width());
@@ -185,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
-  rwhv_bounds =
-      html_view->tab_contents()->GetRenderWidgetHostView()->GetViewBounds();
+  rwhv_bounds = html_view->dom_contents()->tab_contents()->
+      GetRenderWidgetHostView()->GetViewBounds();
   EXPECT_LT(0, rwhv_bounds.width());
   EXPECT_LT(0, rwhv_bounds.height());
   EXPECT_GE(set_bounds.width(), rwhv_bounds.width());
