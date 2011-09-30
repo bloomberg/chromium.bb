@@ -28,6 +28,9 @@ oper.verbose = True # Without verbose Info messages don't show up.
 NOT_APPLICABLE = 'N/A'
 WORLD_TARGET = 'world'
 
+# Files we do not include in our upgrades by convention.
+BLACKLISTED_FILES = set(['Manifest', 'ChangeLog', 'metadata.xml'])
+
 # TODO(mtennant): Use this class to replace the 'info' dictionary used
 # throughout. In the meantime, it simply serves as documentation for
 # the values in that dictionary.
@@ -645,20 +648,22 @@ class Upgrader(object):
     else:
       os.makedirs(pkgdir)
 
-    # Grab all non-ebuilds from upstream plus the specific ebuild requested.
+    # Grab all non-blacklisted, non-ebuilds from upstream plus the specific
+    # ebuild requested.
     # TODO: Selectively exclude files under the 'files' directory that clearly
     # apply to other package versions.  For example, 'files/foo-1.2.3-bar.patch'
     # when upgrading to foo-3.2.1.  Must do this carefully.
     if os.path.exists(upstream_pkgdir):
       items = os.listdir(upstream_pkgdir)
       for item in items:
-        src = os.path.join(upstream_pkgdir, item)
-        dst = os.path.join(pkgdir, item)
-        if not item.endswith('.ebuild') or item == ebuild:
-          if os.path.isdir(src):
-            shutil.copytree(src, dst)
-          else:
-            shutil.copy2(src, dst)
+        if os.path.basename(item) not in BLACKLISTED_FILES:
+          if not item.endswith('.ebuild') or item == ebuild:
+            src = os.path.join(upstream_pkgdir, item)
+            dst = os.path.join(pkgdir, item)
+            if os.path.isdir(src):
+              shutil.copytree(src, dst)
+            else:
+              shutil.copy2(src, dst)
     self._RunGit(self._stable_repo, 'add ' + catpkgsubdir)
 
     # Now copy any eclasses that this package requires.
