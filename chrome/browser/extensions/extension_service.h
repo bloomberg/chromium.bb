@@ -138,9 +138,6 @@ class ExtensionService
   // If auto-updates are turned on, default to running every 5 hours.
   static const int kDefaultUpdateFrequencySeconds = 60 * 60 * 5;
 
-  // The name of the file that the current active version number is stored in.
-  static const char* kCurrentVersionFileName;
-
   // The name of the directory inside the profile where per-extension settings
   // are stored.
   static const char* kSettingsDirectoryName;

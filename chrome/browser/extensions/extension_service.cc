@@ -234,7 +234,6 @@ ExtensionService::NaClModuleInfo::~NaClModuleInfo() {
 // ExtensionService.
 
 const char* ExtensionService::kInstallDirectoryName = "Extensions";
-const char* ExtensionService::kCurrentVersionFileName = "Current Version";
 const char* ExtensionService::kSettingsDirectoryName = "Extension Settings";
 
 // Implements IO for the ExtensionService.
