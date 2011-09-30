@@ -88,6 +88,12 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
       return (!translate_infobar_delegate_->IsLanguageBlacklisted() &&
           !translate_infobar_delegate_->IsSiteBlacklisted());
 
+    case IDC_TRANSLATE_REPORT_BAD_LANGUAGE_DETECTION : {
+      // Until we have a secure URL for reporting language detection errors,
+      // we don't report errors that happened on secure URLs.
+      return !translate_infobar_delegate_->tab_contents()->controller().
+          GetActiveEntry()->url().SchemeIsSecure();
+    }
     default:
       break;
   }
