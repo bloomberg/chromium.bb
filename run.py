@@ -24,9 +24,20 @@ run.py options:
   -L<LIBRARY_PATH>       Add a library path for runnable-ld.so
   --paranoid             Remove -S (signals) and -a (file access)
                          from the default sel_ldr options.
-  --dbg                  Use dbg version of sel_ldr
-  --opt                  Use opt version of sel_ldr
-                         (default is to use whichever already exists)
+
+  --loader=dbg           Use dbg version of sel_ldr
+  --loader=opt           Use opt version of sel_ldr
+  --loader=<path>        Path to sel_ldr
+  Default: Uses whichever sel_ldr already exists. Otherwise, builds opt version.
+
+  --irt=full             Use full IRT
+  --irt=core             Use Core IRT
+  --irt=none             Don't use IRT
+  --irt=<path>           Path to IRT nexe
+  Default: Uses whichever IRT already exists. Otherwise, builds irt_core.
+
+  --use_pnacl_irt        Use IRT built by PNaCl (only meaningful for X86-64)
+
   -n | --dry-run         Just print commands, don't execute them
   -h | --help            Display this information
   -q | --quiet           Don't print nexe information
@@ -93,6 +104,12 @@ def SetupEnvironment():
   # Force a specific sel_ldr
   env.force_sel_ldr = None
 
+  # Force a specific IRT
+  env.force_irt = None
+
+  # Use PNaCl-built IRT
+  env.use_pnacl_irt = False
+
   # Don't print nexe information
   env.quiet = False
 
@@ -115,9 +132,18 @@ def SetupEnvFlags():
 
 def PrintBanner(output):
   if not env.quiet:
+    lines = output.split('\n')
     print '*' * 80
-    print output
+    for line in lines:
+      padding = ' ' * max(0, (80 - len(line)) / 2)
+      print padding + output + padding
     print '*' * 80
+
+def PrintCommand(s):
+  if not env.quiet:
+    print
+    print s
+    print
 
 def SetupArch(arch, is_dynamic, allow_build = True):
   '''Setup environment variables that require knowing the
@@ -140,8 +166,7 @@ def SetupArch(arch, is_dynamic, allow_build = True):
                                          'x86_64-nacl', libdir))
 
   env.sel_ldr = FindOrBuildSelLdr(allow_build = allow_build)
-  env.irt = os.path.join(env.nacl_root, 'scons-out',
-                         'nacl_irt-%s/staging/irt.nexe' % arch)
+  env.irt = FindOrBuildIRT(allow_build = allow_build)
 
 
 def main(argv):
@@ -177,14 +202,17 @@ def main(argv):
     extra = 'DYNAMIC'
   else:
     extra = 'STATIC'
-  PrintBanner((' ' * 16) + '%s is %s %s' % (os.path.basename(nexe),
-                                              arch.upper(), extra))
+  PrintBanner('%s is %s %s' % (os.path.basename(nexe),
+                               arch.upper(), extra))
 
   # Setup architecture-specific environment variables
   SetupArch(arch, is_dynamic)
 
+  sel_ldr_args = []
+
   # Add irt to sel_ldr arguments
-  sel_ldr_args = ['-B', env.irt]
+  if env.irt:
+    sel_ldr_args += ['-B', env.irt]
 
   # Setup sel_ldr arguments
   sel_ldr_args += sel_ldr_options + ['--']
@@ -209,10 +237,64 @@ def RunSelLdr(args):
 
   Run(prefix + [env.sel_ldr] + args)
 
+def FindOrBuildIRT(allow_build = True):
+  if env.force_irt:
+    if env.force_irt == 'none':
+      return None
+    elif env.force_irt == 'full':
+      flavors = ['irt']
+    elif env.force_irt == 'core':
+      flavors = ['irt_core']
+    else:
+      irt = env.force_irt
+      if not os.path.exists(irt):
+        Fatal('IRT not found: %s' % irt)
+      return irt
+  else:
+    flavors = ['irt','irt_core']
+
+  irt_paths = []
+  for flavor in flavors:
+    path = os.path.join(env.nacl_root, 'scons-out',
+                        'nacl_irt-%s/staging/%s.nexe' % (env.arch, flavor))
+    irt_paths.append(path)
+
+  if env.use_pnacl_irt:
+    # We always have to invoke scons for pnacl IRT build, to
+    # guarantee that the IRT was built with bitcode=1.
+    assert(allow_build)
+  else:
+    for path in irt_paths:
+      if os.path.exists(path):
+        return path
+
+  if allow_build:
+    if not env.use_pnacl_irt:
+      PrintBanner('irt not found. Building it with scons.')
+    irt = irt_paths[0]
+    BuildIRT(flavors[0])
+    assert(env.dry_run or os.path.exists(irt))
+    return irt
+
+  return None
+
+def BuildIRT(flavor):
+  args = ('platform=%s naclsdk_validate=0 ' +
+          'sysinfo=0 -j8 %s') % (env.arch, flavor)
+  if env.use_pnacl_irt:
+    args += ' bitcode=1'
+  args = args.split()
+  Run([env.scons] + args, cwd=env.nacl_root)
 
 def FindOrBuildSelLdr(allow_build = True):
   if env.force_sel_ldr:
-    modes = [ env.force_sel_ldr ]
+    if env.force_sel_ldr in ('dbg','opt'):
+      modes = [ env.force_sel_ldr ]
+    else:
+      sel_ldr = env.force_sel_ldr
+      if not os.path.exists(sel_ldr):
+        Fatal('sel_ldr not found: %s' % sel_ldr)
+      return sel_ldr
   else:
     modes = ['opt','dbg']
 
@@ -240,7 +322,7 @@ def FindOrBuildSelLdr(allow_build = True):
 
 def BuildSelLdr(mode):
   args = ('platform=%s MODE=%s-host naclsdk_validate=0 ' +
-          'sdl=none sysinfo=0 -j8 sel_ldr') % (env.arch, mode)
+          'sysinfo=0 -j8 sel_ldr') % (env.arch, mode)
   args = args.split()
   Run([env.scons] + args, cwd=env.nacl_root)
 
@@ -271,7 +353,7 @@ def Stringify(args):
 
 def Run(args, cwd = None, capture = False):
   if not capture:
-    PrintBanner(Stringify(args))
+    PrintCommand(Stringify(args))
     if env.dry_run:
       return
 
@@ -338,10 +420,12 @@ def ArgSplit(argv):
         skip_one = True
     elif arg == '--paranoid':
       env.paranoid = True
-    elif arg == '--dbg':
-      env.force_sel_ldr = 'dbg'
-    elif arg == '--opt':
-      env.force_sel_ldr = 'opt'
+    elif arg.startswith('--loader='):
+      env.force_sel_ldr = arg[len('--loader='):]
+    elif arg.startswith('--irt='):
+      env.force_irt = arg[len('--irt='):]
+    elif arg == '--use_pnacl_irt':
+      env.use_pnacl_irt = True
     elif arg in ('-n', '--dry-run'):
       env.dry_run = True
     elif arg in ('-h', '--help'):
