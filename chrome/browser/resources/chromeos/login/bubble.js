@@ -92,6 +92,15 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Hides the bubble anchored to the given element (if any).
+     * @param {!Object} el Anchor element.
+     */
+    hideForElement: function(el) {
+      if (!this.hidden && this.anchor_ == el)
+        this.hide();
+    },
+
+    /**
      * Handler for faded transition end.
      * @private
      */
