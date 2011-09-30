@@ -58,9 +58,32 @@ cr.define('login', function() {
      */
     initialize: function() {
       if (!this.isGuest) {
+        this.passwordEmpty = true;
         this.passwordElement.addEventListener('keydown',
             this.parentNode.handleKeyDown.bind(this.parentNode));
+        this.passwordElement.addEventListener('keypress',
+            this.handlePasswordKeyPress_.bind(this));
+        this.passwordElement.addEventListener('keyup',
+            this.handlePasswordKeyUp_.bind(this));
       }
+    },
+
+    /**
+     * Handles keyup event on password input.
+     * @param {Event} e Keyup Event object.
+     * @private
+     */
+    handlePasswordKeyUp_: function(e) {
+      this.passwordEmpty = !e.target.value;
+    },
+
+    /**
+     * Handles keypress event (i.e. any textual input) on password input.
+     * @param {Event} e Keypress Event object.
+     * @private
+     */
+    handlePasswordKeyPress_: function(e) {
+      this.passwordEmpty = false;
     },
 
     /**
@@ -88,11 +111,19 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets password hint label.
+     * @type {!HTMLDivElement}
+     */
+    get passwordHintElement() {
+      return this.passwordElement.nextElementSibling;
+    },
+
+    /**
      * Gets guest enter button.
      * @type {!HTMLInputElement}
      */
     get enterButtonElement() {
-      return this.passwordElement.nextElementSibling;
+      return this.passwordHintElement.nextElementSibling;
     },
 
     /**
@@ -191,6 +222,14 @@ cr.define('login', function() {
         this.removeUserButtonElement.classList.remove('active');
         this.removeUserButtonElement.textContent = '';
       }
+    },
+
+    /**
+     * Whether the password field is empty.
+     * @type {boolean}
+     */
+    set passwordEmpty(empty) {
+      this.passwordElement.classList[empty ? 'add' : 'remove']('empty');
     },
 
     /**

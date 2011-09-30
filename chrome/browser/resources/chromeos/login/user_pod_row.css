@@ -138,6 +138,25 @@ podrow {
   visibility: visible;
 }
 
+.pod .password-hint {
+  cursor: text;
+  height: 14px;
+  opacity: 0.3;
+  overflow: hidden;
+  padding: 4px 8px;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 194px;
+  visibility: hidden;
+  white-space: nowrap;
+  width: 154px;
+  z-index: 1;
+}
+
+.pod.focused input[type='password']:not([hidden]).empty + .password-hint {
+  visibility: visible;
+}
+
 .remove-user-button {
   -webkit-transition: width .1s ease-in-out, background .2s ease-in-out;
   -webkit-box-shadow: none;

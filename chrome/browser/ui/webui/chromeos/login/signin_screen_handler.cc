@@ -211,10 +211,8 @@ void SigninScreenHandler::GetLocalizedStrings(
     DictionaryValue* localized_strings) {
   localized_strings->SetString("signinScreenTitle",
       l10n_util::GetStringUTF16(IDS_SIGNIN_SCREEN_TITLE));
-  localized_strings->SetString("emailHint",
-      l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
   localized_strings->SetString("passwordHint",
-      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
   localized_strings->SetString("signinButton",
       l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON));
   localized_strings->SetString("enterGuestButton",
