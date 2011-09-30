@@ -84,9 +84,6 @@
       # crbug.com/97369
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # Browser crash when clearing browsing history and downloads together.
-      # crbug.com/88128
-      '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
-      '-browsing_data.BrowsingDataTest.testClearingAccuracy',
       # crbug.com/97695
       '-downloads.DownloadsTest.testBigZip',
       '-downloads.DownloadsTest.testFileRenaming',
@@ -307,8 +304,6 @@
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',	
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
-      # Flaky: crosbug.com/14394
-      '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
       '-downloads.DownloadsTest.testDeclineDangerousDownload',

@@ -292,7 +292,11 @@ bool TextDatabaseManager::AddPageData(const GURL& url,
     // We're supposed to update the visit database, so load the visit.
     VisitRow row;
     if (!visit_database_->GetRowForVisit(visit_id, &row)) {
-      NOTREACHED() << "Could not find requested visit #" << visit_id;
+      // This situation can occur if Chrome's history is in the process of
+      // being updated, and then the browsing history is deleted before all
+      // updates have been completely performed.  In this case, a stale update
+      // to the database is attempted, leading to the warning below.
+      DLOG(WARNING) << "Could not find requested visit #" << visit_id;
       return false;
     }
 
