@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/point.h"
 
@@ -190,7 +190,7 @@ class MenuGtk {
   // We must free these at shutdown.
   std::vector<MenuGtk*> submenus_we_own_;
 
-  ScopedRunnableMethodFactory<MenuGtk> factory_;
+  base::WeakPtrFactory<MenuGtk> weak_factory_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_MENU_GTK_H_

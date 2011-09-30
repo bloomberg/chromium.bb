@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/notifications/balloon_view_host_gtk.h"
@@ -114,7 +115,7 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<BalloonViewHost> html_contents_;
 
   // The following factory is used to call methods at a later time.
-  ScopedRunnableMethodFactory<BalloonViewImpl> method_factory_;
+  base::WeakPtrFactory<BalloonViewImpl> weak_factory_;
 
   // Close button.
   scoped_ptr<CustomDrawButton> close_button_;

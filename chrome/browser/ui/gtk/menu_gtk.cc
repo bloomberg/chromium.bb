@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -281,7 +282,7 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
       model_(model),
       dummy_accel_group_(gtk_accel_group_new()),
       menu_(gtk_custom_menu_new()),
-      factory_(this) {
+      weak_factory_(this) {
   DCHECK(model);
   g_object_ref_sink(menu_);
   ConnectSignalHandlers();
@@ -719,8 +720,9 @@ void MenuGtk::ExecuteCommand(ui::MenuModel* model, int id) {
 
 void MenuGtk::OnMenuShow(GtkWidget* widget) {
   model_->MenuWillShow();
-  MessageLoop::current()->PostTask(FROM_HERE,
-      factory_.NewRunnableMethod(&MenuGtk::UpdateMenu));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MenuGtk::UpdateMenu, weak_factory_.GetWeakPtr()));
 }
 
 void MenuGtk::OnMenuHidden(GtkWidget* widget) {

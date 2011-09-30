@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -124,7 +125,7 @@ void DetectAndStartProxyConfigUtil(TabContents* tab_contents) {
   if (launched)
     return;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&ShowLinuxProxyConfigUrl, tab_contents));
+      base::Bind(&ShowLinuxProxyConfigUrl, tab_contents));
 }
 
 }  // anonymous namespace
@@ -132,7 +133,7 @@ void DetectAndStartProxyConfigUtil(TabContents* tab_contents) {
 void AdvancedOptionsUtilities::ShowNetworkProxySettings(
     TabContents* tab_contents) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&DetectAndStartProxyConfigUtil, tab_contents));
+      base::Bind(&DetectAndStartProxyConfigUtil, tab_contents));
 }
 
 #endif  // !defined(OS_CHROMEOS)

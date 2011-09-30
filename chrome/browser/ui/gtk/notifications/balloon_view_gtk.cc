@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -101,7 +102,7 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
     : balloon_(NULL),
       frame_container_(NULL),
       html_container_(NULL),
-      method_factory_(this),
+      weak_factory_(this),
       close_button_(NULL),
       animation_(NULL),
       menu_showing_(false),
@@ -123,8 +124,9 @@ void BalloonViewImpl::Close(bool by_user) {
   } else {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &BalloonViewImpl::DelayedClose, by_user));
+        base::Bind(&BalloonViewImpl::DelayedClose,
+                   weak_factory_.GetWeakPtr(),
+                   by_user));
   }
 }
 
@@ -470,8 +472,9 @@ void BalloonViewImpl::StoppedShowing() {
   if (pending_close_) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &BalloonViewImpl::DelayedClose, false));
+        base::Bind(&BalloonViewImpl::DelayedClose,
+                   weak_factory_.GetWeakPtr(),
+                   false));
   }
 }
 

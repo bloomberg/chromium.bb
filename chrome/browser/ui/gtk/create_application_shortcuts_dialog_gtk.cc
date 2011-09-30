@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
@@ -189,9 +190,9 @@ void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
     shortcut_info_.create_in_applications_menu =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(menu_checkbox_));
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-         NewRunnableMethod(this,
-             &CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut,
-             shortcut_info_));
+        base::Bind(&CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut,
+                   this,
+                   shortcut_info_));
 
     OnCreatedShortcut();
   } else {
@@ -218,8 +219,8 @@ void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
     Release();
   } else {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-            &CreateApplicationShortcutsDialogGtk::ShowErrorDialog));
+        base::Bind(&CreateApplicationShortcutsDialogGtk::ShowErrorDialog,
+                   this));
   }
 }
 

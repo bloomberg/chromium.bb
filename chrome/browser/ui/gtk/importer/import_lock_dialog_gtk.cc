@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
@@ -63,13 +64,12 @@ ImportLockDialogGtk::ImportLockDialogGtk(GtkWindow* parent,
 ImportLockDialogGtk::~ImportLockDialogGtk() {}
 
 void ImportLockDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
-  if (response_id == GTK_RESPONSE_ACCEPT) {
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        importer_host_.get(), &ImporterHost::OnImportLockDialogEnd, true));
-  } else {
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        importer_host_.get(), &ImporterHost::OnImportLockDialogEnd, false));
-  }
+  bool is_continue = response_id == GTK_RESPONSE_ACCEPT;
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&ImporterHost::OnImportLockDialogEnd,
+                 importer_host_.get(),
+                 is_continue));
+
   gtk_widget_destroy(dialog_);
   delete this;
 }
