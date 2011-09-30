@@ -165,7 +165,7 @@ void LayerAnimator::AnimationProgressed(const ui::Animation* animation) {
         NOTREACHED();
     }
   }
-  layer_->GetCompositor()->SchedulePaint();
+  layer_->ScheduleDraw();
 }
 
 void LayerAnimator::AnimationEnded(const ui::Animation* animation) {

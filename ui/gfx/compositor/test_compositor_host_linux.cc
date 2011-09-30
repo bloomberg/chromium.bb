@@ -23,7 +23,7 @@ class TestCompositorHostLinux : public TestCompositorHost,
   virtual ui::Compositor* GetCompositor() OVERRIDE;
 
   // Overridden from CompositorDelegate:
-  virtual void ScheduleCompositorPaint() OVERRIDE;
+  virtual void ScheduleDraw() OVERRIDE;
 
   // Overridden from MessagePumpDispatcher:
   virtual bool Dispatch(GdkEvent* event);
@@ -45,7 +45,7 @@ ui::Compositor* TestCompositorHostLinux::GetCompositor() {
   return NULL;
 }
 
-void TestCompositorHostLinux::ScheduleCompositorPaint() {
+void TestCompositorHostLinux::ScheduleDraw() {
   NOTIMPLEMENTED();
 }
 

@@ -1829,7 +1829,7 @@ void NativeWidgetGtk::HandleGtkGrabBroke() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk, private:
 
-void NativeWidgetGtk::ScheduleCompositorPaint() {
+void NativeWidgetGtk::ScheduleDraw() {
   SchedulePaintInRect(gfx::Rect(gfx::Point(), size_));
 }
 

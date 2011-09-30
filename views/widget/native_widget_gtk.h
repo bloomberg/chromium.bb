@@ -301,7 +301,7 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   friend class DropObserver;
 
   // Overridden from ui::CompositorDelegate
-  virtual void ScheduleCompositorPaint();
+  virtual void ScheduleDraw();
 
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;

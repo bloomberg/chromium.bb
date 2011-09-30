@@ -139,7 +139,7 @@ class NativeWidgetWayland : public internal::NativeWidgetPrivate,
   typedef ScopedVector<ui::ViewProp> ViewProps;
 
   // Overridden from ui::CompositorDelegate
-  virtual void ScheduleCompositorPaint();
+  virtual void ScheduleDraw();
 
   // Overridden from NativeWidget
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;

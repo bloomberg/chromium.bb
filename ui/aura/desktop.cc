@@ -97,7 +97,7 @@ void Desktop::OnHostResized(const gfx::Size& size) {
   window_->SetBounds(bounds);
 }
 
-void Desktop::ScheduleCompositorPaint() {
+void Desktop::ScheduleDraw() {
   if (schedule_paint_.empty()) {
     MessageLoop::current()->PostTask(FROM_HERE,
         schedule_paint_.NewRunnableMethod(&Desktop::Draw));

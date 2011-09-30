@@ -193,8 +193,12 @@ void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
 
 void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
   invalid_rect_ = invalid_rect_.Union(invalid_rect);
+  ScheduleDraw();
+}
+
+void Layer::ScheduleDraw() {
   if (GetCompositor())
-    GetCompositor()->SchedulePaint();
+    GetCompositor()->ScheduleDraw();
 }
 
 void Layer::Draw() {

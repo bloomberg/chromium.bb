@@ -81,8 +81,8 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
 // An interface to allow the compositor to communicate with its owner.
 class COMPOSITOR_EXPORT CompositorDelegate {
  public:
-  // Requests the owner to schedule a paint.
-  virtual void ScheduleCompositorPaint() = 0;
+  // Requests the owner to schedule a redraw of the layer tree.
+  virtual void ScheduleDraw() = 0;
 
  protected:
   virtual ~CompositorDelegate() {}
@@ -106,9 +106,9 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // Blurs the specific region in the compositor.
   virtual void Blur(const gfx::Rect& bounds) = 0;
 
-  // Schedules a paint on the widget this Compositor was created for.
-  void SchedulePaint() {
-    delegate_->ScheduleCompositorPaint();
+  // Schedules a redraw of the layer tree associated with this compositor.
+  void ScheduleDraw() {
+    delegate_->ScheduleDraw();
   }
 
   // Sets the root of the layer tree drawn by this Compositor.

@@ -183,7 +183,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   }
 
   // Overridden from ui::CompositorDelegate:
-  virtual void ScheduleCompositorPaint();
+  virtual void ScheduleDraw();
 
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;

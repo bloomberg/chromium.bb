@@ -506,7 +506,7 @@ bool NativeWidgetWayland::ConvertPointFromAncestor(
   return false;
 }
 
-void NativeWidgetWayland::ScheduleCompositorPaint() {
+void NativeWidgetWayland::ScheduleDraw() {
   SchedulePaintInRect(allocation_);
 }
 

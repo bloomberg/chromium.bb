@@ -423,8 +423,7 @@ void View::SetTransform(const ui::Transform& transform) {
     if (!layer())
       CreateLayer();
     layer_property_setter_->SetTransform(layer(), transform);
-    if (layer()->GetCompositor())
-      layer()->GetCompositor()->SchedulePaint();
+    layer()->ScheduleDraw();
   }
 }
 

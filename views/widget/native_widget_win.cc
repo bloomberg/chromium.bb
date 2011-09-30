@@ -486,7 +486,7 @@ void NativeWidgetWin::PopForceHidden() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, CompositorDelegate implementation:
 
-void NativeWidgetWin::ScheduleCompositorPaint() {
+void NativeWidgetWin::ScheduleDraw() {
   RECT rect;
   ::GetClientRect(GetNativeView(), &rect);
   InvalidateRect(GetNativeView(), &rect, FALSE);

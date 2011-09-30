@@ -39,7 +39,7 @@ class TestCompositorHostWin : public TestCompositorHost,
   }
 
   // Overridden from CompositorDelegate:
-  virtual void ScheduleCompositorPaint() OVERRIDE {
+  virtual void ScheduleDraw() OVERRIDE {
     RECT rect;
     ::GetClientRect(hwnd(), &rect);
     InvalidateRect(hwnd(), &rect, FALSE);

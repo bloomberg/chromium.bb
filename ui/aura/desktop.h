@@ -98,7 +98,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   Window* GetTopmostWindowToActivate(Window* ignore);
 
   // Overridden from ui::CompositorDelegate
-  virtual void ScheduleCompositorPaint();
+  virtual void ScheduleDraw();
 
   scoped_refptr<ui::Compositor> compositor_;
 

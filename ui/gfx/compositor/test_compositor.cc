@@ -13,7 +13,7 @@ class TestCompositorDelegate : public ui::CompositorDelegate {
   TestCompositorDelegate() {}
   virtual ~TestCompositorDelegate() {}
 
-  virtual void ScheduleCompositorPaint() OVERRIDE {}
+  virtual void ScheduleDraw() OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestCompositorDelegate);

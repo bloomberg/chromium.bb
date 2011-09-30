@@ -138,10 +138,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   // Resets the canvas of the texture.
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
 
-  // Adds |invalid_rect| to the Layer's pending invalid rect, and schedules a
-  // repaint if the Layer has an associated LayerDelegate that can handle the
-  // repaint.
+  // Adds |invalid_rect| to the Layer's pending invalid rect and calls
+  // ScheduleDraw().
   void SchedulePaint(const gfx::Rect& invalid_rect);
+
+  // Schedules a redraw of the layer tree at the compositor.
+  void ScheduleDraw();
 
   // Does drawing for the layer.
   void Draw();
