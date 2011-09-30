@@ -45,7 +45,7 @@ class ClientSessionTest : public testing::Test {
     EXPECT_CALL(*connection_, session()).WillRepeatedly(Return(&session_));
 
     // Set up a large default screen size that won't affect most tests.
-    default_screen_size_.set(1000, 1000);
+    default_screen_size_.SetSize(1000, 1000);
     ON_CALL(capturer_, size_most_recent()).WillByDefault(ReturnRef(
         default_screen_size_));
 
@@ -59,7 +59,7 @@ class ClientSessionTest : public testing::Test {
   }
 
  protected:
-  SkISize default_screen_size_;
+  gfx::Size default_screen_size_;
   MessageLoop message_loop_;
   std::string client_jid_;
   MockSession session_;
@@ -170,12 +170,12 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   // This event should get through to the input stub.
   client_session_->InjectMouseEvent(mouse_event1);
   // This one should too because the local event echoes the remote one.
-  client_session_->LocalMouseMoved(SkIPoint::Make(mouse_event1.x(),
-                                                  mouse_event1.y()));
+  client_session_->LocalMouseMoved(gfx::Point(mouse_event1.x(),
+                                              mouse_event1.y()));
   client_session_->InjectMouseEvent(mouse_event2);
   // This one should not.
-  client_session_->LocalMouseMoved(SkIPoint::Make(mouse_event1.x(),
-                                                  mouse_event1.y()));
+  client_session_->LocalMouseMoved(gfx::Point(mouse_event1.x(),
+                                              mouse_event1.y()));
   client_session_->InjectMouseEvent(mouse_event3);
   // TODO(jamiewalch): Verify that remote inputs are re-enabled eventually
   // (via dependency injection, not sleep!)
@@ -208,7 +208,7 @@ TEST_F(ClientSessionTest, RestoreEventState) {
 }
 
 TEST_F(ClientSessionTest, ClampMouseEvents) {
-  SkISize screen(SkISize::Make(200, 100));
+  gfx::Size screen(200, 100);
   EXPECT_CALL(capturer_, size_most_recent())
       .WillRepeatedly(ReturnRef(screen));
 

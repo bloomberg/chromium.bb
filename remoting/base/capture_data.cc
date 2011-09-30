@@ -14,7 +14,7 @@ DataPlanes::DataPlanes() {
 }
 
 CaptureData::CaptureData(const DataPlanes &data_planes,
-                         const SkISize& size,
+                         const gfx::Size& size,
                          media::VideoFrame::Format format)
     : data_planes_(data_planes),
       size_(size),

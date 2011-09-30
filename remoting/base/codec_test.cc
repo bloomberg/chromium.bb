@@ -165,12 +165,14 @@ class DecoderTester {
     // Test the content of the update rect.
     ASSERT_EQ(rects_.size(), update_rects_.size());
     for (size_t i = 0; i < update_rects_.size(); ++i) {
-      EXPECT_EQ(rects_[i], update_rects_[i]);
+      SkIRect &r = rects_[i];
+      gfx::Rect rect(r.fLeft, r.fTop, r.width(), r.height());
+      EXPECT_EQ(rect, update_rects_[i]);
 
       EXPECT_EQ(frame_->stride(0), capture_data_->data_planes().strides[0]);
       const int stride = frame_->stride(0);
-      const int offset =  stride * update_rects_[i].fTop +
-          kBytesPerPixel * update_rects_[i].fLeft;
+      const int offset =  stride * update_rects_[i].y() +
+          kBytesPerPixel * update_rects_[i].x();
       const uint8* original = capture_data_->data_planes().data[0] + offset;
       const uint8* decoded = frame_->data(0) + offset;
       const int row_size = kBytesPerPixel * update_rects_[i].width();
@@ -186,7 +188,7 @@ class DecoderTester {
  private:
   bool strict_;
   std::deque<SkIRect> rects_;
-  RectVector update_rects_;
+  UpdatedRects update_rects_;
   Decoder* decoder_;
   scoped_refptr<media::VideoFrame> frame_;
   scoped_refptr<CaptureData> capture_data_;
@@ -255,7 +257,7 @@ scoped_refptr<CaptureData> PrepareEncodeData(media::VideoFrame::Format format,
   planes.strides[0] = kWidth * kBytesPerPixel;
 
   scoped_refptr<CaptureData> data =
-      new CaptureData(planes, SkISize::Make(kWidth, kHeight), format);
+      new CaptureData(planes, gfx::Size(kWidth, kHeight), format);
   return data;
 }
 

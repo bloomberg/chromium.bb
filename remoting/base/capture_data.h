@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/size.h"
 
 namespace remoting {
 
@@ -27,7 +28,7 @@ struct DataPlanes {
 class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
  public:
   CaptureData(const DataPlanes &data_planes,
-              const SkISize& size,
+              const gfx::Size& size,
               media::VideoFrame::Format format);
 
   // Get the data_planes data of the previous capture.
@@ -37,7 +38,7 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
   const SkRegion& dirty_region() const { return dirty_region_; }
 
   // Return the size of the image captured.
-  SkISize size() const { return size_; }
+  gfx::Size size() const { return size_; }
 
   // Get the pixel format of the image captured.
   media::VideoFrame::Format pixel_format() const { return pixel_format_; }
@@ -62,7 +63,7 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
  private:
   const DataPlanes data_planes_;
   SkRegion dirty_region_;
-  SkISize size_;
+  gfx::Size size_;
   media::VideoFrame::Format pixel_format_;
 
   // Time spent in capture. Unit is in milliseconds.

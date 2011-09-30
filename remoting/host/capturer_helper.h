@@ -7,6 +7,7 @@
 
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/size.h"
 
 namespace remoting {
 
@@ -25,7 +26,7 @@ class CapturerHelper {
   void InvalidateRegion(const SkRegion& invalid_region);
 
   // Invalidate the entire screen, of a given size.
-  void InvalidateScreen(const SkISize& size);
+  void InvalidateScreen(const gfx::Size& size);
 
   // Invalidate the entire screen, using the size of the most recently
   // captured screen.
@@ -35,8 +36,8 @@ class CapturerHelper {
   void SwapInvalidRegion(SkRegion* invalid_region);
 
   // Access the size of the most recently captured screen.
-  const SkISize& size_most_recent() const;
-  void set_size_most_recent(const SkISize& size);
+  const gfx::Size& size_most_recent() const;
+  void set_size_most_recent(const gfx::Size& size);
 
  private:
   // A region that has been manually invalidated (through InvalidateRegion).
@@ -48,7 +49,7 @@ class CapturerHelper {
   base::Lock invalid_region_lock_;
 
   // The size of the most recently captured screen.
-  SkISize size_most_recent_;
+  gfx::Size size_most_recent_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturerHelper);
 };

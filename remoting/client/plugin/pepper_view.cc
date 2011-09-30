@@ -74,7 +74,7 @@ void PepperView::Paint() {
   }
 }
 
-void PepperView::SetHostSize(const SkISize& host_size) {
+void PepperView::SetHostSize(const gfx::Size& host_size) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   if (host_size_ == host_size)
@@ -87,10 +87,10 @@ void PepperView::SetHostSize(const SkISize& host_size) {
       host_size.width(), host_size.height());
 }
 
-void PepperView::PaintFrame(media::VideoFrame* frame, RectVector* rects) {
+void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
-  SetHostSize(SkISize::Make(frame->width(), frame->height()));
+  SetHostSize(gfx::Size(frame->width(), frame->height()));
 
   if (!backing_store_.get() || backing_store_->is_null()) {
     LOG(ERROR) << "Backing store is not available.";
@@ -108,26 +108,26 @@ void PepperView::PaintFrame(media::VideoFrame* frame, RectVector* rects) {
     FlushGraphics(start_time);
 }
 
-bool PepperView::PaintRect(media::VideoFrame* frame, const SkIRect& r) {
+bool PepperView::PaintRect(media::VideoFrame* frame, const gfx::Rect& r) {
   const uint8* frame_data = frame->data(media::VideoFrame::kRGBPlane);
   const int kFrameStride = frame->stride(media::VideoFrame::kRGBPlane);
   const int kBytesPerPixel = GetBytesPerPixel(media::VideoFrame::RGB32);
 
   pp::Size backing_store_size = backing_store_->size();
-  SkIRect rect(r);
-  if (!rect.intersect(SkIRect::MakeWH(backing_store_size.width(),
-                                      backing_store_size.height()))) {
+  gfx::Rect rect = r.Intersect(gfx::Rect(0, 0, backing_store_size.width(),
+                                         backing_store_size.height()));
+
+  if (rect.IsEmpty())
     return false;
-  }
 
   const uint8* in =
       frame_data +
-      kFrameStride * rect.fTop +   // Y offset.
-      kBytesPerPixel * rect.fLeft;  // X offset.
+      kFrameStride * rect.y() +   // Y offset.
+      kBytesPerPixel * rect.x();  // X offset.
   uint8* out =
       reinterpret_cast<uint8*>(backing_store_->data()) +
-      backing_store_->stride() * rect.fTop +  // Y offset.
-      kBytesPerPixel * rect.fLeft;  // X offset.
+      backing_store_->stride() * rect.y() +  // Y offset.
+      kBytesPerPixel * rect.x();  // X offset.
 
   // TODO(hclam): We really should eliminate this memory copy.
   for (int j = 0; j < rect.height(); ++j) {
@@ -141,7 +141,7 @@ bool PepperView::PaintRect(media::VideoFrame* frame, const SkIRect& r) {
   graphics2d_.PaintImageData(
       *backing_store_.get(),
       pp::Point(0, 0),
-      pp::Rect(rect.fLeft, rect.fTop, rect.width(), rect.height()));
+      pp::Rect(rect.x(), rect.y(), rect.width(), rect.height()));
   return true;
 }
 
@@ -239,7 +239,7 @@ void PepperView::UpdateLoginStatus(bool success, const std::string& info) {
     scriptable_obj->SignalLoginChallenge();
 }
 
-bool PepperView::SetPluginSize(const SkISize& plugin_size) {
+bool PepperView::SetPluginSize(const gfx::Size& plugin_size) {
   if (plugin_size_ == plugin_size)
     return false;
   plugin_size_ = plugin_size;
@@ -252,7 +252,7 @@ bool PepperView::SetPluginSize(const SkISize& plugin_size) {
     return false;
   }
 
-  if (plugin_size.isEmpty())
+  if (plugin_size.IsEmpty())
     return false;
 
   // Allocate the backing store to save the desktop image.
@@ -271,7 +271,7 @@ bool PepperView::SetPluginSize(const SkISize& plugin_size) {
 
 double PepperView::GetHorizontalScaleRatio() const {
   if (instance_->DoScaling()) {
-    DCHECK(!host_size_.isEmpty());
+    DCHECK(!host_size_.IsEmpty());
     return 1.0 * plugin_size_.width() / host_size_.width();
   }
   return 1.0;
@@ -279,7 +279,7 @@ double PepperView::GetHorizontalScaleRatio() const {
 
 double PepperView::GetVerticalScaleRatio() const {
   if (instance_->DoScaling()) {
-    DCHECK(!host_size_.isEmpty());
+    DCHECK(!host_size_.IsEmpty());
     return 1.0 * plugin_size_.height() / host_size_.height();
   }
   return 1.0;
@@ -311,7 +311,7 @@ void PepperView::ReleaseFrame(media::VideoFrame* frame) {
 }
 
 void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
-                                      RectVector* rects,
+                                      UpdatedRects* rects,
                                       Task* done) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 

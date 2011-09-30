@@ -4,6 +4,8 @@
 
 #include "remoting/host/capturer_fake_ascii.h"
 
+#include "ui/gfx/rect.h"
+
 namespace remoting {
 
 static const int kWidth = 32;
@@ -43,7 +45,7 @@ void CapturerFakeAscii::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void CapturerFakeAscii::InvalidateScreen(const SkISize& size) {
+void CapturerFakeAscii::InvalidateScreen(const gfx::Size& size) {
   helper_.InvalidateScreen(size);
 }
 
@@ -61,14 +63,14 @@ void CapturerFakeAscii::CaptureInvalidRegion(
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
   planes.strides[0] = bytes_per_row_;
   scoped_refptr<CaptureData> capture_data(new CaptureData(
-      planes, SkISize::Make(width_, height_), pixel_format_));
+      planes, gfx::Size(width_, height_), pixel_format_));
 
   helper_.set_size_most_recent(capture_data->size());
 
   callback->Run(capture_data);
 }
 
-const SkISize& CapturerFakeAscii::size_most_recent() const {
+const gfx::Size& CapturerFakeAscii::size_most_recent() const {
   return helper_.size_most_recent();
 }
 

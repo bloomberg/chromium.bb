@@ -231,7 +231,7 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
     // TODO(wez): This code assumes that MouseEvent(0,0) (top-left of client view)
     // corresponds to local (0,0) (top-left of primary monitor).  That won't in
     // general be true on multi-monitor systems, though.
-    SkISize size = capturer_->size_most_recent();
+    gfx::Size size = capturer_->size_most_recent();
     if (event.x() >= 0 || event.y() >= 0 ||
         event.x() < size.width() || event.y() < size.height()) {
       VLOG(3) << "Moving mouse to " << event.x() << "," << event.y();

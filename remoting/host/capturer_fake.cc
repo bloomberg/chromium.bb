@@ -4,6 +4,8 @@
 
 #include "remoting/host/capturer_fake.h"
 
+#include "ui/gfx/rect.h"
+
 namespace remoting {
 
 // CapturerFake generates a white picture of size kWidth x kHeight with a
@@ -37,7 +39,7 @@ CapturerFake::~CapturerFake() {
 }
 
 void CapturerFake::ScreenConfigurationChanged() {
-  size_ = SkISize::Make(kWidth, kHeight);
+  size_ = gfx::Size(kWidth, kHeight);
   bytes_per_row_ = size_.width() * kBytesPerPixel;
   pixel_format_ = media::VideoFrame::RGB32;
 
@@ -60,7 +62,7 @@ void CapturerFake::InvalidateRegion(const SkRegion& invalid_region) {
   helper.InvalidateRegion(invalid_region);
 }
 
-void CapturerFake::InvalidateScreen(const SkISize& size) {
+void CapturerFake::InvalidateScreen(const gfx::Size& size) {
   helper.InvalidateScreen(size);
 }
 
@@ -92,7 +94,7 @@ void CapturerFake::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
   callback->Run(capture_data);
 }
 
-const SkISize& CapturerFake::size_most_recent() const {
+const gfx::Size& CapturerFake::size_most_recent() const {
   return helper.size_most_recent();
 }
 

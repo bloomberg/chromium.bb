@@ -94,10 +94,10 @@ void ClientSession::InjectMouseEvent(const MouseEvent& event) {
       // the event to lie within the current screen area.  This is better than
       // simply discarding the event, which might lose a button-up event at the
       // end of a drag'n'drop (or cause other related problems).
-      SkIPoint pos(SkIPoint::Make(event.x(), event.y()));
-      const SkISize& screen = capturer_->size_most_recent();
-      pos.setX(std::max(0, std::min(screen.width() - 1, pos.x())));
-      pos.setY(std::max(0, std::min(screen.height() - 1, pos.y())));
+      gfx::Point pos(event.x(), event.y());
+      const gfx::Size& screen = capturer_->size_most_recent();
+      pos.set_x(std::max(0, std::min(screen.width() - 1, pos.x())));
+      pos.set_y(std::max(0, std::min(screen.height() - 1, pos.y())));
       event_to_inject.set_x(pos.x());
       event_to_inject.set_y(pos.y());
 
@@ -121,11 +121,11 @@ void ClientSession::OnDisconnected() {
   authenticated_ = false;
 }
 
-void ClientSession::LocalMouseMoved(const SkIPoint& mouse_pos) {
+void ClientSession::LocalMouseMoved(const gfx::Point& mouse_pos) {
   // If this is a genuine local input event (rather than an echo of a remote
   // input event that we've just injected), then ignore remote inputs for a
   // short time.
-  std::list<SkIPoint>::iterator found_position =
+  std::list<gfx::Point>::iterator found_position =
       std::find(injected_mouse_positions_.begin(),
                 injected_mouse_positions_.end(), mouse_pos);
   if (found_position != injected_mouse_positions_.end()) {

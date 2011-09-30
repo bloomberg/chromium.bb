@@ -20,7 +20,7 @@ namespace remoting {
 
 class PartialFrameCleanup : public Task {
  public:
-  PartialFrameCleanup(media::VideoFrame* frame, RectVector* rects,
+  PartialFrameCleanup(media::VideoFrame* frame, UpdatedRects* rects,
                       RectangleUpdateDecoder* decoder)
       : frame_(frame), rects_(rects), decoder_(decoder) {
   }
@@ -36,7 +36,7 @@ class PartialFrameCleanup : public Task {
 
  private:
   scoped_refptr<media::VideoFrame> frame_;
-  RectVector* rects_;
+  UpdatedRects* rects_;
   scoped_refptr<RectangleUpdateDecoder> decoder_;
 };
 
@@ -52,8 +52,8 @@ RectangleUpdateDecoder::~RectangleUpdateDecoder() {
 }
 
 void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
-  initial_screen_size_ = SkISize::Make(config.initial_resolution().width,
-                                       config.initial_resolution().height);
+  initial_screen_size_ = gfx::Size(config.initial_resolution().width,
+                                   config.initial_resolution().height);
 
   // Initialize decoder based on the selected codec.
   ChannelConfig::Codec codec = config.video_config().codec;
@@ -98,20 +98,16 @@ void RectangleUpdateDecoder::AllocateFrame(const VideoPacket* packet,
   // Find the required frame size.
   bool has_screen_size = packet->format().has_screen_width() &&
                          packet->format().has_screen_height();
-  SkISize screen_size(SkISize::Make(packet->format().screen_width(),
-                                    packet->format().screen_height()));
+  gfx::Size screen_size(packet->format().screen_width(),
+                        packet->format().screen_height());
   if (!has_screen_size)
     screen_size = initial_screen_size_;
 
   // Find the current frame size.
-  int width = 0;
-  int height = 0;
-  if (frame_) {
-    width = static_cast<int>(frame_->width());
-    height = static_cast<int>(frame_->height());
-  }
-
-  SkISize frame_size(SkISize::Make(width, height));
+  gfx::Size frame_size(0, 0);
+  if (frame_)
+    frame_size = gfx::Size(static_cast<int>(frame_->width()),
+                           static_cast<int>(frame_->height()));
 
   // Allocate a new frame, if necessary.
   if ((!frame_) || (has_screen_size && (screen_size != frame_size))) {
@@ -179,7 +175,7 @@ void RectangleUpdateDecoder::SetScaleRatios(double horizontal_ratio,
   decoder_->SetScaleRatios(horizontal_ratio, vertical_ratio);
 }
 
-void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
+void RectangleUpdateDecoder::UpdateClipRect(const gfx::Rect& new_clip_rect) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
@@ -193,36 +189,36 @@ void RectangleUpdateDecoder::UpdateClipRect(const SkIRect& new_clip_rect) {
     return;
 
   // Find out the rectangles to show because of clip rect is updated.
-  if (new_clip_rect.fTop < clip_rect_.fTop) {
+  if (new_clip_rect.y() < clip_rect_.y()) {
     refresh_rects_.push_back(
-        SkIRect::MakeXYWH(new_clip_rect.fLeft,
-                          new_clip_rect.fTop,
-                          new_clip_rect.width(),
-                          clip_rect_.fTop - new_clip_rect.fTop));
+        gfx::Rect(new_clip_rect.x(),
+                  new_clip_rect.y(),
+                  new_clip_rect.width(),
+                  clip_rect_.y() - new_clip_rect.y()));
   }
 
-  if (new_clip_rect.fLeft < clip_rect_.fLeft) {
+  if (new_clip_rect.x() < clip_rect_.x()) {
     refresh_rects_.push_back(
-        SkIRect::MakeXYWH(new_clip_rect.fLeft,
-                          clip_rect_.fTop,
-                          clip_rect_.fLeft - new_clip_rect.fLeft,
-                          clip_rect_.height()));
+        gfx::Rect(new_clip_rect.x(),
+                  clip_rect_.y(),
+                  clip_rect_.x() - new_clip_rect.x(),
+                  clip_rect_.height()));
   }
 
-  if (new_clip_rect.fRight > clip_rect_.fRight) {
+  if (new_clip_rect.right() > clip_rect_.right()) {
     refresh_rects_.push_back(
-        SkIRect::MakeXYWH(clip_rect_.fRight,
-                          clip_rect_.fTop,
-                          new_clip_rect.fRight - clip_rect_.fRight,
-                          new_clip_rect.height()));
+        gfx::Rect(clip_rect_.right(),
+                  clip_rect_.y(),
+                  new_clip_rect.right() - clip_rect_.right(),
+                  new_clip_rect.height()));
   }
 
-  if (new_clip_rect.fBottom > clip_rect_.fBottom) {
+  if (new_clip_rect.bottom() > clip_rect_.bottom()) {
     refresh_rects_.push_back(
-        SkIRect::MakeXYWH(new_clip_rect.fLeft,
-                          clip_rect_.fBottom,
-                          new_clip_rect.width(),
-                          new_clip_rect.fBottom - clip_rect_.fBottom));
+        gfx::Rect(new_clip_rect.x(),
+                  clip_rect_.bottom(),
+                  new_clip_rect.width(),
+                  new_clip_rect.bottom() - clip_rect_.bottom()));
   }
 
   clip_rect_ = new_clip_rect;
@@ -244,8 +240,8 @@ void RectangleUpdateDecoder::RefreshFullFrame() {
     return;
 
   refresh_rects_.push_back(
-      SkIRect::MakeWH(static_cast<int>(frame_->width()),
-                      static_cast<int>(frame_->height())));
+      gfx::Rect(0, 0, static_cast<int>(frame_->width()),
+                static_cast<int>(frame_->height())));
   DoRefresh();
 }
 
@@ -255,7 +251,7 @@ void RectangleUpdateDecoder::SubmitToConsumer() {
   if (!frame_)
     return;
 
-  RectVector* dirty_rects = new RectVector();
+  UpdatedRects* dirty_rects = new UpdatedRects();
   decoder_->GetUpdatedRects(dirty_rects);
 
   frame_is_consuming_ = true;

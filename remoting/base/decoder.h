@@ -11,11 +11,11 @@
 #include "base/task.h"
 #include "media/base/video_frame.h"
 #include "remoting/proto/video.pb.h"
-#include "third_party/skia/include/core/SkRect.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 
-typedef std::vector<SkIRect> RectVector;
+typedef std::vector<gfx::Rect> UpdatedRects;
 
 // Interface for a decoder that takes a stream of bytes from the network and
 // outputs frames of data.
@@ -46,7 +46,9 @@ class Decoder {
   // Returns rects that were updated in the last frame. Can be called only
   // after DecodePacket returned DECODE_DONE. Caller keeps ownership of
   // |rects|. |rects| is kept empty if whole screen needs to be updated.
-  virtual void GetUpdatedRects(RectVector* rects) = 0;
+  // TODO(dmaclach): Move this over to using SkRegion.
+  // http://crbug.com/92085
+  virtual void GetUpdatedRects(UpdatedRects* rects) = 0;
 
   // Reset the decoder to an uninitialized state. Release all references to
   // the initialized |frame|.  Initialize() must be called before the decoder
@@ -69,13 +71,13 @@ class Decoder {
   // effective on the next decoded video frame.
   //
   // When scaling is enabled clipping rectangles are ignored.
-  virtual void SetClipRect(const SkIRect& clip_rect) {}
+  virtual void SetClipRect(const gfx::Rect& clip_rect) {}
 
   // Force decoder to output a video frame with content in |rects| using the
   // last decoded video frame.
   //
   // Coordinates of rectangles supplied here are before scaling.
-  virtual void RefreshRects(const RectVector& rects) {}
+  virtual void RefreshRects(const std::vector<gfx::Rect>& rects) {}
 };
 
 }  // namespace remoting

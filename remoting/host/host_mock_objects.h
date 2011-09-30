@@ -28,10 +28,10 @@ class MockCapturer : public Capturer {
   MOCK_CONST_METHOD0(pixel_format, media::VideoFrame::Format());
   MOCK_METHOD0(ClearInvalidRegion, void());
   MOCK_METHOD1(InvalidateRegion, void(const SkRegion& invalid_region));
-  MOCK_METHOD1(InvalidateScreen, void(const SkISize&));
+  MOCK_METHOD1(InvalidateScreen, void(const gfx::Size&));
   MOCK_METHOD0(InvalidateFullScreen, void());
   MOCK_METHOD1(CaptureInvalidRegion, void(CaptureCompletedCallback* callback));
-  MOCK_CONST_METHOD0(size_most_recent, const SkISize&());
+  MOCK_CONST_METHOD0(size_most_recent, const gfx::Size&());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCapturer);

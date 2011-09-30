@@ -50,8 +50,8 @@ static void ProcessReply(XPointer thread,
   if (data->category == XRecordFromServer) {
     xEvent* event = reinterpret_cast<xEvent*>(data->data);
     if (event->u.u.type == MotionNotify) {
-      SkIPoint pos(SkIPoint::Make(event->u.keyButtonPointer.rootX,
-                                  event->u.keyButtonPointer.rootY));
+      gfx::Point pos(event->u.keyButtonPointer.rootX,
+                     event->u.keyButtonPointer.rootY);
       reinterpret_cast<LocalInputMonitorThread*>(thread)->LocalMouseMoved(pos);
     } else {
       reinterpret_cast<LocalInputMonitorThread*>(thread)->LocalKeyPressed(
@@ -162,7 +162,7 @@ void LocalInputMonitorThread::Run() {
   display_ = NULL;
 }
 
-void LocalInputMonitorThread::LocalMouseMoved(const SkIPoint& pos) {
+void LocalInputMonitorThread::LocalMouseMoved(const gfx::Point& pos) {
   host_->LocalMouseMoved(pos);
 }
 

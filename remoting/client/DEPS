@@ -2,6 +2,7 @@ include_rules = [
   "+ppapi",
   "+jingle/glue",
   "+net",
+  "+ui/gfx",
 
   "+remoting/protocol",
   "+remoting/jingle_glue",

@@ -61,7 +61,7 @@ class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
                              Task* done);
   virtual void ReleaseFrame(media::VideoFrame* frame);
   virtual void OnPartialFrameOutput(media::VideoFrame* frame,
-                                    RectVector* rects,
+                                    UpdatedRects* rects,
                                     Task* done);
 
   // Remove the reference to |instance_| and |view_| by setting the value to

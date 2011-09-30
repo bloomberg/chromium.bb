@@ -25,17 +25,17 @@ class CapturerFake : public Capturer {
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void ClearInvalidRegion() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void InvalidateScreen(const SkISize& size) OVERRIDE;
+  virtual void InvalidateScreen(const gfx::Size& size) OVERRIDE;
   virtual void InvalidateFullScreen() OVERRIDE;
   virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
       OVERRIDE;
-  virtual const SkISize& size_most_recent() const OVERRIDE;
+  virtual const gfx::Size& size_most_recent() const OVERRIDE;
 
  private:
   // Generates an image in the front buffer.
   void GenerateImage();
 
-  SkISize size_;
+  gfx::Size size_;
   int bytes_per_row_;
   int box_pos_x_;
   int box_pos_y_;

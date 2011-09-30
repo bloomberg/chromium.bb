@@ -19,6 +19,7 @@
 #include "ppapi/cpp/point.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/frame_consumer.h"
+#include "ui/gfx/size.h"
 
 namespace remoting {
 
@@ -55,24 +56,24 @@ class PepperView : public ChromotingView,
                              Task* done);
   virtual void ReleaseFrame(media::VideoFrame* frame);
   virtual void OnPartialFrameOutput(media::VideoFrame* frame,
-                                    RectVector* rects,
+                                    UpdatedRects* rects,
                                     Task* done);
 
   // This is called when the dimension of the plugin element has changed.
   // Return true if plugin size has changed, false otherwise.
-  bool SetPluginSize(const SkISize& plugin_size);
+  bool SetPluginSize(const gfx::Size& plugin_size);
 
  private:
   void OnPaintDone(base::Time paint_start);
 
   // Set the dimension of the entire host screen.
-  void SetHostSize(const SkISize& host_size);
+  void SetHostSize(const gfx::Size& host_size);
 
-  void PaintFrame(media::VideoFrame* frame, RectVector* rects);
+  void PaintFrame(media::VideoFrame* frame, UpdatedRects* rects);
 
   // Render the rectangle of |frame| to the backing store.
   // Returns true if this rectangle is not clipped.
-  bool PaintRect(media::VideoFrame* frame, const SkIRect& rect);
+  bool PaintRect(media::VideoFrame* frame, const gfx::Rect& rect);
 
   // Blanks out a rectangle in an image.
   void BlankRect(pp::ImageData& image_data, const pp::Rect& rect);
@@ -98,10 +99,10 @@ class PepperView : public ChromotingView,
   bool flush_blocked_;
 
   // The size of the plugin element.
-  SkISize plugin_size_;
+  gfx::Size plugin_size_;
 
   // The size of the host screen.
-  SkISize host_size_;
+  gfx::Size host_size_;
 
   bool is_static_fill_;
   uint32 static_fill_color_;

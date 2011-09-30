@@ -109,7 +109,7 @@ void EventExecutorWin::HandleMouse(const MouseEvent& event) {
     INPUT input;
     input.type = INPUT_MOUSE;
     input.mi.time = 0;
-    SkISize screen_size = capturer_->size_most_recent();
+    gfx::Size screen_size = capturer_->size_most_recent();
     if ((screen_size.width() > 0) && (screen_size.height() > 0)) {
       input.mi.dx = static_cast<int>((x * 65535) / screen_size.width());
       input.mi.dy = static_cast<int>((y * 65535) / screen_size.height());

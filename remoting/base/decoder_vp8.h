@@ -18,16 +18,15 @@ class DecoderVp8 : public Decoder {
   virtual ~DecoderVp8();
 
   // Decoder implementations.
-  virtual void Initialize(scoped_refptr<media::VideoFrame> frame) OVERRIDE;
-  virtual DecodeResult DecodePacket(const VideoPacket* packet) OVERRIDE;
-  virtual void GetUpdatedRects(RectVector* rects) OVERRIDE;
-  virtual bool IsReadyForData() OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual VideoPacketFormat::Encoding Encoding() OVERRIDE;
-  virtual void SetScaleRatios(double horizontal_ratio,
-                              double vertical_ratio) OVERRIDE;
-  virtual void SetClipRect(const SkIRect& clip_rect) OVERRIDE;
-  virtual void RefreshRects(const RectVector& rects) OVERRIDE;
+  virtual void Initialize(scoped_refptr<media::VideoFrame> frame);
+  virtual DecodeResult DecodePacket(const VideoPacket* packet);
+  virtual void GetUpdatedRects(UpdatedRects* rects);
+  virtual bool IsReadyForData();
+  virtual void Reset();
+  virtual VideoPacketFormat::Encoding Encoding();
+  virtual void SetScaleRatios(double horizontal_ratio, double vertical_ratio);
+  virtual void SetClipRect(const gfx::Rect& clip_rect);
+  virtual void RefreshRects(const std::vector<gfx::Rect>& rects);
 
  private:
   enum State {
@@ -41,14 +40,14 @@ class DecoderVp8 : public Decoder {
 
   // Perform color space conversion on the specified rectangles.
   // Write the updated rectangles to |output_rects|.
-  void ConvertRects(const RectVector& rects,
-                    RectVector* output_rects);
+  void ConvertRects(const UpdatedRects& rects,
+                    UpdatedRects* output_rects);
 
   // Perform scaling and color space conversion on the specified
   // rectangles.
   // Write the updated rectangles to |output_rects|.
-  void ScaleAndConvertRects(const RectVector& rects,
-                            RectVector* output_rects);
+  void ScaleAndConvertRects(const UpdatedRects& rects,
+                            UpdatedRects* output_rects);
 
   // The internal state of the decoder.
   State state_;
@@ -62,10 +61,10 @@ class DecoderVp8 : public Decoder {
   vpx_image_t* last_image_;
 
   // Record the updated rects in the last decode.
-  RectVector updated_rects_;
+  UpdatedRects updated_rects_;
 
   // Clipping rect for the output of the decoder.
-  SkIRect clip_rect_;
+  gfx::Rect clip_rect_;
 
   // Scale factors of the decoded output.
   double horizontal_scale_ratio_;

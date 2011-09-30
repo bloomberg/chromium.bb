@@ -144,7 +144,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Notify all active client sessions that local input has been detected, and
   // that remote input should be ignored for a short time.
-  void LocalMouseMoved(const SkIPoint& new_pos);
+  void LocalMouseMoved(const gfx::Point& new_pos);
 
   // Pause or unpause the session. While the session is paused, remote input
   // is ignored.

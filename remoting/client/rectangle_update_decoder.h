@@ -9,6 +9,8 @@
 #include "base/task.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/decoder.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 class MessageLoop;
 
@@ -52,7 +54,7 @@ class RectangleUpdateDecoder :
   // report dirty rectangles accordingly to enhance performance.
   //
   // If scale ratio is not 1.0 then clipping rectangle is ignored.
-  void UpdateClipRect(const SkIRect& clip_rect);
+  void UpdateClipRect(const gfx::Rect& clip_rect);
 
   // Force the decoder to output the last decoded video frame without any
   // clipping.
@@ -66,7 +68,7 @@ class RectangleUpdateDecoder :
 
   void AllocateFrame(const VideoPacket* packet, Task* done);
   void ProcessPacketData(const VideoPacket* packet, Task* done);
-  void RefreshRects(const RectVector& rects);
+  void RefreshRects(const std::vector<gfx::Rect>& rects);
 
   // Obtain updated rectangles from decoder and submit it to the consumer.
   void SubmitToConsumer();
@@ -83,9 +85,9 @@ class RectangleUpdateDecoder :
   MessageLoop* message_loop_;
   FrameConsumer* consumer_;
 
-  SkISize initial_screen_size_;
-  SkIRect clip_rect_;
-  RectVector refresh_rects_;
+  gfx::Size initial_screen_size_;
+  gfx::Rect clip_rect_;
+  std::vector<gfx::Rect> refresh_rects_;
 
   scoped_ptr<Decoder> decoder_;
 

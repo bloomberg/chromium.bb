@@ -7,6 +7,7 @@
 
 #include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 
@@ -20,7 +21,7 @@ void ConvertYUVToRGB32WithRect(const uint8* y_plane,
                                const uint8* u_plane,
                                const uint8* v_plane,
                                uint8* rgb_plane,
-                               const SkIRect& rect,
+                               const gfx::Rect& rect,
                                int y_stride,
                                int uv_stride,
                                int rgb_stride);
@@ -29,8 +30,8 @@ void ScaleYUVToRGB32WithRect(const uint8* y_plane,
                              const uint8* u_plane,
                              const uint8* v_plane,
                              uint8* rgb_plane,
-                             const SkIRect& source_rect,
-                             const SkIRect& dest_rect,
+                             const gfx::Rect& source_rect,
+                             const gfx::Rect& dest_rect,
                              int y_stride,
                              int uv_stride,
                              int rgb_stride);
@@ -50,13 +51,13 @@ void ConvertRGB32ToYUVWithRect(const uint8* rgb_plane,
 int RoundToTwosMultiple(int x);
 
 // Align the sides of the rectangle to multiples of 2 (expanding outwards).
-SkIRect AlignRect(const SkIRect& rect);
+gfx::Rect AlignRect(const gfx::Rect& rect);
 
 // Return a scaled rectangle using the horizontal and vertical scale
 // factors.
-SkIRect ScaleRect(const SkIRect& rect,
-                  double horizontal_ratio,
-                  double vertical_ratio);
+gfx::Rect ScaleRect(const gfx::Rect& rect,
+                    double horizontal_ratio,
+                    double vertical_ratio);
 
 // Copy pixels in the rectangle from source to destination.
 void CopyRect(const uint8* src_plane,

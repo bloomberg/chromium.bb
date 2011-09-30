@@ -49,12 +49,12 @@ TEST(EncoderVp8Test, TestSizeChangeNoLeak) {
   planes.strides[0] = width;
 
   scoped_refptr<CaptureData> capture_data(new CaptureData(
-      planes, SkISize::Make(width, height), media::VideoFrame::RGB32));
+      planes, gfx::Size(width, height), media::VideoFrame::RGB32));
   encoder.Encode(capture_data, false,
                  NewCallback(&callback, &EncoderCallback::DataAvailable));
 
   height /= 2;
-  capture_data = new CaptureData(planes, SkISize::Make(width, height),
+  capture_data = new CaptureData(planes, gfx::Size(width, height),
                                  media::VideoFrame::RGB32);
   encoder.Encode(capture_data, false,
                  NewCallback(&callback, &EncoderCallback::DataAvailable));
@@ -62,25 +62,25 @@ TEST(EncoderVp8Test, TestSizeChangeNoLeak) {
 
 TEST(EncoderVp8Test, AlignAndClipRect) {
   // Simple test case (no clipping).
-  SkIRect r1(SkIRect::MakeXYWH(100, 200, 300, 400));
+  gfx::Rect r1(100, 200, 300, 400);
   EXPECT_EQ(EncoderVp8::AlignAndClipRect(r1, kIntMax, kIntMax), r1);
 
   // Should expand outward to r1.
-  SkIRect r2(SkIRect::MakeXYWH(101, 201, 298, 398));
+  gfx::Rect r2(101, 201, 298, 398);
   EXPECT_EQ(EncoderVp8::AlignAndClipRect(r2, kIntMax, kIntMax), r1);
 
   // Test clipping to screen size.
   EXPECT_EQ(EncoderVp8::AlignAndClipRect(r1, 110, 220),
-            SkIRect::MakeXYWH(100, 200, 10, 20));
+            gfx::Rect(100, 200, 10, 20));
 
   // Rectangle completely off-screen.
-  EXPECT_TRUE(EncoderVp8::AlignAndClipRect(r1, 50, 50).isEmpty());
+  EXPECT_TRUE(EncoderVp8::AlignAndClipRect(r1, 50, 50).IsEmpty());
 
   // Clipping to odd-sized screen.  An unlikely case, and we might not deal
   // with it cleanly in the encoder (we possibly lose 1px at right & bottom
   // of screen).
   EXPECT_EQ(EncoderVp8::AlignAndClipRect(r1, 199, 299),
-            SkIRect::MakeXYWH(100, 200, 98, 98));
+            gfx::Rect(100, 200, 98, 98));
 }
 
 }  // namespace remoting
