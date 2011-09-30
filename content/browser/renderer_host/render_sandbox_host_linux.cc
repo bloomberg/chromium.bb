@@ -32,7 +32,7 @@
 #include "skia/ext/SkFontHost_fontconfig_direct.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebFontInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontInfo.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
 using WebKit::WebCString;
