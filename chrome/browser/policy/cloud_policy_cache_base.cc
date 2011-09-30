@@ -107,9 +107,9 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
   if (!new_policy_differs) {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchNotModified,
                               kMetricPolicySize);
-  } else {
-    NotifyObservers();
   }
+
+  NotifyObservers();
 
   InformNotifier(CloudPolicySubsystem::SUCCESS,
                  CloudPolicySubsystem::NO_DETAILS);

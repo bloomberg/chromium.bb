@@ -109,9 +109,9 @@ cr.define('policies', function() {
      */
     updatePolicyVisibility: function() {
       if ($('toggle-unsent-policies').checked)
-          $('policies').style.display = '';
+        $('policies').style.display = '';
       else if (this.noActivePolicies_)
-          $('policies').style.display = 'none';
+        $('policies').style.display = 'none';
 
       var tableRows = document.getElementsByClassName('policy-unset');
       for (var i = 0; i < tableRows.length; i++)
@@ -212,6 +212,8 @@ cr.define('policies', function() {
       Policy.getInstance().collapseExpandedCells();
       Policy.getInstance().renderTemplate(policyData);
       Policy.getInstance().updatePolicyVisibility();
+
+      $('fetch-policies-button').disabled = false;
     } else {
       Policy.getInstance().renderTemplate(policyData);
     }
@@ -259,6 +261,7 @@ cr.define('policies', function() {
 
     // Set HTML event handlers.
     $('fetch-policies-button').onclick = function(event) {
+      this.disabled = true;
       Policy.triggerPolicyFetch();
     }
 

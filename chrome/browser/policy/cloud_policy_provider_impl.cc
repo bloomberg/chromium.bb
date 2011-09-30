@@ -30,7 +30,7 @@ bool CloudPolicyProviderImpl::IsInitializationComplete() const {
 }
 
 void CloudPolicyProviderImpl::OnCacheUpdate(CloudPolicyCacheBase* cache) {
-  RecombineCachesAndMaybeTriggerUpdate();
+  RecombineCachesAndTriggerUpdate();
 }
 
 void CloudPolicyProviderImpl::OnCacheGoingAway(CloudPolicyCacheBase* cache) {
@@ -42,21 +42,21 @@ void CloudPolicyProviderImpl::OnCacheGoingAway(CloudPolicyCacheBase* cache) {
     }
   }
 
-  RecombineCachesAndMaybeTriggerUpdate();
+  RecombineCachesAndTriggerUpdate();
 }
 
 void CloudPolicyProviderImpl::AppendCache(CloudPolicyCacheBase* cache) {
   initialization_complete_ &= cache->IsReady();
   cache->AddObserver(this);
   caches_.push_back(cache);
-  RecombineCachesAndMaybeTriggerUpdate();
+  RecombineCachesAndTriggerUpdate();
 }
 
 void CloudPolicyProviderImpl::PrependCache(CloudPolicyCacheBase* cache) {
   initialization_complete_ &= cache->IsReady();
   cache->AddObserver(this);
   caches_.insert(caches_.begin(), cache);
-  RecombineCachesAndMaybeTriggerUpdate();
+  RecombineCachesAndTriggerUpdate();
 }
 
 // static
@@ -85,9 +85,8 @@ void CloudPolicyProviderImpl::CombineTwoPolicyMaps(const PolicyMap& base,
   }
 }
 
-void CloudPolicyProviderImpl::RecombineCachesAndMaybeTriggerUpdate() {
+void CloudPolicyProviderImpl::RecombineCachesAndTriggerUpdate() {
   // Re-check whether all caches are ready.
-  bool force_update = false;
   if (!initialization_complete_) {
     bool all_caches_ready = true;
     for (ListType::const_iterator i = caches_.begin();
@@ -97,10 +96,8 @@ void CloudPolicyProviderImpl::RecombineCachesAndMaybeTriggerUpdate() {
         break;
       }
     }
-    if (all_caches_ready) {
-      force_update = true;
+    if (all_caches_ready)
       initialization_complete_ = true;
-    }
   }
 
   // Reconstruct the merged policy map.
@@ -112,10 +109,8 @@ void CloudPolicyProviderImpl::RecombineCachesAndMaybeTriggerUpdate() {
     CombineTwoPolicyMaps(newly_combined, *(*i)->policy(level_), &tmp_map);
     newly_combined.Swap(&tmp_map);
   }
-  if (newly_combined.Equals(combined_) && !force_update)
-    return;
 
-  // Trigger a notification if there was a change.
+  // Trigger a notification.
   combined_.Swap(&newly_combined);
   NotifyPolicyUpdated();
 }

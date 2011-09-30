@@ -130,11 +130,9 @@ void AsynchronousPolicyLoader::PostUpdatePolicyTask(
 void AsynchronousPolicyLoader::UpdatePolicy(DictionaryValue* new_policy_raw) {
   scoped_ptr<DictionaryValue> new_policy(new_policy_raw);
   DCHECK(policy_.get());
-  if (!policy_->Equals(new_policy.get())) {
-    policy_.swap(new_policy);
-    if (!stopped_)
-      updates_callback_.Run();
-  }
+  policy_.swap(new_policy);
+  if (!stopped_)
+    updates_callback_.Run();
 }
 
 void AsynchronousPolicyLoader::InitAfterFileThreadAvailable() {

@@ -48,7 +48,7 @@ class CloudPolicyProviderImpl : public CloudPolicyProvider,
   // except those already provided by |caches_[0]|..|caches_[i-1]|. Proxy
   // related policies are handled as a special case: they are only applied in
   // groups.
-  void RecombineCachesAndMaybeTriggerUpdate();
+  void RecombineCachesAndTriggerUpdate();
 
   // The underlying policy caches.
   typedef std::vector<CloudPolicyCacheBase*> ListType;

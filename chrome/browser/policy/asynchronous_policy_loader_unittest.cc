@@ -110,8 +110,7 @@ TEST_F(AsynchronousPolicyLoaderTest, Stop) {
   loop_.RunAllPending();
 }
 
-// Verifies that the provider is notified upon policy reload, but only
-// if the policy changed.
+// Verifies that the provider is notified upon policy reload.
 TEST_F(AsynchronousPolicyLoaderTest, ProviderNotificationOnPolicyChange) {
   InSequence s;
   MockConfigurationPolicyObserver observer;
@@ -121,12 +120,13 @@ TEST_F(AsynchronousPolicyLoaderTest, ProviderNotificationOnPolicyChange) {
       CreateSequencedTestDictionary(&dictionary_number_1));
   EXPECT_CALL(*delegate_, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number_2));
-  EXPECT_CALL(observer, OnUpdatePolicy()).Times(0);
+  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
   EXPECT_CALL(*delegate_, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number_2));
   EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
   EXPECT_CALL(*delegate_, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number_1));
+  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
   scoped_refptr<AsynchronousPolicyLoader> loader =
       new AsynchronousPolicyLoader(delegate_.release(), 10);
   AsynchronousPolicyProvider provider(NULL, loader);
