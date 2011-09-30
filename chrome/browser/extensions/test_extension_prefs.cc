@@ -48,7 +48,9 @@ class MockExtensionPrefs : public ExtensionPrefs {
 
 }  // namespace
 
-TestExtensionPrefs::TestExtensionPrefs() : pref_service_(NULL) {
+TestExtensionPrefs::TestExtensionPrefs()
+    : pref_service_(NULL),
+      extensions_disabled_(false) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   preferences_file_ = temp_dir_.path().AppendASCII("Preferences");
   extensions_dir_ = temp_dir_.path().AppendASCII("Extensions");
@@ -92,6 +94,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   prefs_.reset(new MockExtensionPrefs(pref_service_.get(),
                                       temp_dir_.path(),
                                       extension_pref_value_map_.get()));
+  prefs_->Init(extensions_disabled_);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {
@@ -146,4 +149,8 @@ std::string TestExtensionPrefs::AddExtensionAndReturnId(std::string name) {
 PrefService* TestExtensionPrefs::CreateIncognitoPrefService() const {
   return pref_service_->CreateIncognitoPrefService(
       new ExtensionPrefStore(extension_pref_value_map_.get(), true));
+}
+
+void TestExtensionPrefs::set_extensions_disabled(bool extensions_disabled) {
+  extensions_disabled_ = extensions_disabled;
 }

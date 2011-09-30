@@ -37,6 +37,7 @@ class ExtensionTestingProfile : public TestingProfile {
     extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
                                               GetExtensionsInstallDir(),
                                               extension_pref_value_map_.get()));
+    extension_prefs_->Init(false);
     service_.reset(new ExtensionService(this,
                                         CommandLine::ForCurrentProcess(),
                                         GetExtensionsInstallDir(),

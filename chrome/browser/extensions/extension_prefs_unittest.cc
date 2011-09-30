@@ -1111,3 +1111,31 @@ class ExtensionPrefsSetExtensionControlledPref
 };
 TEST_F(ExtensionPrefsSetExtensionControlledPref,
     ExtensionPrefsSetExtensionControlledPref) {}
+
+// Tests that the switches::kDisableExtensions command-line flag prevents
+// extension controlled preferences from being enacted.
+class ExtensionPrefsDisableExtensions
+    : public ExtensionPrefsPreferencesBase {
+ public:
+  ExtensionPrefsDisableExtensions()
+      : iteration_(0) {}
+  virtual ~ExtensionPrefsDisableExtensions() {}
+  virtual void Initialize() {
+    InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
+    // This becomes only active in the second verification phase.
+    prefs_.set_extensions_disabled(true);
+  }
+  virtual void Verify() {
+    std::string actual = prefs()->pref_service()->GetString(kPref1);
+    if (iteration_ == 0) {
+      EXPECT_EQ("val1", actual);
+      ++iteration_;
+    } else {
+      EXPECT_EQ(kDefaultPref1, actual);
+    }
+  }
+
+ private:
+  int iteration_;
+};
+TEST_F(ExtensionPrefsDisableExtensions, ExtensionPrefsDisableExtensions) {}

@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/bookmark_load_observer.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
@@ -343,6 +344,10 @@ ExtensionService* TestingProfile::CreateExtensionService(
   // Extension pref store, created for use by |extension_prefs_|.
 
   extension_pref_value_map_.reset(new ExtensionPrefValueMap);
+
+  bool extensions_disabled =
+      command_line && command_line->HasSwitch(switches::kDisableExtensions);
+
   // Note that the GetPrefs() creates a TestingPrefService, therefore
   // the extension controlled pref values set in extension_prefs_
   // are not reflected in the pref service. One would need to
@@ -351,6 +356,7 @@ ExtensionService* TestingProfile::CreateExtensionService(
       new ExtensionPrefs(GetPrefs(),
                          install_directory,
                          extension_pref_value_map_.get()));
+  extension_prefs_->Init(extensions_disabled);
   extension_service_.reset(new ExtensionService(this,
                                                 command_line,
                                                 install_directory,

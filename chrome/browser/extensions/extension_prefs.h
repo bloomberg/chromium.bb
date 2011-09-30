@@ -67,11 +67,16 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
     LAUNCH_DEFAULT = LAUNCH_REGULAR
   };
 
-  // Does not assume ownership of |prefs| and |incognito_prefs|.
+  // Does not assume ownership of |prefs| and |extension_pref_value_map|.
+  // Note that you must call Init() to finalize construction.
   ExtensionPrefs(PrefService* prefs,
                  const FilePath& root_dir,
                  ExtensionPrefValueMap* extension_pref_value_map);
   virtual ~ExtensionPrefs();
+
+  // If |extensions_disabled| is true, extension controlled preferences and
+  // content settings do not become effective.
+  void Init(bool extensions_disabled);
 
   // Returns a copy of the Extensions prefs.
   // TODO(erikkay) Remove this so that external consumers don't need to be
@@ -466,8 +471,8 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   void FixMissingPrefs(const ExtensionIdSet& extension_ids);
 
   // Installs the persistent extension preferences into |prefs_|'s extension
-  // pref store.
-  void InitPrefStore();
+  // pref store. Does nothing if |extensions_disabled| is true.
+  void InitPrefStore(bool extensions_disabled);
 
   // Migrates the permissions data in the pref store.
   void MigratePermissions(const ExtensionIdSet& extension_ids);

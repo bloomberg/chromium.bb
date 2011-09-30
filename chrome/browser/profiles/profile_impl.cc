@@ -932,12 +932,17 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
   // Make sure we save to disk that the session has opened.
   prefs_->ScheduleSavePersistentPrefs();
 
+  bool extensions_disabled =
+      prefs_->GetBoolean(prefs::kDisableExtensions) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableExtensions);
+
   // Ensure that preferences set by extensions are restored in the profile
   // as early as possible. The constructor takes care of that.
   extension_prefs_.reset(new ExtensionPrefs(
       prefs_.get(),
       GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       GetExtensionPrefValueMap()));
+  extension_prefs_->Init(extensions_disabled);
 
   ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 

@@ -232,14 +232,17 @@ ExtensionPrefs::ExtensionPrefs(
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map),
       content_settings_store_(new ExtensionContentSettingsStore()) {
-  MakePathsRelative();
-
-  InitPrefStore();
-
-  content_settings_store_->AddObserver(this);
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
+}
+
+void ExtensionPrefs::Init(bool extensions_disabled) {
+  MakePathsRelative();
+
+  InitPrefStore(extensions_disabled);
+
+  content_settings_store_->AddObserver(this);
 }
 
 // static
@@ -1519,7 +1522,12 @@ const DictionaryValue* ExtensionPrefs::GetExtensionControlledPrefs(
   return preferences;
 }
 
-void ExtensionPrefs::InitPrefStore() {
+void ExtensionPrefs::InitPrefStore(bool extensions_disabled) {
+  if (extensions_disabled) {
+    extension_pref_value_map_->NotifyInitializationCompleted();
+    return;
+  }
+
   // When this is called, the PrefService is initialized and provides access
   // to the user preferences stored in a JSON file.
   ExtensionIdSet extension_ids;

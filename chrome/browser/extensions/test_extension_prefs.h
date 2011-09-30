@@ -61,6 +61,10 @@ class TestExtensionPrefs {
 
   PrefService* CreateIncognitoPrefService() const;
 
+  // Allows disabling the loading of preferences of extensions. Becomes
+  // active after calling RecreateExtensionPrefs(). Defaults to false.
+  void set_extensions_disabled(bool extensions_disabled);
+
  protected:
   ScopedTempDir temp_dir_;
   FilePath preferences_file_;
@@ -70,6 +74,7 @@ class TestExtensionPrefs {
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 
  private:
+  bool extensions_disabled_;
   DISALLOW_COPY_AND_ASSIGN(TestExtensionPrefs);
 };
 
