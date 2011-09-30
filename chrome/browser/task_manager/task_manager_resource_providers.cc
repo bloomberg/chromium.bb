@@ -760,6 +760,8 @@ TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
     case ChildProcessInfo::RENDER_PROCESS:
       return TaskManager::Resource::RENDERER;
     case ChildProcessInfo::PLUGIN_PROCESS:
+    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
+    case ChildProcessInfo::PPAPI_BROKER_PROCESS:
       return TaskManager::Resource::PLUGIN;
     case ChildProcessInfo::WORKER_PROCESS:
       return TaskManager::Resource::WORKER;
@@ -791,9 +793,17 @@ void TaskManagerChildProcessResource::SetSupportNetworkUsage() {
 
 string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
   string16 title = child_process_.name();
-  if (child_process_.type() == ChildProcessInfo::PLUGIN_PROCESS &&
-      title.empty()) {
-    title = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
+  if (title.empty()) {
+    switch (child_process_.type()) {
+      case ChildProcessInfo::PLUGIN_PROCESS:
+      case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
+      case ChildProcessInfo::PPAPI_BROKER_PROCESS:
+        title = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
+        break;
+      default:
+        // Nothing to do for non-plugin processes.
+        break;
+    }
   }
 
   // Explicitly mark name as LTR if there is no strong RTL character,
@@ -817,10 +827,12 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
 
     case ChildProcessInfo::PLUGIN_PROCESS:
     case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
-    case ChildProcessInfo::PPAPI_BROKER_PROCESS: {
       return l10n_util::GetStringFUTF16(
           IDS_TASK_MANAGER_PLUGIN_PREFIX, title, child_process_.version());
-    }
+
+    case ChildProcessInfo::PPAPI_BROKER_PROCESS:
+      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_BROKER_PREFIX,
+                                        title, child_process_.version());
 
     case ChildProcessInfo::NACL_LOADER_PROCESS:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NACL_PREFIX, title);
