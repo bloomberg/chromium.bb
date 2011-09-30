@@ -77,6 +77,13 @@ bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
   PPVarArrayFromNPVariantArray args(accessor.object()->instance(),
                                     argc, argv);
 
+  // For the OOP plugin case we need to grab a reference on the plugin module
+  // object to ensure that it is not destroyed courtsey an incoming
+  // ExecuteScript call which destroys the plugin module and in turn the
+  // dispatcher.
+  scoped_refptr<webkit::ppapi::PluginModule> ref(
+      accessor.object()->instance()->module());
+
   return result_converter.SetResult(accessor.object()->ppp_class()->Call(
       accessor.object()->ppp_class_data(), accessor.identifier(),
       argc, args.array(), result_converter.exception()));
@@ -90,6 +97,13 @@ bool WrapperClass_InvokeDefault(NPObject* np_object, const NPVariant* argv,
 
   PPVarArrayFromNPVariantArray args(obj->instance(), argc, argv);
   PPResultAndExceptionToNPResult result_converter(obj->GetNPObject(), result);
+
+  // For the OOP plugin case we need to grab a reference on the plugin module
+  // object to ensure that it is not destroyed courtsey an incoming
+  // ExecuteScript call which destroys the plugin module and in turn the
+  // dispatcher.
+  scoped_refptr<webkit::ppapi::PluginModule> ref(
+      obj->instance()->module());
 
   result_converter.SetResult(obj->ppp_class()->Call(
       obj->ppp_class_data(), PP_MakeUndefined(), argc, args.array(),
