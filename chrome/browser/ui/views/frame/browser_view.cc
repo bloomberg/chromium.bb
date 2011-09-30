@@ -110,7 +110,7 @@
 #include "ui/base/view_prop.h"
 #include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/views/accelerator_table_gtk.h"
+#include "chrome/browser/ui/views/accelerator_table_linux.h"
 #include "views/window/hit_test.h"
 #if !defined(TOUCH_UI)
 #include "chrome/browser/ui/views/handle_web_keyboard_event_gtk.h"

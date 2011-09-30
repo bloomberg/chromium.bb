@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/accelerator_table_gtk.h"
+#include "chrome/browser/ui/views/accelerator_table_linux.h"
 
 #include "base/basictypes.h"
 #include "chrome/app/chrome_command_ids.h"

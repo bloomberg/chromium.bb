@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/views/accelerator_table_gtk.h"
+#include "chrome/browser/ui/views/accelerator_table_linux.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
 #include "chrome/browser/ui/views/window.h"
