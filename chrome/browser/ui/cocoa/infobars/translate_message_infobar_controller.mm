@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/translate/translate_message_infobar_controller.h"
+#include "chrome/browser/ui/cocoa/infobars/translate_message_infobar_controller.h"
 
 #include "base/sys_string_conversions.h"
 
@@ -12,7 +12,8 @@ using TranslateInfoBarUtilities::MoveControl;
 
 - (void)layout {
   [self removeOkCancelButtons];
-  MoveControl(label1_, translateMessageButton_, spaceBetweenControls_ * 2, true);
+  MoveControl(
+      label1_, translateMessageButton_, spaceBetweenControls_ * 2, true);
   TranslateInfoBarDelegate* delegate = [self delegate];
   if ([self delegate]->ShouldShowMessageInfoBarButton()) {
     string16 buttonText = delegate->GetMessageInfoBarButtonText();

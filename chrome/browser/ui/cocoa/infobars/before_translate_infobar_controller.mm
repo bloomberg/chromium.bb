@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/translate/before_translate_infobar_controller.h"
+#include "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
 
 #include "base/sys_string_conversions.h"
 #include "grit/generated_resources.h"

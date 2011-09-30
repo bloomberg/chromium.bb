@@ -81,7 +81,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "chrome/browser/ui/cocoa/keystone_infobar.h"
+#include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
 #endif
 
 #if defined(TOOLKIT_USES_GTK)

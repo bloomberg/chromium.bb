@@ -10,9 +10,9 @@
 #import "chrome/app/chrome_command_ids.h"  // For translate menu command ids.
 #import "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar.h"
-#import "chrome/browser/ui/cocoa/translate/translate_infobar_base.h"
-#import "chrome/browser/ui/cocoa/translate/before_translate_infobar_controller.h"
+#import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "content/browser/site_instance.h"
 #import "content/browser/tab_contents/tab_contents.h"

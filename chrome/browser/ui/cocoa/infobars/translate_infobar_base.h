@@ -7,7 +7,6 @@
 #pragma once
 
 #import <Cocoa/Cocoa.h>
-#import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 
 #import "base/mac/cocoa_protocols.h"
 #import "base/memory/scoped_nsobject.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #include "chrome/common/translate_errors.h"
 
 class TranslateInfoBarMenuModel;

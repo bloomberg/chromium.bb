@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
+
 #import <Cocoa/Cocoa.h>
-#import "chrome/browser/ui/cocoa/translate/translate_infobar_base.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -11,13 +12,13 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
+#include "chrome/browser/ui/cocoa/infobars/after_translate_infobar_controller.h"
+#import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
-#include "chrome/browser/ui/cocoa/translate/after_translate_infobar_controller.h"
-#import "chrome/browser/ui/cocoa/translate/before_translate_infobar_controller.h"
-#include "chrome/browser/ui/cocoa/translate/translate_message_infobar_controller.h"
+#include "chrome/browser/ui/cocoa/infobars/translate_message_infobar_controller.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -657,4 +658,3 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 }
 
 @end // TranslateInfoBarControllerBase (TestingAPI)
-
