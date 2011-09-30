@@ -588,7 +588,7 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   canvas->TileImageInt(*theme_frame, 0, 0, width(), height());
 
   // No need to paint other stuff if panel is minimized.
-  if (height() <= PanelManager::minimized_panel_height())
+  if (height() <= Panel::kMinimizedPanelHeight)
     return;
 
   // Draw the top border.
@@ -634,7 +634,7 @@ void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   int client_area_top = client_view_bounds_.y();
 
   // No need to paint other stuff if panel is minimized.
-  if (height() <= PanelManager::minimized_panel_height())
+  if (height() <= Panel::kMinimizedPanelHeight)
     return;
 
   // Draw the top edge.

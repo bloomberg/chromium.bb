@@ -51,10 +51,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void ShowPanelInactive() OVERRIDE;
   virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void OnPanelExpansionStateChanged(
-      Panel::ExpansionState expansion_state) OVERRIDE;
-  virtual bool ShouldBringUpPanelTitlebar(int mouse_x,
-                                          int mouse_y) const OVERRIDE;
   virtual void ClosePanel() OVERRIDE;
   virtual void ActivatePanel() OVERRIDE;
   virtual void DeactivatePanel() OVERRIDE;
@@ -82,8 +78,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
       const gfx::Size& content_size) const OVERRIDE;
   virtual gfx::Size ContentSizeFromWindowSize(
       const gfx::Size& window_size) const OVERRIDE;
-  virtual int GetRestoredHeight() const OVERRIDE;
-  virtual void SetRestoredHeight(int height) OVERRIDE;
+  virtual int TitleOnlyHeight() const OVERRIDE;
 
  private:
   // Resize the window as specified by the bounds.
@@ -113,7 +108,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   void CleanupDragDrop();
 
   GdkRectangle GetTitlebarRectForDrawAttention() const;
-  int TitleOnlyHeight() const;
 
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
                        OnTitlebarButtonPressEvent, GdkEventButton*);
@@ -164,10 +158,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   scoped_ptr<PanelSettingsMenuModel> settings_menu_model_;
   scoped_ptr<MenuGtk> settings_menu_;
-
-  // Stores the original height of the panel so we can restore it after it's
-  // been minimized.
-  int restored_height_;
 
   // False until the window has been allocated and sized.
   bool window_size_known_;

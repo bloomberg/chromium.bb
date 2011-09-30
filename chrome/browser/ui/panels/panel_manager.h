@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
@@ -20,15 +21,14 @@ class Panel;
 
 // This class manages a set of panels.
 // Note that the ref count is needed by using PostTask in the implementation.
-class PanelManager : public AutoHidingDesktopBar::Observer,
+class PanelManager : public PanelMouseWatcher::Observer,
+                     public AutoHidingDesktopBar::Observer,
                      public base::RefCounted<PanelManager> {
  public:
   typedef std::vector<Panel*> Panels;
 
   // Returns a single instance.
   static PanelManager* GetInstance();
-
-  static int minimized_panel_height() { return kMinimizedPanelHeight; }
 
   virtual ~PanelManager();
 
@@ -46,6 +46,10 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   void StartDragging(Panel* panel);
   void Drag(int delta_x);
   void EndDragging(bool cancelled);
+
+  // Invoked when a panel's expansion state changes.
+  void OnPanelExpansionStateChanged(Panel::ExpansionState old_state,
+                                    Panel::ExpansionState new_state);
 
   // Invoked when the preferred window size of the given panel might need to
   // get changed.
@@ -68,6 +72,9 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   int num_panels() const { return panels_.size(); }
   bool is_dragging_panel() const;
 
+  // Overridden from PanelMouseWatcher::Observer:
+  virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
+
 #ifdef UNIT_TEST
   const Panels& panels() const { return panels_; }
   static int horizontal_spacing() { return kPanelsHorizontalSpacing; }
@@ -87,6 +94,15 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
 
   void SetWorkAreaForTesting(const gfx::Rect& work_area) {
     SetWorkArea(work_area);
+  }
+
+  int minimized_panel_count() {
+    return minimized_panel_count_;
+  }
+
+  // Tests should disable mouse watching if mouse movements will be simulated.
+  void disable_mouse_watching() {
+    mouse_watching_disabled_ = true;
   }
 #endif
 
@@ -111,6 +127,10 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
 
   // Adjusts the work area to exclude the influence of auto-hiding desktop bars.
   void AdjustWorkAreaForAutoHidingDesktopBars();
+
+  // Keep track of the minimized panels to control mouse watching.
+  void IncrementMinimizedPanels();
+  void DecrementMinimizedPanels();
 
   // Handles all the panels that're delayed to be removed.
   void DelayedRemove();
@@ -153,6 +173,13 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   // when we're in the process of the dragging.
   Panels panels_pending_to_remove_;
 
+  // Use a mouse watcher to know when to bring up titlebars to "peek" at
+  // minimized panels. Mouse movement is only tracked when there is a minimized
+  // panel.
+  scoped_ptr<PanelMouseWatcher> panel_mouse_watcher_;
+  int minimized_panel_count_;
+  bool are_titlebars_up_;
+
   // The maximum work area avaialble. This area does not include the area taken
   // by the always-visible (non-auto-hiding) desktop bars.
   gfx::Rect work_area_;
@@ -186,6 +213,8 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   // will not be affected.
   bool auto_sizing_enabled_;
 
+  bool mouse_watching_disabled_;  // For tests to simulate mouse movements.
+
   static const int kPanelsHorizontalSpacing = 4;
 
   // Minimum width and height of a panel.
@@ -193,9 +222,6 @@ class PanelManager : public AutoHidingDesktopBar::Observer,
   // TODO(jianli): Need to fix this to support smaller panel.
   static const int kPanelMinWidth = 100;
   static const int kPanelMinHeight = 100;
-
-  // The panel can be minimized to 3-pixel lines.
-  static const int kMinimizedPanelHeight = 3;
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };

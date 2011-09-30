@@ -30,10 +30,6 @@ class PanelBrowserWindowCocoa : public NativePanel {
   virtual void ShowPanelInactive() OVERRIDE;
   virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void OnPanelExpansionStateChanged(
-      Panel::ExpansionState expansion_state) OVERRIDE;
-  virtual bool ShouldBringUpPanelTitlebar(int mouse_x,
-                                          int mouse_y) const OVERRIDE;
   virtual void ClosePanel() OVERRIDE;
   virtual void ActivatePanel() OVERRIDE;
   virtual void DeactivatePanel() OVERRIDE;
@@ -63,9 +59,7 @@ class PanelBrowserWindowCocoa : public NativePanel {
       const gfx::Size& content_size) const OVERRIDE;
   virtual gfx::Size ContentSizeFromWindowSize(
       const gfx::Size& window_size) const OVERRIDE;
-
-  virtual int GetRestoredHeight() const OVERRIDE;
-  virtual void SetRestoredHeight(int height) OVERRIDE;
+  virtual int TitleOnlyHeight() const OVERRIDE;
 
   Panel* panel() { return panel_.get(); }
   Browser* browser() const { return browser_.get(); }
@@ -98,7 +92,6 @@ class PanelBrowserWindowCocoa : public NativePanel {
   // top-left of the primary screen. They have to be converted to Cocoa
   // screen coordinates before calling Cocoa API.
   gfx::Rect bounds_;
-  int restored_height_;  // Panel's full height when expanded.
 
   PanelWindowControllerCocoa* controller_;  // Weak, owns us.
   bool is_shown_;  // Panel is hidden on creation, Show() changes that forever.

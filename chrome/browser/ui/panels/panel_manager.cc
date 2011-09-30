@@ -32,22 +32,26 @@ const double kPanelMaxHeightFactor = 0.5;
 const int kMaxMillisecondsWaitForBottomBarVisibilityChange = 1000;
 
 // Single instance of PanelManager.
-scoped_refptr<PanelManager> panel_instance;
+scoped_refptr<PanelManager> panel_manager_instance;
 }  // namespace
 
 // static
 PanelManager* PanelManager::GetInstance() {
-  if (!panel_instance.get())
-    panel_instance = new PanelManager();
-  return panel_instance.get();
+  if (!panel_manager_instance.get())
+    panel_manager_instance = new PanelManager();
+  return panel_manager_instance.get();
 }
 
 PanelManager::PanelManager()
-    : dragging_panel_index_(kInvalidPanelIndex),
+    : minimized_panel_count_(0),
+      are_titlebars_up_(false),
+      dragging_panel_index_(kInvalidPanelIndex),
       dragging_panel_original_x_(0),
       delayed_titlebar_action_(NO_ACTION),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      auto_sizing_enabled_(true) {
+      auto_sizing_enabled_(true),
+      mouse_watching_disabled_(false) {
+  panel_mouse_watcher_.reset(PanelMouseWatcher::Create(this));
   auto_hiding_desktop_bar_ = AutoHidingDesktopBar::Create(this);
   OnDisplayChanged();
 }
@@ -55,6 +59,7 @@ PanelManager::PanelManager()
 PanelManager::~PanelManager() {
   DCHECK(panels_.empty());
   DCHECK(panels_pending_to_remove_.empty());
+  DCHECK_EQ(0, minimized_panel_count_);
 }
 
 void PanelManager::OnDisplayChanged() {
@@ -172,6 +177,9 @@ void PanelManager::DoRemove(Panel* panel) {
   Panels::iterator iter = find(panels_.begin(), panels_.end(), panel);
   if (iter == panels_.end())
     return;
+
+  if (panel->expansion_state() != Panel::EXPANDED)
+    DecrementMinimizedPanels();
 
   gfx::Rect bounds = (*iter)->GetBounds();
   Rearrange(panels_.erase(iter), bounds.right());
@@ -306,6 +314,36 @@ void PanelManager::EndDragging(bool cancelled) {
   dragging_panel_index_ = kInvalidPanelIndex;
 
   DelayedRemove();
+}
+
+void PanelManager::OnPanelExpansionStateChanged(
+    Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
+  DCHECK_NE(new_state, old_state);
+  switch (new_state) {
+    case Panel::EXPANDED:
+      DecrementMinimizedPanels();
+      break;
+    case Panel::MINIMIZED:
+      if (old_state == Panel::EXPANDED)
+        IncrementMinimizedPanels();
+      break;
+    default:
+      break;
+  }
+}
+
+void PanelManager::IncrementMinimizedPanels() {
+  if (!mouse_watching_disabled_ && !minimized_panel_count_)
+    panel_mouse_watcher_->Start();
+  minimized_panel_count_++;
+  DCHECK_LE(minimized_panel_count_, num_panels());
+}
+
+void PanelManager::DecrementMinimizedPanels() {
+  minimized_panel_count_--;
+  DCHECK_GE(minimized_panel_count_, 0);
+  if (!mouse_watching_disabled_ && !minimized_panel_count_)
+    panel_mouse_watcher_->Stop();
 }
 
 void PanelManager::OnPreferredWindowSizeChanged(
@@ -483,6 +521,15 @@ int PanelManager::GetBottomPositionForExpansionState(
   }
 
   return bottom;
+}
+
+void PanelManager::OnMouseMove(const gfx::Point& mouse_position) {
+  bool bring_up_titlebars = ShouldBringUpTitlebars(mouse_position.x(),
+                                                   mouse_position.y());
+  if (are_titlebars_up_ == bring_up_titlebars)
+    return;
+  are_titlebars_up_ = bring_up_titlebars;
+  BringUpOrDownTitlebars(bring_up_titlebars);
 }
 
 void PanelManager::OnAutoHidingDesktopBarThicknessChanged() {

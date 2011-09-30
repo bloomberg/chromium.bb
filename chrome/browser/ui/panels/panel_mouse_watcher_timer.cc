@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/singleton.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "ui/gfx/screen.h"
 
@@ -13,9 +11,7 @@
 // and Mac panels implementations.
 class PanelMouseWatcherTimer : public PanelMouseWatcher {
  public:
-  // Returns the singleton instance.
-  static PanelMouseWatcherTimer* GetInstance();
-
+  explicit PanelMouseWatcherTimer(Observer* observer);
   virtual ~PanelMouseWatcherTimer();
 
  protected:
@@ -25,9 +21,6 @@ class PanelMouseWatcherTimer : public PanelMouseWatcher {
  private:
   // Specifies the rate at which we want to sample the mouse position.
   static const int kMousePollingIntervalMs = 250;
-
-  PanelMouseWatcherTimer();
-  friend struct DefaultSingletonTraits<PanelMouseWatcherTimer>;
 
   // Timer callback function.
   void DoWork();
@@ -43,16 +36,12 @@ class PanelMouseWatcherTimer : public PanelMouseWatcher {
 };
 
 // static
-PanelMouseWatcher* PanelMouseWatcher::GetInstance() {
-  return PanelMouseWatcherTimer::GetInstance();
+PanelMouseWatcher* PanelMouseWatcher::Create(Observer* observer) {
+  return new PanelMouseWatcherTimer(observer);
 }
 
-// static
-PanelMouseWatcherTimer* PanelMouseWatcherTimer::GetInstance() {
-  return Singleton<PanelMouseWatcherTimer>::get();
-}
-
-PanelMouseWatcherTimer::PanelMouseWatcherTimer() : PanelMouseWatcher() {
+PanelMouseWatcherTimer::PanelMouseWatcherTimer(Observer* observer)
+    : PanelMouseWatcher(observer) {
 }
 
 PanelMouseWatcherTimer::~PanelMouseWatcherTimer() {
@@ -72,5 +61,5 @@ void PanelMouseWatcherTimer::Stop() {
 }
 
 void PanelMouseWatcherTimer::DoWork() {
-  HandleMouseMovement(gfx::Screen::GetCursorScreenPoint());
+  NotifyMouseMovement(gfx::Screen::GetCursorScreenPoint());
 }

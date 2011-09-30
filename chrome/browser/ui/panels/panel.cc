@@ -34,7 +34,8 @@ Panel::Panel(Browser* browser, const gfx::Rect& bounds)
     : min_size_(bounds.size()),
       max_size_(bounds.size()),
       native_panel_(NULL),
-      expansion_state_(EXPANDED) {
+      expansion_state_(EXPANDED),
+      restored_height_(bounds.height()) {
   native_panel_ = CreateNativePanel(browser, this, bounds);
 
   registrar_.Add(this,
@@ -56,6 +57,9 @@ const Extension* Panel::GetExtension() const {
 }
 
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
+  if (expansion_state_ == Panel::EXPANDED)
+    restored_height_ = bounds.height();
+
   native_panel_->SetPanelBounds(bounds);
 }
 
@@ -71,13 +75,37 @@ void Panel::SetMaxSize(const gfx::Size& max_size) {
     RequestRenderViewHostToDisableScrollbars(render_view_host);
 }
 
-void Panel::SetExpansionState(ExpansionState new_expansion_state) {
-  if (expansion_state_ == new_expansion_state)
+void Panel::SetExpansionState(ExpansionState new_state) {
+  if (expansion_state_ == new_state)
     return;
 
-  expansion_state_ = new_expansion_state;
+  ExpansionState old_state = expansion_state_;
+  expansion_state_ = new_state;
 
-  native_panel_->OnPanelExpansionStateChanged(expansion_state_);
+  int height;
+  switch (expansion_state_) {
+    case EXPANDED:
+      height = restored_height_;
+      break;
+    case TITLE_ONLY:
+      height = native_panel_->TitleOnlyHeight();
+      break;
+    case MINIMIZED:
+      height = kMinimizedPanelHeight;
+      break;
+    default:
+      NOTREACHED();
+      height = restored_height_;
+      break;
+  }
+
+  int bottom = manager()->GetBottomPositionForExpansionState(expansion_state_);
+  gfx::Rect bounds = native_panel_->GetPanelBounds();
+  bounds.set_y(bottom - height);
+  bounds.set_height(height);
+  SetPanelBounds(bounds);
+
+  manager()->OnPanelExpansionStateChanged(old_state, new_state);
 
   // The minimized panel should not get the focus.
   if (expansion_state_ == MINIMIZED)
@@ -86,16 +114,22 @@ void Panel::SetExpansionState(ExpansionState new_expansion_state) {
 
 bool Panel::ShouldBringUpTitlebar(int mouse_x, int mouse_y) const {
   // Skip the expanded panel.
-  if (expansion_state_ == Panel::EXPANDED)
+  if (expansion_state_ == EXPANDED)
     return false;
 
   // If the panel is showing titlebar only, we want to keep it up when it is
   // being dragged.
-  if (expansion_state_ == Panel::TITLE_ONLY && manager()->is_dragging_panel())
+  if (expansion_state_ == TITLE_ONLY && manager()->is_dragging_panel())
     return true;
 
-  // Let the native panel decide.
-  return native_panel_->ShouldBringUpPanelTitlebar(mouse_x, mouse_y);
+  // We do not want to bring up other minimized panels if the mouse is over the
+  // panel that pops up the title-bar to attract attention.
+  if (native_panel_->IsDrawingAttention())
+    return false;
+
+  gfx::Rect bounds = native_panel_->GetPanelBounds();
+  return bounds.x() <= mouse_x && mouse_x <= bounds.right() &&
+         mouse_y >= bounds.y();
 }
 
 bool Panel::IsDrawingAttention() const {
@@ -103,11 +137,11 @@ bool Panel::IsDrawingAttention() const {
 }
 
 int Panel::GetRestoredHeight() const {
-  return native_panel_->GetRestoredHeight();
+  return restored_height_;
 }
 
 void Panel::SetRestoredHeight(int height) {
-  native_panel_->SetRestoredHeight(height);
+  restored_height_ = height;
 }
 
 void Panel::Show() {
@@ -194,9 +228,8 @@ void Panel::SetStarredState(bool is_starred) {
 
 gfx::Rect Panel::GetRestoredBounds() const {
   gfx::Rect bounds = native_panel_->GetPanelBounds();
-  int restored_height = native_panel_->GetRestoredHeight();
-  bounds.set_y(bounds.y() + bounds.height() - restored_height);
-  bounds.set_height(restored_height);
+  bounds.set_y(bounds.y() + bounds.height() - restored_height_);
+  bounds.set_height(restored_height_);
   return bounds;
 }
 

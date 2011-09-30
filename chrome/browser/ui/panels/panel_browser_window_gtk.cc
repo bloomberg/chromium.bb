@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 
@@ -50,7 +49,6 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
       drag_end_factory_(this),
       panel_(panel),
       bounds_(bounds),
-      restored_height_(bounds.height()),
       window_size_known_(false),
       is_drawing_attention_(false) {
 }
@@ -63,9 +61,6 @@ PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
     gtk_grab_remove(drag_widget_);
     DestroyDragWidget();
   }
-
-  if (PanelMouseWatcher::GetInstance()->IsSubscribed(this))
-    PanelMouseWatcher::GetInstance()->RemoveSubscriber(this);
 }
 
 void PanelBrowserWindowGtk::Init() {
@@ -120,7 +115,7 @@ void PanelBrowserWindowGtk::SaveWindowPosition() {
 void PanelBrowserWindowGtk::SetGeometryHints() {
   // Set minimum height the window can be set to.
   GdkGeometry hints;
-  hints.min_height = PanelManager::minimized_panel_height();
+  hints.min_height = Panel::kMinimizedPanelHeight;
   hints.min_width = panel_->min_size().width();
   gtk_window_set_geometry_hints(
       window(), GTK_WIDGET(window()), &hints, GDK_HINT_MIN_SIZE);
@@ -212,48 +207,8 @@ gfx::Rect PanelBrowserWindowGtk::GetPanelBounds() const {
 }
 
 void PanelBrowserWindowGtk::SetPanelBounds(const gfx::Rect& bounds) {
-  if (bounds != bounds_) {
-    if (panel_->expansion_state() == Panel::EXPANDED)
-      restored_height_ = bounds.height();
+  if (bounds != bounds_)
     SetBoundsImpl(bounds, false);  // Only move if necessary.
-  }
-}
-
-void PanelBrowserWindowGtk::OnPanelExpansionStateChanged(
-    Panel::ExpansionState expansion_state) {
-  // TODO(prasadt): This is very similar to what we do for windows.  Look into
-  // sharing this implementation across platforms.
-  int height;
-  switch (expansion_state) {
-    case Panel::EXPANDED:
-      height = restored_height_;
-      PanelMouseWatcher::GetInstance()->RemoveSubscriber(this);
-      break;
-    case Panel::TITLE_ONLY:
-      height = TitleOnlyHeight();
-      break;
-    case Panel::MINIMIZED:
-      height = PanelManager::minimized_panel_height();
-      PanelMouseWatcher::GetInstance()->AddSubscriber(this);
-      break;
-    default:
-      NOTREACHED();
-      height = restored_height_;
-      break;
-  }
-
-  gfx::Rect bounds = bounds_;
-  int bottom = panel_->manager()->GetBottomPositionForExpansionState(
-      expansion_state);
-  bounds.set_y(bottom - height);
-  bounds.set_height(height);
-  SetBoundsImpl(bounds, false);  // Only move if necessary.
-}
-
-bool PanelBrowserWindowGtk::ShouldBringUpPanelTitlebar(int mouse_x,
-                                                       int mouse_y) const {
-  return bounds_.x() <= mouse_x && mouse_x <= bounds_.right() &&
-         mouse_y >= bounds_.y();
 }
 
 void PanelBrowserWindowGtk::ClosePanel() {
@@ -365,12 +320,8 @@ gfx::Size PanelBrowserWindowGtk::ContentSizeFromWindowSize(
                    window_size.height() - frame.height());
 }
 
-int PanelBrowserWindowGtk::GetRestoredHeight() const {
-  return restored_height_;
-}
-
-void PanelBrowserWindowGtk::SetRestoredHeight(int height) {
-  restored_height_ = height;
+int PanelBrowserWindowGtk::TitleOnlyHeight() const {
+  return titlebar_widget()->allocation.height;
 }
 
 void PanelBrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds,
@@ -479,10 +430,6 @@ GdkRectangle PanelBrowserWindowGtk::GetTitlebarRectForDrawAttention() const {
   return rect;
 }
 
-int PanelBrowserWindowGtk::TitleOnlyHeight() const {
-  return titlebar_widget()->allocation.height;
-}
-
 gboolean PanelBrowserWindowGtk::OnTitlebarButtonPressEvent(
     GtkWidget* widget, GdkEventButton* event) {
   // Every button press ensures either a button-release-event or a drag-fail
@@ -512,7 +459,6 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
     if (base::Time::Now() < disableMinimizeUntilTime_)
       return TRUE;
 
-    restored_height_ = bounds_.height();
     new_expansion_state = Panel::MINIMIZED;
   } else {
     new_expansion_state = Panel::EXPANDED;
@@ -580,9 +526,6 @@ class NativePanelTestingGtk : public NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
-  virtual void SetMousePositionForMinimizeRestore(
-      const gfx::Point& point) OVERRIDE;
-  virtual int TitleOnlyHeight() const OVERRIDE;
 
   PanelBrowserWindowGtk* panel_browser_window_gtk_;
 };
@@ -591,11 +534,6 @@ class NativePanelTestingGtk : public NativePanelTesting {
 NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
   return new NativePanelTestingGtk(static_cast<PanelBrowserWindowGtk*>(
       native_panel));
-}
-
-// static
-PanelMouseWatcher* NativePanelTesting::GetPanelMouseWatcherInstance() {
-  return PanelMouseWatcher::GetInstance();
 }
 
 NativePanelTestingGtk::NativePanelTestingGtk(
@@ -653,14 +591,4 @@ void NativePanelTestingGtk::FinishDragTitlebar() {
       panel_browser_window_gtk_->drag_widget_, NULL,
       GTK_DRAG_RESULT_NO_TARGET);
   MessageLoopForUI::current()->RunAllPending();
-}
-
-void NativePanelTestingGtk::SetMousePositionForMinimizeRestore(
-    const gfx::Point& hover_point) {
-  PanelMouseWatcher::GetInstance()->HandleMouseMovement(hover_point);
-  MessageLoopForUI::current()->RunAllPending();
-}
-
-int NativePanelTestingGtk::TitleOnlyHeight() const {
-  return panel_browser_window_gtk_->TitleOnlyHeight();
 }

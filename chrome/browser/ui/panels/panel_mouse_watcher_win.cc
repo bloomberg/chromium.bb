@@ -6,9 +6,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "ui/gfx/point.h"
 
 namespace {
 
@@ -21,14 +20,14 @@ HMODULE GetModuleHandleFromAddress(void *address) {
 
 // Gets the handle to the currently executing module.
 HMODULE GetCurrentModuleHandle() {
-  return ::GetModuleHandleFromAddress(GetCurrentModuleHandle);
+  return GetModuleHandleFromAddress(GetCurrentModuleHandle);
 }
 
 }  // namespace
 
 class PanelMouseWatcherWin : public PanelMouseWatcher {
  public:
-  PanelMouseWatcherWin();
+  explicit PanelMouseWatcherWin(Observer* observer);
   virtual ~PanelMouseWatcherWin();
 
   virtual void Start() OVERRIDE;
@@ -37,23 +36,24 @@ class PanelMouseWatcherWin : public PanelMouseWatcher {
  private:
   static LRESULT CALLBACK MouseHookProc(int code, WPARAM wparam, LPARAM lparam);
 
+  static PanelMouseWatcherWin* instance_;  // singleton instance
   HHOOK mouse_hook_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelMouseWatcherWin);
 };
 
-scoped_ptr<PanelMouseWatcherWin> mouse_watcher;
+PanelMouseWatcherWin* PanelMouseWatcherWin::instance_ = NULL;
 
 // static
-PanelMouseWatcher* PanelMouseWatcher::GetInstance() {
-  if (!mouse_watcher.get())
-    mouse_watcher.reset(new PanelMouseWatcherWin());
-
-  return mouse_watcher.get();
+PanelMouseWatcher* PanelMouseWatcher::Create(Observer* observer) {
+  return new PanelMouseWatcherWin(observer);
 }
 
-PanelMouseWatcherWin::PanelMouseWatcherWin()
-    : mouse_hook_(NULL) {
+PanelMouseWatcherWin::PanelMouseWatcherWin(Observer* observer)
+    : PanelMouseWatcher(observer),
+      mouse_hook_(NULL) {
+  DCHECK(!instance_);  // Only one instance ever used.
+  instance_ = this;
 }
 
 PanelMouseWatcherWin::~PanelMouseWatcherWin() {
@@ -76,12 +76,12 @@ void PanelMouseWatcherWin::Stop() {
 LRESULT CALLBACK PanelMouseWatcherWin::MouseHookProc(int code,
                                                      WPARAM wparam,
                                                      LPARAM lparam) {
+  DCHECK(instance_);
   if (code == HC_ACTION) {
     MOUSEHOOKSTRUCT* hook_struct = reinterpret_cast<MOUSEHOOKSTRUCT*>(lparam);
-    if (hook_struct) {
-      mouse_watcher->HandleMouseMovement(
-          gfx::Point(hook_struct->pt.x, hook_struct->pt.y));
-    }
+    if (hook_struct)
+      instance_->NotifyMouseMovement(gfx::Point(hook_struct->pt.x,
+                                                hook_struct->pt.y));
   }
   return ::CallNextHookEx(NULL, code, wparam, lparam);
 }

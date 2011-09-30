@@ -39,6 +39,9 @@ class Panel : public BrowserWindow, public NotificationObserver {
    MINIMIZED
   };
 
+  // The panel can be minimized to 3-pixel lines.
+  static const int kMinimizedPanelHeight = 3;
+
   virtual ~Panel();
 
   // Returns the PanelManager associated with this panel.
@@ -226,6 +229,10 @@ class Panel : public BrowserWindow, public NotificationObserver {
   NativePanel* native_panel_;  // Weak, owns us.
 
   ExpansionState expansion_state_;
+
+  // Stores the full height of the panel so we can restore it after it's
+  // been minimized.
+  int restored_height_;
 
   NotificationRegistrar registrar_;
 

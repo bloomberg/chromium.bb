@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -128,6 +127,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
 
     // Test minimizing/restoring an individual panel.
     EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
+    EXPECT_EQ(0, panel_manager->minimized_panel_count());
     int initial_height = panel1->GetBounds().height();
     int titlebar_height = frame_view1->NonClientTopBorderHeight();
 
@@ -136,7 +136,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_LT(panel1->GetBounds().height(), titlebar_height);
     EXPECT_GT(panel1->GetBounds().height(), 0);
     EXPECT_EQ(expected_bottom_on_minimized, panel1->GetBounds().bottom());
-    EXPECT_TRUE(PanelMouseWatcher::GetInstance()->IsSubscribed(browser_view1));
+    EXPECT_EQ(1, panel_manager->minimized_panel_count());
     WaitTillBoundsAnimationFinished(browser_view1);
     EXPECT_FALSE(panel1->IsActive());
 
@@ -144,6 +144,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
     EXPECT_EQ(expected_bottom_on_unminimized, panel1->GetBounds().bottom());
+    EXPECT_EQ(1, panel_manager->minimized_panel_count());
     WaitTillBoundsAnimationFinished(browser_view1);
     EXPECT_TRUE(frame_view1->close_button_->IsVisible());
     EXPECT_TRUE(frame_view1->title_icon_->IsVisible());
@@ -153,21 +154,24 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
     EXPECT_EQ(initial_height, panel1->GetBounds().height());
     EXPECT_EQ(expected_bottom_on_unminimized, panel1->GetBounds().bottom());
+    EXPECT_EQ(0, panel_manager->minimized_panel_count());
     WaitTillBoundsAnimationFinished(browser_view1);
     EXPECT_TRUE(frame_view1->close_button_->IsVisible());
     EXPECT_TRUE(frame_view1->title_icon_->IsVisible());
     EXPECT_TRUE(frame_view1->title_label_->IsVisible());
-
-    panel1->SetExpansionState(Panel::TITLE_ONLY);
-    EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
-    EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
-    EXPECT_EQ(expected_bottom_on_unminimized, panel1->GetBounds().bottom());
 
     panel1->SetExpansionState(Panel::MINIMIZED);
     EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
     EXPECT_LT(panel1->GetBounds().height(), titlebar_height);
     EXPECT_GT(panel1->GetBounds().height(), 0);
     EXPECT_EQ(expected_bottom_on_minimized, panel1->GetBounds().bottom());
+    EXPECT_EQ(1, panel_manager->minimized_panel_count());
+
+    panel1->SetExpansionState(Panel::TITLE_ONLY);
+    EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+    EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
+    EXPECT_EQ(expected_bottom_on_unminimized, panel1->GetBounds().bottom());
+    EXPECT_EQ(1, panel_manager->minimized_panel_count());
 
     // Create 2 more panels for more testing.
     Panel* panel2 = CreatePanel("PanelTest2");
@@ -177,6 +181,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
     panel3->SetExpansionState(Panel::MINIMIZED);
     EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
+    EXPECT_EQ(2, panel_manager->minimized_panel_count());
 
     mock_auto_hiding_desktop_bar()->SetVisibility(
         AutoHidingDesktopBar::ALIGN_BOTTOM, AutoHidingDesktopBar::VISIBLE);
@@ -185,6 +190,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
     EXPECT_EQ(Panel::TITLE_ONLY, panel3->expansion_state());
+    EXPECT_EQ(2, panel_manager->minimized_panel_count());
 
     mock_auto_hiding_desktop_bar()->SetVisibility(
         AutoHidingDesktopBar::ALIGN_BOTTOM, AutoHidingDesktopBar::HIDDEN);
@@ -193,6 +199,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
     EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
     EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
+    EXPECT_EQ(2, panel_manager->minimized_panel_count());
 
     // Test if it is OK to bring up title-bar given the mouse position.
     EXPECT_TRUE(panel_manager->ShouldBringUpTitlebars(
@@ -209,6 +216,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     // Test that the panel in title-only state should not be minimized
     // regardless of the current mouse position when the panel is being dragged.
     panel1->SetExpansionState(Panel::TITLE_ONLY);
+    EXPECT_EQ(2, panel_manager->minimized_panel_count());
     EXPECT_FALSE(panel_manager->ShouldBringUpTitlebars(
         0, 0));
     browser_view1->OnTitlebarMousePressed(panel1->GetBounds().origin());
@@ -221,6 +229,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     panel1->Close();
     panel2->Close();
     panel3->Close();
+    EXPECT_EQ(0, panel_manager->minimized_panel_count());
   }
 
   void TestDrawAttention() {

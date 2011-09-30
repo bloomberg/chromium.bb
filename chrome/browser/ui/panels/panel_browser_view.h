@@ -82,10 +82,6 @@ class PanelBrowserView : public BrowserView,
   virtual void ShowPanelInactive() OVERRIDE;
   virtual gfx::Rect GetPanelBounds() const OVERRIDE;
   virtual void SetPanelBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void OnPanelExpansionStateChanged(
-      Panel::ExpansionState expansion_state) OVERRIDE;
-  virtual bool ShouldBringUpPanelTitlebar(int mouse_x,
-                                          int mouse_y) const OVERRIDE;
   virtual void ClosePanel() OVERRIDE;
   virtual void ActivatePanel() OVERRIDE;
   virtual void DeactivatePanel() OVERRIDE;
@@ -111,8 +107,7 @@ class PanelBrowserView : public BrowserView,
       const gfx::Size& content_size) const OVERRIDE;
   virtual gfx::Size ContentSizeFromWindowSize(
       const gfx::Size& window_size) const OVERRIDE;
-  virtual int GetRestoredHeight() const OVERRIDE;
-  virtual void SetRestoredHeight(int height) OVERRIDE;
+  virtual int TitleOnlyHeight() const OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
 
@@ -125,10 +120,6 @@ class PanelBrowserView : public BrowserView,
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
-
-  // Stores the full height of the panel so we can restore it after it's
-  // been minimized.
-  int restored_height_;
 
   // Is the panel being closed? Do not use it when it is closed.
   bool closed_;

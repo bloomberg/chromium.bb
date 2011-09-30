@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/animation/slide_animation.h"
@@ -41,7 +40,6 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
   : BrowserView(browser),
     panel_(panel),
     bounds_(bounds),
-    restored_height_(bounds.height()),
     closed_(false),
     focused_(false),
     mouse_pressed_(false),
@@ -51,8 +49,6 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
 }
 
 PanelBrowserView::~PanelBrowserView() {
-  if (PanelMouseWatcher::GetInstance()->IsSubscribed(this))
-    PanelMouseWatcher::GetInstance()->RemoveSubscriber(this);
 }
 
 void PanelBrowserView::Init() {
@@ -86,9 +82,6 @@ void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
   if (bounds_ == bounds)
     return;
   bounds_ = bounds;
-
-  if (panel_->expansion_state() == Panel::EXPANDED)
-    restored_height_ = bounds.height();
 
   // No animation if the panel is being dragged.
   if (mouse_dragging_state_ == DRAGGING_STARTED) {
@@ -204,46 +197,6 @@ gfx::Rect PanelBrowserView::GetPanelBounds() const {
 
 void PanelBrowserView::SetPanelBounds(const gfx::Rect& bounds) {
   SetBounds(bounds);
-}
-
-void PanelBrowserView::OnPanelExpansionStateChanged(
-    Panel::ExpansionState expansion_state) {
-  int height;
-  switch (expansion_state) {
-    case Panel::EXPANDED:
-      PanelMouseWatcher::GetInstance()->RemoveSubscriber(this);
-      height = restored_height_;
-      break;
-    case Panel::TITLE_ONLY:
-      height = GetFrameView()->NonClientTopBorderHeight();
-      break;
-    case Panel::MINIMIZED:
-      height = PanelManager::minimized_panel_height();
-      PanelMouseWatcher::GetInstance()->AddSubscriber(this);
-      break;
-    default:
-      NOTREACHED();
-      height = restored_height_;
-      break;
-  }
-
-  int bottom = panel_->manager()->GetBottomPositionForExpansionState(
-      expansion_state);
-  gfx::Rect bounds = bounds_;
-  bounds.set_y(bottom - height);
-  bounds.set_height(height);
-  SetBounds(bounds);
-}
-
-bool PanelBrowserView::ShouldBringUpPanelTitlebar(int mouse_x,
-                                                  int mouse_y) const {
-  // We do not want to bring up other minimized panels if the mouse is over the
-  // panel that pops up the title-bar to attract attention.
-  if (is_drawing_attention_)
-    return false;
-
-  return bounds_.x() <= mouse_x && mouse_x <= bounds_.right() &&
-         mouse_y >= bounds_.y();
 }
 
 void PanelBrowserView::ClosePanel() {
@@ -365,12 +318,8 @@ gfx::Size PanelBrowserView::ContentSizeFromWindowSize(
                    window_size.height() - frame.height());
 }
 
-int PanelBrowserView::GetRestoredHeight() const {
-  return restored_height_;
-}
-
-void PanelBrowserView::SetRestoredHeight(int height) {
-  restored_height_ = height;
+int PanelBrowserView::TitleOnlyHeight() const {
+  return GetFrameView()->NonClientTopBorderHeight();
 }
 
 Browser* PanelBrowserView::GetPanelBrowser() const {
@@ -479,9 +428,6 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
-  virtual void SetMousePositionForMinimizeRestore(
-      const gfx::Point& point) OVERRIDE;
-  virtual int TitleOnlyHeight() const OVERRIDE;
 
   PanelBrowserView* panel_browser_view_;
 };
@@ -490,11 +436,6 @@ class NativePanelTestingWin : public NativePanelTesting {
 NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
   return new NativePanelTestingWin(static_cast<PanelBrowserView*>(
       native_panel));
-}
-
-// static
-PanelMouseWatcher* NativePanelTesting::GetPanelMouseWatcherInstance() {
-  return PanelMouseWatcher::GetInstance();
 }
 
 NativePanelTestingWin::NativePanelTestingWin(
@@ -526,14 +467,4 @@ void NativePanelTestingWin::CancelDragTitlebar() {
 
 void NativePanelTestingWin::FinishDragTitlebar() {
   panel_browser_view_->OnTitlebarMouseReleased();
-}
-
-void NativePanelTestingWin::SetMousePositionForMinimizeRestore(
-    const gfx::Point& hover_point) {
-  PanelMouseWatcher::GetInstance()->HandleMouseMovement(hover_point);
-  MessageLoopForUI::current()->RunAllPending();
-}
-
-int NativePanelTestingWin::TitleOnlyHeight() const {
-  return panel_browser_view_->GetFrameView()->NonClientTopBorderHeight();
 }

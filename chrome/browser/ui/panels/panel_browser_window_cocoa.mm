@@ -10,7 +10,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "content/common/native_web_keyboard_event.h"
@@ -52,16 +51,12 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
   : browser_(browser),
     panel_(panel),
     bounds_(bounds),
-    restored_height_(bounds.height()),
     is_shown_(false),
     has_find_bar_(false) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
 }
 
 PanelBrowserWindowCocoa::~PanelBrowserWindowCocoa() {
-  PanelMouseWatcher* watcher = PanelMouseWatcher::GetInstance();
-  if (watcher->IsSubscribed(this))
-    watcher->RemoveSubscriber(this);
 }
 
 bool PanelBrowserWindowCocoa::isClosed() {
@@ -102,48 +97,6 @@ void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
 
   NSRect frame = ConvertCoordinatesToCocoa(bounds);
   [controller_ setPanelFrame:frame];
-
-  // Store the expanded height for subsequent minimize/restore operations.
-  if (panel_->expansion_state() == Panel::EXPANDED)
-    restored_height_ = NSHeight(frame);
-}
-
-void PanelBrowserWindowCocoa::OnPanelExpansionStateChanged(
-    Panel::ExpansionState expansion_state) {
-  int height;  // New height of the Panel in screen coordinates.
-  switch (expansion_state) {
-    case Panel::EXPANDED:
-      PanelMouseWatcher::GetInstance()->RemoveSubscriber(this);
-      height = restored_height_;
-      break;
-    case Panel::TITLE_ONLY:
-      height = [controller_ titlebarHeightInScreenCoordinates];
-      break;
-    case Panel::MINIMIZED:
-      PanelMouseWatcher::GetInstance()->AddSubscriber(this);
-      height = PanelManager::minimized_panel_height();
-      break;
-    default:
-      NOTREACHED();
-      height = restored_height_;
-      break;
-  }
-
-  int bottom = panel_->manager()->GetBottomPositionForExpansionState(
-      expansion_state);
-  // This math is in platform-independent screen coordinates (inverted),
-  // because it's what SetPanelBounds expects.
-  gfx::Rect bounds = bounds_;
-  bounds.set_y(bottom - height);
-  bounds.set_height(height);
-  SetPanelBounds(bounds);
-}
-
-// Coordinates are in gfx coordinate system (screen, with 0,0 at the top left).
-bool PanelBrowserWindowCocoa::ShouldBringUpPanelTitlebar(int mouse_x,
-                                                         int mouse_y) const {
-  return bounds_.x() <= mouse_x && mouse_x <= bounds_.right() &&
-      mouse_y >= bounds_.y();
 }
 
 void PanelBrowserWindowCocoa::ClosePanel() {
@@ -304,12 +257,8 @@ gfx::Size PanelBrowserWindowCocoa::ContentSizeFromWindowSize(
   return gfx::Size(NSWidth(content), NSHeight(content));
 }
 
-int PanelBrowserWindowCocoa::GetRestoredHeight() const {
-  return restored_height_;
-}
-
-void PanelBrowserWindowCocoa::SetRestoredHeight(int height) {
-  restored_height_ = height;
+int PanelBrowserWindowCocoa::TitleOnlyHeight() const {
+  return [controller_ titlebarHeightInScreenCoordinates];
 }
 
 // NativePanelTesting implementation.
@@ -323,9 +272,6 @@ class NativePanelTestingCocoa : public NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
-  virtual void SetMousePositionForMinimizeRestore(
-      const gfx::Point& point) OVERRIDE;
-  virtual int TitleOnlyHeight() const OVERRIDE;
 
  private:
   PanelTitlebarViewCocoa* titlebar();
@@ -336,11 +282,6 @@ class NativePanelTestingCocoa : public NativePanelTesting {
 // static
 NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
   return new NativePanelTestingCocoa(native_panel);
-}
-
-// static
-PanelMouseWatcher* NativePanelTesting::GetPanelMouseWatcherInstance() {
-  return PanelMouseWatcher::GetInstance();
 }
 
 NativePanelTestingCocoa::NativePanelTestingCocoa(NativePanel* native_panel)
@@ -370,15 +311,4 @@ void NativePanelTestingCocoa::CancelDragTitlebar() {
 
 void NativePanelTestingCocoa::FinishDragTitlebar() {
   [titlebar() finishDragTitlebar];
-}
-
-// TODO(dimich) this method is platform-independent. Reuse it.
-void NativePanelTestingCocoa::SetMousePositionForMinimizeRestore(
-    const gfx::Point& hover_point) {
-  PanelMouseWatcher::GetInstance()->HandleMouseMovement(hover_point);
-  MessageLoopForUI::current()->RunAllPending();
-}
-
-int NativePanelTestingCocoa::TitleOnlyHeight() const {
-  return [native_panel_window_->controller_ titlebarHeightInScreenCoordinates];
 }
