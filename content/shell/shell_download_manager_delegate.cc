@@ -4,11 +4,19 @@
 
 #include "content/shell/shell_download_manager_delegate.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#include <commdlg.h>
+#endif
+
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_state_info.h"
 #include "net/base/net_util.h"
@@ -46,6 +54,9 @@ bool ShellDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
       download->suggested_filename(),
       download->mime_type(),
       string16(UTF8ToUTF16("download")));
+
+  // Since we have no download UI, show the user a dialog always.
+  state.prompt_user_for_save_location = true;
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
@@ -92,6 +103,37 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
     TabContents* tab_contents,
     const FilePath& suggested_path,
     void* data) {
+  FilePath result;
+#if defined(OS_WIN)
+  std::wstring file_part = FilePath(suggested_path).BaseName().value();
+  wchar_t file_name[MAX_PATH];
+  base::wcslcpy(file_name, file_part.c_str(), arraysize(file_name));
+  OPENFILENAME save_as;
+  ZeroMemory(&save_as, sizeof(save_as));
+  save_as.lStructSize = sizeof(OPENFILENAME);
+  save_as.hwndOwner = tab_contents->GetNativeView();
+  save_as.lpstrFile = file_name;
+  save_as.nMaxFile = arraysize(file_name);
+
+  std::wstring directory;
+  if (!suggested_path.empty())
+    directory = suggested_path.DirName().value();
+
+  save_as.lpstrInitialDir = directory.c_str();
+  save_as.Flags = OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_ENABLESIZING |
+                  OFN_NOCHANGEDIR | OFN_PATHMUSTEXIST;
+
+  if (GetSaveFileName(&save_as))
+    result = FilePath(std::wstring(save_as.lpstrFile));
+#else
+  NOTIMPLEMENTED();
+#endif
+
+  if (result.empty()) {
+    download_manager_->FileSelectionCanceled(data);
+  } else {
+    download_manager_->FileSelected(result, data);
+  }
 }
 
 bool ShellDownloadManagerDelegate::OverrideIntermediatePath(
