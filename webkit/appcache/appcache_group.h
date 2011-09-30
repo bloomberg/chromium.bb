@@ -14,8 +14,8 @@
 #include "base/observer_list.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "webkit/appcache/appcache_export.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/appcache/appcache_export.h"
 
 namespace appcache {
 
@@ -27,10 +27,10 @@ class HostObserver;
 
 // Collection of application caches identified by the same manifest URL.
 // A group exists as long as it is in use by a host or is being updated.
-class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
+class APPCACHE_EXPORT AppCacheGroup : public base::RefCounted<AppCacheGroup> {
  public:
 
-  class UpdateObserver {
+  class APPCACHE_EXPORT UpdateObserver {
     public:
       // Called just after an appcache update has completed.
       virtual void OnUpdateComplete(AppCacheGroup* group) = 0;
@@ -43,9 +43,8 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
     DOWNLOADING,
   };
 
-  APPCACHE_EXPORT AppCacheGroup(AppCacheService* service,
-                                const GURL& manifest_url,
-                                int64 group_id);
+  AppCacheGroup(AppCacheService* service, const GURL& manifest_url,
+                int64 group_id);
 
   // Adds/removes an update observer, the AppCacheGroup does not take
   // ownership of the observer.
@@ -64,7 +63,7 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   AppCache* newest_complete_cache() const { return newest_complete_cache_; }
 
-  APPCACHE_EXPORT void AddCache(AppCache* complete_cache);
+  void AddCache(AppCache* complete_cache);
   void RemoveCache(AppCache* cache);
   bool HasCache() const { return newest_complete_cache_ != NULL; }
 

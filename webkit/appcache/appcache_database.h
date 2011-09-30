@@ -26,9 +26,9 @@ class StatementID;
 
 namespace appcache {
 
-class AppCacheDatabase {
+class APPCACHE_EXPORT AppCacheDatabase {
  public:
-  struct GroupRecord {
+  struct APPCACHE_EXPORT GroupRecord {
     GroupRecord();
     ~GroupRecord();
 
@@ -39,7 +39,7 @@ class AppCacheDatabase {
     base::Time last_access_time;
   };
 
-  struct CacheRecord {
+  struct APPCACHE_EXPORT CacheRecord {
     CacheRecord()
         : cache_id(0), group_id(0), online_wildcard(false), cache_size(0) {}
 
@@ -60,7 +60,7 @@ class AppCacheDatabase {
     int64 response_size;
   };
 
-  struct FallbackNameSpaceRecord {
+  struct APPCACHE_EXPORT FallbackNameSpaceRecord {
     FallbackNameSpaceRecord();
     ~FallbackNameSpaceRecord();
 
@@ -180,7 +180,7 @@ class AppCacheDatabase {
       const sql::Statement& statement, OnlineWhiteListRecord* record);
 
   // Database creation
-  APPCACHE_EXPORT bool LazyOpen(bool create_if_needed);
+  bool LazyOpen(bool create_if_needed);
   bool EnsureDatabaseVersion();
   bool CreateSchema();
   bool UpgradeSchema();

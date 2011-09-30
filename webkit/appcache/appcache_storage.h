@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
+#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_working_set.h"
 
 class GURL;
@@ -29,11 +30,11 @@ class AppCacheService;
 struct AppCacheInfoCollection;
 struct HttpResponseInfoIOBuffer;
 
-class AppCacheStorage {
+class APPCACHE_EXPORT AppCacheStorage {
  public:
   typedef std::map<GURL, int64> UsageMap;
 
-  class Delegate {
+  class APPCACHE_EXPORT Delegate {
    public:
     virtual ~Delegate() {}
 

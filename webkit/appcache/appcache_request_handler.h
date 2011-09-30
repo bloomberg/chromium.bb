@@ -5,8 +5,10 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
 #define WEBKIT_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
 
+#include "base/compiler_specific.h"
 #include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache_entry.h"
+#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/glue/resource_type.h"
 
@@ -24,9 +26,10 @@ class AppCacheURLRequestJob;
 // given the opportunity to hijack the request along the way. Callers
 // should use AppCacheHost::CreateRequestHandler to manufacture instances
 // that can retrieve resources for a particular host.
-class AppCacheRequestHandler : public net::URLRequest::UserData,
-                               public AppCacheHost::Observer,
-                               public AppCacheStorage::Delegate  {
+class APPCACHE_EXPORT AppCacheRequestHandler
+    : NON_EXPORTED_BASE(public net::URLRequest::UserData),
+      public AppCacheHost::Observer,
+      public AppCacheStorage::Delegate  {
  public:
   virtual ~AppCacheRequestHandler();
 

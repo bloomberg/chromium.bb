@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
+#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_storage.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
@@ -72,7 +73,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   typedef std::deque<OriginsRequest> OriginsRequestQueue;
   typedef std::deque<DeleteRequest> DeleteRequestQueue;
 
-  explicit AppCacheQuotaClient(AppCacheService* service);
+  APPCACHE_EXPORT explicit AppCacheQuotaClient(AppCacheService* service);
 
   void DidDeleteAppCachesForOrigin(int rv);
   void GetOriginsHelper(quota::StorageType type,
@@ -84,8 +85,8 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   const AppCacheStorage::UsageMap* GetUsageMap();
 
   // For use by appcache internals during initialization and shutdown.
-  void NotifyAppCacheReady();
-  void NotifyAppCacheDestroyed();
+  APPCACHE_EXPORT void NotifyAppCacheReady();
+  APPCACHE_EXPORT void NotifyAppCacheDestroyed();
 
   // Prior to appcache service being ready, we have to queue
   // up reqeusts and defer acting on them until we're ready.

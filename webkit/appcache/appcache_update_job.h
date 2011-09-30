@@ -19,6 +19,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache.h"
+#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/appcache/appcache_response.h"
@@ -29,8 +30,8 @@ namespace appcache {
 class HostNotifier;
 
 // Application cache Update algorithm and state.
-class AppCacheUpdateJob : public AppCacheStorage::Delegate,
-                          public AppCacheHost::Observer {
+class APPCACHE_EXPORT AppCacheUpdateJob : public AppCacheStorage::Delegate,
+                                          public AppCacheHost::Observer {
  public:
   AppCacheUpdateJob(AppCacheService* service, AppCacheGroup* group);
   virtual ~AppCacheUpdateJob();

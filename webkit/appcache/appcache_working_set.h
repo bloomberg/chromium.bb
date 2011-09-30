@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/hash_tables.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/appcache/appcache_export.h"
 
 namespace appcache {
 
@@ -18,7 +19,7 @@ class AppCacheResponseInfo;
 
 // Represents the working set of appcache object instances
 // currently in memory.
-class AppCacheWorkingSet {
+class APPCACHE_EXPORT AppCacheWorkingSet {
  public:
   typedef std::map<GURL, AppCacheGroup*> GroupMap;
 

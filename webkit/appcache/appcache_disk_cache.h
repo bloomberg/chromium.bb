@@ -10,13 +10,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/disk_cache/disk_cache.h"
+#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_response.h"
 
 namespace appcache {
 
 // An implementation of AppCacheDiskCacheInterface that
 // uses net::DiskCache as the backing store.
-class AppCacheDiskCache : public AppCacheDiskCacheInterface {
+class APPCACHE_EXPORT AppCacheDiskCache
+    : public AppCacheDiskCacheInterface {
  public:
   AppCacheDiskCache();
   virtual ~AppCacheDiskCache();
