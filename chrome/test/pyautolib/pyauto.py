@@ -4121,14 +4121,15 @@ class _RemoteProxy():
     self.RemoteConnect(host)
 
   def RemoteConnect(self, host):
-    self._socket = socket.socket()
     begin = time.time()
     while time.time() - begin < 50:
+      self._socket = socket.socket()
       if not self._socket.connect_ex(host):
         break
       time.sleep(0.25)
     else:
       # Make one last attempt, but raise a socket error on failure.
+      self._socket = socket.socket()
       self._socket.connect(host)
 
   def RemoteDisconnect(self):
@@ -4261,8 +4262,8 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
       env['PYTHONPATH'] = main_path
 
     # Run it!
-    subprocess.Popen(['python', os.path.join(os.path.dirname(__file__),
-                                             'remote_host.py')], env=env)
+    subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__),
+                                                   'remote_host.py')], env=env)
 
 
 class _GTestTextTestResult(unittest._TextTestResult):
