@@ -63,7 +63,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->SetParent(params.parent);
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
-  window_->SetVisibility(aura::Window::VISIBILITY_SHOWN);
+  window_->Show();
   can_activate_ = params.can_activate;
 }
 
@@ -264,11 +264,11 @@ void NativeWidgetAura::EnableClose(bool enable) {
 }
 
 void NativeWidgetAura::Show() {
-  window_->SetVisibility(aura::Window::VISIBILITY_SHOWN);
+  window_->Show();
 }
 
 void NativeWidgetAura::Hide() {
-  window_->SetVisibility(aura::Window::VISIBILITY_HIDDEN);
+  window_->Hide();
 }
 
 void NativeWidgetAura::ShowMaximizedWithBounds(
@@ -277,12 +277,12 @@ void NativeWidgetAura::ShowMaximizedWithBounds(
 }
 
 void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
-  window_->SetVisibility(aura::Window::VISIBILITY_SHOWN);
+  window_->Show();
   NOTIMPLEMENTED();
 }
 
 bool NativeWidgetAura::IsVisible() const {
-  return window_->visibility() != aura::Window::VISIBILITY_HIDDEN;
+  return window_->visible();
 }
 
 void NativeWidgetAura::Activate() {

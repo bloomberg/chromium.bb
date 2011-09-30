@@ -206,7 +206,7 @@ class WindowTest : public testing::Test {
     window->set_id(id);
     window->Init();
     window->SetBounds(bounds);
-    window->SetVisibility(Window::VISIBILITY_SHOWN);
+    window->Show();
     window->SetParent(parent);
     return window;
   }
@@ -240,7 +240,7 @@ TEST_F(WindowTest, HitTest) {
   w1.set_id(1);
   w1.Init();
   w1.SetBounds(gfx::Rect(10, 10, 50, 50));
-  w1.SetVisibility(Window::VISIBILITY_SHOWN);
+  w1.Show();
   w1.SetParent(NULL);
 
   // Points are in the Window's coordinates.

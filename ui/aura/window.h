@@ -44,18 +44,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
  public:
   typedef std::vector<Window*> Windows;
 
-  enum Visibility {
-    // Don't display the window onscreen and don't let it receive mouse
-    // events. This is the default.
-    VISIBILITY_HIDDEN = 1,
-
-    // Display the window and let it receive mouse events.
-    VISIBILITY_SHOWN = 2,
-
-    // Display the window but prevent it from receiving mouse events.
-    VISIBILITY_SHOWN_NO_INPUT = 3,
-  };
-
   explicit Window(WindowDelegate* delegate);
   ~Window();
 
@@ -71,8 +59,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   const ui::Layer* layer() const { return layer_.get(); }
 
   // Changes the visibility of the window.
-  void SetVisibility(Visibility visibility);
-  Visibility visibility() const { return visibility_; }
+  void Show();
+  void Hide();
+  bool visible() const { return visible_; }
 
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.
@@ -165,6 +154,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   virtual internal::RootWindow* GetRoot();
 
  private:
+  // Updates the visible state of the layer, but does not make visible-state
+  // specific changes. Called from Show()/Hide().
+  void SetVisible(bool visible);
+
   // Schedules a paint for the Window's entire bounds.
   void SchedulePaint();
 
@@ -173,7 +166,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   WindowDelegate* delegate_;
 
-  Visibility visibility_;
+  bool visible_;
 
   scoped_ptr<ui::Layer> layer_;
 

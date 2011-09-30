@@ -24,7 +24,7 @@ using internal::RootWindow;
 
 Window::Window(WindowDelegate* delegate)
     : delegate_(delegate),
-      visibility_(VISIBILITY_HIDDEN),
+      visible_(false),
       parent_(NULL),
       id_(-1),
       user_data_(NULL) {
@@ -63,19 +63,15 @@ void Window::Init() {
   layer_->set_delegate(this);
 }
 
-void Window::SetVisibility(Visibility visibility) {
-  if (visibility_ == visibility)
-    return;
+void Window::Show() {
+  SetVisible(true);
+}
 
-  visibility_ = visibility;
-  layer_->SetVisible(visibility_ != VISIBILITY_HIDDEN);
-  SchedulePaint();
-  if (visibility_ != VISIBILITY_SHOWN)
-    ReleaseCapture();
-  if ((visibility_ == VISIBILITY_HIDDEN &&
-       Desktop::GetInstance()->active_window() == this) ||
-      (visibility_ == VISIBILITY_HIDDEN &&
-       !Desktop::GetInstance()->active_window())) {
+void Window::Hide() {
+  SetVisible(false);
+  ReleaseCapture();
+  if (Desktop::GetInstance()->active_window() == this ||
+      !Desktop::GetInstance()->active_window()) {
     Desktop::GetInstance()->ActivateTopmostWindow();
   }
 }
@@ -205,7 +201,7 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
   Windows::const_reverse_iterator i = children_.rbegin();
   for (; i != children_.rend(); ++i) {
     Window* child = *i;
-    if (child->visibility() == Window::VISIBILITY_HIDDEN)
+    if (!child->visible())
       continue;
     gfx::Point point_in_child_coords(point);
     Window::ConvertPointToWindow(this, child, &point_in_child_coords);
@@ -223,7 +219,7 @@ internal::FocusManager* Window::GetFocusManager() {
 }
 
 void Window::SetCapture() {
-  if (visibility_ != VISIBILITY_SHOWN)
+  if (!visible_)
     return;
 
   RootWindow* root = GetRoot();
@@ -257,6 +253,15 @@ ui::Animation* Window::CreateDefaultAnimation() {
 
 internal::RootWindow* Window::GetRoot() {
   return parent_ ? parent_->GetRoot() : NULL;
+}
+
+void Window::SetVisible(bool visible) {
+  if (visible_ == visible)
+    return;
+
+  visible_ = visible;
+  layer_->SetVisible(visible_);
+  SchedulePaint();
 }
 
 void Window::SchedulePaint() {

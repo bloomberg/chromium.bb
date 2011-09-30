@@ -41,7 +41,7 @@ void CalculateWindowBoundsAndScaleForTiling(
   int shown_window_count = 0;
   for (aura::Window::Windows::const_iterator i = windows.begin();
        i != windows.end(); ++i) {
-    if ((*i)->visibility() != aura::Window::VISIBILITY_HIDDEN) {
+    if ((*i)->visible()) {
       total_width += (*i)->bounds().width();
       max_height = std::max((*i)->bounds().height(), max_height);
       shown_window_count++;
@@ -68,7 +68,7 @@ void CalculateWindowBoundsAndScaleForTiling(
   for (aura::Window::Windows::const_iterator i = windows.begin();
        i != windows.end();
        ++i) {
-    if ((*i)->visibility() != aura::Window::VISIBILITY_HIDDEN) {
+    if ((*i)->visible()) {
       const gfx::Rect& current_bounds((*i)->bounds());
       int y = (containing_size.height() -
                current_bounds.height() * *y_scale) / 2;

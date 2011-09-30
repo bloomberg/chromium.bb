@@ -51,7 +51,7 @@ void InitDesktopWindow() {
   aura::Window::Windows::const_iterator i;
   for (i = containers.begin(); i != containers.end(); ++i) {
     (*i)->Init();
-    (*i)->SetVisibility(aura::Window::VISIBILITY_SHOWN);
+    (*i)->Show();
     aura::Desktop::GetInstance()->window()->AddChild(*i);
   }
 

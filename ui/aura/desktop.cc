@@ -57,7 +57,7 @@ void Desktop::CreateDefaultParentForTesting() {
   Window* default_parent = new internal::ToplevelWindowContainer;
   default_parent->Init();
   default_parent->SetBounds(window_->bounds());
-  default_parent->SetVisibility(Window::VISIBILITY_SHOWN);
+  default_parent->Show();
   window_->AddChild(default_parent);
   set_default_parent(default_parent);
 }
@@ -136,7 +136,7 @@ Window* Desktop::GetTopmostWindowToActivate(Window* ignore) {
   Window::Windows windows(default_parent_->children());
   for (Window::Windows::const_reverse_iterator i = windows.rbegin();
        i != windows.rend(); ++i) {
-    if (*i != ignore && (*i)->visibility() == Window::VISIBILITY_SHOWN &&
+    if (*i != ignore && (*i)->visible() &&
         (*i)->delegate()->ShouldActivate(NULL))
       return *i;
   }
