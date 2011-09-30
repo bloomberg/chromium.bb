@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/callback.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/chromeos/system_settings_provider.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/browser_resources.h"
@@ -43,37 +45,44 @@ void SystemOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   RegisterTitle(localized_strings, "systemPage", IDS_OPTIONS_SYSTEM_TAB_LABEL);
-  localized_strings->SetString("datetime_title",
+  localized_strings->SetString("datetimeTitle",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME));
   localized_strings->SetString("timezone",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION));
-  localized_strings->SetString("use_24hour_clock",
+  localized_strings->SetString("use24HourClock",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION));
 
   localized_strings->SetString("touchpad",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD));
-  localized_strings->SetString("enable_tap_to_click",
+  localized_strings->SetString("enableTapToClick",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION));
   localized_strings->SetString("sensitivity",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION));
-  localized_strings->SetString("sensitivity_less",
+  localized_strings->SetString("sensitivityLess",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION));
-  localized_strings->SetString("sensitivity_more",
+  localized_strings->SetString("sensitivityMore",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION));
 
+  localized_strings->SetString("bluetooth",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH));
+  localized_strings->SetString("enableBluetooth",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE));
+  localized_strings->SetString("findBluetoothDevices",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES));
+
   localized_strings->SetString("language",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE));
-  localized_strings->SetString("language_customize",
+  localized_strings->SetString("languageCustomize",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE));
-  localized_strings->SetString("modifier_keys_customize",
+  localized_strings->SetString("modifierKeysCustomize",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_MODIFIER_KEYS_CUSTOMIZE));
 
-  localized_strings->SetString("accessibility_title",
+  localized_strings->SetString("accessibilityTitle",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY));
   localized_strings->SetString("accessibility",
@@ -92,6 +101,15 @@ void SystemOptionsHandler::Initialize() {
   base::FundamentalValue checked(acc_enabled);
   web_ui_->CallJavascriptFunction(
       "options.SystemOptions.SetAccessibilityCheckboxState", checked);
+
+  // Bluetooth support is a work in progress.  Supress the feature unless
+  // explicitly enabled via a command line flag.
+  // TODO (kevers) - Test for presence of bluetooth hardware.
+  if (CommandLine::ForCurrentProcess()
+      ->HasSwitch(switches::kEnableBluetooth)) {
+    web_ui_->CallJavascriptFunction(
+        "options.SystemOptions.ShowBluetoothSettings");
+  }
 }
 
 void SystemOptionsHandler::RegisterMessages() {

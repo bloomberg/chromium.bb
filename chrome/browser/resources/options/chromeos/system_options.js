@@ -41,6 +41,10 @@ cr.define('options', function() {
           use_24hour_clock.disabled = true;
       }
 
+      // TODO (kevers) - Populate list of connected bluetooth devices.
+      //                 Set state of 'Enable bluetooth' checkbox.
+      //                 Set state of 'Find devices' button.
+
       $('language-button').onclick = function(event) {
         OptionsPage.navigateToPage('language');
       };
@@ -64,6 +68,13 @@ cr.define('options', function() {
   SystemOptions.SetAccessibilityCheckboxState = function(checked) {
     $('accesibility-check').checked = checked;
   };
+
+  /**
+   * Activate the bluetooth settings section on the System settings page.
+   */
+  SystemOptions.ShowBluetoothSettings = function() {
+    $('bluetooth-devices').hidden = false;
+  }
 
   // Export
   return {

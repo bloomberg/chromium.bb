@@ -2,7 +2,7 @@
   <h1 i18n-content="systemPage"></h1>
   <div class="displaytable">
     <section>
-      <h3 i18n-content="datetime_title"></h3>
+      <h3 i18n-content="datetimeTitle"></h3>
       <div class="option-control-table">
         <span class="option-name" i18n-content="timezone"></span>
         <div id="timezone-value">
@@ -16,7 +16,7 @@
             <input id="use-24hour-clock"
                 pref="settings.clock.use_24hour_clock"
                 type="checkbox">
-            <span i18n-content="use_24hour_clock"></span>
+            <span i18n-content="use24HourClock"></span>
           </label>
         </div>
       </div>
@@ -30,8 +30,8 @@
             <input id="sensitivity-range" type="range" min="1" max="5"
                 pref="settings.touchpad.sensitivity2" class="touch-slider">
             <div>
-              <span i18n-content="sensitivity_less"></span>
-              <span i18n-content="sensitivity_more"
+              <span i18n-content="sensitivityLess"></span>
+              <span i18n-content="sensitivityMore"
                   class="touchpad-sensitivity-more"></span>
             </div>
           </div>
@@ -41,26 +41,46 @@
             <input id="tap-to-click-check"
                 pref="settings.touchpad.enable_tap_to_click"
                 type="checkbox">
-            <span i18n-content="enable_tap_to_click"></span>
+            <span i18n-content="enableTapToClick"></span>
           </label>
         </div>
       </div>  
+    </section>
+    <!-- By default, the bluetooth section is hidden.  It is only
+         visible if the command line flag --enable_bluetooth is set. -->
+    <section id="bluetooth-devices" hidden>
+      <h3 i18n-content="bluetooth"></h3>
+      <div id="bluetooth-options-div">
+        <div id="enable-bluetooth" class="checkbox">
+          <label>
+            <input id="enable-bluetooth-label" type="checkbox"
+                checked="checked" pref="settings.enable_bluetooth">
+            <span i18n-content="enableBluetooth"></span>
+          </label>
+        </div>
+        <div class="bluetooth-device-list">
+          <!-- A list of connected devices is inserted here on page load. -->
+          <!-- The list of devices is updated asynchronously on clicking
+              'Find Devices' -->
+          <button i18n-content="findBluetoothDevices"></button>
+        </div>
+      </div>
     </section>
     <section>
       <h3 i18n-content="language"></h3>
       <div class="option-control-table">
         <div class="option-name">
-          <button id="language-button" i18n-content="language_customize">
+          <button id="language-button" i18n-content="languageCustomize">
           </button>
         </div>
         <div class="option-name">
           <button id="modifier-keys-button"
-              i18n-content="modifier_keys_customize"></button>
+              i18n-content="modifierKeysCustomize"></button>
          </div>
       </div>
     </section>
     <section>
-      <h3 i18n-content="accessibility_title"></h3>
+      <h3 i18n-content="accessibilityTitle"></h3>
       <div class="option-control-table">
         <div class="option-name">
           <div class="checkbox">

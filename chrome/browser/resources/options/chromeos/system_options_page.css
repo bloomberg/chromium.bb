@@ -20,3 +20,8 @@ html[dir=rtl] .touchpad-sensitivity-more {
    display: inline-block;
    vertical-align: top;
 }
+
+#bluetooth-options-div{
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}
