@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
+#include "base/task.h"
 #include "chrome/browser/chromeos/login/profile_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "content/common/notification_observer.h"
@@ -269,6 +270,8 @@ class UserManager : public UserImageLoader::Delegate,
 
   // Download user profile image on login to update it if it's changed.
   scoped_ptr<ProfileImageDownloader> profile_image_downloader_;
+
+  ScopedRunnableMethodFactory<UserManager> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManager);
 };

@@ -461,10 +461,11 @@ void UserManager::UserLoggedIn(const std::string& email) {
     // Download profile image if it's user image and see if it has changed.
     int image_index = logged_in_user_.default_image_index();
     if (image_index == User::kProfileImageIndex) {
-      BrowserThread::PostTask(
+      BrowserThread::PostDelayedTask(
           BrowserThread::UI,
           FROM_HERE,
-          NewRunnableTask(this, &UserManager::DownloadProfileImage),
+          method_factory_.NewRunnableMethod(
+              &UserManager::DownloadProfileImage),
           kProfileImageDownloadDelayMs);
     }
 
@@ -691,7 +692,8 @@ UserManager::UserManager()
       offline_login_(false),
       current_user_is_owner_(false),
       current_user_is_new_(false),
-      user_is_logged_in_(false) {
+      user_is_logged_in_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       NotificationService::AllSources());
 }
