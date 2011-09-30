@@ -55,8 +55,7 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
 
   // Retrieve an instance of BrowserView
   BrowserView* GetBrowserView() {
-    return BrowserView::GetBrowserViewForNativeWindow(
-               browser()->window()->GetNativeHandle());
+    return BrowserView::GetBrowserViewForBrowser(browser());
   }
 
   // Retrieves and initializes an instance of ToolbarView.

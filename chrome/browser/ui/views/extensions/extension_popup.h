@@ -53,7 +53,8 @@ class ExtensionPopup : public BrowserBubble,
   // devtools window for it.
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
-  static ExtensionPopup* Show(const GURL& url, Browser* browser,
+  static ExtensionPopup* Show(const GURL& url,
+                              Browser* browser,
                               const gfx::Rect& relative_to,
                               views::BubbleBorder::ArrowLocation arrow_location,
                               bool inspect_with_devtools,
@@ -98,8 +99,8 @@ class ExtensionPopup : public BrowserBubble,
   static const int kMaxHeight;
 
  private:
-  ExtensionPopup(ExtensionHost* host,
-                 views::Widget* frame,
+  ExtensionPopup(Browser* browser,
+                 ExtensionHost* host,
                  const gfx::Rect& relative_to,
                  views::BubbleBorder::ArrowLocation arrow_location,
                  bool inspect_with_devtools,

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
+class Browser;
 class TabContentsWrapper;
 namespace views {
 class MenuButton;
@@ -21,7 +22,8 @@ class ExtensionInfoBar : public InfoBarView,
                          public ExtensionInfoBarDelegate::DelegateObserver,
                          public views::ViewMenuDelegate {
  public:
-  ExtensionInfoBar(InfoBarTabHelper* owner,
+  ExtensionInfoBar(Browser* browser,
+                   InfoBarTabHelper* owner,
                    ExtensionInfoBarDelegate* delegate);
 
  private:
@@ -51,6 +53,8 @@ class ExtensionInfoBar : public InfoBarView,
   // InfoBars own their delegates (and thus we don't need the DelegateObserver
   // functionality).  For now, almost everyone should use GetDelegate() instead.
   InfoBarDelegate* delegate_;
+
+  Browser* browser_;
 
   // The dropdown menu for accessing the contextual extension actions.
   views::MenuButton* menu_;

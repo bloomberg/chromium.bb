@@ -131,9 +131,7 @@ void AvatarMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   if (!has_menu_)
     return;
 
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
-      browser_->window()->GetNativeHandle());
-
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   gfx::Point origin;
   views::View::ConvertPointToScreen(this, &origin);
   gfx::Rect bounds(0, 0, width(), height());

@@ -145,8 +145,7 @@ bool GlobalErrorBubbleView::FadeInOnShow() {
 }
 
 void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
-      browser->window()->GetNativeHandle());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* wrench_button = browser_view->toolbar()->app_menu();
 
   gfx::Point origin;

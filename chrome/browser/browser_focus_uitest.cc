@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_BrowsersRememberFocus) {
 
   gfx::NativeWindow window2 = browser2->window()->GetNativeHandle();
   BrowserView* browser_view2 =
-      BrowserView::GetBrowserViewForNativeWindow(window2);
+      BrowserView::GetBrowserViewForBrowser(browser2);
   ASSERT_TRUE(browser_view2);
   views::Widget* widget2 = views::Widget::GetWidgetForNativeWindow(window2);
   ASSERT_TRUE(widget2);

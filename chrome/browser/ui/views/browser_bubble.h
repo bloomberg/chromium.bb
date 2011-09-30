@@ -10,6 +10,7 @@
 #include "views/view.h"
 #include "views/widget/widget.h"
 
+class Browser;
 class BrowserBubbleHost;
 
 // A class for creating a floating window that is "attached" to a particular
@@ -39,14 +40,14 @@ class BrowserBubble {
   };
 
   // Note that the bubble will size itself to the preferred size of |view| plus
-  // insets of bubble border. |view| is the embedded view, |frame| is widget
-  // that the bubble is being positioned relative to, |relative_to| is the
-  // location that the bubble is showing relative to in screen coordinates,
+  // insets of bubble border. |view| is the embedded view, |browser| is the
+  // browser that the bubble is being positioned relative to, |relative_to| is
+  // the location that the bubble is showing relative to in screen coordinates,
   // e.g. if the buuble is showing for a toolbar button, |relative_to| usually
   // would be the bounds of the toolbar button in screen coordiates,
   // |arrow_location| is the location where the arrow should on the bubble.
-  BrowserBubble(views::View* view,
-                views::Widget* frame,
+  BrowserBubble(Browser* browser,
+                views::View* view,
                 const gfx::Rect& relative_to,
                 views::BubbleBorder::ArrowLocation arrow_location);
   virtual ~BrowserBubble();

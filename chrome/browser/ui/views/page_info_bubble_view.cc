@@ -474,14 +474,12 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
 
 namespace browser {
 
-void ShowPageInfoBubble(gfx::NativeWindow parent,
+void ShowPageInfoBubble(BrowserView* browser_view,
                         Profile* profile,
                         const GURL& url,
                         const NavigationEntry::SSLStatus& ssl,
                         bool show_history) {
   // Find where to point the bubble at.
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForNativeWindow(parent);
   gfx::Point point;
   if (base::i18n::IsRTL()) {
     int width = browser_view->toolbar()->location_bar()->width();
@@ -496,7 +494,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
   // Show the bubble. If the bubble already exist - it will be closed first.
   PageInfoBubbleView* page_info_bubble =
-      new PageInfoBubbleView(parent, profile, url, ssl, show_history);
+      new PageInfoBubbleView(browser_view->GetNativeHandle(),
+                             profile, url, ssl, show_history);
   Bubble* bubble =
       Bubble::Show(browser_view->GetWidget(), bounds,
                    views::BubbleBorder::TOP_LEFT,

@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -39,14 +38,14 @@ const int ExtensionPopup::kMaxWidth = 800;
 const int ExtensionPopup::kMaxHeight = 600;
 
 ExtensionPopup::ExtensionPopup(
+    Browser* browser,
     ExtensionHost* host,
-    views::Widget* frame,
     const gfx::Rect& relative_to,
     views::BubbleBorder::ArrowLocation arrow_location,
     bool inspect_with_devtools,
     Observer* observer)
-    : BrowserBubble(host->view(),
-                    frame,
+    : BrowserBubble(browser,
+                    host->view(),
                     relative_to,
                     arrow_location),
       relative_to_(relative_to),
@@ -187,9 +186,7 @@ ExtensionPopup* ExtensionPopup::Show(
     return NULL;
 
   ExtensionHost* host = manager->CreatePopupHost(url, browser);
-  views::Widget* frame = BrowserView::GetBrowserViewForNativeWindow(
-      browser->window()->GetNativeHandle())->GetWidget();
-  ExtensionPopup* popup = new ExtensionPopup(host, frame, relative_to,
+  ExtensionPopup* popup = new ExtensionPopup(browser, host, relative_to,
                                              arrow_location,
                                              inspect_with_devtools, observer);
 

@@ -94,8 +94,7 @@ views::Widget* GetTopLevelWidget(Browser* browser) {
   if (!window)
     return NULL;
 
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
-      window->GetNativeHandle());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   return browser_view ? browser_view->GetWidget() : NULL;
 }
 

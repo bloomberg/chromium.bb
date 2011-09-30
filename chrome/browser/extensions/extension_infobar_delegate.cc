@@ -22,6 +22,7 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
     const GURL& url,
     int height)
         : InfoBarDelegate(infobar_helper),
+          browser_(browser),
           observer_(NULL),
           extension_(extension),
           closing_(false) {

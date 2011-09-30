@@ -195,9 +195,11 @@ class DraggedTabController : public TabContentsDelegate,
   // Handles dragging while the tabs are detached.
   void MoveDetached(const gfx::Point& screen_point);
 
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Returns the compatible TabStrip that is under the specified point (screen
   // coordinates), or NULL if there is none.
   BaseTabStrip* GetTabStripForPoint(const gfx::Point& screen_point);
+#endif
 
   DockInfo GetDockInfoAtPoint(const gfx::Point& screen_point);
 

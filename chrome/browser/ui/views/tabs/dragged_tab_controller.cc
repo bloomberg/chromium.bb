@@ -649,14 +649,14 @@ void DraggedTabController::ContinueDragging() {
   // guaranteed to be correct regardless of monitor config.
   gfx::Point screen_point = GetCursorScreenPoint();
 
-#if defined(OS_LINUX)
-  // We don't allow detaching in chrome os.
-  BaseTabStrip* target_tabstrip = source_tabstrip_;
-#else
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Currently only allowed on windows (and not aura).
   // Determine whether or not we have dragged over a compatible TabStrip in
   // another browser window. If we have, we should attach to it and start
   // dragging within it.
   BaseTabStrip* target_tabstrip = GetTabStripForPoint(screen_point);
+#else
+  BaseTabStrip* target_tabstrip = source_tabstrip_;
 #endif
   if (target_tabstrip != attached_tabstrip_) {
     // Make sure we're fully detached from whatever TabStrip we're attached to
@@ -774,6 +774,7 @@ DockInfo DraggedTabController::GetDockInfoAtPoint(
   return info;
 }
 
+#if defined(OS_WIN) && !defined(USE_AURA)
 BaseTabStrip* DraggedTabController::GetTabStripForPoint(
     const gfx::Point& screen_point) {
   gfx::NativeView dragged_view = NULL;
@@ -803,6 +804,7 @@ BaseTabStrip* DraggedTabController::GetTabStripForPoint(
     return NULL;
   return GetTabStripIfItContains(other_tabstrip, screen_point);
 }
+#endif
 
 BaseTabStrip* DraggedTabController::GetTabStripIfItContains(
     BaseTabStrip* tabstrip,

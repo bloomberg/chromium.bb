@@ -28,7 +28,6 @@
 #include "chrome/browser/extensions/extension_tts_api.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/ntp_background_util.h"
-#include "chrome/browser/page_info_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -56,6 +55,7 @@
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/page_info_window.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -383,37 +383,19 @@ BrowserView::~BrowserView() {
   browser_.reset();
 }
 
+// Tab dragging code on windows needs this.
+#if defined(OS_WIN) && !defined(USE_AURA)
 // static
 BrowserView* BrowserView::GetBrowserViewForNativeWindow(
     gfx::NativeWindow window) {
-#if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-#elif defined(OS_WIN)
-  if (IsWindow(window)) {
-    return reinterpret_cast<BrowserView*>(
-        ui::ViewProp::GetValue(window, kBrowserViewKey));
-  }
-#else
-  BrowserView* browser_view = NULL;
-  if (window) {
-    browser_view = static_cast<BrowserView*>(
-        g_object_get_data(G_OBJECT(window), kBrowserViewKey));
+  return IsWindow(window) ? reinterpret_cast<BrowserView*>(
+      ui::ViewProp::GetValue(window, kBrowserViewKey)) : NULL;
+}
+#endif
 
-#if defined(TOUCH_UI)
-    if (!browser_view) {
-      // With views-desktop, we cannot determine the BrowserView from the
-      // NativeWindow. So do the next best thing, and assume the last active
-      // BrowserView is what we want.
-      Browser* browser = BrowserList::GetLastActive();
-      if (browser && !browser->is_type_popup() && !browser->is_type_panel())
-        browser_view = reinterpret_cast<BrowserView*>(browser->window());
-    }
-#endif
-  }
-  return browser_view;
-#endif
-  return NULL;
+// static
+BrowserView* BrowserView::GetBrowserViewForBrowser(Browser* browser) {
+  return static_cast<BrowserView*>(browser->window());
 }
 
 gfx::Rect BrowserView::GetToolbarBounds() const {
@@ -1172,9 +1154,7 @@ void BrowserView::ShowPageInfo(Profile* profile,
                                const GURL& url,
                                const NavigationEntry::SSLStatus& ssl,
                                bool show_history) {
-  gfx::NativeWindow parent = GetWidget()->GetNativeWindow();
-
-  browser::ShowPageInfoBubble(parent, profile, url, ssl, show_history);
+  browser::ShowPageInfoBubble(this, profile, url, ssl, show_history);
 }
 
 void BrowserView::ShowAppMenu() {

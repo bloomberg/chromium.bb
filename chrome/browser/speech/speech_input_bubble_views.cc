@@ -351,8 +351,7 @@ void SpeechInputBubbleImpl::Show() {
           Profile::FromBrowserContext(tab_contents()->browser_context());
       Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
       BrowserView* browser_view =
-          BrowserView::GetBrowserViewForNativeWindow(
-              browser->window()->GetNativeHandle());
+          BrowserView::GetBrowserViewForBrowser(browser);
       gfx::Point point;
       if (base::i18n::IsRTL()) {
         int width = browser_view->toolbar()->location_bar()->width();

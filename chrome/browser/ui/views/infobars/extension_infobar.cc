@@ -23,7 +23,7 @@
 // ExtensionInfoBarDelegate ----------------------------------------------------
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
-  return new ExtensionInfoBar(owner, this);
+  return new ExtensionInfoBar(browser_, owner, this);
 }
 
 // ExtensionInfoBar ------------------------------------------------------------
@@ -33,10 +33,12 @@ namespace {
 const int kMenuHorizontalMargin = 1;
 }  // namespace
 
-ExtensionInfoBar::ExtensionInfoBar(InfoBarTabHelper* owner,
+ExtensionInfoBar::ExtensionInfoBar(Browser* browser,
+                                   InfoBarTabHelper* owner,
                                    ExtensionInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
       delegate_(delegate),
+      browser_(browser),
       menu_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
   delegate->set_observer(this);
@@ -143,11 +145,8 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
   if (!extension->ShowConfigureContextMenus())
     return;
 
-  Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
-      platform_util::GetTopLevel(source->GetWidget()->GetNativeView()))->
-      browser();
   scoped_refptr<ExtensionContextMenuModel> options_menu_contents =
-      new ExtensionContextMenuModel(extension, browser, NULL);
+      new ExtensionContextMenuModel(extension, browser_, NULL);
   DCHECK_EQ(source, menu_);
   RunMenuAt(options_menu_contents.get(), menu_, views::MenuItemView::TOPLEFT);
 }

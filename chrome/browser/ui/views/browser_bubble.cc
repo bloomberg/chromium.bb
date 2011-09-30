@@ -4,39 +4,24 @@
 
 #include "chrome/browser/ui/views/browser_bubble.h"
 
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/widget/widget.h"
 
-namespace {
-
-BrowserBubbleHost* GetBubbleHostFromFrame(views::Widget* frame) {
-  if (!frame)
-    return NULL;
-
-  BrowserBubbleHost* bubble_host = NULL;
-  views::Widget* window = frame->GetTopLevelWidget();
-  if (window) {
-    bubble_host = BrowserView::GetBrowserViewForNativeWindow(
-        window->GetNativeWindow());
-    DCHECK(bubble_host);
-  }
-
-  return bubble_host;
-}
-
-}  // namespace
-
-BrowserBubble::BrowserBubble(views::View* view,
-                             views::Widget* frame,
+BrowserBubble::BrowserBubble(Browser* browser,
+                             views::View* view,
                              const gfx::Rect& relative_to,
                              views::BubbleBorder::ArrowLocation arrow_location)
-    : frame_(frame),
+    : frame_(NULL),
       view_(view),
       relative_to_(relative_to),
       arrow_location_(arrow_location),
       delegate_(NULL),
       attached_(false),
-      bubble_host_(GetBubbleHostFromFrame(frame)) {
+      bubble_host_(NULL) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  frame_ = browser_view->GetWidget();
+  bubble_host_ = browser_view;
   // Keep relative_to_ in frame-relative coordinates to aid in drag
   // positioning.
   gfx::Point origin = relative_to_.origin();

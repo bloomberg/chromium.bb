@@ -60,6 +60,8 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  Browser* browser_;
+
   // The extension host we are showing the InfoBar for. The delegate needs to
   // own this since the InfoBar gets deleted and recreated when you switch tabs
   // and come back (and we don't want the user's interaction with the InfoBar to

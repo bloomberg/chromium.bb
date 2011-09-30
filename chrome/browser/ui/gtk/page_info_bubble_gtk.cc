@@ -12,7 +12,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_model_observer.h"
-#include "chrome/browser/page_info_window.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"

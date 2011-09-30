@@ -332,8 +332,7 @@ void ExtensionInstalledBubble::Observe(int type,
 }
 
 void ExtensionInstalledBubble::ShowInternal() {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
-      browser_->window()->GetNativeHandle());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
 
   const views::View* reference_view = NULL;
   if (type_ == APP) {
@@ -413,8 +412,7 @@ void ExtensionInstalledBubble::ShowInternal() {
 void ExtensionInstalledBubble::BubbleClosing(Bubble* bubble,
                                              bool closed_by_escape) {
   if (extension_ && type_ == PAGE_ACTION) {
-    BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
-        browser_->window()->GetNativeHandle());
+    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
     browser_view->GetLocationBarView()->SetPreviewEnabledPageAction(
         extension_->page_action(),
         false);  // preview_enabled
