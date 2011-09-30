@@ -796,6 +796,18 @@ typedef void (GL_APIENTRYP PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint
 typedef void (GL_APIENTRYP PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
 #endif
 
+/* GL_CHROMIUM_texture_compression_dxt3 */
+#ifndef GL_CHROMIUM_texture_compression_dxt3
+#define GL_CHROMIUM_texture_compression_dxt3 1
+#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT  0x83F2
+#endif
+
+/* GL_CHROMIUM_texture_compression_dxt5 */
+#ifndef GL_CHROMIUM_texture_compression_dxt5
+#define GL_CHROMIUM_texture_compression_dxt5 1
+#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT  0x83F3
+#endif
+
 #ifdef __cplusplus
 }
 #endif
