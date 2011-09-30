@@ -294,11 +294,6 @@ void RenderWidgetHostViewWin::WasHidden() {
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
   render_widget_host_->WasHidden();
-
-  // TODO(darin): what about constrained windows?  it doesn't look like they
-  // see a message when their parent is hidden.  maybe there is something more
-  // generic we can do at the TabContents API level instead of relying on
-  // Windows messages.
 }
 
 void RenderWidgetHostViewWin::SetSize(const gfx::Size& size) {

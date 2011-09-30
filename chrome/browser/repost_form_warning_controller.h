@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_REPOST_FORM_WARNING_CONTROLLER_H_
 #pragma once
 
-#include "content/browser/tab_contents/constrained_window.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
+class ConstrainedWindow;
 class TabContents;
 
 // This class is used to continue or cancel a pending reload when the

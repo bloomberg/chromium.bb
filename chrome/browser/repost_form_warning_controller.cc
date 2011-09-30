@@ -4,6 +4,7 @@
 
 #include "chrome/browser/repost_form_warning_controller.h"
 
+#include "chrome/browser/ui/constrained_window.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
 

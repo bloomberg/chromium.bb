@@ -976,7 +976,7 @@ void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {
 // point to dispatch the ShowWidget message.
 //
 // This method provides us with the information about how to display the newly
-// created RenderWidget (i.e., as a constrained popup or as a new tab).
+// created RenderWidget (i.e., as a blocked popup or as a new tab).
 //
 void RenderWidget::show(WebNavigationPolicy) {
   DCHECK(!did_show_) << "received extraneous Show call";

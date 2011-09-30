@@ -258,11 +258,6 @@ void RenderWidgetHost::WasHidden() {
       content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
       new GpuMsg_VisibilityChanged(routing_id_, process()->id(), false));
 
-  // TODO(darin): what about constrained windows?  it doesn't look like they
-  // see a message when their parent is hidden.  maybe there is something more
-  // generic we can do at the TabContents API level instead of relying on
-  // Windows messages.
-
   // Tell the RenderProcessHost we were hidden.
   process_->WidgetHidden();
 

@@ -8,11 +8,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "content/browser/tab_contents/constrained_window.h"
-
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/constrained_window.h"
 
 @class BrowserWindowController;
 @class GTMWindowSheetController;

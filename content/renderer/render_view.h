@@ -172,7 +172,7 @@ class RenderView : public RenderWidget,
                    public base::SupportsWeakPtr<RenderView> {
  public:
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
-  // parent of the WebView HWND that will be created.  If this is a constrained
+  // parent of the WebView HWND that will be created.  If this is a blocked
   // popup or as a new tab, opener_id is the routing ID of the RenderView
   // responsible for creating this RenderView (corresponding to parent_hwnd).
   // |counter| is either a currently initialized counter, or NULL (in which case

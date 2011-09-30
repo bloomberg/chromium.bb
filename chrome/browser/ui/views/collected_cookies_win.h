@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/common/content_settings.h"
-#include "content/browser/tab_contents/constrained_window.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "views/controls/tabbed_pane/tabbed_pane_listener.h"

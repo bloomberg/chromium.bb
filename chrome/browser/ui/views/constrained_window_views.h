@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/browser/tab_contents/constrained_window.h"
+#include "chrome/browser/ui/constrained_window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "views/widget/widget.h"

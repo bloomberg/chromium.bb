@@ -18,7 +18,6 @@
 #include "content/browser/download/save_package.h"
 #include "content/browser/javascript_dialogs.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/tab_contents/constrained_window.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/page_navigator.h"
@@ -490,14 +489,10 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
 
  private:
   friend class NavigationController;
-  // Used to access the child_windows_ (ConstrainedWindowList) for testing
-  // automation purposes.
-  friend class TestingAutomationProvider;
 
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, NoJSMessageOnInterstitials);
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, UpdateTitle);
   FRIEND_TEST_ALL_PREFIXES(TabContentsTest, CrossSiteCantPreemptAfterUnload);
-  FRIEND_TEST_ALL_PREFIXES(TabContentsTest, ConstrainedWindows);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostManagerTest, PageDoesBackAndReload);

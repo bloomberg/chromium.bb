@@ -1788,7 +1788,7 @@ void RenderView::didBlur() {
 // point to dispatch the ShowView message.
 //
 // This method provides us with the information about how to display the newly
-// created RenderView (i.e., as a constrained popup or as a new tab).
+// created RenderView (i.e., as a blocked popup or as a new tab).
 //
 void RenderView::show(WebNavigationPolicy policy) {
   DCHECK(!did_show_) << "received extraneous Show call";
