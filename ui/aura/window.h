@@ -64,8 +64,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
 
-  const string16& name() const { return name_; }
-  void set_name(const string16& name) { name_ = name; }
+  const std::string& name() const { return name_; }
+  void set_name(const std::string& name) { name_ = name; }
 
   ui::Layer* layer() { return layer_.get(); }
   const ui::Layer* layer() const { return layer_.get(); }
@@ -107,6 +107,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void RemoveChild(Window* child);
 
   const Windows& children() const { return children_; }
+
+  // Retrieves the first-level child with the specified id, or NULL if no first-
+  // level child is found matching |id|.
+  Window* GetChildById(int id);
 
   static void ConvertPointToWindow(Window* source,
                                    Window* target,
@@ -181,7 +185,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   Windows children_;
 
   int id_;
-  string16 name_;
+  std::string name_;
 
   scoped_ptr<EventFilter> event_filter_;
   scoped_ptr<LayoutManager> layout_manager_;

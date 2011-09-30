@@ -20,14 +20,12 @@ class Widget;
 namespace aura_shell {
 namespace internal {
 
+// A layout manager for the root window.
+// Resizes all of its immediate children to fill the bounds of the root window.
 class AURA_SHELL_EXPORT DesktopLayoutManager : public aura::LayoutManager {
  public:
   explicit DesktopLayoutManager(aura::Window* owner);
   virtual ~DesktopLayoutManager();
-
-  void set_toplevel_window_container(aura::Window* toplevel_window_container) {
-    toplevel_window_container_ = toplevel_window_container;
-  }
 
   void set_background_widget(views::Widget* background_widget) {
     background_widget_ = background_widget;
@@ -46,7 +44,7 @@ class AURA_SHELL_EXPORT DesktopLayoutManager : public aura::LayoutManager {
   virtual void OnWindowResized() OVERRIDE;
 
   aura::Window* owner_;
-  aura::Window* toplevel_window_container_;
+
   views::Widget* background_widget_;
   views::Widget* launcher_widget_;
   views::Widget* status_area_widget_;

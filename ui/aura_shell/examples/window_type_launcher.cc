@@ -9,6 +9,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura_shell/examples/example_factory.h"
 #include "ui/aura_shell/examples/toplevel_window.h"
+#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/toplevel_frame_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
@@ -85,7 +86,7 @@ void InitWindowTypeLauncher() {
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
                                             gfx::Rect(120, 150, 400, 300));
-  widget->GetNativeView()->set_name(ASCIIToUTF16("WindowTypeLauncher"));
+  widget->GetNativeView()->set_name("WindowTypeLauncher");
   widget->Show();
 }
 
@@ -110,7 +111,8 @@ WindowTypeLauncher::~WindowTypeLauncher() {
 void WindowTypeLauncher::TileWindows() {
   to_restore_.clear();
   aura::Window* window_container =
-      aura::Desktop::GetInstance()->toplevel_window_container();
+      aura::Desktop::GetInstance()->window()->GetChildById(
+          internal::kShellWindowId_DefaultContainer);
   const aura::Window::Windows& windows = window_container->children();
   if (windows.empty())
     return;
@@ -140,7 +142,8 @@ void WindowTypeLauncher::TileWindows() {
 
 void WindowTypeLauncher::RestoreTiledWindows() {
   aura::Window* window_container =
-      aura::Desktop::GetInstance()->toplevel_window_container();
+      aura::Desktop::GetInstance()->window()->GetChildById(
+          internal::kShellWindowId_DefaultContainer);
   ui::Transform identity_transform;
   for (size_t i = 0; i < to_restore_.size(); ++i) {
     to_restore_[i].first->layer()->SetAnimation(

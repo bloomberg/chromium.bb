@@ -120,7 +120,7 @@ void Window::SetParent(Window* parent) {
   if (parent)
     parent->AddChild(this);
   else
-    Desktop::GetInstance()->toplevel_window_container()->AddChild(this);
+    Desktop::GetInstance()->default_parent()->AddChild(this);
 }
 
 bool Window::IsToplevelWindowContainer() const {
@@ -144,6 +144,8 @@ void Window::MoveChildToFront(Window* child) {
 void Window::AddChild(Window* child) {
   DCHECK(std::find(children_.begin(), children_.end(), child) ==
       children_.end());
+  if (child->parent())
+    child->parent()->RemoveChild(child);
   child->parent_ = this;
   layer_->Add(child->layer_.get());
   children_.push_back(child);
@@ -155,6 +157,18 @@ void Window::RemoveChild(Window* child) {
   child->parent_ = NULL;
   layer_->Remove(child->layer_.get());
   children_.erase(i);
+}
+
+Window* Window::GetChildById(int id) {
+  Windows::const_iterator i;
+  for (i = children_.begin(); i != children_.end(); ++i) {
+    if ((*i)->id() == id)
+      return *i;
+    Window* result = (*i)->GetChildById(id);
+    if (result)
+      return result;
+  }
+  return NULL;
 }
 
 // static
@@ -197,7 +211,7 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
     Window::ConvertPointToWindow(this, child, &point_in_child_coords);
     if (child->HitTest(point_in_child_coords)) {
       Window* handler = child->GetEventHandlerForPoint(point_in_child_coords);
-      if (handler)
+      if (handler && handler->delegate())
         return handler;
     }
   }

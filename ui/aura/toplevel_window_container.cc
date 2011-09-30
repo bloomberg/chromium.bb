@@ -12,7 +12,7 @@ namespace internal {
 
 ToplevelWindowContainer::ToplevelWindowContainer()
     : Window(NULL) {
-  set_name(ASCIIToUTF16("ToplevelWindowContainer"));
+  set_name("ToplevelWindowContainer");
   SetEventFilter(new ToplevelWindowEventFilter(this));
 }
 

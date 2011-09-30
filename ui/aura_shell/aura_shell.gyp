@@ -40,6 +40,7 @@
         'launcher/launcher_button.cc',
         'launcher/launcher_button.h',
         'shell_factory.h',
+        'shell_window_ids.h',
         'status_area_view.cc',
         'status_area_view.h',
         'toplevel_frame_view.cc',

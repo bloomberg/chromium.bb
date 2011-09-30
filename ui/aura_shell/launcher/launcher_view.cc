@@ -40,14 +40,13 @@ AURA_SHELL_EXPORT views::Widget* CreateLauncher() {
   views::Widget* launcher_widget = new views::Widget;
   views::Widget::InitParams params2(views::Widget::InitParams::TYPE_CONTROL);
   params2.bounds = gfx::Rect(0, 0, 300, 64);
-  params2.parent = aura::Desktop::GetInstance()->window();
   LauncherView* launcher_view = new LauncherView;
   params2.delegate = launcher_view;
   launcher_widget->Init(params2);
   launcher_widget->GetNativeWindow()->layer()->SetOpacity(0.2f);
   launcher_widget->SetContentsView(launcher_view);
   launcher_widget->Show();
-  launcher_widget->GetNativeView()->set_name(ASCIIToUTF16("LauncherView"));
+  launcher_widget->GetNativeView()->set_name("LauncherView");
   return launcher_widget;
 }
 

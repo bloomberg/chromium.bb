@@ -36,12 +36,11 @@ AURA_SHELL_EXPORT views::Widget* CreateStatusArea() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   gfx::Size ps = status_area_view->GetPreferredSize();
   params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
-  params.parent = aura::Desktop::GetInstance()->window();
   params.delegate = status_area_view;
   widget->Init(params);
   widget->SetContentsView(status_area_view);
   widget->Show();
-  widget->GetNativeView()->set_name(ASCIIToUTF16("StatusAreaView"));
+  widget->GetNativeView()->set_name("StatusAreaView");
   return widget;
 }
 

@@ -23,7 +23,7 @@ void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new ToplevelWindow(params),
                                             gfx::Rect(120, 150, 400, 300));
-  widget->GetNativeView()->set_name(ASCIIToUTF16("Examples:ToplevelWindow"));
+  widget->GetNativeView()->set_name("Examples:ToplevelWindow");
   widget->Show();
 }
 

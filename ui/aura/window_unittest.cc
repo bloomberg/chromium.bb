@@ -30,7 +30,7 @@ class WindowDelegateImpl : public WindowDelegate {
   WindowDelegateImpl() {}
   virtual ~WindowDelegateImpl() {}
 
-  // Overriden from WindowDelegate:
+  // Overridden from WindowDelegate:
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE {}
   virtual void OnFocus() OVERRIDE {}
@@ -172,8 +172,10 @@ class TestWindowDelegate : public WindowDelegateImpl {
 class WindowTest : public testing::Test {
  public:
   WindowTest() : main_message_loop(MessageLoop::TYPE_UI) {
-    aura::Desktop::GetInstance()->Show();
-    aura::Desktop::GetInstance()->SetSize(gfx::Size(500, 500));
+    Desktop::GetInstance()->Show();
+    Desktop::GetInstance()->SetSize(gfx::Size(500, 500));
+    if (!Desktop::GetInstance()->default_parent())
+      Desktop::GetInstance()->CreateDefaultParentForTesting();
   }
   virtual ~WindowTest() {}
 
@@ -182,6 +184,10 @@ class WindowTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+  }
+
+  Window* CreateTestWindowWithId(int id, Window* parent) {
+    return CreateTestWindowWithDelegate(NULL, id, gfx::Rect(), parent);
   }
 
   Window* CreateTestWindow(SkColor color,
@@ -218,6 +224,17 @@ class WindowTest : public testing::Test {
 
 }  // namespace
 
+TEST_F(WindowTest, GetChildById) {
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w11(CreateTestWindowWithId(11, w1.get()));
+  scoped_ptr<Window> w111(CreateTestWindowWithId(111, w11.get()));
+  scoped_ptr<Window> w12(CreateTestWindowWithId(12, w1.get()));
+
+  EXPECT_EQ(NULL, w1->GetChildById(57));
+  EXPECT_EQ(w12.get(), w1->GetChildById(12));
+  EXPECT_EQ(w111.get(), w1->GetChildById(111));
+}
+
 TEST_F(WindowTest, HitTest) {
   Window w1(new TestWindowDelegate(SK_ColorWHITE));
   w1.set_id(1);
@@ -251,6 +268,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   Window* desktop = Desktop::GetInstance()->window();
+  Desktop::GetInstance()->default_parent()->SetBounds(gfx::Rect(500, 500));
   EXPECT_EQ(NULL, desktop->GetEventHandlerForPoint(gfx::Point(5, 5)));
   EXPECT_EQ(w1.get(), desktop->GetEventHandlerForPoint(gfx::Point(11, 11)));
   EXPECT_EQ(w11.get(), desktop->GetEventHandlerForPoint(gfx::Point(16, 16)));
@@ -550,6 +568,27 @@ TEST_F(WindowTest, ActivateOnMouse) {
   EXPECT_EQ(w1.get(), focus_manager->focused_window());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
+}
+
+// Creates a window with a delegate (w111) that can handle events at a lower
+// z-index than a window without a delegate (w12). w12 is sized to fill the
+// entire bounds of the container. This test verifies that
+// GetEventHandlerForPoint() skips w12 even though its bounds contain the event,
+// because it has no children that can handle the event and it has no delegate
+// allowing it to handle the event itself.
+TEST_F(WindowTest, GetEventHandlerForPoint_NoDelegate) {
+  WindowDelegateImpl d111;
+  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(NULL, 1,
+      gfx::Rect(0, 0, 500, 500), NULL));
+  scoped_ptr<Window> w11(CreateTestWindowWithDelegate(NULL, 11,
+      gfx::Rect(0, 0, 500, 500), w1.get()));
+  scoped_ptr<Window> w111(CreateTestWindowWithDelegate(&d111, 1,
+      gfx::Rect(50, 50, 450, 450), w11.get()));
+  scoped_ptr<Window> w12(CreateTestWindowWithDelegate(NULL, 12,
+      gfx::Rect(0, 0, 500, 500), w1.get()));
+
+  gfx::Point target_point = w111->bounds().CenterPoint();
+  EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(target_point));
 }
 
 }  // namespace internal

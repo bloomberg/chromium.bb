@@ -33,6 +33,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   // Initializes the desktop.
   void Init();
 
+  // Initializes |default_parent()| for testing.
+  void CreateDefaultParentForTesting();
+
   // Shows the desktop host.
   void Show();
 
@@ -62,9 +65,11 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   Window* window() { return window_.get(); }
 
-  Window* toplevel_window_container() { return toplevel_window_container_; }
-  void set_toplevel_window_container(Window* toplevel_window_container) {
-    toplevel_window_container_ = toplevel_window_container;
+  // The window where windows created without an explicitly specified parent are
+  // parented.
+  Window* default_parent() { return default_parent_; }
+  void set_default_parent(Window* default_parent) {
+    default_parent_ = default_parent;
   }
 
   static void set_compositor_factory_for_testing(ui::Compositor*(*factory)()) {
@@ -98,7 +103,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   scoped_refptr<ui::Compositor> compositor_;
 
   scoped_ptr<internal::RootWindow> window_;
-  Window* toplevel_window_container_;
+
+  Window* default_parent_;
 
   scoped_ptr<DesktopHost> host_;
 

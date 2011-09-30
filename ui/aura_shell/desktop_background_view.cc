@@ -37,14 +37,12 @@ AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground() {
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.bounds = gfx::Rect(0, 0, 1024, 768);
-  params.parent = aura::Desktop::GetInstance()->window();
   DesktopBackgroundView* view = new DesktopBackgroundView;
   params.delegate = view;
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(view);
   desktop_widget->Show();
-  desktop_widget->GetNativeView()->set_name(
-      ASCIIToUTF16("DesktopBackgroundView"));
+  desktop_widget->GetNativeView()->set_name("DesktopBackgroundView");
   return desktop_widget;
 }
 

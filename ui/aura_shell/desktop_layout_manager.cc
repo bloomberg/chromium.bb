@@ -15,7 +15,6 @@ namespace internal {
 
 DesktopLayoutManager::DesktopLayoutManager(aura::Window* owner)
     : owner_(owner),
-      toplevel_window_container_(NULL),
       background_widget_(NULL),
       launcher_widget_(NULL),
       status_area_widget_(NULL) {
@@ -30,7 +29,10 @@ DesktopLayoutManager::~DesktopLayoutManager() {
 void DesktopLayoutManager::OnWindowResized() {
   gfx::Rect fullscreen_bounds =
       gfx::Rect(owner_->bounds().width(), owner_->bounds().height());
-  toplevel_window_container_->SetBounds(fullscreen_bounds);
+
+  aura::Window::Windows::const_iterator i;
+  for (i = owner_->children().begin(); i != owner_->children().end(); ++i)
+    (*i)->SetBounds(fullscreen_bounds);
 
   background_widget_->SetBounds(fullscreen_bounds);
 

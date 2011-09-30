@@ -24,7 +24,7 @@ Desktop* Desktop::instance_ = NULL;
 ui::Compositor*(*Desktop::compositor_factory_)() = NULL;
 
 Desktop::Desktop()
-    : toplevel_window_container_(new aura::internal::ToplevelWindowContainer),
+    : default_parent_(NULL),
       host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1280, 1024))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_(this)),
       active_window_(NULL),
@@ -51,10 +51,15 @@ Desktop::~Desktop() {
 void Desktop::Init() {
   window_->Init();
   compositor()->SetRootLayer(window_->layer());
-  toplevel_window_container_->Init();
-  toplevel_window_container_->SetBounds(gfx::Rect(0, 0, 1280, 1024));
-  toplevel_window_container_->SetVisibility(aura::Window::VISIBILITY_SHOWN);
-  toplevel_window_container_->SetParent(window_.get());
+}
+
+void Desktop::CreateDefaultParentForTesting() {
+  Window* default_parent = new internal::ToplevelWindowContainer;
+  default_parent->Init();
+  default_parent->SetBounds(window_->bounds());
+  default_parent->SetVisibility(Window::VISIBILITY_SHOWN);
+  window_->AddChild(default_parent);
+  set_default_parent(default_parent);
 }
 
 void Desktop::Show() {
@@ -87,9 +92,9 @@ bool Desktop::OnKeyEvent(const KeyEvent& event) {
 }
 
 void Desktop::OnHostResized(const gfx::Size& size) {
-  gfx::Rect bounds(window_->bounds().origin(), size);
-  window_->SetBounds(bounds);
+  gfx::Rect bounds(0, 0, size.width(), size.height());
   compositor_->WidgetSizeChanged(size);
+  window_->SetBounds(bounds);
 }
 
 void Desktop::ScheduleCompositorPaint() {
@@ -128,7 +133,7 @@ void Desktop::WindowDestroying(Window* window) {
 }
 
 Window* Desktop::GetTopmostWindowToActivate(Window* ignore) {
-  Window::Windows windows(toplevel_window_container_->children());
+  Window::Windows windows(default_parent_->children());
   for (Window::Windows::const_reverse_iterator i = windows.rbegin();
        i != windows.rend(); ++i) {
     if (*i != ignore && (*i)->visibility() == Window::VISIBILITY_SHOWN &&

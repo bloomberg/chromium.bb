@@ -21,7 +21,7 @@ RootWindow::RootWindow()
       mouse_moved_handler_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_manager_(new FocusManager(this))),
       capture_window_(NULL) {
-  set_name(ASCIIToUTF16("RootWindow"));
+  set_name("RootWindow");
 }
 
 RootWindow::~RootWindow() {
