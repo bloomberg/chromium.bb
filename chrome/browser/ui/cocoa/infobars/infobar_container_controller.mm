@@ -4,9 +4,9 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/tab_contents/infobar.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
@@ -31,11 +31,11 @@ class InfoBarNotificationObserver : public NotificationObserver {
   void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    TabContentsWrapper* tab_contents = Source<TabContentsWrapper>(source).ptr();
+    InfoBarTabHelper* infobar_helper = Source<InfoBarTabHelper>(source).ptr();
     switch (type) {
       case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
         [controller_ addInfoBar:Details<InfoBarAddedDetails>(details)->
-                                    CreateInfoBar(tab_contents)
+                                    CreateInfoBar(infobar_helper)
                         animate:YES];
         break;
 
@@ -54,7 +54,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
         [controller_ closeInfoBarsForDelegate:replaced_details->first
                                       animate:NO];
         [controller_ addInfoBar:replaced_details->second->
-                                    CreateInfoBar(tab_contents)
+                                    CreateInfoBar(infobar_helper)
                         animate:NO];
         break;
       }
@@ -144,11 +144,11 @@ class InfoBarNotificationObserver : public NotificationObserver {
         currentTabContents_->infobar_tab_helper();
     for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
       InfoBar* infobar = infobar_helper->
-          GetInfoBarDelegateAt(i)->CreateInfoBar(currentTabContents_);
+          GetInfoBarDelegateAt(i)->CreateInfoBar(infobar_helper);
       [self addInfoBar:infobar animate:NO];
     }
 
-    Source<TabContentsWrapper> source(currentTabContents_);
+    Source<InfoBarTabHelper> source(infobar_helper);
     registrar_.Add(infoBarObserver_.get(),
                    chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, source);
     registrar_.Add(infoBarObserver_.get(),

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_INFOBARS_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_INFOBARS_INFOBAR_DELEGATE_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -13,11 +13,10 @@
 class ConfirmInfoBarDelegate;
 class ExtensionInfoBarDelegate;
 class InfoBar;
+class InfoBarTabHelper;
 class InsecureContentInfoBarDelegate;
 class LinkInfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
-class TabContents;
-class TabContentsWrapper;
 class ThemeInstalledInfoBarDelegate;
 class TranslateInfoBarDelegate;
 
@@ -46,16 +45,19 @@ class InfoBarDelegate {
 
   // Called to create the InfoBar. Implementation of this method is
   // platform-specific.
-  virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner) = 0;
+  virtual InfoBar* CreateInfoBar(InfoBarTabHelper* owner) = 0;
 
-  // Called by the TabContentsWrapper when it removes us.
+  // Called by the InfoBarTabHelper when it removes us.
   void clear_owner() { owner_ = NULL; }
+
+  // TODO(pkasting): Move to InfoBar once InfoBars own their delegates.
+  InfoBarTabHelper* owner() { return owner_; }
 
   // Returns true if the supplied |delegate| is equal to this one. Equality is
   // left to the implementation to define. This function is called by the
-  // TabContentsWrapper when determining whether or not a delegate should be
+  // InfoBarTabHelper when determining whether or not a delegate should be
   // added because a matching one already exists. If this function returns true,
-  // the TabContentsWrapper will not add the new delegate because it considers
+  // the InfoBarTabHelper will not add the new delegate because it considers
   // one to already be present.
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
 
@@ -92,12 +94,12 @@ class InfoBarDelegate {
  protected:
   // If |contents| is non-NULL, its active entry's unique ID will be stored
   // using StoreActiveEntryUniqueID automatically.
-  explicit InfoBarDelegate(TabContents* contents);
+  explicit InfoBarDelegate(InfoBarTabHelper* infobar_helper);
 
   // Store the unique id for the active entry in the specified TabContents, to
   // be used later upon navigation to determine if this InfoBarDelegate should
   // be expired from |contents_|.
-  void StoreActiveEntryUniqueID(TabContents* contents);
+  void StoreActiveEntryUniqueID(InfoBarTabHelper* infobar_helper);
 
   // Returns true if the navigation is to a new URL or a reload occured.
   bool ShouldExpireInternal(
@@ -113,9 +115,9 @@ class InfoBarDelegate {
   int contents_unique_id_;
 
   // TODO(pkasting): Remove.
-  TabContents* owner_;
+  InfoBarTabHelper* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_INFOBARS_INFOBAR_DELEGATE_H_

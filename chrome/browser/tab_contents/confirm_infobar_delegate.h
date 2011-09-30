@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to
 // control a ConfirmInfoBar.
@@ -56,7 +56,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
  protected:
-  explicit ConfirmInfoBarDelegate(TabContents* contents);
+  explicit ConfirmInfoBarDelegate(InfoBarTabHelper* infobar_helper);
   virtual ~ConfirmInfoBarDelegate();
 
   virtual bool ShouldExpire(
@@ -64,7 +64,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
 
  private:
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner) OVERRIDE;
+  virtual InfoBar* CreateInfoBar(InfoBarTabHelper* owner) OVERRIDE;
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() OVERRIDE;
 

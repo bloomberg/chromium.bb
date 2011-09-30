@@ -28,7 +28,7 @@
 // forms never end up in an infobar.
 class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SavePasswordInfoBarDelegate(TabContents* tab_contents,
+  SavePasswordInfoBarDelegate(InfoBarTabHelper* infobar_helper,
                               PasswordFormManager* form_to_save);
 
  private:
@@ -60,9 +60,9 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
-    TabContents* tab_contents,
+    InfoBarTabHelper* infobar_helper,
     PasswordFormManager* form_to_save)
-    : ConfirmInfoBarDelegate(tab_contents),
+    : ConfirmInfoBarDelegate(infobar_helper),
       form_to_save_(form_to_save),
       infobar_response_(NO_RESPONSE) {
 }
@@ -118,7 +118,7 @@ void PasswordManagerDelegateImpl::AddSavePasswordInfoBar(
     PasswordFormManager* form_to_save) {
   tab_contents_->infobar_tab_helper()->AddInfoBar(
       new SavePasswordInfoBarDelegate(
-          tab_contents_->tab_contents(), form_to_save));
+          tab_contents_->infobar_tab_helper(), form_to_save));
 }
 
 Profile* PasswordManagerDelegateImpl::GetProfileForPasswordManager() {

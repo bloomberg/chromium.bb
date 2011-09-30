@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_GRADIENT_VIEW_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 
 #import <Cocoa/Cocoa.h>

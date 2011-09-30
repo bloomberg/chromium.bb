@@ -394,8 +394,7 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
 
   // Then either replace that old one or add a new one.
   InfoBarDelegate* new_delegate = GetNewThemeInstalledInfoBarDelegate(
-      tab_contents->tab_contents(), new_theme, previous_theme_id,
-      previous_using_native_theme);
+      tab_contents, new_theme, previous_theme_id, previous_using_native_theme);
 
   if (old_delegate)
     infobar_helper->ReplaceInfoBar(old_delegate, new_delegate);
@@ -415,11 +414,16 @@ void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {
 }
 
 InfoBarDelegate* ExtensionInstallUI::GetNewThemeInstalledInfoBarDelegate(
-    TabContents* tab_contents,
+    TabContentsWrapper* tab_contents,
     const Extension* new_theme,
     const std::string& previous_theme_id,
     bool previous_using_native_theme) {
-  return new ThemeInstalledInfoBarDelegate(tab_contents, new_theme,
-                                           previous_theme_id,
-                                           previous_using_native_theme);
+  Profile* profile = tab_contents->profile();
+  return new ThemeInstalledInfoBarDelegate(
+      tab_contents->infobar_tab_helper(),
+      profile->GetExtensionService(),
+      ThemeServiceFactory::GetForProfile(profile),
+      new_theme,
+      previous_theme_id,
+      previous_using_native_theme);
 }

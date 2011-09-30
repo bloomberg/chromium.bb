@@ -372,8 +372,9 @@ void CollectedCookiesWin::DeleteDelegate() {
 
 bool CollectedCookiesWin::Cancel() {
   if (status_changed_) {
-    wrapper_->infobar_tab_helper()->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(wrapper_->tab_contents()));
+    InfoBarTabHelper* infobar_helper = wrapper_->infobar_tab_helper();
+    infobar_helper->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(infobar_helper));
   }
 
   return true;

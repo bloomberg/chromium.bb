@@ -53,12 +53,14 @@ const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 // permissions.
 class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  NotificationPermissionInfoBarDelegate(TabContents* contents,
-                                        const GURL& origin,
-                                        const string16& display_name,
-                                        int process_id,
-                                        int route_id,
-                                        int callback_context);
+  NotificationPermissionInfoBarDelegate(
+      InfoBarTabHelper* infobar_helper,
+      DesktopNotificationService* notification_service,
+      const GURL& origin,
+      const string16& display_name,
+      int process_id,
+      int route_id,
+      int callback_context);
 
  private:
   virtual ~NotificationPermissionInfoBarDelegate();
@@ -78,8 +80,8 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // origin_ for extensions.
   string16 display_name_;
 
-  // The Profile that we restore sessions from.
-  Profile* profile_;
+  // The notification service to be used.
+  DesktopNotificationService* notification_service_;
 
   // The callback information that tells us how to respond to javascript via
   // the correct RenderView.
@@ -94,16 +96,17 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 NotificationPermissionInfoBarDelegate::NotificationPermissionInfoBarDelegate(
-    TabContents* contents,
+    InfoBarTabHelper* infobar_helper,
+    DesktopNotificationService* notification_service,
     const GURL& origin,
     const string16& display_name,
     int process_id,
     int route_id,
     int callback_context)
-    : ConfirmInfoBarDelegate(contents),
+    : ConfirmInfoBarDelegate(infobar_helper),
       origin_(origin),
       display_name_(display_name),
-      profile_(Profile::FromBrowserContext(contents->browser_context())),
+      notification_service_(notification_service),
       process_id_(process_id),
       route_id_(route_id),
       callback_context_(callback_context),
@@ -143,16 +146,14 @@ string16 NotificationPermissionInfoBarDelegate::GetButtonLabel(
 
 bool NotificationPermissionInfoBarDelegate::Accept() {
   UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Allowed", 1);
-  DesktopNotificationServiceFactory::GetForProfile(profile_)->
-      GrantPermission(origin_);
+  notification_service_->GrantPermission(origin_);
   action_taken_ = true;
   return true;
 }
 
 bool NotificationPermissionInfoBarDelegate::Cancel() {
   UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Denied", 1);
-  DesktopNotificationServiceFactory::GetForProfile(profile_)->
-      DenyPermission(origin_);
+  notification_service_->DenyPermission(origin_);
   action_taken_ = true;
   return true;
 }
@@ -347,10 +348,15 @@ void DesktopNotificationService::RequestPermission(
     // Show an info bar requesting permission.
     TabContentsWrapper* wrapper =
         TabContentsWrapper::GetCurrentWrapperForContents(tab);
-    wrapper->infobar_tab_helper()->AddInfoBar(
-        new NotificationPermissionInfoBarDelegate(
-            tab, origin, DisplayNameForOrigin(origin), process_id,
-            route_id, callback_context));
+    InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+    infobar_helper->AddInfoBar(new NotificationPermissionInfoBarDelegate(
+        infobar_helper,
+        DesktopNotificationServiceFactory::GetForProfile(wrapper->profile()),
+        origin,
+        DisplayNameForOrigin(origin),
+        process_id,
+        route_id,
+        callback_context));
   } else {
     // Notify renderer immediately.
     RenderViewHost* host = RenderViewHost::FromID(process_id, route_id);

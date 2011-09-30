@@ -9,10 +9,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 
-class TabContents;
-class TabContentsWrapper;
+class InfoBarTabHelper;
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to
 // control a LinkInfoBar.
@@ -33,12 +32,12 @@ class LinkInfoBarDelegate : public InfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
  protected:
-  explicit LinkInfoBarDelegate(TabContents* contents);
+  explicit LinkInfoBarDelegate(InfoBarTabHelper* infobar_helper);
   virtual ~LinkInfoBarDelegate();
 
  private:
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(TabContentsWrapper* owner) OVERRIDE;
+  virtual InfoBar* CreateInfoBar(InfoBarTabHelper* infobar_helper) OVERRIDE;
   virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(LinkInfoBarDelegate);

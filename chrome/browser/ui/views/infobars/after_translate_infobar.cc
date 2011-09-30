@@ -13,7 +13,7 @@
 #include "views/controls/menu/menu_item_view.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
-    TabContentsWrapper* owner,
+    InfoBarTabHelper* owner,
     TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(owner, delegate),
       label_1_(NULL),

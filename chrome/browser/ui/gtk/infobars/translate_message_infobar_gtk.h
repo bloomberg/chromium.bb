@@ -12,7 +12,7 @@ class TranslateInfoBarDelegate;
 
 class TranslateMessageInfoBar : public TranslateInfoBarBase {
  public:
-  TranslateMessageInfoBar(TabContentsWrapper* owner,
+  TranslateMessageInfoBar(InfoBarTabHelper* owner,
                           TranslateInfoBarDelegate* delegate);
   virtual ~TranslateMessageInfoBar();
 

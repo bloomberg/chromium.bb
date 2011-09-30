@@ -31,7 +31,7 @@ enum {
 
 }  // namespace
 
-TranslateInfoBarBase::TranslateInfoBarBase(TabContentsWrapper* owner,
+TranslateInfoBarBase::TranslateInfoBarBase(InfoBarTabHelper* owner,
                                            TranslateInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate) {
   DCHECK(delegate);
@@ -214,7 +214,7 @@ void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
 }
 
 // TranslateInfoBarDelegate specific method:
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
     case BEFORE_TRANSLATE:

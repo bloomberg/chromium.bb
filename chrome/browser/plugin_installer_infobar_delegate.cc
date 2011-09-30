@@ -5,6 +5,7 @@
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
 
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
@@ -16,9 +17,8 @@
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 
 PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
-    TabContents* tab_contents, gfx::NativeWindow window)
-    : ConfirmInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents),
+    InfoBarTabHelper* infobar_helper, gfx::NativeWindow window)
+    : ConfirmInfoBarDelegate(infobar_helper),
       window_(window) {
 }
 
@@ -69,7 +69,7 @@ string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
 
 bool PluginInstallerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  tab_contents_->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
+  owner()->tab_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
       "http://www.google.com/support/chrome/bin/answer.py?answer=95697&topic="
       "14687")), GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,

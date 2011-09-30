@@ -1386,7 +1386,7 @@ InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
       reply_message_(reply_message),
       tab_contents_(tab_contents),
       target_count_(target_count) {
-  Source<TabContentsWrapper> source(tab_contents);
+  Source<InfoBarTabHelper> source(tab_contents->infobar_tab_helper());
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                  source);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -2325,7 +2325,7 @@ AutofillFormSubmittedObserver::AutofillFormSubmittedObserver(
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       pdm_(pdm),
-      tab_contents_(NULL) {
+      infobar_helper_(NULL) {
   pdm_->SetObserver(this);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                  NotificationService::AllSources());
@@ -2334,12 +2334,11 @@ AutofillFormSubmittedObserver::AutofillFormSubmittedObserver(
 AutofillFormSubmittedObserver::~AutofillFormSubmittedObserver() {
   pdm_->RemoveObserver(this);
 
-  if (tab_contents_) {
-    InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  if (infobar_helper_) {
     InfoBarDelegate* infobar = NULL;
-    if (infobar_helper->infobar_count() > 0 &&
-        (infobar = infobar_helper->GetInfoBarDelegateAt(0))) {
-      infobar_helper->RemoveInfoBar(infobar);
+    if (infobar_helper_->infobar_count() > 0 &&
+        (infobar = infobar_helper_->GetInfoBarDelegateAt(0))) {
+      infobar_helper_->RemoveInfoBar(infobar);
     }
   }
 }
@@ -2367,9 +2366,9 @@ void AutofillFormSubmittedObserver::Observe(
   DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED);
 
   // Accept in the infobar.
-  tab_contents_ = Source<TabContentsWrapper>(source).ptr();
+  infobar_helper_ = Source<InfoBarTabHelper>(source).ptr();
   InfoBarDelegate* infobar = NULL;
-  infobar = tab_contents_->infobar_tab_helper()->GetInfoBarDelegateAt(0);
+  infobar = infobar_helper_->GetInfoBarDelegateAt(0);
 
   ConfirmInfoBarDelegate* confirm_infobar = infobar->AsConfirmInfoBarDelegate();
   if (!confirm_infobar) {

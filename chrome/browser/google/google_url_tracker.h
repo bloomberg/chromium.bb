@@ -85,7 +85,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
  private:
   friend class GoogleURLTrackerTest;
 
-  typedef InfoBarDelegate* (*InfobarCreator)(TabContents*,
+  typedef InfoBarDelegate* (*InfobarCreator)(InfoBarTabHelper*,
                                              GoogleURLTracker*,
                                              const GURL&);
 
@@ -164,7 +164,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
 // code can subclass it.
 class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  GoogleURLTrackerInfoBarDelegate(TabContents* tab_contents,
+  GoogleURLTrackerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
                                   GoogleURLTracker* google_url_tracker,
                                   const GURL& new_google_url);
 
@@ -187,8 +187,6 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Returns the portion of the appropriate hostname to display.
   string16 GetHost(bool new_host) const;
-
-  TabContents* tab_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerInfoBarDelegate);
 };

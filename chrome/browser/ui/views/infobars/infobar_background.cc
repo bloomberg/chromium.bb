@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 
-#include "chrome/browser/tab_contents/infobar.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia_paint.h"

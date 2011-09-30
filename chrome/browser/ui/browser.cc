@@ -57,6 +57,7 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
+#include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -2416,8 +2417,11 @@ void Browser::JSOutOfMemoryHelper(TabContents* tab) {
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
   if (tcw) {
-    tcw->infobar_tab_helper()->AddInfoBar(new SimpleAlertInfoBarDelegate(
-        tab, NULL, l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
+    InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
+    infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
+        infobar_helper,
+        NULL,
+        l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
         true));
   }
 }
@@ -2453,8 +2457,11 @@ void Browser::RegisterProtocolHandlerHelper(TabContents* tab,
       return;
     UserMetrics::RecordAction(
         UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
-    tcw->infobar_tab_helper()->AddInfoBar(
-        new RegisterProtocolHandlerInfoBarDelegate(tab, registry, handler));
+    InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
+    infobar_helper->AddInfoBar(
+        new RegisterProtocolHandlerInfoBarDelegate(infobar_helper,
+                                                   registry,
+                                                   handler));
   }
 }
 
@@ -2483,8 +2490,11 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
   service.action = action;
   service.type = type;
   service.title = title;
-  tcw->infobar_tab_helper()->AddInfoBar(
-      new RegisterIntentHandlerInfoBarDelegate(tab, service));
+  InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
+  infobar_helper->AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(
+      infobar_helper,
+      WebIntentsRegistryFactory::GetForProfile(tcw->profile()),
+      service));
 }
 
 // static
@@ -2530,9 +2540,10 @@ void Browser::CrashedPluginHelper(TabContents* tab,
   }
   gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
-  tcw->infobar_tab_helper()->AddInfoBar(
+  InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
+  infobar_helper->AddInfoBar(
       new SimpleAlertInfoBarDelegate(
-          tab,
+          infobar_helper,
           icon,
           l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
           true));
@@ -3733,8 +3744,11 @@ void Browser::RendererResponsive(TabContents* source) {
 void Browser::WorkerCrashed(TabContents* source) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(source);
-  wrapper->infobar_tab_helper()->AddInfoBar(new SimpleAlertInfoBarDelegate(
-      source, NULL, l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT),
+  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+  infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
+      infobar_helper,
+      NULL,
+      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT),
       true));
 }
 

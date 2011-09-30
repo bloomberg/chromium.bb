@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/infobar.h"
+#include "chrome/browser/infobars/infobar.h"
 
 #include <cmath>
 
 #include "build/build_config.h"
 #include "base/logging.h"
+#include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/tab_contents/infobar_container.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "ui/base/animation/slide_animation.h"
 
 SkColor GetInfoBarTopColor(InfoBarDelegate::Type infobar_type) {
@@ -40,7 +39,7 @@ SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type) {
 // TODO(pkasting): Port Mac to use this.
 #if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
 
-InfoBar::InfoBar(TabContentsWrapper* owner, InfoBarDelegate* delegate)
+InfoBar::InfoBar(InfoBarTabHelper* owner, InfoBarDelegate* delegate)
     : owner_(owner),
       delegate_(delegate),
       container_(NULL),
@@ -104,7 +103,7 @@ void InfoBar::AnimationProgressed(const ui::Animation* animation) {
 
 void InfoBar::RemoveSelf() {
   DCHECK(owner_);
-  owner_->infobar_tab_helper()->RemoveInfoBar(delegate_);
+  owner_->RemoveInfoBar(delegate_);
 }
 
 void InfoBar::SetBarTargetHeight(int height) {

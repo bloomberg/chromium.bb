@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/tab_contents/infobar_container.h"
+#include "chrome/browser/infobars/infobar_container.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class InfoBar;

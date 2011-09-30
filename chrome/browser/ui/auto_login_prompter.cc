@@ -134,7 +134,8 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
 // This is the actual infobar displayed to prompt the user to auto-login.
 class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  AutoLoginInfoBarDelegate(TabContents* tab_contents,
+  AutoLoginInfoBarDelegate(InfoBarTabHelper* owner,
+                           NavigationController* navigation_controller,
                            TokenService* token_service,
                            PrefService* pref_service,
                            const std::string& username,
@@ -159,13 +160,15 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(AutoLoginInfoBarDelegate);
 };
 
-AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(TabContents* tab_contents,
-                                                   TokenService* token_service,
-                                                   PrefService* pref_service,
-                                                   const std::string& username,
-                                                   const std::string& args)
-    : ConfirmInfoBarDelegate(tab_contents),
-      navigation_controller_(&tab_contents->controller()),
+AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
+    InfoBarTabHelper* owner,
+    NavigationController* navigation_controller,
+    TokenService* token_service,
+    PrefService* pref_service,
+    const std::string& username,
+    const std::string& args)
+    : ConfirmInfoBarDelegate(owner),
+      navigation_controller_(navigation_controller),
       token_service_(token_service),
       pref_service_(pref_service),
       username_(username),
@@ -320,9 +323,11 @@ void AutoLoginPrompter::Observe(int type,
         TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
     // |wrapper| is NULL for TabContents hosted in HTMLDialog.
     if (wrapper) {
+      InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
       Profile* profile = wrapper->profile();
-      wrapper->infobar_tab_helper()->AddInfoBar(new AutoLoginInfoBarDelegate(
-          tab_contents_, profile->GetTokenService(), profile->GetPrefs(),
+      infobar_helper->AddInfoBar(new AutoLoginInfoBarDelegate(
+          infobar_helper, &tab_contents_->controller(),
+          profile->GetTokenService(), profile->GetPrefs(),
           username_, args_));
     }
   }

@@ -5,20 +5,20 @@
 #include "chrome/browser/autofill/autofill_feedback_infobar_delegate.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
 #include "content/browser/tab_contents/navigation_details.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
 AutofillFeedbackInfoBarDelegate::AutofillFeedbackInfoBarDelegate(
-    TabContents* tab_contents,
+    InfoBarTabHelper* infobar_helper,
     const string16& message,
     const string16& link_text,
     const std::string& feedback_message)
-    : LinkInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents),
+    : LinkInfoBarDelegate(infobar_helper),
       message_(message),
       link_text_(link_text),
       feedback_message_(feedback_message),
@@ -49,7 +49,8 @@ bool AutofillFeedbackInfoBarDelegate::LinkClicked(
 #endif
 
   browser::ShowHtmlBugReportView(
-      Browser::GetBrowserForController(&tab_contents_->controller(), NULL),
+      Browser::GetBrowserForController(&owner()->tab_contents()->controller(),
+                                       NULL),
       feedback_message_,
       issue_type);
   return true;

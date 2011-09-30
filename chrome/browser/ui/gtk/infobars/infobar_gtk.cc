@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
@@ -13,6 +15,7 @@
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -46,9 +49,10 @@ const int InfoBar::kDefaultBarTargetHeight = 36;
 // static
 const int InfoBarGtk::kEndOfLabelSpacing = 6;
 
-InfoBarGtk::InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate)
+InfoBarGtk::InfoBarGtk(InfoBarTabHelper* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
-      theme_service_(GtkThemeService::GetFrom(owner->profile())),
+      theme_service_(GtkThemeService::GetFrom(Profile::FromBrowserContext(
+          owner->tab_contents()->browser_context()))),
       signals_(new ui::GtkSignalRegistrar) {
   DCHECK(delegate);
   // Create |hbox_| and pad the sides.

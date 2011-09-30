@@ -86,7 +86,7 @@ void ExtensionDisabledDialogDelegate::InstallUIAbort(bool user_initiated) {
 class ExtensionDisabledInfobarDelegate : public ConfirmInfoBarDelegate,
                                          public NotificationObserver {
  public:
-  ExtensionDisabledInfobarDelegate(TabContentsWrapper* tab_contents,
+  ExtensionDisabledInfobarDelegate(InfoBarTabHelper* infobar_helper,
                                    ExtensionService* service,
                                    const Extension* extension);
 
@@ -105,17 +105,15 @@ class ExtensionDisabledInfobarDelegate : public ConfirmInfoBarDelegate,
                        const NotificationDetails& details) OVERRIDE;
 
   NotificationRegistrar registrar_;
-  TabContentsWrapper* tab_contents_;
   ExtensionService* service_;
   const Extension* extension_;
 };
 
 ExtensionDisabledInfobarDelegate::ExtensionDisabledInfobarDelegate(
-    TabContentsWrapper* tab_contents,
+    InfoBarTabHelper* infobar_helper,
     ExtensionService* service,
     const Extension* extension)
-    : ConfirmInfoBarDelegate(tab_contents->tab_contents()),
-      tab_contents_(tab_contents),
+    : ConfirmInfoBarDelegate(infobar_helper),
       service_(service),
       extension_(extension) {
   // The user might re-enable the extension in other ways, so watch for that.
@@ -147,7 +145,7 @@ string16 ExtensionDisabledInfobarDelegate::GetButtonLabel(
 
 bool ExtensionDisabledInfobarDelegate::Accept() {
   // This object manages its own lifetime.
-  new ExtensionDisabledDialogDelegate(tab_contents_->profile(), service_,
+  new ExtensionDisabledDialogDelegate(service_->profile(), service_,
                                       extension_);
   return true;
 }
@@ -175,7 +173,8 @@ void ExtensionDisabledInfobarDelegate::Observe(
 
 // Globals --------------------------------------------------------------------
 
-void ShowExtensionDisabledUI(ExtensionService* service, Profile* profile,
+void ShowExtensionDisabledUI(ExtensionService* service,
+                             Profile* profile,
                              const Extension* extension) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser)
@@ -185,8 +184,9 @@ void ShowExtensionDisabledUI(ExtensionService* service, Profile* profile,
   if (!tab_contents)
     return;
 
-  tab_contents->infobar_tab_helper()->AddInfoBar(
-      new ExtensionDisabledInfobarDelegate(tab_contents, service, extension));
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  infobar_helper->AddInfoBar(
+      new ExtensionDisabledInfobarDelegate(infobar_helper, service, extension));
 }
 
 void ShowExtensionDisabledDialog(ExtensionService* service, Profile* profile,

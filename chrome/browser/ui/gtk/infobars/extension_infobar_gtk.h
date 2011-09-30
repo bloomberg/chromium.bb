@@ -23,7 +23,7 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
                             public ImageLoadingTracker::Observer,
                             public MenuGtk::Delegate {
  public:
-  ExtensionInfoBarGtk(TabContentsWrapper* owner,
+  ExtensionInfoBarGtk(InfoBarTabHelper* owner,
                       ExtensionInfoBarDelegate* delegate);
   virtual ~ExtensionInfoBarGtk();
 

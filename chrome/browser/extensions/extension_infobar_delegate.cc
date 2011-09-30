@@ -6,27 +6,29 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 
-ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
-                                                   TabContents* tab_contents,
-                                                   const Extension* extension,
-                                                   const GURL& url,
-                                                   int height)
-    : InfoBarDelegate(tab_contents),
-      observer_(NULL),
-      extension_(extension),
-      closing_(false) {
+ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
+    Browser* browser,
+    InfoBarTabHelper* infobar_helper,
+    const Extension* extension,
+    const GURL& url,
+    int height)
+        : InfoBarDelegate(infobar_helper),
+          observer_(NULL),
+          extension_(extension),
+          closing_(false) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   extension_host_.reset(manager->CreateInfobarHost(url, browser));
-  extension_host_->set_associated_tab_contents(tab_contents);
+  extension_host_->set_associated_tab_contents(infobar_helper->tab_contents());
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(browser->profile()));

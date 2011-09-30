@@ -9,15 +9,15 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 RegisterIntentHandlerInfoBarDelegate::RegisterIntentHandlerInfoBarDelegate(
-    TabContents* tab_contents, const WebIntentServiceData& service)
-    : ConfirmInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents),
-      profile_(Profile::FromBrowserContext(tab_contents->browser_context())),
+    InfoBarTabHelper* infobar_helper,
+    WebIntentsRegistry* registry,
+    const WebIntentServiceData& service)
+    : ConfirmInfoBarDelegate(infobar_helper),
+      registry_(registry),
       service_(service) {
 }
 
@@ -45,9 +45,7 @@ string16 RegisterIntentHandlerInfoBarDelegate::GetButtonLabel(
 }
 
 bool RegisterIntentHandlerInfoBarDelegate::Accept() {
-  WebIntentsRegistry* registry =
-      WebIntentsRegistryFactory::GetForProfile(profile_);
-  registry->RegisterIntentProvider(service_);
+  registry_->RegisterIntentProvider(service_);
   return true;
 }
 

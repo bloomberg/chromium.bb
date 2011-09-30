@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -36,7 +37,7 @@ OptionsMenuModel::OptionsMenuModel(
 
   // Populate the menu.
   // Incognito mode does not get any preferences related items.
-  if (!translate_delegate->tab_contents()->
+  if (!translate_delegate->owner()->tab_contents()->
       browser_context()->IsOffTheRecord()) {
     AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
@@ -121,7 +122,8 @@ void OptionsMenuModel::ExecuteCommand(int command_id) {
       break;
 
     case IDC_TRANSLATE_OPTIONS_ABOUT: {
-      TabContents* tab_contents = translate_infobar_delegate_->tab_contents();
+      TabContents* tab_contents =
+          translate_infobar_delegate_->owner()->tab_contents();
       if (tab_contents) {
         GURL about_url = google_util::AppendGoogleLocaleParam(
             GURL(kAboutGoogleTranslateUrl));

@@ -16,7 +16,6 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_details.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -35,13 +34,13 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   typedef QuotaPermissionContext::PermissionCallback PermissionCallback;
 
   RequestQuotaInfoBarDelegate(
-      TabContents* tab_contents,
+      InfoBarTabHelper* infobar_helper,
       ChromeQuotaPermissionContext* context,
       const GURL& origin_url,
       int64 requested_quota,
       const std::string& display_languages,
       PermissionCallback* callback)
-      : ConfirmInfoBarDelegate(tab_contents),
+      : ConfirmInfoBarDelegate(infobar_helper),
         context_(context),
         origin_url_(origin_url),
         display_languages_(display_languages),
@@ -144,9 +143,12 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
 
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  wrapper->infobar_tab_helper()->AddInfoBar(new RequestQuotaInfoBarDelegate(
-      tab_contents, this,
-      origin_url, requested_quota,
+  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+  infobar_helper->AddInfoBar(new RequestQuotaInfoBarDelegate(
+      infobar_helper,
+      this,
+      origin_url,
+      requested_quota,
       wrapper->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
       callback.release()));
 }

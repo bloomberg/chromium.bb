@@ -14,6 +14,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
@@ -30,7 +31,7 @@ namespace {
 
 class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  PluginInfoBarDelegate(TabContents* tab_contents, const string16& name);
+  PluginInfoBarDelegate(InfoBarTabHelper* infobar_helper, const string16& name);
 
  protected:
   virtual ~PluginInfoBarDelegate();
@@ -42,7 +43,6 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual std::string GetLearnMoreURL() const = 0;
 
   string16 name_;
-  TabContents* tab_contents_;
 
  private:
   // ConfirmInfoBarDelegate:
@@ -52,24 +52,22 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(PluginInfoBarDelegate);
 };
 
-PluginInfoBarDelegate::PluginInfoBarDelegate(TabContents* tab_contents,
+PluginInfoBarDelegate::PluginInfoBarDelegate(InfoBarTabHelper* infobar_helper,
                                              const string16& name)
-    : ConfirmInfoBarDelegate(tab_contents),
-      name_(name),
-      tab_contents_(tab_contents) {
+    : ConfirmInfoBarDelegate(infobar_helper),
+      name_(name) {
 }
 
 PluginInfoBarDelegate::~PluginInfoBarDelegate() {
 }
 
 bool PluginInfoBarDelegate::Cancel() {
-  tab_contents_->render_view_host()->Send(new ChromeViewMsg_LoadBlockedPlugins(
-      tab_contents_->render_view_host()->routing_id()));
+  owner()->Send(new ChromeViewMsg_LoadBlockedPlugins(owner()->routing_id()));
   return true;
 }
 
 bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  tab_contents_->OpenURL(
+  owner()->tab_contents()->OpenURL(
       google_util::AppendGoogleLocaleParam(GURL(GetLearnMoreURL())), GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       PageTransition::LINK);
@@ -90,7 +88,8 @@ string16 PluginInfoBarDelegate::GetLinkText() const {
 
 class BlockedPluginInfoBarDelegate : public PluginInfoBarDelegate {
  public:
-  BlockedPluginInfoBarDelegate(TabContents* tab_contents,
+  BlockedPluginInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                               HostContentSettingsMap* content_settings,
                                const string16& name);
 
  private:
@@ -105,13 +104,17 @@ class BlockedPluginInfoBarDelegate : public PluginInfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
   virtual std::string GetLearnMoreURL() const OVERRIDE;
 
+  HostContentSettingsMap* content_settings_;
+
   DISALLOW_COPY_AND_ASSIGN(BlockedPluginInfoBarDelegate);
 };
 
 BlockedPluginInfoBarDelegate::BlockedPluginInfoBarDelegate(
-    TabContents* tab_contents,
+    InfoBarTabHelper* infobar_helper,
+    HostContentSettingsMap* content_settings,
     const string16& utf16_name)
-    : PluginInfoBarDelegate(tab_contents, utf16_name) {
+    : PluginInfoBarDelegate(infobar_helper, utf16_name),
+      content_settings_(content_settings) {
   UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(utf16_name);
   if (name == webkit::npapi::PluginGroup::kJavaGroupName)
@@ -158,14 +161,11 @@ bool BlockedPluginInfoBarDelegate::Accept() {
 bool BlockedPluginInfoBarDelegate::Cancel() {
   UserMetrics::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->browser_context());
-  profile->GetHostContentSettingsMap()->AddExceptionForURL(
-      tab_contents_->GetURL(),
-      tab_contents_->GetURL(),
-      CONTENT_SETTINGS_TYPE_PLUGINS,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
+  content_settings_->AddExceptionForURL(owner()->tab_contents()->GetURL(),
+                                        owner()->tab_contents()->GetURL(),
+                                        CONTENT_SETTINGS_TYPE_PLUGINS,
+                                        std::string(),
+                                        CONTENT_SETTING_ALLOW);
   return PluginInfoBarDelegate::Cancel();
 }
 
@@ -185,7 +185,7 @@ bool BlockedPluginInfoBarDelegate::LinkClicked(
 
 class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate {
  public:
-  OutdatedPluginInfoBarDelegate(TabContents* tab_contents,
+  OutdatedPluginInfoBarDelegate(InfoBarTabHelper* infobar_helper,
                                 const string16& name,
                                 const GURL& update_url);
 
@@ -207,10 +207,10 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate {
 };
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
-    TabContents* tab_contents,
+    InfoBarTabHelper* infobar_helper,
     const string16& utf16_name,
     const GURL& update_url)
-    : PluginInfoBarDelegate(tab_contents, utf16_name),
+    : PluginInfoBarDelegate(infobar_helper, utf16_name),
       update_url_(update_url) {
   UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(utf16_name);
@@ -254,8 +254,8 @@ string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
 
 bool OutdatedPluginInfoBarDelegate::Accept() {
   UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
-  tab_contents_->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
-                         PageTransition::LINK);
+  owner()->tab_contents()->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
+                                   PageTransition::LINK);
   return false;
 }
 
@@ -302,8 +302,11 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 
 void PluginObserver::OnBlockedOutdatedPlugin(const string16& name,
                                              const GURL& update_url) {
-  tab_contents_->infobar_tab_helper()->AddInfoBar(update_url.is_empty() ?
+  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  infobar_helper->AddInfoBar(update_url.is_empty() ?
       static_cast<InfoBarDelegate*>(new BlockedPluginInfoBarDelegate(
-          tab_contents(), name)) :
-      new OutdatedPluginInfoBarDelegate(tab_contents(), name, update_url));
+          infobar_helper,
+          tab_contents_->profile()->GetHostContentSettingsMap(),
+          name)) :
+      new OutdatedPluginInfoBarDelegate(infobar_helper, name, update_url));
 }

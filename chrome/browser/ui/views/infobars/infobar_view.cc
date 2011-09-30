@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 #include "grit/generated_resources.h"
@@ -59,7 +59,7 @@ const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;
 const int InfoBarView::kHorizontalPadding = 6;
 
-InfoBarView::InfoBarView(TabContentsWrapper* owner, InfoBarDelegate* delegate)
+InfoBarView::InfoBarView(InfoBarTabHelper* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
       icon_(NULL),
       close_button_(NULL) {

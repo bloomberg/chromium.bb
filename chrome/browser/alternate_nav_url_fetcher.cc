@@ -24,7 +24,7 @@
 
 class AlternateNavInfoBarDelegate : public LinkInfoBarDelegate {
  public:
-  AlternateNavInfoBarDelegate(TabContents* tab_contents,
+  AlternateNavInfoBarDelegate(InfoBarTabHelper* owner,
                               const GURL& alternate_nav_url);
   virtual ~AlternateNavInfoBarDelegate();
 
@@ -36,17 +36,15 @@ class AlternateNavInfoBarDelegate : public LinkInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  TabContents* tab_contents_;
   GURL alternate_nav_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AlternateNavInfoBarDelegate);
 };
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
-    TabContents* tab_contents,
+    InfoBarTabHelper* owner,
     const GURL& alternate_nav_url)
-    : LinkInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents),
+    : LinkInfoBarDelegate(owner),
       alternate_nav_url_(alternate_nav_url) {
 }
 
@@ -75,7 +73,7 @@ string16 AlternateNavInfoBarDelegate::GetLinkText() const {
 
 bool AlternateNavInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  tab_contents_->OpenURL(
+  owner()->tab_contents()->OpenURL(
       alternate_nav_url_, GURL(), disposition,
       // Pretend the user typed this URL, so that navigating to
       // it will be the default action when it's typed again in
@@ -202,9 +200,11 @@ void AlternateNavURLFetcher::ShowInfobarIfPossible() {
     return;
   }
 
-  TabContents* tab_contents = controller_->tab_contents();
-  TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
-      infobar_tab_helper()->AddInfoBar(new AlternateNavInfoBarDelegate(
-          tab_contents, alternate_nav_url_));
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(
+          controller_->tab_contents());
+  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+  infobar_helper->AddInfoBar(
+      new AlternateNavInfoBarDelegate(infobar_helper, alternate_nav_url_));
   delete this;
 }

@@ -13,7 +13,7 @@ class TranslateInfoBarDelegate;
 
 class AfterTranslateInfoBar : public TranslateInfoBarBase {
  public:
-  AfterTranslateInfoBar(TabContentsWrapper* owner,
+  AfterTranslateInfoBar(InfoBarTabHelper* owner,
                         TranslateInfoBarDelegate* delegate);
   virtual ~AfterTranslateInfoBar();
 

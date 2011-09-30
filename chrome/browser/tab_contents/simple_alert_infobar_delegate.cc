@@ -4,15 +4,14 @@
 
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 
-#include "content/browser/tab_contents/tab_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
-    TabContents* contents,
+    InfoBarTabHelper* infobar_helper,
     gfx::Image* icon,
     const string16& message,
     bool auto_expire)
-    : ConfirmInfoBarDelegate(contents),
+    : ConfirmInfoBarDelegate(infobar_helper),
       icon_(icon),
       message_(message),
       auto_expire_(auto_expire) {

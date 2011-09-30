@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
@@ -14,11 +15,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
-    TabContents* tab_contents,
+    InfoBarTabHelper* infobar_helper,
     ProtocolHandlerRegistry* registry,
     const ProtocolHandler& handler)
-    : ConfirmInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents),
+    : ConfirmInfoBarDelegate(infobar_helper),
       registry_(registry),
       handler_(handler) {
 }
@@ -91,7 +91,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
-  tab_contents_->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
+  owner()->tab_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
       chrome::kLearnMoreRegisterProtocolHandlerURL)), GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       PageTransition::LINK);

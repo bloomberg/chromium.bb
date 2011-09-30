@@ -10,10 +10,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/stringprintf.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
@@ -168,7 +168,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-        Source<TabContentsWrapper>(contents_wrapper()));
+        Source<InfoBarTabHelper>(contents_wrapper()->infobar_tab_helper()));
   }
 
   virtual void TearDown() {
@@ -176,7 +176,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
     notification_registrar_.Remove(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-        Source<TabContentsWrapper>(contents_wrapper()));
+        Source<InfoBarTabHelper>(contents_wrapper()->infobar_tab_helper()));
 
     TabContentsWrapperTestHarness::TearDown();
   }

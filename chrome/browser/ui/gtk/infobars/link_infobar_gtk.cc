@@ -9,13 +9,13 @@
 
 // LinkInfoBarDelegate ---------------------------------------------------------
 
-InfoBar* LinkInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   return new LinkInfoBarGtk(owner, this);
 }
 
 // LinkInfoBarGtk --------------------------------------------------------------
 
-LinkInfoBarGtk::LinkInfoBarGtk(TabContentsWrapper* owner,
+LinkInfoBarGtk::LinkInfoBarGtk(InfoBarTabHelper* owner,
                                LinkInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate) {
   size_t link_offset;

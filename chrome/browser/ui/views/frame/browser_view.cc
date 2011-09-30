@@ -2566,7 +2566,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents,
   // avoid an unnecessary resize and re-layout of a TabContents.
   if (change_tab_contents)
     contents_container_->ChangeTabContents(NULL);
-  infobar_container_->ChangeTabContents(new_contents);
+  infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),

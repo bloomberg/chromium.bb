@@ -21,7 +21,7 @@ class ExtensionInfoBar : public InfoBarView,
                          public ExtensionInfoBarDelegate::DelegateObserver,
                          public views::ViewMenuDelegate {
  public:
-  ExtensionInfoBar(TabContentsWrapper* owner,
+  ExtensionInfoBar(InfoBarTabHelper* owner,
                    ExtensionInfoBarDelegate* delegate);
 
  private:

@@ -4,19 +4,17 @@
 
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 
-#include "chrome/browser/tab_contents/infobar.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/notification_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
-InfoBarTabHelper::InfoBarTabHelper(TabContentsWrapper* tab_contents)
-    : TabContentsObserver(tab_contents->tab_contents()),
-      infobars_enabled_(true),
-      tab_contents_wrapper_(tab_contents) {
+InfoBarTabHelper::InfoBarTabHelper(TabContents* tab_contents)
+    : TabContentsObserver(tab_contents),
+      infobars_enabled_(true) {
   DCHECK(tab_contents);
 }
 
@@ -43,10 +41,12 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
     }
   }
 
+  // TODO(pkasting): Consider removing InfoBarTabHelper arg from delegate
+  // constructors and instead using a setter from here.
   infobars_.push_back(delegate);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-      Source<TabContentsWrapper>(tab_contents_wrapper_),
+      Source<InfoBarTabHelper>(this),
       Details<InfoBarAddedDetails>(delegate));
 
   // Add ourselves as an observer for navigations the first time a delegate is
@@ -82,7 +82,7 @@ void InfoBarTabHelper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
   InfoBarReplacedDetails replaced_details(old_delegate, new_delegate);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
-      Source<TabContentsWrapper>(tab_contents_wrapper_),
+      Source<InfoBarTabHelper>(this),
       Details<InfoBarReplacedDetails>(&replaced_details));
 
   infobars_.erase(infobars_.begin() + i + 1);
@@ -111,7 +111,7 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
   InfoBarRemovedDetails removed_details(infobar, animate);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-      Source<TabContentsWrapper>(tab_contents_wrapper_),
+      Source<InfoBarTabHelper>(this),
       Details<InfoBarRemovedDetails>(&removed_details));
 
   infobars_.erase(infobars_.begin() + i);
@@ -133,7 +133,7 @@ void InfoBarTabHelper::OnDidBlockDisplayingInsecureContent() {
     if (GetInfoBarDelegateAt(i)->AsInsecureContentInfoBarDelegate())
       return;
   }
-  AddInfoBar(new InsecureContentInfoBarDelegate(tab_contents_wrapper_,
+  AddInfoBar(new InsecureContentInfoBarDelegate(this,
       InsecureContentInfoBarDelegate::DISPLAY));
 }
 
@@ -145,13 +145,12 @@ void InfoBarTabHelper::OnDidBlockRunningInsecureContent() {
     if (delegate) {
       if (delegate->type() != InsecureContentInfoBarDelegate::RUN) {
         ReplaceInfoBar(delegate, new InsecureContentInfoBarDelegate(
-            tab_contents_wrapper_,
-            InsecureContentInfoBarDelegate::RUN));
+            this, InsecureContentInfoBarDelegate::RUN));
       }
       return;
     }
   }
-  AddInfoBar(new InsecureContentInfoBarDelegate(tab_contents_wrapper_,
+  AddInfoBar(new InsecureContentInfoBarDelegate(this,
       InsecureContentInfoBarDelegate::RUN));
 }
 

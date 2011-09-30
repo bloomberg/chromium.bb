@@ -49,7 +49,9 @@ static const char kReaderUpdateUrl[] =
 // the buttons, and the meaning of the delegate callbacks.
 class PDFEnableAdobeReaderInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit PDFEnableAdobeReaderInfoBarDelegate(TabContents* tab_contents);
+  explicit PDFEnableAdobeReaderInfoBarDelegate(
+      InfoBarTabHelper* infobar_helper,
+      Profile* profile);
   virtual ~PDFEnableAdobeReaderInfoBarDelegate();
 
   // ConfirmInfoBarDelegate
@@ -64,15 +66,15 @@ class PDFEnableAdobeReaderInfoBarDelegate : public ConfirmInfoBarDelegate {
   void OnYes();
   void OnNo();
 
-  TabContents* tab_contents_;
+  Profile* profile_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PDFEnableAdobeReaderInfoBarDelegate);
 };
 
 PDFEnableAdobeReaderInfoBarDelegate::PDFEnableAdobeReaderInfoBarDelegate(
-    TabContents* tab_contents)
-    : ConfirmInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents) {
+    InfoBarTabHelper* infobar_helper, Profile* profile)
+    : ConfirmInfoBarDelegate(infobar_helper),
+      profile_(profile) {
   UserMetrics::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarShown"));
 }
 
@@ -89,9 +91,7 @@ InfoBarDelegate::Type
 }
 
 bool PDFEnableAdobeReaderInfoBarDelegate::Accept() {
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->browser_context());
-  profile->GetPrefs()->SetBoolean(
+  profile_->GetPrefs()->SetBoolean(
       prefs::kPluginsShowSetReaderDefaultInfobar, false);
   OnNo();
   return true;
@@ -115,9 +115,7 @@ string16 PDFEnableAdobeReaderInfoBarDelegate::GetMessageText() const {
 
 void PDFEnableAdobeReaderInfoBarDelegate::OnYes() {
   UserMetrics::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarOK"));
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->browser_context());
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile_);
   plugin_prefs->EnablePluginGroup(
       true, ASCIIToUTF16(webkit::npapi::PluginGroup::kAdobeReaderGroupName));
   plugin_prefs->EnablePluginGroup(
@@ -262,7 +260,7 @@ class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
 PDFUnsupportedFeatureInfoBarDelegate::PDFUnsupportedFeatureInfoBarDelegate(
     TabContentsWrapper* tab_contents,
     const PluginGroup* reader_group)
-    : ConfirmInfoBarDelegate(tab_contents->tab_contents()),
+    : ConfirmInfoBarDelegate(tab_contents->infobar_tab_helper()),
       tab_contents_(tab_contents),
       reader_installed_(!!reader_group),
       reader_vulnerable_(false) {
@@ -345,8 +343,8 @@ bool PDFUnsupportedFeatureInfoBarDelegate::OnYes() {
 
   if (tab_contents_->profile()->GetPrefs()->GetBoolean(
       prefs::kPluginsShowSetReaderDefaultInfobar)) {
-    InfoBarDelegate* bar =
-        new PDFEnableAdobeReaderInfoBarDelegate(tab_contents_->tab_contents());
+    InfoBarDelegate* bar = new PDFEnableAdobeReaderInfoBarDelegate(
+        tab_contents_->infobar_tab_helper(), tab_contents_->profile());
     OpenUsingReader(tab_contents_, reader_webplugininfo_, this, bar);
     return false;
   }

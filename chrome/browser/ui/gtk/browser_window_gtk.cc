@@ -1219,7 +1219,7 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
 
   // Update various elements that are interested in knowing the current
   // TabContents.
-  infobar_container_->ChangeTabContents(new_contents);
+  infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
   contents_container_->SetTab(new_contents);
   UpdateDevToolsForContents(new_contents->tab_contents());
 

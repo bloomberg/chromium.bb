@@ -61,6 +61,7 @@ class Browser;
 class Extension;
 class ExtensionProcessManager;
 class ExtensionService;
+class InfoBarTabHelper;
 class NavigationController;
 class Profile;
 class RenderViewHost;
@@ -1500,7 +1501,7 @@ class AutofillFormSubmittedObserver
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
   PersonalDataManager* pdm_;
-  TabContentsWrapper* tab_contents_;
+  InfoBarTabHelper* infobar_helper_;
 };
 
 // Allows the automation provider to wait until all the notification

@@ -9,7 +9,7 @@
 #include "views/controls/label.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
-    TabContentsWrapper* owner,
+    InfoBarTabHelper* owner,
     TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(owner, delegate),
       label_(NULL),

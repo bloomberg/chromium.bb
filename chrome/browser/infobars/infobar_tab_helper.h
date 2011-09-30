@@ -11,13 +11,13 @@
 #include "content/common/notification_registrar.h"
 
 class InfoBarDelegate;
-class TabContentsWrapper;
+class TabContents;
 
 // Per-tab info bar manager.
 class InfoBarTabHelper : public TabContentsObserver,
                          public NotificationObserver {
  public:
-  explicit InfoBarTabHelper(TabContentsWrapper* tab_contents);
+  explicit InfoBarTabHelper(TabContents* tab_contents);
   virtual ~InfoBarTabHelper();
 
   // Adds an InfoBar for the specified |delegate|.
@@ -58,6 +58,11 @@ class InfoBarTabHelper : public TabContentsObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  // Helper functions for infobars:
+  TabContents* tab_contents() {
+    return TabContentsObserver::tab_contents();
+  }
+
  private:
   void RemoveInfoBarInternal(InfoBarDelegate* delegate, bool animate);
   void RemoveAllInfoBars(bool animate);
@@ -71,9 +76,6 @@ class InfoBarTabHelper : public TabContentsObserver,
   bool infobars_enabled_;
 
   NotificationRegistrar registrar_;
-
-  // Owning TabContentsWrapper.
-  TabContentsWrapper* tab_contents_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarTabHelper);
 };

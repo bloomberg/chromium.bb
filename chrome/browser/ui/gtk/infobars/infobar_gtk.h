@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/tab_contents/infobar.h"
+#include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -21,7 +21,6 @@
 
 class CustomDrawButton;
 class GtkThemeService;
-class InfoBarDelegate;
 class MenuGtk;
 
 namespace ui {
@@ -32,7 +31,7 @@ class MenuModel;
 class InfoBarGtk : public InfoBar,
                    public NotificationObserver {
  public:
-  InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate);
+  InfoBarGtk(InfoBarTabHelper* owner, InfoBarDelegate* delegate);
   virtual ~InfoBarGtk();
 
   // Get the top level native GTK widget for this infobar.

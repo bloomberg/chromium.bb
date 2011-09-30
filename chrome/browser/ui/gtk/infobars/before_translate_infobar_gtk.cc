@@ -13,7 +13,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
-    TabContentsWrapper* owner,
+    InfoBarTabHelper* owner,
     TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(owner, delegate) {
 }

@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
@@ -31,14 +32,12 @@
 
 namespace {
 
-InfoBarDelegate* CreateInfobar(TabContents* tab_contents,
+InfoBarDelegate* CreateInfobar(InfoBarTabHelper* infobar_helper,
                                GoogleURLTracker* google_url_tracker,
                                const GURL& new_google_url) {
-  InfoBarDelegate* infobar = new GoogleURLTrackerInfoBarDelegate(tab_contents,
+  InfoBarDelegate* infobar = new GoogleURLTrackerInfoBarDelegate(infobar_helper,
       google_url_tracker, new_google_url);
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  wrapper->infobar_tab_helper()->AddInfoBar(infobar);
+  infobar_helper->AddInfoBar(infobar);
   return infobar;
 }
 
@@ -47,13 +46,12 @@ InfoBarDelegate* CreateInfobar(TabContents* tab_contents,
 // GoogleURLTrackerInfoBarDelegate --------------------------------------------
 
 GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
-    TabContents* tab_contents,
+    InfoBarTabHelper* infobar_helper,
     GoogleURLTracker* google_url_tracker,
     const GURL& new_google_url)
-    : ConfirmInfoBarDelegate(tab_contents),
+    : ConfirmInfoBarDelegate(infobar_helper),
       google_url_tracker_(google_url_tracker),
-      new_google_url_(new_google_url),
-      tab_contents_(tab_contents) {
+      new_google_url_(new_google_url) {
 }
 
 bool GoogleURLTrackerInfoBarDelegate::Accept() {
@@ -73,7 +71,7 @@ string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
 
 bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  tab_contents_->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
+  owner()->tab_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
       GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       PageTransition::LINK);
@@ -382,5 +380,12 @@ void GoogleURLTracker::ShowGoogleURLInfoBarIfNecessary(
     return;
   DCHECK(!fetched_google_url_.is_empty());
 
-  infobar_ = (*infobar_creator_)(tab_contents, this, fetched_google_url_);
+  // |tab_contents| can be NULL during tests.
+  InfoBarTabHelper* infobar_helper = NULL;
+  if (tab_contents) {
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+    infobar_helper = wrapper->infobar_tab_helper();
+  }
+  infobar_ = (*infobar_creator_)(infobar_helper, this, fetched_google_url_);
 }

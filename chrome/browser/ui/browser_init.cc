@@ -137,7 +137,8 @@ void SetAsDefaultBrowserTask::Run() {
 // The delegate for the infobar shown when Chrome is not the default browser.
 class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit DefaultBrowserInfoBarDelegate(TabContents* contents);
+  explicit DefaultBrowserInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                                         PrefService* prefs);
 
  private:
   virtual ~DefaultBrowserInfoBarDelegate();
@@ -154,8 +155,8 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  // The Profile that we restore sessions from.
-  Profile* profile_;
+  // The prefs to use.
+  PrefService* prefs_;
 
   // Whether the user clicked one of the buttons.
   bool action_taken_;
@@ -170,9 +171,10 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
-    TabContents* contents)
-    : ConfirmInfoBarDelegate(contents),
-      profile_(Profile::FromBrowserContext(contents->browser_context())),
+    InfoBarTabHelper* infobar_helper,
+    PrefService* prefs)
+    : ConfirmInfoBarDelegate(infobar_helper),
+      prefs_(prefs),
       action_taken_(false),
       should_expire_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
@@ -225,7 +227,7 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
   action_taken_ = true;
   UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.DontSetAsDefault", 1);
   // User clicked "Don't ask me again", remember that.
-  profile_->GetPrefs()->SetBoolean(prefs::kCheckDefaultBrowser, false);
+  prefs_->SetBoolean(prefs::kCheckDefaultBrowser, false);
   return true;
 }
 
@@ -253,14 +255,21 @@ void NotifyNotDefaultBrowserTask::Run() {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;  // Reached during ui tests.
-  // Don't show the info-bar if there are already info-bars showing.
+
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
   TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
-  if (!tab || tab->infobar_tab_helper()->infobar_count() > 0)
+  if (!tab)
     return;
-  tab->infobar_tab_helper()->AddInfoBar(
-      new DefaultBrowserInfoBarDelegate(tab->tab_contents()));
+
+  // Don't show the info-bar if there are already info-bars showing.
+  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+  if (infobar_helper->infobar_count() > 0)
+    return;
+
+  infobar_helper->AddInfoBar(
+      new DefaultBrowserInfoBarDelegate(infobar_helper,
+                                        tab->profile()->GetPrefs()));
 }
 
 
@@ -298,7 +307,8 @@ void CheckDefaultBrowserTask::Run() {
 // A delegate for the InfoBar shown when the previous session has crashed.
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SessionCrashedInfoBarDelegate(Profile* profile, TabContents* contents);
+  SessionCrashedInfoBarDelegate(Profile* profile,
+                                InfoBarTabHelper* infobar_helper);
 
  private:
   virtual ~SessionCrashedInfoBarDelegate();
@@ -318,8 +328,8 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
     Profile* profile,
-    TabContents* contents)
-    : ConfirmInfoBarDelegate(contents),
+    InfoBarTabHelper* infobar_helper)
+    : ConfirmInfoBarDelegate(infobar_helper),
       profile_(profile) {
 }
 
@@ -1092,7 +1102,7 @@ void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
     // so that they can restore if they want. The delegate deletes itself when
     // it is closed.
     tab->infobar_tab_helper()->AddInfoBar(
-        new SessionCrashedInfoBarDelegate(profile_, tab->tab_contents()));
+        new SessionCrashedInfoBarDelegate(profile_, tab->infobar_tab_helper()));
   }
 }
 
@@ -1119,7 +1129,7 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
   if (bad_flag) {
     tab->infobar_tab_helper()->AddInfoBar(
         new SimpleAlertInfoBarDelegate(
-            tab->tab_contents(), NULL,
+            tab->infobar_tab_helper(), NULL,
             l10n_util::GetStringFUTF16(
                 IDS_BAD_FLAGS_WARNING_MESSAGE,
                 UTF8ToUTF16(std::string("--") + bad_flag)),
@@ -1129,7 +1139,7 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
 
 class LearnMoreInfoBar : public LinkInfoBarDelegate {
  public:
-  LearnMoreInfoBar(TabContents* tab_contents,
+  LearnMoreInfoBar(InfoBarTabHelper* infobar_helper,
                    const string16& message,
                    const GURL& url);
   virtual ~LearnMoreInfoBar();
@@ -1139,18 +1149,16 @@ class LearnMoreInfoBar : public LinkInfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
  private:
-  TabContents* const tab_contents_;
   string16 message_;
   GURL learn_more_url_;
 
   DISALLOW_COPY_AND_ASSIGN(LearnMoreInfoBar);
 };
 
-LearnMoreInfoBar::LearnMoreInfoBar(TabContents* tab_contents,
+LearnMoreInfoBar::LearnMoreInfoBar(InfoBarTabHelper* infobar_helper,
                                    const string16& message,
                                    const GURL& url)
-    : LinkInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents),
+    : LinkInfoBarDelegate(infobar_helper),
       message_(message),
       learn_more_url_(url) {
 }
@@ -1170,8 +1178,8 @@ string16 LearnMoreInfoBar::GetLinkText() const {
 }
 
 bool LearnMoreInfoBar::LinkClicked(WindowOpenDisposition disposition) {
-  tab_contents_->OpenURL(learn_more_url_, GURL(), disposition,
-                         PageTransition::LINK);
+  owner()->tab_contents()->OpenURL(learn_more_url_, GURL(), disposition,
+                                   PageTransition::LINK);
   return false;
 }
 
@@ -1188,7 +1196,7 @@ void BrowserInit::LaunchWithProfile::
   string16 message = l10n_util::GetStringUTF16(
       IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE);
   tab->infobar_tab_helper()->AddInfoBar(
-      new LearnMoreInfoBar(tab->tab_contents(),
+      new LearnMoreInfoBar(tab->infobar_tab_helper(),
                            message,
                            GURL(kLearnMoreURL)));
 }
@@ -1211,8 +1219,9 @@ void BrowserInit::LaunchWithProfile::AddObsoleteSystemInfoBarIfNecessary(
     // Link to an article in the help center on minimum system requirements.
     const char* kLearnMoreURL =
         "http://www.google.com/support/chrome/bin/answer.py?answer=95411";
-    tab->infobar_tab_helper()->AddInfoBar(
-        new LearnMoreInfoBar(tab->tab_contents(),
+    InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+    infobar_helper->AddInfoBar(
+        new LearnMoreInfoBar(infobar_helper,
                              message,
                              GURL(kLearnMoreURL)));
   }

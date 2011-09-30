@@ -14,13 +14,13 @@
 
 // ConfirmInfoBarDelegate ------------------------------------------------------
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   return new ConfirmInfoBarGtk(owner, this);
 }
 
 // ConfirmInfoBarGtk -----------------------------------------------------------
 
-ConfirmInfoBarGtk::ConfirmInfoBarGtk(TabContentsWrapper* owner,
+ConfirmInfoBarGtk::ConfirmInfoBarGtk(InfoBarTabHelper* owner,
                                      ConfirmInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate),
       size_group_(NULL) {

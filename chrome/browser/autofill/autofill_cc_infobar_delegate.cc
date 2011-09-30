@@ -15,11 +15,11 @@
 #include "ui/base/resource/resource_bundle.h"
 
 AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
-    TabContents* tab_contents,
+    InfoBarTabHelper* infobar_helper,
     const CreditCard* credit_card,
     PersonalDataManager* personal_data,
     const AutofillMetrics* metric_logger)
-    : ConfirmInfoBarDelegate(tab_contents),
+    : ConfirmInfoBarDelegate(infobar_helper),
       credit_card_(credit_card),
       personal_data_(personal_data),
       metric_logger_(metric_logger),

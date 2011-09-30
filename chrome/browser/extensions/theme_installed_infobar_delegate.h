@@ -11,17 +11,19 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class ThemeService;
 class Extension;
-class Profile;
+class ExtensionService;
 class SkBitmap;
+class ThemeService;
 
 // When a user installs a theme, we display it immediately, but provide an
 // infobar allowing them to cancel.
 class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public NotificationObserver {
  public:
-  ThemeInstalledInfoBarDelegate(TabContents* tab_contents,
+  ThemeInstalledInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                                ExtensionService* extension_service,
+                                ThemeService* theme_service,
                                 const Extension* new_theme,
                                 const std::string& previous_theme_id,
                                 bool previous_using_native_theme);
@@ -53,7 +55,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
-  Profile* profile_;
+  ExtensionService* extension_service_;
   ThemeService* theme_service_;
 
   // Name of theme that's just been installed.

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -75,15 +74,17 @@ TranslateInfoBarDelegate* InfoBarDelegate::AsTranslateInfoBarDelegate() {
   return NULL;
 }
 
-InfoBarDelegate::InfoBarDelegate(TabContents* contents)
+InfoBarDelegate::InfoBarDelegate(InfoBarTabHelper* infobar_helper)
     : contents_unique_id_(0),
-      owner_(contents) {
-  if (contents)
-    StoreActiveEntryUniqueID(contents);
+      owner_(infobar_helper) {
+  if (infobar_helper)
+    StoreActiveEntryUniqueID(infobar_helper);
 }
 
-void InfoBarDelegate::StoreActiveEntryUniqueID(TabContents* contents) {
-  NavigationEntry* active_entry = contents->controller().GetActiveEntry();
+void InfoBarDelegate::StoreActiveEntryUniqueID(
+    InfoBarTabHelper* infobar_helper) {
+  NavigationEntry* active_entry =
+      infobar_helper->tab_contents()->controller().GetActiveEntry();
   contents_unique_id_ = active_entry ? active_entry->unique_id() : 0;
 }
 
@@ -95,8 +96,6 @@ bool InfoBarDelegate::ShouldExpireInternal(
 }
 
 void InfoBarDelegate::RemoveSelf() {
-  if (owner_) {
-    TabContentsWrapper::GetCurrentWrapperForContents(owner_)->
-        infobar_tab_helper()->RemoveInfoBar(this);  // Clears |owner_|.
-  }
+  if (owner_)
+    owner_->RemoveInfoBar(this);  // Clears |owner_|.
 }

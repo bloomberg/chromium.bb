@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/tab_contents/infobar.h"
-#include "chrome/browser/tab_contents/infobar_container.h"
+#include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_container.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -36,7 +36,7 @@ class InfoBarView : public InfoBar,
                     public views::ButtonListener,
                     public views::FocusChangeListener {
  public:
-  InfoBarView(TabContentsWrapper* owner, InfoBarDelegate* delegate);
+  InfoBarView(InfoBarTabHelper* owner, InfoBarDelegate* delegate);
 
   const SkPath& fill_path() const { return fill_path_; }
   const SkPath& stroke_path() const { return stroke_path_; }

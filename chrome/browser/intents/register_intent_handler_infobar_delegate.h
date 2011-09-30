@@ -11,14 +11,15 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "webkit/glue/web_intent_service_data.h"
 
-class Profile;
 class TabContents;
+class WebIntentsRegistry;
 
 // The InfoBar used to request permission for a site to be registered as an
 // Intent handler.
 class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  RegisterIntentHandlerInfoBarDelegate(TabContents* tab_contents,
+  RegisterIntentHandlerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                                       WebIntentsRegistry* registry,
                                        const WebIntentServiceData& service);
 
   // ConfirmInfoBarDelegate implementation.
@@ -30,11 +31,8 @@ class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
  private:
-  // The TabContents that contains this InfoBar. Weak pointer.
-  TabContents* tab_contents_;
-
-  // The profile associated with |tab_contents_|. Weak pointer.
-  Profile* profile_;
+  // The web intents registry to use. Weak pointer.
+  WebIntentsRegistry* registry_;
 
   // The cached intent data bundle passed up from the renderer.
   WebIntentServiceData service_;

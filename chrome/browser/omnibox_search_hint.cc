@@ -85,7 +85,7 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
 };
 
 HintInfoBar::HintInfoBar(OmniboxSearchHint* omnibox_hint)
-    : ConfirmInfoBarDelegate(omnibox_hint->tab()->tab_contents()),
+    : ConfirmInfoBarDelegate(omnibox_hint->tab()->infobar_tab_helper()),
       omnibox_hint_(omnibox_hint),
       action_taken_(false),
       should_expire_(false),

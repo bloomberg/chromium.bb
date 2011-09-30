@@ -15,7 +15,7 @@ class TranslateInfoBarDelegate;
 // use.
 class TranslateInfoBarBase : public InfoBarGtk {
  public:
-  TranslateInfoBarBase(TabContentsWrapper* owner,
+  TranslateInfoBarBase(InfoBarTabHelper* owner,
                        TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 

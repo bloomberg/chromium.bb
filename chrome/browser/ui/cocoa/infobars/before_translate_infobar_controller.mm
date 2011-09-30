@@ -36,8 +36,8 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
   [super dealloc];
 }
 
-- (id) initWithDelegate:(InfoBarDelegate *)delegate
-                  owner:(TabContentsWrapper*)owner {
+- (id)initWithDelegate:(InfoBarDelegate*)delegate
+                  owner:(InfoBarTabHelper*)owner {
   if ((self = [super initWithDelegate:delegate owner:owner])) {
     [self initializeExtraControls];
   }

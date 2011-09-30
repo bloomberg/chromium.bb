@@ -404,9 +404,16 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
       }
 
       if (error) {
-        ShowInfoBar(tab, TranslateInfoBarDelegate::CreateErrorDelegate(
-            TranslateErrors::NETWORK, tab,
-            request.source_lang, request.target_lang));
+        TabContentsWrapper* wrapper =
+            TabContentsWrapper::GetCurrentWrapperForContents(tab);
+        InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+        ShowInfoBar(
+            tab, TranslateInfoBarDelegate::CreateErrorDelegate(
+                TranslateErrors::NETWORK,
+                infobar_helper,
+                wrapper->profile()->GetPrefs(),
+                request.source_lang,
+                request.target_lang));
       } else {
         // Translate the page.
         DoTranslatePage(tab, translate_script_,
@@ -512,11 +519,12 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     return;
   }
 
+  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
   // Prompts the user if he/she wants the page translated.
-  wrapper->infobar_tab_helper()->AddInfoBar(
+  infobar_helper->AddInfoBar(
       TranslateInfoBarDelegate::CreateDelegate(
-        TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab, language_code,
-        target_lang));
+          TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar_helper,
+          wrapper->profile()->GetPrefs(), language_code, target_lang));
 }
 
 void TranslateManager::InitiateTranslationPosted(
@@ -543,9 +551,12 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
     return;
   }
 
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
   ShowInfoBar(tab_contents, TranslateInfoBarDelegate::CreateDelegate(
-      TranslateInfoBarDelegate::TRANSLATING, tab_contents,
-      source_lang, target_lang));
+      TranslateInfoBarDelegate::TRANSLATING, infobar_helper,
+      wrapper->profile()->GetPrefs(), source_lang, target_lang));
 
   if (!translate_script_.empty()) {
     DoTranslatePage(tab_contents, translate_script_, source_lang, target_lang);
@@ -636,23 +647,32 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
 
 void TranslateManager::PageTranslated(TabContents* tab,
                                       PageTranslatedDetails* details) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+  PrefService* prefs = wrapper->profile()->GetPrefs();
+
   // Create the new infobar to display.
   TranslateInfoBarDelegate* infobar;
   if (details->error_type != TranslateErrors::NONE) {
-    infobar = TranslateInfoBarDelegate::CreateErrorDelegate(details->error_type,
-        tab, details->source_language, details->target_language);
+    infobar = TranslateInfoBarDelegate::CreateErrorDelegate(
+        details->error_type,
+        infobar_helper,
+        prefs,
+        details->source_language,
+        details->target_language);
   } else if (!IsSupportedLanguage(details->source_language)) {
     // TODO(jcivelli): http://crbug.com/9390 We should change the "after
     //                 translate" infobar to support unknown as the original
     //                 language.
     UMA_HISTOGRAM_COUNTS("Translate.ServerReportedUnsupportedLanguage", 1);
     infobar = TranslateInfoBarDelegate::CreateErrorDelegate(
-        TranslateErrors::UNSUPPORTED_LANGUAGE, tab,
-        details->source_language, details->target_language);
+        TranslateErrors::UNSUPPORTED_LANGUAGE, infobar_helper,
+        prefs, details->source_language, details->target_language);
   } else {
     infobar = TranslateInfoBarDelegate::CreateDelegate(
-        TranslateInfoBarDelegate::AFTER_TRANSLATE, tab,
-        details->source_language, details->target_language);
+        TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar_helper,
+        prefs, details->source_language, details->target_language);
   }
   ShowInfoBar(tab, infobar);
 }
@@ -763,11 +783,12 @@ void TranslateManager::ShowInfoBar(TabContents* tab,
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (!wrapper)
     return;
+  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
   if (old_infobar) {
     // There already is a translate infobar, simply replace it.
-    wrapper->infobar_tab_helper()->ReplaceInfoBar(old_infobar, infobar);
+    infobar_helper->ReplaceInfoBar(old_infobar, infobar);
   } else {
-    wrapper->infobar_tab_helper()->AddInfoBar(infobar);
+    infobar_helper->AddInfoBar(infobar);
   }
 }
 

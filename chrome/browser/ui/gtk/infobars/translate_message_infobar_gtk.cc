@@ -11,7 +11,7 @@
 #include "ui/base/gtk/gtk_signal_registrar.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
-    TabContentsWrapper* owner,
+    InfoBarTabHelper* owner,
     TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(owner, delegate) {
 }

@@ -55,8 +55,9 @@ void SelectFileDialog::SelectFile(Type type,
     if (source_contents) {
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(source_contents);
-      wrapper->infobar_tab_helper()->AddInfoBar(new SimpleAlertInfoBarDelegate(
-          source_contents,
+      InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+      infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
+          infobar_helper,
           NULL,
           l10n_util::GetStringUTF16(IDS_FILE_SELECTION_DIALOG_INFOBAR),
           true));

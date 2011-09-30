@@ -4,14 +4,12 @@
 
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 
-#include "content/browser/tab_contents/tab_contents.h"
-
 bool LinkInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return true;
 }
 
-LinkInfoBarDelegate::LinkInfoBarDelegate(TabContents* contents)
-    : InfoBarDelegate(contents) {
+LinkInfoBarDelegate::LinkInfoBarDelegate(InfoBarTabHelper* infobar_helper)
+    : InfoBarDelegate(infobar_helper) {
 }
 
 LinkInfoBarDelegate::~LinkInfoBarDelegate() {

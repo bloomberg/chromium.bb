@@ -24,7 +24,7 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
-ExtensionInfoBarGtk::ExtensionInfoBarGtk(TabContentsWrapper* owner,
+ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarTabHelper* owner,
                                          ExtensionInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate),
       tracker_(this),
@@ -199,6 +199,6 @@ gboolean ExtensionInfoBarGtk::OnExpose(GtkWidget* sender,
   return FALSE;
 }
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   return new ExtensionInfoBarGtk(owner, this);
 }

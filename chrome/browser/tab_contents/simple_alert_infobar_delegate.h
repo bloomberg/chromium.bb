@@ -16,7 +16,7 @@ class TabContents;
 
 class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SimpleAlertInfoBarDelegate(TabContents* contents,
+  SimpleAlertInfoBarDelegate(InfoBarTabHelper* infobar_helper,
                              gfx::Image* icon,  // May be NULL.
                              const string16& message,
                              bool auto_expire);

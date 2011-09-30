@@ -9,13 +9,11 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 
-class TabContents;
-
 // The main purpose for this class is to popup/close the infobar when there is
 // a missing plugin.
 class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  PluginInstallerInfoBarDelegate(TabContents* tab_contents,
+  PluginInstallerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
                                  gfx::NativeWindow window);
 
  private:
@@ -32,8 +30,6 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  // The containing TabContents
-  TabContents* tab_contents_;
   gfx::NativeWindow window_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstallerInfoBarDelegate);

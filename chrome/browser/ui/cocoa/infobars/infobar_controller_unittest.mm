@@ -104,7 +104,7 @@ class LinkInfoBarControllerTest : public CocoaProfileTest,
     delegate_ = new MockLinkInfoBarDelegate(this);
     controller_.reset([[TestLinkInfoBarController alloc]
         initWithDelegate:delegate_
-                   owner:tab_contents_.get()]);
+                   owner:tab_contents_.get()->infobar_tab_helper()]);
     container_.reset(
         [[InfoBarContainerTest alloc] initWithController:controller_]);
     [controller_ setContainerController:container_];
@@ -148,7 +148,7 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
     delegate_ = new MockConfirmInfoBarDelegate(this);
     controller_.reset([[TestConfirmInfoBarController alloc]
         initWithDelegate:delegate_
-                   owner:tab_contents_.get()]);
+                   owner:tab_contents_.get()->infobar_tab_helper()]);
     container_.reset(
         [[InfoBarContainerTest alloc] initWithController:controller_]);
     [controller_ setContainerController:container_];

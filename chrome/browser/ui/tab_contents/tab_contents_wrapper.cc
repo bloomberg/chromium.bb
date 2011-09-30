@@ -256,7 +256,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));
-  infobar_tab_helper_.reset(new InfoBarTabHelper(this));
+  infobar_tab_helper_.reset(new InfoBarTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));

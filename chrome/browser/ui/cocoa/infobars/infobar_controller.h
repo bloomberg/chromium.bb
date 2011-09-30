@@ -11,8 +11,8 @@
 @class HoverCloseButton;
 @protocol InfoBarContainer;
 class InfoBarDelegate;
+class InfoBarTabHelper;
 @class InfoBarGradientView;
-class TabContentsWrapper;
 
 // A controller for an infobar in the browser window.  There is one
 // controller per infobar view.  The base InfoBarController is able to
@@ -21,7 +21,7 @@ class TabContentsWrapper;
 @interface InfoBarController : NSViewController<NSTextViewDelegate> {
  @private
   id<InfoBarContainer> containerController_;  // weak, owns us
-  TabContentsWrapper* owner_;  // weak
+  InfoBarTabHelper* owner_;  // weak
   BOOL infoBarClosing_;
 
  @protected
@@ -46,7 +46,7 @@ class TabContentsWrapper;
 
 // Initializes a new InfoBarController.
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(TabContentsWrapper*)owner;
+                 owner:(InfoBarTabHelper*)owner;
 
 // Returns YES if the infobar is owned.  If this is NO, it is not safe to call
 // any delegate functions, since they might attempt to access the owner.  Code

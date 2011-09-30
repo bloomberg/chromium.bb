@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_BACKGROUND_H_
 #pragma once
 
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "views/background.h"
 
 class InfoBarBackground : public views::Background {

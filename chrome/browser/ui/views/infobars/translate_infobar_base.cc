@@ -19,7 +19,7 @@
 
 // TranslateInfoBarDelegate ---------------------------------------------------
 
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
     case BEFORE_TRANSLATE:
@@ -44,7 +44,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
 // static
 const int TranslateInfoBarBase::kButtonInLabelSpacing = 5;
 
-TranslateInfoBarBase::TranslateInfoBarBase(TabContentsWrapper* owner,
+TranslateInfoBarBase::TranslateInfoBarBase(InfoBarTabHelper* owner,
                                            TranslateInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
       error_background_(InfoBarDelegate::WARNING_TYPE) {

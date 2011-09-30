@@ -17,6 +17,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -268,8 +269,10 @@ AutofillCCInfoBarDelegate* AutofillMetricsTest::CreateDelegate(
   CreditCard* credit_card = new CreditCard();
   if (created_card)
     *created_card = credit_card;
-  return new AutofillCCInfoBarDelegate(contents(), credit_card,
-                                       &personal_data_, metric_logger);
+  return new AutofillCCInfoBarDelegate(contents_wrapper()->infobar_tab_helper(),
+                                       credit_card,
+                                       &personal_data_,
+                                       metric_logger);
 }
 
 // Test that we log quality metrics appropriately.

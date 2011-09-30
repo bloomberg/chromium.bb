@@ -38,7 +38,8 @@ namespace {
 
 class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit KeystonePromotionInfoBarDelegate(TabContents* tab_contents);
+  KeystonePromotionInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                                   PrefService* prefs);
 
  private:
   virtual ~KeystonePromotionInfoBarDelegate();
@@ -56,8 +57,8 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  // The TabContents' profile.
-  Profile* profile_;  // weak
+  // The prefs to use.
+  PrefService* prefs_;  // weak
 
   // Whether the info bar should be dismissed on the next navigation.
   bool can_expire_;
@@ -69,9 +70,10 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
-    TabContents* tab_contents)
-    : ConfirmInfoBarDelegate(tab_contents),
-      profile_(Profile::FromBrowserContext(tab_contents->browser_context())),
+    InfoBarTabHelper* infobar_helper,
+    PrefService* prefs)
+    : ConfirmInfoBarDelegate(infobar_helper),
+      prefs_(prefs),
       can_expire_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   const int kCanExpireOnNavigationAfterMilliseconds = 8 * 1000;
@@ -111,7 +113,7 @@ bool KeystonePromotionInfoBarDelegate::Accept() {
 }
 
 bool KeystonePromotionInfoBarDelegate::Cancel() {
-  profile_->GetPrefs()->SetBoolean(prefs::kShowUpdatePromotionInfoBar, false);
+  prefs_->SetBoolean(prefs::kShowUpdatePromotionInfoBar, false);
   return true;
 }
 
@@ -192,9 +194,14 @@ bool KeystonePromotionInfoBarDelegate::Cancel() {
 
       // Only show if no other info bars are showing, because that's how the
       // default browser info bar works.
-      if (wrapper && wrapper->infobar_tab_helper()->infobar_count() == 0) {
-        wrapper->infobar_tab_helper()->AddInfoBar(
-            new KeystonePromotionInfoBarDelegate(wrapper->tab_contents()));
+      if (wrapper) {
+        InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+        if (infobar_helper->infobar_count() == 0) {
+          infobar_helper->AddInfoBar(
+              new KeystonePromotionInfoBarDelegate(
+                  infobar_helper,
+                  wrapper->profile()->GetPrefs()));
+        }
       }
     }
   }

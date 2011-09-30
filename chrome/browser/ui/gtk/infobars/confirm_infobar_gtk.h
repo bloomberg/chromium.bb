@@ -19,7 +19,7 @@ typedef struct _GtkWidget GtkWidget;
 // "Would you like to do X? [Yes] [No]                         _Learn More_ [x]"
 class ConfirmInfoBarGtk : public InfoBarGtk {
  public:
-  ConfirmInfoBarGtk(TabContentsWrapper* owner,
+  ConfirmInfoBarGtk(InfoBarTabHelper* owner,
                     ConfirmInfoBarDelegate* delegate);
 
  private:

@@ -12,13 +12,13 @@
 
 // LinkInfoBarDelegate --------------------------------------------------------
 
-InfoBar* LinkInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   return new LinkInfoBar(owner, this);
 }
 
 // LinkInfoBar ----------------------------------------------------------------
 
-LinkInfoBar::LinkInfoBar(TabContentsWrapper* owner,
+LinkInfoBar::LinkInfoBar(InfoBarTabHelper* owner,
                          LinkInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
       label_1_(NULL),

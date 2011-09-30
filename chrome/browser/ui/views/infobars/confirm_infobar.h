@@ -24,7 +24,7 @@ class TextButton;
 class ConfirmInfoBar : public InfoBarView,
                        public views::LinkListener {
  public:
-  ConfirmInfoBar(TabContentsWrapper* owner, ConfirmInfoBarDelegate* delegate);
+  ConfirmInfoBar(InfoBarTabHelper* owner, ConfirmInfoBarDelegate* delegate);
 
  private:
   virtual ~ConfirmInfoBar();

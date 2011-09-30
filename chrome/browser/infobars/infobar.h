@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
-#define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
+#ifndef CHROME_BROWSER_INFOBARS_INFOBAR_H_
+#define CHROME_BROWSER_INFOBARS_INFOBAR_H_
 #pragma once
 
 #include <utility>
@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
@@ -31,11 +31,11 @@ typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarReplacedDetails;
 #if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
 
 class InfoBarContainer;
-class TabContentsWrapper;
+class InfoBarTabHelper;
 
 class InfoBar : public ui::AnimationDelegate {
  public:
-  InfoBar(TabContentsWrapper* owner, InfoBarDelegate* delegate);
+  InfoBar(InfoBarTabHelper* owner, InfoBarDelegate* delegate);
   virtual ~InfoBar();
 
   // Platforms must define these.
@@ -119,7 +119,7 @@ class InfoBar : public ui::AnimationDelegate {
   // delete us) and closes the delegate.
   void MaybeDelete();
 
-  TabContentsWrapper* owner_;
+  InfoBarTabHelper* owner_;
   InfoBarDelegate* delegate_;
   InfoBarContainer* container_;
   ui::SlideAnimation animation_;
@@ -140,4 +140,4 @@ class InfoBar : public ui::AnimationDelegate {
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #endif
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_INFOBAR_H_
+#endif  // CHROME_BROWSER_INFOBARS_INFOBAR_H_

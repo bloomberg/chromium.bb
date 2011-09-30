@@ -22,7 +22,7 @@
 
 // ExtensionInfoBarDelegate ----------------------------------------------------
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   return new ExtensionInfoBar(owner, this);
 }
 
@@ -33,7 +33,7 @@ namespace {
 const int kMenuHorizontalMargin = 1;
 }  // namespace
 
-ExtensionInfoBar::ExtensionInfoBar(TabContentsWrapper* owner,
+ExtensionInfoBar::ExtensionInfoBar(InfoBarTabHelper* owner,
                                    ExtensionInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
       delegate_(delegate),

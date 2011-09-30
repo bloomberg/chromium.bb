@@ -19,7 +19,7 @@ class TabContents;
 class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   DownloadRequestInfoBarDelegate(
-      TabContents* tab,
+      InfoBarTabHelper* infobar_helper,
       DownloadRequestLimiter::TabDownloadState* host);
 
   void set_host(DownloadRequestLimiter::TabDownloadState* host) {

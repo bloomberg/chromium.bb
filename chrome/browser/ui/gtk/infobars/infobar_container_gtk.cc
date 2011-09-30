@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/message_loop.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"

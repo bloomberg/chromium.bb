@@ -74,10 +74,11 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   if (DownloadRequestLimiter::delegate_) {
     NotifyCallbacks(DownloadRequestLimiter::delegate_->ShouldAllowDownload());
   } else {
-    infobar_ = new DownloadRequestInfoBarDelegate(tab, this);
-    TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-    wrapper->infobar_tab_helper()->AddInfoBar(infobar_);
+    InfoBarTabHelper* infobar_helper =
+        TabContentsWrapper::GetCurrentWrapperForContents(tab)->
+            infobar_tab_helper();
+    infobar_ = new DownloadRequestInfoBarDelegate(infobar_helper, this);
+    infobar_helper->AddInfoBar(infobar_);
   }
 }
 

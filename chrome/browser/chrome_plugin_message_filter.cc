@@ -123,14 +123,12 @@ void ChromePluginMessageFilter::HandleMissingPluginStatus(
 
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       host->delegate()->GetAsTabContents());
-  if (!tcw)
-    return;
+  DCHECK(tcw);
   InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
 
   if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
     infobar_helper->AddInfoBar(
-        new PluginInstallerInfoBarDelegate(
-            host->delegate()->GetAsTabContents(), window));
+        new PluginInstallerInfoBarDelegate(infobar_helper, window));
     return;
   }
 

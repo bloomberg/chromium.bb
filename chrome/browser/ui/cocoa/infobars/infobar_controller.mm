@@ -50,7 +50,7 @@ const float kAnimateCloseDuration = 0.12;
 @synthesize delegate = delegate_;
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(TabContentsWrapper*)owner {
+                 owner:(InfoBarTabHelper*)owner {
   DCHECK(delegate);
   if ((self = [super initWithNibName:@"InfoBar"
                               bundle:base::mac::MainAppBundle()])) {
@@ -127,7 +127,7 @@ const float kAnimateCloseDuration = 0.12;
 
 - (void)removeSelf {
   DCHECK(owner_);
-  owner_->infobar_tab_helper()->RemoveInfoBar(delegate_);
+  owner_->RemoveInfoBar(delegate_);
 }
 
 - (AnimatableView*)animatableView {
@@ -444,13 +444,13 @@ const float kAnimateCloseDuration = 0.12;
 //////////////////////////////////////////////////////////////////////////
 // CreateInfoBar() implementations
 
-InfoBar* LinkInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   LinkInfoBarController* controller =
       [[LinkInfoBarController alloc] initWithDelegate:this owner:owner];
   return new InfoBar(controller, this);
 }
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   ConfirmInfoBarController* controller =
       [[ConfirmInfoBarController alloc] initWithDelegate:this owner:owner];
   return new InfoBar(controller, this);

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,30 +33,24 @@ MockWebIntentsRegistry* BuildForProfile(Profile* profile) {
 }
 
 class RegisterIntentHandlerInfoBarDelegateTest
-    : public ChromeRenderViewHostTestHarness {
+    : public TabContentsWrapperTestHarness {
  protected:
   RegisterIntentHandlerInfoBarDelegateTest()
       : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {}
 
   virtual void SetUp() {
-    ChromeRenderViewHostTestHarness::SetUp();
+    TabContentsWrapperTestHarness::SetUp();
 
     profile()->CreateWebDataService(false);
-
-    SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
-    tab_contents_.reset(new TestTabContents(profile(), instance));
-
     web_intents_registry_ = BuildForProfile(profile());
   }
 
   virtual void TearDown() {
-    tab_contents_.reset();
     web_intents_registry_ = NULL;
 
-    ChromeRenderViewHostTestHarness::TearDown();
+    TabContentsWrapperTestHarness::TearDown();
   }
 
-  scoped_ptr<TestTabContents> tab_contents_;
   MockWebIntentsRegistry* web_intents_registry_;
 
  private:
@@ -71,7 +64,10 @@ TEST_F(RegisterIntentHandlerInfoBarDelegateTest, Accept) {
   service.service_url = GURL("google.com");
   service.action = ASCIIToUTF16("http://webintents.org/share");
   service.type = ASCIIToUTF16("text/url");
-  RegisterIntentHandlerInfoBarDelegate delegate(tab_contents_.get(), service);
+  RegisterIntentHandlerInfoBarDelegate delegate(
+      contents_wrapper()->infobar_tab_helper(),
+      WebIntentsRegistryFactory::GetForProfile(profile()),
+      service);
 
   EXPECT_CALL(*web_intents_registry_, RegisterIntentProvider(service));
   delegate.Accept();

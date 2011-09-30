@@ -22,7 +22,7 @@ class MenuButton;
 class TranslateInfoBarBase : public TranslateInfoBarView,
                              public InfoBarView {
  public:
-  TranslateInfoBarBase(TabContentsWrapper* owner,
+  TranslateInfoBarBase(InfoBarTabHelper* owner,
                        TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 

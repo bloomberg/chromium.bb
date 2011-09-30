@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "build/build_config.h"
-#include "chrome/browser/tab_contents/infobar_container.h"
+#include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

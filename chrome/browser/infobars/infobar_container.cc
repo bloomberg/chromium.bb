@@ -7,12 +7,13 @@
 // TODO(pkasting): Port Mac to use this.
 #if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
 
-#include "chrome/browser/tab_contents/infobar_container.h"
+#include "chrome/browser/infobars/infobar_container.h"
 
+#include <algorithm>
+
+#include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/tab_contents/infobar.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -23,7 +24,7 @@ InfoBarContainer::Delegate::~Delegate() {
 
 InfoBarContainer::InfoBarContainer(Delegate* delegate)
     : delegate_(delegate),
-      tab_contents_(NULL),
+      tab_helper_(NULL),
       top_arrow_target_height_(InfoBar::kDefaultArrowTargetHeight) {
 }
 
@@ -32,7 +33,7 @@ InfoBarContainer::~InfoBarContainer() {
   DCHECK(infobars_.empty());
 }
 
-void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
+void InfoBarContainer::ChangeTabContents(InfoBarTabHelper* tab_helper) {
   registrar_.RemoveAll();
 
   while (!infobars_.empty()) {
@@ -42,24 +43,21 @@ void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
     infobar->Hide(false);
   }
 
-  tab_contents_ = contents;
-  if (tab_contents_) {
-    Source<TabContentsWrapper> tc_source(tab_contents_);
+  tab_helper_ = tab_helper;
+  if (tab_helper_) {
+    Source<InfoBarTabHelper> th_source(tab_helper_);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-                   tc_source);
+                   th_source);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-                   tc_source);
+                   th_source);
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
-                   tc_source);
+                   th_source);
 
-    for (size_t i = 0;
-         i < tab_contents_->infobar_tab_helper()->infobar_count();
-         ++i) {
+    for (size_t i = 0; i < tab_helper_->infobar_count(); ++i) {
       // As when we removed the infobars above, we prevent callbacks to
       // OnInfoBarAnimated() for each infobar.
       AddInfoBar(
-          tab_contents_->infobar_tab_helper()->GetInfoBarDelegateAt(i)->
-              CreateInfoBar(tab_contents_),
+          tab_helper_->GetInfoBarDelegateAt(i)->CreateInfoBar(tab_helper_),
           i, false, NO_CALLBACK);
     }
   }
@@ -131,7 +129,7 @@ void InfoBarContainer::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
       AddInfoBar(
-          Details<InfoBarAddedDetails>(details)->CreateInfoBar(tab_contents_),
+          Details<InfoBarAddedDetails>(details)->CreateInfoBar(tab_helper_),
           infobars_.size(), true, WANT_CALLBACK);
       break;
 
@@ -145,7 +143,7 @@ void InfoBarContainer::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED: {
       InfoBarReplacedDetails* replaced_details =
           Details<InfoBarReplacedDetails>(details).ptr();
-      AddInfoBar(replaced_details->second->CreateInfoBar(tab_contents_),
+      AddInfoBar(replaced_details->second->CreateInfoBar(tab_helper_),
           HideInfoBar(replaced_details->first, false), false, WANT_CALLBACK);
       break;
     }
@@ -159,7 +157,7 @@ void InfoBarContainer::Observe(int type,
 size_t InfoBarContainer::HideInfoBar(InfoBarDelegate* delegate,
                                      bool use_animation) {
   // Search for the infobar associated with |delegate|.  We cannot search for
-  // |delegate| in |tab_contents_|, because an InfoBar remains alive until its
+  // |delegate| in |tab_helper_|, because an InfoBar remains alive until its
   // close animation completes, while the delegate is removed from the tab
   // immediately.
   for (InfoBars::iterator i(infobars_.begin()); i != infobars_.end(); ++i) {

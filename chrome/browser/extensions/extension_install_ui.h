@@ -22,7 +22,7 @@ class ExtensionPermissionSet;
 class MessageLoop;
 class Profile;
 class InfoBarDelegate;
-class TabContents;
+class TabContentsWrapper;
 
 // Displays all the UI around extension installation.
 class ExtensionInstallUI : public ImageLoadingTracker::Observer {
@@ -179,7 +179,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // Returns the delegate to control the browser's info bar. This is
   // within its own function due to its platform-specific nature.
   static InfoBarDelegate* GetNewThemeInstalledInfoBarDelegate(
-      TabContents* tab_contents,
+      TabContentsWrapper* tab_contents,
       const Extension* new_theme,
       const std::string& previous_theme_id,
       bool previous_using_native_theme);

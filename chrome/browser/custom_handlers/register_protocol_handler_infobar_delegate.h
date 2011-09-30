@@ -11,13 +11,12 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 
 class ProtocolHandlerRegistry;
-class TabContents;
 
 // An InfoBar delegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission.
 class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  RegisterProtocolHandlerInfoBarDelegate(TabContents* tab_contents,
+  RegisterProtocolHandlerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
                                          ProtocolHandlerRegistry* registry,
                                          const ProtocolHandler& handler);
 
@@ -36,7 +35,6 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   // Returns a user-friendly name for the protocol of this protocol handler.
   string16 GetProtocolName(const ProtocolHandler& handler) const;
-  TabContents* tab_contents_;
   ProtocolHandlerRegistry* registry_;
   ProtocolHandler handler_;
 

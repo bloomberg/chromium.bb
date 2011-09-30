@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_INFOBAR_CONTAINER_H_
-#define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_CONTAINER_H_
+#ifndef CHROME_BROWSER_INFOBARS_INFOBAR_CONTAINER_H_
+#define CHROME_BROWSER_INFOBARS_INFOBAR_CONTAINER_H_
 #pragma once
 
 #include <vector>
@@ -15,7 +15,7 @@
 
 class InfoBar;
 class InfoBarDelegate;
-class TabContentsWrapper;
+class InfoBarTabHelper;
 
 // InfoBarContainer is a cross-platform base class to handle the visibility-
 // related aspects of InfoBars.  While InfoBars own themselves, the
@@ -46,10 +46,10 @@ class InfoBarContainer : public NotificationObserver {
   explicit InfoBarContainer(Delegate* delegate);
   virtual ~InfoBarContainer();
 
-  // Changes the TabContentsWrapper for which this container is showing
+  // Changes the InfoBarTabHelper for which this container is showing
   // infobars.  This will remove all current infobars from the container, add
   // the infobars from |contents|, and show them all.  |contents| may be NULL.
-  void ChangeTabContents(TabContentsWrapper* contents);
+  void ChangeTabContents(InfoBarTabHelper* tab_helper);
 
   // Returns the amount by which to overlap the toolbar above, and, when
   // |total_height| is non-NULL, set it to the height of the InfoBarContainer
@@ -101,7 +101,7 @@ class InfoBarContainer : public NotificationObserver {
                        const NotificationDetails& details) OVERRIDE;
 
   // Hides an InfoBar for the specified delegate, in response to a notification
-  // from the selected TabContentsWrapper.  The InfoBar's disappearance will be
+  // from the selected InfoBarTabHelper.  The InfoBar's disappearance will be
   // animated if |use_animation| is true.  The InfoBar will call back to
   // RemoveInfoBar() to remove itself once it's hidden (which may mean
   // synchronously).  Returns the position within |infobars_| the infobar was
@@ -124,7 +124,7 @@ class InfoBarContainer : public NotificationObserver {
 
   NotificationRegistrar registrar_;
   Delegate* delegate_;
-  TabContentsWrapper* tab_contents_;
+  InfoBarTabHelper* tab_helper_;
   InfoBars infobars_;
 
   // Calculated in SetMaxTopArrowHeight().
@@ -133,4 +133,4 @@ class InfoBarContainer : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainer);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_INFOBAR_CONTAINER_H_
+#endif  // CHROME_BROWSER_INFOBARS_INFOBAR_CONTAINER_H_

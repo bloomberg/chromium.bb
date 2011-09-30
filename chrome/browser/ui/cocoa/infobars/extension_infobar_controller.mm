@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
@@ -136,7 +137,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 @implementation ExtensionInfoBarController
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(TabContentsWrapper*)owner
+                 owner:(InfoBarTabHelper*)owner
                 window:(NSWindow*)window {
   if ((self = [super initWithDelegate:delegate owner:owner])) {
     window_ = window;
@@ -266,7 +267,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 
 @end
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   NSWindow* window =
       [(NSView*)owner->tab_contents()->GetContentNativeView() window];
   ExtensionInfoBarController* controller =

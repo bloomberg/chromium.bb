@@ -42,9 +42,10 @@ static void ShowGenericExtensionInstalledInfoBar(
                                  extension_name) +
       UTF8ToUTF16(" ") +
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
+  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
   InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(
-      wrapper->tab_contents(), new gfx::Image(new SkBitmap(icon)), msg, true);
-  wrapper->infobar_tab_helper()->AddInfoBar(delegate);
+      infobar_helper, new gfx::Image(new SkBitmap(icon)), msg, true);
+  infobar_helper->AddInfoBar(delegate);
 }
 
 namespace browser {

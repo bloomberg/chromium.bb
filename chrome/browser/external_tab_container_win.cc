@@ -1161,7 +1161,7 @@ void ExternalTabContainer::SetupExternalTabView() {
   external_tab_view_ = new views::View();
 
   InfoBarContainerView* info_bar_container = new InfoBarContainerView(this);
-  info_bar_container->ChangeTabContents(tab_contents_.get());
+  info_bar_container->ChangeTabContents(tab_contents_->infobar_tab_helper());
 
   views::GridLayout* layout = new views::GridLayout(external_tab_view_);
   // Give this column an identifier of 0.
