@@ -333,27 +333,61 @@ class OmniboxTest(pyauto.PyUITest):
     matches = test_utils.GetOmniboxMatchesFor(self, search_string)
     self.assertTrue(verify_string in matches[-1]['contents'])
 
-  def _InstallAndVerifySamplePackagedApp(self):
+  def _InstallAndVerifyApp(self, app_name):
     """Installs a sample packaged app and verifies the install is successful.
 
     Returns:
       The string ID of the installed app.
     """
     app_crx_file = os.path.abspath(os.path.join(self.DataDir(),
-                                   'pyauto_private', 'apps', 'countdown.crx'))
+                                   'pyauto_private', 'apps', app_name))
     installed_app_id = self.InstallApp(app_crx_file)
     self.assertTrue(installed_app_id, msg='App install failed.')
 
-  def testAppSearch(self):
+  def _VerifyAppSearch(self, app_name, search_str, app_url):
+    """Verify installed app can be searched in omnibox."""
+    self._InstallAndVerifyApp(app_name)
+    matches = test_utils.GetOmniboxMatchesFor(self, search_str)
+    self.assertTrue(matches)
+    self.assertTrue([x for x in matches if x['destination_url'] == app_url])
+
+  def testBasicAppSearch(self):
     """Verify that we can search for installed apps"""
-    self._InstallAndVerifySamplePackagedApp()
-    self.SetOmniboxText('countdown')
-    self.WaitUntilOmniboxQueryDone()
-    self.assertTrue('countdown' in self.GetOmniboxInfo().Text())
-    self.OmniboxAcceptInput()
+    app_name = 'countdown.crx'
+    search_str = 'countdown'
     app_url = 'chrome-extension:' \
               '//aeabikdlfbfeihglecobdkdflahfgcpd/launchLocalPath.html'
-    self.assertEqual(app_url, self.GetActiveTabURL().spec())
+    self._VerifyAppSearch(app_name, search_str, app_url)
+
+  def testAppNameWithSpaceSearch(self):
+    """Verify that we can search for apps with space in app name."""
+    app_name = 'cargo_bridge.crx'
+    search_str = 'Cargo Bridge'
+    app_url = 'http://www.limexgames.com/games/cargo_bridge/'
+    self._VerifyAppSearch(app_name, search_str, app_url)
+
+  def testAppNameWithNumberSearch(self):
+    """Verify that we can search for apps with number in app name."""
+    app_name = '3d_stunt_pilot.crx'
+    search_str = '3D Stunt Pilot'
+    app_url = 'chrome-extension://cjhglkpjpcechghgbkdfoofgbphpgjde/index.html'
+    self._VerifyAppSearch(app_name, search_str, app_url)
+
+  def testAppComboNameWithSpecialCharSearch(self):
+    """Verify that we can search for apps with special characters in compound
+    app name.
+    """
+    app_name = 'atari_lunar_lander.crx'
+    search_str = 'Atari - Lunar Lander'
+    app_url = 'http://chrome.atari.com/lunarlander/'
+    self._VerifyAppSearch(app_name, search_str, app_url)
+
+  def testAppSearchWithVeryLongAppName(self):
+    """Verify that we can search app with very long app name."""
+    app_name = '20_thing_I_learn_from_browser_and_web.crx'
+    search_str = '20 Things I Learned About Browsers & the Web'
+    app_url = 'http://www.20thingsilearned.com/'
+    self._VerifyAppSearch(app_name, search_str, app_url)
 
 
 if __name__ == '__main__':
