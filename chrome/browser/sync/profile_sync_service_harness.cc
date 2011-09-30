@@ -325,8 +325,11 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     }
     case WAITING_FOR_ENCRYPTION: {
       VLOG(1) << GetClientInfoString("WAITING_FOR_ENCRYPTION");
-      if (IsSynced() &&
-          IsTypeEncrypted(waiting_for_encryption_type_) &&
+      // The correctness of this if condition may depend on the ordering of its
+      // sub-expressions.  See crbug.com/98607, crbug.com/95619.
+      // TODO(rlarocque): Figure out a less brittle way of detecting this.
+      if (IsTypeEncrypted(waiting_for_encryption_type_) &&
+          IsSynced() &&
           GetLastSessionSnapshot()->num_conflicting_updates == 0) {
         // Encryption is now complete for the the type in which we were waiting.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
