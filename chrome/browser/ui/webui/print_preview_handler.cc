@@ -959,11 +959,11 @@ void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
-#if defined(OS_CHROMEOS)
-  bool enable_cloud_print_integration = true;
-#else
+#if defined(OS_MACOSX)
   bool enable_cloud_print_integration =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableCloudPrint);
+#else
+  bool enable_cloud_print_integration = true;
 #endif
   GURL gcp_url(CloudPrintURL(BrowserList::GetLastActive()->profile()).
                GetCloudPrintServiceURL());

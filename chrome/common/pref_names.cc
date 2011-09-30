@@ -613,7 +613,7 @@ const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 const char kPrintingEnabled[] = "printing.enabled";
 
 // Enable print preview once for supported platforms.
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#if defined(GOOGLE_CHROME_BUILD)
 const char kPrintingPrintPreviewEnabledOnce[] =
     "printing.print_preview_enabled_once";
 #endif

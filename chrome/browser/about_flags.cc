@@ -192,9 +192,7 @@ const Experiment kExperiments[] = {
     "cloud-print",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CLOUD_PRINT_NAME,
     IDS_FLAGS_CLOUD_PRINT_DESCRIPTION,
-    // Define this for all platforms except Chrome OS.
-    // It makes no sense to disable it on Chrome OS.
-    kOsMac | kOsWin | kOsLinux,
+    kOsMac,
     SINGLE_VALUE_TYPE(switches::kEnableCloudPrint)
   },
   // TODO(dspringer): When NaCl is on by default, remove this flag entry.

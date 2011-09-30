@@ -226,7 +226,7 @@ extern const char kEnableAutoSpellCorrect[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kDeleteTimePeriod[];
 extern const char kPrintingEnabled[];
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#if defined(GOOGLE_CHROME_BUILD)
 extern const char kPrintingPrintPreviewEnabledOnce[];
 #endif
 #if defined(TOOLKIT_USES_GTK)
