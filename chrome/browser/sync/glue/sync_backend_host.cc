@@ -826,8 +826,10 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
 
   bool setup_completed =
       profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted);
-  if (setup_completed) {
-    initialization_state_ = REFRESHING_ENCRYPTION;
+  // If setup has completed, start off in DOWNLOADING_NIGORI so that
+  // we start off by refreshing encryption.
+  if (setup_completed && initialization_state_ < DOWNLOADING_NIGORI) {
+    initialization_state_ = DOWNLOADING_NIGORI;
   }
 
   // Run initialization state machine.
@@ -845,11 +847,6 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
           true);
       break;
     case DOWNLOADING_NIGORI:
-      // Now that the syncapi is initialized, we can update the
-      // cryptographer and can handle any ON_PASSPHRASE_REQUIRED
-      // notifications that may arise.  TODO(tim): Bug 87797. We
-      // should be able to RefreshEncryption unconditionally as soon
-      // as the UI supports having this info early on.
       initialization_state_ = REFRESHING_ENCRYPTION;
       RefreshEncryption(
           base::Bind(
