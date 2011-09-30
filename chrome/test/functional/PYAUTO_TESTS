@@ -232,7 +232,6 @@
       '-ntp.NTPTest.testLaunchAppRegularTab',
       '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
       '-ntp.NTPTest.testUninstallApp',
-      '-ntp.NTPTest.testAppSearch',
     ],
 
     'linux': [  # linux != chromeos
