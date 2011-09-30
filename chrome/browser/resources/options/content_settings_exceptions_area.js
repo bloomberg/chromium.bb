@@ -115,9 +115,11 @@ cr.define('options.contentSettings', function() {
         this.editable = false;
       }
 
-      // If the source of the content setting exception is a policy, then the
-      // content settings exception is managed and the user can't edit it.
-      if (this.dataItem.source == 'policy') {
+      // If the source of the content setting exception is not the user
+      // preference, then the content settings exception is managed and the user
+      // can't edit it.
+      if (this.dataItem.source  &&
+          this.dataItem.source != 'preference') {
         this.setAttribute('managedby', this.dataItem.source);
         this.deletable = false;
         this.editable = false;
