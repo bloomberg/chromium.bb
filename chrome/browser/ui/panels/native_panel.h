@@ -62,6 +62,9 @@ class NativePanel {
   virtual FindBar* CreatePanelFindBar() = 0;
   virtual void NotifyPanelOnUserChangedTheme() = 0;
   virtual void PanelTabContentsFocused(TabContents* tab_contents) = 0;
+  virtual void PanelCut() = 0;
+  virtual void PanelCopy() = 0;
+  virtual void PanelPaste() = 0;
   virtual void DrawAttention() = 0;
   virtual bool IsDrawingAttention() const = 0;
   virtual bool PreHandlePanelKeyboardEvent(

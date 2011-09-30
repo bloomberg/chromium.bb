@@ -290,6 +290,18 @@ void PanelBrowserView::PanelTabContentsFocused(TabContents* tab_contents) {
   TabContentsFocused(tab_contents);
 }
 
+void PanelBrowserView::PanelCut() {
+  Cut();
+}
+
+void PanelBrowserView::PanelCopy() {
+  Copy();
+}
+
+void PanelBrowserView::PanelPaste() {
+  Paste();
+}
+
 void PanelBrowserView::DrawAttention() {
   // Don't draw attention for active panel.
   if (is_drawing_attention_ || focused_)

@@ -419,15 +419,15 @@ void Panel::ShowCreateChromeAppShortcutsDialog(Profile* profile,
 }
 
 void Panel::Cut() {
-  NOTIMPLEMENTED();
+  native_panel_->PanelCut();
 }
 
 void Panel::Copy() {
-  NOTIMPLEMENTED();
+  native_panel_->PanelCopy();
 }
 
 void Panel::Paste() {
-  NOTIMPLEMENTED();
+  native_panel_->PanelPaste();
 }
 
 void Panel::ToggleTabStripMode() {

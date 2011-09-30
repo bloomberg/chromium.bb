@@ -300,6 +300,18 @@ void PanelBrowserWindowGtk::PanelTabContentsFocused(TabContents* tab_contents) {
   TabContentsFocused(tab_contents);
 }
 
+void PanelBrowserWindowGtk::PanelCut() {
+  Cut();
+}
+
+void PanelBrowserWindowGtk::PanelCopy() {
+  Copy();
+}
+
+void PanelBrowserWindowGtk::PanelPaste() {
+  Paste();
+}
+
 void PanelBrowserWindowGtk::DrawAttention() {
   // Don't draw attention for active panel.
   if (is_drawing_attention_ || IsActive())

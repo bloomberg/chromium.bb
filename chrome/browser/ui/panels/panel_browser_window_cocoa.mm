@@ -212,6 +212,18 @@ void PanelBrowserWindowCocoa::PanelTabContentsFocused(
   // TODO(jianli): to be implemented.
 }
 
+void PanelBrowserWindowCocoa::PanelCut() {
+  // Nothing to do since we do not have panel-specific system menu on Mac.
+}
+
+void PanelBrowserWindowCocoa::PanelCopy() {
+  // Nothing to do since we do not have panel-specific system menu on Mac.
+}
+
+void PanelBrowserWindowCocoa::PanelPaste() {
+  // Nothing to do since we do not have panel-specific system menu on Mac.
+}
+
 // TODO(dimich) the code here looks very platform-independent. Move it to Panel.
 void PanelBrowserWindowCocoa::DrawAttention() {
   // Don't draw attention for active panel.
