@@ -245,6 +245,9 @@ TEST_F(ExtensionManifestTest, InitFromValueValid) {
   // Test with a minimum_chrome_version.
   extension = LoadAndExpectSuccess("init_valid_minimum_chrome.json");
 
+  // Test a hosted app with a minimum_chrome_version.
+  extension = LoadAndExpectSuccess("init_valid_app_minimum_chrome.json");
+
   // Verify empty permission settings are considered valid.
   LoadAndExpectSuccess("init_valid_permissions_empty.json");
 

@@ -1245,7 +1245,8 @@ bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
         *key != keys::kOptionalPermissions &&
         *key != keys::kOptionsPage &&
         *key != keys::kBackground &&
-        *key != keys::kOfflineEnabled) {
+        *key != keys::kOfflineEnabled &&
+        *key != keys::kMinimumChromeVersion) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kHostedAppsCannotIncludeExtensionFeatures, *key);
       return false;
