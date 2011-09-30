@@ -28,8 +28,4 @@ bool PepperPluginThreadDelegate::RunOnPluginThread(
   return true;
 }
 
-bool PepperPluginThreadDelegate::IsPluginThread() {
-  return core_->IsMainThread();
-}
-
 }  // namespace remoting

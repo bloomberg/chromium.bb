@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 
 namespace remoting {
 
@@ -22,7 +23,6 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
 
     virtual bool RunOnPluginThread(
         int delay_ms, void(function)(void*), void* data) = 0;
-    virtual bool IsPluginThread() = 0;
   };
 
   // Caller keeps ownership of delegate.
@@ -69,6 +69,8 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
 
   void RunTaskIf(Task* task);
   void RunClosureIf(const base::Closure& task);
+
+  base::PlatformThreadId plugin_thread_id_;
 
   // |lock_| must be acquired when accessing |delegate_|.
   base::Lock lock_;

@@ -28,8 +28,6 @@ class PepperPluginThreadDelegate : public PluginMessageLoopProxy::Delegate {
   virtual bool RunOnPluginThread(
       int delay_ms, void(CDECL function)(void*), void* data) OVERRIDE;
 
-  virtual bool IsPluginThread() OVERRIDE;
-
  private:
   pp::Core* core_;
 };

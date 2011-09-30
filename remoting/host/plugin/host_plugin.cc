@@ -70,8 +70,7 @@ class HostNPPlugin : public remoting::PluginMessageLoopProxy::Delegate {
   //              content in the window.
   HostNPPlugin(NPP instance, uint16 mode)
       : instance_(instance),
-        scriptable_object_(NULL),
-        np_thread_id_(base::PlatformThread::CurrentId()) {
+        scriptable_object_(NULL) {
   }
 
   ~HostNPPlugin() {
@@ -165,10 +164,6 @@ class HostNPPlugin : public remoting::PluginMessageLoopProxy::Delegate {
       timers_[timer_id] = task;
     }
     return true;
-  }
-
-  virtual bool IsPluginThread() OVERRIDE {
-    return np_thread_id_ == base::PlatformThread::CurrentId();
   }
 
   static void NPDelayedTaskSpringboard(NPP npp, uint32_t timer_id) {
@@ -336,7 +331,6 @@ class HostNPPlugin : public remoting::PluginMessageLoopProxy::Delegate {
   NPP instance_;
   NPObject* scriptable_object_;
 
-  base::PlatformThreadId np_thread_id_;
   std::map<uint32_t, DelayedTask> timers_;
   base::Lock timers_lock_;
 };
