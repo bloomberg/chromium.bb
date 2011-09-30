@@ -12,7 +12,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/compositor/layer.h"
 #include "views/focus/view_storage.h"
 #include "views/layout/fill_layout.h"
 #include "views/touchui/gesture_manager.h"
@@ -156,14 +155,10 @@ std::string RootView::GetClassName() const {
 }
 
 void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (layer()) {
-    layer()->SchedulePaint(rect);
-  } else {
-    gfx::Rect xrect = ConvertRectToParent(rect);
-    gfx::Rect invalid_rect = GetLocalBounds().Intersect(xrect);
-    if (!invalid_rect.IsEmpty())
-      widget_->SchedulePaintInRect(invalid_rect);
-  }
+  gfx::Rect xrect = ConvertRectToParent(rect);
+  gfx::Rect invalid_rect = GetLocalBounds().Intersect(xrect);
+  if (!invalid_rect.IsEmpty())
+    widget_->SchedulePaintInRect(invalid_rect);
 }
 
 bool RootView::OnMousePressed(const MouseEvent& event) {
@@ -420,6 +415,14 @@ void RootView::OnPaint(gfx::Canvas* canvas) {
 #if !defined(TOUCH_UI)
   canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 #endif
+}
+
+const ui::Compositor* RootView::GetCompositor() const {
+  return widget_->GetCompositor();
+}
+
+ui::Compositor* RootView::GetCompositor() {
+  return widget_->GetCompositor();
 }
 
 void RootView::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,

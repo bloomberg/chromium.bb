@@ -2453,7 +2453,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   v1->SetPaintToLayer(true);
   root_layer->DrawTree();
   EXPECT_EQ(1, ui::TestTexture::live_count());
-  EXPECT_TRUE(v1->layer() != NULL);
+  EXPECT_TRUE(v1->layer() == NULL);
   v1->SetBounds(20, 30, 140, 150);
   content_view->AddChildView(v1);
   root_layer->DrawTree();
@@ -2627,7 +2627,7 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
   EXPECT_TRUE(v1->layer());
 
   v1->SetVisible(false);
-  EXPECT_TRUE(v1->layer());
+  EXPECT_TRUE(v1->layer() == NULL);
 
   v1->SetVisible(true);
   EXPECT_TRUE(v1->layer());
@@ -2648,15 +2648,24 @@ TEST_F(ViewLayerTest, ToggleOpacityWithLayer) {
   child_view->SetBounds(50, 50, 100, 100);
   parent_view->AddChildView(child_view);
 
+  // Call SetFillsBoundsOpaquely before layer is created.
   ASSERT_TRUE(child_view->layer() == NULL);
-  child_view->SetPaintToLayer(true);
   child_view->SetFillsBoundsOpaquely(true);
+
+  child_view->SetPaintToLayer(true);
   ASSERT_TRUE(child_view->layer());
   EXPECT_EQ(
       gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
 
   child_view->SetFillsBoundsOpaquely(false);
   EXPECT_TRUE(parent_view->layer()->hole_rect().IsEmpty());
+
+  // Call SetFillsBoundsOpaquely after layer is created.
+  ASSERT_TRUE(parent_view->layer());
+
+  child_view->SetFillsBoundsOpaquely(true);
+  EXPECT_EQ(
+      gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
 }
 
 // Test that a hole in a layer always corresponds to the bounds of opaque
@@ -2713,8 +2722,8 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithOpaqueLayer) {
 
   View* child_view = new View;
   child_view->SetBounds(50, 50, 100, 100);
-  child_view->SetPaintToLayer(true);
   child_view->SetFillsBoundsOpaquely(true);
+  child_view->SetPaintToLayer(true);
   parent_view->AddChildView(child_view);
   EXPECT_EQ(
        gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());

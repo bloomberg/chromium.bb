@@ -23,6 +23,7 @@
 #include "views/accelerator.h"
 #include "views/background.h"
 #include "views/border.h"
+#include "views/layer_helper.h"
 
 using ui::OSExchangeData;
 
@@ -255,10 +256,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual bool IsEnabled() const;
 
   // This indicates that the view completely fills its bounds in an opaque
-  // color. This doesn't affect compositing but is a hint to the compositor to
-  // optimize painting.
-  // Note that this method does not implicitly create a layer if one does not
-  // already exist for the View, but is a no-op in that case.
+  // color.
+  // This doesn't affect compositing but is a hint to the compositor to optimize
+  // painting.
   void SetFillsBoundsOpaquely(bool fills_bounds_opaquely);
 
   // Transformations -----------------------------------------------------------
@@ -284,15 +284,18 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // . SetPaintToLayer(true) has been invoked.
   // View creates the Layer only when it exists in a Widget with a non-NULL
   // Compositor.
-  void SetPaintToLayer(bool paint_to_layer);
+  void SetPaintToLayer(bool value);
 
   // Sets the LayerPropertySetter for this view. A value of NULL resets the
-  // LayerPropertySetter to the default (immediate). Can only be called on a
-  // View that has a layer().
+  // LayerPropertySetter to the default (immediate).
   void SetLayerPropertySetter(LayerPropertySetter* setter);
 
-  const ui::Layer* layer() const { return layer_.get(); }
-  ui::Layer* layer() { return layer_.get(); }
+  const ui::Layer* layer() const {
+    return layer_helper_.get() ? layer_helper_->layer() : NULL;
+  }
+  ui::Layer* layer() {
+    return layer_helper_.get() ? layer_helper_->layer() : NULL;
+  }
 
   // RTL positioning -----------------------------------------------------------
 
@@ -969,11 +972,18 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns false if it cannot create a layer to which to assign the texture.
   bool SetExternalTexture(ui::Texture* texture);
 
+  // Returns the Compositor.
+  virtual const ui::Compositor* GetCompositor() const;
+  virtual ui::Compositor* GetCompositor();
+
   // Returns the offset from this view to the nearest ancestor with a layer.
   // If |ancestor| is non-NULL it is set to the nearest ancestor with a layer.
   virtual void CalculateOffsetToAncestorWithLayer(
       gfx::Point* offset,
       ui::Layer** layer_parent);
+
+  // Creates a layer for this and recurses through all descendants.
+  virtual void CreateLayerIfNecessary();
 
   // If this view has a layer, the layer is reparented to |parent_layer| and its
   // bounds is set based on |point|. If this view does not have a layer, then
@@ -983,9 +993,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void MoveLayerToParent(ui::Layer* parent_layer,
                                  const gfx::Point& point);
 
-  // Called to update the bounds of any child layers within this View's
-  // hierarchy when something happens to the hierarchy.
-  virtual void UpdateChildLayerBounds(const gfx::Point& offset);
+  // Destroys the layer on this view and all descendants. Intended for when a
+  // view is being removed or made invisible.
+  virtual void DestroyLayerRecurse();
+
+  // Resets the bounds of the layer associated with this view and all
+  // descendants.
+  virtual void UpdateLayerBounds(const gfx::Point& offset);
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
@@ -1221,26 +1235,27 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // hierarchy during time critical operations and this would not be needed.
   void set_painting_enabled(bool enabled) { painting_enabled_ = enabled; }
 
+  // Returns true if this view should paint to layer.
+  bool ShouldPaintToLayer() const;
+
   // Creates the layer and related fields for this view.
   void CreateLayer();
 
-  // Parents all un-parented layers within this view's hierarchy to this view's
-  // layer.
-  void UpdateParentLayers();
+  // Reparents any descendant layer to our current layer parent and destroys
+  // this views layer.
+  void DestroyLayerAndReparent();
 
-  // Updates the view's layer's parent. Called when a view is added to a view
-  // hierarchy, responsible for parenting the view's layer to the enclosing
-  // layer in the hierarchy.
-  void UpdateParentLayer();
-
-  // Parents this view's layer to |parent_layer|, and sets its bounds and other
-  // properties in accordance to |offset|, the view's offset from the
-  // |parent_layer|.
-  void ReparentLayer(const gfx::Point& offset, ui::Layer* parent_layer);
-
-  // Destroys the layer associated with this view, and reparents any descendants
-  // to the destroyed layer's parent.
+  // Destroys the layer and related fields of this view. This is intended for
+  // use from one of the other destroy methods, normally you shouldn't invoke
+  // this directly.
   void DestroyLayer();
+
+  // Returns the transform, or NULL if no transform has been set or the identity
+  // transform was set. Be careful in using this as it may return NULL. Use
+  // GetTransform() if you always want a non-NULL transform.
+  const ui::Transform* transform() const {
+    return layer_helper_.get() ? layer_helper_->transform() : NULL;
+  }
 
   // Input ---------------------------------------------------------------------
 
@@ -1377,9 +1392,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Accelerated painting ------------------------------------------------------
 
-  bool paint_to_layer_;
-  scoped_ptr<ui::Layer> layer_;
-  scoped_ptr<LayerPropertySetter> layer_property_setter_;
+  scoped_ptr<internal::LayerHelper> layer_helper_;
 
   // Accelerators --------------------------------------------------------------
 

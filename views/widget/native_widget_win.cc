@@ -1286,10 +1286,8 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
           hwnd(),
           gfx::Size(window_rect.Width(), window_rect.Height()));
     }
-    if (compositor_.get()) {
+    if (compositor_.get())
       delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
-      compositor_->SetRootLayer(delegate_->AsWidget()->GetRootView()->layer());
-    }
   }
 #endif
 

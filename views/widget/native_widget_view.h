@@ -74,7 +74,9 @@ class VIEWS_EXPORT NativeWidgetView : public View {
   virtual std::string GetClassName() const OVERRIDE;
   virtual void MoveLayerToParent(ui::Layer* parent_layer,
                                  const gfx::Point& point) OVERRIDE;
-  virtual void UpdateChildLayerBounds(const gfx::Point& offset) OVERRIDE;
+  virtual void DestroyLayerRecurse() OVERRIDE;
+  virtual void UpdateLayerBounds(const gfx::Point& offset) OVERRIDE;
+  virtual void CreateLayerIfNecessary() OVERRIDE;
 
   internal::NativeWidgetDelegate* delegate() {
     return native_widget_->delegate();

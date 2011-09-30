@@ -78,14 +78,6 @@ void Layer::Remove(Layer* child) {
   child->DropTextures();
 }
 
-void Layer::MoveToFront(Layer* child) {
-  std::vector<Layer*>::iterator i =
-      std::find(children_.begin(), children_.end(), child);
-  DCHECK(i != children_.end());
-  children_.erase(i);
-  children_.push_back(child);
-}
-
 bool Layer::Contains(const Layer* other) const {
   for (const Layer* parent = other; parent; parent = parent->parent()) {
     if (parent == this)
@@ -137,8 +129,6 @@ void Layer::SetVisible(bool visible) {
   visible_ = visible;
   if (!visible_)
     DropTextures();
-  if (fills_bounds_opaquely_ && parent_)
-    parent_->RecomputeHole();
 }
 
 bool Layer::ShouldDraw() {
