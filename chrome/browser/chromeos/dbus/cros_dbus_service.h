@@ -63,14 +63,14 @@ class CrosDBusService {
   // Starts the D-Bus service.
   virtual void Start() = 0;
 
-  // Gets the instance.
-  static CrosDBusService* Get(dbus::Bus* bus);
+  // Creates the instance.
+  static CrosDBusService* Create(dbus::Bus* bus);
 
  private:
-  // Gets the instance for testing. Takes the ownership of
+  // Creates the instance for testing. Takes the ownership of
   // |proxy_resolution_service|.
   friend class CrosDBusServiceTest;
-  static CrosDBusService* GetForTesting(
+  static CrosDBusService* CreateForTesting(
       dbus::Bus* bus,
       ServiceProviderInterface* proxy_resolution_service);
 };

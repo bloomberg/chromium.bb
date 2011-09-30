@@ -256,11 +256,12 @@ dbus::Response* ProxyResolutionServiceProvider::ResolveProxyHandler(
   return response;
 }
 
-ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::Get() {
+ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::Create() {
   return new ProxyResolutionServiceProvider(new ProxyResolverImpl);
 }
 
-ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::GetForTesting(
+ProxyResolutionServiceProvider*
+ProxyResolutionServiceProvider::CreateForTesting(
     ProxyResolverInterface* resolver) {
   return new ProxyResolutionServiceProvider(resolver);
 }

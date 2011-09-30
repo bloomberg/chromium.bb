@@ -66,7 +66,7 @@ class CrosDBusServiceTest : public testing::Test {
 
     // Create the cros service with the mocks injected.
     cros_dbus_service_.reset(
-        CrosDBusService::GetForTesting(
+        CrosDBusService::CreateForTesting(
             mock_bus_,
             mock_proxy_resolution_service_provider));
   }

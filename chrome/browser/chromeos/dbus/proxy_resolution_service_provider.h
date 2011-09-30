@@ -81,15 +81,15 @@ class ProxyResolutionServiceProvider
   // CrosDBusService::ServiceProviderInterface override.
   virtual void Start(scoped_refptr<dbus::ExportedObject> exported_object);
 
-  // Gets the instance.
-  static ProxyResolutionServiceProvider* Get();
+  // Creates the instance.
+  static ProxyResolutionServiceProvider* Create();
 
  private:
   explicit ProxyResolutionServiceProvider(ProxyResolverInterface *resovler);
 
-  // Gets the instance for testing. Takes the ownership of |resovler|
+  // Creates the instance for testing. Takes the ownership of |resovler|
   friend class ProxyResolutionServiceProviderTest;
-  static ProxyResolutionServiceProvider* GetForTesting(
+  static ProxyResolutionServiceProvider* CreateForTesting(
       ProxyResolverInterface* resolver);
 
   // Called from ExportedObject, when ResolveProxyHandler() is exported as

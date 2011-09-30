@@ -86,10 +86,10 @@ class CrosDBusServiceStubImpl : public CrosDBusService {
 };
 
 // static
-CrosDBusService* CrosDBusService::Get(dbus::Bus* bus) {
+CrosDBusService* CrosDBusService::Create(dbus::Bus* bus) {
   if (system::runtime_environment::IsRunningOnChromeOS()) {
     CrosDBusServiceImpl* service = new CrosDBusServiceImpl(bus);
-    service->RegisterServiceProvider(ProxyResolutionServiceProvider::Get());
+    service->RegisterServiceProvider(ProxyResolutionServiceProvider::Create());
     return service;
   } else {
     return new CrosDBusServiceStubImpl;
@@ -97,7 +97,7 @@ CrosDBusService* CrosDBusService::Get(dbus::Bus* bus) {
 }
 
 // static
-CrosDBusService* CrosDBusService::GetForTesting(
+CrosDBusService* CrosDBusService::CreateForTesting(
     dbus::Bus* bus,
     ServiceProviderInterface* proxy_resolution_service) {
   CrosDBusServiceImpl* service =  new CrosDBusServiceImpl(bus);

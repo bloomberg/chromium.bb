@@ -133,7 +133,7 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     // Create the proxy resolution service with the mock bus and the mock
     // resolver injected.
     proxy_resolution_service_ =
-        ProxyResolutionServiceProvider::GetForTesting(mock_resolver_);
+        ProxyResolutionServiceProvider::CreateForTesting(mock_resolver_);
 
     // Finally, start the service.
     proxy_resolution_service_->Start(mock_exported_object_);

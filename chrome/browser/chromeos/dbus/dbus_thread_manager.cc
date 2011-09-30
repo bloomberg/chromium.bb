@@ -31,7 +31,7 @@ DBusThreadManager::DBusThreadManager() {
   system_bus_ = new dbus::Bus(system_bus_options);
 
   // Create and start the cros D-Bus service.
-  cros_dbus_service_ = CrosDBusService::Get(system_bus_.get());
+  cros_dbus_service_ = CrosDBusService::Create(system_bus_.get());
   cros_dbus_service_->Start();
 
   // Start monitoring sensors if needed.
