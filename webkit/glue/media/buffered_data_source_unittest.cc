@@ -220,7 +220,7 @@ class BufferedDataSourceTest : public testing::Test {
       EXPECT_CALL(*loader_, Stop());
     }
 
-    data_source_->Stop(media::NewExpectedCallback());
+    data_source_->Stop(media::NewExpectedClosure());
     message_loop_->RunAllPending();
   }
 
@@ -571,7 +571,7 @@ TEST_F(BufferedDataSourceTest, AbortDuringPendingRead) {
                  base::Unretained(static_cast<BufferedDataSourceTest*>(this))));
 
   // Stop() the data source like normal.
-  data_source_->Stop(media::NewExpectedCallback());
+  data_source_->Stop(media::NewExpectedClosure());
 
   // Allow cleanup task to run.
   message_loop_->RunAllPending();

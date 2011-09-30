@@ -11,7 +11,6 @@
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
-#include "media/base/mock_task.h"
 #include "media/base/pipeline_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -144,7 +143,7 @@ TEST_F(CaptureVideoDecoderTest, Play) {
   EXPECT_CALL(*vc_manager_, AddDevice(_, _))
       .WillOnce(Return(vc_impl.get()));
   decoder_->Initialize(NULL,
-                       media::NewExpectedCallback(),
+                       media::NewExpectedClosure(),
                        NewStatisticsCallback());
   message_loop_->RunAllPending();
 
@@ -159,7 +158,7 @@ TEST_F(CaptureVideoDecoderTest, Play) {
       .WillRepeatedly(DeleteDataBuffer());
   decoder_->Seek(base::TimeDelta(),
                  media::NewExpectedStatusCB(media::PIPELINE_OK));
-  decoder_->Play(media::NewExpectedCallback());
+  decoder_->Play(media::NewExpectedClosure());
   message_loop_->RunAllPending();
 
   EXPECT_CALL(*vc_impl, StopCapture(capture_client))
@@ -167,6 +166,6 @@ TEST_F(CaptureVideoDecoderTest, Play) {
       .WillOnce(CaptureStopped(capture_client, vc_impl.get()));
   EXPECT_CALL(*vc_manager_, RemoveDevice(_, _))
       .WillOnce(Return());
-  decoder_->Stop(media::NewExpectedCallback());
+  decoder_->Stop(media::NewExpectedClosure());
   message_loop_->RunAllPending();
 }

@@ -16,7 +16,6 @@
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
-#include "media/base/mock_task.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/session/phone/videoframe.h"
@@ -35,7 +34,7 @@ using media::Limits;
 using media::MockStatisticsCallback;
 using media::MockVideoRenderer;
 using media::MockFilterHost;
-using media::NewExpectedCallback;
+using media::NewExpectedClosure;
 using media::PipelineStatistics;
 using media::PIPELINE_OK;
 using media::StatisticsCallback;
@@ -131,7 +130,7 @@ class RTCVideoDecoderTest : public testing::Test {
   void InitializeDecoderSuccessfully() {
     // Test successful initialization.
     decoder_->Initialize(NULL,
-                         NewExpectedCallback(), NewStatisticsCallback());
+                         NewExpectedClosure(), NewStatisticsCallback());
     message_loop_.RunAllPending();
   }
 

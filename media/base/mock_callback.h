@@ -11,20 +11,20 @@
 
 namespace media {
 
-// Utility class that presents a base::Closure interface (through as_closure())
-// and the ability to set a gMock expectation of being called (through
-// ExpectCall).
-class MockCallback : public base::RefCountedThreadSafe<MockCallback> {
+// Utility mock for testing methods expecting Closures.  See
+// NewExpectedClosure() below for a helper suitable when expectation order is
+// not checked (or when the expectation can be set at mock construction time).
+class MockClosure : public base::RefCountedThreadSafe<MockClosure> {
  public:
-  MockCallback();
-  virtual ~MockCallback();
+  MockClosure();
+  virtual ~MockClosure();
   MOCK_METHOD0(Run, void());
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockCallback);
+  DISALLOW_COPY_AND_ASSIGN(MockClosure);
 };
 
 // Return a callback that expects to be run once.
-base::Closure NewExpectedCallback();
+base::Closure NewExpectedClosure();
 base::Callback<void(PipelineStatus)> NewExpectedStatusCB(PipelineStatus status);
 
 }  // namespace media

@@ -164,7 +164,7 @@ class AudioRendererImplTest
     // Create and initialize the audio renderer.
     renderer_ = new TestAudioRendererImpl();
     renderer_->set_host(&host_);
-    renderer_->Initialize(decoder_, media::NewExpectedCallback());
+    renderer_->Initialize(decoder_, media::NewExpectedClosure());
 
     // Wraps delegate calls into tasks.
     delegate_caller_ = new DelegateCaller(renderer_);
@@ -228,7 +228,7 @@ TEST_F(AudioRendererImplTest, SetPlaybackRate) {
   renderer_->SetPlaybackRate(1.0f);
   renderer_->SetPlaybackRate(0.0f);
 
-  renderer_->Stop(media::NewExpectedCallback());
+  renderer_->Stop(media::NewExpectedClosure());
   WaitForIOThreadCompletion();
 }
 
@@ -238,14 +238,14 @@ TEST_F(AudioRendererImplTest, SetVolume) {
   // Tasks will be posted internally on the IO thread.
   renderer_->SetVolume(0.5f);
 
-  renderer_->Stop(media::NewExpectedCallback());
+  renderer_->Stop(media::NewExpectedClosure());
   WaitForIOThreadCompletion();
 }
 
 TEST_F(AudioRendererImplTest, Stop) {
   // Execute Stop() codepath.
   // Tasks will be posted internally on the IO thread.
-  renderer_->Stop(media::NewExpectedCallback());
+  renderer_->Stop(media::NewExpectedClosure());
 
   // Run AudioMessageFilter::Delegate methods, which can be executed after being
   // stopped. AudioRendererImpl shouldn't create any messages in this state.
@@ -299,7 +299,7 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetPlaybackRate) {
   renderer_->SetPlaybackRate(0.0f);
   renderer_->SetPlaybackRate(1.0f);
   renderer_->SetPlaybackRate(0.0f);
-  renderer_->Stop(media::NewExpectedCallback());
+  renderer_->Stop(media::NewExpectedClosure());
 }
 
 TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetVolume) {
@@ -314,7 +314,7 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetVolume) {
   // No tasks will be posted on the IO thread here since we are in
   // a "stopped" state.
   renderer_->SetVolume(0.5f);
-  renderer_->Stop(media::NewExpectedCallback());
+  renderer_->Stop(media::NewExpectedClosure());
 }
 
 TEST_F(AudioRendererImplTest, DestroyedMessageLoop_ConsumeAudioSamples) {
@@ -330,7 +330,7 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_ConsumeAudioSamples) {
   // a "stopped" state.
   scoped_refptr<media::Buffer> buffer(new media::DataBuffer(kSize));
   renderer_->ConsumeAudioSamples(buffer);
-  renderer_->Stop(media::NewExpectedCallback());
+  renderer_->Stop(media::NewExpectedClosure());
 }
 
 TEST_F(AudioRendererImplTest, UpdateEarliestEndTime) {
@@ -343,6 +343,6 @@ TEST_F(AudioRendererImplTest, UpdateEarliestEndTime) {
                                    time_now);
   int time_delta = (renderer_->earliest_end_time() - time_now).InMilliseconds();
   EXPECT_EQ(1100, time_delta);
-  renderer_->Stop(media::NewExpectedCallback());
+  renderer_->Stop(media::NewExpectedClosure());
   WaitForIOThreadCompletion();
 }

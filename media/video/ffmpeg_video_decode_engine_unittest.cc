@@ -5,7 +5,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "media/base/data_buffer.h"
-#include "media/base/mock_task.h"
 #include "media/base/pipeline.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/ffmpeg_glue.h"

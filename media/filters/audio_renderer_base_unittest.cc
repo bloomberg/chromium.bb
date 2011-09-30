@@ -68,7 +68,7 @@ class AudioRendererBaseTest : public ::testing::Test {
   virtual ~AudioRendererBaseTest() {
     // Expect a call into the subclass.
     EXPECT_CALL(*renderer_, OnStop());
-    renderer_->Stop(NewExpectedCallback());
+    renderer_->Stop(NewExpectedClosure());
   }
 
  protected:
@@ -103,7 +103,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Failed) {
   EXPECT_CALL(host_, SetError(PIPELINE_ERROR_INITIALIZATION_FAILED));
 
   // Initialize, we expect to have no reads.
-  renderer_->Initialize(decoder_, NewExpectedCallback());
+  renderer_->Initialize(decoder_, NewExpectedClosure());
   EXPECT_EQ(0u, pending_reads_);
 }
 
@@ -115,7 +115,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
       .WillOnce(Return(true));
 
   // Initialize, we shouldn't have any reads.
-  renderer_->Initialize(decoder_, NewExpectedCallback());
+  renderer_->Initialize(decoder_, NewExpectedClosure());
   EXPECT_EQ(0u, pending_reads_);
 
   // Now seek to trigger prerolling, verifying the callback hasn't been
@@ -143,7 +143,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
       .WillOnce(Return(true));
 
   // Initialize, we shouldn't have any reads.
-  renderer_->Initialize(decoder_, NewExpectedCallback());
+  renderer_->Initialize(decoder_, NewExpectedClosure());
   EXPECT_EQ(0u, pending_reads_);
 
   // Now seek to trigger prerolling, verifying the callback hasn't been
@@ -166,7 +166,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   }
 
   // Then set the renderer to play state.
-  renderer_->Play(NewExpectedCallback());
+  renderer_->Play(NewExpectedClosure());
   renderer_->SetPlaybackRate(1.0f);
   EXPECT_EQ(1.0f, renderer_->GetPlaybackRate());
 

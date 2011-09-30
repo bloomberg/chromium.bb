@@ -128,7 +128,7 @@ class SimpleDataSourceTest : public testing::Test {
   }
 
   void DestroyDataSource() {
-    data_source_->Stop(media::NewExpectedCallback());
+    data_source_->Stop(media::NewExpectedClosure());
     MessageLoop::current()->RunAllPending();
 
     data_source_ = NULL;

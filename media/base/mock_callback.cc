@@ -11,13 +11,13 @@ using ::testing::StrictMock;
 
 namespace media {
 
-MockCallback::MockCallback() {}
-MockCallback::~MockCallback() {}
+MockClosure::MockClosure() {}
+MockClosure::~MockClosure() {}
 
-base::Closure NewExpectedCallback() {
-  StrictMock<MockCallback>* callback = new StrictMock<MockCallback>();
+base::Closure NewExpectedClosure() {
+  StrictMock<MockClosure>* callback = new StrictMock<MockClosure>();
   EXPECT_CALL(*callback, Run());
-  return base::Bind(&MockCallback::Run, callback);
+  return base::Bind(&MockClosure::Run, callback);
 }
 
 class MockStatusCB : public base::RefCountedThreadSafe<MockStatusCB> {
