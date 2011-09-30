@@ -92,29 +92,18 @@ namespace gfx {
 #if defined(USE_AURA)
 typedef aura::Window* NativeView;
 typedef aura::Window* NativeWindow;
-typedef SkRegion* NativeRegion;
 #elif defined(OS_WIN)
 typedef HWND NativeView;
 typedef HWND NativeWindow;
-typedef HRGN NativeRegion;
 #elif defined(OS_MACOSX)
 typedef NSView* NativeView;
 typedef NSWindow* NativeWindow;
 #elif defined(USE_WAYLAND)
 typedef ui::WaylandWindow* NativeView;
 typedef ui::WaylandWindow* NativeWindow;
-// TODO(dnicoara) This should be replaced with a cairo region or maybe
-// a Wayland specific region
-typedef GdkRegion* NativeRegion;
-#elif defined(TOOLKIT_USES_GTK)
-typedef GdkRegion* NativeRegion;
 #elif defined(USE_X11)
 typedef GtkWidget* NativeView;
 typedef GtkWindow* NativeWindow;
-#elif defined(OS_ANDROID)
-typedef ChromeView* NativeView;
-typedef ChromeView* NativeWindow;
-typedef void* NativeRegion;
 #endif
 
 #if defined(OS_WIN)
@@ -123,6 +112,7 @@ typedef HWND NativeEditView;
 typedef HDC NativeDrawingContext;
 typedef HCURSOR NativeCursor;
 typedef HMENU NativeMenu;
+typedef HRGN NativeRegion;
 typedef IAccessible* NativeViewAccessible;
 #elif defined(OS_MACOSX)
 typedef NSFont* NativeFont;
@@ -137,6 +127,9 @@ typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef void* NativeCursor;
 typedef void* NativeMenu;
+// TODO(dnicoara) This should be replaced with a cairo region or maybe
+// a Wayland specific region
+typedef GdkRegion* NativeRegion;
 typedef void* NativeViewAccessible;
 #elif defined(TOOLKIT_USES_GTK)
 typedef PangoFontDescription* NativeFont;
@@ -144,6 +137,7 @@ typedef GtkWidget* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef GdkCursor* NativeCursor;
 typedef GtkWidget* NativeMenu;
+typedef GdkRegion* NativeRegion;
 typedef void* NativeViewAccessible;
 #elif defined(USE_AURA)
 typedef PangoFontDescription* NativeFont;
@@ -151,13 +145,17 @@ typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef void* NativeCursor;
 typedef void* NativeMenu;
+typedef SkRegion* NativeRegion;
 typedef void* NativeViewAccessible;
 #elif defined(OS_ANDROID)
 typedef void* NativeFont;
+typedef ChromeView* NativeView;
+typedef ChromeView* NativeWindow;
 typedef void* NativeEditView;
 typedef void* NativeDrawingContext;
 typedef void* NativeCursor;
 typedef void* NativeMenu;
+typedef void* NativeRegion;
 typedef void* NativeViewAccessible;
 #endif
 
