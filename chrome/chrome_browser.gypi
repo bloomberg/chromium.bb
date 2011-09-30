@@ -761,6 +761,8 @@
         'browser/chromeos/status/status_area_view.h',
         'browser/chromeos/system/name_value_pairs_parser.cc',
         'browser/chromeos/system/name_value_pairs_parser.h',
+        'browser/chromeos/system/runtime_environment.cc',
+        'browser/chromeos/system/runtime_environment.h',
         'browser/chromeos/system/statistics_provider.cc',
         'browser/chromeos/system/statistics_provider.h',
         'browser/chromeos/system/syslogs_provider.cc',
