@@ -15,7 +15,6 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
-#include "views/border.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
@@ -30,9 +29,6 @@ namespace {
 static const int kTitleTopPadding = 10;
 static const int kTitleContentPadding = 10;
 static const int kHorizontalPadding = 10;
-
-const int kBorderThickness = 1;
-const SkColor kBorderColor = SK_ColorDKGRAY;
 
 // Title font size correction.
 #if defined(CROS_FONTS_USING_BCI)
@@ -53,8 +49,6 @@ BubbleFrameView::BubbleFrameView(views::Widget* frame,
       title_(NULL),
       close_button_(NULL),
       throbber_(NULL) {
-  set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
-
   if (widget_delegate->ShouldShowWindowTitle()) {
     title_ = new views::Label(
         UTF16ToWideHack(widget_delegate->GetWindowTitle()));
@@ -150,17 +144,12 @@ void BubbleFrameView::UpdateWindowIcon() {
 }
 
 gfx::Insets BubbleFrameView::GetInsets() const {
-  gfx::Insets insets;
-  border()->GetInsets(&insets);
-
-  if (!(style_ & STYLE_FLUSH)) {
-    gfx::Insets padding(kTitleTopPadding,
-                        kHorizontalPadding,
-                        0,
-                        kHorizontalPadding);
-    insets += padding;
-  }
-  return insets;
+  return (style_ & STYLE_FLUSH) ?
+         gfx::Insets() :
+         gfx::Insets(kTitleTopPadding,
+                     kHorizontalPadding,
+                     0,
+                     kHorizontalPadding);
 }
 
 gfx::Size BubbleFrameView::GetPreferredSize() {
@@ -217,8 +206,6 @@ void BubbleFrameView::Layout() {
 }
 
 void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
-  // The border of this view creates a rectangular region for the
-  // contents, which we need to fill with the background color.
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(kBubbleWindowBackgroundColor);
@@ -229,8 +216,6 @@ void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
   path.addRect(rect);
   canvas->AsCanvasSkia()->drawPath(path, paint);
-
-  OnPaintBorder(canvas);
 }
 
 void BubbleFrameView::ButtonPressed(views::Button* sender,

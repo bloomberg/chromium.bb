@@ -69,7 +69,6 @@ views::Widget* BubbleWindow::Create(
     params.delegate = widget_delegate;
     params.parent = GTK_WIDGET(parent);
     params.bounds = gfx::Rect();
-    params.transparent = true;
     window->Init(params);
     window->SetBackgroundColor();
     return window;
@@ -82,7 +81,6 @@ views::Widget* BubbleWindow::Create(
   params.native_widget = bubble_window;
   params.parent = GTK_WIDGET(parent);
   params.bounds = gfx::Rect();
-  params.transparent = true;
   window->Init(params);
 
   return window;
