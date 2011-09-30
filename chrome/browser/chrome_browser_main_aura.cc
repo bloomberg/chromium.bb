@@ -7,7 +7,8 @@
 #include "base/logging.h"
 
 ChromeBrowserMainPartsAura::ChromeBrowserMainPartsAura(
-    const MainFunctionParams& parameters) {
+    const MainFunctionParams& parameters)
+  : ChromeBrowserMainParts(parameters) {
   NOTIMPLEMENTED();
 }
 
