@@ -3,10 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-import sys
-import unittest
-
 import pyauto_functional
 import pyauto
 
@@ -73,17 +69,33 @@ class ChromeosFileBrowserTest(pyauto.PyUITest):
     else:
       return None
 
-  def testOpenWavFile(self):
-    """Test we can open a 'wav' file from the file browser dialog."""
-    test_utils.CopyFileFromDataDirToDownloadDir(self, 'media/bear.wav')
-    file_browser = self._GetOpenDialogFileBrowser()
-    self.assertTrue(file_browser, msg='File browser failed to initialize.')
-    self.assertTrue(file_browser.Select('bear.wav'),
-                    msg='"bear.wav" does not exist.')
-    dialog = self.WaitUntilExtensionViewLoaded(view_type='EXTENSION_DIALOG')
-    file_browser.Open()
-    self.assertTrue(self.WaitUntilExtensionViewClosed(dialog),
-                    msg='File browser dialog was not closed.')
+  def testOpenMediaFiles(self):
+    """Test we can open media files from the file browser dialog."""
+    media_files = ['bear.mp4', 'bear.ogv', 'bear.wav', 'bear.webm']
+    private_media_files = ['emerge.m4a', 'sample.mp3', 'sample.m4v',
+                           'sample.ogg']
+    # TODO: .avi, .wmv are not yet (fully) supported on ChromeOS.
+    #       .mov and .3gp only work in the Media Player. Once these format are
+    #        supported on ChromeOS, include them in the test.
+    for fname in media_files:
+      test_utils.CopyFileFromDataDirToDownloadDir(self, 'media/' + fname)
+    for fname in private_media_files:
+      test_utils.CopyFileFromDataDirToDownloadDir(self, 'pyauto_private/media/' +\
+                                                  fname)
+    for fname in media_files + private_media_files:
+      file_browser = self._GetOpenDialogFileBrowser()
+      self.assertTrue(file_browser, msg='File browser failed to initialize.')
+      if file_browser.CurrentDirectory() != '/Downloads':
+        file_browser.ChangeDirectory('/Downloads/')
+      self.assertTrue(file_browser.Select(fname),
+                      msg='"%s" does not exist.' % fname)
+      dialog = self.WaitUntilExtensionViewLoaded(view_type='EXTENSION_DIALOG')
+      file_browser.Open()
+      self.assertTrue(self.WaitUntilExtensionViewClosed(dialog),
+                      msg='File browser dialog was not closed.')
+      self.assertFalse(self.IsDownloadShelfVisible(),
+                       msg='Download shelf is visible. ' +
+                           'Media format not recognized for %s.' % fname)
 
   def testSavePage(self):
     """Test we can save the current page using the file browser dialog."""
