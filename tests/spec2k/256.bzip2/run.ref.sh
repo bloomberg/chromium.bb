@@ -6,11 +6,6 @@ set -o errexit
 VERIFY=${PREFIX:-yes}
 PREFIX=${PREFIX:-}
 
-DASHDASH=""
-if [[ "${PREFIX}" =~ sel_ldr ]] ; then
-  DASHDASH="--"
-fi
-
 rm -f  *.out
 
 ${PREFIX} $1  ${DASHDASH} data/ref/input/input.source 58 > input.source.out  2>stderr1.out

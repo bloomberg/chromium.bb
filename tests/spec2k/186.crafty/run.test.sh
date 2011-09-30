@@ -4,14 +4,9 @@ set -o nounset
 set -o errexit
 
 PREFIX=${PREFIX:-}
-VERIFY=${PREFIX:-yes}
+VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
-
-DASHDASH=""
-if [[ "${PREFIX}" =~ sel_ldr ]] ; then
- DASHDASH="--"
-fi
 
 rm -f *.out
 

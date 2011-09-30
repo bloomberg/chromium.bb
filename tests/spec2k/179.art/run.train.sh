@@ -8,11 +8,6 @@ VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
 
-DASHDASH=""
-if [[ "${PREFIX}" =~ sel_ldr ]] ; then
-  DASHDASH="--"
-fi
-
 rm -f *.out *.err a10.img c756hel.in hc.img
 
 ln -s  data/train/input/* .

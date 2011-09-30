@@ -8,11 +8,6 @@ VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
 
-DASHDASH=""
-if [[ "${PREFIX}" =~ sel_ldr ]] ; then
-  DASHDASH="--"
-fi
-
 rm -f *.out all.init.ammp ammp.in ammp.out
 rm -f init_cond.run.1 init_cond.run.2 init_cond.run.3
 

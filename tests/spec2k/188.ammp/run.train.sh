@@ -8,11 +8,6 @@ VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
 
-DASHDASH=""
-if [[ "${PREFIX}" =~ sel_ldr ]] ; then
-  DASHDASH="--"
-fi
-
 rm -f *.out all.new.ammp ammp.in new.tether ammp.out
 
 ln -s  data/train/input/* .

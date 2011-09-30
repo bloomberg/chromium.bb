@@ -29,7 +29,7 @@ NNACL_NEWLIB_ROOT=$(TC_ROOT)/$(SCONS_BUILD_PLATFORM)_x86_newlib
 NNACL_NEWLIB_SDK32=../../../scons-out/nacl-x86-32
 NNACL_NEWLIB_SDK64=../../../scons-out/nacl-x86-64
 
-PNACL_ROOT=$(TC_ROOT)/pnacl_$(BUILD_PLATFORM)_$(BUILD_ARCH)_newlib
+PNACL_ROOT=$(TC_ROOT)/pnacl_$(BUILD_PLATFORM)_$(BUILD_ARCH)_$(PNACL_LIBMODE)
 ARM_ROOT=$(TC_ROOT)/linux_arm-trusted
 
 CFLAGS = $(CFLAGS_EXTRA)
@@ -220,6 +220,11 @@ BC_STRIP=$(PNACL_BIN)/pnacl-strip
 PNACL_FLAGS=--pnacl-driver-verbose
 
 PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS)
+ifeq ($(PNACL_LIBMODE), newlib)
+  PNACL_EXTRA_LIB=-lnosys
+else
+  PNACL_EXTRA_LIB=
+endif
 
 %.bc: %.c
 	$(BC_GCC) -O0 $(PNACL_FLAGS_COMMON) $< -c -o $@
@@ -233,7 +238,7 @@ PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS)
 
 $(IT).unopt.pexe: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
 	$(BC_GPP) -O0  $(PNACL_FLAGS_COMMON) $^ \
-	-static -lm -lnosys -o $@
+	-static -lm $(PNACL_EXTRA_LIB)  -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).unopt.stripped.pexe: $(IT).unopt.pexe
@@ -242,7 +247,7 @@ $(IT).unopt.stripped.pexe: $(IT).unopt.pexe
 
 $(IT).opt.pexe: $(SRC:%.c=%.o3.bc) $(CPPSRC:%.cc=%.o3.bc)
 	$(BC_GPP) -O3 $(PNACL_FLAGS_COMMON) $^ -static -lm \
-	-lnosys -o $@
+	$(PNACL_EXTRA_LIB) -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).opt.stripped.pexe: $(IT).opt.pexe

@@ -9,14 +9,12 @@ EMU_HACK=${EMU_HACK:-yes}
 
 
 
-DASHDASH=""
-if [[ "${PREFIX}" =~ sel_ldr ]] ; then
+
+if [[ "${DASHDASH}" =~ "--" ]] ; then
   if [[ $1 =~ pnacl.*x8632 ]] ; then
     # TODO(robertm): remove -c option
     # c.f.: http://code.google.com/p/nativeclient/issues/detail?id=893
     DASHDASH="-c --"
-  else
-    DASHDASH="--"
   fi
 fi
 

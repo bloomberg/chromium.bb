@@ -27,6 +27,9 @@ if [[ $(basename "$(pwd)") != "native_client" ]] ; then
 fi
 readonly NACL_ROOT="$(pwd)"
 
+readonly PNACL_LIBMODE=${LIBMODE:-newlib}
+export PNACL_LIBMODE
+
 source tools/llvm/common-tools.sh
 SetScriptPath "${NACL_ROOT}/tools/llvm/utman-test.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/test-log"

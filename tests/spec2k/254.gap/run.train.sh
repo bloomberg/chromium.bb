@@ -7,11 +7,6 @@ PREFIX=${PREFIX:-}
 VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
-DASHDASH=
-if [[ "${PREFIX}" =~ sel_ldr ]] ; then
- DASHDASH="--"
-fi
-
 rm -f  *.out
 
 ${PREFIX} $1 ${DASHDASH} -l data/all/input/ -q -m 128M \
