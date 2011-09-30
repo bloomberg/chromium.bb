@@ -731,7 +731,9 @@ bool View::HitTest(const gfx::Point& l) const {
       gfx::Path mask;
       GetHitTestMask(&mask);
       // TODO: can this use SkRegion's contains instead?
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+      NOTIMPLEMENTED();
+#elif defined(OS_WIN)
       base::win::ScopedRegion rgn(mask.CreateNativeRegion());
       return !!PtInRegion(rgn, l.x(), l.y());
 #elif defined(TOOLKIT_USES_GTK)
