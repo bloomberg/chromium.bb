@@ -313,6 +313,7 @@ void BrowserMainParts::InitializeToolkit() {
 #endif
 
 #if defined(OS_WIN)
+  // Init common control sex.
   INITCOMMONCONTROLSEX config;
   config.dwSize = sizeof(config);
   config.dwICC = ICC_WIN95_CLASSES;
