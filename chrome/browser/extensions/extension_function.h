@@ -91,9 +91,6 @@ class ExtensionFunction
   // be empty).
   virtual const std::string GetResult();
 
-  // Retrieves the results of the function as a Value.
-  base::Value* GetResultValue();
-
   // Retrieves any error string from the function.
   virtual const std::string GetError();
 
@@ -101,8 +98,8 @@ class ExtensionFunction
   void set_name(const std::string& name) { name_ = name; }
   const std::string& name() const { return name_; }
 
-  void set_profile_id(void* profile_id) { profile_id_ = profile_id; }
-  void* profile_id() const { return profile_id_; }
+  void set_profile(void* profile) { profile_ = profile; }
+  void* profile() const { return profile_; }
 
   void set_extension(const Extension* extension) { extension_ = extension; }
   const Extension* GetExtension() const { return extension_.get(); }
@@ -158,7 +155,7 @@ class ExtensionFunction
   int request_id_;
 
   // The Profile of this function's extension.
-  void* profile_id_;
+  void* profile_;
 
   // The extension that called this function.
   scoped_refptr<const Extension> extension_;
