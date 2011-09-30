@@ -42,9 +42,12 @@ cr.define('login', function() {
       if (!this.hasAttribute('tabindex'))
         this.tabIndex = 0;
 
-      this.addEventListener('click', this.handleClick_.bind(this));
+      this.addEventListener('mousedown',
+          this.handleMouseDown_.bind(this));
 
       this.enterButtonElement.addEventListener('click',
+          this.activate.bind(this));
+      this.signinButtonElement.addEventListener('click',
           this.activate.bind(this));
       this.removeUserButtonElement.addEventListener('mouseout',
           this.handleRemoveButtonMouseOut_.bind(this));
@@ -93,6 +96,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets user signin button.
+     * @type {!HTMLInputElement}
+     */
+    get signinButtonElement() {
+      return this.enterButtonElement.nextElementSibling;
+    },
+
+    /**
      * Gets remove user button.
      * @type {!HTMLInputElement}
      */
@@ -119,11 +130,14 @@ cr.define('login', function() {
         this.imageElement.title = userDict.name;
         this.enterButtonElement.hidden = false;
         this.passwordElement.hidden = true;
+        this.signinButtonElement.hidden = true;
       } else {
+        var needSignin = this.needGaiaSignin;
         this.imageElement.title = userDict.emailAddress;
-        this.passwordElement.hidden = false;
-        this.passwordElement.setAttribute('aria-label', userDict.emailAddress);
         this.enterButtonElement.hidden = true;
+        this.passwordElement.hidden = needSignin;
+        this.passwordElement.setAttribute('aria-label', userDict.emailAddress);
+        this.signinButtonElement.hidden = !needSignin;
       }
     },
 
@@ -135,11 +149,24 @@ cr.define('login', function() {
     },
 
     /**
+     * Whether Gaia signin is required for a non-guest user.
+     */
+    get needGaiaSignin() {
+      // Gaia signin is performed if we are using gaia extenstion for signin,
+      // the user has an invalid oauth token and device is online.
+      return localStrings.getString('authType') == 'ext' &&
+          this.user.oauthTokenStatus != OAUTH_TOKEN_STATUS_VALID &&
+          window.navigator.onLine;
+    },
+
+    /**
      * Gets main input element.
      */
     get mainInput() {
       if (this.isGuest) {
         return this.enterButtonElement;
+      } else if (!this.signinButtonElement.hidden) {
+        return this.signinButtonElement;
       } else {
         return this.passwordElement;
       }
@@ -170,6 +197,11 @@ cr.define('login', function() {
      * Focuses on input element.
      */
     focusInput: function() {
+      if (!this.isGuest) {
+        var needSignin = this.needGaiaSignin;
+        this.signinButtonElement.hidden = !needSignin;
+        this.passwordElement.hidden = needSignin;
+      }
       this.mainInput.focus();
     },
 
@@ -180,14 +212,23 @@ cr.define('login', function() {
     activate: function() {
       if (this.isGuest) {
         chrome.send('launchIncognito');
-      } else {
-        if (!this.passwordElement.value)
+        this.parentNode.rowEnabled = false;
+      } else if (!this.signinButtonElement.hidden) {
+        // Switch to Gaia signin.
+        if (!this.needGaiaSignin) {
+          // Network may go offline in time period between the pod is focused
+          // and the button is pressed, in which case fallback to offline login.
+          this.focusInput();
           return false;
-
+        }
+        this.parentNode.showSigninUI(this.user.emailAddress);
+      } else if (!this.passwordElement.value) {
+        return false;
+      } else {
         chrome.send('authenticateUser',
             [this.user.emailAddress, this.passwordElement.value]);
+        this.parentNode.rowEnabled = false;
       }
-      this.parentNode.rowEnabled = false;
 
       return true;
     },
@@ -222,12 +263,20 @@ cr.define('login', function() {
     },
 
     /**
-     * Handles click event.
+     * Handles mousedown event.
      */
-    handleClick_: function(e) {
+    handleMouseDown_: function(e) {
+      if (!this.parentNode.rowEnabled)
+        return;
+      var handled = false;
       if (e.target == this.removeUserButtonElement) {
         this.handleRemoveButtonClick_(e);
-
+        handled = true;
+      } else if (!this.signinButtonElement.hidden) {
+        this.parentNode.showSigninUI(this.user.emailAddress);
+        handled = true;
+      }
+      if (handled) {
         // Prevent default so that we don't trigger 'focus' event.
         e.preventDefault();
       }
@@ -383,35 +432,22 @@ cr.define('login', function() {
         return;
 
       if (pod) {
-        if (pod.isGuest ||
-            localStrings.getString('authType') != 'ext' ||
-            pod.user.oauthTokenStatus == OAUTH_TOKEN_STATUS_VALID ||
-            !window.navigator.onLine) {
-          // Focus the pod if it is guest pod, or
-          // we are not using gaia ext for signin or
-          // the user has a valid oauth token or
-          // device is offline.
-          for (var i = 0; i < this.pods.length; ++i) {
-            this.pods[i].activeRemoveButton = false;
-            if (this.pods[i] == pod) {
-              pod.classList.remove("faded");
-              pod.classList.add("focused");
-              pod.tabIndex = -1;  // Make it not keyboard focusable.
-            } else {
-              this.pods[i].classList.remove('focused');
-              this.pods[i].classList.add('faded');
-              this.pods[i].tabIndex = 0;
-            }
+        for (var i = 0; i < this.pods.length; ++i) {
+          this.pods[i].activeRemoveButton = false;
+          if (this.pods[i] == pod) {
+            pod.classList.remove("faded");
+            pod.classList.add("focused");
+            pod.tabIndex = -1;  // Make it not keyboard focusable.
+          } else {
+            this.pods[i].classList.remove('focused');
+            this.pods[i].classList.add('faded');
+            this.pods[i].tabIndex = 0;
           }
-          pod.focusInput();
-
-          this.focusedPod_ = pod;
-          this.scrollPodIntoView(pod);
-        } else {
-          // Otherwise, switch to Gaia signin.
-          Oobe.showSigninUI(pod.user.emailAddress);
-          this.focusPod();  // Clears current focus.
         }
+        pod.focusInput();
+
+        this.focusedPod_ = pod;
+        this.scrollPodIntoView(pod);
       } else {
         for (var i = 0; i < this.pods.length; ++i) {
           this.pods[i].classList.remove('focused');
@@ -478,6 +514,15 @@ cr.define('login', function() {
     },
 
     /**
+     * Shows signin UI.
+     * @param {string} email Email for signin UI.
+     */
+    showSigninUI: function(email) {
+      this.rowEnabled = false;
+      Oobe.showSigninUI(email);
+    },
+
+    /**
      * Handler of click event.
      * @param {Event} e Click Event object.
      * @private
@@ -526,10 +571,7 @@ cr.define('login', function() {
     handleKeyDown: function(e) {
       if (!this.rowEnabled)
         return;
-      var editing = false;
-      if (e.target.tagName == 'INPUT' && e.target.value)
-        editing = true;
-
+      var editing = e.target.tagName == 'INPUT' && e.target.value;
       switch (e.keyIdentifier) {
         case 'Left':
           if (!editing) {

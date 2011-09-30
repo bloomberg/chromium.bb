@@ -119,7 +119,8 @@ podrow {
   outline: none;
 }
 
-.pod .enter-guest-button {
+.pod .enter-guest-button,
+.pod .signin-button {
   box-sizing: border-box;
   height: 24px;
   width: 94px;
@@ -131,7 +132,8 @@ podrow {
   visibility: hidden;
 }
 
-.pod.focused .enter-guest-button {
+.pod.focused .enter-guest-button,
+.pod.focused .signin-button {
   opacity: 1;
   visibility: visible;
 }
