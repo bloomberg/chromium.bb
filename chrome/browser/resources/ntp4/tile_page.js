@@ -192,7 +192,16 @@ cr.define('ntp4', function() {
         } else if (this.dragClone.hidden) {
           this.finalizeDrag_();
         } else {
-          this.dragClone.classList.add('dropped-on-other-page');
+          // The CSS3 transitions spec intentionally leaves it up to individual
+          // user agents to determine when styles should be applied. On some
+          // platforms (at the moment, Windows), when you apply both classes
+          // immediately a transition may not occur correctly. That's why we're
+          // using a setTimeout here to queue adding the class until the
+          // previous class (currently: .placing) sets up a transition.
+          // http://dev.w3.org/csswg/css3-transitions/#starting
+          window.setTimeout(function() {
+            this.dragClone.classList.add('dropped-on-other-page');
+          }.bind(this), 0);
         }
       }
 
