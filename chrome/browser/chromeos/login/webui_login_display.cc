@@ -44,8 +44,6 @@ void WebUILoginDisplay::Destroy() {
   delegate_ = NULL;
 }
 
-  // TODO(rharrison): Add mechanism to pass in the show_guest and show_new_user
-  // values.
 void WebUILoginDisplay::Init(const std::vector<UserManager::User>& users,
                              bool show_guest,
                              bool show_new_user) {
@@ -95,7 +93,6 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
 }
 
 void WebUILoginDisplay::SelectPod(int index) {
-  // TODO(rharrison): Figure out what we should be doing here.
 }
 
 void WebUILoginDisplay::ShowError(int error_msg_id,
@@ -145,28 +142,33 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
 void WebUILoginDisplay::CompleteLogin(const std::string& username,
                                       const std::string& password) {
   DCHECK(delegate_);
-  delegate_->CompleteLogin(username, password);
+  if (delegate_)
+    delegate_->CompleteLogin(username, password);
 }
 
 void WebUILoginDisplay::Login(const std::string& username,
                               const std::string& password) {
   DCHECK(delegate_);
-  delegate_->Login(username, password);
+  if (delegate_)
+    delegate_->Login(username, password);
 }
 
 void WebUILoginDisplay::LoginAsGuest() {
   DCHECK(delegate_);
-  delegate_->LoginAsGuest();
+  if (delegate_)
+    delegate_->LoginAsGuest();
 }
 
 void WebUILoginDisplay::FixCaptivePortal() {
   DCHECK(delegate_);
-  delegate_->FixCaptivePortal();
+  if (delegate_)
+    delegate_->FixCaptivePortal();
 }
 
 void WebUILoginDisplay::CreateAccount() {
   DCHECK(delegate_);
-  delegate_->CreateAccount();
+  if (delegate_)
+    delegate_->CreateAccount();
 }
 
 void WebUILoginDisplay::RemoveUser(const std::string& username) {
@@ -174,7 +176,8 @@ void WebUILoginDisplay::RemoveUser(const std::string& username) {
 }
 
 void WebUILoginDisplay::ShowEnterpriseEnrollmentScreen() {
-  delegate_->OnStartEnterpriseEnrollment();
+  if (delegate_)
+    delegate_->OnStartEnterpriseEnrollment();
 }
 
 void WebUILoginDisplay::SetWebUIHandler(
