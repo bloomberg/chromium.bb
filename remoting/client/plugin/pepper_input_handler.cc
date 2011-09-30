@@ -40,7 +40,7 @@ void PepperInputHandler::HandleCharacterEvent(
 
 void PepperInputHandler::HandleMouseMoveEvent(
     const pp::MouseInputEvent& event) {
-  gfx::Point p(event.GetPosition().x(), event.GetPosition().y());
+  SkIPoint p(SkIPoint::Make(event.GetPosition().x(), event.GetPosition().y()));
   // Pepper gives co-ordinates in the plugin instance's co-ordinate system,
   // which may be different from the host desktop's co-ordinate system.
   double horizontal_ratio = view_->GetHorizontalScaleRatio();

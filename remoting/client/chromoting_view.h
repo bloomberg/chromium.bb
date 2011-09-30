@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
-#include "ui/gfx/point.h"
 
 class MessageLoop;
 

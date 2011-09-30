@@ -102,7 +102,7 @@ class VideoFrameBuffer {
       int width = CGDisplayPixelsWide(mainDevice);
       int height = CGDisplayPixelsHigh(mainDevice);
       if (width != size_.width() || height != size_.height()) {
-        size_.SetSize(width, height);
+        size_.set(width, height);
         bytes_per_row_ = width * sizeof(uint32_t);
         size_t buffer_size = width * height * sizeof(uint32_t);
         ptr_.reset(new uint8[buffer_size]);
@@ -110,14 +110,14 @@ class VideoFrameBuffer {
     }
   }
 
-  gfx::Size size() const { return size_; }
+  SkISize size() const { return size_; }
   int bytes_per_row() const { return bytes_per_row_; }
   uint8* ptr() const { return ptr_.get(); }
 
   void set_needs_update() { needs_update_ = true; }
 
  private:
-  gfx::Size size_;
+  SkISize size_;
   int bytes_per_row_;
   scoped_array<uint8> ptr_;
   bool needs_update_;
@@ -138,11 +138,11 @@ class CapturerMac : public Capturer {
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void ClearInvalidRegion() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void InvalidateScreen(const gfx::Size& size) OVERRIDE;
+  virtual void InvalidateScreen(const SkISize& size) OVERRIDE;
   virtual void InvalidateFullScreen() OVERRIDE;
   virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback)
       OVERRIDE;
-  virtual const gfx::Size& size_most_recent() const OVERRIDE;
+  virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
   void GlBlitFast(const VideoFrameBuffer& buffer, const SkRegion& region);
@@ -262,7 +262,7 @@ void CapturerMac::ScreenConfigurationChanged() {
   CGDirectDisplayID mainDevice = CGMainDisplayID();
   int width = CGDisplayPixelsWide(mainDevice);
   int height = CGDisplayPixelsHigh(mainDevice);
-  InvalidateScreen(gfx::Size(width, height));
+  InvalidateScreen(SkISize::Make(width, height));
 
   if (!CGDisplayUsesOpenGLAcceleration(mainDevice)) {
     VLOG(3) << "OpenGL support not available.";
@@ -303,7 +303,7 @@ void CapturerMac::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void CapturerMac::InvalidateScreen(const gfx::Size& size) {
+void CapturerMac::InvalidateScreen(const SkISize& size) {
   helper_.InvalidateScreen(size);
 }
 
@@ -346,8 +346,7 @@ void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
         (current_buffer.size().height() - 1) * current_buffer.bytes_per_row();
   }
 
-  data = new CaptureData(planes, gfx::Size(current_buffer.size()),
-                         pixel_format());
+  data = new CaptureData(planes, current_buffer.size(), pixel_format());
   data->mutable_dirty_region() = region;
 
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
@@ -473,7 +472,7 @@ void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
   }
 }
 
-const gfx::Size& CapturerMac::size_most_recent() const {
+const SkISize& CapturerMac::size_most_recent() const {
   return helper_.size_most_recent();
 }
 

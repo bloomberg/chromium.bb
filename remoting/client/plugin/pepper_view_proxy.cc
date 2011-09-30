@@ -146,7 +146,7 @@ void PepperViewProxy::ReleaseFrame(media::VideoFrame* frame) {
 }
 
 void PepperViewProxy::OnPartialFrameOutput(media::VideoFrame* frame,
-                                           UpdatedRects* rects,
+                                           RectVector* rects,
                                            Task* done) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
     plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(

@@ -8,7 +8,6 @@
 #include "remoting/base/encoder.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "ui/gfx/size.h"
 
 namespace remoting {
 
@@ -62,7 +61,7 @@ class EncoderRowBased : public Encoder {
   scoped_ptr<DataAvailableCallback> callback_;
 
   // The most recent screen size.
-  gfx::Size screen_size_;
+  SkISize screen_size_;
 
   int packet_size_;
 };

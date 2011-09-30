@@ -33,7 +33,7 @@ EncoderVp8::EncoderVp8()
       active_map_width_(0),
       active_map_height_(0),
       last_timestamp_(0),
-      size_(0, 0) {
+      size_(SkISize::Make(0, 0)) {
 }
 
 EncoderVp8::~EncoderVp8() {
@@ -48,7 +48,7 @@ void EncoderVp8::Destroy() {
   }
 }
 
-bool EncoderVp8::Init(const gfx::Size& size) {
+bool EncoderVp8::Init(const SkISize& size) {
   Destroy();
   size_ = size;
   codec_.reset(new vpx_codec_ctx_t());
@@ -134,14 +134,18 @@ bool EncoderVp8::Init(const gfx::Size& size) {
 }
 
 // static
-gfx::Rect EncoderVp8::AlignAndClipRect(const gfx::Rect& rect,
-                                       int width, int height) {
-  gfx::Rect screen(RoundToTwosMultiple(width), RoundToTwosMultiple(height));
-  return screen.Intersect(AlignRect(rect));
+SkIRect EncoderVp8::AlignAndClipRect(const SkIRect& rect,
+                                     int width, int height) {
+  SkIRect screen(SkIRect::MakeWH(RoundToTwosMultiple(width),
+                                 RoundToTwosMultiple(height)));
+  if (!screen.intersect(AlignRect(rect))) {
+    screen = SkIRect::MakeWH(0, 0);
+  }
+  return screen;
 }
 
 bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
-                              std::vector<gfx::Rect>* updated_rects) {
+                              RectVector* updated_rects) {
   // Perform RGB->YUV conversion.
   if (capture_data->pixel_format() != media::VideoFrame::RGB32) {
     LOG(ERROR) << "Only RGB32 is supported";
@@ -162,18 +166,17 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
   DCHECK(updated_rects->empty());
   for (SkRegion::Iterator r(region); !r.done(); r.next()) {
     // Align the rectangle, report it as updated.
-    SkIRect skRect = r.rect();
-    gfx::Rect rect(skRect.fLeft, skRect.fTop, skRect.width(), skRect.height());
+    SkIRect rect = r.rect();
     rect = AlignAndClipRect(rect, image_->w, image_->h);
-    if (!rect.IsEmpty())
+    if (!rect.isEmpty())
       updated_rects->push_back(rect);
 
     ConvertRGB32ToYUVWithRect(in,
                               y_out,
                               u_out,
                               v_out,
-                              rect.x(),
-                              rect.y(),
+                              rect.fLeft,
+                              rect.fTop,
                               rect.width(),
                               rect.height(),
                               in_stride,
@@ -183,20 +186,19 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
   return true;
 }
 
-void EncoderVp8::PrepareActiveMap(
-    const std::vector<gfx::Rect>& updated_rects) {
+void EncoderVp8::PrepareActiveMap(const RectVector& updated_rects) {
   // Clear active map first.
   memset(active_map_.get(), 0, active_map_width_ * active_map_height_);
 
   // Mark blocks at active.
   for (size_t i = 0; i < updated_rects.size(); ++i) {
-    const gfx::Rect& r = updated_rects[i];
+    const SkIRect& r = updated_rects[i];
     CHECK(r.width() && r.height());
 
-    int left = r.x() / kMacroBlockSize;
-    int right = (r.right() - 1) / kMacroBlockSize;
-    int top = r.y() / kMacroBlockSize;
-    int bottom = (r.bottom() - 1) / kMacroBlockSize;
+    int left = r.fLeft / kMacroBlockSize;
+    int right = (r.fRight - 1) / kMacroBlockSize;
+    int top = r.fTop / kMacroBlockSize;
+    int bottom = (r.fBottom - 1) / kMacroBlockSize;
     CHECK(right < active_map_width_);
     CHECK(bottom < active_map_height_);
 
@@ -219,7 +221,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     initialized_ = ret;
   }
 
-  std::vector<gfx::Rect> updated_rects;
+  RectVector updated_rects;
   if (!PrepareImage(capture_data, &updated_rects)) {
     NOTREACHED() << "Can't image data for encoding";
   }
@@ -282,8 +284,8 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   message->set_client_sequence_number(capture_data->client_sequence_number());
   for (size_t i = 0; i < updated_rects.size(); ++i) {
     Rect* rect = message->add_dirty_rects();
-    rect->set_x(updated_rects[i].x());
-    rect->set_y(updated_rects[i].y());
+    rect->set_x(updated_rects[i].fLeft);
+    rect->set_y(updated_rects[i].fTop);
     rect->set_width(updated_rects[i].width());
     rect->set_height(updated_rects[i].height());
   }

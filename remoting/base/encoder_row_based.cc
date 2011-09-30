@@ -10,7 +10,6 @@
 #include "remoting/base/compressor_zlib.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"
-#include "ui/gfx/rect.h"
 
 namespace remoting {
 
@@ -42,7 +41,7 @@ EncoderRowBased::EncoderRowBased(Compressor* compressor,
                                  VideoPacketFormat::Encoding encoding)
     : encoding_(encoding),
       compressor_(compressor),
-      screen_size_(0, 0),
+      screen_size_(SkISize::Make(0,0)),
       packet_size_(kPacketSize) {
 }
 
@@ -51,7 +50,7 @@ EncoderRowBased::EncoderRowBased(Compressor* compressor,
                                  int packet_size)
     : encoding_(encoding),
       compressor_(compressor),
-      screen_size_(0, 0),
+      screen_size_(SkISize::Make(0,0)),
       packet_size_(packet_size) {
 }
 

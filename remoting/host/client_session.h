@@ -12,7 +12,7 @@
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
-#include "ui/gfx/point.h"
+#include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
 
@@ -80,7 +80,7 @@ class ClientSession : public protocol::HostStub,
   // Indicate that local mouse activity has been detected. This causes remote
   // inputs to be ignored for a short time so that the local user will always
   // have the upper hand in 'pointer wars'.
-  void LocalMouseMoved(const gfx::Point& new_pos);
+  void LocalMouseMoved(const SkIPoint& new_pos);
 
   bool ShouldIgnoreRemoteMouseInput(const protocol::MouseEvent& event) const;
   bool ShouldIgnoreRemoteKeyboardInput(const protocol::KeyEvent& event) const;
@@ -130,12 +130,12 @@ class ClientSession : public protocol::HostStub,
 
   // Current location of the mouse pointer. This is used to provide appropriate
   // coordinates when we release the mouse buttons after a user disconnects.
-  gfx::Point remote_mouse_pos_;
+  SkIPoint remote_mouse_pos_;
 
   // Queue of recently-injected mouse positions.  This is used to detect whether
   // mouse events from the local input monitor are echoes of injected positions,
   // or genuine mouse movements of a local input device.
-  std::list<gfx::Point> injected_mouse_positions_;
+  std::list<SkIPoint> injected_mouse_positions_;
 
   base::Time latest_local_input_time_;
 
