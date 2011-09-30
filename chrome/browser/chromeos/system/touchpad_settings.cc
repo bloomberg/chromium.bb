@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/browser/browser_thread.h"
 
 namespace chromeos {
@@ -22,8 +23,13 @@ const char* kTpControl = "/opt/google/touchpad/tpcontrol";
 
 // Launches the tpcontrol command asynchronously, if it exists.
 void LaunchTpControl(const std::vector<std::string>& argv) {
+  if (!system::runtime_environment::IsRunningOnChromeOS()) {
+    // Do nothing on Linux desktop, as the command does not exist.
+    return;
+  }
+
   if (!file_util::PathExists(FilePath(argv[0]))) {
-    LOG(WARNING) << argv[0] << " not found. Maybe running on Linux desktop?";
+    LOG(ERROR) << argv[0] << " not found";
     return;
   }
 
