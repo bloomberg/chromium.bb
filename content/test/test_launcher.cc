@@ -601,4 +601,4 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   return exit_code;
 }
 
-}  // namespcae test_launcher
+}  // namespace test_launcher
