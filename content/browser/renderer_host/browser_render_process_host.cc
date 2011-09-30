@@ -359,7 +359,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       content::GetContentClient()->browser()->GetResourceDispatcherHost());
 
   channel_->AddFilter(resource_message_filter);
-  channel_->AddFilter(new AudioInputRendererHost());
+  channel_->AddFilter(new AudioInputRendererHost(
+      &browser_context()->GetResourceContext()));
   channel_->AddFilter(
       new AudioRendererHost(&browser_context()->GetResourceContext()));
   channel_->AddFilter(

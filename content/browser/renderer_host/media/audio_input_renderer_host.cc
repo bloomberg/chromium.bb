@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/resource_context.h"
 #include "content/common/media/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
@@ -22,7 +23,10 @@ AudioInputRendererHost::AudioEntry::AudioEntry()
 
 AudioInputRendererHost::AudioEntry::~AudioEntry() {}
 
-AudioInputRendererHost::AudioInputRendererHost() {}
+AudioInputRendererHost::AudioInputRendererHost(
+    const content::ResourceContext* resource_context)
+    : resource_context_(resource_context) {
+}
 
 AudioInputRendererHost::~AudioInputRendererHost() {
   DCHECK(audio_entries_.empty());
@@ -185,12 +189,8 @@ void AudioInputRendererHost::OnStartDevice(int stream_id, int session_id) {
           << stream_id << ", session_id = " << session_id << ")";
 
   // Get access to the AudioInputDeviceManager to start the device.
-  // TODO(mflodman): Get AudioInputDeviceManager from MediaStreamManager.
-  media_stream::AudioInputDeviceManager* audio_input_man = NULL;
-  if (!audio_input_man) {
-    SendErrorMessage(stream_id);
-    return;
-  }
+  media_stream::AudioInputDeviceManager* audio_input_man =
+      resource_context_->media_stream_manager()->audio_input_device_manager();
 
   // Add the session entry to the map.
   session_entries_[session_id] = stream_id;
@@ -366,10 +366,9 @@ void AudioInputRendererHost::OnDeviceStopped(int session_id) {
 void AudioInputRendererHost::StopAndDeleteDevice(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // TODO(mflodman): Get AudioInputDeviceManager from MediaStreamManager.
-  media_stream::AudioInputDeviceManager* audio_input_man = NULL;
-  if (audio_input_man)
-    audio_input_man->Stop(session_id);
+  media_stream::AudioInputDeviceManager* audio_input_man =
+      resource_context_->media_stream_manager()->audio_input_device_manager();
+  audio_input_man->Stop(session_id);
 
   // Delete the session entry.
   session_entries_.erase(session_id);

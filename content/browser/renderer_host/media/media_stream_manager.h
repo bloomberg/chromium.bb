@@ -115,7 +115,7 @@ class CONTENT_EXPORT MediaStreamManager
 
   scoped_ptr<MediaStreamDeviceSettings> device_settings_;
   scoped_ptr<VideoCaptureManager> video_capture_manager_;
-  // TODO(mflodman) Add AudioInputManager.
+  scoped_ptr<AudioInputDeviceManager> audio_input_device_manager_;
 
   // Keeps track of device types currently being enumerated to not enumerate
   // when not necessary.

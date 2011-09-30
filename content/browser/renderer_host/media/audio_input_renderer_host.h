@@ -69,6 +69,10 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/simple_sources.h"
 
+namespace content {
+class ResourceContext;
+}
+
 class AudioManager;
 struct AudioParameters;
 
@@ -99,7 +103,8 @@ class AudioInputRendererHost
   };
 
   // Called from UI thread from the owner of this object.
-  AudioInputRendererHost();
+  explicit AudioInputRendererHost(
+      const content::ResourceContext* resource_context);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing();
@@ -198,6 +203,9 @@ class AudioInputRendererHost
   // A helper method to look up a session identified by |stream_id|.
   // Returns 0 if not found.
   int LookupSessionById(int stream_id);
+
+  // Used to get an instance of AudioInputDeviceManager.
+  const content::ResourceContext* resource_context_;
 
   // A map of stream IDs to audio sources.
   typedef std::map<int, AudioEntry*> AudioEntryMap;
