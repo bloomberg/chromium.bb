@@ -65,7 +65,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void AllowCertificateError(
       SSLCertErrorHandler* handler,
       bool overridable,
-      Callback2<SSLCertErrorHandler*, bool>::Type* callback) OVERRIDE;
+      const base::Callback<void(SSLCertErrorHandler*, bool)>& callback)
+      OVERRIDE;
   virtual void SelectClientCertificate(
       int render_process_id,
       int render_view_id,

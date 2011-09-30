@@ -4,6 +4,7 @@
 
 #include "content/browser/ssl/ssl_policy.h"
 
+#include "base/bind.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
@@ -196,10 +197,10 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
     return;
   }
 
-  Callback2<SSLCertErrorHandler*, bool>::Type* callback =
-      NewCallback(this, &SSLPolicy::OnAllowCertificate);
   content::GetContentClient()->browser()->AllowCertificateError(
-      handler, overridable, callback);
+      handler,
+      overridable,
+      base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this)));
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntry* entry) {

@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/ssl/ssl_error_handler.h"
 
+#include "base/bind.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -84,8 +85,8 @@ void SSLErrorHandler::CancelRequest() {
   // We need to complete this task on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &SSLErrorHandler::CompleteCancelRequest, net::ERR_ABORTED));
+      base::Bind(
+          &SSLErrorHandler::CompleteCancelRequest, this, net::ERR_ABORTED));
 }
 
 void SSLErrorHandler::DenyRequest() {
@@ -94,8 +95,8 @@ void SSLErrorHandler::DenyRequest() {
   // We need to complete this task on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &SSLErrorHandler::CompleteCancelRequest,
+      base::Bind(
+          &SSLErrorHandler::CompleteCancelRequest, this,
           net::ERR_INSECURE_RESPONSE));
 }
 
@@ -105,7 +106,7 @@ void SSLErrorHandler::ContinueRequest() {
   // We need to complete this task on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &SSLErrorHandler::CompleteContinueRequest));
+      base::Bind(&SSLErrorHandler::CompleteContinueRequest, this));
 }
 
 void SSLErrorHandler::TakeNoAction() {
@@ -114,7 +115,7 @@ void SSLErrorHandler::TakeNoAction() {
   // We need to complete this task on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &SSLErrorHandler::CompleteTakeNoAction));
+      base::Bind(&SSLErrorHandler::CompleteTakeNoAction, this));
 }
 
 void SSLErrorHandler::CompleteCancelRequest(int error) {

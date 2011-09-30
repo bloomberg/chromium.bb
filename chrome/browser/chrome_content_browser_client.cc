@@ -531,7 +531,7 @@ void ChromeContentBrowserClient::ShowItemInFolder(const FilePath& path) {
 void ChromeContentBrowserClient::AllowCertificateError(
     SSLCertErrorHandler* handler,
     bool overridable,
-    Callback2<SSLCertErrorHandler*, bool>::Type* callback) {
+    const base::Callback<void(SSLCertErrorHandler*, bool)>& callback) {
   // If the tab is being prerendered, cancel the prerender and the request.
   TabContents* tab = tab_util::GetTabContentsByID(
       handler->render_process_host_id(),

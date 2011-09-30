@@ -147,7 +147,7 @@ void MockContentBrowserClient::ShowItemInFolder(const FilePath& path) {
 void MockContentBrowserClient::AllowCertificateError(
     SSLCertErrorHandler* handler,
     bool overridable,
-    Callback2<SSLCertErrorHandler*, bool>::Type* callback) {
+    const base::Callback<void(SSLCertErrorHandler*, bool)>& callback) {
 }
 
 void MockContentBrowserClient::SelectClientCertificate(

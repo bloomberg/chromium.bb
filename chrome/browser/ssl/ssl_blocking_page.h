@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/string16.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 
@@ -24,9 +24,10 @@ class DictionaryValue;
 // It deletes itself when the interstitial page is closed.
 class SSLBlockingPage : public ChromeInterstitialPage {
  public:
-  SSLBlockingPage(SSLCertErrorHandler* handler,
-                  bool overridable,
-                  Callback2<SSLCertErrorHandler*, bool>::Type* callback);
+  SSLBlockingPage(
+      SSLCertErrorHandler* handler,
+      bool overridable,
+      const base::Callback<void(SSLCertErrorHandler*, bool)>& callback);
   virtual ~SSLBlockingPage();
 
   // A method that sets strings in the specified dictionary from the passed
@@ -52,7 +53,7 @@ class SSLBlockingPage : public ChromeInterstitialPage {
   // ContinueRequest() on this object.
   scoped_refptr<SSLCertErrorHandler> handler_;
 
-  Callback2<SSLCertErrorHandler*, bool>::Type* callback_;
+  base::Callback<void(SSLCertErrorHandler*, bool)> callback_;
 
   // Is the certificate error overridable or fatal?
   bool overridable_;

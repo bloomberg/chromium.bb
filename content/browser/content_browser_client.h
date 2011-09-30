@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "content/common/content_client.h"
 #include "content/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
@@ -201,7 +201,7 @@ class ContentBrowserClient {
   virtual void AllowCertificateError(
       SSLCertErrorHandler* handler,
       bool overridable,
-      Callback2<SSLCertErrorHandler*, bool>::Type* callback) = 0;
+      const base::Callback<void(SSLCertErrorHandler*, bool)>& callback) = 0;
 
   // Selects a SSL client certificate and returns it to the |handler|. If no
   // certificate was selected NULL is returned to the |handler|.

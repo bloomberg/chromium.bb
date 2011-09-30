@@ -156,7 +156,7 @@ void ShellContentBrowserClient::ShowItemInFolder(const FilePath& path) {
 void ShellContentBrowserClient::AllowCertificateError(
     SSLCertErrorHandler* handler,
     bool overridable,
-    Callback2<SSLCertErrorHandler*, bool>::Type* callback) {
+    const base::Callback<void(SSLCertErrorHandler*, bool)>& callback) {
 }
 
 void ShellContentBrowserClient::SelectClientCertificate(

@@ -4,6 +4,7 @@
 
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 
+#include "base/bind.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -45,8 +46,8 @@ void SSLClientAuthHandler::SelectCertificate() {
   // the net::URLRequest always gets a response.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &SSLClientAuthHandler::DoSelectCertificate,
+      base::Bind(
+          &SSLClientAuthHandler::DoSelectCertificate, this,
           render_process_host_id, render_view_host_id));
 }
 
@@ -71,8 +72,8 @@ void SSLClientAuthHandler::CertificateSelectedNoNotify(
   VLOG(1) << this << " CertificateSelectedNoNotify " << cert;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &SSLClientAuthHandler::DoCertificateSelected,
+      base::Bind(
+          &SSLClientAuthHandler::DoCertificateSelected, this,
           make_scoped_refptr(cert)));
 }
 
