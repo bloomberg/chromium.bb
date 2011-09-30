@@ -12,8 +12,10 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/login/profile_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -32,6 +34,7 @@ class RemoveUserDelegate;
 // This class provides a mechanism for discovering users who have logged
 // into this chromium os device before and updating that list.
 class UserManager : public UserImageLoader::Delegate,
+                    public ProfileImageDownloader::Delegate,
                     public NotificationObserver {
  public:
   // User OAuth token status according to the last check.
@@ -47,6 +50,8 @@ class UserManager : public UserImageLoader::Delegate,
     // Returned as default_image_index when user-selected file or photo
     // is used as user image.
     static const int kExternalImageIndex = -1;
+    // Returned as default_image_index when user profile image is used as
+    // user image.
     static const int kProfileImageIndex = -2;
     static const int kInvalidImageIndex = -3;
 
@@ -165,6 +170,9 @@ class UserManager : public UserImageLoader::Delegate,
                              int image_index,
                              bool save_image);
 
+  // ProfileImageDownloader::Delegate implementation.
+  virtual void OnDownloadSuccess(const SkBitmap& image) OVERRIDE;
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -202,6 +210,10 @@ class UserManager : public UserImageLoader::Delegate,
   void RemoveObserver(Observer* obs);
 
   void NotifyLocalStateChanged();
+
+  // Starts downloading the profile image for the logged-in user.
+  // Used to post a delayed task for that.
+  void DownloadProfileImage();
 
  protected:
   UserManager();
@@ -254,6 +266,9 @@ class UserManager : public UserImageLoader::Delegate,
   friend struct base::DefaultLazyInstanceTraits<UserManager>;
 
   ObserverList<Observer> observer_list_;
+
+  // Download user profile image on login to update it if it's changed.
+  scoped_ptr<ProfileImageDownloader> profile_image_downloader_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManager);
 };

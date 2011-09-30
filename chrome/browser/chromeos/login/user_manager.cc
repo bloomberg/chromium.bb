@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -57,6 +59,9 @@ const char kGuestUser[] = "";
 // Names of nodes with info about user image.
 const char kImagePathNodeName[] = "path";
 const char kImageIndexNodeName[] = "index";
+
+// Delay betweeen user login and attempt to update user's profile image.
+const long kProfileImageDownloadDelayMs = 10000;
 
 base::LazyInstance<UserManager> g_user_manager(base::LINKER_INITIALIZED);
 
@@ -453,12 +458,30 @@ void UserManager::UserLoggedIn(const std::string& email) {
   if (current_user_is_new_) {
     SetDefaultUserImage(email);
   } else {
-    int metric = kDefaultImagesCount;
-    if (logged_in_user_.default_image_index() != User::kExternalImageIndex)
-      metric = logged_in_user_.default_image_index();
+    // Download profile image if it's user image and see if it has changed.
+    int image_index = logged_in_user_.default_image_index();
+    if (image_index == User::kProfileImageIndex) {
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          NewRunnableTask(this, &UserManager::DownloadProfileImage),
+          kProfileImageDownloadDelayMs);
+    }
+
+    int histogram_index = image_index;
+    switch (image_index) {
+      case User::kExternalImageIndex:
+        // TODO(avayvod): Distinguish this from selected from file.
+        histogram_index = kHistogramImageFromCamera;
+        break;
+
+      case User::kProfileImageIndex:
+        histogram_index = kHistogramImageFromProfile;
+        break;
+    }
     UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
-                              metric,
-                              kDefaultImagesCount + 1);
+                              histogram_index,
+                              kHistogramImagesCount);
   }
 }
 
@@ -544,6 +567,7 @@ const UserManager::User& UserManager::logged_in_user() const {
 
 void UserManager::SetLoggedInUserImage(const SkBitmap& image,
                                        int default_image_index) {
+  profile_image_downloader_.reset();
   if (logged_in_user_.email().empty())
     return;
   SetUserImage(logged_in_user_.email(), image, default_image_index, false);
@@ -561,6 +585,7 @@ void UserManager::SetUserImage(const std::string& username,
 }
 
 void UserManager::LoadLoggedInUserImage(const FilePath& path) {
+  profile_image_downloader_.reset();
   if (logged_in_user_.email().empty())
     return;
   image_loader_->Start(
@@ -640,6 +665,20 @@ void UserManager::OnImageLoaded(const std::string& username,
                                 bool should_save_image) {
   DVLOG(1) << "Loaded image for " << username;
   SetUserImage(username, image, image_index, should_save_image);
+}
+
+void UserManager::OnDownloadSuccess(const SkBitmap& image) {
+  VLOG(1) << "Downloaded profile image for logged-in user.";
+
+  std::string current_image_data_url =
+      web_ui_util::GetImageDataUrl(logged_in_user_.image());
+  std::string new_image_data_url =
+      web_ui_util::GetImageDataUrl(image);
+  if (current_image_data_url != new_image_data_url) {
+    VLOG(1) << "Updating profile image for logged-in user";
+    SetLoggedInUserImage(image, User::kProfileImageIndex);
+    SaveUserImage(logged_in_user_.email(), image, User::kProfileImageIndex);
+  }
 }
 
 bool UserManager::IsLoggedInAsGuest() const {
@@ -758,10 +797,15 @@ void UserManager::RemoveObserver(Observer* obs) {
 }
 
 void UserManager::NotifyLocalStateChanged() {
- FOR_EACH_OBSERVER(
+  FOR_EACH_OBSERVER(
     Observer,
     observer_list_,
     LocalStateChanged(this));
+}
+
+void UserManager::DownloadProfileImage() {
+  profile_image_downloader_.reset(new ProfileImageDownloader(this));
+  profile_image_downloader_->Start();
 }
 
 }  // namespace chromeos

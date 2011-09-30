@@ -148,11 +148,13 @@ void ChangePictureOptionsHandler::HandleGetSelectedImage(
   DCHECK(!user.email().empty());
 
   int image_index = user.default_image_index();
-  if (image_index == UserManager::User::kExternalImageIndex) {
-    // User has image from camera/file, copy it and add to the list of images.
+  if (image_index == UserManager::User::kExternalImageIndex ||
+      image_index == UserManager::User::kProfileImageIndex) {
+    // User has image from camera/file/profile, copy it and add to the list of
+    // images.
     previous_image_ = user.image();
     web_ui_->CallJavascriptFunction("ChangePictureOptions.addOldImage");
-  } else {
+  } else if (image_index >= 0 && image_index < kDefaultImagesCount) {
     base::StringValue image_url(GetDefaultImageUrl(image_index));
     web_ui_->CallJavascriptFunction("ChangePictureOptions.setSelectedImage",
                                     image_url);
