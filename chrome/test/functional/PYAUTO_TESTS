@@ -493,6 +493,8 @@
       '-enterprise.EnterpriseTestReverse.testEnable3DAPI',
       # crbug.com/98500
       '-enterprise.EnterpriseTestReverse.testAlwaysAuthorizePluginsDisabled',
+      # crbug.com/97179
+      '-enterprise.EnterpriseTest.testAlwaysAuthorizePlugins',
     ],
 
     'chromeos': [
