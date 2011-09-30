@@ -214,9 +214,9 @@ PNACL_BIN=$(PNACL_ROOT)/bin
 PNACL_TRANSLATOR=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate
 PNACL_TRANSLATOR_SB=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate --pnacl-sb
 PNACL_TRANSLATOR_SB_EMU=$(PNACL_TRANSLATOR_SB) --pnacl-use-emulator
-BC_GCC=$(PNACL_BIN)/pnacl-gcc
-BC_GPP=$(PNACL_BIN)/pnacl-g++
-BC_STRIP=$(PNACL_BIN)/pnacl-strip
+PNACL_CC=$(PNACL_BIN)/pnacl-clang
+PNACL_CXX=$(PNACL_BIN)/pnacl-clang++
+PNACL_STRIP=$(PNACL_BIN)/pnacl-strip
 PNACL_FLAGS=--pnacl-driver-verbose
 
 PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS)
@@ -227,31 +227,31 @@ else
 endif
 
 %.bc: %.c
-	$(BC_GCC) -O0 $(PNACL_FLAGS_COMMON) $< -c -o $@
+	$(PNACL_CC) -O0 $(PNACL_FLAGS_COMMON) $< -c -o $@
 %.bc: %.cc
-	$(BC_GPP) -O0 $(PNACL_FLAGS_COMMON) $< -c -o $@
+	$(PNACL_CXX) -O0 $(PNACL_FLAGS_COMMON) $< -c -o $@
 
 %.o3.bc: %.c
-	$(BC_GCC) -O3 $(PNACL_FLAGS_COMMON) $< -c -o $@
+	$(PNACL_CC) -O3 $(PNACL_FLAGS_COMMON) $< -c -o $@
 %.o3.bc: %.cc
-	$(BC_GPP) -O3 $(PNACL_FLAGS_COMMON) $< -c -o $@
+	$(PNACL_CXX) -O3 $(PNACL_FLAGS_COMMON) $< -c -o $@
 
 $(IT).unopt.pexe: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
-	$(BC_GPP) -O0  $(PNACL_FLAGS_COMMON) $^ \
+	$(PNACL_CXX) -O0  $(PNACL_FLAGS_COMMON) $^ \
 	-static -lm $(PNACL_EXTRA_LIB)  -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).unopt.stripped.pexe: $(IT).unopt.pexe
-	$(BC_STRIP) $^ -o $@
+	$(PNACL_STRIP) $^ -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).opt.pexe: $(SRC:%.c=%.o3.bc) $(CPPSRC:%.cc=%.o3.bc)
-	$(BC_GPP) -O3 $(PNACL_FLAGS_COMMON) $^ -static -lm \
+	$(PNACL_CXX) -O3 $(PNACL_FLAGS_COMMON) $^ -static -lm \
 	$(PNACL_EXTRA_LIB) -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 $(IT).opt.stripped.pexe: $(IT).opt.pexe
-	$(BC_STRIP) $^ -o $@
+	$(PNACL_STRIP) $^ -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
 
 ######################################################################

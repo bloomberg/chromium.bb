@@ -79,7 +79,7 @@ src/xpickint.c
 
 IT=twolf
 
-CFLAGS_EXTRA = -DSPEC_CPU2000 -DHAVE_SIGNED_CHAR
+CFLAGS_EXTRA = -DSPEC_CPU2000 -DHAVE_SIGNED_CHAR -Wno-return-type
 
 EXTRA_CLEAN= ref.* train.*
 
