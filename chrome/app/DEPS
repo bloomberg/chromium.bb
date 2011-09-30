@@ -2,8 +2,12 @@ include_rules = [
   "+breakpad",
   "+chrome/browser",
   "+chrome/installer",
+  "+chrome/plugin/chrome_content_plugin_client.h",
   "+chrome/renderer/chrome_content_renderer_client.h",
   "+chrome/utility/chrome_content_utility_client.h",
+  "+content/app",
+  "+content/browser/renderer_host/render_process_host.h",
+  "+content/renderer/renderer_main.h",
   "+grit",  # For generated headers
   "+media/base",  # For initializing media library.
   "+policy",  # For generated headers and source

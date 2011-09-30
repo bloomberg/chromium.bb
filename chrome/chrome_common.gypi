@@ -70,8 +70,6 @@
         'common/child_process_logging_win.cc',
         'common/chrome_content_client.cc',
         'common/chrome_content_client.h',
-        'common/chrome_content_plugin_client.cc',
-        'common/chrome_content_plugin_client.h',
         'common/chrome_notification_types.h',
         'common/chrome_plugin_messages.h',
         'common/chrome_version_info.cc',

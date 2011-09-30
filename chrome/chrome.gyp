@@ -25,6 +25,7 @@
       'browser',
       'debugger',
       'profile_import',
+      'plugin',
       'renderer',
       'syncapi_core',
       'utility',
@@ -437,6 +438,22 @@
         }],
       ],
     },
+    {
+      'target_name': 'plugin',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../content/content.gyp:content_plugin',
+      ],
+      'sources': [
+        'plugin/chrome_content_plugin_client.cc',
+        'plugin/chrome_content_plugin_client.h',
+      ],
+      'include_dirs': [
+        '..',
+        '<(grit_out_dir)',
+      ],
+    },        
     {
       'target_name': 'utility',
       'type': 'static_library',

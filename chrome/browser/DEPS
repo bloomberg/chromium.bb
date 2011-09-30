@@ -3,10 +3,11 @@ include_rules = [
   "+chrome/app/locales",
   "+chrome/installer",
   "+chrome/personalization",
-  "+chrome/plugin",  # For Mac plugin interpose library.
   "+chrome/profile_import",
   "+chrome/tools/profiles",  # For history unit tests.
   "+chrome/views",
+  "+content/browser",
+  "+content/plugin/plugin_interpose_util_mac.h",
   "+grit",  # For generated headers
   "+media/audio",  # For audio input for speech input feature.
   "+policy",  # For generated headers and source

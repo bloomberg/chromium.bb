@@ -1,13 +1,6 @@
 include_rules = [
-  # TODO(mseaborn): Remove chrome/renderer from this list.  This is
-  # here because we need chrome/renderer/renderer_sandbox_support_linux.h
-  # for creating shared memory segments.  We should probably move this
-  # sandbox support code out of chrome/renderer.  (Previously, this
-  # header was #included from the native_client directory, which was
-  # worse.)
-  "+chrome/app",
-  "+chrome/renderer",
-  "+chrome/test",
+  "+chrome/app/breakpad_win.h",
+  "+content/app/startup_helper_win.h",
   "+sandbox/src",
   "+native_client/src",
 ]
