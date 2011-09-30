@@ -207,6 +207,7 @@
         "chrome.browserAction.onClicked",
         "chrome.browserAction.setIcon"
       ],
+      "crx_path": null,
       "description": "",
       "features": [
         "background_page",
@@ -232,6 +233,7 @@
       "api_calls": [
         "chrome.tabs.executeScript"
       ],
+      "crx_path": null,
       "description": "",
       "features": [
         "browser_action",
@@ -261,6 +263,7 @@
         "chrome.browserAction.setBadgeText",
         "chrome.tabs.executeScript"
       ],
+      "crx_path": null,
       "description": "",
       "features": [
         "background_page",
@@ -287,6 +290,7 @@
         "chrome.i18n.getAcceptLanguages",
         "chrome.i18n.getMessage"
       ],
+      "crx_path": null,
       "description": "Returns accept languages of the browser",
       "features": [
         "browser_action",
@@ -319,6 +323,7 @@
         "chrome.tabs.getSelected",
         "chrome.tabs.onSelectionChanged"
       ],
+      "crx_path": null,
       "description": "This extension adds an animated browser action to the toolbar.",
       "features": [
         "background_page",
@@ -346,6 +351,7 @@
         "chrome.management.launchApp",
         "chrome.tabs.create"
       ],
+      "crx_path": null,
       "description": "",
       "features": [
         "browser_action",
@@ -368,6 +374,7 @@
     },
     {
       "api_calls": [],
+      "crx_path": null,
       "description": "",
       "features": [
         "chrome_url_overrides"
@@ -389,6 +396,7 @@
       "api_calls": [
         "chrome.extension.isAllowedIncognitoAccess"
       ],
+      "crx_path": null,
       "description": "Sample extension which demonstrates how to access a preference.",
       "features": [
         "browser_action",
@@ -417,6 +425,7 @@
         "chrome.tabs.executeScript",
         "chrome.tabs.sendRequest"
       ],
+      "crx_path": null,
       "description": "Extends the Developer Tools, adding an audit category that finds broken links on the inspected page.",
       "features": [
         "background_page",
@@ -446,6 +455,7 @@
       "api_calls": [
         "chrome.experimental.webRequest.onBeforeRequest"
       ],
+      "crx_path": null,
       "description": "I can't has cheezburger!",
       "features": [
         "background_page",
@@ -467,6 +477,7 @@
     },
     {
       "api_calls": [],
+      "crx_path": null,
       "description": "Extends the Developer Tools, adding a sidebar that displays the jQuery data associated with the selected DOM element.",
       "features": [
         "devtools_page",
@@ -505,6 +516,7 @@
         "chrome.windows.onFocusChanged",
         "chrome.windows.onRemoved"
       ],
+      "crx_path": null,
       "description": "Enjoy a more magical and immersive experience when browsing the web using the power of sound.",
       "features": [
         "background_page",
@@ -538,6 +550,7 @@
         "chrome.browserAction.setTitle",
         "chrome.extension.getURL"
       ],
+      "crx_path": null,
       "description": "Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.",
       "features": [
         "background_page",
@@ -575,6 +588,7 @@
         "chrome.tabs.getSelected",
         "chrome.tabs.update"
       ],
+      "crx_path": null,
       "description": "Add support to the omnibox to search the Chromium source code.",
       "features": [
         "background_page",
@@ -604,6 +618,7 @@
         "chrome.tabs.onSelectionChanged",
         "chrome.tabs.onUpdated"
       ],
+      "crx_path": null,
       "description": "Displays the language of a tab",
       "features": [
         "background_page",
@@ -625,6 +640,7 @@
     },
     {
       "api_calls": [],
+      "crx_path": null,
       "description": "Demonstrates making cross domain requests from a content script by putting Twitter trends on Google News.",
       "features": [],
       "icon": "sample-128.png",
@@ -647,6 +663,7 @@
         "chrome.tabs.get",
         "chrome.tabs.getSelected"
       ],
+      "crx_path": null,
       "description": "Shows the content settings for the current site.",
       "features": [
         "browser_action",
@@ -672,6 +689,7 @@
       "api_calls": [
         "chrome.contextMenus.create"
       ],
+      "crx_path": null,
       "description": "Shows some of the features of the Context Menus API",
       "features": [
         "background_page",
@@ -704,6 +722,7 @@
         "chrome.windows.get",
         "chrome.windows.getAll"
       ],
+      "crx_path": null,
       "description": "Testing Cookie API",
       "features": [
         "background_page",
@@ -737,6 +756,7 @@
         "chrome.tabs.executeScript",
         "chrome.tabs.update"
       ],
+      "crx_path": null,
       "description": "This extension adds an email button to the toolbar which allows you to email the page link using your default mail client or Gmail.",
       "features": [
         "background_page",
@@ -766,6 +786,7 @@
       "api_calls": [
         "chrome.extension.isAllowedIncognitoAccess"
       ],
+      "crx_path": null,
       "description": "Sample extension which demonstrates how to access a preference.",
       "features": [
         "browser_action",
@@ -788,6 +809,7 @@
     },
     {
       "api_calls": [],
+      "crx_path": null,
       "description": "A sample extension which uses Google Analytics to track usage.",
       "features": [
         "background_page",
@@ -818,6 +840,7 @@
         "chrome.tabs.onRemoved",
         "chrome.tabs.update"
       ],
+      "crx_path": null,
       "description": "Search the Chrome Extensions documentation.  To use, type 'crdoc' plus a search term into the Omnibox.",
       "features": [
         "background_page",
@@ -846,6 +869,7 @@
         "chrome.extension.sendRequest",
         "chrome.tabs.executeScript"
       ],
+      "crx_path": null,
       "description": "Extends the Developer Tools, adding support for parsing FirePHP messages from server",
       "features": [
         "background_page",
@@ -888,6 +912,7 @@
         "chrome.tabs.onUpdated",
         "chrome.tabs.update"
       ],
+      "crx_path": null,
       "description": "Quickly see the time until your next meeting from any of your calendars. Click on the button to be taken to your calendar.",
       "features": [
         "background_page",
@@ -968,6 +993,7 @@
         "chrome.tabs.onUpdated",
         "chrome.tabs.remove"
       ],
+      "crx_path": null,
       "description": "Demonstrates how to use OAuth to connect the Google Documents List Data API.",
       "features": [
         "background_page",
@@ -1014,6 +1040,7 @@
         "chrome.tabs.onUpdated",
         "chrome.tabs.update"
       ],
+      "crx_path": null,
       "description": "Displays the number of unread messages in your Google Mail inbox. You can also click the button to open your inbox.",
       "features": [
         "background_page",
@@ -1090,6 +1117,7 @@
         "chrome.tabs.onUpdated",
         "chrome.tabs.remove"
       ],
+      "crx_path": null,
       "description": "Find out when you have new waves and preview them fast.",
       "features": [
         "background_page",
@@ -1122,6 +1150,7 @@
     },
     {
       "api_calls": [],
+      "crx_path": null,
       "description": "The first extension that I made.",
       "features": [
         "browser_action",
@@ -1149,6 +1178,7 @@
         "chrome.idle.onStateChanged",
         "chrome.idle.queryState"
       ],
+      "crx_path": null,
       "description": "Demonstrates the Idle API",
       "features": [
         "background_page",
@@ -1171,6 +1201,7 @@
     },
     {
       "api_calls": [],
+      "crx_path": null,
       "description": "",
       "features": [
         "chrome_url_overrides"
@@ -1196,6 +1227,7 @@
         "chrome.windows.create",
         "chrome.windows.update"
       ],
+      "crx_path": null,
       "description": "Get image info for images, including EXIF data",
       "features": [
         "background_page",
@@ -1237,6 +1269,7 @@
         "chrome.windows.get",
         "chrome.windows.getCurrent"
       ],
+      "crx_path": null,
       "description": "Pauses \/ resumes JavaScript execution",
       "features": [
         "background_page",
@@ -1268,6 +1301,7 @@
         "chrome.tabs.getSelected",
         "chrome.tabs.update"
       ],
+      "crx_path": null,
       "description": "Creates a keyboard shortcut (C + Shift + P) to toggle the pinned state of the currently selected tab",
       "features": [
         "background_page",
@@ -1300,6 +1334,7 @@
         "chrome.windows.get",
         "chrome.windows.getCurrent"
       ],
+      "crx_path": null,
       "description": "Displays the live log with the http requests headers",
       "features": [
         "background_page",
@@ -1337,6 +1372,7 @@
         "chrome.tabs.onUpdated",
         "chrome.tabs.sendRequest"
       ],
+      "crx_path": null,
       "description": "Finds addresses in the web page you're on and pops up a map window.",
       "features": [
         "background_page",
@@ -1371,6 +1407,7 @@
         "chrome.windows.getAll",
         "chrome.windows.getCurrent"
       ],
+      "crx_path": null,
       "description": "Merges all of the browser's windows into the current window",
       "features": [
         "background_page",
@@ -1399,6 +1436,7 @@
         "chrome.tabs.getSelected",
         "chrome.tabs.sendRequest"
       ],
+      "crx_path": null,
       "description": "Times how long it takes to send a message to a content script and back.",
       "features": [
         "browser_action",
@@ -1428,6 +1466,7 @@
         "chrome.bookmarks.update",
         "chrome.tabs.create"
       ],
+      "crx_path": null,
       "description": "A browser action with a popup dump of all bookmarks, including search, add, edit and delete.",
       "features": [
         "bookmarks",
@@ -1452,6 +1491,7 @@
       "api_calls": [
         "chrome.tabs.create"
       ],
+      "crx_path": null,
       "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.",
       "features": [
         "browser_action",
@@ -1478,6 +1518,7 @@
         "chrome.i18n.getMessage",
         "chrome.tabs.create"
       ],
+      "crx_path": null,
       "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.",
       "features": [
         "browser_action",
@@ -1509,6 +1550,7 @@
         "chrome.i18n.getMessage",
         "chrome.tabs.create"
       ],
+      "crx_path": null,
       "description": "Displays the latest stories from Google News in a popup.",
       "features": [
         "background_page",
@@ -1544,6 +1586,7 @@
       "api_calls": [
         "chrome.tabs.create"
       ],
+      "crx_path": null,
       "description": "Shows off desktop notifications, which are \"toast\" windows that pop up on the desktop.",
       "features": [
         "background_page",
@@ -1571,6 +1614,7 @@
         "chrome.omnibox.onInputChanged",
         "chrome.omnibox.onInputEntered"
       ],
+      "crx_path": null,
       "description": "To use, type 'omnix' plus a search term into the Omnibox.",
       "features": [
         "background_page"
@@ -1590,10 +1634,43 @@
     },
     {
       "api_calls": [
+        "chrome.experimental.permissions.contains",
+        "chrome.experimental.permissions.onAdded",
+        "chrome.experimental.permissions.onRemoved",
+        "chrome.experimental.permissions.remove",
+        "chrome.experimental.permissions.request",
+        "chrome.tabs.create"
+      ],
+      "crx_path": "examples\/api\/permissions\/request-permissions.crx",
+      "description": "Sample demonstration the optional permissions API.",
+      "features": [
+        "browser_action",
+        "experimental",
+        "options_page"
+      ],
+      "icon": "images\/icon.png",
+      "id": "7421f001a53fde8c1c2523a132be23f764aa35f9",
+      "name": "Optional permissions sample",
+      "path": "examples\/api\/permissions\/request-permissions\/",
+      "protocols": [],
+      "search_string": "OPTIONAL PERMISSIONS SAMPLE SAMPLE DEMONSTRATION THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.EXPERIMENTAL.PERMISSIONS.CONTAINS CHROME.EXPERIMENTAL.PERMISSIONS.ONADDED CHROME.EXPERIMENTAL.PERMISSIONS.ONREMOVED CHROME.EXPERIMENTAL.PERMISSIONS.REMOVE CHROME.EXPERIMENTAL.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
+      "source_files": [
+        "manifest.json",
+        "options.html",
+        "options.js",
+        "popup.html",
+        "popup.js"
+      ],
+      "source_hash": "8f4d6fade4e6c5033b369444e2704b332f6b6070",
+      "zip_path": "examples\/api\/permissions\/request-permissions.zip"
+    },
+    {
+      "api_calls": [
         "chrome.extension.onRequest",
         "chrome.extension.sendRequest",
         "chrome.pageAction.show"
       ],
+      "crx_path": null,
       "description": "Shows a page action for HTML pages containing the word 'sandwich'",
       "features": [
         "background_page",
@@ -1618,6 +1695,7 @@
         "chrome.pageAction.show",
         "chrome.tabs.onUpdated"
       ],
+      "crx_path": null,
       "description": "Shows a page action for urls which have the letter 'g' in them.",
       "features": [
         "background_page",
@@ -1658,6 +1736,7 @@
         "chrome.windows.get",
         "chrome.windows.getCurrent"
       ],
+      "crx_path": null,
       "description": "Chromium Page Benchmarker.",
       "features": [
         "background_page",
@@ -1702,6 +1781,7 @@
         "chrome.browserAction.onClicked",
         "chrome.tabs.update"
       ],
+      "crx_path": null,
       "description": "Adds a print button to the browser.",
       "features": [
         "background_page",
@@ -1726,6 +1806,7 @@
     },
     {
       "api_calls": [],
+      "crx_path": null,
       "description": "Adds a browser action that monitors resource usage of all browser processes.",
       "features": [
         "browser_action",
@@ -1757,6 +1838,7 @@
         "chrome.i18n.getMessage",
         "chrome.proxy.onProxyError"
       ],
+      "crx_path": null,
       "description": "Set Chrome-specific proxies; a demonstration of Chrome's Proxy API",
       "features": [
         "background_page",
@@ -1797,6 +1879,7 @@
         "chrome.tabs.onUpdated",
         "chrome.tabs.remove"
       ],
+      "crx_path": null,
       "description": "Uses OAuth to connect to Google's contacts service and display a list of your contacts.",
       "features": [
         "background_page",
@@ -1831,6 +1914,7 @@
         "chrome.extension.onRequest",
         "chrome.extension.sendRequest"
       ],
+      "crx_path": null,
       "description": "Shows an infobar on pages which contain the word 'sandwich'",
       "features": [
         "background_page",
@@ -1861,6 +1945,7 @@
         "chrome.windows.getCurrent",
         "chrome.windows.update"
       ],
+      "crx_path": null,
       "description": "Adds a browser action showing which tabs share the current tab's process.",
       "features": [
         "browser_action",
@@ -1910,6 +1995,7 @@
         "chrome.windows.remove",
         "chrome.windows.update"
       ],
+      "crx_path": null,
       "description": "Utility for working with the extension tabs api",
       "features": [
         "background_page",
@@ -1940,6 +2026,7 @@
         "chrome.tabs.create",
         "chrome.tabs.onUpdated"
       ],
+      "crx_path": null,
       "description": "Demonstrate screenshot functionality in the chrome.tabs api. Note: only works for code.google.com",
       "features": [
         "background_page",
@@ -1969,6 +2056,7 @@
         "chrome.history.search",
         "chrome.tabs.create"
       ],
+      "crx_path": null,
       "description": "Reads your history, and shows the top ten pages you go to by typing the URL.",
       "features": [
         "browser_action",
@@ -2001,6 +2089,7 @@
         "chrome.extension.sendRequest",
         "chrome.i18n.getMessage"
       ],
+      "crx_path": null,
       "description": "Demonstration of the WebNavigation extension API.",
       "features": [
         "background_page",
@@ -2031,6 +2120,7 @@
         "chrome.extension.isAllowedFileSchemeAccess",
         "chrome.extension.isAllowedIncognitoAccess"
       ],
+      "crx_path": null,
       "description": "Demonstrates the `extension.isAllowed???Access` APIs",
       "features": [
         "browser_action"

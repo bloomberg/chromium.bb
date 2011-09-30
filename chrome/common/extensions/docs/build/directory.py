@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -290,6 +290,7 @@ class Sample(dict):
     self['search_string'] = self._get_search_string()
     self['id'] = hashlib.sha1(self['path']).hexdigest()
     self['zip_path'] = self._get_relative_zip_path()
+    self['crx_path'] = self._get_relative_crx_path()
 
   _FEATURE_ATTRIBUTES = (
     'browser_action',
@@ -400,6 +401,25 @@ class Sample(dict):
     zip_relpath = os.path.dirname(os.path.dirname(self._get_relative_path()))
     return os.path.join(zip_relpath, zip_filename)
 
+  def _get_relative_crx_path(self):
+    """ Returns a relative path from the base dir to the sample's crx file.
+
+    Note: .crx files are provided manually and may or may not exist.
+
+    Returns:
+      If the .crx file exists, the relative directory path from the sample's
+      manifest directory to this sample's .crx files.
+
+      Otherwise, None.
+    """
+    crx_filename = self._get_crx_filename()
+    crx_relroot = os.path.dirname(os.path.dirname(self._get_relative_path()))
+    crx_relpath = os.path.join(crx_relroot, crx_filename)
+    crx_absroot = os.path.dirname(os.path.dirname(self._manifest_path))
+    crx_abspath = os.path.join(crx_absroot, crx_filename)
+    return os.path.isfile(crx_abspath) and crx_relpath or None
+
+
   def _get_search_string(self):
     """ Constructs a string to be used when searching the samples list.
 
@@ -433,6 +453,17 @@ class Sample(dict):
     sample_path = os.path.realpath(os.path.dirname(self._manifest_path))
     sample_dirname = os.path.basename(sample_path)
     return "%s.zip" % sample_dirname
+
+  def _get_crx_filename(self):
+    """ Returns the filename to be used for a generated zip of the sample.
+
+    Returns:
+      A string in the form of "<dirname>.zip" where <dirname> is the name
+      of the directory containing this sample's manifest.json.
+    """
+    sample_path = os.path.realpath(os.path.dirname(self._manifest_path))
+    sample_dirname = os.path.basename(sample_path)
+    return "%s.crx" % sample_dirname
 
   def _parse_description(self):
     """ Returns a localized description of the extension.

@@ -109,6 +109,10 @@
   <div>
     <a jsvalues="href:'http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/' + path" target="_blank">Browse source</a>
     - <a jsvalues="href:$this.zip_path">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span jsdisplay="$this.crx_path != null">
+    - <a jsvalues="href:$this.crx_path">Install extension</a>
+    </span>
   </div>
 </div>
 
