@@ -1095,7 +1095,10 @@ def CMDrecurse(parser, args):
       env['GCLIENT_SCM'] = scm
     if url:
       env['GCLIENT_URL'] = url
-    subprocess2.call(args, cwd=cwd, env=env)
+    if os.path.isdir(cwd):
+      subprocess2.call(args, cwd=cwd, env=env)
+    else:
+      print >> sys.stderr, 'Skipped missing %s' % cwd
   return 0
 
 
