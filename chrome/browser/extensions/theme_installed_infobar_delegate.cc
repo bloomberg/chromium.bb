@@ -55,16 +55,15 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
         extension_service_->GetExtensionById(previous_theme_id_, true);
     if (previous_theme) {
       theme_service_->SetTheme(previous_theme);
-      return true;
+        return false;  // The theme change will close us.
     }
   }
 
-  if (previous_using_native_theme_) {
+  if (previous_using_native_theme_)
     theme_service_->SetNativeTheme();
-  } else {
+  else
     theme_service_->UseDefaultTheme();
-  }
-  return true;
+  return false;  // The theme change will close us.
 }
 
 gfx::Image* ThemeInstalledInfoBarDelegate::GetIcon() const {

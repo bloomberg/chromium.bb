@@ -263,7 +263,8 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
 
 void InfoBarView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
-  DCHECK(owned());  // Subclasses should never call us while we're closing.
+  if (!owned())
+    return;  // We're closing; don't call anything, it might access the owner.
   if (sender == close_button_) {
     delegate()->InfoBarDismissed();
     RemoveSelf();

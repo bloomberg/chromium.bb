@@ -102,8 +102,16 @@ void InfoBar::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void InfoBar::RemoveSelf() {
-  DCHECK(owner_);
-  owner_->RemoveInfoBar(delegate_);
+  // |owner_| should never be NULL here.  If it is, then someone violated what
+  // they were supposed to do -- e.g. a ConfirmInfoBarDelegate subclass returned
+  // true from Accept() or Cancel() even though the infobar was already closing.
+  // In the worst case, if we also switched tabs during that process, then
+  // |this| has already been destroyed.  But if that's the case, then we're
+  // going to deref a garbage |this| pointer here whether we check |owner_| or
+  // not, and in other cases (where we're still closing and |this| is valid),
+  // checking |owner_| here will avoid a NULL deref.
+  if (owner_)
+    owner_->RemoveInfoBar(delegate_);
 }
 
 void InfoBar::SetBarTargetHeight(int height) {
