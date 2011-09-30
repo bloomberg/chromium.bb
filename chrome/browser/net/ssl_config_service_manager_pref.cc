@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -192,9 +193,9 @@ void SSLConfigServiceManagerPref::Observe(int type,
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableMethod(
-            ssl_config_service_.get(),
+        base::Bind(
             &SSLConfigServicePref::SetNewSSLConfig,
+            ssl_config_service_.get(),
             new_config));
   }
 }
