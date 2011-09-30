@@ -184,7 +184,7 @@ void SetCommandLine(const CommandLine* command_line) {
 
   // These should match the corresponding strings in breakpad_win.cc.
   NSString* const kNumSwitchesKey = @"num-switches";
-  NSString* const kSwitchKeyFormat = @"switch-%d";
+  NSString* const kSwitchKeyFormat = @"switch-%d";  // 1-based.
 
   // Note the total number of switches, not including the exec path.
   const CommandLine::StringVector& argv = command_line->argv();
@@ -194,7 +194,7 @@ void SetCommandLine(const CommandLine* command_line) {
   size_t key_i = 0;
   for (size_t i = 1; i < argv.size() && key_i < kMaxSwitches; ++i) {
     // TODO(shess): Skip boring switches.
-    NSString* key = [NSString stringWithFormat:kSwitchKeyFormat, key_i];
+    NSString* key = [NSString stringWithFormat:kSwitchKeyFormat, (key_i + 1)];
     NSString* value = base::SysUTF8ToNSString(argv[i]);
     SetCrashKeyValue(key, value);
     key_i++;
@@ -202,7 +202,7 @@ void SetCommandLine(const CommandLine* command_line) {
 
   // Clear out any stale keys.
   for (; key_i < kMaxSwitches; ++key_i) {
-    NSString* key = [NSString stringWithFormat:kSwitchKeyFormat, key_i];
+    NSString* key = [NSString stringWithFormat:kSwitchKeyFormat, (key_i + 1)];
     ClearCrashKey(key);
   }
 }
