@@ -45,6 +45,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
   virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
                                GdkEventExpose* event) OVERRIDE;
+  virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
+
 
   // Overridden from NativePanel:
   virtual void ShowPanel() OVERRIDE;
