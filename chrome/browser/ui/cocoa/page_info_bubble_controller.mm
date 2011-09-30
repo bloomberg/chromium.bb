@@ -453,15 +453,10 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 // next offset.
 - (CGFloat)addSeparatorToSubviews:(NSMutableArray*)subviews
                          atOffset:(CGFloat)offset {
-  const CGFloat kSpacerHeight = 1.0;
-  NSRect frame = NSMakeRect(kFramePadding, offset,
-      kWindowWidth - 2 * kFramePadding, kSpacerHeight);
-  scoped_nsobject<NSBox> spacer([[NSBox alloc] initWithFrame:frame]);
-  [spacer setBoxType:NSBoxSeparator];
-  [spacer setBorderType:NSLineBorder];
-  [spacer setAlphaValue:0.2];
-  [subviews addObject:spacer.get()];
-  return kVerticalSpacing + kSpacerHeight;
+  NSBox* spacer = [self separatorWithFrame:NSMakeRect(kFramePadding, offset,
+      kWindowWidth - 2 * kFramePadding, 0)];
+  [subviews addObject:spacer];
+  return kVerticalSpacing + NSHeight([spacer frame]);
 }
 
 // Takes in the bubble's height and the parent window, which should be a

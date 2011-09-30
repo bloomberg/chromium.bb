@@ -4311,6 +4311,7 @@
                 'xib_files_to_scan': [
                   # The xibs that need localization
                   'app/nibs/About.xib',
+                  'app/nibs/AvatarMenuItem.xib',
                   'app/nibs/BookmarkAllTabs.xib',
                   'app/nibs/BookmarkBar.xib',
                   'app/nibs/BookmarkBubble.xib',

@@ -64,4 +64,8 @@ class Bridge;
         parentWindow:(NSWindow*)parentWindow
           anchoredAt:(NSPoint)anchoredAt;
 
+// Creates an autoreleased separator view with a given frame. The height of the
+// frame is ignored.
+- (NSBox*)separatorWithFrame:(NSRect)frame;
+
 @end

@@ -133,6 +133,15 @@ class Bridge : public NotificationObserver {
   [self updateOriginFromAnchor];
 }
 
+- (NSBox*)separatorWithFrame:(NSRect)frame {
+  frame.size.height = 1.0;
+  scoped_nsobject<NSBox> spacer([[NSBox alloc] initWithFrame:frame]);
+  [spacer setBoxType:NSBoxSeparator];
+  [spacer setBorderType:NSLineBorder];
+  [spacer setAlphaValue:0.2];
+  return [spacer.release() autorelease];
+}
+
 - (void)parentWindowWillClose:(NSNotification*)notification {
   [self close];
 }
