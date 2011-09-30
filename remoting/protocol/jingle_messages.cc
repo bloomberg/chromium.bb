@@ -147,7 +147,8 @@ JingleMessage::JingleMessage(
     const std::string& sid_value)
     : to(to_value),
       action(action_value),
-      sid(sid_value) {
+      sid(sid_value),
+      reason(UNKNOWN_REASON) {
 }
 
 JingleMessage::~JingleMessage() {
