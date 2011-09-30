@@ -70,9 +70,16 @@ cr.define('cr.ui', function() {
     $('security-link').addEventListener('click', function(event) {
       chrome.send('eulaOnTpmPopupOpened', []);
       $('popup-overlay').hidden = false;
+      $('security-ok-button').focus();
     });
     $('security-ok-button').addEventListener('click', function(event) {
       $('popup-overlay').hidden = true;
+    });
+    // Do not allow focus leaving the overlay.
+    $('popup-overlay').addEventListener('focusout', function(event) {
+      // WebKit does not allow immediate focus return.
+      setTimeout(function() { $('security-ok-button').focus(); }, 0);
+      event.preventDefault();
     });
 
     chrome.send('screenStateInitialize', []);

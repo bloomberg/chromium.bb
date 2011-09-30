@@ -365,7 +365,7 @@ bool WebUILoginView::IsPopupOrPanel(const TabContents* source) const {
 }
 
 bool WebUILoginView::TakeFocus(bool reverse) {
-  if (status_area_) {
+  if (status_area_ && status_area_->IsVisible()) {
     // Forward the focus to the status area.
     base::Callback<void(bool)> return_focus_cb =
         base::Bind(&WebUILoginView::ReturnFocus, base::Unretained(this));
