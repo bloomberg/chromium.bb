@@ -440,6 +440,9 @@
       '-translate.TranslateTest.testSessionRestore',
       # The source is behind.  Waiting for dev to automate the update.
       '-nacl_sdk.NaClSDKTest.testVerifyNaClSDKChecksum',
+      # crbug.com/98681
+      '-nacl_sdk.NaClSDKTest.testNaClSDK',
+      '-nacl_sdk.NaClSDKTest.testVerifyPrereleaseGallery',
     ],
 
     'win': [
