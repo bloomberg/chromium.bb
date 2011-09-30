@@ -15,6 +15,8 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_paths.h"
@@ -44,23 +46,36 @@ const FilePath::CharType kPepperFlashPluginFileName[] =
 #endif
 
 // File name of the Pepper Flash component manifest on different platforms.
-const char kPepperFlashManifestName[] =
+const char kPepperFlashManifestName[] = "Flapper";
+
+// Name of the Pepper Flash OS in the component manifest.
+const char kPepperFlashOperatingSystem[] =
 #if defined(OS_MACOSX)
-    "MacFlapper";
+    "mac";
 #elif defined(OS_WIN)
-    "WinFlapper";
-#else  // OS_LINUX, etc.
-    "NixFlapper";
+    "win";
+#else  // OS_LINUX, etc. TODO(viettrungluu): Separate out Chrome OS and Android?
+    "linux";
 #endif
 
-// The pepper flash plugins are in a directory with this name.
+// Name of the Pepper Flash architecture in the component manifest.
+const char kPepperFlashArch[] =
+#if defined(ARCH_CPU_X86)
+    "ia32";
+#elif defined(ARCH_CPU_X86_64)
+    "x64";
+#else  // TODO(viettrungluu): Support an ARM check?
+    "???";
+#endif
+
+// The Pepper Flash plugins are in a directory with this name.
 const FilePath::CharType kPepperFlashBaseDirectory[] =
     FILE_PATH_LITERAL("PepperFlash");
 
-// If we don't have a flash pepper component, this is the version we claim.
+// If we don't have a Pepper Flash component, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
 
-// The base directory on windows looks like:
+// The base directory on Windows looks like:
 // <profile>\AppData\Local\Google\Chrome\User Data\PepperFlash\.
 FilePath GetPepperFlashBaseDirectory() {
   FilePath result;
@@ -68,7 +83,7 @@ FilePath GetPepperFlashBaseDirectory() {
   return result.Append(kPepperFlashBaseDirectory);
 }
 
-// Pepper flash plugins have the version encoded in the path itself
+// Pepper Flash plugins have the version encoded in the path itself
 // so we need to enumerate the directories to find the full path.
 // On success it returns something like:
 // <profile>\AppData\Local\Google\Chrome\User Data\PepperFlash\10.3.44.555\.
@@ -91,7 +106,7 @@ bool GetLatestPepperFlashDirectory(FilePath* result, Version* latest) {
   return found;
 }
 
-// Returns true if the pepper |interface_name| is implemented  by this browser.
+// Returns true if the Pepper |interface_name| is implemented  by this browser.
 // It does not check if the interface is proxied.
 bool SupportsPepperInterface(const char* interface_name) {
   static webkit::ppapi::PluginModule::GetInterfaceFunc get_itf =
@@ -102,8 +117,6 @@ bool SupportsPepperInterface(const char* interface_name) {
   // so we need to check for that as well. TODO(cpu): make this more sane.
   return (strcmp(interface_name, PPB_PDF_INTERFACE) == 0);
 }
-
-}  // namespace
 
 bool MakePepperFlashPluginInfo(const FilePath& flash_path,
                                const Version& flash_version,
@@ -150,6 +163,8 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
   webkit::npapi::PluginList::Singleton()->RefreshPlugins();
 }
 
+}  // namespace
+
 class PepperFlashComponentInstaller : public ComponentInstaller {
  public:
   explicit PepperFlashComponentInstaller(const Version& version);
@@ -171,25 +186,17 @@ PepperFlashComponentInstaller::PepperFlashComponentInstaller(
 }
 
 void PepperFlashComponentInstaller::OnUpdateError(int error) {
-  NOTREACHED() << "pepper flash update error :" << error;
+  NOTREACHED() << "Pepper Flash update error: " << error;
 }
 
 bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
                                             const FilePath& unpack_path) {
-  std::string name;
-  manifest->GetStringASCII("name", &name);
-  if (name != kPepperFlashManifestName)
-    return false;
-  std::string proposed_version;
-  manifest->GetStringASCII("version", &proposed_version);
-  Version version(proposed_version.c_str());
-  if (!version.IsValid())
+  Version version;
+  if (!CheckPepperFlashManifest(manifest, &version))
     return false;
   if (current_version_.CompareTo(version) > 0)
     return false;
   if (!file_util::PathExists(unpack_path.Append(kPepperFlashPluginFileName)))
-    return false;
-  if (!VetoPepperFlashIntefaces(manifest))
     return false;
   // Passed the basic tests. Time to install it.
   FilePath path =
@@ -223,6 +230,47 @@ bool VetoPepperFlashIntefaces(base::DictionaryValue* manifest) {
   return true;
 }
 
+bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
+                              Version* version_out) {
+  std::string name;
+  manifest->GetStringASCII("name", &name);
+  // TODO(viettrungluu): Support WinFlapper for now, while we change the format
+  // of the manifest. (Should be safe to remove checks for "WinFlapper" in, say,
+  // Nov. 2011.)  crbug.com/98458
+  if (name != kPepperFlashManifestName && name != "WinFlapper")
+    return false;
+
+  std::string proposed_version;
+  manifest->GetStringASCII("version", &proposed_version);
+  Version version(proposed_version.c_str());
+  if (!version.IsValid())
+    return false;
+
+  if (!VetoPepperFlashIntefaces(manifest))
+    return false;
+
+  // TODO(viettrungluu): See above TODO.
+  if (name == "WinFlapper") {
+    *version_out = version;
+    return true;
+  }
+
+  std::string os;
+  manifest->GetStringASCII("x-ppapi-os", &os);
+  if (os != kPepperFlashOperatingSystem)
+    return false;
+
+  std::string arch;
+  manifest->GetStringASCII("x-ppapi-arch", &arch);
+  if (arch != kPepperFlashArch)
+    return false;
+
+  *version_out = version;
+  return true;
+}
+
+namespace {
+
 void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
                                          const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -232,7 +280,7 @@ void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
   pepflash.version = version;
   pepflash.pk_hash.assign(sha2_hash, &sha2_hash[sizeof(sha2_hash)]);
   if (cus->RegisterComponent(pepflash) != ComponentUpdateService::kOk) {
-    NOTREACHED() << "pepper flash component registration fail";
+    NOTREACHED() << "Pepper Flash component registration failed.";
   }
 }
 
@@ -241,7 +289,7 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
   FilePath path = GetPepperFlashBaseDirectory();
   if (!file_util::PathExists(path)) {
     if (!file_util::CreateDirectory(path)) {
-      NOTREACHED() << "cannot create pepper flash directory";
+      NOTREACHED() << "Could not create Pepper Flash directory.";
       return;
     }
   }
@@ -261,9 +309,10 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
       NewRunnableFunction(&FinishPepperFlashUpdateRegistration, cus, version));
 }
 
+}  // namespace
+
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  // TODO(cpu): support Mac and Linux flash pepper.
+#if defined(GOOGLE_CHROME_BUILD)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&StartPepperFlashUpdateRegistration, cus));
 #endif

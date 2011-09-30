@@ -8,6 +8,7 @@
 
 class ComponentUpdateService;
 class FilePath;
+class Version;
 
 namespace base {
 class DictionaryValue;
@@ -18,8 +19,13 @@ class DictionaryValue;
 // The first part is IO intensive so we do it asynchronously in the file thread.
 void RegisterPepperFlashComponent(ComponentUpdateService* cus);
 
-// Returns true if the this browser implements all the interfaces that flash
+// Returns true if this browser implements all the interfaces that Flash
 // specifies in its component installer manifest.
 bool VetoPepperFlashIntefaces(base::DictionaryValue* manifest);
+
+// Returns true if this browser is compatible with the given Pepper Flash
+// manifest, with the version specified in the manifest in |version_out|.
+bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
+                              Version* version_out);
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_

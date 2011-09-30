@@ -1,13 +1,10 @@
 {
-    "description": "Windows Pepper Flash Player", 
-    "name": "WinFlapper", 
-    "plugins": [
-        {
-            "path": "pepflashplayer.dll"
-        }
-    ], 
+    "description": "Pepper Flash Player", 
+    "name": "Flapper", 
     "version": "11.0.31.200", 
-    "x-flapper-revision": "7c35ae805bf57cde33a7562c2b36dda3604651f8", 
+    "x-flapper-revision": "d43330c2e904654fe9db99d1d9e90d6ad75540f9", 
+    "x-ppapi-arch": "ia32", 
+    "x-ppapi-os": "win", 
     "x-ppapi-required-interfaces": [
         "PPB_AudioConfig;1.0", 
         "PPB_Audio;1.0", 
