@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/hash_tables.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
@@ -168,7 +167,7 @@ class SafeBrowsingStore {
   // Delete().  The appropriate action is to use Delete() to clear the
   // store.
   virtual void Init(const FilePath& filename,
-                    Callback0::Type* corruption_callback) = 0;
+                    const base::Closure& corruption_callback) = 0;
 
   // Deletes the files which back the store, returning true if
   // successful.

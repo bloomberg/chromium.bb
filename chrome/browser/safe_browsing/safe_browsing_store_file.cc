@@ -4,7 +4,6 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
-#include "base/callback.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
 
@@ -277,10 +276,12 @@ bool SafeBrowsingStoreFile::Delete() {
   return true;
 }
 
-void SafeBrowsingStoreFile::Init(const FilePath& filename,
-                                 Callback0::Type* corruption_callback) {
+void SafeBrowsingStoreFile::Init(
+    const FilePath& filename,
+    const base::Closure& corruption_callback
+) {
   filename_ = filename;
-  corruption_callback_.reset(corruption_callback);
+  corruption_callback_ = corruption_callback;
 }
 
 bool SafeBrowsingStoreFile::BeginChunk() {
@@ -364,8 +365,7 @@ bool SafeBrowsingStoreFile::OnCorruptDatabase() {
     RecordFormatEvent(FORMAT_EVENT_FILE_CORRUPT);
   corruption_seen_ = true;
 
-  if (corruption_callback_.get())
-    corruption_callback_->Run();
+  corruption_callback_.Run();
 
   // Return false as a convenience to callers.
   return false;

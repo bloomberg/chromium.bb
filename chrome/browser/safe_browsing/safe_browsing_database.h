@@ -363,7 +363,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   std::set<SBPrefix> prefix_miss_cache_;
 
   // Used to schedule resetting the database because of corruption.
-  ScopedRunnableMethodFactory<SafeBrowsingDatabaseNew> reset_factory_;
+  base::WeakPtrFactory<SafeBrowsingDatabaseNew> reset_factory_;
 
   // Set if corruption is detected during the course of an update.
   // Causes the update functions to fail with no side effects, until

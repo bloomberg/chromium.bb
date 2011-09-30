@@ -16,6 +16,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/path_service.h"
@@ -366,8 +367,8 @@ class SafeBrowsingServiceTestHelper
     safe_browsing_test_->set_is_checked_url_safe(
         result == SafeBrowsingService::SAFE);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            NewRunnableMethod(this,
-                            &SafeBrowsingServiceTestHelper::OnCheckUrlDone));
+        base::Bind(&SafeBrowsingServiceTestHelper::OnCheckUrlDone,
+                   this));
   }
   virtual void OnDownloadUrlCheckResult(
       const std::vector<GURL>& url_chain,
@@ -382,8 +383,8 @@ class SafeBrowsingServiceTestHelper
   // Functions and callbacks to start the safebrowsing database update.
   void ForceUpdate() {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-        &SafeBrowsingServiceTestHelper::ForceUpdateInIOThread));
+        base::Bind(&SafeBrowsingServiceTestHelper::ForceUpdateInIOThread,
+                   this));
     // Will continue after OnForceUpdateDone().
     ui_test_utils::RunMessageLoop();
   }
@@ -391,8 +392,8 @@ class SafeBrowsingServiceTestHelper
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     safe_browsing_test_->ForceUpdate();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-        &SafeBrowsingServiceTestHelper::OnForceUpdateDone));
+        base::Bind(&SafeBrowsingServiceTestHelper::OnForceUpdateDone,
+                   this));
   }
   void OnForceUpdateDone() {
     StopUILoop();
@@ -401,8 +402,9 @@ class SafeBrowsingServiceTestHelper
   // Functions and callbacks related to CheckUrl. These are used to verify
   // phishing URLs.
   void CheckUrl(const GURL& url) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
-        this, &SafeBrowsingServiceTestHelper::CheckUrlOnIOThread, url));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+        base::Bind(&SafeBrowsingServiceTestHelper::CheckUrlOnIOThread,
+                   this, url));
     ui_test_utils::RunMessageLoop();
   }
   void CheckUrlOnIOThread(const GURL& url) {
@@ -410,8 +412,9 @@ class SafeBrowsingServiceTestHelper
     safe_browsing_test_->CheckUrl(this, url);
     if (!safe_browsing_test_->is_checked_url_in_db()) {
       // Ends the checking since this URL's prefix is not in database.
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-          this, &SafeBrowsingServiceTestHelper::OnCheckUrlDone));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&SafeBrowsingServiceTestHelper::OnCheckUrlDone,
+                   this));
     }
     // Otherwise, OnCheckUrlDone is called in OnUrlCheckResult since
     // safebrowsing service further fetches hashes from safebrowsing server.
@@ -425,9 +428,8 @@ class SafeBrowsingServiceTestHelper
   void CheckStatusOnIOThread() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     safe_browsing_test_->UpdateSafeBrowsingStatus();
-    safe_browsing_test_->SafeBrowsingMessageLoop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this,
-        &SafeBrowsingServiceTestHelper::CheckIsDatabaseReady));
+    safe_browsing_test_->SafeBrowsingMessageLoop()->PostTask(FROM_HERE,
+        base::Bind(&SafeBrowsingServiceTestHelper::CheckIsDatabaseReady, this));
   }
 
   // Checks status in SafeBrowsing Thread.
@@ -435,8 +437,9 @@ class SafeBrowsingServiceTestHelper
     EXPECT_EQ(MessageLoop::current(),
               safe_browsing_test_->SafeBrowsingMessageLoop());
     safe_browsing_test_->CheckIsDatabaseReady();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-        this, &SafeBrowsingServiceTestHelper::OnWaitForStatusUpdateDone));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&SafeBrowsingServiceTestHelper::OnWaitForStatusUpdateDone,
+                   this));
   }
 
   void OnWaitForStatusUpdateDone() {
@@ -448,8 +451,8 @@ class SafeBrowsingServiceTestHelper
     BrowserThread::PostDelayedTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableMethod(this,
-            &SafeBrowsingServiceTestHelper::CheckStatusOnIOThread),
+        base::Bind(&SafeBrowsingServiceTestHelper::CheckStatusOnIOThread,
+                   this),
         wait_time_msec);
     // Will continue after OnWaitForStatusUpdateDone().
     ui_test_utils::RunMessageLoop();

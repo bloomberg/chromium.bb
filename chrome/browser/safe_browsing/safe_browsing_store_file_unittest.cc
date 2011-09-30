@@ -4,7 +4,7 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +26,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     filename_ = filename_.AppendASCII("SafeBrowsingTestStore");
 
     store_.reset(new SafeBrowsingStoreFile());
-    store_->Init(filename_, NULL);
+    store_->Init(filename_, base::Closure());
   }
   virtual void TearDown() {
     if (store_.get())
@@ -63,7 +63,7 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteTemp) {
   // Pull the rug out from under the existing store, simulating a
   // crash.
   store_.reset(new SafeBrowsingStoreFile());
-  store_->Init(filename_, NULL);
+  store_->Init(filename_, base::Closure());
   EXPECT_FALSE(file_util::PathExists(filename_));
   EXPECT_TRUE(file_util::PathExists(temp_file));
 
@@ -81,8 +81,8 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   SafeBrowsingStoreFile test_store;
   test_store.Init(
       filename_,
-      NewCallback(static_cast<SafeBrowsingStoreFileTest*>(this),
-                  &SafeBrowsingStoreFileTest::OnCorruptionDetected));
+      base::Bind(&SafeBrowsingStoreFileTest::OnCorruptionDetected,
+                 base::Unretained(this)));
 
   corruption_detected_ = false;
 

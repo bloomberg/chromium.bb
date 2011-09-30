@@ -11,7 +11,6 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 
-#include "base/callback_old.h"
 #include "base/file_util.h"
 
 // Implement SafeBrowsingStore in terms of a flat file.  The file
@@ -110,7 +109,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   virtual ~SafeBrowsingStoreFile();
 
   virtual void Init(const FilePath& filename,
-                    Callback0::Type* corruption_callback) OVERRIDE;
+                    const base::Closure& corruption_callback) OVERRIDE;
 
   // Delete any on-disk files, including the permanent storage.
   virtual bool Delete() OVERRIDE;
@@ -272,7 +271,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   base::hash_set<int32> add_del_cache_;
   base::hash_set<int32> sub_del_cache_;
 
-  scoped_ptr<Callback0::Type> corruption_callback_;
+  base::Closure corruption_callback_;
 
   // Tracks whether corruption has already been seen in the current
   // update, so that only one instance is recorded in the stats.

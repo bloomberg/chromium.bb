@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
@@ -532,7 +533,8 @@ void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
 
   browse_store_->Init(
       browse_filename_,
-      NewCallback(this, &SafeBrowsingDatabaseNew::HandleCorruptDatabase));
+      base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
+                 base::Unretained(this)));
   DVLOG(1) << "Init browse store: " << browse_filename_.value();
 
   {
@@ -550,7 +552,8 @@ void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
     download_filename_ = DownloadDBFilename(filename_base);
     download_store_->Init(
         download_filename_,
-        NewCallback(this, &SafeBrowsingDatabaseNew::HandleCorruptDatabase));
+        base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
+                   base::Unretained(this)));
     DVLOG(1) << "Init download store: " << download_filename_.value();
   }
 
@@ -558,7 +561,8 @@ void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
     csd_whitelist_filename_ = CsdWhitelistDBFilename(filename_base);
     csd_whitelist_store_->Init(
         csd_whitelist_filename_,
-        NewCallback(this, &SafeBrowsingDatabaseNew::HandleCorruptDatabase));
+        base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
+                   base::Unretained(this)));
     DVLOG(1) << "Init csd whitelist store: " << csd_whitelist_filename_.value();
     std::vector<SBAddFullHash> full_hashes;
     if (csd_whitelist_store_->GetAddFullHashes(&full_hashes)) {
@@ -574,7 +578,8 @@ void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
     download_whitelist_filename_ = DownloadWhitelistDBFilename(filename_base);
     download_whitelist_store_->Init(
         download_whitelist_filename_,
-        NewCallback(this, &SafeBrowsingDatabaseNew::HandleCorruptDatabase));
+        base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
+                   base::Unretained(this)));
     DVLOG(1) << "Init download whitelist store: "
              << download_whitelist_filename_.value();
     std::vector<SBAddFullHash> full_hashes;
@@ -1295,11 +1300,11 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
 void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
   // Reset the database after the current task has unwound (but only
   // reset once within the scope of a given task).
-  if (reset_factory_.empty()) {
+  if (!reset_factory_.HasWeakPtrs()) {
     RecordFailure(FAILURE_DATABASE_CORRUPT);
     MessageLoop::current()->PostTask(FROM_HERE,
-        reset_factory_.NewRunnableMethod(
-            &SafeBrowsingDatabaseNew::OnHandleCorruptDatabase));
+        base::Bind(&SafeBrowsingDatabaseNew::OnHandleCorruptDatabase,
+                   reset_factory_.GetWeakPtr()));
   }
 }
 
