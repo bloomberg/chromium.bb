@@ -898,8 +898,9 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
           DispatchStateReached(static_cast<OMX_STATETYPE>(data2));
           return;
         case OMX_CommandFlush:
-          DCHECK(current_state_change_ == RESETTING ||
-                 current_state_change_ == DESTROYING);
+          if (current_state_change_ == DESTROYING)
+            return;
+          DCHECK(current_state_change_ == RESETTING);
           if (data2 == input_port_)
             InputPortFlushDone();
           else if (data2 == output_port_)
