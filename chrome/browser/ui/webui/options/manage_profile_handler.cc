@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/manage_profile_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/value_conversions.h"
@@ -48,9 +50,11 @@ void ManageProfileHandler::Initialize() {
 
 void ManageProfileHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("setProfileNameAndIcon",
-      NewCallback(this, &ManageProfileHandler::SetProfileNameAndIcon));
+      base::Bind(&ManageProfileHandler::SetProfileNameAndIcon,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("deleteProfile",
-      NewCallback(this, &ManageProfileHandler::DeleteProfile));
+      base::Bind(&ManageProfileHandler::DeleteProfile,
+                 base::Unretained(this)));
 }
 
 void ManageProfileHandler::Observe(int type,

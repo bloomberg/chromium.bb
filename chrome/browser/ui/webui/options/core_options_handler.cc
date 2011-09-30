@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -136,25 +138,35 @@ void CoreOptionsHandler::Observe(int type,
 
 void CoreOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("coreOptionsInitialize",
-      NewCallback(this, &CoreOptionsHandler::HandleInitialize));
+      base::Bind(&CoreOptionsHandler::HandleInitialize,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("fetchPrefs",
-      NewCallback(this, &CoreOptionsHandler::HandleFetchPrefs));
+      base::Bind(&CoreOptionsHandler::HandleFetchPrefs,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("observePrefs",
-      NewCallback(this, &CoreOptionsHandler::HandleObservePrefs));
+      base::Bind(&CoreOptionsHandler::HandleObservePrefs,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setBooleanPref",
-      NewCallback(this, &CoreOptionsHandler::HandleSetBooleanPref));
+      base::Bind(&CoreOptionsHandler::HandleSetBooleanPref,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setIntegerPref",
-      NewCallback(this, &CoreOptionsHandler::HandleSetIntegerPref));
+      base::Bind(&CoreOptionsHandler::HandleSetIntegerPref,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setDoublePref",
-      NewCallback(this, &CoreOptionsHandler::HandleSetDoublePref));
+      base::Bind(&CoreOptionsHandler::HandleSetDoublePref,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setStringPref",
-      NewCallback(this, &CoreOptionsHandler::HandleSetStringPref));
+      base::Bind(&CoreOptionsHandler::HandleSetStringPref,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setListPref",
-      NewCallback(this, &CoreOptionsHandler::HandleSetListPref));
+      base::Bind(&CoreOptionsHandler::HandleSetListPref,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("clearPref",
-      NewCallback(this, &CoreOptionsHandler::HandleClearPref));
+      base::Bind(&CoreOptionsHandler::HandleClearPref,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("coreOptionsUserMetricsAction",
-      NewCallback(this, &CoreOptionsHandler::HandleUserMetricsAction));
+      base::Bind(&CoreOptionsHandler::HandleUserMetricsAction,
+                 base::Unretained(this)));
 }
 
 void CoreOptionsHandler::HandleInitialize(const ListValue* args) {

@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/options/clear_browser_data_handler.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -86,7 +88,8 @@ void ClearBrowserDataHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback("performClearBrowserData",
-      NewCallback(this, &ClearBrowserDataHandler::HandleClearBrowserData));
+      base::Bind(&ClearBrowserDataHandler::HandleClearBrowserData,
+                 base::Unretained(this)));
 }
 
 void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {

@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -51,15 +53,20 @@ void HandlerOptionsHandler::Initialize() {
 void HandlerOptionsHandler::RegisterMessages() {
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback("clearDefault",
-      NewCallback(this, &HandlerOptionsHandler::ClearDefault));
+      base::Bind(&HandlerOptionsHandler::ClearDefault,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeHandler",
-      NewCallback(this, &HandlerOptionsHandler::RemoveHandler));
+      base::Bind(&HandlerOptionsHandler::RemoveHandler,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setHandlersEnabled",
-      NewCallback(this, &HandlerOptionsHandler::SetHandlersEnabled));
+      base::Bind(&HandlerOptionsHandler::SetHandlersEnabled,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setDefault",
-      NewCallback(this, &HandlerOptionsHandler::SetDefault));
+      base::Bind(&HandlerOptionsHandler::SetDefault,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeIgnoredHandler",
-      NewCallback(this, &HandlerOptionsHandler::RemoveIgnoredHandler));
+      base::Bind(&HandlerOptionsHandler::RemoveIgnoredHandler,
+                 base::Unretained(this)));
 }
 
 ProtocolHandlerRegistry* HandlerOptionsHandler::GetProtocolHandlerRegistry() {

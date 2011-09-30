@@ -6,6 +6,8 @@
 
 #include "base/auto_reset.h"
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -92,36 +94,44 @@ void ExtensionSettingsHandler::RegisterUserPrefs(PrefService* prefs) {
 
 void ExtensionSettingsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("extensionSettingsRequestExtensionsData",
-      NewCallback(this,
-                  &ExtensionSettingsHandler::HandleRequestExtensionsData));
+      base::Bind(&ExtensionSettingsHandler::HandleRequestExtensionsData,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsToggleDeveloperMode",
-      NewCallback(this, &ExtensionSettingsHandler::HandleToggleDeveloperMode));
+      base::Bind(&ExtensionSettingsHandler::HandleToggleDeveloperMode,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsInspect",
-      NewCallback(this, &ExtensionSettingsHandler::HandleInspectMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleInspectMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsReload",
-      NewCallback(this, &ExtensionSettingsHandler::HandleReloadMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleReloadMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsEnable",
-      NewCallback(this,
-                  &ExtensionSettingsHandler::HandleEnableMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleEnableMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsEnableIncognito",
-      NewCallback(this,
-                  &ExtensionSettingsHandler::HandleEnableIncognitoMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleEnableIncognitoMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsAllowFileAccess",
-      NewCallback(this,
-                  &ExtensionSettingsHandler::HandleAllowFileAccessMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleAllowFileAccessMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsUninstall",
-      NewCallback(this, &ExtensionSettingsHandler::HandleUninstallMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleUninstallMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsOptions",
-      NewCallback(this, &ExtensionSettingsHandler::HandleOptionsMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleOptionsMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsShowButton",
-      NewCallback(this, &ExtensionSettingsHandler::HandleShowButtonMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleShowButtonMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsLoad",
-      NewCallback(this, &ExtensionSettingsHandler::HandleLoadMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleLoadMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsAutoupdate",
-      NewCallback(this, &ExtensionSettingsHandler::HandleAutoUpdateMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleAutoUpdateMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("extensionSettingsSelectFilePath",
-      NewCallback(this,
-                  &ExtensionSettingsHandler::HandleSelectFilePathMessage));
+      base::Bind(&ExtensionSettingsHandler::HandleSelectFilePathMessage,
+                 base::Unretained(this)));
 }
 
 void ExtensionSettingsHandler::HandleRequestExtensionsData(

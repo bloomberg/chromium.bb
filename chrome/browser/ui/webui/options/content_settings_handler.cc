@@ -8,7 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -596,17 +597,17 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
 
 void ContentSettingsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("setContentFilter",
-      NewCallback(this,
-                  &ContentSettingsHandler::SetContentFilter));
+      base::Bind(&ContentSettingsHandler::SetContentFilter,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeException",
-      NewCallback(this,
-                  &ContentSettingsHandler::RemoveException));
+      base::Bind(&ContentSettingsHandler::RemoveException,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setException",
-      NewCallback(this,
-                  &ContentSettingsHandler::SetException));
+      base::Bind(&ContentSettingsHandler::SetException,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("checkExceptionPatternValidity",
-      NewCallback(this,
-                  &ContentSettingsHandler::CheckExceptionPatternValidity));
+      base::Bind(&ContentSettingsHandler::CheckExceptionPatternValidity,
+                 base::Unretained(this)));
 }
 
 void ContentSettingsHandler::SetContentFilter(const ListValue* args) {

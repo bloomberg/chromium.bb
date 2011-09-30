@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/options/browser_options_handler.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
@@ -93,46 +95,45 @@ void BrowserOptionsHandler::GetLocalizedValues(
 }
 
 void BrowserOptionsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
-      "setHomePage",
-      NewCallback(this, &BrowserOptionsHandler::SetHomePage));
-  web_ui_->RegisterMessageCallback(
-      "becomeDefaultBrowser",
-      NewCallback(this, &BrowserOptionsHandler::BecomeDefaultBrowser));
-  web_ui_->RegisterMessageCallback(
-      "setDefaultSearchEngine",
-      NewCallback(this, &BrowserOptionsHandler::SetDefaultSearchEngine));
-  web_ui_->RegisterMessageCallback(
-      "removeStartupPages",
-      NewCallback(this, &BrowserOptionsHandler::RemoveStartupPages));
-  web_ui_->RegisterMessageCallback(
-      "addStartupPage",
-      NewCallback(this, &BrowserOptionsHandler::AddStartupPage));
-  web_ui_->RegisterMessageCallback(
-      "editStartupPage",
-      NewCallback(this, &BrowserOptionsHandler::EditStartupPage));
-  web_ui_->RegisterMessageCallback(
-      "setStartupPagesToCurrentPages",
-      NewCallback(this, &BrowserOptionsHandler::SetStartupPagesToCurrentPages));
-  web_ui_->RegisterMessageCallback(
-      "dragDropStartupPage",
-      NewCallback(this, &BrowserOptionsHandler::DragDropStartupPage));
-  web_ui_->RegisterMessageCallback(
-      "requestAutocompleteSuggestions",
-      NewCallback(this,
-                  &BrowserOptionsHandler::RequestAutocompleteSuggestions));
-  web_ui_->RegisterMessageCallback(
-      "toggleShowBookmarksBar",
-      NewCallback(this, &BrowserOptionsHandler::ToggleShowBookmarksBar));
-  web_ui_->RegisterMessageCallback(
-      "enableInstant",
-      NewCallback(this, &BrowserOptionsHandler::EnableInstant));
-  web_ui_->RegisterMessageCallback(
-      "disableInstant",
-      NewCallback(this, &BrowserOptionsHandler::DisableInstant));
-  web_ui_->RegisterMessageCallback(
-      "getInstantFieldTrialStatus",
-      NewCallback(this, &BrowserOptionsHandler::GetInstantFieldTrialStatus));
+  web_ui_->RegisterMessageCallback("setHomePage",
+      base::Bind(&BrowserOptionsHandler::SetHomePage,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("becomeDefaultBrowser",
+      base::Bind(&BrowserOptionsHandler::BecomeDefaultBrowser,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("setDefaultSearchEngine",
+      base::Bind(&BrowserOptionsHandler::SetDefaultSearchEngine,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("removeStartupPages",
+      base::Bind(&BrowserOptionsHandler::RemoveStartupPages,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("addStartupPage",
+      base::Bind(&BrowserOptionsHandler::AddStartupPage,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("editStartupPage",
+      base::Bind(&BrowserOptionsHandler::EditStartupPage,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("setStartupPagesToCurrentPages",
+      base::Bind(&BrowserOptionsHandler::SetStartupPagesToCurrentPages,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("dragDropStartupPage",
+      base::Bind(&BrowserOptionsHandler::DragDropStartupPage,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("requestAutocompleteSuggestions",
+      base::Bind(&BrowserOptionsHandler::RequestAutocompleteSuggestions,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("toggleShowBookmarksBar",
+      base::Bind(&BrowserOptionsHandler::ToggleShowBookmarksBar,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("enableInstant",
+      base::Bind(&BrowserOptionsHandler::EnableInstant,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("disableInstant",
+      base::Bind(&BrowserOptionsHandler::DisableInstant,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("getInstantFieldTrialStatus",
+      base::Bind(&BrowserOptionsHandler::GetInstantFieldTrialStatus,
+                 base::Unretained(this)));
 }
 
 void BrowserOptionsHandler::Initialize() {

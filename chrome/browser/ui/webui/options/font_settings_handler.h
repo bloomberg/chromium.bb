@@ -6,14 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 #pragma once
 
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/browser/font_list_async.h"
 
 // Font settings overlay page UI handler.
-class FontSettingsHandler : public base::SupportsWeakPtr<FontSettingsHandler>,
-                            public OptionsPageUIHandler {
+class FontSettingsHandler : public OptionsPageUIHandler {
  public:
   FontSettingsHandler();
   virtual ~FontSettingsHandler();

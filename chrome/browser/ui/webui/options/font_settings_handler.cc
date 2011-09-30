@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -98,12 +99,14 @@ WebUIMessageHandler* FontSettingsHandler::Attach(WebUI* web_ui) {
 
 void FontSettingsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("fetchFontsData",
-      NewCallback(this, &FontSettingsHandler::HandleFetchFontsData));
+      base::Bind(&FontSettingsHandler::HandleFetchFontsData,
+                 base::Unretained(this)));
 }
 
 void FontSettingsHandler::HandleFetchFontsData(const ListValue* args) {
   content::GetFontListAsync(
-      base::Bind(&FontSettingsHandler::FontsListHasLoaded, AsWeakPtr()));
+      base::Bind(&FontSettingsHandler::FontsListHasLoaded,
+                 base::Unretained(this)));
 }
 
 void FontSettingsHandler::FontsListHasLoaded(

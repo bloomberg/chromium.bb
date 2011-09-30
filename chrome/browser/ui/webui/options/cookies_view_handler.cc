@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/cookies_view_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
@@ -77,13 +79,17 @@ void CookiesViewHandler::GetLocalizedValues(
 
 void CookiesViewHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("updateCookieSearchResults",
-      NewCallback(this, &CookiesViewHandler::UpdateSearchResults));
+      base::Bind(&CookiesViewHandler::UpdateSearchResults,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeAllCookies",
-      NewCallback(this, &CookiesViewHandler::RemoveAll));
+      base::Bind(&CookiesViewHandler::RemoveAll,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeCookie",
-      NewCallback(this, &CookiesViewHandler::Remove));
+      base::Bind(&CookiesViewHandler::Remove,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("loadCookie",
-      NewCallback(this, &CookiesViewHandler::LoadChildren));
+      base::Bind(&CookiesViewHandler::LoadChildren,
+                 base::Unretained(this)));
 }
 
 void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,

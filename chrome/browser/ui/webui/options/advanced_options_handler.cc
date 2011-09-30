@@ -7,7 +7,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -255,46 +256,47 @@ void AdvancedOptionsHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback("selectDownloadLocation",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleSelectDownloadLocation));
+      base::Bind(&AdvancedOptionsHandler::HandleSelectDownloadLocation,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("autoOpenFileTypesAction",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleAutoOpenButton));
+      base::Bind(&AdvancedOptionsHandler::HandleAutoOpenButton,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("defaultFontSizeAction",
-      NewCallback(this, &AdvancedOptionsHandler::HandleDefaultFontSize));
+      base::Bind(&AdvancedOptionsHandler::HandleDefaultFontSize,
+                 base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
   web_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleMetricsReportingCheckbox));
+      base::Bind(&AdvancedOptionsHandler::HandleMetricsReportingCheckbox,
+                 base::Unretained(this)));
 #endif
 #if !defined(USE_NSS) && !defined(USE_OPENSSL)
   web_ui_->RegisterMessageCallback("showManageSSLCertificates",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::ShowManageSSLCertificates));
+      base::Bind(&AdvancedOptionsHandler::ShowManageSSLCertificates,
+                 base::Unretained(this)));
 #endif
   web_ui_->RegisterMessageCallback("showCloudPrintManagePage",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::ShowCloudPrintManagePage));
+      base::Bind(&AdvancedOptionsHandler::ShowCloudPrintManagePage,
+                 base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
   if (cloud_print_proxy_ui_enabled_) {
     web_ui_->RegisterMessageCallback("showCloudPrintSetupDialog",
-        NewCallback(this,
-                    &AdvancedOptionsHandler::ShowCloudPrintSetupDialog));
+        base::Bind(&AdvancedOptionsHandler::ShowCloudPrintSetupDialog,
+                   base::Unretained(this)));
     web_ui_->RegisterMessageCallback("disableCloudPrintProxy",
-        NewCallback(this,
-                    &AdvancedOptionsHandler::HandleDisableCloudPrintProxy));
+        base::Bind(&AdvancedOptionsHandler::HandleDisableCloudPrintProxy,
+                   base::Unretained(this)));
   }
   web_ui_->RegisterMessageCallback("showNetworkProxySettings",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::ShowNetworkProxySettings));
+      base::Bind(&AdvancedOptionsHandler::ShowNetworkProxySettings,
+                 base::Unretained(this)));
 #endif
   web_ui_->RegisterMessageCallback("checkRevocationCheckboxAction",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleCheckRevocationCheckbox));
+      base::Bind(&AdvancedOptionsHandler::HandleCheckRevocationCheckbox,
+                 base::Unretained(this)));
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   web_ui_->RegisterMessageCallback("backgroundModeAction",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleBackgroundModeCheckbox));
+      base::Bind(&AdvancedOptionsHandler::HandleBackgroundModeCheckbox,
+                 base::Unretained(this)));
 #endif
 }
 

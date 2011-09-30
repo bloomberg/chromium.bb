@@ -7,7 +7,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -63,8 +64,8 @@ void ImportDataHandler::Initialize() {
 }
 
 void ImportDataHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
-      "importData", NewCallback(this, &ImportDataHandler::ImportData));
+  web_ui_->RegisterMessageCallback("importData",
+      base::Bind(&ImportDataHandler::ImportData, base::Unretained(this)));
 }
 
 void ImportDataHandler::ImportData(const ListValue* args) {
