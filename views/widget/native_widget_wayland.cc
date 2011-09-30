@@ -258,7 +258,7 @@ void NativeWidgetWayland::SetWindowIcons(const SkBitmap& window_icon,
                                          const SkBitmap& app_icon) {
 }
 
-void NativeWidgetWayland::SetAccessibleName(const std::wstring& name) {
+void NativeWidgetWayland::SetAccessibleName(const string16& name) {
 }
 
 void NativeWidgetWayland::SetAccessibleRole(

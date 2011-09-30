@@ -6,6 +6,7 @@
 #define VIEWS_WIDGET_NATIVE_WIDGET_PRIVATE_H_
 #pragma once
 
+#include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/ime/input_method_delegate.h"
 #include "views/widget/native_widget.h"
@@ -152,7 +153,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
                               const SkBitmap& app_icon) = 0;
 
   // Update native accessibility properties on the native window.
-  virtual void SetAccessibleName(const std::wstring& name) = 0;
+  virtual void SetAccessibleName(const string16& name) = 0;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
 

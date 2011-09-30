@@ -1021,7 +1021,7 @@ void NativeWidgetGtk::SetWindowIcons(const SkBitmap& window_icon,
   // We don't have window icons on ChromeOS.
 }
 
-void NativeWidgetGtk::SetAccessibleName(const std::wstring& name) {
+void NativeWidgetGtk::SetAccessibleName(const string16& name) {
 }
 
 void NativeWidgetGtk::SetAccessibleRole(ui::AccessibilityTypes::Role role) {

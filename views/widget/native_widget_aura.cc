@@ -189,7 +189,7 @@ void NativeWidgetAura::SetWindowIcons(const SkBitmap& window_icon,
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetAura::SetAccessibleName(const std::wstring& name) {
+void NativeWidgetAura::SetAccessibleName(const string16& name) {
   NOTIMPLEMENTED();
 }
 

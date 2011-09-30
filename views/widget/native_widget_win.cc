@@ -715,7 +715,7 @@ void NativeWidgetWin::SetWindowIcons(const SkBitmap& window_icon,
   }
 }
 
-void NativeWidgetWin::SetAccessibleName(const std::wstring& name) {
+void NativeWidgetWin::SetAccessibleName(const string16& name) {
   base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));

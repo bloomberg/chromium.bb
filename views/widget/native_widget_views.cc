@@ -291,7 +291,7 @@ void NativeWidgetViews::SetWindowIcons(const SkBitmap& window_icon,
                                        const SkBitmap& app_icon) {
 }
 
-void NativeWidgetViews::SetAccessibleName(const std::wstring& name) {
+void NativeWidgetViews::SetAccessibleName(const string16& name) {
 }
 
 void NativeWidgetViews::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
