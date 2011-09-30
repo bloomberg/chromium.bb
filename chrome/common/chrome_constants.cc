@@ -124,6 +124,8 @@ const FilePath::CharType kExtensionKeyFileExtension[] = FPL(".pem");
 // filenames
 const FilePath::CharType kArchivedHistoryFilename[] = FPL("Archived History");
 const FilePath::CharType kCacheDirname[] = FPL("Cache");
+const FilePath::CharType kCRLSetFilename[] =
+    FPL("Certificate Revocation Lists");
 const FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const FilePath::CharType kOffTheRecordMediaCacheDirname[] =
     FPL("Incognito Media Cache");

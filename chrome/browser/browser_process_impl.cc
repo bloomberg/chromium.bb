@@ -36,6 +36,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -737,6 +738,19 @@ ComponentUpdateService* BrowserProcessImpl::component_updater() {
     component_updater_.reset(ComponentUpdateServiceFactory(configurator));
   }
   return component_updater_.get();
+#endif
+}
+
+CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
+#if defined(OS_CHROMEOS)
+  // There's no component updater on ChromeOS so there can't be a CRLSetFetcher
+  // either.
+  return NULL;
+#else
+  if (!crl_set_fetcher_.get()) {
+    crl_set_fetcher_ = new CRLSetFetcher();
+  }
+  return crl_set_fetcher_.get();
 #endif
 }
 

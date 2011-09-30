@@ -1540,6 +1540,8 @@
         'browser/net/connect_interceptor.h',
         'browser/net/connection_tester.cc',
         'browser/net/connection_tester.h',
+        'browser/net/crl_set_fetcher.cc',
+        'browser/net/crl_set_fetcher.h',
         'browser/net/gaia/gaia_oauth_consumer.h',
         'browser/net/gaia/gaia_oauth_fetcher.cc',
         'browser/net/gaia/gaia_oauth_fetcher.h',

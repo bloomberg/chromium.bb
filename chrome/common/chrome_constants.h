@@ -54,6 +54,7 @@ extern const FilePath::CharType kExtensionKeyFileExtension[];
 // filenames
 extern const FilePath::CharType kArchivedHistoryFilename[];
 extern const FilePath::CharType kCacheDirname[];
+extern const FilePath::CharType kCRLSetFilename[];
 extern const FilePath::CharType kMediaCacheDirname[];
 extern const FilePath::CharType kOffTheRecordMediaCacheDirname[];
 extern const FilePath::CharType kAppCacheDirname[];

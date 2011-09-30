@@ -21,6 +21,7 @@
 class AutomationProviderList;
 class BackgroundModeManager;
 class ChromeNetLog;
+class CRLSetFetcher;
 class ComponentUpdateService;
 class DevToolsManager;
 class DownloadRequestLimiter;
@@ -243,6 +244,8 @@ class BrowserProcess {
   virtual GpuBlacklistUpdater* gpu_blacklist_updater() = 0;
 
   virtual ComponentUpdateService* component_updater() = 0;
+
+  virtual CRLSetFetcher* crl_set_fetcher() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -529,6 +530,12 @@ void RegisterComponentsForUpdate() {
   // a task to the UI thread to do registration once you done the necessary
   // file IO to know your current version.
   RegisterPepperFlashComponent(cus);
+
+  // CRLSetFetcher attempts to load a CRL set from either the local disk
+  // or network.
+  // TODO(agl): this is disabled for now while it's plumbed in.
+  // g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
+
   cus->Start();
 }
 

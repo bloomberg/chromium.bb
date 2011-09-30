@@ -19,6 +19,7 @@
 #include "content/common/notification_service.h"
 
 class BackgroundModeManager;
+class CRLSetFetcher;
 class IOThread;
 class GoogleURLTracker;
 class MHTMLGenerationManager;
@@ -122,6 +123,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual MHTMLGenerationManager* mhtml_generation_manager() OVERRIDE;
   virtual GpuBlacklistUpdater* gpu_blacklist_updater() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
+  virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

@@ -130,6 +130,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   virtual ComponentUpdateService* component_updater() OVERRIDE;
 
+  virtual CRLSetFetcher* crl_set_fetcher();
+
  private:
   void CreateResourceDispatcherHost();
   void CreateMetricsService();
@@ -318,6 +320,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
 #if !defined(OS_CHROMEOS)
   scoped_ptr<ComponentUpdateService> component_updater_;
+
+  scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
