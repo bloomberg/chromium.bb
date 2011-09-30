@@ -227,6 +227,8 @@ void GpuCommandBufferStub::OnInitialize(
     decoder_->set_debug(true);
   }
 
+  SetSwapInterval();
+
   command_buffer_->SetPutOffsetChangeCallback(
       NewCallback(scheduler_.get(),
                   &gpu::GpuScheduler::PutChanged));
@@ -479,6 +481,7 @@ void GpuCommandBufferStub::ViewResized() {
   if (surface_.get()) {
     surface_->Destroy();
     surface_->Initialize();
+    SetSwapInterval();
   }
 #endif
 }
@@ -493,6 +496,19 @@ void GpuCommandBufferStub::ReportState() {
     msg->set_unblock(true);
     Send(msg);
   }
+}
+
+void GpuCommandBufferStub::SetSwapInterval() {
+#if !defined(OS_MACOSX) && !defined(TOUCH_UI)
+  // Set up swap interval for onscreen contexts.
+  if (!surface_->IsOffscreen()) {
+    decoder_->MakeCurrent();
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
+      context_->SetSwapInterval(0);
+    else
+      context_->SetSwapInterval(1);
+  }
+#endif
 }
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(

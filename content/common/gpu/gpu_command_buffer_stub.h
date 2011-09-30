@@ -128,6 +128,8 @@ class GpuCommandBufferStub
   void OnResize(gfx::Size size);
   void ReportState();
 
+  void SetSwapInterval();
+
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
   // are destroyed. So a raw pointer is safe.
