@@ -43,7 +43,7 @@ void UIThreadExtensionFunction::RenderViewHostTracker::Observe(
 
 ExtensionFunction::ExtensionFunction()
     : request_id_(-1),
-      profile_(NULL),
+      profile_id_(NULL),
       has_callback_(false),
       include_incognito_(false),
       user_gesture_(false),
@@ -73,6 +73,10 @@ const std::string ExtensionFunction::GetResult() {
   if (result_.get())
     base::JSONWriter::Write(result_.get(), false, &json);
   return json;
+}
+
+Value* ExtensionFunction::GetResultValue() {
+  return result_.get();
 }
 
 const std::string ExtensionFunction::GetError() {

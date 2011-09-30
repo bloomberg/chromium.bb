@@ -670,7 +670,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_has_callback(params.has_callback);
   function->set_user_gesture(params.user_gesture);
   function->set_extension(extension);
-  function->set_profile(profile);
+  function->set_profile_id(profile);
   return function;
 }
 
