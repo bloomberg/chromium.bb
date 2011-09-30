@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -294,25 +296,31 @@ void AutofillOptionsHandler::Initialize() {
 void AutofillOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "removeAddress",
-      NewCallback(this, &AutofillOptionsHandler::RemoveAddress));
+      base::Bind(&AutofillOptionsHandler::RemoveAddress,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "removeCreditCard",
-      NewCallback(this, &AutofillOptionsHandler::RemoveCreditCard));
+      base::Bind(&AutofillOptionsHandler::RemoveCreditCard,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "loadAddressEditor",
-      NewCallback(this, &AutofillOptionsHandler::LoadAddressEditor));
+      base::Bind(&AutofillOptionsHandler::LoadAddressEditor,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "loadCreditCardEditor",
-      NewCallback(this, &AutofillOptionsHandler::LoadCreditCardEditor));
+      base::Bind(&AutofillOptionsHandler::LoadCreditCardEditor,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "setAddress",
-      NewCallback(this, &AutofillOptionsHandler::SetAddress));
+      base::Bind(&AutofillOptionsHandler::SetAddress, base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "setCreditCard",
-      NewCallback(this, &AutofillOptionsHandler::SetCreditCard));
+      base::Bind(&AutofillOptionsHandler::SetCreditCard,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "validatePhoneNumbers",
-      NewCallback(this, &AutofillOptionsHandler::ValidatePhoneNumbers));
+      base::Bind(&AutofillOptionsHandler::ValidatePhoneNumbers,
+                 base::Unretained(this)));
 }
 
 /////////////////////////////////////////////////////////////////////////////
