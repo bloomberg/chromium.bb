@@ -314,13 +314,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowAutofillTypePredictions)
   },
   {
-    "sync-oauth",
-    IDS_FLAGS_SYNC_OAUTH_NAME,
-    IDS_FLAGS_SYNC_OAUTH_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSyncOAuth)
-  },
-  {
     "sync-tabs",
     IDS_FLAGS_SYNC_TABS_NAME,
     IDS_FLAGS_SYNC_TABS_DESCRIPTION,

@@ -4543,12 +4543,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SYNC_TABS_DESCRIPTION" desc="Description for the flag to enable syncing the open tabs datatype">
         Enable open tabs in the sync options. This allows syncing your open tabs to other clients.
       </message>
-      <message name="IDS_FLAGS_SYNC_OAUTH_NAME" desc="Title for the flag to enable authenticating with OAuth">
-        Use OAuth to authenticate Sync operations.
-      </message>
-      <message name="IDS_FLAGS_SYNC_OAUTH_DESCRIPTION" desc="Description for the flag to enable authenticating with OAuth">
-        Use OAuth, rather than ClientLogin, to authenticate Sync operations.  This decouples authentication-specific user interface elements from the browser and enables a rich set of second-factor mechanisms.
-      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
           Enable syncing typed URLs
