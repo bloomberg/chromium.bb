@@ -15,6 +15,7 @@
       'sources': [
         'app/breakpad_win.cc',
         'app/breakpad_win.h',
+        'app/chrome_exe_main_aura.cc',
         'app/chrome_exe_main_gtk.cc',
         'app/chrome_exe_main_mac.cc',
         'app/chrome_exe_main_win.cc',

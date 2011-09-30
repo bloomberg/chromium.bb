@@ -100,7 +100,7 @@ void InitAuraDesktop() {
   aura::Window* window1 = new aura::Window(window_delegate1);
   window1->set_id(1);
   window1->Init();
-  window1->SetBounds(gfx::Rect(100, 100, 400, 400), 0);
+  window1->SetBounds(gfx::Rect(100, 100, 400, 400));
   window1->SetVisibility(aura::Window::VISIBILITY_SHOWN);
   window1->SetParent(NULL);
 }
