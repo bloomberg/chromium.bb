@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,13 @@
 #pragma once
 
 #include "base/string16.h"
+#include "content/common/content_export.h"
 
 namespace WebKit {
 class WebSerializedScriptValue;
 }
 
-class SerializedScriptValue {
+class CONTENT_EXPORT SerializedScriptValue {
  public:
   SerializedScriptValue();
   SerializedScriptValue(bool is_null, bool is_invalid, const string16& data);

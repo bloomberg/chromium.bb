@@ -187,11 +187,9 @@ class CONTENT_EXPORT URLFetcher {
   base::TimeDelta backoff_delay() const { return backoff_delay_; }
 
   // Sets the back-off delay, allowing to mock 5xx requests in unit-tests.
-#if defined(UNIT_TEST)
-  void set_backoff_delay(base::TimeDelta backoff_delay) {
+  void set_backoff_delay_for_testing(base::TimeDelta backoff_delay) {
     backoff_delay_ = backoff_delay;
   }
-#endif  // defined(UNIT_TEST)
 
   // By default, the response is saved in a string. Call this method to save the
   // response to a temporary file instead. Must be called before Start().

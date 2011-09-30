@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
+#include "content/common/content_export.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "ui/gfx/surface/transport_dib.h"
 
@@ -41,9 +42,10 @@ class WaitableEvent;
 // keeps a list of RenderView (renderer) and TabContents (browser) which
 // are correlated with IDs. This way, the Views and the corresponding ViewHosts
 // communicate through the two process objects.
-class BrowserRenderProcessHost : public RenderProcessHost,
-                                 public ChildProcessLauncher::Client,
-                                 public base::WaitableEventWatcher::Delegate {
+class CONTENT_EXPORT BrowserRenderProcessHost
+    : public RenderProcessHost,
+      public ChildProcessLauncher::Client,
+      public base::WaitableEventWatcher::Delegate {
  public:
   explicit BrowserRenderProcessHost(content::BrowserContext* browser_context);
   virtual ~BrowserRenderProcessHost();

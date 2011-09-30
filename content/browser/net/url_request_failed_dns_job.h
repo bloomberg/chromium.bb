@@ -21,7 +21,7 @@ class URLRequestFailedDnsJob : public net::URLRequestJob {
                                      const std::string& scheme);
 
   // A test URL that can be used in UI tests.
-  static const char kTestUrl[];
+  CONTENT_EXPORT static const char kTestUrl[];
 
   // Adds the testing URLs to the net::URLRequestFilter.
   CONTENT_EXPORT static void AddUrlHandler();

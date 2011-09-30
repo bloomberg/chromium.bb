@@ -127,4 +127,6 @@ class CONTENT_EXPORT BrowserMainParts {
 
 }  // namespace content
 
+CONTENT_EXPORT int BrowserMain(const MainFunctionParams& parameters);
+
 #endif  // CONTENT_BROWSER_BROWSER_MAIN_H_

@@ -29,7 +29,7 @@ class BrowserContext;
 // Manages RenderViewHosts for a TabContents. Normally there is only one and
 // it is easy to do. But we can also have transitions of processes (and hence
 // RenderViewHosts) that can get complex.
-class RenderViewHostManager
+class CONTENT_EXPORT RenderViewHostManager
     : public RenderViewHostDelegate::RendererManagement,
       public NotificationObserver {
  public:
@@ -106,7 +106,7 @@ class RenderViewHostManager
 
   // Returns the view associated with the current RenderViewHost, or NULL if
   // there is no current one.
-  CONTENT_EXPORT RenderWidgetHostView* GetRenderWidgetHostView() const;
+  RenderWidgetHostView* GetRenderWidgetHostView() const;
 
   // Returns the pending render view host, or NULL if there is no pending one.
   RenderViewHost* pending_render_view_host() const {

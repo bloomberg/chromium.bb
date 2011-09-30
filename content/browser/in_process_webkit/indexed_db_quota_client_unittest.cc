@@ -47,7 +47,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     FilePath indexeddb_dir = temp_dir_.path().Append(
         IndexedDBContext::kIndexedDBDirectory);
     ASSERT_TRUE(file_util::CreateDirectory(indexeddb_dir));
-    idb_context()->set_data_path(indexeddb_dir);
+    idb_context()->set_data_path_for_testing(indexeddb_dir);
   }
 
   ~IndexedDBQuotaClientTest() {

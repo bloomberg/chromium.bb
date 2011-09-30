@@ -160,7 +160,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // Functions for managing switching of Renderers. For TabContents, this is
   // implemented by the RenderViewHostManager
 
-  class RendererManagement {
+  class CONTENT_EXPORT RendererManagement {
    public:
     // Notification whether we should close the page, after an explicit call to
     // AttemptToClosePage.  This is called before a cross-site request or before

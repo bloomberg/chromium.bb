@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityManager;
@@ -39,7 +40,7 @@ typedef std::map<WebAccessibility::StringAttribute, string16> StringAttrMap;
 // APIs.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class BrowserAccessibility {
+class CONTENT_EXPORT BrowserAccessibility {
  public:
   // Creates a platform specific BrowserAccessibility. Ownership passes to the
   // caller.

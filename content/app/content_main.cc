@@ -17,6 +17,7 @@
 #include "base/string_number_conversions.h"
 #include "content/app/content_main_delegate.h"
 #include "content/app/startup_helper_win.h"
+#include "content/browser/browser_main.h"
 #include "content/common/content_constants.h"
 #include "content/common/content_paths.h"
 #include "content/common/content_switches.h"
@@ -57,7 +58,6 @@ int tc_set_new_mode(int mode);
 }
 #endif
 
-extern int BrowserMain(const MainFunctionParams&);
 extern int GpuMain(const MainFunctionParams&);
 extern int PluginMain(const MainFunctionParams&);
 extern int PpapiPluginMain(const MainFunctionParams&);

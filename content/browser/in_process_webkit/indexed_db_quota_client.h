@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
+#include "content/common/content_export.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/quota_types.h"
@@ -22,10 +23,10 @@ class IndexedDBContext;
 class IndexedDBQuotaClient : public quota::QuotaClient,
                              public quota::QuotaTaskObserver {
  public:
-  IndexedDBQuotaClient(
+  CONTENT_EXPORT IndexedDBQuotaClient(
       base::MessageLoopProxy* tracker_thread,
       IndexedDBContext* indexed_db_context);
-  virtual ~IndexedDBQuotaClient();
+  CONTENT_EXPORT virtual ~IndexedDBQuotaClient();
 
   // QuotaClient method overrides
   virtual ID id() const OVERRIDE;

@@ -338,10 +338,7 @@ class CONTENT_EXPORT DownloadItem {
 
   std::string DebugString(bool verbose) const;
 
-#ifdef UNIT_TEST
-  // Mock opening downloads (for testing only).
-  void TestMockDownloadOpen() { open_enabled_ = false; }
-#endif
+  void MockDownloadOpenForTesting() { open_enabled_ = false; }
 
  private:
   // Construction common to all constructors. |active| should be true for new

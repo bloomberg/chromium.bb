@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/speech/speech_input_manager.h"
+#include "content/common/content_export.h"
 #include "net/url_request/url_request_context_getter.h"
 
 struct SpeechInputHostMsg_StartRecognition_Params;
@@ -38,7 +39,7 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
                                  bool* message_was_ok);
 
   // Singleton manager setter useful for tests.
-  static void set_manager(SpeechInputManager* manager) {
+  CONTENT_EXPORT static void set_manager(SpeechInputManager* manager) {
     manager_ = manager;
   }
 

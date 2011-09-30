@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
+#include "content/common/content_export.h"
 #include "content/common/p2p_sockets.h"
 #include "net/socket/tcp_server_socket.h"
 
@@ -21,7 +22,7 @@ class StreamSocket;
 
 namespace content {
 
-class P2PSocketHostTcpServer : public P2PSocketHost {
+class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
  public:
   P2PSocketHostTcpServer(IPC::Message::Sender* message_sender,
                          int routing_id, int id);

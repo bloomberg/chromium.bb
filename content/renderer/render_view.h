@@ -177,7 +177,7 @@ class RenderView : public RenderWidget,
   // responsible for creating this RenderView (corresponding to parent_hwnd).
   // |counter| is either a currently initialized counter, or NULL (in which case
   // we treat this RenderView as a top level window).
-  static RenderView* Create(
+  CONTENT_EXPORT static RenderView* Create(
       RenderThreadBase* render_thread,
       gfx::NativeViewId parent_hwnd,
       int32 opener_id,
@@ -816,7 +816,7 @@ class RenderView : public RenderWidget,
                              const WebKit::WebMediaPlayerAction& action);
   void OnMouseLockLost();
   void OnMoveOrResizeStarted();
-  void OnNavigate(const ViewMsg_Navigate_Params& params);
+  CONTENT_EXPORT void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnPaste();
 #if defined(OS_MACOSX)
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
@@ -837,7 +837,8 @@ class RenderView : public RenderWidget,
   void OnSetBackground(const SkBitmap& background);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
-  void OnSetHistoryLengthAndPrune(int history_length, int32 minimum_page_id);
+  CONTENT_EXPORT void OnSetHistoryLengthAndPrune(int history_length,
+                                                 int32 minimum_page_id);
   void OnSetInitialFocus(bool reverse);
 #if defined(OS_MACOSX)
   void OnSetInLiveResize(bool in_live_resize);

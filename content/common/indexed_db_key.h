@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,10 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 
-class IndexedDBKey {
+class CONTENT_EXPORT IndexedDBKey {
  public:
   IndexedDBKey(); // Defaults to WebKit::WebIDBKey::InvalidType.
   explicit IndexedDBKey(const WebKit::WebIDBKey& key);

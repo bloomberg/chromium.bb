@@ -1387,7 +1387,7 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
   size_t original_count = NavigationController::max_entry_count();
   const int kMaxEntryCount = 5;
 
-  NavigationController::set_max_entry_count(kMaxEntryCount);
+  NavigationController::set_max_entry_count_for_testing(kMaxEntryCount);
 
   int url_index;
   // Load up to the max count, all entries should be there.
@@ -1429,7 +1429,7 @@ TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
   EXPECT_EQ(controller().GetEntryAtIndex(0)->url(),
             GURL("http:////www.a.com/4"));
 
-  NavigationController::set_max_entry_count(original_count);
+  NavigationController::set_max_entry_count_for_testing(original_count);
 }
 
 // Tests that we can do a restore and navigate to the restored entries and

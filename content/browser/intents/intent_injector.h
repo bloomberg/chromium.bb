@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/common/content_export.h"
 #include "content/common/intents_messages.h"
 
 class RenderViewHost;
@@ -26,7 +27,7 @@ class Message;
 // logic will create one of these to take care of passing intent data down into
 // the context of the service, which will be running in the TabContents on which
 // this class is an observer. Deletes itself when the tab is closed.
-class IntentInjector : public TabContentsObserver {
+class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
  public:
   // |tab_contents| must not be NULL.
   explicit IntentInjector(TabContents* tab_contents);

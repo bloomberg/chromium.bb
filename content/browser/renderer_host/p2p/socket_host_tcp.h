@@ -24,7 +24,7 @@ class StreamSocket;
 
 namespace content {
 
-class P2PSocketHostTcp : public P2PSocketHost {
+class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHost {
  public:
   P2PSocketHostTcp(IPC::Message::Sender* message_sender,
                    int routing_id, int id);

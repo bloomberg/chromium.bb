@@ -34,7 +34,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::Rect GetViewBounds() const = 0;
 };
 
-class BrowserAccessibilityFactory {
+class CONTENT_EXPORT BrowserAccessibilityFactory {
  public:
   virtual ~BrowserAccessibilityFactory() {}
 
@@ -44,7 +44,7 @@ class BrowserAccessibilityFactory {
 };
 
 // Manages a tree of BrowserAccessibility objects.
-class BrowserAccessibilityManager {
+class CONTENT_EXPORT BrowserAccessibilityManager {
  public:
   // Creates the platform specific BrowserAccessibilityManager. Ownership passes
   // to the caller.

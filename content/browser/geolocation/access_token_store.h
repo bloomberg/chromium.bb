@@ -45,8 +45,9 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore>,
   // so it is efficient to piggyback it onto this request.
   // Takes ownership of |callback|.
   // Returns a handle which can subsequently be used with CancelRequest().
-  Handle LoadAccessTokens(CancelableRequestConsumerBase* consumer,
-                          LoadAccessTokensCallbackType* callback);
+  CONTENT_EXPORT Handle LoadAccessTokens(
+      CancelableRequestConsumerBase* consumer,
+      LoadAccessTokensCallbackType* callback);
 
   virtual void SaveAccessToken(
       const GURL& server_url, const string16& access_token) = 0;

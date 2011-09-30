@@ -34,9 +34,9 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
                                      const std::string& scheme);
 
   // Test URLs.
-  static const char kUnknownSizeUrl[];
-  static const char kKnownSizeUrl[];
-  static const char kFinishDownloadUrl[];
+  CONTENT_EXPORT static const char kUnknownSizeUrl[];
+  CONTENT_EXPORT static const char kKnownSizeUrl[];
+  CONTENT_EXPORT static const char kFinishDownloadUrl[];
 
   // Adds the testing URLs to the net::URLRequestFilter.
   CONTENT_EXPORT static void AddUrlHandler();

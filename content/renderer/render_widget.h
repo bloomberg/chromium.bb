@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "content/renderer/paint_aggregator.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
@@ -60,10 +62,11 @@ class PluginInstance;
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
-class RenderWidget : public IPC::Channel::Listener,
-                     public IPC::Message::Sender,
-                     virtual public WebKit::WebWidgetClient,
-                     public base::RefCounted<RenderWidget> {
+class CONTENT_EXPORT RenderWidget
+    : public IPC::Channel::Listener,
+      public IPC::Message::Sender,
+      NON_EXPORTED_BASE(virtual public WebKit::WebWidgetClient),
+      public base::RefCounted<RenderWidget> {
  public:
   // Creates a new RenderWidget.  The opener_id is the routing ID of the
   // RenderView that this widget lives inside. The render_thread is any

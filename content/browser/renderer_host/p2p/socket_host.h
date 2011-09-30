@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_H_
 
+#include "content/common/content_export.h"
 #include "content/common/p2p_sockets.h"
 
 #include "ipc/ipc_message.h"
@@ -13,7 +14,7 @@
 namespace content {
 
 // Base class for P2P sockets.
-class P2PSocketHost {
+class CONTENT_EXPORT P2PSocketHost {
  public:
   // Creates P2PSocketHost of the specific type.
   static P2PSocketHost* Create(IPC::Message::Sender* message_sender,

@@ -109,10 +109,9 @@ class CONTENT_EXPORT DOMStorageContext {
     clear_local_state_on_exit_ = clear_local_state;
   }
 
-#ifdef UNIT_TEST
-  // For unit tests allow to override the |data_path_|.
-  void set_data_path(const FilePath& data_path) { data_path_ = data_path; }
-#endif
+  void set_data_path_for_testing(const FilePath& data_path) {
+    data_path_ = data_path;
+  }
 
  private:
 

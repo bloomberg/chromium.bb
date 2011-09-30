@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_child_process_host.h"
+#include "content/common/content_export.h"
 #include "webkit/plugins/webplugininfo.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -41,7 +42,7 @@ class GURL;
 // starting the plugin process when a plugin is created that doesn't already
 // have a process.  After that, most of the communication is directly between
 // the renderer and plugin processes.
-class PluginProcessHost : public BrowserChildProcessHost {
+class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHost {
  public:
   class Client {
    public:

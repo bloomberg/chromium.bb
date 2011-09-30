@@ -332,7 +332,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
                                                  mock_metric_logger));
   fetcher = factory.GetFetcherByID(3);
   ASSERT_TRUE(fetcher);
-  fetcher->set_backoff_delay(
+  fetcher->set_backoff_delay_for_testing(
       base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
   FakeOnURLFetchComplete(fetcher, 500, std::string(responses[0]));
 
@@ -358,7 +358,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
       *(form_structures[0]), true, FieldTypeSet()));
   fetcher = factory.GetFetcherByID(4);
   ASSERT_TRUE(fetcher);
-  fetcher->set_backoff_delay(
+  fetcher->set_backoff_delay_for_testing(
       base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
   FakeOnURLFetchComplete(fetcher, 503, std::string(responses[2]));
   EXPECT_EQ(AutofillDownloadTest::REQUEST_UPLOAD_FAILED,

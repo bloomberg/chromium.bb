@@ -68,13 +68,13 @@ class URLRequestContextGetter;
 }
 
 // Manages all in progress downloads.
-class DownloadFileManager
+class CONTENT_EXPORT DownloadFileManager
     : public base::RefCountedThreadSafe<DownloadFileManager> {
  public:
   explicit DownloadFileManager(ResourceDispatcherHost* rdh);
 
   // Called on shutdown on the UI thread.
-  CONTENT_EXPORT void Shutdown();
+  void Shutdown();
 
   // Called on UI thread to make DownloadFileManager start the download.
   void StartDownload(DownloadCreateInfo* info);

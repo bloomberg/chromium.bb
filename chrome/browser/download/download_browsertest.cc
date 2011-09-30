@@ -615,7 +615,7 @@ class MockDownloadOpeningObserver : public DownloadManager::Observer {
 
     for (std::vector<DownloadItem*>::iterator it = downloads.begin();
          it != downloads.end(); ++it) {
-      (*it)->TestMockDownloadOpen();
+      (*it)->MockDownloadOpenForTesting();
     }
   }
 

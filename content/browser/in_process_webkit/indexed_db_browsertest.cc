@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
     // With the levelDB backend, these are directories.
     WebKitContext *webkit_context = profile.GetWebKitContext();
     IndexedDBContext* idb_context = webkit_context->indexed_db_context();
-    idb_context->set_data_path(temp_dir.path());
+    idb_context->set_data_path_for_testing(temp_dir.path());
     protected_path = idb_context->GetIndexedDBFilePath(
         DatabaseUtil::GetOriginIdentifier(kProtectedOrigin));
     unprotected_path = idb_context->GetIndexedDBFilePath(
@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearSessionOnlyDatabases) {
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;
-    idb_context->set_data_path(temp_dir.path());
+    idb_context->set_data_path_for_testing(temp_dir.path());
 
     normal_path = idb_context->GetIndexedDBFilePath(
         DatabaseUtil::GetOriginIdentifier(kNormalOrigin));
