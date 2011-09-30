@@ -69,8 +69,7 @@ void Window::SetVisibility(Visibility visibility) {
 
   visibility_ = visibility;
   layer_->SetVisible(visibility_ != VISIBILITY_HIDDEN);
-  if (layer_->visible())
-    SchedulePaint();
+  SchedulePaint();
   if (visibility_ != VISIBILITY_SHOWN)
     ReleaseCapture();
   if ((visibility_ == VISIBILITY_HIDDEN &&
