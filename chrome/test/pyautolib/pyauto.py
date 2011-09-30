@@ -477,6 +477,19 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return _HTTP_SERVER.GetURL(os.path.join('files', *relative_path)).spec()
 
   @staticmethod
+  def GetFtpURLForDataPath(ftp_server, *relative_path):
+    """Get ftp:// url for the given path in the data dir.
+
+    Args:
+      ftp_server: handle to ftp server, an instance of TestServer
+      relative_path: any number of path elements
+
+    The URL will be usable only after starting the ftp server.
+    """
+    assert ftp_server, 'FTP Server not yet started'
+    return ftp_server.GetURL(os.path.join(*relative_path)).spec()
+
+  @staticmethod
   def IsMac():
     """Are we on Mac?"""
     return 'darwin' == sys.platform
@@ -640,6 +653,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       time.sleep(retry_sleep)
     return False
 
+  def StartFTPServer(self, data_dir):
+    """Start a local file server hosting data files over ftp://
+
+    Args:
+      data_dir: path where ftp files should be serverd
+
+    Returns:
+      handle to FTP Server, an instance of TestServer
+    """
+    ftp_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_FTP,
+        pyautolib.FilePath(data_dir))
+    assert ftp_server.Start(), 'Could not start ftp server'
+    logging.debug('Started ftp server at "%s".' % data_dir)
+    return ftp_server
+
+  def StopFTPServer(self, ftp_server):
+    """Stop the local ftp server."""
+    assert ftp_server, 'FTP Server not yet started'
+    assert ftp_server.Stop(), 'Could not stop ftp server'
+    logging.debug('Stopped ftp server.')
 
   class ActionTimeoutChanger(object):
     """Facilitate temporary changes to action_timeout_ms.

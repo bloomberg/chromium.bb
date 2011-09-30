@@ -122,8 +122,6 @@
       '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/95031
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
-      # crbug.com/91578
-      '-history.HistoryTest.testFtpHistory',
     ],
 
     'win': [
@@ -302,7 +300,7 @@
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
       # crbug.com/81271
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',	
+      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
@@ -452,7 +450,7 @@
       '-gpu.GpuTest.testGpuWithVideo',
       # Preloaded extensions affect process count: crbug.com/94350
       '-process_count',
-	  
+
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================

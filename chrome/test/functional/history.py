@@ -208,13 +208,14 @@ class HistoryTest(pyauto.PyUITest):
 
   def testFtpHistory(self):
     """Verify a site using ftp protocol shows up within history."""
-    ftp_url = 'ftp://ftp.kernel.org/'
-    ftp_title = 'Index of /'
+    ftp_server = self.StartFTPServer(os.path.join('chrome', 'test', 'data'))
+    ftp_title = 'A Small Hello'
+    ftp_url = self.GetFtpURLForDataPath(ftp_server, 'History', 'landing.html')
     self.NavigateToURL(ftp_url)
     history = self.GetHistoryInfo().History()
     self.assertEqual(len(history), 1)
     self.assertEqual(ftp_title, history[0]['title'])
-    self.assertEqual(ftp_url, history[0]['url'])
+    self.StopFTPServer(ftp_server)
 
   def _CheckHistory(self, title, url, length, index=0):
     """Verify that the current history matches expectations.
