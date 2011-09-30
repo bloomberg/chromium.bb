@@ -293,10 +293,13 @@ void PasswordFormManager::OnRequestDone(int handle,
     return;
   }
 
-  // Proceed to autofill (note that we provide the choices but don't
-  // actually prefill a value if the ACTION paths don't match).
-  bool wait_for_username = observed_form_.action.GetWithEmptyPath() !=
-                           preferred_match_->action.GetWithEmptyPath();
+  // Proceed to autofill.
+  // Note that we provide the choices but don't actually prefill a value if
+  // either: (1) we are in Incognito mode, or (2) the ACTION paths don't match.
+  bool wait_for_username =
+      profile_->IsOffTheRecord() ||
+      observed_form_.action.GetWithEmptyPath() !=
+          preferred_match_->action.GetWithEmptyPath();
   if (wait_for_username)
     manager_action_ = kManagerActionNone;
   else
