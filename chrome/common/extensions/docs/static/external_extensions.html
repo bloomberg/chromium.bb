@@ -92,8 +92,7 @@ file available to the machine you want to install the extension on.
 <code>\\server\share\extension.crx</code>
 or <code>/home/share/extension.crx</code>.)
 </li>
-<li>Locate the <code>external_extensions.json</code> file
-  under the Google Chrome installation directory.
+<li>Locate the <code>external_extensions.json</code> file.
   If the file doesn't exist, create it.
   The location depends on the operating system.
   <dl>
@@ -103,7 +102,11 @@ or <code>/home/share/extension.crx</code>.)
     Example: <code>c:\Users\Me\AppData\Local\Google\Chrome\Application\6.0.422.0\Extensions\</code>
     </dd>
   <dt> Mac OS X: </dt>
-    <dd> <code>/Applications/Google Chrome.app/Contents/Extensions/</code> </dd>
+    <dd> <code>/Library/Application Support/Google/Chrome/External Extensions/</code> </dd>
+    <p class="note"><b>Note:</b> The external extensions file is read only if every directory in the path is owned by the user <code>root</code>, has the group <code>admin</code>, and is not world readable.  The path must also be free of symbolic links.  These restrictions prevent an unprivileged user from causing extensions to be installed for all users.  See <a href="#troubleshooting">troubleshooting</a> for details.</p>
+    <p class="note">
+    <b>Note:</b> The above path was added in Chrome 16.  Prior versions used a different path, which is now deprecated:
+    <code>/Applications/Google Chrome.app/Contents/Extensions/</code> .</p>
   <dt> Linux: </dt>
     <dd> <code>/opt/google/chrome/extensions/</code> <br>
     <b>Note:</b> Use <code>chmod</code> if necessary
@@ -148,6 +151,19 @@ Example:
 <li>Save the JSON file. </li>
 <li>Launch Google Chrome and go to <b>chrome://extensions</b>;
 you should see the extension listed. </li>
+</ol>
+
+<h3 id="troubleshooting">Troubleshooting Mac OS permissions problems</h3>
+
+<p>On Mac OS, if you do not see the external extension installed when Chrome is launched, there may be a permissions problem with the external extensions preferences file.  To see if this is the problem, follow these steps:</p>
+
+<ol>
+  <li> Launch the Console program.  You can find it under /Applications/Utilities/Console. </li>
+  <li> If the leftmost icon in the Console says "Show Log List", click that icon.  A second column appears at the left. </li>
+  <li> Click "Console Messages" in the left pane. </li>
+  <li> Search for the string <b>Can not read external extensions</b>.  If there is a problem reading the external extensions file, you will find an error message.  Look for another error message directly above it, which should explain the issue.  For example, if you see the following error:
+     "Path /Library/Application Support/Google/Chrome is owned by the wrong group", you need to use <code>chgrp</code> or the Finder's Get Info dialog to change the directory's group owner to the Administrator group.</li>
+  <li> After fixing the issue, relaunch Chrome.  Test that the external extension is now installed.  It is possible that one permissions error keeps Chrome from detecting a second error.  If the external extension was not installed, repeat these steps until you do not see an error in the Console application.
 </ol>
 
 <h2 id="registry">Using the Windows registry</h2>
