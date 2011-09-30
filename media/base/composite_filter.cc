@@ -397,29 +397,20 @@ void CompositeFilter::SendErrorToHost(PipelineStatus error) {
     host_impl_.get()->host()->SetError(error);
 }
 
-base::Closure CompositeFilter::NewThreadSafeCallback(
-    void (CompositeFilter::*method)()) {
-  return base::Bind(&CompositeFilter::OnCallback,
-                    message_loop_,
-                    base::Bind(method, weak_ptr_factory_.GetWeakPtr()));
+// Execute |closure| if on |message_loop|, otherwise post to it.
+static void TrampolineClosureIfNecessary(MessageLoop* message_loop,
+                                         const base::Closure& closure) {
+  if (MessageLoop::current() == message_loop)
+    closure.Run();
+  else
+    message_loop->PostTask(FROM_HERE, closure);
 }
 
-// This method is intentionally static so that no reference to the composite
-// is needed to call it. This method may be called by other threads and we
-// don't want those threads to gain ownership of this composite by having a
-// reference to it. |closure| will contain a weak reference to the composite
-// so that the reference can be cleared if the composite is destroyed before
-// the callback is called.
-// static
-void CompositeFilter::OnCallback(MessageLoop* message_loop,
-                                 const base::Closure& closure) {
-  if (MessageLoop::current() != message_loop) {
-    // Posting callback to the proper thread.
-    message_loop->PostTask(FROM_HERE, closure);
-    return;
-  }
-
-  closure.Run();
+base::Closure CompositeFilter::NewThreadSafeCallback(
+    void (CompositeFilter::*method)()) {
+  return base::Bind(&TrampolineClosureIfNecessary,
+                    message_loop_,
+                    base::Bind(method, weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool CompositeFilter::CanForwardError() {

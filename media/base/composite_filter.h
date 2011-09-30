@@ -99,11 +99,6 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   // to call the specified method on the thread associated with this filter.
   base::Closure NewThreadSafeCallback(void (CompositeFilter::*method)());
 
-  // Helper function used by NewThreadSafeCallback() to make sure the
-  // method gets called on the right thread.
-  static void OnCallback(MessageLoop* message_loop,
-                         const base::Closure& closure);
-
   // Helper function that indicates whether SetError() calls can be forwarded
   // to the host of this filter.
   bool CanForwardError();

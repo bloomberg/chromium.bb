@@ -10,23 +10,13 @@
 
 namespace media {
 
-static void DoInitDone(const DemuxerFactory::BuildCallback& cb,
-                       const scoped_refptr<Demuxer>& demuxer,
-                       PipelineStatus status) {
-  if (status != PIPELINE_OK) {
-    cb.Run(status, static_cast<Demuxer*>(NULL));
-    return;
-  }
-
-  cb.Run(status, demuxer);
-}
-
 static void InitDone(MessageLoop* message_loop,
                      const DemuxerFactory::BuildCallback& cb,
-                     const scoped_refptr<Demuxer>& demuxer,
+                     scoped_refptr<Demuxer> demuxer,
                      PipelineStatus status) {
-  message_loop->PostTask(FROM_HERE,
-                         base::Bind(&DoInitDone, cb, demuxer, status));
+  if (status != PIPELINE_OK)
+    demuxer = NULL;
+  message_loop->PostTask(FROM_HERE, base::Bind(cb, status, demuxer));
 }
 
 ChunkDemuxerFactory::ChunkDemuxerFactory(const std::string& url,
