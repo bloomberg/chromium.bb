@@ -1189,9 +1189,13 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
   status_dict->Set("force_spdy_always",
                    Value::CreateBooleanValue(
                        net::HttpStreamFactory::force_spdy_always()));
-  status_dict->Set("next_protos",
-                   Value::CreateStringValue(
-                       *net::HttpStreamFactory::next_protos()));
+
+  // The next_protos may not be specified for certain configurations of SPDY.
+  Value* next_protos_value = net::HttpStreamFactory::next_protos() ?
+      Value::CreateStringValue(*net::HttpStreamFactory::next_protos()) :
+      Value::CreateStringValue("");
+
+  status_dict->Set("next_protos", next_protos_value);
 
   SendJavascriptCommand(L"receivedSpdyStatus", status_dict);
 }
