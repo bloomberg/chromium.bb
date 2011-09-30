@@ -52,6 +52,9 @@
         'gpu/gpu_idirect3d9_mock_win.cc',
         'gpu/gpu_idirect3d9_mock_win.h',
         'renderer/mock_content_renderer_client.cc',
+        'test/browser_test.h',
+        'test/browser_test_base.cc',
+        'test/browser_test_base.h',
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
         'test/test_browser_context.cc',
@@ -198,6 +201,50 @@
         ['OS=="mac"', {
           'dependencies': [
             'closure_blocks_leopard_compat',
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'content_browsertests',
+      'type': 'executable',
+      'dependencies': [
+        'content_browser',
+        'content_gpu',
+        'content_plugin',
+        'content_renderer',
+        'test_support_content',
+        '../base/base.gyp:test_support_base',
+        '../net/net.gyp:net_test_support',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+      ],
+      'sources': [
+        'test/content_browser_test.h',
+        'test/content_browser_test.cc',
+        'test/content_test_launcher.cc',
+        'test/test_launcher.cc',
+        'test/test_launcher.h',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lcomctl32.lib',
+            ],
+          },
+        }],
+        ['OS=="win" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator',
           ],
         }],
       ],

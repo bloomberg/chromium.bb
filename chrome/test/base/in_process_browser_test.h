@@ -11,6 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "content/common/page_transition_types.h"
+#include "content/test/browser_test.h"
+#include "content/test/browser_test_base.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,22 +72,17 @@ class RuleBasedHostResolverProc;
 // InProcessBrowserTest disables the sandbox when running.
 //
 // See ui_test_utils for a handful of methods designed for use with this class.
-class InProcessBrowserTest : public testing::Test {
+class InProcessBrowserTest : public BrowserTestBase {
  public:
   InProcessBrowserTest();
   virtual ~InProcessBrowserTest();
 
-  // We do this so we can be used in a Task.
-  void AddRef() {}
-  void Release() {}
-  static bool ImplementsThreadSafeReferenceCounting() { return false; }
-
   // Configures everything for an in process browser test, then invokes
   // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 
   // Restores state configured in SetUp.
-  virtual void TearDown();
+  virtual void TearDown() OVERRIDE;
 
  protected:
   // Returns the browser created by CreateBrowser.
@@ -107,9 +104,6 @@ class InProcessBrowserTest : public testing::Test {
   // RunTestOnMainThread().
   virtual void SetUpOnMainThread() {}
 
-  // Override this rather than TestBody.
-  virtual void RunTestOnMainThread() = 0;
-
   // Initializes the contents of the user data directory. Called by SetUp()
   // after creating the user data directory, but before any browser is launched.
   // If a test wishes to set up some initial non-empty state in the user data
@@ -117,25 +111,15 @@ class InProcessBrowserTest : public testing::Test {
   // successful.
   virtual bool SetUpUserDataDirectory() WARN_UNUSED_RESULT;
 
-  // We need these special methods because InProcessBrowserTest::SetUp is the
-  // bottom of the stack that winds up calling your test method, so it is not
-  // always an option to do what you want by overriding it and calling the
-  // superclass version.
-  //
-  // Override this for things you would normally override SetUp for. It will be
-  // called before your individual test fixture method is run, but after most
-  // of the overhead initialization has occured.
-  virtual void SetUpInProcessBrowserTestFixture() {}
-
-  // Override this for things you would normally override TearDown for.
-  virtual void TearDownInProcessBrowserTestFixture() {}
-
   // Override this to add command line flags specific to your test.
   virtual void SetUpCommandLine(CommandLine* command_line) {}
 
   // Override this to add any custom cleanup code that needs to be done on the
   // main thread before the browser is torn down.
   virtual void CleanUpOnMainThread() {}
+
+  // BrowserTestBase:
+  virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
   // Returns the testing server. Guaranteed to be non-NULL.
   net::TestServer* test_server() { return test_server_.get(); }
@@ -176,11 +160,6 @@ class InProcessBrowserTest : public testing::Test {
   // if successful.
   virtual bool CreateUserDataDirectory() WARN_UNUSED_RESULT;
 
-  // This is invoked from main after browser_init/browser_main have completed.
-  // This prepares for the test by creating a new browser, runs the test
-  // (RunTestOnMainThread), quits the browsers and returns.
-  void RunTestOnMainThreadLoop();
-
   // Quits all open browsers and waits until there are no more browsers.
   void QuitBrowsers();
 
@@ -218,75 +197,6 @@ class InProcessBrowserTest : public testing::Test {
 #if defined(OS_CHROMEOS)
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
 #endif  // defined(OS_CHROMEOS)
-
-  DISALLOW_COPY_AND_ASSIGN(InProcessBrowserTest);
 };
-
-// We only want to use InProcessBrowserTest in test targets which properly
-// isolate each test case by running each test in a separate process.
-// This way if a test hangs the test launcher can reliably terminate it.
-//
-// InProcessBrowserTest cannot be run more than once in the same address space
-// anyway - otherwise the second test crashes.
-#if defined(HAS_OUT_OF_PROC_TEST_RUNNER)
-
-#define IN_PROC_BROWSER_TEST_(test_case_name, test_name, parent_class,\
-                              parent_id)\
-class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class {\
- public:\
-  GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {}\
- protected:\
-  virtual void RunTestOnMainThread();\
- private:\
-  virtual void TestBody() {}\
-  static ::testing::TestInfo* const test_info_;\
-  GTEST_DISALLOW_COPY_AND_ASSIGN_(\
-      GTEST_TEST_CLASS_NAME_(test_case_name, test_name));\
-};\
-\
-::testing::TestInfo* const GTEST_TEST_CLASS_NAME_(test_case_name, test_name)\
-  ::test_info_ =\
-    ::testing::internal::MakeAndRegisterTestInfo(\
-        #test_case_name, #test_name, "", "", \
-        (parent_id), \
-        parent_class::SetUpTestCase, \
-        parent_class::TearDownTestCase, \
-        new ::testing::internal::TestFactoryImpl<\
-            GTEST_TEST_CLASS_NAME_(test_case_name, test_name)>);\
-void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
-
-#define IN_PROC_BROWSER_TEST_F(test_fixture, test_name)\
-  IN_PROC_BROWSER_TEST_(test_fixture, test_name, test_fixture,\
-                    ::testing::internal::GetTypeId<test_fixture>())
-
-#define IN_PROC_BROWSER_TEST_P(test_case_name, test_name) \
-  class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) \
-      : public test_case_name { \
-   public: \
-    GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {} \
-   protected: \
-    virtual void RunTestOnMainThread(); \
-   private: \
-    virtual void TestBody() {} \
-    static int AddToRegistry() { \
-      ::testing::UnitTest::GetInstance()->parameterized_test_registry(). \
-          GetTestCasePatternHolder<test_case_name>(\
-              #test_case_name, __FILE__, __LINE__)->AddTestPattern(\
-                  #test_case_name, \
-                  #test_name, \
-                  new ::testing::internal::TestMetaFactory< \
-                      GTEST_TEST_CLASS_NAME_(test_case_name, test_name)>()); \
-      return 0; \
-    } \
-    static int gtest_registering_dummy_; \
-    GTEST_DISALLOW_COPY_AND_ASSIGN_(\
-        GTEST_TEST_CLASS_NAME_(test_case_name, test_name)); \
-  }; \
-  int GTEST_TEST_CLASS_NAME_(test_case_name, \
-                             test_name)::gtest_registering_dummy_ = \
-      GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::AddToRegistry(); \
-  void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
-
-#endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
 #endif  // CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_

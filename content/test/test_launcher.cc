@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/test/test_launcher.h"
+
 #include <string>
 #include <vector>
 
@@ -21,47 +23,13 @@
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/chrome_test_suite.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_launcher_utils.h"
+#include "content/test/browser_test.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-#include "base/base_switches.h"
-#include "chrome/common/chrome_constants.h"
-#include "content/common/sandbox_policy.h"
-#include "sandbox/src/dep.h"
-#include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/sandbox_types.h"
-#endif  // defined(OS_WIN)
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/chrome_browser_application_mac.h"
-#endif  // defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-// The entry point signature of chrome.dll.
-typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
-#endif  // defined(OS_WIN)
+namespace test_launcher {
 
 namespace {
-
-const char kGTestFilterFlag[] = "gtest_filter";
-const char kGTestHelpFlag[]   = "gtest_help";
-const char kGTestListTestsFlag[] = "gtest_list_tests";
-const char kGTestRepeatFlag[] = "gtest_repeat";
-const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
-const char kGTestOutputFlag[] = "gtest_output";
-
-const char kSingleProcessTestsFlag[]   = "single_process";
-const char kSingleProcessTestsAndChromeFlag[]   = "single-process";
-// The following is kept for historical reasons (so people that are used to
-// using it don't get surprised).
-const char kChildProcessFlag[]   = "child";
-
-const char kHelpFlag[]   = "help";
 
 // The environment variable name for the total number of test shards.
 static const char kTestTotalShards[] = "GTEST_TOTAL_SHARDS";
@@ -303,9 +271,29 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
   }
 }
 
+// A multiplier for slow tests. We generally avoid multiplying
+// test timeouts by any constants. Here it is used as last resort
+// to implement the SLOW_ test prefix.
+static const int kSlowTestTimeoutMultiplier = 5;
+
+int GetTestTerminationTimeout(const std::string& test_name,
+                              int default_timeout_ms) {
+  int timeout_ms = default_timeout_ms;
+
+  // Make it possible for selected tests to request a longer timeout.
+  // Generally tests should really avoid doing too much, and splitting
+  // a test instead of using SLOW prefix is strongly preferred.
+  if (test_name.find("SLOW_") != std::string::npos)
+    timeout_ms *= kSlowTestTimeoutMultiplier;
+
+  return timeout_ms;
+}
+
 // Runs test specified by |test_name| in a child process,
 // and returns the exit code.
-int RunTest(const std::string& test_name, int default_timeout_ms) {
+int RunTest(TestLauncherDelegate* launcher_delegate,
+            const std::string& test_name,
+            int default_timeout_ms) {
   // Some of the below method calls will leak objects if there is no
   // autorelease pool in place.
   base::mac::ScopedNSAutoreleasePool pool;
@@ -324,9 +312,6 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
   // has been shut down and will actually crash).
   switches.erase(kGTestRepeatFlag);
 
-  // Strip out user-data-dir if present.  We will add it back in again later.
-  switches.erase(switches::kUserDataDir);
-
   for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
        iter != switches.end(); ++iter) {
     new_cmd_line.AppendSwitchNative((*iter).first, (*iter).second);
@@ -336,22 +321,14 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
   // tests unless this flag was specified to the browser test executable.
   new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
   new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
-  new_cmd_line.AppendSwitch(kChildProcessFlag);
+  new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
 
   // Do not let the child ignore failures.  We need to propagate the
   // failure status back to the parent.
   new_cmd_line.AppendSwitch(base::TestSuite::kStrictFailureHandling);
 
-  // Create a new user data dir and pass it to the child.
-  ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDir() || !temp_dir.IsValid()) {
-    LOG(ERROR) << "Error creating temp profile directory";
-    return false;
-  }
-  new_cmd_line.AppendSwitchPath(switches::kUserDataDir, temp_dir.path());
-
-  // file:// access for ChromeOS.
-  new_cmd_line.AppendSwitch(switches::kAllowFileAccess);
+  if (!launcher_delegate->AdjustChildProcessCommandLine(&new_cmd_line))
+    return -1;
 
   const char* browser_wrapper = getenv("BROWSER_WRAPPER");
   if (browser_wrapper) {
@@ -376,11 +353,10 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
 #endif
 
   if (!base::LaunchProcess(new_cmd_line, options, &process_handle))
-    return false;
+    return -1;
 
-  int timeout_ms =
-      test_launcher_utils::GetTestTerminationTimeout(test_name,
-                                                     default_timeout_ms);
+  int timeout_ms = GetTestTerminationTimeout(test_name,
+                                             default_timeout_ms);
 
   int exit_code = 0;
   if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
@@ -409,7 +385,10 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
   return exit_code;
 }
 
-bool RunTests(bool should_shard, int total_shards, int shard_index) {
+bool RunTests(TestLauncherDelegate* launcher_delegate,
+              bool should_shard,
+              int total_shards,
+              int shard_index) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   DCHECK(!command_line->HasSwitch(kGTestListTestsFlag));
@@ -480,7 +459,9 @@ bool RunTests(bool should_shard, int total_shards, int shard_index) {
 
       base::Time start_time = base::Time::Now();
       ++test_run_count;
-      int exit_code = RunTest(test_name, TestTimeouts::action_max_timeout_ms());
+      int exit_code = RunTest(launcher_delegate,
+                              test_name,
+                              TestTimeouts::action_max_timeout_ms());
       if (exit_code == 0) {
         // Test passed.
         printer.OnTestEnd(test_info->name(), test_case->name(), true, false,
@@ -538,10 +519,28 @@ void PrintUsage() {
 
 }  // namespace
 
-int main(int argc, char** argv) {
-#if defined(OS_MACOSX)
-  chrome_browser_application_mac::RegisterBrowserCrApp();
-#endif
+const char kGTestFilterFlag[] = "gtest_filter";
+const char kGTestHelpFlag[]   = "gtest_help";
+const char kGTestListTestsFlag[] = "gtest_list_tests";
+const char kGTestRepeatFlag[] = "gtest_repeat";
+const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
+const char kGTestOutputFlag[] = "gtest_output";
+
+const char kSingleProcessTestsFlag[]   = "single_process";
+const char kSingleProcessTestsAndChromeFlag[]   = "single-process";
+// The following is kept for historical reasons (so people that are used to
+// using it don't get surprised).
+const char kChildProcessFlag[]   = "child";
+
+const char kHelpFlag[]   = "help";
+
+TestLauncherDelegate::~TestLauncherDelegate() {
+}
+
+int LaunchTests(TestLauncherDelegate* launcher_delegate,
+                int argc,
+                char** argv) {
+  launcher_delegate->EarlyInitialize();
 
   CommandLine::Init(argc, argv);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -551,51 +550,9 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  // TODO(pkasting): This "single_process vs. single-process" design is terrible
-  // UI.  Instead, there should be some sort of signal flag on the command line,
-  // with all subsequent arguments passed through to the underlying browser.
-  if (command_line->HasSwitch(kChildProcessFlag) ||
-      command_line->HasSwitch(kSingleProcessTestsFlag) ||
-      command_line->HasSwitch(kSingleProcessTestsAndChromeFlag) ||
-      command_line->HasSwitch(kGTestListTestsFlag) ||
-      command_line->HasSwitch(kGTestHelpFlag)) {
-
-#if defined(OS_WIN)
-    if (command_line->HasSwitch(kChildProcessFlag) ||
-        command_line->HasSwitch(kSingleProcessTestsFlag)) {
-      // This is the browser process, so setup the sandbox broker.
-      sandbox::BrokerServices* broker_services =
-          sandbox::SandboxFactory::GetBrokerServices();
-      if (broker_services) {
-        sandbox::InitBrokerServices(broker_services);
-        // Precreate the desktop and window station used by the renderers.
-        sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
-        sandbox::ResultCode result = policy->CreateAlternateDesktop(true);
-        CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
-        policy->Release();
-      }
-    }
-#endif
-    return ChromeTestSuite(argc, argv).Run();
-  }
-
-#if defined(OS_WIN)
-  if (command_line->HasSwitch(switches::kProcessType)) {
-    // This is a child process, call ChromeMain.
-    FilePath chrome_path(command_line->GetProgram().DirName());
-    chrome_path = chrome_path.Append(chrome::kBrowserResourcesDll);
-    HMODULE dll = LoadLibrary(chrome_path.value().c_str());
-    DLL_MAIN entry_point =
-        reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll, "ChromeMain"));
-    if (!entry_point)
-      return -1;
-
-    // Initialize the sandbox services.
-    sandbox::SandboxInterfaceInfo sandbox_info = {0};
-    sandbox_info.target_services = sandbox::SandboxFactory::GetTargetServices();
-    return entry_point(GetModuleHandle(NULL), &sandbox_info, GetCommandLineW());
-  }
-#endif
+  int return_code = 0;
+  if (launcher_delegate->Run(argc, argv, &return_code))
+    return return_code;
 
   int32 total_shards;
   int32 shard_index;
@@ -617,7 +574,9 @@ int main(int argc, char** argv) {
   // from disk may be slow on a busy bot, and can easily exceed the default
   // timeout causing flaky test failures. Use an empty test that only starts
   // and closes a browser with a long timeout to avoid those problems.
-  RunTest(kEmptyTestName, TestTimeouts::large_test_timeout_ms());
+  RunTest(launcher_delegate,
+          kEmptyTestName,
+          TestTimeouts::large_test_timeout_ms());
 
   int cycles = 1;
   if (command_line->HasSwitch(kGTestRepeatFlag)) {
@@ -627,7 +586,10 @@ int main(int argc, char** argv) {
 
   int exit_code = 0;
   while (cycles != 0) {
-    if (!RunTests(should_shard, total_shards, shard_index)) {
+    if (!RunTests(launcher_delegate,
+                  should_shard,
+                  total_shards,
+                  shard_index)) {
       exit_code = 1;
       break;
     }
@@ -638,3 +600,5 @@ int main(int argc, char** argv) {
   }
   return exit_code;
 }
+
+}  // namespcae test_launcher

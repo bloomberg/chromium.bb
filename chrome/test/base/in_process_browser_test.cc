@@ -33,22 +33,13 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
-#include "content/common/main_function_params.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
-#include "sandbox/src/dep.h"
-
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#include "base/system_monitor/system_monitor.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/audio_handler.h"
 #endif
-
-extern int BrowserMain(const MainFunctionParams&);
 
 // Passed as value of kTestType.
 static const char kBrowserTestType[] = "browser";
@@ -58,11 +49,6 @@ InProcessBrowserTest::InProcessBrowserTest()
       show_window_(false),
       dom_automation_enabled_(false),
       tab_closeable_state_watcher_enabled_(false) {
-#if defined(OS_MACOSX)
-  base::mac::SetOverrideAmIBundled(true);
-  base::SystemMonitor::AllocateSystemIOPorts();
-#endif
-
   // Before we run the browser, we have to hack the path to the exe to match
   // what it would be if Chrome was running, because it is used to fork renderer
   // processes, on Linux at least (failure to do so will cause a browser_test to
@@ -132,14 +118,7 @@ void InProcessBrowserTest::SetUp() {
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc(
       host_resolver_.get());
 
-  SandboxInitWrapper sandbox_wrapper;
-  MainFunctionParams params(*command_line, sandbox_wrapper, NULL);
-  params.ui_task =
-      NewRunnableMethod(this, &InProcessBrowserTest::RunTestOnMainThreadLoop);
-
-  SetUpInProcessBrowserTestFixture();
-  BrowserMain(params);
-  TearDownInProcessBrowserTestFixture();
+  BrowserTestBase::SetUp();
 }
 
 void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
@@ -199,6 +178,7 @@ bool InProcessBrowserTest::CreateUserDataDirectory() {
 
 void InProcessBrowserTest::TearDown() {
   DCHECK(!g_browser_process);
+  BrowserTestBase::TearDown();
 }
 
 void InProcessBrowserTest::AddTabAtIndexToBrowser(

@@ -484,7 +484,10 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
+      ],
       'sources': [
         'browser/accessibility/accessibility_mac_uitest.mm',
         'browser/autofill/autofill_browsertest.cc',
@@ -508,9 +511,11 @@
         'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
         'browser/ui/views/tabs/tab_dragging_test.cc',
         'browser/ui/webui/workers_ui_browsertest.cc',
-        'test/base/out_of_proc_test_runner.cc',
+        'test/base/chrome_test_launcher.cc',
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
+        '../content/test/test_launcher.cc',
+        '../content/test/test_launcher.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -2192,7 +2197,10 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
+      ],
       'sources': [
         'app/breakpad_mac_stubs.mm',
         'app/chrome_command_ids.h',
@@ -2455,7 +2463,7 @@
         'test/base/in_process_browser_test_browsertest.cc',
         'test/base/render_view_test.cc',
         'test/base/render_view_test.h',
-        'test/base/out_of_proc_test_runner.cc',
+        'test/base/chrome_test_launcher.cc',
         'test/data/webui/assertions.js',
         'test/data/webui/async_gen-inl.h',
         'test/data/webui/async_gen.js',
@@ -2485,6 +2493,8 @@
         '../content/renderer/render_widget_browsertest.cc',
         '../content/renderer/render_widget_browsertest.h',
         '../content/renderer/v8_value_converter_browsertest.cc',
+        '../content/test/test_launcher.cc',
+        '../content/test/test_launcher.h',
       ],
       'conditions': [
         ['chromeos==0', {
@@ -2725,11 +2735,16 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
+      ],
       'sources': [
         'app/chrome_dll.rc',
         'browser/safe_browsing/safe_browsing_test.cc',
-        'test/base/out_of_proc_test_runner.cc',
+        'test/base/chrome_test_launcher.cc',
+        '../content/test/test_launcher.cc',
+        '../content/test/test_launcher.h',
       ],
       'conditions': [
         ['safe_browsing==0', {
@@ -3113,7 +3128,10 @@
         '<(protoc_out_dir)',
       ],
       # TODO(phajdan.jr): Only temporary, to make transition easier.
-      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
+      ],
       'sources': [
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
@@ -3122,7 +3140,7 @@
         'browser/password_manager/password_form_data.cc',
         'browser/sessions/session_backend.cc',
         'browser/sync/glue/session_model_associator.cc',
-        'test/base/out_of_proc_test_runner.cc',
+        'test/base/chrome_test_launcher.cc',
         'test/data/resource.rc',
         'browser/sync/test/integration/apps_helper.cc',
         'browser/sync/test/integration/apps_helper.h',
@@ -3179,6 +3197,8 @@
         'browser/sync/test/integration/two_client_typed_urls_sync_test.cc',
         'browser/sync/test/integration/typed_urls_helper.cc',
         'browser/sync/test/integration/typed_urls_helper.h',
+        '../content/test/test_launcher.cc',
+        '../content/test/test_launcher.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -3261,7 +3281,10 @@
         '<(INTERMEDIATE_DIR)',
         '<(protoc_out_dir)',
       ],
-      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
+      ],
       'sources': [
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
@@ -3296,8 +3319,10 @@
         'browser/sync/test/integration/sync_test.h',
         'browser/sync/test/integration/typed_urls_helper.cc',
         'browser/sync/test/integration/typed_urls_helper.h',
-        'test/base/out_of_proc_test_runner.cc',
+        'test/base/chrome_test_launcher.cc',
         'test/data/resource.rc',
+        '../content/test/test_launcher.cc',
+        '../content/test/test_launcher.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -3393,12 +3418,17 @@
         '..',
         '<(test_list_out_dir)',
       ],
-      'defines': [ 'HAS_OUT_OF_PROC_TEST_RUNNER' ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+        'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
+      ],
       'sources': [
         'browser/gpu_pixel_browsertest.cc',
         'browser/gpu_crash_browsertest.cc',
-        'test/base/out_of_proc_test_runner.cc',
+        'test/base/chrome_test_launcher.cc',
         'test/gpu/webgl_conformance_tests.cc',
+        '../content/test/test_launcher.cc',
+        '../content/test/test_launcher.h',
         '<(test_list_out_dir)/webgl_conformance_test_list_autogen.h',
       ],
       # hard_dependency is necessary for this target because it has actions

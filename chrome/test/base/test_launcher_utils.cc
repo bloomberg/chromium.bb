@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/base/test_launcher_utils.h"
+
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
@@ -10,17 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/test_launcher_utils.h"
 #include "ui/gfx/gl/gl_switches.h"
-
-namespace {
-
-// A multiplier for slow tests. We generally avoid multiplying
-// test timeouts by any constants. Here it is used as last resort
-// to implement the SLOW_ test prefix.
-static const int kSlowTestTimeoutMultiplier = 5;
-
-}  // namespace
 
 namespace test_launcher_utils {
 
@@ -92,19 +84,6 @@ bool OverrideGLImplementation(CommandLine* command_line,
   command_line->AppendSwitchASCII(switches::kUseGL, implementation_name);
 
   return true;
-}
-
-int GetTestTerminationTimeout(const std::string& test_name,
-                              int default_timeout_ms) {
-  int timeout_ms = default_timeout_ms;
-
-  // Make it possible for selected tests to request a longer timeout.
-  // Generally tests should really avoid doing too much, and splitting
-  // a test instead of using SLOW prefix is strongly preferred.
-  if (test_name.find("SLOW_") != std::string::npos)
-    timeout_ms *= kSlowTestTimeoutMultiplier;
-
-  return timeout_ms;
 }
 
 }  // namespace test_launcher_utils
