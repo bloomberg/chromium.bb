@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -95,15 +95,20 @@ void PasswordManagerHandler::RegisterMessages() {
   DCHECK(web_ui_);
 
   web_ui_->RegisterMessageCallback("updatePasswordLists",
-      NewCallback(this, &PasswordManagerHandler::UpdatePasswordLists));
+      base::Bind(&PasswordManagerHandler::UpdatePasswordLists,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeSavedPassword",
-      NewCallback(this, &PasswordManagerHandler::RemoveSavedPassword));
+      base::Bind(&PasswordManagerHandler::RemoveSavedPassword,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removePasswordException",
-      NewCallback(this, &PasswordManagerHandler::RemovePasswordException));
+      base::Bind(&PasswordManagerHandler::RemovePasswordException,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeAllSavedPasswords",
-      NewCallback(this, &PasswordManagerHandler::RemoveAllSavedPasswords));
-  web_ui_->RegisterMessageCallback("removeAllPasswordExceptions", NewCallback(
-      this, &PasswordManagerHandler::RemoveAllPasswordExceptions));
+      base::Bind(&PasswordManagerHandler::RemoveAllSavedPasswords,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("removeAllPasswordExceptions",
+      base::Bind(&PasswordManagerHandler::RemoveAllPasswordExceptions,
+                 base::Unretained(this)));
 }
 
 void PasswordManagerHandler::OnLoginsChanged() {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/web_intents_settings_handler.h"
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
@@ -46,9 +47,11 @@ void WebIntentsSettingsHandler::GetLocalizedValues(
 
 void WebIntentsSettingsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("removeIntent",
-      NewCallback(this, &WebIntentsSettingsHandler::RemoveIntent));
+      base::Bind(&WebIntentsSettingsHandler::RemoveIntent,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("loadIntents",
-      NewCallback(this, &WebIntentsSettingsHandler::LoadChildren));
+      base::Bind(&WebIntentsSettingsHandler::LoadChildren,
+                 base::Unretained(this)));
 }
 
 void WebIntentsSettingsHandler::TreeNodesAdded(ui::TreeModel* model,

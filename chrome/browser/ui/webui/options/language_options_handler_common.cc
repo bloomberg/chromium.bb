@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -103,17 +104,17 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
 void LanguageOptionsHandlerCommon::RegisterMessages() {
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback("languageOptionsOpen",
-      NewCallback(
-          this,
-          &LanguageOptionsHandlerCommon::LanguageOptionsOpenCallback));
+      base::Bind(
+          &LanguageOptionsHandlerCommon::LanguageOptionsOpenCallback,
+          base::Unretained(this)));
   web_ui_->RegisterMessageCallback("spellCheckLanguageChange",
-      NewCallback(
-          this,
-          &LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback));
+      base::Bind(
+          &LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback,
+          base::Unretained(this)));
   web_ui_->RegisterMessageCallback("uiLanguageChange",
-      NewCallback(
-          this,
-          &LanguageOptionsHandlerCommon::UiLanguageChangeCallback));
+      base::Bind(
+          &LanguageOptionsHandlerCommon::UiLanguageChangeCallback,
+          base::Unretained(this)));
 }
 
 DictionaryValue* LanguageOptionsHandlerCommon::GetUILanguageCodeSet() {

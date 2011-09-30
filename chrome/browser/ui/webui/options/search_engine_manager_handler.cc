@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -87,23 +87,28 @@ void SearchEngineManagerHandler::GetLocalizedValues(
 void SearchEngineManagerHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "managerSetDefaultSearchEngine",
-      NewCallback(this, &SearchEngineManagerHandler::SetDefaultSearchEngine));
+      base::Bind(&SearchEngineManagerHandler::SetDefaultSearchEngine,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "removeSearchEngine",
-      NewCallback(this, &SearchEngineManagerHandler::RemoveSearchEngine));
+      base::Bind(&SearchEngineManagerHandler::RemoveSearchEngine,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "editSearchEngine",
-      NewCallback(this, &SearchEngineManagerHandler::EditSearchEngine));
+      base::Bind(&SearchEngineManagerHandler::EditSearchEngine,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "checkSearchEngineInfoValidity",
-      NewCallback(this,
-                  &SearchEngineManagerHandler::CheckSearchEngineInfoValidity));
+      base::Bind(&SearchEngineManagerHandler::CheckSearchEngineInfoValidity,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "searchEngineEditCancelled",
-      NewCallback(this, &SearchEngineManagerHandler::EditCancelled));
+      base::Bind(&SearchEngineManagerHandler::EditCancelled,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "searchEngineEditCompleted",
-      NewCallback(this, &SearchEngineManagerHandler::EditCompleted));
+      base::Bind(&SearchEngineManagerHandler::EditCompleted,
+                 base::Unretained(this)));
 }
 
 void SearchEngineManagerHandler::OnModelChanged() {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/pack_extension_handler.h"
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,7 +44,8 @@ void PackExtensionHandler::GetLocalizedValues(
 void PackExtensionHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
   web_ui_->RegisterMessageCallback("pack",
-      NewCallback(this, &PackExtensionHandler::HandlePackMessage));
+      base::Bind(&PackExtensionHandler::HandlePackMessage,
+                 base::Unretained(this)));
 }
 
 void PackExtensionHandler::OnPackSuccess(const FilePath& crx_file,

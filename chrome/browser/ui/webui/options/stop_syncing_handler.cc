@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/options/stop_syncing_handler.h"
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,7 +34,7 @@ void StopSyncingHandler::GetLocalizedValues(
 void StopSyncingHandler::RegisterMessages() {
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback("stopSyncing",
-      NewCallback(this, &StopSyncingHandler::StopSyncing));
+      base::Bind(&StopSyncingHandler::StopSyncing, base::Unretained(this)));
 }
 
 void StopSyncingHandler::StopSyncing(const ListValue* args){

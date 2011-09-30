@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -204,15 +204,18 @@ void PersonalOptionsHandler::RegisterMessages() {
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback(
       "themesReset",
-      NewCallback(this, &PersonalOptionsHandler::ThemesReset));
+      base::Bind(&PersonalOptionsHandler::ThemesReset,
+                 base::Unretained(this)));
 #if defined(TOOLKIT_GTK)
   web_ui_->RegisterMessageCallback(
       "themesSetGTK",
-      NewCallback(this, &PersonalOptionsHandler::ThemesSetGTK));
+      base::Bind(&PersonalOptionsHandler::ThemesSetGTK,
+                 base::Unretained(this)));
 #endif
   web_ui_->RegisterMessageCallback(
       "createProfile",
-      NewCallback(this, &PersonalOptionsHandler::CreateProfile));
+      base::Bind(&PersonalOptionsHandler::CreateProfile,
+                 base::Unretained(this)));
 }
 
 void PersonalOptionsHandler::Observe(int type,

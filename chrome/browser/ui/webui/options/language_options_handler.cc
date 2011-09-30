@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
@@ -46,7 +47,8 @@ void LanguageOptionsHandler::RegisterMessages() {
   LanguageOptionsHandlerCommon::RegisterMessages();
 
   web_ui_->RegisterMessageCallback("uiLanguageRestart",
-      NewCallback(this, &LanguageOptionsHandler::RestartCallback));
+      base::Bind(&LanguageOptionsHandler::RestartCallback,
+                 base::Unretained(this)));
 }
 
 ListValue* LanguageOptionsHandler::GetLanguageList() {
