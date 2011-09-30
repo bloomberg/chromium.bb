@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/desktop_notification_service.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -44,19 +45,18 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
       const GURL& url) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &ThreadProxy::ServiceHasPermissionIO,
-                          service, url));
+        base::Bind(&ThreadProxy::ServiceHasPermissionIO, this, service, url));
     io_event_.Signal();
     ui_event_.Wait();  // Wait for IO thread to be done.
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &ThreadProxy::PauseIOThreadIO));
+                            base::Bind(&ThreadProxy::PauseIOThreadIO, this));
 
     return permission_;
   }
 
   void PauseIOThread() {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &ThreadProxy::PauseIOThreadIO));
+                            base::Bind(&ThreadProxy::PauseIOThreadIO, this));
   }
 
   void DrainIOThread() {
