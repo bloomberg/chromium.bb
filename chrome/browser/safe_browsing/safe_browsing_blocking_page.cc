@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
@@ -638,7 +637,8 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
     // Finish the malware details collection, send it over.
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&MalwareDetails::FinishCollection, malware_details_.get()),
+        NewRunnableMethod(
+            malware_details_.get(), &MalwareDetails::FinishCollection),
         delay_ms);
   }
 }
@@ -650,8 +650,9 @@ void SafeBrowsingBlockingPage::NotifySafeBrowsingService(
     bool proceed) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingService::OnBlockingPageDone,
-                 sb_service, unsafe_resources, proceed));
+      NewRunnableMethod(
+          sb_service, &SafeBrowsingService::OnBlockingPageDone,
+          unsafe_resources, proceed));
 }
 
 // static
