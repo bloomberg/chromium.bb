@@ -659,8 +659,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewForegroundTab) {
 
 // This test verifies that constructing params with a NULL browser and
 // a specific profile matches the specified profile.
-// Flakiness tracked here: http://crbug.com/96610
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, FLAKY_NullBrowser_MatchProfile) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_MatchProfile) {
   // Create a new browser with using the incognito profile.
   Browser* incognito =
       Browser::Create(browser()->profile()->GetOffTheRecordProfile());
