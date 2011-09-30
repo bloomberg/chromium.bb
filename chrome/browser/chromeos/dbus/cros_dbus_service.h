@@ -61,35 +61,18 @@ class CrosDBusService {
   virtual ~CrosDBusService();
 
   // Starts the D-Bus service.
-  virtual void Start();
+  virtual void Start() = 0;
 
   // Gets the instance.
   static CrosDBusService* Get(dbus::Bus* bus);
 
  private:
-  explicit CrosDBusService(dbus::Bus* bus);
-
   // Gets the instance for testing. Takes the ownership of
   // |proxy_resolution_service|.
   friend class CrosDBusServiceTest;
   static CrosDBusService* GetForTesting(
       dbus::Bus* bus,
       ServiceProviderInterface* proxy_resolution_service);
-
-  // Registers a service provider. This must be done before Start().
-  // |provider| will be owned by CrosDBusService.
-  void RegisterServiceProvider(ServiceProviderInterface* provider);
-
-  // Returns true if the current thread is on the origin thread.
-  bool OnOriginThread();
-
-  bool service_started_;
-  base::PlatformThreadId origin_thread_id_;
-  dbus::Bus* bus_;
-  scoped_refptr<dbus::ExportedObject> exported_object_;
-
-  // Service providers that form CrosDBusService.
-  std::vector<scoped_refptr<ServiceProviderInterface> > service_providers_;
 };
 
 }  // namespace
