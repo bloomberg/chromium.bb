@@ -112,6 +112,14 @@ class DEPSFileTest(mox.MoxTestBase):
     self.assertRaises(NotImplementedError, chrome_set_ver.main,
                       ['-d', os.path.join(self.test_base, 'test_3/DEPS.git')])
 
+  def testErrorOnNonexistentHash(self):
+    """Test dying cleanly when trying to pin to nonexistent hash."""
+    self.mox.StubOutWithMock(cros_lib, 'Die')
+    cros_lib.Die(mox.IgnoreArg()).AndRaise(TestEndedException)
+    self.mox.ReplayAll()
+    self.assertRaises(TestEndedException, chrome_set_ver.main,
+                      ['-d', os.path.join(self.test_base, 'test_4/DEPS.git')])
+
   def tearDown(self):
     os.chdir(self.old_dir)
     cros_lib.RunCommand(['rm', '-rf', self.tempdir])

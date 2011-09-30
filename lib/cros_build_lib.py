@@ -469,6 +469,18 @@ def GetGitRepoRevision(cwd, branch='HEAD'):
   return result.output.strip()
 
 
+def DoesCommitExistInRepo(cwd, commit_hash):
+  """Determine if commit object exists in a repo.
+
+  Args:
+    cwd: A directory within the project repo.
+    commit_hash: The hash of the commit object to look for.
+  """
+  result = RunCommand(['git', 'log', '-n1', commit_hash], error_code_ok=True,
+                      cwd=cwd)
+  return result.returncode == 0
+
+
 def DoesLocalBranchExist(repo_dir, branch):
   """Returns True if the local branch exists.
 

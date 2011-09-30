@@ -1,0 +1,13 @@
+# DO NOT EDIT. THIS IS A GENERATED FILE.
+# ALL MANUAL CHANGES WILL BE OVERWRITTEN.
+vars = {
+    'git_url':
+         'http://git.chromium.org',
+    'nonexistent_rev':
+         '@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+}
+
+deps = {
+    'src/repo1':
+        Var('git_url') + '/chromium/support.git' + Var('nonexistent_rev'),
+}

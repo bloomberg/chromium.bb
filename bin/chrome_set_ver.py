@@ -60,9 +60,18 @@ def _LoadDEPS(deps_content):
 
 def _ResetProject(project_path, commit_hash):
   """Reset a git repo to the specified commit hash."""
-  cros_lib.RunCommand(['git', 'checkout', commit_hash],  print_cmd=False,
-                      redirect_stdout=True, redirect_stderr=True,
-                      cwd=project_path)
+  if not cros_lib.DoesCommitExistInRepo(project_path, commit_hash):
+    cros_lib.Die('Commit %s not found in %s.\n'
+                 "You probably need to run 'repo sync --jobs=<jobs>' "
+                 'to update your checkout.'
+                 % (commit_hash, project_path))
+
+  result = cros_lib.RunCommand(['git', 'checkout', commit_hash],
+                               error_code_ok=True, cwd=project_path)
+  if result.returncode != 0:
+    cros_lib.Warning('Failed to pin project %s.\n'
+                     'You probably have uncommited local changes.'
+                     % project_path)
 
 
 def _ExtractProjectFromEntry(entry):
@@ -123,11 +132,14 @@ def _ResetGitCheckout(chromium_root, deps):
       cros_lib.Die('Cannot find project %s. Expecting project to be '
                    'checked out to %s.\n' % (repo_url, abs_path))
 
-    if commit_hash != cros_lib.GetGitRepoRevision(abs_path):
-      print 'pinning project %s' % rel_path
+    if cros_lib.GetCurrentBranch(abs_path):
+      cros_lib.Warning("Not pinning project %s that's checked out to a "
+                       'development branch.' % rel_path)
+    elif commit_hash and (commit_hash != cros_lib.GetGitRepoRevision(abs_path)):
+      print 'Pinning project %s' % rel_path
       _ResetProject(abs_path, commit_hash)
     else:
-      cros_lib.Debug('skipping project %s' % rel_path)
+      cros_lib.Debug('Skipping project %s, already pinned' % rel_path)
 
 
 def _RunHooks(chromium_root, hooks):
@@ -139,6 +151,7 @@ def _RunHooks(chromium_root, hooks):
            in the '.DEPS.git' file.
   """
   for hook in hooks:
+    print '[running hook] %s' % ' '.join(hook['action'])
     cros_lib.RunCommand(hook['action'], cwd=chromium_root)
 
 
