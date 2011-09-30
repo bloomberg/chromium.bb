@@ -64,7 +64,7 @@ class P2PNotifierTest : public testing::Test {
 
   virtual void SetUp() {
     talk_mediator_ = new FakeTalkMediator();
-    p2p_notifier_.reset(new P2PNotifier(talk_mediator_));
+    p2p_notifier_.reset(new P2PNotifier(talk_mediator_, NOTIFY_OTHERS));
     p2p_notifier_->AddObserver(&mock_observer_);
   }
 

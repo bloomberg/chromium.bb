@@ -142,12 +142,16 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
   return true;
 }
 
-P2PNotifier::P2PNotifier(notifier::TalkMediator* talk_mediator)
+P2PNotifier::P2PNotifier(notifier::TalkMediator* talk_mediator,
+                         P2PNotificationTarget send_notification_target)
     : talk_mediator_(talk_mediator),
       logged_in_(false),
       notifications_enabled_(false),
+      send_notification_target_(send_notification_target),
       parent_message_loop_proxy_(
           base::MessageLoopProxy::current()) {
+  DCHECK(send_notification_target_ == NOTIFY_OTHERS ||
+         send_notification_target_ == NOTIFY_ALL);
   talk_mediator_->SetDelegate(this);
 }
 
@@ -225,7 +229,7 @@ void P2PNotifier::SendNotification(
     const syncable::ModelTypeSet& changed_types) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   const P2PNotificationData notification_data(
-      unique_id_, NOTIFY_OTHERS, changed_types);
+      unique_id_, send_notification_target_, changed_types);
   SendNotificationData(notification_data);
 }
 

@@ -96,8 +96,13 @@ SyncNotifier* CreateDefaultSyncNotifier(
         new notifier::TalkMediatorImpl(
             new notifier::MediatorThreadImpl(notifier_options),
             notifier_options);
+    // TODO(rlarocque): Ideally, the notification target would be
+    // NOTIFY_OTHERS.  There's no good reason to notify ourselves of our own
+    // commits.  We self-notify for now only because the integration tests rely
+    // on this behaviour.  See crbug.com/97780.
+    //
     // Takes ownership of |talk_mediator|.
-    return new P2PNotifier(talk_mediator);
+    return new P2PNotifier(talk_mediator, NOTIFY_ALL);
   }
 
   return new NonBlockingInvalidationNotifier(notifier_options, client_info);

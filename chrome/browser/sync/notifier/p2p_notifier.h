@@ -85,7 +85,14 @@ class P2PNotifier
  public:
   // Takes ownership of |talk_mediator|, but it is guaranteed that
   // |talk_mediator| is destroyed only when this object is destroyed.
-  explicit P2PNotifier(notifier::TalkMediator* talk_mediator);
+  //
+  // The |send_notification_target| parameter was added to allow us to send
+  // self-notifications in some cases, but not others.  The value should be
+  // either NOTIFY_ALL to send notifications to all clients, or NOTIFY_OTHERS
+  // to send notificaitons to all clients except for the one that triggered the
+  // notification.  See crbug.com/97780.
+  P2PNotifier(notifier::TalkMediator* talk_mediator,
+              P2PNotificationTarget send_notification_target);
 
   virtual ~P2PNotifier();
 
@@ -125,6 +132,8 @@ class P2PNotifier
   // Whether |talk_mediator_| has notified us that notifications are
   // enabled.
   bool notifications_enabled_;
+  // Which set of clients should be sent notifications.
+  P2PNotificationTarget send_notification_target_;
 
   syncable::ModelTypeSet enabled_types_;
   scoped_refptr<base::MessageLoopProxy> parent_message_loop_proxy_;
