@@ -363,6 +363,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconMapping);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddOrUpdateIconMapping);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetMostRecentVisits);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconForURL);
 
   friend class ::TestingProfile;
 
@@ -530,6 +531,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Returns the BookmarkService, blocking until it is loaded. This may return
   // NULL during testing.
   BookmarkService* GetBookmarkService();
+
+  // If there is a favicon for |page_url| and one of the types in |icon_types|,
+  // |favicon| is set appropriately and true is returned.
+  bool GetFaviconFromDB(const GURL& page_url,
+                        int icon_types,
+                        FaviconData* favicon);
 
   // Data ----------------------------------------------------------------------
 

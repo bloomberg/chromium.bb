@@ -1741,27 +1741,8 @@ void HistoryBackend::GetFaviconForURL(
 
   FaviconData favicon;
 
-  if (db_.get() && thumbnail_db_.get()) {
-    // Time the query.
-    TimeTicks beginning_time = TimeTicks::Now();
-
-    std::vector<IconMapping> icon_mappings;
-    Time last_updated;
-    scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
-    if (thumbnail_db_->GetIconMappingsForPageURL(page_url, &icon_mappings) &&
-        (icon_mappings.front().icon_type & icon_types) &&
-        thumbnail_db_->GetFavicon(icon_mappings.front().icon_id, &last_updated,
-                                  &data->data(), &favicon.icon_url)) {
-      favicon.known_icon = true;
-      favicon.expired = (Time::Now() - last_updated) >
-          TimeDelta::FromDays(kFaviconRefetchDays);
-      favicon.icon_type = icon_mappings.front().icon_type;
-      favicon.image_data = data;
-    }
-
-    UMA_HISTOGRAM_TIMES("History.GetFavIconForURL",  // historical name
-                        TimeTicks::Now() - beginning_time);
-  }
+  // Get the favicon from DB.
+  GetFaviconFromDB(page_url, icon_types, &favicon);
 
   request->ForwardResult(
       GetFaviconRequest::TupleType(request->handle(), favicon));
@@ -2255,6 +2236,45 @@ BookmarkService* HistoryBackend::GetBookmarkService() {
   if (bookmark_service_)
     bookmark_service_->BlockTillLoaded();
   return bookmark_service_;
+}
+
+bool HistoryBackend::GetFaviconFromDB(
+    const GURL& page_url,
+    int icon_types,
+    FaviconData* favicon) {
+  DCHECK(favicon);
+
+  if (!db_.get() || !thumbnail_db_.get())
+    return false;
+
+  bool success = false;
+  // Time the query.
+  TimeTicks beginning_time = TimeTicks::Now();
+
+  std::vector<IconMapping> icon_mappings;
+  // Iterate over the known icons looking for one that includes one of the
+  // requested types.
+  if (thumbnail_db_->GetIconMappingsForPageURL(page_url, &icon_mappings)) {
+    Time last_updated;
+    scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+    for (std::vector<IconMapping>::iterator i = icon_mappings.begin();
+         i != icon_mappings.end(); ++i) {
+      if ((i->icon_type & icon_types) &&
+          thumbnail_db_->GetFavicon(i->icon_id, &last_updated,
+                                    &data->data(), &favicon->icon_url)) {
+        favicon->known_icon = true;
+        favicon->expired = (Time::Now() - last_updated) >
+            TimeDelta::FromDays(kFaviconRefetchDays);
+        favicon->icon_type = i->icon_type;
+        favicon->image_data = data;
+        success = true;
+        break;
+      }
+    }
+  }
+  UMA_HISTOGRAM_TIMES("History.GetFavIconFromDB",  // historical name
+                      TimeTicks::Now() - beginning_time);
+  return success;
 }
 
 }  // namespace history

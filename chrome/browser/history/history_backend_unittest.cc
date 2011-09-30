@@ -1019,4 +1019,48 @@ TEST_F(HistoryBackendTest, AddOrUpdateIconMapping) {
   EXPECT_EQ(1u, icon_mapping.size());
 }
 
+TEST_F(HistoryBackendTest, GetFaviconForURL) {
+  // This test will add a fav icon and touch icon for the same URL
+  // and check the behaviour of backend's GetFaviconForURL implementation.
+  const GURL url("http://www.google.com/");
+  const GURL icon_url("http://www.google.com/icon");
+  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes(data));
+  // Used for testing the icon data after getting from DB
+  std::string blob_data(bytes->front(),
+                        bytes->front() + bytes->size());
+
+  // Add a favicon
+  backend_->SetFavicon(
+      url, icon_url, bytes.get(), FAVICON);
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+      url, FAVICON, NULL));
+
+  // Add a touch_icon
+  backend_->SetFavicon(
+      url, icon_url, bytes.get(), TOUCH_ICON);
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+      url, TOUCH_ICON, NULL));
+
+  // Test the Fav icon for this URL.
+  FaviconData favicon;
+  ASSERT_TRUE(backend_->GetFaviconFromDB(url, FAVICON, &favicon));
+  std::string favicon_data(
+      favicon.image_data->front(),
+      favicon.image_data->front() + favicon.image_data->size());
+
+  EXPECT_EQ(FAVICON, favicon.icon_type);
+  EXPECT_EQ(icon_url, favicon.icon_url);
+  EXPECT_EQ(blob_data, favicon_data);
+
+  // Test the touch icon for this URL.
+  ASSERT_TRUE(backend_->GetFaviconFromDB(url, TOUCH_ICON, &favicon));
+  std::string touchicon_data(
+      favicon.image_data->front(),
+      favicon.image_data->front() + favicon.image_data->size());
+
+  EXPECT_EQ(TOUCH_ICON, favicon.icon_type);
+  EXPECT_EQ(icon_url, favicon.icon_url);
+  EXPECT_EQ(blob_data, touchicon_data);
+}
 }  // namespace history
