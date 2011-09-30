@@ -93,9 +93,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'chrome/test/data/layout_tests/LayoutTests': [
         'UNKNOWN',
     ],
-    'chrome/test/data/plugin': [
-        'UNKNOWN',
-    ],
     'courgette/third_party/bsdiff_create.cc': [
         'UNKNOWN',
     ],
