@@ -1,4 +1,9 @@
 #!/bin/sh
+
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Scape errors from the valgrind bots, reproduce them locally,
 # save logs as regrind-TESTNAME.log, and display any errors found.
 # Also save files regrind-failed.txt listing failed tests,
@@ -10,7 +15,7 @@
 # TODO: extend script to handle more kinds of errors and more tests
 
 # where the valgrind layout bot results live
-LAYOUT_URL="http://build.chromium.org/p/chromium.memory/builders/Webkit%20Linux%20(valgrind%20layout)"
+LAYOUT_URL="http://build.chromium.org/p/chromium.memory.fyi/builders/Webkit%20Linux%20(valgrind%20layout)"
 # how many builds back to check
 LAYOUT_COUNT=250
 
@@ -110,6 +115,8 @@ do
   esac
   shift
 done
+
+echo "WARNING: This script is not supported and may be out of date"
 
 if test $do_scrape = 0 && test $do_repro = 0
 then
