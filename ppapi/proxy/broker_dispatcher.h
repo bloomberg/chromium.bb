@@ -31,7 +31,8 @@ class PPAPI_PROXY_EXPORT BrokerDispatcher : public ProxyChannel {
                    PP_ConnectInstance_Func connect_instance);
 
   void OnMsgConnectToPlugin(PP_Instance instance,
-                            IPC::PlatformFileForTransit handle);
+                            IPC::PlatformFileForTransit handle,
+                            int32_t* result);
 
   PP_ConnectInstance_Func connect_instance_;
 

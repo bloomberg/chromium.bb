@@ -503,8 +503,9 @@ int32_t BrokerDispatcherWrapper::SendHandleToBroker(
   if (foreign_socket_handle == IPC::InvalidPlatformFileForTransit())
     return PP_ERROR_FAILED;
 
+  int32_t result;
   if (!dispatcher_->Send(
-      new PpapiMsg_ConnectToPlugin(instance, foreign_socket_handle))) {
+      new PpapiMsg_ConnectToPlugin(instance, foreign_socket_handle, &result))) {
     // The plugin did not receive the handle, so it must be closed.
     // The easiest way to clean it up is to just put it in an object
     // and then close it. This failure case is not performance critical.
@@ -514,7 +515,7 @@ int32_t BrokerDispatcherWrapper::SendHandleToBroker(
     return PP_ERROR_FAILED;
   }
 
-  return PP_OK;
+  return result;
 }
 
 PpapiBrokerImpl::PpapiBrokerImpl(webkit::ppapi::PluginModule* plugin_module,

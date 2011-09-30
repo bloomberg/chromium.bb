@@ -199,9 +199,10 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_ExecuteCallback,
 
 // Broker Process.
 
-IPC_SYNC_MESSAGE_CONTROL2_0(PpapiMsg_ConnectToPlugin,
+IPC_SYNC_MESSAGE_CONTROL2_1(PpapiMsg_ConnectToPlugin,
                             PP_Instance /* instance */,
-                            IPC::PlatformFileForTransit /* handle */)
+                            IPC::PlatformFileForTransit /* handle */,
+                            int32_t /* result */)
 
 // PPB_Audio.
 

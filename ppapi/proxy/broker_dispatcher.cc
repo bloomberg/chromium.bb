@@ -57,26 +57,24 @@ bool BrokerDispatcher::OnMessageReceived(const IPC::Message& msg) {
 // Transfers ownership of the handle to the broker module.
 void BrokerDispatcher::OnMsgConnectToPlugin(
     PP_Instance instance,
-    IPC::PlatformFileForTransit handle) {
-  int32_t result = PP_OK;
+    IPC::PlatformFileForTransit handle,
+    int32_t* result) {
   if (handle == IPC::InvalidPlatformFileForTransit()) {
-    result = PP_ERROR_FAILED;
+    *result = PP_ERROR_FAILED;
   } else {
     base::SyncSocket::Handle socket_handle =
         IPC::PlatformFileForTransitToPlatformFile(handle);
 
     if (connect_instance_) {
-      result = connect_instance_(instance, PlatformFileToInt(socket_handle));
+      *result = connect_instance_(instance, PlatformFileToInt(socket_handle));
     } else {
-      result = PP_ERROR_FAILED;
+      *result = PP_ERROR_FAILED;
       // Close the handle since there is no other owner.
       // The easiest way to clean it up is to just put it in an object
       // and then close them. This failure case is not performance critical.
       base::SyncSocket temp_socket(socket_handle);
     }
   }
-
-  // TODO(ddorwin): Report result via IPC.
 }
 
 BrokerHostDispatcher::BrokerHostDispatcher(
