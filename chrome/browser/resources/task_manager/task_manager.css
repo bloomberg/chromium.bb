@@ -11,14 +11,15 @@
 
 /* Outer frame of the dialog. */
 body {
-  display: -webkit-box;
   -webkit-box-orient: vertical;
-  position: absolute;
-  width: 100%;
-  height: 100%; 
-  min-height: 150px;
+  -webkit-user-select: none;
+  display: -webkit-box;
   font-family: sans-serif;
   font-size: 13px;
+  height: 100%;
+  min-height: 150px;
+  position: absolute;
+  width: 100%;
 }
 
 /* The top title of the dialog. */
@@ -26,10 +27,11 @@ body {
   background-image: -webkit-linear-gradient(top, #fff,#f6f6f6);
   border-bottom: 1px #d6d9e3 solid;
   color: #42506c;
+  cursor: default;
   font-size: 15px;
   font-weight: bold;
-  padding: 0px 12px 6px 12px;
   margin-bottom: 4px;
+  padding: 0px 12px 6px 12px;
 }
 
 /* Container for the detail list views. */
@@ -43,8 +45,8 @@ body {
 
 /* Column text containers. */
 .list-container {
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
 }
 
 /* Table splitter element */
@@ -58,13 +60,14 @@ body {
 /* Container for a table header. */
 .table-header {
   -webkit-box-sizing: border-box;
-  border-bottom: 1px #aaa solid;
   background-image: -webkit-linear-gradient(top, #f9f9f9, #e8e8e8);
+  border-bottom: 1px #aaa solid;
   height: 28px;
 }
 
 /* Text label in a table header. */
 .table-header-label {
+  cursor: default;
   margin-top: 6px;
 }
 
@@ -83,37 +86,37 @@ body {
 .table-row > .table-row-cell:first-child:before {
   -webkit-border-radius: 3px;
   background: #CCCCCC;
-  margin: 7px 4px 7px 7px;
-  width: 6px;
   content: "";
   display: block;
+  margin: 7px 4px 7px 7px;
+  width: 6px;
 }
 
 .table-background-row {
   background-color: hsl(34, 91%, 87%);
-  border-color: hsl(34, 91%, 65%);
   background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.8),
                                             rgba(255, 255, 255, 0));
+  border-color: hsl(34, 91%, 65%);
 }
 
 /* Cells in table. */
 .table-row-cell {
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
+  display: -webkit-box;
 }
 
 /* Containers of titles of tasks on the process. */
 .detail-container-title {
   -webkit-box-flex: 1;
-  display: -webkit-box;
   -webkit-box-orient: vertical;
+  display: -webkit-box;
   margin-left: 3px;
 }
 
 .detail-title-image {
   height: 16px;
-  width: 16px;
   padding: 2px;
+  width: 16px;
 }
 
 .detail-title-text {
@@ -123,10 +126,10 @@ body {
 
 /* Entire Table (including column header). */
 .detail-table {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
   border: 0;
+  display: -webkit-box;
 }
 /* cr.ui.Table has a black focus border by default, which we don't want. */
 .detail-table:focus {
@@ -135,15 +138,15 @@ body {
 
 /* Container for footer area. */
 .dialog-footer {
-  margin: 4px 6px 10px 6px;
   display: -webkit-box;
+  margin: 4px 6px 10px 6px;
 }
 
 /* Container for the ok/cancel buttons. */
 .footer-left-container {
-  display: -webkit-box;
   -webkit-box-align: center;
   -webkit-box-flex: 1;
+  display: -webkit-box;
   text-align: left;
 }
 
@@ -154,6 +157,6 @@ body {
 }
 
 button {
-  padding: 1px 6px;
   margin: 2px;
+  padding: 1px 6px;
 }
