@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/ppapi_plugin_process_host.h"
-#include "content/browser/ppapi_broker_process_host.h"
 #include "content/common/content_export.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -89,7 +88,7 @@ class CONTENT_EXPORT PluginService
   // started.
   PluginProcessHost* FindNpapiPluginProcess(const FilePath& plugin_path);
   PpapiPluginProcessHost* FindPpapiPluginProcess(const FilePath& plugin_path);
-  PpapiBrokerProcessHost* FindPpapiBrokerProcess(const FilePath& broker_path);
+  PpapiPluginProcessHost* FindPpapiBrokerProcess(const FilePath& broker_path);
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. This will start a process to host the
@@ -99,8 +98,8 @@ class CONTENT_EXPORT PluginService
       const FilePath& plugin_path);
   PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
       const FilePath& plugin_path,
-      PpapiPluginProcessHost::Client* client);
-  PpapiBrokerProcessHost* FindOrStartPpapiBrokerProcess(
+      PpapiPluginProcessHost::PluginClient* client);
+  PpapiPluginProcessHost* FindOrStartPpapiBrokerProcess(
       const FilePath& plugin_path);
 
   // Opens a channel to a plugin process for the given mime type, starting
@@ -113,9 +112,9 @@ class CONTENT_EXPORT PluginService
                                 const std::string& mime_type,
                                 PluginProcessHost::Client* client);
   void OpenChannelToPpapiPlugin(const FilePath& path,
-                                PpapiPluginProcessHost::Client* client);
+                                PpapiPluginProcessHost::PluginClient* client);
   void OpenChannelToPpapiBroker(const FilePath& path,
-                                PpapiBrokerProcessHost::Client* client);
+                                PpapiPluginProcessHost::BrokerClient* client);
 
   // Cancels opening a channel to a NPAPI plugin.
   void CancelOpenChannelToNpapiPlugin(PluginProcessHost::Client* client);

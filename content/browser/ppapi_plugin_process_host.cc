@@ -13,20 +13,95 @@
 #include "content/common/content_switches.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "ipc/ipc_switches.h"
+#include "net/base/network_change_notifier.h"
 #include "ppapi/proxy/ppapi_messages.h"
+
+class PpapiPluginProcessHost::PluginNetworkObserver
+    : public net::NetworkChangeNotifier::IPAddressObserver,
+      public net::NetworkChangeNotifier::OnlineStateObserver {
+ public:
+  explicit PluginNetworkObserver(PpapiPluginProcessHost* process_host)
+      : process_host_(process_host) {
+    net::NetworkChangeNotifier::AddIPAddressObserver(this);
+    net::NetworkChangeNotifier::AddOnlineStateObserver(this);
+  }
+
+  ~PluginNetworkObserver() {
+    net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  }
+
+  // IPAddressObserver implementation.
+  virtual void OnIPAddressChanged() OVERRIDE {
+    // TODO(brettw) bug 90246: This doesn't seem correct. The online/offline
+    // notification seems like it should be sufficient, but I don't see that
+    // when I unplug and replug my network cable. Sending this notification when
+    // "something" changes seems to make Flash reasonably happy, but seems
+    // wrong. We should really be able to provide the real online state in
+    // OnOnlineStateChanged().
+    process_host_->Send(new PpapiMsg_SetNetworkState(true));
+  }
+
+  // OnlineStateObserver implementation.
+  virtual void OnOnlineStateChanged(bool online) OVERRIDE {
+    process_host_->Send(new PpapiMsg_SetNetworkState(online));
+  }
+
+ private:
+  PpapiPluginProcessHost* const process_host_;
+};
+
+PpapiPluginProcessHost::~PpapiPluginProcessHost() {
+  CancelRequests();
+}
+
+PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
+    const PepperPluginInfo& info,
+    net::HostResolver* host_resolver) {
+  PpapiPluginProcessHost* plugin_host =
+      new PpapiPluginProcessHost(host_resolver);
+  if(plugin_host->Init(info))
+    return plugin_host;
+
+  NOTREACHED();  // Init is not expected to fail.
+  return NULL;
+}
+
+PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
+    const PepperPluginInfo& info) {
+  PpapiPluginProcessHost* plugin_host =
+      new PpapiPluginProcessHost();
+  if(plugin_host->Init(info))
+    return plugin_host;
+
+  NOTREACHED();  // Init is not expected to fail.
+  return NULL;
+}
+
+void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
+  if (opening_channel()) {
+    // The channel is already in the process of being opened.  Put
+    // this "open channel" request into a queue of requests that will
+    // be run once the channel is open.
+    pending_requests_.push_back(client);
+    return;
+  }
+
+  // We already have an open channel, send a request right away to plugin.
+  RequestPluginChannel(client);
+}
 
 PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
     : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS),
-      filter_(new PepperMessageFilter(host_resolver)) {
+      filter_(new PepperMessageFilter(host_resolver)),
+      network_observer_(new PluginNetworkObserver(this)),
+      is_broker_(false) {
   AddFilter(filter_.get());
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 
-PpapiPluginProcessHost::~PpapiPluginProcessHost() {
-  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  CancelRequests();
+PpapiPluginProcessHost::PpapiPluginProcessHost()
+    : BrowserChildProcessHost(ChildProcessInfo::PPAPI_BROKER_PROCESS),
+      is_broker_(true) {
 }
 
 bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
@@ -53,18 +128,21 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType,
-                              switches::kPpapiPluginProcess);
+                              is_broker_ ? switches::kPpapiBrokerProcess
+                                         : switches::kPpapiPluginProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
-  // TODO(vtl): Stop passing flash args in the command line, on windows is
-  // going to explode.
-  static const char* kForwardSwitches[] = {
-    switches::kNoSandbox,
-    switches::kPpapiFlashArgs,
-    switches::kPpapiStartupDialog
-  };
-  cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
-                             arraysize(kForwardSwitches));
+  if (!is_broker_) {
+    // TODO(vtl): Stop passing flash args in the command line, on windows is
+    // going to explode.
+    static const char* kForwardSwitches[] = {
+      switches::kNoSandbox,
+      switches::kPpapiFlashArgs,
+      switches::kPpapiStartupDialog
+    };
+    cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
+                               arraysize(kForwardSwitches));
+  }
 
   if (!plugin_launcher.empty())
     cmd_line->PrependWrapper(plugin_launcher);
@@ -75,24 +153,12 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #if defined(OS_WIN)
       FilePath(),
 #elif defined(OS_POSIX)
-      plugin_launcher.empty(),
+      is_broker_ ? false  // Never use the zygote for the broker.
+                 : plugin_launcher.empty(),
       base::environment_vector(),
 #endif
       cmd_line);
   return true;
-}
-
-void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
-  if (opening_channel()) {
-    // The channel is already in the process of being opened.  Put
-    // this "open channel" request into a queue of requests that will
-    // be run once the channel is open.
-    pending_requests_.push_back(client);
-    return;
-  }
-
-  // We already have an open channel, send a request right away to plugin.
-  RequestPluginChannel(client);
 }
 
 void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
@@ -164,20 +230,6 @@ void PpapiPluginProcessHost::CancelRequests() {
                                             IPC::ChannelHandle());
     sent_requests_.pop();
   }
-}
-
-void PpapiPluginProcessHost::OnIPAddressChanged() {
-  // TODO(brettw) bug 90246: This doesn't seem correct. The online/offline
-  // notification seems like it should be sufficient, but I don't see that when
-  // I unplug and replug my network cable. Sending this notification when
-  // "something" changes seems to make Flash reasonably happy, but seems wrong.
-  // We should really be able to provide the real online state in
-  // OnOnlineStateChanged().
-  Send(new PpapiMsg_SetNetworkState(true));
-}
-
-void PpapiPluginProcessHost::OnOnlineStateChanged(bool online) {
-  Send(new PpapiMsg_SetNetworkState(online));
 }
 
 // Called when a new plugin <--> renderer channel has been created.

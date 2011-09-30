@@ -299,16 +299,16 @@ PpapiPluginProcessHost* PluginService::FindPpapiPluginProcess(
   return NULL;
 }
 
-PpapiBrokerProcessHost* PluginService::FindPpapiBrokerProcess(
+PpapiPluginProcessHost* PluginService::FindPpapiBrokerProcess(
     const FilePath& broker_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (BrowserChildProcessHost::Iterator iter(
            ChildProcessInfo::PPAPI_BROKER_PROCESS);
        !iter.Done(); ++iter) {
-    PpapiBrokerProcessHost* broker =
-        static_cast<PpapiBrokerProcessHost*>(*iter);
-    if (broker->broker_path() == broker_path)
+    PpapiPluginProcessHost* broker =
+        static_cast<PpapiPluginProcessHost*>(*iter);
+    if (broker->plugin_path() == broker_path)
       return broker;
   }
 
@@ -340,7 +340,7 @@ PluginProcessHost* PluginService::FindOrStartNpapiPluginProcess(
 
 PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
     const FilePath& plugin_path,
-    PpapiPluginProcessHost::Client* client) {
+    PpapiPluginProcessHost::PluginClient* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   PpapiPluginProcessHost* plugin_host = FindPpapiPluginProcess(plugin_path);
@@ -353,20 +353,16 @@ PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
     return NULL;
 
   // This plugin isn't loaded by any plugin process, so create a new process.
-  scoped_ptr<PpapiPluginProcessHost> new_host(new PpapiPluginProcessHost(
-      client->GetResourceContext()->host_resolver()));
-  if (!new_host->Init(*info)) {
-    NOTREACHED();  // Init is not expected to fail.
-    return NULL;
-  }
-  return new_host.release();
+  return PpapiPluginProcessHost::CreatePluginHost(
+      *info,
+      client->GetResourceContext()->host_resolver());
 }
 
-PpapiBrokerProcessHost* PluginService::FindOrStartPpapiBrokerProcess(
+PpapiPluginProcessHost* PluginService::FindOrStartPpapiBrokerProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  PpapiBrokerProcessHost* plugin_host = FindPpapiBrokerProcess(plugin_path);
+  PpapiPluginProcessHost* plugin_host = FindPpapiBrokerProcess(plugin_path);
   if (plugin_host)
     return plugin_host;
 
@@ -379,13 +375,7 @@ PpapiBrokerProcessHost* PluginService::FindOrStartPpapiBrokerProcess(
   // DCHECK(info->is_out_of_process);
 
   // This broker isn't loaded by any broker process, so create a new process.
-  scoped_ptr<PpapiBrokerProcessHost> new_host(
-      new PpapiBrokerProcessHost);
-  if (!new_host->Init(*info)) {
-    NOTREACHED();  // Init is not expected to fail.
-    return NULL;
-  }
-  return new_host.release();
+  return PpapiPluginProcessHost::CreateBrokerHost(*info);
 }
 
 void PluginService::OpenChannelToNpapiPlugin(
@@ -409,7 +399,7 @@ void PluginService::OpenChannelToNpapiPlugin(
 
 void PluginService::OpenChannelToPpapiPlugin(
     const FilePath& path,
-    PpapiPluginProcessHost::Client* client) {
+    PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
       path, client);
   if (plugin_host)
@@ -420,10 +410,10 @@ void PluginService::OpenChannelToPpapiPlugin(
 
 void PluginService::OpenChannelToPpapiBroker(
     const FilePath& path,
-    PpapiBrokerProcessHost::Client* client) {
-  PpapiBrokerProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(path);
+    PpapiPluginProcessHost::BrokerClient* client) {
+  PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(path);
   if (plugin_host)
-    plugin_host->OpenChannelToPpapiBroker(client);
+    plugin_host->OpenChannelToPlugin(client);
   else  // Send error.
     client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
 }

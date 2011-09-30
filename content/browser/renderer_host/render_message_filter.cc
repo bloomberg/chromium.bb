@@ -23,7 +23,6 @@
 #include "content/browser/plugin_service.h"
 #include "content/browser/plugin_service_filter.h"
 #include "content/browser/ppapi_plugin_process_host.h"
-#include "content/browser/ppapi_broker_process_host.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/media/media_observer.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -102,8 +101,9 @@ class RenderMessageCompletionCallback {
   IPC::Message* reply_msg_;
 };
 
-class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
-                                         public PpapiPluginProcessHost::Client {
+class OpenChannelToPpapiPluginCallback
+    : public RenderMessageCompletionCallback,
+      public PpapiPluginProcessHost::PluginClient {
  public:
   OpenChannelToPpapiPluginCallback(RenderMessageFilter* filter,
                                    const content::ResourceContext* context,
@@ -133,7 +133,8 @@ class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
   const content::ResourceContext* context_;
 };
 
-class OpenChannelToPpapiBrokerCallback : public PpapiBrokerProcessHost::Client {
+class OpenChannelToPpapiBrokerCallback
+    : public PpapiPluginProcessHost::BrokerClient {
  public:
   OpenChannelToPpapiBrokerCallback(RenderMessageFilter* filter,
                                    int routing_id,

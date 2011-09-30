@@ -10,10 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/pepper_message_filter.h"
-#include "net/base/network_change_notifier.h"
 
 struct PepperPluginInfo;
 
@@ -25,10 +25,10 @@ namespace net {
 class HostResolver;
 }
 
+// Process host for PPAPI plugin and broker processes.
+// When used for the broker, interpret all references to "plugin" with "broker".
 class PpapiPluginProcessHost
-    : public BrowserChildProcessHost,
-      public net::NetworkChangeNotifier::IPAddressObserver,
-      public net::NetworkChangeNotifier::OnlineStateObserver {
+    : public BrowserChildProcessHost {
  public:
   class Client {
    public:
@@ -42,18 +42,23 @@ class PpapiPluginProcessHost
     //   IPC::ChannelHandle()
     virtual void OnChannelOpened(base::ProcessHandle plugin_process_handle,
                                  const IPC::ChannelHandle& channel_handle) = 0;
+  };
 
+  class PluginClient : public Client {
+   public:
     // Returns the resource context for the renderer requesting the channel.
     virtual const content::ResourceContext* GetResourceContext() = 0;
   };
 
-  // You must call Init before doing anything else.
-  PpapiPluginProcessHost(net::HostResolver* host_resolver);
+  class BrokerClient : public Client {
+  };
+
   virtual ~PpapiPluginProcessHost();
 
-  // Actually launches the process with the given plugin info. Returns true
-  // on success (the process was spawned).
-  bool Init(const PepperPluginInfo& info);
+  static PpapiPluginProcessHost* CreatePluginHost(
+      const PepperPluginInfo& info,
+      net::HostResolver* host_resolver);
+  static PpapiPluginProcessHost* CreateBrokerHost(const PepperPluginInfo& info);
 
   // Opens a new channel to the plugin. The client will be notified when the
   // channel is ready or if there's an error.
@@ -64,6 +69,17 @@ class PpapiPluginProcessHost
   // The client pointer must remain valid until its callback is issued.
 
  private:
+  class PluginNetworkObserver;
+
+  // Constructors for plugin and broker process hosts, respectively.
+  // You must call Init before doing anything else.
+  PpapiPluginProcessHost(net::HostResolver* host_resolver);
+  PpapiPluginProcessHost();
+
+  // Actually launches the process with the given plugin info. Returns true
+  // on success (the process was spawned).
+  bool Init(const PepperPluginInfo& info);
+
   void RequestPluginChannel(Client* client);
 
   virtual bool CanShutdown();
@@ -75,17 +91,14 @@ class PpapiPluginProcessHost
 
   void CancelRequests();
 
-  // IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() OVERRIDE;
-
-  // OnlineStateObserver implementation.
-  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
-
   // IPC message handlers.
   void OnRendererPluginChannelCreated(const IPC::ChannelHandle& handle);
 
-  // Handles most requests from the plugin.
+  // Handles most requests from the plugin. May be NULL.
   scoped_refptr<PepperMessageFilter> filter_;
+
+  // Observes network changes. May be NULL.
+  scoped_ptr<PluginNetworkObserver> network_observer_;
 
   // Channel requests that we are waiting to send to the plugin process once
   // the channel is opened.
@@ -97,6 +110,8 @@ class PpapiPluginProcessHost
 
   // Path to the plugin library.
   FilePath plugin_path_;
+
+  const bool is_broker_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiPluginProcessHost);
 };
