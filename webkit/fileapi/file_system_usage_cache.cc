@@ -85,8 +85,7 @@ bool FileSystemUsageCache::Invalidate(const FilePath& usage_file_path) {
 bool FileSystemUsageCache::IsValid(const FilePath& usage_file_path) {
   bool is_valid = true;
   uint32 dirty = 0;
-  int64 fs_usage;
-  fs_usage = Read(usage_file_path, &is_valid, &dirty);
+  Read(usage_file_path, &is_valid, &dirty);
   return is_valid;
 }
 

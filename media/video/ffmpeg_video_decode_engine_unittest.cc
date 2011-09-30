@@ -175,10 +175,6 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   Initialize();
 
-  // We rely on FFmpeg for timestamp and duration reporting.
-  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(0);
-  const base::TimeDelta kDuration = base::TimeDelta::FromMicroseconds(10000);
-
   // Simulate decoding a single frame.
   scoped_refptr<VideoFrame> video_frame;
   DecodeASingleFrame(i_frame_buffer_, &video_frame);
@@ -187,8 +183,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   // the buffer timestamp.
   ASSERT_TRUE(video_frame);
   EXPECT_EQ(0, video_frame->GetTimestamp().ToInternalValue());
-  EXPECT_EQ(kDuration.ToInternalValue(),
-            video_frame->GetDuration().ToInternalValue());
+  EXPECT_EQ(10000, video_frame->GetDuration().ToInternalValue());
 }
 
 

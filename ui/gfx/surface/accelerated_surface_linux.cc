@@ -23,7 +23,8 @@ AcceleratedSurface::AcceleratedSurface(const gfx::Size& size)
       dpy, window, size_.width(), size_.height(), gwa.depth);
 
   image_ = eglCreateImageKHR(
-      edpy, EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR, (void*) pixmap_, NULL);
+      edpy, EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
+      reinterpret_cast<void*>(pixmap_), NULL);
 
   glGenTextures(1, &texture_);
 

@@ -5242,8 +5242,6 @@ void Browser::OnWindowDidShow() {
     return;
   window_has_shown_ = true;
 
-  bool did_show_bubble = false;
-
   // Show the First Run information bubble if we've been told to.
   PrefService* local_state = g_browser_process->local_state();
   if (local_state &&
@@ -5262,14 +5260,12 @@ void Browser::OnWindowDidShow() {
     // Reset the preference so we don't show the bubble for subsequent windows.
     local_state->ClearPref(prefs::kShouldShowFirstRunBubble);
     window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
-    did_show_bubble = true;
   } else if (is_type_tabbed()) {
     GlobalErrorService* service =
         GlobalErrorServiceFactory::GetForProfile(profile());
     GlobalError* error = service->GetFirstGlobalErrorWithBubbleView();
     if (error) {
       error->ShowBubbleView(this);
-      did_show_bubble = true;
     }
   }
 }
