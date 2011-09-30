@@ -96,8 +96,6 @@
       # Flaky: crbug.com/83459
       '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
-      # crbug.com/91033
-      '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # crbug.com/82629 - real bug.
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/47935
@@ -213,7 +211,6 @@
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/91617
       '-omnibox.OmniboxTest.testContentHistory',
-      '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
       # crbug.com/97140
