@@ -74,7 +74,7 @@ bool NameValuePairsParser::GetSingleValueFromTool(int argc,
   // TODO(stevenjb,satorux): Make this non blocking: crosbug.com/5603.
   base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
   if (!file_util::PathExists(FilePath(argv[0]))) {
-    LOG(WARNING) << argv[0] << " not found. Maybe running on Linux desktop?";
+    LOG(ERROR) << argv[0] << " not found";
     return false;
   }
 
