@@ -72,13 +72,6 @@ bool TabContentsDelegate::IsPopupOrPanel(const TabContents* source) const {
   return false;
 }
 
-bool TabContentsDelegate::ShouldFocusConstrainedWindow() {
-  return true;
-}
-
-void TabContentsDelegate::WillShowConstrainedWindow(TabContents* source) {
-}
-
 void TabContentsDelegate::UpdateTargetURL(TabContents* source,
                                           int32 page_id,
                                           const GURL& url) {
@@ -124,10 +117,6 @@ bool TabContentsDelegate::TakeFocus(bool reverse) {
 }
 
 void TabContentsDelegate::LostCapture() {
-}
-
-void TabContentsDelegate::SetTabContentBlocked(
-    TabContents* contents, bool blocked) {
 }
 
 void TabContentsDelegate::TabContentsFocused(TabContents* tab_content) {

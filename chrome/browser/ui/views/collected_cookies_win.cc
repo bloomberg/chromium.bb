@@ -181,7 +181,7 @@ CollectedCookiesWin::CollectedCookiesWin(gfx::NativeWindow parent_window,
 
   Init();
 
-  window_ = new ConstrainedWindowViews(wrapper->tab_contents(), this);
+  window_ = new ConstrainedWindowViews(wrapper, this);
 }
 
 CollectedCookiesWin::~CollectedCookiesWin() {

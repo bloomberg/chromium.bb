@@ -94,6 +94,7 @@
 #include "chrome/browser/ui/browser_synced_window_delegate.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -3515,15 +3516,6 @@ void Browser::ContentsZoomChange(bool zoom_in) {
   ExecuteCommand(zoom_in ? IDC_ZOOM_PLUS : IDC_ZOOM_MINUS);
 }
 
-void Browser::SetTabContentBlocked(TabContents* contents, bool blocked) {
-  int index = tabstrip_model()->GetWrapperIndex(contents);
-  if (index == TabStripModel::kNoTab) {
-    NOTREACHED();
-    return;
-  }
-  tabstrip_model()->SetTabBlocked(index, blocked);
-}
-
 void Browser::TabContentsFocused(TabContents* tab_content) {
   window_->TabContentsFocused(tab_content);
 }
@@ -4165,6 +4157,15 @@ void Browser::SwapTabContents(TabContentsWrapper* old_tab_contents,
   DCHECK_NE(TabStripModel::kNoTab, index);
   tab_handler_->GetTabStripModel()->ReplaceTabContentsAt(index,
                                                          new_tab_contents);
+}
+
+void Browser::SetTabContentBlocked(TabContentsWrapper* wrapper, bool blocked) {
+  int index = tabstrip_model()->GetIndexOfTabContents(wrapper);
+  if (index == TabStripModel::kNoTab) {
+    NOTREACHED();
+    return;
+  }
+  tabstrip_model()->SetTabBlocked(index, blocked);
 }
 
 void Browser::SetSuggestedText(const string16& text,
@@ -4946,6 +4947,7 @@ void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
   // ...and all the helpers.
   tab->blocked_content_tab_helper()->set_delegate(delegate);
   tab->bookmark_tab_helper()->set_delegate(delegate);
+  tab->constrained_window_tab_helper()->set_delegate(delegate);
   tab->search_engine_tab_helper()->set_delegate(delegate);
 }
 

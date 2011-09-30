@@ -132,7 +132,7 @@ void SSLClientCertificateSelector::Init() {
 
   StartObserving();
 
-  window_ = new ConstrainedWindowViews(wrapper_->tab_contents(), this);
+  window_ = new ConstrainedWindowViews(wrapper_, this);
 
   // Select the first row automatically.  This must be done after the dialog has
   // been created.

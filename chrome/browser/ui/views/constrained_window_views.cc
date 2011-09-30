@@ -9,6 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
@@ -211,7 +213,7 @@ class ConstrainedWindowFrameView
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
 
   SkColor GetTitleColor() const {
-    return container_->owner()->browser_context()->IsOffTheRecord()
+    return container_->owner()->profile()->IsOffTheRecord()
 #if defined(OS_WIN) && !defined(USE_AURA)
             || !views::NativeWidgetWin::IsAeroGlassEnabled()
 #endif
@@ -588,9 +590,9 @@ void ConstrainedWindowFrameView::InitClass() {
 // ConstrainedWindowViews, public:
 
 ConstrainedWindowViews::ConstrainedWindowViews(
-    TabContents* owner,
+    TabContentsWrapper* wrapper,
     views::WidgetDelegate* widget_delegate)
-    : owner_(owner),
+    : wrapper_(wrapper),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
   views::Widget::InitParams params;
@@ -606,15 +608,17 @@ ConstrainedWindowViews::ConstrainedWindowViews(
       // which has an inputmethod object that knows where to forward
       // event.
     } else {
-      params.parent_widget = static_cast<TabContentsViewViews*>(owner->view());
+      params.parent_widget =
+          static_cast<TabContentsViewViews*>(wrapper->view());
     }
   } else {
     params.child = true;
-    params.parent = owner->GetNativeView();
+    params.parent = wrapper->tab_contents()->GetNativeView();
   }
 
   Init(params);
-  owner->AddConstrainedDialog(this);
+
+  wrapper_->constrained_window_tab_helper()->AddConstrainedDialog(this);
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
@@ -627,20 +631,24 @@ void ConstrainedWindowViews::ShowConstrainedWindow() {
   // We marked the view as hidden during construction.  Mark it as
   // visible now so FocusManager will let us receive focus.
   non_client_view()->SetVisible(true);
-  if (owner_->delegate())
-    owner_->delegate()->WillShowConstrainedWindow(owner_);
+  ConstrainedWindowTabHelper* helper =
+      wrapper_->constrained_window_tab_helper();
+  if (helper && helper->delegate())
+    helper->delegate()->WillShowConstrainedWindow(wrapper_);
   Activate();
   FocusConstrainedWindow();
 }
 
 void ConstrainedWindowViews::CloseConstrainedWindow() {
-  owner_->WillClose(this);
+  wrapper_->constrained_window_tab_helper()->WillClose(this);
   Close();
 }
 
 void ConstrainedWindowViews::FocusConstrainedWindow() {
-  if ((!owner_->delegate() ||
-       owner_->delegate()->ShouldFocusConstrainedWindow()) &&
+  ConstrainedWindowTabHelper* helper =
+      wrapper_->constrained_window_tab_helper();
+  if ((!helper->delegate() ||
+       helper->delegate()->ShouldFocusConstrainedWindow()) &&
       widget_delegate() &&
       widget_delegate()->GetInitiallyFocusedView()) {
     widget_delegate()->GetInitiallyFocusedView()->RequestFocus();
@@ -658,9 +666,7 @@ views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 // ConstrainedWindowViews, NativeConstrainedWindowDelegate implementation:
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowDestroyed() {
-  // Tell our constraining TabContents that we've gone so it can update its
-  // list.
-  owner_->WillClose(this);
+  wrapper_->constrained_window_tab_helper()->WillClose(this);
 }
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {

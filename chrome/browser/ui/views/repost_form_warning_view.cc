@@ -8,6 +8,7 @@
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -38,7 +39,9 @@ RepostFormWarningView::RepostFormWarningView(
       ui::MessageBoxFlags::kIsConfirmMessageBox,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING)),
       std::wstring());
-  controller_->set_window(new ConstrainedWindowViews(tab_contents, this));
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  controller_->set_window(new ConstrainedWindowViews(wrapper, this));
 }
 
 RepostFormWarningView::~RepostFormWarningView() {

@@ -48,7 +48,6 @@
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "net/base/net_util.h"
-#include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -220,12 +219,6 @@ TabContents::~TabContents() {
     dialog_creator_->ResetJavaScriptState(this);
 
   NotifyDisconnected();
-
-  // First cleanly close all child windows.
-  // TODO(mpcomplete): handle case if MaybeCloseChildWindows() already asked
-  // some of these to close.  CloseWindows is async, so it might get called
-  // twice before it runs.
-  CloseConstrainedWindows();
 
   // Notify any observer that have a reference on this tab contents.
   NotificationService::current()->Notify(
@@ -675,28 +668,6 @@ void TabContents::ShowPageInfo(const GURL& url,
   delegate_->ShowPageInfo(browser_context(), url, ssl, show_history);
 }
 
-void TabContents::AddConstrainedDialog(ConstrainedWindow* window) {
-  child_windows_.push_back(window);
-
-  if (child_windows_.size() == 1) {
-    window->ShowConstrainedWindow();
-    BlockTabContent(true);
-  }
-}
-
-void TabContents::BlockTabContent(bool blocked) {
-  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
-  // 70% opaque grey.
-  SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
-  if (rwhv)
-    rwhv->SetVisuallyDeemphasized(blocked ? &greyish : NULL, false);
-  // RenderViewHost may be NULL during shutdown.
-  if (render_view_host())
-    render_view_host()->set_ignore_input_events(blocked);
-  if (delegate_)
-    delegate_->SetTabContentBlocked(this, blocked);
-}
-
 void TabContents::AddNewContents(TabContents* new_contents,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
@@ -758,21 +729,6 @@ void TabContents::OnStartDownload(DownloadItem* download) {
   TabContentsDelegate* d = delegate();
   if (d)
     d->OnStartDownload(this, download);
-}
-
-void TabContents::WillClose(ConstrainedWindow* window) {
-  ConstrainedWindowList::iterator i(
-      std::find(child_windows_.begin(), child_windows_.end(), window));
-  bool removed_topmost_window = i == child_windows_.begin();
-  if (i != child_windows_.end())
-    child_windows_.erase(i);
-  if (child_windows_.empty()) {
-    BlockTabContent(false);
-  } else {
-    if (removed_topmost_window)
-      child_windows_[0]->ShowConstrainedWindow();
-    BlockTabContent(true);
-  }
 }
 
 void TabContents::OnSavePage() {
@@ -1287,11 +1243,6 @@ void TabContents::DidNavigateMainFramePostCommit(
     displayed_insecure_content_ = false;
   }
 
-  // Close constrained windows if necessary.
-  if (!net::RegistryControlledDomainService::SameDomainOrHost(
-      details.previous_url, details.entry->url()))
-    CloseConstrainedWindows();
-
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                     DidNavigateMainFramePostCommit(details, params));
@@ -1312,23 +1263,6 @@ void TabContents::DidNavigateAnyFramePostCommit(
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                     DidNavigateAnyFramePostCommit(details, params));
-}
-
-void TabContents::CloseConstrainedWindows() {
-  // Clear out any constrained windows since we are leaving this page entirely.
-  // To ensure that we iterate over every element in child_windows_ we
-  // need to use a copy of child_windows_. Otherwise if
-  // window->CloseConstrainedWindow() modifies child_windows_ we could end up
-  // skipping some elements.
-  ConstrainedWindowList child_windows_copy(child_windows_);
-  for (ConstrainedWindowList::iterator it = child_windows_copy.begin();
-       it != child_windows_copy.end(); ++it) {
-    ConstrainedWindow* window = *it;
-    if (window) {
-      window->CloseConstrainedWindow();
-      BlockTabContent(false);
-    }
-  }
 }
 
 void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
@@ -1853,10 +1787,8 @@ void TabContents::OnUserGesture() {
 }
 
 void TabContents::OnIgnoredUIEvent() {
-  if (constrained_window_count()) {
-    ConstrainedWindow* window = *constrained_window_begin();
-    window->FocusConstrainedWindow();
-  }
+  // Notify observers.
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, DidGetIgnoredUIEvent());
 }
 
 void TabContents::RendererUnresponsive(RenderViewHost* rvh,

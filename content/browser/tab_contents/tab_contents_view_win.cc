@@ -6,7 +6,6 @@
 
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
-#include "content/browser/tab_contents/constrained_window.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -100,13 +99,6 @@ void TabContentsViewWin::RenderViewCreated(RenderViewHost* host) {
 void TabContentsViewWin::Focus() {
   if (tab_contents_->interstitial_page()) {
     tab_contents_->interstitial_page()->Focus();
-    return;
-  }
-
-  if (tab_contents_->constrained_window_count() > 0) {
-    ConstrainedWindow* window = *tab_contents_->constrained_window_begin();
-    DCHECK(window);
-    window->FocusConstrainedWindow();
     return;
   }
 

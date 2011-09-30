@@ -14,7 +14,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
-class TabContents;
+class TabContentsWrapper;
 typedef struct _GdkColor GdkColor;
 #if defined(TOUCH_UI)
 class TabContentsViewViews;
@@ -58,7 +58,7 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
    typedef TabContentsViewGtk TabContentsViewType;
 #endif
 
-  ConstrainedWindowGtk(TabContents* owner,
+  ConstrainedWindowGtk(TabContentsWrapper* wrapper,
                        ConstrainedWindowGtkDelegate* delegate);
   virtual ~ConstrainedWindowGtk();
 
@@ -67,8 +67,8 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   virtual void CloseConstrainedWindow();
   virtual void FocusConstrainedWindow();
 
-  // Returns the TabContents that constrains this Constrained Window.
-  TabContents* owner() const { return owner_; }
+  // Returns the TabContentsWrapper that constrains this Constrained Window.
+  TabContentsWrapper* owner() const { return wrapper_; }
 
   // Returns the toplevel widget that displays this "window".
   GtkWidget* widget() { return border_.get(); }
@@ -85,8 +85,8 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   CHROMEGTK_CALLBACK_1(ConstrainedWindowGtk, void, OnHierarchyChanged,
                        GtkWidget*);
 
-  // The TabContents that owns and constrains this ConstrainedWindow.
-  TabContents* owner_;
+  // The TabContentsWrapper that owns and constrains this ConstrainedWindow.
+  TabContentsWrapper* wrapper_;
 
   // The top level widget container that exports to our TabContentsView.
   ui::OwnedWidgetGtk border_;

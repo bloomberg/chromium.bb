@@ -13,6 +13,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class RepostFormWarningController;
+class TabContents;
 
 // Displays a dialog that warns the user that they are about to resubmit
 // a form.

@@ -129,8 +129,7 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   ConstrainedHtmlDelegateViews* constrained_delegate =
       new ConstrainedHtmlDelegateViews(profile, delegate);
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowViews(container->tab_contents(),
-                                 constrained_delegate);
+      new ConstrainedWindowViews(container, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
 #endif

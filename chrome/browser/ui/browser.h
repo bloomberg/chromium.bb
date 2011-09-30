@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
@@ -72,6 +73,7 @@ class Browser : public TabHandlerDelegate,
                 public TabContentsDelegate,
                 public TabContentsWrapperDelegate,
                 public SearchEngineTabHelperDelegate,
+                public ConstrainedWindowTabHelperDelegate,
                 public BlockedContentTabHelperDelegate,
                 public BookmarkTabHelperDelegate,
                 public PageNavigator,
@@ -916,8 +918,6 @@ class Browser : public TabHandlerDelegate,
   virtual void ContentsMouseEvent(
       TabContents* source, const gfx::Point& location, bool motion) OVERRIDE;
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
-  virtual void SetTabContentBlocked(TabContents* contents,
-                                    bool blocked) OVERRIDE;
   virtual void TabContentsFocused(TabContents* tab_content) OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
   virtual bool IsApplication() const OVERRIDE;
@@ -1008,6 +1008,10 @@ class Browser : public TabHandlerDelegate,
       TemplateURLService* template_url_service) OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
+
+  // Overridden from ConstrainedWindowTabHelperDelegate:
+  virtual void SetTabContentBlocked(TabContentsWrapper* contents,
+                                    bool blocked) OVERRIDE;
 
   // Overridden from BlockedContentTabHelperDelegate:
   virtual TabContentsWrapper* GetConstrainingContentsWrapper(

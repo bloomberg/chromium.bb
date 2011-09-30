@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/repost_form_warning_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -69,7 +70,9 @@ RepostFormWarningMac::RepostFormWarningMac(
 
   set_sheet(alert);
 
-  controller->set_window(new ConstrainedWindowMac(tab_contents_, this));
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  controller->set_window(new ConstrainedWindowMac(wrapper, this));
 }
 
 RepostFormWarningMac::~RepostFormWarningMac() {

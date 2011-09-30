@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 
 class RepostFormWarningController;
+class TabContents;
 
 // Displays a dialog that warns the user that they are about to resubmit
 // a form. To show the dialog, call the |Create| method. It will open the
@@ -21,7 +22,7 @@ class RepostFormWarningMac : public ConstrainedWindowMacDelegateSystemSheet {
   // Convenience method that creates a new |RepostFormWarningController| and
   // then a new |RepostFormWarningMac| from that.
   static RepostFormWarningMac* Create(NSWindow* parent,
-                                     TabContents* tab_contents);
+                                      TabContents* tab_contents);
 
   RepostFormWarningMac(NSWindow* parent,
                        RepostFormWarningController* controller,

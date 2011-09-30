@@ -8,6 +8,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -123,6 +124,12 @@ class SSLUITest : public InProcessBrowserTest {
         Source<NavigationController>(&tab->controller()));
     interstitial_page->Proceed();
     observer.Wait();
+  }
+
+  int GetConstrainedWindowCount() const {
+    return static_cast<int>(
+        browser()->GetSelectedTabContentsWrapper()->
+        constrained_window_tab_helper()->constrained_window_count());
   }
 
   static bool GetFilePathWithHostAndPortReplacement(
@@ -586,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContents) {
   // opened (the iframe content opens one).
   // Note: because of bug 1115868, no constrained window is opened right now.
   //       Once the bug is fixed, this will do the real check.
-  EXPECT_EQ(0, static_cast<int>(tab->constrained_window_count()));
+  EXPECT_EQ(0, GetConstrainedWindowCount());
 
   int img_width;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
@@ -861,13 +868,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   // It is probably overkill to add a notification for a popup-opening, let's
   // just poll.
   for (int i = 0; i < 10; i++) {
-    if (static_cast<int>(tab1->constrained_window_count()) > 0)
+    if (GetConstrainedWindowCount() > 0)
       break;
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                             new MessageLoop::QuitTask(), 1000);
     ui_test_utils::RunMessageLoop();
   }
-  ASSERT_EQ(1, static_cast<int>(tab1->constrained_window_count()));
+  ASSERT_EQ(1, GetConstrainedWindowCount());
 
   // Let's add another tab to make sure the browser does not exit when we close
   // the first tab.

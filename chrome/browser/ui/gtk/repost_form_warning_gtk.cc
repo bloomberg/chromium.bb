@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/repost_form_warning_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -54,7 +55,9 @@ RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
   g_signal_connect(ok_, "clicked", G_CALLBACK(OnRefreshThunk), this);
   gtk_box_pack_end(GTK_BOX(buttonBox), ok_, FALSE, TRUE, 0);
 
-  controller_->set_window(new ConstrainedWindowGtk(tab_contents, this));
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  controller_->set_window(new ConstrainedWindowGtk(wrapper, this));
 }
 
 GtkWidget* RepostFormWarningGtk::GetWidgetRoot() {

@@ -87,6 +87,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -1357,8 +1358,14 @@ void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     TabContents* tab_contents = nav_controller->tab_contents();
-    if (tab_contents)
-      *count = static_cast<int>(tab_contents->child_windows_.size());
+    if (tab_contents) {
+      TabContentsWrapper* wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+      if (wrapper) {
+        *count = static_cast<int>(wrapper->constrained_window_tab_helper()->
+                                  constrained_window_count());
+      }
+    }
   }
 }
 

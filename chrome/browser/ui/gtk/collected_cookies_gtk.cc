@@ -163,7 +163,7 @@ void CollectedCookiesGtk::Init() {
   blocked_cookies_tree_adapter_->Init();
   EnableControls();
   ShowCookieInfo(gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook_)));
-  window_ = new ConstrainedWindowGtk(wrapper_->tab_contents(), this);
+  window_ = new ConstrainedWindowGtk(wrapper_, this);
 }
 
 GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {

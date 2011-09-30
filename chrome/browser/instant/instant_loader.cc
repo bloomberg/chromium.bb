@@ -22,6 +22,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -146,6 +148,7 @@ void InstantLoader::FrameLoadObserver::Observe(
 class InstantLoader::TabContentsDelegateImpl
     : public TabContentsDelegate,
       public TabContentsWrapperDelegate,
+      public ConstrainedWindowTabHelperDelegate,
       public NotificationObserver,
       public TabContentsObserver {
  public:
@@ -184,8 +187,6 @@ class InstantLoader::TabContentsDelegateImpl
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNavigationHeaders(const GURL& url,
                                     std::string* headers) OVERRIDE;
-  virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
-  virtual void WillShowConstrainedWindow(TabContents* source) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
   virtual void BeforeUnloadFired(TabContents* tab,
                                  bool proceed,
@@ -208,6 +209,10 @@ class InstantLoader::TabContentsDelegateImpl
   // TabContentsWrapperDelegate:
   virtual void SwapTabContents(TabContentsWrapper* old_tc,
                                TabContentsWrapper* new_tc) OVERRIDE;
+
+  // ConstrainedWindowTabHelperDelegate:
+  virtual void WillShowConstrainedWindow(TabContentsWrapper* source) OVERRIDE;
+  virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
 
   // TabContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -421,23 +426,6 @@ void InstantLoader::TabContentsDelegateImpl::AddNavigationHeaders(
                                        headers);
 }
 
-bool InstantLoader::TabContentsDelegateImpl::ShouldFocusConstrainedWindow() {
-  // Return false so that constrained windows are not initially focused. If
-  // we did otherwise the preview would prematurely get committed when focus
-  // goes to the constrained window.
-  return false;
-}
-
-void InstantLoader::TabContentsDelegateImpl::WillShowConstrainedWindow(
-    TabContents* source) {
-  if (!loader_->ready()) {
-    // A constrained window shown for an auth may not paint. Show the preview
-    // contents.
-    UnregisterForPaintNotifications();
-    loader_->ShowPreview();
-  }
-}
-
 bool InstantLoader::TabContentsDelegateImpl::ShouldSuppressDialogs() {
   // Any message shown during instant cancels instant, so we suppress them.
   return true;
@@ -504,6 +492,22 @@ void InstantLoader::TabContentsDelegateImpl::SwapTabContents(
   loader_->ReplacePreviewContents(old_tc, new_tc);
 }
 
+bool InstantLoader::TabContentsDelegateImpl::ShouldFocusConstrainedWindow() {
+  // Return false so that constrained windows are not initially focused. If
+  // we did otherwise the preview would prematurely get committed when focus
+  // goes to the constrained window.
+  return false;
+}
+
+void InstantLoader::TabContentsDelegateImpl::WillShowConstrainedWindow(
+    TabContentsWrapper* source) {
+  if (!loader_->ready()) {
+    // A constrained window shown for an auth may not paint. Show the preview
+    // contents.
+    UnregisterForPaintNotifications();
+    loader_->ShowPreview();
+  }
+}
 
 bool InstantLoader::TabContentsDelegateImpl::OnMessageReceived(
     const IPC::Message& message) {
@@ -947,6 +951,7 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
   SetupPreviewContents(old_tc);
 
   // Cleanup the old preview contents.
+  old_tc->constrained_window_tab_helper()->set_delegate(NULL);
   old_tc->tab_contents()->set_delegate(NULL);
   old_tc->set_delegate(NULL);
 
@@ -972,6 +977,8 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   preview_contents_->tab_contents()->set_delegate(
       preview_tab_contents_delegate_.get());
   preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(true);
+  preview_contents_->constrained_window_tab_helper()->set_delegate(
+      preview_tab_contents_delegate_.get());
 
   // Propagate the max page id. That way if we end up merging the two
   // NavigationControllers (which happens if we commit) none of the page ids

@@ -18,7 +18,7 @@
 @class GTMWindowSheetController;
 @class NSView;
 @class NSWindow;
-class TabContents;
+class TabContentsWrapper;
 
 // Base class for constrained dialog delegates. Never inherit from this
 // directly.
@@ -109,7 +109,7 @@ class ConstrainedWindowMacDelegateCustomSheet
 //    deleted.
 class ConstrainedWindowMac : public ConstrainedWindow {
  public:
-  ConstrainedWindowMac(TabContents* owner,
+  ConstrainedWindowMac(TabContentsWrapper* wrapper,
                        ConstrainedWindowMacDelegate* delegate);
   virtual ~ConstrainedWindowMac();
 
@@ -117,8 +117,8 @@ class ConstrainedWindowMac : public ConstrainedWindow {
   virtual void ShowConstrainedWindow();
   virtual void CloseConstrainedWindow();
 
-  // Returns the TabContents that constrains this Constrained Window.
-  TabContents* owner() const { return owner_; }
+  // Returns the TabContentsWrapper that constrains this Constrained Window.
+  TabContentsWrapper* owner() const { return wrapper_; }
 
   // Returns the window's delegate.
   ConstrainedWindowMacDelegate* delegate() { return delegate_; }
@@ -129,8 +129,8 @@ class ConstrainedWindowMac : public ConstrainedWindow {
  private:
   friend class ConstrainedWindow;
 
-  // The TabContents that owns and constrains this ConstrainedWindow.
-  TabContents* owner_;
+  // The TabContentsWrapper that owns and constrains this ConstrainedWindow.
+  TabContentsWrapper* wrapper_;
 
   // Delegate that provides the contents of this constrained window.
   ConstrainedWindowMacDelegate* delegate_;

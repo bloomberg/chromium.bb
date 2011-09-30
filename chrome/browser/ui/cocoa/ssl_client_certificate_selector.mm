@@ -226,7 +226,7 @@ void ShowSSLClientCertificateSelector(
   }
 
   window_ = new ConstrainedWindowMac(
-      wrapper->tab_contents(),
+      wrapper,
       new ConstrainedSFChooseIdentityPanel(
           panel, self,
           @selector(sheetDidEnd:returnCode:context:),

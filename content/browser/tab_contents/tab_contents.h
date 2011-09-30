@@ -297,28 +297,11 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
 
   // Window management ---------------------------------------------------------
 
-  // Adds the given window to the list of child windows. The window will notify
-  // via WillClose() when it is being destroyed.
-  void AddConstrainedDialog(ConstrainedWindow* window);
-
   // Adds a new tab or window with the given already-created contents.
   void AddNewContents(TabContents* new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_pos,
                       bool user_gesture);
-
-  // Returns the number of constrained windows in this tab.  Used by tests.
-  size_t constrained_window_count() { return child_windows_.size(); }
-
-  typedef std::deque<ConstrainedWindow*> ConstrainedWindowList;
-
-  // Return an iterator for the first constrained window in this tab contents.
-  ConstrainedWindowList::iterator constrained_window_begin()
-  { return child_windows_.begin(); }
-
-  // Return an iterator for the last constrained window in this tab contents.
-  ConstrainedWindowList::iterator constrained_window_end()
-  { return child_windows_.end(); }
 
   // Views and focus -----------------------------------------------------------
   // TODO(brettw): Most of these should be removed and the caller should call
@@ -364,9 +347,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
 
   // Notifies the delegate that a download started.
   void OnStartDownload(DownloadItem* download);
-
-  // Called when a ConstrainedWindow we own is about to be closed.
-  void WillClose(ConstrainedWindow* window);
 
   // Interstitials -------------------------------------------------------------
 
@@ -596,8 +576,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // up at the next animation step if the throbber is going.
   void SetNotWaitingForResponse() { waiting_for_response_ = false; }
 
-  ConstrainedWindowList child_windows_;
-
   // Navigation helpers --------------------------------------------------------
   //
   // These functions are helpers for Navigate() and DidNavigate().
@@ -613,9 +591,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
       RenderViewHost* render_view_host,
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
-
-  // Closes all constrained windows.
-  void CloseConstrainedWindows();
 
   // If our controller was restored and the page id is > than the site
   // instance's page id, the site instances page id is updated as well as the
@@ -731,9 +706,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
 
   // RenderViewHostManager::Delegate -------------------------------------------
-
-  // Blocks/unblocks interaction with renderer process.
-  void BlockTabContent(bool blocked);
 
   virtual void BeforeUnloadFiredFromRenderManager(
       bool proceed,

@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -74,5 +75,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedHtmlDialogBrowserTest, BasicTest) {
                                                  delegate,
                                                  wrapper);
 
-  ASSERT_EQ(1U, wrapper->tab_contents()->constrained_window_count());
+  ASSERT_EQ(1U, wrapper->constrained_window_tab_helper()->
+            constrained_window_count());
 }

@@ -130,12 +130,6 @@ class CONTENT_EXPORT TabContentsDelegate {
   // or a panel window.
   virtual bool IsPopupOrPanel(const TabContents* source) const;
 
-  // Returns true if constrained windows should be focused. Default is true.
-  virtual bool ShouldFocusConstrainedWindow();
-
-  // Invoked prior to the TabContents showing a constrained window.
-  virtual void WillShowConstrainedWindow(TabContents* source);
-
   // Notification that the target URL has changed.
   virtual void UpdateTargetURL(TabContents* source, int32 page_id,
                                const GURL& url);
@@ -198,12 +192,6 @@ class CONTENT_EXPORT TabContentsDelegate {
 
   // Invoked when the page loses mouse capture.
   virtual void LostCapture();
-
-  // Changes the blocked state of the tab at |index|. TabContents are
-  // considered blocked while displaying a tab modal dialog. During that time
-  // renderer host will ignore any UI interaction within TabContent outside of
-  // the currently displaying dialog.
-  virtual void SetTabContentBlocked(TabContents* contents, bool blocked);
 
   // Notification that |tab_contents| has gained focus.
   virtual void TabContentsFocused(TabContents* tab_content);

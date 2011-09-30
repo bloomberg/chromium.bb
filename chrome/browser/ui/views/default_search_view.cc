@@ -11,6 +11,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -194,7 +195,9 @@ DefaultSearchView::DefaultSearchView(TabContents* tab_contents,
   SetupControls(prefs);
 
   // Show the dialog.
-  new ConstrainedWindowViews(tab_contents, this);
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
+  new ConstrainedWindowViews(wrapper, this);
 }
 
 void DefaultSearchView::SetupControls(PrefService* prefs) {

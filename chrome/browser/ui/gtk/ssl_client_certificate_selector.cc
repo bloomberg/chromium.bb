@@ -198,7 +198,7 @@ SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 
 void SSLClientCertificateSelector::Show() {
   DCHECK(!window_);
-  window_ = new ConstrainedWindowGtk(wrapper_->tab_contents(), this);
+  window_ = new ConstrainedWindowGtk(wrapper_, this);
 }
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {

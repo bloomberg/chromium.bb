@@ -43,6 +43,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker_factory_impl.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
@@ -250,6 +251,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
+  constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));

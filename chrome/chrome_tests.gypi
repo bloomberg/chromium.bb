@@ -1702,6 +1702,7 @@
         'browser/ui/cocoa/wrench_menu/menu_tracked_root_view_unittest.mm',
         'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell_unittest.mm',
         'browser/ui/cocoa/wrench_menu/wrench_menu_controller_unittest.mm',
+        'browser/ui/constrained_window_tab_helper_unittest.cc',
         'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
         'browser/ui/content_settings/content_setting_image_model_unittest.cc',
         'browser/ui/find_bar/find_backend_unittest.cc',

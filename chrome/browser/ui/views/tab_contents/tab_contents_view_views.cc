@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/time.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/sad_tab_view.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
@@ -163,11 +165,20 @@ void TabContentsViewViews::Focus() {
     return;
   }
 
-  if (tab_contents_->constrained_window_count() > 0) {
-    ConstrainedWindow* window = *tab_contents_->constrained_window_begin();
-    DCHECK(window);
-    window->FocusConstrainedWindow();
-    return;
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
+  if (wrapper) {
+    // TODO(erg): TabContents used to own constrained windows, which is why
+    // this is here. Eventually this should be ported to a containing view
+    // specializing in constrained window management.
+    ConstrainedWindowTabHelper* helper =
+        wrapper->constrained_window_tab_helper();
+    if (helper->constrained_window_count() > 0) {
+      ConstrainedWindow* window = *helper->constrained_window_begin();
+      DCHECK(window);
+      window->FocusConstrainedWindow();
+      return;
+    }
   }
 
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();

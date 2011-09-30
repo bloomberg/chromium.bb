@@ -42,6 +42,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -512,12 +513,13 @@ private:
   TabContentsWrapper* newTab = tabStripModel_->GetTabContentsAt(modelIndex);
   DCHECK(newTab);
   if (newTab) {
-    TabContents::ConstrainedWindowList::iterator it, end;
-    end = newTab->tab_contents()->constrained_window_end();
+    ConstrainedWindowTabHelper::ConstrainedWindowList::iterator it, end;
+    end = newTab->constrained_window_tab_helper()->constrained_window_end();
     NSWindowController* controller = [[newView window] windowController];
     DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
 
-    for (it = newTab->tab_contents()->constrained_window_begin();
+    for (it = newTab->constrained_window_tab_helper()->
+              constrained_window_begin();
          it != end;
          ++it) {
       ConstrainedWindow* constrainedWindow = *it;
@@ -1992,7 +1994,8 @@ private:
   // Changing it? Do not forget to modify removeConstrainedWindow too.
   // We use the TabContentsController's view in |swapInTabAtIndex|, so we have
   // to pass it to the sheet controller here.
-  NSView* tabContentsView = [window->owner()->GetNativeView() superview];
+  NSView* tabContentsView =
+      [window->owner()->tab_contents()->GetNativeView() superview];
   window->delegate()->RunSheet([self sheetController], tabContentsView);
 
   // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
@@ -2010,12 +2013,18 @@ private:
 }
 
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
-  NSView* tabContentsView = [window->owner()->GetNativeView() superview];
+  NSView* tabContentsView =
+      [window->owner()->tab_contents()->GetNativeView() superview];
 
   // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
   // between windows. Until then, we have to prevent having to move a tabsheet
   // between windows, e.g. no tearing off of tabs.
   NSInteger modelIndex = [self modelIndexForContentsView:tabContentsView];
+  if (modelIndex < 0) {
+    // This can happen during shutdown where the tab contents view has already
+    // removed itself.
+    return;
+  }
   NSInteger index = [self indexFromModelIndex:modelIndex];
   BrowserWindowController* controller =
       (BrowserWindowController*)[[switchView_ window] windowController];

@@ -119,8 +119,7 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   ConstrainedHtmlDelegateGtk* constrained_delegate =
       new ConstrainedHtmlDelegateGtk(profile, delegate);
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowGtk(overshadowed->tab_contents(),
-                               constrained_delegate);
+      new ConstrainedWindowGtk(overshadowed, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
 }

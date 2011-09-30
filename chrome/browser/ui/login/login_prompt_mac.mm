@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/login/login_model.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -71,7 +72,12 @@ class LoginHandlerMac : public LoginHandler,
     // control).  However, that's OK since any UI interaction in those functions
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
-    SetDialog(new ConstrainedWindowMac(GetTabContentsForLogin(), this));
+    TabContents* requesting_contents = GetTabContentsForLogin();
+    DCHECK(requesting_contents);
+
+    TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(requesting_contents);
+    SetDialog(new ConstrainedWindowMac(wrapper, this));
 
     NotifyAuthNeeded();
   }
