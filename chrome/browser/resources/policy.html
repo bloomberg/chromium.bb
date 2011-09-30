@@ -115,8 +115,7 @@
               <tr jsselect="policies"
                   jsvalues=".className: $this.set ?
                   'policy-set': 'policy-unset';
-                  .style.visibility: Policy.shouldDisplayPolicy($this) ?
-                  'visible': 'hidden'">
+                  .hidden: !Policy.shouldDisplayPolicy($this)">
               <td>
                 <span class="policy-type" jscontent="sourceType"></span>
               </td>

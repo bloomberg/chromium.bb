@@ -98,10 +98,8 @@ cr.define('policies', function() {
 
         var nameCell = row.querySelector('.policy-name');
         var cellContents = nameCell.textContent;
-        if (cellContents.toLowerCase().indexOf(this.searchTerm_) >= 0)
-          row.style.display = 'table-row';
-        else
-          row.style.display = 'none';
+        row.hidden =
+            !(cellContents.toLowerCase().indexOf(this.searchTerm_) >= 0);
       }
     },
 
@@ -116,12 +114,8 @@ cr.define('policies', function() {
           $('policies').style.display = 'none';
 
       var tableRows = document.getElementsByClassName('policy-unset');
-      for (var i = 0; i < tableRows.length; i++) {
-        if ($('toggle-unsent-policies').checked)
-          tableRows[i].style.visibility = 'visible';
-        else
-          tableRows[i].style.visibility = 'hidden';
-      }
+      for (var i = 0; i < tableRows.length; i++)
+        tableRows[i].hidden = !($('toggle-unsent-policies').checked);
 
       // Filter table again in case a search was active.
       this.filterTable(this.searchTerm_);
