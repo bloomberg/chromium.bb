@@ -100,6 +100,9 @@ class VIEWS_EXPORT Event {
 
   Event(const Event& model)
       : native_event_(model.native_event()),
+#if defined(TOOLKIT_USES_GTK)
+        gdk_event_(model.gdk_event_),
+#endif
         type_(model.type()),
         time_stamp_(model.time_stamp()),
         flags_(model.flags()) {
