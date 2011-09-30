@@ -37,7 +37,7 @@ class BlobData;
 class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
  public:
   // This will take a reference to the handler.
-  ResourceDispatcherHostRequestInfo(
+  CONTENT_EXPORT ResourceDispatcherHostRequestInfo(
       ResourceHandler* handler,
       ChildProcessInfo::ProcessType process_type,
       int child_id,

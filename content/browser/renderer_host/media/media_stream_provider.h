@@ -15,6 +15,7 @@
 #include <list>
 #include <string>
 
+#include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 
 namespace media_stream {
@@ -32,7 +33,7 @@ enum MediaStreamProviderError {
 enum { kInvalidMediaCaptureSessionId = 0xFFFFFFFF };
 
 // Callback class used by MediaStreamProvider.
-class MediaStreamProviderListener {
+class CONTENT_EXPORT MediaStreamProviderListener {
  public:
   // Called by a MediaStreamProvider when a stream has been opened.
   virtual void Opened(MediaStreamType stream_type,
@@ -56,7 +57,7 @@ class MediaStreamProviderListener {
 };
 
 // Implemented by a manager class providing captured media.
-class MediaStreamProvider {
+class CONTENT_EXPORT MediaStreamProvider {
  public:
   // Registers a listener, only one listener is allowed.
   virtual void Register(MediaStreamProviderListener* listener) = 0;

@@ -29,7 +29,7 @@ namespace speech_input {
 class SpeechRecognitionRequest : public URLFetcher::Delegate {
  public:
   // ID passed to URLFetcher::Create(). Used for testing.
-  static int url_fetcher_id_for_tests;
+  CONTENT_EXPORT static int url_fetcher_id_for_tests;
 
   // Interface for receiving callbacks from this object.
   class CONTENT_EXPORT Delegate {
@@ -42,25 +42,26 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   };
 
   // |url| is the server address to which the request wil be sent.
-  SpeechRecognitionRequest(net::URLRequestContextGetter* context,
-                           Delegate* delegate);
+  CONTENT_EXPORT SpeechRecognitionRequest(net::URLRequestContextGetter* context,
+                                          Delegate* delegate);
 
-  virtual ~SpeechRecognitionRequest();
+  CONTENT_EXPORT virtual ~SpeechRecognitionRequest();
 
   // Sends a new request with the given audio data, returns true if successful.
   // The same object can be used to send multiple requests but only after the
   // previous request has completed.
-  void Start(const std::string& language,
-             const std::string& grammar,
-             bool censor_results,
-             const std::string& hardware_info,
-             const std::string& origin_url,
-             const std::string& content_type);
+  CONTENT_EXPORT void Start(const std::string& language,
+                            const std::string& grammar,
+                            bool censor_results,
+                            const std::string& hardware_info,
+                            const std::string& origin_url,
+                            const std::string& content_type);
 
   // Send a single chunk of audio immediately to the server.
-  void UploadAudioChunk(const std::string& audio_data, bool is_last_chunk);
+  CONTENT_EXPORT void UploadAudioChunk(const std::string& audio_data,
+                                       bool is_last_chunk);
 
-  bool HasPendingRequest() { return url_fetcher_ != NULL; }
+  CONTENT_EXPORT bool HasPendingRequest() { return url_fetcher_ != NULL; }
 
   // URLFetcher::Delegate methods.
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;

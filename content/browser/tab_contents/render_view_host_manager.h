@@ -106,7 +106,7 @@ class RenderViewHostManager
 
   // Returns the view associated with the current RenderViewHost, or NULL if
   // there is no current one.
-  RenderWidgetHostView* GetRenderWidgetHostView() const;
+  CONTENT_EXPORT RenderWidgetHostView* GetRenderWidgetHostView() const;
 
   // Returns the pending render view host, or NULL if there is no pending one.
   RenderViewHost* pending_render_view_host() const {

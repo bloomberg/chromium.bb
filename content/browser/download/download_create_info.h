@@ -14,12 +14,13 @@
 #include "base/time.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/common/content_export.h"
 #include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 // Used for informing the download manager of a new download, since we don't
 // want to pass |DownloadItem|s between threads.
-struct DownloadCreateInfo {
+struct CONTENT_EXPORT DownloadCreateInfo {
   DownloadCreateInfo(const FilePath& path,
                      const GURL& url,
                      const base::Time& start_time,

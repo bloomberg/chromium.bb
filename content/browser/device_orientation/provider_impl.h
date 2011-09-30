@@ -13,6 +13,7 @@
 #include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"
+#include "content/common/content_export.h"
 
 class MessageLoop;
 
@@ -28,7 +29,7 @@ class ProviderImpl : public Provider {
 
   // Create a ProviderImpl that uses the NULL-terminated factories array to find
   // a DataFetcher that can provide orientation data.
-  ProviderImpl(const DataFetcherFactory factories[]);
+  CONTENT_EXPORT ProviderImpl(const DataFetcherFactory factories[]);
 
   // From Provider.
   virtual void AddObserver(Observer* observer);

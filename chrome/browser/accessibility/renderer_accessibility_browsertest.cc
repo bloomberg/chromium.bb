@@ -43,7 +43,7 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
     view_host->set_save_accessibility_tree_for_testing(true);
     view_host->EnableRendererAccessibility();
     tree_updated_observer.Wait();
-    return view_host->accessibility_tree();
+    return view_host->accessibility_tree_for_testing();
   }
 
   // Make sure each node in the tree has an unique id.

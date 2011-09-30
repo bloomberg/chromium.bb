@@ -12,6 +12,9 @@
     'content_shell.gypi',
     'content_tests.gypi',
   ],
+  'target_defaults': {
+    'defines': ['CONTENT_IMPLEMENTATION'],
+  },
   'conditions': [
    # In component mode, we build all of content as a single DLL.
    # However, in the static mode, we need to build content as multiple
@@ -21,11 +24,6 @@
    # chrome_exe to have to depend on allocator).
    # TODO(dpranke): Uncomment: ['component == "static_library"', {
    ['1 == 1', {
-     'target_defaults': {
-       'defines': [
-         'CONTENT_IMPLEMENTATION',
-       ],
-     },
      'targets': [
       {'target_name': 'content',
        'type': 'none',
@@ -122,6 +120,7 @@
          'targets': [
            {
              'target_name': 'closure_blocks_leopard_compat',
+             'defines!': ['CONTENT_IMPLEMENTATION'],
              'conditions': [
                ['mac_sdk == "10.5"', {
                  'type': 'shared_library',
@@ -182,9 +181,6 @@
     },
     { # component != static_library
      'target_defaults': {
-       'defines': [
-         'CONTENT_IMPLEMENTATION',
-       ],
      },
      'targets': [
       {'target_name': 'content',

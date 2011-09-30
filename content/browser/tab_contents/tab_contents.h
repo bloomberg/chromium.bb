@@ -247,10 +247,10 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // returns false.
   bool NeedToFireBeforeUnload();
 
-#ifdef UNIT_TEST
   // Expose the render manager for testing.
-  RenderViewHostManager* render_manager() { return &render_manager_; }
-#endif
+  RenderViewHostManager* render_manager_for_testing() {
+    return &render_manager_;
+  }
 
   // In the underlying RenderViewHostManager, swaps in the provided
   // RenderViewHost to replace the current RenderViewHost.  The current RVH

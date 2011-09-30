@@ -15,8 +15,9 @@
 #include "base/time.h"
 #include "build/build_config.h"
 #include "content/common/dx_diag_node.h"
+#include "content/common/content_export.h"
 
-struct GPUInfo {
+struct CONTENT_EXPORT GPUInfo {
   GPUInfo();
   ~GPUInfo();
 

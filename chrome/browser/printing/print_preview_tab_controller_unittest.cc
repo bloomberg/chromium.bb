@@ -88,7 +88,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, TitleAfterReload) {
   // Set up a PrintPreviewUI for |preview_tab|.
   PrintPreviewUI* preview_ui = new PrintPreviewUI(preview_tab->tab_contents());
   // RenderViewHostManager takes ownership of |preview_ui|.
-  preview_tab->tab_contents()->render_manager()->SetWebUIPostCommit(preview_ui);
+  preview_tab->tab_contents()->render_manager_for_testing()->
+      SetWebUIPostCommit(preview_ui);
 
   // Simulate a reload event on |preview_tab|.
   scoped_ptr<NavigationEntry> entry;

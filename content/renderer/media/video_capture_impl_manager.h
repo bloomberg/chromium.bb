@@ -16,12 +16,13 @@
 #include "base/threading/thread.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "media/video/capture/video_capture.h"
 
 class VideoCaptureImpl;
 class VideoCaptureMessageFilter;
 
-class VideoCaptureImplManager
+class CONTENT_EXPORT VideoCaptureImplManager
     : public base::RefCountedThreadSafe<VideoCaptureImplManager> {
  public:
   VideoCaptureImplManager();

@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/filters.h"
 #include "media/base/video_frame.h"
@@ -20,7 +21,7 @@ class VideoCaptureImplManager;
 
 // A filter takes raw frames from video capture engine and passes them to media
 // engine as a video decoder filter.
-class CaptureVideoDecoder
+class CONTENT_EXPORT CaptureVideoDecoder
     : public media::VideoDecoder,
       public media::VideoCapture::EventHandler {
  public:

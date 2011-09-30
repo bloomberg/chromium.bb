@@ -10,9 +10,10 @@
 
 #include "base/file_util.h"
 #include "content/browser/trace_controller.h"
+#include "content/common/content_export.h"
 
 // Stdio implementation of TraceSubscriber. Use this to write traces to a file.
-class TraceSubscriberStdio : public TraceSubscriber {
+class CONTENT_EXPORT TraceSubscriberStdio : public TraceSubscriber {
  public:
   TraceSubscriberStdio();
   // Creates or overwrites the specified file. Check IsValid() for success.

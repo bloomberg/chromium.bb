@@ -14,7 +14,7 @@
 
 namespace content {
 
-extern const unsigned int kMaxRendererProcessCount;
+CONTENT_EXPORT extern const unsigned int kMaxRendererProcessCount;
 
 // The maximum number of session history entries per tab.
 extern const int kMaxSessionHistoryEntries;

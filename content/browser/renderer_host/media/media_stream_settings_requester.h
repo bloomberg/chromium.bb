@@ -7,12 +7,13 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 
 namespace media_stream {
 
 // Implemented by the class requesting media capture device usage.
-class SettingsRequester {
+class CONTENT_EXPORT SettingsRequester {
  public:
   // Called to get available devices for a certain media type. A call to
   // |AvailableDevices| with the currently available capture devices is

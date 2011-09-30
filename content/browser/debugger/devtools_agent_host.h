@@ -13,7 +13,7 @@ class Message;
 }
 
 // Describes interface for managing devtools agents from the browser process.
-class DevToolsAgentHost {
+class CONTENT_EXPORT DevToolsAgentHost {
  public:
   class CONTENT_EXPORT CloseListener {
    public:

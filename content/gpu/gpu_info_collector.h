@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_info.h"
 
 struct IDirect3D9;
@@ -29,19 +30,20 @@ bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info);
 // The selection between the two methods is done in the cc file.
 
 // A D3D argument is passed in for testing purposes
-bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info);
+bool CONTENT_EXPORT CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info);
 
 // Collects D3D driver version/date through registry lookup.
 // Note that this does not require a D3D context.
 // device_id here is the raw data in DISPLAY_DEVICE.
-bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info);
+bool CONTENT_EXPORT CollectDriverInfoD3D(const std::wstring& device_id,
+                                         GPUInfo* gpu_info);
 
 // Collect the DirectX Disagnostics information about the attached displays.
 bool GetDxDiagnostics(DxDiagNode* output);
 #endif
 
 // All platforms have a GL version for collecting information
-bool CollectGraphicsInfoGL(GPUInfo* gpu_info);
+bool CONTENT_EXPORT CollectGraphicsInfoGL(GPUInfo* gpu_info);
 
 // Collect GL and Shading language version information
 bool CollectGLVersionInfo(GPUInfo* gpu_info);

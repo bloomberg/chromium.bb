@@ -9,6 +9,7 @@
 #include "base/task.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
+#include "content/common/content_export.h"
 #include "content/common/geoposition.h"
 
 // Location provider for Windows 7 that uses the Location and Sensors platform
@@ -17,7 +18,7 @@
 // TODO(allanwoj): Possibly derive this class and the linux gps provider class
 // from a single SystemLocationProvider class as their implementation is very
 // similar.
-class Win7LocationProvider : public LocationProviderBase {
+class CONTENT_EXPORT Win7LocationProvider : public LocationProviderBase {
  public:
   Win7LocationProvider(Win7LocationApi* api);
   virtual ~Win7LocationProvider();

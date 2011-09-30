@@ -7,6 +7,7 @@
 #pragma once
 
 #include "content/browser/webui/web_ui.h"
+#include "content/common/content_export.h"
 
 class TabContents;
 class GURL;
@@ -17,7 +18,7 @@ class BrowserContext;
 
 // Interface for an object which controls which URLs are considered WebUI URLs
 // and creates WebUI instances for given URLs.
-class WebUIFactory {
+class CONTENT_EXPORT WebUIFactory {
  public:
   // Returns a WebUI instance for the given URL, or NULL if the URL doesn't
   // correspond to a WebUI.

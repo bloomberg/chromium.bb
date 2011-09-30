@@ -7,6 +7,7 @@
     {
       'target_name': 'content_shell',
       'type': 'executable',
+      'defines!': ['CONTENT_IMPLEMENTATION'],
       'variables': {
         'chromium_code': 1,
       },

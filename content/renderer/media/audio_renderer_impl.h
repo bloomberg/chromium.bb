@@ -44,6 +44,7 @@
 #include "base/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
+#include "content/common/content_export.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
@@ -52,7 +53,7 @@
 
 class AudioMessageFilter;
 
-class AudioRendererImpl
+class CONTENT_EXPORT AudioRendererImpl
     : public media::AudioRendererBase,
       public AudioMessageFilter::Delegate,
       public base::DelegateSimpleThread::Delegate,

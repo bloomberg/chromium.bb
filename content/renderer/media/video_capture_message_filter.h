@@ -14,12 +14,14 @@
 
 #include "base/message_loop_proxy.h"
 #include "base/shared_memory.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/video/capture/video_capture.h"
 
-class VideoCaptureMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class CONTENT_EXPORT VideoCaptureMessageFilter
+    : public IPC::ChannelProxy::MessageFilter {
  public:
-  class Delegate {
+  class CONTENT_EXPORT Delegate {
    public:
     // Called when a video frame buffer is created in the browser process.
     virtual void OnBufferCreated(base::SharedMemoryHandle handle,

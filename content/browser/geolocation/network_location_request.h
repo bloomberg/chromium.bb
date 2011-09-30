@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/geolocation/device_data_provider.h"
+#include "content/common/content_export.h"
 #include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
@@ -29,7 +30,7 @@ struct Position;
 class NetworkLocationRequest : private URLFetcher::Delegate {
  public:
   // ID passed to URLFetcher::Create(). Used for testing.
-  static int url_fetcher_id_for_tests;
+  CONTENT_EXPORT static int url_fetcher_id_for_tests;
   // Interface for receiving callbacks from a NetworkLocationRequest object.
   class ListenerInterface {
    public:

@@ -12,6 +12,7 @@
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
+#include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 
 namespace content {
@@ -23,7 +24,7 @@ namespace media_stream {
 // MediaStreamDispatcherHost is a delegate for Media Stream API messages used by
 // MediaStreamImpl. It's the complement of MediaStreamDispatcher
 // (owned by RenderView).
-class MediaStreamDispatcherHost
+class CONTENT_EXPORT MediaStreamDispatcherHost
     : public BrowserMessageFilter,
       public MediaStreamRequester {
  public:

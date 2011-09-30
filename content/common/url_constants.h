@@ -41,7 +41,7 @@ CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
 
 // About URLs (including schemes).
 CONTENT_EXPORT extern const char kAboutBlankURL[];
-extern const char kAboutCrashURL[];
+CONTENT_EXPORT extern const char kAboutCrashURL[];
 
 // Special URL used to start a navigation to an error page.
 extern const char kUnreachableWebDataURL[];

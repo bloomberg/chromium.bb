@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,11 @@
 
 #include <string>
 #include "base/time.h"
+#include "content/common/content_export.h"
 
 // The internal representation of a geo position. Some properties use different
 // types when passed to JavaScript.
-struct Geoposition {
+struct CONTENT_EXPORT Geoposition {
  public:
   // Error codes for returning to JavaScript. These values are defined by the
   // W3C spec. Note that Gears does not use all of these codes, but we need

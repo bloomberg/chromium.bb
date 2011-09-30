@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/render_view_observer.h"
@@ -20,7 +21,7 @@
 // and Audio input devices.
 // It's the complement of MediaStreamDispatcherHost (owned by
 // BrowserRenderProcessHost).
-class MediaStreamDispatcher : public RenderViewObserver {
+class CONTENT_EXPORT MediaStreamDispatcher : public RenderViewObserver {
  public:
   explicit MediaStreamDispatcher(RenderView* render_view);
   virtual ~MediaStreamDispatcher();

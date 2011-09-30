@@ -75,7 +75,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   contents2.controller().LoadURL(kNtpUrl, GURL(), PageTransition::LINK,
                                  std::string());
   TestRenderViewHost* ntp_rvh2 = static_cast<TestRenderViewHost*>(
-      contents2.render_manager()->current_host());
+      contents2.render_manager_for_testing()->current_host());
   EXPECT_FALSE(contents2.cross_navigation_pending());
   ntp_rvh2->SendNavigate(100, kNtpUrl);
 
@@ -85,7 +85,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
                                  std::string());
   EXPECT_TRUE(contents2.cross_navigation_pending());
   TestRenderViewHost* dest_rvh2 = static_cast<TestRenderViewHost*>(
-      contents2.render_manager()->pending_render_view_host());
+      contents2.render_manager_for_testing()->pending_render_view_host());
   ASSERT_TRUE(dest_rvh2);
   ntp_rvh2->SendShouldCloseACK(true);
   dest_rvh2->SendNavigate(101, kDestUrl);
@@ -104,7 +104,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   contents2.controller().LoadURL(kNtpUrl, GURL(), PageTransition::LINK,
                                  std::string());
   dest_rvh2->SendShouldCloseACK(true);
-  static_cast<TestRenderViewHost*>(contents2.render_manager()->
+  static_cast<TestRenderViewHost*>(contents2.render_manager_for_testing()->
      pending_render_view_host())->SendNavigate(102, kNtpUrl);
   dest_rvh2->OnSwapOutACK();
 
@@ -348,7 +348,8 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   // We should have a new pending RVH.
   // Note that in this case, the navigation has not committed, so evil_rvh will
   // not be deleted yet.
-  EXPECT_NE(evil_rvh, contents()->render_manager()->pending_render_view_host());
+  EXPECT_NE(evil_rvh, contents()->render_manager_for_testing()->
+      pending_render_view_host());
 
   // Before that RVH has committed, the evil page reloads itself.
   ViewHostMsg_FrameNavigate_Params params;
@@ -364,8 +365,9 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
 
   // That should have cancelled the pending RVH, and the evil RVH should be the
   // current one.
-  EXPECT_TRUE(contents()->render_manager()->pending_render_view_host() == NULL);
-  EXPECT_EQ(evil_rvh, contents()->render_manager()->current_host());
+  EXPECT_TRUE(contents()->render_manager_for_testing()->
+      pending_render_view_host() == NULL);
+  EXPECT_EQ(evil_rvh, contents()->render_manager_for_testing()->current_host());
 
   // Also we should not have a pending navigation entry.
   NavigationEntry* entry = contents()->controller().GetActiveEntry();

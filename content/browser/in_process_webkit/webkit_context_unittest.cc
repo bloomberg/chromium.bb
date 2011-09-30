@@ -57,7 +57,8 @@ TEST(WebKitContextTest, PurgeMemory) {
             NULL, false, NULL, NULL));
     MockDOMStorageContext* mock_context = new MockDOMStorageContext(
         context.get(), NULL);
-    context->set_dom_storage_context(mock_context);  // Takes ownership.
+    // Takes ownership.
+    context->set_dom_storage_context_for_testing(mock_context);
 
     // Ensure PurgeMemory() calls our mock object on the right thread.
     EXPECT_EQ(0, mock_context->purge_count());

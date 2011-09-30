@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
 
@@ -24,7 +25,7 @@ class PlatformCanvas;
 }
 
 // Represents a backing store for the pixels in a RenderWidgetHost.
-class BackingStore {
+class CONTENT_EXPORT BackingStore {
  public:
   virtual ~BackingStore();
 

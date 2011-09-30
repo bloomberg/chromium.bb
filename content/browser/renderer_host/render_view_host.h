@@ -353,19 +353,17 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
 
   void ToggleSpeechInput();
 
-#if defined(UNIT_TEST)
-  // These functions shouldn't be necessary outside of testing.
-
   void set_save_accessibility_tree_for_testing(bool save) {
     save_accessibility_tree_for_testing_ = save;
   }
 
-  const webkit_glue::WebAccessibility& accessibility_tree() {
+  const webkit_glue::WebAccessibility& accessibility_tree_for_testing() {
     return accessibility_tree_;
   }
 
-  bool is_waiting_for_unload_ack() { return is_waiting_for_unload_ack_; }
-#endif
+  bool is_waiting_for_unload_ack_for_testing() {
+    return is_waiting_for_unload_ack_;
+  }
 
   // Checks that the given renderer can request |url|, if not it sets it to an
   // empty url.

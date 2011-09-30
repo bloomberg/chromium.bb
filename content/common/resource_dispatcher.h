@@ -15,6 +15,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
@@ -24,7 +25,7 @@ struct ResourceResponseHead;
 // This class serves as a communication interface between the
 // ResourceDispatcherHost in the browser process and the ResourceLoaderBridge in
 // the child process.  It can be used from any child process.
-class ResourceDispatcher : public IPC::Channel::Listener {
+class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
  public:
   explicit ResourceDispatcher(IPC::Message::Sender* sender);
   virtual ~ResourceDispatcher();

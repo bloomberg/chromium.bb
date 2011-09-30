@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/hash_tables.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotification.h"
 
 namespace WebKit {
@@ -20,7 +21,7 @@ class WebNotificationPermissionCallback;
 // This class manages the set of active Notification objects in either
 // a render or worker process.  This class should be accessed only on
 // the main thread.
-class ActiveNotificationTracker {
+class CONTENT_EXPORT ActiveNotificationTracker {
  public:
   ActiveNotificationTracker();
   ~ActiveNotificationTracker();

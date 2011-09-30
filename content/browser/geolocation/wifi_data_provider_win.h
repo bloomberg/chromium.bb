@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,11 @@
 #pragma once
 
 #include "content/browser/geolocation/wifi_data_provider_common.h"
+#include "content/common/content_export.h"
 
 class PollingPolicyInterface;
 
-class Win32WifiDataProvider : public WifiDataProviderCommon {
+class CONTENT_EXPORT Win32WifiDataProvider : public WifiDataProviderCommon {
  public:
   Win32WifiDataProvider();
 

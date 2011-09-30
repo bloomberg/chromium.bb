@@ -17,6 +17,7 @@
 
 #include "base/string16.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/common/content_export.h"
 
 class AccessTokenStore;
 struct Geoposition;
@@ -27,12 +28,13 @@ class URLRequestContextGetter;
 }
 
 // The base class used by all location providers.
-class LocationProviderBase : public base::NonThreadSafe {
+class CONTENT_EXPORT LocationProviderBase
+    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // Clients of the location provider must implement this interface. All call-
   // backs to this interface will happen in the context of the thread on which
   // the location provider was created.
-  class ListenerInterface {
+  class CONTENT_EXPORT ListenerInterface {
    public:
     // Used to inform listener that a new position fix is available or that a
     // fatal error has occurred. Providers should call this for new listeners
@@ -90,7 +92,7 @@ class LocationProviderBase : public base::NonThreadSafe {
 
 // Factory functions for the various types of location provider to abstract
 // over the platform-dependent implementations.
-LocationProviderBase* NewNetworkLocationProvider(
+CONTENT_EXPORT LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     net::URLRequestContextGetter* context,
     const GURL& url,

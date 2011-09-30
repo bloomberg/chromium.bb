@@ -10,12 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 
 class BrowserWebKitPlatformSupportImpl;
 
 // This creates a WebKit main thread on instantiation (if not in
 // --single-process mode) on construction and kills it on deletion.
-class WebKitThread {
+class CONTENT_EXPORT WebKitThread {
  public:
   // Called from the UI thread.
   WebKitThread();

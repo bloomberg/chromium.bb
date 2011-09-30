@@ -8,9 +8,11 @@
 #include <deque>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "media/base/filters.h"
 #include "media/base/video_frame.h"
 #include "third_party/libjingle/source/talk/session/phone/mediachannel.h"
@@ -22,9 +24,9 @@ namespace cricket {
 class VideoFrame;
 }  // namespace cricket
 
-class RTCVideoDecoder
+class CONTENT_EXPORT RTCVideoDecoder
     : public media::VideoDecoder,
-      public cricket::VideoRenderer {
+      NON_EXPORTED_BASE(public cricket::VideoRenderer) {
  public:
   RTCVideoDecoder(MessageLoop* message_loop, const std::string& url);
   virtual ~RTCVideoDecoder();

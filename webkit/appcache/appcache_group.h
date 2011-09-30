@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "webkit/appcache/appcache_export.h"
 #include "googleurl/src/gurl.h"
 
 namespace appcache {
@@ -42,8 +43,9 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
     DOWNLOADING,
   };
 
-  AppCacheGroup(AppCacheService* service, const GURL& manifest_url,
-                int64 group_id);
+  APPCACHE_EXPORT AppCacheGroup(AppCacheService* service,
+                                const GURL& manifest_url,
+                                int64 group_id);
 
   // Adds/removes an update observer, the AppCacheGroup does not take
   // ownership of the observer.
@@ -62,7 +64,7 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   AppCache* newest_complete_cache() const { return newest_complete_cache_; }
 
-  void AddCache(AppCache* complete_cache);
+  APPCACHE_EXPORT void AddCache(AppCache* complete_cache);
   void RemoveCache(AppCache* cache);
   bool HasCache() const { return newest_complete_cache_ != NULL; }
 

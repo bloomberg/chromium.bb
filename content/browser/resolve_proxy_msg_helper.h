@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/browser/browser_message_filter.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_service.h"
@@ -29,7 +30,7 @@ class URLRequestContextGetter;
 // the stored IPC::Message pointers for pending requests.
 //
 // This object is expected to live on the IO thread.
-class ResolveProxyMsgHelper : public BrowserMessageFilter {
+class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
  public:
   explicit ResolveProxyMsgHelper(net::URLRequestContextGetter* getter);
   // Constructor used by unittests.

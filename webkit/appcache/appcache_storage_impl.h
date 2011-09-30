@@ -15,6 +15,7 @@
 #include "base/task.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_disk_cache.h"
+#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_storage.h"
 
 namespace appcache {
@@ -119,7 +120,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
       const GURL& fallback_url, const AppCacheEntry& fallback_entry,
       int64 cache_id, const GURL& manifest_url);
 
-  AppCacheDiskCache* disk_cache();
+  APPCACHE_EXPORT AppCacheDiskCache* disk_cache();
 
   // The directory in which we place files in the file system.
   FilePath cache_directory_;

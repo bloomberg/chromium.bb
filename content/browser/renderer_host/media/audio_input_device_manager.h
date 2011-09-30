@@ -17,6 +17,7 @@
 
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
+#include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "media/audio/audio_device_name.h"
 
@@ -24,7 +25,7 @@ namespace media_stream {
 
 class AudioInputDeviceManagerEventHandler;
 
-class AudioInputDeviceManager : public MediaStreamProvider {
+class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
  public:
   // Calling Start() with this kFakeOpenSessionId will open the default device,
   // even though Open() has not been called. This is used to be able to use the

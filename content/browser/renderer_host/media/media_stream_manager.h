@@ -41,11 +41,11 @@ class VideoCaptureManager;
 // start the media flow.
 // The classes requesting new media streams are answered using
 // MediaStreamManager::Listener.
-class MediaStreamManager
+class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
       public SettingsRequester {
  public:
-  CONTENT_EXPORT MediaStreamManager();
+  MediaStreamManager();
   virtual ~MediaStreamManager();
 
   // Used to access VideoCaptureManager.

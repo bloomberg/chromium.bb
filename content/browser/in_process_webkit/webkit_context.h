@@ -56,13 +56,12 @@ class CONTENT_EXPORT WebKitContext
     clear_local_state_on_exit_ = clear_local_state;
   }
 
-#ifdef UNIT_TEST
   // For unit tests, allow specifying a DOMStorageContext directly so it can be
   // mocked.
-  void set_dom_storage_context(DOMStorageContext* dom_storage_context) {
+  void set_dom_storage_context_for_testing(
+      DOMStorageContext* dom_storage_context) {
     dom_storage_context_.reset(dom_storage_context);
   }
-#endif
 
   // Tells the DOMStorageContext to purge any memory it does not need.
   void PurgeMemory();

@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/appcache/appcache_export.h"
 
 namespace sql {
 class Connection;
@@ -179,7 +180,7 @@ class AppCacheDatabase {
       const sql::Statement& statement, OnlineWhiteListRecord* record);
 
   // Database creation
-  bool LazyOpen(bool create_if_needed);
+  APPCACHE_EXPORT bool LazyOpen(bool create_if_needed);
   bool EnsureDatabaseVersion();
   bool CreateSchema();
   bool UpgradeSchema();

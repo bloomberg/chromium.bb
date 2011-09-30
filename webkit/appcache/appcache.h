@@ -15,6 +15,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_entry.h"
+#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/manifest_parser.h"
 
 namespace appcache {
@@ -31,7 +32,7 @@ class AppCache : public base::RefCounted<AppCache> {
   typedef std::map<GURL, AppCacheEntry> EntryMap;
   typedef std::set<AppCacheHost*> AppCacheHosts;
 
-  AppCache(AppCacheService *service, int64 cache_id);
+  APPCACHE_EXPORT AppCache(AppCacheService *service, int64 cache_id);
 
   int64 cache_id() const { return cache_id_; }
 
@@ -43,7 +44,7 @@ class AppCache : public base::RefCounted<AppCache> {
   AppCacheService* service() const { return service_; }
 
   // Adds a new entry. Entry must not already be in cache.
-  void AddEntry(const GURL& url, const AppCacheEntry& entry);
+  void APPCACHE_EXPORT AddEntry(const GURL& url, const AppCacheEntry& entry);
 
   // Adds a new entry or modifies an existing entry by merging the types
   // of the new entry with the existing entry. Returns true if a new entry

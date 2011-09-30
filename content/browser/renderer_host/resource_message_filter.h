@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_message_filter.h"
+#include "content/common/content_export.h"
 #include "content/common/child_process_info.h"
 #include "webkit/glue/resource_type.h"
 
@@ -25,7 +26,7 @@ class URLRequestContext;
 // delayed by costly UI processing that may be occuring on the main thread of
 // the browser.  It also means that any hangs in starting a network request
 // will not interfere with browser UI.
-class ResourceMessageFilter : public BrowserMessageFilter {
+class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
  public:
   // Allows selecting the net::URLRequestContext used to service requests.
   class URLRequestContextSelector {

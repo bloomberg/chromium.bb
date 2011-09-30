@@ -55,7 +55,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   rvh()->SendShouldCloseACK(true);
   contents()->Stop();
   controller().Reload(false);
-  EXPECT_FALSE(rvh()->is_waiting_for_unload_ack());
+  EXPECT_FALSE(rvh()->is_waiting_for_unload_ack_for_testing());
 }
 
 class MockDraggingRenderViewHostDelegateView

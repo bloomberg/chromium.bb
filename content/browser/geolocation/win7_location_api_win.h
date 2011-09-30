@@ -13,6 +13,7 @@
 
 #include "base/time.h"
 #include "base/win/scoped_com_initializer.h"
+#include "content/common/content_export.h"
 
 struct Geoposition;
 
@@ -20,7 +21,7 @@ struct Geoposition;
 typedef HRESULT (WINAPI* PropVariantToDoubleFunction)
     (REFPROPVARIANT propvarIn, DOUBLE *pdblRet);
 
-class Win7LocationApi {
+class CONTENT_EXPORT Win7LocationApi {
  public:
   virtual ~Win7LocationApi();
   // Attempts to load propsys.dll, initialise |location_| and requests the user

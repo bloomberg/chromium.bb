@@ -51,11 +51,11 @@ class RenderViewHostFactory {
   // Registers your factory to be called when new RenderViewHosts are created.
   // We have only one global factory, so there must be no factory registered
   // before the call. This class does NOT take ownership of the pointer.
-  static void RegisterFactory(RenderViewHostFactory* factory);
+  CONTENT_EXPORT static void RegisterFactory(RenderViewHostFactory* factory);
 
   // Unregister the previously registered factory. With no factory registered,
   // the default RenderViewHosts will be created.
-  static void UnregisterFactory();
+  CONTENT_EXPORT static void UnregisterFactory();
 
  private:
   // The current globally registered factory. This is NULL when we should

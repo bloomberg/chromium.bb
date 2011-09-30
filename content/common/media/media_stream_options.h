@@ -8,12 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "content/common/content_export.h"
+
 namespace media_stream {
 
 // StreamOptions is a Chromium representation of WebKit's
 // WebGenerateStreamOptionFlags. It describes the components in a request for a
 // new media stream.
-struct StreamOptions {
+struct CONTENT_EXPORT StreamOptions {
   enum VideoOption {
     kNoCamera = 0,
     kFacingUser,
@@ -41,7 +43,7 @@ enum MediaStreamType {
 };
 
 // StreamDeviceInfo describes information about a device.
-struct StreamDeviceInfo {
+struct CONTENT_EXPORT StreamDeviceInfo {
   static const int kNoId;
 
   StreamDeviceInfo();

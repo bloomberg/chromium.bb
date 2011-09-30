@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 
 namespace media_stream {
@@ -14,7 +15,7 @@ namespace media_stream {
 // MediaStreamRequester must be implemented by the class requesting a new media
 // stream to be opened. MediaStreamManager will use this interface to signal
 // success and error for a request.
-class MediaStreamRequester {
+class CONTENT_EXPORT MediaStreamRequester {
  public:
   // Called as a reply of a successful call to GenerateStream.
   virtual void StreamGenerated(const std::string& label,

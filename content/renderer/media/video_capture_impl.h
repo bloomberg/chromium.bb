@@ -12,6 +12,7 @@
 #include <list>
 #include <map>
 
+#include "content/common/content_export.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "media/video/capture/video_capture.h"
 
@@ -19,9 +20,8 @@ namespace base {
 class MessageLoopProxy;
 }
 
-class VideoCaptureImpl
-    : public media::VideoCapture,
-      public VideoCaptureMessageFilter::Delegate {
+class CONTENT_EXPORT VideoCaptureImpl
+    : public media::VideoCapture, public VideoCaptureMessageFilter::Delegate {
  public:
   // media::VideoCapture interface.
   virtual void StartCapture(media::VideoCapture::EventHandler* handler,

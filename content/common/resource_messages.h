@@ -12,6 +12,8 @@
 #include "net/base/upload_data.h"
 
 #define IPC_MESSAGE_START ResourceMsgStart
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(request_time)

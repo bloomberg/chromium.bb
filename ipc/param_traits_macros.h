@@ -11,7 +11,7 @@
 #define IPC_STRUCT_TRAITS_BEGIN(struct_name) \
   namespace IPC { \
     template <> \
-    struct ParamTraits<struct_name> { \
+    struct IPC_MESSAGE_EXPORT ParamTraits<struct_name> { \
       typedef struct_name param_type; \
       static void Write(Message* m, const param_type& p); \
       static bool Read(const Message* m, void** iter, param_type* p); \

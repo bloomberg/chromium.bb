@@ -7,11 +7,12 @@
 
 #include "base/memory/singleton.h"
 #include "content/browser/webui/web_ui_factory.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 // A stubbed out version of WebUIFactory.
-class EmptyWebUIFactory : public content::WebUIFactory {
+class CONTENT_EXPORT EmptyWebUIFactory : public content::WebUIFactory {
  public:
   // Returns the singleton instance.
   static EmptyWebUIFactory* GetInstance();

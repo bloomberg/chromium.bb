@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 
 class AccessTokenStore;
 class GURL;
@@ -23,7 +24,7 @@ class URLRequestContextGetter;
 
 // Allows injection of factory methods for creating the location providers.
 // RefCounted for simplicity of writing tests.
-class GeolocationArbitratorDependencyFactory
+class CONTENT_EXPORT GeolocationArbitratorDependencyFactory
     : public base::RefCounted<GeolocationArbitratorDependencyFactory> {
  public:
   // Defines a function that returns the current time.
@@ -45,7 +46,7 @@ class GeolocationArbitratorDependencyFactory
 
 // The default dependency factory, exposed so that it is possible
 // to override only certain parts (e.g. the location providers).
-class DefaultGeolocationArbitratorDependencyFactory
+class CONTENT_EXPORT DefaultGeolocationArbitratorDependencyFactory
     : public GeolocationArbitratorDependencyFactory {
  public:
   // GeolocationArbitratorDependencyFactory

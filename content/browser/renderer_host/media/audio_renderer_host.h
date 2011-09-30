@@ -62,6 +62,7 @@
 #include "base/shared_memory.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_export.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/simple_sources.h"
@@ -74,7 +75,7 @@ namespace content {
 class ResourceContext;
 }  // namespace content
 
-class AudioRendererHost
+class CONTENT_EXPORT AudioRendererHost
     : public BrowserMessageFilter,
       public media::AudioOutputController::EventHandler {
  public:

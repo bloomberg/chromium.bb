@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 
 // This class is responsible for aggregating multiple invalidation and scroll
 // commands to produce a scroll and repaint sequence.
-class PaintAggregator {
+class CONTENT_EXPORT PaintAggregator {
  public:
   // This structure describes an aggregation of InvalidateRect and ScrollRect
   // calls.  If |scroll_rect| is non-empty, then that rect should be scrolled
@@ -22,7 +23,7 @@ class PaintAggregator {
   // are non-empty, then scrolling should be performed before repainting.
   // |scroll_delta| can only specify scrolling in one direction (i.e., the x
   // and y members cannot both be non-zero).
-  struct PendingUpdate {
+  struct CONTENT_EXPORT PendingUpdate {
     PendingUpdate();
     ~PendingUpdate();
 

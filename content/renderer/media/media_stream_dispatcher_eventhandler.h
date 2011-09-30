@@ -7,9 +7,10 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 
-class MediaStreamDispatcherEventHandler {
+class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
  public:
   // A new media stream have been created.
   virtual void OnStreamGenerated(

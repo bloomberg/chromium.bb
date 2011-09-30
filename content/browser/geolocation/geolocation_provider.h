@@ -24,7 +24,8 @@ struct DefaultSingletonTraits;
 // observers which will be notified of location updates. Underlying location
 // arbitrator will only be enabled whilst there is at least one observer
 // registered.
-class GeolocationProvider : public base::Thread, public GeolocationObserver {
+class CONTENT_EXPORT GeolocationProvider
+    : public base::Thread, public GeolocationObserver {
  public:
   GeolocationProvider();
 
@@ -42,7 +43,7 @@ class GeolocationProvider : public base::Thread, public GeolocationObserver {
   // via AddObserver(). Returns true if the observer was removed.
   bool RemoveObserver(GeolocationObserver* delegate);
 
-  CONTENT_EXPORT void OnPermissionGranted(const GURL& requesting_frame);
+  void OnPermissionGranted(const GURL& requesting_frame);
   bool HasPermissionBeenGranted() const;
 
   // GeolocationObserver
@@ -51,7 +52,7 @@ class GeolocationProvider : public base::Thread, public GeolocationObserver {
   // Gets a pointer to the singleton instance of the location relayer, which
   // is in turn bound to the browser's global context objects. Ownership is NOT
   // returned.
-  CONTENT_EXPORT static GeolocationProvider* GetInstance();
+  static GeolocationProvider* GetInstance();
 
   typedef std::map<GeolocationObserver*, GeolocationObserverOptions>
       ObserverMap;

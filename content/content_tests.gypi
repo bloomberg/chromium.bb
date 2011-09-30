@@ -7,12 +7,16 @@
     {
       'target_name': 'test_support_content',
       'type': 'static_library',
+      'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         'content_common',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../ui/gfx/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui_test_support',
+        '../webkit/support/webkit_support.gyp:appcache',
       ],
       'include_dirs': [
         '..',
@@ -72,6 +76,7 @@
     {
       'target_name': 'content_unittests',
       'type': 'executable',
+      'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         'content_browser',
         'content_gpu',
@@ -79,6 +84,7 @@
         'content_renderer',
         'test_support_content',
         '../base/base.gyp:test_support_base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
         '../gpu/gpu.gyp:gpu_unittest_utils',
         '../ipc/ipc.gyp:test_support_ipc',
@@ -90,6 +96,8 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../ui/gfx/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
+        '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/support/webkit_support.gyp:quota',
       ],
       'include_dirs': [
         '..',
@@ -200,6 +208,7 @@
       'targets': [
         {
           'target_name': 'omx_video_decode_accelerator_unittest',
+          'defines!': ['CONTENT_IMPLEMENTATION'],
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',

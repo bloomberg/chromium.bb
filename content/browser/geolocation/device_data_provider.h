@@ -34,6 +34,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/common/content_export.h"
 
 // The following data structures are used to store cell radio data and wifi
 // data. See the Geolocation API design document at
@@ -72,7 +73,7 @@ enum RadioType {
 };
 
 // All data for the cell radio.
-struct RadioData {
+struct CONTENT_EXPORT RadioData {
   RadioData();
   ~RadioData();
 
@@ -94,7 +95,7 @@ struct RadioData {
 };
 
 // Wifi data relating to a single access point.
-struct AccessPointData {
+struct CONTENT_EXPORT AccessPointData {
   AccessPointData();
   ~AccessPointData();
 
@@ -116,7 +117,7 @@ struct AccessPointDataLess {
 };
 
 // All data for wifi.
-struct WifiData {
+struct CONTENT_EXPORT WifiData {
   WifiData();
   ~WifiData();
 
@@ -134,7 +135,7 @@ class DeviceDataProvider;
 
 // This class just exists to work-around MSVC2005 not being able to have a
 // template class implement RefCountedThreadSafe
-class DeviceDataProviderImplBaseHack
+class CONTENT_EXPORT DeviceDataProviderImplBaseHack
     : public base::RefCountedThreadSafe<DeviceDataProviderImplBaseHack> {
  protected:
   friend class base::RefCountedThreadSafe<DeviceDataProviderImplBaseHack>;
@@ -343,7 +344,8 @@ class DeviceDataProvider : public base::NonThreadSafe {
     impl_->StopDataProvider();
   }
 
-  static DeviceDataProviderImplBase<DataType>* DefaultFactoryFunction();
+  static CONTENT_EXPORT DeviceDataProviderImplBase<DataType>*
+      DefaultFactoryFunction();
 
   // The singleton-like instance of this class. (Not 'true' singleton, as it
   // may go through multiple create/destroy/create cycles per process instance,

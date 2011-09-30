@@ -11,11 +11,12 @@
 #include "base/basictypes.h"
 #include "content/browser/debugger/devtools_agent_host.h"
 #include "content/browser/renderer_host/render_view_host_observer.h"
+#include "content/common/content_export.h"
 
 class RenderViewHost;
 
-class RenderViewDevToolsAgentHost : public DevToolsAgentHost,
-                                    private RenderViewHostObserver {
+class CONTENT_EXPORT RenderViewDevToolsAgentHost
+    : public DevToolsAgentHost, private RenderViewHostObserver {
  public:
   static DevToolsAgentHost* FindFor(RenderViewHost*);
 

@@ -306,7 +306,7 @@ TestRenderViewHost* RenderViewHostTestHarness::rvh() {
 
 TestRenderViewHost* RenderViewHostTestHarness::pending_rvh() {
   return static_cast<TestRenderViewHost*>(
-      contents()->render_manager()->pending_render_view_host());
+      contents()->render_manager_for_testing()->pending_render_view_host());
 }
 
 TestRenderViewHost* RenderViewHostTestHarness::active_rvh() {

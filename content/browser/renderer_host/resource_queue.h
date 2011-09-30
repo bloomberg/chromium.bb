@@ -45,7 +45,7 @@ class ResourceQueueDelegate {
 
 // Makes it easy to delay starting URL requests until specified conditions are
 // met.
-class ResourceQueue {
+class CONTENT_EXPORT ResourceQueue {
  public:
   typedef std::set<ResourceQueueDelegate*> DelegateSet;
 
@@ -77,8 +77,8 @@ class ResourceQueue {
   // A delegate should call StartDelayedRequest when it wants to allow the
   // request to start. If it was the last delegate that demanded the request
   // to be delayed, the request will be started.
-  CONTENT_EXPORT void StartDelayedRequest(ResourceQueueDelegate* delegate,
-                                          const GlobalRequestID& request_id);
+  void StartDelayedRequest(ResourceQueueDelegate* delegate,
+                           const GlobalRequestID& request_id);
 
  private:
   typedef std::map<GlobalRequestID, net::URLRequest*> RequestMap;

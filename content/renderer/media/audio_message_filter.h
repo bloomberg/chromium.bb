@@ -16,6 +16,7 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/common/media/audio_stream_state.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
 
@@ -25,9 +26,10 @@ namespace base {
 class Time;
 }
 
-class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class CONTENT_EXPORT AudioMessageFilter
+    : public IPC::ChannelProxy::MessageFilter {
  public:
-  class Delegate {
+  class CONTENT_EXPORT Delegate {
    public:
     // Called when an audio packet is requested from the browser process.
     virtual void OnRequestPacket(AudioBuffersState buffers_state) = 0;

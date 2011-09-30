@@ -6,12 +6,13 @@
 #define CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 namespace device_orientation {
 
 class Orientation;
 
-class Provider : public base::RefCountedThreadSafe<Provider> {
+class CONTENT_EXPORT Provider : public base::RefCountedThreadSafe<Provider> {
  public:
   class Observer {
    public:

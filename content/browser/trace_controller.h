@@ -20,7 +20,7 @@ class TraceMessageFilter;
 // Objects interested in receiving trace data derive from TraceSubscriber.
 // See also: trace_message_filter.h
 // See also: child_trace_message_filter.h
-class TraceSubscriber {
+class CONTENT_EXPORT TraceSubscriber {
  public:
   // Called once after TraceController::EndTracingAsync.
   virtual void OnEndTracingComplete() = 0;

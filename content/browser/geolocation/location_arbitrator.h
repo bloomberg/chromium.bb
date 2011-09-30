@@ -12,6 +12,7 @@
 #include "content/browser/geolocation/access_token_store.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/geolocation_observer.h"
+#include "content/common/content_export.h"
 #include "content/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -30,7 +31,8 @@ struct Geoposition;
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
-class GeolocationArbitrator : public LocationProviderBase::ListenerInterface {
+class CONTENT_EXPORT GeolocationArbitrator
+    : public LocationProviderBase::ListenerInterface {
  public:
   // Number of milliseconds newer a location provider has to be that it's worth
   // switching to this location provider on the basis of it being fresher

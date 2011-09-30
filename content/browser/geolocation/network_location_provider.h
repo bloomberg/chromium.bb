@@ -17,6 +17,7 @@
 #include "content/browser/geolocation/device_data_provider.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/network_location_request.h"
+#include "content/common/content_export.h"
 #include "content/common/geoposition.h"
 
 class URLFetcherProtectEntry;
@@ -28,7 +29,7 @@ class NetworkLocationProvider
       public NetworkLocationRequest::ListenerInterface {
  public:
   // Cache of recently resolved locations. Public for tests.
-  class PositionCache {
+  class CONTENT_EXPORT PositionCache {
    public:
     // The maximum size of the cache of positions for previously requested
     // device data.
