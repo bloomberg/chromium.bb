@@ -342,8 +342,7 @@ bool NativeTabContentsViewWin::ScrollZoom(int scroll_type) {
 // static
 NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
     internal::NativeTabContentsViewDelegate* delegate) {
-  if (views::Widget::IsPureViews() &&
-      views::ViewsDelegate::views_delegate->GetDefaultParentView())
+  if (views::Widget::IsPureViews())
     return new NativeTabContentsViewViews(delegate);
   return new NativeTabContentsViewWin(delegate);
 }
