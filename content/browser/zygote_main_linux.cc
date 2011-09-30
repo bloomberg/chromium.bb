@@ -377,52 +377,54 @@ class Zygote {
     return -1;
   }
 
-  // Handle a 'fork' request from the browser: this means that the browser
-  // wishes to start a new renderer.
-  bool HandleForkRequest(int fd, const Pickle& pickle,
-                         void* iter, std::vector<int>& fds) {
+  // Unpacks process type and arguments from |pickle| and forks a new process.
+  // Returns -1 on error, otherwise returns twice, returning 0 to the child
+  // process and the child process ID to the parent process, like fork().
+  base::ProcessId ReadArgsAndFork(const Pickle& pickle,
+                                  void* iter,
+                                  std::vector<int>& fds) {
     std::vector<std::string> args;
-    int argc, numfds;
+    int argc = 0;
+    int numfds = 0;
     base::GlobalDescriptors::Mapping mapping;
-    base::ProcessId child;
     std::string process_type;
     std::string channel_id;
     const std::string channel_id_prefix = std::string("--")
         + switches::kProcessChannelID + std::string("=");
 
     if (!pickle.ReadString(&iter, &process_type))
-      goto error;
-
+      return -1;
     if (!pickle.ReadInt(&iter, &argc))
-      goto error;
+      return -1;
 
     for (int i = 0; i < argc; ++i) {
       std::string arg;
       if (!pickle.ReadString(&iter, &arg))
-        goto error;
+        return -1;
       args.push_back(arg);
       if (arg.compare(0, channel_id_prefix.length(), channel_id_prefix) == 0)
         channel_id = arg;
     }
 
     if (!pickle.ReadInt(&iter, &numfds))
-      goto error;
+      return -1;
     if (numfds != static_cast<int>(fds.size()))
-      goto error;
+      return -1;
 
     for (int i = 0; i < numfds; ++i) {
       base::GlobalDescriptors::Key key;
       if (!pickle.ReadUInt32(&iter, &key))
-        goto error;
+        return -1;
       mapping.push_back(std::make_pair(key, fds[i]));
     }
 
     mapping.push_back(std::make_pair(
         static_cast<uint32_t>(kSandboxIPCChannel), kMagicSandboxIPCDescriptor));
 
-    child = ForkWithRealPid(process_type, fds, channel_id);
-
-    if (!child) {
+    // Returns twice, once per process.
+    base::ProcessId child_pid = ForkWithRealPid(process_type, fds, channel_id);
+    if (!child_pid) {
+      // This is the child process.
 #if defined(SECCOMP_SANDBOX)
       if (SeccompSandboxEnabled() && g_proc_fd >= 0) {
         // Try to open /proc/self/maps as the seccomp sandbox needs access to it
@@ -455,27 +457,28 @@ class Zygote {
       // SetProcessTitleFromCommandLine in ChromeMain, so we can pass NULL here
       // (we don't have the original argv at this point).
       SetProcessTitleFromCommandLine(NULL);
-
-      // The fork() request is handled further up the call stack.
-      return true;
-    } else if (child < 0) {
-      LOG(ERROR) << "Zygote could not fork: " << errno;
-      goto error;
+    } else if (child_pid < 0) {
+      LOG(ERROR) << "Zygote could not fork: process_type " << process_type
+          << " numfds " << numfds << " child_pid " << child_pid;
     }
+    return child_pid;
+  }
 
+  // Handle a 'fork' request from the browser: this means that the browser
+  // wishes to start a new renderer.  Returns true if we are in a new process,
+  // otherwise writes the child_pid back to the browser via |fd|.  Writes a
+  // child_pid of -1 on error.
+  bool HandleForkRequest(int fd, const Pickle& pickle,
+                         void* iter, std::vector<int>& fds) {
+    base::ProcessId child_pid = ReadArgsAndFork(pickle, iter, fds);
+    if (child_pid == 0)
+      return true;
     for (std::vector<int>::const_iterator
          i = fds.begin(); i != fds.end(); ++i)
       close(*i);
-
-    if (HANDLE_EINTR(write(fd, &child, sizeof(child))) < 0)
+    // Must always send reply, as ZygoteHost blocks while waiting for it.
+    if (HANDLE_EINTR(write(fd, &child_pid, sizeof(child_pid))) < 0)
       PLOG(ERROR) << "write";
-    return false;
-
-   error:
-    LOG(ERROR) << "Error parsing fork request from browser";
-    for (std::vector<int>::const_iterator
-         i = fds.begin(); i != fds.end(); ++i)
-      close(*i);
     return false;
   }
 
