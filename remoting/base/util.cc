@@ -54,13 +54,13 @@ void ConvertYUVToRGB32WithRect(const uint8* y_plane,
                                const uint8* u_plane,
                                const uint8* v_plane,
                                uint8* rgb_plane,
-                               const gfx::Rect& rect,
+                               const SkIRect& rect,
                                int y_stride,
                                int uv_stride,
                                int rgb_stride) {
-  int rgb_offset = CalculateRGBOffset(rect.x(), rect.y(), rgb_stride);
-  int y_offset = CalculateYOffset(rect.x(), rect.y(), y_stride);
-  int uv_offset = CalculateUVOffset(rect.x(), rect.y(), uv_stride);
+  int rgb_offset = CalculateRGBOffset(rect.fLeft, rect.fTop, rgb_stride);
+  int y_offset = CalculateYOffset(rect.fLeft, rect.fTop, y_stride);
+  int uv_offset = CalculateUVOffset(rect.fLeft, rect.fTop, uv_stride);
 
   media::ConvertYUVToRGB32(y_plane + y_offset,
                            u_plane + uv_offset,
@@ -78,15 +78,20 @@ void ScaleYUVToRGB32WithRect(const uint8* y_plane,
                              const uint8* u_plane,
                              const uint8* v_plane,
                              uint8* rgb_plane,
-                             const gfx::Rect& source_rect,
-                             const gfx::Rect& dest_rect,
+                             const SkIRect& source_rect,
+                             const SkIRect& dest_rect,
                              int y_stride,
                              int uv_stride,
                              int rgb_stride) {
-  int rgb_offset = CalculateRGBOffset(dest_rect.x(), dest_rect.y(), rgb_stride);
-  int y_offset = CalculateYOffset(source_rect.x(), source_rect.y(), y_stride);
-  int uv_offset = CalculateUVOffset(source_rect.x(),
-                                    source_rect.y(), uv_stride);
+  int rgb_offset = CalculateRGBOffset(dest_rect.fLeft,
+                                      dest_rect.fTop,
+                                      rgb_stride);
+  int y_offset = CalculateYOffset(source_rect.fLeft,
+                                  source_rect.fTop,
+                                  y_stride);
+  int uv_offset = CalculateUVOffset(source_rect.fLeft,
+                                    source_rect.fTop,
+                                    uv_stride);
 
   media::ScaleYUVToRGB32(y_plane + y_offset,
                          u_plane + uv_offset,
@@ -134,26 +139,23 @@ int RoundToTwosMultiple(int x) {
   return x & (~1);
 }
 
-gfx::Rect AlignRect(const gfx::Rect& rect) {
-  int x = RoundToTwosMultiple(rect.x());
-  int y = RoundToTwosMultiple(rect.y());
-  int right = RoundToTwosMultiple(rect.right() + 1);
-  int bottom = RoundToTwosMultiple(rect.bottom() + 1);
-  return gfx::Rect(x, y, right - x, bottom - y);
+SkIRect AlignRect(const SkIRect& rect) {
+  int x = RoundToTwosMultiple(rect.fLeft);
+  int y = RoundToTwosMultiple(rect.fTop);
+  int right = RoundToTwosMultiple(rect.fRight + 1);
+  int bottom = RoundToTwosMultiple(rect.fBottom + 1);
+  return SkIRect::MakeXYWH(x, y, right - x, bottom - y);
 }
 
-gfx::Rect ScaleRect(const gfx::Rect& rect,
-                    double horizontal_ratio,
-                    double vertical_ratio) {
-  gfx::Rect scaled_rect(rect.x() * horizontal_ratio,
-                        rect.y() * vertical_ratio,
-                        0,
-                        0);
-  scaled_rect.set_width(
-      rect.right() * horizontal_ratio - scaled_rect.x());
-  scaled_rect.set_height(
-      rect.bottom() * vertical_ratio - scaled_rect.y());
-  return scaled_rect;
+SkIRect ScaleRect(const SkIRect& rect,
+                  double horizontal_ratio,
+                  double vertical_ratio) {
+  int x = rect.fLeft * horizontal_ratio;
+  int y = rect.fTop * vertical_ratio;
+  int w = rect.fRight * horizontal_ratio - x;
+  int h = rect.fBottom * vertical_ratio - y;
+
+  return SkIRect::MakeXYWH(x, y, w, h);
 }
 
 void CopyRect(const uint8* src_plane,

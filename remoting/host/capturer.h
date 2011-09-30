@@ -58,7 +58,7 @@ class Capturer {
   virtual void InvalidateRegion(const SkRegion& invalid_region) = 0;
 
   // Invalidate the entire screen, of a given size.
-  virtual void InvalidateScreen(const gfx::Size& size) = 0;
+  virtual void InvalidateScreen(const SkISize& size) = 0;
 
   // Invalidate the entire screen, using the size of the most recently
   // captured screen.
@@ -76,7 +76,7 @@ class Capturer {
   virtual void CaptureInvalidRegion(CaptureCompletedCallback* callback) = 0;
 
   // Get the size of the most recently captured screen.
-  virtual const gfx::Size& size_most_recent() const = 0;
+  virtual const SkISize& size_most_recent() const = 0;
 };
 
 }  // namespace remoting

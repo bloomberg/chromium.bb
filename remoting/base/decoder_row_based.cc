@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,8 +88,8 @@ Decoder::DecodeResult DecoderRowBased::DecodePacket(const VideoPacket* packet) {
   int stride = frame_->stride(media::VideoFrame::kRGBPlane);
   uint8* rect_begin = frame_->data(media::VideoFrame::kRGBPlane);
 
-  uint8* out = rect_begin + stride * (clip_.y() + row_y_) +
-      kBytesPerPixel * clip_.x();
+  uint8* out = rect_begin + stride * (clip_.fTop + row_y_) +
+      kBytesPerPixel * clip_.fLeft;
 
   // Consume all the data in the message.
   bool decompress_again = true;
@@ -151,7 +151,7 @@ void DecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
     state_ = kProcessing;
 
     // Reset the buffer location status variables on the first packet.
-    clip_.SetRect(packet->format().x(), packet->format().y(),
+    clip_.setXYWH(packet->format().x(), packet->format().y(),
                   packet->format().width(), packet->format().height());
     row_pos_ = 0;
     row_y_ = 0;
@@ -184,7 +184,7 @@ void DecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
   return;
 }
 
-void DecoderRowBased::GetUpdatedRects(UpdatedRects* rects) {
+void DecoderRowBased::GetUpdatedRects(RectVector* rects) {
   rects->swap(updated_rects_);
   updated_rects_.clear();
 }

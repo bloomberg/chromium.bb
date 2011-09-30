@@ -9,7 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "remoting/base/encoder.h"
-#include "ui/gfx/rect.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;
 typedef struct vpx_image vpx_image_t;
@@ -27,10 +27,12 @@ class EncoderVp8 : public Encoder {
                       DataAvailableCallback* data_available_callback);
 
  private:
+  typedef std::vector<SkIRect> RectVector;
+
   FRIEND_TEST_ALL_PREFIXES(EncoderVp8Test, AlignAndClipRect);
 
   // Initialize the encoder. Returns true if successful.
-  bool Init(const gfx::Size& size);
+  bool Init(const SkISize& size);
 
   // Destroy the encoder.
   void Destroy();
@@ -38,11 +40,11 @@ class EncoderVp8 : public Encoder {
   // Prepare |image_| for encoding. Write updated rectangles into
   // |updated_rects|. Returns true if successful.
   bool PrepareImage(scoped_refptr<CaptureData> capture_data,
-                    std::vector<gfx::Rect>* updated_rects);
+                    RectVector* updated_rects);
 
   // Update the active map according to |updated_rects|. Active map is then
   // given to the encoder to speed up encoding.
-  void PrepareActiveMap(const std::vector<gfx::Rect>& updated_rects);
+  void PrepareActiveMap(const RectVector& updated_rects);
 
   // Align the sides of the rectangle to multiples of 2 (expanding outwards),
   // but ensuring the result stays within the screen area (width, height).
@@ -50,8 +52,7 @@ class EncoderVp8 : public Encoder {
   //
   // TODO(lambroslambrou): Pull this out if it's useful for other things than
   // VP8-encoding?
-  static gfx::Rect AlignAndClipRect(const gfx::Rect& rect,
-                                    int width, int height);
+  static SkIRect AlignAndClipRect(const SkIRect& rect, int width, int height);
 
   // True if the encoder is initialized.
   bool initialized_;
@@ -67,7 +68,7 @@ class EncoderVp8 : public Encoder {
   scoped_array<uint8> yuv_image_;
 
   // The current frame size.
-  gfx::Size size_;
+  SkISize size_;
 
   DISALLOW_COPY_AND_ASSIGN(EncoderVp8);
 };

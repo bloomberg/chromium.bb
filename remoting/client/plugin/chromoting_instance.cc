@@ -211,7 +211,7 @@ void ChromotingInstance::DidChangeView(const pp::Rect& position,
                                        const pp::Rect& clip) {
   DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
-  view_->SetPluginSize(gfx::Size(position.width(), position.height()));
+  view_->SetPluginSize(SkISize::Make(position.width(), position.height()));
 
   // TODO(wez): Pass the dimensions of the plugin to the RectangleDecoder
   //            and let it generate the necessary refresh events.
@@ -225,7 +225,7 @@ void ChromotingInstance::DidChangeView(const pp::Rect& position,
 
   // Notify the RectangleDecoder of the new clip rect.
   rectangle_decoder_->UpdateClipRect(
-      gfx::Rect(clip.x(), clip.y(), clip.width(), clip.height()));
+      SkIRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height()));
 }
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {

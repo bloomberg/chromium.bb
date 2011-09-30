@@ -112,7 +112,7 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
     planes.strides[i] = kWidth * 4;
   }
-  gfx::Size size(kWidth, kHeight);
+  SkISize size(SkISize::Make(kWidth, kHeight));
   scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));
   EXPECT_CALL(capturer_, InvalidateFullScreen());
 
@@ -161,7 +161,7 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
     planes.strides[i] = kWidth * 4;
   }
 
-  gfx::Size size(kWidth, kHeight);
+  SkISize size(SkISize::Make(kWidth, kHeight));
   scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));
   EXPECT_CALL(capturer_, InvalidateFullScreen());
 

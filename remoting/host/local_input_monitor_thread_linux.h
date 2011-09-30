@@ -6,7 +6,7 @@
 #define LOCAL_INPUT_MONITOR_THREAD_LINUX_H_
 
 #include "base/threading/simple_thread.h"
-#include "ui/gfx/point.h"
+#include "third_party/skia/include/core/SkPoint.h"
 
 typedef struct _XDisplay Display;
 
@@ -22,7 +22,7 @@ class LocalInputMonitorThread : public base::SimpleThread {
   void Stop();
   virtual void Run();
 
-  void LocalMouseMoved(const gfx::Point& pos);
+  void LocalMouseMoved(const SkIPoint& pos);
   void LocalKeyPressed(int key_code, bool down);
 
  private:

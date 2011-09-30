@@ -89,13 +89,14 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
   }
   last_image_ = image;
 
-  std::vector<gfx::Rect> rects;
+  RectVector rects;
+  rects.reserve(packet->dirty_rects_size());
   for (int i = 0; i < packet->dirty_rects_size(); ++i) {
-    gfx::Rect r = gfx::Rect(packet->dirty_rects(i).x(),
-                            packet->dirty_rects(i).y(),
-                            packet->dirty_rects(i).width(),
-                            packet->dirty_rects(i).height());
-    rects.push_back(r);
+    Rect remoting_rect = packet->dirty_rects(i);
+    rects.push_back(SkIRect::MakeXYWH(remoting_rect.x(),
+                                      remoting_rect.y(),
+                                      remoting_rect.width(),
+                                      remoting_rect.height()));
   }
 
   if (!DoScaling())
@@ -105,7 +106,7 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
   return DECODE_DONE;
 }
 
-void DecoderVp8::GetUpdatedRects(UpdatedRects* rects) {
+void DecoderVp8::GetUpdatedRects(RectVector* rects) {
   rects->swap(updated_rects_);
 }
 
@@ -136,11 +137,11 @@ void DecoderVp8::SetScaleRatios(double horizontal_ratio,
   vertical_scale_ratio_ = vertical_ratio;
 }
 
-void DecoderVp8::SetClipRect(const gfx::Rect& clip_rect) {
+void DecoderVp8::SetClipRect(const SkIRect& clip_rect) {
   clip_rect_ = clip_rect;
 }
 
-void DecoderVp8::RefreshRects(const std::vector<gfx::Rect>& rects) {
+void DecoderVp8::RefreshRects(const RectVector& rects) {
   if (!DoScaling())
     ConvertRects(rects, &updated_rects_);
   else
@@ -151,8 +152,8 @@ bool DecoderVp8::DoScaling() const {
   return horizontal_scale_ratio_ != 1.0 || vertical_scale_ratio_ != 1.0;
 }
 
-void DecoderVp8::ConvertRects(const UpdatedRects& rects,
-                              UpdatedRects* output_rects) {
+void DecoderVp8::ConvertRects(const RectVector& rects,
+                              RectVector* output_rects) {
   if (!last_image_)
     return;
 
@@ -160,23 +161,23 @@ void DecoderVp8::ConvertRects(const UpdatedRects& rects,
   const int stride = frame_->stride(media::VideoFrame::kRGBPlane);
 
   output_rects->clear();
+  output_rects->reserve(rects.size());
   for (size_t i = 0; i < rects.size(); ++i) {
+    // Clip by the clipping rectangle first.
+    SkIRect dest_rect = rects[i];
+    if (!dest_rect.intersect(clip_rect_))
+      continue;
+
     // Round down the image width and height.
     int image_width = RoundToTwosMultiple(last_image_->d_w);
     int image_height = RoundToTwosMultiple(last_image_->d_h);
 
-    // Clip by the clipping rectangle first.
-    gfx::Rect dest_rect = rects[i].Intersect(clip_rect_);
-
     // Then clip by the rounded down dimension of the image for safety.
-    dest_rect = dest_rect.Intersect(
-        gfx::Rect(0, 0, image_width, image_height));
+    if (!dest_rect.intersect(SkIRect::MakeWH(image_width, image_height)))
+      continue;
 
     // Align the rectangle to avoid artifacts in color space conversion.
     dest_rect = AlignRect(dest_rect);
-
-    if (dest_rect.IsEmpty())
-      continue;
 
     ConvertYUVToRGB32WithRect(last_image_->planes[0],
                               last_image_->planes[1],
@@ -190,8 +191,8 @@ void DecoderVp8::ConvertRects(const UpdatedRects& rects,
   }
 }
 
-void DecoderVp8::ScaleAndConvertRects(const UpdatedRects& rects,
-                                      UpdatedRects* output_rects) {
+void DecoderVp8::ScaleAndConvertRects(const RectVector& rects,
+                                      RectVector* output_rects) {
   if (!last_image_)
     return;
 
@@ -199,24 +200,23 @@ void DecoderVp8::ScaleAndConvertRects(const UpdatedRects& rects,
   const int stride = frame_->stride(media::VideoFrame::kRGBPlane);
 
   output_rects->clear();
+  output_rects->reserve(rects.size());
   for (size_t i = 0; i < rects.size(); ++i) {
     // Round down the image width and height.
     int image_width = RoundToTwosMultiple(last_image_->d_w);
     int image_height = RoundToTwosMultiple(last_image_->d_h);
 
     // Clip by the rounded down dimension of the image for safety.
-    gfx::Rect dest_rect =
-        rects[i].Intersect(gfx::Rect(0, 0, image_width, image_height));
+    SkIRect dest_rect = rects[i];
+    if (!dest_rect.intersect(SkIRect::MakeWH(image_width, image_height)))
+      continue;
 
     // Align the rectangle to avoid artifacts in color space conversion.
     dest_rect = AlignRect(dest_rect);
 
-    if (dest_rect.IsEmpty())
-      continue;
-
-    gfx::Rect scaled_rect = ScaleRect(dest_rect,
-                                      horizontal_scale_ratio_,
-                                      vertical_scale_ratio_);
+    SkIRect scaled_rect = ScaleRect(dest_rect,
+                                    horizontal_scale_ratio_,
+                                    vertical_scale_ratio_);
 
     ScaleYUVToRGB32WithRect(last_image_->planes[0],
                             last_image_->planes[1],
