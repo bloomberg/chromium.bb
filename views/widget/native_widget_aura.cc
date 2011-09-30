@@ -126,12 +126,15 @@ void NativeWidgetAura::ViewRemoved(View* view) {
 }
 
 void NativeWidgetAura::SetNativeWindowProperty(const char* name, void* value) {
-  NOTIMPLEMENTED();
+  if (!value)
+    props_map_.erase(name);
+  else
+    props_map_[name] = value;
 }
 
 void* NativeWidgetAura::GetNativeWindowProperty(const char* name) const {
-  NOTIMPLEMENTED();
-  return NULL;
+  PropsMap::const_iterator i = props_map_.find(name);
+  return i == props_map_.end() ? NULL : i->second;
 }
 
 TooltipManager* NativeWidgetAura::GetTooltipManager() const {

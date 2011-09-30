@@ -6,6 +6,8 @@
 #define VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
 #pragma once
 
+#include <map>
+
 #include "ui/aura/window_delegate.h"
 #include "views/views_export.h"
 #include "views/widget/native_widget_private.h"
@@ -132,6 +134,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowDestroyed() OVERRIDE;
 
  private:
+  typedef std::map<const char*, void*> PropsMap;
+
   internal::NativeWidgetDelegate* delegate_;
 
   aura::Window* window_;
@@ -144,6 +148,9 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   ScopedRunnableMethodFactory<NativeWidgetAura> close_widget_factory_;
 
   bool can_activate_;
+
+  // Map used by Set/GetNativeWindowProperty.
+  PropsMap props_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };
