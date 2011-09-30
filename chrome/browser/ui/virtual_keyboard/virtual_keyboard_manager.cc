@@ -171,7 +171,7 @@ KeyboardWidget::KeyboardWidget()
   SetContentsView(dom_view_);
 
   // Setup observer so the events from the keyboard can be handled.
-  TabContentsObserver::Observe(dom_view_->tab_contents());
+  TabContentsObserver::Observe(dom_view_->dom_contents()->tab_contents());
 
   // Initialize the animation.
   animation_.reset(new ui::SlideAnimation(this));
@@ -291,7 +291,7 @@ bool KeyboardWidget::OnMessageReceived(const IPC::Message& message) {
 
 void KeyboardWidget::OnRequest(const ExtensionHostMsg_Request_Params& request) {
   extension_dispatcher_.Dispatch(request,
-      dom_view_->tab_contents()->render_view_host());
+      dom_view_->dom_contents()->tab_contents()->render_view_host());
 }
 
 void KeyboardWidget::TextInputTypeChanged(ui::TextInputType type,
@@ -342,7 +342,8 @@ void KeyboardWidget::TextInputTypeChanged(ui::TextInputType type,
   base::JSONWriter::Write(&args, false, &json_args);
 
   Profile* profile =
-      Profile::FromBrowserContext(dom_view_->tab_contents()->browser_context());
+      Profile::FromBrowserContext(
+          dom_view_->dom_contents()->tab_contents()->browser_context());
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
       kOnTextInputTypeChanged, json_args, NULL, GURL());
 
@@ -364,7 +365,8 @@ gfx::NativeView KeyboardWidget::GetNativeViewOfHost() {
 }
 
 TabContents* KeyboardWidget::GetAssociatedTabContents() const {
-  return dom_view_->tab_contents();
+  return dom_view_->dom_contents() ?
+      dom_view_->dom_contents()->tab_contents() : NULL;
 }
 
 #if defined(OS_CHROMEOS)
