@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/callback_old.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
@@ -68,6 +69,11 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   // Used by WebUIMessageHandlers. RegisterMessageCallback takes ownership of
   // the passed callback. If the given message is already registered, the call
   // has no effect unless |register_callback_overwrites_| is set to true.
+  typedef base::Callback<void(const base::ListValue*)> NewMessageCallback;
+  void RegisterMessageCallback(const std::string& message,
+                               const NewMessageCallback& callback);
+
+  // TODO(csilv): Remove legacy callback support
   typedef Callback1<const base::ListValue*>::Type MessageCallback;
   void RegisterMessageCallback(const std::string& message,
                                MessageCallback* callback);
@@ -190,6 +196,10 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
 
  private:
   // A map of message name -> message handling callback.
+  typedef std::map<std::string, NewMessageCallback> NewMessageCallbackMap;
+  NewMessageCallbackMap new_message_callbacks_;
+
+  // TODO(csilv): Remove legacy callback support.
   typedef std::map<std::string, MessageCallback*> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
 

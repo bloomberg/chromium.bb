@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/ntp/bookmarks_handler.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -45,13 +46,17 @@ WebUIMessageHandler* BookmarksHandler::Attach(WebUI* web_ui) {
 
 void BookmarksHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("createBookmark",
-      NewCallback(this, &BookmarksHandler::HandleCreateBookmark));
+      base::Bind(&BookmarksHandler::HandleCreateBookmark,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("getBookmarksData",
-      NewCallback(this, &BookmarksHandler::HandleGetBookmarksData));
+      base::Bind(&BookmarksHandler::HandleGetBookmarksData,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("moveBookmark",
-      NewCallback(this, &BookmarksHandler::HandleMoveBookmark));
+      base::Bind(&BookmarksHandler::HandleMoveBookmark,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeBookmark",
-      NewCallback(this, &BookmarksHandler::HandleRemoveBookmark));
+      base::Bind(&BookmarksHandler::HandleRemoveBookmark,
+                 base::Unretained(this)));
 }
 
 void BookmarksHandler::Loaded(BookmarkModel* model, bool ids_reassigned) {
