@@ -262,8 +262,10 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
 
 }  // namespace
 
-UserManager::User::User() : oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
-                            is_displayname_unique_(false) {
+UserManager::User::User()
+    : oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
+      is_displayname_unique_(false),
+      default_image_index_(kInvalidImageIndex) {
   image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       kDefaultImageResources[0]);
 }

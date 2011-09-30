@@ -161,7 +161,7 @@ cr.define('options', function() {
      * @param {string} imageUrl New image URL.
      * @return {!Object} Image data of the added or updated image.
      */
-    updateImage: function(imageInfo, imageUrl) {
+    updateItem: function(imageInfo, imageUrl) {
       var imageIndex = this.dataModel.indexOf(imageInfo);
       this.removeItem(imageInfo);
       return this.addItem(

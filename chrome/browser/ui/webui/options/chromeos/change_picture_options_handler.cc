@@ -148,16 +148,27 @@ void ChangePictureOptionsHandler::HandleGetSelectedImage(
   DCHECK(!user.email().empty());
 
   int image_index = user.default_image_index();
-  if (image_index == UserManager::User::kExternalImageIndex ||
-      image_index == UserManager::User::kProfileImageIndex) {
-    // User has image from camera/file/profile, copy it and add to the list of
-    // images.
+  if (image_index == UserManager::User::kInvalidImageIndex) {
+    // This can happen in some test paths.
+    image_index = 0;
+  }
+
+  if (image_index == UserManager::User::kExternalImageIndex) {
+    // User has image from camera/file, copy it and add to the list of images.
+    previous_image_ = user.image();
+    web_ui_->CallJavascriptFunction("ChangePictureOptions.addOldImage");
+  } else if (image_index == UserManager::User::kProfileImageIndex) {
+    // User has his/her Profile image as image.
+    // TODO(ivankr): TODO(avayvod): implement this properly.
     previous_image_ = user.image();
     web_ui_->CallJavascriptFunction("ChangePictureOptions.addOldImage");
   } else if (image_index >= 0 && image_index < kDefaultImagesCount) {
+    // User has image from the set of default images.
     base::StringValue image_url(GetDefaultImageUrl(image_index));
     web_ui_->CallJavascriptFunction("ChangePictureOptions.setSelectedImage",
                                     image_url);
+  } else {
+    NOTREACHED();
   }
 }
 

@@ -114,6 +114,13 @@ void ProfileImageDownloader::Start() {
 
   TokenService* service =
       ProfileManager::GetDefaultProfile()->GetTokenService();
+  if (!service) {
+    // This can happen in some test paths.
+    LOG(WARNING) << "User has no token service";
+    if (delegate_)
+      delegate_->OnDownloadFailure();
+    return;
+  }
   if (service->HasTokenForService(GaiaConstants::kPicasaService)) {
     auth_token_ =
         service->GetTokenForService(GaiaConstants::kPicasaService);
@@ -229,4 +236,3 @@ void ProfileImageDownloader::Observe(int type,
 }
 
 }  // namespace chromeos
-

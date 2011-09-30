@@ -27,8 +27,6 @@ cr.define('oobe', function() {
     Oobe.getInstance().registerScreen(screen);
   };
 
-  cr.addSingletonGetter(UserImageScreen);
-
   UserImageScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -134,12 +132,10 @@ cr.define('oobe', function() {
      */
     setUserPhoto_: function(photoUrl) {
       var imageGrid = $('user-image-grid');
-      if (this.photoImage_) {
-        this.photoImage_ = imageGrid.updateImage(this.photoImage_, photoUrl);
-      } else {
-        this.photoImage_ = imageGrid.addImage(
-            photoUrl, undefined, undefined, 1);
-      }
+      if (this.photoImage_)
+        this.photoImage_ = imageGrid.updateItem(this.photoImage_, photoUrl);
+      else
+        this.photoImage_ = imageGrid.addItem(photoUrl, undefined, undefined, 1);
       imageGrid.selectedItem = this.photoImage_;
       imageGrid.focus();
     },
@@ -151,7 +147,7 @@ cr.define('oobe', function() {
      */
     setProfileImage_: function(imageUrl) {
       this.profileImage_ =
-          $('user-image-grid').updateImage(this.profileImage_, imageUrl);
+          $('user-image-grid').updateItem(this.profileImage_, imageUrl);
     },
 
     /**
@@ -185,7 +181,7 @@ cr.define('oobe', function() {
     'setUserPhoto',
   ].forEach(function(name) {
     UserImageScreen[name] = function(value) {
-      UserImageScreen.getInstance()[name + '_'](value);
+      $('user-image')[name + '_'](value);
     };
   });
 
