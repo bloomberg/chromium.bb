@@ -11,6 +11,7 @@
 #include <deque>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_collection_base.h"
@@ -184,7 +185,7 @@ class BalloonCollectionImpl : public BalloonCollection
   bool IsCursorInBalloonCollection() const;
 
   // Factory for generating delayed reposition tasks on mouse motion.
-  ScopedRunnableMethodFactory<BalloonCollectionImpl> reposition_factory_;
+  base::WeakPtrFactory<BalloonCollectionImpl> reposition_factory_;
 
   // Is the balloon collection currently listening for UI events?
   bool added_as_message_loop_observer_;
