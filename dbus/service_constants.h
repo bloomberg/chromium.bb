@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SERVICE_CONSTANTS_H_
-#define CHROMEOS_DBUS_SERVICE_CONSTANTS_H_
+#ifndef DBUS_SERVICE_CONSTANTS_H_
+#define DBUS_SERVICE_CONSTANTS_H_
 
 namespace cryptohome {
 const char kCryptohomeInterface[] = "org.chromium.CryptohomeInterface";
@@ -65,12 +65,12 @@ namespace imageburn {
 const char kImageBurnServiceName[] = "org.chromium.ImageBurner";
 const char kImageBurnServicePath[] = "/org/chromium/ImageBurner";
 const char kImageBurnServiceInterface[] = "org.chromium.ImageBurnerInterface";
-//Methods
+// Methods
 const char kBurnImage[] = "BurnImage";
-//Signals
+// Signals
 const char kSignalBurnFinishedName[] = "burn_finished";
 const char kSignalBurnUpdateName[] = "burn_progress_update";
-} // namespace imageburn
+}  // namespace imageburn
 
 namespace login_manager {
 const char kSessionManagerInterface[] = "org.chromium.SessionManagerInterface";
@@ -174,7 +174,7 @@ const char kLibCrosServicePath[] = "/org/chromium/LibCrosService";
 const char kLibCrosServiceInterface[] = "org.chromium.LibCrosServiceInterface";
 // Methods
 const char kResolveNetworkProxy[] = "ResolveNetworkProxy";
-} // namespace chromeos
+}  // namespace chromeos
 
 namespace flimflam {
 // Flimflam D-Bus service identifiers.
@@ -571,4 +571,136 @@ const char kSMSListFunction[] = "List";
 const char kSMSReceivedSignal[] = "SmsReceived";
 }  // namespace modemmanager
 
-#endif  // CHROMEOS_DBUS_SERVICE_CONSTANTS_H_
+namespace bluetooth_manager {
+// Bluetooth Manager service identifiers.
+const char kBluetoothManagerServiceName[] = "org.bluez";
+const char kBluetoothManagerServicePath[] = "/";  // crosbug.com/20135
+const char kBluetoothManagerInterface[] = "org.bluez.Manager";
+
+// Bluetooth Manager methods.
+const char kGetProperties[] = "GetProperties";
+const char kDefaultAdapter[] = "DefaultAdapter";
+const char kFindAdapter[] = "FindAdapter";
+
+// Bluetooth Manager signals.
+const char kPropertyChangedSignal[] = "PropertyChanged";
+const char kAdapterAddedSignal[] = "AdapterAdded";
+const char kAdapterRemovedSignal[] = "AdapterRemoved";
+const char kDefaultAdapterChangedSignal[] = "DefaultAdapterChanged";
+
+// Bluetooth Manager properties.
+const char kAdaptersProperty[] = "Adapters";
+}  // namespace bluetooth_manager
+
+namespace bluetooth_adapter {
+// Bluetooth Adapter service identifiers.
+const char kBluetoothAdapterServiceName[] = "org.bluez";
+const char kBluetoothAdapterInterface[] = "org.bluez.Adapter";
+
+// Bluetooth Adapter methods.
+const char kGetProperties[] = "GetProperties";
+const char kSetProperty[] = "SetProperty";
+const char kRequestSession[] = "RequestSession";
+const char kReleaseSession[] = "ReleaseSession";
+const char kStartDiscovery[] = "StartDiscovery";
+const char kStopDiscovery[] = "StopDiscovery";
+const char kFindDevice[] = "FindDevice";
+const char kCreateDevice[] = "CreateDevice";
+const char kCreatePairedDevice[] = "CreatePairedDevice";
+const char kCancelDeviceCreation[] = "CancelDeviceCreation";
+const char kRemoveDevice[] = "RemoveDevice";
+const char kRegisterAgent[] = "RegisterAgent";
+const char kUnregisterAgent[] = "UnregisterAgent";
+
+// Bluetooth Adapter signals.
+const char kPropertyChangedSignal[] = "PropertyChanged";
+const char kDeviceFoundSignal[] = "DeviceFound";
+const char kDeviceDisappearedSignal[] = "DeviceDisappeared";
+const char kDeviceCreatedSignal[] = "DeviceCreated";
+const char kDeviceRemovedSignal[] = "DeviceRemoved";
+
+// Bluetooth Adapter properties.
+const char kAddressProperty[] = "Address";
+const char kNameProperty[] = "Name";
+const char kClassProperty[] = "Class";
+const char kPoweredProperty[] = "Powered";
+const char kDiscoverableProperty[] = "Discoverable";
+const char kPairableProperty[] = "Pairable";
+const char kPairableTimeoutProperty[] = "PairableTimeout";
+const char kDiscoverableTimeoutProperty[] = "DiscoverableTimeout";
+const char kDiscoveringProperty[] = "Discovering";
+const char kDevicesProperty[] = "Devices";
+const char kUUIDsProperty[] = "UUIDs";
+}  // namespace bluetooth_adapter
+
+namespace bluetooth_agent {
+// Bluetooth Agent service indentifiers
+const char kBluetoothAgentInterface[] = "org.bluez.Agent";
+
+// Bluetooth Agent methods.
+const char kRelease[] = "Release";
+const char kRequestPinCode[] = "RequestPinCode";
+const char kRequestPasskey[] = "RequestPasskey";
+const char kDisplayPasskey[] = "DisplayPasskey";
+const char kRequestConfirmation[] = "RequestConfirmation";
+const char kAuthorize[] = "Authorize";
+const char kConfirmModeChange[] = "ConfirmModeChange";
+const char kCancel[] = "Cancel";
+}  // namespace bluetooth_agent
+
+namespace bluetooth_device {
+// Bluetooth Device service identifiers.
+const char kBluetoothDeviceServiceName[] = "org.bluez";
+const char kBluetoothDeviceInterface[] = "org.bluez.Device";
+
+// Bluetooth Device methods.
+const char kGetProperties[] = "GetProperties";
+const char kSetProperty[] = "SetProperty";
+const char kDiscoverServices[] = "DiscoverServices";
+const char kCancelDiscovery[] = "CancelDiscovery";
+const char kDisconnect[] = "Disconnect";
+const char kListNodes[] = "ListNodes";
+const char kCreateNode[] = "CreateNode";
+const char kRemoveNode[] = "RemoveNode";
+
+// Bluetooth Device signals.
+const char kPropertyChangedSignal[] = "PropertyChanged";
+const char kDisconnectRequestedSignal[] = "DisconnectRequested";
+const char kNodeCreatedSignal[] = "NodeCreated";
+const char kNodeRemovedSignal[] = "NodeRemoved";
+
+// Bluetooth Device properties.
+const char kAddressProperty[] = "Address";
+const char kNameProperty[] = "Name";
+const char kIconProperty[] = "Icon";
+const char kClassProperty[] = "Class";
+const char kUUIDsProperty[] = "UUIDs";
+const char kServicesProperty[] = "Services";
+const char kPairedProperty[] = "Paired";
+const char kConnectedProperty[] = "Connected";
+const char kTrustedProperty[] = "Trusted";
+const char kBlockedProperty[] = "Blocked";
+const char kAliasProperty[] = "Alias";
+const char kNodesProperty[] = "Nodes";
+const char kAdapterProperty[] = "Adapter";
+const char kLegacyPairingProperty[] = "LegacyPairing";
+}  // namespace bluetooth_device
+
+namespace bluetooth_input {
+// Bluetooth Input service identifiers.
+const char kBluetoothInputServiceName[] = "org.bluez";
+const char kBluetoothInputInterface[] = "org.bluez.Input";
+
+// Bluetooth Input methods.
+const char kConnect[] = "Connect";
+const char kDisconnect[] = "Disconnect";
+const char kGetProperties[] = "GetProperties";
+
+// Bluetooth Input signals.
+const char kPropertyChangedSignal[] = "PropertyChanged";
+
+// Bluetoooth Input properties.
+const char kConnectedProperty[] = "Connected";
+}  // namespace bluetooth_input
+
+#endif  // DBUS_SERVICE_CONSTANTS_H_
