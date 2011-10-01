@@ -1362,7 +1362,7 @@ bool WebRequestAddEventListener::RunImpl() {
   std::string extension_name = extension ? extension->name() : extension_id();
 
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      profile(), extension_id(), extension_name,
+      profile_id(), extension_id(), extension_name,
       event_name, sub_event_name, filter,
       extra_info_spec, ipc_sender_weak());
 
@@ -1440,7 +1440,7 @@ bool WebRequestEventHandled::RunImpl() {
   }
 
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
-      profile(), extension_id(), event_name, sub_event_name, request_id,
+      profile_id(), extension_id(), event_name, sub_event_name, request_id,
       response.release());
 
   return true;
