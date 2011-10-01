@@ -21,20 +21,12 @@ class VideoDecodeContext;
 
 struct PipelineStatistics;
 
-struct VideoCodecInfo {
-  // Other parameter is only meaningful when this is true.
-  bool success;
-
-  // Natural dimensions of video. May be different from coded and visible sizes.
-  gfx::Size natural_size;
-};
-
 class MEDIA_EXPORT VideoDecodeEngine {
  public:
   struct MEDIA_EXPORT EventHandler {
    public:
     virtual ~EventHandler() {}
-    virtual void OnInitializeComplete(const VideoCodecInfo& info) = 0;
+    virtual void OnInitializeComplete(bool success) = 0;
     virtual void OnUninitializeComplete() = 0;
     virtual void OnFlushComplete() = 0;
     virtual void OnSeekComplete() = 0;

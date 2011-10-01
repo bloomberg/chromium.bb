@@ -92,18 +92,17 @@ void FFmpegVideoDecodeEngine::Initialize(
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
   if ((!threads.empty() &&
-      !base::StringToInt(threads, &decode_threads)) ||
+       !base::StringToInt(threads, &decode_threads)) ||
       decode_threads < 0 || decode_threads > kMaxDecodeThreads) {
     decode_threads = kDecodeThreads;
   }
+
+  codec_context_->thread_count = decode_threads;
 
   // We don't allocate AVFrame on the stack since different versions of FFmpeg
   // may change the size of AVFrame, causing stack corruption.  The solution is
   // to let FFmpeg allocate the structure via avcodec_alloc_frame().
   av_frame_.reset(avcodec_alloc_frame());
-  VideoCodecInfo info;
-  info.success = false;
-  info.natural_size = config.natural_size();
 
   // If we do not have enough buffers, we will report error too.
   frame_queue_available_.clear();
@@ -119,14 +118,10 @@ void FFmpegVideoDecodeEngine::Initialize(
     frame_queue_available_.push_back(video_frame);
   }
 
-  codec_context_->thread_count = decode_threads;
-  if (codec &&
-      avcodec_open(codec_context_, codec) >= 0 &&
-      av_frame_.get()) {
-    info.success = true;
-  }
+  // Open the codec!
+  bool success = codec && avcodec_open(codec_context_, codec) >= 0;
   event_handler_ = event_handler;
-  event_handler_->OnInitializeComplete(info);
+  event_handler_->OnInitializeComplete(success);
 }
 
 void FFmpegVideoDecodeEngine::ConsumeVideoSample(

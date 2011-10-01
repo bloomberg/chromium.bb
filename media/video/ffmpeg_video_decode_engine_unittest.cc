@@ -36,7 +36,7 @@ class FFmpegVideoDecodeEngineTest
       public VideoDecodeEngine::EventHandler {
  public:
   FFmpegVideoDecodeEngineTest()
-      : config_(kCodecVP8, kCodedSize, kVisibleRect, kNaturalSize,
+      : config_(kCodecVP8, kCodedSize, kVisibleRect,
                 kFrameRate.num, kFrameRate.den, NULL, 0) {
     CHECK(FFmpegGlue::GetInstance());
 
@@ -56,11 +56,8 @@ class FFmpegVideoDecodeEngineTest
   }
 
   void Initialize() {
-    VideoCodecInfo info;
-    EXPECT_CALL(*this, OnInitializeComplete(_))
-        .WillOnce(SaveArg<0>(&info));
+    EXPECT_CALL(*this, OnInitializeComplete(true));
     test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
-    EXPECT_TRUE(info.success);
   }
 
   // Decodes the single compressed frame in |buffer| and writes the
@@ -114,12 +111,9 @@ class FFmpegVideoDecodeEngineTest
 
   // VideoDecodeEngine::EventHandler implementation.
   MOCK_METHOD2(ConsumeVideoFrame,
-               void(scoped_refptr<VideoFrame> video_frame,
-                    const PipelineStatistics& statistics));
-  MOCK_METHOD1(ProduceVideoSample,
-               void(scoped_refptr<Buffer> buffer));
-  MOCK_METHOD1(OnInitializeComplete,
-               void(const VideoCodecInfo& info));
+               void(scoped_refptr<VideoFrame>, const PipelineStatistics&));
+  MOCK_METHOD1(ProduceVideoSample, void(scoped_refptr<Buffer>));
+  MOCK_METHOD1(OnInitializeComplete, void(bool));
   MOCK_METHOD0(OnUninitializeComplete, void());
   MOCK_METHOD0(OnFlushComplete, void());
   MOCK_METHOD0(OnSeekComplete, void());
@@ -149,27 +143,21 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_Normal) {
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
   VideoDecoderConfig config(kUnknownVideoCodec, kCodedSize, kVisibleRect,
-                            kNaturalSize, kFrameRate.num, kFrameRate.den,
+                            kFrameRate.num, kFrameRate.den,
                             NULL, 0);
 
   // Test avcodec_find_decoder() returning NULL.
-  VideoCodecInfo info;
-  EXPECT_CALL(*this, OnInitializeComplete(_))
-     .WillOnce(SaveArg<0>(&info));
+  EXPECT_CALL(*this, OnInitializeComplete(false));
   test_engine_->Initialize(MessageLoop::current(), this, NULL, config);
-  EXPECT_FALSE(info.success);
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   // Specify Theora w/o extra data so that avcodec_open() fails.
   VideoDecoderConfig config(kCodecTheora, kCodedSize, kVisibleRect,
-                            kNaturalSize, kFrameRate.num, kFrameRate.den,
+                            kFrameRate.num, kFrameRate.den,
                             NULL, 0);
-  VideoCodecInfo info;
-  EXPECT_CALL(*this, OnInitializeComplete(_))
-     .WillOnce(SaveArg<0>(&info));
+  EXPECT_CALL(*this, OnInitializeComplete(false));
   test_engine_->Initialize(MessageLoop::current(), this, NULL, config);
-  EXPECT_FALSE(info.success);
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
