@@ -7,7 +7,6 @@
 #include "base/memory/singleton.h"
 #include "base/task.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 
 namespace chromeos {
 namespace system {
@@ -39,7 +38,6 @@ const char kVpdDelim[] = "\n";
 
 }  // namespace
 
-// The StatisticsProvider implementation used in production.
 class StatisticsProviderImpl : public StatisticsProvider {
  public:
   // StatisticsProvider implementation:
@@ -101,37 +99,13 @@ StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {
                    DefaultSingletonTraits<StatisticsProviderImpl> >::get();
 }
 
-// The stub StatisticsProvider implementation used on Linux desktop.
-class StatisticsProviderStubImpl : public StatisticsProvider {
- public:
-  // StatisticsProvider implementation:
-  virtual bool GetMachineStatistic(const std::string& name,
-                                   std::string* result) {
-    *result = "stub statistic for " + name;
-    return true;
-  }
-
-  static StatisticsProviderStubImpl* GetInstance() {
-    return Singleton<StatisticsProviderStubImpl,
-        DefaultSingletonTraits<StatisticsProviderStubImpl> >::get();
-  }
-
- private:
-  friend struct DefaultSingletonTraits<StatisticsProviderStubImpl>;
-
-  StatisticsProviderStubImpl() {
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(StatisticsProviderStubImpl);
-};
-
 StatisticsProvider* StatisticsProvider::GetInstance() {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
-    return StatisticsProviderImpl::GetInstance();
-  } else {
-    return StatisticsProviderStubImpl::GetInstance();
-  }
+  return StatisticsProviderImpl::GetInstance();
 }
 
 }  // namespace system
 }  // namespace chromeos
+
+// Allows InvokeLater without adding refcounting. StatisticsProviderImpl is a
+// Singleton and won't be deleted until it's last InvokeLater is run.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::system::StatisticsProviderImpl);
