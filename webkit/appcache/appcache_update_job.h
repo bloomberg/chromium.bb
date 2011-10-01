@@ -143,7 +143,7 @@ class APPCACHE_EXPORT AppCacheUpdateJob : public AppCacheStorage::Delegate,
     scoped_refptr<net::HttpResponseHeaders> existing_response_headers_;
     std::string manifest_data_;
     scoped_ptr<AppCacheResponseWriter> response_writer_;
-    net::CompletionCallbackImpl<URLFetcher> write_callback_;
+    net::OldCompletionCallbackImpl<URLFetcher> write_callback_;
   };  // class URLFetcher
 
   AppCacheResponseWriter* CreateResponseWriter();
@@ -304,9 +304,9 @@ class APPCACHE_EXPORT AppCacheUpdateJob : public AppCacheStorage::Delegate,
   // Whether we've stored the resulting group/cache yet.
   StoredState stored_state_;
 
-  net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_info_write_callback_;
-  net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_write_callback_;
-  net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_read_callback_;
+  net::OldCompletionCallbackImpl<AppCacheUpdateJob> manifest_info_write_callback_;
+  net::OldCompletionCallbackImpl<AppCacheUpdateJob> manifest_data_write_callback_;
+  net::OldCompletionCallbackImpl<AppCacheUpdateJob> manifest_data_read_callback_;
 
   FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, QueueUpdate);
 

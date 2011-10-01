@@ -18,7 +18,7 @@
 
 namespace {
 
-class ClearCacheCompletion : public net::CompletionCallback {
+class ClearCacheCompletion : public net::OldCompletionCallback {
  public:
   ClearCacheCompletion(ChromeBenchmarkingMessageFilter* filter,
                        IPC::Message* reply_msg)
@@ -82,7 +82,7 @@ class DoomEntriesHelper {
   disk_cache::Backend* backend_;
   disk_cache::Entry* entry_;
   void* iter_;
-  net::CompletionCallbackImpl<DoomEntriesHelper> callback_;
+  net::OldCompletionCallbackImpl<DoomEntriesHelper> callback_;
   ClearCacheCompletion* user_callback_;
 };
 

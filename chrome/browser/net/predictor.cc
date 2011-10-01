@@ -110,7 +110,7 @@ class Predictor::LookupRequest {
   }
 
   // HostResolver will call us using this callback when resolution is complete.
-  net::CompletionCallbackImpl<LookupRequest> net_callback_;
+  net::OldCompletionCallbackImpl<LookupRequest> net_callback_;
 
   Predictor* predictor_;  // The predictor which started us.
 

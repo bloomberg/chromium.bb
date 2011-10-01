@@ -70,7 +70,7 @@ void ReadFileTask(base::PlatformFile file,
                   char* buf,
                   int buf_len,
                   bool record_uma,
-                  CompletionCallback* callback) {
+                  OldCompletionCallback* callback) {
   callback->Run(ReadFile(file, buf, buf_len, record_uma));
 }
 
@@ -89,7 +89,7 @@ int WriteFile(base::PlatformFile file, const char* buf, int buf_len,
 void WriteFileTask(base::PlatformFile file,
                    const char* buf,
                    int buf_len, bool record_uma,
-                   CompletionCallback* callback) {
+                   OldCompletionCallback* callback) {
   callback->Run(WriteFile(file, buf, buf_len, record_uma));
 }
 
@@ -137,12 +137,12 @@ class FileStream::AsyncContext {
   // These methods post synchronous read() and write() calls to a WorkerThread.
   void InitiateAsyncRead(
       base::PlatformFile file, char* buf, int buf_len,
-      CompletionCallback* callback);
+      OldCompletionCallback* callback);
   void InitiateAsyncWrite(
       base::PlatformFile file, const char* buf, int buf_len,
-      CompletionCallback* callback);
+      OldCompletionCallback* callback);
 
-  CompletionCallback* callback() const { return callback_; }
+  OldCompletionCallback* callback() const { return callback_; }
 
   // Called by the WorkerPool thread executing the IO after the IO completes.
   // This method queues RunAsynchronousCallback() on the MessageLoop and signals
@@ -163,11 +163,11 @@ class FileStream::AsyncContext {
 
   // The MessageLoopForIO that this AsyncContext is running on.
   MessageLoopForIO* const message_loop_;
-  CompletionCallback* callback_;  // The user provided callback.
+  OldCompletionCallback* callback_;  // The user provided callback.
 
   // A callback wrapper around OnBackgroundIOCompleted().  Run by the WorkerPool
   // thread doing the background IO on our behalf.
-  CompletionCallbackImpl<AsyncContext> background_io_completed_callback_;
+  OldCompletionCallbackImpl<AsyncContext> background_io_completed_callback_;
 
   // This is used to synchronize between the AsyncContext destructor (which runs
   // on the IO thread and OnBackgroundIOCompleted() which runs on the WorkerPool
@@ -213,7 +213,7 @@ FileStream::AsyncContext::~AsyncContext() {
 
 void FileStream::AsyncContext::InitiateAsyncRead(
     base::PlatformFile file, char* buf, int buf_len,
-    CompletionCallback* callback) {
+    OldCompletionCallback* callback) {
   DCHECK(!callback_);
   callback_ = callback;
 
@@ -228,7 +228,7 @@ void FileStream::AsyncContext::InitiateAsyncRead(
 
 void FileStream::AsyncContext::InitiateAsyncWrite(
     base::PlatformFile file, const char* buf, int buf_len,
-    CompletionCallback* callback) {
+    OldCompletionCallback* callback) {
   DCHECK(!callback_);
   callback_ = callback;
 
@@ -266,7 +266,7 @@ void FileStream::AsyncContext::RunAsynchronousCallback() {
   }
 
   DCHECK(callback_);
-  CompletionCallback* temp = NULL;
+  OldCompletionCallback* temp = NULL;
   std::swap(temp, callback_);
   background_io_completed_.Reset();
   temp->Run(result_);
@@ -370,7 +370,7 @@ int64 FileStream::Available() {
 }
 
 int FileStream::Read(
-    char* buf, int buf_len, CompletionCallback* callback) {
+    char* buf, int buf_len, OldCompletionCallback* callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -413,7 +413,7 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
 }
 
 int FileStream::Write(
-    const char* buf, int buf_len, CompletionCallback* callback) {
+    const char* buf, int buf_len, OldCompletionCallback* callback) {
   // write(..., 0) will return 0, which indicates end-of-file.
   DCHECK_GT(buf_len, 0);
 

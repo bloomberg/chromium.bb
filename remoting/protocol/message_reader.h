@@ -72,7 +72,7 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
 
   bool closed_;
   scoped_refptr<net::IOBuffer> read_buffer_;
-  net::CompletionCallbackImpl<MessageReader> read_callback_;
+  net::OldCompletionCallbackImpl<MessageReader> read_callback_;
 
   MessageDecoder message_decoder_;
 

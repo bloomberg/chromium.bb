@@ -149,7 +149,7 @@ class ExtensionWebRequestEventRouter {
   int OnBeforeRequest(void* profile,
                       ExtensionInfoMap* extension_info_map,
                       net::URLRequest* request,
-                      net::CompletionCallback* callback,
+                      net::OldCompletionCallback* callback,
                       GURL* new_url);
 
   // Dispatches the onBeforeSendHeaders event. This is fired for HTTP(s)
@@ -159,7 +159,7 @@ class ExtensionWebRequestEventRouter {
   int OnBeforeSendHeaders(void* profile,
                           ExtensionInfoMap* extension_info_map,
                           net::URLRequest* request,
-                          net::CompletionCallback* callback,
+                          net::OldCompletionCallback* callback,
                           net::HttpRequestHeaders* headers);
 
   // Dispatches the onSendHeaders event. This is fired for HTTP(s) requests

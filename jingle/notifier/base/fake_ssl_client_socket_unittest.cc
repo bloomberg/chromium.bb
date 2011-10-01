@@ -47,11 +47,11 @@ class MockClientSocket : public net::StreamSocket {
  public:
   virtual ~MockClientSocket() {}
 
-  MOCK_METHOD3(Read, int(net::IOBuffer*, int, net::CompletionCallback*));
-  MOCK_METHOD3(Write, int(net::IOBuffer*, int, net::CompletionCallback*));
+  MOCK_METHOD3(Read, int(net::IOBuffer*, int, net::OldCompletionCallback*));
+  MOCK_METHOD3(Write, int(net::IOBuffer*, int, net::OldCompletionCallback*));
   MOCK_METHOD1(SetReceiveBufferSize, bool(int32));
   MOCK_METHOD1(SetSendBufferSize, bool(int32));
-  MOCK_METHOD1(Connect, int(net::CompletionCallback*));
+  MOCK_METHOD1(Connect, int(net::OldCompletionCallback*));
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD0(IsConnectedAndIdle, bool());
@@ -108,7 +108,7 @@ class FakeSSLClientSocketTest : public testing::Test {
 
   void ExpectStatus(
       bool async, int expected_status, int immediate_status,
-      TestCompletionCallback* test_completion_callback) {
+      TestOldCompletionCallback* test_completion_callback) {
     if (async) {
       EXPECT_EQ(net::ERR_IO_PENDING, immediate_status);
       int status = test_completion_callback->WaitForResult();
@@ -149,7 +149,7 @@ class FakeSSLClientSocketTest : public testing::Test {
 
     for (int i = 0; i < num_resets + 1; ++i) {
       SCOPED_TRACE(i);
-      TestCompletionCallback test_completion_callback;
+      TestOldCompletionCallback test_completion_callback;
       int status = fake_ssl_client_socket.Connect(&test_completion_callback);
       if (async) {
         EXPECT_FALSE(fake_ssl_client_socket.IsConnected());
@@ -242,7 +242,7 @@ class FakeSSLClientSocketTest : public testing::Test {
          (error == ERR_MALFORMED_SERVER_HELLO)) ?
         net::ERR_UNEXPECTED : error;
 
-    TestCompletionCallback test_completion_callback;
+    TestOldCompletionCallback test_completion_callback;
     int status = fake_ssl_client_socket.Connect(&test_completion_callback);
     EXPECT_FALSE(fake_ssl_client_socket.IsConnected());
     ExpectStatus(async, expected_status, status, &test_completion_callback);

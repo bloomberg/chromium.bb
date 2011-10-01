@@ -97,7 +97,7 @@ NetworkStats::~NetworkStats() {
 bool NetworkStats::Start(net::HostResolver* host_resolver,
                          const net::HostPortPair& server_host_port_pair,
                          uint32 bytes_to_send,
-                         net::CompletionCallback* finished_callback) {
+                         net::OldCompletionCallback* finished_callback) {
   DCHECK(bytes_to_send);   // We should have data to send.
 
   Initialize(bytes_to_send, finished_callback);
@@ -114,7 +114,7 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
 }
 
 void NetworkStats::Initialize(uint32 bytes_to_send,
-                              net::CompletionCallback* finished_callback) {
+                              net::OldCompletionCallback* finished_callback) {
   DCHECK(bytes_to_send);   // We should have data to send.
 
   load_size_ = bytes_to_send;
@@ -156,7 +156,7 @@ bool NetworkStats::ConnectComplete(int result) {
 
 void NetworkStats::DoFinishCallback(int result) {
   if (finished_callback_ != NULL) {
-    net::CompletionCallback* callback = finished_callback_;
+    net::OldCompletionCallback* callback = finished_callback_;
     finished_callback_ = NULL;
     callback->Run(result);
   }

@@ -80,8 +80,8 @@ class PepperStreamChannel : public PepperChannel,
   scoped_ptr<ChannelAuthenticator> authenticator_;
 
   // Callback called by the TCP and SSL layers.
-  net::CompletionCallbackImpl<PepperStreamChannel> p2p_connect_callback_;
-  net::CompletionCallbackImpl<PepperStreamChannel> ssl_connect_callback_;
+  net::OldCompletionCallbackImpl<PepperStreamChannel> p2p_connect_callback_;
+  net::OldCompletionCallbackImpl<PepperStreamChannel> ssl_connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperStreamChannel);
 };

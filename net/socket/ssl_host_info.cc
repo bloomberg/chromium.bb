@@ -35,7 +35,7 @@ SSLHostInfo::SSLHostInfo(
       rev_checking_enabled_(ssl_config.rev_checking_enabled),
       verify_ev_cert_(ssl_config.verify_ev_cert),
       verifier_(cert_verifier),
-      callback_(new CancelableCompletionCallback<SSLHostInfo>(
+      callback_(new CancelableOldCompletionCallback<SSLHostInfo>(
                         ALLOW_THIS_IN_INITIALIZER_LIST(this),
                         &SSLHostInfo::VerifyCallback)),
       dnsrr_resolver_(NULL),
@@ -179,7 +179,7 @@ const CertVerifyResult& SSLHostInfo::cert_verify_result() const {
   return cert_verify_result_;
 }
 
-int SSLHostInfo::WaitForCertVerification(CompletionCallback* callback) {
+int SSLHostInfo::WaitForCertVerification(OldCompletionCallback* callback) {
   if (cert_verification_complete_)
     return cert_verification_error_;
   DCHECK(!cert_parsing_failed_);
@@ -205,7 +205,7 @@ void SSLHostInfo::VerifyCallback(int rv) {
   cert_verification_complete_ = true;
   cert_verification_error_ = rv;
   if (cert_verification_callback_) {
-    CompletionCallback* callback = cert_verification_callback_;
+    OldCompletionCallback* callback = cert_verification_callback_;
     cert_verification_callback_ = NULL;
     callback->Run(rv);
   }

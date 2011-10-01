@@ -478,8 +478,8 @@ class TCPChannelTester : public ChannelTesterBase {
   scoped_refptr<net::DrainableIOBuffer> output_buffer_;
   scoped_refptr<net::GrowableIOBuffer> input_buffer_;
 
-  net::CompletionCallbackImpl<TCPChannelTester> write_cb_;
-  net::CompletionCallbackImpl<TCPChannelTester> read_cb_;
+  net::OldCompletionCallbackImpl<TCPChannelTester> write_cb_;
+  net::OldCompletionCallbackImpl<TCPChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
   int message_size_;
@@ -660,8 +660,8 @@ class UDPChannelTester : public ChannelTesterBase {
   scoped_refptr<net::IOBuffer> sent_packets_[kMessages];
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  net::CompletionCallbackImpl<UDPChannelTester> write_cb_;
-  net::CompletionCallbackImpl<UDPChannelTester> read_cb_;
+  net::OldCompletionCallbackImpl<UDPChannelTester> write_cb_;
+  net::OldCompletionCallbackImpl<UDPChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
   int packets_sent_;

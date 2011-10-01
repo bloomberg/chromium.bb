@@ -143,7 +143,7 @@ class DatabaseQuotaClient::DeleteOriginTask : public HelperTask {
         result_(quota::kQuotaStatusUnknown),
         caller_callback_(caller_callback),
         ALLOW_THIS_IN_INITIALIZER_LIST(completion_callback_(
-            this, &DeleteOriginTask::OnCompletionCallback)) {
+            this, &DeleteOriginTask::OnOldCompletionCallback)) {
   }
 
  private:
@@ -159,16 +159,16 @@ class DatabaseQuotaClient::DeleteOriginTask : public HelperTask {
   }
 
   virtual bool RunOnTargetThreadAsync() OVERRIDE {
-    AddRef();  // balanced in OnCompletionCallback
+    AddRef();  // balanced in OnOldCompletionCallback
     string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url_);
     int rv = db_tracker_->DeleteDataForOrigin(origin_id, &completion_callback_);
     if (rv == net::ERR_IO_PENDING)
       return false;  // we wait for the callback
-    OnCompletionCallback(rv);
+    OnOldCompletionCallback(rv);
     return false;
   }
 
-  void OnCompletionCallback(int rv) {
+  void OnOldCompletionCallback(int rv) {
     if (rv == net::OK)
       result_ = quota::kQuotaStatusOk;
     original_message_loop()->PostTask(
@@ -179,7 +179,7 @@ class DatabaseQuotaClient::DeleteOriginTask : public HelperTask {
   const GURL origin_url_;
   quota::QuotaStatusCode result_;
   scoped_ptr<DeletionCallback> caller_callback_;
-  net::CompletionCallbackImpl<DeleteOriginTask> completion_callback_;
+  net::OldCompletionCallbackImpl<DeleteOriginTask> completion_callback_;
 };
 
 // DatabaseQuotaClient --------------------------------------------------------

@@ -46,7 +46,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, notify_task_);
     }
 
-    net::CompletionCallbackImpl<Request> completion_callback_;
+    net::OldCompletionCallbackImpl<Request> completion_callback_;
 
     std::string source_url_;  // URL being resolved.
     int result_;  // Result of proxy resolution.

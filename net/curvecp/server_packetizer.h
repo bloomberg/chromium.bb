@@ -37,7 +37,7 @@ class ServerPacketizer : public base::RefCounted<ServerPacketizer>,
   virtual int SendMessage(ConnectionKey key,
                           const char* data,
                           size_t length,
-                          CompletionCallback* callback);
+                          OldCompletionCallback* callback);
   virtual void Close(ConnectionKey key);
   virtual int GetPeerAddress(IPEndPoint* endpoint) const;
   virtual int max_message_payload() const;
@@ -86,8 +86,8 @@ class ServerPacketizer : public base::RefCounted<ServerPacketizer>,
   // The listener map tracks active message listeners known to the packetizer.
   ListenerMap listener_map_;
 
-  CompletionCallbackImpl<ServerPacketizer> read_callback_;
-  CompletionCallbackImpl<ServerPacketizer> write_callback_;
+  OldCompletionCallbackImpl<ServerPacketizer> read_callback_;
+  OldCompletionCallbackImpl<ServerPacketizer> write_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerPacketizer);
 };

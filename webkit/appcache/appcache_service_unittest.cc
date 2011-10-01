@@ -38,7 +38,7 @@ class MockResponseReader : public AppCacheResponseReader {
         data_(data), data_size_(data_size) {
   }
   virtual void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                        net::CompletionCallback* callback) OVERRIDE {
+                        net::OldCompletionCallback* callback) OVERRIDE {
     info_buffer_ = info_buf;
     user_callback_ = callback;  // Cleared on completion.
 
@@ -48,7 +48,7 @@ class MockResponseReader : public AppCacheResponseReader {
     ScheduleUserCallback(rv);
   }
   virtual void ReadData(net::IOBuffer* buf, int buf_len,
-                        net::CompletionCallback* callback) OVERRIDE {
+                        net::OldCompletionCallback* callback) OVERRIDE {
     buffer_ = buf;
     buffer_len_ = buf_len;
     user_callback_ = callback;  // Cleared on completion.
@@ -67,7 +67,7 @@ class MockResponseReader : public AppCacheResponseReader {
   void ScheduleUserCallback(int result) {
     MessageLoop::current()->PostTask(FROM_HERE,
         method_factory_.NewRunnableMethod(
-            &MockResponseReader::InvokeUserCompletionCallback, result));
+            &MockResponseReader::InvokeUserOldCompletionCallback, result));
   }
 
   scoped_ptr<net::HttpResponseInfo> info_;
@@ -170,7 +170,7 @@ class AppCacheServiceTest : public testing::Test {
   scoped_ptr<AppCacheService> service_;
   int delete_result_;
   int delete_completion_count_;
-  net::CompletionCallbackImpl<AppCacheServiceTest> deletion_callback_;
+  net::OldCompletionCallbackImpl<AppCacheServiceTest> deletion_callback_;
 };
 
 TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {

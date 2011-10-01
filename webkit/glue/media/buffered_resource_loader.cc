@@ -89,7 +89,7 @@ BufferedResourceLoader::~BufferedResourceLoader() {
     url_loader_->cancel();
 }
 
-void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
+void BufferedResourceLoader::Start(net::OldCompletionCallback* start_callback,
                                    const base::Closure& event_callback,
                                    WebFrame* frame) {
   // Make sure we have not started.
@@ -172,7 +172,7 @@ void BufferedResourceLoader::Stop() {
 void BufferedResourceLoader::Read(int64 position,
                                   int read_size,
                                   uint8* buffer,
-                                  net::CompletionCallback* read_callback) {
+                                  net::OldCompletionCallback* read_callback) {
   DCHECK(!read_callback_.get());
   DCHECK(buffer_.get());
   DCHECK(read_callback);

@@ -385,7 +385,7 @@ TEST_F(FileWriterTest, CancelFailedTruncate) {
   EXPECT_EQ(0, received_did_write_count_);
 }
 
-TEST_F(FileWriterTest, DeleteInCompletionCallbacks) {
+TEST_F(FileWriterTest, DeleteInOldCompletionCallbacks) {
   delete_in_client_callback_ = true;
   writer()->write(kBasicFileWrite_Offset, GURL("blob://bloburl/"));
   EXPECT_FALSE(testable_writer_.get());

@@ -71,14 +71,14 @@ class APPCACHE_EXPORT AppCacheService {
   // This method always completes asynchronously.
   void CanHandleMainResourceOffline(const GURL& url,
                                     const GURL& first_party,
-                                    net::CompletionCallback* callback);
+                                    net::OldCompletionCallback* callback);
 
   // Populates 'collection' with info about all of the appcaches stored
   // within the service, 'callback' is invoked upon completion. The service
   // acquires a reference to the 'collection' until until completion.
   // This method always completes asynchronously.
   void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
-                          net::CompletionCallback* callback);
+                          net::OldCompletionCallback* callback);
 
   // Deletes the group identified by 'manifest_url', 'callback' is
   // invoked upon completion. Upon completion, the cache group and
@@ -86,13 +86,13 @@ class APPCACHE_EXPORT AppCacheService {
   // subresource loads for pages associated with a deleted group
   // will fail. This method always completes asynchronously.
   void DeleteAppCacheGroup(const GURL& manifest_url,
-                           net::CompletionCallback* callback);
+                           net::OldCompletionCallback* callback);
 
   // Deletes all appcaches for the origin, 'callback' is invoked upon
   // completion. This method always completes asynchronously.
   // (virtual for unittesting)
   virtual void DeleteAppCachesForOrigin(const GURL& origin,
-                                        net::CompletionCallback* callback);
+                                        net::OldCompletionCallback* callback);
 
   // Checks the integrity of 'response_id' by reading the headers and data.
   // If it cannot be read, the cache group for 'manifest_url' is deleted.

@@ -34,9 +34,9 @@ class TransportChannelSocketAdapter : public net::Socket,
 
   // Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* callback);
+                   net::OldCompletionCallback* callback);
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback);
+                    net::OldCompletionCallback* callback);
 
   virtual bool SetReceiveBufferSize(int32 size);
   virtual bool SetSendBufferSize(int32 size);
@@ -51,11 +51,11 @@ class TransportChannelSocketAdapter : public net::Socket,
 
   cricket::TransportChannel* channel_;
 
-  net::CompletionCallback* read_callback_;  // Not owned.
+  net::OldCompletionCallback* read_callback_;  // Not owned.
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
 
-  net::CompletionCallback* write_callback_;  // Not owned.
+  net::OldCompletionCallback* write_callback_;  // Not owned.
   scoped_refptr<net::IOBuffer> write_buffer_;
   int write_buffer_size_;
 

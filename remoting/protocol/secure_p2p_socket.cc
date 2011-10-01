@@ -10,7 +10,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
-using net::CompletionCallback;
+using net::OldCompletionCallback;
 using net::IOBuffer;
 
 namespace remoting {
@@ -120,7 +120,7 @@ SecureP2PSocket::~SecureP2PSocket() {
 }
 
 int SecureP2PSocket::Read(IOBuffer* buf, int buf_len,
-                          CompletionCallback* callback) {
+                          OldCompletionCallback* callback) {
   DCHECK(!user_read_buf_);
   DCHECK(!user_read_buf_len_);
   DCHECK(!user_read_callback_);
@@ -132,7 +132,7 @@ int SecureP2PSocket::Read(IOBuffer* buf, int buf_len,
 }
 
 int SecureP2PSocket::Write(IOBuffer* buf, int buf_len,
-                           CompletionCallback* callback) {
+                           OldCompletionCallback* callback) {
   // See the spec for the steps taken in this method:
   // http://www.whatwg.org/specs/web-apps/current-work/complete/video-conferencing-and-peer-to-peer-communication.html#peer-to-peer-connections
   // 4. Increment sequence number by one.
@@ -215,7 +215,7 @@ int SecureP2PSocket::ReadInternal() {
 }
 
 void SecureP2PSocket::ReadDone(int err) {
-  net::CompletionCallback* callback = user_read_callback_;
+  net::OldCompletionCallback* callback = user_read_callback_;
   user_read_callback_ = NULL;
 
   if (err < 0) {
@@ -237,7 +237,7 @@ void SecureP2PSocket::ReadDone(int err) {
 }
 
 void SecureP2PSocket::WriteDone(int err) {
-  net::CompletionCallback* callback = user_write_callback_;
+  net::OldCompletionCallback* callback = user_write_callback_;
   int buf_len = user_write_buf_len_;
 
   user_write_callback_ = NULL;

@@ -97,7 +97,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   // And once it's ready, we can only handle one delete request at a time,
   // so we queue up additional requests while one is in already in progress.
   scoped_ptr<DeletionCallback> current_delete_request_callback_;
-  scoped_refptr<net::CancelableCompletionCallback<AppCacheQuotaClient> >
+  scoped_refptr<net::CancelableOldCompletionCallback<AppCacheQuotaClient> >
       service_delete_callback_;
 
   AppCacheService* service_;

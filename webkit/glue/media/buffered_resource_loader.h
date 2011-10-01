@@ -73,7 +73,7 @@ class BufferedResourceLoader
   //   An error code that indicates the request has failed.
   // |event_callback| is called when the response is completed, data is
   // received, the request is suspended or resumed.
-  virtual void Start(net::CompletionCallback* callback,
+  virtual void Start(net::OldCompletionCallback* callback,
                      const base::Closure& event_callback,
                      WebKit::WebFrame* frame);
 
@@ -92,7 +92,7 @@ class BufferedResourceLoader
   // - net::ERR_CACHE_MISS
   //   The read was made too far away from the current buffered position.
   virtual void Read(int64 position, int read_size,
-                    uint8* buffer, net::CompletionCallback* callback);
+                    uint8* buffer, net::OldCompletionCallback* callback);
 
   // Returns the position of the last byte buffered. Returns
   // |kPositionNotSpecified| if such value is not available.
@@ -261,14 +261,14 @@ class BufferedResourceLoader
   base::Closure event_callback_;
 
   // Members used during request start.
-  scoped_ptr<net::CompletionCallback> start_callback_;
+  scoped_ptr<net::OldCompletionCallback> start_callback_;
   int64 offset_;
   int64 content_length_;
   int64 instance_size_;
 
   // Members used during a read operation. They should be reset after each
   // read has completed or failed.
-  scoped_ptr<net::CompletionCallback> read_callback_;
+  scoped_ptr<net::OldCompletionCallback> read_callback_;
   int64 read_position_;
   size_t read_size_;
   uint8* read_buffer_;

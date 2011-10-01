@@ -70,7 +70,7 @@ Messenger::Messenger(Packetizer* packetizer)
 Messenger::~Messenger() {
 }
 
-int Messenger::Read(IOBuffer* buf, int buf_len, CompletionCallback* callback) {
+int Messenger::Read(IOBuffer* buf, int buf_len, OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!receive_complete_callback_);
 
@@ -86,7 +86,7 @@ int Messenger::Read(IOBuffer* buf, int buf_len, CompletionCallback* callback) {
   return bytes_read;
 }
 
-int Messenger::Write(IOBuffer* buf, int buf_len, CompletionCallback* callback) {
+int Messenger::Write(IOBuffer* buf, int buf_len, OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!pending_send_.get());   // Already a write pending!
   DCHECK(!send_complete_callback_);
@@ -156,7 +156,7 @@ IOBufferWithSize* Messenger::CreateBufferFromSendQueue() {
     int len = send_buffer_.write(pending_send_->data(), pending_send_length_);
     if (len) {
       pending_send_ = NULL;
-      CompletionCallback* callback = send_complete_callback_;
+      OldCompletionCallback* callback = send_complete_callback_;
       send_complete_callback_ = NULL;
       callback->Run(len);
     }
@@ -341,7 +341,7 @@ void Messenger::RecvMessage() {
   if (received_list_.bytes_available() && receive_complete_callback_) {
     // Pass the data up to the caller.
     int bytes_read = InternalRead(pending_receive_, pending_receive_length_);
-    CompletionCallback* callback = receive_complete_callback_;
+    OldCompletionCallback* callback = receive_complete_callback_;
     receive_complete_callback_ = NULL;
     callback->Run(bytes_read);
   }

@@ -113,8 +113,8 @@ class Client {
   net::HttpRequestInfo request_info_;
   scoped_ptr<net::HttpTransaction> transaction_;
   scoped_refptr<net::IOBuffer> buffer_;
-  net::CompletionCallbackImpl<Client> connect_callback_;
-  net::CompletionCallbackImpl<Client> read_callback_;
+  net::OldCompletionCallbackImpl<Client> connect_callback_;
+  net::OldCompletionCallbackImpl<Client> read_callback_;
 };
 
 int main(int argc, char** argv) {

@@ -148,7 +148,7 @@ class AsyncHostResolverTest : public testing::Test {
   TestPrng test_prng_;
   RandIntCallback rand_int_cb_;
   scoped_ptr<HostResolver> resolver_;
-  TestCompletionCallback callback0_, callback1_, callback2_, callback3_;
+  TestOldCompletionCallback callback0_, callback1_, callback2_, callback3_;
 };
 
 TEST_F(AsyncHostResolverTest, EmptyHostLookup) {
@@ -455,7 +455,7 @@ TEST_F(AsyncHostResolverTest, OverflowQueueWithHighPriorityLookup) {
   HostResolver::RequestInfo info(HostPortPair("cnn.com", 80));
   info.set_address_family(ADDRESS_FAMILY_IPV4);
   AddressList addrlist_fail;
-  TestCompletionCallback callback_fail;
+  TestOldCompletionCallback callback_fail;
   int rv_fail = resolver_->Resolve(info, &addrlist_fail, &callback_fail, NULL,
                                    BoundNetLog());
   EXPECT_EQ(1u,

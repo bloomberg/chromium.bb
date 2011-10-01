@@ -34,8 +34,8 @@ class Messenger : public base::NonThreadSafe,
   explicit Messenger(Packetizer* packetizer);
   virtual ~Messenger();
 
-  int Read(IOBuffer* buf, int buf_len, CompletionCallback* callback);
-  int Write(IOBuffer* buf, int buf_len, CompletionCallback* callback);
+  int Read(IOBuffer* buf, int buf_len, OldCompletionCallback* callback);
+  int Write(IOBuffer* buf, int buf_len, OldCompletionCallback* callback);
 
   // Packetizer::Listener methods:
   virtual void OnConnection(ConnectionKey key);
@@ -71,13 +71,13 @@ class Messenger : public base::NonThreadSafe,
   // The send_buffer is a list of pending data to pack into messages and send
   // to the remote.
   CircularBuffer send_buffer_;
-  CompletionCallback* send_complete_callback_;
+  OldCompletionCallback* send_complete_callback_;
   scoped_refptr<IOBuffer> pending_send_;
   int pending_send_length_;
 
   // The read_buffer is a list of pending data which has been unpacked from
   // messages and is awaiting delivery to the application.
-  CompletionCallback* receive_complete_callback_;
+  OldCompletionCallback* receive_complete_callback_;
   scoped_refptr<IOBuffer> pending_receive_;
   int pending_receive_length_;
 
@@ -93,7 +93,7 @@ class Messenger : public base::NonThreadSafe,
   // A timer to fire when we can send data.
   base::OneShotTimer<Messenger> send_timer_;
 
-  CompletionCallbackImpl<Messenger> send_message_callback_;
+  OldCompletionCallbackImpl<Messenger> send_message_callback_;
 
   ScopedRunnableMethodFactory<Messenger> factory_;
   DISALLOW_COPY_AND_ASSIGN(Messenger);

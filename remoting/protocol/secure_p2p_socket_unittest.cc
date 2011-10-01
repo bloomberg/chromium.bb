@@ -22,7 +22,7 @@ class TestSocket : public net::Socket {
 
   // Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* callback) {
+                   net::OldCompletionCallback* callback) {
     std::string buffer = buffer_.front();
     buffer_.pop();
 
@@ -32,7 +32,7 @@ class TestSocket : public net::Socket {
   }
 
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback) {
+                    net::OldCompletionCallback* callback) {
     buffer_.push(std::string(buf->data(), buf_len));
     return buf_len;
   }

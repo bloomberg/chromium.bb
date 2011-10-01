@@ -200,7 +200,7 @@ TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
 TransportSocket::~TransportSocket() {
 }
 
-int TransportSocket::Connect(net::CompletionCallback* callback) {
+int TransportSocket::Connect(net::OldCompletionCallback* callback) {
   // Connect is never called by SSLClientSocket, instead SSLSocketAdapter
   // calls Connect() on socket_ directly.
   NOTREACHED();
@@ -282,7 +282,7 @@ base::TimeDelta TransportSocket::GetConnectTimeMicros() const {
 }
 
 int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
-                          net::CompletionCallback* callback) {
+                          net::OldCompletionCallback* callback) {
   DCHECK(buf);
   DCHECK(!read_callback_);
   DCHECK(!read_buffer_.get());
@@ -301,7 +301,7 @@ int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
 }
 
 int TransportSocket::Write(net::IOBuffer* buf, int buf_len,
-                           net::CompletionCallback* callback) {
+                           net::OldCompletionCallback* callback) {
   DCHECK(buf);
   DCHECK(!write_callback_);
   DCHECK(!write_buffer_.get());
@@ -332,7 +332,7 @@ bool TransportSocket::SetSendBufferSize(int32 size) {
 void TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
   if (read_callback_) {
     DCHECK(read_buffer_.get());
-    net::CompletionCallback* callback = read_callback_;
+    net::OldCompletionCallback* callback = read_callback_;
     scoped_refptr<net::IOBuffer> buffer = read_buffer_;
     int buffer_len = read_buffer_len_;
 
@@ -358,7 +358,7 @@ void TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
 void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
   if (write_callback_) {
     DCHECK(write_buffer_.get());
-    net::CompletionCallback* callback = write_callback_;
+    net::OldCompletionCallback* callback = write_callback_;
     scoped_refptr<net::IOBuffer> buffer = write_buffer_;
     int buffer_len = write_buffer_len_;
 

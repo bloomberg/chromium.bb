@@ -79,7 +79,7 @@ class OfflineResourceHandler : public ResourceHandler,
   int deferred_request_id_;
   GURL deferred_url_;
 
-  scoped_refptr<net::CancelableCompletionCallback<OfflineResourceHandler> >
+  scoped_refptr<net::CancelableOldCompletionCallback<OfflineResourceHandler> >
       appcache_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineResourceHandler);

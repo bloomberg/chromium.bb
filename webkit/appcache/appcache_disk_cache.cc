@@ -21,14 +21,14 @@ class AppCacheDiskCache::EntryImpl : public Entry {
     DCHECK(disk_cache_entry);
   }
   virtual int Read(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* completion_callback) {
+                   net::OldCompletionCallback* completion_callback) {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
     return disk_cache_entry_->ReadData(
         index, static_cast<int>(offset), buf, buf_len, completion_callback);
   }
   virtual int Write(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* completion_callback) {
+                    net::OldCompletionCallback* completion_callback) {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
     const bool kTruncate = true;
@@ -58,19 +58,19 @@ class AppCacheDiskCache::ActiveCall {
             async_completion_(this, &ActiveCall::OnAsyncCompletion)) {
   }
 
-  int CreateEntry(int64 key, Entry** entry, net::CompletionCallback* callback) {
+  int CreateEntry(int64 key, Entry** entry, net::OldCompletionCallback* callback) {
     int rv = owner_->disk_cache()->CreateEntry(
         base::Int64ToString(key), &entry_ptr_, &async_completion_);
     return HandleImmediateReturnValue(rv, entry, callback);
   }
 
-  int OpenEntry(int64 key, Entry** entry, net::CompletionCallback* callback) {
+  int OpenEntry(int64 key, Entry** entry, net::OldCompletionCallback* callback) {
     int rv = owner_->disk_cache()->OpenEntry(
         base::Int64ToString(key), &entry_ptr_, &async_completion_);
     return HandleImmediateReturnValue(rv, entry, callback);
   }
 
-  int DoomEntry(int64 key, net::CompletionCallback* callback) {
+  int DoomEntry(int64 key, net::OldCompletionCallback* callback) {
     int rv = owner_->disk_cache()->DoomEntry(
         base::Int64ToString(key), &async_completion_);
     return HandleImmediateReturnValue(rv, NULL, callback);
@@ -78,7 +78,7 @@ class AppCacheDiskCache::ActiveCall {
 
  private:
   int HandleImmediateReturnValue(int rv, Entry** entry,
-                                 net::CompletionCallback* callback) {
+                                 net::OldCompletionCallback* callback) {
     if (rv == net::ERR_IO_PENDING) {
       // OnAsyncCompletion will be called later.
       callback_ = callback;
@@ -102,10 +102,10 @@ class AppCacheDiskCache::ActiveCall {
   }
 
   Entry** entry_;
-  net::CompletionCallback* callback_;
+  net::OldCompletionCallback* callback_;
   AppCacheDiskCache* owner_;
   disk_cache::Entry* entry_ptr_;
-  net::CompletionCallbackImpl<ActiveCall> async_completion_;
+  net::OldCompletionCallbackImpl<ActiveCall> async_completion_;
 };
 
 AppCacheDiskCache::AppCacheDiskCache()
@@ -124,13 +124,13 @@ AppCacheDiskCache::~AppCacheDiskCache() {
 
 int AppCacheDiskCache::InitWithDiskBackend(
     const FilePath& disk_cache_directory, int disk_cache_size, bool force,
-    base::MessageLoopProxy* cache_thread, net::CompletionCallback* callback) {
+    base::MessageLoopProxy* cache_thread, net::OldCompletionCallback* callback) {
   return Init(net::APP_CACHE, disk_cache_directory,
               disk_cache_size, force, cache_thread, callback);
 }
 
 int AppCacheDiskCache::InitWithMemBackend(
-    int mem_cache_size, net::CompletionCallback* callback) {
+    int mem_cache_size, net::OldCompletionCallback* callback) {
   return Init(net::MEMORY_CACHE, FilePath(), mem_cache_size, false, NULL,
               callback);
 }
@@ -149,7 +149,7 @@ void AppCacheDiskCache::Disable() {
 }
 
 int AppCacheDiskCache::CreateEntry(int64 key, Entry** entry,
-                                   net::CompletionCallback* callback) {
+                                   net::OldCompletionCallback* callback) {
   DCHECK(entry && callback);
   if (is_disabled_)
     return net::ERR_ABORTED;
@@ -166,7 +166,7 @@ int AppCacheDiskCache::CreateEntry(int64 key, Entry** entry,
 }
 
 int AppCacheDiskCache::OpenEntry(int64 key, Entry** entry,
-                                 net::CompletionCallback* callback) {
+                                 net::OldCompletionCallback* callback) {
   DCHECK(entry && callback);
   if (is_disabled_)
     return net::ERR_ABORTED;
@@ -183,7 +183,7 @@ int AppCacheDiskCache::OpenEntry(int64 key, Entry** entry,
 }
 
 int AppCacheDiskCache::DoomEntry(int64 key,
-                                 net::CompletionCallback* callback) {
+                                 net::OldCompletionCallback* callback) {
   DCHECK(callback);
   if (is_disabled_)
     return net::ERR_ABORTED;
@@ -203,7 +203,7 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
                             const FilePath& cache_directory,
                             int cache_size, bool force,
                             base::MessageLoopProxy* cache_thread,
-                            net::CompletionCallback* callback) {
+                            net::OldCompletionCallback* callback) {
   DCHECK(!is_initializing() && !disk_cache_.get());
   is_disabled_ = false;
   create_backend_callback_ = new CreateBackendCallback(

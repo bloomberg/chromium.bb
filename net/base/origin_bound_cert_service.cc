@@ -36,7 +36,7 @@ const int kValidityPeriodInDays = 365;
 // Represents the output and result callback of a request.
 class OriginBoundCertServiceRequest {
  public:
-  OriginBoundCertServiceRequest(CompletionCallback* callback,
+  OriginBoundCertServiceRequest(OldCompletionCallback* callback,
                                 std::string* private_key,
                                 std::string* cert)
       : callback_(callback),
@@ -67,7 +67,7 @@ class OriginBoundCertServiceRequest {
   bool canceled() const { return !callback_; }
 
  private:
-  CompletionCallback* callback_;
+  OldCompletionCallback* callback_;
   std::string* private_key_;
   std::string* cert_;
 };
@@ -259,7 +259,7 @@ OriginBoundCertService::~OriginBoundCertService() {
 int OriginBoundCertService::GetOriginBoundCert(const std::string& origin,
                                                std::string* private_key,
                                                std::string* cert,
-                                               CompletionCallback* callback,
+                                               OldCompletionCallback* callback,
                                                RequestHandle* out_req) {
   DCHECK(CalledOnValidThread());
 

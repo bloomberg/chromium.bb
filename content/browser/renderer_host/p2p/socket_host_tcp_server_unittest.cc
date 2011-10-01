@@ -33,7 +33,7 @@ class FakeServerSocket : public net::ServerSocket {
       DCHECK(incoming_sockets_.empty());
       accept_socket_->reset(socket);
       accept_socket_ = NULL;
-      net::CompletionCallback* cb = accept_callback_;
+      net::OldCompletionCallback* cb = accept_callback_;
       accept_callback_ = NULL;
       cb->Run(net::OK);
     } else {
@@ -54,7 +54,7 @@ class FakeServerSocket : public net::ServerSocket {
   }
 
   virtual int Accept(scoped_ptr<net::StreamSocket>* socket,
-                     net::CompletionCallback* callback) OVERRIDE {
+                     net::OldCompletionCallback* callback) OVERRIDE {
     DCHECK(socket);
     if (!incoming_sockets_.empty()) {
       socket->reset(incoming_sockets_.front());
@@ -73,7 +73,7 @@ class FakeServerSocket : public net::ServerSocket {
   net::IPEndPoint local_address_;
 
   scoped_ptr<net::StreamSocket>* accept_socket_;
-  net::CompletionCallback* accept_callback_;
+  net::OldCompletionCallback* accept_callback_;
 
   std::list<net::StreamSocket*> incoming_sockets_;
 };

@@ -55,7 +55,7 @@ class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
   scoped_ptr<net::StreamSocket> accept_socket_;
   AcceptedSocketsMap accepted_sockets_;
 
-  net::CompletionCallbackImpl<P2PSocketHostTcpServer> accept_callback_;
+  net::OldCompletionCallbackImpl<P2PSocketHostTcpServer> accept_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcpServer);
 };

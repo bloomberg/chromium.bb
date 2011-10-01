@@ -59,7 +59,7 @@ class TransportChannelSocketAdapterTest : public testing::Test {
 
   MockTransportChannel channel_;
   scoped_ptr<TransportChannelSocketAdapter> target_;
-  net::CompletionCallbackImpl<TransportChannelSocketAdapterTest> callback_;
+  net::OldCompletionCallbackImpl<TransportChannelSocketAdapterTest> callback_;
   int callback_result_;
   MessageLoopForIO message_loop_;
 };

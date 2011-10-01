@@ -37,7 +37,7 @@ class AppCacheTestHelper : public appcache::AppCacheStorage::Delegate {
   int group_id_;
   int appcache_id_;
   int response_id_;
-  net::CompletionCallbackImpl<AppCacheTestHelper> appcache_got_info_callback_;
+  net::OldCompletionCallbackImpl<AppCacheTestHelper> appcache_got_info_callback_;
   scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
   std::set<GURL>* origins_;  // not owned
 

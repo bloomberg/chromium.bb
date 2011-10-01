@@ -59,7 +59,7 @@ InitProxyResolver::~InitProxyResolver() {
 int InitProxyResolver::Init(const ProxyConfig& config,
                             const base::TimeDelta wait_delay,
                             ProxyConfig* effective_config,
-                            CompletionCallback* callback) {
+                            OldCompletionCallback* callback) {
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(callback);
   DCHECK(config.HasAutomaticSettings());

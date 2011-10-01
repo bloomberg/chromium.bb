@@ -99,7 +99,7 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
   // ProxyScriptFetcher implementation.
   virtual int Fetch(const GURL& url,
                     string16* text,
-                    CompletionCallback* callback) {
+                    OldCompletionCallback* callback) {
     const Rules::Rule& rule = rules_->GetRuleByUrl(url);
     int rv = rule.fetch_error;
     EXPECT_NE(ERR_UNEXPECTED, rv);
@@ -124,7 +124,7 @@ class RuleBasedProxyResolver : public ProxyResolver {
   // ProxyResolver implementation:
   virtual int GetProxyForURL(const GURL& /*url*/,
                              ProxyInfo* /*results*/,
-                             CompletionCallback* /*callback*/,
+                             OldCompletionCallback* /*callback*/,
                              RequestHandle* /*request_handle*/,
                              const BoundNetLog& /*net_log*/) {
     NOTREACHED();
@@ -141,7 +141,7 @@ class RuleBasedProxyResolver : public ProxyResolver {
 
   virtual int SetPacScript(
       const scoped_refptr<ProxyResolverScriptData>& script_data,
-      CompletionCallback* callback) {
+      OldCompletionCallback* callback) {
 
    const GURL url =
       script_data->type() == ProxyResolverScriptData::TYPE_SCRIPT_URL ?
@@ -184,7 +184,7 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
 
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   ProxyConfig effective_config;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, &log);
@@ -226,7 +226,7 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
 
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   ProxyConfig effective_config;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, &log);
@@ -263,7 +263,7 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
 
   rules.AddFailParsingRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
   EXPECT_EQ(kFailedParsing,
             init.Init(config, base::TimeDelta(), NULL, &callback));
@@ -279,7 +279,7 @@ TEST(InitProxyResolverTest, HasNullProxyScriptFetcher) {
   ProxyConfig config;
   config.set_pac_url(GURL("http://custom/proxy.pac"));
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   InitProxyResolver init(&resolver, NULL, &dhcp_fetcher, NULL);
   EXPECT_EQ(ERR_UNEXPECTED,
             init.Init(config, base::TimeDelta(), NULL, &callback));
@@ -298,7 +298,7 @@ TEST(InitProxyResolverTest, AutodetectSuccess) {
 
   Rules::Rule rule = rules.AddSuccessRule("http://wpad/wpad.dat");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   ProxyConfig effective_config;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
   EXPECT_EQ(OK, init.Init(
@@ -323,7 +323,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess1) {
   rules.AddFailDownloadRule("http://wpad/wpad.dat");
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   ProxyConfig effective_config;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
   EXPECT_EQ(OK, init.Init(
@@ -350,7 +350,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   rules.AddFailParsingRule("http://wpad/wpad.dat");
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
 
   ProxyConfig effective_config;
@@ -423,7 +423,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails1) {
   rules.AddFailDownloadRule("http://wpad/wpad.dat");
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
   EXPECT_EQ(kFailedDownloading,
             init.Init(config, base::TimeDelta(), NULL, &callback));
@@ -444,7 +444,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails2) {
   rules.AddFailDownloadRule("http://wpad/wpad.dat");
   rules.AddFailParsingRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
   EXPECT_EQ(kFailedParsing,
             init.Init(config, base::TimeDelta(), NULL, &callback));
@@ -467,7 +467,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2_NoFetch) {
   rules.AddFailParsingRule("");  // Autodetect.
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
   EXPECT_EQ(OK, init.Init(config, base::TimeDelta(), NULL, &callback));
   EXPECT_EQ(rule.url, resolver.script_data()->url());
@@ -487,7 +487,7 @@ TEST(InitProxyResolverTest, CustomPacFails1_WithPositiveDelay) {
 
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, &log);
   EXPECT_EQ(ERR_IO_PENDING,
@@ -530,7 +530,7 @@ TEST(InitProxyResolverTest, CustomPacFails1_WithNegativeDelay) {
 
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, &log);
   EXPECT_EQ(kFailedDownloading,
@@ -559,7 +559,7 @@ class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
       : gurl_("http://dhcppac/"), expected_text_(expected_text) {
   }
 
-  int Fetch(string16* utf16_text, CompletionCallback* callback) OVERRIDE {
+  int Fetch(string16* utf16_text, OldCompletionCallback* callback) OVERRIDE {
     *utf16_text = expected_text_;
     return OK;
   }
@@ -600,7 +600,7 @@ TEST(InitProxyResolverTest, AutodetectDhcpSuccess) {
   rules.AddSuccessRule("http://bingo/");
   rules.AddFailDownloadRule("http://wpad/wpad.dat");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   ProxyConfig effective_config;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
   EXPECT_EQ(OK, init.Init(
@@ -625,7 +625,7 @@ TEST(InitProxyResolverTest, AutodetectDhcpFailParse) {
   rules.AddFailParsingRule("http://bingo/");
   rules.AddFailDownloadRule("http://wpad/wpad.dat");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   ProxyConfig effective_config;
   InitProxyResolver init(&resolver, &fetcher, &dhcp_fetcher, NULL);
   // Since there is fallback to DNS-based WPAD, the final error will be that
@@ -644,7 +644,7 @@ class AsyncFailDhcpFetcher
   AsyncFailDhcpFetcher() : callback_(NULL) {
   }
 
-  int Fetch(string16* utf16_text, CompletionCallback* callback) OVERRIDE {
+  int Fetch(string16* utf16_text, OldCompletionCallback* callback) OVERRIDE {
     callback_ = callback;
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -667,7 +667,7 @@ class AsyncFailDhcpFetcher
 
  private:
   GURL dummy_gurl_;
-  CompletionCallback* callback_;
+  OldCompletionCallback* callback_;
 };
 
 TEST(InitProxyResolverTest, DhcpCancelledByDestructor) {
@@ -685,7 +685,7 @@ TEST(InitProxyResolverTest, DhcpCancelledByDestructor) {
   config.set_auto_detect(true);
   rules.AddFailDownloadRule("http://wpad/wpad.dat");
 
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
 
   // Scope so InitProxyResolver gets destroyed early.
   {

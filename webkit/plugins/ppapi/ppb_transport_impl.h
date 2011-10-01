@@ -73,8 +73,8 @@ class PPB_Transport_Impl : public ::ppapi::Resource,
   scoped_refptr<TrackedCompletionCallback> recv_callback_;
   scoped_refptr<TrackedCompletionCallback> send_callback_;
 
-  net::CompletionCallbackImpl<PPB_Transport_Impl> channel_write_callback_;
-  net::CompletionCallbackImpl<PPB_Transport_Impl> channel_read_callback_;
+  net::OldCompletionCallbackImpl<PPB_Transport_Impl> channel_write_callback_;
+  net::OldCompletionCallbackImpl<PPB_Transport_Impl> channel_read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Transport_Impl);
 };

@@ -66,7 +66,7 @@ void PepperTransportSocketAdapter::AddRemoteCandidate(
 }
 
 int PepperTransportSocketAdapter::Read(net::IOBuffer* buf, int buf_len,
-                                       net::CompletionCallback* callback) {
+                                       net::OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!read_callback_);
   DCHECK(!read_buffer_);
@@ -88,7 +88,7 @@ int PepperTransportSocketAdapter::Read(net::IOBuffer* buf, int buf_len,
 }
 
 int PepperTransportSocketAdapter::Write(net::IOBuffer* buf, int buf_len,
-                                        net::CompletionCallback* callback) {
+                                        net::OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!write_callback_);
   DCHECK(!write_buffer_);
@@ -123,7 +123,7 @@ bool PepperTransportSocketAdapter::SetSendBufferSize(int32 size) {
   return false;
 }
 
-int PepperTransportSocketAdapter::Connect(net::CompletionCallback* callback) {
+int PepperTransportSocketAdapter::Connect(net::OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
 
   if (!transport_.get())
@@ -259,7 +259,7 @@ void PepperTransportSocketAdapter::OnConnect(int result) {
   if (result == PP_OK)
     connected_ = true;
 
-  net::CompletionCallback* callback = connect_callback_;
+  net::OldCompletionCallback* callback = connect_callback_;
   connect_callback_ = NULL;
   callback->Run(PPErrorToNetError(result));
 }
@@ -269,7 +269,7 @@ void PepperTransportSocketAdapter::OnRead(int32_t result) {
   DCHECK(read_callback_);
   DCHECK(read_buffer_);
 
-  net::CompletionCallback* callback = read_callback_;
+  net::OldCompletionCallback* callback = read_callback_;
   read_callback_ = NULL;
   read_buffer_ = NULL;
   callback->Run(PPErrorToNetError(result));
@@ -280,7 +280,7 @@ void PepperTransportSocketAdapter::OnWrite(int32_t result) {
   DCHECK(write_callback_);
   DCHECK(write_buffer_);
 
-  net::CompletionCallback* callback = write_callback_;
+  net::OldCompletionCallback* callback = write_callback_;
   write_callback_ = NULL;
   write_buffer_ = NULL;
   callback->Run(PPErrorToNetError(result));

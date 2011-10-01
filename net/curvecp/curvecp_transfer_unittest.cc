@@ -30,7 +30,7 @@ void RunEchoTest(int bytes) {
 
   EXPECT_TRUE(server.Start(1234));
   HostPortPair server_address("localhost", 1234);
-  TestCompletionCallback cb;
+  TestOldCompletionCallback cb;
   EXPECT_TRUE(client.Start(server_address, bytes, &cb));
 
   int rv = cb.WaitForResult();

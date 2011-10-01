@@ -15,13 +15,13 @@
 
 int CacheDumper::CreateEntry(const std::string& key,
                              disk_cache::Entry** entry,
-                             net::CompletionCallback* callback) {
+                             net::OldCompletionCallback* callback) {
   return cache_->CreateEntry(key, entry, callback);
 }
 
 int CacheDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
                             net::IOBuffer* buf, int buf_len,
-                            net::CompletionCallback* callback) {
+                            net::OldCompletionCallback* callback) {
   return entry->WriteData(index, offset, buf, buf_len, callback, false);
 }
 
@@ -66,7 +66,7 @@ bool SafeCreateDirectory(const std::wstring& path) {
 
 int DiskDumper::CreateEntry(const std::string& key,
                             disk_cache::Entry** entry,
-                            net::CompletionCallback* callback) {
+                            net::OldCompletionCallback* callback) {
   FilePath path(path_);
   // The URL may not start with a valid protocol; search for it.
   int urlpos = key.find("http");
@@ -147,7 +147,7 @@ void GetNormalizedHeaders(const net::HttpResponseInfo& info,
 
 int DiskDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
                            net::IOBuffer* buf, int buf_len,
-                           net::CompletionCallback* callback) {
+                           net::OldCompletionCallback* callback) {
   if (!entry_)
     return 0;
 

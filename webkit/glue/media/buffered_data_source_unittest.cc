@@ -74,12 +74,12 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
       : BufferedResourceLoader(GURL(), 0, 0, new media::MediaLog()) {
   }
 
-  MOCK_METHOD3(Start, void(net::CompletionCallback* read_callback,
+  MOCK_METHOD3(Start, void(net::OldCompletionCallback* read_callback,
                            const base::Closure& network_callback,
                            WebFrame* frame));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD4(Read, void(int64 position, int read_size, uint8* buffer,
-                          net::CompletionCallback* callback));
+                          net::OldCompletionCallback* callback));
   MOCK_METHOD0(content_length, int64());
   MOCK_METHOD0(instance_size, int64());
   MOCK_METHOD0(range_supported, bool());
@@ -225,7 +225,7 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   void InvokeStartCallback(
-      net::CompletionCallback* callback,
+      net::OldCompletionCallback* callback,
       const base::Closure& network_callback,
       WebFrame* frame) {
     callback->RunWithParams(Tuple1<int>(error_));
@@ -234,7 +234,7 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   void InvokeReadCallback(int64 position, int size, uint8* buffer,
-                          net::CompletionCallback* callback) {
+                          net::OldCompletionCallback* callback) {
     if (error_ > 0)
       memcpy(buffer, data_ + static_cast<int>(position), error_);
     callback->RunWithParams(Tuple1<int>(error_));

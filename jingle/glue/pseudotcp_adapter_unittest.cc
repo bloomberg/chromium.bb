@@ -92,7 +92,7 @@ class FakeSocket : public net::Socket {
     if (read_callback_) {
       int size = std::min(read_buffer_size_, static_cast<int>(data.size()));
       memcpy(read_buffer_->data(), &data[0], data.size());
-      net::CompletionCallback* cb = read_callback_;
+      net::OldCompletionCallback* cb = read_callback_;
       read_callback_ = NULL;
       read_buffer_ = NULL;
       cb->Run(size);
@@ -113,7 +113,7 @@ class FakeSocket : public net::Socket {
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* callback) {
+                   net::OldCompletionCallback* callback) {
     CHECK(!read_callback_);
     CHECK(buf);
 
@@ -133,7 +133,7 @@ class FakeSocket : public net::Socket {
   }
 
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback) OVERRIDE {
+                    net::OldCompletionCallback* callback) OVERRIDE {
     DCHECK(buf);
     if (peer_socket_) {
       MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
@@ -156,7 +156,7 @@ class FakeSocket : public net::Socket {
  private:
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
-  net::CompletionCallback* read_callback_;
+  net::OldCompletionCallback* read_callback_;
 
   std::deque<std::vector<char> > incoming_packets_;
 
@@ -292,8 +292,8 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
   scoped_refptr<net::DrainableIOBuffer> output_buffer_;
   scoped_refptr<net::GrowableIOBuffer> input_buffer_;
 
-  net::CompletionCallbackImpl<TCPChannelTester> write_cb_;
-  net::CompletionCallbackImpl<TCPChannelTester> read_cb_;
+  net::OldCompletionCallbackImpl<TCPChannelTester> write_cb_;
+  net::OldCompletionCallbackImpl<TCPChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
 };
@@ -322,8 +322,8 @@ class PseudoTcpAdapterTest : public testing::Test {
 };
 
 TEST_F(PseudoTcpAdapterTest, DataTransfer) {
-  TestCompletionCallback host_connect_cb;
-  TestCompletionCallback client_connect_cb;
+  TestOldCompletionCallback host_connect_cb;
+  TestOldCompletionCallback client_connect_cb;
 
   int rv1 = host_pseudotcp_->Connect(&host_connect_cb);
   int rv2 = client_pseudotcp_->Connect(&client_connect_cb);
@@ -357,8 +357,8 @@ TEST_F(PseudoTcpAdapterTest, LimitedChannel) {
   host_socket_->set_latency(kLatencyMs);
   client_socket_->set_rate_limiter(&client_limiter);
 
-  TestCompletionCallback host_connect_cb;
-  TestCompletionCallback client_connect_cb;
+  TestOldCompletionCallback host_connect_cb;
+  TestOldCompletionCallback client_connect_cb;
 
   int rv1 = host_pseudotcp_->Connect(&host_connect_cb);
   int rv2 = client_pseudotcp_->Connect(&client_connect_cb);
@@ -396,9 +396,9 @@ TEST_F(PseudoTcpAdapterTest, DeleteOnConnected) {
   // This test verifies that deleting the adapter mid-callback doesn't lead
   // to deleted structures being touched as the stack unrolls, so the failure
   // mode is a crash rather than a normal test failure.
-  TestCompletionCallback client_connect_cb;
+  TestOldCompletionCallback client_connect_cb;
   DeleteOnConnected host_delete(&message_loop_, &host_pseudotcp_);
-  net::CompletionCallbackImpl<DeleteOnConnected>
+  net::OldCompletionCallbackImpl<DeleteOnConnected>
       host_connect_cb(&host_delete, &DeleteOnConnected::OnConnected);
 
   host_pseudotcp_->Connect(&host_connect_cb);

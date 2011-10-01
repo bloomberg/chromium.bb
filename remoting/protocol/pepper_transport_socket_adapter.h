@@ -50,14 +50,14 @@ class PepperTransportSocketAdapter : public base::NonThreadSafe,
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* callback) OVERRIDE;
+                   net::OldCompletionCallback* callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback) OVERRIDE;
+                    net::OldCompletionCallback* callback) OVERRIDE;
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
   // net::StreamSocket interface.
-  virtual int Connect(net::CompletionCallback* callback) OVERRIDE;
+  virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;
@@ -85,15 +85,15 @@ class PepperTransportSocketAdapter : public base::NonThreadSafe,
 
   scoped_ptr<pp::Transport_Dev> transport_;
 
-  net::CompletionCallback* connect_callback_;
+  net::OldCompletionCallback* connect_callback_;
   bool connected_;
 
   bool get_address_pending_;
 
-  net::CompletionCallback* read_callback_;
+  net::OldCompletionCallback* read_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  net::CompletionCallback* write_callback_;
+  net::OldCompletionCallback* write_callback_;
   scoped_refptr<net::IOBuffer> write_buffer_;
 
   net::BoundNetLog net_log_;

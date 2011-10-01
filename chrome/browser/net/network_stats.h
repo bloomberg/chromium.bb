@@ -74,7 +74,7 @@ class NetworkStats {
   bool Start(net::HostResolver* host_resolver,
              const net::HostPortPair& server,
              uint32 bytes_to_send,
-             net::CompletionCallback* callback);
+             net::OldCompletionCallback* callback);
 
  protected:
   // Constructs an NetworkStats object that collects metrics for network
@@ -86,7 +86,7 @@ class NetworkStats {
   // server. |finished_callback| is called when we are done with the test.
   // |finished_callback| is mainly useful for unittests.
   void Initialize(uint32 bytes_to_send,
-                  net::CompletionCallback* finished_callback);
+                  net::OldCompletionCallback* finished_callback);
 
   // Called after host is resolved. UDPStatsClient and TCPStatsClient implement
   // this method. They create the socket and connect to the server.
@@ -177,18 +177,18 @@ class NetworkStats {
   net::AddressList addresses_;
 
   // Callback to call when host resolution is completed.
-  net::CompletionCallbackImpl<NetworkStats> resolve_callback_;
+  net::OldCompletionCallbackImpl<NetworkStats> resolve_callback_;
 
   // Callback to call when data is read from the server.
-  net::CompletionCallbackImpl<NetworkStats> read_callback_;
+  net::OldCompletionCallbackImpl<NetworkStats> read_callback_;
 
   // Callback to call when data is sent to the server.
-  net::CompletionCallbackImpl<NetworkStats> write_callback_;
+  net::OldCompletionCallbackImpl<NetworkStats> write_callback_;
 
   // Callback to call when echo protocol is successefully finished or whenever
   // there is an error (this allows unittests to wait until echo protocol's
   // round trip is finished).
-  net::CompletionCallback* finished_callback_;
+  net::OldCompletionCallback* finished_callback_;
 
   // The time when the session was started.
   base::TimeTicks start_time_;
@@ -252,7 +252,7 @@ class TCPStatsClient : public NetworkStats {
   void OnConnectComplete(int result);
 
   // Callback to call when connect is completed.
-  net::CompletionCallbackImpl<TCPStatsClient> connect_callback_;
+  net::OldCompletionCallbackImpl<TCPStatsClient> connect_callback_;
 };
 
 // This collects the network connectivity stats for UDP and TCP for small

@@ -147,8 +147,8 @@ class AppCacheStorageImpl : public AppCacheStorage {
   int64 last_deletable_response_rowid_;
 
   // AppCacheDiskCache async callbacks
-  net::CompletionCallbackImpl<AppCacheStorageImpl> doom_callback_;
-  net::CompletionCallbackImpl<AppCacheStorageImpl> init_callback_;
+  net::OldCompletionCallbackImpl<AppCacheStorageImpl> doom_callback_;
+  net::OldCompletionCallbackImpl<AppCacheStorageImpl> init_callback_;
 
   // Created on the IO thread, but only used on the DB thread.
   AppCacheDatabase* database_;

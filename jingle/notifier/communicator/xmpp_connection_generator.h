@@ -70,7 +70,7 @@ class XmppConnectionGenerator {
 
   Delegate* delegate_;
   net::SingleRequestHostResolver host_resolver_;
-  scoped_ptr<net::CompletionCallback> resolve_callback_;
+  scoped_ptr<net::OldCompletionCallback> resolve_callback_;
   net::AddressList address_list_;
   net::BoundNetLog bound_net_log_;
   scoped_ptr<ConnectionSettingsList> settings_list_;

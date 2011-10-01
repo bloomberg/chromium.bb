@@ -50,7 +50,7 @@ class WebSocketServerSocket : public Socket {
   // Returns either ERR_IO_PENDING, in which case the given callback will be
   // called in the future with the real result, or it completes synchronously,
   // returning the result immediately.
-  virtual int Accept(CompletionCallback* callback) = 0;
+  virtual int Accept(OldCompletionCallback* callback) = 0;
 };
 
 // Creates websocket server socket atop of already connected socket. This

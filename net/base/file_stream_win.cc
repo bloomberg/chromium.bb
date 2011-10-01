@@ -54,10 +54,10 @@ class FileStream::AsyncContext : public MessageLoopForIO::IOHandler {
   }
   ~AsyncContext();
 
-  void IOCompletionIsPending(CompletionCallback* callback);
+  void IOCompletionIsPending(OldCompletionCallback* callback);
 
   OVERLAPPED* overlapped() { return &context_.overlapped; }
-  CompletionCallback* callback() const { return callback_; }
+  OldCompletionCallback* callback() const { return callback_; }
 
   void set_error_source(FileErrorSource source) { error_source_ = source; }
 
@@ -71,7 +71,7 @@ class FileStream::AsyncContext : public MessageLoopForIO::IOHandler {
 
   FileStream* owner_;
   MessageLoopForIO::IOContext context_;
-  CompletionCallback* callback_;
+  OldCompletionCallback* callback_;
   bool is_closing_;
   bool record_uma_;
   FileErrorSource error_source_;
@@ -93,7 +93,7 @@ FileStream::AsyncContext::~AsyncContext() {
 }
 
 void FileStream::AsyncContext::IOCompletionIsPending(
-    CompletionCallback* callback) {
+    OldCompletionCallback* callback) {
   DCHECK(!callback_);
   callback_ = callback;
 }
@@ -115,7 +115,7 @@ void FileStream::AsyncContext::OnIOCompleted(
   if (bytes_read)
     IncrementOffset(&context->overlapped, bytes_read);
 
-  CompletionCallback* temp = NULL;
+  OldCompletionCallback* temp = NULL;
   std::swap(temp, callback_);
   temp->Run(result);
 }
@@ -230,7 +230,7 @@ int64 FileStream::Available() {
 }
 
 int FileStream::Read(
-    char* buf, int buf_len, CompletionCallback* callback) {
+    char* buf, int buf_len, OldCompletionCallback* callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 
@@ -292,7 +292,7 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
 }
 
 int FileStream::Write(
-    const char* buf, int buf_len, CompletionCallback* callback) {
+    const char* buf, int buf_len, OldCompletionCallback* callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;
 

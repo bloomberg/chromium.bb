@@ -41,7 +41,7 @@ class BrowsingDataAppCacheHelper
 
   bool is_fetching_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<net::CancelableCompletionCallback<BrowsingDataAppCacheHelper> >
+  scoped_refptr<net::CancelableOldCompletionCallback<BrowsingDataAppCacheHelper> >
       appcache_info_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataAppCacheHelper);

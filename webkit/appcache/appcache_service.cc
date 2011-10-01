@@ -31,7 +31,7 @@ class AppCacheService::AsyncHelper
     : public AppCacheStorage::Delegate {
  public:
   AsyncHelper(
-      AppCacheService* service, net::CompletionCallback* callback)
+      AppCacheService* service, net::OldCompletionCallback* callback)
       : service_(service), callback_(callback) {
     service_->pending_helpers_.insert(this);
   }
@@ -55,12 +55,12 @@ class AppCacheService::AsyncHelper
     callback_ = NULL;
   }
 
-  static void DeferredCallCallback(net::CompletionCallback* callback, int rv) {
+  static void DeferredCallCallback(net::OldCompletionCallback* callback, int rv) {
     callback->Run(rv);
   }
 
   AppCacheService* service_;
-  net::CompletionCallback* callback_;
+  net::OldCompletionCallback* callback_;
 };
 
 void AppCacheService::AsyncHelper::Cancel() {
@@ -78,7 +78,7 @@ class AppCacheService::CanHandleOfflineHelper : AsyncHelper {
  public:
   CanHandleOfflineHelper(
       AppCacheService* service, const GURL& url,
-      const GURL& first_party, net::CompletionCallback* callback)
+      const GURL& first_party, net::OldCompletionCallback* callback)
       : AsyncHelper(service, callback), url_(url), first_party_(first_party) {
   }
 
@@ -119,7 +119,7 @@ class AppCacheService::DeleteHelper : public AsyncHelper {
  public:
   DeleteHelper(
       AppCacheService* service, const GURL& manifest_url,
-      net::CompletionCallback* callback)
+      net::OldCompletionCallback* callback)
       : AsyncHelper(service, callback), manifest_url_(manifest_url) {
   }
 
@@ -162,7 +162,7 @@ class AppCacheService::DeleteOriginHelper : public AsyncHelper {
  public:
   DeleteOriginHelper(
       AppCacheService* service, const GURL& origin,
-      net::CompletionCallback* callback)
+      net::OldCompletionCallback* callback)
       : AsyncHelper(service, callback), origin_(origin),
         num_caches_to_delete_(0), successes_(0), failures_(0) {
   }
@@ -252,7 +252,7 @@ class AppCacheService::GetInfoHelper : AsyncHelper {
  public:
   GetInfoHelper(
       AppCacheService* service, AppCacheInfoCollection* collection,
-      net::CompletionCallback* callback)
+      net::OldCompletionCallback* callback)
       : AsyncHelper(service, callback), collection_(collection) {
   }
 
@@ -327,8 +327,8 @@ class AppCacheService::CheckResponseHelper : AsyncHelper {
   int64 expected_total_size_;
   int amount_headers_read_;
   int amount_data_read_;
-  net::CompletionCallbackImpl<CheckResponseHelper> read_info_callback_;
-  net::CompletionCallbackImpl<CheckResponseHelper> read_data_callback_;
+  net::OldCompletionCallbackImpl<CheckResponseHelper> read_info_callback_;
+  net::OldCompletionCallbackImpl<CheckResponseHelper> read_data_callback_;
   DISALLOW_COPY_AND_ASSIGN(CheckResponseHelper);
 };
 
@@ -445,27 +445,27 @@ void AppCacheService::Initialize(const FilePath& cache_directory,
 void AppCacheService::CanHandleMainResourceOffline(
     const GURL& url,
     const GURL& first_party,
-    net::CompletionCallback* callback) {
+    net::OldCompletionCallback* callback) {
   CanHandleOfflineHelper* helper =
       new CanHandleOfflineHelper(this, url, first_party, callback);
   helper->Start();
 }
 
 void AppCacheService::GetAllAppCacheInfo(AppCacheInfoCollection* collection,
-                                         net::CompletionCallback* callback) {
+                                         net::OldCompletionCallback* callback) {
   DCHECK(collection);
   GetInfoHelper* helper = new GetInfoHelper(this, collection, callback);
   helper->Start();
 }
 
 void AppCacheService::DeleteAppCacheGroup(const GURL& manifest_url,
-                                          net::CompletionCallback* callback) {
+                                          net::OldCompletionCallback* callback) {
   DeleteHelper* helper = new DeleteHelper(this, manifest_url, callback);
   helper->Start();
 }
 
 void AppCacheService::DeleteAppCachesForOrigin(
-    const GURL& origin,  net::CompletionCallback* callback) {
+    const GURL& origin,  net::OldCompletionCallback* callback) {
   DeleteOriginHelper* helper = new DeleteOriginHelper(this, origin, callback);
   helper->Start();
 }

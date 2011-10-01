@@ -952,7 +952,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<net::StringIOBuffer> io_buffer(
         new net::StringIOBuffer(seed_data));
     write_callback_.reset(
-        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
     response_writer_->WriteData(io_buffer, seed_data.length(),
                                 write_callback_.get());
@@ -1050,7 +1050,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<net::StringIOBuffer> io_buffer(
         new net::StringIOBuffer(seed_data));
     write_callback_.reset(
-        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
     response_writer_->WriteData(io_buffer, seed_data.length(),
                                 write_callback_.get());
@@ -1112,7 +1112,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
-        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
     response_writer_->WriteInfo(io_buffer, write_callback_.get());
 
@@ -1170,7 +1170,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
-        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
     response_writer_->WriteInfo(io_buffer, write_callback_.get());
 
@@ -1228,7 +1228,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
-        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
     response_writer_->WriteInfo(io_buffer, write_callback_.get());
 
@@ -2608,7 +2608,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
-        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
     response_writer_->WriteInfo(io_buffer, write_callback_.get());
 
@@ -2666,7 +2666,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
-        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+        new net::OldCompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
     response_writer_->WriteInfo(io_buffer, write_callback_.get());
 
@@ -3152,7 +3152,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   scoped_ptr<base::WaitableEvent> event_;
 
   scoped_ptr<AppCacheResponseWriter> response_writer_;
-  scoped_ptr<net::CompletionCallbackImpl<AppCacheUpdateJobTest> >
+  scoped_ptr<net::OldCompletionCallbackImpl<AppCacheUpdateJobTest> >
       write_callback_;
 
   // Hosts used by an async test that need to live until update job finishes.

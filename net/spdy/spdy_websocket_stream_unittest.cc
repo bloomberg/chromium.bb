@@ -48,7 +48,7 @@ namespace net {
 
 class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
  public:
-  explicit SpdyWebSocketStreamEventRecorder(CompletionCallback* callback)
+  explicit SpdyWebSocketStreamEventRecorder(OldCompletionCallback* callback)
       : callback_(callback) {}
   virtual ~SpdyWebSocketStreamEventRecorder() {}
 
@@ -148,7 +148,7 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
   scoped_ptr<Callback1<SpdyWebSocketStreamEvent*>::Type> on_sent_data_;
   scoped_ptr<Callback1<SpdyWebSocketStreamEvent*>::Type> on_received_data_;
   scoped_ptr<Callback1<SpdyWebSocketStreamEvent*>::Type> on_close_;
-  CompletionCallback* callback_;
+  OldCompletionCallback* callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyWebSocketStreamEventRecorder);
 };
@@ -264,7 +264,7 @@ class SpdyWebSocketStreamTest : public testing::Test {
     EXPECT_TRUE(spdy_session_pool->HasSession(host_port_proxy_pair_));
     transport_params_ = new TransportSocketParams(host_port_pair_, MEDIUM,
                                                   GURL(), false, false);
-    TestCompletionCallback callback;
+    TestOldCompletionCallback callback;
     scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
     EXPECT_EQ(ERR_IO_PENDING,
               connection->Init(host_port_pair_.ToString(), transport_params_,
@@ -297,8 +297,8 @@ class SpdyWebSocketStreamTest : public testing::Test {
   scoped_ptr<spdy::SpdyFrame> closing_frame_;
   HostPortPair host_port_pair_;
   HostPortProxyPair host_port_proxy_pair_;
-  TestCompletionCallback completion_callback_;
-  TestCompletionCallback sync_callback_;
+  TestOldCompletionCallback completion_callback_;
+  TestOldCompletionCallback sync_callback_;
 
   static const char kMessageFrame[];
   static const char kClosingFrame[];

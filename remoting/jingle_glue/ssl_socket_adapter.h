@@ -41,7 +41,7 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
 
   // net::StreamSocket implementation
 
-  virtual int Connect(net::CompletionCallback* callback);
+  virtual int Connect(net::OldCompletionCallback* callback);
   virtual void Disconnect();
   virtual bool IsConnected() const;
   virtual bool IsConnectedAndIdle() const;
@@ -58,9 +58,9 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
   // net::Socket implementation
 
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* callback);
+                   net::OldCompletionCallback* callback);
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback);
+                    net::OldCompletionCallback* callback);
   virtual bool SetReceiveBufferSize(int32 size);
   virtual bool SetSendBufferSize(int32 size);
 
@@ -70,8 +70,8 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
   void OnReadEvent(talk_base::AsyncSocket* socket);
   void OnWriteEvent(talk_base::AsyncSocket* socket);
 
-  net::CompletionCallback* read_callback_;
-  net::CompletionCallback* write_callback_;
+  net::OldCompletionCallback* read_callback_;
+  net::OldCompletionCallback* write_callback_;
 
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_len_;
@@ -141,9 +141,9 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
   scoped_ptr<net::CertVerifier> cert_verifier_;
   scoped_ptr<net::SSLClientSocket> ssl_socket_;
 
-  net::CompletionCallbackImpl<SSLSocketAdapter> connected_callback_;
-  net::CompletionCallbackImpl<SSLSocketAdapter> read_callback_;
-  net::CompletionCallbackImpl<SSLSocketAdapter> write_callback_;
+  net::OldCompletionCallbackImpl<SSLSocketAdapter> connected_callback_;
+  net::OldCompletionCallbackImpl<SSLSocketAdapter> read_callback_;
+  net::OldCompletionCallbackImpl<SSLSocketAdapter> write_callback_;
   SSLState ssl_state_;
   IOState read_state_;
   IOState write_state_;

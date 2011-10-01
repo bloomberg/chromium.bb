@@ -178,8 +178,8 @@ class UdpChannelTester : public base::RefCountedThreadSafe<UdpChannelTester> {
   scoped_refptr<net::IOBuffer> sent_packets_[kMessages];
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  net::CompletionCallbackImpl<UdpChannelTester> write_cb_;
-  net::CompletionCallbackImpl<UdpChannelTester> read_cb_;
+  net::OldCompletionCallbackImpl<UdpChannelTester> write_cb_;
+  net::OldCompletionCallbackImpl<UdpChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
   int packets_sent_;
@@ -314,8 +314,8 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
   std::vector<char> sent_data_;
   std::vector<char> received_data_;
 
-  net::CompletionCallbackImpl<TcpChannelTester> write_cb_;
-  net::CompletionCallbackImpl<TcpChannelTester> read_cb_;
+  net::OldCompletionCallbackImpl<TcpChannelTester> write_cb_;
+  net::OldCompletionCallbackImpl<TcpChannelTester> read_cb_;
   int write_errors_;
   int read_errors_;
 };

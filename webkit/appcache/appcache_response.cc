@@ -77,7 +77,7 @@ AppCacheResponseIO::AppCacheResponseIO(
       entry_(NULL), buffer_len_(0), user_callback_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(raw_callback_(
-          new net::CancelableCompletionCallback<AppCacheResponseIO>(
+          new net::CancelableOldCompletionCallback<AppCacheResponseIO>(
               this, &AppCacheResponseIO::OnRawIOComplete))) {
 }
 
@@ -87,18 +87,18 @@ AppCacheResponseIO::~AppCacheResponseIO() {
     entry_->Close();
 }
 
-void AppCacheResponseIO::ScheduleIOCompletionCallback(int result) {
+void AppCacheResponseIO::ScheduleIOOldCompletionCallback(int result) {
   MessageLoop::current()->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(
           &AppCacheResponseIO::OnIOComplete, result));
 }
 
-void AppCacheResponseIO::InvokeUserCompletionCallback(int result) {
+void AppCacheResponseIO::InvokeUserOldCompletionCallback(int result) {
   // Clear the user callback and buffers prior to invoking the callback
   // so the caller can schedule additional operations in the callback.
   buffer_ = NULL;
   info_buffer_ = NULL;
-  net::CompletionCallback* temp_user_callback = user_callback_;
+  net::OldCompletionCallback* temp_user_callback = user_callback_;
   user_callback_ = NULL;
   temp_user_callback->Run(result);
 }
@@ -110,7 +110,7 @@ void AppCacheResponseIO::ReadRaw(int index, int offset,
   int rv = entry_->Read(index, offset, buf, buf_len, raw_callback_);
   if (rv != net::ERR_IO_PENDING) {
     raw_callback_->Release();
-    ScheduleIOCompletionCallback(rv);
+    ScheduleIOOldCompletionCallback(rv);
   }
 }
 
@@ -121,7 +121,7 @@ void AppCacheResponseIO::WriteRaw(int index, int offset,
   int rv = entry_->Write(index, offset, buf, buf_len, raw_callback_);
   if (rv != net::ERR_IO_PENDING) {
     raw_callback_->Release();
-    ScheduleIOCompletionCallback(rv);
+    ScheduleIOOldCompletionCallback(rv);
   }
 }
 
@@ -147,7 +147,7 @@ AppCacheResponseReader::~AppCacheResponseReader() {
 }
 
 void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                                      net::CompletionCallback* callback) {
+                                      net::OldCompletionCallback* callback) {
   DCHECK(callback && !IsReadPending());
   DCHECK(info_buf && !info_buf->http_info.get());
   DCHECK(!buffer_.get() && !info_buffer_.get());
@@ -159,13 +159,13 @@ void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
 
 void AppCacheResponseReader::ContinueReadInfo() {
   if (!entry_)  {
-    ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
+    ScheduleIOOldCompletionCallback(net::ERR_CACHE_MISS);
     return;
   }
 
   int size = entry_->GetSize(kResponseInfoIndex);
   if (size <= 0) {
-    ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
+    ScheduleIOOldCompletionCallback(net::ERR_CACHE_MISS);
     return;
   }
 
@@ -174,7 +174,7 @@ void AppCacheResponseReader::ContinueReadInfo() {
 }
 
 void AppCacheResponseReader::ReadData(net::IOBuffer* buf, int buf_len,
-                                      net::CompletionCallback* callback) {
+                                      net::OldCompletionCallback* callback) {
   DCHECK(callback && !IsReadPending());
   DCHECK(buf && (buf_len >= 0));
   DCHECK(!buffer_.get() && !info_buffer_.get());
@@ -187,7 +187,7 @@ void AppCacheResponseReader::ReadData(net::IOBuffer* buf, int buf_len,
 
 void AppCacheResponseReader::ContinueReadData() {
   if (!entry_)  {
-    ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
+    ScheduleIOOldCompletionCallback(net::ERR_CACHE_MISS);
     return;
   }
 
@@ -215,7 +215,7 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       bool response_truncated = false;
       if (!info->InitFromPickle(pickle, &response_truncated) ||
           !info->headers) {
-        InvokeUserCompletionCallback(net::ERR_FAILED);
+        InvokeUserOldCompletionCallback(net::ERR_FAILED);
         return;
       }
       DCHECK(!response_truncated);
@@ -229,7 +229,7 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       read_position_ += result;
     }
   }
-  InvokeUserCompletionCallback(result);
+  InvokeUserOldCompletionCallback(result);
 }
 
 void AppCacheResponseReader::OpenEntryIfNeededAndContinue() {
@@ -281,7 +281,7 @@ AppCacheResponseWriter::~AppCacheResponseWriter() {
 }
 
 void AppCacheResponseWriter::WriteInfo(HttpResponseInfoIOBuffer* info_buf,
-                                       net::CompletionCallback* callback) {
+                                       net::OldCompletionCallback* callback) {
   DCHECK(callback && !IsWritePending());
   DCHECK(info_buf && info_buf->http_info.get());
   DCHECK(!buffer_.get() && !info_buffer_.get());
@@ -294,7 +294,7 @@ void AppCacheResponseWriter::WriteInfo(HttpResponseInfoIOBuffer* info_buf,
 
 void AppCacheResponseWriter::ContinueWriteInfo() {
   if (!entry_) {
-    ScheduleIOCompletionCallback(net::ERR_FAILED);
+    ScheduleIOOldCompletionCallback(net::ERR_FAILED);
     return;
   }
 
@@ -308,7 +308,7 @@ void AppCacheResponseWriter::ContinueWriteInfo() {
 }
 
 void AppCacheResponseWriter::WriteData(net::IOBuffer* buf, int buf_len,
-                                       net::CompletionCallback* callback) {
+                                       net::OldCompletionCallback* callback) {
   DCHECK(callback && !IsWritePending());
   DCHECK(buf && (buf_len >= 0));
   DCHECK(!buffer_.get() && !info_buffer_.get());
@@ -321,7 +321,7 @@ void AppCacheResponseWriter::WriteData(net::IOBuffer* buf, int buf_len,
 
 void AppCacheResponseWriter::ContinueWriteData() {
   if (!entry_) {
-    ScheduleIOCompletionCallback(net::ERR_FAILED);
+    ScheduleIOOldCompletionCallback(net::ERR_FAILED);
     return;
   }
   WriteRaw(kResponseContentIndex, write_position_, buffer_, write_amount_);
@@ -335,7 +335,7 @@ void AppCacheResponseWriter::OnIOComplete(int result) {
     else
       info_size_ = result;
   }
-  InvokeUserCompletionCallback(result);
+  InvokeUserOldCompletionCallback(result);
 }
 
 void AppCacheResponseWriter::CreateEntryIfNeededAndContinue() {

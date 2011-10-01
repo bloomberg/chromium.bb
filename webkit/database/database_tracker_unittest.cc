@@ -214,7 +214,7 @@ class DatabaseTracker_TestHelper_Test {
     // Delete db1. Should also delete origin1.
     TestObserver observer;
     tracker->AddObserver(&observer);
-    TestCompletionCallback callback;
+    TestOldCompletionCallback callback;
     int result = tracker->DeleteDatabase(kOrigin1, kDB1, &callback);
     EXPECT_EQ(net::ERR_IO_PENDING, result);
     ASSERT_FALSE(callback.have_result());

@@ -81,7 +81,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_ptr<net::FileStream> file_stream_;
   net::URLRequest* request_;
-  net::CompletionCallbackImpl<FileWriterDelegate> io_callback_;
+  net::OldCompletionCallbackImpl<FileWriterDelegate> io_callback_;
   ScopedRunnableMethodFactory<FileWriterDelegate> method_factory_;
   base::ScopedCallbackFactory<FileWriterDelegate> callback_factory_;
 };

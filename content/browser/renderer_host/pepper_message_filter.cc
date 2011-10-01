@@ -191,11 +191,11 @@ class PepperMessageFilter::FlashTCPSocket {
   ConnectionState connection_state_;
   bool end_of_file_reached_;
 
-  net::CompletionCallbackImpl<FlashTCPSocket> resolve_callback_;
-  net::CompletionCallbackImpl<FlashTCPSocket> connect_callback_;
-  net::CompletionCallbackImpl<FlashTCPSocket> ssl_handshake_callback_;
-  net::CompletionCallbackImpl<FlashTCPSocket> read_callback_;
-  net::CompletionCallbackImpl<FlashTCPSocket> write_callback_;
+  net::OldCompletionCallbackImpl<FlashTCPSocket> resolve_callback_;
+  net::OldCompletionCallbackImpl<FlashTCPSocket> connect_callback_;
+  net::OldCompletionCallbackImpl<FlashTCPSocket> ssl_handshake_callback_;
+  net::OldCompletionCallbackImpl<FlashTCPSocket> read_callback_;
+  net::OldCompletionCallbackImpl<FlashTCPSocket> write_callback_;
 
   scoped_ptr<net::SingleRequestHostResolver> resolver_;
   net::AddressList address_list_;
@@ -582,8 +582,8 @@ class PepperMessageFilter::FlashUDPSocket {
   uint32 plugin_dispatcher_id_;
   uint32 socket_id_;
 
-  net::CompletionCallbackImpl<FlashUDPSocket> recvfrom_callback_;
-  net::CompletionCallbackImpl<FlashUDPSocket> sendto_callback_;
+  net::OldCompletionCallbackImpl<FlashUDPSocket> recvfrom_callback_;
+  net::OldCompletionCallbackImpl<FlashUDPSocket> sendto_callback_;
 
   scoped_ptr<net::UDPServerSocket> socket_;
 
@@ -1064,7 +1064,7 @@ class PepperMessageFilter::LookupRequest {
   }
 
   // HostResolver will call us using this callback when resolution is complete.
-  net::CompletionCallbackImpl<LookupRequest> net_callback_;
+  net::OldCompletionCallbackImpl<LookupRequest> net_callback_;
 
   PepperMessageFilter* pepper_message_filter_;
   net::SingleRequestHostResolver resolver_;

@@ -43,9 +43,9 @@ class SecureP2PSocket : public net::Socket {
 
   // Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* callback);
+                   net::OldCompletionCallback* callback);
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback);
+                    net::OldCompletionCallback* callback);
   virtual bool SetReceiveBufferSize(int32 size);
   virtual bool SetSendBufferSize(int32 size);
 
@@ -60,17 +60,17 @@ class SecureP2PSocket : public net::Socket {
   uint64 write_seq_;
   uint64 read_seq_;
 
-  net::CompletionCallback* user_read_callback_;
+  net::OldCompletionCallback* user_read_callback_;
   scoped_refptr<net::IOBuffer> user_read_buf_;
   int user_read_buf_len_;
 
-  net::CompletionCallback* user_write_callback_;
+  net::OldCompletionCallback* user_write_callback_;
   int user_write_buf_len_;
 
-  scoped_ptr<net::CompletionCallback> read_callback_;
+  scoped_ptr<net::OldCompletionCallback> read_callback_;
   scoped_refptr<net::IOBufferWithSize> read_buf_;
 
-  scoped_ptr<net::CompletionCallback> write_callback_;
+  scoped_ptr<net::OldCompletionCallback> write_callback_;
 
   scoped_ptr<crypto::SymmetricKey> mask_key_;
   crypto::HMAC msg_hasher_;

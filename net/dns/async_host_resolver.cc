@@ -86,7 +86,7 @@ class AsyncHostResolver::Request {
           const BoundNetLog& request_net_log,
           int id,
           const HostResolver::RequestInfo& info,
-          CompletionCallback* callback,
+          OldCompletionCallback* callback,
           AddressList* addresses)
       : resolver_(resolver),
         source_net_log_(source_net_log),
@@ -173,7 +173,7 @@ class AsyncHostResolver::Request {
     if (result == OK)
       *addresses_ = CreateAddressListUsingPort(addresses, info_.port());
     DCHECK(callback_);
-    CompletionCallback* callback = callback_;
+    OldCompletionCallback* callback = callback_;
     callback_ = NULL;
     resolver_->OnFinish(this, result);
     callback->Run(result);
@@ -191,7 +191,7 @@ class AsyncHostResolver::Request {
   const int id_;
   const HostResolver::RequestInfo info_;
   Key key_;
-  CompletionCallback* callback_;
+  OldCompletionCallback* callback_;
   AddressList* addresses_;
   int result_;
 };
@@ -230,7 +230,7 @@ AsyncHostResolver::~AsyncHostResolver() {
 
 int AsyncHostResolver::Resolve(const RequestInfo& info,
                                AddressList* addresses,
-                               CompletionCallback* callback,
+                               OldCompletionCallback* callback,
                                RequestHandle* out_req,
                                const BoundNetLog& source_net_log) {
   DCHECK(addresses);
@@ -410,7 +410,7 @@ void AsyncHostResolver::OnTransactionComplete(
 
 AsyncHostResolver::Request* AsyncHostResolver::CreateNewRequest(
     const RequestInfo& info,
-    CompletionCallback* callback,
+    OldCompletionCallback* callback,
     AddressList* addresses,
     const BoundNetLog& source_net_log) {
   BoundNetLog request_net_log = BoundNetLog::Make(net_log_,

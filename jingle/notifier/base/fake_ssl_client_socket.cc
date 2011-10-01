@@ -99,14 +99,14 @@ FakeSSLClientSocket::FakeSSLClientSocket(
 FakeSSLClientSocket::~FakeSSLClientSocket() {}
 
 int FakeSSLClientSocket::Read(net::IOBuffer* buf, int buf_len,
-                             net::CompletionCallback* callback) {
+                             net::OldCompletionCallback* callback) {
   DCHECK_EQ(next_handshake_state_, STATE_NONE);
   DCHECK(handshake_completed_);
   return transport_socket_->Read(buf, buf_len, callback);
 }
 
 int FakeSSLClientSocket::Write(net::IOBuffer* buf, int buf_len,
-                              net::CompletionCallback* callback) {
+                              net::OldCompletionCallback* callback) {
   DCHECK_EQ(next_handshake_state_, STATE_NONE);
   DCHECK(handshake_completed_);
   return transport_socket_->Write(buf, buf_len, callback);
@@ -120,7 +120,7 @@ bool FakeSSLClientSocket::SetSendBufferSize(int32 size) {
   return transport_socket_->SetSendBufferSize(size);
 }
 
-int FakeSSLClientSocket::Connect(net::CompletionCallback* callback) {
+int FakeSSLClientSocket::Connect(net::OldCompletionCallback* callback) {
   // We don't support synchronous operation, even if
   // |transport_socket_| does.
   DCHECK(callback);
@@ -167,7 +167,7 @@ int FakeSSLClientSocket::DoHandshakeLoop() {
 void FakeSSLClientSocket::RunUserConnectCallback(int status) {
   DCHECK_LE(status, net::OK);
   next_handshake_state_ = STATE_NONE;
-  net::CompletionCallback* user_connect_callback = user_connect_callback_;
+  net::OldCompletionCallback* user_connect_callback = user_connect_callback_;
   user_connect_callback_ = NULL;
   user_connect_callback->Run(status);
 }

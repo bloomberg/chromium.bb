@@ -35,7 +35,7 @@ TransportChannelSocketAdapter::~TransportChannelSocketAdapter() {
 }
 
 int TransportChannelSocketAdapter::Read(
-    net::IOBuffer* buf, int buffer_size, net::CompletionCallback* callback) {
+    net::IOBuffer* buf, int buffer_size, net::OldCompletionCallback* callback) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(buf);
   DCHECK(callback);
@@ -54,7 +54,7 @@ int TransportChannelSocketAdapter::Read(
 }
 
 int TransportChannelSocketAdapter::Write(
-    net::IOBuffer* buffer, int buffer_size, net::CompletionCallback* callback) {
+    net::IOBuffer* buffer, int buffer_size, net::OldCompletionCallback* callback) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(buffer);
   DCHECK(callback);
@@ -111,14 +111,14 @@ void TransportChannelSocketAdapter::Close(int error_code) {
   channel_ = NULL;
 
   if (read_callback_) {
-    net::CompletionCallback* callback = read_callback_;
+    net::OldCompletionCallback* callback = read_callback_;
     read_callback_ = NULL;
     read_buffer_ = NULL;
     callback->Run(error_code);
   }
 
   if (write_callback_) {
-    net::CompletionCallback* callback = write_callback_;
+    net::OldCompletionCallback* callback = write_callback_;
     write_callback_ = NULL;
     write_buffer_ = NULL;
     callback->Run(error_code);
@@ -141,7 +141,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
 
     memcpy(read_buffer_->data(), data, data_size);
 
-    net::CompletionCallback* callback = read_callback_;
+    net::OldCompletionCallback* callback = read_callback_;
     read_callback_ = NULL;
     read_buffer_ = NULL;
 
@@ -163,7 +163,7 @@ void TransportChannelSocketAdapter::OnWritableState(
       result = net::MapSystemError(channel_->GetError());
 
     if (result != net::ERR_IO_PENDING) {
-      net::CompletionCallback* callback = write_callback_;
+      net::OldCompletionCallback* callback = write_callback_;
       write_callback_ = NULL;
       write_buffer_ = NULL;
       callback->Run(result);

@@ -50,7 +50,7 @@ TEST_F(CertVerifierTest, CacheHit) {
 
   int error;
   CertVerifyResult verify_result;
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
   error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
@@ -88,10 +88,10 @@ TEST_F(CertVerifierTest, InflightJoin) {
 
   int error;
   CertVerifyResult verify_result;
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
   CertVerifyResult verify_result2;
-  TestCompletionCallback callback2;
+  TestOldCompletionCallback callback2;
   CertVerifier::RequestHandle request_handle2;
 
   error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
@@ -125,7 +125,7 @@ TEST_F(CertVerifierTest, ExpiredCacheEntry) {
 
   int error;
   CertVerifyResult verify_result;
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
   error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
@@ -184,7 +184,7 @@ TEST_F(CertVerifierTest, FullCache) {
 
   int error;
   CertVerifyResult verify_result;
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
   error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,
@@ -249,7 +249,7 @@ TEST_F(CertVerifierTest, CancelRequest) {
   // Issue a few more requests to the worker pool and wait for their
   // completion, so that the task of the canceled request (which runs on a
   // worker thread) is likely to complete by the end of this test.
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   for (int i = 0; i < 5; ++i) {
     error = verifier.Verify(test_cert, "www2.example.com", 0, &verify_result,
                             &callback, &request_handle);
@@ -271,7 +271,7 @@ TEST_F(CertVerifierTest, CancelRequestThenQuit) {
 
   int error;
   CertVerifyResult verify_result;
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
   error = verifier.Verify(test_cert, "www.example.com", 0, &verify_result,

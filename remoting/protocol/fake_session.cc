@@ -42,7 +42,7 @@ void FakeSocket::AppendInputData(const char* data, int data_size) {
 }
 
 int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
-                     net::CompletionCallback* callback) {
+                     net::OldCompletionCallback* callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
   if (input_pos_ < static_cast<int>(input_data_.size())) {
     int result = std::min(buf_len,
@@ -60,7 +60,7 @@ int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
 }
 
 int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
-                      net::CompletionCallback* callback) {
+                      net::OldCompletionCallback* callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
   written_data_.insert(written_data_.end(),
                        buf->data(), buf->data() + buf_len);
@@ -76,7 +76,7 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
   return false;
 }
 
-int FakeSocket::Connect(net::CompletionCallback* callback) {
+int FakeSocket::Connect(net::OldCompletionCallback* callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
   return net::OK;
 }
@@ -167,7 +167,7 @@ void FakeUdpSocket::AppendInputPacket(const char* data, int data_size) {
 }
 
 int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
-                        net::CompletionCallback* callback) {
+                        net::OldCompletionCallback* callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
   if (input_pos_ < static_cast<int>(input_packets_.size())) {
     int result = std::min(
@@ -185,7 +185,7 @@ int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
 }
 
 int FakeUdpSocket::Write(net::IOBuffer* buf, int buf_len,
-                         net::CompletionCallback* callback) {
+                         net::OldCompletionCallback* callback) {
   EXPECT_EQ(message_loop_, MessageLoop::current());
   written_packets_.push_back(std::string());
   written_packets_.back().assign(buf->data(), buf->data() + buf_len);

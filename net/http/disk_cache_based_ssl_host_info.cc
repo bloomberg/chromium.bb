@@ -57,7 +57,7 @@ void DiskCacheBasedSSLHostInfo::Start() {
   DoLoop(OK);
 }
 
-int DiskCacheBasedSSLHostInfo::WaitForDataReady(CompletionCallback* callback) {
+int DiskCacheBasedSSLHostInfo::WaitForDataReady(OldCompletionCallback* callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(state_ != GET_BACKEND);
 
@@ -101,7 +101,7 @@ std::string DiskCacheBasedSSLHostInfo::key() const {
 void DiskCacheBasedSSLHostInfo::OnIOComplete(int rv) {
   rv = DoLoop(rv);
   if (rv != ERR_IO_PENDING) {
-    CompletionCallback* callback = user_callback_;
+    OldCompletionCallback* callback = user_callback_;
     user_callback_ = NULL;
     if (callback)
       callback->Run(rv);

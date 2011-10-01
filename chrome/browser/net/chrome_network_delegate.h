@@ -47,10 +47,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
  private:
   // NetworkDelegate methods:
   virtual int OnBeforeURLRequest(net::URLRequest* request,
-                                 net::CompletionCallback* callback,
+                                 net::OldCompletionCallback* callback,
                                  GURL* new_url) OVERRIDE;
   virtual int OnBeforeSendHeaders(net::URLRequest* request,
-                                  net::CompletionCallback* callback,
+                                  net::OldCompletionCallback* callback,
                                   net::HttpRequestHeaders* headers) OVERRIDE;
   virtual void OnSendHeaders(net::URLRequest* request,
                              const net::HttpRequestHeaders& headers) OVERRIDE;

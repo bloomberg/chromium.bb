@@ -66,7 +66,7 @@ class HostChannelAuthenticator : public ChannelAuthenticator {
 
   scoped_refptr<net::GrowableIOBuffer> auth_read_buf_;
 
-  net::CompletionCallbackImpl<HostChannelAuthenticator> auth_read_callback_;
+  net::OldCompletionCallbackImpl<HostChannelAuthenticator> auth_read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HostChannelAuthenticator);
 };
@@ -90,7 +90,7 @@ class ClientChannelAuthenticator : public ChannelAuthenticator {
 
   scoped_refptr<net::DrainableIOBuffer> auth_write_buf_;
 
-  net::CompletionCallbackImpl<ClientChannelAuthenticator> auth_write_callback_;
+  net::OldCompletionCallbackImpl<ClientChannelAuthenticator> auth_write_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientChannelAuthenticator);
 };

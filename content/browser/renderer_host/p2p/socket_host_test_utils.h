@@ -57,12 +57,12 @@ class FakeSocket : public net::StreamSocket {
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-           net::CompletionCallback* callback) OVERRIDE;
+           net::OldCompletionCallback* callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback) OVERRIDE;
+                    net::OldCompletionCallback* callback) OVERRIDE;
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
-  virtual int Connect(net::CompletionCallback* callback) OVERRIDE;
+  virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;
@@ -80,7 +80,7 @@ class FakeSocket : public net::StreamSocket {
   bool read_pending_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
-  net::CompletionCallback* read_callback_;
+  net::OldCompletionCallback* read_callback_;
 
   std::string* written_data_;
   std::string input_data_;
@@ -111,7 +111,7 @@ void FakeSocket::AppendInputData(const char* data, int data_size) {
     memcpy(read_buffer_->data(), &input_data_[0] + input_pos_, result);
     input_pos_ += result;
     read_buffer_ = NULL;
-    net::CompletionCallback* cb = read_callback_;
+    net::OldCompletionCallback* cb = read_callback_;
     read_callback_ = NULL;
     cb->Run(result);
   }
@@ -126,7 +126,7 @@ void FakeSocket::SetLocalAddress(const net::IPEndPoint& local_address) {
 }
 
 int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
-                     net::CompletionCallback* callback) {
+                     net::OldCompletionCallback* callback) {
   DCHECK(buf);
   if (input_pos_ < static_cast<int>(input_data_.size())){
     int result = std::min(buf_len,
@@ -144,7 +144,7 @@ int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
 }
 
 int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
-                      net::CompletionCallback* callback) {
+                      net::OldCompletionCallback* callback) {
   DCHECK(buf);
   if (written_data_) {
     written_data_->insert(written_data_->end(),
@@ -163,7 +163,7 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
   return false;
 }
 
-int FakeSocket::Connect(net::CompletionCallback* callback) {
+int FakeSocket::Connect(net::OldCompletionCallback* callback) {
   return 0;
 }
 

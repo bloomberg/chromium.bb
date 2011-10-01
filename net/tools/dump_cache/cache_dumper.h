@@ -30,13 +30,13 @@ class CacheDumpWriter {
   // Returns a net error code.
   virtual int CreateEntry(const std::string& key,
                           disk_cache::Entry** entry,
-                          net::CompletionCallback* callback) = 0;
+                          net::OldCompletionCallback* callback) = 0;
 
   // Write to the current entry.
   // Returns a net error code.
   virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
                          net::IOBuffer* buf, int buf_len,
-                         net::CompletionCallback* callback) = 0;
+                         net::OldCompletionCallback* callback) = 0;
 
   // Close the current entry.
   virtual void CloseEntry(disk_cache::Entry* entry, base::Time last_used,
@@ -49,10 +49,10 @@ class CacheDumper : public CacheDumpWriter {
   explicit CacheDumper(disk_cache::Backend* cache) : cache_(cache) {}
 
   virtual int CreateEntry(const std::string& key, disk_cache::Entry** entry,
-                          net::CompletionCallback* callback);
+                          net::OldCompletionCallback* callback);
   virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
                          net::IOBuffer* buf, int buf_len,
-                         net::CompletionCallback* callback);
+                         net::OldCompletionCallback* callback);
   virtual void CloseEntry(disk_cache::Entry* entry, base::Time last_used,
                           base::Time last_modified);
 
@@ -67,10 +67,10 @@ class DiskDumper : public CacheDumpWriter {
     file_util::CreateDirectory(FilePath(path));
   }
   virtual int CreateEntry(const std::string& key, disk_cache::Entry** entry,
-                          net::CompletionCallback* callback);
+                          net::OldCompletionCallback* callback);
   virtual int WriteEntry(disk_cache::Entry* entry, int stream, int offset,
                          net::IOBuffer* buf, int buf_len,
-                         net::CompletionCallback* callback);
+                         net::OldCompletionCallback* callback);
   virtual void CloseEntry(disk_cache::Entry* entry, base::Time last_used,
                           base::Time last_modified);
 

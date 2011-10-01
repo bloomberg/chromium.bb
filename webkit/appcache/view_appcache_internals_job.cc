@@ -315,7 +315,7 @@ class MainPageJob : public BaseInternalsJob {
     DCHECK(request_);
     info_collection_ = new AppCacheInfoCollection;
     gotinfo_complete_callback_ =
-        new net::CancelableCompletionCallback<MainPageJob>(
+        new net::CancelableOldCompletionCallback<MainPageJob>(
             this, &MainPageJob::OnGotInfoComplete);
     appcache_service_->GetAllAppCacheInfo(
         info_collection_, gotinfo_complete_callback_);
@@ -365,7 +365,7 @@ class MainPageJob : public BaseInternalsJob {
     StartAsync();
   }
 
-  scoped_refptr<net::CancelableCompletionCallback<MainPageJob> >
+  scoped_refptr<net::CancelableOldCompletionCallback<MainPageJob> >
       gotinfo_complete_callback_;
   scoped_refptr<AppCacheInfoCollection> info_collection_;
   DISALLOW_COPY_AND_ASSIGN(MainPageJob);
@@ -402,7 +402,7 @@ class RemoveAppCacheJob : public RedirectToMainPageJob {
   virtual void Start() {
     DCHECK(request_);
     delete_appcache_callback_ =
-        new net::CancelableCompletionCallback<RemoveAppCacheJob>(
+        new net::CancelableOldCompletionCallback<RemoveAppCacheJob>(
             this, &RemoveAppCacheJob::OnDeleteAppCacheComplete);
     appcache_service_->DeleteAppCacheGroup(
         manifest_url_, delete_appcache_callback_);
@@ -420,7 +420,7 @@ class RemoveAppCacheJob : public RedirectToMainPageJob {
   }
 
   GURL manifest_url_;
-  scoped_refptr<net::CancelableCompletionCallback<RemoveAppCacheJob> >
+  scoped_refptr<net::CancelableOldCompletionCallback<RemoveAppCacheJob> >
       delete_appcache_callback_;
 };
 
@@ -579,7 +579,7 @@ class ViewEntryJob : public BaseInternalsJob,
   scoped_refptr<net::IOBuffer> response_data_;
   int amount_read_;
   scoped_ptr<AppCacheResponseReader> reader_;
-  net::CompletionCallbackImpl<ViewEntryJob> read_callback_;
+  net::OldCompletionCallbackImpl<ViewEntryJob> read_callback_;
 };
 
 }  // namespace

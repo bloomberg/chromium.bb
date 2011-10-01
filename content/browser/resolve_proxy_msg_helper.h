@@ -70,7 +70,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
   };
 
   // Members for the current outstanding proxy request.
-  net::CompletionCallbackImpl<ResolveProxyMsgHelper> callback_;
+  net::OldCompletionCallbackImpl<ResolveProxyMsgHelper> callback_;
   net::ProxyInfo proxy_info_;
 
   // FIFO queue of pending requests. The first entry is always the current one.

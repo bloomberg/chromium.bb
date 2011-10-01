@@ -89,7 +89,7 @@ class CONTENT_EXPORT P2PTransportImpl
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> channel_adapter_;
   scoped_ptr<jingle_glue::PseudoTcpAdapter> pseudo_tcp_adapter_;
 
-  net::CompletionCallbackImpl<P2PTransportImpl> connect_callback_;
+  net::OldCompletionCallbackImpl<P2PTransportImpl> connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PTransportImpl);
 };

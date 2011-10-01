@@ -50,7 +50,7 @@ ClientPacketizer::~ClientPacketizer() {
 
 int ClientPacketizer::Connect(const AddressList& server,
                               Packetizer::Listener* listener,
-                              CompletionCallback* callback) {
+                              OldCompletionCallback* callback) {
   DCHECK(!user_callback_);
   DCHECK(!socket_.get());
   DCHECK(!listener_);
@@ -68,7 +68,7 @@ int ClientPacketizer::Connect(const AddressList& server,
 int ClientPacketizer::SendMessage(ConnectionKey key,
                                   const char* data,
                                   size_t length,
-                                  CompletionCallback* callback) {
+                                  OldCompletionCallback* callback) {
   // We can't send messages smaller than 16 bytes.
   if (length < 16)
     return ERR_UNEXPECTED;
@@ -280,7 +280,7 @@ void ClientPacketizer::DoCallback(int result) {
   DCHECK_NE(result, ERR_IO_PENDING);
   DCHECK(user_callback_);
 
-  CompletionCallback* callback = user_callback_;
+  OldCompletionCallback* callback = user_callback_;
   user_callback_ = NULL;
   callback->Run(result);
 }

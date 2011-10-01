@@ -318,7 +318,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   const net::BoundNetLog* net_log;
 
   // The callback to call when we get a response from all event handlers.
-  net::CompletionCallback* callback;
+  net::OldCompletionCallback* callback;
 
   // If non-empty, this contains the new URL that the request will redirect to.
   // Only valid for OnBeforeRequest.
@@ -464,7 +464,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
-    net::CompletionCallback* callback,
+    net::OldCompletionCallback* callback,
     GURL* new_url) {
   // TODO(jochen): Figure out what to do with events from the system context.
   if (!profile)
@@ -506,7 +506,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
-    net::CompletionCallback* callback,
+    net::OldCompletionCallback* callback,
     net::HttpRequestHeaders* headers) {
   // TODO(jochen): Figure out what to do with events from the system context.
   if (!profile)
@@ -1282,7 +1282,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     // distinguished from a regular failure.
     if (blocked_request.callback) {
       int rv = canceled ? net::ERR_EMPTY_RESPONSE : net::OK;
-      net::CompletionCallback* callback = blocked_request.callback;
+      net::OldCompletionCallback* callback = blocked_request.callback;
       // Ensure that request is removed before callback because the callback
       // might trigger the next event.
       blocked_requests_.erase(request_id);

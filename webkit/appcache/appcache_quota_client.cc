@@ -26,7 +26,7 @@ namespace appcache {
 
 AppCacheQuotaClient::AppCacheQuotaClient(AppCacheService* service)
     : ALLOW_THIS_IN_INITIALIZER_LIST(service_delete_callback_(
-          new net::CancelableCompletionCallback<AppCacheQuotaClient>(
+          new net::CancelableOldCompletionCallback<AppCacheQuotaClient>(
               this, &AppCacheQuotaClient::DidDeleteAppCachesForOrigin))),
       service_(service), appcache_is_ready_(false),
       quota_manager_is_destroyed_(false) {

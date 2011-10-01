@@ -34,7 +34,7 @@ class NetworkStatsTestUDP : public NetworkStatsTest {
 
  protected:
   void RunUDPEchoTest(int bytes) {
-    TestCompletionCallback cb;
+    TestOldCompletionCallback cb;
 
     scoped_ptr<net::MockHostResolver> host_resolver(
         new net::MockHostResolver());
@@ -61,7 +61,7 @@ class NetworkStatsTestTCP : public NetworkStatsTest {
 
  protected:
   void RunTCPEchoTest(int bytes) {
-    TestCompletionCallback cb;
+    TestOldCompletionCallback cb;
 
     scoped_ptr<net::MockHostResolver> host_resolver(
         new net::MockHostResolver());

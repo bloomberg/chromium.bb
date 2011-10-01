@@ -95,7 +95,7 @@ class P2PSocketDispatcherHost::DnsRequest {
 
   DoneCallback done_callback_;
 
-  net::CompletionCallbackImpl<DnsRequest> completion_callback_;
+  net::OldCompletionCallbackImpl<DnsRequest> completion_callback_;
 };
 
 P2PSocketDispatcherHost::P2PSocketDispatcherHost(

@@ -27,13 +27,13 @@ class ClientPacketizer : public Packetizer {
 
   int Connect(const AddressList& server,
               Packetizer::Listener* listener,
-              CompletionCallback* callback);
+              OldCompletionCallback* callback);
 
   // Packetizer methods
   virtual int SendMessage(ConnectionKey key,
                           const char* data,
                           size_t length,
-                          CompletionCallback* callback);
+                          OldCompletionCallback* callback);
   virtual void Close(ConnectionKey key);
   virtual int GetPeerAddress(IPEndPoint* endpoint) const;
   virtual int max_message_payload() const;
@@ -81,7 +81,7 @@ class ClientPacketizer : public Packetizer {
   StateType next_state_;
   scoped_ptr<UDPClientSocket> socket_;
   Packetizer::Listener* listener_;
-  CompletionCallback* user_callback_;
+  OldCompletionCallback* user_callback_;
   AddressList addresses_;
   const struct addrinfo* current_address_;
   int hello_attempts_;  // Number of attempts to send a Hello Packet.
@@ -91,7 +91,7 @@ class ClientPacketizer : public Packetizer {
 
   uchar shortterm_public_key_[32];
 
-  CompletionCallbackImpl<ClientPacketizer> io_callback_;
+  OldCompletionCallbackImpl<ClientPacketizer> io_callback_;
   ScopedRunnableMethodFactory<ClientPacketizer> timers_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientPacketizer);

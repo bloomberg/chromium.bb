@@ -64,7 +64,7 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   ScopedRunnableMethodFactory<FileSystemURLRequestJob> method_factory_;
   base::ScopedCallbackFactory<FileSystemURLRequestJob> callback_factory_;
-  net::CompletionCallbackImpl<FileSystemURLRequestJob> io_callback_;
+  net::OldCompletionCallbackImpl<FileSystemURLRequestJob> io_callback_;
   scoped_ptr<net::FileStream> stream_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;

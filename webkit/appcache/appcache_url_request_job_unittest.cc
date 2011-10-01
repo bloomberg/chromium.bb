@@ -751,8 +751,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   scoped_refptr<HttpResponseInfoIOBuffer> read_info_buffer_;
   scoped_refptr<IOBuffer> read_buffer_;
   int expected_read_result_;
-  net::CompletionCallbackImpl<AppCacheURLRequestJobTest> read_callback_;
-  net::CompletionCallbackImpl<AppCacheURLRequestJobTest> read_info_callback_;
+  net::OldCompletionCallbackImpl<AppCacheURLRequestJobTest> read_callback_;
+  net::OldCompletionCallbackImpl<AppCacheURLRequestJobTest> read_info_callback_;
   bool should_delete_reader_in_completion_callback_;
   int reader_deletion_count_down_;
   bool read_callback_was_called_;
@@ -762,8 +762,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   scoped_refptr<HttpResponseInfoIOBuffer> write_info_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;
   int expected_write_result_;
-  net::CompletionCallbackImpl<AppCacheURLRequestJobTest> write_callback_;
-  net::CompletionCallbackImpl<AppCacheURLRequestJobTest> write_info_callback_;
+  net::OldCompletionCallbackImpl<AppCacheURLRequestJobTest> write_callback_;
+  net::OldCompletionCallbackImpl<AppCacheURLRequestJobTest> write_info_callback_;
   bool should_delete_writer_in_completion_callback_;
   int writer_deletion_count_down_;
   bool write_callback_was_called_;

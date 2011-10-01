@@ -77,7 +77,7 @@ class RedirectToFileResourceHandler : public ResourceHandler {
   int write_cursor_;
 
   scoped_ptr<net::FileStream> file_stream_;
-  net::CompletionCallbackImpl<RedirectToFileResourceHandler> write_callback_;
+  net::OldCompletionCallbackImpl<RedirectToFileResourceHandler> write_callback_;
   bool write_callback_pending_;
 
   // We create a DeletableFileReference for the temp file created as

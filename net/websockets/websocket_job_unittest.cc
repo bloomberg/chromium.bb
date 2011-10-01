@@ -88,7 +88,7 @@ class MockSocketStreamDelegate : public net::SocketStream::Delegate {
   }
 
   virtual int OnStartOpenConnection(net::SocketStream* socket,
-                                    net::CompletionCallback* callback) {
+                                    net::OldCompletionCallback* callback) {
     if (on_start_open_connection_.get())
       on_start_open_connection_->Run();
     return net::OK;
@@ -441,7 +441,7 @@ class WebSocketJobTest : public PlatformTest {
   scoped_refptr<SocketStream> socket_;
   scoped_ptr<MockClientSocketFactory> socket_factory_;
   scoped_refptr<OrderedSocketData> data_;
-  TestCompletionCallback sync_callback_;
+  TestOldCompletionCallback sync_callback_;
   scoped_refptr<MockSSLConfigService> ssl_config_service_;
   scoped_ptr<net::ProxyService> proxy_service_;
   scoped_ptr<net::MockHostResolver> host_resolver_;

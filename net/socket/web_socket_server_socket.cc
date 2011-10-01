@@ -172,7 +172,7 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
     };
 
     PendingReq(Type type, net::DrainableIOBuffer* io_buf,
-               net::CompletionCallback* callback)
+               net::OldCompletionCallback* callback)
         : type(type),
           io_buf(io_buf),
           callback(callback) {
@@ -193,12 +193,12 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
 
     Type type;
     scoped_refptr<net::DrainableIOBuffer> io_buf;
-    net::CompletionCallback* callback;
+    net::OldCompletionCallback* callback;
   };
 
   // Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* callback) OVERRIDE {
+                   net::OldCompletionCallback* callback) OVERRIDE {
     if (buf_len == 0)
       return 0;
     if (buf == NULL || buf_len < 0) {
@@ -263,7 +263,7 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
   }
 
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback) OVERRIDE {
+                    net::OldCompletionCallback* callback) OVERRIDE {
     if (buf_len == 0)
       return 0;
     if (buf == NULL || buf_len < 0) {
@@ -319,7 +319,7 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
   }
 
   // WebSocketServerSocket implementation.
-  virtual int Accept(net::CompletionCallback* callback) {
+  virtual int Accept(net::OldCompletionCallback* callback) {
     if (phase_ != PHASE_NYMPH)
       return net::ERR_UNEXPECTED;
     phase_ = PHASE_HANDSHAKE;
@@ -447,7 +447,7 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
         if (rv > 0) {
           process_handshake_buf_->DidConsume(rv);
           phase_ = PHASE_FRAME_OUTSIDE;
-          net::CompletionCallback* cb = pending_reqs_.front().callback;
+          net::OldCompletionCallback* cb = pending_reqs_.front().callback;
           pending_reqs_.pop_front();
           ConsiderTransportWrite();  // Schedule answer handshake.
           if (cb)
@@ -474,7 +474,7 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
           return;
         }
         if (rv > 0 || phase_ == PHASE_SHUT) {
-          net::CompletionCallback* cb = it->callback;
+          net::OldCompletionCallback* cb = it->callback;
           pending_reqs_.erase(it);
           if (cb)
             cb->Run(rv);
@@ -515,7 +515,7 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
     DCHECK_LE(result, it->io_buf->BytesRemaining());
     it->io_buf->DidConsume(result);
     if (it->io_buf->BytesRemaining() == 0) {
-      net::CompletionCallback* cb = it->callback;
+      net::OldCompletionCallback* cb = it->callback;
       int bytes_written = it->io_buf->BytesConsumed();
       DCHECK_GT(bytes_written, 0);
       pending_reqs_.erase(it);
@@ -878,8 +878,8 @@ class WebSocketServerSocketImpl : public net::WebSocketServerSocket {
   std::deque<PendingReq> pending_reqs_;
 
   // Callbacks from transport to us.
-  scoped_ptr<net::CompletionCallback> transport_read_callback_;
-  scoped_ptr<net::CompletionCallback> transport_write_callback_;
+  scoped_ptr<net::OldCompletionCallback> transport_read_callback_;
+  scoped_ptr<net::OldCompletionCallback> transport_write_callback_;
 
   // Whether transport requests are pending.
   bool is_transport_read_pending_;

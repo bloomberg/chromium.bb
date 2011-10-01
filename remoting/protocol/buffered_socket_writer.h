@@ -99,7 +99,7 @@ class BufferedSocketWriterBase
 
   bool write_pending_;
 
-  net::CompletionCallbackImpl<BufferedSocketWriterBase> written_callback_;
+  net::OldCompletionCallbackImpl<BufferedSocketWriterBase> written_callback_;
 
   bool closed_;
 };

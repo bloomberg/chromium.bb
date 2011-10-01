@@ -36,7 +36,7 @@ TEST_F(OriginBoundCertServiceTest, CacheHit) {
   std::string origin("https://encrypted.google.com:443");
 
   int error;
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   OriginBoundCertService::RequestHandle request_handle;
 
   // Asynchronous completion.
@@ -72,7 +72,7 @@ TEST_F(OriginBoundCertServiceTest, StoreCerts) {
   scoped_ptr<OriginBoundCertService> service(
       new OriginBoundCertService(new DefaultOriginBoundCertStore(NULL)));
   int error;
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   OriginBoundCertService::RequestHandle request_handle;
 
   std::string origin1("https://encrypted.google.com:443");
@@ -122,11 +122,11 @@ TEST_F(OriginBoundCertServiceTest, InflightJoin) {
   int error;
 
   std::string private_key_info1, der_cert1;
-  TestCompletionCallback callback1;
+  TestOldCompletionCallback callback1;
   OriginBoundCertService::RequestHandle request_handle1;
 
   std::string private_key_info2, der_cert2;
-  TestCompletionCallback callback2;
+  TestOldCompletionCallback callback2;
   OriginBoundCertService::RequestHandle request_handle2;
 
   error = service->GetOriginBoundCert(
@@ -154,7 +154,7 @@ TEST_F(OriginBoundCertServiceTest, ExtractValuesFromBytes) {
   std::string origin("https://encrypted.google.com:443");
   std::string private_key_info, der_cert;
   int error;
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   OriginBoundCertService::RequestHandle request_handle;
 
   error = service->GetOriginBoundCert(
@@ -198,7 +198,7 @@ TEST_F(OriginBoundCertServiceTest, CancelRequest) {
   // Issue a few more requests to the worker pool and wait for their
   // completion, so that the task of the canceled request (which runs on a
   // worker thread) is likely to complete by the end of this test.
-  TestCompletionCallback callback;
+  TestOldCompletionCallback callback;
   for (int i = 0; i < 5; ++i) {
     error = service->GetOriginBoundCert(
         "https://encrypted.google.com:" + std::string(1, (char) ('1' + i)),

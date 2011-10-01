@@ -65,7 +65,7 @@ ProxyResolvingClientSocket::~ProxyResolvingClientSocket() {
 }
 
 int ProxyResolvingClientSocket::Read(net::IOBuffer* buf, int buf_len,
-                                     net::CompletionCallback* callback) {
+                                     net::OldCompletionCallback* callback) {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->Read(buf, buf_len, callback);
   NOTREACHED();
@@ -73,7 +73,7 @@ int ProxyResolvingClientSocket::Read(net::IOBuffer* buf, int buf_len,
 }
 
 int ProxyResolvingClientSocket::Write(net::IOBuffer* buf, int buf_len,
-                                      net::CompletionCallback* callback) {
+                                      net::OldCompletionCallback* callback) {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->Write(buf, buf_len, callback);
   NOTREACHED();
@@ -94,7 +94,7 @@ bool ProxyResolvingClientSocket::SetSendBufferSize(int32 size) {
   return false;
 }
 
-int ProxyResolvingClientSocket::Connect(net::CompletionCallback* callback) {
+int ProxyResolvingClientSocket::Connect(net::OldCompletionCallback* callback) {
   DCHECK(!user_connect_callback_);
 
   tried_direct_connect_fallback_ = false;
@@ -124,7 +124,7 @@ int ProxyResolvingClientSocket::Connect(net::CompletionCallback* callback) {
 
 void ProxyResolvingClientSocket::RunUserConnectCallback(int status) {
   DCHECK_LE(status, net::OK);
-  net::CompletionCallback* user_connect_callback = user_connect_callback_;
+  net::OldCompletionCallback* user_connect_callback = user_connect_callback_;
   user_connect_callback_ = NULL;
   user_connect_callback->Run(status);
 }

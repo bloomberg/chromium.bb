@@ -176,10 +176,10 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   void DoClose();
 
   // Callbacks passed to |transport_socket_|.
-  net::CompletionCallbackImpl<ChromeAsyncSocket> connect_callback_;
-  net::CompletionCallbackImpl<ChromeAsyncSocket> read_callback_;
-  net::CompletionCallbackImpl<ChromeAsyncSocket> write_callback_;
-  net::CompletionCallbackImpl<ChromeAsyncSocket> ssl_connect_callback_;
+  net::OldCompletionCallbackImpl<ChromeAsyncSocket> connect_callback_;
+  net::OldCompletionCallbackImpl<ChromeAsyncSocket> read_callback_;
+  net::OldCompletionCallbackImpl<ChromeAsyncSocket> write_callback_;
+  net::OldCompletionCallbackImpl<ChromeAsyncSocket> ssl_connect_callback_;
 
   scoped_ptr<ResolvingClientSocketFactory> client_socket_factory_;
 

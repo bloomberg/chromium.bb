@@ -45,7 +45,7 @@ TestClient::~TestClient() {
 
 bool TestClient::Start(const HostPortPair& server_host_port_pair,
                        int bytes_to_send,
-                       CompletionCallback* callback) {
+                       OldCompletionCallback* callback) {
   DCHECK(!socket_);
   DCHECK(!finished_callback_);
 
@@ -171,7 +171,7 @@ void TestClient::Finish(int result) {
   DCHECK(finished_callback_);
 
   LOG(ERROR) << "TestClient Done!";
-  CompletionCallback* callback = finished_callback_;
+  OldCompletionCallback* callback = finished_callback_;
   finished_callback_ = NULL;
   callback->Run(result);
 }

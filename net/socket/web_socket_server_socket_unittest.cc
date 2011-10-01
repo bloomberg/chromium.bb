@@ -94,7 +94,7 @@ class TestingTransportSocket : public net::Socket {
 
   // Socket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* callback) {
+                   net::OldCompletionCallback* callback) {
     CHECK_GT(buf_len, 0);
     int remaining = sample_->BytesRemaining();
     if (remaining < 1) {
@@ -116,7 +116,7 @@ class TestingTransportSocket : public net::Socket {
   }
 
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback) {
+                    net::OldCompletionCallback* callback) {
     CHECK_GT(buf_len, 0);
     int remaining = answer_->BytesRemaining();
     CHECK_GE(remaining, buf_len);
@@ -144,7 +144,7 @@ class TestingTransportSocket : public net::Socket {
 
   net::DrainableIOBuffer* answer() { return answer_.get(); }
 
-  void DoReadCallback(net::CompletionCallback* callback, int result) {
+  void DoReadCallback(net::OldCompletionCallback* callback, int result) {
     if (result == 0 && !is_closed_) {
       MessageLoop::current()->PostTask(FROM_HERE,
           method_factory_.NewRunnableMethod(
@@ -155,7 +155,7 @@ class TestingTransportSocket : public net::Socket {
     }
   }
 
-  void DoWriteCallback(net::CompletionCallback* callback, int result) {
+  void DoWriteCallback(net::OldCompletionCallback* callback, int result) {
     if (callback)
       callback->Run(result);
   }
@@ -169,7 +169,7 @@ class TestingTransportSocket : public net::Socket {
   scoped_refptr<net::DrainableIOBuffer> answer_;
 
   // Final read callback to report zero (zero stands for EOF).
-  net::CompletionCallback* final_read_callback_;
+  net::OldCompletionCallback* final_read_callback_;
 
   ScopedRunnableMethodFactory<TestingTransportSocket> method_factory_;
 };
@@ -302,9 +302,9 @@ class ReadWriteTracker {
  private:
   net::WebSocketServerSocket* const ws_;
   int const buf_size_;
-  scoped_ptr<net::CompletionCallback> accept_callback_;
-  scoped_ptr<net::CompletionCallback> read_callback_;
-  scoped_ptr<net::CompletionCallback> write_callback_;
+  scoped_ptr<net::OldCompletionCallback> accept_callback_;
+  scoped_ptr<net::OldCompletionCallback> read_callback_;
+  scoped_ptr<net::OldCompletionCallback> write_callback_;
   scoped_refptr<net::IOBuffer> read_buf_;
   scoped_refptr<net::IOBuffer> write_buf_;
   int bytes_remaining_to_read_;
@@ -348,7 +348,7 @@ class WebSocketServerSocketTest : public testing::Test {
   }
 
   int count_;
-  scoped_ptr<net::CompletionCallback> accept_callback_[2];
+  scoped_ptr<net::OldCompletionCallback> accept_callback_[2];
 };
 
 TEST_F(WebSocketServerSocketTest, Handshake) {

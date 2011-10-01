@@ -46,12 +46,12 @@ class FakeSSLClientSocket : public net::StreamSocket {
 
   // net::StreamSocket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::CompletionCallback* callback);
+                   net::OldCompletionCallback* callback);
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::CompletionCallback* callback);
+                    net::OldCompletionCallback* callback);
   virtual bool SetReceiveBufferSize(int32 size);
   virtual bool SetSendBufferSize(int32 size);
-  virtual int Connect(net::CompletionCallback* callback);
+  virtual int Connect(net::OldCompletionCallback* callback);
   virtual void Disconnect();
   virtual bool IsConnected() const;
   virtual bool IsConnectedAndIdle() const;
@@ -90,10 +90,10 @@ class FakeSSLClientSocket : public net::StreamSocket {
   net::Error ProcessVerifyServerHelloDone(size_t read);
 
   // Callbacks passed to |transport_socket_|.
-  net::CompletionCallbackImpl<FakeSSLClientSocket> connect_callback_;
-  net::CompletionCallbackImpl<FakeSSLClientSocket>
+  net::OldCompletionCallbackImpl<FakeSSLClientSocket> connect_callback_;
+  net::OldCompletionCallbackImpl<FakeSSLClientSocket>
       send_client_hello_callback_;
-  net::CompletionCallbackImpl<FakeSSLClientSocket>
+  net::OldCompletionCallbackImpl<FakeSSLClientSocket>
       verify_server_hello_callback_;
 
   scoped_ptr<net::StreamSocket> transport_socket_;
@@ -106,7 +106,7 @@ class FakeSSLClientSocket : public net::StreamSocket {
   bool handshake_completed_;
 
   // The callback passed to Connect().
-  net::CompletionCallback* user_connect_callback_;
+  net::OldCompletionCallback* user_connect_callback_;
 
   scoped_refptr<net::DrainableIOBuffer> write_buf_;
   scoped_refptr<net::DrainableIOBuffer> read_buf_;

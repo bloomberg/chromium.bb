@@ -27,29 +27,29 @@ class APPCACHE_EXPORT AppCacheDiskCache
   int InitWithDiskBackend(const FilePath& disk_cache_directory,
                           int disk_cache_size, bool force,
                           base::MessageLoopProxy* cache_thread,
-                          net::CompletionCallback* callback);
+                          net::OldCompletionCallback* callback);
 
   // Initializes the object to use memory only storage.
   // This is used for Chrome's incognito browsing.
   int InitWithMemBackend(int disk_cache_size,
-                         net::CompletionCallback* callback);
+                         net::OldCompletionCallback* callback);
 
   void Disable();
   bool is_disabled() const { return is_disabled_; }
 
   virtual int CreateEntry(int64 key, Entry** entry,
-                          net::CompletionCallback* callback);
+                          net::OldCompletionCallback* callback);
   virtual int OpenEntry(int64 key, Entry** entry,
-                        net::CompletionCallback* callback);
-  virtual int DoomEntry(int64 key, net::CompletionCallback* callback);
+                        net::OldCompletionCallback* callback);
+  virtual int DoomEntry(int64 key, net::OldCompletionCallback* callback);
 
  private:
   class EntryImpl;
 
   class CreateBackendCallback
-      : public net::CancelableCompletionCallback<AppCacheDiskCache> {
+      : public net::CancelableOldCompletionCallback<AppCacheDiskCache> {
    public:
-    typedef net::CancelableCompletionCallback<AppCacheDiskCache> BaseClass;
+    typedef net::CancelableOldCompletionCallback<AppCacheDiskCache> BaseClass;
     CreateBackendCallback(AppCacheDiskCache* object,
                           void (AppCacheDiskCache::* method)(int))
         : BaseClass(object, method), backend_ptr_(NULL) {}
@@ -75,12 +75,12 @@ class APPCACHE_EXPORT AppCacheDiskCache
     PendingCallType call_type;
     int64 key;
     Entry** entry;
-    net::CompletionCallback* callback;
+    net::OldCompletionCallback* callback;
 
     PendingCall()
         : call_type(CREATE), key(0), entry(NULL), callback(NULL) {}
     PendingCall(PendingCallType call_type, int64 key,
-                Entry** entry, net::CompletionCallback* callback)
+                Entry** entry, net::OldCompletionCallback* callback)
         : call_type(call_type), key(key), entry(entry), callback(callback) {}
   };
   typedef std::vector<PendingCall> PendingCalls;
@@ -94,13 +94,13 @@ class APPCACHE_EXPORT AppCacheDiskCache
   disk_cache::Backend* disk_cache() { return disk_cache_.get(); }
   int Init(net::CacheType cache_type, const FilePath& directory,
            int cache_size, bool force, base::MessageLoopProxy* cache_thread,
-           net::CompletionCallback* callback);
+           net::OldCompletionCallback* callback);
   void OnCreateBackendComplete(int rv);
   void AddActiveCall(ActiveCall* call) { active_calls_.insert(call); }
   void RemoveActiveCall(ActiveCall* call) { active_calls_.erase(call); }
 
   bool is_disabled_;
-  net::CompletionCallback* init_callback_;
+  net::OldCompletionCallback* init_callback_;
   scoped_refptr<CreateBackendCallback> create_backend_callback_;
   PendingCalls pending_calls_;
   ActiveCalls active_calls_;

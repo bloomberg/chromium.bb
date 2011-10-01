@@ -71,7 +71,7 @@ class ViewHttpCacheJob : public net::URLRequestJob {
     std::string data_;
     int data_offset_;
     net::ViewCacheHelper cache_helper_;
-    net::CompletionCallbackImpl<Core> callback_;
+    net::OldCompletionCallbackImpl<Core> callback_;
     Callback0::Type* user_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);

@@ -74,9 +74,9 @@ class ProtocolTestConnection
   ProtocolTestClient* client_;
   MessageLoop* message_loop_;
   scoped_ptr<Session> session_;
-  net::CompletionCallbackImpl<ProtocolTestConnection> write_cb_;
+  net::OldCompletionCallbackImpl<ProtocolTestConnection> write_cb_;
   bool pending_write_;
-  net::CompletionCallbackImpl<ProtocolTestConnection> read_cb_;
+  net::OldCompletionCallbackImpl<ProtocolTestConnection> read_cb_;
   scoped_refptr<net::IOBuffer> read_buffer_;
 };
 

@@ -46,7 +46,7 @@ bool ServerPacketizer::Open(ConnectionKey key, Packetizer::Listener* listener) {
 int ServerPacketizer::SendMessage(ConnectionKey key,
                                   const char* data,
                                   size_t length,
-                                  CompletionCallback* callback) {
+                                  OldCompletionCallback* callback) {
   DCHECK(socket_.get());
   DCHECK_LT(0u, length);
   DCHECK_GT(kMaxPacketLength - sizeof(ServerMessagePacket), length);

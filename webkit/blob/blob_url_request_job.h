@@ -72,7 +72,7 @@ class BlobURLRequestJob : public net::URLRequestJob {
   base::ScopedCallbackFactory<BlobURLRequestJob> callback_factory_;
   scoped_refptr<BlobData> blob_data_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
-  net::CompletionCallbackImpl<BlobURLRequestJob> io_callback_;
+  net::OldCompletionCallbackImpl<BlobURLRequestJob> io_callback_;
   std::vector<int64> item_length_list_;
   scoped_ptr<net::FileStream> stream_;
   size_t item_index_;

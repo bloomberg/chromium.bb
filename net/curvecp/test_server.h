@@ -19,7 +19,7 @@ class IOBuffer;
 
 // TestServer is the server which processes the listen socket.
 // It will create an EchoServer instance to handle each connection.
-class TestServer : public CompletionCallback,
+class TestServer : public OldCompletionCallback,
                    public CurveCPServerSocket::Acceptor {
  public:
   TestServer();
@@ -27,7 +27,7 @@ class TestServer : public CompletionCallback,
 
   bool Start(int port);
 
-  // CompletionCallback methods:
+  // OldCompletionCallback methods:
   virtual void RunWithParams(const Tuple1<int>& params);
 
   // CurveCPServerSocket::Acceptor methods:
@@ -65,8 +65,8 @@ class EchoServer {
   scoped_refptr<DrainableIOBuffer> write_buffer_;
   TestDataStream received_stream_;
   int bytes_received_;
-  CompletionCallbackImpl<EchoServer> read_callback_;
-  CompletionCallbackImpl<EchoServer> write_callback_;
+  OldCompletionCallbackImpl<EchoServer> read_callback_;
+  OldCompletionCallbackImpl<EchoServer> write_callback_;
 };
 
 }  // namespace net

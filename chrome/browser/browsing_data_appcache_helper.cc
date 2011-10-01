@@ -32,7 +32,7 @@ void BrowsingDataAppCacheHelper::StartFetching(Callback0::Type* callback) {
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   appcache_info_callback_ =
-      new net::CancelableCompletionCallback<BrowsingDataAppCacheHelper>(
+      new net::CancelableOldCompletionCallback<BrowsingDataAppCacheHelper>(
           this, &BrowsingDataAppCacheHelper::OnFetchComplete);
   appcache_service_->GetAllAppCacheInfo(info_collection_,
                                         appcache_info_callback_);

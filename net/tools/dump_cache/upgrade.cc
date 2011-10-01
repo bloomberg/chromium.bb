@@ -266,8 +266,8 @@ class MasterSM : public BaseSM {
   CacheDumpWriter* writer_;
   const std::wstring& path_;
   bool dump_to_disk_;
-  net::CompletionCallbackImpl<MasterSM> create_callback_;
-  net::CompletionCallbackImpl<MasterSM> write_callback_;
+  net::OldCompletionCallbackImpl<MasterSM> create_callback_;
+  net::OldCompletionCallbackImpl<MasterSM> write_callback_;
 };
 
 void MasterSM::OnIOCompleted(MessageLoopForIO::IOContext* context,
@@ -323,7 +323,7 @@ bool MasterSM::DoInit() {
     writer_ = new DiskDumper(path_);
   } else {
     disk_cache::Backend* cache;
-    TestCompletionCallback cb;
+    TestOldCompletionCallback cb;
     int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                             FilePath::FromWStringHack(path_), 0,
                                             false,
@@ -592,8 +592,8 @@ class SlaveSM : public BaseSM {
   void* iterator_;
   Message msg_;  // Used for DoReadDataComplete and DoGetEntryComplete.
 
-  net::CompletionCallbackImpl<SlaveSM> read_callback_;
-  net::CompletionCallbackImpl<SlaveSM> next_callback_;
+  net::OldCompletionCallbackImpl<SlaveSM> read_callback_;
+  net::OldCompletionCallbackImpl<SlaveSM> next_callback_;
   scoped_ptr<disk_cache::BackendImpl> cache_;
 };
 
@@ -604,7 +604,7 @@ SlaveSM::SlaveSM(const std::wstring& path, HANDLE channel)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           next_callback_(this, &SlaveSM::DoGetEntryComplete)) {
   disk_cache::Backend* cache;
-  TestCompletionCallback cb;
+  TestOldCompletionCallback cb;
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                           FilePath::FromWStringHack(path), 0,
                                           false,

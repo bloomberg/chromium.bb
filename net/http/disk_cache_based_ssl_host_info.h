@@ -34,7 +34,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
 
   // Implementation of SSLHostInfo
   virtual void Start();
-  virtual int WaitForDataReady(CompletionCallback* callback);
+  virtual int WaitForDataReady(OldCompletionCallback* callback);
   virtual void Persist();
 
  private:
@@ -114,7 +114,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
   HttpCache* const http_cache_;
   disk_cache::Backend* backend_;
   disk_cache::Entry* entry_;
-  CompletionCallback* user_callback_;
+  OldCompletionCallback* user_callback_;
   scoped_refptr<IOBuffer> read_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;
   std::string data_;

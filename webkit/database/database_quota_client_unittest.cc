@@ -68,7 +68,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   virtual int DeleteDataForOrigin(
       const string16& origin_id,
-      net::CompletionCallback* callback) {
+      net::OldCompletionCallback* callback) {
     ++delete_called_count_;
     if (async_delete()) {
       base::MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -79,7 +79,7 @@ class MockDatabaseTracker : public DatabaseTracker {
     return net::OK;
   }
 
-  void AsyncDeleteDataForOrigin(net::CompletionCallback* callback) {
+  void AsyncDeleteDataForOrigin(net::OldCompletionCallback* callback) {
     callback->Run(net::OK);
   }
 

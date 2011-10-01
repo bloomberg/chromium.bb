@@ -109,7 +109,7 @@ bool OfflineResourceHandler::OnWillStart(int request_id,
     AddRef();  //  Balanced with OnCanHandleOfflineComplete
     DCHECK(!appcache_completion_callback_);
     appcache_completion_callback_ =
-        new net::CancelableCompletionCallback<OfflineResourceHandler>(
+        new net::CancelableOldCompletionCallback<OfflineResourceHandler>(
             this, &OfflineResourceHandler::OnCanHandleOfflineComplete);
     appcache_service_->CanHandleMainResourceOffline(
         url, request_->first_party_for_cookies(),

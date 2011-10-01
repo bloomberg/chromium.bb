@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE InitProxyResolver {
   int Init(const ProxyConfig& config,
            const base::TimeDelta wait_delay,
            ProxyConfig* effective_config,
-           CompletionCallback* callback);
+           OldCompletionCallback* callback);
 
  private:
   // Represents the sources from which we can get PAC files; two types of
@@ -137,8 +137,8 @@ class NET_EXPORT_PRIVATE InitProxyResolver {
   ProxyScriptFetcher* proxy_script_fetcher_;
   DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher_;
 
-  CompletionCallbackImpl<InitProxyResolver> io_callback_;
-  CompletionCallback* user_callback_;
+  OldCompletionCallbackImpl<InitProxyResolver> io_callback_;
+  OldCompletionCallback* user_callback_;
 
   size_t current_pac_source_index_;
 

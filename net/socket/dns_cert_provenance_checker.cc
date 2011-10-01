@@ -200,7 +200,7 @@ class DnsCertProvenanceCheck : public base::NonThreadSafe {
   std::vector<std::string> der_certs_;
   RRResponse response_;
   DnsRRResolver::Handle handle_;
-  CompletionCallbackImpl<DnsCertProvenanceCheck> callback_;
+  OldCompletionCallbackImpl<DnsCertProvenanceCheck> callback_;
 };
 
 SECKEYPublicKey* GetServerPubKey() {
