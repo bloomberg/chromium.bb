@@ -9,11 +9,11 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
+#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/mock_render_process.h"
 #include "content/common/dom_storage_common.h"
@@ -21,6 +21,7 @@
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
+#include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -109,14 +110,18 @@ void RenderViewTest::SetUp() {
   // hacky, but this is the world we live in...
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
   WebKit::initialize(&webkit_platform_support_);
-  WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get());
+
+  WebScriptController::registerExtension(new ChromeV8Extension(
+      "extensions/json_schema.js", IDR_JSON_SCHEMA_JS, NULL));
   WebScriptController::registerExtension(EventBindings::Get(
-      extension_dispatcher_));
-  WebScriptController::registerExtension(ExtensionApiTestV8Extension::Get());
-  WebScriptController::registerExtension(ExtensionProcessBindings::Get(
       extension_dispatcher_));
   WebScriptController::registerExtension(RendererExtensionBindings::Get(
       extension_dispatcher_));
+  WebScriptController::registerExtension(ExtensionProcessBindings::Get(
+      extension_dispatcher_));
+  WebScriptController::registerExtension(new ChromeV8Extension(
+      "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL));
+
   EventBindings::SetRenderThread(&render_thread_);
   ExtensionBindingsContext::SetRenderThreadMessageLoop(&msg_loop_);
 

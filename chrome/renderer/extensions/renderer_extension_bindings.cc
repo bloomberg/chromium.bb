@@ -12,8 +12,8 @@
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/renderer/render_thread.h"
@@ -59,14 +59,15 @@ static void ClearPortData(int port_id) {
 }
 
 const char kPortClosedError[] = "Attempting to use a disconnected port object";
-const char* kExtensionDeps[] = { EventBindings::kName };
+const char* kExtensionDeps[] = { "extensions/event.js" };
 
-class ExtensionImpl : public ExtensionBase {
+class ExtensionImpl : public ChromeV8Extension {
  public:
   explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
-      : ExtensionBase(RendererExtensionBindings::kName,
-                      GetStringResource(IDR_RENDERER_EXTENSION_BINDINGS_JS),
-                      arraysize(kExtensionDeps), kExtensionDeps, dispatcher) {
+      : ChromeV8Extension("extensions/renderer_extension_bindings.js",
+                          IDR_RENDERER_EXTENSION_BINDINGS_JS,
+                          arraysize(kExtensionDeps), kExtensionDeps,
+                          dispatcher) {
   }
   ~ExtensionImpl() {}
 
@@ -85,7 +86,7 @@ class ExtensionImpl : public ExtensionBase {
     } else if (name->Equals(v8::String::New("GetL10nMessage"))) {
       return v8::FunctionTemplate::New(GetL10nMessage);
     }
-    return ExtensionBase::GetNativeFunction(name);
+    return ChromeV8Extension::GetNativeFunction(name);
   }
 
   // Creates a new messaging channel to the given extension.
@@ -245,9 +246,6 @@ class ExtensionImpl : public ExtensionBase {
 };
 
 }  // namespace
-
-const char* RendererExtensionBindings::kName =
-    "chrome/RendererExtensionBindings";
 
 v8::Extension* RendererExtensionBindings::Get(ExtensionDispatcher* dispatcher) {
   static v8::Extension* extension = new ExtensionImpl(dispatcher);

@@ -26,12 +26,11 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
-#include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
-#include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "chrome/renderer/static_v8_external_string_resource.h"
@@ -54,12 +53,11 @@ using WebKit::WebView;
 
 namespace {
 
-const char kExtensionName[] = "chrome/ExtensionProcessBindings";
 const char* kExtensionDeps[] = {
-  EventBindings::kName,
-  JsonSchemaJsV8Extension::kName,
-  RendererExtensionBindings::kName,
-  ExtensionApiTestV8Extension::kName,
+  "extensions/event.js",
+  "extensions/json_schema.js",
+  "extensions/renderer_extension_bindings.js",
+  "extensions/apitest.js"
 };
 
 // Contains info relevant to a pending API request.
@@ -155,14 +153,14 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
   int index_;
 };
 
-class ExtensionImpl : public ExtensionBase {
+class ExtensionImpl : public ChromeV8Extension {
  public:
   explicit ExtensionImpl(ExtensionDispatcher* extension_dispatcher)
-    : ExtensionBase(kExtensionName,
-                    GetStringResource(IDR_EXTENSION_PROCESS_BINDINGS_JS),
-                    arraysize(kExtensionDeps),
-                    kExtensionDeps,
-                    extension_dispatcher) {
+      : ChromeV8Extension("extensions/extension_process_bindings.js",
+                          IDR_EXTENSION_PROCESS_BINDINGS_JS,
+                          arraysize(kExtensionDeps),
+                          kExtensionDeps,
+                          extension_dispatcher) {
   }
   ~ExtensionImpl() {}
 
@@ -202,7 +200,7 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(CreateBlob, v8::External::New(this));
     }
 
-    return ExtensionBase::GetNativeFunction(name);
+    return ChromeV8Extension::GetNativeFunction(name);
   }
 
  private:

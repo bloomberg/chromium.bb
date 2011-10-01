@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_BASE_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_BASE_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_CHROME_V8_EXTENSION_H_
+#define CHROME_RENDERER_EXTENSIONS_CHROME_V8_EXTENSION_H_
 #pragma once
 
 #include "base/logging.h"
@@ -21,18 +21,20 @@ class WebFrame;
 
 // This is a base class for chrome extension bindings.  Common features that
 // are shared by different modules go here.
-class ExtensionBase : public v8::Extension {
+//
+// TODO(aa): Remove the extension-system specific bits of this and move to
+// renderer/, or even to renderer/bindings and use DEPS to enforce separation
+// from extension system.
+class ChromeV8Extension : public v8::Extension {
  public:
-  static const char* GetStringResource(int resource_id);
-
-  ExtensionBase(const char* name,
-                const char* source,
-                int dep_count,
-                const char** deps,
-                ExtensionDispatcher* extension_dispatcher)
-      : v8::Extension(name, source, dep_count, deps),
-        extension_dispatcher_(extension_dispatcher) {
-  }
+  ChromeV8Extension(const char* name,
+                    int resource_id,
+                    ExtensionDispatcher* extension_dispatcher);
+  ChromeV8Extension(const char* name,
+                    int resource_id,
+                    int dependency_count,
+                    const char** dependencies,
+                    ExtensionDispatcher* extension_dispatcher);
 
   // Derived classes should call this at the end of their implementation in
   // order to expose common native functions, like GetChromeHidden, to the
@@ -40,7 +42,6 @@ class ExtensionBase : public v8::Extension {
   virtual v8::Handle<v8::FunctionTemplate>
       GetNativeFunction(v8::Handle<v8::String> name);
 
-  // TODO(jstritar): Used for testing http://crbug.com/91582. Remove when done.
   ExtensionDispatcher* extension_dispatcher() { return extension_dispatcher_; }
 
   // Returns a hidden variable for use by the bindings in the specified context
@@ -76,8 +77,10 @@ class ExtensionBase : public v8::Extension {
   ExtensionDispatcher* extension_dispatcher_;
 
  private:
+  static const char* GetStringResource(int resource_id);
+
   // Helper to print from bindings javascript.
   static v8::Handle<v8::Value> Print(const v8::Arguments& args);
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_BASE_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_CHROME_V8_EXTENSION_H_

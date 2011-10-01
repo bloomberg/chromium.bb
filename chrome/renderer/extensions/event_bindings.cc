@@ -12,12 +12,11 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
@@ -57,12 +56,12 @@ static EventListenerCounts& GetListenerCounts(const std::string& extension_id) {
   return g_singleton_data.Get().listener_counts_[extension_id];
 }
 
-class ExtensionImpl : public ExtensionBase {
+class ExtensionImpl : public ChromeV8Extension {
  public:
   explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
-      : ExtensionBase(EventBindings::kName,
-                      GetStringResource(IDR_EVENT_BINDINGS_JS),
-                      0, NULL, dispatcher) {
+      : ChromeV8Extension("extensions/event.js",
+                          IDR_EVENT_BINDINGS_JS,
+                          dispatcher) {
   }
   ~ExtensionImpl() {}
 
@@ -75,7 +74,7 @@ class ExtensionImpl : public ExtensionBase {
     } else if (name->Equals(v8::String::New("GetExternalFileEntry"))) {
       return v8::FunctionTemplate::New(GetExternalFileEntry);
     }
-    return ExtensionBase::GetNativeFunction(name);
+    return ChromeV8Extension::GetNativeFunction(name);
   }
 
   // Attach an event name to an object.
@@ -164,8 +163,6 @@ class ExtensionImpl : public ExtensionBase {
 };
 
 }  // namespace
-
-const char* EventBindings::kName = "chrome/EventBindings";
 
 v8::Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
   static v8::Extension* extension = new ExtensionImpl(dispatcher);

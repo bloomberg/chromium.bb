@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_base.h"
+#include "chrome/renderer/extensions/chrome_v8_extension.h"
 
 #include "base/logging.h"
 #include "base/lazy_instance.h"
@@ -35,7 +35,7 @@ static base::LazyInstance<StringMap> g_string_map(base::LINKER_INITIALIZED);
 }  // namespace
 
 // static
-const char* ExtensionBase::GetStringResource(int resource_id) {
+const char* ChromeV8Extension::GetStringResource(int resource_id) {
   StringMap* strings = g_string_map.Pointer();
   StringMap::iterator it = strings->find(resource_id);
   if (it == strings->end()) {
@@ -48,7 +48,7 @@ const char* ExtensionBase::GetStringResource(int resource_id) {
 }
 
 // static
-RenderView* ExtensionBase::GetCurrentRenderView() {
+RenderView* ChromeV8Extension::GetCurrentRenderView() {
   WebFrame* webframe = WebFrame::frameForCurrentContext();
   DCHECK(webframe) << "RetrieveCurrentFrame called when not in a V8 context.";
   if (!webframe)
@@ -63,7 +63,27 @@ RenderView* ExtensionBase::GetCurrentRenderView() {
   return renderview;
 }
 
-const Extension* ExtensionBase::GetExtensionForCurrentRenderView() const {
+ChromeV8Extension::ChromeV8Extension(const char* name, int resource_id,
+                                     ExtensionDispatcher* extension_dispatcher)
+    : v8::Extension(name,
+                    GetStringResource(resource_id),
+                    0,  // num dependencies
+                    NULL),  // dependencies array
+      extension_dispatcher_(extension_dispatcher) {
+}
+
+ChromeV8Extension::ChromeV8Extension(const char* name, int resource_id,
+                                     int dependency_count,
+                                     const char** dependencies,
+                                     ExtensionDispatcher* extension_dispatcher)
+    : v8::Extension(name,
+                    GetStringResource(resource_id),
+                    dependency_count,
+                    dependencies),
+      extension_dispatcher_(extension_dispatcher) {
+}
+
+const Extension* ChromeV8Extension::GetExtensionForCurrentRenderView() const {
   RenderView* renderview = GetCurrentRenderView();
   if (!renderview)
     return NULL;  // this can happen as a tab is closing.
@@ -76,7 +96,7 @@ const Extension* ExtensionBase::GetExtensionForCurrentRenderView() const {
   return extensions->GetByURL(url);
 }
 
-bool ExtensionBase::CheckPermissionForCurrentRenderView(
+bool ChromeV8Extension::CheckPermissionForCurrentRenderView(
     const std::string& function_name) const {
   const ::Extension* extension = GetExtensionForCurrentRenderView();
   if (extension &&
@@ -94,7 +114,7 @@ bool ExtensionBase::CheckPermissionForCurrentRenderView(
 }
 
 v8::Handle<v8::FunctionTemplate>
-    ExtensionBase::GetNativeFunction(v8::Handle<v8::String> name) {
+    ChromeV8Extension::GetNativeFunction(v8::Handle<v8::String> name) {
   if (name->Equals(v8::String::New("GetChromeHidden"))) {
     return v8::FunctionTemplate::New(GetChromeHidden);
   }
@@ -106,12 +126,12 @@ v8::Handle<v8::FunctionTemplate>
   return v8::Handle<v8::FunctionTemplate>();
 }
 
-v8::Handle<v8::Value> ExtensionBase::GetChromeHidden(
+v8::Handle<v8::Value> ChromeV8Extension::GetChromeHidden(
     const v8::Arguments& args) {
   return GetChromeHidden(v8::Context::GetCurrent());
 }
 
-v8::Handle<v8::Value> ExtensionBase::GetChromeHidden(
+v8::Handle<v8::Value> ChromeV8Extension::GetChromeHidden(
     const v8::Handle<v8::Context>& context) {
   v8::Local<v8::Object> global = context->Global();
   v8::Local<v8::Value> hidden = global->GetHiddenValue(
@@ -133,7 +153,7 @@ v8::Handle<v8::Value> ExtensionBase::GetChromeHidden(
   return v8::Local<v8::Object>::Cast(hidden);
 }
 
-v8::Handle<v8::Value> ExtensionBase::Print(const v8::Arguments& args) {
+v8::Handle<v8::Value> ChromeV8Extension::Print(const v8::Arguments& args) {
   if (args.Length() < 1)
     return v8::Undefined();
 

@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
-#include "chrome/renderer/extensions/extension_base.h"
+#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/common/url_constants.h"
@@ -250,7 +250,7 @@ v8::Handle<v8::Value> ExtensionBindingsContext::CallChromeHiddenMethod(
   // Look up the function name, which may be a sub-property like
   // "Port.dispatchOnMessage" in the hidden global variable.
   v8::Local<v8::Value> value = v8::Local<v8::Value>::New(
-      ExtensionBase::GetChromeHidden(v8_context_));
+      ChromeV8Extension::GetChromeHidden(v8_context_));
   std::vector<std::string> components;
   base::SplitStringDontTrim(function_name, '.', &components);
   for (size_t i = 0; i < components.size(); ++i) {

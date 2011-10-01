@@ -16,8 +16,6 @@ class Extension;
 // This class deals with the javascript bindings related to Event objects.
 class EventBindings {
  public:
-  static const char* kName;  // The v8::Extension name, for dependencies.
-
   static v8::Extension* Get(ExtensionDispatcher* dispatcher);
 
   // Allow RenderThread to be mocked out. It would be better if

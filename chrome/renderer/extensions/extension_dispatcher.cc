@@ -12,15 +12,16 @@
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
+#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_thread.h"
+#include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
@@ -90,11 +91,13 @@ void ExtensionDispatcher::WebKitInitialized() {
   RegisterExtension(ChromeWebstoreExtension::Get(), false);
 
   // Add v8 extensions related to chrome extensions.
-  RegisterExtension(ExtensionProcessBindings::Get(this), true);
-  RegisterExtension(JsonSchemaJsV8Extension::Get(), true);
+  RegisterExtension(new ChromeV8Extension(
+      "extensions/json_schema.js", IDR_JSON_SCHEMA_JS, NULL), true);
   RegisterExtension(EventBindings::Get(this), true);
   RegisterExtension(RendererExtensionBindings::Get(this), true);
-  RegisterExtension(ExtensionApiTestV8Extension::Get(), true);
+  RegisterExtension(ExtensionProcessBindings::Get(this), true);
+  RegisterExtension(new ChromeV8Extension(
+      "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL), true);
 
   // Initialize host permissions for any extensions that were activated before
   // WebKit was initialized.

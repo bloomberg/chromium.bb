@@ -26,13 +26,13 @@
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/automation/automation_renderer_helper.h"
-#include "chrome/renderer/automation/dom_automation_v8_extension.h"
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/chrome_ppapi_interfaces.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
+#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
@@ -181,7 +181,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDomAutomationController)) {
-    thread->RegisterExtension(DomAutomationV8Extension::Get());
+    thread->RegisterExtension(new ChromeV8Extension(
+        "dom_automation.js", IDR_DOM_AUTOMATION_JS, NULL));
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(

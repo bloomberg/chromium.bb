@@ -19,9 +19,6 @@ class Extension;
 // used by both web renderers and extension processes.
 class RendererExtensionBindings {
  public:
-  // Name of extension, for dependencies.
-  static const char* kName;
-
   // Creates an instance of the extension.
   static v8::Extension* Get(ExtensionDispatcher* dispatcher);
 
