@@ -692,19 +692,30 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 }
 
-// This will be called after the command-line has been mutated by about:flags
-MetricsService* ChromeBrowserMainParts::SetupMetricsAndFieldTrials(
+void ChromeBrowserMainParts::SetupMetricsAndFieldTrials(
+    MetricsService* metrics,
     const CommandLine& parsed_command_line,
     PrefService* local_state) {
-  // Must initialize metrics after labs have been converted into switches,
-  // but before field trials are set up (so that client ID is available for
-  // one-time randomized field trials).
-  MetricsService* metrics = InitializeMetrics(parsed_command_line, local_state);
-
-  // Initialize FieldTrialList to support FieldTrials that use one-time
-  // randomization. The client ID will be empty if the user has not opted
-  // to send metrics.
-  field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
+  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly) ||
+      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
+    // If we're testing then we don't care what the user preference is, we turn
+    // on recording, but not reporting, otherwise tests fail.
+    metrics->StartRecordingOnly();
+  } else {
+    // If the user permits metrics reporting with the checkbox in the
+    // prefs, we turn on recording.  We disable metrics completely for
+    // non-official builds.
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+    bool enabled =
+        chromeos::UserCrosSettingsProvider::cached_reporting_enabled();
+#else
+    bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+#endif  // #if defined(OS_CHROMEOS)
+    if (enabled)
+      metrics->Start();
+#endif  // defined(GOOGLE_CHROME_BUILD)
+  }
 
   SetupFieldTrials(metrics->recording_active(),
                    local_state->IsManagedPreference(
@@ -715,8 +726,6 @@ MetricsService* ChromeBrowserMainParts::SetupMetricsAndFieldTrials(
   // scope. Even though NewRunnableMethod does AddRef and Release, the object
   // will not be deleted after the Task is executed.
   field_trial_synchronizer_ = new FieldTrialSynchronizer();
-
-  return metrics;
 }
 
 // This is an A/B test for the maximum number of persistent connections per
@@ -1088,11 +1097,9 @@ void ChromeBrowserMainParts::DefaultAppsFieldTrial() {
   }
 }
 
-// ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
-
 // Initializes the metrics service with the configuration for this process,
 // returning the created service (guaranteed non-NULL).
-MetricsService* ChromeBrowserMainParts::InitializeMetrics(
+MetricsService* ChromeBrowserMainParts::CreateMetrics(
     const CommandLine& parsed_command_line,
     const PrefService* local_state) {
 #if defined(OS_WIN)
@@ -1102,29 +1109,15 @@ MetricsService* ChromeBrowserMainParts::InitializeMetrics(
   MetricsLog::set_version_extension("-64");
 #endif  // defined(OS_WIN)
 
+  // Must initialize metrics after labs have been converted into switches,
+  // but before field trials are set up (so that client ID is available for
+  // one-time randomized field trials).
   MetricsService* metrics = g_browser_process->metrics_service();
 
-  if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly) ||
-      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
-    // If we're testing then we don't care what the user preference is, we turn
-    // on recording, but not reporting, otherwise tests fail.
-    metrics->StartRecordingOnly();
-    return metrics;
-  }
-
-  // If the user permits metrics reporting with the checkbox in the
-  // prefs, we turn on recording.  We disable metrics completely for
-  // non-official builds.
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-  bool enabled = chromeos::UserCrosSettingsProvider::cached_reporting_enabled();
-#else
-  bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-#endif  // #if defined(OS_CHROMEOS)
-  if (enabled) {
-    metrics->Start();
-  }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+  // Initialize FieldTrialList to support FieldTrials that use one-time
+  // randomization. The client ID will be empty if the user has not opted
+  // to send metrics.
+  field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
 
   return metrics;
 }
@@ -1401,11 +1394,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // will not be deleted after the Task is executed.
   histogram_synchronizer_ = new HistogramSynchronizer();
 
-  // Now the command line has been mutated based on about:flags, we can
-  // set up metrics and initialize field trials.
-  MetricsService* metrics =
-      SetupMetricsAndFieldTrials(parsed_command_line(), local_state);
-
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually
   // gets used if the user has metrics reporting enabled at uninstall time.
@@ -1426,7 +1414,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   SecKeychainAddCallback(&KeychainCallback, 0, NULL);
 #endif
 
+  // Now the command line has been mutated based on about:flags, we can
+  // set up metrics and initialize field trials. This needs the threads started.
+  MetricsService* metrics = CreateMetrics(parsed_command_line(), local_state);
+
   CreateChildThreads(browser_process_.get());
+
+  SetupMetricsAndFieldTrials(metrics, parsed_command_line(), local_state);
 
 #if defined(OS_CHROMEOS)
   // Now that the file thread exists we can record our stats.

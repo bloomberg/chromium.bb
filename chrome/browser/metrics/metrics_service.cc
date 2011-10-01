@@ -799,6 +799,7 @@ void MetricsService::StartRecording() {
     // initialization steps (such as plugin list generation) necessary
     // for sending the initial log.  This avoids blocking the main UI
     // thread.
+    DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::FILE));
     BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&MetricsService::InitTaskGetHardwareClass,
             base::Unretained(this),
