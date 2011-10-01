@@ -799,7 +799,7 @@ void MetricsService::StartRecording() {
     // initialization steps (such as plugin list generation) necessary
     // for sending the initial log.  This avoids blocking the main UI
     // thread.
-    BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
+    g_browser_process->file_thread()->message_loop()->PostDelayedTask(FROM_HERE,
         base::Bind(&MetricsService::InitTaskGetHardwareClass,
             base::Unretained(this),
             MessageLoop::current()->message_loop_proxy()),
