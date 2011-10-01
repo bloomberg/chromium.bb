@@ -1636,12 +1636,6 @@
    fun:ExtensionContentSettingsStoreTest_*
 }
 {
-   bug_98538
-   Heapcheck:Leak
-   ...
-   fun:ExtensionSettingsStorageTest*
-}
-{
    bug_98568
    Heapcheck:Leak
    ...

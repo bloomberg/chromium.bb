@@ -4609,12 +4609,6 @@
    fun:avcodec_decode_audio3
 }
 {
-   bug_98538
-   Memcheck:Leak
-   ...
-   fun:*ExtensionSettingsStorageTest*
-}
-{
    bug_98568
    Memcheck:Leak
    ...

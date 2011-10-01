@@ -79,8 +79,12 @@ ExtensionSettingsStorageTest::~ExtensionSettingsStorageTest() {}
 
 void ExtensionSettingsStorageTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  storage_ = (GetParam())(temp_dir_.path(), "fakeExtension");
-  ASSERT_TRUE(storage_ != NULL);
+  storage_.reset((GetParam())(temp_dir_.path(), "fakeExtension"));
+  ASSERT_TRUE(storage_.get());
+}
+
+void ExtensionSettingsStorageTest::TearDown() {
+  storage_.reset();
 }
 
 TEST_P(ExtensionSettingsStorageTest, GetWhenEmpty) {

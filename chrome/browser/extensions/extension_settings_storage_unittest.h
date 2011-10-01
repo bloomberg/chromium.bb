@@ -30,9 +30,10 @@ class ExtensionSettingsStorageTest
   virtual ~ExtensionSettingsStorageTest();
 
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
  protected:
-  ExtensionSettingsStorage* storage_;
+  scoped_ptr<ExtensionSettingsStorage> storage_;
 
   std::string key1_;
   std::string key2_;
