@@ -46,6 +46,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -1651,6 +1652,8 @@ int32_t PluginInstance::LockMouse(PP_Instance instance,
   }
   if (lock_mouse_callback_.func)
     return PP_ERROR_INPROGRESS;
+  if (!CanAccessMainFrame())
+    return PP_ERROR_NOACCESS;
 
   lock_mouse_callback_ = callback;
   // We will be notified on completion via OnLockMouseACK(), either
@@ -1671,6 +1674,23 @@ void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {
   cursor_.reset(cursor);
   if (fullscreen_container_)
     fullscreen_container_->DidChangeCursor(*cursor);
+}
+
+bool PluginInstance::CanAccessMainFrame() const {
+  if (!container_)
+    return false;
+  WebKit::WebDocument containing_document = container_->element().document();
+
+  if (!containing_document.frame() ||
+      !containing_document.frame()->view() ||
+      !containing_document.frame()->view()->mainFrame()) {
+    return false;
+  }
+  WebKit::WebDocument main_document =
+      containing_document.frame()->view()->mainFrame()->document();
+
+  return containing_document.securityOrigin().canAccess(
+      main_document.securityOrigin());
 }
 
 }  // namespace ppapi
