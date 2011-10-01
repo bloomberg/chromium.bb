@@ -512,6 +512,10 @@ void TabContents::ToggleFullscreenMode(bool enter_fullscreen) {
     delegate_->ToggleFullscreenModeForTab(this, enter_fullscreen);
 }
 
+bool TabContents::IsFullscreenForCurrentTab() const {
+  return delegate_ ? delegate_->IsFullscreenForTab(this) : false;
+}
+
 void TabContents::UpdatePreferredSize(const gfx::Size& pref_size) {
   if (delegate_)
     delegate_->UpdatePreferredSize(this, pref_size);

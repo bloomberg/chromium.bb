@@ -1131,6 +1131,11 @@ void RenderViewHost::NotifyRendererResponsive() {
   delegate_->RendererResponsive(this);
 }
 
+bool RenderViewHost::CanLockMouse() const {
+  // Only allow to lock the mouse when the current tab is in fullscreen mode.
+  return delegate_->IsFullscreenForCurrentTab();
+}
+
 void RenderViewHost::OnMsgFocus() {
   delegate_->Activate();
 }
@@ -1223,6 +1228,8 @@ void RenderViewHost::SetAltErrorPageURL(const GURL& url) {
 }
 
 void RenderViewHost::ExitFullscreen() {
+  UnlockMouseIfNecessary();
+
   Send(new ViewMsg_ExitFullscreen(routing_id()));
 }
 

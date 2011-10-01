@@ -373,6 +373,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Notification that the page wants to go into or out of fullscreen mode.
   virtual void ToggleFullscreenMode(bool enter_fullscreen) {}
+  virtual bool IsFullscreenForCurrentTab() const;
 
   // The contents' preferred size changed.
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}

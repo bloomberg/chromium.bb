@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -325,14 +326,16 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   }
 
   // RenderWidgetHost public overrides.
-  virtual void Shutdown();
-  virtual bool IsRenderView() const;
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void GotFocus();
-  virtual void LostCapture();
-  virtual void ForwardMouseEvent(const WebKit::WebMouseEvent& mouse_event);
-  virtual void OnMouseActivate();
-  virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
+  virtual void Shutdown() OVERRIDE;
+  virtual bool IsRenderView() const OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void GotFocus() OVERRIDE;
+  virtual void LostCapture() OVERRIDE;
+  virtual void ForwardMouseEvent(
+      const WebKit::WebMouseEvent& mouse_event) OVERRIDE;
+  virtual void OnMouseActivate() OVERRIDE;
+  virtual void ForwardKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event) OVERRIDE;
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int route_id,
@@ -450,13 +453,15 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
 
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void OnUserGesture();
-  virtual void NotifyRendererUnresponsive();
-  virtual void NotifyRendererResponsive();
-  virtual void OnMsgFocus();
-  virtual void OnMsgBlur();
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void UnhandledKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void OnUserGesture() OVERRIDE;
+  virtual void NotifyRendererUnresponsive() OVERRIDE;
+  virtual void NotifyRendererResponsive() OVERRIDE;
+  virtual bool CanLockMouse() const OVERRIDE;
+  virtual void OnMsgFocus() OVERRIDE;
+  virtual void OnMsgBlur() OVERRIDE;
 
   // IPC message handlers.
   void OnMsgShowView(int route_id,

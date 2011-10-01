@@ -378,8 +378,7 @@ void RenderWidgetHost::Focus() {
 }
 
 void RenderWidgetHost::Blur() {
-  if (IsMouseLocked())
-    view_->UnlockMouse();
+  UnlockMouseIfNecessary();
 
   Send(new ViewMsg_SetFocus(routing_id_, false));
 }
@@ -393,8 +392,7 @@ void RenderWidgetHost::LostMouseLock() {
 }
 
 void RenderWidgetHost::ViewDestroyed() {
-  if (IsMouseLocked())
-    view_->UnlockMouse();
+  UnlockMouseIfNecessary();
 
   // TODO(evanm): tracking this may no longer be necessary;
   // eliminate this function if so.
@@ -796,6 +794,15 @@ void RenderWidgetHost::ImeCancelComposition() {
             std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
 }
 
+bool RenderWidgetHost::CanLockMouse() const {
+  return false;
+}
+
+void RenderWidgetHost::UnlockMouseIfNecessary() {
+  if (IsMouseLocked())
+    view_->UnlockMouse();
+}
+
 bool RenderWidgetHost::IsMouseLocked() const {
   return view_ ? view_->mouse_locked() : false;
 }
@@ -1146,9 +1153,7 @@ void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
 }
 
 void RenderWidgetHost::OnMsgLockMouse() {
-  // TODO(yzshen): Only allow to lock the mouse when in fullscreen mode, and
-  // make sure that the mouse is unlocked when leaving fullscreen mode.
-  if (!view_ || !view_->HasFocus() || !view_->LockMouse()) {
+  if (!CanLockMouse() || !view_ || !view_->HasFocus()|| !view_->LockMouse()) {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
   } else {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
@@ -1156,8 +1161,7 @@ void RenderWidgetHost::OnMsgLockMouse() {
 }
 
 void RenderWidgetHost::OnMsgUnlockMouse() {
-  if (IsMouseLocked())
-    view_->UnlockMouse();
+  UnlockMouseIfNecessary();
 }
 
 #if defined(OS_POSIX)

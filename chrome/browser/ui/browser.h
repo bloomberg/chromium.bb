@@ -963,6 +963,7 @@ class Browser : public TabHandlerDelegate,
                                 const FilePath& path) OVERRIDE;
   virtual void ToggleFullscreenModeForTab(TabContents* tab,
       bool enter_fullscreen) OVERRIDE;
+  virtual bool IsFullscreenForTab(const TabContents* tab) const OVERRIDE;
   virtual void JSOutOfMemory(TabContents* tab) OVERRIDE;
   virtual void RegisterProtocolHandler(TabContents* tab,
                                        const std::string& protocol,

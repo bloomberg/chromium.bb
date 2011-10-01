@@ -468,6 +468,12 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   virtual void NotifyRendererUnresponsive() {}
   virtual void NotifyRendererResponsive() {}
 
+  // RenderViewHost overrides this method to impose further restrictions on when
+  // to allow mouse lock. For now, it only allows to lock the mouse when the
+  // current tab is in fullscreen mode.
+  virtual bool CanLockMouse() const;
+
+  void UnlockMouseIfNecessary();
   bool IsMouseLocked() const;
 
  protected:

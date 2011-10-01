@@ -283,6 +283,10 @@ void TabContentsDelegate::ToggleFullscreenModeForTab(TabContents* tab,
                                                      bool enter_fullscreen) {
 }
 
+bool TabContentsDelegate::IsFullscreenForTab(const TabContents* tab) const {
+  return false;
+}
+
 void TabContentsDelegate::JSOutOfMemory(TabContents* tab) {
 }
 

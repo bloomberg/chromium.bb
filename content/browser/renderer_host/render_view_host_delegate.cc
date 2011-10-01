@@ -43,3 +43,7 @@ bool RenderViewHostDelegate::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
   return false;
 }
+
+bool RenderViewHostDelegate::IsFullscreenForCurrentTab() const {
+  return false;
+}

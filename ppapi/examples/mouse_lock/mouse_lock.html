@@ -7,19 +7,67 @@
   -->
 <head>
   <title>Mouse Lock Example</title>
+  <style type="text/css">
+    :-webkit-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <script>
+    var fullscreen = false;
+    function ToggleFullscreen() {
+      if (fullscreen) {
+        document.webkitCancelFullScreen();
+      } else {
+        document.getElementById('container').webkitRequestFullScreen(
+            Element.ALLOW_KEYBOARD_INPUT);
+      }
+      fullscreen = !fullscreen;
+    }
+  </script>
 </head>
-
 <body title="This tooltip should not be shown if the mouse is locked.">
-<ul>
-  <li>Lock mouse: left click in either of the two boxes; or right click in
-      either of the boxes to ensure that it is focused and then press Enter key.
-  </li>
-  <li>Unlock mouse: lose focus, press Esc key, or right click.</li>
-</ul>
-<object id="plugin" type="application/x-ppapi-example-mouse-lock"
-    width="300" height="300" border="2px"></object>
-<div></div>
-<object id="plugin" type="application/x-ppapi-example-mouse-lock"
-    width="300" height="300" border="2px"></object>
+<div id="container">
+  <ul>
+    <li>There are two different kinds of fullscreen mode - "tab fullscreen" and
+        "browser fullscreen".
+      <ul>
+        <li>"tab fullscreen" refers to when a tab enters fullscreen mode via the
+            JS or Pepper fullscreen API;</li>
+        <li>"browser fullscreen" refers to the user putting the browser itself
+            into fullscreen mode from the UI (e.g., pressing F11).</li>
+      </ul>
+      <span style="font-weight:bold">
+        NOTE: Mouse lock is only allowed in "tab fullscreen" mode.
+      </span>
+    </li>
+    <li>Lock mouse:
+      <ul>
+        <li>left click in either of the two boxes; or</li>
+        <li>right click in either of the boxes to ensure that it is focused and
+            then press Enter key. (You could verify that the tooltip window is
+            dismissed properly by this second approach.)</li>
+      </ul>
+    </li>
+    <li>Unlock mouse:
+      <ul>
+        <li>lose focus; or</li>
+        <li>press Esc key; or</li>
+        <li>middle click; or</li>
+        <li>exit from the "tab fullscreen" mode.</li>
+      </ul>
+    </li>
+  </ul>
+  <object id="plugin" type="application/x-ppapi-example-mouse-lock"
+      width="300" height="300" border="2px"></object>
+  <div></div>
+  <object id="plugin" type="application/x-ppapi-example-mouse-lock"
+      width="300" height="300" border="2px"></object>
+  <div>
+    <button id="toggle_fullscreen" onclick="ToggleFullscreen();">
+      Toggle Tab Fullscreen
+    </button>
+  </div>
+</div>
 </body>
 </html>

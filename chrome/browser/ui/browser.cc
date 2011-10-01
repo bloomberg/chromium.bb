@@ -3795,23 +3795,46 @@ void Browser::ToggleFullscreenModeForTab(TabContents* tab,
     bool enter_fullscreen) {
   if (tab != GetSelectedTabContents())
     return;
-  fullscreened_tab_ = enter_fullscreen ?
-      TabContentsWrapper::GetCurrentWrapperForContents(tab) : NULL;
-  bool in_correct_mode_for_tab_fullscreen;
+
+  if (enter_fullscreen) {
+    fullscreened_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
+    bool in_correct_mode_for_tab_fullscreen;
 #if defined(OS_MACOSX)
-  in_correct_mode_for_tab_fullscreen = window_->InPresentationMode();
+    in_correct_mode_for_tab_fullscreen = window_->InPresentationMode();
 #else
-  in_correct_mode_for_tab_fullscreen = window_->IsFullscreen();
+    in_correct_mode_for_tab_fullscreen = window_->IsFullscreen();
 #endif
-  if (enter_fullscreen && !in_correct_mode_for_tab_fullscreen)
-    tab_caused_fullscreen_ = true;
+    if (!in_correct_mode_for_tab_fullscreen)
+      tab_caused_fullscreen_ = true;
+  }
+
   if (tab_caused_fullscreen_) {
 #if defined(OS_MACOSX)
     TogglePresentationMode();
 #else
     ToggleFullscreenMode();
 #endif
+  } else if (!enter_fullscreen) {
+    // If currently there is a tab in "tab fullscreen" mode and fullscreen was
+    // not caused by it (i.e., previously it was in "browser fullscreen" mode),
+    // we need to switch back to "browser fullscreen" mode. In this case, all we
+    // have to do is notifying the tab that it has exited "tab fullscreen" mode.
+    NotifyTabOfFullscreenExitIfNecessary();
   }
+}
+
+bool Browser::IsFullscreenForTab(const TabContents* tab) const {
+  const TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  bool result = wrapper && wrapper == fullscreened_tab_;
+  DCHECK(!result || tab == GetSelectedTabContents());
+#if defined(OS_MACOSX)
+  DCHECK(!result || window_->InPresentationMode());
+#else
+  DCHECK(!result || window_->IsFullscreen());
+#endif
+
+  return result;
 }
 
 void Browser::JSOutOfMemory(TabContents* tab) {

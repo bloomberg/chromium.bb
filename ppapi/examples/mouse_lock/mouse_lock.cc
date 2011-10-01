@@ -53,8 +53,9 @@ class MyInstance : public pp::Instance, public pp::MouseLock_Dev {
             !mouse_locked_) {
           LockMouse(
               callback_factory_.NewRequiredCallback(&MyInstance::DidLockMouse));
-        } else if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_RIGHT &&
-                   mouse_locked_) {
+        } else if (
+            mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE &&
+            mouse_locked_) {
           UnlockMouse();
         }
         return true;
