@@ -99,9 +99,15 @@ DictionaryValue* GetCountryData() {
 void GetValueList(const AutofillProfile& profile,
                   AutofillFieldType type,
                   scoped_ptr<ListValue>* list) {
+  list->reset(new ListValue);
+
   std::vector<string16> values;
   profile.GetMultiInfo(type, &values);
-  list->reset(new ListValue);
+
+  // |GetMultiInfo()| always returns at least one, potentially empty, item.
+  if (values.size() == 1 && values.front().empty())
+    return;
+
   for (size_t i = 0; i < values.size(); ++i) {
     (*list)->Set(i, Value::CreateStringValue(values[i]));
   }
@@ -123,6 +129,8 @@ void SetValueList(const ListValue* list,
 // Get the multi-valued element for |type| and return it in |ListValue| form.
 void GetNameList(const AutofillProfile& profile,
                  scoped_ptr<ListValue>* names) {
+  names->reset(new ListValue);
+
   std::vector<string16> first_names;
   std::vector<string16> middle_names;
   std::vector<string16> last_names;
@@ -132,7 +140,12 @@ void GetNameList(const AutofillProfile& profile,
   DCHECK_EQ(first_names.size(), middle_names.size());
   DCHECK_EQ(first_names.size(), last_names.size());
 
-  names->reset(new ListValue);
+  // |GetMultiInfo()| always returns at least one, potentially empty, item.
+  if (first_names.size() == 1 && first_names.front().empty() &&
+      middle_names.front().empty() && last_names.front().empty()) {
+    return;
+  }
+
   for (size_t i = 0; i < first_names.size(); ++i) {
     ListValue* name = new ListValue;  // owned by |list|
     name->Set(0, Value::CreateStringValue(first_names[i]));

@@ -74,10 +74,9 @@ cr.define('options', function() {
      * @param {Array} entries The list of items to be added to the list.
      */
     setMultiValueList_: function(listName, entries) {
-      // Add data entries, filtering null or empty strings.
+      // Add data entries.
       var list = $(listName);
-      list.dataModel = new ArrayDataModel(
-          entries.filter(function(i) {return i}));
+      list.dataModel = new ArrayDataModel(entries);
 
       // Add special entry for adding new values.
       list.dataModel.splice(list.dataModel.length, 0, null);
