@@ -23,7 +23,7 @@
 #include "content/common/socket_stream_dispatcher.h"
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/content_renderer_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_thread.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"

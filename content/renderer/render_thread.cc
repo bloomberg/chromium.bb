@@ -33,7 +33,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
-#include "content/renderer/content_renderer_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/devtools_agent_filter.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"

@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/renderer/content_renderer_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 
 class ChromeRenderProcessObserver;
 class ExtensionDispatcher;

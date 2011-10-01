@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "content/renderer/content_renderer_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 
 namespace content {
 

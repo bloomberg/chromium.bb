@@ -23,6 +23,7 @@
     '..',
   ],
   'sources': [
+    'public/renderer/content_renderer_client.h',
     'renderer/active_notification_tracker.cc',
     'renderer/active_notification_tracker.h',
     'renderer/content_renderer_client.h',

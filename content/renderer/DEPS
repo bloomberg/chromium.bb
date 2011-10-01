@@ -1,6 +1,6 @@
 include_rules = [
-  "-chrome",
   "+chrome/test",
+  "+content/public/renderer",
   "+media",  # For audio input/output and audio/video decoding.
   "+third_party/mach_override",
   "+third_party/tcmalloc",

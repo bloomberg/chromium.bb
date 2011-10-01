@@ -20,7 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/common/content_switches.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/content_renderer_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "ipc/ipc_channel.h"

@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome/app",  # The plugins use the theme library to get the sad plugin bitmap.
+  "+content/public/renderer",
   "+content/renderer",
   "+grit",  # For generated headers
   "+media/base",  # For initializing media library and media switches.
