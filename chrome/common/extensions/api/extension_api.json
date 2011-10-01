@@ -5842,7 +5842,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["requestLine", "requestHeaders", "statusLine", "responseHeaders", "blocking"]
+              "enum": ["requestHeaders", "responseHeaders", "blocking"]
             }
           },
           {"type": "string", "name": "eventName"},
@@ -5952,7 +5952,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["requestLine", "requestHeaders", "blocking"]
+              "enum": ["requestHeaders", "blocking"]
             }
           }
         ],
@@ -5996,7 +5996,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["requestLine", "requestHeaders"]
+              "enum": ["requestHeaders"]
             }
           }
         ]
@@ -6040,7 +6040,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["statusLine", "responseHeaders"]
+              "enum": ["responseHeaders"]
             }
           }
         ]
@@ -6083,7 +6083,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["statusLine", "responseHeaders"]
+              "enum": ["responseHeaders"]
             }
           }
         ]
@@ -6127,7 +6127,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["statusLine", "responseHeaders"]
+              "enum": ["responseHeaders"]
             }
           }
         ]
@@ -6170,7 +6170,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["statusLine", "responseHeaders"]
+              "enum": ["responseHeaders"]
             }
           }
         ]

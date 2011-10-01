@@ -47,7 +47,8 @@ runTests([
             type: "main_frame",
             url: getURL("complexLoad/a.html"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -57,7 +58,8 @@ runTests([
             type: "sub_frame",
             url: getURL("complexLoad/b.html"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -67,7 +69,8 @@ runTests([
             type: "image",
             url: getURL("complexLoad/b.jpg"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -77,7 +80,8 @@ runTests([
             type: "main_frame",
             url: getURL("complexLoad/a.html"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -87,7 +91,8 @@ runTests([
             type: "sub_frame",
             url: getURL("complexLoad/b.html"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -97,7 +102,8 @@ runTests([
             type: "image",
             url: getURL("complexLoad/b.jpg"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -141,7 +147,8 @@ runTests([
             type: "main_frame",
             url: getURL("complexLoad/a.html"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -151,7 +158,8 @@ runTests([
             type: "image",
             url: getURL("complexLoad/b.jpg"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -161,7 +169,8 @@ runTests([
             type: "main_frame",
             url: getURL("complexLoad/a.html"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -171,7 +180,8 @@ runTests([
             type: "image",
             url: getURL("complexLoad/b.jpg"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -225,7 +235,8 @@ runTests([
             scheme: "basic",
             realm: "testrealm",
             challenger: {host: testServer, port: testServerPort},
-            responseHeadersExist: true
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
           }
         },
         { label: "onResponseStarted",
@@ -235,7 +246,8 @@ runTests([
             fromCache: false,
             statusCode: 401,
             ip: "127.0.0.1",
-            responseHeadersExist: true
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
           }
         },
         { label: "onCompleted",
@@ -245,7 +257,8 @@ runTests([
             fromCache: false,
             statusCode: 401,
             ip: "127.0.0.1",
-            responseHeadersExist: true
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
           }
         },
       ],
@@ -291,6 +304,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
+            statusLine: "HTTP/1.0 200 OK",
           }
         },
         { label: "onCompleted-1",
@@ -301,6 +315,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
+            statusLine: "HTTP/1.0 200 OK",
           }
         },
         { label: "onBeforeRequest-2",
@@ -333,6 +348,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
+            statusLine: "HTTP/1.0 200 OK",
           }
         },
         { label: "onCompleted-2",
@@ -343,6 +359,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
+            statusLine: "HTTP/1.0 200 OK",
           }
         }
       ],

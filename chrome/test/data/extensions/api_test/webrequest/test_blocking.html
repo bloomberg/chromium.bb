@@ -87,7 +87,8 @@ runTests([
           details: {
             url: getURL("simpleLoad/a.html"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -96,7 +97,8 @@ runTests([
           details: {
             url: getURL("simpleLoad/a.html"),
             fromCache: false,
-            statusCode: 200
+            statusCode: 200,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -143,7 +145,8 @@ runTests([
             url: getURLEchoUserAgent(),
             fromCache: false,
             statusCode: 200,
-            ip: "127.0.0.1"
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.0 200 OK",
           }
         },
         { label: "onCompleted",
@@ -152,7 +155,8 @@ runTests([
             url: getURLEchoUserAgent(),
             fromCache: false,
             statusCode: 200,
-            ip: "127.0.0.1"
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.0 200 OK",
           }
         },
       ],

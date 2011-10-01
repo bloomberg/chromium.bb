@@ -27,7 +27,8 @@ runTests([
           details: {
             url: getURL("simpleLoad/a.html"),
             statusCode: 200,
-            fromCache: false
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -36,7 +37,8 @@ runTests([
           details: {
             url: getURL("simpleLoad/a.html"),
             statusCode: 200,
-            fromCache: false
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -134,7 +136,7 @@ runTests([
          "onBeforeRequest-2", "onBeforeSendHeaders-2", "onSendHeaders-2",
          "onResponseStarted", "onCompleted"] ],
       {},  // filter
-      ["requestHeaders", "responseHeaders", "statusLine"]);
+      ["requestHeaders", "responseHeaders"]);
     navigateAndWait(getURLHttpSimpleLoadRedirect());
   },
 

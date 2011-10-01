@@ -214,19 +214,19 @@ function initListeners(filter, extraInfoSpec) {
   chrome.experimental.webRequest.onAuthRequired.addListener(
       function(details) {
     return captureEvent("onAuthRequired", details);
-  }, filter, intersect(extraInfoSpec, ["responseHeaders", "statusLine"]));
+  }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
   chrome.experimental.webRequest.onResponseStarted.addListener(
       function(details) {
     return captureEvent("onResponseStarted", details);
-  }, filter, intersect(extraInfoSpec, ["responseHeaders", "statusLine"]));
+  }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
   chrome.experimental.webRequest.onBeforeRedirect.addListener(
       function(details) {
     return captureEvent("onBeforeRedirect", details);
-  }, filter, intersect(extraInfoSpec, ["responseHeaders", "statusLine"]));
+  }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
   chrome.experimental.webRequest.onCompleted.addListener(
       function(details) {
     return captureEvent("onCompleted", details);
-  }, filter, intersect(extraInfoSpec, ["responseHeaders", "statusLine"]));
+  }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
   chrome.experimental.webRequest.onErrorOccurred.addListener(
       function(details) {
     return captureEvent("onErrorOccurred", details);

@@ -78,11 +78,9 @@ class ExtensionWebRequestEventRouter {
   // events.
   struct ExtraInfoSpec {
     enum Flags {
-      REQUEST_LINE = 1<<0,
-      REQUEST_HEADERS = 1<<1,
-      STATUS_LINE = 1<<2,
-      RESPONSE_HEADERS = 1<<3,
-      BLOCKING = 1<<4,
+      REQUEST_HEADERS = 1<<0,
+      RESPONSE_HEADERS = 1<<1,
+      BLOCKING = 1<<2,
     };
 
     static bool InitFromValue(const base::ListValue& value,

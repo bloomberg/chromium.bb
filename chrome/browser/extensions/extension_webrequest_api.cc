@@ -398,12 +398,8 @@ bool ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
     if (!value.GetString(i, &str))
       return false;
 
-    if (str == "requestLine")
-      *extra_info_spec |= REQUEST_LINE;
-    else if (str == "requestHeaders")
+    if (str == "requestHeaders")
       *extra_info_spec |= REQUEST_HEADERS;
-    else if (str == "statusLine")
-      *extra_info_spec |= STATUS_LINE;
     else if (str == "responseHeaders")
       *extra_info_spec |= RESPONSE_HEADERS;
     else if (str == "blocking")
@@ -533,11 +529,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   ExtractRequestInfo(request, dict);
-
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
     dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(*headers));
-  // TODO(battre): implement request line.
-
   args.Append(dict);
 
   if (DispatchEvent(profile, request, listeners, args)) {
@@ -578,7 +571,6 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
   ExtractRequestInfo(request, dict);
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
     dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(headers));
-  // TODO(battre): support "request line".
   args.Append(dict);
 
   DispatchEvent(profile, request, listeners, args);
@@ -614,12 +606,11 @@ void ExtensionWebRequestEventRouter::OnAuthRequired(
   challenger->SetString(keys::kHostKey, auth_info.challenger.host());
   challenger->SetInteger(keys::kPortKey, auth_info.challenger.port());
   dict->Set(keys::kChallengerKey, challenger);
+  dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
   }
-  if (extra_info_spec & ExtraInfoSpec::STATUS_LINE)
-    dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
   DispatchEvent(profile, request, listeners, args);
@@ -662,12 +653,11 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());
+  dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
   }
-  if (extra_info_spec & ExtraInfoSpec::STATUS_LINE)
-    dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
   DispatchEvent(profile, request, listeners, args);
@@ -708,12 +698,11 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());
   dict->SetInteger(keys::kStatusCodeKey, response_code);
+  dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
   }
-  if (extra_info_spec & ExtraInfoSpec::STATUS_LINE)
-    dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
   DispatchEvent(profile, request, listeners, args);
@@ -757,12 +746,11 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());
+  dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
   }
-  if (extra_info_spec & ExtraInfoSpec::STATUS_LINE)
-    dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
   args.Append(dict);
 
   DispatchEvent(profile, request, listeners, args);
@@ -837,8 +825,6 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
       dict->Remove(keys::kRequestHeadersKey, NULL);
     if (!((*it)->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
       dict->Remove(keys::kResponseHeadersKey, NULL);
-    if (!((*it)->extra_info_spec & ExtraInfoSpec::STATUS_LINE))
-      dict->Remove(keys::kStatusLineKey, NULL);
 
     base::JSONWriter::Write(args_filtered.get(), false, &json_args);
 
