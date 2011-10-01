@@ -158,25 +158,6 @@ static const int kNewtabBarRoundness = 5;
 // Returned from BrowserView::GetClassName.
 const char BrowserView::kViewClassName[] = "browser/ui/views/BrowserView";
 
-#if defined(OS_CHROMEOS)
-// Get a normal browser window of given |profile| to use as dialog parent
-// if given |browser| is not one. Otherwise, returns browser window of
-// |browser|. If |profile| is NULL, |browser|'s profile is used to find the
-// normal browser.
-static gfx::NativeWindow GetNormalBrowserWindowForBrowser(Browser* browser,
-                                                          Profile* profile) {
-  if (!browser->is_type_tabbed()) {
-    Browser* normal_browser = BrowserList::FindTabbedBrowser(
-        profile ? profile : browser->profile(),
-        true);
-    if (normal_browser && normal_browser->window())
-      return normal_browser->window()->GetNativeHandle();
-  }
-
-  return browser->window()->GetNativeHandle();
-}
-#endif  // defined(OS_CHROMEOS)
-
 ///////////////////////////////////////////////////////////////////////////////
 // BookmarkExtensionBackground, private:
 // This object serves as the views::Background object which is used to layout
@@ -1113,18 +1094,6 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   DownloadInProgressDialogView* view =
       new DownloadInProgressDialogView(browser_.get());
   browser::CreateViewsWindow(GetNativeHandle(), view)->Show();
-}
-
-gfx::NativeWindow BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
-                                              gfx::NativeWindow parent_window) {
-  // Default to using our window as the parent if the argument is not specified.
-  gfx::NativeWindow parent = parent_window ? parent_window
-                                           : GetNativeHandle();
-#if defined(OS_CHROMEOS)
-  parent = GetNormalBrowserWindowForBrowser(browser(), NULL);
-#endif  // defined(OS_CHROMEOS)
-
-  return browser::ShowHtmlDialog(parent, browser_.get()->profile(), delegate);
 }
 
 void BrowserView::ShowCreateWebAppShortcutsDialog(

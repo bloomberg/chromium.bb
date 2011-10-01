@@ -994,11 +994,6 @@ void BrowserWindowGtk::ShowThemeInstallBubble() {
   ThemeInstallBubbleViewGtk::Show(window_);
 }
 
-gfx::NativeWindow BrowserWindowGtk::ShowHTMLDialog(
-    HtmlDialogUIDelegate* delegate, gfx::NativeWindow parent_window) {
-  return browser::ShowHtmlDialog(parent_window, browser_->profile(), delegate);
-}
-
 void BrowserWindowGtk::UserChangedTheme() {
   SetBackgroundColor();
   InvalidateWindow();

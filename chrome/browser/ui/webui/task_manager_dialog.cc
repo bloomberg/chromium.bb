@@ -146,4 +146,3 @@ void TaskManagerDialog::ShowBackgroundPages() {
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&TaskManagerDialogImpl::Show, true));
 }
-

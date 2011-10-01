@@ -405,14 +405,6 @@ void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {
                  confirm_close_factory_.GetWeakPtr(), true));
 }
 
-gfx::NativeWindow BrowserWindowCocoa::ShowHTMLDialog(
-    HtmlDialogUIDelegate* delegate,
-    gfx::NativeWindow parent_window) {
-  [HtmlDialogWindowController showHtmlDialog:delegate
-                                     profile:browser_->profile()];
-  return NULL;
-}
-
 void BrowserWindowCocoa::UserChangedTheme() {
   [controller_ userChangedTheme];
 }

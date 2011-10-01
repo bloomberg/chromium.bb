@@ -28,10 +28,10 @@ class RenderWidgetHost;
 namespace browser {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
-gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
+gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
+                                 Profile* profile,
                                  HtmlDialogUIDelegate* delegate) {
-  HtmlDialogView* html_view =
-      new HtmlDialogView(profile, delegate);
+  HtmlDialogView* html_view = new HtmlDialogView(profile, delegate);
   browser::CreateViewsWindow(parent, html_view);
   html_view->InitDialog();
   html_view->GetWidget()->Show();

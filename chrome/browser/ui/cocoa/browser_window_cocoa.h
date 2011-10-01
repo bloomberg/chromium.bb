@@ -85,8 +85,6 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void ShowCollectedCookiesDialog(TabContentsWrapper* wrapper);
   virtual void ShowThemeInstallBubble();
   virtual void ConfirmBrowserCloseWithPendingDownloads();
-  virtual gfx::NativeWindow ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
-                                           gfx::NativeWindow parent_window);
   virtual void UserChangedTheme();
   virtual int GetExtraRenderViewHeight() const;
   virtual void TabContentsFocused(TabContents* tab_contents);

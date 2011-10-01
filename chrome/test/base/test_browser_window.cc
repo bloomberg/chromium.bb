@@ -88,12 +88,6 @@ DownloadShelf* TestBrowserWindow::GetDownloadShelf() {
   return NULL;
 }
 
-gfx::NativeWindow TestBrowserWindow::ShowHTMLDialog(
-    HtmlDialogUIDelegate* delegate,
-    gfx::NativeWindow parent_window) {
- return NULL;
-}
-
 int TestBrowserWindow::GetExtraRenderViewHeight() const {
   return 0;
 }

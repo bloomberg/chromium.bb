@@ -400,12 +400,6 @@ void Panel::ConfirmBrowserCloseWithPendingDownloads() {
   NOTIMPLEMENTED();
 }
 
-gfx::NativeWindow Panel::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
-                                        gfx::NativeWindow parent_window) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 void Panel::UserChangedTheme() {
   native_panel_->NotifyPanelOnUserChangedTheme();
 }
