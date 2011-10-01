@@ -283,9 +283,9 @@ bool TextDatabaseManager::AddPageData(const GURL& url,
   VisitVector visits;
   visit_database_->GetIndexedVisitsForURL(url_id, &visits);
   for (size_t i = 0; i < visits.size(); i++) {
-      visits[i].is_indexed = false;
-      visit_database_->UpdateVisitRow(visits[i]);
-      DeletePageData(visits[i].visit_time, url, NULL);
+    visits[i].is_indexed = false;
+    visit_database_->UpdateVisitRow(visits[i]);
+    DeletePageData(visits[i].visit_time, url, NULL);
   }
 
   if (visit_id) {
@@ -375,6 +375,9 @@ void TextDatabaseManager::DeleteAll() {
   DCHECK_EQ(0, transaction_nesting_) << "Calling deleteAll in a transaction.";
 
   InitDBList();
+
+  // Delete uncommitted entries.
+  recent_changes_.Clear();
 
   // Close all open databases.
   db_cache_.Clear();

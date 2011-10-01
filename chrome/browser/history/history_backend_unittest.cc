@@ -352,6 +352,61 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   EXPECT_EQ(0U, text_matches.size());
 }
 
+// Checks that adding a visit, then calling DeleteAll, and then trying to add
+// data for the visited page works.  This can happen when clearing the history
+// immediately after visiting a page.
+TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
+  ASSERT_TRUE(backend_.get());
+
+  Time visit_time = Time::Now();
+  GURL url("http://www.google.com/");
+  scoped_refptr<HistoryAddPageArgs> request(
+      new HistoryAddPageArgs(url, visit_time, NULL, 0, GURL(),
+                             history::RedirectList(),
+                             PageTransition::KEYWORD_GENERATED,
+                             history::SOURCE_BROWSED, false));
+  backend_->AddPage(request);
+
+  // Check that a row was added.
+  URLRow outrow;
+  EXPECT_TRUE(backend_->db_->GetRowForURL(url, &outrow));
+
+  // Check that the visit was added.
+  VisitVector all_visits;
+  backend_->db_->GetAllVisitsInRange(Time(), Time(), 0, &all_visits);
+  ASSERT_EQ(1U, all_visits.size());
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+
+  // The row should be deleted.
+  EXPECT_FALSE(backend_->db_->GetRowForURL(url, &outrow));
+
+  // The visit should be deleted.
+  backend_->db_->GetAllVisitsInRange(Time(), Time(), 0, &all_visits);
+  ASSERT_EQ(0U, all_visits.size());
+
+  // Try and set the full text index.
+  backend_->SetPageTitle(url, UTF8ToUTF16("Title"));
+  backend_->SetPageContents(url, UTF8ToUTF16("Body"));
+
+  // The row should still be deleted.
+  EXPECT_FALSE(backend_->db_->GetRowForURL(url, &outrow));
+
+  // The visit should still be deleted.
+  backend_->db_->GetAllVisitsInRange(Time(), Time(), 0, &all_visits);
+  ASSERT_EQ(0U, all_visits.size());
+
+  // The full text database should have no data.
+  std::vector<TextDatabase::Match> text_matches;
+  Time first_time_searched;
+  backend_->text_database_->GetTextMatches(UTF8ToUTF16("Body"),
+                                           QueryOptions(),
+                                           &text_matches,
+                                           &first_time_searched);
+  EXPECT_EQ(0U, text_matches.size());
+}
+
 TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   GURL favicon_url1("http://www.google.com/favicon.ico");
   GURL favicon_url2("http://news.google.com/favicon.ico");
