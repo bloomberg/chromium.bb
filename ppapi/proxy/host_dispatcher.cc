@@ -137,8 +137,14 @@ bool HostDispatcher::Send(IPC::Message* msg) {
   // Prevent the dispatcher from going away during the call. Scenarios
   // where this could happen include a Send for a sync message which while
   // waiting for the reply, dispatches an incoming ExecuteScript call which
-  // destroys the plugin module and in turn the dispatcher,
+  // destroys the plugin module and in turn the dispatcher.
   ScopedModuleReference ref(this);
+
+  // Normal sync messages are set to unblock, which would normally cause the
+  // plugin to be reentered to process them. We only want to do this when we
+  // know the plugin is in a state to accept reentrancy. Since the plugin side
+  // never clears this flag on messages it sends, we can't get deadlock, but we
+  // may still get reentrancy in the host as a result.
 
   if (!allow_plugin_reentrancy_)
     msg->set_unblock(false);
