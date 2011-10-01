@@ -72,9 +72,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // specified timeout value is reached.
   void ConnectBackupJobsFieldTrial();
 
-  // A/B test for using a different host prefix in Google search suggest.
-  void SuggestPrefixFieldTrial();
-
   // Field trial to see what disabling DNS pre-resolution does to
   // latency of page loads.
   void PredictorFieldTrial();

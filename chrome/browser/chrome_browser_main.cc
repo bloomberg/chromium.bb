@@ -1067,20 +1067,6 @@ void ChromeBrowserMainParts::PredictorFieldTrial() {
   }
 }
 
-// Test the impact on subsequent Google searches of getting suggestions from
-// www.google.TLD instead of clients1.google.TLD.
-void ChromeBrowserMainParts::SuggestPrefixFieldTrial() {
-  const base::FieldTrial::Probability kSuggestPrefixDivisor = 100;
-  // 50% probability.
-  const base::FieldTrial::Probability kSuggestPrefixProbability = 50;
-  // After Jan 1, 2012, it will always be in default group.
-  scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("SuggestHostPrefix",
-          kSuggestPrefixDivisor, "Default_Prefix", 2012, 1, 1));
-  trial->AppendGroup("Www_Prefix", kSuggestPrefixProbability);
-  // The field trial is detected directly, so we don't need to call anything.
-}
-
 void ChromeBrowserMainParts::DefaultAppsFieldTrial() {
 #if defined(OS_WIN)
   string16 brand;
@@ -1156,7 +1142,6 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   InstantFieldTrial::Activate();
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();
-  SuggestPrefixFieldTrial();
   WarmConnectionFieldTrial();
   PredictorFieldTrial();
   DefaultAppsFieldTrial();

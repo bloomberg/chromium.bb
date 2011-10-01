@@ -420,16 +420,11 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
         break;
       }
 
-      case GOOGLE_SEARCH_FIELDTRIAL_GROUP: {
-        static bool use_suggest_prefix =
-            base::FieldTrialList::TrialExists("SuggestHostPrefix");
-        if (use_suggest_prefix) {
-          static bool used_www = (base::FieldTrialList::FindFullName(
-              "SuggestHostPrefix") == "Www_Prefix");
-          url.insert(i->index, used_www ? "gcx=w&" : "gcx=c&");
-        }
+      case GOOGLE_SEARCH_FIELDTRIAL_GROUP:
+        // We are not curerntly running any fieldtrials that modulate the search
+        // url.  If we do, then we'd have some conditional insert such as:
+        // url.insert(i->index, used_www ? "gcx=w&" : "gcx=c&");
         break;
-      }
 
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {
         std::string unescaped_terms;

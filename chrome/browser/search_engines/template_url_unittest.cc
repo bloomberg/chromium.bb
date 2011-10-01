@@ -209,7 +209,7 @@ TEST_F(TemplateURLTest, URLRefTestSearchTermsUsingTermsData) {
     { "{google:baseURL}{language}{searchTerms}", string16(),
       "http://example.com/e/yy" },
     { "{google:baseSuggestURL}{searchTerms}", string16(),
-      "http://clients1.example.com/complete/" }
+      "http://example.com/complete/" }
   };
 
   TestSearchTermsData search_terms_data("http://example.com/e/");
@@ -473,12 +473,11 @@ TEST_F(TemplateURLTest, GoogleBaseSuggestURL) {
     const char* const base_url;
     const char* const base_suggest_url;
   } data[] = {
-    { "http://google.com/", "http://clients1.google.com/complete/", },
-    { "http://www.google.com/", "http://clients1.google.com/complete/", },
-    { "http://www.google.co.uk/", "http://clients1.google.co.uk/complete/", },
-    { "http://www.google.com.by/",
-      "http://clients1.google.com.by/complete/", },
-    { "http://google.com/intl/xx/", "http://clients1.google.com/complete/", },
+    { "http://google.com/", "http://google.com/complete/", },
+    { "http://www.google.com/", "http://www.google.com/complete/", },
+    { "http://www.google.co.uk/", "http://www.google.co.uk/complete/", },
+    { "http://www.google.com.by/", "http://www.google.com.by/complete/", },
+    { "http://google.com/intl/xx/", "http://google.com/complete/", },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i)

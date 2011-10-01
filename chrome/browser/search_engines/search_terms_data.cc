@@ -24,27 +24,11 @@ SearchTermsData::~SearchTermsData() {
 }
 
 std::string SearchTermsData::GoogleBaseSuggestURLValue() const {
-  // The suggest base URL we want at the end is something like
-  // "http://clients1.google.TLD/complete/".  The key bit we want from the
-  // original Google base URL is the TLD.
-
-  // This is being temporarilly modified to (experimentally) use
-  // "http://www.google.TLD/complete/".
-  static bool www = base::FieldTrialList::TrialExists("SuggestHostPrefix") &&
-      base::FieldTrialList::FindFullName("SuggestHostPrefix") == "Www_Prefix";
-  const char* prefix = www ? "www." : "clients1.";
-
   // Start with the Google base URL.
   const GURL base_url(GoogleBaseURLValue());
   DCHECK(base_url.is_valid());
 
-  // Change "www." to "clients1." in the hostname.  If no "www." was found, just
-  // prepend "clients1.".
-  const std::string base_host(base_url.host());
   GURL::Replacements repl;
-  const std::string suggest_host(prefix +
-      (base_host.compare(0, 4, "www.") ? base_host : base_host.substr(4)));
-  repl.SetHostStr(suggest_host);
 
   // Replace any existing path with "/complete/".
   static const std::string suggest_path("/complete/");
