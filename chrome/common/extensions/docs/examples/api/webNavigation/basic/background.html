@@ -18,7 +18,7 @@
           'onErrorOccurred', 'onReferenceFragmentUpdated'];
 
       eventList.forEach(function(e) {
-        chrome.experimental.webNavigation[e].addListener(function(data) {
+        chrome.webNavigation[e].addListener(function(data) {
           if (typeof data)
             console.log(chrome.i18n.getMessage('inHandler'), e, data);
           else

@@ -48,17 +48,17 @@ function NavigationCollector() {
   // Bind handlers to the 'webNavigation' events that we're interested
   // in handling in order to build up a complete picture of the whole
   // navigation event.
-  chrome.experimental.webNavigation.onCreatedNavigationTarget.addListener(
+  chrome.webNavigation.onCreatedNavigationTarget.addListener(
       this.onCreatedNavigationTargetListener_.bind(this));
-  chrome.experimental.webNavigation.onBeforeNavigate.addListener(
+  chrome.webNavigation.onBeforeNavigate.addListener(
       this.onBeforeNavigateListener_.bind(this));
-  chrome.experimental.webNavigation.onCompleted.addListener(
+  chrome.webNavigation.onCompleted.addListener(
       this.onCompletedListener_.bind(this));
-  chrome.experimental.webNavigation.onCommitted.addListener(
+  chrome.webNavigation.onCommitted.addListener(
       this.onCommittedListener_.bind(this));
-  chrome.experimental.webNavigation.onErrorOccurred.addListener(
+  chrome.webNavigation.onErrorOccurred.addListener(
       this.onErrorOccurredListener_.bind(this));
-  chrome.experimental.webNavigation.onReferenceFragmentUpdated.addListener(
+  chrome.webNavigation.onReferenceFragmentUpdated.addListener(
       this.onReferenceFragmentUpdatedListener_.bind(this));
 
   // Bind handler to extension messages for communication from popup.

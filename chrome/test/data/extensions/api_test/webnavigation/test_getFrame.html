@@ -7,13 +7,13 @@ chrome.test.runTests([
     chrome.tabs.create({"url": "about:blank"}, function(tab) {
       tabId = tab.id;
       var done = chrome.test.listenForever(
-        chrome.experimental.webNavigation.onBeforeNavigate,
+        chrome.webNavigation.onBeforeNavigate,
         function (details) {
           if (details.tabId != tabId)
             return;
           if (details.url != URL)
             return;
-          chrome.experimental.webNavigation.getFrame(
+          chrome.webNavigation.getFrame(
               {tabId: tabId, frameId: 0},
               function(details) {
             chrome.test.assertEq({errorOccurred: false, url: URL},
@@ -26,7 +26,7 @@ chrome.test.runTests([
   },
 
   function testGetInvalidFrame() {
-    chrome.experimental.webNavigation.getFrame(
+    chrome.webNavigation.getFrame(
         {tabId: tabId, frameId: 1},
       function (details) {
         chrome.test.assertEq(null, details);
@@ -35,7 +35,7 @@ chrome.test.runTests([
   },
 
   function testGetAllFrames() {
-    chrome.experimental.webNavigation.getAllFrames(
+    chrome.webNavigation.getAllFrames(
         {tabId: tabId},
       function (details) {
         chrome.test.assertEq([{errorOccurred: false, frameId: 0, url: URL}],

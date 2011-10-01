@@ -5553,7 +5553,7 @@
     "events": []
   },
   {
-    "namespace": "experimental.webNavigation",
+    "namespace": "webNavigation",
     "types": [],
     "functions": [
       {

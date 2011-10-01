@@ -1,15 +1,15 @@
 <script>
-chrome.experimental.webNavigation.onBeforeNavigate.addListener(
+chrome.webNavigation.onBeforeNavigate.addListener(
     function(details) {});
-chrome.experimental.webNavigation.onCommitted.addListener(
+chrome.webNavigation.onCommitted.addListener(
     function(details) {});
-chrome.experimental.webNavigation.onDOMContentLoaded.addListener(
+chrome.webNavigation.onDOMContentLoaded.addListener(
     function(details) {});
-chrome.experimental.webNavigation.onCompleted.addListener(
+chrome.webNavigation.onCompleted.addListener(
     function(details) {});
-chrome.experimental.webNavigation.onErrorOccurred.addListener(
+chrome.webNavigation.onErrorOccurred.addListener(
     function(details) {});
-chrome.experimental.webNavigation.onCreatedNavigationTarget.addListener(
+chrome.webNavigation.onCreatedNavigationTarget.addListener(
     function(details) {});
 chrome.test.notifyPass();
 </script>

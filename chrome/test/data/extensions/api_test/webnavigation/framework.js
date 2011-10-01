@@ -125,31 +125,31 @@ function initListeners() {
   if (initialized)
     return;
   initialized = true;
-  chrome.experimental.webNavigation.onBeforeNavigate.addListener(
+  chrome.webNavigation.onBeforeNavigate.addListener(
       function(details) {
     captureEvent("onBeforeNavigate", details);
   });
-  chrome.experimental.webNavigation.onCommitted.addListener(
+  chrome.webNavigation.onCommitted.addListener(
       function(details) {
     captureEvent("onCommitted", details);
   });
-  chrome.experimental.webNavigation.onDOMContentLoaded.addListener(
+  chrome.webNavigation.onDOMContentLoaded.addListener(
       function(details) {
     captureEvent("onDOMContentLoaded", details);
   });
-  chrome.experimental.webNavigation.onCompleted.addListener(
+  chrome.webNavigation.onCompleted.addListener(
       function(details) {
     captureEvent("onCompleted", details);
   });
-  chrome.experimental.webNavigation.onCreatedNavigationTarget.addListener(
+  chrome.webNavigation.onCreatedNavigationTarget.addListener(
       function(details) {
     captureEvent("onCreatedNavigationTarget", details);
   });
-  chrome.experimental.webNavigation.onReferenceFragmentUpdated.addListener(
+  chrome.webNavigation.onReferenceFragmentUpdated.addListener(
       function(details) {
     captureEvent("onReferenceFragmentUpdated", details);
   });
-  chrome.experimental.webNavigation.onErrorOccurred.addListener(
+  chrome.webNavigation.onErrorOccurred.addListener(
       function(details) {
     captureEvent("onErrorOccurred", details);
   });

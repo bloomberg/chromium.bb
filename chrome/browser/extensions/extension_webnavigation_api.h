@@ -225,14 +225,14 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
 class GetFrameFunction : public SyncExtensionFunction {
   virtual ~GetFrameFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.webNavigation.getFrame")
+  DECLARE_EXTENSION_FUNCTION_NAME("webNavigation.getFrame")
 };
 
 // API function that returns the states of all frames in a given tab.
 class GetAllFramesFunction : public SyncExtensionFunction {
   virtual ~GetAllFramesFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.webNavigation.getAllFrames")
+  DECLARE_EXTENSION_FUNCTION_NAME("webNavigation.getAllFrames")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_H_

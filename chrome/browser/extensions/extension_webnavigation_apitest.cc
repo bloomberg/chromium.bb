@@ -39,9 +39,6 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   ASSERT_TRUE(
@@ -49,9 +46,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationGetFrame) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   ASSERT_TRUE(
@@ -59,9 +53,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationGetFrame) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   ASSERT_TRUE(
@@ -70,9 +61,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationServerRedirect) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
@@ -83,9 +71,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationServerRedirect) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   ASSERT_TRUE(
@@ -94,9 +79,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   ASSERT_TRUE(
@@ -104,9 +86,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   ASSERT_TRUE(
@@ -114,9 +93,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   ASSERT_TRUE(
@@ -125,9 +101,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationSimpleLoad) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   ASSERT_TRUE(
@@ -135,9 +108,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationSimpleLoad) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFailures) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   ASSERT_TRUE(
@@ -145,9 +115,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFailures) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   FrameNavigationState::set_allow_extension_scheme(true);
 
   // Wait for the extension to set itself up and return control to us.
