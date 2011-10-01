@@ -50,6 +50,13 @@ void BrowserFrame::InitBrowserFrame() {
     params.bounds = browser_view_->browser()->GetSavedWindowBounds();
     params.show_state = browser_view_->browser()->GetSavedWindowShowState();
   }
+  if (browser_view_->browser()->is_type_panel()) {
+    // We need to set the top-most bit when the panel window is created.
+    // There is a Windows bug/feature that would very likely prevent the window
+    // from being changed to top-most after the window is created without
+    // activation.
+    params.keep_on_top = true;
+  }
   Init(params);
 #if defined(OS_CHROMEOS)
   // On ChromeOS we always want top-level windows to appear active.

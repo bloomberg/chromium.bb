@@ -45,9 +45,6 @@ class PanelBrowserView : public BrowserView,
  private:
   friend class NativePanelTestingWin;
   friend class PanelBrowserViewTest;
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreatePanel);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, ShowOrHideSettingsButton);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, SetBoundsAnimation);
 
   enum MouseDraggingState {
     NO_DRAGGING,
