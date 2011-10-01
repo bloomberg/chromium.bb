@@ -187,8 +187,6 @@
    bug_75037
    Memcheck:Cond
    ...
-   fun:gl*
-   ...
    fun:_ZN8remoting*CapturerMac*
 }
 {
