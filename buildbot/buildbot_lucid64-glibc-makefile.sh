@@ -97,7 +97,7 @@ else
   done
   for patch in tools/SRC/*.patch ; do
     filename="${patch#tools/SRC/}"
-    echo $GSUTIL -h Cache-Control:no-cache cp -a public-read \
+    $GSUTIL -h Cache-Control:no-cache cp -a public-read \
       $patch \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/$filename
   done
