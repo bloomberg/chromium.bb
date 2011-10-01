@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -139,6 +140,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       Profile* profile =
           Profile::FromBrowserContext(render_process_host->browser_context());
       ExtensionService* extension_service = profile->GetExtensionService();
+      ExtensionProcessManager* extension_process_manager =
+          profile->GetExtensionProcessManager();
 
       // The RenderProcessHost may host multiple TabContents.  Any
       // of them which contain diagnostics information make the whole
@@ -168,7 +171,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
             process.renderer_type = ChildProcessInfo::RENDERER_DEVTOOLS;
           else
             process.renderer_type = ChildProcessInfo::RENDERER_CHROME;
-        } else if (host->enabled_bindings() & BindingsPolicy::EXTENSION) {
+        } else if (extension_process_manager->AreBindingsEnabledForProcess(
+                   host->process()->id())) {
           process.renderer_type = ChildProcessInfo::RENDERER_EXTENSION;
         }
         TabContents* contents = host_delegate->GetAsTabContents();

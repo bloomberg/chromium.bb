@@ -118,7 +118,6 @@ class ExtensionFunctionDispatcher
       const ExtensionHostMsg_Request_Params& params,
       const Extension* extension,
       void* profile,
-      int render_process_id,
       IPC::Message::Sender* ipc_sender,
       int routing_id);
 

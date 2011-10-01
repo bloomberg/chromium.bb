@@ -69,22 +69,16 @@ class ExtensionProcessManager : public NotificationObserver {
   // Returns the SiteInstance that the given URL belongs to.
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
-  // Registers a SiteInstance with |site_instance_id| as hosting the extension
-  // with |extension_id|.
-  void RegisterExtensionSiteInstance(int site_instance_id,
-                                     const std::string& extension_id);
+  // Registers a SiteInstance as hosting a given extension.
+  void RegisterExtensionSiteInstance(SiteInstance* site_instance,
+                                     const Extension* extension);
 
-  // Unregisters the extension associated with |site_instance_id|.
-  void UnregisterExtensionSiteInstance(int site_instance_id);
+  // Unregisters the extension associated with |site_instance|.
+  void UnregisterExtensionSiteInstance(SiteInstance* site_instance);
 
-  // Registers a RenderProcessHost with |host_id| as hosting an extension.
-  void RegisterProcessHost(int host_id);
-
-  // Unregisters the RenderProcessHost with |host_id|.
-  void UnregisterProcessHost(int host_id);
-
-  // True if this process host is hosting an extension.
-  bool IsExtensionProcessHost(int host_id) const;
+  // True if this process host is hosting an extension with extension bindings
+  // enabled.
+  bool AreBindingsEnabledForProcess(int host_id);
 
   // Returns the extension process that |url| is associated with if it exists.
   // This is not valid for hosted apps without the background permission, since
@@ -135,8 +129,9 @@ class ExtensionProcessManager : public NotificationObserver {
   typedef std::map<int, std::string> SiteInstanceIDMap;
   SiteInstanceIDMap extension_ids_;
 
-  // A set of render process host IDs that have access to extension bindings.
-  std::set<int> process_ids_;
+  // A map of process ID to site instance ID of the site instances it hosts.
+  typedef std::map<int, std::set<int> > ProcessIDMap;
+  ProcessIDMap process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

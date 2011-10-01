@@ -21,9 +21,6 @@ class BindingsPolicy {
     DOM_AUTOMATION = 1 << 1,
     // Bindings that allow access to the external host (through automation).
     EXTERNAL_HOST = 1 << 2,
-    // Special bindings with privileged APIs for code running in the extension
-    // process.
-    EXTENSION = 1 << 3,
   };
 
   static bool is_web_ui_enabled(int flags) {
@@ -34,9 +31,6 @@ class BindingsPolicy {
   }
   static bool is_external_host_enabled(int flags) {
     return (flags & EXTERNAL_HOST) != 0;
-  }
-  static bool is_extension_enabled(int flags) {
-    return (flags & EXTENSION) != 0;
   }
 };
 

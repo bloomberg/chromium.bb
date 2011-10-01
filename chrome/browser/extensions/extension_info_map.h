@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -49,6 +50,15 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   // sub-profile (incognito to original profile, or vice versa).
   bool CanCrossIncognito(const Extension* extension);
 
+  // Registers a RenderProcessHost with |host_id| as hosting an extension.
+  void BindingsEnabledForProcess(int host_id);
+
+  // Unregisters the RenderProcessHost with |host_id|.
+  void BindingsDisabledForProcess(int host_id);
+
+  // True if this process host is hosting an extension.
+  bool AreBindingsEnabledForProcess(int host_id) const;
+
  private:
   // Extra dynamic data related to an extension.
   struct ExtraData;
@@ -60,6 +70,9 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
   // Extra data associated with enabled extensions.
   ExtraDataMap extra_data_;
+
+  // The set of process ids that have extension bindings enabled.
+  std::set<int> extension_bindings_process_ids_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_

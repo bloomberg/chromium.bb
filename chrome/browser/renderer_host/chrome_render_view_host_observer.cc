@@ -75,8 +75,8 @@ void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
   // Register the association between extension and SiteInstance with
   // ExtensionProcessManager.
   // TODO(creis): Use this to replace SetInstalledAppForRenderer.
-  process_manager->RegisterExtensionSiteInstance(site_instance->id(),
-                                                 extension->id());
+  process_manager->RegisterExtensionSiteInstance(site_instance,
+                                                 extension);
 
   if (extension->is_app()) {
     // Record which, if any, installed app is associated with this process.
@@ -84,20 +84,6 @@ void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
     // service. Can we get it from EPM instead?
     profile->GetExtensionService()->SetInstalledAppForRenderer(
         render_view_host()->process()->id(), extension);
-  }
-
-  // Enable extension bindings for the renderer. Currently only extensions,
-  // packaged apps, and hosted component apps use extension bindings.
-  Extension::Type type = extension->GetType();
-  if (type == Extension::TYPE_EXTENSION ||
-      type == Extension::TYPE_USER_SCRIPT ||
-      type == Extension::TYPE_PACKAGED_APP ||
-      (type == Extension::TYPE_HOSTED_APP &&
-       extension->location() == Extension::COMPONENT)) {
-    render_view_host()->AllowBindings(BindingsPolicy::EXTENSION);
-    ChildProcessSecurityPolicy::GetInstance()->GrantExtensionBindings(
-        render_view_host()->process()->id());
-    process_manager->RegisterProcessHost(render_view_host()->process()->id());
   }
 }
 

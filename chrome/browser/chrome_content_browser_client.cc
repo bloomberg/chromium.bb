@@ -267,7 +267,8 @@ bool ChromeContentBrowserClient::IsSuitableHost(
 
   bool is_extension_host =
       process_host->is_extension_process() ||
-      extension_process_manager->IsExtensionProcessHost(process_host->id());
+      extension_process_manager->AreBindingsEnabledForProcess(
+          process_host->id());
   return site_url.SchemeIs(chrome::kExtensionScheme) == is_extension_host;
 }
 

@@ -107,9 +107,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicy {
   // Grant the child process the ability to use Web UI Bindings.
   void GrantWebUIBindings(int child_id);
 
-  // Grant the child process the ability to use extension Bindings.
-  void GrantExtensionBindings(int child_id);
-
   // Grant the child process the ability to read raw cookies.
   void GrantReadRawCookies(int child_id);
 
@@ -140,11 +137,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicy {
   // The browser should check this property before assuming the child process is
   // allowed to use WebUIBindings.
   bool HasWebUIBindings(int child_id);
-
-  // Returns true if the specified child_id has been granted WebUIBindings.
-  // The browser should check this property before assuming the child process is
-  // allowed to use extension bindings.
-  bool HasExtensionBindings(int child_id);
 
   // Returns true if the specified child_id has been granted ReadRawCookies.
   bool CanReadRawCookies(int child_id);

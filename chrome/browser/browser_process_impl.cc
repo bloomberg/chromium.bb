@@ -162,6 +162,9 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
 
   net_log_.reset(new ChromeNetLog);
 
+  ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
+      chrome::kExtensionScheme);
+
   extension_event_router_forwarder_ = new ExtensionEventRouterForwarder;
 
   ExtensionTabIdMap::GetInstance()->Init();

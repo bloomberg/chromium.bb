@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -253,8 +254,12 @@ void ExtensionEventRouter::DispatchEventImpl(
   // Send the event only to renderers that are listening for it.
   for (std::set<EventListener>::iterator listener = listeners.begin();
        listener != listeners.end(); ++listener) {
-    if (!ChildProcessSecurityPolicy::GetInstance()->
-            HasExtensionBindings(listener->process->id())) {
+    Profile* listener_profile = Profile::FromBrowserContext(
+        listener->process->browser_context());
+    ExtensionProcessManager* extension_process_manager =
+        listener_profile->GetExtensionProcessManager();
+    if (!extension_process_manager->AreBindingsEnabledForProcess(
+        listener->process->id())) {
       // Don't send browser-level events to unprivileged processes.
       continue;
     }
@@ -274,7 +279,7 @@ void ExtensionEventRouter::DispatchEventImpl(
     // Is this event from a different profile than the renderer (ie, an
     // incognito tab event sent to a normal process, or vice versa).
     bool cross_incognito = event->restrict_to_profile &&
-        listener->process->browser_context() != event->restrict_to_profile;
+        listener_profile != event->restrict_to_profile;
     // Send the event with different arguments to extensions that can't
     // cross incognito, if necessary.
     if (cross_incognito && !service->CanCrossIncognito(extension)) {

@@ -2115,7 +2115,6 @@
             'app/chrome_dll.rc',
             'browser/accessibility/browser_accessibility_win_unittest.cc',
             'browser/bookmarks/bookmark_node_data_unittest.cc',
-            'browser/extensions/extension_process_manager_unittest.cc',
             'browser/rlz/rlz_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 
@@ -11,6 +12,7 @@
 #include "chrome/browser/extensions/extension_host_mac.h"
 #endif
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -103,9 +106,6 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
   // We can listen to everything for SITE_INSTANCE_DELETED because we check the
   // |site_instance_id| in UnregisterExtensionSiteInstance.
   registrar_.Add(this, content::NOTIFICATION_SITE_INSTANCE_DELETED,
-                 NotificationService::AllBrowserContextsAndSources());
-  // Same for NOTIFICATION_RENDERER_PROCESS_CLOSED.
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  NotificationService::AllSources());
@@ -231,34 +231,86 @@ ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(
 }
 
 void ExtensionProcessManager::RegisterExtensionSiteInstance(
-    int site_instance_id, const std::string& extension_id) {
+    SiteInstance* site_instance,
+    const Extension* extension) {
+  if (!site_instance->HasProcess()) {
+    NOTREACHED();
+    return;
+  }
+
+  int site_instance_id = site_instance->id();
+  int host_id = site_instance->GetProcess()->id();
+  process_ids_[host_id].insert(site_instance_id);
+
+  // Register process hosting extensions that have access to extension bindings
+  // with the ExtensionInfoMap on the IO thread.
+  Profile* profile =
+      Profile::FromBrowserContext(browsing_instance_->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
+  if (service->ExtensionBindingsAllowed(extension->url())) {
+    Profile* profile = Profile::FromBrowserContext(
+        site_instance->GetProcess()->browser_context());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ExtensionInfoMap::BindingsEnabledForProcess,
+                   profile->GetExtensionInfoMap(),
+                   host_id));
+  }
+
   SiteInstanceIDMap::const_iterator it = extension_ids_.find(site_instance_id);
-  if (it != extension_ids_.end() && (*it).second == extension_id)
+  if (it != extension_ids_.end() && (*it).second == extension->id())
     return;
 
   // SiteInstance ids should get removed from the map before the extension ids
   // get used for a new SiteInstance.
   DCHECK(it == extension_ids_.end());
-  extension_ids_[site_instance_id] = extension_id;
+  extension_ids_[site_instance_id] = extension->id();
 }
 
 void ExtensionProcessManager::UnregisterExtensionSiteInstance(
-    int site_instance_id) {
+    SiteInstance* site_instance) {
+  int site_instance_id = site_instance->id();
   SiteInstanceIDMap::iterator it = extension_ids_.find(site_instance_id);
-  if (it != extension_ids_.end())
+  if (it != extension_ids_.end()) {
     extension_ids_.erase(it++);
+  }
+  if (site_instance->HasProcess()) {
+    int host_id = site_instance->GetProcess()->id();
+    ProcessIDMap::iterator host = process_ids_.find(host_id);
+    if (host != process_ids_.end()) {
+      host->second.erase(site_instance_id);
+      if (host->second.empty()) {
+        process_ids_.erase(host++);
+        Profile* profile = Profile::FromBrowserContext(
+            site_instance->GetProcess()->browser_context());
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            base::Bind(&ExtensionInfoMap::BindingsDisabledForProcess,
+                       profile->GetExtensionInfoMap(),
+                       host_id));
+      }
+    }
+  }
 }
 
-void ExtensionProcessManager::RegisterProcessHost(int host_id) {
-  process_ids_.insert(host_id);
-}
+bool ExtensionProcessManager::AreBindingsEnabledForProcess(int host_id) {
+  ProcessIDMap::iterator it = process_ids_.find(host_id);
+  if (process_ids_.find(host_id) == process_ids_.end())
+    return false;
 
-void ExtensionProcessManager::UnregisterProcessHost(int host_id) {
-  process_ids_.erase(host_id);
-}
-
-bool ExtensionProcessManager::IsExtensionProcessHost(int host_id) const {
-  return process_ids_.find(host_id) != process_ids_.end();
+  Profile* profile =
+      Profile::FromBrowserContext(browsing_instance_->browser_context());
+  ExtensionService* service = profile->GetExtensionService();
+  for (std::set<int>::iterator site_instance_id = it->second.begin();
+       site_instance_id != it->second.end(); ++site_instance_id) {
+    const Extension* extension =
+        GetExtensionForSiteInstance(*site_instance_id);
+    if (extension == NULL)
+      continue;
+    if (service->ExtensionBindingsAllowed(extension->url()))
+      return true;
+  }
+  return false;
 }
 
 RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
@@ -346,14 +398,7 @@ void ExtensionProcessManager::Observe(int type,
 
     case content::NOTIFICATION_SITE_INSTANCE_DELETED: {
       SiteInstance* site_instance = Source<SiteInstance>(source).ptr();
-      UnregisterExtensionSiteInstance(site_instance->id());
-      break;
-    }
-
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      RenderProcessHost* process_host =
-          Source<RenderProcessHost>(source).ptr();
-      UnregisterProcessHost(process_host->id());
+      UnregisterExtensionSiteInstance(site_instance);
       break;
     }
 

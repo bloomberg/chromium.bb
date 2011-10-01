@@ -96,10 +96,6 @@ class ChildProcessSecurityPolicy::SecurityState {
     return BindingsPolicy::is_web_ui_enabled(enabled_bindings_);
   }
 
-  bool has_extension_bindings() const {
-    return BindingsPolicy::is_extension_enabled(enabled_bindings_);
-  }
-
   bool can_read_raw_cookies() const {
     return can_read_raw_cookies_;
   }
@@ -132,7 +128,6 @@ ChildProcessSecurityPolicy::ChildProcessSecurityPolicy() {
   RegisterWebSafeScheme(chrome::kFtpScheme);
   RegisterWebSafeScheme(chrome::kDataScheme);
   RegisterWebSafeScheme("feed");
-  RegisterWebSafeScheme(chrome::kExtensionScheme);
   RegisterWebSafeScheme(chrome::kBlobScheme);
   RegisterWebSafeScheme(chrome::kFileSystemScheme);
 
@@ -313,16 +308,6 @@ void ChildProcessSecurityPolicy::GrantWebUIBindings(int child_id) {
   state->second->GrantScheme(chrome::kFileScheme);
 }
 
-void ChildProcessSecurityPolicy::GrantExtensionBindings(int child_id) {
-  base::AutoLock lock(lock_);
-
-  SecurityStateMap::iterator state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return;
-
-  state->second->GrantBindings(BindingsPolicy::EXTENSION);
-}
-
 void ChildProcessSecurityPolicy::GrantReadRawCookies(int child_id) {
   base::AutoLock lock(lock_);
 
@@ -430,16 +415,6 @@ bool ChildProcessSecurityPolicy::HasWebUIBindings(int child_id) {
     return false;
 
   return state->second->has_web_ui_bindings();
-}
-
-bool ChildProcessSecurityPolicy::HasExtensionBindings(int child_id) {
-  base::AutoLock lock(lock_);
-
-  SecurityStateMap::iterator state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return false;
-
-  return state->second->has_extension_bindings();
 }
 
 bool ChildProcessSecurityPolicy::CanReadRawCookies(int child_id) {
