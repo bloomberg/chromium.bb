@@ -18,9 +18,6 @@ runTests([
         { label: "a-onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
             url: getURL("simpleLoad/a.html"),
             frameUrl: getURL("simpleLoad/a.html")
           }
@@ -57,9 +54,6 @@ runTests([
         { label: "onBeforeRequest-1",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
             url: getURLHttpSimpleLoadRedirect(),
             frameUrl: getURLHttpSimpleLoadRedirect()
           }
@@ -93,9 +87,6 @@ runTests([
         { label: "onBeforeRequest-2",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
             url: getURLHttpSimpleLoad(),
             frameUrl: getURLHttpSimpleLoad()
           }
@@ -154,9 +145,6 @@ runTests([
         { label: "onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
             url: getURL("does_not_exist.html"),
             frameUrl: getURL("does_not_exist.html")
           }

@@ -183,12 +183,12 @@ bool ParseResourceType(const std::string& type_str,
   return true;
 }
 
-void ExtractRequestInfo(net::URLRequest* request,
-                        bool* is_main_frame,
-                        int64* frame_id,
-                        int* tab_id,
-                        int* window_id,
-                        ResourceType::Type* resource_type) {
+void ExtractRequestInfoDetails(net::URLRequest* request,
+                               bool* is_main_frame,
+                               int64* frame_id,
+                               int* tab_id,
+                               int* window_id,
+                               ResourceType::Type* resource_type) {
   if (!request->GetUserData(NULL))
     return;
 
@@ -205,6 +205,30 @@ void ExtractRequestInfo(net::URLRequest* request,
                 info->resource_type());
   *resource_type = (iter != ARRAYEND(kResourceTypeValues)) ?
       *iter : ResourceType::LAST_TYPE;
+}
+
+// Extracts from |request| information for the keys requestId, url, method,
+// frameId, tabId, type, and timeStamp and writes these into |out| to be passed
+// on to extensions.
+void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
+  bool is_main_frame = false;
+  int64 frame_id = -1;
+  int frame_id_for_extension = -1;
+  int tab_id = -1;
+  int window_id = -1;
+  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id, &tab_id,
+                            &window_id, &resource_type);
+  frame_id_for_extension = GetFrameId(is_main_frame, frame_id);
+
+  out->SetString(keys::kRequestIdKey,
+                 base::Uint64ToString(request->identifier()));
+  out->SetString(keys::kUrlKey, request->url().spec());
+  out->SetString(keys::kMethodKey, request->method());
+  out->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
+  out->SetInteger(keys::kTabIdKey, tab_id);
+  out->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
+  out->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
 }
 
 // Creates a list of HttpHeaders (see extension_api.json). If |headers| is
@@ -457,21 +481,10 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
                                              base::Time::Now(),
                                              request->url());
 
-  bool is_main_frame = false;
-  int64 frame_id = -1;
-  int frame_id_for_extension = -1;
-  int tab_id = -1;
-  int window_id = -1;
-  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
-  ExtractRequestInfo(request, &is_main_frame, &frame_id, &tab_id, &window_id,
-                     &resource_type);
-  frame_id_for_extension = GetFrameId(is_main_frame, frame_id);
-
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map, keys::kOnBeforeRequest,
-                           request->url(), tab_id, window_id, resource_type,
-                           &extra_info_spec);
+                           request, &extra_info_spec);
   if (listeners.empty())
     return net::OK;
 
@@ -480,14 +493,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request->identifier()));
-  dict->SetString(keys::kUrlKey, request->url().spec());
-  dict->SetString(keys::kMethodKey, request->method());
-  dict->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
-  dict->SetInteger(keys::kTabIdKey, tab_id);
-  dict->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
-  dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
+  ExtractRequestInfo(request, dict);
   args.Append(dict);
 
   if (DispatchEvent(profile, request, listeners, args)) {
@@ -526,10 +532,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request->identifier()));
-  dict->SetString(keys::kUrlKey, request->url().spec());
-  dict->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
+  ExtractRequestInfo(request, dict);
 
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
     dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(*headers));
@@ -555,8 +558,6 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
   if (!profile)
     return;
 
-  base::Time time(base::Time::Now());
-
   if (!HasWebRequestScheme(request->url()))
     return;
 
@@ -574,10 +575,7 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request->identifier()));
-  dict->SetString(keys::kUrlKey, request->url().spec());
-  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
+  ExtractRequestInfo(request, dict);
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
     dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(headers));
   // TODO(battre): support "request line".
@@ -594,8 +592,6 @@ void ExtensionWebRequestEventRouter::OnAuthRequired(
   if (!profile)
     return;
 
-  base::Time time(base::Time::Now());
-
   if (!HasWebRequestScheme(request->url()))
     return;
 
@@ -608,9 +604,7 @@ void ExtensionWebRequestEventRouter::OnAuthRequired(
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request->identifier()));
-  dict->SetString(keys::kUrlKey, request->url().spec());
+  ExtractRequestInfo(request, dict);
   dict->SetBoolean(keys::kIsProxyKey, auth_info.is_proxy);
   if (!auth_info.scheme.empty())
     dict->SetString(keys::kSchemeKey, auth_info.scheme);
@@ -620,7 +614,6 @@ void ExtensionWebRequestEventRouter::OnAuthRequired(
   challenger->SetString(keys::kHostKey, auth_info.challenger.host());
   challenger->SetInteger(keys::kPortKey, auth_info.challenger.port());
   dict->Set(keys::kChallengerKey, challenger);
-  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
@@ -643,8 +636,6 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   if (!HasWebRequestScheme(request->url()))
     return;
 
-  base::Time time(base::Time::Now());
-
   if (GetAndSetSignaled(request->identifier(), kOnBeforeRedirect))
     return;
 
@@ -665,15 +656,12 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request->identifier()));
-  dict->SetString(keys::kUrlKey, request->url().spec());
+  ExtractRequestInfo(request, dict);
   dict->SetString(keys::kRedirectUrlKey, new_location.spec());
   dict->SetInteger(keys::kStatusCodeKey, http_status_code);
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());
-  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
@@ -699,8 +687,6 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
   if (request->status().status() != net::URLRequestStatus::SUCCESS)
     return;
 
-  base::Time time(base::Time::Now());
-
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
@@ -717,14 +703,11 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request->identifier()));
-  dict->SetString(keys::kUrlKey, request->url().spec());
+  ExtractRequestInfo(request, dict);
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());
   dict->SetInteger(keys::kStatusCodeKey, response_code);
-  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
@@ -753,8 +736,6 @@ void ExtensionWebRequestEventRouter::OnCompleted(
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnCompleted));
 
-  base::Time time(base::Time::Now());
-
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
@@ -771,14 +752,11 @@ void ExtensionWebRequestEventRouter::OnCompleted(
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request->identifier()));
-  dict->SetString(keys::kUrlKey, request->url().spec());
+  ExtractRequestInfo(request, dict);
   dict->SetInteger(keys::kStatusCodeKey, response_code);
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());
-  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
@@ -808,8 +786,6 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnErrorOccurred));
 
-  base::Time time(base::Time::Now());
-
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
@@ -821,15 +797,12 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kRequestIdKey,
-                  base::Uint64ToString(request->identifier()));
-  dict->SetString(keys::kUrlKey, request->url().spec());
+  ExtractRequestInfo(request, dict);
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
   dict->SetBoolean(keys::kFromCache, request->was_cached());
   dict->SetString(keys::kErrorKey,
                   net::ErrorToString(request->status().error()));
-  dict->SetDouble(keys::kTimeStampKey, time.ToDoubleT() * 1000);
   args.Append(dict);
 
   DispatchEvent(profile, request, listeners, args);
@@ -1041,13 +1014,20 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     const std::string& event_name,
-    const GURL& url,
-    int tab_id,
-    int window_id,
-    ResourceType::Type resource_type,
+    net::URLRequest* request,
     int* extra_info_spec) {
   // TODO(mpcomplete): handle profile == NULL (should collect all listeners).
   *extra_info_spec = 0;
+
+  bool is_main_frame = false;
+  int64 frame_id = -1;
+  int tab_id = -1;
+  int window_id = -1;
+  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+  const GURL& url = request->url();
+
+  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id, &tab_id,
+                            &window_id, &resource_type);
 
   std::vector<const ExtensionWebRequestEventRouter::EventListener*>
       matching_listeners;
@@ -1064,26 +1044,6 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   }
 
   return matching_listeners;
-}
-
-std::vector<const ExtensionWebRequestEventRouter::EventListener*>
-ExtensionWebRequestEventRouter::GetMatchingListeners(
-    void* profile,
-    ExtensionInfoMap* extension_info_map,
-    const std::string& event_name,
-    net::URLRequest* request,
-    int* extra_info_spec) {
-  bool is_main_frame = false;
-  int64 frame_id = -1;
-  int tab_id = -1;
-  int window_id = -1;
-  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
-  ExtractRequestInfo(request, &is_main_frame, &frame_id, &tab_id, &window_id,
-                     &resource_type);
-
-  return GetMatchingListeners(
-      profile, extension_info_map, event_name, request->url(),
-      tab_id, window_id, resource_type, extra_info_spec);
 }
 
 linked_ptr<ExtensionWebRequestEventRouter::EventResponseDelta>

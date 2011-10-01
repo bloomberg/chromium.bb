@@ -20,8 +20,6 @@ runTests([
         { label: "a.html-onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
             type: "main_frame",
             url: getURL("complexLoad/a.html"),
             frameUrl: getURL("complexLoad/a.html")
@@ -30,8 +28,6 @@ runTests([
         { label: "b.html-onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
             type: "sub_frame",
             url: getURL("complexLoad/b.html"),
             frameUrl: getURL("complexLoad/b.html")
@@ -40,8 +36,6 @@ runTests([
         { label: "b.jpg-onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
             type: "image",
             url: getURL("complexLoad/b.jpg"),
             frameUrl: getURL("complexLoad/b.html")
@@ -50,6 +44,7 @@ runTests([
         { label: "a.html-onResponseStarted",
           event: "onResponseStarted",
           details: {
+            type: "main_frame",
             url: getURL("complexLoad/a.html"),
             fromCache: false,
             statusCode: 200
@@ -59,6 +54,7 @@ runTests([
         { label: "b.html-onResponseStarted",
           event: "onResponseStarted",
           details: {
+            type: "sub_frame",
             url: getURL("complexLoad/b.html"),
             fromCache: false,
             statusCode: 200
@@ -68,6 +64,7 @@ runTests([
         { label: "b.jpg-onResponseStarted",
           event: "onResponseStarted",
           details: {
+            type: "image",
             url: getURL("complexLoad/b.jpg"),
             fromCache: false,
             statusCode: 200
@@ -77,6 +74,7 @@ runTests([
         { label: "a.html-onCompleted",
           event: "onCompleted",
           details: {
+            type: "main_frame",
             url: getURL("complexLoad/a.html"),
             fromCache: false,
             statusCode: 200
@@ -86,6 +84,7 @@ runTests([
         { label: "b.html-onCompleted",
           event: "onCompleted",
           details: {
+            type: "sub_frame",
             url: getURL("complexLoad/b.html"),
             fromCache: false,
             statusCode: 200
@@ -95,6 +94,7 @@ runTests([
         { label: "b.jpg-onCompleted",
           event: "onCompleted",
           details: {
+            type: "image",
             url: getURL("complexLoad/b.jpg"),
             fromCache: false,
             statusCode: 200
@@ -121,8 +121,6 @@ runTests([
         { label: "a-onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
             type: "main_frame",
             url: getURL("complexLoad/a.html"),
             frameUrl: getURL("complexLoad/a.html")
@@ -131,8 +129,6 @@ runTests([
         { label: "b-onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
             type: "image",
             url: getURL("complexLoad/b.jpg"),
             // As we do not listed to sub-frames we do not know the frameUrl.
@@ -142,6 +138,7 @@ runTests([
         { label: "a-onResponseStarted",
           event: "onResponseStarted",
           details: {
+            type: "main_frame",
             url: getURL("complexLoad/a.html"),
             fromCache: false,
             statusCode: 200
@@ -151,6 +148,7 @@ runTests([
         { label: "b-onResponseStarted",
           event: "onResponseStarted",
           details: {
+            type: "image",
             url: getURL("complexLoad/b.jpg"),
             fromCache: false,
             statusCode: 200
@@ -160,6 +158,7 @@ runTests([
         { label: "a-onCompleted",
           event: "onCompleted",
           details: {
+            type: "main_frame",
             url: getURL("complexLoad/a.html"),
             fromCache: false,
             statusCode: 200
@@ -169,6 +168,7 @@ runTests([
         { label: "b-onCompleted",
           event: "onCompleted",
           details: {
+            type: "image",
             url: getURL("complexLoad/b.jpg"),
             fromCache: false,
             statusCode: 200
@@ -200,9 +200,6 @@ runTests([
         { label: "onBeforeRequest",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
-            type: "main_frame",
             url: getURLAuthRequired(),
             frameUrl: getURLAuthRequired()
           }
@@ -267,8 +264,6 @@ runTests([
         { label: "onBeforeRequest-1",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
             type: "main_frame",
             url: getURLHttpXHR(),
             frameUrl: getURLHttpXHR()
@@ -277,18 +272,21 @@ runTests([
         { label: "onBeforeSendHeaders-1",
           event: "onBeforeSendHeaders",
           details: {
+            type: "main_frame",
             url: getURLHttpXHR(),
           }
         },
         { label: "onSendHeaders-1",
           event: "onSendHeaders",
           details: {
+            type: "main_frame",
             url: getURLHttpXHR(),
           }
         },
         { label: "onResponseStarted-1",
           event: "onResponseStarted",
           details: {
+            type: "main_frame",
             url: getURLHttpXHR(),
             statusCode: 200,
             ip: "127.0.0.1",
@@ -298,6 +296,7 @@ runTests([
         { label: "onCompleted-1",
           event: "onCompleted",
           details: {
+            type: "main_frame",
             url: getURLHttpXHR(),
             statusCode: 200,
             ip: "127.0.0.1",
@@ -307,8 +306,6 @@ runTests([
         { label: "onBeforeRequest-2",
           event: "onBeforeRequest",
           details: {
-            method: "GET",
-            tabId: tabId,
             type: "xmlhttprequest",
             url: getURLHttpXHRData(),
             frameUrl: getURLHttpXHR()
@@ -317,18 +314,21 @@ runTests([
         { label: "onBeforeSendHeaders-2",
           event: "onBeforeSendHeaders",
           details: {
+            type: "xmlhttprequest",
             url: getURLHttpXHRData(),
           }
         },
         { label: "onSendHeaders-2",
           event: "onSendHeaders",
           details: {
+            type: "xmlhttprequest",
             url: getURLHttpXHRData(),
           }
         },
         { label: "onResponseStarted-2",
           event: "onResponseStarted",
           details: {
+            type: "xmlhttprequest",
             url: getURLHttpXHRData(),
             statusCode: 200,
             ip: "127.0.0.1",
@@ -338,6 +338,7 @@ runTests([
         { label: "onCompleted-2",
           event: "onCompleted",
           details: {
+            type: "xmlhttprequest",
             url: getURLHttpXHRData(),
             statusCode: 200,
             ip: "127.0.0.1",

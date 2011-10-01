@@ -265,17 +265,6 @@ class ExtensionWebRequestEventRouter {
       void* profile,
       ExtensionInfoMap* extension_info_map,
       const std::string& event_name,
-      const GURL& url,
-      int tab_id,
-      int window_id,
-      ResourceType::Type resource_type,
-      int* extra_info_spec);
-
-  // Same as above, but retrieves the filter parameters from the request.
-  std::vector<const EventListener*> GetMatchingListeners(
-      void* profile,
-      ExtensionInfoMap* extension_info_map,
-      const std::string& event_name,
       net::URLRequest* request,
       int* extra_info_spec);
 

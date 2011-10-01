@@ -5929,7 +5929,11 @@
             "properties": {
               "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
               "url": {"type": "string"},
-              "timeStamp": {"type": "number", "description": "The time when the browser was about to send headers, in milliseconds since the epoch."},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the request, in milliseconds since the epoch."},
               "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that are going to be sent out with this request."}
             }
           }
@@ -5967,9 +5971,13 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "string", "description": "The ID of the request."},
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
               "url": {"type": "string"},
-              "timeStamp": {"type": "number", "description": "The time when the browser finished sending the request, in milliseconds since the epoch."},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the request, in milliseconds since the epoch."},
               "requestHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP request headers that have been sent out with this request."}
             }
           }
@@ -6002,13 +6010,17 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "string", "description": "The ID of the request."},
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
               "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the request, in milliseconds since the epoch."},
               "scheme": {"type": "string", "description": "The authentication scheme, e.g. Basic or Digest."},
               "realm": {"type": "string", "description": "The authentication realm provided by the server, if there is one.", "optional": true},
               "challenger": {"type": "object", "description": "The server requesting authentication.", "properties": {"host": {"type": "string"}, "port": {"type": "integer"}}},
               "isProxy": {"type": "boolean", "description": "True for Proxy-Authenticate, false for WWW-Authenticate."},
-              "timeStamp": {"type": "number", "description": "The time when the status line and response headers were received, in milliseconds since the epoch."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
               "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
             }
@@ -6042,12 +6054,16 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "string", "description": "The ID of the request."},
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
               "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the request, in milliseconds since the epoch."},
               "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
               "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
-              "timeStamp": {"type": "number", "description": "The time when the status line and response headers were received, in milliseconds since the epoch."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
               "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
             }
@@ -6081,13 +6097,17 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "string", "description": "The ID of the request."},
-              "url": {"type": "string", "description": "The URL of the current request."},
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the request, in milliseconds since the epoch."},
               "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
               "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
               "redirectUrl": {"type": "string", "description": "The new URL."},
-              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the redirect, in milliseconds since the epoch."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this redirect."},
               "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
             }
@@ -6121,12 +6141,16 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "string", "description": "The ID of the request."},
-              "url": {"type": "string", "description": "The URL of the current request."},
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the request, in milliseconds since the epoch."},
               "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
               "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
               "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
-              "timeStamp": {"type": "number", "description": "The time when the response was received completely, in milliseconds since the epoch."},
               "responseHeaders": {"$ref": "HttpHeaders", "optional": true, "description": "The HTTP response headers that were received along with this response."},
               "statusLine": {"type": "string", "optional": true, "description": "HTTP status line of the response"}
             }
@@ -6160,12 +6184,16 @@
             "type": "object",
             "name": "details",
             "properties": {
-              "requestId": {"type": "string", "description": "The ID of the request."},
-              "url": {"type": "string", "description": "The URL of the current request."},
+              "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "frameId": {"type": "integer", "description": "0 indicates the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the request, in milliseconds since the epoch."},
               "ip": {"type": "string", "optional": true, "description": "The server IP address that the request was actually sent to. Note that it may be a literal IPv6 address."},
               "fromCache": {"type": "boolean", "description": "Indicates if this response was fetched from disk cache."},
-              "error": {"type": "string", "description": "The error description. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content."},
-              "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
+              "error": {"type": "string", "description": "The error description. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content."}
             }
           }
         ],

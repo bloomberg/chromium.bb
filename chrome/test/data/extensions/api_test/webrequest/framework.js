@@ -64,6 +64,18 @@ function expect(data, order, filter, extraInfoSpec) {
   tabAndFrameUrls = {};  // Maps "{tabId}-{frameId}" to the URL of the frame.
   removeListeners();
   initListeners(filter || {}, extraInfoSpec || []);
+  // Fill in default values.
+  for (var i = 0; i < expectedEventData.length; ++i) {
+    if (!expectedEventData[i].details.method) {
+      expectedEventData[i].details.method = "GET";
+    }
+    if (!expectedEventData[i].details.tabId) {
+      expectedEventData[i].details.tabId = tabId;
+    }
+    if (!expectedEventData[i].details.type) {
+      expectedEventData[i].details.type = "main_frame";
+    }
+  }
 }
 
 function checkExpectations() {
