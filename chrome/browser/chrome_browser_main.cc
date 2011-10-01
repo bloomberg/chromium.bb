@@ -134,6 +134,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -1794,7 +1795,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // indication of brightness changes during login.
   static chromeos::BrightnessObserver* brightness_observer =
       new chromeos::BrightnessObserver();
-  chromeos::CrosLibrary::Get()->GetBrightnessLibrary()->AddObserver(
+  chromeos::DBusThreadManager::Get()->power_manager_client()->AddObserver(
       brightness_observer);
 
   // Listen for system key events so that the user will be able to adjust the

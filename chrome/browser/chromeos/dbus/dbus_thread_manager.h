@@ -20,6 +20,7 @@ class Bus;
 namespace chromeos {
 
 class CrosDBusService;
+class PowerManagerClient;
 class SensorsSource;
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
@@ -53,8 +54,12 @@ class DBusThreadManager {
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
 
-  // Returns the connection to the system bus.
-  dbus::Bus* system_bus() { return system_bus_.get(); }
+  // Returns the power manager client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  PowerManagerClient* power_manager_client() {
+    return power_manager_client_.get();
+  }
 
  private:
   DBusThreadManager();
@@ -64,6 +69,7 @@ class DBusThreadManager {
   scoped_refptr<dbus::Bus> system_bus_;
   CrosDBusService* cros_dbus_service_;
   scoped_refptr<SensorsSource> sensors_source_;
+  scoped_refptr<PowerManagerClient> power_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
 };

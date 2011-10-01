@@ -16,7 +16,6 @@ template <typename T> struct DefaultLazyInstanceTraits;
 
 namespace chromeos {
 
-class BrightnessLibrary;
 class BurnLibrary;
 class CertLibrary;
 class CryptohomeLibrary;
@@ -47,7 +46,6 @@ class CrosLibrary {
     // when the CrosLibrary is deleted (or other mocks are set).
     // Setter for LibraryLoader.
     void SetLibraryLoader(LibraryLoader* loader, bool own);
-    void SetBrightnessLibrary(BrightnessLibrary* library, bool own);
     void SetCertLibrary(CertLibrary* library, bool own);
     void SetBurnLibrary(BurnLibrary* library, bool own);
     void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
@@ -76,7 +74,6 @@ class CrosLibrary {
   // called (or Shutdown() has been called).
   static CrosLibrary* Get();
 
-  BrightnessLibrary* GetBrightnessLibrary();
   BurnLibrary* GetBurnLibrary();
   CertLibrary* GetCertLibrary();
   CryptohomeLibrary* GetCryptohomeLibrary();
@@ -150,7 +147,6 @@ class CrosLibrary {
     bool own_;
   };
 
-  Library<BrightnessLibrary> brightness_lib_;
   Library<BurnLibrary> burn_lib_;
   Library<CertLibrary> cert_lib_;
   Library<CryptohomeLibrary> crypto_lib_;

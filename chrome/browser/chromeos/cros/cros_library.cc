@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
-#include "chrome/browser/chromeos/cros/brightness_library.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
@@ -82,7 +81,6 @@ CrosLibrary* CrosLibrary::Get() {
   return g_cros_library;
 }
 
-DEFINE_GET_LIBRARY_METHOD(Brightness, brightness);
 DEFINE_GET_LIBRARY_METHOD(Burn, burn);
 DEFINE_GET_LIBRARY_METHOD(Cert, cert);
 DEFINE_GET_LIBRARY_METHOD(Cryptohome, crypto);
@@ -131,7 +129,6 @@ void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
   library_->load_error_ = false;
 }
 
-DEFINE_SET_LIBRARY_METHOD(Brightness, brightness);
 DEFINE_SET_LIBRARY_METHOD(Cert, cert);
 DEFINE_SET_LIBRARY_METHOD(Burn, burn);
 DEFINE_SET_LIBRARY_METHOD(Cryptohome, crypto);

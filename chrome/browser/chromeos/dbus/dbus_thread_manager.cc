@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/sensors_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "dbus/bus.h"
@@ -40,6 +41,9 @@ DBusThreadManager::DBusThreadManager() {
     sensors_source_ = new SensorsSource;
     sensors_source_->Init(system_bus_.get());
   }
+
+  // Create the power manager client.
+  power_manager_client_ = PowerManagerClient::Create(system_bus_.get());
 }
 
 DBusThreadManager::~DBusThreadManager() {

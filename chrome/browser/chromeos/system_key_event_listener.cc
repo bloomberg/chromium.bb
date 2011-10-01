@@ -11,8 +11,8 @@
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/brightness_bubble.h"
-#include "chrome/browser/chromeos/cros/brightness_library.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/input_method/hotkey_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -208,19 +208,13 @@ void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
 }
 
 void SystemKeyEventListener::OnBrightnessDown() {
-  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
-    return;
-  chromeos::BrightnessLibrary* cros =
-      CrosLibrary::Get()->GetBrightnessLibrary();
-  cros->DecreaseScreenBrightness(true);
+  DBusThreadManager::Get()->power_manager_client()->
+      DecreaseScreenBrightness(true);
 }
 
 void SystemKeyEventListener::OnBrightnessUp() {
-  if (!chromeos::CrosLibrary::Get()->EnsureLoaded())
-    return;
-  chromeos::BrightnessLibrary* cros =
-      CrosLibrary::Get()->GetBrightnessLibrary();
-  cros->IncreaseScreenBrightness();
+  DBusThreadManager::Get()->power_manager_client()->
+      IncreaseScreenBrightness();
 }
 
 void SystemKeyEventListener::OnVolumeMute() {
