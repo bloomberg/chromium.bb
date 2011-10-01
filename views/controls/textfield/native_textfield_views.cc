@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -524,14 +525,15 @@ void NativeTextfieldViews::HandleFocus() {
   // Start blinking cursor.
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      cursor_timer_.NewRunnableMethod(&NativeTextfieldViews::UpdateCursor),
+      base::Bind(&NativeTextfieldViews::UpdateCursor,
+                 cursor_timer_.GetWeakPtr()),
       kCursorVisibleTimeMs);
 }
 
 void NativeTextfieldViews::HandleBlur() {
   GetRenderText()->set_focused(false);
   // Stop blinking cursor.
-  cursor_timer_.RevokeAll();
+  cursor_timer_.InvalidateWeakPtrs();
   if (is_cursor_visible_) {
     is_cursor_visible_ = false;
     RepaintCursor();
@@ -816,7 +818,8 @@ void NativeTextfieldViews::UpdateCursor() {
   RepaintCursor();
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      cursor_timer_.NewRunnableMethod(&NativeTextfieldViews::UpdateCursor),
+      base::Bind(&NativeTextfieldViews::UpdateCursor,
+                 cursor_timer_.GetWeakPtr()),
       is_cursor_visible_ ? kCursorVisibleTimeMs : kCursorInvisibleTimeMs);
 }
 

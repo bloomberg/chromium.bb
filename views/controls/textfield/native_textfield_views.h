@@ -6,8 +6,8 @@
 #define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
 #pragma once
 
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
 #include "views/border.h"
@@ -239,7 +239,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   bool initiating_drag_;
 
   // A runnable method factory for callback to update the cursor.
-  ScopedRunnableMethodFactory<NativeTextfieldViews> cursor_timer_;
+  base::WeakPtrFactory<NativeTextfieldViews> cursor_timer_;
 
   // State variables used to track double and triple clicks.
   size_t aggregated_clicks_;
