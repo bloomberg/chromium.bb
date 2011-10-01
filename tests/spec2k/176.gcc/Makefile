@@ -15,6 +15,6 @@ src/c-typeck.c     src/flow.c        src/jump.c          src/reload1.c     src/v
 src/caller-save.c  src/fold-const.c  src/local-alloc.c   src/reorg.c       src/xcoffout.c
 
 IT=gcc
-CFLAGS_EXTRA = -DHOST_WORDS_LITTLE_ENDIAN
+CFLAGS_EXTRA = -DHOST_WORDS_LITTLE_ENDIAN -std=gnu89
 
 include ../Makefile.common
