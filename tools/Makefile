@@ -112,7 +112,6 @@ endif
 ##################################################################
 #  The version numbers for the tools we will be building.
 ##################################################################
-GCC_VERSION=4.4.3
 GMP_VERSION=5.0.2
 MPFR_VERSION=3.0.1
 MPC_VERSION=0.9
@@ -125,6 +124,16 @@ mpc: $(MPC_VERSION), \
 ppl: $(PPL_VERSION), \
 cloog-ppl: $(CLOOG_PPL_VERSION)
 endef
+BINUTILS_VERSION=2.20.1
+NACL_BINUTILS_GIT_BASE=1beca2258eb9a92e8d6c6f081fc1255773b1fb8b
+GCC_VERSION=4.4.3
+NACL_GCC_GIT_BASE=4e0ae761f59baae95282ab07efa9b831ac524642
+NEWLIB_VERSION=1.18.0
+NACL_NEWLIB_GIT_BASE=65e6baefeb2874011001c2f843cf3083e771b62f
+GDB_VERSION=6.8
+NACL_GDB_GIT_BASE=5540d856ee177a454c2b8871c6498d0524b0c6f9
+GLIBC_VERSION=2.9
+NACL_GLIBC_GIT_BASE=5c46008d0874c9b9d5f5f201a10e975d1fe84787
 
 ##################################################################
 # Get or update the sources.
@@ -853,12 +862,41 @@ buildbot-build-with-newlib: | \
 	find SRC -print0 | xargs -0 touch -r SRC
 	$(MAKE) -f $(THISMAKEFILE) build-with-newlib
 
+# Don't generate patch files for things like gmp or linux-headers-for-nacl
+# because these are not changed from upstream.
+BINUTILS_PATCHNAME := naclbinutils-$(BINUTILS_VERSION)-r$(shell svnversion)
+GCC_PATCHNAME := naclgcc-$(GCC_VERSION)-r$(shell svnversion)
+#GDB_PATCHNAME := naclgdb-$(GDB_VERSION)-r$(shell svnversion)
+GLIBC_PATCHNAME := naclglibc-$(GLIBC_VERSION)-r$(shell svnversion)
+NEWLIB_PATCHNAME := naclnewlib-$(NEWLIB_VERSION)-r$(shell svnversion)
+
+patch-names = $(BINUTILS_PATCHNAME) $(GCC_PATCHNAME) \
+	      $(GLIBC_PATCHNAME) $(NEWLIB_PATCHNAME)
+patch-list = $(patch-names:%=SRC/%.patch)
+
+$(patch-list): SRC/%.patch:
+	package=$@ && \
+	package=$${package#SRC/nacl} && \
+	package=$${package/.patch/} && \
+	basename=$${package/-*-r*} && \
+	cd SRC/$${basename} && \
+	  git diff --patience --patch-with-stat --no-renames \
+	    --src-prefix=$${package/-r*}/ \
+	    --dst-prefix=nacl$$package/ \
+	    $(NACL_$(shell n=$@ ; n=$${n#SRC/nacl} ; echo $${n/-*-r*/} | \
+	             tr '[:lower:]-' '[:upper:]_')_GIT_BASE) \
+	    > ../../$@
+
+.PHONY: patches
+patches: $(patch-list)
+
 # Glibc toolchain for buildbot.
 .PHONY: buildbot-build-with-glibc
 buildbot-build-with-glibc: | \
   buildbot-mark-version \
   pinned-src-glibc \
   pinned-src-linux-headers-for-nacl
+	rm -rf SRC/gcc/gmp-* SRC/gcc/mpfr-*
 	find SRC -print0 | xargs -0 touch -r SRC
 	$(MAKE) -f $(THISMAKEFILE) build-with-glibc
 

@@ -37,6 +37,8 @@ echo @@@BUILD_STEP compile_toolchain@@@
   make -j8 buildbot-build-with-glibc
   if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
     make install-glibc INST_GLIBC_PREFIX="$PWD"
+    make pinned-src-newlib
+    make patches
   fi
 )
 
@@ -92,6 +94,12 @@ else
     $GSUTIL -h Cache-Control:no-cache cp -a public-read \
       tools/toolchain.tar.$suffix \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.$suffix
+  done
+  for patch in tools/SRC/*.patch ; do
+    filename="${patch#tools/SRC/}"
+    echo $GSUTIL -h Cache-Control:no-cache cp -a public-read \
+      $patch \
+      gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/$filename
   done
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
 
