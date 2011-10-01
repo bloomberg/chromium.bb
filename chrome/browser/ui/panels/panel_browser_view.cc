@@ -54,6 +54,7 @@ PanelBrowserView::~PanelBrowserView() {
 void PanelBrowserView::Init() {
   BrowserView::Init();
 
+  GetWidget()->SetAlwaysOnTop(true);
   GetWidget()->non_client_view()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }

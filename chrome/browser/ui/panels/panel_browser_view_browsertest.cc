@@ -60,103 +60,47 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     bool is_cursor_in_view_;
   };
 
-  PanelBrowserView* GetBrowserView(Panel* panel) const {
+  PanelBrowserView* GetBrowserView(Panel* panel) {
     return static_cast<PanelBrowserView*>(panel->native_panel());
   }
 
-  gfx::Rect GetViewBounds(Panel* panel) const {
-    return GetBrowserView(panel)->GetBounds();
-  }
-
-  void SetViewBounds(Panel* panel, const gfx::Rect& rect) const {
-    return GetBrowserView(panel)->SetPanelBounds(rect);
-  }
-
-  HWND GetNativeWindow(Panel* panel) const {
-    return GetBrowserView(panel)->GetNativeHandle();
-  }
-
-  ui::SlideAnimation* GetBoundsAnimator(Panel* panel) const {
-    return GetBrowserView(panel)->bounds_animator_.get();
-  }
-
-  ui::SlideAnimation* GetSettingsButtonAnimator(Panel* panel) const {
-    return GetBrowserView(panel)->GetFrameView()->
-        settings_button_animator_.get();
-  }
-
-  int GetTitlebarHeight(Panel* panel) const {
-    PanelBrowserFrameView* frame_view = GetBrowserView(panel)->GetFrameView();
-    return frame_view->NonClientTopBorderHeight() -
-           frame_view->NonClientBorderThickness();
-  }
-
-  MockMouseWatcher* CreateTitlebarMouseWatcher(Panel* panel) {
-    PanelBrowserFrameView* frame_view = GetBrowserView(panel)->GetFrameView();
-    MockMouseWatcher* mouse_watcher = new MockMouseWatcher(frame_view);
-    frame_view->set_mouse_watcher(mouse_watcher);
-    return mouse_watcher;
-  }
-
-  PanelBrowserFrameView::PaintState GetTitlebarPaintState(Panel* panel) const {
-    return GetBrowserView(panel)->GetFrameView()->paint_state_;
-  }
-
-  bool IsTitlebarPaintedAsActive(Panel* panel) const {
-    return GetTitlebarPaintState(panel) ==
-           PanelBrowserFrameView::PAINT_AS_ACTIVE;
-  }
-
-  bool IsTitlebarPaintedAsInactive(Panel* panel) const {
-    return GetTitlebarPaintState(panel) ==
-           PanelBrowserFrameView::PAINT_AS_INACTIVE;
-  }
-
-  bool IsTitlebarPaintedForAttention(Panel* panel) const {
-    return GetTitlebarPaintState(panel) ==
-           PanelBrowserFrameView::PAINT_FOR_ATTENTION;
-  }
-
-  int GetControlCount(Panel* panel) const {
-    return GetBrowserView(panel)->GetFrameView()->child_count();
-  }
-
-  TabIconView* GetTitleIcon(Panel* panel) const {
-    return GetBrowserView(panel)->GetFrameView()->title_icon_;
-  }
-
-  views::Label* GetTitleText(Panel* panel) const {
-    return GetBrowserView(panel)->GetFrameView()->title_label_;
-  }
-
-  views::Button* GetSettingsButton(Panel* panel) const {
-    return GetBrowserView(panel)->GetFrameView()->settings_button_;
-  }
-
-  views::Button* GetCloseButton(Panel* panel) const {
-    return GetBrowserView(panel)->GetFrameView()->close_button_;
-  }
-
-  bool ContainsControl(Panel* panel, views::View* control) const {
-    return GetBrowserView(panel)->GetFrameView()->Contains(control);
-  }
-
-  void WaitTillBoundsAnimationFinished(Panel* panel) {
+  void WaitTillBoundsAnimationFinished(PanelBrowserView* browser_view) {
     // The timer for the animation will only kick in as async task.
-    while (GetBoundsAnimator(panel)->is_animating()) {
+    while (browser_view->bounds_animator_->is_animating()) {
       MessageLoopForUI::current()->PostTask(FROM_HERE,
                                             new MessageLoop::QuitTask());
       MessageLoopForUI::current()->RunAllPending();
     }
   }
 
-  void WaitTillSettingsAnimationFinished(Panel* panel) {
+  void WaitTillSettingsAnimationFinished(PanelBrowserFrameView* frame_view) {
     // The timer for the animation will only kick in as async task.
-    while (GetSettingsButtonAnimator(panel)->is_animating()) {
+    while (frame_view->settings_button_animator_->is_animating()) {
       MessageLoopForUI::current()->PostTask(FROM_HERE,
                                             new MessageLoop::QuitTask());
       MessageLoopForUI::current()->RunAllPending();
     }
+  }
+
+  void TestShowPanelActiveOrInactive() {
+    CreatePanelParams params1("PanelTest1", gfx::Rect(), SHOW_AS_ACTIVE);
+    Panel* panel1 = CreatePanelWithParams(params1);
+    PanelBrowserView* browser_view1 = GetBrowserView(panel1);
+    PanelBrowserFrameView* frame_view1 = browser_view1->GetFrameView();
+    EXPECT_TRUE(panel1->IsActive());
+    EXPECT_EQ(PanelBrowserFrameView::PAINT_AS_ACTIVE,
+              frame_view1->paint_state_);
+
+    CreatePanelParams params2("PanelTest2", gfx::Rect(), SHOW_AS_INACTIVE);
+    Panel* panel2 = CreatePanelWithParams(params2);
+    PanelBrowserView* browser_view2 = GetBrowserView(panel2);
+    PanelBrowserFrameView* frame_view2 = browser_view2->GetFrameView();
+    EXPECT_FALSE(panel2->IsActive());
+    EXPECT_EQ(PanelBrowserFrameView::PAINT_AS_INACTIVE,
+              frame_view2->paint_state_);
+
+    panel1->Close();
+    panel2->Close();
   }
 
   // We put all the testing logic in this class instead of the test so that
@@ -193,7 +137,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_GT(panel1->GetBounds().height(), 0);
     EXPECT_EQ(expected_bottom_on_minimized, panel1->GetBounds().bottom());
     EXPECT_EQ(1, panel_manager->minimized_panel_count());
-    WaitTillBoundsAnimationFinished(panel1);
+    WaitTillBoundsAnimationFinished(browser_view1);
     EXPECT_FALSE(panel1->IsActive());
 
     panel1->SetExpansionState(Panel::TITLE_ONLY);
@@ -201,7 +145,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
     EXPECT_EQ(expected_bottom_on_unminimized, panel1->GetBounds().bottom());
     EXPECT_EQ(1, panel_manager->minimized_panel_count());
-    WaitTillBoundsAnimationFinished(panel1);
+    WaitTillBoundsAnimationFinished(browser_view1);
     EXPECT_TRUE(frame_view1->close_button_->IsVisible());
     EXPECT_TRUE(frame_view1->title_icon_->IsVisible());
     EXPECT_TRUE(frame_view1->title_label_->IsVisible());
@@ -211,7 +155,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(initial_height, panel1->GetBounds().height());
     EXPECT_EQ(expected_bottom_on_unminimized, panel1->GetBounds().bottom());
     EXPECT_EQ(0, panel_manager->minimized_panel_count());
-    WaitTillBoundsAnimationFinished(panel1);
+    WaitTillBoundsAnimationFinished(browser_view1);
     EXPECT_TRUE(frame_view1->close_button_->IsVisible());
     EXPECT_TRUE(frame_view1->title_icon_->IsVisible());
     EXPECT_TRUE(frame_view1->title_label_->IsVisible());
@@ -389,139 +333,73 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
 
 // Panel is not supported for Linux view yet.
 #if !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanelBasic) {
-  CreatePanelParams params(
-      "PanelTest", gfx::Rect(0, 0, 200, 150), SHOW_AS_ACTIVE);
-  Panel* panel = CreatePanelWithParams(params);
-
-  // Validate basic window properties.
-#if defined(OS_WIN)
-  HWND native_window = GetNativeWindow(panel);
-
-  RECT window_rect;
-  EXPECT_TRUE(::GetWindowRect(native_window, &window_rect));
-  EXPECT_EQ(200, window_rect.right - window_rect.left);
-  EXPECT_EQ(150, window_rect.bottom - window_rect.top);
-
-  EXPECT_TRUE(::IsWindowVisible(native_window));
-#endif
-
-  panel->Close();
-}
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanelActive) {
-  CreatePanelParams params("PanelTest", gfx::Rect(), SHOW_AS_ACTIVE);
-  Panel* panel = CreatePanelWithParams(params);
-
-  // Validate it is active.
-  EXPECT_TRUE(panel->IsActive());
-  EXPECT_TRUE(IsTitlebarPaintedAsActive(panel));
-
-  // Validate window styles. We want to ensure that the window is created
-  // with expected styles regardless of its active state.
-#if defined(OS_WIN)
-  HWND native_window = GetNativeWindow(panel);
-
-  LONG styles = ::GetWindowLong(native_window, GWL_STYLE);
-  EXPECT_EQ(0, styles & WS_MAXIMIZEBOX);
-  EXPECT_EQ(0, styles & WS_MINIMIZEBOX);
-  EXPECT_EQ(0, styles & WS_THICKFRAME);
-
-  LONG ext_styles = ::GetWindowLong(native_window, GWL_EXSTYLE);
-  EXPECT_EQ(WS_EX_TOPMOST, ext_styles & WS_EX_TOPMOST);
-#endif
-
-  panel->Close();
-}
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanelInactive) {
-  CreatePanelParams params("PanelTest", gfx::Rect(), SHOW_AS_INACTIVE);
-  Panel* panel = CreatePanelWithParams(params);
-
-  // Validate it is inactive.
-  EXPECT_FALSE(panel->IsActive());
-  EXPECT_TRUE(IsTitlebarPaintedAsInactive(panel));
-
-  // Validate window styles. We want to ensure that the window is created
-  // with expected styles regardless of its active state.
-#if defined(OS_WIN)
-  HWND native_window = GetNativeWindow(panel);
-
-  LONG styles = ::GetWindowLong(native_window, GWL_STYLE);
-  EXPECT_EQ(0, styles & WS_MAXIMIZEBOX);
-  EXPECT_EQ(0, styles & WS_MINIMIZEBOX);
-  EXPECT_EQ(0, styles & WS_THICKFRAME);
-
-  LONG ext_styles = ::GetWindowLong(native_window, GWL_EXSTYLE);
-  EXPECT_EQ(WS_EX_TOPMOST, ext_styles & WS_EX_TOPMOST);
-#endif
-
-  panel->Close();
-}
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, PanelLayout) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanel) {
   Panel* panel = CreatePanel("PanelTest");
+  PanelBrowserView* browser_view = GetBrowserView(panel);
+  PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
 
-  views::View* title_icon = GetTitleIcon(panel);
-  views::View* title_text = GetTitleText(panel);
-  views::View* settings_button = GetSettingsButton(panel);
-  views::View* close_button = GetCloseButton(panel);
+  // The bounds animation should not be triggered when the panel is up for the
+  // first time.
+  EXPECT_FALSE(browser_view->bounds_animator_.get());
 
   // We should have icon, text, settings button and close button.
-  EXPECT_EQ(4, GetControlCount(panel));
-  EXPECT_TRUE(ContainsControl(panel, title_icon));
-  EXPECT_TRUE(ContainsControl(panel, title_text));
-  EXPECT_TRUE(ContainsControl(panel, settings_button));
-  EXPECT_TRUE(ContainsControl(panel, close_button));
+  EXPECT_EQ(4, frame_view->child_count());
+  EXPECT_TRUE(frame_view->Contains(frame_view->title_icon_));
+  EXPECT_TRUE(frame_view->Contains(frame_view->title_label_));
+  EXPECT_TRUE(frame_view->Contains(frame_view->settings_button_));
+  EXPECT_TRUE(frame_view->Contains(frame_view->close_button_));
 
   // These controls should be visible.
-  EXPECT_TRUE(title_icon->IsVisible());
-  EXPECT_TRUE(title_text->IsVisible());
-  EXPECT_TRUE(close_button->IsVisible());
+  EXPECT_TRUE(frame_view->title_icon_->IsVisible());
+  EXPECT_TRUE(frame_view->title_label_->IsVisible());
+  EXPECT_TRUE(frame_view->close_button_->IsVisible());
 
   // Validate their layouts.
-  int titlebar_height = GetTitlebarHeight(panel);
-  EXPECT_GT(title_icon->width(), 0);
-  EXPECT_GT(title_icon->height(), 0);
-  EXPECT_LT(title_icon->height(), titlebar_height);
-  EXPECT_GT(title_text->width(), 0);
-  EXPECT_GT(title_text->height(), 0);
-  EXPECT_LT(title_text->height(), titlebar_height);
-  EXPECT_GT(settings_button->width(), 0);
-  EXPECT_GT(settings_button->height(), 0);
-  EXPECT_LT(settings_button->height(), titlebar_height);
-  EXPECT_GT(close_button->width(), 0);
-  EXPECT_GT(close_button->height(), 0);
-  EXPECT_LT(close_button->height(), titlebar_height);
-  EXPECT_LT(title_icon->x() + title_icon->width(), title_text->x());
-  EXPECT_LT(title_text->x() + title_text->width(), settings_button->x());
-  EXPECT_LT(settings_button->x() + settings_button->width(), close_button->x());
+  int titlebar_height = frame_view->NonClientTopBorderHeight() -
+      frame_view->NonClientBorderThickness();
+  EXPECT_GT(frame_view->title_icon_->width(), 0);
+  EXPECT_GT(frame_view->title_icon_->height(), 0);
+  EXPECT_LT(frame_view->title_icon_->height(), titlebar_height);
+  EXPECT_GT(frame_view->title_label_->width(), 0);
+  EXPECT_GT(frame_view->title_label_->height(), 0);
+  EXPECT_LT(frame_view->title_label_->height(), titlebar_height);
+  EXPECT_GT(frame_view->settings_button_->width(), 0);
+  EXPECT_GT(frame_view->settings_button_->height(), 0);
+  EXPECT_LT(frame_view->settings_button_->height(), titlebar_height);
+  EXPECT_GT(frame_view->close_button_->width(), 0);
+  EXPECT_GT(frame_view->close_button_->height(), 0);
+  EXPECT_LT(frame_view->close_button_->height(), titlebar_height);
+  EXPECT_LT(frame_view->title_icon_->x() + frame_view->title_icon_->width(),
+      frame_view->title_label_->x());
+  EXPECT_LT(frame_view->title_label_->x() + frame_view->title_label_->width(),
+      frame_view->settings_button_->x());
+  EXPECT_LT(
+      frame_view->settings_button_->x() + frame_view->settings_button_->width(),
+      frame_view->close_button_->x());
+
+  // Validate that the controls should be updated when the activation state is
+  // changed.
+  frame_view->UpdateControlStyles(PanelBrowserFrameView::PAINT_AS_ACTIVE);
+  SkColor title_label_color1 = frame_view->title_label_->GetColor();
+  frame_view->UpdateControlStyles(PanelBrowserFrameView::PAINT_AS_INACTIVE);
+  SkColor title_label_color2 = frame_view->title_label_->GetColor();
+  EXPECT_NE(title_label_color1, title_label_color2);
+
+  panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, Deactivate) {
-  // When a panel is created, it should be active at first.
-  Panel* panel = CreatePanel("PanelTest");
-  EXPECT_TRUE(panel->IsActive());
-
-  // When the panel is deactivated, the appearance of controls should be
-  // updated.
-  views::Label* title_text = GetTitleText(panel);
-  SkColor title_text_color_before = title_text->GetColor();
-
-  panel->Deactivate();
-  EXPECT_FALSE(panel->IsActive());
-
-  SkColor title_text_color_after = title_text->GetColor();
-  EXPECT_NE(title_text_color_before, title_text_color_after);
+IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowPanelActiveOrInactive) {
+  TestShowPanelActiveOrInactive();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideSettingsButton) {
   Panel* panel = CreatePanel("PanelTest");
-  views::View* settings_button = GetSettingsButton(panel);
+  PanelBrowserFrameView* frame_view = GetBrowserView(panel)->GetFrameView();
 
   // Create and hook up the MockMouseWatcher so that we can simulate if the
   // mouse is over the panel.
-  MockMouseWatcher* mouse_watcher = CreateTitlebarMouseWatcher(panel);
+  MockMouseWatcher* mouse_watcher = new MockMouseWatcher(frame_view);
+  frame_view->set_mouse_watcher(mouse_watcher);
 
   // When the panel is created, it is active. Since we cannot programatically
   // bring the panel back to active state once it is deactivated, we have to
@@ -530,44 +408,40 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideSettingsButton) {
 
   // When the panel is active, the settings button should always be visible.
   mouse_watcher->MoveMouse(true);
-  EXPECT_TRUE(settings_button->IsVisible());
+  EXPECT_TRUE(frame_view->settings_button_->IsVisible());
   mouse_watcher->MoveMouse(false);
-  EXPECT_TRUE(settings_button->IsVisible());
+  EXPECT_TRUE(frame_view->settings_button_->IsVisible());
 
   // When the panel is inactive, the options button is active per the mouse over
   // the panel or not.
   panel->Deactivate();
   EXPECT_FALSE(panel->IsActive());
-  WaitTillSettingsAnimationFinished(panel);
-  EXPECT_FALSE(settings_button->IsVisible());
+  WaitTillSettingsAnimationFinished(frame_view);
+  EXPECT_FALSE(frame_view->settings_button_->IsVisible());
 
   mouse_watcher->MoveMouse(true);
-  WaitTillSettingsAnimationFinished(panel);
-  EXPECT_TRUE(settings_button->IsVisible());
+  WaitTillSettingsAnimationFinished(frame_view);
+  EXPECT_TRUE(frame_view->settings_button_->IsVisible());
   mouse_watcher->MoveMouse(false);
-  WaitTillSettingsAnimationFinished(panel);
-  EXPECT_FALSE(settings_button->IsVisible());
+  WaitTillSettingsAnimationFinished(frame_view);
+  EXPECT_FALSE(frame_view->settings_button_->IsVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {
   Panel* panel = CreatePanel("PanelTest");
   PanelBrowserView* browser_view = GetBrowserView(panel);
 
-  // The bounds animation should not be triggered when the panel is up for the
-  // first time.
-  EXPECT_FALSE(GetBoundsAnimator(panel));
-
   // Validate that animation should be triggered when bounds are changed.
-  gfx::Rect target_bounds(GetViewBounds(panel));
+  gfx::Rect target_bounds(browser_view->GetBounds());
   target_bounds.Offset(20, -30);
   target_bounds.set_width(target_bounds.width() + 100);
   target_bounds.set_height(target_bounds.height() + 50);
-  SetViewBounds(panel, target_bounds);
-  ASSERT_TRUE(GetBoundsAnimator(panel));
-  EXPECT_TRUE(GetBoundsAnimator(panel)->is_animating());
-  EXPECT_NE(GetViewBounds(panel), target_bounds);
-  WaitTillBoundsAnimationFinished(panel);
-  EXPECT_EQ(GetViewBounds(panel), target_bounds);
+  browser_view->SetPanelBounds(target_bounds);
+  ASSERT_TRUE(browser_view->bounds_animator_.get());
+  EXPECT_TRUE(browser_view->bounds_animator_->is_animating());
+  EXPECT_NE(browser_view->GetBounds(), target_bounds);
+  WaitTillBoundsAnimationFinished(browser_view);
+  EXPECT_EQ(browser_view->GetBounds(), target_bounds);
 
   // Validates that no animation should be triggered for the panel currently
   // being dragged.
@@ -575,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {
       target_bounds.x(), target_bounds.y()));
   browser_view->OnTitlebarMouseDragged(gfx::Point(
       target_bounds.x() + 5, target_bounds.y() + 5));
-  EXPECT_FALSE(GetBoundsAnimator(panel)->is_animating());
+  EXPECT_FALSE(browser_view->bounds_animator_->is_animating());
   browser_view->OnTitlebarMouseCaptureLost();
 
   panel->Close();

@@ -99,6 +99,8 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
  private:
   friend class PanelBrowserViewTest;
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, CreatePanel);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, ShowOrHideSettingsButton);
 
   enum PaintState {
     NOT_PAINTED,
