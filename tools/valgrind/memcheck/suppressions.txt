@@ -4620,6 +4620,23 @@
    ...
    fun:_ZN44WebDragDestGtkTest_NoTabContentsWrapper_Test8TestBodyEv
 }
+{
+   bug_98751
+   Memcheck:Cond
+   fun:_ZN7SkIRect9intersectEiiii
+   fun:_ZN7SkIRect9intersectERKS_
+   fun:_ZN8remoting10DecoderVp812ConvertRectsERKSt6vectorI7SkIRectSaIS2_EEPS4_
+   fun:_ZN8remoting10DecoderVp812DecodePacketEPKNS_11VideoPacketE
+   fun:_ZN8remoting13DecoderTester14ReceivedPacketEPNS_11VideoPacketE
+   fun:_ZN8remoting13EncoderTester13DataAvailableEPNS_11VideoPacketE
+   fun:_Z16DispatchToMethodIN8remoting13EncoderTesterEMS1_FvPNS0_11VideoPacketEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplIN8remoting13EncoderTesterEMS1_FvPNS0_11VideoPacketEE6Tuple1IS3_EE13RunWithParamsERKS7_
+   fun:_ZN14CallbackRunnerI6Tuple1IPN8remoting11VideoPacketEEE3RunIS3_EEvRKT_
+   fun:_ZN8remoting10EncoderVp86EncodeE13scoped_refptrINS_11CaptureDataEEbP14CallbackRunnerI6Tuple1IPNS_11VideoPacketEEE
+   fun:_ZN8remotingL17TestEncodingRectsEPNS_7EncoderEPNS_13EncoderTesterEPNS_13DecoderTesterE13scoped_refptrINS_11CaptureDataEEPK7SkIRecti
+   fun:_ZN8remoting18TestEncoderDecoderEPNS_7EncoderEPNS_7DecoderEb
+   fun:_ZN8remoting35DecoderVp8Test_EncodeAndDecode_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
