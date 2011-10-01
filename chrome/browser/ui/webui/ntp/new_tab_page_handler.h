@@ -21,8 +21,11 @@ class NewTabPageHandler : public WebUIMessageHandler {
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // Callback for "closePromo".
-  void HandleClosePromo(const ListValue* args);
+  // Callback for "closeNotificationPromo".
+  void HandleCloseNotificationPromo(const ListValue* args);
+
+  // Callback for "notificationPromoViewed".
+  void HandleNotificationPromoViewed(const ListValue* args);
 
   // Callback for "pageSelected".
   void HandlePageSelected(const ListValue* args);
@@ -55,6 +58,9 @@ class NewTabPageHandler : public WebUIMessageHandler {
     APPS_PAGE_ID = 2 << 10,
     BOOKMARKS_PAGE_ID = 3 << 10,
   };
+
+  // Helper to send out promo resource change notification.
+  void NotifyPromoResourceChanged();
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageHandler);
 };

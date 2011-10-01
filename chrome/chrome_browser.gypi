@@ -3841,6 +3841,8 @@
         'browser/web_applications/web_app.h',
         'browser/web_resource/gpu_blacklist_updater.cc',
         'browser/web_resource/gpu_blacklist_updater.h',
+        'browser/web_resource/notification_promo.cc',
+        'browser/web_resource/notification_promo.h',
         'browser/web_resource/promo_resource_service.cc',
         'browser/web_resource/promo_resource_service.h',
         'browser/web_resource/web_resource_service.cc',

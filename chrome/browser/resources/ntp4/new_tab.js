@@ -215,8 +215,9 @@ cr.define('ntp4', function() {
     var serverpromo = localStrings.getString('serverpromo');
     if (serverpromo) {
       showNotification(parseHtmlSubset(serverpromo), [], function() {
-        chrome.send('closePromo');
+        chrome.send('closeNotificationPromo');
       }, 60000);
+      chrome.send('notificationPromoViewed');
     }
   }
 

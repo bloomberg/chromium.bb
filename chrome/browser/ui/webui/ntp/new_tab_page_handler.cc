@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
@@ -22,8 +23,10 @@ static const char kNTP4IntroURL[] =
   "http://www.google.com/support/chrome/bin/answer.py?answer=95451";
 
 void NewTabPageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("closePromo", NewCallback(
-      this, &NewTabPageHandler::HandleClosePromo));
+  web_ui_->RegisterMessageCallback("closeNotificationPromo", NewCallback(
+      this, &NewTabPageHandler::HandleCloseNotificationPromo));
+  web_ui_->RegisterMessageCallback("notificationPromoViewed", NewCallback(
+      this, &NewTabPageHandler::HandleNotificationPromoViewed));
   web_ui_->RegisterMessageCallback("pageSelected", NewCallback(
       this, &NewTabPageHandler::HandlePageSelected));
   web_ui_->RegisterMessageCallback("introMessageDismissed", NewCallback(
@@ -32,13 +35,19 @@ void NewTabPageHandler::RegisterMessages() {
       this, &NewTabPageHandler::HandleIntroMessageSeen));
 }
 
-void NewTabPageHandler::HandleClosePromo(const ListValue* args) {
-  Profile::FromWebUI(web_ui_)->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed,
-                                                      true);
-  NotificationService* service = NotificationService::current();
-  service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
-                  Source<NewTabPageHandler>(this),
-                  NotificationService::NoDetails());
+void NewTabPageHandler::HandleCloseNotificationPromo(const ListValue* args) {
+  NotificationPromo notification_promo(
+      Profile::FromWebUI(web_ui_)->GetPrefs(), NULL);
+  notification_promo.HandleClosed();
+  NotifyPromoResourceChanged();
+}
+
+void NewTabPageHandler::HandleNotificationPromoViewed(const ListValue* args) {
+  NotificationPromo notification_promo(
+      Profile::FromWebUI(web_ui_)->GetPrefs(), NULL);
+  if (notification_promo.HandleViewed()) {
+    NotifyPromoResourceChanged();
+  }
 }
 
 void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
@@ -102,4 +111,11 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
 // static
 void NewTabPageHandler::DismissIntroMessage(PrefService* prefs) {
   prefs->SetInteger(prefs::kNTP4IntroDisplayCount, kIntroDisplayMax + 1);
+}
+
+void NewTabPageHandler::NotifyPromoResourceChanged() {
+  NotificationService* service = NotificationService::current();
+  service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
+                  Source<NewTabPageHandler>(this),
+                  NotificationService::NoDetails());
 }

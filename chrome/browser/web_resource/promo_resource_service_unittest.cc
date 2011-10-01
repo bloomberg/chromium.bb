@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -111,78 +112,337 @@ TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
   EXPECT_EQ(logo_end, 0);  // date value reset to 0;
 }
 
-TEST_F(PromoResourceServiceTest, UnpackNotificationSignal) {
-  // Set up start and end dates and promo line in a Dictionary as if parsed
-  // from the service.
-  std::string json = "{ "
-                     "  \"topic\": {"
-                     "    \"answers\": ["
-                     "       {"
-                     "        \"name\": \"promo_start\","
-                     "        \"question\": \"3:2:5\","
-                     "        \"tooltip\": \"Eat more pie!\","
-                     "        \"inproduct\": \"31/01/10 01:00 GMT\""
-                     "       },"
-                     "       {"
-                     "        \"name\": \"promo_end\","
-                     "        \"inproduct\": \"31/01/12 01:00 GMT\""
-                     "       }"
-                     "    ]"
-                     "  }"
-                     "}";
-  scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
+class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
+ public:
+  explicit NotificationPromoTestDelegate(PrefService* prefs)
+      : prefs_(prefs),
+        notification_promo_(NULL),
+        received_notification_(false),
+        build_targeted_(true),
+        start_(0.0),
+        end_(0.0),
+        build_(PromoResourceService::ALL_BUILDS),
+        time_slice_(0),
+        max_group_(0),
+        max_views_(0),
+        text_(),
+        closed_(false) {
+  }
 
+  void Init(NotificationPromo* notification_promo,
+            const std::string& json,
+            double start, double end,
+            int build, int time_slice, int max_group, int max_views,
+            const std::string& text, bool closed) {
+    notification_promo_ = notification_promo;
+
+    test_json_.reset(static_cast<DictionaryValue*>(
+        base::JSONReader::Read(json, false)));
+
+    start_ = start;
+    end_ = end;
+
+    build_ = build;
+    time_slice_ = time_slice;
+    max_group_ = max_group;
+    max_views_ = max_views;
+
+    text_ = text;
+    closed_ = closed;
+
+    received_notification_ = false;
+  }
+
+  // NotificationPromo::Delegate implementation.
+  virtual void OnNewNotification(double start, double end) {
+    EXPECT_EQ(CalcStart(), start);
+    EXPECT_EQ(notification_promo_->StartTimeWithOffset(), start);
+    EXPECT_EQ(notification_promo_->end_, end);
+    received_notification_ = true;
+  }
+
+  virtual bool IsBuildAllowed(int builds_targeted) const {
+    EXPECT_EQ(builds_targeted, build_);
+    return build_targeted_;
+  }
+
+  const base::DictionaryValue& TestJson() const {
+    return *test_json_;
+  }
+
+  double CalcStart() const {
+    return start_ + notification_promo_->group_ * time_slice_ * 60.0 * 60.0;
+  }
+
+  void InitPromoFromJson(bool should_receive_notification) {
+    received_notification_ = false;
+    notification_promo_->InitFromJson(TestJson());
+    EXPECT_TRUE(received_notification_ == should_receive_notification);
+
+    // Test the fields.
+    TestNotification();
+    TestPrefs();
+  }
+
+  void TestNotification() {
+    // Check values.
+    EXPECT_EQ(notification_promo_->start_, start_);
+    EXPECT_EQ(notification_promo_->end_, end_);
+    EXPECT_EQ(notification_promo_->build_, build_);
+    EXPECT_EQ(notification_promo_->time_slice_, time_slice_);
+    EXPECT_EQ(notification_promo_->max_group_, max_group_);
+    EXPECT_EQ(notification_promo_->max_views_, max_views_);
+    EXPECT_EQ(notification_promo_->text_, text_);
+    EXPECT_EQ(notification_promo_->closed_, closed_);
+
+    // Check group within bounds.
+    EXPECT_GE(notification_promo_->group_, 0);
+    EXPECT_LT(notification_promo_->group_, 100);
+
+    // Views should be 0 for now.
+    EXPECT_EQ(notification_promo_->views_, 0);
+
+    // Check calculated time.
+    EXPECT_EQ(notification_promo_->StartTimeWithOffset(), CalcStart());
+  }
+
+  void TestPrefs() {
+    EXPECT_EQ(prefs_->GetDouble(prefs::kNTPPromoStart), start_);
+    EXPECT_EQ(prefs_->GetDouble(prefs::kNTPPromoEnd), end_);
+
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoBuild), build_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoGroupTimeSlice), time_slice_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoGroupMax), max_group_);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoViewsMax), max_views_);
+
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoGroup),
+        notification_promo_ ? notification_promo_->group_: 0);
+    EXPECT_EQ(prefs_->GetInteger(prefs::kNTPPromoViews), 0);
+    EXPECT_EQ(prefs_->GetString(prefs::kNTPPromoLine), text_);
+    EXPECT_EQ(prefs_->GetBoolean(prefs::kNTPPromoClosed), closed_);
+  }
+
+  // Create a new NotificationPromo from prefs and compare to current
+  // notification.
+  void TestInitFromPrefs() {
+    NotificationPromo prefs_notification_promo(prefs_, this);
+    prefs_notification_promo.InitFromPrefs();
+    const bool is_equal = *notification_promo_ == prefs_notification_promo;
+    EXPECT_TRUE(is_equal);
+  }
+
+  void TestGroup() {
+    // Test out of range groups.
+    for (int i = max_group_; i <= NotificationPromo::kMaxGroupSize; ++i) {
+      notification_promo_->group_ = i;
+      EXPECT_FALSE(notification_promo_->CanShow());
+    }
+
+    // Test in-range groups.
+    for (int i = 0; i < max_group_; ++i) {
+      notification_promo_->group_ = i;
+      EXPECT_TRUE(notification_promo_->CanShow());
+    }
+  }
+
+  void TestViews() {
+    // Test out of range views.
+    for (int i = max_views_; i < 100; ++i) {
+      notification_promo_->views_ = i;
+      EXPECT_FALSE(notification_promo_->CanShow());
+    }
+
+    // Test in range views.
+    for (int i = 0; i < max_views_; ++i) {
+      notification_promo_->views_ = i;
+      EXPECT_TRUE(notification_promo_->CanShow());
+    }
+  }
+
+  void TestBuild() {
+    build_targeted_ = false;
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    build_targeted_ = true;
+    EXPECT_TRUE(notification_promo_->CanShow());
+  }
+
+  void TestClosed() {
+    notification_promo_->closed_ = true;
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    notification_promo_->closed_ = false;
+    EXPECT_TRUE(notification_promo_->CanShow());
+  }
+
+  void TestText() {
+    notification_promo_->text_.clear();
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    notification_promo_->text_ = text_;
+    EXPECT_TRUE(notification_promo_->CanShow());
+  }
+
+  void TestTime() {
+    const double now = base::Time::Now().ToDoubleT();
+    const double qhour = 15 * 60;
+
+    notification_promo_->group_ = 0;  // For simplicity.
+
+    notification_promo_->start_ = now - qhour;
+    notification_promo_->end_ = now + qhour;
+    EXPECT_TRUE(notification_promo_->CanShow());
+
+    // Start time has not arrived.
+    notification_promo_->start_ = now + qhour;
+    notification_promo_->end_ = now + qhour;
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    // End time has past.
+    notification_promo_->start_ = now - qhour;
+    notification_promo_->end_ = now - qhour;
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    notification_promo_->start_ = start_;
+    notification_promo_->end_ = end_;
+    EXPECT_TRUE(notification_promo_->CanShow());
+  }
+
+ private:
+  PrefService* prefs_;
+  NotificationPromo* notification_promo_;
+  bool received_notification_;
+  bool build_targeted_;
+  scoped_ptr<DictionaryValue> test_json_;
+
+  double start_;
+  double end_;
+
+  int build_;
+  int time_slice_;
+  int max_group_;
+  int max_views_;
+
+  std::string text_;
+  bool closed_;
+};
+
+TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   // Check that prefs are set correctly.
-  web_resource_service_->UnpackNotificationSignal(*(test_json.get()));
   PrefService* prefs = profile_.GetPrefs();
   ASSERT_TRUE(prefs != NULL);
 
-  std::string promo_line = prefs->GetString(prefs::kNTPPromoLine);
-  EXPECT_EQ(promo_line, "Eat more pie!");
+  NotificationPromoTestDelegate delegate(prefs);
+  NotificationPromo notification_promo(prefs, &delegate);
 
-  int promo_group = prefs->GetInteger(prefs::kNTPPromoGroup);
-  EXPECT_GE(promo_group, 0);
-  EXPECT_LT(promo_group, 100);
+  // Make sure prefs are unset.
+  delegate.TestPrefs();
 
-  int promo_build_type = prefs->GetInteger(prefs::kNTPPromoBuild);
-  EXPECT_EQ(promo_build_type & PromoResourceService::DEV_BUILD,
-            PromoResourceService::DEV_BUILD);
-  EXPECT_EQ(promo_build_type & PromoResourceService::BETA_BUILD,
-            PromoResourceService::BETA_BUILD);
-  EXPECT_EQ(promo_build_type & PromoResourceService::STABLE_BUILD, 0);
+  // Set up start and end dates and promo line in a Dictionary as if parsed
+  // from the service.
+  delegate.Init(&notification_promo,
+                "{ "
+                "  \"topic\": {"
+                "    \"answers\": ["
+                "       {"
+                "        \"name\": \"promo_start\","
+                "        \"question\": \"3:2:5:10\","
+                "        \"tooltip\": \"Eat more pie!\","
+                "        \"inproduct\": \"31/01/10 01:00 GMT\""
+                "       },"
+                "       {"
+                "        \"name\": \"promo_end\","
+                "        \"inproduct\": \"31/01/12 01:00 GMT\""
+                "       }"
+                "    ]"
+                "  }"
+                "}",
+                1264899600,  // unix epoch for Jan 31 2010 0100 GMT.
+                1327971600,  // unix epoch for Jan 31 2012 0100 GMT.
+                3, 2, 5, 10,
+                "Eat more pie!", false);
 
-  int promo_time_slice = prefs->GetInteger(prefs::kNTPPromoGroupTimeSlice);
-  EXPECT_EQ(promo_time_slice, 2);
+  delegate.InitPromoFromJson(true);
 
-  int promo_group_max = prefs->GetInteger(prefs::kNTPPromoGroupMax);
-  EXPECT_EQ(promo_group_max, 5);
+  // Second time should not trigger a notification.
+  delegate.InitPromoFromJson(false);
 
-  double promo_start = prefs->GetDouble(prefs::kNTPPromoStart);
-  double actual_start = 1264899600;  // unix epoch for Jan 31 2010 0100 GMT.
-  EXPECT_EQ(promo_start, actual_start);
+  delegate.TestInitFromPrefs();
 
-  double modified_start = actual_start + promo_group * 2 * 60 * 60;
-  EXPECT_EQ(PromoResourceService::GetNotificationStartTime(prefs),
-      modified_start);
+  // Test various conditions of CanShow.
+  // TestGroup Has the side effect of setting us to a passing group.
+  delegate.TestGroup();
+  delegate.TestViews();
+  delegate.TestBuild();
+  delegate.TestClosed();
+  delegate.TestText();
+  delegate.TestTime();
+}
 
-  double promo_end = prefs->GetDouble(prefs::kNTPPromoEnd);
-  EXPECT_EQ(promo_end, 1327971600);  // unix epoch for Jan 31 2012 0100 GMT.
+TEST_F(PromoResourceServiceTest, NotificationPromoTestFail) {
+  // Check that prefs are set correctly.
+  PrefService* prefs = profile_.GetPrefs();
+  ASSERT_TRUE(prefs != NULL);
 
-  // Unpack the same json a second time.
-  web_resource_service_->UnpackNotificationSignal(*(test_json.get()));
+  NotificationPromoTestDelegate delegate(prefs);
+  NotificationPromo notification_promo(prefs, &delegate);
 
-  // All the data should be unchanged.
-  EXPECT_EQ(promo_line, prefs->GetString(prefs::kNTPPromoLine));
-  EXPECT_EQ(promo_group, prefs->GetInteger(prefs::kNTPPromoGroup));
-  EXPECT_EQ(promo_build_type, prefs->GetInteger(prefs::kNTPPromoBuild));
-  EXPECT_EQ(promo_time_slice,
-      prefs->GetInteger(prefs::kNTPPromoGroupTimeSlice));
-  EXPECT_EQ(promo_group_max, prefs->GetInteger(prefs::kNTPPromoGroupMax));
-  EXPECT_EQ(promo_start, prefs->GetDouble(prefs::kNTPPromoStart));
-  EXPECT_EQ(modified_start,
-      PromoResourceService::GetNotificationStartTime(prefs));
-  EXPECT_EQ(promo_end, prefs->GetDouble(prefs::kNTPPromoEnd));
+  // Set up start and end dates and promo line in a Dictionary as if parsed
+  // from the service.
+  delegate.Init(&notification_promo,
+                "{ "
+                "  \"topic\": {"
+                "    \"answers\": ["
+                "       {"
+                "        \"name\": \"promo_start\","
+                "        \"question\": \"12:8:10:20\","
+                "        \"tooltip\": \"Happy 3rd Birthday!\","
+                "        \"inproduct\": \"09/15/10 05:00 PDT\""
+                "       },"
+                "       {"
+                "        \"name\": \"promo_end\","
+                "        \"inproduct\": \"09/30/10 05:00 PDT\""
+                "       }"
+                "    ]"
+                "  }"
+                "}",
+                1284552000,  // unix epoch for Sep 15 2010 0500 PDT.
+                1285848000,  // unix epoch for Sep 30 2010 0500 PDT.
+                12, 8, 10, 20,
+                "Happy 3rd Birthday!", false);
+
+  delegate.InitPromoFromJson(true);
+
+  // Second time should not trigger a notification.
+  delegate.InitPromoFromJson(false);
+
+  delegate.TestInitFromPrefs();
+
+  // Should fail because out of time bounds.
+  EXPECT_FALSE(notification_promo.CanShow());
+}
+
+TEST_F(PromoResourceServiceTest, GetNextQuestionValueTest) {
+  const std::string question("0:-100:2048:0:2a");
+  const int question_vec[] = { 0, -100, 2048, 0 };
+  size_t index = 0;
+  bool err = false;
+
+  for (size_t i = 0; i < arraysize(question_vec); ++i) {
+    EXPECT_EQ(question_vec[i],
+        NotificationPromo::GetNextQuestionValue(question, &index, &err));
+    EXPECT_FALSE(err);
+  }
+  EXPECT_EQ(NotificationPromo::GetNextQuestionValue(question, &index, &err), 0);
+  EXPECT_TRUE(err);
+}
+
+TEST_F(PromoResourceServiceTest, NewGroupTest) {
+  for (size_t i = 0; i < 1000; ++i) {
+    const int group = NotificationPromo::NewGroup();
+    EXPECT_GE(group, 0);
+    EXPECT_LT(group, 100);
+  }
 }
 
 TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
@@ -409,7 +669,7 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignalHttpLogo) {
   EXPECT_EQ(GURL(""), AppsPromo::GetSourcePromoLogoURL());
 }
 
-TEST_F(PromoResourceServiceTest, IsBuildTargeted) {
+TEST_F(PromoResourceServiceTest, IsBuildTargetedTest) {
   // canary
   const chrome::VersionInfo::Channel canary =
       chrome::VersionInfo::CHANNEL_CANARY;

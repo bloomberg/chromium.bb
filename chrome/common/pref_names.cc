@@ -1278,6 +1278,12 @@ const char kNTPPromoGroupTimeSlice[] = "ntp.promo_group_timeslice";
 // Number of groups to roll out this promo to.
 const char kNTPPromoGroupMax[] = "ntp.promo_group_max";
 
+// Number of views of this promo.
+const char kNTPPromoViews[] = "ntp.promo_views";
+
+// Max number of views of this promo.
+const char kNTPPromoViewsMax[] = "ntp.promo_views_max";
+
 // Promo line from server.
 const char kNTPPromoLine[] = "ntp.promo_line";
 

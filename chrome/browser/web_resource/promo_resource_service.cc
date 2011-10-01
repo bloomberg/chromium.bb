@@ -30,15 +30,7 @@ static const int kStartResourceFetchDelay = 5000;
 
 // Delay between calls to update the cache (48 hours), and 3 min in debug mode.
 static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
-static const int kDebugCacheUpdateDelay = 3 * 60 * 1000;
-
-// Users are randomly assigned to one of kNTPPromoGroupSize buckets, in order
-// to be able to roll out promos slowly, or display different promos to
-// different groups.
-static const int kNTPPromoGroupSize = 100;
-
-// Maximum number of hours for each time slice (4 weeks).
-static const int kMaxTimeSliceHours = 24 * 7 * 4;
+static const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 
 // The version of the service (used to expire the cache when upgrading Chrome
 // to versions with different types of promos).
@@ -51,28 +43,6 @@ static const char kWebStoreButtonProperty[] = "inproduct_target";
 static const char kWebStoreLinkProperty[] = "inproduct";
 static const char kWebStoreExpireProperty[] = "tooltip";
 
-chrome::VersionInfo::Channel GetChannel() {
-  // GetChannel hits the registry on Windows. See http://crbug.com/70898.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  return chrome::VersionInfo::GetChannel();
-}
-
-int GetNextQuestionValue(const std::string& question,
-                         size_t* index,
-                         bool* err) {
-  if (*err)
-    return 0;
-
-  size_t new_index = question.find(':', *index);
-  // Note that substr correctly handles npos.
-  std::string fragment(question.substr(*index, new_index - *index));
-  *index = new_index + 1;
-
-  int value;
-  *err = !base::StringToInt(fragment, &value);
-  return value;
-}
-
 const char* GetPromoResourceURL() {
   std::string promo_server_url = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kPromoServerURL);
@@ -81,9 +51,12 @@ const char* GetPromoResourceURL() {
       promo_server_url.c_str();
 }
 
+bool IsTest() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kPromoServerURL);
+}
+
 int GetCacheUpdateDelay() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPromoServerURL) ? kDebugCacheUpdateDelay : kCacheUpdateDelay;
+  return IsTest() ? kTestCacheUpdateDelay : kCacheUpdateDelay;
 }
 
 }  // namespace
@@ -106,31 +79,14 @@ void PromoResourceService::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(prefs::kNTPCustomLogoEnd,
                             0,
                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(prefs::kNTPPromoStart,
-                            0,
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(prefs::kNTPPromoEnd,
-                            0,
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kNTPPromoLine,
-                            std::string(),
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kNTPPromoClosed,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoGroup,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(
-      prefs::kNTPPromoBuild,
-      ALL_BUILDS,
-      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoGroupTimeSlice,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNTPPromoGroupMax,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
+  NotificationPromo::RegisterUserPrefs(prefs);
+}
+
+// static
+chrome::VersionInfo::Channel PromoResourceService::GetChannel() {
+  // GetChannel hits the registry on Windows. See http://crbug.com/70898.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  return chrome::VersionInfo::GetChannel();
 }
 
 // static
@@ -173,7 +129,7 @@ void PromoResourceService::Init() {
   ScheduleNotificationOnInit();
 }
 
-bool PromoResourceService::IsThisBuildTargeted(int builds_targeted) {
+bool PromoResourceService::IsBuildTargeted(int builds_targeted) {
   if (channel_ == chrome::VersionInfo::CHANNEL_UNKNOWN)
     channel_ = GetChannel();
 
@@ -184,6 +140,10 @@ void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
   UnpackLogoSignal(parsed_json);
   UnpackNotificationSignal(parsed_json);
   UnpackWebStoreSignal(parsed_json);
+}
+
+void PromoResourceService::OnNewNotification(double start, double end) {
+  ScheduleNotification(start, end);
 }
 
 void PromoResourceService::ScheduleNotification(double promo_start,
@@ -240,199 +200,14 @@ std::string PromoResourceService::GetPromoLocale() {
 
 void PromoResourceService::UnpackNotificationSignal(
     const DictionaryValue& parsed_json) {
-  // Check for newly received start and end values.
-  std::string promo_start_string, promo_end_string;
-
-  DictionaryValue* topic_dict;
-  if (parsed_json.GetDictionary("topic", &topic_dict)) {
-    ListValue* answer_list;
-    if (topic_dict->GetList("answers", &answer_list)) {
-      for (ListValue::const_iterator answer_iter = answer_list->begin();
-           answer_iter != answer_list->end(); ++answer_iter) {
-        if (!(*answer_iter)->IsType(Value::TYPE_DICTIONARY))
-          continue;
-
-        ParseNotification(static_cast<DictionaryValue*>(*answer_iter),
-            &promo_start_string, &promo_end_string);
-      }
-    }
-  }
-
-  CheckForNewNotification(promo_start_string, promo_end_string);
-}
-
-void PromoResourceService::ParseNotification(
-    DictionaryValue* a_dic,
-    std::string* promo_start_string,
-    std::string* promo_end_string) {
-  std::string promo_signal;
-  if (a_dic->GetString("name", &promo_signal)) {
-    if (promo_signal == "promo_start") {
-      SetNotificationParams(a_dic);
-      SetNotificationLine(a_dic);
-
-      a_dic->GetString("inproduct", promo_start_string);
-    } else if (promo_signal == "promo_end") {
-      a_dic->GetString("inproduct", promo_end_string);
-    }
-  }
-}
-
-void PromoResourceService::SetNotificationParams(DictionaryValue* a_dic) {
-  std::string question;
-  a_dic->GetString("question", &question);
-
-  size_t index(0);
-  bool err(false);
-  int promo_build = GetNextQuestionValue(question, &index, &err);
-  int time_slice = GetNextQuestionValue(question, &index, &err);
-  int max_group = GetNextQuestionValue(question, &index, &err);
-
-  if (err ||
-      promo_build < 0 ||
-      promo_build > ALL_BUILDS ||
-      time_slice < 0 ||
-      time_slice > kMaxTimeSliceHours ||
-      max_group < 0 ||
-      max_group >= kNTPPromoGroupSize) {
-    // If values are not valid, do not show promo.
-    NOTREACHED() << "Invalid server data, question=" << question <<
-        ", build=" << promo_build <<
-        ", time_slice=" << time_slice <<
-        ", max_group=" << max_group;
-    promo_build = NO_BUILD;
-    time_slice = 0;
-    max_group = 0;
-  }
-
-  prefs_->SetInteger(prefs::kNTPPromoBuild, promo_build);
-  prefs_->SetInteger(prefs::kNTPPromoGroupTimeSlice, time_slice);
-  prefs_->SetInteger(prefs::kNTPPromoGroupMax, max_group);
-}
-
-void PromoResourceService::SetNotificationLine(DictionaryValue* a_dic) {
-  std::string promo_line;
-  a_dic->GetString("tooltip", &promo_line);
-  if (!promo_line.empty())
-    prefs_->SetString(prefs::kNTPPromoLine, promo_line);
-}
-
-void PromoResourceService::CheckForNewNotification(
-    const std::string& promo_start_string,
-    const std::string& promo_end_string) {
-  double promo_start = 0.0, promo_end = 0.0;
-  ParseNewNotificationTimes(promo_start_string, promo_end_string,
-      &promo_start, &promo_end);
-
-  double old_promo_start = 0.0, old_promo_end = 0.0;
-  GetCurrentNotificationTimes(&old_promo_start, &old_promo_end);
-
-  // If start or end times have changed, trigger a new web resource
-  // notification, so that the logo on the NTP is updated. This check is
-  // outside the reading of the web resource data, because the absence of
-  // dates counts as a triggering change if there were dates before.
-  // Also create new promo groups, and reset the promo closed preference,
-  // to signal a new promo.
-  if (old_promo_start != promo_start || old_promo_end != promo_end)
-    OnNewNotification(promo_start, promo_end);
-}
-
-void PromoResourceService::ParseNewNotificationTimes(
-    const std::string& promo_start_string,
-    const std::string& promo_end_string,
-    double* promo_start,
-    double* promo_end) {
-  *promo_start = *promo_end = 0.0;
-
-  if (promo_start_string.empty() && !promo_end_string.empty())
-    return;
-
-  base::Time start_time, end_time;
-  if (!base::Time::FromString(promo_start_string.c_str(), &start_time) ||
-      !base::Time::FromString(promo_end_string.c_str(), &end_time))
-    return;
-
-  *promo_start = start_time.ToDoubleT();
-  *promo_end = end_time.ToDoubleT();
-}
-
-void PromoResourceService::GetCurrentNotificationTimes(double* old_promo_start,
-                                                       double* old_promo_end) {
-  *old_promo_start = *old_promo_end = 0.0;
-  if (prefs_->HasPrefPath(prefs::kNTPPromoStart) &&
-      prefs_->HasPrefPath(prefs::kNTPPromoEnd)) {
-    *old_promo_start = prefs_->GetDouble(prefs::kNTPPromoStart);
-    *old_promo_end = prefs_->GetDouble(prefs::kNTPPromoEnd);
-  }
-}
-
-int PromoResourceService::ResetNotificationGroup() {
-  srand(static_cast<uint32>(time(NULL)));
-  const int promo_group = rand() % kNTPPromoGroupSize;
-  prefs_->SetInteger(prefs::kNTPPromoGroup, promo_group);
-  return promo_group;
-}
-
-// static
-double PromoResourceService::GetNotificationStartTime(PrefService* prefs) {
-  if (!prefs->HasPrefPath(prefs::kNTPPromoStart))
-    return 0.0;
-
-  const double promo_start = prefs->GetDouble(prefs::kNTPPromoStart);
-
-  if (!prefs->HasPrefPath(prefs::kNTPPromoGroup) ||
-      !prefs->HasPrefPath(prefs::kNTPPromoGroupTimeSlice))
-    return promo_start;
-
-  const int promo_group = prefs->GetInteger(prefs::kNTPPromoGroup);
-  const int time_slice = prefs->GetInteger(prefs::kNTPPromoGroupTimeSlice);
-  // Adjust promo_start using group time slice, adjusted from hours to seconds.
-  static const double kSecondsInHour = 60.0 * 60.0;
-  return promo_start + promo_group * time_slice * kSecondsInHour;
-}
-
-void PromoResourceService::OnNewNotification(double promo_start,
-                                             double promo_end) {
-  ResetNotificationGroup();
-
-  prefs_->SetBoolean(prefs::kNTPPromoClosed, false);
-
-  prefs_->SetDouble(prefs::kNTPPromoStart, promo_start);
-  prefs_->SetDouble(prefs::kNTPPromoEnd, promo_end);
-
-  ScheduleNotification(GetNotificationStartTime(prefs_), promo_end);
+  NotificationPromo notification_promo(prefs_, this);
+  notification_promo.InitFromJson(parsed_json);
 }
 
 bool PromoResourceService::CanShowNotificationPromo(Profile* profile) {
-  PrefService* prefs = profile->GetPrefs();
-
-  // Check if promo has been closed by the user.
-  if (prefs->HasPrefPath(prefs::kNTPPromoClosed) &&
-      prefs->GetBoolean(prefs::kNTPPromoClosed))
-    return false;
-
-  // Check if our build is appropriate for this promo.
-  if (!prefs->HasPrefPath(prefs::kNTPPromoBuild) ||
-      !IsBuildTargeted(GetChannel(), prefs->GetInteger(prefs::kNTPPromoBuild)))
-    return false;
-
-  // Check if we are in the right group for this promo.
-  if (!prefs->FindPreference(prefs::kNTPPromoGroup) ||
-      !prefs->FindPreference(prefs::kNTPPromoGroupMax) ||
-      (prefs->GetInteger(prefs::kNTPPromoGroup) >=
-      prefs->GetInteger(prefs::kNTPPromoGroupMax)))
-    return false;
-
-  // Check if we are in the right time window for this promo.
-  if (!prefs->FindPreference(prefs::kNTPPromoStart) ||
-      !prefs->FindPreference(prefs::kNTPPromoEnd) ||
-      base::Time::FromDoubleT(GetNotificationStartTime(prefs)) >
-          base::Time::Now() ||
-      base::Time::FromDoubleT(prefs->GetDouble(prefs::kNTPPromoEnd)) <
-          base::Time::Now())
-    return false;
-
-  return prefs->HasPrefPath(prefs::kNTPPromoLine);
+  NotificationPromo notification_promo(profile->GetPrefs(), NULL);
+  notification_promo.InitFromPrefs();
+  return notification_promo.CanShow();
 }
 
 void PromoResourceService::UnpackWebStoreSignal(
@@ -497,7 +272,7 @@ void PromoResourceService::UnpackWebStoreSignal(
         !a_dic->GetString(kWebStoreExpireProperty, &promo_data.expire))
       continue;
 
-    if (IsThisBuildTargeted(target_builds)) {
+    if (IsBuildTargeted(target_builds)) {
       // The downloader will set the promo prefs and send the
       // NOTIFICATION_WEB_STORE_PROMO_LOADED notification.
       promo_data.link = GURL(promo_link);

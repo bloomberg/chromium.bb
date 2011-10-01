@@ -459,6 +459,8 @@ extern const char kNTPPromoClosed[];
 extern const char kNTPPromoGroup[];
 extern const char kNTPPromoGroupTimeSlice[];
 extern const char kNTPPromoGroupMax[];
+extern const char kNTPPromoViews[];
+extern const char kNTPPromoViewsMax[];
 extern const char kNTPPromoBuild[];
 extern const char kNTPWebStoreEnabled[];
 extern const char kNTPWebStorePromoLastId[];
