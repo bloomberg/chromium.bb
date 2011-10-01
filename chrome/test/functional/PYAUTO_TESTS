@@ -239,8 +239,13 @@
       # on the chromium bots, so exlcude these from here.  They're included
       # back in the FULL suite below.
       # crbug.com/85310
+      '-omnibox.OmniboxTest.testAppComboNameWithSpecialCharSearch',
+      '-omnibox.OmniboxTest.testAppNameWithNumberSearch',
+      '-omnibox.OmniboxTest.testAppNameWithSpaceSearch',
+      '-omnibox.OmniboxTest.testAppSearchWithVeryLongAppName',
       '-omnibox.OmniboxTest.testAutoCompleteForNonAsciiSearch',
       '-omnibox.OmniboxTest.testAutoCompleteForSearch',
+      '-omnibox.OmniboxTest.testBasicAppSearch',
       '-omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       '-omnibox.OmniboxTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
@@ -250,6 +255,7 @@
       '-omnibox.OmniboxTest.testSelect',
       '-omnibox.OmniboxTest.testSuggest',
       '-omnibox.OmniboxTest.testSuggestPref',
+
       # System password manager obstructs password automation.
       '-passwords',
 
@@ -474,8 +480,13 @@
       # because they do not produce omnibox results under virtual X on linux.
       # crbug.com/85310
       'instant',
+      'omnibox.OmniboxTest.testAppComboNameWithSpecialCharSearch',
+      'omnibox.OmniboxTest.testAppNameWithNumberSearch',
+      'omnibox.OmniboxTest.testAppNameWithSpaceSearch',
+      'omnibox.OmniboxTest.testAppSearchWithVeryLongAppName',
       'omnibox.OmniboxTest.testAutoCompleteForNonAsciiSearch',
       'omnibox.OmniboxTest.testAutoCompleteForSearch',
+      'omnibox.OmniboxTest.testBasicAppSearch',
       'omnibox.OmniboxTest.testBookmarkResultInNewTabAndWindow',
       'omnibox.OmniboxTest.testCrazyFilenames',
       'omnibox.OmniboxTest.testDifferentTypesOfResults',
@@ -485,6 +496,7 @@
       'omnibox.OmniboxTest.testSelect',
       'omnibox.OmniboxTest.testSuggest',
       'omnibox.OmniboxTest.testSuggestPref',
+
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
