@@ -9,12 +9,9 @@
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/controls/label.h"
 #include "views/widget/widget.h"
 
 namespace {
@@ -150,11 +147,6 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
     if (is_drawing_attention_)
       StopDrawingAttention();
   }
-
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      Source<Panel>(panel()),
-      NotificationService::NoDetails());
 }
 
 bool PanelBrowserView::AcceleratorPressed(
@@ -436,8 +428,6 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
-  virtual bool VerifyDrawingAttention() const OVERRIDE;
-
 
   PanelBrowserView* panel_browser_view_;
 };
@@ -477,11 +467,4 @@ void NativePanelTestingWin::CancelDragTitlebar() {
 
 void NativePanelTestingWin::FinishDragTitlebar() {
   panel_browser_view_->OnTitlebarMouseReleased();
-}
-
-bool NativePanelTestingWin::VerifyDrawingAttention() const {
-  PanelBrowserFrameView* frame_view = panel_browser_view_->GetFrameView();
-  SkColor attention_color = frame_view->GetTitleColor(
-      PanelBrowserFrameView::PAINT_FOR_ATTENTION);
-  return attention_color == frame_view->title_label_->GetColor();
 }

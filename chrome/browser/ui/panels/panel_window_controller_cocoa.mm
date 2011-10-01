@@ -491,23 +491,17 @@ static BOOL g_reportAnimationStatus = NO;
   // drawing attention - since it is ready to accept input, it already has
   // user's attention.
   windowShim_->panel()->SetExpansionState(Panel::EXPANDED);
-  if ([[self titlebarView] isDrawingAttention]) {
-    // Disable ExpansionState changes on mouse click for a short duration.
-    // This is needed in case the window became key as result of mouseDown while
-    // being already expanded and drawing attention - in this case, we don't
-    // want to minimize it on subsequent mouseUp.
-    // We use time interval because the window may become key in various ways
-    // (via keyboard for example) which are not distinguishable at this point.
-    // Apparently this interval is not affecting the user in other cases.
-    disableMinimizeUntilTime_ =
-      base::Time::Now() + kSuspendMinimizeOnClickIntervalMs;
-    [[self titlebarView] stopDrawingAttention];
-  }
+  [[self titlebarView] stopDrawingAttention];
 
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      Source<Panel>(windowShim_->panel()),
-      NotificationService::NoDetails());
+  // Disable ExpansionState changes on mouse click for a short duration.
+  // This is needed in case the window became key as result of mouseDown while
+  // being already expanded and drawing attention - in this case, we don't want
+  // to minimize it on subsequent mouseUp.
+  // We use time interval because the window may become key in various ways
+  // (via keyboard for example) which are not distinguishable at this point.
+  // Apparently this disable interval is not affecting the user in other cases.
+  disableMinimizeUntilTime_ =
+    base::Time::Now() + kSuspendMinimizeOnClickIntervalMs;
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
@@ -525,11 +519,6 @@ static BOOL g_reportAnimationStatus = NO;
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
   }
-
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      Source<Panel>(windowShim_->panel()),
-      NotificationService::NoDetails());
 }
 
 // TestingAPI interface implementation

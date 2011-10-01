@@ -901,10 +901,6 @@ enum NotificationType {
   // Sent when all nonblocking bounds animations are finished across panels.
   NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
 
-  // Sent when panel gains/loses focus.
-  // The source is the Panel, no details.
-  NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-
   // Sent when a global error has changed and the error UI should update it
   // self. The source is a Source<Profile> containing the profile for the
   // error. The detail is a GlobalError object that has changed or NULL if

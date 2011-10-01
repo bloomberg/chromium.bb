@@ -175,22 +175,6 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   panel_manager->set_auto_hiding_desktop_bar(mock_auto_hiding_desktop_bar_);
   panel_manager->SetWorkAreaForTesting(testing_work_area_);
   panel_manager->enable_auto_sizing(false);
-  // This is needed so the subsequently created panels can be activated.
-  // On a Mac, it transforms background-only test process into foreground one.
-  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-}
-
-void BasePanelBrowserTest::WaitForPanelActiveState(
-    Panel* panel, ActiveState expectedState) {
-  DCHECK(expectedState == SHOW_AS_ACTIVE || expectedState == SHOW_AS_INACTIVE);
-  if (panel->IsActive() == (expectedState == SHOW_AS_ACTIVE))
-    return;  // Already in required state.
-  ui_test_utils::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      Source<Panel>(panel));
-  signal.Wait();
-  // Verify that thransition happened in the desired direction.
-  EXPECT_TRUE(panel->IsActive() == (expectedState == SHOW_AS_ACTIVE));
 }
 
 Panel* BasePanelBrowserTest::CreatePanelWithParams(
@@ -226,10 +210,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   else
     panel->ShowInactive();
   MessageLoopForUI::current()->RunAllPending();
-  // More waiting, because gaining or losing focus may require inter-process
-  // asynchronous communication, and it is not enough to just run the local
-  // message loop to make sure this activity has completed.
-  WaitForPanelActiveState(panel, params.show_flag);
+
   return panel;
 }
 

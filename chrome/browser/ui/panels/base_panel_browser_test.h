@@ -36,17 +36,17 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE;
 
  protected:
-  enum ActiveState { SHOW_AS_ACTIVE, SHOW_AS_INACTIVE };
+  enum ShowFlag { SHOW_AS_ACTIVE, SHOW_AS_INACTIVE };
 
   struct CreatePanelParams {
     std::string name;
     gfx::Rect bounds;
-    ActiveState show_flag;
+    ShowFlag show_flag;
     GURL url;
 
     CreatePanelParams(const std::string& name,
                       const gfx::Rect& bounds,
-                      ActiveState show_flag)
+                      ShowFlag show_flag)
         : name(name),
           bounds(bounds),
           show_flag(show_flag) {
@@ -57,8 +57,6 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   Panel* CreatePanelWithBounds(const std::string& panel_name,
                                const gfx::Rect& bounds);
   Panel* CreatePanel(const std::string& panel_name);
-
-  void WaitForPanelActiveState(Panel* panel, ActiveState state);
 
   scoped_refptr<Extension> CreateExtension(const FilePath::StringType& path,
                                            Extension::Location location,
@@ -71,6 +69,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+
   gfx::Rect testing_work_area_;
   scoped_refptr<MockAutoHidingDesktopBar> mock_auto_hiding_desktop_bar_;
 };
