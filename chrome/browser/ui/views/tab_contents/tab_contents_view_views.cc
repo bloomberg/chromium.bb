@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/time.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -128,6 +129,12 @@ void TabContentsViewViews::SetPageTitle(const string16& title) {
 
 void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
                                         int /* error_code */) {
+  // Only show the sad tab if we're not in browser shutdown, so that TabContents
+  // objects that are not in a browser (e.g., HTML dialogs) and thus are
+  // visible do not flash a sad tab page.
+  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
+    return;
+
   // Force an invalidation to render sad tab.
   // Note that it's possible to get this message after the window was destroyed.
   if (GetNativeView()) {

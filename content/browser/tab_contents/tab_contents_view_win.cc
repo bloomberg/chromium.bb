@@ -74,6 +74,7 @@ void TabContentsViewWin::SetPageTitle(const std::wstring& title) {
 
 void TabContentsViewWin::OnTabCrashed(base::TerminationStatus status,
                                       int error_code) {
+  view_ = NULL;
 }
 
 void TabContentsViewWin::SizeContents(const gfx::Size& size) {

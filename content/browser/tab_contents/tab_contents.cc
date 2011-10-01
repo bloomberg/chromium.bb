@@ -1446,6 +1446,7 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
   SetIsLoading(false, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
+  view()->OnTabCrashed(crashed_status(), crashed_error_code());
 
   FOR_EACH_OBSERVER(TabContentsObserver, observers_, RenderViewGone());
 }

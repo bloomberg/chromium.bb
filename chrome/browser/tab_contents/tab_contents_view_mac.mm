@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "chrome/browser/browser_shutdown.h"
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
@@ -183,6 +184,12 @@ void TabContentsViewMac::SetPageTitle(const string16& title) {
 
 void TabContentsViewMac::OnTabCrashed(base::TerminationStatus /* status */,
                                       int /* error_code */) {
+  // Only show the sad tab if we're not in browser shutdown, so that TabContents
+  // objects that are not in a browser (e.g., HTML dialogs) and thus are
+  // visible do not flash a sad tab page.
+  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
+    return;
+
   if (!sad_tab_.get()) {
     DCHECK(tab_contents_);
     if (tab_contents_) {

@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
@@ -196,6 +197,12 @@ void TabContentsViewGtk::SetPageTitle(const string16& title) {
 
 void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus status,
                                       int error_code) {
+  // Only show the sad tab if we're not in browser shutdown, so that TabContents
+  // objects that are not in a browser (e.g., HTML dialogs) and thus are
+  // visible do not flash a sad tab page.
+  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
+    return;
+
   if (tab_contents_ != NULL && !sad_tab_.get()) {
     sad_tab_.reset(new SadTabGtk(
         tab_contents_,

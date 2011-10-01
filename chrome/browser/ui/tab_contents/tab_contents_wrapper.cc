@@ -12,7 +12,6 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter_observer.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -544,17 +543,6 @@ Profile* TabContentsWrapper::profile() const {
 
 void TabContentsWrapper::RenderViewCreated(RenderViewHost* render_view_host) {
   UpdateAlternateErrorPageURL(render_view_host);
-}
-
-void TabContentsWrapper::RenderViewGone() {
-  // Tell the view that we've crashed so it can prepare the sad tab page.
-  // Only do this if we're not in browser shutdown, so that TabContents
-  // objects that are not in a browser (e.g., HTML dialogs) and thus are
-  // visible do not flash a sad tab page.
-  if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID) {
-    tab_contents()->view()->OnTabCrashed(
-        tab_contents()->crashed_status(), tab_contents()->crashed_error_code());
-  }
 }
 
 void TabContentsWrapper::DidBecomeSelected() {
