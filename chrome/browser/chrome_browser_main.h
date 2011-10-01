@@ -33,6 +33,13 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
  public:
   virtual ~ChromeBrowserMainParts();
 
+  // Constructs metrics service and does related initialization, including
+  // creation of field trials. Call only after labs have been converted to
+  // switches.
+  MetricsService* SetupMetricsAndFieldTrials(
+      const CommandLine& parsed_command_line,
+      PrefService* local_state);
+
  protected:
   explicit ChromeBrowserMainParts(const MainFunctionParams& parameters);
 
@@ -73,16 +80,11 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // has on retention and general apps/webstore usage.
   void DefaultAppsFieldTrial();
 
-  // Constructs metrics service and field trials. Call only after labs have been
-  // converted to switches.
-  MetricsService* CreateMetrics(
+  // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
+
+  static MetricsService* InitializeMetrics(
       const CommandLine& parsed_command_line,
       const PrefService* local_state);
-
-  // Initializes metrics service and sets up the field trial experiments.
-  void SetupMetricsAndFieldTrials(MetricsService* metrics,
-                                  const CommandLine& parsed_command_line,
-                                  PrefService* local_state);
 
   // Add an invocation of your field trial init function to this method.
   void SetupFieldTrials(bool metrics_recording_enabled,
