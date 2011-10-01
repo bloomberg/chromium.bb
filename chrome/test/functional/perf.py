@@ -458,49 +458,74 @@ class FileUploadDownloadTest(BasePerfTest):
 class ScrollTest(BasePerfTest):
   """Tests to measure scrolling performance."""
 
-  def RunTestScroll(self):
-    # Navigate to a webpage, inject the scroll test code, and initiate the test.
-    self.assertTrue(self.AppendTab(pyauto.GURL(self.GetFileURLForDataPath(
-                        'find_in_page', 'largepage.html'))),
-                    msg='Failed to append tab for webpage.')
+  def ExtraChromeFlags(self):
+    """Ensures Chrome is launched with custom flags.
 
+    Extends the default list of extra flags passed to Chrome.  See
+    ExtraChromeFlags() in pyauto.py.
+    """
+    # Extra flag needed by scroll performance tests.
+    return super(ScrollTest, self).ExtraChromeFlags() + ['--disable-gpu-vsync']
+
+  def _RunScrollTest(self, url, description):
+    """Runs a scroll performance test on the specified webpage.
+
+    Args:
+      url: The string url for the webpage on which to run the scroll test.
+      description: A string description for the particular test being run.
+    """
     scroll_file = os.path.join(self.DataDir(), 'scroll', 'scroll.js')
     with open(scroll_file, 'r') as f:
       scroll_text = f.read()
-    js = """
-        %s
-        __start_scroll_test();
-        window.domAutomationController.send('done');
-    """ % scroll_text
-    self.ExecuteJavascript(js, 0, 1)
 
-    # Poll the webpage until the test is complete.
-    def IsTestDone():
-      done_js = """
-        if (__tests_complete)
-          window.domAutomationController.send('true');
-        else
-          window.domAutomationController.send('false');
+    def _RunSingleInvocation(url, scroll_text):
+      """Runs a single invocation of the scroll test and returns the FPS."""
+      self.assertTrue(self.AppendTab(pyauto.GURL(url)),
+                      msg='Failed to append tab for webpage.')
+
+      js = """
+          %s
+          window.domAutomationController.send('done');
+      """ % scroll_text
+      self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
+
+      # Poll the webpage until the test is complete.
+      def IsTestDone():
+        done_js = """
+          if (__scrolling_complete)
+            window.domAutomationController.send('true');
+          else
+            window.domAutomationController.send('false');
+        """
+        return self.ExecuteJavascript(done_js, 0, 1) == 'true'
+
+      self.assertTrue(
+          self.WaitUntil(IsTestDone, timeout=300, expect_retval=True,
+                         retry_sleep=0.25),
+          msg='Timed out when waiting for scrolling tests to complete.')
+
+      # Get the scroll test results from the webpage.
+      results_js = """
+        window.domAutomationController.send("{'fps': " + __mean_fps + "}");
       """
-      return self.ExecuteJavascript(done_js, 0, 1) == 'true'
+      fps = eval(self.ExecuteJavascript(results_js, 0, 1))['fps']
+      self.GetBrowserWindow(0).GetTab(1).Close(True)
+      return fps
 
-    self.assertTrue(
-        self.WaitUntil(IsTestDone, timeout=300, expect_retval=True,
-                       retry_sleep=0.10),
-        msg='Timed out when waiting for scrolling tests to complete.')
+    fps_vals = [_RunSingleInvocation(url, scroll_text)
+                for _ in range(self._num_iterations)]
 
-    # Get the scroll tests results from the webpage.
-    results_js = """
-      window.domAutomationController.send(
-          "{'delta_max': " + __delta_max + ", 'delta_min': " + __delta_min +
-          ", 'delta_sum': " + __delta_sum + ", 'delta_square_sum': " +
-            __delta_square_sum + ", 'n_samples': " + __n_samples + "}"
-      );
-    """
-    results = eval(self.ExecuteJavascript(results_js, 0, 1))
-    print '===== SCROLL TEST RESULTS ====='
-    self.pprint(results)
-    print '==============================='
+    self._PrintSummaryResults(description, fps_vals, 'FPS')
+
+  def testBlankPageScroll(self):
+    """Runs the scroll test on a blank page."""
+    self._RunScrollTest(
+        self.GetFileURLForDataPath('scroll', 'blank.html'), 'ScrollBlankPage')
+
+  def testTextScroll(self):
+    """Runs the scroll test on a text-filled page."""
+    self._RunScrollTest(
+        self.GetFileURLForDataPath('scroll', 'text.html'), 'ScrollTextPage')
 
 
 class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
