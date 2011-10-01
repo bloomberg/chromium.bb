@@ -66,7 +66,7 @@ static void GetPluginsForGroupsCallback(
 // correct thread.
 void WillLoadPluginsCallback() {
   // TODO(rsesek): Change these to CHECKs.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
   LOG_IF(ERROR, !BrowserThread::CurrentlyOn(BrowserThread::FILE));
 #else
   LOG(ERROR) << "Plugin loading should happen out-of-process.";
@@ -110,6 +110,13 @@ class PluginLoaderClient : public UtilityProcessHost::Client {
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
+  }
+
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE {
+    LOG(ERROR) << "Out-of-process plugin loader crashed with code " << exit_code
+               << ". You will have no plugins!";
+    // Don't leave callers hanging.
+    OnGotPlugins(std::vector<webkit::WebPluginInfo>());
   }
 
   virtual void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {
@@ -516,7 +523,7 @@ void PluginService::GetPlugins(const GetPluginsCallback& callback) {
   scoped_refptr<base::MessageLoopProxy> target_loop(
       MessageLoop::current()->message_loop_proxy());
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&PluginService::GetPluginsInternal, base::Unretained(this),
           target_loop, callback));
