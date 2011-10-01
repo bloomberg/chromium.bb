@@ -71,15 +71,17 @@ void PepperViewProxy::UnsetSolidFill() {
     view_->UnsetSolidFill();
 }
 
-void PepperViewProxy::SetConnectionState(ConnectionState state) {
+void PepperViewProxy::SetConnectionState(
+    protocol::ConnectionToHost::State state,
+    protocol::ConnectionToHost::Error error) {
   if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
     plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &PepperViewProxy::SetConnectionState, state));
+        this, &PepperViewProxy::SetConnectionState, state, error));
     return;
   }
 
   if (view_)
-    view_->SetConnectionState(state);
+    view_->SetConnectionState(state, error);
 }
 
 void PepperViewProxy::UpdateLoginStatus(bool success, const std::string& info) {

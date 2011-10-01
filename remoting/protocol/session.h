@@ -49,6 +49,7 @@ class Session : public base::NonThreadSafe {
     FAILED,
   };
 
+  // TODO(sergeyu): Move error codes to a separate file.
   enum Error {
     OK = 0,
     PEER_IS_OFFLINE,
@@ -58,6 +59,9 @@ class Session : public base::NonThreadSafe {
   };
 
   typedef Callback1<State>::Type StateChangeCallback;
+
+  // TODO(sergeyu): Specify connection error code when channel
+  // connection fails.
   typedef base::Callback<void(net::StreamSocket*)> StreamChannelCallback;
   typedef base::Callback<void(net::Socket*)> DatagramChannelCallback;
 

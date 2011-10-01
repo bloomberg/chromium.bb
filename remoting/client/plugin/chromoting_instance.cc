@@ -184,8 +184,9 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   client_->Start(xmpp_proxy);
 
   VLOG(1) << "Connection status: Initializing";
-  GetScriptableObject()->SetConnectionInfo(STATUS_INITIALIZING,
-                                           QUALITY_UNKNOWN);
+  GetScriptableObject()->SetConnectionStatus(
+      ChromotingScriptableObject::STATUS_INITIALIZING,
+      ChromotingScriptableObject::ERROR_NONE);
 }
 
 void ChromotingInstance::Disconnect() {
@@ -204,7 +205,9 @@ void ChromotingInstance::Disconnect() {
   input_handler_.reset();
   host_connection_.reset();
 
-  GetScriptableObject()->SetConnectionInfo(STATUS_CLOSED, QUALITY_UNKNOWN);
+  GetScriptableObject()->SetConnectionStatus(
+      ChromotingScriptableObject::STATUS_CLOSED,
+      ChromotingScriptableObject::ERROR_NONE);
 }
 
 void ChromotingInstance::DidChangeView(const pp::Rect& position,
@@ -302,8 +305,7 @@ ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
 
 void ChromotingInstance::SubmitLoginInfo(const std::string& username,
                                          const std::string& password) {
-  if (host_connection_->state() !=
-      protocol::ConnectionToHost::STATE_CONNECTED) {
+  if (host_connection_->state() != protocol::ConnectionToHost::CONNECTED) {
     LOG(INFO) << "Client not connected or already authenticated.";
     return;
   }

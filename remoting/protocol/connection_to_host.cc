@@ -35,7 +35,8 @@ ConnectionToHost::ConnectionToHost(
       event_callback_(NULL),
       client_stub_(NULL),
       video_stub_(NULL),
-      state_(STATE_EMPTY),
+      state_(CONNECTING),
+      error_(OK),
       control_connected_(false),
       input_connected_(false),
       video_connected_(false) {
@@ -120,7 +121,7 @@ void ConnectionToHost::OnStateChange(
     InitSession();
   } else if (state == SignalStrategy::StatusObserver::CLOSED) {
     VLOG(1) << "Connection closed.";
-    event_callback_->OnConnectionClosed(this);
+    CloseOnError(NETWORK_FAILURE);
   }
 }
 
@@ -153,6 +154,20 @@ void ConnectionToHost::OnIncomingSession(
   *response = SessionManager::DECLINE;
 }
 
+void ConnectionToHost::OnClientAuthenticated() {
+  // TODO(hclam): Don't send anything except authentication request if it is
+  // not authenticated.
+  SetState(AUTHENTICATED, OK);
+
+  // Create and enable the input stub now that we're authenticated.
+  input_sender_.reset(
+      new InputSender(message_loop_, session_->event_channel()));
+}
+
+ConnectionToHost::State ConnectionToHost::state() const {
+  return state_;
+}
+
 void ConnectionToHost::OnSessionStateChange(
     Session::State state) {
   DCHECK(message_loop_->BelongsToCurrentThread());
@@ -160,13 +175,28 @@ void ConnectionToHost::OnSessionStateChange(
 
   switch (state) {
     case Session::FAILED:
-      CloseOnError();
+      switch (session_->error()) {
+        case Session::PEER_IS_OFFLINE:
+          CloseOnError(HOST_IS_OFFLINE);
+          break;
+        case Session::SESSION_REJECTED:
+          CloseOnError(SESSION_REJECTED);
+          break;
+        case Session::INCOMPATIBLE_PROTOCOL:
+          CloseOnError(INCOMPATIBLE_PROTOCOL);
+          break;
+        case Session::CHANNEL_CONNECTION_ERROR:
+          CloseOnError(NETWORK_FAILURE);
+          break;
+        case Session::OK:
+          DLOG(FATAL) << "Error code isn't set";
+          CloseOnError(NETWORK_FAILURE);
+      }
       break;
 
     case Session::CLOSED:
-      state_ = STATE_CLOSED;
       CloseChannels();
-      event_callback_->OnConnectionClosed(this);
+      SetState(CLOSED, OK);
       break;
 
     case Session::CONNECTED:
@@ -179,7 +209,6 @@ void ConnectionToHost::OnSessionStateChange(
       break;
 
     case Session::CONNECTED_CHANNELS:
-      state_ = STATE_CONNECTED;
       host_control_sender_.reset(
           new HostControlSender(message_loop_, session_->control_channel()));
       dispatcher_.reset(new ClientMessageDispatcher());
@@ -199,7 +228,7 @@ void ConnectionToHost::OnSessionStateChange(
 void ConnectionToHost::OnVideoChannelInitialized(bool successful) {
   if (!successful) {
     LOG(ERROR) << "Failed to connect video channel";
-    CloseOnError();
+    CloseOnError(NETWORK_FAILURE);
     return;
   }
 
@@ -208,14 +237,15 @@ void ConnectionToHost::OnVideoChannelInitialized(bool successful) {
 }
 
 void ConnectionToHost::NotifyIfChannelsReady() {
-  if (control_connected_ && input_connected_ && video_connected_)
-    event_callback_->OnConnectionOpened(this);
+  if (control_connected_ && input_connected_ && video_connected_ &&
+      state_ == CONNECTING) {
+    SetState(CONNECTED, OK);
+  }
 }
 
-void ConnectionToHost::CloseOnError() {
-  state_ = STATE_FAILED;
+void ConnectionToHost::CloseOnError(Error error) {
   CloseChannels();
-  event_callback_->OnConnectionFailed(this);
+  SetState(FAILED, error);
 }
 
 void ConnectionToHost::CloseChannels() {
@@ -228,18 +258,16 @@ void ConnectionToHost::CloseChannels() {
   video_reader_.reset();
 }
 
-void ConnectionToHost::OnClientAuthenticated() {
-  // TODO(hclam): Don't send anything except authentication request if it is
-  // not authenticated.
-  state_ = STATE_AUTHENTICATED;
+void ConnectionToHost::SetState(State state, Error error) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  // |error| should be specified only when |state| is set to FAILED.
+  DCHECK(state == FAILED || error == OK);
 
-  // Create and enable the input stub now that we're authenticated.
-  input_sender_.reset(
-      new InputSender(message_loop_, session_->event_channel()));
-}
-
-ConnectionToHost::State ConnectionToHost::state() const {
-  return state_;
+  if (state != state_) {
+    state_ = state;
+    error_ = error;
+    event_callback_->OnConnectionState(state_, error_);
+  }
 }
 
 }  // namespace protocol

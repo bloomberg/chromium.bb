@@ -21,20 +21,19 @@
 //   readonly attribute unsigned short status;
 //
 //   // Constants for connection status.
-//   const unsigned short STATUS_UNKNOWN = 0;
-//   const unsigned short STATUS_CONNECTING = 1;
-//   const unsigned short STATUS_INITIALIZING = 2;
-//   const unsigned short STATUS_CONNECTED = 3;
-//   const unsigned short STATUS_CLOSED = 4;
-//   const unsigned short STATUS_FAILED = 5;
+//   const unsigned short STATUS_UNKNOWN;
+//   const unsigned short STATUS_CONNECTING;
+//   const unsigned short STATUS_INITIALIZING;
+//   const unsigned short STATUS_CONNECTED;
+//   const unsigned short STATUS_CLOSED;
+//   const unsigned short STATUS_FAILED;
 //
-//   // Connection quality.
-//   readonly attribute unsigned short quality;
-//
-//   // Constants for connection quality
-//   const unsigned short QUALITY_UNKNOWN = 0;
-//   const unsigned short QUALITY_GOOD = 1;
-//   const unsigned short QUALITY_BAD = 2;
+//   // Constants for connection errors.
+//   const unsigned short ERROR_NONE;
+//   const unsigned short ERROR_HOST_IS_OFFLINE;
+//   const unsigned short ERROR_SESSION_REJECTED;
+//   const unsigned short ERROR_INCOMPATIBLE_PROTOCOL;
+//   const unsigned short ERROR_NETWORK_FAILURE;
 //
 //   // JS callback function so we can signal the JS UI when the connection
 //   // status has been updated.
@@ -129,25 +128,27 @@ namespace remoting {
 class ChromotingInstance;
 class PepperXmppProxy;
 
-enum ConnectionStatus {
-  STATUS_UNKNOWN = 0,
-  STATUS_CONNECTING,
-  STATUS_INITIALIZING,
-  STATUS_CONNECTED,
-  STATUS_CLOSED,
-  STATUS_FAILED,
-};
-
-enum ConnectionQuality {
-  QUALITY_UNKNOWN = 0,
-  QUALITY_GOOD,
-  QUALITY_BAD,
-};
-
 class ChromotingScriptableObject
     : public pp::deprecated::ScriptableObject,
       public base::SupportsWeakPtr<ChromotingScriptableObject> {
  public:
+  enum ConnectionStatus {
+    STATUS_UNKNOWN = 0,
+    STATUS_CONNECTING,
+    STATUS_INITIALIZING,
+    STATUS_CONNECTED,
+    STATUS_CLOSED,
+    STATUS_FAILED,
+  };
+
+  enum ConnectionError {
+    ERROR_NONE = 0,
+    ERROR_HOST_IS_OFFLINE,
+    ERROR_SESSION_REJECTED,
+    ERROR_INCOMPATIBLE_PROTOCOL,
+    ERROR_NETWORK_FAILURE,
+  };
+
   ChromotingScriptableObject(
       ChromotingInstance* instance,
       base::MessageLoopProxy* plugin_message_loop);
@@ -168,7 +169,7 @@ class ChromotingScriptableObject
                        const std::vector<pp::Var>& args,
                        pp::Var* exception);
 
-  void SetConnectionInfo(ConnectionStatus status, ConnectionQuality quality);
+  void SetConnectionStatus(ConnectionStatus status, ConnectionError error);
   void LogDebugInfo(const std::string& info);
   void SetDesktopSize(int width, int height);
 

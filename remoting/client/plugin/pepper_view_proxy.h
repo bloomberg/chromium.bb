@@ -42,7 +42,9 @@ class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
   virtual void Paint() OVERRIDE;
   virtual void SetSolidFill(uint32 color) OVERRIDE;
   virtual void UnsetSolidFill() OVERRIDE;
-  virtual void SetConnectionState(ConnectionState state) OVERRIDE;
+  virtual void SetConnectionState(
+      protocol::ConnectionToHost::State state,
+      protocol::ConnectionToHost::Error error) OVERRIDE;
   virtual void UpdateLoginStatus(bool success, const std::string& info)
       OVERRIDE;
 

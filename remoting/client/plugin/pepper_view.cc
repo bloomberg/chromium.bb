@@ -19,6 +19,28 @@
 
 namespace remoting {
 
+namespace {
+
+ChromotingScriptableObject::ConnectionError ConvertConnectionError(
+    protocol::ConnectionToHost::Error error) {
+  switch (error) {
+    case protocol::ConnectionToHost::OK:
+      return ChromotingScriptableObject::ERROR_NONE;
+    case protocol::ConnectionToHost::HOST_IS_OFFLINE:
+      return ChromotingScriptableObject::ERROR_HOST_IS_OFFLINE;
+    case protocol::ConnectionToHost::SESSION_REJECTED:
+      return ChromotingScriptableObject::ERROR_SESSION_REJECTED;
+    case protocol::ConnectionToHost::INCOMPATIBLE_PROTOCOL:
+      return ChromotingScriptableObject::ERROR_INCOMPATIBLE_PROTOCOL;
+    case protocol::ConnectionToHost::NETWORK_FAILURE:
+      return ChromotingScriptableObject::ERROR_NETWORK_FAILURE;
+  }
+  DLOG(FATAL) << "Unknown error code" << error;
+  return  ChromotingScriptableObject::ERROR_NONE;
+}
+
+}  // namespace
+
 PepperView::PepperView(ChromotingInstance* instance, ClientContext* context)
   : instance_(instance),
     context_(context),
@@ -200,30 +222,40 @@ void PepperView::UnsetSolidFill() {
   is_static_fill_ = false;
 }
 
-void PepperView::SetConnectionState(ConnectionState state) {
+void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
+                                    protocol::ConnectionToHost::Error error) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   // TODO(hclam): Re-consider the way we communicate with Javascript.
   ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
   switch (state) {
-    case CREATED:
+    case protocol::ConnectionToHost::CONNECTING:
       SetSolidFill(kCreatedColor);
-      scriptable_obj->SetConnectionInfo(STATUS_CONNECTING, QUALITY_UNKNOWN);
+      scriptable_obj->SetConnectionStatus(
+          ChromotingScriptableObject::STATUS_CONNECTING,
+          ConvertConnectionError(error));
       break;
 
-    case CONNECTED:
-      UnsetSolidFill();
+    case protocol::ConnectionToHost::CONNECTED:
       scriptable_obj->SignalLoginChallenge();
       break;
 
-    case DISCONNECTED:
-      SetSolidFill(kDisconnectedColor);
-      scriptable_obj->SetConnectionInfo(STATUS_CLOSED, QUALITY_UNKNOWN);
+    case protocol::ConnectionToHost::AUTHENTICATED:
+      UnsetSolidFill();
       break;
 
-    case FAILED:
+    case protocol::ConnectionToHost::CLOSED:
+      SetSolidFill(kDisconnectedColor);
+      scriptable_obj->SetConnectionStatus(
+          ChromotingScriptableObject::STATUS_CLOSED,
+          ConvertConnectionError(error));
+      break;
+
+    case protocol::ConnectionToHost::FAILED:
       SetSolidFill(kFailedColor);
-      scriptable_obj->SetConnectionInfo(STATUS_FAILED, QUALITY_UNKNOWN);
+      scriptable_obj->SetConnectionStatus(
+          ChromotingScriptableObject::STATUS_FAILED,
+          ConvertConnectionError(error));
       break;
   }
 }
@@ -233,10 +265,13 @@ void PepperView::UpdateLoginStatus(bool success, const std::string& info) {
 
   // TODO(hclam): Re-consider the way we communicate with Javascript.
   ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
-  if (success)
-    scriptable_obj->SetConnectionInfo(STATUS_CONNECTED, QUALITY_UNKNOWN);
-  else
+  if (success) {
+    scriptable_obj->SetConnectionStatus(
+        ChromotingScriptableObject::STATUS_CONNECTED,
+        ChromotingScriptableObject::ERROR_NONE);
+  } else {
     scriptable_obj->SignalLoginChallenge();
+  }
 }
 
 bool PepperView::SetPluginSize(const SkISize& plugin_size) {

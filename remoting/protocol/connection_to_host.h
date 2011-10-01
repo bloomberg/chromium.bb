@@ -48,25 +48,27 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
                          public SessionManager::Listener {
  public:
   enum State {
-    STATE_EMPTY,
-    STATE_CONNECTED,
-    STATE_AUTHENTICATED,
-    STATE_FAILED,
-    STATE_CLOSED,
+    CONNECTING,
+    CONNECTED,
+    AUTHENTICATED,
+    FAILED,
+    CLOSED,
+  };
+
+  enum Error {
+    OK,
+    HOST_IS_OFFLINE,
+    SESSION_REJECTED,
+    INCOMPATIBLE_PROTOCOL,
+    NETWORK_FAILURE,
   };
 
   class HostEventCallback {
    public:
     virtual ~HostEventCallback() {}
 
-    // Called when the network connection is opened.
-    virtual void OnConnectionOpened(ConnectionToHost* conn) = 0;
-
-    // Called when the network connection is closed.
-    virtual void OnConnectionClosed(ConnectionToHost* conn) = 0;
-
-    // Called when the network connection has failed.
-    virtual void OnConnectionFailed(ConnectionToHost* conn) = 0;
+    // Called when state of the connection changes.
+    virtual void OnConnectionState(State state, Error error) = 0;
   };
 
   ConnectionToHost(base::MessageLoopProxy* message_loop,
@@ -124,10 +126,12 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   // Callback for |video_reader_|.
   void OnVideoPacket(VideoPacket* packet);
 
-  void CloseOnError();
+  void CloseOnError(Error error);
 
   // Stops writing in the channels.
   void CloseChannels();
+
+  void SetState(State state, Error error);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   pp::Instance* pp_instance_;
@@ -158,6 +162,7 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
 
   // Internal state of the connection.
   State state_;
+  Error error_;
 
   // State of the channels.
   bool control_connected_;
