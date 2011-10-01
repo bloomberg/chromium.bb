@@ -27,6 +27,7 @@ oper.verbose = True # Without verbose Info messages don't show up.
 
 NOT_APPLICABLE = 'N/A'
 WORLD_TARGET = 'world'
+UPGRADED = 'Upgraded'
 
 # Files we do not include in our upgrades by convention.
 BLACKLISTED_FILES = set(['Manifest', 'ChangeLog', 'metadata.xml'])
@@ -904,13 +905,33 @@ class Upgrader(object):
     # Add a row to status table for this package
     self._AppendPackageRow(info)
 
+  def _ExtractUpgradedPkgs(self, upgrade_lines):
+    """Extracts list of packages from standard commit |upgrade_lines|."""
+    # Expecting message lines like this (return just package names):
+    # Upgraded sys-libs/ncurses to version 5.7-r7 on amd64, arm, x86
+    # Upgraded sys-apps/less to version 441 on amd64, arm
+    # Upgraded sys-apps/less to version 442 on x86
+    pkgs = set()
+    regexp = re.compile(r'^%s\s+\S+/(\S+)\s' % UPGRADED)
+    for line in upgrade_lines:
+      match = regexp.search(line)
+      if match:
+        pkgs.add(match.group(1))
+
+    return sorted(pkgs)
+
   def _CreateCommitMessage(self, upgrade_lines, bug_num=None):
     """Create appropriate git commit message for upgrades in |upgrade_lines|."""
     message = ''
-    upgrade_count = len(upgrade_lines)
+    upgrade_pkgs = self._ExtractUpgradedPkgs(upgrade_lines)
+    upgrade_count = len(upgrade_pkgs)
     upgrade_str = '\n'.join(upgrade_lines)
     if upgrade_count == 1:
-      message = 'Upgrade the following Portage package\n\n%s\n' % upgrade_str
+      message = ('Upgraded the %s Portage package\n\n%s\n' %
+                 (upgrade_pkgs[0], upgrade_str))
+    elif upgrade_count < 6:
+      message = ('Upgraded the %s Portage packages\n\n%s\n' %
+                 (', '.join(upgrade_pkgs), upgrade_str))
     else:
       message = ('Upgrade the following %d Portage packages\n\n%s\n' %
                  (upgrade_count, upgrade_str))
@@ -933,7 +954,13 @@ class Upgrader(object):
     match = re.search(r'__BEGIN BODY__\n(.+)__END BODY__',
                       result.output, re.DOTALL)
     if match:
-      # Extract the upgrade_lines of last commit.
+      # Extract the upgrade_lines of last commit.  Stop at empty line.
+      # Expecting message body like this:
+      # Upgraded sys-libs/ncurses to version 5.7-r7 on amd64, arm, x86
+      # Upgraded sys-apps/less to version 441 on amd64, arm, x86
+      #
+      # BUG=chromium-os:20923
+      # TEST=trybot run of chromiumos-sdk
       body = match.group(1)
       for line in body.split('\n'):
         if line:
@@ -1316,16 +1343,16 @@ class Upgrader(object):
         # Upgrade is the same across all archs.
         upgraded_ver = upgraded_versset.pop()
         arch_str = ', '.join(sorted(self._master_archs))
-        pkg_commit_line = ('Upgraded %s to version %s on %s' %
-                           (pkg, upgraded_ver, arch_str))
+        pkg_commit_line = ('%s %s to version %s on %s' %
+                           (UPGRADED, pkg, upgraded_ver, arch_str))
 
       elif len(upgraded_versset) > 1:
         # Iterate again, and specify arch for each upgraded version.
         tokens = []
         for upgraded_ver in upgraded_verslist:
           tokens.append('%s on %s' % (upgraded_ver, arch))
-        pkg_commit_line = ('Upgraded %s to versions %s' %
-                           (pkg, ' AND '.join(tokens)))
+        pkg_commit_line = ('%s %s to versions %s' %
+                           (UPGRADED, pkg, ' AND '.join(tokens)))
 
       if pkg_commit_line:
         commit_lines.append(pkg_commit_line)
