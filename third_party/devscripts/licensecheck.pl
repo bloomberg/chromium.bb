@@ -470,7 +470,9 @@ sub parselicense($) {
 	$license = "Perl $license";
     }
 
-    if ($licensetext =~ /under the Apache License, Version ([^ ]+)/) {
+    if ($licensetext =~ /under the terms of the Apache ([^ ]+) License OR version 2 of the GNU/) {
+	$license = "Apache (v$1) GPL (v2) $license";
+    } elsif ($licensetext =~ /under the Apache License, Version ([^ ]+)/) {
 	$license = "Apache (v$1) $license";
     }
 

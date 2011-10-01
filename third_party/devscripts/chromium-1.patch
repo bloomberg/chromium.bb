@@ -1,5 +1,5 @@
---- licensecheck.pl.orig	2011-09-29 22:37:51.668584727 +0100
-+++ licensecheck.pl	2011-09-29 21:15:10.238581840 +0100
+--- licensecheck.pl.orig	2011-09-30 11:26:05.132392850 -0700
++++ licensecheck.pl	2011-09-30 11:29:27.662389093 -0700
 @@ -241,6 +241,12 @@
  my @find_args = ();
  my $files_count = @ARGV;
@@ -81,7 +81,7 @@
  	$license = "MIT/X11 (BSD like) $license";
      } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files \(the Software\), to deal in the Software/) {
  	$license = "MIT/X11 (BSD like) $license";
-@@ -448,15 +437,21 @@
+@@ -448,15 +437,19 @@
      }
  
      if ($licensetext =~ /THIS SOFTWARE IS PROVIDED .*AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY/) {
@@ -106,6 +106,17 @@
      }
  
      if ($licensetext =~ /Mozilla Public License Version ([^ ]+)/) {
+@@ -475,7 +468,9 @@
+ 	$license = "Perl $license";
+     }
+ 
+-    if ($licensetext =~ /under the Apache License, Version ([^ ]+)/) {
++    if ($licensetext =~ /under the terms of the Apache ([^ ]+) License OR version 2 of the GNU/) {
++	$license = "Apache (v$1) GPL (v2) $license";
++    } elsif ($licensetext =~ /under the Apache License, Version ([^ ]+)/) {
+ 	$license = "Apache (v$1) $license";
+     }
+ 
 @@ -495,7 +490,7 @@
  	$license = "SGI Free Software License B $license";
      }

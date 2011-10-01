@@ -32,6 +32,7 @@ Examples:
 WHITELISTED_LICENSES = [
     'Apache (v2.0)',
     'Apache (v2.0) BSD (2 clause)',
+    'Apache (v2.0) GPL (v2)',
     'BSD',
     'BSD (2 clause)',
     'BSD (2 clause) MIT/X11 (BSD like)',
