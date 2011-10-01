@@ -899,6 +899,11 @@
               'SK_BUILD_FOR_ANDROID_NDK',
             ],
           }],
+          ['OS=="mac"', {
+            'include_dirs': [
+              '../third_party/skia/include/utils/mac',
+            ],
+          }],
         ],
       },
     },
