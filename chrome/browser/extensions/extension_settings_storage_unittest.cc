@@ -8,37 +8,72 @@
 #include "base/file_util.h"
 #include "base/values.h"
 
+namespace {
+
 // Gets the pretty-printed JSON for a value.
-static std::string GetJSON(const Value& value) {
+std::string GetJSON(const Value& value) {
   std::string json;
   base::JSONWriter::Write(&value, true, &json);
   return json;
 }
 
-// Returns whether the result of a storage operation is an expected value.
+// Pretty-prints a set of strings.
+std::string ToString(const std::set<std::string>& strings) {
+  std::string string("{");
+  for (std::set<std::string>::const_iterator it = strings.begin();
+      it != strings.end(); ++it) {
+    if (it != strings.begin()) {
+      string.append(", ");
+    }
+    string.append(*it);
+  }
+  string.append("}");
+  return string;
+}
+
+}  // namespace
+
+// Returns whether the result of a storage operation has the expected settings
+// and changed keys.
 testing::AssertionResult SettingsEq(
-    const char* expected_expr, const char* actual_expr,
-    DictionaryValue* expected, ExtensionSettingsStorage::Result actual) {
+    const char* _1, const char* _2, const char* _3,
+    DictionaryValue* expected_settings,
+    std::set<std::string>* expected_changed_keys,
+    ExtensionSettingsStorage::Result actual) {
   if (actual.HasError()) {
     return testing::AssertionFailure() <<
-        "Expected: " << GetJSON(*expected) <<
+        "Expected: " << GetJSON(*expected_settings) <<
+        ", " << ToString(*expected_changed_keys) << "\n" <<
         ", actual has error: " << actual.GetError();
   }
-  if (expected == actual.GetSettings()) {
-    return testing::AssertionSuccess();
-  }
-  if (expected == NULL && actual.GetSettings() != NULL) {
+  if (expected_settings == NULL && actual.GetSettings() != NULL) {
     return testing::AssertionFailure() <<
-        "Expected NULL, actual: " << GetJSON(*actual.GetSettings());
+        "Expected NULL settings, actual: " << GetJSON(*actual.GetSettings());
   }
-  if (expected != NULL && actual.GetSettings() == NULL) {
+  if (expected_changed_keys == NULL && actual.GetChangedKeys() != NULL) {
     return testing::AssertionFailure() <<
-        "Expected: " << GetJSON(*expected) << ", actual NULL";
+        "Expected NULL changed keys, actual: " <<
+        ToString(*actual.GetChangedKeys());
   }
-  if (!expected->Equals(actual.GetSettings())) {
+  if (expected_settings != NULL && actual.GetSettings() == NULL) {
     return testing::AssertionFailure() <<
-        "Expected: " << GetJSON(*expected) <<
+        "Expected: " << GetJSON(*expected_settings) << ", actual NULL";
+  }
+  if (expected_changed_keys != NULL && actual.GetChangedKeys() == NULL) {
+    return testing::AssertionFailure() <<
+        "Expected: " << ToString(*expected_changed_keys) << ", actual NULL";
+  }
+  if (expected_settings != actual.GetSettings() &&
+      !expected_settings->Equals(actual.GetSettings())) {
+    return testing::AssertionFailure() <<
+        "Expected: " << GetJSON(*expected_settings) <<
         ", actual: " << GetJSON(*actual.GetSettings());
+  }
+  if (expected_changed_keys != actual.GetChangedKeys() &&
+        *expected_changed_keys != *actual.GetChangedKeys()) {
+    return testing::AssertionFailure() <<
+        "Expected: " << ToString(*expected_changed_keys) <<
+        ", actual: " << ToString(*actual.GetChangedKeys());
   }
   return testing::AssertionSuccess();
 }
@@ -59,6 +94,7 @@ ExtensionSettingsStorageTest::ExtensionSettingsStorageTest()
 
   list1_.push_back(key1_);
   list2_.push_back(key2_);
+  list3_.push_back(key3_);
   list12_.push_back(key1_);
   list12_.push_back(key2_);
   list13_.push_back(key1_);
@@ -66,6 +102,13 @@ ExtensionSettingsStorageTest::ExtensionSettingsStorageTest()
   list123_.push_back(key1_);
   list123_.push_back(key2_);
   list123_.push_back(key3_);
+
+  set1_.insert(list1_.begin(), list1_.end());
+  set2_.insert(list2_.begin(), list2_.end());
+  set3_.insert(list3_.begin(), list3_.end());
+  set12_.insert(list12_.begin(), list12_.end());
+  set13_.insert(list13_.begin(), list13_.end());
+  set123_.insert(list123_.begin(), list123_.end());
 
   dict1_->Set(key1_, val1_->DeepCopy());
   dict12_->Set(key1_, val1_->DeepCopy());
@@ -88,118 +131,179 @@ void ExtensionSettingsStorageTest::TearDown() {
 }
 
 TEST_P(ExtensionSettingsStorageTest, GetWhenEmpty) {
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq,
-      empty_dict_.get(), storage_->Get(empty_list_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list123_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(empty_list_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list123_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get());
 }
 
 TEST_P(ExtensionSettingsStorageTest, GetWithSingleValue) {
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Set(key1_, *val1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), &set1_, storage_->Set(key1_, *val1_));
 
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key2_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key3_));
-  ASSERT_PRED_FORMAT2(SettingsEq,
-      empty_dict_.get(), storage_->Get(empty_list_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get(list123_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key2_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key3_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(empty_list_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get(list123_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get());
 }
 
 TEST_P(ExtensionSettingsStorageTest, GetWithMultipleValues) {
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Set(*dict12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), &set12_, storage_->Set(*dict12_));
 
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key3_));
-  ASSERT_PRED_FORMAT2(SettingsEq,
-      empty_dict_.get(), storage_->Get(empty_list_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Get(list123_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key3_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(empty_list_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), NULL, storage_->Get(list123_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), NULL, storage_->Get());
 }
 
 TEST_P(ExtensionSettingsStorageTest, RemoveWhenEmpty) {
-  ASSERT_PRED_FORMAT2(SettingsEq, NULL, storage_->Remove(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &empty_set_, storage_->Remove(key1_));
 
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get());
 }
 
 TEST_P(ExtensionSettingsStorageTest, RemoveWithSingleValue) {
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Set(*dict1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, NULL, storage_->Remove(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), &set1_, storage_->Set(*dict1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &set1_, storage_->Remove(key1_));
 
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key2_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list12_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key2_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get());
 }
 
 TEST_P(ExtensionSettingsStorageTest, RemoveWithMultipleValues) {
-  ASSERT_PRED_FORMAT2(SettingsEq, dict123_.get(), storage_->Set(*dict123_));
-  ASSERT_PRED_FORMAT2(SettingsEq, NULL, storage_->Remove(key3_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict123_.get(), &set123_, storage_->Set(*dict123_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &set3_, storage_->Remove(key3_));
 
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key3_));
-  ASSERT_PRED_FORMAT2(SettingsEq,
-      empty_dict_.get(), storage_->Get(empty_list_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get(list1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Get(list12_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get(list13_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Get(list123_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key3_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(empty_list_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get(list1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), NULL, storage_->Get(list12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get(list13_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), NULL, storage_->Get(list123_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), NULL, storage_->Get());
 
-  ASSERT_PRED_FORMAT2(SettingsEq, NULL, storage_->Remove(list12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &set12_, storage_->Remove(list12_));
 
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key3_));
-  ASSERT_PRED_FORMAT2(SettingsEq,
-      empty_dict_.get(), storage_->Get(empty_list_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list12_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list13_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list123_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key3_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(empty_list_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list13_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list123_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get());
 }
 
 TEST_P(ExtensionSettingsStorageTest, SetWhenOverwriting) {
   DictionaryValue key1_val2;
   key1_val2.Set(key1_, val2_->DeepCopy());
-  ASSERT_PRED_FORMAT2(SettingsEq, &key1_val2, storage_->Set(key1_, *val2_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Set(*dict12_));
 
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key3_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(),
-      storage_->Get(empty_list_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get(list1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Get(list12_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict1_.get(), storage_->Get(list13_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Get(list123_));
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &key1_val2, &set1_, storage_->Set(key1_, *val2_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), &set12_, storage_->Set(*dict12_));
+
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key3_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(empty_list_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get(list1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), NULL, storage_->Get(list12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), NULL, storage_->Get(list13_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), NULL, storage_->Get(list123_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), NULL, storage_->Get());
 }
 
 TEST_P(ExtensionSettingsStorageTest, ClearWhenEmpty) {
-  ASSERT_PRED_FORMAT2(SettingsEq, NULL, storage_->Clear());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &empty_set_, storage_->Clear());
 
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(),
-      storage_->Get(empty_list_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list123_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(empty_list_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list123_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get());
 }
 
 TEST_P(ExtensionSettingsStorageTest, ClearWhenNotEmpty) {
-  ASSERT_PRED_FORMAT2(SettingsEq, dict12_.get(), storage_->Set(*dict12_));
-  ASSERT_PRED_FORMAT2(SettingsEq, NULL, storage_->Clear());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), &set12_, storage_->Set(*dict12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &set12_, storage_->Clear());
 
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(key1_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(),
-      storage_->Get(empty_list_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(list123_));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(empty_list_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(list123_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get());
 }
 
 // Dots should be allowed in key names; they shouldn't be interpreted as
@@ -209,22 +313,38 @@ TEST_P(ExtensionSettingsStorageTest, DotsInKeyNames) {
   StringValue dot_value("baz.qux");
   std::vector<std::string> dot_list;
   dot_list.push_back(dot_key);
+  std::set<std::string> dot_set;
+  dot_set.insert(dot_key);
   DictionaryValue dot_dict;
   dot_dict.SetWithoutPathExpansion(dot_key, dot_value.DeepCopy());
 
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(dot_key));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(dot_key));
 
-  ASSERT_PRED_FORMAT2(SettingsEq, &dot_dict, storage_->Set(dot_key, dot_value));
-  ASSERT_PRED_FORMAT2(SettingsEq, &dot_dict, storage_->Get(dot_key));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &dot_dict, &dot_set, storage_->Set(dot_key, dot_value));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &dot_dict, &empty_set_, storage_->Set(dot_key, dot_value));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &dot_dict, NULL, storage_->Get(dot_key));
 
-  ASSERT_PRED_FORMAT2(SettingsEq, NULL, storage_->Remove(dot_key));
-  ASSERT_PRED_FORMAT2(SettingsEq, &dot_dict, storage_->Set(dot_dict));
-  ASSERT_PRED_FORMAT2(SettingsEq, &dot_dict, storage_->Get(dot_list));
-  ASSERT_PRED_FORMAT2(SettingsEq, &dot_dict, storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &dot_set, storage_->Remove(dot_key));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &empty_set_, storage_->Remove(dot_key));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &dot_dict, &dot_set, storage_->Set(dot_dict));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &dot_dict, NULL, storage_->Get(dot_list));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &dot_dict, NULL, storage_->Get());
 
-  ASSERT_PRED_FORMAT2(SettingsEq, NULL, storage_->Remove(dot_list));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get(dot_key));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &dot_set, storage_->Remove(dot_list));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get(dot_key));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get());
 }
 
 TEST_P(ExtensionSettingsStorageTest, DotsInKeyNamesWithDicts) {
@@ -232,8 +352,85 @@ TEST_P(ExtensionSettingsStorageTest, DotsInKeyNamesWithDicts) {
   DictionaryValue* inner_dict = new DictionaryValue();
   outer_dict.Set("foo", inner_dict);
   inner_dict->Set("bar", Value::CreateStringValue("baz"));
+  std::set<std::string> changed_keys;
+  changed_keys.insert("foo");
 
-  ASSERT_PRED_FORMAT2(SettingsEq, &outer_dict, storage_->Set(outer_dict));
-  ASSERT_PRED_FORMAT2(SettingsEq, &outer_dict, storage_->Get("foo"));
-  ASSERT_PRED_FORMAT2(SettingsEq, empty_dict_.get(), storage_->Get("foo.bar"));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &outer_dict, &changed_keys, storage_->Set(outer_dict));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &outer_dict, NULL, storage_->Get("foo"));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      empty_dict_.get(), NULL, storage_->Get("foo.bar"));
+}
+
+TEST_P(ExtensionSettingsStorageTest, ComplexChangedKeysScenarios) {
+  // Test:
+  //   - Setting over missing/changed/same keys, combinations.
+  //   - Removing over missing and present keys, combinations.
+  //   - Clearing.
+  std::vector<std::string> complex_list;
+  std::set<std::string> complex_set;
+  DictionaryValue complex_dict;
+
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), &set1_, storage_->Set(key1_, *val1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), &empty_set_, storage_->Set(key1_, *val1_));
+
+  complex_dict.Clear();
+  complex_dict.Set(key1_, val2_->DeepCopy());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &complex_dict, &set1_, storage_->Set(key1_, *val2_));
+
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &set1_, storage_->Remove(key1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &empty_set_, storage_->Remove(key1_));
+
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict1_.get(), &set1_, storage_->Set(key1_, *val1_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &set1_, storage_->Clear());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &empty_set_, storage_->Clear());
+
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), &set12_, storage_->Set(*dict12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict12_.get(), &empty_set_, storage_->Set(*dict12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      dict123_.get(), &set3_, storage_->Set(*dict123_));
+
+  complex_dict.Clear();
+  complex_dict.Set(key1_, val2_->DeepCopy());
+  complex_dict.Set(key2_, val2_->DeepCopy());
+  complex_dict.Set("asdf", val1_->DeepCopy());
+  complex_dict.Set("qwerty", val3_->DeepCopy());
+  complex_set.clear();
+  complex_set.insert(key1_);
+  complex_set.insert("asdf");
+  complex_set.insert("qwerty");
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      &complex_dict, &complex_set, storage_->Set(complex_dict));
+
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &set12_, storage_->Remove(list12_));
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &empty_set_, storage_->Remove(list12_));
+
+  complex_list.clear();
+  complex_list.push_back(key1_);
+  complex_list.push_back("asdf");
+  complex_set.clear();
+  complex_set.insert("asdf");
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &complex_set, storage_->Remove(complex_list));
+
+  complex_set.clear();
+  complex_set.insert(key3_);
+  complex_set.insert("qwerty");
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &complex_set, storage_->Clear());
+  EXPECT_PRED_FORMAT3(SettingsEq,
+      NULL, &empty_set_, storage_->Clear());
 }

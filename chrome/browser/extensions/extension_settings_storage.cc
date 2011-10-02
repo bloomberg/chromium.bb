@@ -7,11 +7,12 @@
 
 // Implementation of ExtensionSettingsStorage::Result
 
-ExtensionSettingsStorage::Result::Result(DictionaryValue* settings)
-    : inner_(new Inner(settings, std::string())) {}
+ExtensionSettingsStorage::Result::Result(
+    DictionaryValue* settings, std::set<std::string>* changed_keys)
+    : inner_(new Inner(settings, changed_keys, std::string())) {}
 
 ExtensionSettingsStorage::Result::Result(const std::string& error)
-    : inner_(new Inner(NULL, error)) {
+    : inner_(new Inner(NULL, new std::set<std::string>(), error)) {
   DCHECK(!error.empty());
 }
 
@@ -20,6 +21,12 @@ ExtensionSettingsStorage::Result::~Result() {}
 DictionaryValue* ExtensionSettingsStorage::Result::GetSettings() const {
   DCHECK(!HasError());
   return inner_->settings_.get();
+}
+
+std::set<std::string>*
+ExtensionSettingsStorage::Result::GetChangedKeys() const {
+  DCHECK(!HasError());
+  return inner_->changed_keys_.get();
 }
 
 bool ExtensionSettingsStorage::Result::HasError() const {
@@ -32,7 +39,9 @@ const std::string& ExtensionSettingsStorage::Result::GetError() const {
 }
 
 ExtensionSettingsStorage::Result::Inner::Inner(
-    DictionaryValue* settings, const std::string& error)
-    : settings_(settings), error_(error) {}
+    DictionaryValue* settings,
+    std::set<std::string>* changed_keys,
+    const std::string& error)
+    : settings_(settings), changed_keys_(changed_keys), error_(error) {}
 
 ExtensionSettingsStorage::Result::Inner::~Inner() {}

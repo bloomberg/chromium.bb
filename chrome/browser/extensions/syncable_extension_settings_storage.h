@@ -46,11 +46,13 @@ class SyncableExtensionSettingsStorage : public ExtensionSettingsStorage {
 
  private:
   // Either adds to sync or send updates to sync for some settings.
-  // Whether they're adds or updates depends on the state of synced_keys_.
-  void SendAddsOrUpdatesToSync(const DictionaryValue& settings);
+  // Whether they're adds or updates depends on the state of |synced_keys_|.
+  void SendAddsOrUpdatesToSync(
+      const std::set<std::string>& changed_keys,
+      const DictionaryValue& settings);
 
   // Sends deletes to sync for some settings.
-  void SendDeletesToSync(const std::vector<std::string>& keys);
+  void SendDeletesToSync(const std::set<std::string>& keys);
 
   // Sends all local settings to sync (synced settings assumed to be empty).
   SyncError SendLocalSettingsToSync(

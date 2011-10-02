@@ -45,14 +45,14 @@ class ExtensionSettingsLeveldbStorage : public ExtensionSettingsStorage {
   // Ownership of db is taken.
   explicit ExtensionSettingsLeveldbStorage(leveldb::DB* db);
 
-  // Reads a key from the database, settings the resulting key/value pair in
-  // a given settings object if successful.
-  // Returns whether the get was successful.
+  // Reads a setting from the database.  Returns whether the read was
+  // successful, in which case |setting| will be reset to the Value read
+  // from the database.  This value may be NULL.
   bool ReadFromDb(
       leveldb::ReadOptions options,
       const std::string& key,
-      // Ownership NOT taken.
-      DictionaryValue* settings);
+      // Will be reset() with the result, if any.
+      scoped_ptr<Value>* setting);
 
   // leveldb backend.
   scoped_ptr<leveldb::DB> db_;

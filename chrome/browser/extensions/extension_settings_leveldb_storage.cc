@@ -15,8 +15,31 @@
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace {
+
 // Generic error message sent to extensions on failure.
 const char* kGenericOnFailureMessage = "Extension settings failed";
+
+// Scoped leveldb snapshot which releases the snapshot on destruction.
+class ScopedSnapshot {
+ public:
+  explicit ScopedSnapshot(leveldb::DB* db)
+      : db_(db), snapshot_(db->GetSnapshot()) {}
+
+  ~ScopedSnapshot() {
+    db_->ReleaseSnapshot(snapshot_);
+  }
+
+  const leveldb::Snapshot* get() {
+    return snapshot_;
+  }
+
+ private:
+  leveldb::DB* db_;
+  const leveldb::Snapshot* snapshot_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSnapshot);
+};
+
 }  // namespace
 
 /* static */
@@ -56,34 +79,39 @@ ExtensionSettingsLeveldbStorage::~ExtensionSettingsLeveldbStorage() {
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get(
     const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<DictionaryValue> settings(new DictionaryValue());
-  if (!ReadFromDb(leveldb::ReadOptions(), key, settings.get())) {
+  scoped_ptr<Value> setting;
+  if (!ReadFromDb(leveldb::ReadOptions(), key, &setting)) {
     return Result(kGenericOnFailureMessage);
   }
-  return Result(settings.release());
+  DictionaryValue* settings = new DictionaryValue();
+  if (setting.get()) {
+    settings->SetWithoutPathExpansion(key, setting.release());
+  }
+  return Result(settings, NULL);
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   leveldb::ReadOptions options;
+  scoped_ptr<DictionaryValue> settings(new DictionaryValue());
+
   // All interaction with the db is done on the same thread, so snapshotting
   // isn't strictly necessary.  This is just defensive.
-  scoped_ptr<DictionaryValue> settings(new DictionaryValue());
-  bool success = true;
-
-  options.snapshot = db_->GetSnapshot();
+  ScopedSnapshot snapshot(db_.get());
+  options.snapshot = snapshot.get();
   for (std::vector<std::string>::const_iterator it = keys.begin();
-      success && it != keys.end(); ++it) {
-    success &= ReadFromDb(options, *it, settings.get());
+      it != keys.end(); ++it) {
+    scoped_ptr<Value> setting;
+    if (!ReadFromDb(options, *it, &setting)) {
+      return Result(kGenericOnFailureMessage);
+    }
+    if (setting.get()) {
+      settings->SetWithoutPathExpansion(*it, setting.release());
+    }
   }
-  db_->ReleaseSnapshot(options.snapshot);
 
-  if (!success) {
-    return Result(kGenericOnFailureMessage);
-  }
-
-  return Result(settings.release());
+  return Result(settings.release(), NULL);
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get() {
@@ -94,7 +122,8 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get() {
   // isn't strictly necessary.  This is just defensive.
   scoped_ptr<DictionaryValue> settings(new DictionaryValue());
 
-  options.snapshot = db_->GetSnapshot();
+  ScopedSnapshot snapshot(db_.get());
+  options.snapshot = snapshot.get();
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     Value* value =
@@ -106,46 +135,44 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Get() {
       LOG(ERROR) << "Invalid JSON: " << it->value().ToString();
     }
   }
-  db_->ReleaseSnapshot(options.snapshot);
 
   if (!it->status().ok()) {
     LOG(ERROR) << "DB iteration failed: " << it->status().ToString();
     return Result(kGenericOnFailureMessage);
   }
 
-  return Result(settings.release());
+  return Result(settings.release(), NULL);
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Set(
     const std::string& key, const Value& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::string value_as_json;
-  base::JSONWriter::Write(&value, false, &value_as_json);
-
-  leveldb::Status status =
-      db_->Put(leveldb::WriteOptions(), key, value_as_json);
-  if (!status.ok()) {
-    LOG(WARNING) << "DB write failed: " << status.ToString();
-    return Result(kGenericOnFailureMessage);
-  }
-
-  DictionaryValue* settings = new DictionaryValue();
-  settings->SetWithoutPathExpansion(key, value.DeepCopy());
-  return Result(settings);
+  DictionaryValue settings;
+  settings.SetWithoutPathExpansion(key, value.DeepCopy());
+  return Set(settings);
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Set(
     const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  scoped_ptr<std::set<std::string> > changed_keys(new std::set<std::string>());
   std::string value_as_json;
   leveldb::WriteBatch batch;
 
   for (DictionaryValue::key_iterator it = settings.begin_keys();
       it != settings.end_keys(); ++it) {
-    Value* value;
-    settings.GetWithoutPathExpansion(*it, &value);
-    base::JSONWriter::Write(value, false, &value_as_json);
-    batch.Put(*it, value_as_json);
+    scoped_ptr<Value> original_value;
+    if (!ReadFromDb(leveldb::ReadOptions(), *it, &original_value)) {
+      return Result(kGenericOnFailureMessage);
+    }
+
+    Value* new_value = NULL;
+    settings.GetWithoutPathExpansion(*it, &new_value);
+    if (!original_value.get() || !original_value->Equals(new_value)) {
+      changed_keys->insert(*it);
+      base::JSONWriter::Write(new_value, false, &value_as_json);
+      batch.Put(*it, value_as_json);
+    }
   }
 
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
@@ -154,28 +181,34 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Set(
     return Result(kGenericOnFailureMessage);
   }
 
-  return Result(settings.DeepCopy());
+  return Result(settings.DeepCopy(), changed_keys.release());
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Remove(
     const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  leveldb::Status status = db_->Delete(leveldb::WriteOptions(), key);
-  if (!status.ok() && !status.IsNotFound()) {
-    LOG(WARNING) << "DB delete failed: " << status.ToString();
-    return Result(kGenericOnFailureMessage);
-  }
-
-  return Result(NULL);
+  std::vector<std::string> keys;
+  keys.push_back(key);
+  return Remove(keys);
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Remove(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  scoped_ptr<std::set<std::string> > changed_keys(new std::set<std::string>());
+
   leveldb::WriteBatch batch;
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
-    batch.Delete(*it);
+    scoped_ptr<Value> original_value;
+    if (!ReadFromDb(leveldb::ReadOptions(), *it, &original_value)) {
+      return Result(kGenericOnFailureMessage);
+    }
+
+    if (original_value.get()) {
+      changed_keys->insert(*it);
+      batch.Delete(*it);
+    }
   }
 
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
@@ -184,22 +217,24 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Remove(
     return Result(kGenericOnFailureMessage);
   }
 
-  return Result(NULL);
+  return Result(NULL, changed_keys.release());
 }
 
 ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Clear() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  scoped_ptr<std::set<std::string> > changed_keys(new std::set<std::string>());
   leveldb::ReadOptions options;
   // All interaction with the db is done on the same thread, so snapshotting
   // isn't strictly necessary.  This is just defensive.
   leveldb::WriteBatch batch;
 
-  options.snapshot = db_->GetSnapshot();
+  ScopedSnapshot snapshot(db_.get());
+  options.snapshot = snapshot.get();
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    changed_keys->insert(it->key().ToString());
     batch.Delete(it->key());
   }
-  db_->ReleaseSnapshot(options.snapshot);
 
   if (!it->status().ok()) {
     LOG(WARNING) << "Clear iteration failed: " << it->status().ToString();
@@ -212,14 +247,15 @@ ExtensionSettingsStorage::Result ExtensionSettingsLeveldbStorage::Clear() {
     return Result(kGenericOnFailureMessage);
   }
 
-  return Result(NULL);
+  return Result(NULL, changed_keys.release());
 }
 
 bool ExtensionSettingsLeveldbStorage::ReadFromDb(
     leveldb::ReadOptions options,
     const std::string& key,
-    DictionaryValue* settings) {
+    scoped_ptr<Value>* setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(setting != NULL);
   std::string value_as_json;
   leveldb::Status s = db_->Get(options, key, &value_as_json);
 
@@ -240,6 +276,6 @@ bool ExtensionSettingsLeveldbStorage::ReadFromDb(
     return false;
   }
 
-  settings->SetWithoutPathExpansion(key, value);
+  setting->reset(value);
   return true;
 }

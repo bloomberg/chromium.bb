@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SETTINGS_STORAGE_H_
 #pragma once
 
+#include <set>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -21,8 +23,12 @@ class ExtensionSettingsStorage {
   // Supports lightweight copying.
   class Result {
    public:
-    // Ownership of settings taken.
-    explicit Result(DictionaryValue* settings);
+    // Ownership of |settings| and |changed_keys| taken.
+    // |settings| may be NULL when the result is for an operation which
+    // generates no setting values (e.g. Remove(), Clear()).
+    // |changed_keys| may be NULL when the result is for an operation which
+    // cannot change settings (e.g. Get()).
+    Result(DictionaryValue* settings, std::set<std::string>* changed_keys);
     explicit Result(const std::string& error);
     ~Result();
 
@@ -30,6 +36,12 @@ class ExtensionSettingsStorage {
     // HasError() should be used to test this.
     // Ownership remains with with the Result.
     DictionaryValue* GetSettings() const;
+
+    // Gets the list of setting keys which changed as a result of the
+    // computation.  This includes all settings that existed and removed, all
+    // settings which changed when set, and all setting keys cleared.
+    // May be NULL for operations which cannot change settings, such as Get().
+    std::set<std::string>* GetChangedKeys() const;
 
     // Whether there was an error in the computation.  If so, the results of
     // GetSettings and ReleaseSettings are not valid.
@@ -41,10 +53,14 @@ class ExtensionSettingsStorage {
    private:
     struct Inner : public base::RefCountedThreadSafe<Inner> {
       // Empty error implies no error.
-      Inner(DictionaryValue* settings, const std::string& error);
+      Inner(
+          DictionaryValue* settings,
+          std::set<std::string>* changed_keys,
+          const std::string& error);
       ~Inner();
 
       const scoped_ptr<DictionaryValue> settings_;
+      const scoped_ptr<std::set<std::string> > changed_keys_;
       const std::string error_;
     };
 
