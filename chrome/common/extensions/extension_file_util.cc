@@ -20,8 +20,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "content/common/json_value_serializer.h"
@@ -550,7 +550,7 @@ FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
     return FilePath();
 
   // Drop the leading slashes and convert %-encoded UTF8 to regular UTF8.
-  std::string file_path = UnescapeURLComponent(url_path,
+  std::string file_path = net::UnescapeURLComponent(url_path,
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
   size_t skip = file_path.find_first_not_of("/\\");
   if (skip != file_path.npos)

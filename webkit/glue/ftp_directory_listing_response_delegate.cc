@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -95,10 +95,10 @@ void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
 void FtpDirectoryListingResponseDelegate::Init(const GURL& response_url) {
   UnescapeRule::Type unescape_rules = UnescapeRule::SPACES |
                                       UnescapeRule::URL_SPECIAL_CHARS;
-  std::string unescaped_path = UnescapeURLComponent(response_url.path(),
-                                                    unescape_rules);
+  std::string unescaped_path = net::UnescapeURLComponent(response_url.path(),
+                                                         unescape_rules);
   SendDataToClient(net::GetDirectoryListingHeader(
-                       ConvertPathToUTF16(unescaped_path)));
+      ConvertPathToUTF16(unescaped_path)));
 
   // If this isn't top level directory (i.e. the path isn't "/",)
   // add a link to the parent directory.

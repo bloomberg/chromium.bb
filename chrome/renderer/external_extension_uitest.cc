@@ -118,7 +118,7 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
                               TestTimeouts::action_max_timeout_ms());
 
   // Unescapes and normalizes the actual result.
-  std::string value = UnescapeURLComponent(
+  std::string value = net::UnescapeURLComponent(
       escaped_value,
       UnescapeRule::NORMAL | UnescapeRule::SPACES |
       UnescapeRule::URL_SPECIAL_CHARS | UnescapeRule::CONTROL_CHARS);

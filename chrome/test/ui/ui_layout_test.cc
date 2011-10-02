@@ -227,7 +227,7 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
           status_cookie.c_str(), TestTimeouts::action_max_timeout_ms());
 
   // Unescapes and normalizes the actual result.
-  std::string value = UnescapeURLComponent(escaped_value,
+  std::string value = net::UnescapeURLComponent(escaped_value,
       UnescapeRule::NORMAL | UnescapeRule::SPACES |
           UnescapeRule::URL_SPECIAL_CHARS | UnescapeRule::CONTROL_CHARS);
   value += "\n";

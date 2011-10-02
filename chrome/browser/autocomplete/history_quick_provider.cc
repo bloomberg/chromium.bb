@@ -21,9 +21,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/url_parse.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_source.h"
+#include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -88,7 +88,7 @@ void HistoryQuickProvider::DeleteMatch(const AutocompleteMatch& match) {}
 void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
   string16 term_string = autocomplete_input_.text();
-  term_string = UnescapeURLComponent(term_string,
+  term_string = net::UnescapeURLComponent(term_string,
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
   history::InMemoryURLIndex::String16Vector terms(
       InMemoryURLIndex::WordVectorFromString16(term_string, false));

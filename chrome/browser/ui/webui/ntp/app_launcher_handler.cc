@@ -871,7 +871,7 @@ void AppLauncherHandler::RecordAppLaunchByURL(
     extension_misc::AppLaunchBucket bucket) {
   CHECK(bucket != extension_misc::APP_LAUNCH_BUCKET_INVALID);
 
-  GURL url(UnescapeURLComponent(escaped_url, kUnescapeRules));
+  GURL url(net::UnescapeURLComponent(escaped_url, kUnescapeRules));
   DCHECK(profile->GetExtensionService());
   if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;

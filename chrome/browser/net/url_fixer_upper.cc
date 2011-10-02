@@ -548,11 +548,11 @@ GURL URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
     // escaped things. We need to go through 8-bit since the escaped values
     // only represent 8-bit values.
 #if defined(OS_WIN)
-    std::wstring unescaped = UTF8ToWide(UnescapeURLComponent(
+    std::wstring unescaped = UTF8ToWide(net::UnescapeURLComponent(
         WideToUTF8(trimmed),
         UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS));
 #elif defined(OS_POSIX)
-    std::string unescaped = UnescapeURLComponent(
+    std::string unescaped = net::UnescapeURLComponent(
         trimmed,
         UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
 #endif

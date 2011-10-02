@@ -365,8 +365,8 @@ class ExtensionUpdaterTest : public testing::Test {
     base::SplitString(url.query(), '=', &parts);
     EXPECT_EQ(2u, parts.size());
     EXPECT_EQ("x", parts[0]);
-    std::string decoded = UnescapeURLComponent(parts[1],
-                                               UnescapeRule::URL_SPECIAL_CHARS);
+    std::string decoded = net::UnescapeURLComponent(
+        parts[1], UnescapeRule::URL_SPECIAL_CHARS);
     std::map<std::string, std::string> params;
     ExtractParameters(decoded, &params);
     if (pending) {
@@ -416,8 +416,8 @@ class ExtensionUpdaterTest : public testing::Test {
     base::SplitString(url.query(), '=', &parts);
     EXPECT_EQ(2u, parts.size());
     EXPECT_EQ("x", parts[0]);
-    std::string decoded = UnescapeURLComponent(parts[1],
-                                               UnescapeRule::URL_SPECIAL_CHARS);
+    std::string decoded = net::UnescapeURLComponent(
+        parts[1], UnescapeRule::URL_SPECIAL_CHARS);
     std::map<std::string, std::string> params;
     ExtractParameters(decoded, &params);
     EXPECT_EQ("com.google.crx.blacklist", params["id"]);

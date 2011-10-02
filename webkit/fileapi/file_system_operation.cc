@@ -806,7 +806,7 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
     // On Windows, the path will look like /C:/foo/bar; we need to remove the
     // leading slash to make it valid.  But if it's empty, we shouldn't do
     // anything.
-    std::string temp = UnescapeURLComponent(path.path(),
+    std::string temp = net::UnescapeURLComponent(path.path(),
         UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
     if (temp.size())
       temp = temp.substr(1);
@@ -861,7 +861,7 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
     // On Windows, the path will look like /C:/foo/bar; we need to remove the
     // leading slash to make it valid.  But if it's empty, we shouldn't do
     // anything.
-    std::string temp = UnescapeURLComponent(path.path(),
+    std::string temp = net::UnescapeURLComponent(path.path(),
         UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
     if (temp.size())
       temp = temp.substr(1);

@@ -845,7 +845,7 @@ std::string AboutHistograms(const std::string& query) {
   std::string unescaped_query;
   std::string unescaped_title("About Histograms");
   if (!query.empty()) {
-    unescaped_query = UnescapeURLComponent(query, UnescapeRule::NORMAL);
+    unescaped_query = net::UnescapeURLComponent(query, UnescapeRule::NORMAL);
     unescaped_title += " - " + unescaped_query;
   }
 
@@ -877,7 +877,7 @@ static std::string AboutObjects(const std::string& query) {
   std::string unescaped_title("About Histograms");
   if (!query.empty()) {
     unescaped_title += " - ";
-    unescaped_title += UnescapeURLComponent(query, UnescapeRule::NORMAL);
+    unescaped_title += net::UnescapeURLComponent(query, UnescapeRule::NORMAL);
   }
   std::string data;
   AppendHeader(&data, 0, unescaped_title);

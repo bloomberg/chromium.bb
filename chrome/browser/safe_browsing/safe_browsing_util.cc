@@ -225,7 +225,7 @@ std::string Unescape(const std::string& url) {
   int loop_var = 0;
   do {
     old_unescaped_str = unescaped_str;
-    unescaped_str = UnescapeURLComponent(old_unescaped_str,
+    unescaped_str = net::UnescapeURLComponent(old_unescaped_str,
         UnescapeRule::CONTROL_CHARS | UnescapeRule::SPACES |
         UnescapeRule::URL_SPECIAL_CHARS);
   } while (unescaped_str != old_unescaped_str && ++loop_var <=

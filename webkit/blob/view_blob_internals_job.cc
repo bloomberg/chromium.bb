@@ -5,13 +5,13 @@
 #include "webkit/blob/view_blob_internals_job.h"
 
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/format_macros.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
@@ -133,7 +133,7 @@ void ViewBlobInternalsJob::DoWorkAsync() {
   if (request_->url().has_query() &&
       StartsWithASCII(request_->url().query(), "remove=", true)) {
     std::string blob_url = request_->url().query().substr(strlen("remove="));
-    blob_url = UnescapeURLComponent(blob_url,
+    blob_url = net::UnescapeURLComponent(blob_url,
         UnescapeRule::NORMAL | UnescapeRule::URL_SPECIAL_CHARS);
     blob_storage_controller_->UnregisterBlobUrl(GURL(blob_url));
   }
