@@ -174,7 +174,7 @@
       '-sync.SyncTest.testDisableAndEnableDatatypes',
       # Crashes browser. crbug.com/89000
       '-prefs.PrefsTest.testGeolocationPref',
-      #	crbug.com/95621
+      # crbug.com/95621
       '-youtube.YoutubeTest.testPlayerStatus',
     ],
 
@@ -206,6 +206,11 @@
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/91617
       '-omnibox.OmniboxTest.testContentHistory',
+      # App doesn't install on mac. Have quarantine bit on data files.
+      # crbug.com/98801
+      '-omnibox.OmniboxTest.testAppNameWithNumberSearch',
+      '-omnibox.OmniboxTest.testAppSearchWithVeryLongAppName',
+      '-omnibox.OmniboxTest.testBasicAppSearch',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
       # crbug.com/97140
