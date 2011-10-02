@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <ostream>
 #include <set>
 
 #include "base/basictypes.h"

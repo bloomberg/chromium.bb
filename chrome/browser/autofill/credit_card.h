@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_CREDIT_CARD_H_
 #pragma once
 
-#include <ostream>
+#include <iosfwd>
 #include <string>
 #include <vector>
 

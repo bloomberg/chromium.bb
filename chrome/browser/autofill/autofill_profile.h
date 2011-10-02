@@ -7,8 +7,9 @@
 #pragma once
 
 #include <stddef.h>
+
+#include <iosfwd>
 #include <list>
-#include <ostream>
 #include <string>
 #include <vector>
 

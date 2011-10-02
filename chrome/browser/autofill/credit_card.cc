@@ -5,6 +5,8 @@
 #include "chrome/browser/autofill/credit_card.h"
 
 #include <stddef.h>
+
+#include <ostream>
 #include <string>
 
 #include "base/basictypes.h"
