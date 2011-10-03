@@ -151,7 +151,8 @@ class NetworkIcon {
         top_right_badge_(NULL),
         bottom_left_badge_(NULL),
         bottom_right_badge_(NULL),
-        is_status_bar_(true) {
+        is_status_bar_(true),
+        connected_network_(NULL) {
   }
 
   // Service path constructor for cached network service icons.
@@ -163,7 +164,8 @@ class NetworkIcon {
         top_right_badge_(NULL),
         bottom_left_badge_(NULL),
         bottom_right_badge_(NULL),
-        is_status_bar_(false) {
+        is_status_bar_(false),
+        connected_network_(NULL) {
   }
 
   ~NetworkIcon() {
@@ -214,6 +216,11 @@ class NetworkIcon {
       }
       if (index != strength_index_) {
         strength_index_ = index;
+        dirty = true;
+      }
+    } else if (type == TYPE_VPN) {
+      if (cros->connected_network() != connected_network_) {
+        connected_network_ = cros->connected_network();
         dirty = true;
       }
     }
@@ -378,6 +385,7 @@ class NetworkIcon {
   const SkBitmap* bottom_left_badge_;
   const SkBitmap* bottom_right_badge_;
   bool is_status_bar_;
+  const Network* connected_network_;  // weak pointer; used for VPN icons.
 
   DISALLOW_COPY_AND_ASSIGN(NetworkIcon);
 };
