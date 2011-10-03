@@ -25,6 +25,7 @@ abcirclenow.com
 abrocketpowertrainer.com
 abtserver.com
 abtwebxpress.com
+ac-caen.fr
 ac-lyon.fr
 ac-nice.fr
 ac-orleans-tours.fr
@@ -364,6 +365,7 @@ comprabuxton.com
 comprariddexpulse.com
 compupaypartner.com
 computerstore.be
+comserving.com
 conduxio.com
 confluence.mediaspectrum.net
 connect.bangor.ac.uk
@@ -383,6 +385,7 @@ cortesoft.com
 covlecremote.org
 covnet.covenantretirement.org
 coyoteportal.wc.edu
+cozi.com
 cpas.cz
 cportal.sechan.com
 cprmc.com
@@ -967,6 +970,7 @@ legalease.jmls.edu
 lendingtreeautos.com
 leopards-den.us
 lexor.lsp.at
+lgelements.com
 library.failteireland.ie
 lifeaction.net
 lifenetems.org
@@ -1288,6 +1292,9 @@ myclinicallogic.com
 mycls.cls.ch
 mycundus.com
 myevolver.com
+myflcourtaccess.com
+myfloridacounty.com
+myfloridaremit.com
 myfluvaccine.com
 mygetmighytighty.com
 mygiftregistry.co.za
@@ -1676,6 +1683,7 @@ rk.sjdc.co.jp
 rms.unlv.edu
 rocmondriaan.net
 rodino.ro
+rogers.com
 rome.faber.co.uk
 ross.fs.fed.us
 routercenter.be
@@ -2041,6 +2049,7 @@ u-tokyo.ac.jp
 ube-ind.co.jp
 ubi.pt
 ucar.edu
+uci.edu
 uckac.edu
 ucr.edu
 ucsd.edu
