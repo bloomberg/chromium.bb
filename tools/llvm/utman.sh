@@ -796,8 +796,7 @@ clang-libs() {
   clang-build-libgcc_eh x86-32
   clang-build-libgcc_eh x86-64
 
-  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2289
-  # clang-libstdcpp
+  clang-libstdcpp
 }
 
 #@ everything            - Build and install untrusted SDK. no translator
@@ -1660,22 +1659,32 @@ bitcode-build-compiler-rt() {
 
 #+ libstdcpp             - build and install libstdcpp in bitcode
 libstdcpp() {
-  StepBanner "LIBSTDCPP (BITCODE)"
+  libstdcpp-generic STD_ENV_FOR_LIBSTDCPP
+}
+
+#+ libstdcpp         - build and install libstdcpp in bitcode with Clang
+clang-libstdcpp() {
+  libstdcpp-generic STD_ENV_FOR_LIBSTDCPP_CLANG
+}
+
+libstdcpp-generic() {
+  local build_env=$1
+  StepBanner "LIBSTDCPP (BITCODE) $build_env"
 
   if libstdcpp-needs-configure; then
     libstdcpp-clean
-    libstdcpp-configure
+    libstdcpp-configure-generic $build_env
   else
     SkipBanner "LIBSTDCPP" "configure"
   fi
 
   if libstdcpp-needs-make; then
-    libstdcpp-make
+    libstdcpp-make-generic $build_env
   else
     SkipBanner "LIBSTDCPP" "make"
   fi
 
-  libstdcpp-install
+  libstdcpp-install-generic $build_env
 }
 
 #+ libstdcpp-clean - clean libstdcpp in bitcode
@@ -1694,7 +1703,18 @@ libstdcpp-needs-configure() {
 
 #+ libstdcpp-configure - configure libstdcpp for bitcode
 libstdcpp-configure() {
-  StepBanner "LIBSTDCPP" "Configure"
+  libstdcpp-configure-generic STD_ENV_FOR_LIBSTDCPP
+}
+
+#+ clang-libstdcpp-configure - configure bitcode libstdcpp with Clang
+clang-libstdcpp-configure() {
+  libstdcpp-configure-generic STD_ENV_FOR_LIBSTDCPP_CLANG
+}
+
+libstdcpp-configure-generic() {
+  StepBanner "LIBSTDCPP" "Configure $1"
+  local -a build_env
+  eval $(copy-array-by-reference-cmd $1 build_env)
   local srcdir="${TC_SRC_LIBSTDCPP}"
   local objdir="${TC_BUILD_LIBSTDCPP}"
 
@@ -1713,10 +1733,8 @@ libstdcpp-configure() {
 
   RunWithLog llvm-gcc.configure_libstdcpp \
       env -i PATH=/usr/bin/:/bin \
-        "${STD_ENV_FOR_LIBSTDCPP[@]}" \
+        "${build_env[@]}" \
         "${srcdir}"/configure \
-          CC=${PNACL_GCC} \
-          CXX=${PNACL_GPP} \
           --host="${CROSS_TARGET_ARM}" \
           --prefix="${LIBSTDCPP_INSTALL_DIR}" \
           --enable-llvm="${LLVM_INSTALL_DIR}" \
@@ -1739,17 +1757,27 @@ libstdcpp-needs-make() {
 
 #+ libstdcpp-make - Make libstdcpp in bitcode
 libstdcpp-make() {
-  StepBanner "LIBSTDCPP" "Make"
+  libstdcpp-make-generic STD_ENV_FOR_LIBSTDCPP
+}
+
+clang-libstdcpp-make() {
+  libstdcpp-make-generic STD_ENV_FOR_LIBSTDCPP_CLANG
+}
+
+libstdcpp-make-generic() {
+  StepBanner "LIBSTDCPP" "Make $1"
+  local -a build_env
+  eval $(copy-array-by-reference-cmd $1 build_env)
   local srcdir="${TC_SRC_LIBSTDCPP}"
   local objdir="${TC_BUILD_LIBSTDCPP}"
 
   ts-touch-open "${objdir}"
 
   spushd "${objdir}"
-  RunWithLog llvm-gcc.make_libstdcpp \
+ RunWithLog llvm-gcc.make_libstdcpp \
     env -i PATH=/usr/bin/:/bin \
         make \
-        "${STD_ENV_FOR_LIBSTDCPP[@]}" \
+        "${build_env[@]}" \
         ${MAKE_OPTS}
   spopd
 
@@ -1758,7 +1786,18 @@ libstdcpp-make() {
 
 #+ libstdcpp-install - Install libstdcpp in bitcode
 libstdcpp-install() {
-  StepBanner "LIBSTDCPP" "Install"
+  libstdcpp-install-generic STD_ENV_FOR_LIBSTDCPP
+}
+
+#+ libstdcpp-install - Install libstdcpp in bitcode with Clang
+clang-libstdcpp-install() {
+  libstdcpp-install-generic STD_ENV_FOR_LIBSTDCPP_CLANG
+}
+
+libstdcpp-install-generic() {
+  StepBanner "LIBSTDCPP" "Install $1"
+  local -a build_env
+  eval $(copy-array-by-reference-cmd $1 build_env)
   local objdir="${TC_BUILD_LIBSTDCPP}"
 
   spushd "${objdir}"
@@ -1768,7 +1807,7 @@ libstdcpp-install() {
   rm -rf "${INSTALL_ROOT}/include/c++"
   RunWithLog llvm-gcc.install_libstdcpp \
     make \
-    "${STD_ENV_FOR_LIBSTDCPP[@]}" \
+    "${build_env[@]}" \
     ${MAKE_OPTS} install-data
 
   # Install bitcode library
@@ -2721,6 +2760,14 @@ newlib() {
 #+ clang-newlib         - Build and install newlib in bitcode with Clang.
 clang-newlib() {
   newlib-generic STD_ENV_FOR_NEWLIB_CLANG
+  # Clang claims posix thread model, not single as llvm-gcc does.
+  # It means that libstdcpp needs pthread.h to be in place.
+  # This should go away when we properly import pthread.h with
+  # the other newlib headers. This hack is tracked by
+  # http://code.google.com/p/nativeclient/issues/detail?id=2333
+  StepBanner "NEWLIB" "Copying pthreads headers ahead of time "\
+  "(HACK. See http://code.google.com/p/nativeclient/issues/detail?id=2333)"
+  sdk-headers
 }
 
 #+ newlib-generic - Build and install newlib in bitcode using build env.

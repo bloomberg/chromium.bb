@@ -289,7 +289,9 @@ GCCPatterns = [
   ( '(-print-.*)',            "env.set('DIAGNOSTIC', '1')"),
   ( '(--print.*)',            "env.set('DIAGNOSTIC', '1')"),
   ( '(-dumpspecs)',           "env.set('DIAGNOSTIC', '1')"),
-  ( '(-v|--v|--version|-V)',  "env.set('DIAGNOSTIC', '1')"),
+  ( '(-v|--v|--version)',     "env.set('DIAGNOSTIC', '1')"),
+  ( '(-V)',                   "env.set('DIAGNOSTIC', '1')\n"
+                              "env.clear('CC_FLAGS')"),
   ( '(-d.*)',                 "env.set('DIAGNOSTIC', '1')"),
 
   # Catch all other command-line arguments
@@ -314,7 +316,7 @@ def main(argv):
   # parse the output. In these cases we do not alter the incoming
   # commandline. It is also important to not emit spurious messages.
   if env.getbool('DIAGNOSTIC'):
-    RunWithLog(env.get('CC') + real_argv)
+    RunWithLog(env.get('CC') + env.get('CC_FLAGS') + real_argv)
     return 0
 
   unmatched = env.get('UNMATCHED')
