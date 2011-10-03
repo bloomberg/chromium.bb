@@ -49,10 +49,9 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   }
 
  protected:
-  gfx::Point GetCursorPosition(int cursor_pos) {
+  gfx::Point GetCursorPosition(const gfx::SelectionModel& sel) {
     gfx::RenderText* render_text = textfield_view_->GetRenderText();
-    gfx::Rect cursor_bounds = render_text->GetCursorBounds(
-        gfx::SelectionModel(cursor_pos), false);
+    gfx::Rect cursor_bounds = render_text->GetCursorBounds(sel, true);
     return gfx::Point(cursor_bounds.x(), cursor_bounds.bottom() - 1);
   }
 
@@ -85,8 +84,10 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
       EXPECT_TRUE(GetSelectionController()->IsSelectionHandle2Visible());
       gfx::SelectionModel sel;
       textfield_view_->GetSelectionModel(&sel);
-      gfx::Point selection_start = GetCursorPosition(sel.selection_start());
-      gfx::Point selection_end = GetCursorPosition(sel.selection_end());
+      gfx::SelectionModel sel_start = textfield_view_->GetRenderText()->
+                                      GetSelectionModelForSelectionStart();
+      gfx::Point selection_start = GetCursorPosition(sel_start);
+      gfx::Point selection_end = GetCursorPosition(sel);
       gfx::Point sh1 = GetSelectionController()->GetSelectionHandle1Position();
       gfx::Point sh2 = GetSelectionController()->GetSelectionHandle2Position();
       sh1.Offset(10, 0); // offset by kSelectionHandleRadius.
@@ -138,6 +139,60 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
 
   // Test with focus re-gained.
   widget_->GetFocusManager()->SetFocusedView(textfield_);
+  VerifySelectionHandlePositions(false);
+}
+
+// Tests that the selection handles are placed appropriately in bidi text.
+TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
+  CreateTextfield();
+  textfield_->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
+
+  // Test cursor at run boundary and with empty selection.
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(3, 2, gfx::SelectionModel::TRAILING));
+  VerifySelectionHandlePositions(false);
+
+  // Test selection range inside one run and starts or ends at run boundary.
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(2, 3, 2, gfx::SelectionModel::TRAILING));
+  VerifySelectionHandlePositions(false);
+
+  // TODO(xji): change to textfield_->SelectRange(3, 2).
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(3, 2, 2, gfx::SelectionModel::LEADING));
+  VerifySelectionHandlePositions(false);
+
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(3, 4, 3, gfx::SelectionModel::TRAILING));
+  VerifySelectionHandlePositions(false);
+
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(4, 3, 3, gfx::SelectionModel::LEADING));
+  VerifySelectionHandlePositions(false);
+
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(3, 6, 5, gfx::SelectionModel::TRAILING));
+  VerifySelectionHandlePositions(false);
+
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(6, 3, 3, gfx::SelectionModel::LEADING));
+  VerifySelectionHandlePositions(false);
+
+  // Test selection range accross runs.
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(0, 6, 5, gfx::SelectionModel::TRAILING));
+  VerifySelectionHandlePositions(false);
+
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(6, 0, 0, gfx::SelectionModel::LEADING));
+  VerifySelectionHandlePositions(false);
+
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(1, 4, 3, gfx::SelectionModel::TRAILING));
+  VerifySelectionHandlePositions(false);
+
+  textfield_->SelectSelectionModel(
+      gfx::SelectionModel(4, 1, 1, gfx::SelectionModel::LEADING));
   VerifySelectionHandlePositions(false);
 }
 

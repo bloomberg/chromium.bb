@@ -179,6 +179,10 @@ class UI_EXPORT RenderText {
   // Get the logical index of the grapheme following the argument |position|.
   virtual size_t GetIndexOfNextGrapheme(size_t position);
 
+  // Return a SelectionModel with the cursor at the current selection's start.
+  // The returned value represents a cursor/caret position without a selection.
+  SelectionModel GetSelectionModelForSelectionStart();
+
  protected:
   RenderText();
 
@@ -251,10 +255,6 @@ class UI_EXPORT RenderText {
   // Update the cached bounds and display offset to ensure that the current
   // cursor is within the visible display area.
   void UpdateCachedBoundsAndOffset();
-
-  // Returns the selection model of selection_start_.
-  // The returned value represents a cursor/caret position without a selection.
-  SelectionModel GetSelectionModelForSelectionStart();
 
   // Logical UTF-16 string data to be drawn.
   string16 text_;

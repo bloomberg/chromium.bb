@@ -414,6 +414,20 @@ size_t RenderText::GetIndexOfNextGrapheme(size_t position) {
   return IndexOfAdjacentGrapheme(position, true);
 }
 
+SelectionModel RenderText::GetSelectionModelForSelectionStart() {
+  size_t selection_start = GetSelectionStart();
+  size_t selection_end = GetCursorPosition();
+  if (selection_start < selection_end)
+    return SelectionModel(selection_start,
+                          selection_start,
+                          SelectionModel::LEADING);
+  else if (selection_start > selection_end)
+    return SelectionModel(selection_start,
+                          GetIndexOfPreviousGrapheme(selection_start),
+                          SelectionModel::TRAILING);
+  return selection_model_;
+}
+
 RenderText::RenderText()
     : text_(),
       selection_model_(),
@@ -620,20 +634,6 @@ void RenderText::UpdateCachedBoundsAndOffset() {
   }
   display_offset_.Offset(delta_offset, 0);
   cursor_bounds_.Offset(delta_offset, 0);
-}
-
-SelectionModel RenderText::GetSelectionModelForSelectionStart() {
-  size_t selection_start = GetSelectionStart();
-  size_t selection_end = GetCursorPosition();
-  if (selection_start < selection_end)
-    return SelectionModel(selection_start,
-                          selection_start,
-                          SelectionModel::LEADING);
-  else if (selection_start > selection_end)
-    return SelectionModel(selection_start,
-                          GetIndexOfPreviousGrapheme(selection_start),
-                          SelectionModel::TRAILING);
-  return selection_model_;
 }
 
 }  // namespace gfx
