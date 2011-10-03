@@ -390,8 +390,10 @@ void RenderWidgetHostViewViews::Observe(int type,
     return;
   }
 
-  gfx::Rect keyboard_rect = *Details<gfx::Rect>(details).ptr();
+  if (!GetWidget())
+    return;
 
+  gfx::Rect keyboard_rect = *Details<gfx::Rect>(details).ptr();
   if (keyboard_rect != keyboard_rect_) {
     keyboard_rect_ = keyboard_rect;
     gfx::Rect screen_bounds = GetScreenBounds();
@@ -404,7 +406,8 @@ void RenderWidgetHostViewViews::Observe(int type,
     origin.SetPoint(origin.x() - r.x(), origin.y() - r.y());
     views::View::ConvertPointFromWidget(this, &origin);
     available_rect.set_origin(origin);
-    host_->ScrollFocusedEditableNodeIntoRect(available_rect);
+    if (!available_rect.IsEmpty())
+      host_->ScrollFocusedEditableNodeIntoRect(available_rect);
   }
 #endif
 }
