@@ -367,7 +367,9 @@
   "56a8d2ac24ca7bba78fd88ad57f43fc13c784497": "SAMPLE - OAUTH CONTACTS USES OAUTH TO CONNECT TO GOOGLES CONTACTS SERVICE AND DISPLAY A LIST OF YOUR CONTACTS. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
   "38f6e1e17756ede38b1364c7114a738ca717dcbb": "SANDWICHBAR SHOWS AN INFOBAR ON PAGES WHICH CONTAIN THE WORD SANDWICH BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.INFOBARS.SHOW CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST",
   "fc89b35755483af30b66cd72cefa34a43a3e8312": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
+  "a491a2faa1fe79cb49b2fe9ed2720f4723c14184": "SPEAK SELECTION SPEAKS THE CURRENT SELECTION OUT LOUD. <ALL_URLS> BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS TTS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETURL CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.SENDREQUEST CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
   "230463f2d5c3d4d0ca13c230e1f00f2aae0a8a64": "TAB INSPECTOR UTILITY FOR WORKING WITH THE EXTENSION TABS API BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.GETSELECTED CHROME.TABS.MOVE CHROME.TABS.ONATTACHED CHROME.TABS.ONCREATED CHROME.TABS.ONDETACHED CHROME.TABS.ONMOVED CHROME.TABS.ONREMOVED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE CHROME.TABS.UPDATE CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.GETLASTFOCUSED CHROME.WINDOWS.ONCREATED CHROME.WINDOWS.ONFOCUSCHANGED CHROME.WINDOWS.ONREMOVED CHROME.WINDOWS.REMOVE CHROME.WINDOWS.UPDATE",
+  "04f5d2ddea95746b0200be1ea223ccb7a748a771": "TALKING ALARM CLOCK A CLOCK WITH TWO CONFIGURABLE ALARMS THAT WILL PLAY A SOUND AND SPEAK A PHRASE OF YOUR CHOICE. BACKGROUND BACKGROUND_PAGE BROWSER_ACTION TTS CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "e1697cacebad05218798bf3e8a0f724517f0e8c3": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. NOTE: ONLY WORKS FOR CODE.GOOGLE.COM BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED",
   "b3de91ab04b7d7a2670ca7ee9d740eb42cead0b6": "TYPED URL HISTORY READS YOUR HISTORY, AND SHOWS THE TOP TEN PAGES YOU GO TO BY TYPING THE URL. BROWSER_ACTION HISTORY TABS CHROME.HISTORY.GETVISITS CHROME.HISTORY.SEARCH CHROME.TABS.CREATE",
   "a3c674f7eb93621c590562ad3fa04de4f03f53a0": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXTENSION POPUP WEBNAVIGATION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
@@ -3586,6 +3588,90 @@
     - <a>Install extension</a>
     </span>
   </div>
+</div><div class="sample" id="a491a2faa1fe79cb49b2fe9ed2720f4723c14184">
+  <img class="icon" src="examples/extensions/speak_selection/SpeakSel128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a href="#a491a2faa1fe79cb49b2fe9ed2720f4723c14184">Speak Selection</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>&lt;all_urls&gt;</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>options_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tts</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Speaks the current selection out loud.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setIcon">chrome.browserAction.setIcon</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getURL">chrome.extension.getURL</a></code>
+      </li><li>
+        <code><a href="extension.html#event-onRequest">chrome.extension.onRequest</a></code>
+      </li><li>
+        <code><a href="extension.html#method-sendRequest">chrome.extension.sendRequest</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-executeScript">chrome.tabs.executeScript</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-sendRequest">chrome.tabs.sendRequest</a></code>
+      </li><li>
+        <code><a href="tts.html#method-getVoices">chrome.tts.getVoices</a></code>
+      </li><li>
+        <code><a href="tts.html#method-speak">chrome.tts.speak</a></code>
+      </li><li>
+        <code><a href="tts.html#method-stop">chrome.tts.stop</a></code>
+      </li><li>
+        <code><a href="windows.html#method-get">chrome.windows.get</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getAll">chrome.windows.getAll</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/background.js?content-type=text/plain">background.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/content_script.js?content-type=text/plain">content_script.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/keycodes.js?content-type=text/plain">keycodes.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/options.html?content-type=text/plain">options.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/options.js?content-type=text/plain">options.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/tabs.js?content-type=text/plain">tabs.js</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/">Browse source</a>
+    - <a href="examples/extensions/speak_selection.zip">Download source</a>
+  </div>
 </div><div class="sample" id="230463f2d5c3d4d0ca13c230e1f00f2aae0a8a64">
   <img class="icon" style="display: none; ">
   <img class="icon" src="images/sample-default-icon.png">
@@ -3682,6 +3768,68 @@
     <span style="display: none; ">
     - <a>Install extension</a>
     </span>
+  </div>
+</div><div class="sample" id="04f5d2ddea95746b0200be1ea223ccb7a748a771">
+  <img class="icon" src="examples/extensions/talking_alarm_clock/clock-128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a href="#04f5d2ddea95746b0200be1ea223ccb7a748a771">Talking Alarm Clock</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tts</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>A clock with two configurable alarms that will play a sound and speak a phrase of your choice.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#method-setIcon">chrome.browserAction.setIcon</a></code>
+      </li><li>
+        <code><a href="extension.html#method-connect">chrome.extension.connect</a></code>
+      </li><li>
+        <code><a href="extension.html#event-onConnect">chrome.extension.onConnect</a></code>
+      </li><li>
+        <code><a href="tts.html#method-getVoices">chrome.tts.getVoices</a></code>
+      </li><li>
+        <code><a href="tts.html#method-speak">chrome.tts.speak</a></code>
+      </li><li>
+        <code><a href="tts.html#method-stop">chrome.tts.stop</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/talking_alarm_clock/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/talking_alarm_clock/background.js?content-type=text/plain">background.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/talking_alarm_clock/common.js?content-type=text/plain">common.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/talking_alarm_clock/credits.html?content-type=text/plain">credits.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/talking_alarm_clock/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/talking_alarm_clock/popup.html?content-type=text/plain">popup.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/talking_alarm_clock/popup.js?content-type=text/plain">popup.js</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/talking_alarm_clock/">Browse source</a>
+    - <a href="examples/extensions/talking_alarm_clock.zip">Download source</a>
   </div>
 </div><div class="sample" id="e1697cacebad05218798bf3e8a0f724517f0e8c3">
   <img class="icon" style="display: none; ">

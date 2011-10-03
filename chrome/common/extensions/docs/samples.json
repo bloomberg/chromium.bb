@@ -892,7 +892,7 @@
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "b607f6ca8f1ccf4343766b480ae21bb220dd949c",
+      "source_hash": "4d6a2fc67a692883e75a427b416bf782eda57cee",
       "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {
@@ -1251,7 +1251,7 @@
         "info.html",
         "manifest.json"
       ],
-      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a",
+      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {
@@ -1969,6 +1969,50 @@
     {
       "api_calls": [
         "chrome.browserAction.onClicked",
+        "chrome.browserAction.setIcon",
+        "chrome.extension.getURL",
+        "chrome.extension.onRequest",
+        "chrome.extension.sendRequest",
+        "chrome.tabs.create",
+        "chrome.tabs.executeScript",
+        "chrome.tabs.sendRequest",
+        "chrome.tts.getVoices",
+        "chrome.tts.speak",
+        "chrome.tts.stop",
+        "chrome.windows.get",
+        "chrome.windows.getAll"
+      ],
+      "description": "Speaks the current selection out loud.",
+      "features": [
+        "<all_urls>",
+        "background_page",
+        "browser_action",
+        "options_page",
+        "tabs",
+        "tts"
+      ],
+      "icon": "SpeakSel128.png",
+      "id": "a491a2faa1fe79cb49b2fe9ed2720f4723c14184",
+      "name": "Speak Selection",
+      "path": "examples\/extensions\/speak_selection\/",
+      "protocols": [],
+      "search_string": "SPEAK SELECTION SPEAKS THE CURRENT SELECTION OUT LOUD. <ALL_URLS> BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS TTS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETURL CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.SENDREQUEST CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
+      "source_files": [
+        "background.html",
+        "background.js",
+        "content_script.js",
+        "keycodes.js",
+        "manifest.json",
+        "options.html",
+        "options.js",
+        "tabs.js"
+      ],
+      "source_hash": "e2d40eb04e5ffe6fee5f6513ed19e44b0feae395",
+      "zip_path": "examples\/extensions\/speak_selection.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.browserAction.onClicked",
         "chrome.extension.getURL",
         "chrome.tabs.create",
         "chrome.tabs.get",
@@ -2016,6 +2060,40 @@
       ],
       "source_hash": "3076b39a4302d8e86f456e6d7367129187cce0c0",
       "zip_path": "examples\/api\/tabs\/inspector.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.browserAction.setIcon",
+        "chrome.extension.connect",
+        "chrome.extension.onConnect",
+        "chrome.tts.getVoices",
+        "chrome.tts.speak",
+        "chrome.tts.stop"
+      ],
+      "description": "A clock with two configurable alarms that will play a sound and speak a phrase of your choice.",
+      "features": [
+        "background",
+        "background_page",
+        "browser_action",
+        "tts"
+      ],
+      "icon": "clock-128.png",
+      "id": "04f5d2ddea95746b0200be1ea223ccb7a748a771",
+      "name": "Talking Alarm Clock",
+      "path": "examples\/extensions\/talking_alarm_clock\/",
+      "protocols": [],
+      "search_string": "TALKING ALARM CLOCK A CLOCK WITH TWO CONFIGURABLE ALARMS THAT WILL PLAY A SOUND AND SPEAK A PHRASE OF YOUR CHOICE. BACKGROUND BACKGROUND_PAGE BROWSER_ACTION TTS CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
+      "source_files": [
+        "background.html",
+        "background.js",
+        "common.js",
+        "credits.html",
+        "manifest.json",
+        "popup.html",
+        "popup.js"
+      ],
+      "source_hash": "fabc898cb578912a082bf6e16ef6540320b88b73",
+      "zip_path": "examples\/extensions\/talking_alarm_clock.zip"
     },
     {
       "api_calls": [
