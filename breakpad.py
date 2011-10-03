@@ -89,8 +89,8 @@ def SendStack(last_tb, stack, url=None, maxlen=50):
         'version': sys.version,
     }
     # pylint: disable=W0702
-    print('\n'.join('  %s: %s' % (k, v[0:maxlen])
-                    for k, v in params.iteritems()))
+    print('\n'.join('  %s: %s' % (k, params[k][0:maxlen])
+                    for k in sorted(params)))
     print(post(url, params))
   except IOError:
     print('There was a failure while trying to send the stack trace. Too bad.')
