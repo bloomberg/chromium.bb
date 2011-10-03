@@ -86,7 +86,8 @@ class Upgrader(object):
                '_cros_overlay', # Path to chromiumos-overlay repo
                '_csv_file',     # File path for writing csv output
                '_deps_graph',   # Dependency graph from portage
-               '_eclass_regexp',# Regexp to find needed eclass in equery output
+               '_missing_eclass_re',# Regexp for missing eclass in equery
+               '_outdated_eclass_re',# Regexp for outdated eclass in equery
                '_emptydir',     # Path to temporary empty directory
                '_equery_regexp',# Regexp mask bits from 'equery list' output
                '_master_archs', # Set. Archs of tables merged into master_table
@@ -135,8 +136,11 @@ class Upgrader(object):
 
     # Pre-compiled regexps for speed.
     self._equery_regexp = re.compile(r'^\[...\]\s*\[(.)(.)\]\s+\S+$')
-    self._eclass_regexp = re.compile(r'(\S+\.eclass) could not be '
-                                     'found by inherit')
+    self._missing_eclass_re = re.compile(r'(\S+\.eclass) could not be '
+                                         'found by inherit')
+    self._outdated_eclass_re = re.compile(r'Call stack:\n'
+                                          '(?:.*?\s+\S+,\sline.*?\n)*'
+                                          '.*?\s+(\S+\.eclass),\s+line')
 
   def _GetPkgKeywordsFile(self):
     """Return the path to the package.keywords file in chromiumos-overlay."""
@@ -477,14 +481,30 @@ class Upgrader(object):
 
   def _IdentifyNeededEclass(self, cpv):
     """Return eclass that must be upgraded for this |cpv|."""
-    # Use the output of 'equery which'.  If a needed eclass cannot be found,
-    # then the output will have lines like:
+    # Try to detect two cases:
+    # 1) The upgraded package uses an eclass not in local source, yet.
+    # 2) The upgraded package needs one or more eclasses to also be upgraded.
+
+    # Use the output of 'equery which'.
+    # If a needed eclass cannot be found, then the output will have lines like:
     # * ERROR: app-admin/eselect-1.2.15 failed (depend phase):
     # *   bash-completion-r1.eclass could not be found by inherit()
+
+    # If a needed eclass must be upgraded, the output might have the eclass
+    # in the call stack (... used for long paths):
+    # * Call stack:
+    # *            ebuild.sh, line 2047:  Called source '.../vim-7.3.189.ebuild'
+    # *   vim-7.3.189.ebuild, line    7:  Called inherit 'vim'
+    # *            ebuild.sh, line 1410:  Called qa_source '.../vim.eclass'
+    # *            ebuild.sh, line   43:  Called source '.../vim.eclass'
+    # *           vim.eclass, line   40:  Called die
+    # * The specific snippet of code:
+    # *       die "Unknown EAPI ${EAPI}"
+
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=True)
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
-    cmd = [equery, 'which', cpv]
+    cmd = [equery, '--no-pipe', 'which', cpv]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
                                  extra_env=envvars, print_cmd=False,
                                  redirect_stdout=True,
@@ -493,10 +513,22 @@ class Upgrader(object):
 
     if result.returncode != 0:
       output = result.output.strip()
+
+      # _missing_eclass_re works line by line.
       for line in output.split('\n'):
-        match = self._eclass_regexp.search(line)
+        match = self._missing_eclass_re.search(line)
         if match:
-          return match.group(1)
+          eclass = match.group(1)
+          oper.Info("Determined that %s requires %s" % (cpv, eclass))
+          return eclass
+
+      # _outdated_eclass_re works on the entire output at once.
+      match = self._outdated_eclass_re.search(output)
+      if match:
+        eclass = match.group(1)
+        oper.Info("Making educated guess that %s requires update of %s" %
+                  (cpv, eclass))
+        return eclass
 
     return None
 
