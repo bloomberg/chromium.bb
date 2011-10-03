@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/accessibility_util.h"
@@ -54,11 +52,9 @@ void CoreOobeHandler::Initialize() {
 
 void CoreOobeHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(kJsApiToggleAccessibility,
-      base::Bind(&CoreOobeHandler::OnToggleAccessibility,
-                 base::Unretained(this)));
+      NewCallback(this, &CoreOobeHandler::OnToggleAccessibility));
   web_ui_->RegisterMessageCallback(kJsApiScreenStateInitialize,
-      base::Bind(&CoreOobeHandler::OnInitialized,
-                 base::Unretained(this)));
+      NewCallback(this, &CoreOobeHandler::OnInitialized));
 }
 
 void CoreOobeHandler::OnInitialized(const base::ListValue* args) {

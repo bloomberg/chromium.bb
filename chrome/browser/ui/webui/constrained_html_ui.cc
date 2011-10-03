@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -43,8 +41,7 @@ void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
 
   // Add a "DialogClose" callback which matches HTMLDialogUI behavior.
   RegisterMessageCallback("DialogClose",
-      base::Bind(&ConstrainedHtmlUI::OnDialogCloseMessage,
-                 base::Unretained(this)));
+      NewCallback(this, &ConstrainedHtmlUI::OnDialogCloseMessage));
 }
 
 void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {

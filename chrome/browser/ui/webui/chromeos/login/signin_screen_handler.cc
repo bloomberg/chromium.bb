@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/stringprintf.h"
@@ -282,50 +280,37 @@ void SigninScreenHandler::RegisterMessages() {
   network_state_informer_.reset(new NetworkStateInformer(web_ui_));
 
   web_ui_->RegisterMessageCallback("authenticateUser",
-      base::Bind(&SigninScreenHandler::HandleAuthenticateUser,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleAuthenticateUser));
   web_ui_->RegisterMessageCallback("completeLogin",
-      base::Bind(&SigninScreenHandler::HandleCompleteLogin,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleCompleteLogin));
   web_ui_->RegisterMessageCallback("getUsers",
-      base::Bind(&SigninScreenHandler::HandleGetUsers,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleGetUsers));
   web_ui_->RegisterMessageCallback("launchIncognito",
-      base::Bind(&SigninScreenHandler::HandleLaunchIncognito,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleLaunchIncognito));
   web_ui_->RegisterMessageCallback("fixCaptivePortal",
-      base::Bind(&SigninScreenHandler::HandleFixCaptivePortal,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleFixCaptivePortal));
   web_ui_->RegisterMessageCallback("showAddUser",
-      base::Bind(&SigninScreenHandler::HandleShowAddUser,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleShowAddUser));
   web_ui_->RegisterMessageCallback("shutdownSystem",
-      base::Bind(&SigninScreenHandler::HandleShutdownSystem,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleShutdownSystem));
   web_ui_->RegisterMessageCallback("removeUser",
-      base::Bind(&SigninScreenHandler::HandleRemoveUser,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleRemoveUser));
   web_ui_->RegisterMessageCallback("toggleEnrollmentScreen",
-      base::Bind(&SigninScreenHandler::HandleToggleEnrollmentScreen,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleToggleEnrollmentScreen));
   web_ui_->RegisterMessageCallback("launchHelpApp",
-      base::Bind(&SigninScreenHandler::HandleLaunchHelpApp,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleLaunchHelpApp));
   web_ui_->RegisterMessageCallback("createAccount",
-      base::Bind(&SigninScreenHandler::HandleCreateAccount,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleCreateAccount));
   web_ui_->RegisterMessageCallback("loginWebuiReady",
-      base::Bind(&SigninScreenHandler::HandleLoginWebuiReady,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleLoginWebuiReady));
   web_ui_->RegisterMessageCallback("loginRequestNetworkState",
-      base::Bind(&SigninScreenHandler::HandleLoginRequestNetworkState,
-                 base::Unretained(this)));
+      NewCallback(this, &SigninScreenHandler::HandleLoginRequestNetworkState));
   web_ui_->RegisterMessageCallback("loginAddNetworkStateObserver",
-      base::Bind(&SigninScreenHandler::HandleLoginAddNetworkStateObserver,
-                 base::Unretained(this)));
+      NewCallback(this,
+                  &SigninScreenHandler::HandleLoginAddNetworkStateObserver));
   web_ui_->RegisterMessageCallback("loginRemoveNetworkStateObserver",
-      base::Bind(&SigninScreenHandler::HandleLoginRemoveNetworkStateObserver,
-                 base::Unretained(this)));
+      NewCallback(this,
+                  &SigninScreenHandler::HandleLoginRemoveNetworkStateObserver));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {

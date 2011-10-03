@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
@@ -118,15 +117,15 @@ void UserImageScreenHandler::AddProfileImage(const SkBitmap& image) {
 }
 
 void UserImageScreenHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("takePhoto",
-      base::Bind(this, &UserImageScreenHandler::HandleTakePhoto,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("selectImage",
-      base::Bind(this, &UserImageScreenHandler::HandleSelectImage,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("onUserImageAccepted",
-      base::Bind(this, &UserImageScreenHandler::HandleImageAccepted,
-                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "takePhoto",
+      NewCallback(this, &UserImageScreenHandler::HandleTakePhoto));
+  web_ui_->RegisterMessageCallback(
+      "selectImage",
+      NewCallback(this, &UserImageScreenHandler::HandleSelectImage));
+  web_ui_->RegisterMessageCallback(
+      "onUserImageAccepted",
+      NewCallback(this, &UserImageScreenHandler::HandleImageAccepted));
 }
 
 void UserImageScreenHandler::OnPhotoAccepted(const SkBitmap& photo) {

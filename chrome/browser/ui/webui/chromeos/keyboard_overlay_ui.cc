@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -274,11 +273,9 @@ WebUIMessageHandler* KeyboardOverlayHandler::Attach(WebUI* web_ui) {
 void KeyboardOverlayHandler::RegisterMessages() {
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback("getInputMethodId",
-      base::Bind(&KeyboardOverlayHandler::GetInputMethodId,
-                 base::Unretained(this)));
+      NewCallback(this, &KeyboardOverlayHandler::GetInputMethodId));
   web_ui_->RegisterMessageCallback("getLabelMap",
-      base::Bind(&KeyboardOverlayHandler::GetLabelMap,
-                 base::Unretained(this)));
+      NewCallback(this, &KeyboardOverlayHandler::GetLabelMap));
 }
 
 void KeyboardOverlayHandler::GetInputMethodId(const ListValue* args) {

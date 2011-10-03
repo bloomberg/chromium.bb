@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/collected_cookies_ui_delegate.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -213,17 +211,13 @@ bool CollectedCookiesUIDelegate::ShouldShowDialogTitle() const {
 
 void CollectedCookiesUIDelegate::RegisterMessages() {
   web_ui_->RegisterMessageCallback("BindCookiesTreeModel",
-      base::Bind(&CollectedCookiesUIDelegate::BindCookiesTreeModel,
-                 base::Unretained(this)));
+      NewCallback(this, &CollectedCookiesUIDelegate::BindCookiesTreeModel));
   web_ui_->RegisterMessageCallback("Block",
-      base::Bind(&CollectedCookiesUIDelegate::Block,
-                 base::Unretained(this)));
+      NewCallback(this, &CollectedCookiesUIDelegate::Block));
   web_ui_->RegisterMessageCallback("Allow",
-      base::Bind(&CollectedCookiesUIDelegate::Allow,
-                 base::Unretained(this)));
+      NewCallback(this, &CollectedCookiesUIDelegate::Allow));
   web_ui_->RegisterMessageCallback("AllowThisSession",
-      base::Bind(&CollectedCookiesUIDelegate::AllowThisSession,
-                 base::Unretained(this)));
+      NewCallback(this, &CollectedCookiesUIDelegate::AllowThisSession));
 
   allowed_cookies_adapter_.Init(web_ui_);
   blocked_cookies_adapter_.Init(web_ui_);

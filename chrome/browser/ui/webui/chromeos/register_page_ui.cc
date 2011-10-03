@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -207,11 +205,9 @@ void RegisterPageHandler::Init() {
 void RegisterPageHandler::RegisterMessages() {
 #if defined(OS_CHROMEOS)
   web_ui_->RegisterMessageCallback(kJsCallbackGetRegistrationUrl,
-      base::Bind(&RegisterPageHandler::HandleGetRegistrationUrl,
-                 base::Unretained(this)));
+      NewCallback(this, &RegisterPageHandler::HandleGetRegistrationUrl));
   web_ui_->RegisterMessageCallback(kJsCallbackUserInfo,
-      base::Bind(&RegisterPageHandler::HandleGetUserInfo,
-                 base::Unretained(this)));
+      NewCallback(this, &RegisterPageHandler::HandleGetUserInfo));
 #endif
 }
 

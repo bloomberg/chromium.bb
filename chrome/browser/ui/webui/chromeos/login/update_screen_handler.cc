@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "grit/chromium_strings.h"
@@ -107,9 +105,9 @@ void UpdateScreenHandler::ShowPreparingUpdatesInfo(bool visible) {
 
 void UpdateScreenHandler::RegisterMessages() {
 #if !defined(OFFICIAL_BUILD)
-  web_ui_->RegisterMessageCallback("cancelUpdate",
-      base::Bind(&UpdateScreenHandler::HandleUpdateCancel,
-                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "cancelUpdate",
+      NewCallback(this, &UpdateScreenHandler::HandleUpdateCancel));
 #endif
 }
 

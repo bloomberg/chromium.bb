@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/workers_ui.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string_number_conversions.h"
@@ -109,8 +107,7 @@ class WorkersDOMHandler : public WebUIMessageHandler {
 
 void WorkersDOMHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(kOpenDevToolsCommand,
-      base::Bind(&WorkersDOMHandler::HandleOpenDevTools,
-                 base::Unretained(this)));
+      NewCallback(this, &WorkersDOMHandler::HandleOpenDevTools));
 }
 
 void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {

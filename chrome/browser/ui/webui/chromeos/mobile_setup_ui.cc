@@ -8,8 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -485,11 +484,9 @@ void MobileSetupHandler::Init(TabContents* contents) {
 
 void MobileSetupHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(kJsApiStartActivation,
-      base::Bind(&MobileSetupHandler::HandleStartActivation,
-                 base::Unretained(this)));
+      NewCallback(this, &MobileSetupHandler::HandleStartActivation));
   web_ui_->RegisterMessageCallback(kJsApiSetTransactionStatus,
-      base::Bind(&MobileSetupHandler::HandleSetTransactionStatus,
-                 base::Unretained(this)));
+      NewCallback(this, &MobileSetupHandler::HandleSetTransactionStatus));
 }
 
 void MobileSetupHandler::OnNetworkManagerChanged(

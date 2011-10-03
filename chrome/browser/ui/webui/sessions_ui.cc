@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/synced_session.h"
@@ -113,8 +111,7 @@ WebUIMessageHandler* SessionsDOMHandler::Attach(WebUI* web_ui) {
 
 void SessionsDOMHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("requestSessionList",
-      base::Bind(&SessionsDOMHandler::HandleRequestSessions,
-                 base::Unretained(this)));
+      NewCallback(this, &SessionsDOMHandler::HandleRequestSessions));
 }
 
 void SessionsDOMHandler::HandleRequestSessions(const ListValue* args) {

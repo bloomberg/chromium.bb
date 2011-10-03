@@ -6,9 +6,7 @@
 
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -389,25 +387,19 @@ bool BugReportHandler::Init() {
 
 void BugReportHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getDialogDefaults",
-      base::Bind(&BugReportHandler::HandleGetDialogDefaults,
-                 base::Unretained(this)));
+      NewCallback(this, &BugReportHandler::HandleGetDialogDefaults));
   web_ui_->RegisterMessageCallback("refreshCurrentScreenshot",
-      base::Bind(&BugReportHandler::HandleRefreshCurrentScreenshot,
-                 base::Unretained(this)));
+      NewCallback(this, &BugReportHandler::HandleRefreshCurrentScreenshot));
 #if defined(OS_CHROMEOS)
   web_ui_->RegisterMessageCallback("refreshSavedScreenshots",
-      base::Bind(&BugReportHandler::HandleRefreshSavedScreenshots,
-                 base::Unretained(this)));
+      NewCallback(this, &BugReportHandler::HandleRefreshSavedScreenshots));
 #endif
   web_ui_->RegisterMessageCallback("sendReport",
-      base::Bind(&BugReportHandler::HandleSendReport,
-                 base::Unretained(this)));
+      NewCallback(this, &BugReportHandler::HandleSendReport));
   web_ui_->RegisterMessageCallback("cancel",
-      base::Bind(&BugReportHandler::HandleCancel,
-                 base::Unretained(this)));
+      NewCallback(this, &BugReportHandler::HandleCancel));
   web_ui_->RegisterMessageCallback("openSystemTab",
-      base::Bind(&BugReportHandler::HandleOpenSystemTab,
-                 base::Unretained(this)));
+      NewCallback(this, &BugReportHandler::HandleOpenSystemTab));
 }
 
 void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {

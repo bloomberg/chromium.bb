@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/utf_string_conversions.h"
@@ -107,8 +105,7 @@ WebUIMessageHandler* CrashesDOMHandler::Attach(WebUI* web_ui) {
 
 void CrashesDOMHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("requestCrashList",
-      base::Bind(&CrashesDOMHandler::HandleRequestCrashes,
-                 base::Unretained(this)));
+      NewCallback(this, &CrashesDOMHandler::HandleRequestCrashes));
 }
 
 void CrashesDOMHandler::HandleRequestCrashes(const ListValue* args) {

@@ -6,8 +6,6 @@
 
 #include <algorithm>
 #include <functional>
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -299,17 +297,13 @@ void TaskManagerHandler::Init() {
 
 void TaskManagerHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("killProcess",
-      base::Bind(&TaskManagerHandler::HandleKillProcess,
-                 base::Unretained(this)));
+      NewCallback(this, &TaskManagerHandler::HandleKillProcess));
   web_ui_->RegisterMessageCallback("openAboutMemory",
-      base::Bind(&TaskManagerHandler::OpenAboutMemory,
-                 base::Unretained(this)));
+      NewCallback(this, &TaskManagerHandler::OpenAboutMemory));
   web_ui_->RegisterMessageCallback("enableTaskManager",
-      base::Bind(&TaskManagerHandler::EnableTaskManager,
-                 base::Unretained(this)));
+      NewCallback(this, &TaskManagerHandler::EnableTaskManager));
   web_ui_->RegisterMessageCallback("disableTaskManager",
-      base::Bind(&TaskManagerHandler::DisableTaskManager,
-                 base::Unretained(this)));
+      NewCallback(this, &TaskManagerHandler::DisableTaskManager));
 }
 
 void TaskManagerHandler::HandleKillProcess(const ListValue* indexes) {

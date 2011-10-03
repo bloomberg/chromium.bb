@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/quota_internals_proxy.h"
@@ -25,9 +23,9 @@ QuotaInternalsHandler::~QuotaInternalsHandler() {
 
 void QuotaInternalsHandler::RegisterMessages() {
   DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback("requestInfo",
-      base::Bind(&QuotaInternalsHandler::OnRequestInfo,
-                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "requestInfo",
+      NewCallback(this, &QuotaInternalsHandler::OnRequestInfo));
 }
 
 void QuotaInternalsHandler::ReportAvailableSpace(int64 available_space) {

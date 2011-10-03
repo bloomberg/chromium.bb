@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helphers.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 #include "content/browser/webui/web_ui.h"
@@ -41,17 +39,13 @@ void NetworkDropdownHandler::Initialize() {
 
 void NetworkDropdownHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(kJsApiNetworkItemChosen,
-      base::Bind(&NetworkDropdownHandler::HandleNetworkItemChosen,
-                 base::Unretained(this)));
+      NewCallback(this, &NetworkDropdownHandler::HandleNetworkItemChosen));
   web_ui_->RegisterMessageCallback(kJsApiNetworkDropdownShow,
-      base::Bind(&NetworkDropdownHandler::HandleNetworkDropdownShow,
-                 base::Unretained(this)));
+      NewCallback(this, &NetworkDropdownHandler::HandleNetworkDropdownShow));
   web_ui_->RegisterMessageCallback(kJsApiNetworkDropdownHide,
-      base::Bind(&NetworkDropdownHandler::HandleNetworkDropdownHide,
-                 base::Unretained(this)));
+      NewCallback(this, &NetworkDropdownHandler::HandleNetworkDropdownHide));
   web_ui_->RegisterMessageCallback(kJsApiNetworkDropdownRefresh,
-      base::Bind(&NetworkDropdownHandler::HandleNetworkDropdownRefresh,
-                 base::Unretained(this)));
+      NewCallback(this, &NetworkDropdownHandler::HandleNetworkDropdownRefresh));
 }
 
 void NetworkDropdownHandler::HandleNetworkItemChosen(

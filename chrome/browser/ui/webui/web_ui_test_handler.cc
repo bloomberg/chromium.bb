@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
@@ -49,8 +47,8 @@ bool WebUITestHandler::RunJavaScriptTestWithResult(const string16& js_text) {
 }
 
 void WebUITestHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("testResult",
-      base::Bind(&WebUITestHandler::HandleTestResult, base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("testResult", NewCallback(
+      this, &WebUITestHandler::HandleTestResult));
 }
 
 void WebUITestHandler::HandleTestResult(const ListValue* test_result) {

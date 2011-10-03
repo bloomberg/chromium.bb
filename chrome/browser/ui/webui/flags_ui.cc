@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
@@ -103,14 +101,11 @@ class FlagsDOMHandler : public WebUIMessageHandler {
 
 void FlagsDOMHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("requestFlagsExperiments",
-      base::Bind(&FlagsDOMHandler::HandleRequestFlagsExperiments,
-                 base::Unretained(this)));
+      NewCallback(this, &FlagsDOMHandler::HandleRequestFlagsExperiments));
   web_ui_->RegisterMessageCallback("enableFlagsExperiment",
-      base::Bind(&FlagsDOMHandler::HandleEnableFlagsExperimentMessage,
-                 base::Unretained(this)));
+      NewCallback(this, &FlagsDOMHandler::HandleEnableFlagsExperimentMessage));
   web_ui_->RegisterMessageCallback("restartBrowser",
-      base::Bind(&FlagsDOMHandler::HandleRestartBrowser,
-                 base::Unretained(this)));
+      NewCallback(this, &FlagsDOMHandler::HandleRestartBrowser));
 }
 
 void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {

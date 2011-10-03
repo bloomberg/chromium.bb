@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/media/media_internals_handler.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/media/media_internals_proxy.h"
@@ -30,9 +28,9 @@ WebUIMessageHandler* MediaInternalsMessageHandler::Attach(WebUI* web_ui) {
 void MediaInternalsMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  web_ui_->RegisterMessageCallback("getEverything",
-      base::Bind(&MediaInternalsMessageHandler::OnGetEverything,
-                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "getEverything",
+      NewCallback(this, &MediaInternalsMessageHandler::OnGetEverything));
 }
 
 void MediaInternalsMessageHandler::OnGetEverything(const ListValue* list) {
