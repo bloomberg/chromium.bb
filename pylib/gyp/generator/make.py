@@ -725,7 +725,7 @@ class XcodeSettings(object):
     assert self.spec['type'] != 'loadable_modules', (
         "Info.plist files for loadable_modules not yet supported by the "
         "make generator (target %s)" % self.spec['target_name'])  # Not tested.
-    if self.spec['type'] == 'executable':
+    if self.spec['type'] in ('executable', 'loadable_module'):
       return os.path.join(self.GetBundleContentsFolderPath(), 'Info.plist')
     else:
       return os.path.join(self.GetBundleContentsFolderPath(),
@@ -735,9 +735,9 @@ class XcodeSettings(object):
     """Returns the name of the bundle binary of by this target.
     E.g. Chromium.app/Contents/MacOS/Chromium. Only valid for bundles."""
     assert self._IsBundle()
-    if self.spec['type'] in ('loadable_module', 'shared_library'):
+    if self.spec['type'] in ('shared_library'):
       path = self.GetBundleContentsFolderPath()
-    elif self.spec['type'] == 'executable':
+    elif self.spec['type'] in ('executable', 'loadable_module'):
       path = os.path.join(self.GetBundleContentsFolderPath(), 'MacOS')
     return os.path.join(path, self.spec.get('product_name',
                                             self.spec['target_name']))
@@ -2337,7 +2337,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       'TARGET_BUILD_DIR' : built_products_dir,
       'TEMP_DIR' : '$(TMPDIR)',
     }
-    if self.type in ('executable', 'shared_library'):
+    if self.type in ('executable', 'shared_library', 'loadable_module'):
       env['EXECUTABLE_NAME'] = os.path.basename(self.output_binary)
     if self.type in (
         'executable', 'static_library', 'shared_library', 'loadable_module'):
