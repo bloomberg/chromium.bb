@@ -134,9 +134,7 @@ void Window::MoveChildToFront(Window* child) {
   children_.insert(children_.begin() + children_.size(), child);
   SchedulePaintInRect(gfx::Rect());
 
-  ui::Layer* parent_layer = child->layer()->parent();
-  parent_layer->Remove(child->layer());
-  parent_layer->Add(child->layer());
+  child->layer()->parent()->MoveToFront(child->layer());
 }
 
 void Window::AddChild(Window* child) {
