@@ -392,6 +392,7 @@
         'webcursor_gtk_data.h',
         'webcursor_mac.mm',
         'webcursor_win.cc',
+        'webcursor_x11.cc',
         'webdropdata.cc',
         'webdropdata_win.cc',
         'webdropdata.h',

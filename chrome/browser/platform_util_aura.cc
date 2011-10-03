@@ -46,7 +46,7 @@ void ActivateWindow(gfx::NativeWindow window) {
 }
 
 bool IsVisible(gfx::NativeView view) {
-  return view->visibility() != aura::Window::VISIBILITY_HIDDEN;
+  return view->visible();
 }
 
 }  // namespace platform_util

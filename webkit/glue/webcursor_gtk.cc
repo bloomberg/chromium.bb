@@ -141,22 +141,13 @@ int WebCursor::GetCursorType() const {
 }
 
 gfx::NativeCursor WebCursor::GetNativeCursor() {
-#if defined(USE_AURA)
-  // TODO(saintlou):
-  return NULL;
-#else
   int type = GetCursorType();
   if (type == GDK_CURSOR_IS_PIXMAP)
     return GetCustomCursor();
   return gfx::GetCursor(type);
-#endif
 }
 
 GdkCursor* WebCursor::GetCustomCursor() {
-#if defined(USE_AURA)
-  // TODO(saintlou):
-  return NULL;
-#else
   switch (type_) {
     case WebCursorInfo::TypeZoomIn:
       return GetInlineCustomCursor(CustomCursorZoomIn);
@@ -191,7 +182,6 @@ GdkCursor* WebCursor::GetCustomCursor() {
     gdk_cursor_unref(unref_);
   unref_ = cursor;
   return cursor;
-#endif
 }
 
 void WebCursor::InitPlatformData() {
