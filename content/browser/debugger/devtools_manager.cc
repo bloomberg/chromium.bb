@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_client.h"
-#include "content/common/devtools_messages.h"
 #include "googleurl/src/gurl.h"
 
 // static
@@ -67,7 +66,6 @@ void DevToolsManager::RegisterDevToolsClientHostFor(
   DevToolsRuntimeProperties initial_properties;
   BindClientHost(agent_host, client_host, initial_properties);
   client_host->set_close_listener(this);
-  SendAttachToAgent(agent_host);
 }
 
 bool DevToolsManager::ForwardToDevToolsAgent(DevToolsClientHost* from,
@@ -103,15 +101,6 @@ void DevToolsManager::RuntimePropertyChanged(DevToolsAgentHost* agent_host,
     it = runtime_properties_map_.insert(value).first;
   }
   it->second[name] = value;
-}
-
-void DevToolsManager::SendInspectElement(RenderViewHost* inspected_rvh,
-                                         int x,
-                                         int y) {
-  inspected_rvh->Send(new DevToolsAgentMsg_InspectElement(
-      inspected_rvh->routing_id(),
-      x,
-      y));
 }
 
 void DevToolsManager::ClientHostClosing(DevToolsClientHost* client_host) {
@@ -218,27 +207,8 @@ void DevToolsManager::AttachClientHost(int client_host_cookie,
   DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
       to_rvh);
   BindClientHost(agent_host, client_host, (*it).second.second);
-  SendAttachToAgent(agent_host);
 
   orphan_client_hosts_.erase(client_host_cookie);
-}
-
-void DevToolsManager::SendAttachToAgent(DevToolsAgentHost* agent_host) {
-  DevToolsRuntimeProperties properties;
-  RuntimePropertiesMap::iterator it =
-      runtime_properties_map_.find(agent_host);
-  if (it != runtime_properties_map_.end()) {
-    properties = DevToolsRuntimeProperties(it->second.begin(),
-                                           it->second.end());
-  }
-  agent_host->SendMessageToAgent(new DevToolsAgentMsg_Attach(
-      MSG_ROUTING_NONE,
-      properties));
-}
-
-void DevToolsManager::SendDetachToAgent(DevToolsAgentHost* agent_host) {
-  agent_host->SendMessageToAgent(new DevToolsAgentMsg_Detach(
-      MSG_ROUTING_NONE));
 }
 
 void DevToolsManager::BindClientHost(
@@ -264,6 +234,8 @@ void DevToolsManager::BindClientHost(
   int process_id = agent_host->GetRenderProcessId();
   if (process_id != -1)
     ChildProcessSecurityPolicy::GetInstance()->GrantReadRawCookies(process_id);
+
+  agent_host->Attach(runtime_properties);
 }
 
 void DevToolsManager::UnbindClientHost(DevToolsAgentHost* agent_host,
@@ -285,7 +257,7 @@ void DevToolsManager::UnbindClientHost(DevToolsAgentHost* agent_host,
         FROM_HERE,
         NewRunnableFunction(&DevToolsNetLogObserver::Detach));
   }
-  SendDetachToAgent(agent_host);
+  agent_host->Detach();
 
   int process_id = agent_host->GetRenderProcessId();
   if (process_id == -1)

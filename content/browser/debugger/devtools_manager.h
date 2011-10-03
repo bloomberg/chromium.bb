@@ -61,9 +61,6 @@ class CONTENT_EXPORT DevToolsManager
                               const std::string& name,
                               const std::string& value);
 
-  // Starts element inspection in the devtools agent.
-  void SendInspectElement(RenderViewHost* inspected_rvh, int x, int y);
-
   // Sends 'Attach' message to the agent using |dest_rvh| in case
   // there is a DevToolsClientHost registered for the |inspected_rvh|.
   void OnNavigatingToPendingEntry(RenderViewHost* inspected_rvh,
@@ -102,9 +99,6 @@ class CONTENT_EXPORT DevToolsManager
 
   // Returns DevToolsAgentHost inspected by the DevToolsClientHost.
   DevToolsAgentHost* GetAgentHost(DevToolsClientHost* client_host);
-
-  void SendAttachToAgent(DevToolsAgentHost*);
-  void SendDetachToAgent(DevToolsAgentHost*);
 
   void BindClientHost(DevToolsAgentHost* agent_host,
                       DevToolsClientHost* client_host,

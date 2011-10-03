@@ -103,7 +103,10 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
 void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
                                     int x,
                                     int y) {
-  DevToolsManager::GetInstance()->SendInspectElement(inspected_rvh, x, y);
+  inspected_rvh->Send(new DevToolsAgentMsg_InspectElement(
+      inspected_rvh->routing_id(),
+      x,
+      y));
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
   OpenDevToolsWindow(inspected_rvh);

@@ -5,8 +5,19 @@
 #include "content/browser/debugger/devtools_agent_host.h"
 
 #include "base/basictypes.h"
+#include "content/common/devtools_messages.h"
 
 DevToolsAgentHost::DevToolsAgentHost() : close_listener_(NULL) {
+}
+
+void DevToolsAgentHost::Attach(const DevToolsRuntimeProperties& properties) {
+  SendMessageToAgent(new DevToolsAgentMsg_Attach(
+      MSG_ROUTING_NONE,
+      properties));
+}
+
+void DevToolsAgentHost::Detach() {
+  SendMessageToAgent(new DevToolsAgentMsg_Detach(MSG_ROUTING_NONE));
 }
 
 void DevToolsAgentHost::NotifyCloseListener() {
