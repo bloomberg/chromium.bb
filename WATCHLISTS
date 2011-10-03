@@ -269,6 +269,9 @@
                   '|ui/base/accessibility/.*' \
                   '|views/accessibility/.*'
     },
+    'tools_emacs': {
+      'filepath': 'tools/emacs/.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -367,5 +370,6 @@
                       'yuzo+watch@chromium.org'],
     'aura': ['ben+watch@chromium.org'],
     'views_core': ['ben+watch@chromium.org'],
+    'tools_emacs': ['fischman+watch@chromium.org'],
   },
 }
