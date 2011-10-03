@@ -34,6 +34,7 @@ class BrowserSyncedWindowDelegate : public browser_sync::SyncedWindowDelegate {
   virtual bool IsTabPinned(
       const browser_sync::SyncedTabDelegate* tab) const OVERRIDE;
   virtual browser_sync::SyncedTabDelegate* GetTabAt(int index) const OVERRIDE;
+  virtual SessionID::id_type GetTabIdAt(int index) const OVERRIDE;
 
  private:
   Browser* browser_;

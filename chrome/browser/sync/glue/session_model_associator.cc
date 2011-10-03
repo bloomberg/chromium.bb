@@ -175,13 +175,23 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
       // Store the order of tabs.
       bool found_tabs = false;
       for (int j = 0; j < (*i)->GetTabCount(); ++j) {
-        SyncedTabDelegate* tab = (*i)->GetTabAt(j);
-        DCHECK(tab);
-        if (IsValidTab(*tab)) {
+        const SessionTab* tab;
+        SessionID::id_type tab_id = (*i)->GetTabIdAt(j);
+
+        // Any modified tab will have been reassociated before this was called,
+        // and if necessary added to the synced_session_tracker_. Therefore,
+        // we know that anything not already in the synced_session_tracker_ was
+        // for an invalid tab and can ensure it won't affect the window.
+        if (synced_session_tracker_.LookupSessionTab(local_tag, tab_id, &tab)) {
           found_tabs = true;
-          window_s.add_tab(tab->GetSessionId());
+          window_s.add_tab(tab_id);
           if (reload_tabs) {
-            ReassociateTab(*tab);
+            SyncedTabDelegate* tab = (*i)->GetTabAt(j);
+            // It's possible for GetTabAt to return a null tab. We can assume
+            // this means the tab already existed but hasn't changed, so no
+            // need to reassociate.
+            if (tab)
+              ReassociateTab(*tab);
           }
         }
       }
@@ -263,6 +273,8 @@ void SessionModelAssociator::ReassociateTab(const SyncedTabDelegate& tab) {
     // This tab is already associated with a sync node, reuse it.
     sync_id = tablink->second.sync_id();
   }
+  VLOG(1) << "Reloading tab " << id << " from window "
+          << tab.GetWindowId();
   Associate(&tab, sync_id);
 }
 
@@ -278,23 +290,14 @@ void SessionModelAssociator::Associate(const SyncedTabDelegate* tab,
   TabLinks t(sync_id, tab);
   tab_map_[session_id] = t;
 
-  sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  WriteTabContentsToSyncModel(*window, *tab, sync_id, &trans);
+  WriteTabContentsToSyncModel(*window, *tab, sync_id);
 }
 
 bool SessionModelAssociator::WriteTabContentsToSyncModel(
     const SyncedWindowDelegate& window,
     const SyncedTabDelegate& tab,
-    int64 sync_id,
-    sync_api::WriteTransaction* trans) {
-
+    int64 sync_id) {
   DCHECK(CalledOnValidThread());
-  sync_api::WriteNode tab_node(trans);
-  if (!tab_node.InitByIdLookup(sync_id)) {
-    LOG(ERROR) << "Failed to look up tab node " << sync_id;
-    return false;
-  }
-
   sync_pb::SessionSpecifics session_s;
   session_s.set_session_tag(GetCurrentMachineTag());
   sync_pb::SessionTab* tab_s = session_s.mutable_tab();
@@ -330,8 +333,6 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   }
   tab_s->set_current_navigation_index(current_index);
 
-  tab_node.SetSessionSpecifics(session_s);
-
   // Convert to a local representation and store in synced session tracker.
   SessionTab* session_tab =
       synced_session_tracker_.GetSessionTab(GetCurrentMachineTag(),
@@ -340,6 +341,15 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
   PopulateSessionTabFromSpecifics(*tab_s,
                                   base::Time::Now(),
                                   session_tab);
+
+  // Write into the actual sync model.
+  sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+  sync_api::WriteNode tab_node(&trans);
+  if (!tab_node.InitByIdLookup(sync_id)) {
+    LOG(ERROR) << "Failed to look up tab node " << sync_id;
+    return false;
+  }
+  tab_node.SetSessionSpecifics(session_s);
   return true;
 }
 

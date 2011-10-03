@@ -58,6 +58,10 @@ browser_sync::SyncedTabDelegate* BrowserSyncedWindowDelegate::GetTabAt(
   return browser_->GetTabContentsWrapperAt(index)->synced_tab_delegate();
 }
 
+SessionID::id_type BrowserSyncedWindowDelegate::GetTabIdAt(int index) const {
+  return GetTabAt(index)->GetSessionId();
+}
+
 bool BrowserSyncedWindowDelegate::HasWindow() const {
   return browser_->window() != NULL;
 }

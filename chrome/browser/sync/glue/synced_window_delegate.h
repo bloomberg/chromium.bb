@@ -60,6 +60,9 @@ class SyncedWindowDelegate {
   // see Browser::GetTabContentsWrapperAt
   virtual SyncedTabDelegate* GetTabAt(int index) const = 0;
 
+  // Return the tab id for the tab at |index|.
+  virtual SessionID::id_type GetTabIdAt(int index) const = 0;
+
  protected:
   virtual ~SyncedWindowDelegate() {}
 };

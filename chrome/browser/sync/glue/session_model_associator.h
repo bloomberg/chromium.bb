@@ -362,8 +362,7 @@ class SessionModelAssociator
   // (from a local navigation event)
   bool WriteTabContentsToSyncModel(const SyncedWindowDelegate& window,
                                    const SyncedTabDelegate& tab,
-                                   const int64 sync_id,
-                                   sync_api::WriteTransaction* trans);
+                                   const int64 sync_id);
 
   // Used to populate a session header from the session specifics header
   // provided.
