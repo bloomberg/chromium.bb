@@ -180,11 +180,6 @@
         'renderer/visitedlink_slave.h',
       ],
       'conditions': [      
-        ['use_aura == 1', {
-          'dependencies!': [
-            '../content/content.gyp:content_plugin',
-          ],
-        }],
         ['disable_nacl!=1', {
           'dependencies': [
             'nacl',
