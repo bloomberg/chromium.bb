@@ -764,8 +764,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
       "http://home", "options.html");
 }
 
-#if !defined(OS_CHROMEOS)
-// This test fails on ChromeOS. See crbug.com/97541
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
 
@@ -818,7 +816,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
 
   panel->Close();
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   // Disable mouse watcher. We don't care about mouse movements in this test.
