@@ -109,14 +109,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],
-      'conditions': [
-        ['OS=="linux"', {
-          'sources!': [
-            'test_compositor_host.h',
-            'test_compositor_host_linux.cc',
-          ],
-        }],
-      ],
     },
   ],
 }

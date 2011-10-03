@@ -10,17 +10,12 @@
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/test_compositor.h"
-
-// TestCompositorHost needs to be ported to linux for these to work.
-#if !defined(OS_LINUX)
 #include "ui/gfx/compositor/test_compositor_host.h"
-#endif
 
 namespace ui {
 
 namespace {
 
-#if !defined(OS_LINUX)
 class LayerWithRealCompositorTest : public testing::Test {
  public:
   LayerWithRealCompositorTest() {}
@@ -91,7 +86,6 @@ class LayerWithRealCompositorTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithRealCompositorTest);
 };
-#endif
 
 // LayerDelegate that paints colors to the layer.
 class TestLayerDelegate : public LayerDelegate {
@@ -164,8 +158,6 @@ class NullLayerDelegate : public LayerDelegate {
 
 }
 
-#if !defined(OS_LINUX)
-
 TEST_F(LayerWithRealCompositorTest, Draw) {
   scoped_ptr<Layer> layer(CreateColorLayer(SK_ColorRED,
                                            gfx::Rect(20, 20, 50, 50)));
@@ -194,8 +186,6 @@ TEST_F(LayerWithRealCompositorTest, Hierarchy) {
 
   DrawTree(l1.get());
 }
-
-#endif
 
 // LayerTest uses TestCompositor as the Compositor implementation.
 class LayerTest : public testing::Test {
