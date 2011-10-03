@@ -1482,6 +1482,13 @@ def main():
 
   # Update environment (library cache, symlinks, etc.)
   if deps.board and "--pretend" not in emerge.opts:
+    # Turn off env-update suppression used above for disabling
+    # env-update during merging.
+    os.environ["FEATURES"] += " -no-env-update"
+    # Also kick the existing settings should they be reused...
+    if hasattr(portage, 'settings'):
+      portage.settings.unlock()
+      portage.settings.features.discard('no-env-update')
     portage.env_update()
 
   # If we already upgraded portage, we don't need to do so again. But we do
