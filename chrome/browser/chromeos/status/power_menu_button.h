@@ -34,7 +34,7 @@ class PowerMenuButton : public StatusAreaButton,
   virtual ~PowerMenuButton();
 
   // views::MenuDelegate implementation.
-  virtual std::wstring GetLabel(int id) const;
+  virtual string16 GetLabel(int id) const;
   virtual bool IsCommandEnabled(int id) const;
 
   // PowerLibrary::Observer implementation.

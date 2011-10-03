@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/string16.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -61,7 +62,7 @@ class VIEWS_EXPORT MenuDelegate {
 
   // The string shown for the menu item. This is only invoked when an item is
   // added with an empty label.
-  virtual std::wstring GetLabel(int id) const;
+  virtual string16 GetLabel(int id) const;
 
   // The font for the menu item label.
   virtual const gfx::Font& GetLabelFont(int id) const;

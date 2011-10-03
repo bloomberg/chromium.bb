@@ -201,7 +201,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(int index,
   }
   MenuItemView* item = new MenuItemView(this, item_id, type);
   if (label.empty() && GetDelegate())
-    item->SetTitle(GetDelegate()->GetLabel(item_id));
+    item->SetTitle(UTF16ToWideHack(GetDelegate()->GetLabel(item_id)));
   else
     item->SetTitle(label);
   item->SetIcon(icon);

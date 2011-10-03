@@ -253,8 +253,8 @@ PowerMenuButton::~PowerMenuButton() {
 
 // PowerMenuButton, views::MenuDelegate implementation:
 
-std::wstring PowerMenuButton::GetLabel(int id) const {
-  return std::wstring();
+string16 PowerMenuButton::GetLabel(int id) const {
+  return string16();
 }
 
 bool PowerMenuButton::IsCommandEnabled(int id) const {

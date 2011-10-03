@@ -78,7 +78,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
                                       bool is_mouse_gesture) OVERRIDE;
 
   // Menu::Delegate overrides:
-  virtual std::wstring GetLabel(int id) const OVERRIDE;
+  virtual string16 GetLabel(int id) const OVERRIDE;
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
 

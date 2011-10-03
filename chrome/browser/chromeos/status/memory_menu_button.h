@@ -37,7 +37,7 @@ class MemoryMenuButton : public StatusAreaButton,
   virtual ~MemoryMenuButton();
 
   // views::MenuDelegate implementation
-  virtual std::wstring GetLabel(int id) const OVERRIDE;
+  virtual string16 GetLabel(int id) const OVERRIDE;
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
 

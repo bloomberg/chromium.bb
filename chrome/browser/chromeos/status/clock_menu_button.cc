@@ -122,10 +122,9 @@ void ClockMenuButton::Observe(int type,
 }
 
 // ClockMenuButton, views::MenuDelegate implementation:
-std::wstring ClockMenuButton::GetLabel(int id) const {
+string16 ClockMenuButton::GetLabel(int id) const {
   DCHECK_EQ(CLOCK_DISPLAY_ITEM, id);
-  const string16 label = base::TimeFormatFriendlyDate(base::Time::Now());
-  return UTF16ToWide(label);
+  return base::TimeFormatFriendlyDate(base::Time::Now());
 }
 
 bool ClockMenuButton::IsCommandEnabled(int id) const {

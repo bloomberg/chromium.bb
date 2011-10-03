@@ -91,32 +91,39 @@ void MemoryMenuButton::UpdateText() {
 }
 
 // MemoryMenuButton, views::MenuDelegate implementation:
-std::wstring MemoryMenuButton::GetLabel(int id) const {
+string16 MemoryMenuButton::GetLabel(int id) const {
+  std::string label;
   switch (id) {
     case MEM_TOTAL_ITEM:
-      return StringPrintf(L"%d MB total", meminfo_->total / 1024);
+      label = base::StringPrintf("%d MB total", meminfo_->total / 1024);
+      break;
     case MEM_FREE_ITEM:
-      return StringPrintf(L"%d MB free", meminfo_->free / 1024);
+      label = base::StringPrintf("%d MB free", meminfo_->free / 1024);
+      break;
     case MEM_BUFFERS_ITEM:
-      return StringPrintf(L"%d MB buffers", meminfo_->buffers / 1024);
+      label = base::StringPrintf("%d MB buffers", meminfo_->buffers / 1024);
+      break;
     case MEM_CACHE_ITEM:
-      return StringPrintf(L"%d MB cache", meminfo_->cached / 1024);
+      label = base::StringPrintf("%d MB cache", meminfo_->cached / 1024);
+      break;
     case SHMEM_ITEM:
-      return StringPrintf(L"%d MB shmem", meminfo_->shmem / 1024);
+      label = base::StringPrintf("%d MB shmem", meminfo_->shmem / 1024);
+      break;
     case PURGE_MEMORY_ITEM:
-      return L"Purge memory";
+      return ASCIIToUTF16("Purge memory");
 #if defined(USE_TCMALLOC)
     case TOGGLE_PROFILING_ITEM:
       if (!IsHeapProfilerRunning())
-        return L"Start profiling";
+        return ASCIIToUTF16("Start profiling");
       else
-        return L"Stop profiling";
+        return ASCIIToUTF16("Stop profiling");
     case DUMP_PROFILING_ITEM:
-        return L"Dump profile";
+        return ASCIIToUTF16("Dump profile");
 #endif
     default:
-      return std::wstring();
+      return string16();
   }
+  return UTF8ToUTF16(label);
 }
 
 bool MemoryMenuButton::IsCommandEnabled(int id) const {

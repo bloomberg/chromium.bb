@@ -70,7 +70,7 @@ class SimpleMenuModelDelegateAdapter : public views::MenuDelegate {
   // views::MenuDelegate implementation.
   virtual bool GetAccelerator(int id,
                               views::Accelerator* accelerator) OVERRIDE;
-  virtual std::wstring GetLabel(int id) const OVERRIDE;
+  virtual string16 GetLabel(int id) const OVERRIDE;
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual bool IsItemChecked(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
@@ -96,8 +96,8 @@ bool SimpleMenuModelDelegateAdapter::GetAccelerator(
       id, accelerator);
 }
 
-std::wstring SimpleMenuModelDelegateAdapter::GetLabel(int id) const {
-  return UTF16ToWide(simple_menu_model_delegate_->GetLabelForCommandId(id));
+string16 SimpleMenuModelDelegateAdapter::GetLabel(int id) const {
+  return simple_menu_model_delegate_->GetLabelForCommandId(id);
 }
 
 bool SimpleMenuModelDelegateAdapter::IsCommandEnabled(int id) const {

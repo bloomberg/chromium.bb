@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/views_export.h"
 
@@ -48,8 +49,8 @@ class VIEWS_EXPORT Menu {
     }
 
     // The string shown for the menu item.
-    virtual std::wstring GetLabel(int id) const {
-      return std::wstring();
+    virtual string16 GetLabel(int id) const {
+      return string16();
     }
 
     // The delegate needs to implement this function if it wants to display

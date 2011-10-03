@@ -13,8 +13,8 @@ bool MenuDelegate::IsItemChecked(int id) const {
   return false;
 }
 
-std::wstring MenuDelegate::GetLabel(int id) const {
-  return std::wstring();
+string16 MenuDelegate::GetLabel(int id) const {
+  return string16();
 }
 
 const gfx::Font& MenuDelegate::GetLabelFont(int id) const {
