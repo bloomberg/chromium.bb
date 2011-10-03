@@ -465,7 +465,7 @@ cr.define('options', function() {
 
     // Reverse the button strip for views. See the documentation of
     // reverseButtonStrip_() for an explanation of why this is necessary.
-    if (document.documentElement.toolkit == 'views')
+    if (cr.isViews)
       this.reverseButtonStrip_(overlay);
 
     overlay.tab = undefined;
@@ -484,6 +484,11 @@ cr.define('options', function() {
    */
   OptionsPage.reverseButtonStrip_ = function(overlay) {
     var buttonStrip = overlay.pageDiv.querySelector('.button-strip');
+
+    // Not all overlays have button strips.
+    if (!buttonStrip)
+      return;
+
     var childNodes = buttonStrip.childNodes;
     for (var i = childNodes.length - 1; i >= 0; i--)
       buttonStrip.appendChild(childNodes[i]);
