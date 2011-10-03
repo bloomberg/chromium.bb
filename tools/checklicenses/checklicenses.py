@@ -401,9 +401,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'tools/symsrc/pefile.py': [
         'UNKNOWN',
     ],
-    'tools/valgrind': [
-        'UNKNOWN',
-    ],
     'v8/test/cctest': [
         'UNKNOWN',
     ],
