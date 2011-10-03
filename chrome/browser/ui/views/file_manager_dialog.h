@@ -21,9 +21,8 @@ class RenderViewHost;
 class FileManagerDialog
     : public SelectFileDialog,
       public ExtensionDialogObserver {
-
  public:
-  explicit FileManagerDialog(SelectFileDialog::Listener* listener);
+  static FileManagerDialog* Create(SelectFileDialog::Listener* listener);
 
   // BaseShellDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow owner_window) const OVERRIDE;
@@ -54,7 +53,11 @@ class FileManagerDialog
                               void* params) OVERRIDE;
 
  private:
-  // Object is ref-counted, see SelectFileDialog.
+  friend class FileManagerDialogBrowserTest;
+  friend class FileManagerDialogTest;
+
+  // Object is ref-counted, use FileManagerDialog::Create().
+  explicit FileManagerDialog(SelectFileDialog::Listener* listener);
   virtual ~FileManagerDialog();
 
   // Closes the dialog and cleans up callbacks and listeners.
@@ -62,6 +65,9 @@ class FileManagerDialog
 
   // Posts a task to close the dialog.
   void PostTaskToClose();
+
+  // Adds this to the list of pending dialogs, used for testing.
+  void AddPending(int32 tab_id);
 
   void* params_;
 

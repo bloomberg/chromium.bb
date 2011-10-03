@@ -1743,6 +1743,7 @@
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
         'browser/ui/views/bubble/border_contents_unittest.cc',
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
+        'browser/ui/views/file_manager_dialog_unittest.cc',
         'browser/ui/views/generic_info_view_unittest.cc',
         'browser/ui/views/reload_button_unittest.cc',
         'browser/ui/views/shell_dialogs_win_unittest.cc',
@@ -1891,6 +1892,11 @@
           'sources/': [
             ['exclude', '^browser/ui/touch/'],
             ['exclude', '^browser/ui/webui/chromeos/login/'],
+          ],
+        }],
+        ['file_manager_extension==0', {
+          'sources!': [
+            'browser/ui/views/file_manager_dialog_unittest.cc',
           ],
         }],
         ['configuration_policy==0', {

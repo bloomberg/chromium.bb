@@ -63,9 +63,9 @@ class MockSelectFileDialogListener : public SelectFileDialog::Listener {
   DISALLOW_COPY_AND_ASSIGN(MockSelectFileDialogListener);
 };
 
-class FileManagerDialogTest : public ExtensionBrowserTest {
+class FileManagerDialogBrowserTest : public ExtensionBrowserTest {
  public:
-  void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // Create the dialog wrapper object, but don't show it yet.
     listener_.reset(new MockSelectFileDialogListener());
     dialog_ = new FileManagerDialog(listener_.get());
@@ -73,10 +73,10 @@ class FileManagerDialogTest : public ExtensionBrowserTest {
     ExtensionBrowserTest::SetUp();
   }
 
-  void TearDown() {
+  virtual void TearDown() OVERRIDE {
     ExtensionBrowserTest::TearDown();
-    // Release the dialog first, as it holds a pointer to the listener.
-    dialog_.release();
+    // Delete the dialog first, as it holds a pointer to the listener.
+    dialog_ = NULL;
     listener_.reset();
   }
 
@@ -93,7 +93,7 @@ class FileManagerDialogTest : public ExtensionBrowserTest {
   scoped_refptr<FileManagerDialog> dialog_;
 };
 
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FileManagerCreateAndDestroy) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest, CreateAndDestroy) {
   // Browser window must be up for us to test dialog window parent.
   gfx::NativeWindow native_window = browser()->window()->GetNativeHandle();
   ASSERT_TRUE(native_window != NULL);
@@ -102,14 +102,17 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FileManagerCreateAndDestroy) {
   ASSERT_FALSE(dialog_->IsRunning(native_window));
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, FileManagerDestroyListener) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest, DestroyListener) {
   // Some users of SelectFileDialog destroy their listener before cleaning
   // up the dialog.  Make sure we don't crash.
   dialog_->ListenerDestroyed();
   listener_.reset();
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndCancel) {
+// TODO(jamescook): Add a test for selecting a file for an <input type='file'/>
+// page element, as that uses different memory management pathways.
+// crbug.com/98791
+IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest, SelectFileAndCancel) {
   // Add tmp mount point even though this test won't use it directly.
   // We need this to make sure that at least one top-level directory exists
   // in the file browser.
@@ -161,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndCancel) {
   ASSERT_EQ(this, listener_->params());
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest, SelectFileAndOpen) {
   // Allow the tmp directory to be mounted.  We explicitly use /tmp because
   // it it whitelisted for file system access on Chrome OS.
   FilePath tmp_dir("/tmp");
@@ -232,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndOpen) {
   ASSERT_EQ(this, listener_->params());
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndSave) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest, SelectFileAndSave) {
   // Allow the tmp directory to be mounted.  We explicitly use /tmp because
   // it it whitelisted for file system access on Chrome OS.
   FilePath tmp_dir("/tmp");
@@ -298,7 +301,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndSave) {
   ASSERT_EQ(this, listener_->params());
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, OpenSingletonTabAndCancel) {
+IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest,
+                       OpenSingletonTabAndCancel) {
   // Add tmp mount point even though this test won't use it directly.
   // We need this to make sure that at least one top-level directory exists
   // in the file browser.
