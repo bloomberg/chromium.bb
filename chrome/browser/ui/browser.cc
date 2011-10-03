@@ -1706,14 +1706,6 @@ void Browser::TogglePresentationMode() {
 
 #if defined(OS_CHROMEOS)
 void Browser::Search() {
-  // If the NTP is showing, close it.
-  const GURL& url = GetSelectedTabContents()->GetURL();
-  if (url.SchemeIs(chrome::kChromeUIScheme) &&
-      url.host() == chrome::kChromeUINewTabHost) {
-    CloseTab();
-    return;
-  }
-
   // Exit fullscreen to show omnibox.
   if (window_->IsFullscreen()) {
     ToggleFullscreenMode();
@@ -1725,8 +1717,15 @@ void Browser::Search() {
     return;
   }
 
-  // Otherwise just open it.
-  NewTab();
+  const GURL& url = GetSelectedTabContents()->GetURL();
+  if (url.SchemeIs(chrome::kChromeUIScheme) &&
+      url.host() == chrome::kChromeUINewTabHost) {
+    // If the NTP is showing, focus the omnibox.
+    window_->SetFocusToLocationBar(true);
+  } else {
+    // Otherwise, open the NTP.
+    NewTab();
+  }
 }
 
 void Browser::ShowKeyboardOverlay() {
