@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2009 Google Inc. All rights reserved.
+# Copyright (c) 2011 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,7 +18,9 @@ test = TestGyp.TestGyp(formats=['make'])
 
 os.environ['HOME'] = os.path.abspath('home')
 
-test.run_gyp('all.gyp', chdir='src')
+dotgyp = test.workpath(os.path.join('home', '.gyp', 'include.gypi'))
+test.run_gyp('all.gyp', chdir='src',
+             stderr='Using overrides found in %s\n' % dotgyp)
 
 # After relocating, we should still be able to build (build file shouldn't
 # contain relative reference to ~/.gyp/includes.gypi)
@@ -28,17 +30,18 @@ test.build('all.gyp', test.ALL, chdir='relocate/src')
 
 test.run_built_executable('printfoo',
                           chdir='relocate/src',
-                          stdout="FOO is fromhome\n");
+                          stdout='FOO is fromhome\n')
 
 # Building should notice any changes to ~/.gyp/includes.gypi and regyp.
 test.sleep()
 
 test.write('home/.gyp/include.gypi', test.read('home2/.gyp/include.gypi'))
 
-test.build('all.gyp', test.ALL, chdir='relocate/src')
+test.build('all.gyp', test.ALL, chdir='relocate/src',
+           stderr='Using overrides found in %s\n' % dotgyp)
 
 test.run_built_executable('printfoo',
                           chdir='relocate/src',
-                          stdout="FOO is fromhome2\n");
+                          stdout='FOO is fromhome2\n')
 
 test.pass_test()
