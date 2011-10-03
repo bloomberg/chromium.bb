@@ -209,6 +209,7 @@
       # App doesn't install on mac. Have quarantine bit on data files.
       # crbug.com/98801
       '-omnibox.OmniboxTest.testAppNameWithNumberSearch',
+      '-omnibox.OmniboxTest.testAppComboNameWithSpecialCharSearch',
       '-omnibox.OmniboxTest.testAppSearchWithVeryLongAppName',
       '-omnibox.OmniboxTest.testBasicAppSearch',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
