@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import simplejson as json  # found in third_party
+
 
 class FileBrowser(object):
   """This class provides an API for automating the ChromeOS File Browser.
@@ -51,11 +53,8 @@ class FileBrowser(object):
     script = """
       pyautoAPI.listDirectory();
     """
-    list = self.executor.Execute(script)
-    if list:
-     return set(list.split('|'))
-    else:
-      return None
+    list = json.loads(self.executor.Execute(script))
+    return set(list)
 
   def Save(self, name):
     """Save the entry using the given name.
@@ -149,6 +148,18 @@ class FileBrowser(object):
       pyautoAPI.currentDirectory();
     """
     return self.executor.Execute(script)
+
+  def GetSelectedDirectorySizeStats(self):
+    """Get remaining and total size of selected directory.
+
+    Returns:
+      A tuple: (remaining size in KB, total size in KB)
+    """
+    script = """
+      pyautoAPI.getSelectedDirectorySizeStats();
+    """
+    stats = json.loads(self.executor.Execute(script))
+    return stats['remainingSizeKB'], stats['totalSizeKB']
 
   def WaitUntilInitialized(self):
     """Returns whether the file manager is initialized.

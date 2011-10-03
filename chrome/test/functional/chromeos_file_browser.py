@@ -239,6 +239,21 @@ class ChromeosFileBrowserTest(pyauto.PyUITest):
     self.assertTrue(file_browser, msg='File browser failed to initialize.')
     self._CutFolder(file_browser)
 
+  def testGetSelectedDirectorySizeStats(self):
+    """Test we can get remaining and total size of the file shelf."""
+    file_browser = self._GetFullPageFileBrowser()
+    self.assertTrue(file_browser, msg='File browser failed to initialize.')
+    file_browser.CreateDirectory('apples')
+    file_browser.Select('apples')
+    remaining, total = file_browser.GetSelectedDirectorySizeStats()
+    self.assertTrue(remaining > 0,
+                    msg='Remaining disk space = %dKB.' % remaining)
+    self.assertTrue(total > 0,
+                    msg='Total disk space = %dKB.' % total)
+    self.assertTrue(total > remaining,
+                    msg='Total space(%dKB) <= remaining space(%dKB).' %
+                    (total, remaining))
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

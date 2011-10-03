@@ -18,18 +18,18 @@ var pyautoAPI = {
    */
   addItemToSelection: function(name) {
     var itemExists = fileManager.addItemToSelection(name);
-    window.domAutomationController.send(itemExists);
+    this.sendValue_(itemExists);
   },
 
   /**
    * List all items in the current directory.
    * We assume names do not contain '|' charecter.
    *
-   * @return {string} A delimeter seperated string of item names.
+   * @return {object} A a list of item names.
    */
   listDirectory: function() {
     var list = fileManager.listDirectory();
-    window.domAutomationController.send(list.join('|'));
+    this.sendJSONValue_(list);
   },
 
   /**
@@ -39,7 +39,7 @@ var pyautoAPI = {
    */
   saveItemAs: function(name) {
     fileManager.doSaveAs(name);
-    window.domAutomationController.send('done');
+    this.sendDone_();
   },
 
   /**
@@ -47,7 +47,7 @@ var pyautoAPI = {
    */
   openItem: function() {
     fileManager.doOpen();
-    window.domAutomationController.send('done');
+    this.sendDone_();
   },
 
   /**
@@ -55,7 +55,7 @@ var pyautoAPI = {
    */
   copyItems: function() {
     fileManager.copySelectionToClipboard();
-    window.domAutomationController.send('done');
+    this.sendDone_();
   },
 
   /**
@@ -63,7 +63,7 @@ var pyautoAPI = {
    */
   cutItems: function() {
     fileManager.cutSelectionToClipboard();
-    window.domAutomationController.send('done');
+    this.sendDone_();
   },
 
   /**
@@ -110,7 +110,7 @@ var pyautoAPI = {
    */
   changeDirectory: function(path) {
     if (path.charAt(0) != '/')
-      path = fileManager.getCurrentDirectory() + '/' + path
+      path = fileManager.getCurrentDirectory() + '/' + path;
     fileManager.changeDirectory(path, undefined, undefined, this.sendDone_);
   },
 
@@ -120,15 +120,17 @@ var pyautoAPI = {
    * @return {string} Path to the current directory.
    */
   currentDirectory: function() {
-    path = fileManager.getCurrentDirectory()
+    path = fileManager.getCurrentDirectory();
     window.domAutomationController.send(path);
   },
 
   /**
-   * Callback function signalling completion of operation.
+   * Get remaining and total size of selected directory.
+   *
+   * @return {object} remaining and total size in KB.
    */
-  sendDone_: function() {
-      window.domAutomationController.send('done');
+  getSelectedDirectorySizeStats: function() {
+    fileManager.getSelectedDirectorySizeStats(this.sendJSONValue_);
   },
 
   /**
@@ -140,7 +142,28 @@ var pyautoAPI = {
    * @return {boolean} Whether file manager is initialied.
    */
   isInitialized: function() {
-    var initialized = (fileManager != null) && fileManager.isInitialized()
-    window.domAutomationController.send(initialized);
+    var initialized = (fileManager != null) && fileManager.isInitialized();
+    this.sendValue_(initialized);
+  },
+
+  /**
+   * Callback function for returning primitiv types (int, string, boolean)
+   */
+  sendValue_: function(value) {
+      window.domAutomationController.send(value);
+  },
+
+  /**
+   * Callback function for returning a JSON encoded value.
+   */
+  sendJSONValue_: function(value) {
+      window.domAutomationController.send(JSON.stringify(value));
+  },
+
+  /**
+   * Callback function signalling completion of operation.
+   */
+  sendDone_: function() {
+      window.domAutomationController.send('done');
   },
 };

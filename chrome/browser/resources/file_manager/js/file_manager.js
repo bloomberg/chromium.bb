@@ -2233,6 +2233,19 @@ FileManager.prototype = {
   }
 
   /**
+   * Get remaining and total size of selected directory in KB.
+   *
+   * @param {object} callback Function to call with stats string as the
+   * argument.
+   */
+  FileManager.prototype.getSelectedDirectorySizeStats = function(callback) {
+    directoryURL = fileManager.selection.entries[0].toURL();
+    chrome.fileBrowserPrivate.getSizeStats(directoryURL, function(stats) {
+      callback(stats);
+    });
+  }
+
+  /**
    * Used by tests to wait before interacting with the file maanager
    */
   FileManager.prototype.isInitialized = function() {
