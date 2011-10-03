@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
@@ -464,14 +466,18 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
 
    private:
     virtual void RegisterMessages() OVERRIDE {
-      web_ui_->RegisterMessageCallback("startAsyncTest", NewCallback(
-          this, &AsyncWebUIMessageHandler::HandleStartAsyncTest));
-      web_ui_->RegisterMessageCallback("testContinues", NewCallback(
-          this, &AsyncWebUIMessageHandler::HandleTestContinues));
-      web_ui_->RegisterMessageCallback("testFails", NewCallback(
-          this, &AsyncWebUIMessageHandler::HandleTestFails));
-      web_ui_->RegisterMessageCallback("testPasses", NewCallback(
-          this, &AsyncWebUIMessageHandler::HandleTestPasses));
+      web_ui_->RegisterMessageCallback("startAsyncTest",
+          base::Bind(&AsyncWebUIMessageHandler::HandleStartAsyncTest,
+                     base::Unretained(this)));
+      web_ui_->RegisterMessageCallback("testContinues",
+          base::Bind(&AsyncWebUIMessageHandler::HandleTestContinues,
+                     base::Unretained(this)));
+      web_ui_->RegisterMessageCallback("testFails",
+          base::Bind(&AsyncWebUIMessageHandler::HandleTestFails,
+                     base::Unretained(this)));
+      web_ui_->RegisterMessageCallback("testPasses",
+          base::Bind(&AsyncWebUIMessageHandler::HandleTestPasses,
+                     base::Unretained(this)));
     }
 
     // Starts the test in |list_value|[0] with the runAsync wrapper.

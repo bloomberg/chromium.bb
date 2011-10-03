@@ -8,7 +8,8 @@
 #include <functional>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/string_piece.h"
@@ -143,31 +144,41 @@ void DownloadsDOMHandler::Init() {
 
 void DownloadsDOMHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getDownloads",
-      NewCallback(this, &DownloadsDOMHandler::HandleGetDownloads));
+      base::Bind(&DownloadsDOMHandler::HandleGetDownloads,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("openFile",
-      NewCallback(this, &DownloadsDOMHandler::HandleOpenFile));
-
+      base::Bind(&DownloadsDOMHandler::HandleOpenFile,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("drag",
-      NewCallback(this, &DownloadsDOMHandler::HandleDrag));
-
+      base::Bind(&DownloadsDOMHandler::HandleDrag,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("saveDangerous",
-      NewCallback(this, &DownloadsDOMHandler::HandleSaveDangerous));
+      base::Bind(&DownloadsDOMHandler::HandleSaveDangerous,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("discardDangerous",
-      NewCallback(this, &DownloadsDOMHandler::HandleDiscardDangerous));
+      base::Bind(&DownloadsDOMHandler::HandleDiscardDangerous,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("show",
-      NewCallback(this, &DownloadsDOMHandler::HandleShow));
+      base::Bind(&DownloadsDOMHandler::HandleShow,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("togglepause",
-      NewCallback(this, &DownloadsDOMHandler::HandlePause));
+      base::Bind(&DownloadsDOMHandler::HandlePause,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("resume",
-      NewCallback(this, &DownloadsDOMHandler::HandlePause));
+      base::Bind(&DownloadsDOMHandler::HandlePause,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("remove",
-      NewCallback(this, &DownloadsDOMHandler::HandleRemove));
+      base::Bind(&DownloadsDOMHandler::HandleRemove,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("cancel",
-      NewCallback(this, &DownloadsDOMHandler::HandleCancel));
+      base::Bind(&DownloadsDOMHandler::HandleCancel,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("clearAll",
-      NewCallback(this, &DownloadsDOMHandler::HandleClearAll));
+      base::Bind(&DownloadsDOMHandler::HandleClearAll,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("openDownloadsFolder",
-      NewCallback(this, &DownloadsDOMHandler::HandleOpenDownloadsFolder));
+      base::Bind(&DownloadsDOMHandler::HandleOpenDownloadsFolder,
+                 base::Unretained(this)));
 }
 
 void DownloadsDOMHandler::OnDownloadUpdated(DownloadItem* download) {

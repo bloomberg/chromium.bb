@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -175,8 +177,8 @@ void HungRendererDialogHandler::CloseDialog() {
 
 void HungRendererDialogHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("requestTabContentsList",
-      NewCallback(this,
-          &HungRendererDialogHandler::RequestTabContentsList));
+      base::Bind(&HungRendererDialogHandler::RequestTabContentsList,
+                 base::Unretained(this)));
 }
 
 void HungRendererDialogHandler::RequestTabContentsList(

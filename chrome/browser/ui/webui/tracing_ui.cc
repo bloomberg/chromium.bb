@@ -6,6 +6,9 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_old.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -168,26 +171,24 @@ WebUIMessageHandler* TracingMessageHandler::Attach(WebUI* web_ui) {
 void TracingMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  web_ui_->RegisterMessageCallback(
-      "tracingControllerInitialized",
-      NewCallback(this,
-                  &TracingMessageHandler::OnTracingControllerInitialized));
-  web_ui_->RegisterMessageCallback(
-      "beginTracing",
-      NewCallback(this, &TracingMessageHandler::OnBeginTracing));
-  web_ui_->RegisterMessageCallback(
-      "endTracingAsync",
-      NewCallback(this, &TracingMessageHandler::OnEndTracingAsync));
-  web_ui_->RegisterMessageCallback(
-      "beginRequestBufferPercentFull",
-      NewCallback(this,
-                  &TracingMessageHandler::OnBeginRequestBufferPercentFull));
-  web_ui_->RegisterMessageCallback(
-      "loadTraceFile",
-      NewCallback(this, &TracingMessageHandler::OnLoadTraceFile));
-  web_ui_->RegisterMessageCallback(
-      "saveTraceFile",
-      NewCallback(this, &TracingMessageHandler::OnSaveTraceFile));
+  web_ui_->RegisterMessageCallback("tracingControllerInitialized",
+      base::Bind(&TracingMessageHandler::OnTracingControllerInitialized,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("beginTracing",
+      base::Bind(&TracingMessageHandler::OnBeginTracing,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("endTracingAsync",
+      base::Bind(&TracingMessageHandler::OnEndTracingAsync,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("beginRequestBufferPercentFull",
+      base::Bind(&TracingMessageHandler::OnBeginRequestBufferPercentFull,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("loadTraceFile",
+      base::Bind(&TracingMessageHandler::OnLoadTraceFile,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("saveTraceFile",
+      base::Bind(&TracingMessageHandler::OnSaveTraceFile,
+                 base::Unretained(this)));
 }
 
 void TracingMessageHandler::OnTracingControllerInitialized(

@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -101,11 +103,12 @@ void EulaScreenHandler::Initialize() {
 
 void EulaScreenHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("eulaOnExit",
-      NewCallback(this, &EulaScreenHandler::HandleOnExit));
+      base::Bind(&EulaScreenHandler::HandleOnExit,base::Unretained(this)));
   web_ui_->RegisterMessageCallback("eulaOnLearnMore",
-      NewCallback(this, &EulaScreenHandler::HandleOnLearnMore));
+      base::Bind(&EulaScreenHandler::HandleOnLearnMore,base::Unretained(this)));
   web_ui_->RegisterMessageCallback("eulaOnTpmPopupOpened",
-      NewCallback(this, &EulaScreenHandler::HandleOnTpmPopupOpened));
+      base::Bind(&EulaScreenHandler::HandleOnTpmPopupOpened,
+                 base::Unretained(this)));
 }
 
 void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {

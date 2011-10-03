@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
@@ -324,24 +326,31 @@ void SyncSetupHandler::OnGetOAuthTokenFailure(
   CloseSyncSetup();
 }
 
-
 void SyncSetupHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("SyncSetupDidClosePage",
-      NewCallback(this, &SyncSetupHandler::OnDidClosePage));
+      base::Bind(&SyncSetupHandler::OnDidClosePage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("SyncSetupSubmitAuth",
-      NewCallback(this, &SyncSetupHandler::HandleSubmitAuth));
+      base::Bind(&SyncSetupHandler::HandleSubmitAuth,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("SyncSetupConfigure",
-      NewCallback(this, &SyncSetupHandler::HandleConfigure));
+      base::Bind(&SyncSetupHandler::HandleConfigure,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("SyncSetupPassphrase",
-      NewCallback(this, &SyncSetupHandler::HandlePassphraseEntry));
+      base::Bind(&SyncSetupHandler::HandlePassphraseEntry,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("SyncSetupPassphraseCancel",
-      NewCallback(this, &SyncSetupHandler::HandlePassphraseCancel));
+      base::Bind(&SyncSetupHandler::HandlePassphraseCancel,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("SyncSetupAttachHandler",
-      NewCallback(this, &SyncSetupHandler::HandleAttachHandler));
+      base::Bind(&SyncSetupHandler::HandleAttachHandler,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("SyncSetupShowErrorUI",
-      NewCallback(this, &SyncSetupHandler::HandleShowErrorUI));
+      base::Bind(&SyncSetupHandler::HandleShowErrorUI,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("SyncSetupShowSetupUI",
-      NewCallback(this, &SyncSetupHandler::HandleShowSetupUI));
+      base::Bind(&SyncSetupHandler::HandleShowSetupUI,
+                 base::Unretained(this)));
 }
 
 // Ideal(?) solution here would be to mimic the ClientLogin overlay.  Since

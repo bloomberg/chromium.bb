@@ -8,7 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -222,17 +223,23 @@ void ActiveDownloadsHandler::Init() {
 
 void ActiveDownloadsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getDownloads",
-      NewCallback(this, &ActiveDownloadsHandler::HandleGetDownloads));
+      base::Bind(&ActiveDownloadsHandler::HandleGetDownloads,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("pauseToggleDownload",
-      NewCallback(this, &ActiveDownloadsHandler::HandlePauseToggleDownload));
+      base::Bind(&ActiveDownloadsHandler::HandlePauseToggleDownload,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("cancelDownload",
-      NewCallback(this, &ActiveDownloadsHandler::HandleCancelDownload));
+      base::Bind(&ActiveDownloadsHandler::HandleCancelDownload,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("allowDownload",
-      NewCallback(this, &ActiveDownloadsHandler::HandleAllowDownload));
+      base::Bind(&ActiveDownloadsHandler::HandleAllowDownload,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("openNewFullWindow",
-      NewCallback(this, &ActiveDownloadsHandler::OpenNewFullWindow));
+      base::Bind(&ActiveDownloadsHandler::OpenNewFullWindow,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("playMediaFile",
-      NewCallback(this, &ActiveDownloadsHandler::PlayMediaFile));
+      base::Bind(&ActiveDownloadsHandler::PlayMediaFile,
+                 base::Unretained(this)));
 }
 
 void ActiveDownloadsHandler::PlayMediaFile(const ListValue* args) {

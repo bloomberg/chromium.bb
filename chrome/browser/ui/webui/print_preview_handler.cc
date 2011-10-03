@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #if !defined(OS_CHROMEOS)
 #include "base/command_line.h"
 #endif
@@ -554,35 +556,50 @@ PrintPreviewHandler::~PrintPreviewHandler() {
 
 void PrintPreviewHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getDefaultPrinter",
-      NewCallback(this, &PrintPreviewHandler::HandleGetDefaultPrinter));
+      base::Bind(&PrintPreviewHandler::HandleGetDefaultPrinter,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("getPrinters",
-      NewCallback(this, &PrintPreviewHandler::HandleGetPrinters));
+      base::Bind(&PrintPreviewHandler::HandleGetPrinters,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("getPreview",
-      NewCallback(this, &PrintPreviewHandler::HandleGetPreview));
+      base::Bind(&PrintPreviewHandler::HandleGetPreview,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("print",
-      NewCallback(this, &PrintPreviewHandler::HandlePrint));
+      base::Bind(&PrintPreviewHandler::HandlePrint,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("getPrinterCapabilities",
-      NewCallback(this, &PrintPreviewHandler::HandleGetPrinterCapabilities));
+      base::Bind(&PrintPreviewHandler::HandleGetPrinterCapabilities,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("showSystemDialog",
-      NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
+      base::Bind(&PrintPreviewHandler::HandleShowSystemDialog,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("signIn",
-      NewCallback(this, &PrintPreviewHandler::HandleSignin));
+      base::Bind(&PrintPreviewHandler::HandleSignin,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("manageCloudPrinters",
-      NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
+      base::Bind(&PrintPreviewHandler::HandleManageCloudPrint,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("manageLocalPrinters",
-      NewCallback(this, &PrintPreviewHandler::HandleManagePrinters));
+      base::Bind(&PrintPreviewHandler::HandleManagePrinters,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("reloadCrashedInitiatorTab",
-      NewCallback(this, &PrintPreviewHandler::HandleReloadCrashedInitiatorTab));
+      base::Bind(&PrintPreviewHandler::HandleReloadCrashedInitiatorTab,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("closePrintPreviewTab",
-      NewCallback(this, &PrintPreviewHandler::HandleClosePreviewTab));
+      base::Bind(&PrintPreviewHandler::HandleClosePreviewTab,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("hidePreview",
-      NewCallback(this, &PrintPreviewHandler::HandleHidePreview));
+      base::Bind(&PrintPreviewHandler::HandleHidePreview,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("cancelPendingPrintRequest",
-      NewCallback(this, &PrintPreviewHandler::HandleCancelPendingPrintRequest));
+      base::Bind(&PrintPreviewHandler::HandleCancelPendingPrintRequest,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("saveLastPrinter",
-      NewCallback(this, &PrintPreviewHandler::HandleSaveLastPrinter));
+      base::Bind(&PrintPreviewHandler::HandleSaveLastPrinter,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("getInitiatorTabTitle",
-      NewCallback(this, &PrintPreviewHandler::HandleGetInitiatorTabTitle));
+      base::Bind(&PrintPreviewHandler::HandleGetInitiatorTabTitle,
+                 base::Unretained(this)));
 }
 
 TabContentsWrapper* PrintPreviewHandler::preview_tab_wrapper() const {

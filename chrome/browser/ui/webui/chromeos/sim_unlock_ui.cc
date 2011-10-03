@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_piece.h"
@@ -344,17 +346,23 @@ void SimUnlockHandler::Init(TabContents* contents) {
 
 void SimUnlockHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(kJsApiCancel,
-        NewCallback(this, &SimUnlockHandler::HandleCancel));
+      base::Bind(&SimUnlockHandler::HandleCancel,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(kJsApiChangePinCode,
-      NewCallback(this, &SimUnlockHandler::HandleChangePinCode));
+      base::Bind(&SimUnlockHandler::HandleChangePinCode,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(kJsApiEnterPinCode,
-      NewCallback(this, &SimUnlockHandler::HandleEnterPinCode));
+      base::Bind(&SimUnlockHandler::HandleEnterPinCode,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(kJsApiEnterPukCode,
-      NewCallback(this, &SimUnlockHandler::HandleEnterPukCode));
+      base::Bind(&SimUnlockHandler::HandleEnterPukCode,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(kJsApiProceedToPukInput,
-      NewCallback(this, &SimUnlockHandler::HandleProceedToPukInput));
+      base::Bind(&SimUnlockHandler::HandleProceedToPukInput,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(kJsApiSimStatusInitialize,
-      NewCallback(this, &SimUnlockHandler::HandleSimStatusInitialize));
+      base::Bind(&SimUnlockHandler::HandleSimStatusInitialize,
+                 base::Unretained(this)));
 }
 
 void SimUnlockHandler::OnNetworkDeviceSimLockChanged(

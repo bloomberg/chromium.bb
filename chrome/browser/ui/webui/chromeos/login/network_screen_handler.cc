@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -138,11 +140,13 @@ void NetworkScreenHandler::Initialize() {
 
 void NetworkScreenHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(kJsApiNetworkOnExit,
-      NewCallback(this, &NetworkScreenHandler::HandleOnExit));
+      base::Bind(&NetworkScreenHandler::HandleOnExit,base::Unretained(this)));
   web_ui_->RegisterMessageCallback(kJsApiNetworkOnLanguageChanged,
-      NewCallback(this, &NetworkScreenHandler::HandleOnLanguageChanged));
+      base::Bind(&NetworkScreenHandler::HandleOnLanguageChanged,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(kJsApiNetworkOnInputMethodChanged,
-      NewCallback(this, &NetworkScreenHandler::HandleOnInputMethodChanged));
+      base::Bind(&NetworkScreenHandler::HandleOnInputMethodChanged,
+                 base::Unretained(this)));
 }
 
 // NetworkScreenHandler, private: ----------------------------------------------
