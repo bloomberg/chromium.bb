@@ -594,6 +594,8 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
 void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
   UMA_HISTOGRAM_COUNTS("Translate.ReportLanguageDetectionError", 1);
   GURL page_url = tab_contents->controller().GetActiveEntry()->url();
+  // Report option should be disabled for secure URLs.
+  DCHECK(!page_url.SchemeIsSecure());
   std::string report_error_url(kReportLanguageDetectionErrorURL);
   report_error_url += "?client=cr&action=langidc&u=";
   report_error_url += EscapeUrlEncodedData(page_url.spec(), true);

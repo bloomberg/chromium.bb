@@ -89,6 +89,18 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
       return (!translate_infobar_delegate_->IsLanguageBlacklisted() &&
           !translate_infobar_delegate_->IsSiteBlacklisted());
 
+    case IDC_TRANSLATE_REPORT_BAD_LANGUAGE_DETECTION : {
+      // Until we have a secure URL for reporting language detection errors,
+      // we don't report errors that happened on secure URLs.
+      DCHECK(translate_infobar_delegate_ != NULL);
+      DCHECK(translate_infobar_delegate_->owner() != NULL);
+      DCHECK(translate_infobar_delegate_->owner()->tab_contents() != NULL);
+      NavigationEntry* entry = translate_infobar_delegate_->owner()->
+          tab_contents()->controller().GetActiveEntry();
+      // Delegate and tab contents should never be NULL, but active entry
+      // can be NULL when running tests. We want to return false if NULL.
+      return (entry != NULL) && !entry->url().SchemeIsSecure();
+    }
     default:
       break;
   }
