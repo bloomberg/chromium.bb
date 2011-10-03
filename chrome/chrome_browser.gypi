@@ -2834,7 +2834,6 @@
         'browser/ui/gtk/browser_titlebar.h',
         'browser/ui/gtk/browser_toolbar_gtk.cc',
         'browser/ui/gtk/browser_toolbar_gtk.h',
-        'browser/ui/gtk/browser_window_factory_gtk.cc',
         'browser/ui/gtk/browser_window_gtk.cc',
         'browser/ui/gtk/browser_window_gtk.h',
         'browser/ui/gtk/bubble/bubble_accelerators_gtk.cc',
