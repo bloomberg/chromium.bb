@@ -257,21 +257,35 @@
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#H2-0">Event order</a>
+              <a href="#H2-0">Manifest</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#H2-1">Relation to webRequest events</a>
+              <a href="#H2-1">Examples</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#H2-2">A note about timestamps</a>
+              <a href="#H2-2">Event order</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#H2-3">Relation to webRequest events</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#H2-4">A note about timestamps</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -343,14 +357,39 @@
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-Use the <code>chrome.experimental.webNavigation</code> module to recieve
-notifications about the status of navigations requests in-flight. This
-module is still very much experimental. For information on how to use
-experimental APIs, see the <a href="experimental.html">chrome.experimental.*
-APIs</a> page.
+Use the <code>chrome.webNavigation</code> module to receive
+notifications about the status of navigations requests in-flight.
 </p>
 
-<a name="H2-0"></a><h2>Event order</h2>
+<a name="H2-0"></a><h2>Manifest</h2>
+<p>
+All <code>chrome.webNavigation</code> methods and events require you to declare
+the "webNavigation" permission in the <a href="manifest.html">extension
+manifest</a>.
+For example:
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "webNavigation"
+  ]</b>,
+  ...
+}</pre>
+
+
+<a name="H2-1"></a><h2>Examples</h2>
+
+<p>
+You can find simple examples of using the tabs module in the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/webNavigation/">examples/api/webNavigation</a>
+directory.
+For other examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.
+</p>
+
+<a name="H2-2"></a><h2>Event order</h2>
 <p>
 For a navigation that is successfully completed, events are fired in the
 following order:
@@ -375,7 +414,7 @@ time after <code>onDOMContentLoaded</code>, even after
 <code>onCompleted</code>.
 </p>
 
-<a name="H2-1"></a><h2>Relation to webRequest events</h2>
+<a name="H2-3"></a><h2>Relation to webRequest events</h2>
 <p>
 There is no defined ordering between events of the <a href="experimental.webRequest.html">webRequest API</a> and the events of the
 webNavigation API. It is possible that webRequest events are still received for
@@ -388,7 +427,7 @@ state that is displayed in the UI, while the webRequest events correspond to
 the state of the network stack which is generally opaque to the user.
 </p>
 
-<a name="H2-2"></a><h2>A note about timestamps</h2>
+<a name="H2-4"></a><h2>A note about timestamps</h2>
 <p>
 It's important to note that some technical oddities in the OS's handling
 of distinct Chrome processes can cause the clock to be skewed between the
