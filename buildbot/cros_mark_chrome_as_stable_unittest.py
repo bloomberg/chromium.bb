@@ -6,6 +6,9 @@
 
 """Unit tests for cros_mark_chrome_as_stable.py."""
 
+# run with:
+#    cros_sdk ../../chromite/buildbot/cros_mark_chrome_as_stable_unittest.py
+
 import mox
 import os
 import shutil
@@ -146,63 +149,73 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
 
   def testGetTipOfTrunkSvnRevision(self):
     """Tests if we can get the latest svn revision from TOT."""
+    A_URL='dorf://mink/delaane/forkat/sertiunu.ortg./desk'
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'info', cros_mark_chrome_as_stable._GetSvnUrl()],
+        ['svn', 'info', cros_mark_chrome_as_stable._GetSvnUrl(A_URL)],
         redirect_stdout=True).AndReturn(
             'Some Junk 2134\nRevision: %s\nOtherInfo: test_data' % fake_svn_rev)
     self.mox.ReplayAll()
-    revision = cros_mark_chrome_as_stable._GetTipOfTrunkSvnRevision()
+    revision = cros_mark_chrome_as_stable._GetTipOfTrunkSvnRevision(A_URL)
     self.mox.VerifyAll()
     self.assertEquals(revision, fake_svn_rev)
 
   def testGetTipOfTrunkVersion(self):
     """Tests if we get the latest version from TOT."""
-    path = os.path.join(cros_mark_chrome_as_stable._GetSvnUrl(), 'src',
-                        'chrome', 'VERSION')
+    ARBITRARY_URL='Pratooey'
+    path = os.path.join(cros_mark_chrome_as_stable._GetSvnUrl(ARBITRARY_URL),
+                        'src', 'chrome', 'VERSION')
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'cat', path], redirect_stdout=True,
+        ['svn', 'info', cros_mark_chrome_as_stable._GetSvnUrl(ARBITRARY_URL)],
+        redirect_stdout=True).AndReturn(
+            'Some Junk 2134\nRevision: %s\nOtherInfo: test_data' % fake_svn_rev)
+    cros_mark_chrome_as_stable.RunCommand(
+        ['svn', 'cat', '-r', fake_svn_rev, path], redirect_stdout=True,
         error_message=mox.IsA(str)).AndReturn('A=8\nB=0\nC=256\nD=0')
 
     self.mox.ReplayAll()
-    version = cros_mark_chrome_as_stable._GetTipOfTrunkVersion()
+    version = cros_mark_chrome_as_stable._GetSpecificVersionUrl(ARBITRARY_URL,
+                                                                fake_svn_rev)
     self.mox.VerifyAll()
     self.assertEquals(version, '8.0.256.0')
 
   def testGetLatestRelease(self):
     """Tests if we can find the latest release from our mock url data."""
+    ARBITRARY_URL = 'phthp://sores.chromium.org/tqs'
     test_data = '\n'.join(['7.0.224.1/',
                            '7.0.224.2/',
                            '8.0.365.5/',
                            'LATEST.txt'])
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'ls', 'http://src.chromium.org/svn/releases'],
+        ['svn', 'ls', ARBITRARY_URL + '/releases'],
         redirect_stdout=True).AndReturn('some_data')
     cros_mark_chrome_as_stable.RunCommand(
         ['sort', '--version-sort'], input='some_data',
         redirect_stdout=True).AndReturn(test_data)
     self.mox.ReplayAll()
-    release = cros_mark_chrome_as_stable._GetLatestRelease()
+    release = cros_mark_chrome_as_stable._GetLatestRelease(ARBITRARY_URL)
     self.mox.VerifyAll()
     self.assertEqual('8.0.365.5', release)
 
   def testGetLatestStickyRelease(self):
     """Tests if we can find the latest sticky release from our mock url data."""
+    ARBITRARY_URL = 'http://src.chromium.org/svn'
     test_data = '\n'.join(['7.0.222.1/',
                            '8.0.224.2/',
                            '8.0.365.5/',
                            'LATEST.txt'])
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
     cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'ls', 'http://src.chromium.org/svn/releases'],
+        ['svn', 'ls', ARBITRARY_URL + '/releases'],
         redirect_stdout=True).AndReturn('some_data')
     cros_mark_chrome_as_stable.RunCommand(
         ['sort', '--version-sort'], input='some_data',
         redirect_stdout=True).AndReturn(test_data)
     self.mox.ReplayAll()
-    release = cros_mark_chrome_as_stable._GetLatestRelease(self.sticky_branch)
+    release = cros_mark_chrome_as_stable._GetLatestRelease(ARBITRARY_URL,
+                                                           self.sticky_branch)
     self.mox.VerifyAll()
     self.assertEqual('8.0.224.2', release)
 
