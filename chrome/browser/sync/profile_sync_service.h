@@ -293,8 +293,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return unrecoverable_error_message_;
   }
   tracked_objects::Location unrecoverable_error_location() {
-    return unrecoverable_error_location_.get() ?
-        *unrecoverable_error_location_.get() : tracked_objects::Location();
+    return unrecoverable_error_location_;
   }
 
   bool UIShouldDepictAuthInProgress() const {
@@ -613,7 +612,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // A message sent when an unrecoverable error occurred.
   std::string unrecoverable_error_message_;
-  scoped_ptr<tracked_objects::Location> unrecoverable_error_location_;
+  tracked_objects::Location unrecoverable_error_location_;
 
   // Manages the start and stop of the various data types.
   scoped_ptr<browser_sync::DataTypeManager> data_type_manager_;

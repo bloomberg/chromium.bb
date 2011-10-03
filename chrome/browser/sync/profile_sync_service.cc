@@ -565,7 +565,7 @@ void ProfileSyncService::NotifyObservers() {
 void ProfileSyncService::ClearStaleErrors() {
   unrecoverable_error_detected_ = false;
   unrecoverable_error_message_.clear();
-  unrecoverable_error_location_.reset();
+  unrecoverable_error_location_ = tracked_objects::Location();
   last_actionable_error_ = SyncProtocolError();
 }
 
@@ -644,11 +644,7 @@ void ProfileSyncService::OnUnrecoverableError(
     const std::string& message) {
   unrecoverable_error_detected_ = true;
   unrecoverable_error_message_ = message;
-  unrecoverable_error_location_.reset(
-      new tracked_objects::Location(from_here.function_name(),
-                                    from_here.file_name(),
-                                    from_here.line_number(),
-                                    from_here.program_counter()));
+  unrecoverable_error_location_ = from_here;
 
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
