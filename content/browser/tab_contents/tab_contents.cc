@@ -41,6 +41,7 @@
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/content_client.h"
+#include "content/common/content_constants.h"
 #include "content/common/content_restriction.h"
 #include "content/common/intents_messages.h"
 #include "content/common/navigation_types.h"
@@ -575,6 +576,11 @@ bool TabContents::NavigateToEntry(
   RenderViewHost* dest_render_view_host = render_manager_.Navigate(entry);
   if (!dest_render_view_host)
     return false;  // Unable to create the desired render view host.
+
+  // The renderer will reject IPC messages with URLs longer than
+  // this limit, so don't attempt to navigate with a longer URL.
+  if (entry.url().spec().size() > content::kMaxURLChars)
+    return false;
 
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.

@@ -22,6 +22,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/bindings_policy.h"
+#include "content/common/content_constants.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
@@ -261,6 +262,16 @@ TEST_F(TabContentsTest, SimpleNavigation) {
   // Controller's entry should now have the SiteInstance, or else we won't be
   // able to find it later.
   EXPECT_EQ(instance1, controller().GetActiveEntry()->site_instance());
+}
+
+// Test that we reject NavigateToEntry if the url is over content::kMaxURLChars.
+TEST_F(TabContentsTest, NavigateToExcessivelyLongURL) {
+  // Construct a URL that's kMaxURLChars + 1 long of all 'a's.
+  const GURL url(std::string("http://example.org/").append(
+      content::kMaxURLChars + 1, 'a'));
+
+  controller().LoadURL(url, GURL(), PageTransition::GENERATED, std::string());
+  EXPECT_TRUE(controller().GetActiveEntry() == NULL);
 }
 
 // Test that navigating across a site boundary creates a new RenderViewHost
