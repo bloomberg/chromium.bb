@@ -34,7 +34,6 @@ const struct AcceleratorMapping {
   { IDC_SHOW_BOOKMARK_MANAGER, @"b", NSCommandKeyMask | NSAlternateKeyMask },
   { IDC_SHOW_DOWNLOADS, @"j", NSCommandKeyMask | NSShiftKeyMask },
   { IDC_SHOW_HISTORY, @"y", NSCommandKeyMask },
-  { IDC_TOGGLE_SPEECH_INPUT, @".", NSCommandKeyMask | NSShiftKeyMask },
   { IDC_VIEW_SOURCE, @"u", NSCommandKeyMask | NSAlternateKeyMask },
   { IDC_ZOOM_MINUS, @"-", NSCommandKeyMask },
   { IDC_ZOOM_PLUS, @"+", NSCommandKeyMask }
