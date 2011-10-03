@@ -8,6 +8,10 @@
 #include <ole2.h>
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/desktop.h"
+#endif
+
 namespace views {
 
 ViewsTestBase::ViewsTestBase()
@@ -31,6 +35,10 @@ ViewsTestBase::~ViewsTestBase() {
 void ViewsTestBase::SetUp() {
   testing::Test::SetUp();
   setup_called_ = true;
+#if defined(USE_AURA)
+  if (!aura::Desktop::GetInstance()->default_parent())
+    aura::Desktop::GetInstance()->CreateDefaultParentForTesting();
+#endif
   if (!views_delegate_.get())
     views_delegate_.reset(new TestViewsDelegate());
 }

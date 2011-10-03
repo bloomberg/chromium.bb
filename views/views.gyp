@@ -165,6 +165,8 @@
         'controls/native_control_win.h',
         'controls/native/native_view_host.cc',
         'controls/native/native_view_host.h',
+        'controls/native/native_view_host_aura.cc',
+        'controls/native/native_view_host_aura.h',
         'controls/native/native_view_host_gtk.cc',
         'controls/native/native_view_host_gtk.h',
         'controls/native/native_view_host_win.cc',
