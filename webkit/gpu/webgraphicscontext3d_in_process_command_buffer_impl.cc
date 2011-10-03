@@ -603,14 +603,6 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
   g_all_shared_contexts.Pointer()->erase(this);
 }
 
-// This string should only be passed for WebGL contexts. Nothing ELSE!!!
-// Compositor contexts, Canvas2D contexts, Pepper Contexts, nor any other use of
-// a context should not pass this string.
-static const char* kWebGLPreferredGLExtensions =
-    "GL_OES_packed_depth_stencil "
-    "GL_OES_depth24 "
-    "GL_CHROMIUM_webglsl";
-
 bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view,
@@ -631,8 +623,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     GLInProcessContext::NONE,
   };
 
-  const char* preferred_extensions = attributes.noExtensions ?
-      kWebGLPreferredGLExtensions : "*";
+  const char* preferred_extensions = "*";
 
   GURL active_url;
   if (web_view && web_view->mainFrame())
@@ -669,6 +660,10 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     return false;
 
   gl_ = context_->GetImplementation();
+
+  if (gl_ && attributes.noExtensions)
+    gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
+
   context_->SetContextLostCallback(
       NewCallback(
           this,

@@ -66,14 +66,6 @@ WebGraphicsContext3DCommandBufferImpl::
   delete context_;
 }
 
-// This string should only be passed for WebGL contexts. Nothing ELSE!!!
-// Compositor contexts, Canvas2D contexts, Pepper Contexts, nor any other use of
-// a context should not pass this string.
-static const char* kWebGLPreferredGLExtensions =
-    "GL_OES_packed_depth_stencil "
-    "GL_OES_depth24 "
-    "GL_CHROMIUM_webglsl";
-
 bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view,
@@ -143,8 +135,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     RendererGLContext::NONE,
   };
 
-  const char* preferred_extensions = attributes_.noExtensions ?
-      kWebGLPreferredGLExtensions : "*";
+  const char* preferred_extensions = "*";
 
   // We need to lock g_all_shared_contexts until after RendererGLContext::Create
   // to ensure that the context we picked for our share group isn't deleted.
@@ -180,6 +171,12 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     return false;
 
   gl_ = context_->GetImplementation();
+
+  // TODO(twiz):  This code is too fragile in that it assumes that only WebGL
+  // contexts will request noExtensions.
+  if (gl_ && attributes_.noExtensions)
+    gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
+
   context_->SetContextLostCallback(
       NewCallback(this,
                   &WebGraphicsContext3DCommandBufferImpl::OnContextLost));

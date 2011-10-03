@@ -49,6 +49,10 @@
 namespace gpu {
 namespace gles2 {
 
+namespace {
+static const char kOESDerivativeExtension[] = "GL_OES_standard_derivatives";
+}
+
 class GLES2DecoderImpl;
 
 // Check that certain assumptions the code makes are true. There are places in
@@ -1329,6 +1333,14 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool needs_mac_nvidia_driver_workaround_;
   bool needs_glsl_built_in_function_emulation_;
 
+  // These flags are used to override the state of the shared feature_info_
+  // member.  Because the same FeatureInfo instance may be shared among many
+  // contexts, the assumptions on the availablity of extensions in WebGL
+  // contexts may be broken.  These flags override the shared state to preserve
+  // WebGL semantics.
+  bool force_webgl_glsl_validation_;
+  bool derivatives_explicitly_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -1690,7 +1702,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       has_arb_robustness_(false),
       reset_status_(GL_NO_ERROR),
       needs_mac_nvidia_driver_workaround_(false),
-      needs_glsl_built_in_function_emulation_(false) {
+      needs_glsl_built_in_function_emulation_(false),
+      force_webgl_glsl_validation_(false),
+      derivatives_explicitly_enabled_(false) {
   DCHECK(group);
 
   attrib_0_value_.v[0] = 0.0f;
@@ -1706,7 +1720,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
   // empty string to CompileShader and this is not a valid shader.
   // TODO(apatrick): fix this test.
   if ((gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-       !feature_info_->feature_flags().chromium_webglsl) ||
+       !feature_info_->feature_flags().chromium_webglsl &&
+       !force_webgl_glsl_validation_) ||
       gfx::GetGLImplementation() == gfx::kGLImplementationMockGL) {
     use_shader_translator_ = false;
   }
@@ -1975,7 +1990,8 @@ void GLES2DecoderImpl::UpdateCapabilities() {
 bool GLES2DecoderImpl::InitializeShaderTranslator() {
   // Re-check the state of use_shader_translator_ each time this is called.
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-      feature_info_->feature_flags().chromium_webglsl &&
+      (feature_info_->feature_flags().chromium_webglsl ||
+       force_webgl_glsl_validation_) &&
       !use_shader_translator_) {
     use_shader_translator_ = true;
   }
@@ -1995,11 +2011,18 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxFragmentUniformVectors =
       group_->max_fragment_uniform_vectors();
   resources.MaxDrawBuffers = 1;
-  resources.OES_standard_derivatives =
-      feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
+
+  if (force_webgl_glsl_validation_) {
+    resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
+  } else {
+    resources.OES_standard_derivatives =
+        feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
+  }
+
   vertex_translator_.reset(new ShaderTranslator);
-  ShShaderSpec shader_spec = feature_info_->feature_flags().chromium_webglsl ?
-      SH_WEBGL_SPEC : SH_GLES2_SPEC;
+  ShShaderSpec shader_spec = force_webgl_glsl_validation_ ||
+      feature_info_->feature_flags().chromium_webglsl ?
+          SH_WEBGL_SPEC : SH_GLES2_SPEC;
   ShaderTranslatorInterface::GlslImplementationType implementation_type =
       gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 ?
           ShaderTranslatorInterface::kGlslES : ShaderTranslatorInterface::kGlsl;
@@ -5495,6 +5518,7 @@ error::Error GLES2DecoderImpl::HandleGetString(
   }
   const char* gl_str = reinterpret_cast<const char*>(glGetString(name));
   const char* str = NULL;
+  std::string extensions;
   switch (name) {
     case GL_VERSION:
       str = "OpenGL ES 2.0 Chromium";
@@ -5503,7 +5527,24 @@ error::Error GLES2DecoderImpl::HandleGetString(
       str = "OpenGL ES GLSL ES 1.0 Chromium";
       break;
     case GL_EXTENSIONS:
-      str = feature_info_->extensions().c_str();
+      {
+        // For WebGL contexts, strip out the OES derivatives extension if it has
+        // not been enabled.
+        if (force_webgl_glsl_validation_ &&
+            !derivatives_explicitly_enabled_) {
+          extensions = feature_info_->extensions();
+          size_t offset = extensions.find(kOESDerivativeExtension);
+          if (std::string::npos != offset) {
+            extensions.replace(offset,
+                               offset + arraysize(kOESDerivativeExtension),
+                               std::string());
+          }
+          str = extensions.c_str();
+        } else {
+          str = feature_info_->extensions().c_str();
+        }
+
+      }
       break;
     default:
       str = gl_str;
@@ -6739,6 +6780,9 @@ error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(
     // needs to be done it seems like refactoring for one to one of those
     // methods is a very low priority.
     const_cast<Validators*>(validators_)->vertex_attrib_type.AddValue(GL_FIXED);
+  } else if (feature_str.compare("webgl_enable_glsl_webgl_validation") == 0) {
+    force_webgl_glsl_validation_ = true;
+    InitializeShaderTranslator();
   } else {
     return error::kNoError;
   }
@@ -6772,12 +6816,22 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
 
   feature_info_->AddFeatures(feature_str.c_str());
 
+  bool initialization_required = false;
+  if (force_webgl_glsl_validation_ && !derivatives_explicitly_enabled_) {
+    size_t derivatives_offset = feature_str.find(kOESDerivativeExtension);
+    if (std::string::npos != derivatives_offset) {
+      derivatives_explicitly_enabled_ = true;
+      initialization_required = true;
+    }
+  }
+
   // If we just enabled a feature which affects the shader translator,
   // we may need to re-initialize it.
   if (std_derivatives_enabled !=
           feature_info_->feature_flags().oes_standard_derivatives ||
       webglsl_enabled !=
-          feature_info_->feature_flags().chromium_webglsl) {
+          feature_info_->feature_flags().chromium_webglsl ||
+      initialization_required) {
     InitializeShaderTranslator();
   }
 
