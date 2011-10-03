@@ -864,11 +864,11 @@ buildbot-build-with-newlib: | \
 
 # Don't generate patch files for things like gmp or linux-headers-for-nacl
 # because these are not changed from upstream.
-BINUTILS_PATCHNAME := naclbinutils-$(BINUTILS_VERSION)-r$(shell svnversion)
-GCC_PATCHNAME := naclgcc-$(GCC_VERSION)-r$(shell svnversion)
-#GDB_PATCHNAME := naclgdb-$(GDB_VERSION)-r$(shell svnversion)
-GLIBC_PATCHNAME := naclglibc-$(GLIBC_VERSION)-r$(shell svnversion)
-NEWLIB_PATCHNAME := naclnewlib-$(NEWLIB_VERSION)-r$(shell svnversion)
+BINUTILS_PATCHNAME := naclbinutils-$(BINUTILS_VERSION)-r$(shell svnversion | tr : _)
+GCC_PATCHNAME := naclgcc-$(GCC_VERSION)-r$(shell svnversion | tr : _)
+#GDB_PATCHNAME := naclgdb-$(GDB_VERSION)-r$(shell svnversion | tr : _)
+GLIBC_PATCHNAME := naclglibc-$(GLIBC_VERSION)-r$(shell svnversion | tr : _)
+NEWLIB_PATCHNAME := naclnewlib-$(NEWLIB_VERSION)-r$(shell svnversion | tr : _)
 
 patch-names = $(BINUTILS_PATCHNAME) $(GCC_PATCHNAME) \
 	      $(GLIBC_PATCHNAME) $(NEWLIB_PATCHNAME)

@@ -38,6 +38,14 @@ echo @@@BUILD_STEP compile_toolchain@@@
   if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
     make install-glibc INST_GLIBC_PREFIX="$PWD"
     make pinned-src-newlib
+    ../src/trusted/service_runtime/export_header.py \
+      ../src/trusted/service_runtime/include \
+      SRC/newlib/newlib/libc/sys/nacl
+    mkdir SRC/newlib/newlib/libc/sys/nacl/include
+    cp -aiv ../src/untrusted/pthread/{pthread.h,semaphore.h} \
+      SRC/newlib/newlib/libc/sys/nacl/include
+    find SRC/newlib/newlib/libc/sys/nacl -name .svn -print0 | xargs -0 rm -rf --
+    ( cd SRC/newlib/newlib/libc/sys ; git add nacl )
     make patches
   fi
 )
