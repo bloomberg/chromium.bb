@@ -160,9 +160,13 @@ void ChromeNetworkDelegate::OnPACScriptError(int line_number,
       event_router_.get(), profile_, line_number, error);
 }
 
-void ChromeNetworkDelegate::OnAuthRequired(
+net::NetworkDelegate::AuthRequiredResponse
+ChromeNetworkDelegate::OnAuthRequired(
     net::URLRequest* request,
-    const net::AuthChallengeInfo& auth_info) {
+    const net::AuthChallengeInfo& auth_info,
+    const AuthCallback& callback,
+    net::AuthCredentials* credentials) {
   ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
       profile_, extension_info_map_.get(), request, auth_info);
+  return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
