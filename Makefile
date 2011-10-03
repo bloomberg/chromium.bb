@@ -6,6 +6,7 @@ OBJDIR = obj
 
 OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter.o \
+	$(OBJDIR)/activity_log.o \
 	$(OBJDIR)/gestures.o \
 	$(OBJDIR)/immediate_interpreter.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter.o \
@@ -15,6 +16,7 @@ OBJECTS=\
 
 TEST_OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter_unittest.o \
+	$(OBJDIR)/activity_log_unittest.o \
 	$(OBJDIR)/gestures_unittest.o \
 	$(OBJDIR)/immediate_interpreter_unittest.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter_unittest.o \
