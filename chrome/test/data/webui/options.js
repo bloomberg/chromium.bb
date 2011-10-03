@@ -107,7 +107,8 @@ TEST_F('OptionsWebUITest', 'MAYBE_testRefreshStaysOnCurrentPage', function() {
 
 // Test that there are no console errors after opening all registered pages.
 // Crashes on chromium os, flaky on other platforms. See crbug.com/90420.
-GEN('#if defined(TOOLKIT_VIEWS)');
+// Disabling on Mac OS X since the failure rate is now >50%.
+GEN('#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)');
 GEN('#define MAYBE_testOpenAllOptionsPages DISABLED_testOpenAllOptionsPages');
 GEN('#else');
 GEN('#define MAYBE_testOpenAllOptionsPages FLAKY_testOpenAllOptionsPages');
