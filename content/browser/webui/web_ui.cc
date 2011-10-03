@@ -99,6 +99,14 @@ void WebUI::OnWebUISend(const GURL& source_url,
   }
 }
 
+void WebUI::RenderViewCreated(RenderViewHost* render_view_host) {
+#if defined(TOOLKIT_VIEWS)
+  render_view_host->SetWebUIProperty("toolkit", "views");
+#elif defined(TOOLKIT_GTK)
+  render_view_host->SetWebUIProperty("toolkit", "GTK");
+#endif  // defined(TOOLKIT_VIEWS)
+}
+
 void WebUI::CallJavascriptFunction(const std::string& function_name) {
   DCHECK(IsStringASCII(function_name));
   string16 javascript = ASCIIToUTF16(function_name + "();");
