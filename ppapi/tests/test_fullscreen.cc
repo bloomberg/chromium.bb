@@ -109,9 +109,11 @@ std::string TestFullscreen::TestNormalToFullscreenToNormal() {
   normal_pending_ = true;
   if (!screen_mode_.SetFullscreen(false))
     return ReportError("SetFullscreen(false) in fullscreen", false);
-  // Normal is now pending, so repeated requests should fail.
+  // Normal is now pending, so additional requests should fail.
   if (screen_mode_.SetFullscreen(false))
     return ReportError("SetFullscreen(false) in normal pending", true);
+  if (screen_mode_.SetFullscreen(true))
+    return ReportError("SetFullscreen(true) in normal pending", true);
   if (instance_->BindGraphics(graphics2d_normal_))
     return ReportError("BindGraphics() in normal transition", true);
   if (!screen_mode_.IsFullscreen())
@@ -154,11 +156,15 @@ bool TestFullscreen::HandleInputEvent(const pp::InputEvent& event) {
     FailFullscreenTest(ReportError("SetFullscreen(true) in normal", false));
     return false;
   }
-  // Fullscreen is now pending, so repeated requests should fail.
+  // Fullscreen is now pending, so additional requests should fail.
   if (screen_mode_.SetFullscreen(true)) {
     FailFullscreenTest(
         ReportError("SetFullscreen(true) in fullscreen pending", true));
     return false;
+  }
+  if (screen_mode_.SetFullscreen(false)) {
+    FailFullscreenTest(
+        ReportError("SetFullscreen(false) in fullscreen pending", true));
   }
   // No graphics devices can be bound while in transition.
   if (instance_->BindGraphics(graphics2d_fullscreen_)) {

@@ -936,10 +936,16 @@ bool PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
 
-  // We check whether we are trying to switch to the state we're already going
+  // Check whether we are trying to switch to the state we're already going
   // to (i.e. if we're already switching to fullscreen but the fullscreen
   // container isn't ready yet, don't do anything more).
   if (fullscreen == IsFullscreenOrPending())
+    return false;
+
+  // Check whether we are trying to switch while the state is in transition.
+  // The 2nd request gets dropped while messing up the internal state, so
+  // disallow this.
+  if (fullscreen_ != desired_fullscreen_state_)
     return false;
 
   // The browser will allow us to go into fullscreen mode only when processing
