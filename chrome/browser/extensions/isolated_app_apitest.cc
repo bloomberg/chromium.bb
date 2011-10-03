@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppApiTest, MAYBE_CookieIsolation) {
 #else
 #define MAYBE_NoCookieIsolationWithoutApp NoCookieIsolationWithoutApp
 #endif
-IN_PROC_BROWSER_TEST_F(IsolatedAppApiTest, NoCookieIsolationWithoutApp) {
+IN_PROC_BROWSER_TEST_F(IsolatedAppApiTest, MAYBE_NoCookieIsolationWithoutApp) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
