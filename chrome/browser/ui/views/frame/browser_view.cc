@@ -29,8 +29,8 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -444,15 +444,7 @@ bool BrowserView::ShouldShowAvatar() const {
     return false;
   if (IsOffTheRecord())
     return true;
-
-  if (ProfileManager::IsMultipleProfilesEnabled()) {
-    // Show the profile avatar after the user has created more than one profile.
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    return cache.GetNumberOfProfiles() > 1;
-  }
-
-  return false;
+  return AvatarMenuModel::ShouldShowAvatarMenu();
 }
 
 bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {

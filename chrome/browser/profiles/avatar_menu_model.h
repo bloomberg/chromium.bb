@@ -81,6 +81,9 @@ class AvatarMenuModel : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  // True if avatar menu should be displayed.
+  static bool ShouldShowAvatarMenu();
+
  private:
   // Rebuilds the menu from the cache and notifies the |observer_|.
   void RebuildMenu();

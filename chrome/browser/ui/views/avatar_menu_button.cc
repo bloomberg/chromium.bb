@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/profile_menu_model.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/gfx/canvas_skia.h"

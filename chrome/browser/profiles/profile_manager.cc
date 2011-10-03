@@ -175,18 +175,6 @@ Profile* ProfileManager::GetLastUsedProfile(const FilePath& user_data_dir) {
   return GetProfile(last_used_profile_dir);
 }
 
-void ProfileManager::RegisterProfileName(Profile* profile) {
-  std::string profile_name = profile->GetProfileName();
-  std::string dir_base = profile->GetPath().BaseName().MaybeAsASCII();
-  DictionaryPrefUpdate update(g_browser_process->local_state(),
-                              prefs::kProfileDirectoryMap);
-  DictionaryValue* path_map = update.Get();
-  // We don't check for duplicates because we should be able to overwrite
-  // path->name mappings here, if the user syncs a local account to a
-  // different Google account.
-  path_map->SetString(dir_base, profile_name);
-}
-
 Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
   FilePath default_profile_dir(user_data_dir);
   default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
@@ -449,27 +437,11 @@ void ProfileManager::CreateMultiProfileAsync() {
 // static
 void ProfileManager::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kProfileLastUsed, "");
-  prefs->RegisterDictionaryPref(prefs::kProfileDirectoryMap);
   prefs->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
 }
 
-
 size_t ProfileManager::GetNumberOfProfiles() {
-  const DictionaryValue* path_map =
-      g_browser_process->local_state()->GetDictionary(
-          prefs::kProfileDirectoryMap);
-  return path_map ? path_map->size() : 0;
-}
-
-string16 ProfileManager::GetNameOfProfileAtIndex(size_t index) {
-  return GetSortedProfilesFromDirectoryMap()[index].second;
-}
-
-FilePath ProfileManager::GetFilePathOfProfileAtIndex(
-    size_t index,
-    const FilePath& user_data_dir) {
-  FilePath base_name = GetSortedProfilesFromDirectoryMap()[index].first;
-  return user_data_dir.Append(base_name);
+  return GetProfileInfoCache().GetNumberOfProfiles();
 }
 
 bool ProfileManager::CompareProfilePathAndName(
@@ -483,37 +455,6 @@ bool ProfileManager::CompareProfilePathAndName(
   } else {
     return pair1.first < pair2.first;
   }
-}
-
-ProfileManager::ProfilePathAndNames
-ProfileManager::GetSortedProfilesFromDirectoryMap() {
-  ProfilePathAndNames profiles;
-
-  const DictionaryValue* path_map =
-      g_browser_process->local_state()->GetDictionary(
-          prefs::kProfileDirectoryMap);
-  if (!path_map)
-    return profiles;
-
-  for (DictionaryValue::key_iterator it = path_map->begin_keys();
-       it != path_map->end_keys(); ++it) {
-    std::string name_ascii;
-    path_map->GetString(*it, &name_ascii);
-    string16 name = ASCIIToUTF16(name_ascii);
-    if (name.empty())
-      name = l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME);
-#if defined(OS_POSIX)
-    FilePath file_path(*it);
-#elif defined(OS_WIN)
-    FilePath file_path(ASCIIToWide(*it));
-#endif
-
-    // Pending, need to insert it alphabetically.
-    profiles.push_back(std::pair<FilePath, string16>(file_path, name));
-  }
-
-  std::sort(profiles.begin(), profiles.end(), CompareProfilePathAndName);
-  return profiles;
 }
 
 ProfileInfoCache& ProfileManager::GetProfileInfoCache() {

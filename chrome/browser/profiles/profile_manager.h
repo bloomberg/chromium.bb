@@ -77,11 +77,8 @@ class ProfileManager : public base::NonThreadSafe,
   // otherwise it will create and manage it.
   Profile* GetProfile(const FilePath& profile_dir);
 
-  // Multi-profile support.
+  // Returns total number of profiles available on this machine.
   size_t GetNumberOfProfiles();
-  string16 GetNameOfProfileAtIndex(size_t index);
-  FilePath GetFilePathOfProfileAtIndex(size_t index,
-                                       const FilePath& user_data_dir);
 
   // Explicit asynchronous creation of the profile. |observer| is called
   // when profile is created. If profile has already been created, observer
@@ -107,9 +104,6 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Same as instance method but provides the default user_data_dir as well.
   static Profile* GetLastUsedProfile();
-
-  // Register the mapping of a directory to a profile name in Local State.
-  void RegisterProfileName(Profile* profile);
 
   // Returns created profiles. Note, profiles order is NOT guaranteed to be
   // related with the creation order.

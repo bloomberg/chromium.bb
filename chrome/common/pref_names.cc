@@ -844,9 +844,6 @@ const char kPasswordsUseLocalProfileId[] =
 // Directory of the last profile used.
 const char kProfileLastUsed[] = "profile.last_used";
 
-// Maps profile data directories to login names.
-const char kProfileDirectoryMap[] = "profile.directory_map";
-
 // Total number of profiles created for this Chrome build. Used to tag profile
 // directories.
 const char kProfilesNumCreated[] = "profile.profiles_created";

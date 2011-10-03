@@ -16,8 +16,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
@@ -1359,18 +1359,9 @@ enum {
 - (BOOL)shouldShowAvatar {
   if (![self hasTabStrip])
     return NO;
-
   if (browser_->profile()->IsOffTheRecord())
     return YES;
-
-  if (ProfileManager::IsMultipleProfilesEnabled()) {
-    // Show the profile avatar after the user has created more than one profile.
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    return cache.GetNumberOfProfiles() > 1;
-  }
-
-  return NO;
+  return AvatarMenuModel::ShouldShowAvatarMenu();
 }
 
 - (BOOL)isBookmarkBarVisible {

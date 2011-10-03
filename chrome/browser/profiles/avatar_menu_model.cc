@@ -114,6 +114,12 @@ void AvatarMenuModel::Observe(int type,
   observer_->OnAvatarMenuModelChanged(this);
 }
 
+// static
+bool AvatarMenuModel::ShouldShowAvatarMenu() {
+  return ProfileManager::IsMultipleProfilesEnabled() &&
+      g_browser_process->profile_manager()->GetNumberOfProfiles() > 1;
+}
+
 void AvatarMenuModel::RebuildMenu() {
   ClearMenu();
 
