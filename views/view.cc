@@ -1104,7 +1104,6 @@ void View::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
   parent_->CalculateOffsetToAncestorWithLayer(offset, layer_parent);
 }
 
-
 void View::MoveLayerToParent(ui::Layer* parent_layer,
                              const gfx::Point& point) {
   gfx::Point local_point(point);
@@ -1484,8 +1483,13 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
     }
   }
 
-  if (is_add && layer() && !layer()->parent())
+  if (is_add && layer() && !layer()->parent()) {
     UpdateParentLayer();
+  } else if (!is_add && child == this) {
+    // Make sure the layers beloning to the subtree rooted at |child| get
+    // removed from layers that do not belong in the same subtree.
+    OrphanLayers();
+  }
 
   ViewHierarchyChanged(is_add, parent, child);
   parent->needs_layout_ = true;
@@ -1513,32 +1517,32 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
     SchedulePaintBoundsChanged(
         bounds_.size() == previous_bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :
         SCHEDULE_PAINT_SIZE_CHANGED);
+  }
 
-    if (use_acceleration_when_possible) {
-      if (layer()) {
-        if (parent_) {
-          gfx::Point offset;
-          parent_->CalculateOffsetToAncestorWithLayer(&offset, NULL);
-          offset.Offset(x(), y());
-          layer_property_setter_->SetBounds(layer(), gfx::Rect(offset, size()));
-        } else {
-          layer_property_setter_->SetBounds(layer(), bounds_);
-        }
-        // TODO(beng): this seems redundant with the SchedulePaint at the top of
-        //             this function. explore collapsing.
-        if (previous_bounds.size() != bounds_.size() &&
-            !layer()->layer_updated_externally()) {
-          // If our bounds have changed then we need to update the complete
-          // texture.
-          layer()->SchedulePaint(GetLocalBounds());
-        }
-      } else {
-        // If our bounds have changed, then any descendant layer bounds may
-        // have changed. Update them accordingly.
+  if (use_acceleration_when_possible) {
+    if (layer()) {
+      if (parent_) {
         gfx::Point offset;
-        CalculateOffsetToAncestorWithLayer(&offset, NULL);
-        UpdateChildLayerBounds(offset);
+        parent_->CalculateOffsetToAncestorWithLayer(&offset, NULL);
+        offset.Offset(x(), y());
+        layer_property_setter_->SetBounds(layer(), gfx::Rect(offset, size()));
+      } else {
+        layer_property_setter_->SetBounds(layer(), bounds_);
       }
+      // TODO(beng): this seems redundant with the SchedulePaint at the top of
+      //             this function. explore collapsing.
+      if (previous_bounds.size() != bounds_.size() &&
+          !layer()->layer_updated_externally()) {
+        // If our bounds have changed then we need to update the complete
+        // texture.
+        layer()->SchedulePaint(GetLocalBounds());
+      }
+    } else {
+      // If our bounds have changed, then any descendant layer bounds may
+      // have changed. Update them accordingly.
+      gfx::Point offset;
+      CalculateOffsetToAncestorWithLayer(&offset, NULL);
+      UpdateChildLayerBounds(offset);
     }
   }
 
@@ -1706,6 +1710,7 @@ void View::CreateLayer() {
     layer_property_setter_->Installed(layer());
   else
     SetLayerPropertySetter(NULL);
+  layer_->SetVisible(IsVisible());
 
   UpdateParentLayers();
 }
@@ -1726,10 +1731,29 @@ void View::UpdateParentLayer() {
 
   ui::Layer* parent_layer = NULL;
   gfx::Point offset(x(), y());
+
+  // TODO(sad): The NULL check here for parent_ essentially is to check if this
+  // is the RootView. Instead of doing this, this function should be made
+  // virtual and overridden from the RootView.
   if (parent_)
     parent_->CalculateOffsetToAncestorWithLayer(&offset, &parent_layer);
+  else if (!parent_ && GetWidget())
+    GetWidget()->CalculateOffsetToAncestorWithLayer(&offset, &parent_layer);
 
   ReparentLayer(offset, parent_layer);
+}
+
+void View::OrphanLayers() {
+  if (layer()) {
+    if (layer()->parent())
+      layer()->parent()->Remove(layer());
+
+    // The layer belonging to this View has already been orphaned. It is not
+    // necessary to orphan the child layers.
+    return;
+  }
+  for (int i = 0, count = child_count(); i < count; ++i)
+    child_at(i)->OrphanLayers();
 }
 
 void View::ReparentLayer(const gfx::Point& offset, ui::Layer* parent_layer) {

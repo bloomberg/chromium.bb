@@ -1238,6 +1238,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |parent_layer|.
   void ReparentLayer(const gfx::Point& offset, ui::Layer* parent_layer);
 
+  // Orphans the layers in this subtree that are parented to layers outside of
+  // this subtree.
+  void OrphanLayers();
+
   // Destroys the layer associated with this view, and reparents any descendants
   // to the destroyed layer's parent.
   void DestroyLayer();
