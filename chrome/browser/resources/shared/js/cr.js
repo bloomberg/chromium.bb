@@ -35,16 +35,10 @@ const cr = (function() {
   const isLinux = /Linux/.test(navigator.userAgent);
 
   /**
-   * Whether this uses GTK or not.
-   * @type {boolean}
-   */
-  const isGTK = /GTK/.test(chrome.toolkit);
-
-  /**
    * Whether this uses the views toolkit or not.
    * @type {boolean}
    */
-  const isViews = /views/.test(chrome.toolkit);
+  const isViews = isWindows || isChromeOS;
 
   /**
    * Sets the os and toolkit attributes in the <html> element so that platform
@@ -57,10 +51,10 @@ const cr = (function() {
       doc.documentElement.setAttribute('os', 'windows');
     if (isChromeOS)
       doc.documentElement.setAttribute('os', 'chromeos');
-    if (isLinux)
+    if (isLinux) {
       doc.documentElement.setAttribute('os', 'linux');
-    if (isGTK)
       doc.documentElement.setAttribute('toolkit', 'gtk');
+    }
     if (isViews)
       doc.documentElement.setAttribute('toolkit', 'views');
   }

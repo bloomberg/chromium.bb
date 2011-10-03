@@ -49,7 +49,7 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   // *not* called for every page load because in some cases
   // RenderViewHostManager will reuse RenderView instances. In those cases,
   // RenderViewReused will be called instead.
-  virtual void RenderViewCreated(RenderViewHost* render_view_host);
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) {}
 
   // Called by RenderViewHostManager when a RenderView is reused to display a
   // page.
