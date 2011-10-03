@@ -144,6 +144,8 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
  private:
   friend class desktop::DesktopWindowView;
 
+  typedef std::map<const char*, void*> PropsMap;
+
   // These functions may return NULL during Widget destruction.
   internal::NativeWidgetPrivate* GetParentNativeWidget();
   const internal::NativeWidgetPrivate* GetParentNativeWidget() const;
@@ -173,7 +175,8 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   bool delete_native_view_;
 
-  std::map<const char*, void*> window_properties_;
+  // Map used by Set/GetNativeWindowProperty.
+  PropsMap props_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViews);
 };

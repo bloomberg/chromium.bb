@@ -225,15 +225,14 @@ void NativeWidgetViews::ViewRemoved(View* view) {
 
 void NativeWidgetViews::SetNativeWindowProperty(const char* name, void* value) {
   if (value)
-    window_properties_[name] = value;
+    props_map_[name] = value;
   else
-    window_properties_.erase(name);
+    props_map_.erase(name);
 }
 
 void* NativeWidgetViews::GetNativeWindowProperty(const char* name) const {
-  std::map<const char*, void*>::const_iterator iter =
-      window_properties_.find(name);
-  return iter != window_properties_.end() ? iter->second : NULL;
+  PropsMap::const_iterator iter = props_map_.find(name);
+  return iter != props_map_.end() ? iter->second : NULL;
 }
 
 TooltipManager* NativeWidgetViews::GetTooltipManager() const {
