@@ -76,7 +76,10 @@ namespace {
 const CGFloat kUseFullAvailableWidth = -1.0;
 
 // The amount by which tabs overlap.
-const CGFloat kTabOverlap = 20.0;
+const CGFloat kTabOverlap = 19.0;
+
+// The amount by which mini tabs are separated from normal tabs.
+const CGFloat kLastMiniTabSpacing = 3.0;
 
 // The width and height for a tab's icon.
 const CGFloat kIconWidthAndHeight = 16.0;
@@ -845,8 +848,9 @@ private:
   // section, they don't change size.
   CGFloat availableSpaceForNonMini = availableSpace;
   if (!verticalLayout_) {
-      availableSpaceForNonMini -=
-          [self numberOfOpenMiniTabs] * (kMiniTabWidth - kTabOverlap);
+    availableSpaceForNonMini -=
+        [self numberOfOpenMiniTabs] * (kMiniTabWidth - kTabOverlap);
+    availableSpaceForNonMini -= kLastMiniTabSpacing;
   }
 
   // Initialize |nonMiniTabWidth| in case there aren't any non-mini-tabs; this
@@ -869,6 +873,8 @@ private:
 
   CGFloat offset = [self leftIndentForControls];
   bool hasPlaceholderGap = false;
+  // Whether or not the last tab processed by the loop was a mini tab.
+  BOOL isLastTabMini = NO;
   for (TabController* tab in tabArray_.get()) {
     // Ignore a tab that is going through a close animation.
     if ([closingControllers_ containsObject:tab])
@@ -935,10 +941,19 @@ private:
 
     // Set the width. Selected tabs are slightly wider when things get really
     // small and thus we enforce a different minimum width.
-    tabFrame.size.width = [tab mini] ?
+    BOOL isMini = [tab mini];
+    tabFrame.size.width = isMini ?
         ([tab app] ? kAppTabWidth : kMiniTabWidth) : nonMiniTabWidth;
     if ([tab selected])
       tabFrame.size.width = MAX(tabFrame.size.width, kMinSelectedTabWidth);
+
+    // If this is the first non-mini tab, then add a bit of spacing between this
+    // and the last mini tab.
+    if (!isMini && isLastTabMini) {
+      offset += kLastMiniTabSpacing;
+      tabFrame.origin.x = offset;
+    }
+    isLastTabMini = isMini;
 
     // Animate a new tab in by putting it below the horizon unless told to put
     // it in a specific location (i.e., from a drop).

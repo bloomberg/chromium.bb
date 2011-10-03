@@ -70,7 +70,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 + (CGFloat)minTabWidth { return 31; }
 + (CGFloat)minSelectedTabWidth { return 46; }
 + (CGFloat)maxTabWidth { return 220; }
-+ (CGFloat)miniTabWidth { return 69; }
++ (CGFloat)miniTabWidth { return 61; }
 + (CGFloat)appTabWidth { return 66; }
 
 - (TabView*)tabView {
