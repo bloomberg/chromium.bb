@@ -14,22 +14,22 @@
 #include "base/string16.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "chrome/browser/importer/profile_import_process_client.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/utility_process_host.h"
 
 class ExternalProcessImporterHost;
 class InProcessImporterBridge;
-class ProfileImportProcessHost;
+class UtilityProcessHost;
 
 namespace history {
 class URLRow;
 struct ImportedFaviconUsage;
 }
 
-// This class is the client for the ProfileImportProcessHost.  It collects
-// notifications from this process host and feeds data back to the importer
-// host, who actually does the writing.
-class ExternalProcessImporterClient : public ProfileImportProcessClient {
+// This class is the client for the out of process profile importing.  It
+// collects notifications from this process host and feeds data back to the
+// importer host, who actually does the writing.
+class ExternalProcessImporterClient : public UtilityProcessHost::Client {
  public:
   ExternalProcessImporterClient(ExternalProcessImporterHost* importer_host,
                                 const importer::SourceProfile& source_profile,
@@ -49,63 +49,38 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
   // Launches the task to start the external process.
   virtual void Start();
 
-  // Creates a new ProfileImportProcessHost, which launches the import process.
+  // Creates a new UtilityProcessHost, which launches the import process.
   virtual void StartProcessOnIOThread(BrowserThread::ID thread_id);
 
   // Called by the ExternalProcessImporterHost on import cancel.
   virtual void Cancel();
 
-  // Begin ProfileImportProcessHost::ImportProcessClient implementation.
-  virtual void OnProcessCrashed(int exit_status) OVERRIDE;
-  virtual void OnImportStart() OVERRIDE;
-  virtual void OnImportFinished(bool succeeded,
-                                const std::string& error_msg) OVERRIDE;
-  virtual void OnImportItemStart(int item) OVERRIDE;
-  virtual void OnImportItemFinished(int item) OVERRIDE;
+  // UtilityProcessHost::Client implementation:
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // Called on first message received when importing history; gives total
-  // number of rows to be imported.
-  virtual void OnHistoryImportStart(size_t total_history_rows_count) OVERRIDE;
-
-  // Called when a group of URLRows has been received.
-  virtual void OnHistoryImportGroup(
+  // Message handlers
+  void OnImportStart();
+  void OnImportFinished(bool succeeded, const std::string& error_msg);
+  void OnImportItemStart(int item);
+  void OnImportItemFinished(int item);
+  void OnHistoryImportStart(size_t total_history_rows_count);
+  void OnHistoryImportGroup(
       const std::vector<history::URLRow>& history_rows_group,
-      int visit_source) OVERRIDE;
-
-  // Called when the home page has been received.
-  virtual void OnHomePageImportReady(const GURL& home_page) OVERRIDE;
-
-  // First message received when importing bookmarks.
-  // |first_folder_name| can be NULL.
-  // |total_bookmarks_count| is the total number of bookmarks to be imported.
-  virtual void OnBookmarksImportStart(const string16& first_folder_name,
-                                      size_t total_bookmarks_count) OVERRIDE;
-
-  // Called when a group of bookmarks has been received.
-  virtual void OnBookmarksImportGroup(
-      const std::vector<ProfileWriter::BookmarkEntry>& bookmarks_group)
-          OVERRIDE;
-
-  // First message received when importing favicons. |total_favicons_size|
-  // gives the total number of favicons to be imported.
-  virtual void OnFaviconsImportStart(size_t total_favicons_count) OVERRIDE;
-
-  // Called when a group of favicons has been received.
-  virtual void OnFaviconsImportGroup(
-      const std::vector<history::ImportedFaviconUsage>& favicons_group)
-          OVERRIDE;
-
-  // Called when the passwordform has been received.
-  virtual void OnPasswordFormImportReady(
-      const webkit_glue::PasswordForm& form) OVERRIDE;
-
-  // Called when search engines have been received.
-  virtual void OnKeywordsImportReady(
+      int visit_source);
+  void OnHomePageImportReady(const GURL& home_page);
+  void OnBookmarksImportStart(const string16& first_folder_name,
+                                      size_t total_bookmarks_count);
+  void OnBookmarksImportGroup(
+      const std::vector<ProfileWriter::BookmarkEntry>& bookmarks_group);
+  void OnFaviconsImportStart(size_t total_favicons_count);
+  void OnFaviconsImportGroup(
+      const std::vector<history::ImportedFaviconUsage>& favicons_group);
+  void OnPasswordFormImportReady(const webkit_glue::PasswordForm& form);
+  void OnKeywordsImportReady(
       const std::vector<TemplateURL>& template_urls,
       int default_keyword_index,
-      bool unique_on_host_and_path) OVERRIDE;
-
-  // End ProfileImportProcessClient implementation.
+      bool unique_on_host_and_path);
 
  private:
   // These variables store data being collected from the importer until the
@@ -135,7 +110,7 @@ class ExternalProcessImporterClient : public ProfileImportProcessClient {
 
   // Handles sending messages to the external process.  Deletes itself when
   // the external process dies (see ChildProcessHost::OnChildDied).
-  ProfileImportProcessHost* profile_import_process_host_;
+  UtilityProcessHost* utility_process_host_;
 
   // Data to be passed from the importer host to the external importer.
   const importer::SourceProfile& source_profile_;

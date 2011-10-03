@@ -24,7 +24,6 @@
       'common',
       'browser',
       'debugger',
-      'profile_import',
       'plugin',
       'renderer',
       'syncapi_core',
@@ -475,18 +474,6 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-      ],
-    },
-    {
-      'target_name': 'profile_import',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'sources': [
-        'profile_import/profile_import_main.cc',
-        'profile_import/profile_import_thread.cc',
-        'profile_import/profile_import_thread.h',
       ],
     },
     {

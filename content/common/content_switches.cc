@@ -405,9 +405,6 @@ const char kRecordMode[]                    = "record-mode";
 // renderer or plugin host.  If it's empty, it's the browser.
 const char kProcessType[]                   = "type";
 
-// Causes the process to run as a profile import subprocess.
-const char kProfileImportProcess[]          = "profile-import";
-
 // Register Pepper plugins (see pepper_plugin_registry.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 

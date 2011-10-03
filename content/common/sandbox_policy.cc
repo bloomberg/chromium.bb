@@ -426,8 +426,9 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     VLOG(1) << "GPU sandbox is disabled";
   }
 
-  if (browser_command_line.HasSwitch(switches::kNoSandbox)) {
-    // The user has explicity opted-out from all sandboxing.
+  if (browser_command_line.HasSwitch(switches::kNoSandbox) ||
+      cmd_line->HasSwitch(switches::kNoSandbox)) {
+    // The user or the caller has explicity opted-out from all sandboxing.
     in_sandbox = false;
   }
 

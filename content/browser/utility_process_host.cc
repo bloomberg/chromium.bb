@@ -124,7 +124,7 @@ bool UtilityProcessHost::StartProcess() {
       exposed_dir_,
 #elif defined(OS_POSIX)
       false,
-      base::environment_vector(),
+      env_,
 #endif
       cmd_line);
 

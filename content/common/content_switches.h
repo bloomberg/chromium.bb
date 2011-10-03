@@ -130,8 +130,6 @@ extern const char kPpapiStartupDialog[];
 extern const char kProcessPerSite[];
 CONTENT_EXPORT extern const char kProcessPerTab[];
 CONTENT_EXPORT extern const char kProcessType[];
-// TODO(jam): this doesn't belong in content.
-extern const char kProfileImportProcess[];
 CONTENT_EXPORT extern const char kRecordMode[];
 extern const char kRegisterPepperPlugins[];
 CONTENT_EXPORT extern const char kRemoteShellPort[];

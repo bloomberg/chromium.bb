@@ -7,6 +7,10 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/threading/thread.h"
+#include "chrome/browser/importer/external_process_importer_bridge.h"
+#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/profile_import_process_messages.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -35,7 +39,7 @@
 
 namespace chrome {
 
-ChromeContentUtilityClient::ChromeContentUtilityClient() {
+ChromeContentUtilityClient::ChromeContentUtilityClient() : items_to_import_(0) {
 }
 
 ChromeContentUtilityClient::~ChromeContentUtilityClient() {
@@ -75,6 +79,12 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
+    IPC_MESSAGE_HANDLER(ProfileImportProcessMsg_StartImport,
+                        OnImportStart)
+    IPC_MESSAGE_HANDLER(ProfileImportProcessMsg_CancelImport,
+                        OnImportCancel)
+    IPC_MESSAGE_HANDLER(ProfileImportProcessMsg_ReportImportItemFinished,
+                        OnImportItemFinished)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -353,6 +363,57 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(
         printer_name));
   }
+  UtilityThread::current()->ReleaseProcessIfNeeded();
+}
+
+void ChromeContentUtilityClient::OnImportStart(
+    const importer::SourceProfile& source_profile,
+    uint16 items,
+    const DictionaryValue& localized_strings) {
+  bridge_ = new ExternalProcessImporterBridge(localized_strings);
+  importer_ = importer::CreateImporterByType(source_profile.importer_type);
+  if (!importer_) {
+    Send(new ProfileImportProcessHostMsg_Import_Finished(false,
+        "Importer could not be created."));
+    return;
+  }
+
+  items_to_import_ = items;
+
+  // Create worker thread in which importer runs.
+  import_thread_.reset(new base::Thread("import_thread"));
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_IO;
+  if (!import_thread_->StartWithOptions(options)) {
+    NOTREACHED();
+    ImporterCleanup();
+  }
+  import_thread_->message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(importer_.get(),
+                                   &Importer::StartImport,
+                                   source_profile,
+                                   items,
+                                   bridge_));
+}
+
+void ChromeContentUtilityClient::OnImportCancel() {
+  ImporterCleanup();
+}
+
+void ChromeContentUtilityClient::OnImportItemFinished(uint16 item) {
+  items_to_import_ ^= item;  // Remove finished item from mask.
+  // If we've finished with all items, notify the browser process.
+  if (items_to_import_ == 0) {
+    Send(new ProfileImportProcessHostMsg_Import_Finished(true, ""));
+    ImporterCleanup();
+  }
+}
+
+void ChromeContentUtilityClient::ImporterCleanup() {
+  importer_->Cancel();
+  importer_ = NULL;
+  bridge_ = NULL;
+  import_thread_.reset();
   UtilityThread::current()->ReleaseProcessIfNeeded();
 }
 

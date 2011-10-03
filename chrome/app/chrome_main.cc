@@ -102,7 +102,6 @@ base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client(base::LINKER_INITIALIZED);
 
 extern int NaClMain(const MainFunctionParams&);
-extern int ProfileImportMain(const MainFunctionParams&);
 extern int ServiceProcessMain(const MainFunctionParams&);
 
 #if defined(OS_WIN)
@@ -226,9 +225,6 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
              process_type == switches::kGpuProcess ||
              process_type == switches::kServiceProcess) {
     score = kMiscScore;
-  } else if (process_type == switches::kProfileImportProcess) {
-    NOTIMPLEMENTED();
-    score = kZygoteScore;
 #ifndef DISABLE_NACL
   } else if (process_type == switches::kNaClLoaderProcess) {
     score = kPluginScore;
@@ -655,8 +651,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       { switches::kExtensionProcess,   RendererMain },
       { switches::kServiceProcess,     ServiceProcessMain },
 #if defined(OS_MACOSX)
-      // TODO(port): Use OOP profile import - http://crbug.com/22142 .
-      { switches::kProfileImportProcess, ProfileImportMain },
       { switches::kRelauncherProcess,
             mac_relauncher::internal::RelauncherMain },
 #endif

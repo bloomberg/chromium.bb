@@ -15,7 +15,10 @@
 #include "chrome/browser/importer/profile_writer.h"
 
 class GURL;
-class ProfileImportThread;
+
+namespace IPC {
+class Message;
+}
 
 namespace base {
 class DictionaryValue;
@@ -28,8 +31,8 @@ class DictionaryValue;
 // profile.
 class ExternalProcessImporterBridge : public ImporterBridge {
  public:
-  ExternalProcessImporterBridge(ProfileImportThread* profile_import_thread,
-                                const base::DictionaryValue& localized_strings);
+  explicit ExternalProcessImporterBridge(
+      const base::DictionaryValue& localized_strings);
 
   // Begin ImporterBridge implementation:
   virtual void AddBookmarks(
@@ -66,8 +69,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
  private:
   virtual ~ExternalProcessImporterBridge();
 
-  // Call back to send data and messages across IPC.
-  ProfileImportThread* const profile_import_thread_;
+  bool Send(IPC::Message* message);
 
   // Holds strings needed by the external importer because the resource
   // bundle isn't available to the external process.

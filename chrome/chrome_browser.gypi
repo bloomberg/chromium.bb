@@ -19,7 +19,6 @@
         'in_memory_url_index_cache_proto',
         'installer_util',
         'platform_locale_settings',
-        'profile_import',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         # TODO(sync): Make browser not depend on syncapi_core directly.
@@ -1406,10 +1405,6 @@
         'browser/importer/nss_decryptor_system_nss.h',
         'browser/importer/nss_decryptor_win.cc',
         'browser/importer/nss_decryptor_win.h',
-        'browser/importer/profile_import_process_client.cc',
-        'browser/importer/profile_import_process_client.h',
-        'browser/importer/profile_import_process_host.cc',
-        'browser/importer/profile_import_process_host.h',
         'browser/importer/profile_import_process_messages.cc',
         'browser/importer/profile_import_process_messages.h',
         'browser/importer/profile_writer.cc',
