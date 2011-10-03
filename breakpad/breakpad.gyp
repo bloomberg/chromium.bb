@@ -390,7 +390,9 @@
             'src/client/linux/minidump_writer/minidump_writer_unittest.cc',
             'src/common/linux/file_id_unittest.cc',
             'src/common/linux/linux_libc_support_unittest.cc',
+            'src/common/linux/synth_elf.cc',
             'src/common/memory_unittest.cc',
+            'src/common/test_assembler.cc',
           ],
 
           'include_dirs': [

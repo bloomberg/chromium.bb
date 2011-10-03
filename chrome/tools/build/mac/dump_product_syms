@@ -105,9 +105,12 @@ for SRC_NAME in "${SRC_NAMES[@]}"; do
   BPAD_SYM_NAME="${SRC_NAME}-${FULL_VERSION}-${ARCH}.breakpad"
   BPAD_SYM_PATH="${BUILT_PRODUCTS_DIR}/${BPAD_SYM_NAME}"
 
-  # Only run dump_syms if the file has changed since the last dump.
+  # Only run dump_syms if the file has changed since the last dump. Use -c to
+  # avoid dumping CFI, because the Breakpad stackwalk is incompatible with CFI
+  # produced by clang.
+  # http://code.google.com/p/google-breakpad/issues/detail?id=443
   if [ "${DWARF_PATH}" -nt "${BPAD_SYM_PATH}" ] ; then
-    "${BREAKPAD_DUMP_SYMS}" -a "${ARCH}" "${DWARF_PATH}" > "${BPAD_SYM_PATH}"
+    "${BREAKPAD_DUMP_SYMS}" -a "${ARCH}" -c "${DWARF_PATH}" > "${BPAD_SYM_PATH}"
   fi
 
   # Some executables will show up with variant names. The Breakpad symbol

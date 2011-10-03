@@ -1,4 +1,4 @@
-// Copyright (c) 2010 Google Inc.
+// Copyright (c) 2011 Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <ostream>
+#include <iostream>
+#include <utility>
 
 namespace google_breakpad {
 
@@ -56,16 +57,17 @@ Module::Module(const string &name, const string &os,
     load_address_(0) { }
 
 Module::~Module() {
-  for (FileByNameMap::iterator it = files_.begin(); it != files_.end(); it++)
+  for (FileByNameMap::iterator it = files_.begin(); it != files_.end(); ++it)
     delete it->second;
   for (FunctionSet::iterator it = functions_.begin();
-       it != functions_.end(); it++)
+       it != functions_.end(); ++it) {
     delete *it;
+  }
   for (vector<StackFrameEntry *>::iterator it = stack_frame_entries_.begin();
-       it != stack_frame_entries_.end(); it++)
+       it != stack_frame_entries_.end(); ++it) {
     delete *it;
-  for (ExternSet::iterator it = externs_.begin();
-       it != externs_.end(); it++)
+  }
+  for (ExternSet::iterator it = externs_.begin(); it != externs_.end(); ++it)
     delete *it;
 }
 
@@ -84,7 +86,7 @@ void Module::AddFunction(Function *function) {
 
 void Module::AddFunctions(vector<Function *>::iterator begin,
                           vector<Function *>::iterator end) {
-  for (vector<Function *>::iterator it = begin; it != end; it++)
+  for (vector<Function *>::iterator it = begin; it != end; ++it)
     AddFunction(*it);
 }
 
@@ -146,7 +148,7 @@ Module::File *Module::FindExistingFile(const string &name) {
 
 void Module::GetFiles(vector<File *> *vec) {
   vec->clear();
-  for (FileByNameMap::iterator it = files_.begin(); it != files_.end(); it++)
+  for (FileByNameMap::iterator it = files_.begin(); it != files_.end(); ++it)
     vec->push_back(it->second);
 }
 
@@ -157,16 +159,17 @@ void Module::GetStackFrameEntries(vector<StackFrameEntry *> *vec) {
 void Module::AssignSourceIds() {
   // First, give every source file an id of -1.
   for (FileByNameMap::iterator file_it = files_.begin();
-       file_it != files_.end(); file_it++)
+       file_it != files_.end(); ++file_it) {
     file_it->second->source_id = -1;
+  }
 
   // Next, mark all files actually cited by our functions' line number
   // info, by setting each one's source id to zero.
   for (FunctionSet::const_iterator func_it = functions_.begin();
-       func_it != functions_.end(); func_it++) {
+       func_it != functions_.end(); ++func_it) {
     Function *func = *func_it;
     for (vector<Line>::iterator line_it = func->lines.begin();
-         line_it != func->lines.end(); line_it++)
+         line_it != func->lines.end(); ++line_it)
       line_it->file->source_id = 0;
   }
 
@@ -176,9 +179,10 @@ void Module::AssignSourceIds() {
   // lexicographical order by name, which is neat.
   int next_source_id = 0;
   for (FileByNameMap::iterator file_it = files_.begin();
-       file_it != files_.end(); file_it++)
+       file_it != files_.end(); ++file_it) {
     if (!file_it->second->source_id)
       file_it->second->source_id = next_source_id++;
+  }
 }
 
 bool Module::ReportError() {
@@ -189,7 +193,7 @@ bool Module::ReportError() {
 
 bool Module::WriteRuleMap(const RuleMap &rule_map, std::ostream &stream) {
   for (RuleMap::const_iterator it = rule_map.begin();
-       it != rule_map.end(); it++) {
+       it != rule_map.end(); ++it) {
     if (it != rule_map.begin())
       stream << ' ';
     stream << it->first << ": " << it->second;
@@ -197,7 +201,7 @@ bool Module::WriteRuleMap(const RuleMap &rule_map, std::ostream &stream) {
   return stream.good();
 }
 
-bool Module::Write(std::ostream &stream) {
+bool Module::Write(std::ostream &stream, bool cfi) {
   stream << "MODULE " << os_ << " " << architecture_ << " "
          << id_ << " " << name_ << endl;
   if (!stream.good())
@@ -207,7 +211,7 @@ bool Module::Write(std::ostream &stream) {
 
   // Write out files.
   for (FileByNameMap::iterator file_it = files_.begin();
-       file_it != files_.end(); file_it++) {
+       file_it != files_.end(); ++file_it) {
     File *file = file_it->second;
     if (file->source_id >= 0) {
       stream << "FILE " << file->source_id << " " <<  file->name << endl;
@@ -218,7 +222,7 @@ bool Module::Write(std::ostream &stream) {
 
   // Write out functions and their lines.
   for (FunctionSet::const_iterator func_it = functions_.begin();
-       func_it != functions_.end(); func_it++) {
+       func_it != functions_.end(); ++func_it) {
     Function *func = *func_it;
     assert(!func->name.empty());
     stream << "FUNC " << hex
@@ -226,11 +230,11 @@ bool Module::Write(std::ostream &stream) {
            << func->size << " "
            << func->parameter_size << " "
            << func->name << dec << endl;
-      
+
     if (!stream.good())
       return ReportError();
     for (vector<Line>::iterator line_it = func->lines.begin();
-         line_it != func->lines.end(); line_it++) {
+         line_it != func->lines.end(); ++line_it) {
       stream << hex
              << (line_it->address - load_address_) << " "
              << line_it->size << " "
@@ -244,7 +248,7 @@ bool Module::Write(std::ostream &stream) {
 
   // Write out 'PUBLIC' records.
   for (ExternSet::const_iterator extern_it = externs_.begin();
-       extern_it != externs_.end(); extern_it++) {
+       extern_it != externs_.end(); ++extern_it) {
     Extern *ext = *extern_it;
     stream << "PUBLIC " << hex
            << (ext->address - load_address_) << " 0 "
@@ -253,39 +257,36 @@ bool Module::Write(std::ostream &stream) {
       return ReportError();
   }
 
-#if 0
-  // Bypass all of the "STACK CFI" stuff for the time being to work around
-  // http://code.google.com/p/google-breakpad/issues/detail?id=443.
-  // This should be fine as long as -fomit-frame-pointer is not in use.
-  // Write out 'STACK CFI INIT' and 'STACK CFI' records.
-  vector<StackFrameEntry *>::const_iterator frame_it;
-  for (frame_it = stack_frame_entries_.begin();
-       frame_it != stack_frame_entries_.end(); frame_it++) {
-    StackFrameEntry *entry = *frame_it;
-    stream << "STACK CFI INIT " << hex
-           << (entry->address - load_address_) << " "
-           << entry->size << " " << dec;
-    if (!stream.good()
-        || !WriteRuleMap(entry->initial_rules, stream))
-      return ReportError();
-
-    stream << endl;
-
-    // Write out this entry's delta rules as 'STACK CFI' records.
-    for (RuleChangeMap::const_iterator delta_it = entry->rule_changes.begin();
-         delta_it != entry->rule_changes.end(); delta_it++) {
-      stream << "STACK CFI " << hex
-             << (delta_it->first - load_address_) << " " << dec;
+  if (cfi) {
+    // Write out 'STACK CFI INIT' and 'STACK CFI' records.
+    vector<StackFrameEntry *>::const_iterator frame_it;
+    for (frame_it = stack_frame_entries_.begin();
+         frame_it != stack_frame_entries_.end(); ++frame_it) {
+      StackFrameEntry *entry = *frame_it;
+      stream << "STACK CFI INIT " << hex
+             << (entry->address - load_address_) << " "
+             << entry->size << " " << dec;
       if (!stream.good()
-          || !WriteRuleMap(delta_it->second, stream))
+          || !WriteRuleMap(entry->initial_rules, stream))
         return ReportError();
 
       stream << endl;
+
+      // Write out this entry's delta rules as 'STACK CFI' records.
+      for (RuleChangeMap::const_iterator delta_it = entry->rule_changes.begin();
+           delta_it != entry->rule_changes.end(); ++delta_it) {
+        stream << "STACK CFI " << hex
+               << (delta_it->first - load_address_) << " " << dec;
+        if (!stream.good()
+            || !WriteRuleMap(delta_it->second, stream))
+          return ReportError();
+
+        stream << endl;
+      }
     }
   }
-#endif
 
   return true;
 }
 
-} // namespace google_breakpad
+}  // namespace google_breakpad
