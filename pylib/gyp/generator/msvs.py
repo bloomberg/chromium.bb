@@ -1013,7 +1013,7 @@ def _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config):
               defines)
   # Change program database directory to prevent collisions.
   _ToolAppend(tools, 'VCCLCompilerTool', 'ProgramDataBaseFileName',
-              '$(IntDir)\\$(ProjectName)\\vc80.pdb')
+              '$(IntDir)\\$(ProjectName)\\vc80.pdb', only_if_unset=True)
   # Add disabled warnings.
   _ToolAppend(tools, 'VCCLCompilerTool',
               'DisableSpecificWarnings', disabled_warnings)
