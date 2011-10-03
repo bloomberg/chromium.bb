@@ -26,6 +26,7 @@ class WebDragDestGtkTest : public ChromeRenderViewHostTestHarness {
 TEST_F(WebDragDestGtkTest, NoTabContentsWrapper) {
   scoped_ptr<TestTabContents> tab_contents(CreateTestTabContents());
   GtkWidget* widget = gtk_button_new();
+  g_object_ref_sink(widget);
   scoped_ptr<WebDragDestGtk> drag_dest(
       new WebDragDestGtk(tab_contents.get(), widget));
 
@@ -54,5 +55,5 @@ TEST_F(WebDragDestGtkTest, NoTabContentsWrapper) {
   drag_dest->OnDragMotion(widget, &context, 0, 0, 0);  // x, y, time
 
   drag_dest.reset();
-  gtk_widget_destroy(widget);
+  g_object_unref(widget);
 }
