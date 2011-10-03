@@ -32,8 +32,11 @@
 #if DEBUG
   #define PRINT_MACH_RESULT(result_, message_) \
     printf(message_"%s (%d)\n", mach_error_string(result_), result_ );
+  #define PRINT_BOOTSTRAP_RESULT(result_, message_) \
+    printf(message_"%s (%d)\n", bootstrap_strerror(result_), result_ );
 #else
   #define PRINT_MACH_RESULT(result_, message_)
+  #define PRINT_BOOTSTRAP_RESULT(result_, message_)
 #endif
 
 //==============================================================================
@@ -67,15 +70,29 @@ kern_return_t OnDemandServer::Initialize(const char *server_command,
                                          bool unregister_on_cleanup) {
   unregister_on_cleanup_ = unregister_on_cleanup;
 
-  kern_return_t kr =
-    bootstrap_create_server(bootstrap_port,
-                            const_cast<char*>(server_command),
-                            geteuid(),       // server uid
-                            true,
-                            &server_port_);
+  mach_port_t self_task = mach_task_self();
 
+  mach_port_t bootstrap_port;
+  kern_return_t kr = task_get_bootstrap_port(self_task, &bootstrap_port);
   if (kr != KERN_SUCCESS) {
-    PRINT_MACH_RESULT(kr, "bootstrap_create_server() : ");
+    PRINT_MACH_RESULT(kr, "task_get_bootstrap_port(): ");
+    return kr;
+  }
+
+  mach_port_t bootstrap_subset_port;
+  kr = bootstrap_subset(bootstrap_port, self_task, &bootstrap_subset_port);
+  if (kr != KERN_SUCCESS) {
+    PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_subset(): ");
+    return kr;
+  }
+
+  kr = bootstrap_create_server(bootstrap_subset_port,
+                               const_cast<char*>(server_command),
+                               geteuid(),       // server uid
+                               true,
+                               &server_port_);
+  if (kr != KERN_SUCCESS) {
+    PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_create_server(): ");
     return kr;
   }
 
@@ -86,15 +103,14 @@ kern_return_t OnDemandServer::Initialize(const char *server_command,
   kr = bootstrap_create_service(server_port_,
                                 const_cast<char*>(service_name),
                                 &service_port_);
-
   if (kr != KERN_SUCCESS) {
-    PRINT_MACH_RESULT(kr, "bootstrap_create_service() : ");
+    PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_create_service(): ");
 
     // perhaps the service has already been created - try to look it up
     kr = bootstrap_look_up(bootstrap_port, (char*)service_name, &service_port_);
 
     if (kr != KERN_SUCCESS) {
-      PRINT_MACH_RESULT(kr, "bootstrap_look_up() : ");
+      PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_look_up(): ");
       Unregister();  // clean up server port
       return kr;
     }
