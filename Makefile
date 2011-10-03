@@ -7,6 +7,7 @@ OBJDIR = obj
 OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter.o \
 	$(OBJDIR)/activity_log.o \
+	$(OBJDIR)/activity_replay.o \
 	$(OBJDIR)/gestures.o \
 	$(OBJDIR)/immediate_interpreter.o \
 	$(OBJDIR)/integral_gesture_filter_interpreter.o \
