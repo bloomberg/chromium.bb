@@ -1,16 +1,17 @@
-Index: mozilla/security/nss/lib/ssl/sslsecur.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslsecur.c,v
-retrieving revision 1.43.2.4
-diff -p -u -8 -r1.43.2.4 sslsecur.c
---- mozilla/security/nss/lib/ssl/sslsecur.c	8 Apr 2011 05:25:21 -0000	1.43.2.4
-+++ mozilla/security/nss/lib/ssl/sslsecur.c	4 Aug 2011 23:33:46 -0000
-@@ -383,16 +383,28 @@ SSL_ForceHandshake(PRFileDesc *fd)
- 		 SSL_GETPID(), fd));
- 	return rv;
-     }
- 
-     /* Don't waste my time */
+From eb24998651cb972c60453b5d5fb1e13dfd8107ce Mon Sep 17 00:00:00 2001
+From: Adam Langley <agl@chromium.org>
+Date: Mon, 3 Oct 2011 12:26:44 -0400
+Subject: [PATCH] handshakeshortwrite.patch
+
+---
+ mozilla/security/nss/lib/ssl/sslsecur.c |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
+
+diff --git a/mozilla/security/nss/lib/ssl/sslsecur.c b/mozilla/security/nss/lib/ssl/sslsecur.c
+index 816b8f6..dc374e0 100644
+--- a/mozilla/security/nss/lib/ssl/sslsecur.c
++++ b/mozilla/security/nss/lib/ssl/sslsecur.c
+@@ -388,6 +388,18 @@ SSL_ForceHandshake(PRFileDesc *fd)
      if (!ss->opt.useSecurity) 
      	return SECSuccess;
  
@@ -29,17 +30,7 @@ diff -p -u -8 -r1.43.2.4 sslsecur.c
      ssl_Get1stHandshakeLock(ss);
  
      if (ss->version >= SSL_LIBRARY_VERSION_3_0) {
- 	int gatherResult;
- 
-     	ssl_GetRecvBufLock(ss);
- 	gatherResult = ssl3_GatherCompleteHandshake(ss, 0);
- 	ssl_ReleaseRecvBufLock(ss);
-@@ -1132,17 +1144,16 @@ ssl_SecureRecv(sslSocket *ss, unsigned c
-     if (!ssl_SocketIsBlocking(ss) && !ss->opt.fdx) {
- 	ssl_GetXmitBufLock(ss);
- 	if (ss->pendingBuf.len != 0) {
- 	    rv = ssl_SendSavedWriteData(ss);
- 	    if ((rv < 0) && (PORT_GetError() != PR_WOULD_BLOCK_ERROR)) {
+@@ -1128,7 +1140,6 @@ ssl_SecureRecv(sslSocket *ss, unsigned char *buf, int len, int flags)
  		ssl_ReleaseXmitBufLock(ss);
  		return SECFailure;
  	    }
@@ -47,8 +38,3 @@ diff -p -u -8 -r1.43.2.4 sslsecur.c
  	}
  	ssl_ReleaseXmitBufLock(ss);
      }
-     
-     rv = 0;
-     /* If any of these is non-zero, the initial handshake is not done. */
-     if (!ss->firstHsDone) {
- 	ssl_Get1stHandshakeLock(ss);

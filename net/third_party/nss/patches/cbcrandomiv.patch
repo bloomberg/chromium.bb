@@ -1,16 +1,17 @@
-Index: mozilla/security/nss/lib/ssl/ssl3con.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/ssl/ssl3con.c,v
-retrieving revision 1.151
-diff -u -p -8 -r1.151 ssl3con.c
---- mozilla/security/nss/lib/ssl/ssl3con.c	26 Jul 2011 02:13:37 -0000	1.151
-+++ mozilla/security/nss/lib/ssl/ssl3con.c	29 Sep 2011 17:39:16 -0000
-@@ -2032,56 +2032,56 @@ ssl3_ClientAuthTokenPresent(sslSessionID
- 	isPresent = PR_FALSE;
-     } 
-     if (slot) {
- 	PK11_FreeSlot(slot);
-     }
+From 03c5c660f3668ed1e9c9b6277d64c96d2ab3d890 Mon Sep 17 00:00:00 2001
+From: Adam Langley <agl@chromium.org>
+Date: Mon, 3 Oct 2011 12:23:29 -0400
+Subject: [PATCH] cbcrandomiv.patch
+
+---
+ mozilla/security/nss/lib/ssl/ssl3con.c |   96 +++++++++++++++++++++++---------
+ 1 files changed, 69 insertions(+), 27 deletions(-)
+
+diff --git a/mozilla/security/nss/lib/ssl/ssl3con.c b/mozilla/security/nss/lib/ssl/ssl3con.c
+index dd99962..2648cbe 100644
+--- a/mozilla/security/nss/lib/ssl/ssl3con.c
++++ b/mozilla/security/nss/lib/ssl/ssl3con.c
+@@ -2039,24 +2039,24 @@ ssl3_ClientAuthTokenPresent(sslSessionID *sid) {
      return isPresent;
  }
  
@@ -42,16 +43,7 @@ diff -u -p -8 -r1.151 ssl3con.c
      cipher_def = cwSpec->cipher_def;
  
      if (cwSpec->compressor) {
- 	int outlen;
- 	rv = cwSpec->compressor(
- 	    cwSpec->compressContext, wrBuf->buf + SSL3_RECORD_HEADER_LENGTH,
- 	    &outlen, wrBuf->space - SSL3_RECORD_HEADER_LENGTH, pIn, contentLen);
- 	if (rv != SECSuccess)
- 	    return rv;
- 	pIn = wrBuf->buf + SSL3_RECORD_HEADER_LENGTH;
- 	contentLen = outlen;
-     }
- 
+@@ -2073,12 +2073,12 @@ ssl3_CompressMACEncryptRecord(sslSocket *        ss,
      /*
       * Add the MAC
       */
@@ -66,17 +58,7 @@ diff -u -p -8 -r1.151 ssl3con.c
      }
      p1Len   = contentLen;
      p2Len   = macLen;
-     fragLen = contentLen + macLen;	/* needs to be encrypted */
-     PORT_Assert(fragLen <= MAX_FRAGMENT_LENGTH + 1024);
- 
-     /*
-      * Pad the text (if we're doing a block cipher)
-@@ -2124,52 +2124,46 @@ ssl3_CompressMACEncryptRecord(sslSocket 
- 	rv = cwSpec->encode( cwSpec->encodeContext, 
- 	    wrBuf->buf + SSL3_RECORD_HEADER_LENGTH, /* output */
- 	    &cipherBytes,                           /* actual outlen */
- 	    p1Len,                                  /* max outlen */
- 	    pIn, p1Len);                      /* input, and inputlen */
+@@ -2131,7 +2131,7 @@ ssl3_CompressMACEncryptRecord(sslSocket *        ss,
  	PORT_Assert(rv == SECSuccess && cipherBytes == p1Len);
  	if (rv != SECSuccess || cipherBytes != p1Len) {
  	    PORT_SetError(SSL_ERROR_ENCRYPTION_FAILURE);
@@ -85,13 +67,7 @@ diff -u -p -8 -r1.151 ssl3con.c
  	}
      }
      if (p2Len > 0) {
- 	PRInt32 cipherBytesPart2 = -1;
- 	rv = cwSpec->encode( cwSpec->encodeContext, 
- 	    wrBuf->buf + SSL3_RECORD_HEADER_LENGTH + p1Len,
- 	    &cipherBytesPart2,          /* output and actual outLen */
- 	    p2Len,                             /* max outlen */
- 	    wrBuf->buf + SSL3_RECORD_HEADER_LENGTH + p1Len,
- 	    p2Len);                            /* input and inputLen*/
+@@ -2145,7 +2145,7 @@ ssl3_CompressMACEncryptRecord(sslSocket *        ss,
  	PORT_Assert(rv == SECSuccess && cipherBytesPart2 == p2Len);
  	if (rv != SECSuccess || cipherBytesPart2 != p2Len) {
  	    PORT_SetError(SSL_ERROR_ENCRYPTION_FAILURE);
@@ -100,14 +76,7 @@ diff -u -p -8 -r1.151 ssl3con.c
  	}
  	cipherBytes += cipherBytesPart2;
      }	
-     PORT_Assert(cipherBytes <= MAX_FRAGMENT_LENGTH + 1024);
- 
-     ssl3_BumpSequenceNumber(&cwSpec->write_seq_num);
- 
-     wrBuf->len    = cipherBytes + SSL3_RECORD_HEADER_LENGTH;
-     wrBuf->buf[0] = type;
-     wrBuf->buf[1] = MSB(cwSpec->version);
-     wrBuf->buf[2] = LSB(cwSpec->version);
+@@ -2160,13 +2160,7 @@ ssl3_CompressMACEncryptRecord(sslSocket *        ss,
      wrBuf->buf[3] = MSB(cipherBytes);
      wrBuf->buf[4] = LSB(cipherBytes);
  
@@ -121,17 +90,7 @@ diff -u -p -8 -r1.151 ssl3con.c
  }
  
  /* Process the plain text before sending it.
-  * Returns the number of bytes of plaintext that were successfully sent
-  * 	plus the number of bytes of plaintext that were copied into the
-  *	output (write) buffer.
-  * Returns SECFailure on a hard IO error, memory error, or crypto error.
-  * Does NOT return SECWouldBlock.
-@@ -2220,39 +2214,87 @@ ssl3_SendRecord(   sslSocket *        ss
-     /* check for Token Presence */
-     if (!ssl3_ClientAuthTokenPresent(ss->sec.ci.sid)) {
- 	PORT_SetError(SSL_ERROR_TOKEN_INSERTION_REMOVAL);
- 	return SECFailure;
-     }
+@@ -2227,20 +2221,70 @@ ssl3_SendRecord(   sslSocket *        ss,
  
      while (nIn > 0) {
  	PRUint32  contentLen = PR_MIN(nIn, MAX_FRAGMENT_LENGTH);
@@ -166,9 +125,10 @@ diff -u -p -8 -r1.151 ssl3con.c
 -		return SECFailure; /* sslBuffer_Grow set a memory error code. */
 +			 SSL_GETPID(), ss->fd, spaceNeeded));
 +		goto spec_locked_loser; /* sslBuffer_Grow set a memory error code. */
-+	    }
-+	}
-+
+ 	    }
+ 	}
+ 
+-	rv = ssl3_CompressMACEncryptRecord( ss, type, pIn, contentLen);
 +	if (numRecords == 2) {
 +	    sslBuffer secondRecord;
 +
@@ -200,17 +160,16 @@ diff -u -p -8 -r1.151 ssl3con.c
 +	    if (rv == SECSuccess) {
 +	        PRINT_BUF(50, (ss, "send (encrypted) record data [1/1]:",
 +	                       wrBuf->buf, wrBuf->len));
- 	    }
- 	}
- 
--	rv = ssl3_CompressMACEncryptRecord( ss, type, pIn, contentLen);
++	    }
++	}
++
 +spec_locked_loser:
 +	ssl_ReleaseSpecReadLock(ss); /************************************/
 +
  	if (rv != SECSuccess)
  	    return SECFailure;
  
- 	pIn += contentLen;
+@@ -2248,8 +2292,6 @@ ssl3_SendRecord(   sslSocket *        ss,
  	nIn -= contentLen;
  	PORT_Assert( nIn >= 0 );
  
@@ -219,8 +178,3 @@ diff -u -p -8 -r1.151 ssl3con.c
  	/* If there's still some previously saved ciphertext,
  	 * or the caller doesn't want us to send the data yet,
  	 * then add all our new ciphertext to the amount previously saved.
- 	 */
- 	if ((ss->pendingBuf.len > 0) ||
- 	    (flags & ssl_SEND_FLAG_FORCE_INTO_BUFFER)) {
- 
- 	    rv = ssl_SaveWriteData(ss, wrBuf->buf, wrBuf->len);

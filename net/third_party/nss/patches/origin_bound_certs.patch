@@ -1,11 +1,18 @@
-commit b5f89535668edebf59ac8186457d117572c05f2b
-Author: Adam Langley <agl@chromium.org>
-Date:   Thu Jul 21 10:26:36 2011 -0400
+From 68d651bb679cd9da8f162774c5dcf40aad5ae3f1 Mon Sep 17 00:00:00 2001
+From: Adam Langley <agl@chromium.org>
+Date: Mon, 3 Oct 2011 12:25:10 -0400
+Subject: [PATCH] origin_bound_certs.patch
 
-    obcerts
+---
+ mozilla/security/nss/lib/ssl/ssl.h     |    1 +
+ mozilla/security/nss/lib/ssl/ssl3ext.c |   82 +++++++++++++++++++++++++++++++-
+ mozilla/security/nss/lib/ssl/sslimpl.h |    7 +++
+ mozilla/security/nss/lib/ssl/sslsock.c |   13 +++++-
+ mozilla/security/nss/lib/ssl/sslt.h    |    5 +-
+ 5 files changed, 104 insertions(+), 4 deletions(-)
 
 diff --git a/mozilla/security/nss/lib/ssl/ssl.h b/mozilla/security/nss/lib/ssl/ssl.h
-index 5682d0a..53ca301 100644
+index c32438d..1115fa9 100644
 --- a/mozilla/security/nss/lib/ssl/ssl.h
 +++ b/mozilla/security/nss/lib/ssl/ssl.h
 @@ -142,6 +142,7 @@ SSL_IMPORT PRFileDesc *SSL_ImportFD(PRFileDesc *model, PRFileDesc *fd);
@@ -16,26 +23,8 @@ index 5682d0a..53ca301 100644
  
  #ifdef SSL_DEPRECATED_FUNCTION 
  /* Old deprecated function names */
-diff --git a/mozilla/security/nss/lib/ssl/ssl3con.c b/mozilla/security/nss/lib/ssl/ssl3con.c
-index c39b8f8..66071d2 100644
---- a/mozilla/security/nss/lib/ssl/ssl3con.c
-+++ b/mozilla/security/nss/lib/ssl/ssl3con.c
-@@ -2352,9 +2352,10 @@ ssl3_SendApplicationData(sslSocket *ss, const unsigned char *in,
-     ssl_ReleaseSpecReadLock(ss);
- 
-     if (isBlockCipher && len > 0) {
--	// We assume that block ciphers are used in CBC mode and prepend an
--	// empty record. This effectively randomizes the IV in a backwards
--	// compatible way.
-+	/* We assume that block ciphers are used in CBC mode and prepend an
-+	 * empty record. This effectively randomizes the IV in a backwards
-+	 * compatible way.
-+	 */
- 	PRInt32 sent = ssl3_SendRecord(ss, content_application_data,
- 				       in, 0 /* no payload */, flags);
- 	if (sent < 0) {
 diff --git a/mozilla/security/nss/lib/ssl/ssl3ext.c b/mozilla/security/nss/lib/ssl/ssl3ext.c
-index 79ed9e3..e54b4fd 100644
+index 17898fb..887344b 100644
 --- a/mozilla/security/nss/lib/ssl/ssl3ext.c
 +++ b/mozilla/security/nss/lib/ssl/ssl3ext.c
 @@ -237,6 +237,7 @@ static const ssl3HelloExtensionHandler clientHelloHandlers[] = {
@@ -146,10 +135,10 @@ index 79ed9e3..e54b4fd 100644
 +    return SECSuccess;
 +}
 diff --git a/mozilla/security/nss/lib/ssl/sslimpl.h b/mozilla/security/nss/lib/ssl/sslimpl.h
-index 95a1eee..df30029 100644
+index f1e9a3e..973a3c9 100644
 --- a/mozilla/security/nss/lib/ssl/sslimpl.h
 +++ b/mozilla/security/nss/lib/ssl/sslimpl.h
-@@ -350,6 +350,7 @@ typedef struct sslOptionsStr {
+@@ -341,6 +341,7 @@ typedef struct sslOptionsStr {
      unsigned int enableFalseStart       : 1;  /* 23 */
      unsigned int enableOCSPStapling     : 1;  /* 24 */
      unsigned int enableCachedInfo       : 1;  /* 25 */
@@ -157,7 +146,7 @@ index 95a1eee..df30029 100644
  } sslOptions;
  
  typedef enum { sslHandshakingUndetermined = 0,
-@@ -1573,10 +1574,14 @@ extern SECStatus ssl3_ClientHandleCachedInfoXtn(sslSocket *ss,
+@@ -1547,10 +1548,14 @@ extern SECStatus ssl3_ClientHandleCachedInfoXtn(sslSocket *ss,
  			PRUint16 ex_type, SECItem *data);
  extern SECStatus ssl3_ClientHandleStatusRequestXtn(sslSocket *ss,
  			PRUint16 ex_type, SECItem *data);
@@ -172,7 +161,7 @@ index 95a1eee..df30029 100644
  
  /* ClientHello and ServerHello extension senders.
   * Note that not all extension senders are exposed here; only those that
-@@ -1596,6 +1601,8 @@ extern PRInt32 ssl3_ClientSendCachedInfoXtn(sslSocket *ss, PRBool append,
+@@ -1570,6 +1575,8 @@ extern PRInt32 ssl3_ClientSendCachedInfoXtn(sslSocket *ss, PRBool append,
                       PRUint32 maxBytes);
  extern PRInt32 ssl3_ServerSendCachedInfoXtn(sslSocket *ss, PRBool append,
  		     PRUint32 maxBytes);
@@ -182,7 +171,7 @@ index 95a1eee..df30029 100644
  /* Assigns new cert, cert chain and keys to ss->serverCerts
   * struct. If certChain is NULL, tries to find one. Aborts if
 diff --git a/mozilla/security/nss/lib/ssl/sslsock.c b/mozilla/security/nss/lib/ssl/sslsock.c
-index 340d17c..68fd3cb 100644
+index 11b53da..7d12bfe 100644
 --- a/mozilla/security/nss/lib/ssl/sslsock.c
 +++ b/mozilla/security/nss/lib/ssl/sslsock.c
 @@ -187,6 +187,7 @@ static sslOptions ssl_defaults = {
@@ -193,7 +182,7 @@ index 340d17c..68fd3cb 100644
  };
  
  sslSessionIDLookupFunc  ssl_sid_lookup;
-@@ -752,6 +753,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRBool on)
+@@ -748,6 +749,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRBool on)
  	ss->opt.enableCachedInfo = on;
  	break;
  
@@ -204,7 +193,7 @@ index 340d17c..68fd3cb 100644
        default:
  	PORT_SetError(SEC_ERROR_INVALID_ARGS);
  	rv = SECFailure;
-@@ -817,7 +822,8 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 which, PRBool *pOn)
+@@ -813,7 +818,8 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 which, PRBool *pOn)
                                    on = ss->opt.requireSafeNegotiation; break;
      case SSL_ENABLE_FALSE_START:  on = ss->opt.enableFalseStart;   break;
      case SSL_ENABLE_OCSP_STAPLING: on = ss->opt.enableOCSPStapling; break;
@@ -214,7 +203,7 @@ index 340d17c..68fd3cb 100644
  
      default:
  	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-@@ -873,6 +879,7 @@ SSL_OptionGetDefault(PRInt32 which, PRBool *pOn)
+@@ -869,6 +875,7 @@ SSL_OptionGetDefault(PRInt32 which, PRBool *pOn)
  	on = ssl_defaults.enableOCSPStapling;
  	break;
      case SSL_ENABLE_CACHED_INFO:  on = ssl_defaults.enableCachedInfo;   break;
@@ -222,7 +211,7 @@ index 340d17c..68fd3cb 100644
  
      default:
  	PORT_SetError(SEC_ERROR_INVALID_ARGS);
-@@ -1028,6 +1035,10 @@ SSL_OptionSetDefault(PRInt32 which, PRBool on)
+@@ -1024,6 +1031,10 @@ SSL_OptionSetDefault(PRInt32 which, PRBool on)
  	ssl_defaults.enableCachedInfo = on;
  	break;
  
@@ -234,7 +223,7 @@ index 340d17c..68fd3cb 100644
  	PORT_SetError(SEC_ERROR_INVALID_ARGS);
  	return SECFailure;
 diff --git a/mozilla/security/nss/lib/ssl/sslt.h b/mozilla/security/nss/lib/ssl/sslt.h
-index bca7496..907c1dc 100644
+index bca7496..5f852fe 100644
 --- a/mozilla/security/nss/lib/ssl/sslt.h
 +++ b/mozilla/security/nss/lib/ssl/sslt.h
 @@ -206,9 +206,10 @@ typedef enum {

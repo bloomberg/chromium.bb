@@ -1,8 +1,19 @@
-commit de6d1a65eb146a0887a31ca92e9ca924045e9e69
-Author: Adam Langley <agl@chromium.org>
-Date:   Mon Jun 20 15:49:24 2011 -0400
+From 6b594dc531e7a1d1d5bca2f0f78e7bc0ac3ff937 Mon Sep 17 00:00:00 2001
+From: Adam Langley <agl@chromium.org>
+Date: Mon, 3 Oct 2011 12:19:28 -0400
+Subject: [PATCH] nextproto.patch
 
-    nextproto.patch
+---
+ mozilla/security/nss/cmd/tstclnt/tstclnt.c |    6 ++
+ mozilla/security/nss/lib/ssl/ssl.def       |    7 ++
+ mozilla/security/nss/lib/ssl/ssl.h         |   12 +++
+ mozilla/security/nss/lib/ssl/ssl3con.c     |   54 ++++++++++++
+ mozilla/security/nss/lib/ssl/ssl3ext.c     |  122 +++++++++++++++++++++++++++-
+ mozilla/security/nss/lib/ssl/ssl3prot.h    |    3 +-
+ mozilla/security/nss/lib/ssl/sslimpl.h     |   24 ++++++
+ mozilla/security/nss/lib/ssl/sslsock.c     |   74 +++++++++++++++++
+ mozilla/security/nss/lib/ssl/sslt.h        |    3 +-
+ 9 files changed, 302 insertions(+), 3 deletions(-)
 
 diff --git a/mozilla/security/nss/cmd/tstclnt/tstclnt.c b/mozilla/security/nss/cmd/tstclnt/tstclnt.c
 index 55684e6..d209a33 100644
