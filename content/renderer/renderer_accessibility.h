@@ -10,7 +10,7 @@
 
 #include "base/hash_tables.h"
 #include "base/task.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 
 namespace WebKit {
@@ -28,7 +28,7 @@ struct WebAccessibility;
 // the renderer to the browser and sending updates whenever it changes, and
 // handling requests from the browser to perform accessibility actions on
 // nodes in the tree (e.g., change focus, or click on a button).
-class RendererAccessibility : public RenderViewObserver {
+class RendererAccessibility : public content::RenderViewObserver {
  public:
   RendererAccessibility(RenderView* render_view);
   virtual ~RendererAccessibility();

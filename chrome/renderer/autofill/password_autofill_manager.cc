@@ -203,7 +203,7 @@ namespace autofill {
 
 PasswordAutofillManager::PasswordAutofillManager(
     RenderView* render_view)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 

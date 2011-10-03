@@ -17,7 +17,7 @@
 #include "ui/gfx/rect.h"
 
 TextInputClientObserver::TextInputClientObserver(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+    : content::RenderViewObserver(render_view) {
 }
 
 TextInputClientObserver::~TextInputClientObserver() {

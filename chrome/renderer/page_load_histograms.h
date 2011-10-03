@@ -6,12 +6,12 @@
 #define CHROME_RENDERER_PAGE_LOAD_HISTOGRAMS_H_
 
 #include "base/basictypes.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 
 class NavigationState;
 class RendererHistogramSnapshots;
 
-class PageLoadHistograms : public RenderViewObserver {
+class PageLoadHistograms : public content::RenderViewObserver {
  public:
   PageLoadHistograms(RenderView* render_view,
                      RendererHistogramSnapshots* histogram_snapshots);

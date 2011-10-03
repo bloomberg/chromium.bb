@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/id_map.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpellCheckClient.h"
 
 class RenderView;
@@ -23,7 +23,7 @@ struct WebTextCheckingResult;
 
 // This class deals with invoking browser-side spellcheck mechanism
 // which is done asynchronously.
-class SpellCheckProvider : public RenderViewObserver,
+class SpellCheckProvider : public content::RenderViewObserver,
                            public WebKit::WebSpellCheckClient {
  public:
   typedef IDMap<WebKit::WebTextCheckingCompletion> WebTextCheckCompletions;

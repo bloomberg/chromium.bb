@@ -9,8 +9,8 @@
 #include <map>
 
 #include "chrome/common/content_settings.h"
-#include "content/renderer/render_view_observer.h"
-#include "content/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 
 class GURL;
 
@@ -21,8 +21,8 @@ class WebURL;
 
 // Handles blocking content per content settings for each RenderView.
 class ContentSettingsObserver
-    : public RenderViewObserver,
-      public RenderViewObserverTracker<ContentSettingsObserver> {
+    : public content::RenderViewObserver,
+      public content::RenderViewObserverTracker<ContentSettingsObserver> {
  public:
   explicit ContentSettingsObserver(RenderView* render_view);
   virtual ~ContentSettingsObserver();

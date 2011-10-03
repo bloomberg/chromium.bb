@@ -13,7 +13,7 @@
 //
 //   MyRVO::MyRVO(RenderView* render_view)
 //       : RenderViewObserver(render_view),
-//         RenderViewObserverTracker<SearchBox>(render_view) {
+//         RenderViewObserverTracker<MyRVO>(render_view) {
 //     ...
 //   }
 //
@@ -23,8 +23,8 @@
 //    // my_rvo == my_rvo_tracked
 //  }
 
-#ifndef CONTENT_RENDERER_RENDER_VIEW_OBSERVER_TRACKER_H_
-#define CONTENT_RENDERER_RENDER_VIEW_OBSERVER_TRACKER_H_
+#ifndef CONTENT_PUBLIC_RENDERER_RENDER_VIEW_OBSERVER_TRACKER_H_
+#define CONTENT_PUBLIC_RENDERER_RENDER_VIEW_OBSERVER_TRACKER_H_
 #pragma once
 
 #include <map>
@@ -32,6 +32,8 @@
 #include "base/lazy_instance.h"
 
 class RenderView;
+
+namespace content {
 
 template <class T>
 class RenderViewObserverTracker {
@@ -61,4 +63,6 @@ template <class T>
 base::LazyInstance<std::map<const RenderView*, T*> >
     RenderViewObserverTracker<T>::render_view_map_(base::LINKER_INITIALIZED);
 
-#endif  // CONTENT_RENDERER_RENDER_VIEW_OBSERVER_TRACKER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_RENDERER_RENDER_VIEW_OBSERVER_TRACKER_H_

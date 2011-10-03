@@ -42,6 +42,7 @@
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools_agent.h"
 #include "content/renderer/external_popup_menu.h"
@@ -60,7 +61,6 @@
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread.h"
-#include "content/renderer/render_view_observer.h"
 #include "content/renderer/render_view_visitor.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_accessibility.h"
@@ -237,6 +237,7 @@ using WebKit::WebWorkerClient;
 using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
+using content::RenderViewObserver;
 using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;

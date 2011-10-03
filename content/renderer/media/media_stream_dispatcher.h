@@ -13,15 +13,16 @@
 #include "base/message_loop.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
-#include "content/renderer/render_view_observer.h"
 
 // MediaStreamDispatcher is a delegate for the Media Stream API messages.
 // MediaStreams are used by WebKit to open media devices such as Video Capture
 // and Audio input devices.
 // It's the complement of MediaStreamDispatcherHost (owned by
 // BrowserRenderProcessHost).
-class CONTENT_EXPORT MediaStreamDispatcher : public RenderViewObserver {
+class CONTENT_EXPORT MediaStreamDispatcher
+    : public content::RenderViewObserver {
  public:
   explicit MediaStreamDispatcher(RenderView* render_view);
   virtual ~MediaStreamDispatcher();

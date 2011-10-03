@@ -5,11 +5,11 @@
 #ifndef CONTENT_RENDERER_MHTML_GENERATOR_H_
 #define CONTENT_RENDERER_MHTML_GENERATOR_H_
 
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 
 #include "ipc/ipc_platform_file.h"
 
-class MHTMLGenerator : public RenderViewObserver {
+class MHTMLGenerator : public content::RenderViewObserver {
  public:
   explicit MHTMLGenerator(RenderView* render_view);
   virtual ~MHTMLGenerator();

@@ -78,7 +78,7 @@ bool WebAccessibilityNotificationToViewHostMsg(
 }
 
 RendererAccessibility::RendererAccessibility(RenderView* render_view)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       browser_root_(NULL),
       ack_pending_(false),

@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/time.h"
-#include "content/renderer/render_view_observer.h"
-#include "content/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 
 namespace prerender {
 
@@ -19,8 +19,9 @@ namespace prerender {
 // prerendering starts and deleted as soon as just after the prerendering
 // histograms have been recorded for a displayed prerendered page.  For
 // non-displayed pages, deleted on destruction of the RenderView.
-class PrerenderHelper : public RenderViewObserver,
-                        public RenderViewObserverTracker<PrerenderHelper> {
+class PrerenderHelper
+    : public content::RenderViewObserver,
+      public content::RenderViewObserverTracker<PrerenderHelper> {
  public:
   explicit PrerenderHelper(RenderView* render_view);
   virtual ~PrerenderHelper();

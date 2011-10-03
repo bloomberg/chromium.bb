@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_AUTOMATION_AUTOMATION_RENDERER_HELPER_H_
 #pragma once
 
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 
 namespace WebKit {
 class WebFrame;
@@ -15,7 +15,7 @@ class WebURL;
 
 // Filters automation/testing messages sent to a |RenderView| and sends
 // automation/testing messages to the browser.
-class AutomationRendererHelper : public RenderViewObserver {
+class AutomationRendererHelper : public content::RenderViewObserver {
  public:
   explicit AutomationRendererHelper(RenderView* render_view);
   virtual ~AutomationRendererHelper();

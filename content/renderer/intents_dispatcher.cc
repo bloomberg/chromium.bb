@@ -119,7 +119,7 @@ class IntentsDispatcher::BoundDeliveredIntent : public CppBoundClass {
 };
 
 IntentsDispatcher::IntentsDispatcher(RenderView* render_view)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       intent_id_(0) {
 }
 

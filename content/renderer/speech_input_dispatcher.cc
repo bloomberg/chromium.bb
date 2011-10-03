@@ -28,7 +28,7 @@ using WebKit::WebView;
 SpeechInputDispatcher::SpeechInputDispatcher(
     RenderView* render_view,
     WebKit::WebSpeechInputListener* listener)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       listener_(listener) {
 }
 

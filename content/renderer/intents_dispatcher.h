@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 namespace webkit_glue {
@@ -21,7 +21,7 @@ class WebFrame;
 // IntentsDispatcher is a delegate for Web Intents messages. It is the
 // renderer-side handler for IPC messages delivering the intent payload data
 // and preparing it for access by the service page.
-class IntentsDispatcher : public RenderViewObserver {
+class IntentsDispatcher : public content::RenderViewObserver {
  public:
   // |render_view| must not be NULL.
   explicit IntentsDispatcher(RenderView* render_view);

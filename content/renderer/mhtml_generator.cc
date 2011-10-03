@@ -11,7 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 
 MHTMLGenerator::MHTMLGenerator(RenderView* render_view)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       file_(base::kInvalidPlatformFileValue) {
 }
 

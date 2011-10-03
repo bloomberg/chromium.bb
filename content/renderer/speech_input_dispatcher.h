@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/speech_input_result.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputController.h"
 
 class GURL;
@@ -18,7 +18,7 @@ class WebSpeechInputListener;
 
 // SpeechInputDispatcher is a delegate for speech input messages used by WebKit.
 // It's the complement of SpeechInputDispatcherHost (owned by RenderViewHost).
-class SpeechInputDispatcher : public RenderViewObserver,
+class SpeechInputDispatcher : public content::RenderViewObserver,
                               public WebKit::WebSpeechInputController {
  public:
   SpeechInputDispatcher(RenderView* render_view,

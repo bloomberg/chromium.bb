@@ -10,7 +10,7 @@
 
 DeviceOrientationDispatcher::DeviceOrientationDispatcher(
     RenderView* render_view)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       controller_(NULL),
       started_(false) {
 }

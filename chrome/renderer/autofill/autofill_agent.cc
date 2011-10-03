@@ -50,7 +50,7 @@ namespace autofill {
 AutofillAgent::AutofillAgent(
     RenderView* render_view,
     PasswordAutofillManager* password_autofill_manager)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       password_autofill_manager_(password_autofill_manager),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),

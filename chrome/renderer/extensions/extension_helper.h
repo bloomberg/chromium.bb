@@ -9,9 +9,9 @@
 #include <map>
 
 #include "content/common/view_types.h"
+#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/render_view_observer.h"
-#include "content/renderer/render_view_observer_tracker.h"
 
 class ExtensionDispatcher;
 class GURL;
@@ -27,8 +27,9 @@ class ResourceFetcher;
 }
 
 // RenderView-level plumbing for extension features.
-class ExtensionHelper : public RenderViewObserver,
-                        public RenderViewObserverTracker<ExtensionHelper> {
+class ExtensionHelper
+    : public content::RenderViewObserver,
+      public content::RenderViewObserverTracker<ExtensionHelper> {
  public:
   ExtensionHelper(RenderView* render_view,
                   ExtensionDispatcher* extension_dispatcher);

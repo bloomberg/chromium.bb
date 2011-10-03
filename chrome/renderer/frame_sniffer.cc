@@ -12,7 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 
 FrameSniffer::FrameSniffer(RenderView* render_view, const string16 &frame_name)
-    : RenderViewObserver(render_view), frame_name_(frame_name) {
+    : content::RenderViewObserver(render_view), frame_name_(frame_name) {
 }
 
 FrameSniffer::~FrameSniffer() {

@@ -48,8 +48,8 @@ static base::LazyInstance<SchedulerMap> g_schedulers(base::LINKER_INITIALIZED);
 
 ExtensionHelper::ExtensionHelper(RenderView* render_view,
                                  ExtensionDispatcher* extension_dispatcher)
-    : RenderViewObserver(render_view),
-      RenderViewObserverTracker<ExtensionHelper>(render_view),
+    : content::RenderViewObserver(render_view),
+      content::RenderViewObserverTracker<ExtensionHelper>(render_view),
       extension_dispatcher_(extension_dispatcher),
       pending_app_icon_requests_(0),
       view_type_(ViewType::INVALID),

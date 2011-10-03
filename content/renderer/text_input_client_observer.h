@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/point.h"
 
@@ -18,7 +18,7 @@ class WebView;
 // This is the renderer-side message filter that generates the replies for the
 // messages sent by the TextInputClientMac. See
 // content/browser/renderer_host/text_input_client_mac.h for more information.
-class TextInputClientObserver : public RenderViewObserver {
+class TextInputClientObserver : public content::RenderViewObserver {
  public:
   explicit TextInputClientObserver(RenderView* render_view);
   virtual ~TextInputClientObserver();

@@ -48,7 +48,7 @@ const WebInputElement GetTextWebInputElement(const WebNode& node) {
 }  // namespace
 
 PageClickTracker::PageClickTracker(RenderView* render_view)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       was_focused_(false) {
 }
 

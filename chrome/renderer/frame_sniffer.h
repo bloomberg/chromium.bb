@@ -7,11 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 
 // Class which observes events from the frame with specific name and sends IPC
 // messages to be handled by RenderViewHostObserver.
-class FrameSniffer : public RenderViewObserver {
+class FrameSniffer : public content::RenderViewObserver {
  public:
   FrameSniffer(RenderView* render_view, const string16 &frame_name);
   virtual ~FrameSniffer();

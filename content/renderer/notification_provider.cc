@@ -25,7 +25,7 @@ using WebKit::WebString;
 using WebKit::WebURL;
 
 NotificationProvider::NotificationProvider(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+    : content::RenderViewObserver(render_view) {
 }
 
 NotificationProvider::~NotificationProvider() {

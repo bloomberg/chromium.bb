@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 
 #include "content/renderer/render_view.h"
 
 using WebKit::WebFrame;
 
+namespace content {
+
 RenderViewObserver::RenderViewObserver(RenderView* render_view)
     : render_view_(render_view),
-      routing_id_(render_view ? render_view->routing_id() : 0) {
+      routing_id_(render_view ? render_view->routing_id() : MSG_ROUTING_NONE) {
   // |render_view| can be NULL on unit testing.
   if (render_view_)
     render_view_->AddObserver(this);
@@ -36,3 +38,5 @@ bool RenderViewObserver::Send(IPC::Message* message) {
   delete message;
   return false;
 }
+
+}  // namespace content

@@ -27,7 +27,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/p2p_sockets.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "net/base/net_util.h"
 
 namespace base {
@@ -46,7 +46,7 @@ class P2PSocketClient;
 // P2PSocketDispatcher works on the renderer thread. It dispatches all
 // messages on that thread, and all its methods must be called on the
 // same thread.
-class P2PSocketDispatcher : public RenderViewObserver {
+class P2PSocketDispatcher : public content::RenderViewObserver {
  public:
   class NetworkListObserver {
    public:

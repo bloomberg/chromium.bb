@@ -11,8 +11,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
 
@@ -37,7 +37,7 @@ class ImageResourceFetcher;
 
 // This class holds the Chrome specific parts of RenderView, and has the same
 // lifetime.
-class ChromeRenderViewObserver : public RenderViewObserver,
+class ChromeRenderViewObserver : public content::RenderViewObserver,
                                  public WebKit::WebPermissionClient {
  public:
   // translate_helper can be NULL.

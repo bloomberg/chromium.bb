@@ -19,7 +19,7 @@ using WebKit::WebDevToolsFrontend;
 using WebKit::WebString;
 
 DevToolsClient::DevToolsClient(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+    : content::RenderViewObserver(render_view) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   web_tools_frontend_.reset(
       WebDevToolsFrontend::create(

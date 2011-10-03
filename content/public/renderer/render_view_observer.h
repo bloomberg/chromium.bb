@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDER_VIEW_OBSERVER_H_
-#define CONTENT_RENDERER_RENDER_VIEW_OBSERVER_H_
+#ifndef CONTENT_PUBLIC_RENDERER_RENDER_VIEW_OBSERVER_H_
+#define CONTENT_PUBLIC_RENDERER_RENDER_VIEW_OBSERVER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -25,6 +25,8 @@ class WebTouchEvent;
 class WebURL;
 struct WebURLError;
 }
+
+namespace content {
 
 // Base class for objects that want to filter incoming IPCs, and also get
 // notified of changes to the frame.
@@ -89,7 +91,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
   int routing_id() { return routing_id_; }
 
  private:
-  friend class RenderView;
+  friend class ::RenderView;
 
   void set_render_view(RenderView* rv) { render_view_ = rv; }
 
@@ -100,4 +102,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
   DISALLOW_COPY_AND_ASSIGN(RenderViewObserver);
 };
 
-#endif  // CONTENT_RENDERER_RENDER_VIEW_OBSERVER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_RENDERER_RENDER_VIEW_OBSERVER_H_

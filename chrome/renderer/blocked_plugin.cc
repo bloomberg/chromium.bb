@@ -63,7 +63,7 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              const string16& message,
                              bool is_blocked_for_prerendering,
                              bool allow_loading)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       frame_(frame),
       plugin_params_(params),
       is_blocked_for_prerendering_(is_blocked_for_prerendering),

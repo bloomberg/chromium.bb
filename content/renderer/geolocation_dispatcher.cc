@@ -20,7 +20,7 @@ using WebKit::WebGeolocationPermissionRequestManager;
 using WebKit::WebGeolocationPosition;
 
 GeolocationDispatcher::GeolocationDispatcher(RenderView* render_view)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       pending_permissions_(new WebGeolocationPermissionRequestManager()),
       enable_high_accuracy_(false),
       updating_(false) {

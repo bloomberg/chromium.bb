@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEventListener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 
@@ -28,7 +28,7 @@ class PageClickListener;
 // could easily be changed to report click on any type of WebNode.
 //
 // There is one PageClickTracker per RenderView.
-class PageClickTracker : public RenderViewObserver,
+class PageClickTracker : public content::RenderViewObserver,
                          public WebKit::WebDOMEventListener {
  public:
   explicit PageClickTracker(RenderView* render_view);

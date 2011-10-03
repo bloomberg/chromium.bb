@@ -11,7 +11,7 @@
 MediaStreamDispatcherEventHandler::~MediaStreamDispatcherEventHandler() {}
 
 MediaStreamDispatcher::MediaStreamDispatcher(RenderView* render_view)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       next_ipc_id_(0) {
 }
 

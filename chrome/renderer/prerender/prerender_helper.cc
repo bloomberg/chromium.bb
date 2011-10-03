@@ -26,8 +26,8 @@
 namespace prerender {
 
 PrerenderHelper::PrerenderHelper(RenderView* render_view)
-    : RenderViewObserver(render_view),
-      RenderViewObserverTracker<PrerenderHelper>(render_view),
+    : content::RenderViewObserver(render_view),
+      content::RenderViewObserverTracker<PrerenderHelper>(render_view),
       is_prerendering_(true),
       has_unrecorded_data_(false) {
   UpdateVisibilityState();

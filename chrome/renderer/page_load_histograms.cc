@@ -85,7 +85,7 @@ enum AbandonType {
 PageLoadHistograms::PageLoadHistograms(
     RenderView* render_view,
     RendererHistogramSnapshots* histogram_snapshots)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       cross_origin_access_count_(0),
       same_origin_access_count_(0),
       histogram_snapshots_(histogram_snapshots) {

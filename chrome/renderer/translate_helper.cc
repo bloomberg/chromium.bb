@@ -48,7 +48,7 @@ static const char* const kAutoDetectionLanguage = "auto";
 //
 TranslateHelper::TranslateHelper(RenderView* render_view,
                                  autofill::AutofillAgent* autofill)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       translation_pending_(false),
       page_id_(-1),
       autofill_(autofill),

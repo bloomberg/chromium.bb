@@ -85,7 +85,7 @@ PhishingClassifierDelegate* PhishingClassifierDelegate::Create(
 PhishingClassifierDelegate::PhishingClassifierDelegate(
     RenderView* render_view,
     PhishingClassifier* classifier)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       last_main_frame_transition_(PageTransition::LINK),
       have_page_text_(false),
       is_classifying_(false) {

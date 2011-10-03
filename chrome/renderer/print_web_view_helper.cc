@@ -490,8 +490,8 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
 }
 
 PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
-    : RenderViewObserver(render_view),
-      RenderViewObserverTracker<PrintWebViewHelper>(render_view),
+    : content::RenderViewObserver(render_view),
+      content::RenderViewObserverTracker<PrintWebViewHelper>(render_view),
       print_web_view_(NULL),
       is_preview_(switches::IsPrintPreviewEnabled()),
       is_print_ready_metafile_sent_(false),

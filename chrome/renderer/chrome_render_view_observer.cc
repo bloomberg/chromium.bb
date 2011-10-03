@@ -206,7 +206,7 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
     ChromeRenderProcessObserver* chrome_render_process_observer,
     ExtensionDispatcher* extension_dispatcher,
     TranslateHelper* translate_helper)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       chrome_render_process_observer_(chrome_render_process_observer),
       extension_dispatcher_(extension_dispatcher),
       content_settings_(content_settings),

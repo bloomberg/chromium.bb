@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/renderer/autofill/form_cache.h"
 #include "chrome/renderer/page_click_listener.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
@@ -40,7 +40,7 @@ class PasswordAutofillManager;
 // - password form fill, refered to as Password Autofill, and
 // - entire form fill based on one field entry, referred to as Form Autofill.
 
-class AutofillAgent : public RenderViewObserver,
+class AutofillAgent : public content::RenderViewObserver,
                       public PageClickListener,
                       public WebKit::WebAutofillClient {
  public:

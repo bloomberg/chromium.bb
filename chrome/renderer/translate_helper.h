@@ -10,7 +10,7 @@
 
 #include "base/task.h"
 #include "chrome/common/translate_errors.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 
 namespace WebKit {
 class WebDocument;
@@ -24,7 +24,7 @@ class AutofillAgent;
 // This class deals with page translation.
 // There is one TranslateHelper per RenderView.
 
-class TranslateHelper : public RenderViewObserver {
+class TranslateHelper : public content::RenderViewObserver {
  public:
   // autofill can be NULL.
   TranslateHelper(RenderView* render_view, autofill::AutofillAgent* autofill);

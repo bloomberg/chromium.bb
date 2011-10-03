@@ -11,12 +11,12 @@
 
 #include "base/string16.h"
 #include "chrome/common/instant_types.h"
-#include "content/renderer/render_view_observer.h"
-#include "content/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 #include "ui/gfx/rect.h"
 
-class SearchBox : public RenderViewObserver,
-                  public RenderViewObserverTracker<SearchBox> {
+class SearchBox : public content::RenderViewObserver,
+                  public content::RenderViewObserverTracker<SearchBox> {
  public:
   explicit SearchBox(RenderView* render_view);
   virtual ~SearchBox();

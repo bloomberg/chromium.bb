@@ -57,7 +57,7 @@ class WebKitClientMessageLoopImpl
 std::map<int, DevToolsAgent*> DevToolsAgent::agent_for_routing_id_;
 
 DevToolsAgent::DevToolsAgent(RenderView* render_view)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
       is_attached_(false) {
   agent_for_routing_id_[routing_id()] = this;
 

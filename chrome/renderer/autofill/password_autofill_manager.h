@@ -11,7 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/renderer/page_click_listener.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
@@ -24,7 +24,7 @@ namespace autofill {
 
 // This class is responsible for filling password forms.
 // There is one PasswordAutofillManager per RenderView.
-class PasswordAutofillManager : public RenderViewObserver,
+class PasswordAutofillManager : public content::RenderViewObserver,
                                 public PageClickListener {
  public:
   explicit PasswordAutofillManager(RenderView* render_view);

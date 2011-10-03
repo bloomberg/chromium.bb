@@ -67,7 +67,6 @@ class NavigationState;
 class NotificationProvider;
 class PepperDeviceTest;
 class PrintWebViewHelper;
-class RenderViewObserver;
 class RenderViewVisitor;
 class RenderWidgetFullscreenPepper;
 class RendererAccessibility;
@@ -89,6 +88,7 @@ class WaitableEvent;
 
 namespace content {
 class P2PSocketDispatcher;
+class RenderViewObserver;
 }  // namespace content
 
 namespace gfx {
@@ -239,8 +239,8 @@ class RenderView : public RenderWidget,
   }
 
   // Functions to add and remove observers for this object.
-  void AddObserver(RenderViewObserver* observer);
-  void RemoveObserver(RenderViewObserver* observer);
+  void AddObserver(content::RenderViewObserver* observer);
+  void RemoveObserver(content::RenderViewObserver* observer);
 
   // Evaluates a string of JavaScript in a particular frame.
   CONTENT_EXPORT void EvaluateScript(const string16& frame_xpath,
@@ -1215,7 +1215,7 @@ class RenderView : public RenderWidget,
 
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
-  ObserverList<RenderViewObserver> observers_;
+  ObserverList<content::RenderViewObserver> observers_;
 
   // Used to inform didChangeSelection() when it is called in the context
   // of handling a ViewMsg_SelectRange IPC.

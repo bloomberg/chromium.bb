@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_BLOCKED_PLUGIN_H_
 #pragma once
 
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/plugins/npapi/webview_plugin.h"
@@ -23,7 +23,7 @@ namespace webkit_glue {
 struct CustomContextMenuContext;
 }
 
-class BlockedPlugin : public RenderViewObserver,
+class BlockedPlugin : public content::RenderViewObserver,
                       public CppBoundClass,
                       public webkit::npapi::WebViewPlugin::Delegate {
  public:

@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
 namespace WebKit {
@@ -25,7 +25,7 @@ typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 // agents with the communication capabilities. All messages from/to Glue's
 // agents infrastructure are flowing through this communication agent.
 // There is a corresponding DevToolsClient object on the client side.
-class DevToolsAgent : public RenderViewObserver,
+class DevToolsAgent : public content::RenderViewObserver,
                       public WebKit::WebDevToolsAgentClient {
  public:
   explicit DevToolsAgent(RenderView* render_view);

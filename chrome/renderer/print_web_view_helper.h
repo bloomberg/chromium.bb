@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
-#include "content/renderer/render_view_observer.h"
-#include "content/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
@@ -86,10 +86,11 @@ class PrepareFrameAndViewForPrint {
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
 // of the document and creating a new WebView with the contents.
-class PrintWebViewHelper : public RenderViewObserver,
-                           public RenderViewObserverTracker<PrintWebViewHelper>,
-                           public WebKit::WebViewClient,
-                           public WebKit::WebFrameClient {
+class PrintWebViewHelper
+    : public content::RenderViewObserver,
+      public content::RenderViewObserverTracker<PrintWebViewHelper>,
+      public WebKit::WebViewClient,
+      public WebKit::WebFrameClient {
  public:
   explicit PrintWebViewHelper(RenderView* render_view);
   virtual ~PrintWebViewHelper();

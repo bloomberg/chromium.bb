@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "content/common/page_transition_types.h"
-#include "content/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/render_process_observer.h"
 #include "googleurl/src/gurl.h"
 
@@ -34,7 +34,7 @@ class PhishingClassifierFilter : public RenderProcessObserver {
   DISALLOW_COPY_AND_ASSIGN(PhishingClassifierFilter);
 };
 
-class PhishingClassifierDelegate : public RenderViewObserver {
+class PhishingClassifierDelegate : public content::RenderViewObserver {
  public:
   // The RenderView owns us.  This object takes ownership of the classifier.
   // Note that if classifier is null, a default instance of PhishingClassifier

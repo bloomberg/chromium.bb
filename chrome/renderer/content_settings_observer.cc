@@ -56,8 +56,8 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
 ContentSettings ContentSettingsObserver::default_settings_;
 
 ContentSettingsObserver::ContentSettingsObserver(RenderView* render_view)
-    : RenderViewObserver(render_view),
-      RenderViewObserverTracker<ContentSettingsObserver>(render_view),
+    : content::RenderViewObserver(render_view),
+      content::RenderViewObserverTracker<ContentSettingsObserver>(render_view),
       plugins_temporarily_allowed_(false) {
   ClearBlockedContentSettings();
 }

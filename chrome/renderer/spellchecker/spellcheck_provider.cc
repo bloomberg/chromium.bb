@@ -23,7 +23,7 @@ using WebKit::WebVector;
 
 SpellCheckProvider::SpellCheckProvider(RenderView* render_view,
                                        SpellCheck* spellcheck)
-    : RenderViewObserver(render_view),
+    : content::RenderViewObserver(render_view),
 #if defined(OS_MACOSX)
       has_document_tag_(false),
 #endif
