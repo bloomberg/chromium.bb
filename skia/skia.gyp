@@ -776,6 +776,7 @@
           'dependencies': [
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:freetype2',
+            '../build/linux/system.gyp:pangocairo',
             '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
             '../third_party/icu/icu.gyp:icuuc',
           ],
