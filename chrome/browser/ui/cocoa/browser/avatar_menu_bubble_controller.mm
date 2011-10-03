@@ -220,6 +220,10 @@ const CGFloat kLabelInset = 49.0;
 
 // Menu Item Controller ////////////////////////////////////////////////////////
 
+@interface AvatarMenuItemController (Private)
+- (void)animateFromView:(NSView*)outView toView:(NSView*)inView;
+@end
+
 @implementation AvatarMenuItemController
 
 @synthesize modelIndex = modelIndex_;
@@ -262,20 +266,43 @@ const CGFloat kLabelInset = 49.0;
   BOOL active = !self.activeView.isHidden;
   switch (type) {
     case NSMouseEntered:
-      if (active) {
-        self.editButton.hidden = NO;
-        self.emailField.hidden = YES;
-      }
+      if (active)
+        [self animateFromView:self.emailField toView:self.editButton];
       break;
 
     case NSMouseExited:
-      self.editButton.hidden = YES;
-      self.emailField.hidden = NO;
+      if (active)
+        [self animateFromView:self.editButton toView:self.emailField];
       break;
 
     default:
       NOTREACHED();
   };
+}
+
+- (void)animateFromView:(NSView*)outView toView:(NSView*)inView {
+  const NSTimeInterval kAnimationDuration = 0.175;
+
+  NSDictionary* outDict = [NSDictionary dictionaryWithObjectsAndKeys:
+      outView, NSViewAnimationTargetKey,
+      NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey,
+      nil
+  ];
+  NSDictionary* inDict = [NSDictionary dictionaryWithObjectsAndKeys:
+      inView, NSViewAnimationTargetKey,
+      NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
+      nil
+  ];
+
+  scoped_nsobject<NSViewAnimation> animation(
+      [[NSViewAnimation alloc] initWithViewAnimations:[NSArray arrayWithObjects:
+          outDict, inDict, nil]]);
+  [animation setDuration:kAnimationDuration];
+  [self willStartAnimation:animation];
+  [animation startAnimation];
+}
+
+- (void)willStartAnimation:(NSAnimation*)animation {
 }
 
 @end

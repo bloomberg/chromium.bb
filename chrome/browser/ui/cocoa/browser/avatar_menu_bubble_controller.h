@@ -120,5 +120,8 @@ class Browser;
 - (NSMutableArray*)items;
 @end
 
+@interface AvatarMenuItemController (ExposedForTesting)
+- (void)willStartAnimation:(NSAnimation*)animation;
+@end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_AVATAR_MENU_BUBBLE_CONTROLLER_H_

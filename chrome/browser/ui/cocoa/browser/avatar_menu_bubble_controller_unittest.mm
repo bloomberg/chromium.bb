@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/message_pump_mac.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
@@ -132,10 +133,44 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
   [controller() close];
 }
 
+// This subclass is used to inject a delegate into the hide/show edit link
+// animation.
+@interface TestingAvatarMenuItemController : AvatarMenuItemController
+                                                 <NSAnimationDelegate> {
+ @private
+  scoped_refptr<base::MessagePumpNSRunLoop> pump_;
+}
+// After calling |-highlightForEventType:| an animation will possibly be
+// started. Since the animation is non-blocking, the run loop will need to be
+// spun (via the MessagePump) until the animation has finished.
+- (void)runMessagePump;
+@end
+
+@implementation TestingAvatarMenuItemController
+- (void)runMessagePump {
+  if (!pump_.get())
+    pump_ = new base::MessagePumpNSRunLoop;
+  pump_->Run(NULL);
+}
+
+- (void)willStartAnimation:(NSAnimation*)anim {
+  [anim setDelegate:self];
+}
+
+- (void)animationDidEnd:(NSAnimation*)anim {
+  pump_->Quit();
+}
+
+- (void)animationDidStop:(NSAnimation*)anim {
+  FAIL() << "Animation stopped before it completed its run";
+  pump_->Quit();
+}
+@end
+
 TEST_F(AvatarMenuBubbleControllerTest, HighlightForEventType) {
-  scoped_nsobject<AvatarMenuItemController> item(
-      [[AvatarMenuItemController alloc] initWithModelIndex:0
-                                            menuController:nil]);
+  scoped_nsobject<TestingAvatarMenuItemController> item(
+      [[TestingAvatarMenuItemController alloc] initWithModelIndex:0
+                                                   menuController:nil]);
   // Test non-active states first.
   [[item activeView] setHidden:YES];
 
@@ -155,10 +190,14 @@ TEST_F(AvatarMenuBubbleControllerTest, HighlightForEventType) {
   [[item activeView] setHidden:NO];
 
   [item highlightForEventType:NSMouseEntered];
+  [item runMessagePump];
+
   EXPECT_FALSE(editButton.isHidden);
   EXPECT_TRUE(emailField.isHidden);
 
   [item highlightForEventType:NSMouseExited];
+  [item runMessagePump];
+
   EXPECT_TRUE(editButton.isHidden);
   EXPECT_FALSE(emailField.isHidden);
 }
