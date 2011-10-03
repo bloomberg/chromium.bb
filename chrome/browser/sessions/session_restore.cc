@@ -562,7 +562,7 @@ class SessionRestoreImpl : public NotificationObserver {
     if (synchronous_) {
       // See comment above windows_ as to why we don't process immediately.
       windows_.swap(*windows);
-      MessageLoop::current()->Quit();
+      MessageLoop::current()->QuitNow();
       return;
     }
 
