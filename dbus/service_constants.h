@@ -358,6 +358,7 @@ const char kStateActivationFailure[] = "activation-failure";
 const char kSIMLockStatusProperty[] = "Cellular.SIMLockStatus";
 const char kSIMLockTypeProperty[] = "LockType";
 const char kSIMLockRetriesLeftProperty[] = "RetriesLeft";
+const char kSIMLockEnabledProperty[] = "LockEnabled";
 
 // Flimflam property names for Cellular.FoundNetworks.
 const char kLongNameProperty[] = "long_name";
