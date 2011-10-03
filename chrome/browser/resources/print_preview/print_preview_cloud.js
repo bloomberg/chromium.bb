@@ -270,8 +270,10 @@ cr.define('cloudprint', function() {
    * @return {boolean} true if the printer defaults to color.
    */
   function colorIsDefault(printer) {
-    return isCloudPrint(printer) &&
-           printer.cloudPrintOptions.colorIsDefault;
+    // For now assume that unsupported color means we just don't know
+    // and assume color.
+    return !supportsColor(printer) ||
+        (isCloudPrint(printer) && printer.cloudPrintOptions.colorIsDefault);
   }
 
   /**
