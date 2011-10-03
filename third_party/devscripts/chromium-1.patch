@@ -1,5 +1,5 @@
---- licensecheck.pl.orig	2011-09-30 11:26:05.132392850 -0700
-+++ licensecheck.pl	2011-09-30 11:29:27.662389093 -0700
+--- licensecheck.pl.orig	2011-09-22 10:51:25.934402455 -0700
++++ licensecheck.pl	2011-10-03 09:49:41.651443138 -0700
 @@ -241,6 +241,12 @@
  my @find_args = ();
  my $files_count = @ARGV;
@@ -81,7 +81,7 @@
  	$license = "MIT/X11 (BSD like) $license";
      } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files \(the Software\), to deal in the Software/) {
  	$license = "MIT/X11 (BSD like) $license";
-@@ -448,15 +437,19 @@
+@@ -448,15 +437,21 @@
      }
  
      if ($licensetext =~ /THIS SOFTWARE IS PROVIDED .*AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY/) {
@@ -106,7 +106,7 @@
      }
  
      if ($licensetext =~ /Mozilla Public License Version ([^ ]+)/) {
-@@ -475,7 +468,9 @@
+@@ -475,7 +470,9 @@
  	$license = "Perl $license";
      }
  
@@ -117,7 +117,7 @@
  	$license = "Apache (v$1) $license";
      }
  
-@@ -495,7 +490,7 @@
+@@ -495,7 +492,7 @@
  	$license = "SGI Free Software License B $license";
      }
  
@@ -126,7 +126,7 @@
  	$license = "Public domain";
      }
  
-@@ -503,6 +498,10 @@
+@@ -503,6 +500,17 @@
  	$license = "CDDL " . ($1 ? "(v$2) " : '') . $license;
      }
  
@@ -134,10 +134,17 @@
 +        $license = "Ms-PL $license";
 +    }
 +
++    if ($licensetext =~ /as defined in and that are subject to the Apple Public Source License([ ,-]+Version ([^ ]+)?(\.))/) {
++	$license = "APSL " . ($1 ? "(v$2) " : '') . $license;
++    } elsif ($licensetext =~ /provided that if you redistribute the Apple Software in its entirety and without modifications, you must retain this notice and the following text and disclaimers in all such redistributions of the Apple Software/) {
++	# https://fedoraproject.org/wiki/Licensing/Apple_MIT_License
++	$license = "Apple MIT $license";
++    }
++
      if ($licensetext =~ /Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license \(the \"Software\"\)/ or
  	$licensetext =~ /Boost Software License([ ,-]+Version ([^ ]+)?(\.))/i) {
  	$license = "BSL " . ($1 ? "(v$2) " : '') . $license;
-@@ -515,18 +514,8 @@
+@@ -515,18 +523,8 @@
      if ($licensetext =~ /The origin of this software must not be misrepresented.*Altered source versions must be plainly marked as such.*This notice may not be removed or altered from any source distribution/ or
          $licensetext =~ /see copyright notice in zlib\.h/) {
  	$license = "zlib/libpng $license";

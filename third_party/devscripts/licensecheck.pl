@@ -504,6 +504,13 @@ sub parselicense($) {
         $license = "Ms-PL $license";
     }
 
+    if ($licensetext =~ /as defined in and that are subject to the Apple Public Source License([ ,-]+Version ([^ ]+)?(\.))/) {
+	$license = "APSL " . ($1 ? "(v$2) " : '') . $license;
+    } elsif ($licensetext =~ /provided that if you redistribute the Apple Software in its entirety and without modifications, you must retain this notice and the following text and disclaimers in all such redistributions of the Apple Software/) {
+	# https://fedoraproject.org/wiki/Licensing/Apple_MIT_License
+	$license = "Apple MIT $license";
+    }
+
     if ($licensetext =~ /Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license \(the \"Software\"\)/ or
 	$licensetext =~ /Boost Software License([ ,-]+Version ([^ ]+)?(\.))/i) {
 	$license = "BSL " . ($1 ? "(v$2) " : '') . $license;

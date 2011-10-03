@@ -33,6 +33,9 @@ WHITELISTED_LICENSES = [
     'Apache (v2.0)',
     'Apache (v2.0) BSD (2 clause)',
     'Apache (v2.0) GPL (v2)',
+    'Apple MIT',  # https://fedoraproject.org/wiki/Licensing/Apple_MIT_License
+    'APSL (v2)',
+    'APSL (v2) BSD (4 clause)',
     'BSD',
     'BSD (2 clause)',
     'BSD (2 clause) MIT/X11 (BSD like)',
@@ -172,12 +175,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (unversioned/unknown version)',
     ],
     'third_party/active_doc': [
-        'UNKNOWN',
-    ],
-    'third_party/apple/ImageAndTextCell.h': [
-        'UNKNOWN',
-    ],
-    'third_party/apple_apsl': [
         'UNKNOWN',
     ],
     'third_party/angle': [
