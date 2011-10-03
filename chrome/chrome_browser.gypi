@@ -1243,8 +1243,6 @@
         'browser/first_run/upgrade_util_mac.cc',
         'browser/first_run/upgrade_util_win.cc',
         'browser/first_run/upgrade_util_win.h',
-        'browser/fragmentation_checker_win.cc',
-        'browser/fragmentation_checker_win.h',
         'browser/fullscreen.h',
         'browser/fullscreen_aura.cc',
         'browser/fullscreen_gtk.cc',

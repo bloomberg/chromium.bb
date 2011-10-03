@@ -1291,7 +1291,6 @@
         'browser/external_protocol/external_protocol_handler_unittest.cc',
         'browser/favicon/favicon_handler_unittest.cc',
         'browser/first_run/first_run_unittest.cc',
-        'browser/fragmentation_checker_unittest_win.cc',
         'browser/geolocation/chrome_geolocation_permission_context_unittest.cc',
         'browser/geolocation/geolocation_settings_state_unittest.cc',
         'browser/geolocation/wifi_data_provider_unittest_chromeos.cc',
