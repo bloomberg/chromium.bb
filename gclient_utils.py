@@ -358,6 +358,9 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
           else:
             filter_fn(in_line)
             in_line = ''
+        else:
+          filter_fn(in_line)
+          in_line = ''
         in_byte = kid.stdout.read(1)
       # Flush the rest of buffered output. This is only an issue with
       # stdout/stderr not ending with a \n.

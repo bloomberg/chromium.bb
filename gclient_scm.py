@@ -494,7 +494,7 @@ class GitWrapper(SCMWrapper):
       # to stdout
       print('')
 
-    clone_cmd = ['clone']
+    clone_cmd = ['clone', '--progress']
     if revision.startswith('refs/heads/'):
       clone_cmd.extend(['-b', revision.replace('refs/heads/', '')])
       detach_head = False
@@ -510,9 +510,20 @@ class GitWrapper(SCMWrapper):
     if not os.path.exists(parent_dir):
       os.makedirs(parent_dir)
 
+    percent_re = re.compile('.* ([0-9]{1,2})% .*')
+    def _GitFilter(line):
+      # git uses an escape sequence to clear the line; elide it.
+      esc = line.find(unichr(033))
+      if esc > -1:
+        line = line[:esc]
+      match = percent_re.match(line)
+      if not match or not int(match.group(1)) % 10:
+        print '%s' % line
+
     for _ in range(3):
       try:
-        self._Run(clone_cmd, options, cwd=self._root_dir)
+        self._Run(clone_cmd, options, cwd=self._root_dir, filter_fn=_GitFilter,
+                  print_stdout=False)
         break
       except subprocess2.CalledProcessError, e:
         # Too bad we don't have access to the actual output yet.
@@ -679,8 +690,11 @@ class GitWrapper(SCMWrapper):
 
   def _Run(self, args, options, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
-    gclient_utils.CheckCallAndFilterAndHeader(['git'] + args,
-        always=options.verbose, **kwargs)
+    kwargs.setdefault('print_stdout', True)
+    stdout = kwargs.get('stdout', sys.stdout)
+    stdout.write('\n________ running \'%s\' in \'%s\'\n' % (
+                 ' '.join(args), kwargs['cwd']))
+    gclient_utils.CheckCallAndFilter(['git'] + args, **kwargs)
 
 
 class SVNWrapper(SCMWrapper):
