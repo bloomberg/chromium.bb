@@ -19,7 +19,6 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/models/accelerator.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/menu/menu.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
@@ -92,7 +91,7 @@ class ToolbarView : public AccessiblePaneView,
   virtual bool SetPaneFocus(int view_storage_id, View* initial_focus) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Overridden from views::MenuDelegate:
+  // Overridden from views::ViewMenuDelegate:
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // Overridden from LocationBarView::Delegate:
