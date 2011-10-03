@@ -42,7 +42,7 @@
       <include name="IDR_CREDITS_JS" file="resources\about_credits.js" type="BINDATA" />
       <include name="IDR_DOWNLOADS_JS" file="resources\downloads.js" type="BINDATA" />
       <include name="IDR_DOWNLOADS_HTML" file="resources\downloads.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_HUNG_RENDERER_DIALOG_HTML" file="resources\hung_renderer_dialog.html" type="BINDATA" />
+      <include name="IDR_HUNG_RENDERER_DIALOG_HTML" file="resources\hung_renderer_dialog.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HUNG_RENDERER_DIALOG_JS" file="resources\hung_renderer_dialog.js" type="BINDATA" />
       <include name="IDR_HUNG_RENDERER_DIALOG_CSS" file="resources\hung_renderer_dialog.css" type="BINDATA" />
       <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
