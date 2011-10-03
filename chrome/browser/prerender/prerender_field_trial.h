@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_
 
+#include <string>
+
 class CommandLine;
 class Profile;
 
@@ -12,7 +14,8 @@ namespace prerender {
 
 enum OmniboxHeuristic {
   OMNIBOX_HEURISTIC_ORIGINAL,
-  OMNIBOX_HEURISTIC_CONSERVATIVE
+  OMNIBOX_HEURISTIC_CONSERVATIVE,
+  OMNIBOX_HEURISTIC_MAX
 };
 
 // Parse the --prerender= command line switch, which controls both prerendering
@@ -27,6 +30,10 @@ bool IsOmniboxEnabled(Profile* profile);
 // Returns the heuristic to use when determining if prerendering should be
 // attempted from the Omnibox. Governed by a field trial.
 OmniboxHeuristic GetOmniboxHeuristicToUse();
+
+// Returns the suffix to use for histograms dependent on which Omnibox heuristic
+// is active.
+std::string GetOmniboxHistogramSuffix();
 
 }  // namespace prerender
 

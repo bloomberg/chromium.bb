@@ -95,15 +95,12 @@ NetworkActionPredictor::Action
     return ACTION_NONE;
 
   double confidence = 0.0;
-  std::string histogram("NetworkActionPredictor.Confidence_");
   switch (prerender::GetOmniboxHeuristicToUse()) {
     case prerender::OMNIBOX_HEURISTIC_ORIGINAL:
       confidence = OriginalAlgorithm(url_row);
-      histogram += "Original";
       break;
     case prerender::OMNIBOX_HEURISTIC_CONSERVATIVE:
       confidence = ConservativeAlgorithm(url_row);
-      histogram += "Conservative";
       break;
     default:
       NOTREACHED();
@@ -112,7 +109,9 @@ NetworkActionPredictor::Action
 
   CHECK(confidence >= 0.0 && confidence <= 1.0);
 
-  UMA_HISTOGRAM_COUNTS_100(histogram.c_str(), confidence * 100);
+  UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.Confidence_" +
+                           prerender::GetOmniboxHistogramSuffix(),
+                           confidence * 100);
 
   for (int i = 0; i < LAST_PREDICT_ACTION; ++i)
     if (confidence >= kConfidenceCutoff[i])

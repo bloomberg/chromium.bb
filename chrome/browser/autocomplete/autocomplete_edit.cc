@@ -216,7 +216,9 @@ void AutocompleteEditModel::OnChanged() {
   // so we can get stats for anyone who is opted in to UMA.
   NetworkActionPredictor::Action recommended_action =
       network_action_predictor_.RecommendAction(user_text_, current_match);
-  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action", recommended_action,
+  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action_" +
+                            prerender::GetOmniboxHistogramSuffix(),
+                            recommended_action,
                             NetworkActionPredictor::LAST_PREDICT_ACTION);
   bool might_support_instant = false;
   if (!DoInstant(current_match, &suggested_text, &might_support_instant)) {

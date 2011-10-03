@@ -17,8 +17,25 @@
 
 namespace prerender {
 
+namespace {
+
 int omnibox_original_group_id = 0;
 int omnibox_conservative_group_id = 0;
+
+const char* kOmniboxHeuristicNames[] = {
+  "Original",
+  "Conservative",
+};
+COMPILE_ASSERT(arraysize(kOmniboxHeuristicNames) == OMNIBOX_HEURISTIC_MAX,
+               OmniboxHeuristic_name_count_mismatch);
+
+const char* NameFromOmniboxHeuristic(OmniboxHeuristic heuristic) {
+  DCHECK_LT(static_cast<unsigned int>(heuristic),
+            arraysize(kOmniboxHeuristicNames));
+  return kOmniboxHeuristicNames[heuristic];
+}
+
+}  // end namespace
 
 // If the command line contains the --prerender-from-omnibox switch, enable
 // prerendering from the Omnibox. If not, enter the user into a field trial.
@@ -172,6 +189,10 @@ OmniboxHeuristic GetOmniboxHeuristicToUse() {
 
   // If we don't have a group just return the original heuristic.
   return OMNIBOX_HEURISTIC_ORIGINAL;
+}
+
+std::string GetOmniboxHistogramSuffix() {
+  return NameFromOmniboxHeuristic(prerender::GetOmniboxHeuristicToUse());
 }
 
 }  // namespace prerender
