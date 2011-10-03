@@ -31,26 +31,32 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
  public:
   virtual void StartFetching(FetchResultCallback* callback) OVERRIDE;
   virtual void CancelNotification() OVERRIDE;
+  virtual void RevokeHostQuota(const std::string& host) OVERRIDE;
 
  private:
-  void FetchQuotaInfo();
-  void OnComplete();
+  BrowsingDataQuotaHelperImpl(base::MessageLoopProxy* ui_thread,
+                              base::MessageLoopProxy* io_thread,
+                              quota::QuotaManager* quota_manager);
+  virtual ~BrowsingDataQuotaHelperImpl();
 
-  void GetHostUsage(const std::string& host, quota::StorageType type);
-  void ProcessPendingHosts();
+  void FetchQuotaInfo();
 
   // Callback function for GetOriginModifiedSince.
   void GotOrigins(const std::set<GURL>& origins, quota::StorageType type);
+
+  void ProcessPendingHosts();
+  void GetHostUsage(const std::string& host, quota::StorageType type);
 
   // Callback function for GetHostUsage.
   void GotHostUsage(const std::string& host,
                     quota::StorageType type,
                     int64 usage);
 
-  explicit BrowsingDataQuotaHelperImpl(base::MessageLoopProxy* ui_thread,
-                                       base::MessageLoopProxy* io_thread,
-                                       quota::QuotaManager* quota_manager);
-  virtual ~BrowsingDataQuotaHelperImpl();
+  void OnComplete();
+  void DidRevokeHostQuota(quota::QuotaStatusCode status,
+                          const std::string& host,
+                          quota::StorageType type,
+                          int64 quota);
 
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_ptr<FetchResultCallback> callback_;

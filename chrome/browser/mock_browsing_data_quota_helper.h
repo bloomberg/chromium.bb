@@ -19,6 +19,7 @@ class MockBrowsingDataQuotaHelper : public BrowsingDataQuotaHelper {
 
   virtual void StartFetching(FetchResultCallback* callback) OVERRIDE;
   virtual void CancelNotification() OVERRIDE;
+  virtual void RevokeHostQuota(const std::string& host) OVERRIDE;
 
   void AddHost(const std::string& host,
                int64 temporary_usage,

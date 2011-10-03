@@ -301,7 +301,9 @@ CookieTreeQuotaNode::CookieTreeQuotaNode(
 CookieTreeQuotaNode::~CookieTreeQuotaNode() {}
 
 void CookieTreeQuotaNode::DeleteStoredObjects() {
-  GetModel()->quota_helper_->DeleteQuotaHost(quota_info_->host);
+  // Calling this function may cause unexpected over-quota state of origin.
+  // However, it'll caused no problem, just prevent usage growth of the origin.
+  GetModel()->quota_helper_->RevokeHostQuota(quota_info_->host);
   GetModel()->quota_info_list_.erase(quota_info_);
 }
 

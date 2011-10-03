@@ -65,8 +65,7 @@ class BrowsingDataQuotaHelper
   virtual void StartFetching(FetchResultCallback* callback) = 0;
   virtual void CancelNotification() = 0;
 
-  // We don't support deletion now.
-  virtual void DeleteQuotaHost(const std::string& host) {}
+  virtual void RevokeHostQuota(const std::string& host) = 0;
 
  protected:
   explicit BrowsingDataQuotaHelper(base::MessageLoopProxy* io_thread_);

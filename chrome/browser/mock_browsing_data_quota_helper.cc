@@ -19,6 +19,9 @@ void MockBrowsingDataQuotaHelper::CancelNotification() {
   callback_.reset(NULL);
 }
 
+void MockBrowsingDataQuotaHelper::RevokeHostQuota(const std::string& host) {
+}
+
 void MockBrowsingDataQuotaHelper::AddHost(
     const std::string& host,
     int64 temporary_usage,

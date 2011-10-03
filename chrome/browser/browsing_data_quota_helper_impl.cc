@@ -19,21 +19,6 @@ BrowsingDataQuotaHelper* BrowsingDataQuotaHelper::Create(Profile* profile) {
       profile->GetQuotaManager());
 }
 
-BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
-    base::MessageLoopProxy* ui_thread,
-    base::MessageLoopProxy* io_thread,
-    quota::QuotaManager* quota_manager)
-    : BrowsingDataQuotaHelper(io_thread),
-      quota_manager_(quota_manager),
-      is_fetching_(false),
-      ui_thread_(ui_thread),
-      io_thread_(io_thread),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  DCHECK(quota_manager);
-}
-
-BrowsingDataQuotaHelperImpl::~BrowsingDataQuotaHelperImpl() {}
-
 void BrowsingDataQuotaHelperImpl::StartFetching(FetchResultCallback* callback) {
   DCHECK(callback);
   DCHECK(!callback_.get());
@@ -48,6 +33,37 @@ void BrowsingDataQuotaHelperImpl::StartFetching(FetchResultCallback* callback) {
 void BrowsingDataQuotaHelperImpl::CancelNotification() {
   callback_.reset();
 }
+
+void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(
+            this,
+            &BrowsingDataQuotaHelperImpl::RevokeHostQuota,
+            host));
+    return;
+  }
+
+  quota_manager_->SetPersistentHostQuota(
+      host, 0, callback_factory_.NewCallback(
+          &BrowsingDataQuotaHelperImpl::DidRevokeHostQuota));
+}
+
+BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
+    base::MessageLoopProxy* ui_thread,
+    base::MessageLoopProxy* io_thread,
+    quota::QuotaManager* quota_manager)
+    : BrowsingDataQuotaHelper(io_thread),
+      quota_manager_(quota_manager),
+      is_fetching_(false),
+      ui_thread_(ui_thread),
+      io_thread_(io_thread),
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  DCHECK(quota_manager);
+}
+
+BrowsingDataQuotaHelperImpl::~BrowsingDataQuotaHelperImpl() {}
 
 void BrowsingDataQuotaHelperImpl::FetchQuotaInfo() {
   if (!io_thread_->BelongsToCurrentThread()) {
@@ -159,4 +175,11 @@ void BrowsingDataQuotaHelperImpl::OnComplete() {
 
   callback_->Run(result);
   callback_.reset();
+}
+
+void BrowsingDataQuotaHelperImpl::DidRevokeHostQuota(
+    quota::QuotaStatusCode status_unused,
+    const std::string& host_unused,
+    quota::StorageType type_unused,
+    int64 quota_unused) {
 }
