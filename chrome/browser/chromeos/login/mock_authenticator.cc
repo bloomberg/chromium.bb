@@ -124,9 +124,12 @@ std::string MockLoginUtils::GetOffTheRecordCommandLine(
   return std::string();
 }
 
-bool MockLoginUtils::TransferDefaultCookies(Profile* default_profile,
-                                                   Profile* new_profile) {
-  return true;
+void MockLoginUtils::TransferDefaultCookies(Profile* default_profile,
+                                            Profile* new_profile) {
+}
+
+void MockLoginUtils::TransferDefaultAuthCache(Profile* default_profile,
+                                              Profile* new_profile) {
 }
 
 }  // namespace chromeos

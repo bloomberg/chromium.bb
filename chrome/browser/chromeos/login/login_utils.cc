@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -61,6 +62,9 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_store.h"
+#include "net/http/http_auth_cache.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/gl/gl_switches.h"
@@ -113,14 +117,13 @@ class StartSyncOnUIThreadTask : public Task {
   GaiaAuthConsumer::ClientLoginResult credentials_;
 };
 
-// Transfers initial set of Profile cookies form the default profile.
+// Transfers initial set of Profile cookies from the default profile.
 class TransferDefaultCookiesOnIOThreadTask : public Task {
  public:
   TransferDefaultCookiesOnIOThreadTask(
-      net::URLRequestContextGetter* auth_context, Profile* new_profile,
+      net::URLRequestContextGetter* auth_context,
       net::URLRequestContextGetter* new_context)
           : auth_context_(auth_context),
-            new_profile_(new_profile),
             new_context_(new_context) {}
   virtual ~TransferDefaultCookiesOnIOThreadTask() {}
 
@@ -150,12 +153,36 @@ class TransferDefaultCookiesOnIOThreadTask : public Task {
 
  private:
   net::URLRequestContextGetter* auth_context_;
-  Profile* new_profile_;
   net::URLRequestContextGetter* new_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TransferDefaultCookiesOnIOThreadTask);
 };
 
+// Transfers initial HTTP proxy authentication from the default profile.
+class TransferDefaultAuthCacheOnIOThreadTask : public Task {
+ public:
+  TransferDefaultAuthCacheOnIOThreadTask(
+      net::URLRequestContextGetter* auth_context,
+      net::URLRequestContextGetter* new_context)
+          : auth_context_(auth_context),
+            new_context_(new_context) {}
+  virtual ~TransferDefaultAuthCacheOnIOThreadTask() {}
+
+  // Task override.
+  virtual void Run() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    net::HttpAuthCache* new_cache = new_context_->GetURLRequestContext()->
+        http_transaction_factory()->GetSession()->http_auth_cache();
+    new_cache->UpdateAllFrom(*auth_context_->GetURLRequestContext()->
+        http_transaction_factory()->GetSession()->http_auth_cache());
+  }
+
+ private:
+  net::URLRequestContextGetter* auth_context_;
+  net::URLRequestContextGetter* new_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransferDefaultAuthCacheOnIOThreadTask);
+};
 
 // Verifies OAuth1 access token by performing OAuthLogin.
 class OAuthLoginVerifier : public GaiaOAuthConsumer {
@@ -402,10 +429,16 @@ class LoginUtilsImpl : public LoginUtils,
   // Transfers cookies from the |default_profile| into the |new_profile|.
   // If authentication was performed by an extension, then
   // the set of cookies that was acquired through such that process will be
-  // automatically transfered into the profile. Returns true if cookie transfer
-  // was performed successfully.
-  virtual bool TransferDefaultCookies(Profile* default_profile,
+  // automatically transfered into the profile.
+  virtual void TransferDefaultCookies(Profile* default_profile,
                                       Profile* new_profile) OVERRIDE;
+
+  // Transfers HTTP authentication cache from the |default_profile|
+  // into the |new_profile|. If user was required to authenticate with a proxy
+  // during the login, this authentication information will be transferred
+  // into the new session.
+  virtual void TransferDefaultAuthCache(Profile* default_profile,
+                                        Profile* new_profile) OVERRIDE;
 
   // ProfileManagerObserver implementation:
   virtual void OnProfileCreated(Profile* profile, Status status) OVERRIDE;
@@ -605,11 +638,12 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
       // put in place that will ensure that the newly created session is
       // authenticated for the websites that work with the used authentication
       // schema.
-      if (!TransferDefaultCookies(authenticator_->authentication_profile(),
-                                  user_profile)) {
-        LOG(WARNING) << "Cookie transfer from the default profile failed!";
-      }
+      TransferDefaultCookies(authenticator_->authentication_profile(),
+                             user_profile);
     }
+    // Transfer proxy authentication cache.
+    TransferDefaultAuthCache(authenticator_->authentication_profile(),
+                             user_profile);
     std::string oauth1_token;
     std::string oauth1_secret;
     if (ReadOAuth1AccessToken(user_profile, &oauth1_token, &oauth1_secret) ||
@@ -965,14 +999,20 @@ BackgroundView* LoginUtilsImpl::GetBackgroundView() {
   return background_view_;
 }
 
-bool LoginUtilsImpl::TransferDefaultCookies(Profile* default_profile,
+void LoginUtilsImpl::TransferDefaultCookies(Profile* default_profile,
                                             Profile* profile) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           new TransferDefaultCookiesOnIOThreadTask(
                               default_profile->GetRequestContext(),
-                              profile,
                               profile->GetRequestContext()));
-  return true;
+}
+
+void LoginUtilsImpl::TransferDefaultAuthCache(Profile* default_profile,
+                                              Profile* profile) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          new TransferDefaultAuthCacheOnIOThreadTask(
+                              default_profile->GetRequestContext(),
+                              profile->GetRequestContext()));
 }
 
 void LoginUtilsImpl::OnGetOAuthTokenSuccess(const std::string& oauth_token) {
