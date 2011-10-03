@@ -34,4 +34,12 @@ if sys.platform == 'darwin':
 	<string>test_loadable_module</string>
 """)
 
+  # PkgInfo.
+  test.built_file_must_not_exist(
+      'test_loadable_module.plugin/Contents/PkgInfo',
+      chdir='loadable-module')
+  test.built_file_must_not_exist(
+      'test_loadable_module.plugin/Contents/Resources',
+      chdir='loadable-module')
+
   test.pass_test()
