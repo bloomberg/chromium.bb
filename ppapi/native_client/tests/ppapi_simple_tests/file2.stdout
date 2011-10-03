@@ -80,6 +80,8 @@ output 0:  i(1)
 replaying PPB_Messaging_PostMessage:iC::
 input 0:  i(5555)
 input 1:  C(48,\x05\x00\x00\x00!\x00\x00\x005555: Error: Finish unexpected rv\x00\x00\x00\x00\x00\x00\x00)
+replaying PPB_Core_ReleaseResource:i::
+input 0:  i(38)
 rpc call complete RunCompletionCallback:iiC:
 
 

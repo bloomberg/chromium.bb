@@ -2,6 +2,10 @@
 #    sel_universal_ppapi_replay_prolog.stdin
 # define a bunch of variables for readability
 
+# NOTE: this test exercises the request.SetStreamToFile(true) case
+#       which does not result in a 200 return code
+#       So the expected outcome of this tests is a failure.
+
 set_variable MODULE i(4444)
 set_variable INSTANCE i(5555)
 

@@ -2,6 +2,8 @@
 #    sel_universal_ppapi_replay_prolog.stdin
 # define a bunch of variables for readability
 
+# NOTE: this test exercises the request.SetStreamToFile(false) case
+
 set_variable MODULE i(4444)
 set_variable INSTANCE i(5555)
 
