@@ -224,9 +224,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/hunspell': [
         'UNKNOWN',
     ],
-    'third_party/hyphen': [
-        'UNKNOWN',
-    ],
     'third_party/iccjpeg': [
         'UNKNOWN',
     ],
