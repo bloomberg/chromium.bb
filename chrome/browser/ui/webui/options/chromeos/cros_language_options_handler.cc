@@ -8,6 +8,8 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -74,16 +76,17 @@ void CrosLanguageOptionsHandler::RegisterMessages() {
   LanguageOptionsHandlerCommon::RegisterMessages();
 
   web_ui_->RegisterMessageCallback("inputMethodDisable",
-      NewCallback(this,
-                  &CrosLanguageOptionsHandler::InputMethodDisableCallback));
+      base::Bind(&CrosLanguageOptionsHandler::InputMethodDisableCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("inputMethodEnable",
-      NewCallback(this,
-                  &CrosLanguageOptionsHandler::InputMethodEnableCallback));
+      base::Bind(&CrosLanguageOptionsHandler::InputMethodEnableCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("inputMethodOptionsOpen",
-      NewCallback(this,
-                  &CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback));
+      base::Bind(&CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("uiLanguageRestart",
-      NewCallback(this, &CrosLanguageOptionsHandler::RestartCallback));
+      base::Bind(&CrosLanguageOptionsHandler::RestartCallback,
+                 base::Unretained(this)));
 }
 
 ListValue* CrosLanguageOptionsHandler::GetInputMethodList(

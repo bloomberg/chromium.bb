@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/change_picture_options_handler.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -74,23 +75,21 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
 
 void ChangePictureOptionsHandler::RegisterMessages() {
   DCHECK(web_ui_);
-  web_ui_->RegisterMessageCallback(
-      "chooseFile",
-      NewCallback(this, &ChangePictureOptionsHandler::HandleChooseFile));
-  web_ui_->RegisterMessageCallback(
-      "takePhoto",
-      NewCallback(this, &ChangePictureOptionsHandler::HandleTakePhoto));
-  web_ui_->RegisterMessageCallback(
-      "getAvailableImages",
-      NewCallback(this,
-                  &ChangePictureOptionsHandler::HandleGetAvailableImages));
-  web_ui_->RegisterMessageCallback(
-      "getSelectedImage",
-      NewCallback(this,
-                  &ChangePictureOptionsHandler::HandleGetSelectedImage));
-  web_ui_->RegisterMessageCallback(
-      "selectImage",
-      NewCallback(this, &ChangePictureOptionsHandler::HandleSelectImage));
+  web_ui_->RegisterMessageCallback("chooseFile",
+      base::Bind(&ChangePictureOptionsHandler::HandleChooseFile,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("takePhoto",
+      base::Bind(&ChangePictureOptionsHandler::HandleTakePhoto,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("getAvailableImages",
+      base::Bind(&ChangePictureOptionsHandler::HandleGetAvailableImages,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("getSelectedImage",
+      base::Bind(&ChangePictureOptionsHandler::HandleGetSelectedImage,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("selectImage",
+      base::Bind(&ChangePictureOptionsHandler::HandleSelectImage,
+                 base::Unretained(this)));
 }
 
 void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {

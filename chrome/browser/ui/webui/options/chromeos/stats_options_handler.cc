@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/stats_options_handler.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -26,9 +27,9 @@ void StatsOptionsHandler::Initialize() {
 
 // WebUIMessageHandler implementation.
 void StatsOptionsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback(
-      "metricsReportingCheckboxAction",
-      NewCallback(this, &StatsOptionsHandler::HandleMetricsReportingCheckbox));
+  web_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
+      base::Bind(&StatsOptionsHandler::HandleMetricsReportingCheckbox,
+                 base::Unretained(this)));
 }
 
 void StatsOptionsHandler::HandleMetricsReportingCheckbox(

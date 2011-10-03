@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_old.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
@@ -234,14 +236,14 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
 void AboutPageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("PageReady",
-      NewCallback(this, &AboutPageHandler::PageReady));
+      base::Bind(&AboutPageHandler::PageReady, base::Unretained(this)));
   web_ui_->RegisterMessageCallback("SetReleaseTrack",
-      NewCallback(this, &AboutPageHandler::SetReleaseTrack));
+      base::Bind(&AboutPageHandler::SetReleaseTrack, base::Unretained(this)));
 
   web_ui_->RegisterMessageCallback("CheckNow",
-      NewCallback(this, &AboutPageHandler::CheckNow));
+      base::Bind(&AboutPageHandler::CheckNow, base::Unretained(this)));
   web_ui_->RegisterMessageCallback("RestartNow",
-      NewCallback(this, &AboutPageHandler::RestartNow));
+      base::Bind(&AboutPageHandler::RestartNow, base::Unretained(this)));
 }
 
 void AboutPageHandler::PageReady(const ListValue* args) {

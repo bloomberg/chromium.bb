@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -30,11 +32,14 @@ AccountsOptionsHandler::~AccountsOptionsHandler() {
 void AccountsOptionsHandler::RegisterMessages() {
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback("whitelistUser",
-      NewCallback(this, &AccountsOptionsHandler::WhitelistUser));
+      base::Bind(&AccountsOptionsHandler::WhitelistUser,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("unwhitelistUser",
-      NewCallback(this, &AccountsOptionsHandler::UnwhitelistUser));
+      base::Bind(&AccountsOptionsHandler::UnwhitelistUser,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("whitelistExistingUsers",
-      NewCallback(this, &AccountsOptionsHandler::WhitelistExistingUsers));
+      base::Bind(&AccountsOptionsHandler::WhitelistExistingUsers,
+                 base::Unretained(this)));
 }
 
 void AccountsOptionsHandler::GetLocalizedValues(

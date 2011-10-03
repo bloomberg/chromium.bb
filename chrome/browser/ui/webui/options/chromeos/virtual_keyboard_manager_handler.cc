@@ -8,7 +8,8 @@
 #include <set>
 #include <string>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -63,17 +64,14 @@ void VirtualKeyboardManagerHandler::RegisterMessages() {
   DCHECK(web_ui_);
   // Register handler functions for chrome.send().
   web_ui_->RegisterMessageCallback("updateVirtualKeyboardList",
-      NewCallback(
-          this,
-          &VirtualKeyboardManagerHandler::UpdateVirtualKeyboardList));
+      base::Bind(&VirtualKeyboardManagerHandler::UpdateVirtualKeyboardList,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setVirtualKeyboardPreference",
-      NewCallback(
-          this,
-          &VirtualKeyboardManagerHandler::SetVirtualKeyboardPreference));
+      base::Bind(&VirtualKeyboardManagerHandler::SetVirtualKeyboardPreference,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("clearVirtualKeyboardPreference",
-      NewCallback(
-          this,
-          &VirtualKeyboardManagerHandler::ClearVirtualKeyboardPreference));
+      base::Bind(&VirtualKeyboardManagerHandler::ClearVirtualKeyboardPreference,
+                 base::Unretained(this)));
 }
 
 ListValue* VirtualKeyboardManagerHandler::GetVirtualKeyboardList() {

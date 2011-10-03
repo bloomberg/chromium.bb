@@ -12,7 +12,8 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
@@ -373,33 +374,47 @@ void InternetOptionsHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
   DCHECK(web_ui_);
   web_ui_->RegisterMessageCallback("buttonClickCallback",
-      NewCallback(this, &InternetOptionsHandler::ButtonClickCallback));
+      base::Bind(&InternetOptionsHandler::ButtonClickCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("refreshCellularPlan",
-      NewCallback(this, &InternetOptionsHandler::RefreshCellularPlanCallback));
+      base::Bind(&InternetOptionsHandler::RefreshCellularPlanCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setPreferNetwork",
-      NewCallback(this, &InternetOptionsHandler::SetPreferNetworkCallback));
+      base::Bind(&InternetOptionsHandler::SetPreferNetworkCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setAutoConnect",
-      NewCallback(this, &InternetOptionsHandler::SetAutoConnectCallback));
+      base::Bind(&InternetOptionsHandler::SetAutoConnectCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setIPConfig",
-      NewCallback(this, &InternetOptionsHandler::SetIPConfigCallback));
+      base::Bind(&InternetOptionsHandler::SetIPConfigCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("enableWifi",
-      NewCallback(this, &InternetOptionsHandler::EnableWifiCallback));
+      base::Bind(&InternetOptionsHandler::EnableWifiCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("disableWifi",
-      NewCallback(this, &InternetOptionsHandler::DisableWifiCallback));
+      base::Bind(&InternetOptionsHandler::DisableWifiCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("enableCellular",
-      NewCallback(this, &InternetOptionsHandler::EnableCellularCallback));
+      base::Bind(&InternetOptionsHandler::EnableCellularCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("disableCellular",
-      NewCallback(this, &InternetOptionsHandler::DisableCellularCallback));
+      base::Bind(&InternetOptionsHandler::DisableCellularCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("buyDataPlan",
-      NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));
+      base::Bind(&InternetOptionsHandler::BuyDataPlanCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("showMorePlanInfo",
-      NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));
+      base::Bind(&InternetOptionsHandler::BuyDataPlanCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setApn",
-        NewCallback(this, &InternetOptionsHandler::SetApnCallback));
+      base::Bind(&InternetOptionsHandler::SetApnCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setSimCardLock",
-        NewCallback(this, &InternetOptionsHandler::SetSimCardLockCallback));
+      base::Bind(&InternetOptionsHandler::SetSimCardLockCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("changePin",
-        NewCallback(this, &InternetOptionsHandler::ChangePinCallback));
+      base::Bind(&InternetOptionsHandler::ChangePinCallback,
+                 base::Unretained(this)));
 }
 
 void InternetOptionsHandler::EnableWifiCallback(const ListValue* args) {
