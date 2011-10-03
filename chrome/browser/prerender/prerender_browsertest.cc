@@ -1691,8 +1691,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
 
 // Checks that when the history is cleared, prerendering is cancelled and
 // prerendering history is cleared.
-// DISABLED: http://www.crbug.com/86829
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderClearHistory) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearHistory) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_CACHE_OR_HISTORY_CLEARED,
                    1);
