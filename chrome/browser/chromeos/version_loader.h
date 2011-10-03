@@ -78,7 +78,7 @@ class VersionLoader : public CancelableRequestProvider {
   // and extract the version.
   class Backend : public base::RefCountedThreadSafe<Backend> {
    public:
-    Backend() : parse_as_platform_(false) {}
+    Backend() {}
 
     // Calls ParseVersion to get the version # and notifies request.
     // This is invoked on the file thread.
@@ -90,12 +90,8 @@ class VersionLoader : public CancelableRequestProvider {
     // This is invoked on the file thread.
     void GetFirmware(scoped_refptr<GetFirmwareRequest> request);
 
-    void set_parse_as_platform(bool value) { parse_as_platform_ = value; }
-
    private:
     friend class base::RefCountedThreadSafe<Backend>;
-
-    bool parse_as_platform_;
 
     ~Backend() {}
 

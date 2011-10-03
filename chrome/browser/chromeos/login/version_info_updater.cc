@@ -39,7 +39,6 @@ VersionInfoUpdater::~VersionInfoUpdater() {
 
 void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    version_loader_.EnablePlatformVersions(true);
     version_loader_.GetVersion(
         &version_consumer_,
         NewCallback(this, &VersionInfoUpdater::OnVersion),
@@ -199,4 +198,3 @@ void VersionInfoUpdater::OnPolicyStateChanged(
 }
 
 }  // namespace chromeos
-

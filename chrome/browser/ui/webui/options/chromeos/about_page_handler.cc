@@ -246,7 +246,6 @@ void AboutPageHandler::RegisterMessages() {
 
 void AboutPageHandler::PageReady(const ListValue* args) {
   // Version information is loaded from a callback
-  loader_.EnablePlatformVersions(true);
   loader_.GetVersion(&consumer_,
                      NewCallback(this, &AboutPageHandler::OnOSVersion),
                      VersionLoader::VERSION_FULL);
