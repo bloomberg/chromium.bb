@@ -87,8 +87,8 @@ void DownloadItemMac::LoadIcon() {
 
   // The icon isn't cached, load it asynchronously.
   icon_manager->LoadIcon(file, IconLoader::ALL, &icon_consumer_,
-                         NewCallback(this,
-                                     &DownloadItemMac::OnExtractIconComplete));
+                         base::Bind(&DownloadItemMac::OnExtractIconComplete,
+                                    base::Unretained(this)));
 }
 
 void DownloadItemMac::OnExtractIconComplete(IconManager::Handle handle,

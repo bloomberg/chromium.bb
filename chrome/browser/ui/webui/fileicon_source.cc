@@ -54,7 +54,8 @@ void FileIconSource::StartDataRequest(const std::string& path,
     IconManager::Handle h = im->LoadIcon(escaped_filepath,
         IconLoader::NORMAL,
         &cancelable_consumer_,
-        NewCallback(this, &FileIconSource::OnFileIconDataAvailable));
+        base::Bind(&FileIconSource::OnFileIconDataAvailable,
+                   base::Unretained(this)));
 
     // Attach the ChromeURLDataManager request ID to the history request.
     cancelable_consumer_.SetClientData(im, h, request_id);

@@ -71,7 +71,7 @@ class IconManager : public IconLoader::Delegate,
                          IconLoader::IconSize size);
 
   typedef CancelableRequestProvider::Handle Handle;
-  typedef Callback2<Handle, gfx::Image*>::Type IconRequestCallback;
+  typedef base::Callback<void(Handle, gfx::Image*)> IconRequestCallback;
 
   // Asynchronous call to lookup and return the icon associated with file. The
   // work is done on the file thread, with the callbacks running on the UI
@@ -82,7 +82,7 @@ class IconManager : public IconLoader::Delegate,
   Handle LoadIcon(const FilePath& file_name,
                   IconLoader::IconSize size,
                   CancelableRequestConsumerBase* consumer,
-                  IconRequestCallback* callback);
+                  const IconRequestCallback& callback);
 
   // IconLoader::Delegate interface.
   virtual bool OnImageLoaded(IconLoader* source, gfx::Image* result);

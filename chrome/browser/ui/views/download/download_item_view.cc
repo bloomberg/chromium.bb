@@ -928,7 +928,8 @@ void DownloadItemView::LoadIcon() {
   last_download_item_path_ = download_->GetUserVerifiedFilePath();
   im->LoadIcon(last_download_item_path_,
                IconLoader::SMALL, &icon_consumer_,
-               NewCallback(this, &DownloadItemView::OnExtractIconComplete));
+               base::Bind(&DownloadItemView::OnExtractIconComplete,
+                          base::Unretained(this)));
 }
 
 void DownloadItemView::LoadIconIfItemPathChanged() {

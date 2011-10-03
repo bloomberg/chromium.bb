@@ -461,10 +461,12 @@ void DownloadItemGtk::LoadIcon() {
   icon_filepath_ = get_download()->GetUserVerifiedFilePath();
   im->LoadIcon(icon_filepath_,
                IconLoader::SMALL, &icon_consumer_,
-               NewCallback(this, &DownloadItemGtk::OnLoadSmallIconComplete));
+               base::Bind(&DownloadItemGtk::OnLoadSmallIconComplete,
+                          base::Unretained(this)));
   im->LoadIcon(icon_filepath_,
                IconLoader::LARGE, &icon_consumer_,
-               NewCallback(this, &DownloadItemGtk::OnLoadLargeIconComplete));
+               base::Bind(&DownloadItemGtk::OnLoadLargeIconComplete,
+                          base::Unretained(this)));
 }
 
 void DownloadItemGtk::UpdateTooltip() {

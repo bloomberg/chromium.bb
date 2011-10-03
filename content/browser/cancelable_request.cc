@@ -107,3 +107,34 @@ void CancelableRequestBase::Init(CancelableRequestProvider* provider,
   consumer_ = consumer;
   handle_ = handle;
 }
+
+void CancelableRequestBase::DoForward(const base::Closure& forwarded_call,
+                                      bool force_async) {
+  if (force_async || callback_thread_ != MessageLoop::current()) {
+    callback_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&CancelableRequestBase::ExecuteCallback, this,
+                   forwarded_call));
+  } else {
+    // We can do synchronous callbacks when we're on the same thread.
+    ExecuteCallback(forwarded_call);
+  }
+}
+
+void CancelableRequestBase::ExecuteCallback(
+    const base::Closure& forwarded_call) {
+  DCHECK_EQ(callback_thread_, MessageLoop::current());
+
+  if (!canceled_.IsSet()) {
+    WillExecute();
+
+    // Execute the callback.
+    forwarded_call.Run();
+  }
+
+  // Notify the provider that the request is complete. The provider will
+  // notify the consumer for us. Note that it is possible for the callback to
+  // cancel this request; we must check canceled again.
+  if (!canceled_.IsSet())
+    NotifyCompleted();
+}

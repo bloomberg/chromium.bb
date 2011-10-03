@@ -91,6 +91,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -565,6 +566,10 @@ class CONTENT_EXPORT CancelableRequestBase
             CancelableRequestProvider::Handle handle,
             CancelableRequestConsumerBase* consumer);
 
+  // Attempts to execute callback on |callback_thread_| if the request has not
+  // been canceled yet.
+  void DoForward(const base::Closure& forwarded_call, bool force_async);
+
   // Tells the provider that the request is complete, which then tells the
   // consumer.
   void NotifyCompleted() const {
@@ -599,6 +604,11 @@ class CONTENT_EXPORT CancelableRequestBase
   base::CancellationFlag canceled_;
 
  private:
+  // Executes the |forwarded_call| and notifies the provider and the consumer
+  // that this request has been completed. This must be called on the
+  // |callback_thread_|.
+  void ExecuteCallback(const base::Closure& forwarded_call);
+
   DISALLOW_COPY_AND_ASSIGN(CancelableRequestBase);
 };
 
@@ -631,6 +641,8 @@ class CONTENT_EXPORT CancelableRequestBase
 template<typename CB>
 class CancelableRequest : public CancelableRequestBase {
  public:
+  // TODO(ajwong): After all calls have been migrated, remove this template in
+  // favor of the specialization on base::Callback<Sig>.
   typedef CB CallbackType;          // CallbackRunner<...>
   typedef typename CB::TupleType TupleType;  // Tuple of the callback args.
 
@@ -698,6 +710,235 @@ class CancelableRequest : public CancelableRequestBase {
   // This should only be executed if !canceled_.IsSet(),
   // otherwise the pointers may be invalid.
   scoped_ptr<CallbackType> callback_;
+};
+
+// CancelableRequest<> wraps a normal base::Callback<> for use in the
+// CancelableRequest framework.
+//
+// When using this class, the provider MUST call Init() (on the base class)
+// before this is valid.
+//
+// The two functions ForwardResult(), and ForwardResultAsync() are used to
+// invoke the wrapped callback on the correct thread.  They are the same
+// except that ForwardResult() will run the callback synchronously if
+// we are already on the right thread.
+//
+// The caller does not need to check for cancel before calling ForwardResult()
+// or ForwardResultAsync(). If the request has not been canceled, one of the
+// these MUST be called.
+//
+// If there are any pointers in the parameters, they must live at least as
+// long as the request so that it can be forwarded to the other thread.
+// For complex objects, this would typically be done by having a derived
+// request own the data itself.
+//
+// The following specializations handle different arities of base::Callbacks<>.
+template<>
+class CancelableRequest<base::Closure> : public CancelableRequestBase {
+ public:
+  typedef base::Closure CallbackType;
+
+  explicit CancelableRequest(const CallbackType& callback)
+      : CancelableRequestBase(),
+        callback_(callback) {
+    DCHECK(!callback.is_null()) << "Callback must be initialized.";
+  }
+
+  void ForwardResult(void) {
+    if (canceled()) return;
+    DoForward(callback_, false);
+  }
+
+  void ForwardResultAsync() {
+    if (canceled()) return;
+    DoForward(callback_, true);
+  }
+
+ protected:
+  virtual ~CancelableRequest() {}
+
+ private:
+  CallbackType callback_;
+};
+
+template<typename A1>
+class CancelableRequest<base::Callback<void(A1)> > :
+    public CancelableRequestBase {
+ public:
+  typedef base::Callback<void(A1)> CallbackType;
+
+  explicit CancelableRequest(const CallbackType& callback)
+      : CancelableRequestBase(),
+        callback_(callback) {
+    DCHECK(!callback.is_null()) << "Callback must be initialized.";
+  }
+
+  void ForwardResult(const A1& a1) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1), false);
+  }
+
+  void ForwardResultAsync(const A1& a1) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1), true);
+  }
+
+ protected:
+  virtual ~CancelableRequest() {}
+
+ private:
+  CallbackType callback_;
+};
+
+template<typename A1, typename A2>
+class CancelableRequest<base::Callback<void(A1,A2)> > :
+    public CancelableRequestBase {
+ public:
+  typedef base::Callback<void(A1,A2)> CallbackType;
+
+  explicit CancelableRequest(const CallbackType& callback)
+      : CancelableRequestBase(),
+        callback_(callback) {
+    DCHECK(!callback.is_null()) << "Callback must be initialized.";
+  }
+
+  void ForwardResult(const A1& a1, const A2& a2) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2), false);
+  }
+
+  void ForwardResultAsync(const A1& a1, const A2& a2) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2), true);
+  }
+
+ protected:
+  virtual ~CancelableRequest() {}
+
+ private:
+  CallbackType callback_;
+};
+
+template<typename A1, typename A2, typename A3>
+class CancelableRequest<base::Callback<void(A1,A2,A3)> > :
+    public CancelableRequestBase {
+ public:
+  typedef base::Callback<void(A1,A2,A3)> CallbackType;
+
+  explicit CancelableRequest(const CallbackType& callback)
+      : CancelableRequestBase(),
+        callback_(callback) {
+    DCHECK(!callback.is_null()) << "Callback must be initialized.";
+  }
+
+  void ForwardResult(const A1& a1, const A2& a2, const A3& a3) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2, a3), false);
+  }
+
+  void ForwardResultAsync(const A1& a1, const A2& a2, const A3& a3) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2, a3), true);
+  }
+
+ protected:
+  virtual ~CancelableRequest() {}
+
+ private:
+  CallbackType callback_;
+};
+
+template<typename A1, typename A2, typename A3, typename A4>
+class CancelableRequest<base::Callback<void(A1, A2, A3, A4)> > :
+    public CancelableRequestBase {
+ public:
+  typedef base::Callback<void(A1, A2, A3, A4)> CallbackType;
+
+  explicit CancelableRequest(const CallbackType& callback)
+      : CancelableRequestBase(),
+        callback_(callback) {
+    DCHECK(!callback.is_null()) << "Callback must be initialized.";
+  }
+
+  void ForwardResult(const A1& a1, const A2& a2, const A3& a3, const A4& a4) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2, a3, a4), false);
+  }
+
+  void ForwardResultAsync(const A1& a1, const A2& a2, const A3& a3,
+                          const A4& a4) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2, a3, a4), true);
+  }
+
+ protected:
+  virtual ~CancelableRequest() {}
+
+ private:
+  CallbackType callback_;
+};
+
+template<typename A1, typename A2, typename A3, typename A4, typename A5>
+class CancelableRequest<base::Callback<void(A1, A2, A3, A4, A5)> > :
+    public CancelableRequestBase {
+ public:
+  typedef base::Callback<void(A1, A2, A3, A4, A5)> CallbackType;
+
+  explicit CancelableRequest(const CallbackType& callback)
+      : CancelableRequestBase(),
+        callback_(callback) {
+    DCHECK(!callback.is_null()) << "Callback must be initialized.";
+  }
+
+  void ForwardResult(const A1& a1, const A2& a2, const A3& a3, const A4& a4,
+                     const A5& a5) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2, a3, a4, a5), false);
+  }
+
+  void ForwardResultAsync(const A1& a1, const A2& a2, const A3& a3,
+                          const A4& a4, const A5& a5) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2, a3, a4, a5), true);
+  }
+
+ protected:
+  virtual ~CancelableRequest() {}
+
+ private:
+  CallbackType callback_;
+};
+
+template<typename A1, typename A2, typename A3, typename A4, typename A5,
+         typename A6>
+class CancelableRequest<base::Callback<void(A1, A2, A3, A4, A5, A6)> > :
+    public CancelableRequestBase {
+ public:
+  typedef base::Callback<void(A1, A2, A3, A4, A5, A6)> CallbackType;
+
+  explicit CancelableRequest(const CallbackType& callback)
+      : CancelableRequestBase(),
+        callback_(callback) {
+    DCHECK(!callback.is_null()) << "Callback must be initialized.";
+  }
+
+  void ForwardResult(const A1& a1, const A2& a2, const A3& a3, const A4& a4,
+                     const A5& a5, const A6& a6) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2, a3, a4, a5, a6), false);
+  }
+
+  void ForwardResultAsync(const A1& a1, const A2& a2, const A3& a3,
+                          const A4& a4, const A5& a5, const A6& a6) {
+    if (canceled()) return;
+    DoForward(base::Bind(callback_, a1, a2, a3, a4, a5, a6), true);
+  }
+
+ protected:
+  virtual ~CancelableRequest() {}
+
+ private:
+  CallbackType callback_;
 };
 
 // A CancelableRequest with a single value. This is intended for use when
