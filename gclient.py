@@ -179,22 +179,26 @@ class DependencySettings(GClientKeywords):
 
   @property
   def deps_file(self):
-    """Immutable so no need to lock."""
     return self._deps_file
 
   @property
   def managed(self):
-    """Immutable so no need to lock."""
     return self._managed
 
   @property
   def parent(self):
-    """Immutable so no need to lock."""
     return self._parent
 
   @property
+  def root(self):
+    """Returns the root node, a GClient object."""
+    if not self.parent:
+      # This line is to signal pylint that it could be a GClient instance.
+      return self or GClient(None, None)
+    return self.parent.root
+
+  @property
   def safesync_url(self):
-    """Immutable so no need to lock."""
     return self._safesync_url
 
   @property
@@ -204,17 +208,27 @@ class DependencySettings(GClientKeywords):
 
   @property
   def custom_vars(self):
-    """Immutable so no need to lock."""
     return self._custom_vars.copy()
 
   @property
   def custom_deps(self):
-    """Immutable so no need to lock."""
     return self._custom_deps.copy()
 
   @property
   def url(self):
     return self._url
+
+  @property
+  def recursion_limit(self):
+    """Returns > 0 if this dependency is not too recursed to be processed."""
+    return max(self.parent.recursion_limit - 1, 0)
+
+  def get_custom_deps(self, name, url):
+    """Returns a custom deps if applicable."""
+    if self.parent:
+      url = self.parent.get_custom_deps(name, url)
+    # None is a valid return value to disable a dependency.
+    return self.custom_deps.get(name, url)
 
 
 class Dependency(gclient_utils.WorkItem, DependencySettings):
@@ -619,21 +633,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         if j.should_process:
           yield j
 
-  def get_custom_deps(self, name, url):
-    """Returns a custom deps if applicable."""
-    if self.parent:
-      url = self.parent.get_custom_deps(name, url)
-    # None is a valid return value to disable a dependency.
-    return self.custom_deps.get(name, url)
-
-  @property
-  def recursion_limit(self):
-    """Returns > 0 if this dependency is not too recursed to be processed.
-
-    Immutable so no need to lock.
-    """
-    return max(self.parent.recursion_limit - 1, 0)
-
   @property
   def dependencies(self):
     return tuple(self._dependencies)
@@ -694,14 +693,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       out = '%s(%s) -> %s' % (i.name, i.url, out)
       i = i.parent
     return out
-
-  @property
-  def root(self):
-    """Returns the root node, a GClient object."""
-    if not self.parent:
-      # This line is to signal pylint that it could be a GClient instance.
-      return self or GClient(None, None)
-    return self.parent.root
 
 
 class GClient(Dependency):
