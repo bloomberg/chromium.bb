@@ -1955,10 +1955,6 @@ void TabContents::set_encoding(const std::string& encoding) {
       GetCanonicalEncodingNameByAliasName(encoding);
 }
 
-void TabContents::SwapInRenderViewHost(RenderViewHost* rvh) {
-  render_manager_.SwapInRenderViewHost(rvh);
-}
-
 void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   RenderWidgetHostView* rwh_view = view()->CreateViewForWidget(rvh);
   rwh_view->SetSize(view()->GetContainerSize());

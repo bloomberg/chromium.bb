@@ -185,11 +185,6 @@ class CONTENT_EXPORT RenderViewHostManager
   // Called when a RenderViewHost is about to be deleted.
   void RenderViewDeleted(RenderViewHost* rvh);
 
-  // Allows a caller to swap in a provided RenderViewHost to replace the
-  // current RenderViewHost.  The current RVH will be shutdown and ultimately
-  // deleted.
-  void SwapInRenderViewHost(RenderViewHost* rvh);
-
   // Returns whether the given RenderViewHost is on the list of swapped out
   // RenderViewHosts.
   bool IsSwappedOut(RenderViewHost* rvh);

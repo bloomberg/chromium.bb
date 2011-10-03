@@ -638,7 +638,7 @@ void RenderViewHostManager::CommitPending() {
     // Temp fix for http://crbug.com/90867 until we do a better cleanup to make
     // sure we don't get different rvh instances for the same site instance
     // in the same rvhmgr.
-    // TODO(creis): Clean this up, and duplication in SwapInRenderViewHost.
+    // TODO(creis): Clean this up.
     int32 old_site_instance_id = old_render_view_host->site_instance()->id();
     RenderViewHostMap::iterator iter =
         swapped_out_hosts_.find(old_site_instance_id);
@@ -809,83 +809,6 @@ void RenderViewHostManager::RenderViewDeleted(RenderViewHost* rvh) {
       break;
     }
   }
-}
-
-void RenderViewHostManager::SwapInRenderViewHost(RenderViewHost* rvh) {
-  // TODO(creis): Abstract out the common code between this and CommitPending.
-  web_ui_.reset();
-
-  // Make sure the current RVH is swapped out so that it filters out any
-  // disruptive messages from the renderer.  We can pass -1,-1 because there is
-  // no pending response in the ResourceDispatcherHost to unpause.
-  render_view_host_->SwapOut(-1, -1);
-
-  // Swap in the new view and make it active.
-  RenderViewHost* old_render_view_host = render_view_host_;
-  render_view_host_ = rvh;
-  render_view_host_->set_delegate(render_view_delegate_);
-  // Remove old RenderWidgetHostView with mocked out methods so it can be
-  // replaced with a new one that's a child of |delegate_|'s view.
-  scoped_ptr<RenderWidgetHostView> old_view(render_view_host_->view());
-  render_view_host_->SetView(NULL);
-  delegate_->CreateViewAndSetSizeForRVH(render_view_host_);
-  render_view_host_->ActivateDeferredPluginHandles();
-  // If the view is gone, then this RenderViewHost died while it was hidden.
-  // We ignored the RenderViewGone call at the time, so we should send it now
-  // to make sure the sad tab shows up, etc.
-  if (render_view_host_->view()) {
-    // The Hide() is needed to sync the state of |render_view_host_|, which is
-    // hidden, with the newly created view, which does not know the
-    // RenderViewHost is hidden.
-    // TODO(tburkard,cbentzel): Figure out if this hack can be removed
-    //                          (http://crbug.com/79891).
-    render_view_host_->view()->Hide();
-    render_view_host_->view()->Show();
-  }
-
-  // Hide the current view and prepare to swap it out.
-  if (old_render_view_host->view()) {
-    old_render_view_host->view()->Hide();
-    old_render_view_host->WasSwappedOut();
-  }
-
-  delegate_->UpdateRenderViewSizeForRenderManager();
-
-  RenderViewHostSwitchedDetails details;
-  details.new_host = render_view_host_;
-  details.old_host = old_render_view_host;
-  NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      Source<NavigationController>(&delegate_->GetControllerForRenderManager()),
-      Details<RenderViewHostSwitchedDetails>(&details));
-
-  // If the given RVH was on the swapped out list, we can remove it.
-  swapped_out_hosts_.erase(render_view_host_->site_instance()->id());
-
-  // If the old RVH is live, we are swapping it out and should keep track of it
-  // in case we navigate back to it.
-  if (old_render_view_host->IsRenderViewLive()) {
-    DCHECK(old_render_view_host->is_swapped_out());
-    // Temp fix for http://crbug.com/90867 until we do a better cleanup to make
-    // sure we don't get different rvh instances for the same site instance
-    // in the same rvhmgr.
-    // TODO(creis): Clean this up as well as duplication with CommitPending.
-    int32 old_site_instance_id = old_render_view_host->site_instance()->id();
-    RenderViewHostMap::iterator iter =
-        swapped_out_hosts_.find(old_site_instance_id);
-    if (iter != swapped_out_hosts_.end() &&
-        iter->second != old_render_view_host) {
-      // Shutdown the RVH that will be replaced in the map to avoid a leak.
-      iter->second->Shutdown();
-    }
-    swapped_out_hosts_[old_site_instance_id] = old_render_view_host;
-  } else {
-    old_render_view_host->Shutdown();
-  }
-
-  // Let the task manager know that we've swapped RenderViewHosts, since it
-  // might need to update its process groupings.
-  delegate_->NotifySwappedFromRenderManager();
 }
 
 bool RenderViewHostManager::IsSwappedOut(RenderViewHost* rvh) {

@@ -251,11 +251,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
     return &render_manager_;
   }
 
-  // In the underlying RenderViewHostManager, swaps in the provided
-  // RenderViewHost to replace the current RenderViewHost.  The current RVH
-  // will be shutdown and ultimately deleted.
-  void SwapInRenderViewHost(RenderViewHost* rvh);
-
   // Commands ------------------------------------------------------------------
 
   // Implementation of PageNavigator.
