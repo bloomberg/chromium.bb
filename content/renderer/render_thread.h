@@ -32,7 +32,6 @@ class GpuChannelHost;
 class IndexedDBDispatcher;
 class RendererHistogram;
 class RendererHistogramSnapshots;
-class RenderProcessObserver;
 class RendererNetPredictor;
 class RendererWebKitPlatformSupportImpl;
 class SkBitmap;
@@ -45,17 +44,21 @@ struct GPUInfo;
 struct ViewMsg_New_Params;
 struct WebPreferences;
 
-namespace base {
-class MessageLoopProxy;
-class Thread;
-}
-
 namespace IPC {
 struct ChannelHandle;
 }
 
 namespace WebKit {
 class WebStorageEventDispatcher;
+}
+
+namespace base {
+class MessageLoopProxy;
+class Thread;
+}
+
+namespace content {
+class RenderProcessObserver;
 }
 
 namespace v8 {
@@ -133,8 +136,8 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
   virtual void WidgetHidden();
   virtual void WidgetRestored();
 
-  void AddObserver(RenderProcessObserver* observer);
-  void RemoveObserver(RenderProcessObserver* observer);
+  void AddObserver(content::RenderProcessObserver* observer);
+  void RemoveObserver(content::RenderProcessObserver* observer);
 
   // These methods modify how the next message is sent.  Normally, when sending
   // a synchronous message that runs a nested message loop, we need to suspend
@@ -276,7 +279,7 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
   // Map of registered v8 extensions. The key is the extension name.
   std::set<std::string> v8_extensions_;
 
-  ObserverList<RenderProcessObserver> observers_;
+  ObserverList<content::RenderProcessObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };

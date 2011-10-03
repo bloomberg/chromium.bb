@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDER_VIEW_VISITOR_H_
-#define CONTENT_RENDERER_RENDER_VIEW_VISITOR_H_
+#ifndef CONTENT_PUBLIC_RENDERER_RENDER_VIEW_VISITOR_H_
+#define CONTENT_PUBLIC_RENDERER_RENDER_VIEW_VISITOR_H_
 #pragma once
 
 class RenderView;
+
+namespace content {
 
 class RenderViewVisitor {
  public:
@@ -17,4 +19,6 @@ class RenderViewVisitor {
   virtual ~RenderViewVisitor() {}
 };
 
-#endif  // CONTENT_RENDERER_RENDER_VIEW_VISITOR_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_RENDERER_RENDER_VIEW_VISITOR_H_

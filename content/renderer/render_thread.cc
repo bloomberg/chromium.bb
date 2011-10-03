@@ -34,6 +34,8 @@
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/devtools_agent_filter.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"
@@ -43,9 +45,7 @@
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process_impl.h"
-#include "content/renderer/render_process_observer.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/render_view_visitor.h"
 #include "content/renderer/renderer_webidbfactory_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "ipc/ipc_channel_handle.h"
@@ -95,6 +95,7 @@ using WebKit::WebScriptController;
 using WebKit::WebString;
 using WebKit::WebStorageEventDispatcher;
 using WebKit::WebView;
+using content::RenderProcessObserver;
 
 namespace {
 static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
@@ -108,7 +109,7 @@ static const int kPopupListBoxMinimumRowHeight = 60;
 static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
     base::LINKER_INITIALIZED);
 
-class RenderViewZoomer : public RenderViewVisitor {
+class RenderViewZoomer : public content::RenderViewVisitor {
  public:
   RenderViewZoomer(const GURL& url, double zoom_level)
       : zoom_level_(zoom_level) {

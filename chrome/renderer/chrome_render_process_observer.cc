@@ -23,9 +23,9 @@
 #include "content/common/resource_dispatcher.h"
 #include "content/common/resource_dispatcher_delegate.h"
 #include "content/common/view_messages.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/render_view_visitor.h"
 #include "crypto/nss_util.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
@@ -107,7 +107,7 @@ class RendererResourceDelegate : public ResourceDispatcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };
 
-class RenderViewContentSettingsSetter : public RenderViewVisitor {
+class RenderViewContentSettingsSetter : public content::RenderViewVisitor {
  public:
   RenderViewContentSettingsSetter(const GURL& url,
                                   const ContentSettings& content_settings)
@@ -326,7 +326,7 @@ void ChromeRenderProcessObserver::OnClearCache(bool on_navigation) {
 void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
   WebCache::ResourceTypeStats stats;
   WebCache::getResourceTypeStats(&stats);
-  Send(new ChromeViewHostMsg_ResourceTypeStats(stats));
+  RenderThread::current()->Send(new ChromeViewHostMsg_ResourceTypeStats(stats));
 }
 
 #if defined(USE_TCMALLOC)
@@ -335,7 +335,7 @@ void ChromeRenderProcessObserver::OnGetRendererTcmalloc() {
   char buffer[1024 * 32];
   MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
   result.append(buffer);
-  Send(new ChromeViewHostMsg_RendererTcmalloc(result));
+  RenderThread::current()->Send(new ChromeViewHostMsg_RendererTcmalloc(result));
 }
 
 void ChromeRenderProcessObserver::OnSetTcmallocHeapProfiling(
@@ -364,7 +364,8 @@ void ChromeRenderProcessObserver::OnWriteTcmallocHeapProfile(
   // a string and pass it to the handler (which runs on the browser host).
   std::string result(profile);
   delete profile;
-  Send(new ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK(filename, result));
+  RenderThread::current()->Send(
+      new ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK(filename, result));
 #endif
 }
 
@@ -379,8 +380,8 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
 void ChromeRenderProcessObserver::OnGetV8HeapStats() {
   v8::HeapStatistics heap_stats;
   v8::V8::GetHeapStatistics(&heap_stats);
-  Send(new ChromeViewHostMsg_V8HeapStats(heap_stats.total_heap_size(),
-                                         heap_stats.used_heap_size()));
+  RenderThread::current()->Send(new ChromeViewHostMsg_V8HeapStats(
+      heap_stats.total_heap_size(), heap_stats.used_heap_size()));
 }
 
 void ChromeRenderProcessObserver::OnPurgeMemory() {

@@ -15,7 +15,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
-#include "content/renderer/render_process_observer.h"
+#include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "unicode/uscript.h"
 
@@ -27,7 +27,7 @@ class MemoryMappedFile;
 
 // TODO(morrita): Needs reorg with SpellCheckProvider.
 // See http://crbug.com/73699.
-class SpellCheck : public RenderProcessObserver {
+class SpellCheck : public content::RenderProcessObserver {
  public:
   SpellCheck();
   virtual ~SpellCheck();

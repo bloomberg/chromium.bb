@@ -12,7 +12,7 @@
 
 #include "base/shared_memory.h"
 #include "base/timer.h"
-#include "content/renderer/render_process_observer.h"
+#include "content/public/renderer/render_process_observer.h"
 #include "chrome/common/extensions/extension_set.h"
 
 class GURL;
@@ -36,7 +36,7 @@ class Extension;
 
 // Dispatches extension control messages sent to the renderer and stores
 // renderer extension related state.
-class ExtensionDispatcher : public RenderProcessObserver {
+class ExtensionDispatcher : public content::RenderProcessObserver {
  public:
   ExtensionDispatcher();
   virtual ~ExtensionDispatcher();

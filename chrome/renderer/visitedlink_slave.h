@@ -8,12 +8,12 @@
 
 #include "base/shared_memory.h"
 #include "chrome/common/visitedlink_common.h"
-#include "content/renderer/render_process_observer.h"
+#include "content/public/renderer/render_process_observer.h"
 
 // Reads the link coloring database provided by the master. There can be any
 // number of slaves reading the same database.
 class VisitedLinkSlave : public VisitedLinkCommon,
-                         public RenderProcessObserver {
+                         public content::RenderProcessObserver {
  public:
   VisitedLinkSlave();
   virtual ~VisitedLinkSlave();

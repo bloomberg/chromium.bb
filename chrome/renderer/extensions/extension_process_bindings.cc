@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
@@ -35,7 +36,6 @@
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "chrome/renderer/static_v8_external_string_resource.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/render_view_visitor.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
@@ -78,7 +78,7 @@ base::LazyInstance<PendingRequestMap> g_pending_requests(
 // views, looking for a view of the given type, in the given browser window
 // and within the given extension.
 // Used to accumulate the list of views associated with an extension.
-class ExtensionViewAccumulator : public RenderViewVisitor {
+class ExtensionViewAccumulator : public content::RenderViewVisitor {
  public:
   ExtensionViewAccumulator(const std::string& extension_id,
                            int browser_window_id,

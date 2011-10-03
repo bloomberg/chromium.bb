@@ -48,7 +48,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "content/renderer/render_view_visitor.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,7 +70,7 @@ namespace safe_browsing {
 
 class RenderViewFakeResourcesTest : public ::testing::Test,
                                     public IPC::Channel::Listener,
-                                    public RenderViewVisitor {
+                                    public content::RenderViewVisitor {
  public:
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

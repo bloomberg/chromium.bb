@@ -15,10 +15,10 @@
 #include "base/process.h"
 #include "base/task.h"
 #include "chrome/common/metrics_helpers.h"
-#include "content/renderer/render_process_observer.h"
+#include "content/public/renderer/render_process_observer.h"
 
 class RendererHistogramSnapshots : public HistogramSender,
-                                   public RenderProcessObserver {
+                                   public content::RenderProcessObserver {
  public:
   RendererHistogramSnapshots();
   virtual ~RendererHistogramSnapshots();

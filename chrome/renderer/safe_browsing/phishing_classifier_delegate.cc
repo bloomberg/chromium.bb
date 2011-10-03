@@ -201,7 +201,7 @@ void PhishingClassifierDelegate::ClassificationDone(
           << " score = " << verdict.client_score();
   if (verdict.client_score() != PhishingClassifier::kInvalidScore) {
     DCHECK_EQ(last_url_sent_to_classifier_.spec(), verdict.url());
-    Send(new SafeBrowsingHostMsg_PhishingDetectionDone(
+    RenderThread::current()->Send(new SafeBrowsingHostMsg_PhishingDetectionDone(
         routing_id(), verdict.SerializeAsString()));
   }
 }

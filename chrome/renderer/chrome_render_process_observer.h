@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/renderer/render_process_observer.h"
+#include "content/public/renderer/render_process_observer.h"
 
 namespace chrome {
 class ChromeContentRendererClient;
@@ -25,7 +25,7 @@ struct ContentSettings;
 // a RenderView) for Chrome specific messages that the content layer doesn't
 // happen.  If a few messages are related, they should probably have their own
 // observer.
-class ChromeRenderProcessObserver : public RenderProcessObserver {
+class ChromeRenderProcessObserver : public content::RenderProcessObserver {
  public:
   explicit ChromeRenderProcessObserver(
       chrome::ChromeContentRendererClient* client);

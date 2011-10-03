@@ -67,7 +67,6 @@ class NavigationState;
 class NotificationProvider;
 class PepperDeviceTest;
 class PrintWebViewHelper;
-class RenderViewVisitor;
 class RenderWidgetFullscreenPepper;
 class RendererAccessibility;
 class SkBitmap;
@@ -89,6 +88,7 @@ class WaitableEvent;
 namespace content {
 class P2PSocketDispatcher;
 class RenderViewObserver;
+class RenderViewVisitor;
 }  // namespace content
 
 namespace gfx {
@@ -191,7 +191,7 @@ class RenderView : public RenderWidget,
 
   // Visit all RenderViews with a live WebView (i.e., RenderViews that have
   // been closed but not yet destroyed are excluded).
-  CONTENT_EXPORT static void ForEach(RenderViewVisitor* visitor);
+  CONTENT_EXPORT static void ForEach(content::RenderViewVisitor* visitor);
 
   // Returns the RenderView containing the given WebView.
   CONTENT_EXPORT static RenderView* FromWebView(WebKit::WebView* webview);
