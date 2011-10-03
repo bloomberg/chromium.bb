@@ -440,7 +440,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (NSNumber*)required {
   return [NSNumber numberWithBool:
-      !GetState(browserAccessibility_, WebAccessibility::STATE_REQUIRED)];
+      GetState(browserAccessibility_, WebAccessibility::STATE_REQUIRED)];
 }
 
 // Returns a string indicating the role of this object.
