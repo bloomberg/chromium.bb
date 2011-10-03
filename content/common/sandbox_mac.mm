@@ -15,8 +15,8 @@ extern "C" {
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
-#include "base/mac/crash_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/rand_util_c.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -68,6 +68,15 @@ bool EscapeSingleChar(char c, std::string* dst) {
 
   dst->append(append);
   return true;
+}
+
+// Errors quoting strings for the Sandbox profile are always fatal, report them
+// in a central place.
+NOINLINE void FatalStringQuoteException(const std::string& str) {
+  // Copy bad string to the stack so it's recorded in the crash dump.
+  char bad_string[256] = {0};
+  base::strlcpy(bad_string, str.c_str(), arraysize(bad_string));
+  LOG(FATAL) << "String quoting failed " << bad_string;
 }
 
 }  // namespace
@@ -301,7 +310,7 @@ NSString* Sandbox::BuildAllowDirectoryAccessSandboxString(
        ++i) {
     std::string subdir_escaped;
     if (!QuotePlainString(i->value(), &subdir_escaped)) {
-      LOG(FATAL) << "String quoting failed " << i->value();
+      FatalStringQuoteException(i->value());
       return nil;
     }
 
@@ -432,11 +441,13 @@ bool Sandbox::PostProcessSandboxProfile(
           break;
 
         case SandboxSubstring::LITERAL:
-          QuotePlainString(replacement.value(), &new_piece);
+          if (!QuotePlainString(replacement.value(), &new_piece))
+            FatalStringQuoteException(replacement.value());
           break;
 
         case SandboxSubstring::REGEX:
-          QuoteStringForRegex(replacement.value(), &new_piece);
+          if (!QuoteStringForRegex(replacement.value(), &new_piece))
+            FatalStringQuoteException(replacement.value());
           break;
       }
     }
@@ -514,7 +525,7 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
 
   // Splice the path of the user's home directory into the sandbox profile
   // (see renderer.sb for details).
-  std::string home_dir = base::SysNSStringToUTF8(NSHomeDirectory());
+  std::string home_dir = [NSHomeDirectory() fileSystemRepresentation];
 
   FilePath home_dir_canonical(home_dir);
   GetCanonicalSandboxPath(&home_dir_canonical);
@@ -560,22 +571,6 @@ bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
 void Sandbox::GetCanonicalSandboxPath(FilePath* path) {
   int fd = HANDLE_EINTR(open(path->value().c_str(), O_RDONLY));
   if (fd < 0) {
-    // Start temporary debugging code.
-    base::mac::SetCrashKeyValue(
-        @"errno", [NSString stringWithFormat:@"%d", errno]);
-    base::mac::SetCrashKeyValue(@"homedir", NSHomeDirectory());
-    int fd2 = HANDLE_EINTR(
-                  open([NSHomeDirectory() fileSystemRepresentation], O_RDONLY));
-    base::mac::SetCrashKeyValue(
-        @"errno2", [NSString stringWithFormat:@"%d", errno]);
-    file_util::ScopedFD file_closer2(&fd2);
-
-    if (fd2 < 0)
-      base::mac::SetCrashKeyValue(@"alternateOpen", @"fail");
-    else
-      base::mac::SetCrashKeyValue(@"alternateOpen", @"success");
-    // End temporary debugging code.
-
     PLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
                 << path->value();
     return;
