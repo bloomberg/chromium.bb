@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/callback_old.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -49,10 +50,11 @@ FaviconWebUIHandler::~FaviconWebUIHandler() {
 
 void FaviconWebUIHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getFaviconDominantColor",
-      NewCallback(this, &FaviconWebUIHandler::HandleGetFaviconDominantColor));
+      base::Bind(&FaviconWebUIHandler::HandleGetFaviconDominantColor,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("getAppIconDominantColor",
-      NewCallback(this,
-                  &FaviconWebUIHandler::HandleGetAppIconDominantColor));
+      base::Bind(&FaviconWebUIHandler::HandleGetAppIconDominantColor,
+                 base::Unretained(this)));
 }
 
 void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {

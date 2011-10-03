@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_old.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -234,29 +236,41 @@ WebUIMessageHandler* AppLauncherHandler::Attach(WebUI* web_ui) {
 
 void AppLauncherHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getApps",
-      NewCallback(this, &AppLauncherHandler::HandleGetApps));
+      base::Bind(&AppLauncherHandler::HandleGetApps,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("launchApp",
-      NewCallback(this, &AppLauncherHandler::HandleLaunchApp));
+      base::Bind(&AppLauncherHandler::HandleLaunchApp,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setLaunchType",
-      NewCallback(this, &AppLauncherHandler::HandleSetLaunchType));
+      base::Bind(&AppLauncherHandler::HandleSetLaunchType,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("uninstallApp",
-      NewCallback(this, &AppLauncherHandler::HandleUninstallApp));
+      base::Bind(&AppLauncherHandler::HandleUninstallApp,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("hideAppsPromo",
-      NewCallback(this, &AppLauncherHandler::HandleHideAppsPromo));
+      base::Bind(&AppLauncherHandler::HandleHideAppsPromo,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("createAppShortcut",
-      NewCallback(this, &AppLauncherHandler::HandleCreateAppShortcut));
+      base::Bind(&AppLauncherHandler::HandleCreateAppShortcut,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("reorderApps",
-      NewCallback(this, &AppLauncherHandler::HandleReorderApps));
+      base::Bind(&AppLauncherHandler::HandleReorderApps,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setPageIndex",
-      NewCallback(this, &AppLauncherHandler::HandleSetPageIndex));
+      base::Bind(&AppLauncherHandler::HandleSetPageIndex,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("promoSeen",
-      NewCallback(this, &AppLauncherHandler::HandlePromoSeen));
+      base::Bind(&AppLauncherHandler::HandlePromoSeen,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("saveAppPageName",
-      NewCallback(this, &AppLauncherHandler::HandleSaveAppPageName));
+      base::Bind(&AppLauncherHandler::HandleSaveAppPageName,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("generateAppForLink",
-      NewCallback(this, &AppLauncherHandler::HandleGenerateAppForLink));
+      base::Bind(&AppLauncherHandler::HandleGenerateAppForLink,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("recordAppLaunchByURL",
-      NewCallback(this, &AppLauncherHandler::HandleRecordAppLaunchByURL));
+      base::Bind(&AppLauncherHandler::HandleRecordAppLaunchByURL,
+                 base::Unretained(this)));
 }
 
 void AppLauncherHandler::Observe(int type,

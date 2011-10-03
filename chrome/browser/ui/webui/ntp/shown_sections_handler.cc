@@ -6,7 +6,8 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
@@ -63,7 +64,8 @@ ShownSectionsHandler::ShownSectionsHandler(PrefService* pref_service)
 
 void ShownSectionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("setShownSections",
-      NewCallback(this, &ShownSectionsHandler::HandleSetShownSections));
+      base::Bind(&ShownSectionsHandler::HandleSetShownSections,
+                 base::Unretained(this)));
 }
 
 void ShownSectionsHandler::Observe(int type,

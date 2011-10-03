@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -31,7 +33,8 @@ WebUIMessageHandler* NTPLoginHandler::Attach(WebUI* web_ui) {
 
 void NTPLoginHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("initializeLogin",
-      NewCallback(this, &NTPLoginHandler::HandleInitializeLogin));
+      base::Bind(&NTPLoginHandler::HandleInitializeLogin,
+                 base::Unretained(this)));
 }
 
 void NTPLoginHandler::Observe(int type,

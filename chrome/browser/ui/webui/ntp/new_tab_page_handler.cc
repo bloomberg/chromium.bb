@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -23,16 +25,21 @@ static const char kNTP4IntroURL[] =
   "http://www.google.com/support/chrome/bin/answer.py?answer=95451";
 
 void NewTabPageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("closeNotificationPromo", NewCallback(
-      this, &NewTabPageHandler::HandleCloseNotificationPromo));
-  web_ui_->RegisterMessageCallback("notificationPromoViewed", NewCallback(
-      this, &NewTabPageHandler::HandleNotificationPromoViewed));
-  web_ui_->RegisterMessageCallback("pageSelected", NewCallback(
-      this, &NewTabPageHandler::HandlePageSelected));
-  web_ui_->RegisterMessageCallback("introMessageDismissed", NewCallback(
-      this, &NewTabPageHandler::HandleIntroMessageDismissed));
-  web_ui_->RegisterMessageCallback("introMessageSeen", NewCallback(
-      this, &NewTabPageHandler::HandleIntroMessageSeen));
+  web_ui_->RegisterMessageCallback("closeNotificationPromo",
+      base::Bind(&NewTabPageHandler::HandleCloseNotificationPromo,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("notificationPromoViewed",
+      base::Bind(&NewTabPageHandler::HandleNotificationPromoViewed,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("pageSelected",
+      base::Bind(&NewTabPageHandler::HandlePageSelected,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("introMessageDismissed",
+      base::Bind(&NewTabPageHandler::HandleIntroMessageDismissed,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("introMessageSeen",
+      base::Bind(&NewTabPageHandler::HandleIntroMessageSeen,
+                 base::Unretained(this)));
 }
 
 void NewTabPageHandler::HandleCloseNotificationPromo(const ListValue* args) {

@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -34,11 +36,11 @@ ForeignSessionHandler::ForeignSessionHandler() {
 
 void ForeignSessionHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getForeignSessions",
-      NewCallback(this,
-      &ForeignSessionHandler::HandleGetForeignSessions));
+      base::Bind(&ForeignSessionHandler::HandleGetForeignSessions,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("openForeignSession",
-      NewCallback(this,
-      &ForeignSessionHandler::HandleOpenForeignSession));
+      base::Bind(&ForeignSessionHandler::HandleOpenForeignSession,
+                 base::Unretained(this)));
 }
 
 void ForeignSessionHandler::Init() {

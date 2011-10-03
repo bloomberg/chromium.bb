@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_utils.h"
@@ -55,10 +57,11 @@ bool WindowToValue(const TabRestoreService::Window& window,
 
 void RecentlyClosedTabsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getRecentlyClosedTabs",
-      NewCallback(this,
-                  &RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs));
+      base::Bind(&RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("reopenTab",
-      NewCallback(this, &RecentlyClosedTabsHandler::HandleReopenTab));
+      base::Bind(&RecentlyClosedTabsHandler::HandleReopenTab,
+                 base::Unretained(this)));
 }
 
 RecentlyClosedTabsHandler::~RecentlyClosedTabsHandler() {

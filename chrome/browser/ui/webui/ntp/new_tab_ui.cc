@@ -8,7 +8,8 @@
 
 #include <set>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/singleton.h"
@@ -105,12 +106,14 @@ class MetricsHandler : public WebUIMessageHandler {
 
 void MetricsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("recordAction",
-      NewCallback(this, &MetricsHandler::HandleRecordAction));
+      base::Bind(&MetricsHandler::HandleRecordAction,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("recordInHistogram",
-      NewCallback(this, &MetricsHandler::HandleRecordInHistogram));
-
+      base::Bind(&MetricsHandler::HandleRecordInHistogram,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("logEventTime",
-      NewCallback(this, &MetricsHandler::HandleLogEventTime));
+      base::Bind(&MetricsHandler::HandleLogEventTime,
+                 base::Unretained(this)));
 }
 
 void MetricsHandler::HandleRecordAction(const ListValue* args) {

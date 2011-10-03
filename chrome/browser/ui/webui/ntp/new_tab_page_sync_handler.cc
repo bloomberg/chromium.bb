@@ -6,7 +6,8 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -61,9 +62,11 @@ WebUIMessageHandler* NewTabPageSyncHandler::Attach(WebUI* web_ui) {
 
 void NewTabPageSyncHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("GetSyncMessage",
-      NewCallback(this, &NewTabPageSyncHandler::HandleGetSyncMessage));
+      base::Bind(&NewTabPageSyncHandler::HandleGetSyncMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("SyncLinkClicked",
-      NewCallback(this, &NewTabPageSyncHandler::HandleSyncLinkClicked));
+      base::Bind(&NewTabPageSyncHandler::HandleSyncLinkClicked,
+                 base::Unretained(this)));
 }
 
 void NewTabPageSyncHandler::HandleGetSyncMessage(const ListValue* args) {

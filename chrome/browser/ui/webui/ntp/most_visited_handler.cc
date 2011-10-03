@@ -6,7 +6,9 @@
 
 #include <set>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_old.h"
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/memory/scoped_vector.h"
@@ -85,21 +87,27 @@ WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
 
 void MostVisitedHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getMostVisited",
-      NewCallback(this, &MostVisitedHandler::HandleGetMostVisited));
+      base::Bind(&MostVisitedHandler::HandleGetMostVisited,
+                 base::Unretained(this)));
 
   // Register ourselves for any most-visited item blacklisting.
   web_ui_->RegisterMessageCallback("blacklistURLFromMostVisited",
-      NewCallback(this, &MostVisitedHandler::HandleBlacklistURL));
+      base::Bind(&MostVisitedHandler::HandleBlacklistURL,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeURLsFromMostVisitedBlacklist",
-      NewCallback(this, &MostVisitedHandler::HandleRemoveURLsFromBlacklist));
+      base::Bind(&MostVisitedHandler::HandleRemoveURLsFromBlacklist,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("clearMostVisitedURLsBlacklist",
-      NewCallback(this, &MostVisitedHandler::HandleClearBlacklist));
+      base::Bind(&MostVisitedHandler::HandleClearBlacklist,
+                 base::Unretained(this)));
 
   // Register ourself for pinned URL messages.
   web_ui_->RegisterMessageCallback("addPinnedURL",
-      NewCallback(this, &MostVisitedHandler::HandleAddPinnedURL));
+      base::Bind(&MostVisitedHandler::HandleAddPinnedURL,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removePinnedURL",
-      NewCallback(this, &MostVisitedHandler::HandleRemovePinnedURL));
+      base::Bind(&MostVisitedHandler::HandleRemovePinnedURL,
+                 base::Unretained(this)));
 }
 
 void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
