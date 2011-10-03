@@ -323,7 +323,10 @@ void TabContents::RunFileChooser(
 }
 
 RenderProcessHost* TabContents::GetRenderProcessHost() const {
-  return render_manager_.current_host()->process();
+  if (render_manager_.current_host())
+    return render_manager_.current_host()->process();
+  else
+    return NULL;
 }
 
 const GURL& TabContents::GetURL() const {
