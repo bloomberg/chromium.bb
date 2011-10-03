@@ -12,9 +12,12 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "webkit/glue/webpreferences.h"
 
 namespace {
 
@@ -352,6 +355,15 @@ void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
 }
 
 void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
+  RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
+  if (rvh && rvh->delegate()) {
+    WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
+    webkit_prefs.allow_scripts_to_close_windows = true;
+    rvh->UpdateWebkitPreferences(webkit_prefs);
+  } else {
+    DCHECK(false);
+  }
+
   task_manager_->OpenAboutMemory();
 }
 
