@@ -58,6 +58,7 @@ using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
 using WebKit::WebTextDirection;
+using WebKit::WebTouchEvent;
 using WebKit::WebVector;
 using WebKit::WebWidget;
 
@@ -493,6 +494,8 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
       DidHandleKeyEvent();
     if (WebInputEvent::isMouseEventType(input_event->type))
       DidHandleMouseEvent(*(static_cast<const WebMouseEvent*>(input_event)));
+    if (WebInputEvent::isTouchEventType(input_event->type))
+      DidHandleTouchEvent(*(static_cast<const WebTouchEvent*>(input_event)));
   }
 }
 

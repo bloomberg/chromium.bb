@@ -11,8 +11,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
@@ -85,6 +88,10 @@ class KeyboardWidget
  private:
   // Sets the target widget, adds/removes Widget::Observer, reparents etc.
   void SetTarget(Widget* target);
+
+  // Returns the widget of the active browser, or NULL if there is no such
+  // widget.
+  views::Widget* GetBrowserWidget();
 
   // Overridden from views::Widget.
   virtual bool OnKeyEvent(const views::KeyEvent& event) OVERRIDE;
@@ -180,6 +187,9 @@ KeyboardWidget::KeyboardWidget()
 
   views::TextInputTypeTracker::GetInstance()->AddTextInputTypeObserver(this);
   registrar_.Add(this,
+                 chrome::NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
                  chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,
                  NotificationService::AllSources());
   registrar_.Add(this,
@@ -210,6 +220,8 @@ KeyboardWidget::~KeyboardWidget() {
 }
 
 void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
+  if (target_ == widget && IsVisible())
+    return;
   SetTarget(widget);
 
   transform_.reset(new ui::InterpolatedTranslation(
@@ -254,6 +266,16 @@ void KeyboardWidget::SetTarget(views::Widget* target) {
   } else if (IsVisible()) {
     Hide();
   }
+}
+
+views::Widget* KeyboardWidget::GetBrowserWidget() {
+  Browser* browser = GetBrowser();
+  if (!browser)
+    return NULL;
+  BrowserView* view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (!view)
+    return NULL;
+  return view->GetWidget();
 }
 
 bool KeyboardWidget::OnKeyEvent(const views::KeyEvent& event) {
@@ -384,6 +406,16 @@ void KeyboardWidget::Observe(int type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   switch (type) {
+    case chrome::NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED: {
+      // In case the keyboard hid itself and the focus is still in an editable
+      // field, and the user touches the field, then we want to show the
+      // keyboard again.
+      views::Widget* widget = GetBrowserWidget();
+      if (widget)
+        ShowKeyboardForWidget(widget);
+      break;
+    }
+
     case chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED: {
       Hide();
       break;

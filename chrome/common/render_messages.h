@@ -526,6 +526,10 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockDisplayingInsecureContent)
 // a secure origin by a security policy.  The page may appear incomplete.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockRunningInsecureContent)
 
+// Message sent from renderer to the browser when the element that is focused
+// and currently accepts keyboard input inside the webpage has been touched.
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_FocusedEditableNodeTouched)
+
 // Suggest results -----------------------------------------------------------
 
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SetSuggestions,

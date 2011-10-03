@@ -134,6 +134,7 @@ class WebPlugin;
 class WebSpeechInputController;
 class WebSpeechInputListener;
 class WebStorageNamespace;
+class WebTouchEvent;
 class WebURLLoader;
 class WebURLRequest;
 class WebView;
@@ -649,6 +650,7 @@ class RenderView : public RenderWidget,
   virtual bool WillHandleMouseEvent(
       const WebKit::WebMouseEvent& event) OVERRIDE;
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
+  virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event);
   virtual void OnSetFocus(bool enable);
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);

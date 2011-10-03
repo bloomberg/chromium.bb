@@ -53,6 +53,8 @@ bool ChromeRenderViewHostObserver::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewHostObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusedEditableNodeTouched,
+                        OnFocusedEditableNodeTouched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -151,4 +153,11 @@ void ChromeRenderViewHostObserver::OnDomOperationResponse(
       chrome::NOTIFICATION_DOM_OPERATION_RESPONSE,
       Source<RenderViewHost>(render_view_host()),
       Details<DomOperationNotificationDetails>(&details));
+}
+
+void ChromeRenderViewHostObserver::OnFocusedEditableNodeTouched() {
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED,
+      Source<RenderViewHost>(render_view_host()),
+      NotificationService::NoDetails());
 }

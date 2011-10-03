@@ -223,6 +223,7 @@ using WebKit::WebStorageQuotaType;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
 using WebKit::WebTextDirection;
+using WebKit::WebTouchEvent;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
@@ -3946,6 +3947,10 @@ bool RenderView::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
 
 void RenderView::DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleMouseEvent(event));
+}
+
+void RenderView::DidHandleTouchEvent(const WebTouchEvent& event) {
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleTouchEvent(event));
 }
 
 void RenderView::OnWasHidden() {

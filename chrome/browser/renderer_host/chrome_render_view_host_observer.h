@@ -39,6 +39,7 @@ class ChromeRenderViewHostObserver : public RenderViewHostObserver {
 
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
+  void OnFocusedEditableNodeTouched();
 
   chrome_browser_net::Predictor* predictor_;
 

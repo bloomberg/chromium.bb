@@ -46,6 +46,7 @@ class PlatformCanvas;
 namespace WebKit {
 class WebInputEvent;
 class WebMouseEvent;
+class WebTouchEvent;
 class WebWidget;
 struct WebPopupMenuInfo;
 }
@@ -313,6 +314,10 @@ class CONTENT_EXPORT RenderWidget
   // Called by OnHandleInputEvent() to notify subclasses that a mouse event was
   // just handled.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
+
+  // Called by OnHandleInputEvent() to notify subclasses that a touch event was
+  // just handled.
+  virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) {}
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.

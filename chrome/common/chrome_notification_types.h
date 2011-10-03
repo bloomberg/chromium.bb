@@ -121,6 +121,11 @@ enum NotificationType {
   // The source is the ExtensionTabHelper SetAppExtension was invoked on.
   NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
 
+  // Notification posted when the element that is focused and currently accepts
+  // keyboard input inside the webpage has been touched.  The source is the
+  // RenderViewHost and the details are not used.
+  NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED,
+
   // Stuff inside the tabs ---------------------------------------------------
 
   // Notification from TabContents that we have received a response from the

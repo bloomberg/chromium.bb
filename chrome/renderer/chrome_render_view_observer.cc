@@ -30,10 +30,12 @@
 #include "net/base/data_url.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -48,6 +50,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "v8/include/v8-testing.h"
 
+using WebKit::WebAccessibilityObject;
 using WebKit::WebCString;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
@@ -56,6 +59,7 @@ using WebKit::WebRect;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSize;
 using WebKit::WebString;
+using WebKit::WebTouchEvent;
 using WebKit::WebURL;
 using WebKit::WebURLRequest;
 using WebKit::WebView;
@@ -721,6 +725,33 @@ void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {
     GetExternalHostBindings()->set_routing_id(routing_id());
     GetExternalHostBindings()->BindToJavascript(frame, "externalHost");
   }
+}
+
+void ChromeRenderViewObserver::DidHandleTouchEvent(const WebTouchEvent& event) {
+  // TODO(mazda): Consider using WebKit::WebInputEvent::GestureTap event when
+  //              it's implemented. Only sends the message on touch end event
+  //              for now.
+  if (event.type != WebKit::WebInputEvent::TouchEnd)
+    return;
+  // Ignore the case of multiple touches
+  if (event.touchesLength != 1)
+    return;
+  if (render_view()->webview()->textInputType() == WebKit::WebTextInputTypeNone)
+    return;
+  WebKit::WebNode node = render_view()->GetFocusedNode();
+  if (node.isNull())
+    return;
+  WebKit::WebAccessibilityObject accessibility =
+      render_view()->webview()->accessibilityObject();
+  if (accessibility.isNull())
+    return;
+  const WebKit::WebTouchPoint point = event.touches[0];
+  accessibility = accessibility.hitTest(point.position);
+  if (accessibility.isNull())
+    return;
+  if (accessibility.node() == node)
+    render_view()->Send(new ChromeViewHostMsg_FocusedEditableNodeTouched(
+        render_view()->routing_id()));
 }
 
 void ChromeRenderViewObserver::CapturePageInfo(int load_id,

@@ -21,6 +21,7 @@ class WebMediaPlayerClient;
 class WebMouseEvent;
 class WebNode;
 class WebString;
+class WebTouchEvent;
 class WebURL;
 struct WebURLError;
 }
@@ -67,6 +68,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
 
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
+  virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) {}
 
   virtual void WillCreateMediaPlayer(WebKit::WebFrame* frame,
                                      WebKit::WebMediaPlayerClient* client) {}
