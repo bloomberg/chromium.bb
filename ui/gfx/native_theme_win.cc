@@ -176,10 +176,20 @@ void NativeThemeWin::PaintToNonPlatformCanvas(SkCanvas* canvas,
   offscreen_canvas->clear(placeholder);
 
   // Offset destination rects to have origin (0,0).
-  gfx::Rect adjusted_rect(rect.width(), rect.height());
+  gfx::Rect adjusted_rect(rect.size());
   ExtraParams adjusted_extra(extra);
-  adjusted_extra.progress_bar.value_rect_x = 0;
-  adjusted_extra.progress_bar.value_rect_y = 0;
+  switch (part) {
+    case kProgressBar:
+      adjusted_extra.progress_bar.value_rect_x = 0;
+      adjusted_extra.progress_bar.value_rect_y = 0;
+      break;
+    case kScrollbarHorizontalTrack:
+    case kScrollbarVerticalTrack:
+      adjusted_extra.scrollbar_track.track_x = 0;
+      adjusted_extra.scrollbar_track.track_y = 0;
+      break;
+    default: break;
+  }
   // Draw the theme controls using existing HDC-drawing code.
   Paint(offscreen_canvas.get(), part, state, adjusted_rect, adjusted_extra);
 
