@@ -859,8 +859,6 @@ FileManager.prototype = {
       case 'paste':
         event.canExecute =
           (this.clipboard_ &&
-           this.clipboard_.sourceDirEntry.fullPath !=
-           this.currentDirEntry_.fullPath &&
            !isSystemDirEntry(this.currentDirEntry_));
         if (this.pasteButton_)
           this.pasteButton_.disabled = !event.canExecute;
@@ -3095,7 +3093,7 @@ FileManager.prototype = {
    * KeyDown event handler for the document.
    */
   FileManager.prototype.onKeyDown_ = function(event) {
-    if (event.srcElement.tagName == 'INPUT') {
+    if (event.srcElement === this.renameInput_) {
       // Ignore keydown handler in the rename input box.
       return;
     }

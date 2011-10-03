@@ -33,6 +33,13 @@ FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
   this.completedBytes = 0;
 
   this.deleteAfterCopy = false;
+
+  // If directory already exists, we try to make a copy named 'dir (X)',
+  // where X is a number. When we do this, all subsequent copies from
+  // inside the subtree should be mapped to the new directory name.
+  // For example, if 'dir' was copied as 'dir (1)', then 'dir\file.txt' should
+  // become 'dir (1)\file.txt'.
+  this.renamedDirectories_ = [];
 }
 
 FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
@@ -66,6 +73,26 @@ FileCopyManager.Task.prototype.markEntryComplete = function(entry, size) {
     this.completedFiles.push(entry);
     this.completedBytes += size;
   }
+};
+
+FileCopyManager.Task.prototype.registerRename = function(fromName, toName) {
+  this.renamedDirectories_.push({from: fromName + '/', to: toName + '/'});
+};
+
+FileCopyManager.Task.prototype.applyRenames = function(path) {
+  // Directories are processed in pre-order, so we will store only the first
+  // renaming point:
+  // x   -> x (1)    -- new directory created.
+  // x\y -> x (1)\y  -- no more renames inside the new directory, so
+  //                    this one will not be stored.
+  // x\y\a.txt       -- only one rename will be applied.
+  for (var index = 0; index < this.renamedDirectories_.length; ++index) {
+    var rename = this.renamedDirectories_[index];
+    if (path.indexOf(rename.from) == 0) {
+      path = rename.to + path.substr(rename.from.length);
+    }
+  }
+  return path;
 };
 
 /**
@@ -311,7 +338,30 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
   }
 
   var targetDirEntry = task.targetDirEntry;
-  var targetRelativePath = sourceEntry.fullPath.substr(sourcePath.length + 1);
+  var originalPath = sourceEntry.fullPath.substr(sourcePath.length + 1);
+  originalPath = task.applyRenames(originalPath);
+
+  var targetRelativePrefix = originalPath;
+  var targetExt = '';
+  var index = targetRelativePrefix.lastIndexOf('.');
+  if (index != -1) {
+    targetExt = targetRelativePrefix.substr(index);
+    targetRelativePrefix = targetRelativePrefix.substr(0, index);
+  }
+
+  // If file already exists, we try to make a copy named 'file (1).ext'.
+  // If file is already named 'file (X).ext', we go with 'file (X+1).ext'.
+  // If new name is still occupied, we increase the number up to 10 times.
+  var copyNumber = 0;
+  var match = /^(.*?)(?: \((\d+)\))?$/.exec(targetRelativePrefix);
+  if (match && match[2]) {
+    copyNumber = parseInt(match[2], 10);
+    targetRelativePrefix = match[1];
+  }
+
+  var targetRelativePath = '';
+  var renameTries = 0;
+  var firstExistingEntry = null;
 
   function onCopyComplete(entry, size) {
     task.markEntryComplete(entry, size);
@@ -328,7 +378,15 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
   }
 
   function onTargetExists(existingEntry) {
-    onError('TARGET_EXISTS', existingEntry);
+    if (!firstExistingEntry)
+      firstExistingEntry = existingEntry;
+    renameTries++;
+    if (renameTries < 10) {
+      copyNumber++;
+      tryNextCopy();
+    } else {
+      onError('TARGET_EXISTS', firstExistingEntry);
+    }
   }
 
   function onTargetNotResolved(err) {
@@ -342,7 +400,12 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
       targetDirEntry.getDirectory(
           targetRelativePath,
           {create: true, exclusive: true},
-          onCopyComplete,
+          function(targetEntry) {
+            if (targetRelativePath != originalPath) {
+              task.registerRename(originalPath, targetRelativePath);
+            }
+            onCopyComplete(targetEntry);
+          },
           util.flog('Error getting dir: ' + targetRelativePath,
                     onFilesystemError));
     } else {
@@ -358,10 +421,20 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     }
   }
 
-  // Check to see if the target exists.  This kicks off the rest of the copy
-  // if the target is not found, or raises an error if it does.
-  util.resolvePath(targetDirEntry, targetRelativePath, onTargetExists,
-                   onTargetNotResolved);
+  function tryNextCopy() {
+    targetRelativePath = targetRelativePrefix;
+    if (copyNumber > 0) {
+      targetRelativePath += ' (' + copyNumber + ')';
+    }
+    targetRelativePath += targetExt;
+
+    // Check to see if the target exists.  This kicks off the rest of the copy
+    // if the target is not found, or raises an error if it does.
+    util.resolvePath(targetDirEntry, targetRelativePath, onTargetExists,
+                     onTargetNotResolved);
+  }
+
+  tryNextCopy();
 };
 
 /**
