@@ -30,6 +30,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/debugger/devtools_client_host.h"
+#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
@@ -89,6 +91,7 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
     // We'll crash the renderer after it's loaded.
     case FINAL_STATUS_RENDERER_CRASHED:
     case FINAL_STATUS_CANCELLED:
+    case FINAL_STATUS_DEVTOOLS_ATTACHED:
       return true;
     default:
       return false;
@@ -380,6 +383,18 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
   FakeSafeBrowsingService* most_recent_service_;
 };
 #endif
+
+class FakeDevToolsClientHost : public DevToolsClientHost {
+ public:
+  FakeDevToolsClientHost() {}
+  virtual ~FakeDevToolsClientHost() {
+    NotifyCloseListener();
+  }
+  virtual void InspectedTabClosing() OVERRIDE {}
+  virtual void FrameNavigating(const std::string& url) OVERRIDE {}
+  virtual void SendMessageToClient(const IPC::Message& msg) OVERRIDE {}
+  virtual void TabReplaced(TabContents* new_tab) OVERRIDE {}
+};
 
 }  // namespace
 
@@ -1833,6 +1848,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   browser()->SelectNextTab();
   ClickToNextPageAfterPrerender(browser());
   GoBackToPrerender(browser());
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       NavigateToPrerenderedPageWhenDevToolsAttached) {
+  DisableJavascriptCalls();
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  RenderViewHost* inspected_rvh = tab_contents->render_view_host();
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  FakeDevToolsClientHost client_host;
+  manager->RegisterDevToolsClientHostFor(inspected_rvh, &client_host);
+  const char* url = "files/prerender/prerender_page.html";
+  PrerenderTestURL(url, FINAL_STATUS_DEVTOOLS_ATTACHED, 1);
+  NavigateToURL(url);
 }
 
 }  // namespace prerender

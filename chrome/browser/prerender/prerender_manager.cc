@@ -31,6 +31,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/cancelable_request.h"
+#include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -509,6 +510,13 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   if (prerender_contents->starting_page_id() <=
       tab_contents->GetMaxPageID()) {
     prerender_contents.release()->Destroy(FINAL_STATUS_PAGE_ID_CONFLICT);
+    return false;
+  }
+
+  // Don't use prerendered pages if debugger is attached to the tab.
+  // See http://crbug.com/98541
+  if (RenderViewDevToolsAgentHost::IsDebuggerAttached(tab_contents)) {
+    prerender_contents.release()->Destroy(FINAL_STATUS_DEVTOOLS_ATTACHED);
     return false;
   }
 

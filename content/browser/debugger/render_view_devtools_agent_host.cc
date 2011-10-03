@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/notification_service.h"
 
@@ -22,6 +23,22 @@ DevToolsAgentHost* RenderViewDevToolsAgentHost::FindFor(
   if (it != instances_.end())
     return it->second;
   return new RenderViewDevToolsAgentHost(rvh);
+}
+
+bool RenderViewDevToolsAgentHost::IsDebuggerAttached(
+    TabContents* tab_contents) {
+  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
+  if (!devtools_manager)
+    return false;
+  RenderViewHostDelegate* delegate = tab_contents;
+  for (Instances::iterator it = instances_.begin();
+       it != instances_.end(); ++it) {
+    if (it->first->delegate() != delegate)
+      continue;
+    if (devtools_manager->GetDevToolsClientHostFor(it->second))
+      return true;
+  }
+  return false;
 }
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)

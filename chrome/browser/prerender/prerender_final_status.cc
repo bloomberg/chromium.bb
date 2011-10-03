@@ -46,6 +46,7 @@ const char* kFinalStatusNames[] = {
   "Cancelled",
   "SSL Error",
   "Cross-Site Navigation Pending",
+  "DevTools Attached To The Tab",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

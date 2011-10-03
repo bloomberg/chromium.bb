@@ -14,11 +14,13 @@
 #include "content/common/content_export.h"
 
 class RenderViewHost;
+class TabContents;
 
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
     : public DevToolsAgentHost, private RenderViewHostObserver {
  public:
   static DevToolsAgentHost* FindFor(RenderViewHost*);
+  static bool IsDebuggerAttached(TabContents*);
 
  private:
   RenderViewDevToolsAgentHost(RenderViewHost*);
