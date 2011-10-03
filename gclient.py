@@ -275,15 +275,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       self._requirements.add(self.url.module_name)
 
     if self.name and self.should_process:
-      def yield_full_tree(root):
-        """Depth-first recursion."""
-        yield root
-        for i in root.dependencies:
-          for j in yield_full_tree(i):
-            if j.should_process:
-              yield j
-
-      for obj in yield_full_tree(self.root):
+      for obj in self.root.depth_first_tree():
         if obj is self or not obj.name:
           continue
         # Step 1: Find any requirements self may need.
@@ -610,15 +602,22 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       sys.exit(2)
 
   def subtree(self, include_all):
-    """Breadth first"""
-    result = []
+    """Breadth first recursion excluding root node."""
     dependencies = self.dependencies
     for d in dependencies:
       if d.should_process or include_all:
-        result.append(d)
+        yield d
     for d in dependencies:
-      result.extend(d.subtree(include_all))
-    return result
+      for i in d.subtree(include_all):
+        yield i
+
+  def depth_first_tree(self):
+    """Depth-first recursion including the root node."""
+    yield self
+    for i in self.dependencies:
+      for j in i.depth_first_tree():
+        if j.should_process:
+          yield j
 
   def get_custom_deps(self, name, url):
     """Returns a custom deps if applicable."""
