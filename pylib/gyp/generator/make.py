@@ -722,9 +722,6 @@ class XcodeSettings(object):
     """Returns the qualified path to the bundle's plist file. E.g.
     Chromium.app/Contents/Info.plist. Only valid for bundles."""
     assert self._IsBundle()
-    assert self.spec['type'] != 'loadable_modules', (
-        "Info.plist files for loadable_modules not yet supported by the "
-        "make generator (target %s)" % self.spec['target_name'])  # Not tested.
     if self.spec['type'] in ('executable', 'loadable_module'):
       return os.path.join(self.GetBundleContentsFolderPath(), 'Info.plist')
     else:
