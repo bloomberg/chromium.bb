@@ -106,7 +106,7 @@ SUBSTRING : pluginprocesshost::replytorenderer___pluginprocesshost::onchannelcre
 PREFIX : windowdragresponsetask::run___messageloop::runtask
 
 # 31936
-PREFIX : webcore::uniscribehelpertextrun::uniscribehelpertextrun___webcore::font::floatwidthforcomplextext___webcore::font::floatwidth___webcore::renderimage::setimagesizeforalttext
+SUBSTRING : webcore::uniscribehelpertextrun::uniscribehelpertextrun___webcore::font::floatwidthforcomplextext
 
 # 61593
 PREFIX : webcore::font::glyphdataforcharacter___webcore::widthiterator::advance___webcore::font::floatwidthforsimpletext___webcore::font::floatwidth___webcore::renderimage::setimagesizeforalttext___webcore::renderimage::imagechanged
