@@ -70,16 +70,12 @@ void SdchDictionaryFetcher::StartFetching() {
   current_fetch_->Start();
 }
 
-void SdchDictionaryFetcher::OnURLFetchComplete(
-    const URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const net::ResponseCookies& cookies,
-    const std::string& data) {
-  if ((200 == response_code) &&
-      (status.status() == net::URLRequestStatus::SUCCESS)) {
-    net::SdchManager::Global()->AddSdchDictionary(data, url);
+void SdchDictionaryFetcher::OnURLFetchComplete(const URLFetcher* source) {
+  if ((200 == source->response_code()) &&
+      (source->status().status() == net::URLRequestStatus::SUCCESS)) {
+    net::SdchManager::Global()->AddSdchDictionary(
+        source->GetResponseStringRef(),
+        source->url());
   }
   current_fetch_.reset(NULL);
   ScheduleDelayedRun();

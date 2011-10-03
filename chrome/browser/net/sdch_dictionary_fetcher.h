@@ -50,12 +50,7 @@ class SdchDictionaryFetcher : public URLFetcher::Delegate,
 
   // Implementation of URLFetcher::Delegate. Called after transmission
   // completes (either successfully or with failure).
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const net::URLRequestStatus& status,
-                                  int response_code,
-                                  const net::ResponseCookies& cookies,
-                                  const std::string& data);
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // A queue of URLs that are being used to download dictionaries.
   std::queue<GURL> fetch_queue_;
