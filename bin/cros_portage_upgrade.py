@@ -1010,6 +1010,10 @@ class Upgrader(object):
         self._PackageReport(info)
 
       self._GiveEmergeResults(infolist)
+
+      # If there were any ebuilds staged before running this script, then
+      # make sure they were targeted in infolist.  If not, abort.
+      self._CheckStagedUpgrades(infolist)
     except RuntimeError as ex:
       oper.Error(str(ex))
 
@@ -1019,6 +1023,35 @@ class Upgrader(object):
       # Allow the changes to stay staged so that the user can attempt to address
       # the issue (perhaps an edit to package.mask is required, or another
       # package must also be upgraded).
+
+  def _CheckStagedUpgrades(self, infolist):
+    """Raise RuntimeError if staged upgrades are not also in |infolist|."""
+    # This deals with the situation where a previous upgrade run staged one or
+    # more package upgrades, but did not commit them because it found an error
+    # of some kind.  This is ok, as long as subsequent runs continue to request
+    # an upgrade of that package again (presumably with the problem fixed).
+    # However, if a subsequent run does not mention that package then it should
+    # abort.  The user must reset those staged changes first.
+
+    if self._stable_repo_status:
+      err_msgs = []
+
+      # Go over files with pre-existing git statuses.
+      filelist = self._stable_repo_status.keys()
+      ebuilds = [e for e in filelist if e.endswith('.ebuild')]
+      for ebuild in ebuilds:
+        (overlay, cat, pn, pv) = self._SplitEBuildPath(ebuild)
+        cpv = '%s/%s' % (cat, pv)
+
+        # Look for info with ['upgraded_cpv'] that matches
+        matching_infos = [i for i in infolist if i['upgraded_cpv'] == cpv]
+        if not matching_infos:
+          err_msgs.append("Staged %s is not one of upgrade targets." % ebuild)
+
+      if err_msgs:
+        raise RuntimeError("%s\n"
+                           "Add to upgrade targets or reset staged changes." %
+                           '\n'.join(err_msgs))
 
   def _GenParallelEmergeArgv(self, args):
     """Creates an argv for parallel_emerge using current options and |args|."""
