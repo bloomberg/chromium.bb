@@ -589,7 +589,6 @@ cr.define('options', function() {
        var value = !$('enable-spell-check').checked;
 
        $('language-options-spell-check-language-button').disabled = value;
-       $('language-options-add-button').disabled = value;
      },
 
     /**
