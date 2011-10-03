@@ -18,9 +18,10 @@ class TestTrendGraph(unittest.TestCase):
     shutil.copyfile(test_graph_file_backup_path, test_graph_file_path)
     trend_graph = TrendGraph(test_graph_file_path)
     data_map = {}
-    data_map['whole'] = (str(1), 'undefined', 'undefined')
-    data_map['skip'] = (str(2), 'undefined', 'undefined')
-    data_map['nonskip'] = (str(3), 'undefined', 'undefined')
+    data_map['whole'] = (['test1'], 'undefined', 'undefined')
+    data_map['skip'] = (['test1', 'test2'], 'undefined', 'undefined')
+    data_map['nonskip'] = (['test1', 'test2', 'test3'], 'undefined',
+                           'undefined')
     data_map['passingrate'] = (str(4), 'undefined', 'undefined')
 
     trend_graph.Update('2008,1,1,13,45,00', data_map)
@@ -30,6 +31,6 @@ class TestTrendGraph(unittest.TestCase):
     f.close()
     lineCount = 0
     for line in lines2:
-      if '2008,1,1,13,45,00' in line:
+      if '2008,0,1,13,45,00' in line:
         lineCount += 1
     self.assertEqual(lineCount, 2)

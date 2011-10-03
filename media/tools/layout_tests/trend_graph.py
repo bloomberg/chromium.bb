@@ -56,7 +56,8 @@ class TrendGraph(object):
     str_list[1] = str(int(str_list[1])-1) # month
     datetime_string = ','.join(str_list)
     for key in ['whole', 'skip', 'nonskip']:
-      joined_str += ','.join(data_map[key]) + ','
+      joined_str += str(len(data_map[key][0])) + ','
+      joined_str += ','.join(data_map[key][1:]) + ','
     new_line_for_numbers = '         [new Date(%s),%s],\n' % (datetime_string,
                                                               joined_str)
     new_line_for_numbers += '         %s\n' % (
@@ -66,7 +67,7 @@ class TrendGraph(object):
         new_line_for_numbers)
 
     joined_str = '%s,%s,%s' % (
-        data_map['passingrate'][0], data_map['nonskip'][1],
+        str(data_map['passingrate'][0]), data_map['nonskip'][1],
         data_map['nonskip'][2])
     new_line_for_passingrate = '         [new Date(%s),%s],\n' % (
         datetime_string, joined_str)

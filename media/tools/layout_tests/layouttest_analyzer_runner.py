@@ -81,16 +81,52 @@ def GenerateDashboardHTMLFile(file_name, test_group_list):
     test_group_list: a list of test group names such as 'media' or 'composite'.
   """
   file_object = open(file_name, 'wb')
+  legend_txt = """
+<style type="text/css">
+th {
+  width: 30px; overflow: hidden;
+}
+tr.d0 td {
+  background-color: #CC9999; color: black;
+  text-align: right;
+  width: 30px; overflow: hidden;
+}
+tr.d1 td {
+  background-color: #9999CC; color: black;
+  text-align: right;
+  width: 30px; overflow: hidden;
+}
+</style>
+<h2>Chromium Layout Test Analyzer Result</h2>
+Legend:
+<ul>
+<li>#Tests: the number of tests for the given test group
+<li>#Skipped Tests: the number of tests that are skipped in the
+<a href='http://svn.webkit.org/repository/webkit/trunk/LayoutTests/platform/\
+chromium/test_expectations.txt'>test expectaion file</a> (e.g., BUGWK60877
+SKIP : loader/navigation-while-deferring-loads.html = FAIL)
+<li>#Non-Skipped Failing Tests: the number of tests that appeared in the
+test expectation file and were not skipped.
+<li>Failing rate: #NonSkippedFailing / (#Tests - #Skipped)
+<li>Passing rate: 100 - (Failing rate)
+</ul>
+  """
+  file_object.write(legend_txt)
   file_object.write('<table border="1">')
-  file_object.write('<tr><th>test group</th>')
+  file_object.write('<tr><th>Base Directory</th>')
+  file_object.write('<th>Trend Graph</th>')
   file_object.write('<th>#Tests</th>')
   file_object.write('<th>#Skipped Tests</th>')
   file_object.write('<th>#Non-Skipped Failing Tests</th>')
-  file_object.write('<th>Passing Rate</td></tr>')
-  for test_group in test_group_list:
-    file_object.write('<tr>\n')
+  file_object.write('<th>Failing Rate</th>')
+  file_object.write('<th>Passing Rate</th>')
+  file_object.write('<th>Last Revision Number</th>')
+  file_object.write('<th>Last Revision Date</th></tr>\n')
+  test_group_list.sort()
+  for i, test_group in enumerate(test_group_list):
+    file_object.write('<tr class="d' + str(i % 2) + '">\n')
     file_object.write('<td>' + test_group + '</td>\n')
-    file_object.write('</tr>')
+    file_object.write('</tr>\n')
   file_object.write('</table>')
   file_object.close()
 

@@ -12,7 +12,7 @@ import os
 import sys
 import time
 
-from layouttests import LayoutTests
+import layouttests
 import layouttest_analyzer_helpers
 from test_expectations import TestExpectations
 from trend_graph import TrendGraph
@@ -130,9 +130,10 @@ def GetCurrentAndPreviousResults(debug, test_group_file_location,
       sys.exit()
     filter_names = []
     if test_group_file_location and os.path.exists(test_group_file_location):
-      filter_names = LayoutTests.GetLayoutTestNamesFromCSV(
+      filter_names = layouttests.LayoutTests.GetLayoutTestNamesFromCSV(
           test_group_file_location)
-      parent_location_list = LayoutTests.GetParentDirectoryList(filter_names)
+      parent_location_list = (
+          layouttests.LayoutTests.GetParentDirectoryList(filter_names))
       recursion = False
     else:
       # When test group CSV file is not specified, test group name
@@ -150,11 +151,11 @@ def GetCurrentAndPreviousResults(debug, test_group_file_location,
       parent_location_list = [test_group_name]
       filter_names = None
       recursion = True
-    layouttests = LayoutTests(parent_location_list=parent_location_list,
-                              recursion=recursion,
-                              filter_names=filter_names)
+    layouttests_object = layouttests.LayoutTests(
+        parent_location_list=parent_location_list, recursion=recursion,
+        filter_names=filter_names)
     analyzer_result_map = layouttest_analyzer_helpers.AnalyzerResultMap(
-        layouttests.JoinWithTestExpectation(TestExpectations()))
+        layouttests_object.JoinWithTestExpectation(TestExpectations()))
     result = layouttest_analyzer_helpers.FindLatestResult(
                  result_directory_location)
     if result:
@@ -236,7 +237,11 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
             layouttest_analyzer_helpers.SendStatusEmail().
         simple_rev_str: a simple version of revision string that is sent in
             the email.
+        rev: the latest revision number for the given test group.
+        rev_date: the latest revision date for the given test group.
   """
+  rev = ''
+  rev_date = ''
   if prev_analyzer_result_map:
     diff_map = analyzer_result_map.CompareToOtherResultMap(
         prev_analyzer_result_map)
@@ -254,7 +259,7 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
         cur_time_in_float = time.mktime(cur_time_in_float.timetuple())
       else:
         cur_time_in_float = time.time()
-      (rev_str, simple_rev_str) = (
+      (rev_str, simple_rev_str, rev, rev_date) = (
           layouttest_analyzer_helpers.GetRevisionString(prev_time_in_float,
                                                         cur_time_in_float,
                                                         diff_map))
@@ -273,7 +278,7 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
     result_change = True
     diff_map = None
     simple_rev_str = 'undefined'
-  return (result_change, diff_map, simple_rev_str)
+  return (result_change, diff_map, simple_rev_str, rev, rev_date)
 
 
 def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
@@ -296,8 +301,8 @@ def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
 
   Returns:
      a dictionary that maps result data category ('whole', 'skip', 'nonskip',
-         'passingrate') to information tuple (the number of the tests,
-         annotation, simple_rev_string) of the given result
+         'passingrate') to information tuple (a dictionary that maps test name
+         to its description, annotation, simple_rev_string) of the given result
          data category. These tuples are used for trend graph update.
   """
   # Trend graph update (if specified in the command-line argument) when
@@ -318,7 +323,11 @@ def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
   passingrate_anno = ''
   for test_group in ['whole', 'skip', 'nonskip']:
     anno = 'undefined'
-    tests = analyzer_result_map.result_map[test_group].keys()
+    # Extract test description.
+    test_map = {}
+    for (test_name, value) in (
+        analyzer_result_map.result_map[test_group].iteritems()):
+      test_map[test_name] = value['desc']
     test_str = ''
     links = ''
     if diff_map and diff_map[test_group]:
@@ -337,9 +346,9 @@ def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
     else:
       links = 'undefined'
     if test_group is 'whole':
-      data_map[test_group] = (str(len(tests)), anno, links)
+      data_map[test_group] = (test_map, anno, links)
     else:
-      data_map[test_group] = (str(len(tests)), anno, simple_rev_str)
+      data_map[test_group] = (test_map, anno, simple_rev_str)
   if not passingrate_anno:
     passingrate_anno = 'undefined'
   data_map['passingrate'] = (
@@ -349,27 +358,60 @@ def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
   return data_map
 
 
-def UpdateDashboard(dashboard_file_location, test_group_name, data_map):
+def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
+                    layouttest_root_path, rev, rev_date):
   """Update dashboard HTML file.
 
   Args:
     dashboard_file_location: the file location for the dashboard file.
     test_group_name: please refer to |options|.
-    data_map: a dictionary that maps result data category
-        ('whole', 'skip', 'nonskip', 'passingrate') to information tuple (the
-        number of the tests, annotation, simple_rev_string) of the given result
-        data category.
+    data_map: a dictionary that maps result data category ('whole', 'skip',
+        'nonskip', 'passingrate') to information tuple (a dictionary that maps
+        test name to its description, annotation, simple_rev_string) of the
+        given result data category. These tuples are used for trend graph
+        update.
+    layouttest_root_path: A location string where Webkit layout tests are
+        stored.
+    rev: the latest revision number for the given test group.
+    rev_date: the latest revision date for the given test group.
   """
-  new_str = ('<td><a href="%s">%s</a><td>%s</td><td>%s</td><td>%s</td>'
-             '<td>%s%%</td><tr>\n') % (
+  # Generate a HTML file that contains all test names for each test group.
+  escaped_tg_name = test_group_name.replace('/', '_')
+  for tg in ['whole', 'skip', 'nonskip']:
+    file_name = os.path.join(
+        os.path.dirname(dashboard_file_location),
+        escaped_tg_name + '_' + tg + '.html')
+    file_object = open(file_name, 'wb')
+    file_object.write('<table border="1">')
+    sorted_testnames = data_map[tg][0].keys()
+    sorted_testnames.sort()
+    for testname in sorted_testnames:
+      file_object.write(('<tr><td><a href="%s">%s</a></td>'
+                         '<td><a href="%s">dashboard</a></td>'
+                         '<td>%s</td></tr>') % (
+          layouttest_root_path + testname, testname,
+          ('http://test-results.appspot.com/dashboards/'
+           'flakiness_dashboard.html#tests=%s') % testname,
+          data_map[tg][0][testname]))
+    file_object.write('</table>')
+    file_object.close()
+  new_str = ('<td><a href="%s">%s</a></td><td><a href="%s">%s</a></td>'
+             '<td><a href="%s">%s</a></td><td><a href="%s">%s</a></td>'
+             '<td><a href="%s">%s</a></td><td>%d%%</td><td>%s%%</td>'
+             '<td><a href="http://trac.webkit.org/changeset/%s">%s</a></td>'
+             '<td>%s</td>\n') % (
                  # Dashboard file and graph must be in the same directory
                  # to make the following link work.
-                 test_group_name.replace('/', '_') + '.html',
-                 test_group_name, data_map['whole'][0],
-                 data_map['skip'][0], data_map['nonskip'][0],
-                 data_map['passingrate'][0])
+                 layouttest_root_path + '/' + test_group_name,
+                 test_group_name, escaped_tg_name + '.html',
+                 'graph', escaped_tg_name + '_whole.html',
+                 len(data_map['whole'][0]), escaped_tg_name + '_skip.html',
+                 len(data_map['skip'][0]), escaped_tg_name + '_nonskip.html',
+                 len(data_map['nonskip'][0]),
+                 100 - int(data_map['passingrate'][0]),
+                 data_map['passingrate'][0], rev, rev, rev_date)
   layouttest_analyzer_helpers.ReplaceLineInFile(
-      dashboard_file_location, test_group_name, new_str)
+      dashboard_file_location, '<td>' + test_group_name + '</td>', new_str)
 
 
 def main():
@@ -385,7 +427,7 @@ def main():
   (anno_map, appended_text_to_email) = ReadEmailInformation(
       options.bug_annotation_file_location,
       options.email_appended_text_file_location)
-  (result_change, diff_map, simple_rev_str) = (
+  (result_change, diff_map, simple_rev_str, rev, rev_date) = (
       SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
                 anno_map, appended_text_to_email,
                 options.email_only_change_mode, options.debug,
@@ -402,7 +444,8 @@ def main():
     # Report the result to dashboard.
     if options.dashboard_file_location:
       UpdateDashboard(options.dashboard_file_location, options.test_group_name,
-                      data_map)
+                      data_map, layouttests.DEFAULT_LAYOUTTEST_LOCATION, rev,
+                      rev_date)
 
 
 if '__main__' == __name__:

@@ -311,13 +311,16 @@ def GetRevisionString(prev_time, current_time, diff_map):
         Please refer to |diff_map| in |SendStatusEmail()|.
 
   Returns:
-     a tuple of two strings: one string is a full string that contains links,
-         author, date, and line for each change in the test expectation file,
-         and the other string contains only links to the change. The latter is
-         used for the trend graph annotations.
+    a tuple of strings:
+        1) full string containing links, author, date, and line for each
+           change in the test expectation file.
+        2) shorter string containing only links to the change.  Used for
+           trend graph annotations.
+        3) last revision number for the given test group.
+        4) last revision date for the given test group.
   """
   if not diff_map:
-    return ('', '')
+    return ('', '', '', '')
   testname_map = {}
   for test_group in ['skip', 'nonskip']:
     for i in range(2):
@@ -328,7 +331,12 @@ def GetRevisionString(prev_time, current_time, diff_map):
                                                           testname_map.keys())
   rev_str = ''
   simple_rev_str = ''
+  rev = ''
+  rev_date = ''
   if rev_infos:
+    # Get latest revision number and date.
+    rev = rev_infos[-1][1]
+    rev_date = rev_infos[-1][3]
     for rev_info in rev_infos:
       (old_rev, new_rev, author, date, _, target_lines) = rev_info
       link = urllib.unquote('http://trac.webkit.org/changeset?new=%d%40trunk'
@@ -343,7 +351,7 @@ def GetRevisionString(prev_time, current_time, diff_map):
       for line in target_lines:
         rev_str += '<li>%s</li>\n' % line
       rev_str += '</ul></ul>'
-  return (rev_str, simple_rev_str)
+  return (rev_str, simple_rev_str, rev, rev_date)
 
 
 def SendEmail(sender_email_address, receivers_email_addresses, subject,

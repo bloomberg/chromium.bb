@@ -112,6 +112,7 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
 
   def RunTestGetRevisionString(self, current_time_str, prev_time_str,
                                expected_rev_str, expected_simple_rev_str,
+                               expected_rev_number, expected_rev_date,
                                testname, diff_map_none=False):
     current_time = datetime.strptime(current_time_str, '%Y-%m-%d-%H')
     current_time = time.mktime(current_time.timetuple())
@@ -125,12 +126,13 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
         'skip': [[(testname, 'te_info1')], []],
         'nonskip': [[], []],
       }
-    (rev_str, simple_rev_str) = (
-       layouttest_analyzer_helpers.GetRevisionString(prev_time,
-                                                     current_time, diff_map))
-
+    (rev_str, simple_rev_str, rev_number, rev_date) = (
+        layouttest_analyzer_helpers.GetRevisionString(prev_time, current_time,
+                                                      diff_map))
     self.assertEquals(rev_str, expected_rev_str)
     self.assertEquals(simple_rev_str, expected_simple_rev_str)
+    self.assertEquals(rev_number, expected_rev_number)
+    self.assertEquals(rev_date, expected_rev_date)
 
   def testGetRevisionString(self):
     expected_rev_str = ('<ul><a href="http://trac.webkit.org/changeset?'
@@ -150,15 +152,16 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
                                'test_expectations.txt">94366->94377</a>,')
     self.RunTestGetRevisionString('2011-09-02-00', '2011-09-01-00',
                                   expected_rev_str, expected_simple_rev_str,
+                                  94377, '2011-09-01 18:00:23',
                                   'fast/dom/dom-constructors.html')
 
   def testGetRevisionStringNoneDiffMap(self):
     self.RunTestGetRevisionString('2011-09-02-00', '2011-09-01-00', '', '',
-                                  '', diff_map_none=True)
+                                  '', '', '', diff_map_none=True)
 
   def testGetRevisionStringNoMatchingTest(self):
     self.RunTestGetRevisionString('2011-09-01-00', '2011-09-02-00', '', '',
-                                  'foo1.html')
+                                  '', '', 'foo1.html')
 
   def testReplaceLineInFile(self):
     file_path = os.path.join('test_data', 'inplace.txt')
