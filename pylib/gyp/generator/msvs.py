@@ -855,30 +855,29 @@ def _GenerateMSVSProject(project, options, version):
                          project.guid, platforms)
 
   # Get directory project file is in.
-  gyp_dir = os.path.split(project.path)[0]
-  gyp_file = posixpath.split(project.build_file)[1]
-  gyp_path = _NormalizedSource(gyp_file)
-  relative_path_of_gyp_file = gyp.common.RelativePath(gyp_path, gyp_dir)
+  project_dir = os.path.split(project.path)[0]
+  gyp_path = _NormalizedSource(project.build_file)
+  relative_path_of_gyp_file = gyp.common.RelativePath(gyp_path, project_dir)
 
   config_type = _GetMSVSConfigurationType(spec, project.build_file)
   for config_name, config in spec['configurations'].iteritems():
     _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config)
 
   # Prepare list of sources and excluded sources.
-  sources, excluded_sources = _PrepareListOfSources(spec,
-                                                    relative_path_of_gyp_file)
+  gyp_file = os.path.split(project.build_file)[1]
+  sources, excluded_sources = _PrepareListOfSources(spec, gyp_file)
 
   # Add rules.
   actions_to_add = {}
-  _GenerateRulesForMSVS(p, gyp_dir, options, spec,
+  _GenerateRulesForMSVS(p, project_dir, options, spec,
                         sources, excluded_sources,
                         actions_to_add)
   sources, excluded_sources, excluded_idl = (
       _AdjustSourcesAndConvertToFilterHierarchy(
-          spec, options, gyp_dir, sources, excluded_sources))
+          spec, options, project_dir, sources, excluded_sources))
 
   # Add in files.
-  _VerifySourcesExist(sources, gyp_dir)
+  _VerifySourcesExist(sources, project_dir)
   p.AddFiles(sources)
 
   _AddToolFilesToMSVS(p, spec)
@@ -1236,7 +1235,7 @@ def _AddNormalizedSources(sources_set, sources_array):
   sources_set.update(set(sources))
 
 
-def _PrepareListOfSources(spec, relative_path_of_gyp_file):
+def _PrepareListOfSources(spec, gyp_file):
   """Prepare list of sources and excluded sources.
 
   Besides the sources specified directly in the spec, adds the gyp file so
@@ -1246,15 +1245,16 @@ def _PrepareListOfSources(spec, relative_path_of_gyp_file):
 
   Arguments:
     spec: The target dictionary containing the properties of the target.
-    relative_path_of_gyp_file: The relative path of the gyp file.
+    gyp_file: The name of the gyp file.
   Returns:
-    A pair of (list of sources, list of excluded sources)
+    A pair of (list of sources, list of excluded sources).
+    The sources will be relative to the gyp file.
   """
   sources = set()
   _AddNormalizedSources(sources, spec.get('sources', []))
   excluded_sources = set()
   # Add in the gyp file.
-  sources.add(relative_path_of_gyp_file)
+  sources.add(gyp_file)
 
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
@@ -2737,30 +2737,28 @@ def _GetMSBuildProjectReferences(project):
 def _GenerateMSBuildProject(project, options, version):
   spec = project.spec
   configurations = spec['configurations']
-  gyp_dir, gyp_file_name = os.path.split(project.path)
+  project_dir, project_file_name = os.path.split(project.path)
   msbuildproj_dir = os.path.dirname(project.path)
   if msbuildproj_dir and not os.path.exists(msbuildproj_dir):
     os.makedirs(msbuildproj_dir)
   # Prepare list of sources and excluded sources.
-  gyp_dir = os.path.split(project.path)[0]
-  gyp_file = posixpath.split(project.build_file)[1]
-  gyp_path = _NormalizedSource(gyp_file)
-  relative_path_of_gyp_file = gyp.common.RelativePath(gyp_path, gyp_dir)
+  gyp_path = _NormalizedSource(project.build_file)
+  relative_path_of_gyp_file = gyp.common.RelativePath(gyp_path, project_dir)
 
-  sources, excluded_sources = _PrepareListOfSources(spec,
-                                                    relative_path_of_gyp_file)
+  gyp_file = os.path.split(project.build_file)[1]
+  sources, excluded_sources = _PrepareListOfSources(spec, gyp_file)
   # Add rules.
   actions_to_add = {}
   props_files_of_rules = set()
   targets_files_of_rules = set()
   extension_to_rule_name = {}
-  _GenerateRulesForMSBuild(gyp_dir, options, spec,
+  _GenerateRulesForMSBuild(project_dir, options, spec,
                            sources, excluded_sources,
                            props_files_of_rules, targets_files_of_rules,
                            actions_to_add, extension_to_rule_name)
   sources, excluded_sources, excluded_idl = (
       _AdjustSourcesAndConvertToFilterHierarchy(spec, options,
-                                                gyp_dir, sources,
+                                                project_dir, sources,
                                                 excluded_sources))
   _AddActions(actions_to_add, spec, project.build_file)
   _AddCopies(actions_to_add, spec)
@@ -2776,7 +2774,7 @@ def _GenerateMSBuildProject(project, options, version):
 
   _GenerateMSBuildFiltersFile(project.path + '.filters', sources,
                               extension_to_rule_name)
-  _VerifySourcesExist(sources, gyp_dir)
+  _VerifySourcesExist(sources, project_dir)
 
   for (_, configuration) in configurations.iteritems():
     _FinalizeMSBuildSettings(spec, configuration)
@@ -2799,7 +2797,7 @@ def _GenerateMSBuildProject(project, options, version):
       }]
 
   content += _GetMSBuildProjectConfigurations(configurations)
-  content += _GetMSBuildGlobalProperties(spec, project.guid, gyp_file_name)
+  content += _GetMSBuildGlobalProperties(spec, project.guid, project_file_name)
   content += import_default_section
   content += _GetMSBuildConfigurationDetails(spec, project.build_file)
   content += import_cpp_props_section
