@@ -196,12 +196,12 @@ void ExtensionFileBrowserEventRouter::MountCompleted(
       event_type == chromeos::MountLibrary::MOUNTING) {
     chromeos::MountLibrary* mount_lib =
         chromeos::CrosLibrary::Get()->GetMountLibrary();
-    if (mount_lib->disks().find(mount_info.source_path) ==
-        mount_lib->disks().end()) {
+    chromeos::MountLibrary::DiskMap::const_iterator disk_it =
+        mount_lib->disks().find(mount_info.source_path);
+    if (disk_it == mount_lib->disks().end()) {
       return;
     }
-    chromeos::MountLibrary::Disk* disk =
-        mount_lib->disks().find(mount_info.source_path)->second;
+    chromeos::MountLibrary::Disk* disk = disk_it->second;
 
      notifications_->ManageNotificationsOnMountCompleted(
         disk->system_path_prefix(), disk->drive_label(), disk->is_parent(),
