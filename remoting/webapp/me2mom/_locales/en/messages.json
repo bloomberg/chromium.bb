@@ -61,6 +61,14 @@
     "message": "Disconnect (Ctrl+Alt+Esc)",
     "description": "Label for the disconnect button including the Windows keyboard shortcut."
   },
+  "ERROR_HOST_IS_OFFLINE": {
+    "message": "The remote computer is not responding to connection requests. Please verify that it is online and try again.",
+    "description": "Error that is shown on the client side when we don't get a response from the host."
+  },
+  "ERROR_INCOMPATIBLE_PROTOCOL": {
+    "message": "Incompatible version of Chromoting detected. Please make sure that you have the latest version of Chromium and Chromoting on both computers and try again.",
+    "description": "Error that is shown on the client side when incompatible Chromoting versions are installed on host and client."
+  },
   "ERROR_GENERIC": {
     "message": "An unknown error occurred. Please sign out of Chromoting and try again.",
     "description": "Generic error message, displayed if something went wrong, but we aren't able to determine what, or the cause is too technical to be of use to a typical user."

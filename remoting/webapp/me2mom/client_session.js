@@ -54,11 +54,28 @@ remoting.ClientSession.State = {
   CONNECTION_FAILED: 8
 };
 
+/** @enum {number} */
+remoting.ClientSession.ConnectionError = {
+  NONE: 0,
+  HOST_IS_OFFLINE: 1,
+  SESSION_REJECTED: 2,
+  INCOMPATIBLE_PROTOCOL: 3,
+  NETWORK_FAILURE: 4,
+  OTHER: 5,
+};
+
 /**
  * The current state of the session.
  * @type {remoting.ClientSession.State}
  */
 remoting.ClientSession.prototype.state = remoting.ClientSession.State.UNKNOWN;
+
+/**
+ * The last connection error. Set when state is set to CONNECTION_FAILED.
+ * @type {remoting.ClientSession.ConnectionError}
+ */
+remoting.ClientSession.prototype.error =
+    remoting.ClientSession.ConnectionError.NONE;
 
 /**
  * Chromoting session API version (for this javascript).
@@ -278,6 +295,18 @@ remoting.ClientSession.prototype.connectionInfoUpdateCallback = function() {
   } else if (state == this.plugin.STATUS_CLOSED) {
     this.setState_(remoting.ClientSession.State.CLOSED);
   } else if (state == this.plugin.STATUS_FAILED) {
+    var error = this.plugin.error;
+    if (error == this.plugin.ERROR_HOST_IS_OFFLINE) {
+      error = remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE;
+    } else if (error == this.plugin.ERROR_SESSION_REJECTED) {
+      error = remoting.ClientSession.ConnectionError.SESSION_REJECTED;
+    } else if (error == this.plugin.ERROR_INCOMPATIBLE_PROTOCOL) {
+      error = remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL;
+    } else if (error == this.plugin.NETWORK_FAILURE) {
+      error = remoting.ClientSession.ConnectionError.NETWORK_FAILURE;
+    } else {
+      error = remoting.ClientSession.ConnectionError.OTHER;
+    }
     this.setState_(remoting.ClientSession.State.CONNECTION_FAILED);
   }
 };

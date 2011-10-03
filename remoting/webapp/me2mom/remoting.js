@@ -45,6 +45,8 @@ remoting.ClientError = {
   INVALID_ACCESS_CODE: /*i18n-content*/'ERROR_INVALID_ACCESS_CODE',
   MISSING_PLUGIN: /*i18n-content*/'ERROR_MISSING_PLUGIN',
   OAUTH_FETCH_FAILED: /*i18n-content*/'ERROR_AUTHENTICATION_FAILED',
+  HOST_IS_OFFLINE: /*i18n-content*/'ERROR_HOST_IS_OFFLINE',
+  INCOMPATIBLE_PROTOCOL: /*i18n-content*/'ERROR_INCOMPATIBLE_PROTOCOL',
   OTHER_ERROR: /*i18n-content*/'ERROR_GENERIC'
 };
 
@@ -468,14 +470,28 @@ function onClientStateChange_(oldState) {
       remoting.debug.log('Connection closed by host');
       remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED);
     } else {
-      // TODO(jamiewalch): This is not quite correct, as it will report
-      // "Invalid access code", regardless of what actually went wrong.
-      // Fix this up by having the host send a suitable error code.
+      // The transition from CONNECTING to CLOSED state may happen
+      // only with older client plugins. Current version should go the
+      // FAILED state when connection fails.
       showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
     }
   } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
     remoting.debug.log('Client plugin reported connection failed');
-    showConnectError_(remoting.ClientError.OTHER_ERROR);
+    if (remoting.session.error ==
+        remoting.ClientSession.Error.HOST_IS_OFFLINE) {
+      showConnectError_(remoting.ClientError.HOST_IS_OFFLINE);
+    } else if (remoting.session.error ==
+               remoting.ClientSession.Error.SESSION_REJECTED) {
+      showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
+    } else if (remoting.session.error ==
+               remoting.ClientSession.Error.INCOMPATIBLE_PROTOCOL) {
+      showConnectError_(remoting.ClientError.INCOMPATIBLE_PROTOCOL);
+    } else if (remoting.session.error ==
+               remoting.ClientSession.Error.NETWORK_FAILURE) {
+      showConnectError_(remoting.ClientError.OTHER_ERROR);
+    } else {
+      showConnectError_(remoting.ClientError.OTHER_ERROR);
+    }
   } else {
     remoting.debug.log('Unexpected client plugin state: ' + state);
     // This should only happen if the web-app and client plugin get out of
