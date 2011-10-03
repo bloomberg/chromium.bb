@@ -12,6 +12,7 @@
 #include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
 #include "gestures/include/logging.h"
+#include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/lookahead_filter_interpreter.h"
 #include "gestures/include/scaling_filter_interpreter.h"
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
@@ -160,12 +161,13 @@ GestureInterpreter::GestureInterpreter(int version)
       prop_provider_(NULL),
       prop_provider_data_(NULL) {
   interpreter_.reset(
-      new StuckButtonInhibitorFilterInterpreter(
-          new IntegralGestureFilterInterpreter(
-              new ScalingFilterInterpreter(
-                  new AccelFilterInterpreter(
-                      new LookaheadFilterInterpreter(
-                          new ImmediateInterpreter))))));
+      new LoggingFilterInterpreter(
+          new StuckButtonInhibitorFilterInterpreter(
+              new IntegralGestureFilterInterpreter(
+                  new ScalingFilterInterpreter(
+                      new AccelFilterInterpreter(
+                          new LookaheadFilterInterpreter(
+                              new ImmediateInterpreter)))))));
 }
 
 GestureInterpreter::~GestureInterpreter() {
