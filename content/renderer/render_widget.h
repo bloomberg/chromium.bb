@@ -104,7 +104,8 @@ class CONTENT_EXPORT RenderWidget
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect&);
   virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect);
-  virtual void didActivateAcceleratedCompositing(bool active);
+  virtual void didActivateCompositor(int compositorIdentifier);
+  virtual void didDeactivateCompositor();
   virtual void scheduleComposite();
   virtual void scheduleAnimation();
   virtual void didFocus();
