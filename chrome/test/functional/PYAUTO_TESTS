@@ -281,6 +281,10 @@
       '-sync',
       # crbug.com/87837
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
+
+      # Broken only on linux. crbug.com/99060
+      '-policy_prefs_ui.PolicyPrefsUITest.testPoliciesShowBanner',
+      '-policy_prefs_ui.PolicyPrefsUITest.testTogglePolicyTogglesBanner',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
