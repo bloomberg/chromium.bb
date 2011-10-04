@@ -14,7 +14,7 @@
 
 namespace skia {
 
-//static
+// static
 SkDevice* VectorPlatformDeviceEmf::CreateDevice(
     int width, int height, bool is_opaque, HANDLE shared_section) {
   if (!is_opaque) {
@@ -294,7 +294,7 @@ static bool gdiCanHandleText(const SkPaint& paint) {
 }
 
 class SkGDIFontSetup {
-public:
+ public:
   SkGDIFontSetup() : fUseGDI(false) {
     SkDEBUGCODE(fUseGDIHasBeenCalled = false;)
   }
@@ -303,7 +303,7 @@ public:
   // can only be called once
   bool useGDI(HDC hdc, const SkPaint&);
 
-private:
+ private:
   HDC      fHDC;
   HFONT    fNewFont;
   HFONT    fSavedFont;
@@ -326,6 +326,7 @@ bool SkGDIFontSetup::useGDI(HDC hdc, const SkPaint& paint) {
     lf.lfHeight = -SkScalarRound(paint.getTextSize());
     fNewFont = CreateFontIndirect(&lf);
     fSavedFont = (HFONT)::SelectObject(hdc, fNewFont);
+    fHDC = hdc;
   }
   return fUseGDI;
 }
@@ -344,8 +345,8 @@ static SkScalar getAscent(const SkPaint& paint) {
   return fm.fAscent;
 }
 
-// return the options int for ExtTextOut. Only valid if the paint's text encoding
-// is not UTF8 (in which case ExtTextOut can't be used).
+// return the options int for ExtTextOut. Only valid if the paint's text
+// encoding is not UTF8 (in which case ExtTextOut can't be used).
 static UINT getTextOutOptions(const SkPaint& paint) {
   if (SkPaint::kGlyphID_TextEncoding == paint.getTextEncoding()) {
     return ETO_GLYPH_INDEX;

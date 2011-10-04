@@ -8,6 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
+#include "base/win/scoped_gdi_object.h"
+#include "base/win/scoped_hdc.h"
+#include "base/win/scoped_select_object.h"
 #include "chrome/common/print_messages.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
@@ -39,34 +42,53 @@ int CALLBACK EnhMetaFileProc(HDC dc,
   HDC* bitmap_dc = reinterpret_cast<HDC*>(data);
   // Play this command to the bitmap DC.
   PlayEnhMetaFileRecord(*bitmap_dc, handle_table, record, num_objects);
-  if (record->iType == EMR_ALPHABLEND) {
-    const EMRALPHABLEND* emr_alpha_blend =
-        reinterpret_cast<const EMRALPHABLEND*>(record);
-    XFORM bitmap_dc_transform, metafile_dc_transform;
-    XFORM identity = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
-    // Temporarily set the world transforms of both DC's to identity.
-    GetWorldTransform(dc, &metafile_dc_transform);
-    SetWorldTransform(dc, &identity);
-    GetWorldTransform(*bitmap_dc, &bitmap_dc_transform);
-    SetWorldTransform(*bitmap_dc, &identity);
-    const RECTL& rect = emr_alpha_blend->rclBounds;
-    // Since the printer does not support alpha blend, copy the alpha blended
-    // region from our (software-rendered) bitmap DC to the metafile DC.
-    BitBlt(dc,
-           rect.left,
-           rect.top,
-           rect.right - rect.left + 1,
-           rect.bottom - rect.top + 1,
-           *bitmap_dc,
-           rect.left,
-           rect.top,
-           SRCCOPY);
-    // Restore the world transforms of both DC's.
-    SetWorldTransform(dc, &metafile_dc_transform);
-    SetWorldTransform(*bitmap_dc, &bitmap_dc_transform);
-  } else {
-    // Play this command to the metafile DC.
-    PlayEnhMetaFileRecord(dc, handle_table, record, num_objects);
+  switch (record->iType) {
+    case EMR_ALPHABLEND: {
+      const EMRALPHABLEND* emr_alpha_blend =
+          reinterpret_cast<const EMRALPHABLEND*>(record);
+      XFORM bitmap_dc_transform, metafile_dc_transform;
+      XFORM identity = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
+      // Temporarily set the world transforms of both DC's to identity.
+      GetWorldTransform(dc, &metafile_dc_transform);
+      SetWorldTransform(dc, &identity);
+      GetWorldTransform(*bitmap_dc, &bitmap_dc_transform);
+      SetWorldTransform(*bitmap_dc, &identity);
+      const RECTL& rect = emr_alpha_blend->rclBounds;
+      // Since the printer does not support alpha blend, copy the alpha
+      // blended region from our (software-rendered) bitmap DC to the
+      // metafile DC.
+      BitBlt(dc,
+             rect.left,
+             rect.top,
+             rect.right - rect.left + 1,
+             rect.bottom - rect.top + 1,
+             *bitmap_dc,
+             rect.left,
+             rect.top,
+             SRCCOPY);
+      // Restore the world transforms of both DC's.
+      SetWorldTransform(dc, &metafile_dc_transform);
+      SetWorldTransform(*bitmap_dc, &bitmap_dc_transform);
+      break;
+    }
+
+    case EMR_CREATEBRUSHINDIRECT:
+    case EMR_CREATECOLORSPACE:
+    case EMR_CREATECOLORSPACEW:
+    case EMR_CREATEDIBPATTERNBRUSHPT:
+    case EMR_CREATEMONOBRUSH:
+    case EMR_CREATEPALETTE:
+    case EMR_CREATEPEN:
+    case EMR_DELETECOLORSPACE:
+    case EMR_DELETEOBJECT:
+    case EMR_EXTCREATEFONTINDIRECTW:
+      // Play object creation command only once.
+      break;
+
+    default:
+      // Play this command to the metafile DC.
+      PlayEnhMetaFileRecord(dc, handle_table, record, num_objects);
+      break;
   }
   return 1;  // Continue enumeration
 }
@@ -235,19 +257,20 @@ Metafile* PrintWebViewHelper::RenderPage(
 
       // Page used alpha blend, but printer doesn't support it.  Rewrite the
       // metafile and flatten out the transparency.
-      HDC bitmap_dc = CreateCompatibleDC(GetDC(NULL));
+      base::win::ScopedGetDC screen_dc(NULL);
+      base::win::ScopedHDC bitmap_dc(CreateCompatibleDC(screen_dc));
       if (!bitmap_dc)
         NOTREACHED() << "Bitmap DC creation failed";
       SetGraphicsMode(bitmap_dc, GM_ADVANCED);
       void* bits = NULL;
       BITMAPINFO hdr;
       gfx::CreateBitmapHeader(width, height, &hdr.bmiHeader);
-      HBITMAP hbitmap = CreateDIBSection(
-          bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0);
+      base::win::ScopedBitmap hbitmap(CreateDIBSection(
+          bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0));
       if (!hbitmap)
         NOTREACHED() << "Raster bitmap creation for printing failed";
 
-      HGDIOBJ old_bitmap = SelectObject(bitmap_dc, hbitmap);
+      base::win::ScopedSelectObject selectBitmap(bitmap_dc, hbitmap);
       RECT rect = {0, 0, width, height };
       HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
       FillRect(bitmap_dc, &rect, whiteBrush);
@@ -267,8 +290,6 @@ Metafile* PrintWebViewHelper::RenderPage(
                       EnhMetaFileProc,
                       &bitmap_dc,
                       &metafile_bounds);
-
-      SelectObject(bitmap_dc, old_bitmap);
       return metafile2;
     }
   }
