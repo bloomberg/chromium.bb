@@ -78,8 +78,8 @@ bool RenderViewDevToolsAgentHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewDevToolsAgentHost, message)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ForwardToClient, OnForwardToClient)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RuntimePropertyChanged,
-                        OnRuntimePropertyChanged)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
+                        OnSaveAgentRuntimeState)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ClearBrowserCache, OnClearBrowserCache)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ClearBrowserCookies,
                         OnClearBrowserCookies)
@@ -88,11 +88,9 @@ bool RenderViewDevToolsAgentHost::OnMessageReceived(
   return handled;
 }
 
-void RenderViewDevToolsAgentHost::OnRuntimePropertyChanged(
-    const std::string& name,
-    const std::string& value) {
-  DevToolsManager::GetInstance()->RuntimePropertyChanged(
-      this, name, value);
+void RenderViewDevToolsAgentHost::OnSaveAgentRuntimeState(
+    const std::string& state) {
+  DevToolsManager::GetInstance()->SaveAgentRuntimeState(this, state);
 }
 
 void RenderViewDevToolsAgentHost::OnForwardToClient(

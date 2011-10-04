@@ -29,7 +29,8 @@ class CONTENT_EXPORT DevToolsAgentHost {
 
   // Sends the message to the devtools agent hosted by this object.
   virtual void SendMessageToAgent(IPC::Message* msg) = 0;
-  virtual void Attach(const DevToolsRuntimeProperties&);
+  virtual void Attach();
+  virtual void Reattach(const std::string& saved_agent_state);
   virtual void Detach();
 
   // TODO(yurys): get rid of this method
