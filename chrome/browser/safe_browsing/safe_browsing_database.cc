@@ -1325,7 +1325,7 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
   // next update to generate a new filter.
   // TODO(paulg): Investigate how often the filter file is missing and how
   // expensive it would be to regenerate it.
-  int64 size_64;
+  int64 size_64 = 0;
   if (!file_util::GetFileSize(browse_filename_, &size_64) || size_64 == 0)
     return;
 

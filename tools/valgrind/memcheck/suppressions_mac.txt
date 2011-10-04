@@ -1842,12 +1842,6 @@
    fun:PyObject_Free
 }
 {
-   bug_96663
-   Memcheck:Cond
-   fun:_ZN23SafeBrowsingDatabaseNew15LoadBloomFilterEv
-   fun:_ZN23SafeBrowsingDatabaseNew4InitERK8FilePath
-}
-{
    bug_96671
    Memcheck:Cond
    ...
