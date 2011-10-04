@@ -72,6 +72,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::NativeTextButton* create_nonresizable_button_;
   views::NativeTextButton* bubble_button_;
   views::NativeTextButton* tile_button_;
+  views::NativeTextButton* lock_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   std::vector<WindowAndBoundsPair> to_restore_;

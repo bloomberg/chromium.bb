@@ -17,6 +17,8 @@ namespace examples {
 
 void CreatePointyBubble(gfx::NativeWindow parent, const gfx::Point& origin);
 
+void CreateLock();
+
 }  // namespace examples
 }  // namespace aura_shell
 

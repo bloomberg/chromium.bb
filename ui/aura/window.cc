@@ -27,7 +27,8 @@ Window::Window(WindowDelegate* delegate)
       visible_(false),
       parent_(NULL),
       id_(-1),
-      user_data_(NULL) {
+      user_data_(NULL),
+      consumes_events_(false) {
 }
 
 Window::~Window() {
@@ -214,6 +215,8 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
       if (handler && handler->delegate())
         return handler;
     }
+    if (child->consumes_events_ && !child->children().empty())
+      return NULL;
   }
   return delegate_ ? this : NULL;
 }

@@ -120,6 +120,15 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   WindowDelegate* delegate() { return delegate_; }
 
+  // When set to true, this Window will consume all events targeted at it or
+  // Windows below it in the z-order, but only if this Window has children. This
+  // is used to implement lock-screen type functionality where we do not want
+  // events to be sent to running logged-in windows when the lock screen is
+  // displayed.
+  void set_consumes_events(bool consumes_events) {
+    consumes_events_ = consumes_events;
+  }
+
   // Returns true if the mouse pointer at the specified |point| can trigger an
   // event for this Window.
   // TODO(beng):
@@ -188,6 +197,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   scoped_ptr<LayoutManager> layout_manager_;
 
   void* user_data_;
+
+  // When true, events are not sent to windows behind this one in the z-order,
+  // provided this window has children. See set_consumes_events().
+  bool consumes_events_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

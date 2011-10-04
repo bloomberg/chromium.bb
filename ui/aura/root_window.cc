@@ -57,7 +57,7 @@ bool RootWindow::HandleKeyEvent(const KeyEvent& event) {
   Window* focused_window = GetFocusManager()->focused_window();
   if (focused_window) {
     KeyEvent translated_event(event);
-    return GetFocusManager()->focused_window()->OnKeyEvent(&translated_event);
+    return focused_window->OnKeyEvent(&translated_event);
   }
   return false;
 }

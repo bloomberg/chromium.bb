@@ -98,10 +98,13 @@ WindowTypeLauncher::WindowTypeLauncher()
               this, L"Create Non-Resizable Window"))),
       ALLOW_THIS_IN_INITIALIZER_LIST(bubble_button_(
           new views::NativeTextButton(this, L"Create Pointy Bubble"))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(lock_button_(
+          new views::NativeTextButton(this, L"Lock Screen"))),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   AddChildView(create_button_);
   AddChildView(create_nonresizable_button_);
   AddChildView(bubble_button_);
+  AddChildView(lock_button_);
   set_context_menu_controller(this);
 }
 
@@ -176,6 +179,11 @@ void WindowTypeLauncher::Layout() {
   create_nonresizable_button_->SetBounds(
       5, bubble_button_->y() - create_nr_button_ps.height() - 5,
       create_nr_button_ps.width(), create_nr_button_ps.height());
+
+  gfx::Size lock_ps = lock_button_->GetPreferredSize();
+  lock_button_->SetBounds(
+      5, create_nonresizable_button_->y() - lock_ps.height() - 5,
+      lock_ps.width(), lock_ps.height());
 }
 
 gfx::Size WindowTypeLauncher::GetPreferredSize() {
@@ -183,7 +191,7 @@ gfx::Size WindowTypeLauncher::GetPreferredSize() {
 }
 
 bool WindowTypeLauncher::OnMousePressed(const views::MouseEvent& event) {
-  // Overriden so we get OnMouseReleased and can show the context menu.
+  // Overridden so we get OnMouseReleased and can show the context menu.
   return true;
 }
 
@@ -216,6 +224,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     views::View::ConvertPointToWidget(bubble_button_->parent(), &origin);
     origin.Offset(10, bubble_button_->height() - 10);
     CreatePointyBubble(GetWidget()->GetNativeWindow(), origin);
+  } else if (sender == lock_button_) {
+    CreateLock();
   }
 }
 
