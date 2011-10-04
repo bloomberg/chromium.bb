@@ -77,6 +77,14 @@ bool IsDoubleClickMouseEvent(const ui::NativeEvent& native_event) {
          native_event.message == WM_XBUTTONDBLCLK;
 }
 
+bool IsKeyEvent(const ui::NativeEvent& native_event) {
+  return native_event.message == WM_KEYDOWN ||
+         native_event.message == WM_SYSKEYDOWN ||
+         native_event.message == WM_CHAR ||
+         native_event.message == WM_KEYUP ||
+         native_event.message == WM_SYSKEYUP;
+}
+
 // Returns a mask corresponding to the set of pressed modifier keys.
 // Checks the current global state and the state sent by client mouse messages.
 int KeyStateFlagsFromNative(const ui::NativeEvent& native_event) {
@@ -84,7 +92,10 @@ int KeyStateFlagsFromNative(const ui::NativeEvent& native_event) {
   flags |= (GetKeyState(VK_MENU) & 0x80) ? ui::EF_ALT_DOWN : 0;
   flags |= (GetKeyState(VK_SHIFT) & 0x80) ? ui::EF_SHIFT_DOWN : 0;
   flags |= (GetKeyState(VK_CONTROL) & 0x80) ? ui::EF_CONTROL_DOWN : 0;
-  flags |= (HIWORD(native_event.lParam) & KF_EXTENDED) ? ui::EF_EXTENDED : 0;
+
+  // Check key messages for the extended key flag.
+  if (IsKeyEvent(native_event))
+    flags |= (HIWORD(native_event.lParam) & KF_EXTENDED) ? ui::EF_EXTENDED : 0;
 
   // Most client mouse messages include key state information.
   if (IsClientMouseEvent(native_event)) {
