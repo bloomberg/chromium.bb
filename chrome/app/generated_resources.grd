@@ -6665,6 +6665,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_HEADING_EMPTY_RESPONSE" desc="Heading in the error page when no data is received.">
         No data received
       </message>
+      <message name="IDS_ERRORPAGES_HEADING_DUPLICATE_HEADERS" desc="Heading in the error page when a response from the server contains duplicate headers.">
+        Duplicate headers received from server
+      </message>
       <message name="IDS_ERRORPAGES_HEADING_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Heading of the error page when the server has a weak Diffie-Hellman public key. Diffie-Hellman is a technical term and the conjuction of two names so may be best left untranslated. 'key' here is used as the technical name for a large number with certain mathematical properties that allow it to be used to encrypt and decrypt data. 'weak' here means that the number is too small to resist an exhaustive attempt to find certain mathematical structures in it, the secrecy of which is critical.">
         Server has a weak ephemeral Diffie-Hellman public key
       </message>
@@ -6817,6 +6820,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUMMARY_EMPTY_RESPONSE" desc="Summary in the error page when no data is received.">
         Unable to load the webpage because the server sent no data.
       </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_DUPLICATE_HEADERS" desc="Summary in the error page when a response from the server contains duplicate headers.">
+        The response from the server contained duplicate headers.  This problem
+        is generally the result of a misconfigured website or proxy.  Only the
+        website or proxy administrator can fix this issue.
+      </message>
       <message name="IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Summary in the error page when the server has a weak Diffie-Hellman public key">
         This error can occur when connecting to a secure (HTTPS) server. It
         means that the server is trying to set up a secure connection but, due to
@@ -6915,6 +6923,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_EMPTY_RESPONSE" desc="The error message displayed when no data is received.">
         The server closed the connection without sending any data.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH" desc="The error message displayed when we received multiple 'Content-Length' header fields in an http response.">
+        Multiple distinct Content-Length headers received.  This is disallowed
+        to protect against HTTP response splitting attacks.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION" desc="The error message displayed when we received multiple 'Content-Disposition' header fields in an http response.">
+        Multiple Content-Disposition headers received.  This is disallowed to
+        protect against HTTP response splitting attacks.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_LOCATION" desc="The error message displayed when we received multiple 'Location' header fields in an http response.">
+        Multiple Location headers received.  This is disallowed to protect
+        against HTTP response splitting attacks.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
         Unknown error.
