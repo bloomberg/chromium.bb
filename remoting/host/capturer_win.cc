@@ -219,7 +219,7 @@ void CapturerGdi::ReallocateBuffer(int buffer_index, const SkISize& size) {
   BITMAPINFO bmi;
   memset(&bmi, 0, sizeof(bmi));
   bmi.bmiHeader.biHeight = -size.height();
-  bmi.bmiHeader.biWidth = size.width();
+  bmi.bmiHeader.biWidth = rounded_width;
   bmi.bmiHeader.biPlanes = 1;
   bmi.bmiHeader.biBitCount = kBytesPerPixel * 8;
   bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
