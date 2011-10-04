@@ -11,8 +11,6 @@ full and pre-flight-queue builds.
 """
 
 import constants
-import multiprocessing
-import Queue
 import optparse
 import os
 import pprint
@@ -24,11 +22,11 @@ if __name__ == '__main__':
 
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_background as background
-from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import patch as cros_patch
+from chromite.buildbot import remote_try
 from chromite.buildbot import repository
 from chromite.buildbot import tee
 from chromite.lib import cros_build_lib as cros_lib
@@ -66,7 +64,7 @@ def _PrintValidConfigs(trybot_only=True):
 def _GetConfig(config_name):
   """Gets the configuration for the build"""
   if not cbuildbot_config.config.has_key(config_name):
-    print 'Non-existent configuration specified.'
+    print 'Non-existent configuration %s specified.' % config_name
     print 'Please specify one of:'
     _PrintValidConfigs()
     sys.exit(1)
@@ -100,13 +98,12 @@ def _CheckBuildRootBranch(buildroot, tracking_branch):
                  'Buildroot checked out to %s\n' % manifest_branch)
 
 
-def _PreProcessPatches(gerrit_patches, local_patches, tracking_branch):
+def _PreProcessPatches(gerrit_patches, local_patches):
   """Validate patches ASAP to catch user errors.  Also generate patch info.
 
   Args:
     gerrit_patches: List of gerrit CL ID's passed in by user.
     local_patches: List of local project branches to generate patches from.
-    tracking_branch: The branch the buildroot will be checked out to.
 
   Returns:
     A tuple containing a list of cros_patch.GerritPatch and a list of
@@ -123,8 +120,9 @@ def _PreProcessPatches(gerrit_patches, local_patches, tracking_branch):
           cros_lib.Warning('Patch %s has already been merged.' % str(patch))
 
     if local_patches:
-      local_patch_info = cros_patch.PrepareLocalPatches(local_patches,
-                                                        tracking_branch)
+      local_patch_info = cros_patch.PrepareLocalPatches(
+          local_patches,
+          _GetChromiteTrackingBranch())
 
   except cros_patch.PatchException as e:
     cros_lib.Die(str(e))
@@ -213,8 +211,7 @@ class Builder(object):
     if not results_lib.Results.GetPrevious().get(
         self._GetStageInstance(stages.PatchChangesStage, None, None).name):
       self.gerrit_patches, self.local_patches = _PreProcessPatches(
-          self.options.gerrit_patches, self.options.local_patches,
-          self.tracking_branch)
+          self.options.gerrit_patches, self.options.local_patches)
 
     bs.BuilderStage.SetTrackingBranch(self.tracking_branch)
 
@@ -674,6 +671,9 @@ def _CreateParser():
   parser.add_option('--profile', default=None, type='string', action='store',
                     dest='profile',
                     help=('Name of profile to sub-specify board variant.'))
+  parser.add_option('--remote', default=False, action='store_true',
+                    dest='remote',
+                    help=('Specifies that this tryjob should be run remotely.'))
 
   # Advanced options
   group = optparse.OptionGroup(
@@ -759,7 +759,7 @@ def _CreateParser():
   return parser
 
 
-def _PostParseCheck(options):
+def _PostParseCheck(options, args):
   """Perform some usage validation after we've parsed the arguments
 
   Args:
@@ -786,6 +786,9 @@ def _PostParseCheck(options):
       cros_lib.Die('Chrome rev must not be %s if chrome_version is not set.' %
                    constants.CHROME_REV_SPEC)
 
+  if options.remote and options.local_patches:
+    cros_lib.Die('Local patching not yet supported with remote tryjobs.')
+
   # Set debug correctly.  If --debug is set explicitly, always set
   # options.debug to true, o/w if not buildbot.
   options.debug = options.debug | (not options.buildbot)
@@ -797,6 +800,12 @@ def _PostParseCheck(options):
 
     except optparse.OptionValueError as e:
       cros_lib.Die(str(e))
+
+  if options.remote and not options.gerrit_patches:
+    cros_lib.Die('Must provide patches when running with --remote.')
+
+  if len(args) > 1 and not options.remote:
+    cros_lib.Die('Multiple configs not supported if not running with --remote.')
 
 
 def main(argv=None):
@@ -813,10 +822,22 @@ def main(argv=None):
     _PrintValidConfigs(not options.print_all)
     sys.exit(0)
 
-  _PostParseCheck(options)
+  _PostParseCheck(options, args)
 
-  if len(args) >= 1:
-    bot_id = args[-1]
+  if options.remote:
+    # Verify configs are valid.
+    for bot in args:
+      _GetConfig(bot)
+
+    # Verify gerrit patches are valid.
+    _PreProcessPatches(options.gerrit_patches, options.local_patches)
+
+    remote_try.RemoteTryJob(options, args).Submit()
+    sys.exit(0)
+
+  if args:
+    # Only expecting one config
+    bot_id = args[0]
     build_config = _GetConfig(bot_id)
   else:
     parser.error('Invalid usage.  Use -h to see usage.')
