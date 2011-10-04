@@ -179,14 +179,37 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   }
 
   virtual void AddObserver(InputMethodManager::Observer* observer) {
-    if (!observers_.size()) {
-      observer->FirstObserverIsAdded(this);
-    }
     observers_.AddObserver(observer);
   }
 
   virtual void RemoveObserver(InputMethodManager::Observer* observer) {
     observers_.RemoveObserver(observer);
+  }
+
+  virtual void AddPreLoginPreferenceObserver(
+      InputMethodManager::PreferenceObserver* observer) {
+    if (!pre_login_preference_observers_.size()) {
+      observer->FirstObserverIsAdded(this);
+    }
+    pre_login_preference_observers_.AddObserver(observer);
+  }
+
+  virtual void RemovePreLoginPreferenceObserver(
+      InputMethodManager::PreferenceObserver* observer) {
+    pre_login_preference_observers_.RemoveObserver(observer);
+  }
+
+  virtual void AddPostLoginPreferenceObserver(
+      InputMethodManager::PreferenceObserver* observer) {
+    if (!post_login_preference_observers_.size()) {
+      observer->FirstObserverIsAdded(this);
+    }
+    post_login_preference_observers_.AddObserver(observer);
+  }
+
+  virtual void RemovePostLoginPreferenceObserver(
+      InputMethodManager::PreferenceObserver* observer) {
+    post_login_preference_observers_.RemoveObserver(observer);
   }
 
   virtual void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer) {
@@ -835,13 +858,29 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     }
   }
 
+  // Ask the first observer to update preferences. We should not ask every
+  // observer to do so. Otherwise, we'll end up updating preferences many times
+  // when many observers are attached (ex. many windows are opened), which is
+  // unnecessary and expensive.
+  bool UpdateInputMethodPreference(
+      ObserverList<PreferenceObserver>* observers) {
+    ObserverListBase<PreferenceObserver>::Iterator it(*observers);
+    PreferenceObserver* first_observer = it.GetNext();
+    if (!first_observer) {
+      return false;
+    }
+    first_observer->PreferenceUpdateNeeded(this,
+                                           previous_input_method_,
+                                           current_input_method_);
+    return true;
+  }
+
   // Changes the current input method from the given input method
   // descriptor.  This function updates states like current_input_method_
   // and notifies observers about the change (that will update the
   // preferences), hence this function should always be used even if you
   // just need to change the current keyboard layout.
-  void ChangeCurrentInputMethod(const InputMethodDescriptor&
-                                new_input_method) {
+  void ChangeCurrentInputMethod(const InputMethodDescriptor& new_input_method) {
     if (current_input_method_.id() != new_input_method.id()) {
       previous_input_method_ = current_input_method_;
       current_input_method_ = new_input_method;
@@ -853,16 +892,11 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
                    << current_input_method_.keyboard_layout();
       }
 
-      // Ask the first observer to update preferences. We should not ask every
-      // observer to do so. Otherwise, we'll end up updating preferences many
-      // times when many observers are attached (ex. many windows are opened),
-      // which is unnecessary and expensive.
-      ObserverListBase<InputMethodManager::Observer>::Iterator it(observers_);
-      InputMethodManager::Observer* first_observer = it.GetNext();
-      if (first_observer) {
-        first_observer->PreferenceUpdateNeeded(this,
-                                               previous_input_method_,
-                                               current_input_method_);
+      // Save the input method names to the Pref.
+      if (!UpdateInputMethodPreference(&post_login_preference_observers_)) {
+        // When both pre- and post-login observers are available, only notifies
+        // the latter one.
+        UpdateInputMethodPreference(&pre_login_preference_observers_);
       }
     }
 
@@ -1233,6 +1267,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   // allow allow callbacks when the input method status changes.
   scoped_ptr<IBusController> ibus_controller_;
   ObserverList<InputMethodManager::Observer> observers_;
+  ObserverList<PreferenceObserver> pre_login_preference_observers_;
+  ObserverList<PreferenceObserver> post_login_preference_observers_;
   ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 
   // The input method which was/is selected.

@@ -37,10 +37,12 @@ namespace chromeos {
 // Since the class provides the views::ViewMenuDelegate interface, it's easy to
 // create a button widget (e.g. views::MenuButton, chromeos::StatusAreaButton)
 // which shows the dropdown menu on click.
-class InputMethodMenu : public views::ViewMenuDelegate,
-                        public ui::MenuModel,
-                        public input_method::InputMethodManager::Observer,
-                        public NotificationObserver {
+class InputMethodMenu
+    : public views::ViewMenuDelegate,
+      public ui::MenuModel,
+      public input_method::InputMethodManager::Observer,
+      public input_method::InputMethodManager::PreferenceObserver,
+      public NotificationObserver {
  public:
   InputMethodMenu(PrefService* pref_service,
                   StatusAreaHost::ScreenMode screen_mode,
@@ -80,13 +82,15 @@ class InputMethodMenu : public views::ViewMenuDelegate,
       input_method::InputMethodManager* manager,
       const input_method::InputMethodDescriptor& current_input_method,
       size_t num_active_input_methods);
+  virtual void PropertyListChanged(
+      input_method::InputMethodManager* manager,
+      const input_method::ImePropertyList& current_ime_properties);
+
+  // InputMethodManager::PreferenceObserver implementation.
   virtual void PreferenceUpdateNeeded(
     input_method::InputMethodManager* manager,
     const input_method::InputMethodDescriptor& previous_input_method,
     const input_method::InputMethodDescriptor& current_input_method);
-  virtual void PropertyListChanged(
-      input_method::InputMethodManager* manager,
-      const input_method::ImePropertyList& current_ime_properties);
   virtual void FirstObserverIsAdded(input_method::InputMethodManager* manager);
 
   // NotificationObserver implementation.
@@ -160,6 +164,9 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // Returns true if the zero-origin |index| points to the "Configure IME" menu
   // item.
   bool IndexPointsToConfigureImeMenuItem(int index) const;
+
+  // Stops observing InputMethodManager.
+  void RemoveObservers();
 
   // The current input method list.
   scoped_ptr<input_method::InputMethodDescriptors> input_method_descriptors_;

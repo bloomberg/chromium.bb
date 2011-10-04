@@ -159,21 +159,30 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
   }
 
   InputMethodManager* manager = InputMethodManager::GetInstance();
-  manager->AddObserver(this);  // FirstObserverIsAdded() might be called back.
-
   if (screen_mode_ == StatusAreaHost::kViewsLoginMode ||
       screen_mode_ == StatusAreaHost::kWebUILoginMode) {
     // This button is for the login screen.
+    manager->AddPreLoginPreferenceObserver(this);
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    NotificationService::AllSources());
+  } else if (screen_mode_ == StatusAreaHost::kBrowserMode) {
+    manager->AddPostLoginPreferenceObserver(this);
   }
+
+  // AddObserver() should be called after AddXXXLoginPreferenceObserver. This is
+  // because when the function is called FirstObserverIsAdded might be called
+  // back, and FirstObserverIsAdded might then might call ChangeInputMethod() in
+  // InputMethodManager. We have to prevent the manager function from calling
+  // callback functions like InputMethodChanged since they touch (yet
+  // uninitialized) UI elements.
+  manager->AddObserver(this);
 }
 
 InputMethodMenu::~InputMethodMenu() {
-  // RemoveObserver() is no-op if |this| object is already removed from the
-  // observer list.
-  InputMethodManager::GetInstance()->RemoveObserver(this);
+  // RemoveObservers() is no-op if |this| object is already removed from the
+  // observer list
+  RemoveObservers();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -696,13 +705,24 @@ void InputMethodMenu::Observe(int type,
     // When a user logs in, we should remove |this| object from the observer
     // list so that PreferenceUpdateNeeded() does not update the local state
     // anymore.
-    InputMethodManager::GetInstance()->RemoveObserver(this);
+    RemoveObservers();
   }
 }
 
 void InputMethodMenu::SetMinimumWidth(int width) {
   // On the OOBE network selection screen, fixed width menu would be preferable.
   minimum_input_method_menu_width_ = width;
+}
+
+void InputMethodMenu::RemoveObservers() {
+  InputMethodManager* manager = InputMethodManager::GetInstance();
+  if (screen_mode_ == StatusAreaHost::kViewsLoginMode ||
+      screen_mode_ == StatusAreaHost::kWebUILoginMode) {
+    manager->RemovePreLoginPreferenceObserver(this);
+  } else if (screen_mode_ == StatusAreaHost::kBrowserMode) {
+    manager->RemovePostLoginPreferenceObserver(this);
+  }
+  manager->RemoveObserver(this);
 }
 
 }  // namespace chromeos
