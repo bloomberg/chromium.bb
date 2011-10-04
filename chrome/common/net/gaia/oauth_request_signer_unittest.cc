@@ -79,7 +79,7 @@ TEST(OAuthRequestSignerTest, SignGet1) {
   parameters["xaouth_display_name"] = "Chromium";
   parameters["oauth_timestamp"] = "1308152953";
   std::string signed_text;
-  ASSERT_TRUE(OAuthRequestSigner::Sign(
+  ASSERT_TRUE(OAuthRequestSigner::SignURL(
                   request_url,
                   parameters,
                   OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
@@ -92,13 +92,13 @@ TEST(OAuthRequestSignerTest, SignGet1) {
   ASSERT_EQ("https://www.google.com/accounts/o8/GetOAuthToken"
             "?oauth_consumer_key=johndoe"
             "&oauth_nonce=2oiE_aHdk5qRTz0L9C8Lq0g"
+            "&oauth_signature=y9GCmlGSvNuTAotxsBMyxb6j%2BE8%3D"
             "&oauth_signature_method=HMAC-SHA1"
             "&oauth_timestamp=1308152953"
             "&oauth_token=4%2FVGY0MsQadcmO8VnCv9gnhoEooq1v"
             "&oauth_version=1.0"
             "&scope=https%3A%2F%2Fwww.google.com%2Faccounts%2FOAuthLogin"
-            "&xaouth_display_name=Chromium"
-            "&oauth_signature=y9GCmlGSvNuTAotxsBMyxb6j%2BE8%3D",
+            "&xaouth_display_name=Chromium",
             signed_text);
 }
 
@@ -108,7 +108,7 @@ TEST(OAuthRequestSignerTest, SignGet2) {
   parameters["oauth_timestamp"] = "1308147831";
   parameters["oauth_nonce"] = "4d4hZW9DygWQujP2tz06UN";
   std::string signed_text;
-  ASSERT_TRUE(OAuthRequestSigner::Sign(
+  ASSERT_TRUE(OAuthRequestSigner::SignURL(
                   request_url,
                   parameters,
                   OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
@@ -122,11 +122,11 @@ TEST(OAuthRequestSignerTest, SignGet2) {
             "https://www.google.com/accounts/OAuthGetAccessToken"
             "?oauth_consumer_key=anonymous"
             "&oauth_nonce=4d4hZW9DygWQujP2tz06UN"
+            "&oauth_signature=2KVN8YCOKgiNIA16EGTcfESvdvA%3D"
             "&oauth_signature_method=HMAC-SHA1"
             "&oauth_timestamp=1308147831"
             "&oauth_token=4%2FCcC-hgdj1TNnWaX8NTQ76YDXCBEK"
-            "&oauth_version=1.0"
-            "&oauth_signature=2KVN8YCOKgiNIA16EGTcfESvdvA%3D");
+            "&oauth_version=1.0");
 }
 
 TEST(OAuthRequestSignerTest, ParseAndSignGet1) {
@@ -148,13 +148,13 @@ TEST(OAuthRequestSignerTest, ParseAndSignGet1) {
   ASSERT_EQ("https://www.google.com/accounts/o8/GetOAuthToken"
             "?oauth_consumer_key=anonymous"
             "&oauth_nonce=2oiE_aHdk5qRTz0L9C8Lq0g"
+            "&oauth_signature=S%2B6dcftDfbINlavHuma4NLJ98Ys%3D"
             "&oauth_signature_method=HMAC-SHA1"
             "&oauth_timestamp=1308152953"
             "&oauth_token=4%2FCcC-hgdj1TNnWaX8NTQ76YDXCBEK"
             "&oauth_version=1.0"
             "&scope=https%3A%2F%2Fwww.google.com%2Faccounts%2FOAuthLogin"
-            "&xaouth_display_name=Chromium"
-            "&oauth_signature=S%2B6dcftDfbINlavHuma4NLJ98Ys%3D",
+            "&xaouth_display_name=Chromium",
             signed_text);
 }
 
@@ -176,11 +176,11 @@ TEST(OAuthRequestSignerTest, ParseAndSignGet2) {
             "https://www.google.com/accounts/OAuthGetAccessToken"
             "?oauth_consumer_key=anonymous"
             "&oauth_nonce=4d4hZW9DygWQujP2tz06UN"
+            "&oauth_signature=2KVN8YCOKgiNIA16EGTcfESvdvA%3D"
             "&oauth_signature_method=HMAC-SHA1"
             "&oauth_timestamp=1308147831"
             "&oauth_token=4%2FCcC-hgdj1TNnWaX8NTQ76YDXCBEK"
-            "&oauth_version=1.0"
-            "&oauth_signature=2KVN8YCOKgiNIA16EGTcfESvdvA%3D");
+            "&oauth_version=1.0");
 }
 
 TEST(OAuthRequestSignerTest, SignPost1) {
@@ -191,7 +191,7 @@ TEST(OAuthRequestSignerTest, SignPost1) {
   parameters["xaouth_display_name"] = "Chromium";
   parameters["oauth_timestamp"] = "1308152953";
   std::string signed_text;
-  ASSERT_TRUE(OAuthRequestSigner::Sign(
+  ASSERT_TRUE(OAuthRequestSigner::SignURL(
                   request_url,
                   parameters,
                   OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
@@ -203,13 +203,13 @@ TEST(OAuthRequestSignerTest, SignPost1) {
                   &signed_text));
   ASSERT_EQ("oauth_consumer_key=anonymous"
             "&oauth_nonce=2oiE_aHdk5qRTz0L9C8Lq0g"
+            "&oauth_signature=F%2BINyO4xgon5wUxcdcxWC11Ep7Y%3D"
             "&oauth_signature_method=HMAC-SHA1"
             "&oauth_timestamp=1308152953"
             "&oauth_token=4%2FX8x0r7bHif_VNCLjUMutxGkzo13d"
             "&oauth_version=1.0"
             "&scope=https%3A%2F%2Fwww.google.com%2Faccounts%2FOAuthLogin"
-            "&xaouth_display_name=Chromium"
-            "&oauth_signature=F%2BINyO4xgon5wUxcdcxWC11Ep7Y%3D",
+            "&xaouth_display_name=Chromium",
             signed_text);
 }
 
@@ -219,7 +219,7 @@ TEST(OAuthRequestSignerTest, SignPost2) {
   parameters["oauth_timestamp"] = "1234567890";
   parameters["oauth_nonce"] = "17171717171717171";
   std::string signed_text;
-  ASSERT_TRUE(OAuthRequestSigner::Sign(
+  ASSERT_TRUE(OAuthRequestSigner::SignURL(
                   request_url,
                   parameters,
                   OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
@@ -232,11 +232,11 @@ TEST(OAuthRequestSignerTest, SignPost2) {
   ASSERT_EQ(signed_text,
             "oauth_consumer_key=anonymous"
             "&oauth_nonce=17171717171717171"
+            "&oauth_signature=BIuPHITrcptxSefd8H9Iazo8Pmo%3D"
             "&oauth_signature_method=HMAC-SHA1"
             "&oauth_timestamp=1234567890"
             "&oauth_token=4%2FCcC-hgdj1TNnWaX8NTQ76YDXCBEK"
-            "&oauth_version=1.0"
-            "&oauth_signature=BIuPHITrcptxSefd8H9Iazo8Pmo%3D");
+            "&oauth_version=1.0");
 }
 
 TEST(OAuthRequestSignerTest, ParseAndSignPost1) {
@@ -257,13 +257,13 @@ TEST(OAuthRequestSignerTest, ParseAndSignPost1) {
                   &signed_text));
   ASSERT_EQ("oauth_consumer_key=anonymous"
             "&oauth_nonce=2oiE_aHdk5qRTz0L9C8Lq0g"
+            "&oauth_signature=F%2BINyO4xgon5wUxcdcxWC11Ep7Y%3D"
             "&oauth_signature_method=HMAC-SHA1"
             "&oauth_timestamp=1308152953"
             "&oauth_token=4%2FX8x0r7bHif_VNCLjUMutxGkzo13d"
             "&oauth_version=1.0"
             "&scope=https%3A%2F%2Fwww.google.com%2Faccounts%2FOAuthLogin"
-            "&xaouth_display_name=Chromium"
-            "&oauth_signature=F%2BINyO4xgon5wUxcdcxWC11Ep7Y%3D",
+            "&xaouth_display_name=Chromium",
             signed_text);
 }
 
@@ -284,9 +284,40 @@ TEST(OAuthRequestSignerTest, ParseAndSignPost2) {
   ASSERT_EQ(signed_text,
             "oauth_consumer_key=anonymous"
             "&oauth_nonce=17171717171717171"
+            "&oauth_signature=BIuPHITrcptxSefd8H9Iazo8Pmo%3D"
             "&oauth_signature_method=HMAC-SHA1"
             "&oauth_timestamp=1234567890"
             "&oauth_token=4%2FCcC-hgdj1TNnWaX8NTQ76YDXCBEK"
-            "&oauth_version=1.0"
-            "&oauth_signature=BIuPHITrcptxSefd8H9Iazo8Pmo%3D");
+            "&oauth_version=1.0");
+}
+
+TEST(OAuthRequestSignerTest, SignAuthHeader) {
+  GURL request_url("https://www.google.com/accounts/o8/GetOAuthToken");
+  OAuthRequestSigner::Parameters parameters;
+  parameters["scope"] = "https://www.google.com/accounts/OAuthLogin";
+  parameters["oauth_nonce"] = "2oiE_aHdk5qRTz0L9C8Lq0g";
+  parameters["xaouth_display_name"] = "Chromium";
+  parameters["oauth_timestamp"] = "1308152953";
+  std::string signed_text;
+  ASSERT_TRUE(OAuthRequestSigner::SignAuthHeader(
+                  request_url,
+                  parameters,
+                  OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
+                  OAuthRequestSigner::GET_METHOD,
+                  "johndoe",  // oauth_consumer_key
+                  "53cR3t",  // consumer secret
+                  "4/VGY0MsQadcmO8VnCv9gnhoEooq1v",  // oauth_token
+                  "c5e0531ff55dfbb4054e", // token secret
+                  &signed_text));
+  ASSERT_EQ("OAuth "
+            "oauth_consumer_key=\"johndoe\", "
+            "oauth_nonce=\"2oiE_aHdk5qRTz0L9C8Lq0g\", "
+            "oauth_signature=\"y9GCmlGSvNuTAotxsBMyxb6j%2BE8%3D\", "
+            "oauth_signature_method=\"HMAC-SHA1\", "
+            "oauth_timestamp=\"1308152953\", "
+            "oauth_token=\"4%2FVGY0MsQadcmO8VnCv9gnhoEooq1v\", "
+            "oauth_version=\"1.0\", "
+            "scope=\"https%3A%2F%2Fwww.google.com%2Faccounts%2FOAuthLogin\", "
+            "xaouth_display_name=\"Chromium\"",
+            signed_text);
 }

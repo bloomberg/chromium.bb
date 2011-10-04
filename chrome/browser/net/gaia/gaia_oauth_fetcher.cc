@@ -107,7 +107,7 @@ std::string GaiaOAuthFetcher::MakeOAuthLoginBody(
   parameters["service"] = service;
   parameters["source"] = source;
   std::string signed_request;
-  bool is_signed = OAuthRequestSigner::Sign(
+  bool is_signed = OAuthRequestSigner::SignURL(
       GURL(GaiaUrls::GetInstance()->oauth1_login_url()),
       parameters,
       OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
@@ -126,7 +126,7 @@ std::string GaiaOAuthFetcher::MakeOAuthGetAccessTokenBody(
     const std::string& oauth1_request_token) {
   OAuthRequestSigner::Parameters empty_parameters;
   std::string signed_request;
-  bool is_signed = OAuthRequestSigner::Sign(
+  bool is_signed = OAuthRequestSigner::SignURL(
       GURL(GaiaUrls::GetInstance()->oauth_get_access_token_url()),
       empty_parameters,
       OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
@@ -150,7 +150,7 @@ std::string GaiaOAuthFetcher::MakeOAuthWrapBridgeBody(
   parameters["wrap_token_duration"] = wrap_token_duration;
   parameters["wrap_scope"] = oauth2_scope;
   std::string signed_request;
-  bool is_signed = OAuthRequestSigner::Sign(
+  bool is_signed = OAuthRequestSigner::SignURL(
       GURL(GaiaUrls::GetInstance()->oauth_wrap_bridge_url()),
       parameters,
       OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
@@ -416,6 +416,48 @@ void GaiaOAuthFetcher::StartUserInfo(const std::string& oauth2_access_token) {
   fetcher_->Start();
 }
 
+void GaiaOAuthFetcher::StartOAuthRevokeAccessToken(const std::string& token,
+                                                   const std::string& secret) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  // Must outlive fetcher_.
+  request_body_ = "";
+
+  OAuthRequestSigner::Parameters empty_parameters;
+  std::string auth_header;
+  bool is_signed = OAuthRequestSigner::SignAuthHeader(
+      GURL(GaiaUrls::GetInstance()->oauth_revoke_token_url()),
+      empty_parameters,
+      OAuthRequestSigner::HMAC_SHA1_SIGNATURE,
+      OAuthRequestSigner::GET_METHOD,
+      "anonymous",
+      "anonymous",
+      token,
+      secret,
+      &auth_header);
+  DCHECK(is_signed);
+  request_headers_ = "Authorization: " + auth_header;
+  GURL url(GaiaUrls::GetInstance()->oauth_revoke_token_url());
+  fetcher_.reset(CreateGaiaFetcher(getter_, url, request_body_,
+                                   request_headers_, false, this));
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
+void GaiaOAuthFetcher::StartOAuthRevokeWrapToken(const std::string& token) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  // Must outlive fetcher_.
+  request_body_ = "";
+
+  request_headers_ = "Authorization: Bearer " + token;
+  GURL url(GaiaUrls::GetInstance()->oauth_revoke_token_url());
+  fetcher_.reset(CreateGaiaFetcher(getter_, url, request_body_,
+                                   request_headers_, false, this));
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
 // static
 GoogleServiceAuthError GaiaOAuthFetcher::GenerateAuthError(
     const std::string& data,
@@ -586,6 +628,18 @@ void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
   }
 }
 
+void GaiaOAuthFetcher::OnOAuthRevokeTokenFetched(
+    const std::string& data,
+    const net::URLRequestStatus& status,
+    int response_code) {
+  if (status.is_success() && response_code == RC_REQUEST_OK) {
+    consumer_->OnOAuthRevokeTokenSuccess();
+  } else {
+    LOG(ERROR) << "Token revocation failure " << response_code << ": " << data;
+    consumer_->OnOAuthRevokeTokenFailure(GenerateAuthError(data, status));
+  }
+}
+
 void GaiaOAuthFetcher::OnUserInfoFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
@@ -620,6 +674,10 @@ void GaiaOAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
     OnOAuthWrapBridgeFetched(data, status, response_code);
   } else if (url.spec() == gaia_urls->oauth_user_info_url()) {
     OnUserInfoFetched(data, status, response_code);
+  } else if (StartsWithASCII(url.spec(),
+                             gaia_urls->oauth_revoke_token_url(),
+                             true)) {
+    OnOAuthRevokeTokenFetched(data, status, response_code);
   } else {
     NOTREACHED();
   }

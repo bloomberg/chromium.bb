@@ -106,6 +106,15 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   // oauth2_access_token is from OAuthWrapBridge's result.
   virtual void StartUserInfo(const std::string& oauth2_access_token);
 
+  // Starts a request for revoking the given OAuth access token (as requested by
+  // StartOAuthGetAccessToken).
+  virtual void StartOAuthRevokeAccessToken(const std::string& token,
+                                           const std::string& secret);
+
+  // Starts a request for revoking the given OAuth Bearer token (as requested by
+  // StartOAuthWrapBridge).
+  virtual void StartOAuthRevokeWrapToken(const std::string& token);
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -157,6 +166,11 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
   virtual void OnOAuthWrapBridgeFetched(const std::string& data,
                                         const net::URLRequestStatus& status,
                                         int response_code);
+
+  // Process the results of a token revocation fetch.
+  virtual void OnOAuthRevokeTokenFetched(const std::string& data,
+                                         const net::URLRequestStatus& status,
+                                         int response_code);
 
   // Process the results of a userinfo fetch.
   virtual void OnUserInfoFetched(const std::string& data,
@@ -213,9 +227,6 @@ class GaiaOAuthFetcher : public URLFetcher::Delegate,
       const std::string& oauth1_access_token_secret,
       const std::string& wrap_token_duration,
       const std::string& oauth2_service_scope);
-
-  // Given parameters, create a userinfo request body.
-  static std::string MakeUserInfoBody(const std::string& oauth2_access_token);
 
   // Create a fetcher useable for making any Gaia OAuth request.
   static URLFetcher* CreateGaiaFetcher(net::URLRequestContextGetter* getter,

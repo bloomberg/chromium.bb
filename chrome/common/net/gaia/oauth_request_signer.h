@@ -72,15 +72,27 @@ class OAuthRequestSigner {
   //
   // If HttpMethod is GET_METHOD, the signed result is the full URL, otherwise
   // it is the request parameters, including the oauth_signature field.
-  static bool Sign(const GURL& request_base_url,
-                   const Parameters& parameters,
-                   SignatureMethod signature_method,
-                   HttpMethod http_method,
-                   const std::string& consumer_key,
-                   const std::string& consumer_secret,
-                   const std::string& token_key,
-                   const std::string& token_secret,
-                   std::string* signed_result);
+  static bool SignURL(const GURL& request_base_url,
+                      const Parameters& parameters,
+                      SignatureMethod signature_method,
+                      HttpMethod http_method,
+                      const std::string& consumer_key,
+                      const std::string& consumer_secret,
+                      const std::string& token_key,
+                      const std::string& token_secret,
+                      std::string* signed_result);
+
+  // Similar to SignURL(), but the returned string is not a URL, but the payload
+  // to for an HTTP Authorization header.
+  static bool SignAuthHeader(const GURL& request_base_url,
+                             const Parameters& parameters,
+                             SignatureMethod signature_method,
+                             HttpMethod http_method,
+                             const std::string& consumer_key,
+                             const std::string& consumer_secret,
+                             const std::string& token_key,
+                             const std::string& token_secret,
+                             std::string* signed_result);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OAuthRequestSigner);

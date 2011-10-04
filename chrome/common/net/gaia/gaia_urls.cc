@@ -22,6 +22,7 @@ const char kGetOAuthTokenUrlSuffix[] = "/accounts/o8/GetOAuthToken";
 const char kOAuthGetAccessTokenUrlSuffix[] = "/accounts/OAuthGetAccessToken";
 const char kOAuthWrapBridgeUrlSuffix[] = "/accounts/OAuthWrapBridge";
 const char kOAuth1LoginUrlSuffix[] = "/accounts/OAuthLogin";
+const char kOAuthRevokeTokenUrlSuffix[] = "/accounts/AuthSubRevokeToken";
 
 }  // namespacce
 
@@ -50,6 +51,7 @@ GaiaUrls::GaiaUrls() {
   oauth_get_access_token_url_ = gaia_origin_url_ +
                                 kOAuthGetAccessTokenUrlSuffix;
   oauth_wrap_bridge_url_ = gaia_origin_url_ + kOAuthWrapBridgeUrlSuffix;
+  oauth_revoke_token_url_ = gaia_origin_url_ + kOAuthRevokeTokenUrlSuffix;
   oauth1_login_url_ = gaia_origin_url_ + kOAuth1LoginUrlSuffix;
 
   // TODO(joaodasilva): these aren't configurable for now, but are managed here
@@ -106,6 +108,10 @@ const std::string& GaiaUrls::oauth_wrap_bridge_url() {
 
 const std::string& GaiaUrls::oauth_user_info_url() {
   return oauth_user_info_url_;
+}
+
+const std::string& GaiaUrls::oauth_revoke_token_url() {
+  return oauth_revoke_token_url_;
 }
 
 const std::string& GaiaUrls::oauth1_login_url() {

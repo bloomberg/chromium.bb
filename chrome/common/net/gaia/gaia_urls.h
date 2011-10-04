@@ -28,6 +28,7 @@ class GaiaUrls {
   const std::string& oauth_get_access_token_url();
   const std::string& oauth_wrap_bridge_url();
   const std::string& oauth_user_info_url();
+  const std::string& oauth_revoke_token_url();
   const std::string& oauth1_login_url();
 
   const std::string& oauth1_login_scope();
@@ -51,6 +52,7 @@ class GaiaUrls {
   std::string oauth_get_access_token_url_;
   std::string oauth_wrap_bridge_url_;
   std::string oauth_user_info_url_;
+  std::string oauth_revoke_token_url_;
   std::string oauth1_login_url_;
 
   std::string oauth1_login_scope_;
