@@ -12,6 +12,9 @@
 using sessions_helper::CheckForeignSessionsAgainst;
 using sessions_helper::CheckInitialState;
 using sessions_helper::OpenTabAndGetLocalWindows;
+using sessions_helper::ScopedWindowMap;
+using sessions_helper::SessionWindowMap;
+using sessions_helper::SyncedSessionVector;
 
 class MultipleClientSessionsSyncTest : public SyncTest {
  public:
@@ -24,7 +27,7 @@ class MultipleClientSessionsSyncTest : public SyncTest {
 
 IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, AllChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ScopedVector<SessionWindowVector> client_windows;
+  std::vector<ScopedWindowMap> client_windows(num_clients());
 
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_TRUE(CheckInitialState(i));
@@ -32,10 +35,10 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, AllChanged) {
 
   // Open tabs on all clients and retain window information.
   for (int i = 0; i < num_clients(); ++i) {
-    SessionWindowVector* windows = new SessionWindowVector();
+    SessionWindowMap windows;
     ASSERT_TRUE(OpenTabAndGetLocalWindows(
-        i, GURL(StringPrintf("about:bubba%i", i)), *windows));
-    client_windows.push_back(windows);
+        i, GURL(StringPrintf("about:bubba%i", i)), &windows));
+    client_windows[i].Reset(&windows);
   }
 
   // Wait for sync.
@@ -44,14 +47,14 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, AllChanged) {
   // Get foreign session data from all clients and check it against all
   // client_windows.
   for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows.get()));
+    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows));
   }
 }
 
 IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
                        EncryptedAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ScopedVector<SessionWindowVector> client_windows;
+  std::vector<ScopedWindowMap> client_windows(num_clients());
 
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_TRUE(CheckInitialState(i));
@@ -68,10 +71,10 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
 
   // Open tabs on all clients and retain window information.
   for (int i = 0; i < num_clients(); ++i) {
-    SessionWindowVector* windows = new SessionWindowVector();
+    SessionWindowMap windows;
     ASSERT_TRUE(OpenTabAndGetLocalWindows(
-        i, GURL(StringPrintf("about:bubba%i", i)), *windows));
-    client_windows.push_back(windows);
+        i, GURL(StringPrintf("about:bubba%i", i)), &windows));
+    client_windows[i].Reset(&windows);
   }
 
   // Wait for sync.
@@ -81,6 +84,6 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
   // client_windows.
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_TRUE(IsEncrypted(i, syncable::SESSIONS));
-    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows.get()));
+    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows));
   }
 }

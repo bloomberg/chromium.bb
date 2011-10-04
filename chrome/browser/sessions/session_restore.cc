@@ -446,12 +446,12 @@ class SessionRestoreImpl : public NotificationObserver {
 
   // Restore window(s) from a foreign session.
   void RestoreForeignSession(
-      std::vector<SessionWindow*>::const_iterator begin,
-      std::vector<SessionWindow*>::const_iterator end) {
+      std::vector<const SessionWindow*>::const_iterator begin,
+      std::vector<const SessionWindow*>::const_iterator end) {
     StartTabCreation();
     // Create a browser instance to put the restored tabs in.
-    for (std::vector<SessionWindow*>::const_iterator i = begin;
-        i != end; ++i) {
+    for (std::vector<const SessionWindow*>::const_iterator i = begin;
+         i != end; ++i) {
       Browser* browser = CreateRestoredBrowser(
           static_cast<Browser::Type>((*i)->type),
           (*i)->bounds,
@@ -842,8 +842,8 @@ Browser* SessionRestore::RestoreSession(Profile* profile,
 // static
 void SessionRestore::RestoreForeignSessionWindows(
     Profile* profile,
-    std::vector<SessionWindow*>::const_iterator begin,
-    std::vector<SessionWindow*>::const_iterator end) {
+    std::vector<const SessionWindow*>::const_iterator begin,
+    std::vector<const SessionWindow*>::const_iterator end) {
   // Create a SessionRestore object to eventually restore the tabs.
   std::vector<GURL> gurls;
   SessionRestoreImpl restorer(profile,

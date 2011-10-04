@@ -1518,6 +1518,7 @@
         'browser/sync/glue/sync_backend_host_mock.h',
         'browser/sync/glue/sync_backend_host_unittest.cc',
         'browser/sync/glue/sync_backend_registrar_unittest.cc',
+        'browser/sync/glue/synced_session_tracker_unittest.cc',
         'browser/sync/glue/theme_data_type_controller_unittest.cc',
         'browser/sync/glue/theme_util_unittest.cc',
         'browser/sync/glue/typed_url_model_associator_unittest.cc',

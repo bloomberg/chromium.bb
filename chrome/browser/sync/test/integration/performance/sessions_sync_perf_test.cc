@@ -12,6 +12,8 @@
 using sessions_helper::GetLocalSession;
 using sessions_helper::GetSessionData;
 using sessions_helper::OpenMultipleTabs;
+using sessions_helper::SyncedSessionVector;
+using sessions_helper::SessionWindowMap;
 using sessions_helper::WaitForTabsToLoad;
 
 static const int kNumTabs = 150;
@@ -89,10 +91,10 @@ int SessionsSyncPerfTest::GetTabCount(int profile) {
   sessions.push_back(local_session);
   for (SyncedSessionVector::const_iterator it = sessions.begin();
        it != sessions.end(); ++it) {
-    for (SessionWindowVector::const_iterator win_it = (*it)->windows.begin();
+    for (SessionWindowMap::const_iterator win_it = (*it)->windows.begin();
          win_it != (*it)->windows.end();
          ++win_it) {
-      tab_count += (*win_it)->tabs.size();
+      tab_count += win_it->second->tabs.size();
     }
   }
   return tab_count;

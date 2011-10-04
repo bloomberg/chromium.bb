@@ -80,8 +80,9 @@ class SessionsDOMHandler : public WebUIMessageHandler {
   void GetTabList(const std::vector<SessionTab*>& tabs, ListValue* tab_list);
 
   // Appends each entry in |windows| to |window_list| as a DictonaryValue.
-  void GetWindowList(const std::vector<SessionWindow*>& windows,
-                     ListValue* window_list);
+  void GetWindowList(
+      const browser_sync::SyncedSession::SyncedWindowMap& windows,
+      ListValue* window_list);
 
   // Appends each entry in |sessions| to |session_list| as a DictonaryValue.
   void GetSessionList(
@@ -159,10 +160,11 @@ void SessionsDOMHandler::GetTabList(
 }
 
 void SessionsDOMHandler::GetWindowList(
-    const std::vector<SessionWindow*>& windows, ListValue* window_list) {
-  for (std::vector<SessionWindow*>::const_iterator it =
+    const browser_sync::SyncedSession::SyncedWindowMap& windows,
+    ListValue* window_list) {
+  for (browser_sync::SyncedSession::SyncedWindowMap::const_iterator it =
       windows.begin(); it != windows.end(); ++it) {
-    const SessionWindow* window = *it;
+    const SessionWindow* window = it->second;
     scoped_ptr<DictionaryValue> window_data(new DictionaryValue());
     window_data->SetInteger("id", window->window_id.id());
     window_data->SetDouble("timestamp",
@@ -193,9 +195,12 @@ void SessionsDOMHandler::GetAllTabs(
     const std::vector<const browser_sync::SyncedSession*>& sessions,
     std::vector<SessionTab*>* all_tabs) {
   for (size_t i = 0; i < sessions.size(); i++) {
-    const std::vector<SessionWindow*>& windows = sessions[i]->windows;
-    for (size_t j = 0; j < windows.size(); j++) {
-      const std::vector<SessionTab*>& tabs = windows[j]->tabs;
+    const browser_sync::SyncedSession::SyncedWindowMap& windows =
+        sessions[i]->windows;
+    for (browser_sync::SyncedSession::SyncedWindowMap::const_iterator iter =
+             windows.begin();
+         iter != windows.end(); ++iter) {
+      const std::vector<SessionTab*>& tabs = iter->second->tabs;
       all_tabs->insert(all_tabs->end(), tabs.begin(), tabs.end());
     }
   }

@@ -13,6 +13,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/synced_session.h"
@@ -144,10 +145,9 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
   header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_OTHER);
 #endif
 
-  size_t window_num = 0;
+  synced_session_tracker_.ResetSessionTracking(local_tag);
   std::set<SyncedWindowDelegate*> windows =
       SyncedWindowDelegate::GetSyncedWindowDelegates();
-  current_session->windows.reserve(windows.size());
   for (std::set<SyncedWindowDelegate*>::const_iterator i =
        windows.begin(); i != windows.end(); ++i) {
     // Make sure the window has tabs and a viewable window. The viewable window
@@ -156,8 +156,7 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
     // for us to get a handle to a browser that is about to be removed. If
     // the tab count is 0 or the window is NULL, the browser is about to be
     // deleted, so we ignore it.
-    if (ShouldSyncWindow(*i) && (*i)->GetTabCount() &&
-        (*i)->HasWindow()) {
+    if (ShouldSyncWindow(*i) && (*i)->GetTabCount() && (*i)->HasWindow()) {
       sync_pb::SessionWindow window_s;
       SessionID::id_type window_id = (*i)->GetSessionId();
       VLOG(1) << "Reassociating window " << window_id << " with " <<
@@ -201,19 +200,18 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
         *header_window = window_s;
 
         // Update this window's representation in the synced session tracker.
-        if (window_num >= current_session->windows.size()) {
-          // This a new window, create it.
-          current_session->windows.push_back(new SessionWindow());
-        }
+        synced_session_tracker_.PutWindowInSession(local_tag, window_id);
         PopulateSessionWindowFromSpecifics(
             local_tag,
             window_s,
             base::Time::Now(),
-            current_session->windows[window_num++],
+            current_session->windows[window_id],
             &synced_session_tracker_);
       }
     }
   }
+  // Free memory for closed windows and tabs.
+  synced_session_tracker_.CleanupSession(local_tag);
 
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::WriteNode header_node(&trans);
@@ -335,9 +333,8 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
 
   // Convert to a local representation and store in synced session tracker.
   SessionTab* session_tab =
-      synced_session_tracker_.GetSessionTab(GetCurrentMachineTag(),
-                                            tab_s->tab_id(),
-                                            false);
+      synced_session_tracker_.GetTab(GetCurrentMachineTag(),
+                                     tab_s->tab_id());
   PopulateSessionTabFromSpecifics(*tab_s,
                                   base::Time::Now(),
                                   session_tab);
@@ -440,7 +437,7 @@ bool SessionModelAssociator::AssociateModels(SyncError* error) {
   DCHECK(CalledOnValidThread());
 
   // Ensure that we disassociated properly, otherwise memory might leak.
-  DCHECK(synced_session_tracker_.empty());
+  DCHECK(synced_session_tracker_.Empty());
   DCHECK_EQ(0U, tab_pool_.capacity());
 
   local_session_syncid_ = sync_api::kInvalidId;
@@ -497,7 +494,7 @@ bool SessionModelAssociator::AssociateModels(SyncError* error) {
 
 bool SessionModelAssociator::DisassociateModels(SyncError* error) {
   DCHECK(CalledOnValidThread());
-  synced_session_tracker_.clear();
+  synced_session_tracker_.Clear();
   tab_map_.clear();
   tab_pool_.clear();
   local_session_syncid_ = sync_api::kInvalidId;
@@ -644,37 +641,37 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
     // Load (or create) the SyncedSession object for this client.
     SyncedSession* foreign_session =
         synced_session_tracker_.GetSession(foreign_session_tag);
-
     const sync_pb::SessionHeader& header = specifics.header();
     PopulateSessionHeaderFromSpecifics(header, foreign_session);
-    foreign_session->windows.reserve(header.window_size());
-    VLOG(1) << "Associating " << foreign_session_tag << " with " <<
-        header.window_size() << " windows.";
-    size_t i;
-    for (i = 0; i < static_cast<size_t>(header.window_size()); ++i) {
-      if (i >= foreign_session->windows.size()) {
-        // This a new window, create it.
-        foreign_session->windows.push_back(new SessionWindow());
-      }
+
+    // Reset the tab/window tracking for this session (must do this before
+    // we start calling PutWindowInSession and PutTabInWindow so that all
+    // unused tabs/windows get cleared by the CleanupSession(...) call).
+    synced_session_tracker_.ResetSessionTracking(foreign_session_tag);
+
+    // Process all the windows and their tab information.
+    int num_windows = header.window_size();
+    VLOG(1) << "Associating " << foreign_session_tag << " with "
+            << num_windows << " windows.";
+    for (int i = 0; i < num_windows; ++i) {
       const sync_pb::SessionWindow& window_s = header.window(i);
+      SessionID::id_type window_id = window_s.window_id();
+      synced_session_tracker_.PutWindowInSession(foreign_session_tag,
+                                                 window_id);
       PopulateSessionWindowFromSpecifics(foreign_session_tag,
                                          window_s,
                                          modification_time,
-                                         foreign_session->windows[i],
+                                         foreign_session->windows[window_id],
                                          &synced_session_tracker_);
     }
-    // Remove any remaining windows (in case windows were closed)
-    for (; i < foreign_session->windows.size(); ++i) {
-      delete foreign_session->windows[i];
-    }
-    foreign_session->windows.resize(header.window_size());
+
+    // Delete any closed windows and unused tabs as necessary.
+    synced_session_tracker_.CleanupSession(foreign_session_tag);
   } else if (specifics.has_tab()) {
     const sync_pb::SessionTab& tab_s = specifics.tab();
     SessionID::id_type tab_id = tab_s.tab_id();
     SessionTab* tab =
-        synced_session_tracker_.GetSessionTab(foreign_session_tag,
-                                              tab_id,
-                                              false);
+        synced_session_tracker_.GetTab(foreign_session_tag, tab_id);
     PopulateSessionTabFromSpecifics(tab_s, modification_time, tab);
   } else {
     NOTREACHED();
@@ -740,11 +737,13 @@ void SessionModelAssociator::PopulateSessionWindowFromSpecifics(
     }
   }
   session_window->timestamp = mtime;
-  session_window->tabs.resize(specifics.tab_size());
+  session_window->tabs.resize(specifics.tab_size(), NULL);
   for (int i = 0; i < specifics.tab_size(); i++) {
     SessionID::id_type tab_id = specifics.tab(i);
-    session_window->tabs[i] =
-        tracker->GetSessionTab(session_tag, tab_id, true);
+    tracker->PutTabInWindow(session_tag,
+                            session_window->window_id.id(),
+                            tab_id,
+                            i);
   }
 }
 
@@ -753,6 +752,7 @@ void SessionModelAssociator::PopulateSessionTabFromSpecifics(
     const sync_pb::SessionTab& specifics,
     const base::Time& mtime,
     SessionTab* tab) {
+  DCHECK_EQ(tab->tab_id.id(), specifics.tab_id());
   if (specifics.has_tab_id())
     tab->tab_id.set_id(specifics.tab_id());
   if (specifics.has_window_id())
@@ -928,8 +928,7 @@ bool SessionModelAssociator::GetLocalSession(
   DCHECK(CalledOnValidThread());
   if (current_machine_tag_.empty())
     return false;
-  *local_session =
-      synced_session_tracker_.GetSession(GetCurrentMachineTag());
+  *local_session = synced_session_tracker_.GetSession(GetCurrentMachineTag());
   return true;
 }
 
@@ -941,7 +940,7 @@ bool SessionModelAssociator::GetAllForeignSessions(
 
 bool SessionModelAssociator::GetForeignSession(
     const std::string& tag,
-    std::vector<SessionWindow*>* windows) {
+    std::vector<const SessionWindow*>* windows) {
   DCHECK(CalledOnValidThread());
   return synced_session_tracker_.LookupSessionWindows(tag, windows);
 }
@@ -954,23 +953,8 @@ bool SessionModelAssociator::GetForeignTab(
   return synced_session_tracker_.LookupSessionTab(tag, tab_id, tab);
 }
 
-// Static
-bool SessionModelAssociator::SessionWindowHasNoTabsToSync(
-    const SessionWindow& window) {
-  int num_populated = 0;
-  for (std::vector<SessionTab*>::const_iterator i = window.tabs.begin();
-      i != window.tabs.end(); ++i) {
-    const SessionTab* tab = *i;
-    if (IsValidSessionTab(*tab))
-      num_populated++;
-  }
-  if (num_populated == 0)
-    return true;
-  return false;
-}
-
 // Valid local tab?
-bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) {
+bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) const {
   DCHECK(CalledOnValidThread());
   if ((tab.profile() == sync_service_->profile() ||
        sync_service_->profile() == NULL)) {          // For tests.
@@ -990,26 +974,6 @@ bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) {
   }
   return false;
 }
-
-// Static.
-bool SessionModelAssociator::IsValidSessionTab(const SessionTab& tab) {
-  if (tab.navigations.empty())
-    return false;
-  int selected_index = tab.current_navigation_index;
-  selected_index = std::max(
-      0,
-      std::min(selected_index,
-          static_cast<int>(tab.navigations.size() - 1)));
-  if (selected_index == 0 &&
-      tab.navigations.size() == 1 &&
-      tab.navigations.at(selected_index).virtual_url().GetOrigin() ==
-          GURL(chrome::kChromeUINewTabURL)) {
-    // This is a new tab with no further history, skip.
-    return false;
-  }
-  return true;
-}
-
 
 void SessionModelAssociator::QuitLoopForSubtleTesting() {
   if (waiting_for_change_) {

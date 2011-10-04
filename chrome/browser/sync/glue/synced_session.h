@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_H_
 #pragma once
 
+#include <map>
 #include <string>
-#include <vector>
 
+#include "chrome/browser/sessions/session_id.h"
+
+struct SessionTab;
 struct SessionWindow;
 
 namespace browser_sync {
@@ -17,6 +20,8 @@ namespace browser_sync {
 // list of windows along with a unique session identifer (tag) and meta-data
 // about the device being synced.
 struct SyncedSession {
+  typedef std::map<SessionID::id_type, SessionWindow*> SyncedWindowMap;
+
   // The type of device.
   enum DeviceType {
     TYPE_UNSET = 0,
@@ -34,9 +39,26 @@ struct SyncedSession {
   std::string session_tag;
   // User-visible name
   std::string session_name;
+
+  // Type of device this session is from.
   DeviceType device_type;
-  std::vector<SessionWindow*> windows;
+
+  // Map of windows that make up this session. Windowws are owned by the session
+  // itself and free'd on destruction.
+  SyncedWindowMap windows;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyncedSession);
 };
+
+// Control which foreign tabs we're interested in syncing/displaying. Checks
+// that the tab has navigations and is not a new tab (url == NTP).
+// Note: A new tab page with back/forward history is valid.
+bool IsValidSessionTab(const SessionTab& tab);
+
+// Checks whether the window has tabs to sync. If no tabs to sync, it returns
+// true, false otherwise.
+bool SessionWindowHasNoTabsToSync(const SessionWindow& window);
 
 }  // namespace browser_sync
 

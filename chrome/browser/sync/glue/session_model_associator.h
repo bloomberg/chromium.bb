@@ -157,7 +157,7 @@ class SessionModelAssociator
   // Loads all windows for foreign session with session tag |tag|.
   // Caller does NOT own SyncedSession objects.
   bool GetForeignSession(const std::string& tag,
-                         std::vector<SessionWindow*>* windows);
+                         std::vector<const SessionWindow*>* windows);
 
   // Looks up the foreign tab identified by |tab_id| and belonging to foreign
   // session |tag|.
@@ -166,19 +166,10 @@ class SessionModelAssociator
                      const SessionID::id_type tab_id,
                      const SessionTab** tab);
 
-  // Specifies whether the window has tabs to sync. The new tab page does not
-  // count. If no tabs to sync, it returns true, otherwise false;
-  static bool SessionWindowHasNoTabsToSync(const SessionWindow& window);
-
   // Control which local tabs we're interested in syncing.
   // Ensures the profile matches sync's profile and that the tab has at least
   // one navigation entry and is not an empty tab.
-  bool IsValidTab(const SyncedTabDelegate& tab);
-
-  // Control which foreign tabs we're interested in displaying.
-  // Checks that the tab has navigations and is not a new tab.
-  // Note: a new tab page with back/forward history is valid.
-  static bool IsValidSessionTab(const SessionTab& tab);
+  bool IsValidTab(const SyncedTabDelegate& tab) const;
 
   // Returns the syncable model type.
   static syncable::ModelType model_type() { return syncable::SESSIONS; }

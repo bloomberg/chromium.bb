@@ -17,21 +17,36 @@
 
 class GURL;
 
-typedef std::vector<const browser_sync::SyncedSession*> SyncedSessionVector;
-typedef std::vector<SessionWindow*> SessionWindowVector;
-
 namespace sessions_helper {
+
+typedef std::vector<const browser_sync::SyncedSession*> SyncedSessionVector;
+typedef browser_sync::SyncedSession::SyncedWindowMap SessionWindowMap;
+
+// Wrapper around a SyncedWindowMap that will automatically delete the
+// SessionWindow pointers it holds.
+class ScopedWindowMap {
+ public:
+  ScopedWindowMap();
+  explicit ScopedWindowMap(SessionWindowMap* windows);
+  ~ScopedWindowMap();
+
+  const SessionWindowMap* Get() const;
+  SessionWindowMap* GetMutable();
+  void Reset(SessionWindowMap* windows);
+ private:
+  SessionWindowMap windows_;
+};
 
 // Copies the local session windows of profile |index| to |local_windows|.
 // Returns true if successful.
-bool GetLocalWindows(int index, SessionWindowVector& local_windows);
+bool GetLocalWindows(int index, SessionWindowMap* local_windows);
 
 // Creates and verifies the creation of a new window for profile |index| with
 // one tab displaying |url|. Copies the SessionWindow associated with the new
 // window to |local_windows|. Returns true if successful.
 bool OpenTabAndGetLocalWindows(int index,
                                const GURL& url,
-                               SessionWindowVector& local_windows);
+                               SessionWindowMap* local_windows);
 
 // Checks that window count and foreign session count are 0.
 bool CheckInitialState(int index);
@@ -45,14 +60,6 @@ int GetNumForeignSessions(int index);
 // Fills the sessions vector with the model associator's foreign session data.
 // Caller owns |sessions|, but not SyncedSessions objects within.
 bool GetSessionData(int index, SyncedSessionVector* sessions);
-
-// Compare session windows based on their first tab's url.
-// Returns true if the virtual url of the lhs is < the rhs.
-bool CompareSessionWindows(SessionWindow* lhs, SessionWindow* rhs);
-
-// Sort session windows using our custom comparator (first tab url
-// comparison).
-void SortSessionWindows(SessionWindowVector& windows);
 
 // Compares a foreign session based on the first session window.
 // Returns true based on the comparison of the session windows.
@@ -75,8 +82,8 @@ bool NavigationEquals(const TabNavigation& expected,
 //    3. number of tab navigations per tab,
 //    4. actual tab navigations contents
 // - false otherwise.
-bool WindowsMatch(const SessionWindowVector& win1,
-                  const SessionWindowVector& win2);
+bool WindowsMatch(const SessionWindowMap& win1,
+                  const SessionWindowMap& win2);
 
 // Retrieves the foreign sessions for a particular profile and compares them
 // with a reference SessionWindow list.
@@ -84,7 +91,7 @@ bool WindowsMatch(const SessionWindowVector& win1,
 // reference.
 bool CheckForeignSessionsAgainst(
     int index,
-    const std::vector<SessionWindowVector*>& windows);
+    const std::vector<ScopedWindowMap>& windows);
 
 // Open a single tab and block until the session model associator is aware
 // of it. Returns true upon success, false otherwise.

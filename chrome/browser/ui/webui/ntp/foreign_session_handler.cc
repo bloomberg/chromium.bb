@@ -110,10 +110,10 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
       added_count < kMaxSessionsToShow; ++i) {
     const SyncedSession* foreign_session = *i;
     scoped_ptr<ListValue> window_list(new ListValue());
-    for (std::vector<SessionWindow*>::const_iterator it =
+    for (SyncedSession::SyncedWindowMap::const_iterator it =
         foreign_session->windows.begin(); it != foreign_session->windows.end();
         ++it) {
-      SessionWindow* window = *it;
+      SessionWindow* window = it->second;
       scoped_ptr<DictionaryValue> window_data(new DictionaryValue());
       if (SessionWindowToValue(*window, window_data.get())) {
         window_data->SetString("sessionTag", foreign_session->session_tag);
@@ -177,18 +177,18 @@ void ForeignSessionHandler::HandleOpenForeignSession(
     }
     SessionRestore::RestoreForeignSessionTab(profile, *tab);
   } else {
-    std::vector<SessionWindow*> windows;
+    std::vector<const SessionWindow*> windows;
     // Note: we don't own the ForeignSessions themselves.
     if (!associator->GetForeignSession(session_string_value, &windows)) {
       LOG(ERROR) << "ForeignSessionHandler failed to get session data from"
           "SessionModelAssociator.";
       return;
     }
-    std::vector<SessionWindow*>::const_iterator iter_begin = windows.begin() +
-        ((window_num == kInvalidId) ? 0 : window_num);
-    std::vector<SessionWindow*>::const_iterator iter_end =
+    std::vector<const SessionWindow*>::const_iterator iter_begin =
+        windows.begin() + ((window_num == kInvalidId) ? 0 : window_num);
+    std::vector<const SessionWindow*>::const_iterator iter_end =
         ((window_num == kInvalidId) ?
-        std::vector<SessionWindow*>::const_iterator(windows.end()) :
+        std::vector<const SessionWindow*>::const_iterator(windows.end()) :
         iter_begin + 1);
     SessionRestore::RestoreForeignSessionWindows(profile, iter_begin, iter_end);
   }
