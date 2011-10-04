@@ -18,12 +18,9 @@ const char kHotKeySectionName[] = "general/hotkey";
 const char kPreloadEnginesConfigName[] = "preload_engines";
 const char kNextEngineInMenuConfigName[] = "next_engine_in_menu";
 const char kPreviousEngineConfigName[] = "previous_engine";
-const char kHotkeyNextEngineInMenu[] =
-    "Shift+Alt+Release+Shift_L,Shift+Alt+Release+Meta_L,"
-    "Shift+Alt+Release+Shift_R,Shift+Alt+Release+Meta_R,"
-    // TODO(yusukes): Check if the "C+S+space" hotkey is really necessary.
-    "Control+Shift+space";
-const char kHotkeyPreviousEngine[] = "Control+space";
+// The following two variables are for deleting ibus-daemon's default hotkeys.
+const char kHotkeyNextEngineInMenu[] = "";
+const char kHotkeyPreviousEngine[] = "";
 
 // ---------------------------------------------------------------------------
 // For Traditional Chinese input method (ibus-mozc-chewing)
