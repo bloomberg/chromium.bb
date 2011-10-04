@@ -65,7 +65,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->SetParent(params.parent);
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
-  window_->Show();
   can_activate_ = params.can_activate;
 }
 
@@ -518,7 +517,22 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
 // static
 void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* children) {
-  NOTIMPLEMENTED();
+  {
+    // Code expects widget for |native_view| to be added to |children|.
+    NativeWidgetAura* native_widget = static_cast<NativeWidgetAura*>(
+        GetNativeWidgetForNativeView(native_view));
+    if (native_widget->GetWidget())
+      children->insert(native_widget->GetWidget());
+  }
+
+  const aura::Window::Windows& child_windows = native_view->children();
+  for (aura::Window::Windows::const_iterator i = child_windows.begin();
+       i != child_windows.end(); ++i) {
+    NativeWidgetAura* native_widget =
+        static_cast<NativeWidgetAura*>(GetNativeWidgetForNativeView(*i));
+    if (native_widget)
+      children->insert(native_widget->GetWidget());
+  }
 }
 
 // static

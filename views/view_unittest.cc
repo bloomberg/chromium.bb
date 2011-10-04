@@ -2375,11 +2375,6 @@ class ViewLayerTest : public ViewsTestBase {
 
     ui::TestTexture::reset_live_count();
 
-#if defined(USE_AURA)
-    aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
-#else
-    Widget::set_compositor_factory_for_testing(&TestCreateCompositor);
-#endif
     widget_ = new Widget;
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(50, 50, 200, 200);
@@ -2390,11 +2385,6 @@ class ViewLayerTest : public ViewsTestBase {
   virtual void TearDown() OVERRIDE {
     View::set_use_acceleration_when_possible(old_use_acceleration_);
     widget_->CloseNow();
-#if defined(USE_AURA)
-    aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
-#else
-    Widget::set_compositor_factory_for_testing(NULL);
-#endif
     Widget::SetPureViews(false);
     ViewsTestBase::TearDown();
   }
@@ -2448,16 +2438,19 @@ TEST_F(ViewLayerTest, LayerToggling) {
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
+  root_layer->DrawTree();
+  ui::TestTexture::reset_live_count();
+
   // Create v1, give it a bounds and verify everything is set up correctly.
   View* v1 = new View;
   v1->SetPaintToLayer(true);
   root_layer->DrawTree();
-  EXPECT_EQ(1, ui::TestTexture::live_count());
+  EXPECT_EQ(0, ui::TestTexture::live_count());
   EXPECT_TRUE(v1->layer() != NULL);
   v1->SetBounds(20, 30, 140, 150);
   content_view->AddChildView(v1);
   root_layer->DrawTree();
-  EXPECT_EQ(2, ui::TestTexture::live_count());
+  EXPECT_EQ(1, ui::TestTexture::live_count());
   ASSERT_TRUE(v1->layer() != NULL);
   EXPECT_EQ(root_layer, v1->layer()->parent());
   EXPECT_EQ(gfx::Rect(20, 30, 140, 150), v1->layer()->bounds());
@@ -2469,7 +2462,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   v2->SetBounds(10, 20, 30, 40);
   v2->SetPaintToLayer(true);
   root_layer->DrawTree();
-  EXPECT_EQ(3, ui::TestTexture::live_count());
+  EXPECT_EQ(2, ui::TestTexture::live_count());
   ASSERT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(v1->layer(), v2->layer()->parent());
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
@@ -2478,7 +2471,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   // changed.
   v1->SetPaintToLayer(false);
   root_layer->DrawTree();
-  EXPECT_EQ(2, ui::TestTexture::live_count());
+  EXPECT_EQ(1, ui::TestTexture::live_count());
   EXPECT_TRUE(v1->layer() == NULL);
   EXPECT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(root_layer, v2->layer()->parent());
@@ -2493,7 +2486,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   transform.SetScale(2.0f, 2.0f);
   v1->SetTransform(transform);
   root_layer->DrawTree();
-  EXPECT_EQ(3, ui::TestTexture::live_count());
+  EXPECT_EQ(2, ui::TestTexture::live_count());
   EXPECT_TRUE(v1->layer() != NULL);
   EXPECT_TRUE(v2->layer() != NULL);
   EXPECT_EQ(root_layer, v1->layer()->parent());

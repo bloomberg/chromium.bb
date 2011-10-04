@@ -8,11 +8,18 @@
 #include <ole2.h>
 #endif
 
+#include "ui/gfx/compositor/test_compositor.h"
+#include "views/widget/widget.h"
+
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"
 #endif
 
 namespace views {
+
+static ui::Compositor* TestCreateCompositor() {
+  return new ui::TestCompositor();
+}
 
 ViewsTestBase::ViewsTestBase()
     : setup_called_(false),
@@ -36,8 +43,11 @@ void ViewsTestBase::SetUp() {
   testing::Test::SetUp();
   setup_called_ = true;
 #if defined(USE_AURA)
+  aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
   if (!aura::Desktop::GetInstance()->default_parent())
     aura::Desktop::GetInstance()->CreateDefaultParentForTesting();
+#else
+  Widget::set_compositor_factory_for_testing(&TestCreateCompositor);
 #endif
   if (!views_delegate_.get())
     views_delegate_.reset(new TestViewsDelegate());
@@ -50,6 +60,11 @@ void ViewsTestBase::TearDown() {
   teardown_called_ = true;
   views_delegate_.reset();
   testing::Test::TearDown();
+#if defined(USE_AURA)
+  aura::Desktop::set_compositor_factory_for_testing(NULL);
+#else
+  Widget::set_compositor_factory_for_testing(NULL);
+#endif
 }
 
 }  // namespace views

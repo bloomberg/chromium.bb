@@ -729,9 +729,13 @@ bool View::HitTest(const gfx::Point& l) const {
     if (HasHitTestMask()) {
       gfx::Path mask;
       GetHitTestMask(&mask);
-      // TODO: can this use SkRegion's contains instead?
 #if defined(USE_AURA)
-      NOTIMPLEMENTED();
+      // TODO: should we use this every where?
+      SkRegion clip_region;
+      clip_region.setRect(0, 0, width(), height());
+      SkRegion mask_region;
+      return mask_region.setPath(mask, clip_region) &&
+          mask_region.contains(l.x(), l.y());
 #elif defined(OS_WIN)
       base::win::ScopedRegion rgn(mask.CreateNativeRegion());
       return !!PtInRegion(rgn, l.x(), l.y());
