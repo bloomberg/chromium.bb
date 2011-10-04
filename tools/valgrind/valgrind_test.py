@@ -809,9 +809,18 @@ class DrMemory(BaseTool):
       proc += ["-debug"]
 
     proc += ["-logdir", self.log_dir]
-    proc += ["-batch", "-quiet"]
+    proc += ["-batch", "-quiet", "-no_results_to_stderr"]
 
     proc += ["-callstack_max_frames", "40"]
+
+    # make callstacks easier to read
+    proc += ["-callstack_srcfile_prefix",
+             "build\\src,chromium\\src,crt_build\\self_x86"]
+    proc += ["-callstack_truncate_below",
+             "main,BaseThreadInitThunk,testing*Test*Run*,"+
+             "testing::internal*,MessageLoop::Run,RunnableMethod*"]
+    proc += ["-callstack_modname_hide",
+             "*.exe,chrome.dll"]
 
     if not self.handle_uninits_and_leaks:
       proc += ["-no_check_uninitialized", "-no_count_leaks"]

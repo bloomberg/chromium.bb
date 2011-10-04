@@ -1,11 +1,11 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 # drmemory_analyze.py
 
-''' Given a ThreadSanitizer output file, parses errors and uniques them.'''
+''' Given a Dr. Memory output file, parses errors and uniques them.'''
 
 import logging
 import optparse
@@ -45,39 +45,11 @@ class DrMemoryAnalyze:
     self.stack_trace_line_ = None
 
   def ReadSection(self):
-    FILE_PREFIXES_TO_CUT = [
-        "build\\src\\",
-        "chromium\\src\\",
-        "crt_bld\\self_x86\\",
-    ]
-    BORING_CALLERS = [
-        "BaseThreadInitThunk",
-        "testing.*Test.*Run.*",
-        "testing::internal.*",
-        "MessageLoop::Run",
-        "RunnableMethod.*"
-    ]
-    CUT_STACK_BELOW = (r"\.(exe|dll|DLL)!(" + "|".join(BORING_CALLERS) +
-                       r")(\s+\[.*\]$|\s*$)")
-    # TODO(timurrrr): whitespaces needed in "\s*$" due to
-    # http://code.google.com/p/drmemory/issues/detail?id=584
-
     result = [self.line_]
     self.ReadLine()
-    skip_following_frames = False
     while len(self.line_.strip()) > 0:
-      cur_line = self.line_
+      result.append(self.line_)
       self.ReadLine()
-      if skip_following_frames or re.search(CUT_STACK_BELOW, cur_line):
-        skip_following_frames = True
-        continue
-      for prefix in FILE_PREFIXES_TO_CUT:
-        regexp = "([^\[\]]+" + re.escape(prefix) + ").*"
-        m = re.search(regexp, cur_line)
-        if m:
-          assert len(m.groups()) == 1
-          cur_line = cur_line.replace(m.groups()[0], "")
-      result.append(cur_line)
     return result
 
   def ParseReportFile(self, filename):
@@ -87,7 +59,7 @@ class DrMemoryAnalyze:
       self.ReadLine()
       if (self.line_ == ''):
         break
-      if re.search("Grouping errors that", self.line_):
+      if re.search("FINAL SUMMARY", self.line_):
         # DrMemory has finished working.
         break
       tmp = []
