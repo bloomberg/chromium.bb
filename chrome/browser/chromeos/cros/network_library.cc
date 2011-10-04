@@ -1760,9 +1760,6 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   const std::string& GetTpmSlot();
   const std::string& GetTpmPin();
 
-  // Pin related functions.
-  void FlipSimPinRequiredStateIfNeeded();
-
   // Network manager observer list.
   ObserverList<NetworkManagerObserver> network_manager_observers_;
 
@@ -3191,20 +3188,6 @@ const std::string& NetworkLibraryImplBase::GetTpmPin() {
   return tpm_pin_;
 }
 
-void NetworkLibraryImplBase::FlipSimPinRequiredStateIfNeeded() {
-  if (sim_operation_ != SIM_OPERATION_CHANGE_REQUIRE_PIN)
-    return;
-
-  const NetworkDevice* cellular = FindCellularDevice();
-  if (cellular) {
-    NetworkDevice* device = FindNetworkDeviceByPath(cellular->device_path());
-    if (device->sim_pin_required() == SIM_PIN_NOT_REQUIRED)
-      device->sim_pin_required_ = SIM_PIN_REQUIRED;
-    else if (device->sim_pin_required() == SIM_PIN_REQUIRED)
-      device->sim_pin_required_ = SIM_PIN_NOT_REQUIRED;
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////
 
 class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
@@ -3720,10 +3703,6 @@ void NetworkLibraryImplCros::PinOperationCallback(
   if (error == chromeos::NETWORK_METHOD_ERROR_NONE) {
     pin_error = PIN_ERROR_NONE;
     VLOG(1) << "Pin operation completed successfuly";
-    // TODO(nkostylev): Might be cleaned up and exposed in flimflam API.
-    // http://crosbug.com/14253
-    // Since this option state is not exposed we have to update it manually.
-    networklib->FlipSimPinRequiredStateIfNeeded();
   } else {
     if (error_message &&
         (strcmp(error_message, flimflam::kErrorIncorrectPinMsg) == 0 ||
@@ -5000,7 +4979,6 @@ void NetworkLibraryImplStub::ChangeRequirePin(bool require_pin,
   sim_operation_ = SIM_OPERATION_CHANGE_REQUIRE_PIN;
   if (!pin_required_ || pin == pin_) {
     pin_required_ = require_pin;
-    FlipSimPinRequiredStateIfNeeded();
     NotifyPinOperationCompleted(PIN_ERROR_NONE);
   } else {
     NotifyPinOperationCompleted(PIN_ERROR_INCORRECT_CODE);

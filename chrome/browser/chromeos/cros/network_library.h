@@ -234,9 +234,7 @@ enum SimLockState {
   SIM_LOCKED_PUK = 3,  // also when SIM is blocked, then retries = 0.
 };
 
-// SIM PinRequire states. Since PinRequire current state is not exposed as a
-// cellular property, we initialize its value based on the SimLockState
-// initial value.
+// SIM PinRequire states.
 // SIM_PIN_REQUIRE_UNKNOWN - SIM card is absent or SimLockState initial value
 //                           hasn't been received yet.
 // SIM_PIN_REQUIRED - SIM card is locked when booted/wake from sleep and

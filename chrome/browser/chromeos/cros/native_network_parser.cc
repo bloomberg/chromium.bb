@@ -323,23 +323,19 @@ bool NativeNetworkDeviceParser::ParseValue(
       if (value.IsType(Value::TYPE_DICTIONARY)) {
         SimLockState sim_lock_state;
         int sim_retries_left;
+        bool sim_lock_enabled;
         if (!ParseSimLockStateFromDictionary(
                 static_cast<const DictionaryValue&>(value),
                 &sim_lock_state,
-                &sim_retries_left))
+                &sim_retries_left,
+                &sim_lock_enabled))
           return false;
         device->set_sim_lock_state(sim_lock_state);
         device->set_sim_retries_left(sim_retries_left);
-        // Initialize PinRequired value only once.
-        // See SimPinRequire enum comments.
-        if (device->sim_pin_required() == SIM_PIN_REQUIRE_UNKNOWN) {
-          if (device->sim_lock_state() == SIM_UNLOCKED) {
-            device->set_sim_pin_required(SIM_PIN_NOT_REQUIRED);
-          } else if (device->sim_lock_state() == SIM_LOCKED_PIN ||
-                     device->sim_lock_state() == SIM_LOCKED_PUK) {
-            device->set_sim_pin_required(SIM_PIN_REQUIRED);
-          }
-        }
+        if (sim_lock_enabled)
+          device->set_sim_pin_required(SIM_PIN_REQUIRED);
+        else
+          device->set_sim_pin_required(SIM_PIN_NOT_REQUIRED);
         return true;
       }
       break;
@@ -450,10 +446,14 @@ SimLockState NativeNetworkDeviceParser::ParseSimLockState(
 }
 
 bool NativeNetworkDeviceParser::ParseSimLockStateFromDictionary(
-    const DictionaryValue& info, SimLockState* out_state, int* out_retries) {
+    const DictionaryValue& info,
+    SimLockState* out_state,
+    int* out_retries,
+    bool* out_enabled) {
   std::string state_string;
   if (!info.GetString(flimflam::kSIMLockTypeProperty, &state_string) ||
-      !info.GetInteger(flimflam::kSIMLockRetriesLeftProperty, out_retries)) {
+      !info.GetInteger(flimflam::kSIMLockRetriesLeftProperty, out_retries) ||
+      !info.GetBoolean(flimflam::kSIMLockEnabledProperty, out_enabled)) {
     LOG(ERROR) << "Error parsing SIMLock state";
     return false;
   }

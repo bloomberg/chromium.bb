@@ -39,7 +39,8 @@ class NativeNetworkDeviceParser : public NetworkDeviceParser {
   virtual bool ParseSimLockStateFromDictionary(
       const base::DictionaryValue& info,
       SimLockState* out_state,
-      int* out_retries);
+      int* out_retries,
+      bool* out_enabled);
   virtual TechnologyFamily ParseTechnologyFamily(
       const std::string& technology_family);
 
