@@ -177,7 +177,7 @@
         'test/run_all_unittests.cc',
       ],
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
+        ['use_x11 == 1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../dbus/dbus.gyp:dbus_test_support',
