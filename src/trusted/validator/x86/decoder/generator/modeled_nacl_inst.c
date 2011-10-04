@@ -56,14 +56,14 @@ void NaClModeledInstPrint(struct Gio* f, const NaClModeledInst* inst) {
     count += 2;
   }
   if (inst->flags & NACL_IFLAG(OpcodeInModRm)) {
-    gprintf(f, " / %d", inst->opcode[inst->num_opcode_bytes]);
+    gprintf(f, " / %d", NaClGetOpcodeInModRm(inst->opcode_ext));
     count += 4;
   } else if (inst->flags & NACL_IFLAG(OpcodePlusR)) {
-    gprintf(f, " - r%d", inst->opcode[inst->num_opcode_bytes]);
+    gprintf(f, " - r%d", NaClGetOpcodePlusR(inst->opcode_ext));
     count += 5;
   }
   if (inst->flags & NACL_IFLAG(OpcodeInModRmRm)) {
-    gprintf(f, " / %d", inst->opcode[inst->num_opcode_bytes + 1]);
+    gprintf(f, " / %d", NaClGetOpcodeInModRmRm(inst->opcode_ext));
     count += 4;
   }
   while (count < 30) {

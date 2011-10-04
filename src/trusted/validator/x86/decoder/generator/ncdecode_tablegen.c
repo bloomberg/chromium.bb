@@ -955,7 +955,6 @@ void NaClDefOpcodeExtension(int opcode) {
   }
   DEBUG(NaClLog(LOG_INFO, "Defining opcode extension %d\n", opcode));
   NaClMoveCurrentToMrmIndex(byte_opcode);
-  current_inst->opcode[current_inst->num_opcode_bytes] = byte_opcode;
   NaClSetOpcodeInModRm(byte_opcode, &current_inst->opcode_ext);
 }
 
@@ -973,7 +972,6 @@ void NaClDefineOpcodeModRmRmExtension(int value) {
   DEBUG(NaClLog(LOG_INFO, "Defining modrm r/m opcode extension %d", value));
   NaClAddIFlags(NACL_IFLAG(OpcodeInModRmRm));
   if (current_inst->num_opcode_bytes + 1 < NACL_MAX_ALL_OPCODE_BYTES) {
-    current_inst->opcode[current_inst->num_opcode_bytes+1] = byte_opcode;
     NaClSetOpcodeInModRmRm(byte_opcode, &current_inst->opcode_ext);
   } else {
     NaClFatalInst("No room for opcode modrm rm extension");
@@ -992,7 +990,6 @@ void NaClDefOpcodeRegisterValue(int r) {
     NaClFatalInst(
         "Attempted to define opcode register value when not OpcodePlusR");
   }
-  current_inst->opcode[current_inst->num_opcode_bytes] = byte_r;
   NaClSetOpcodePlusR(byte_r, &current_inst->opcode_ext);
 }
 

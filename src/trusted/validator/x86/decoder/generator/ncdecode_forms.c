@@ -412,7 +412,7 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
           }
           if (IsSLValue(val)) {
             if ((inst->flags & NACL_IFLAG(OpcodeInModRm)) &&
-                (SLOpcode(val) == inst->opcode[inst->num_opcode_bytes])) {
+                (SLOpcode(val) == NaClGetOpcodeInModRm(inst->opcode_ext))) {
               /* good, continue search. */
               matched_slash = TRUE;
             } else {
