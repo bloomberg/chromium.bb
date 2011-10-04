@@ -22,6 +22,7 @@ using ::testing::StrictMock;
 
 namespace media {
 
+static const VideoFrame::Format kVideoFormat = VideoFrame::YV12;
 static const gfx::Size kCodedSize(320, 240);
 static const gfx::Rect kVisibleRect(320, 240);
 static const gfx::Size kNaturalSize(522, 288);
@@ -36,7 +37,7 @@ class FFmpegVideoDecodeEngineTest
       public VideoDecodeEngine::EventHandler {
  public:
   FFmpegVideoDecodeEngineTest()
-      : config_(kCodecVP8, kCodedSize, kVisibleRect,
+      : config_(kCodecVP8, kVideoFormat, kCodedSize, kVisibleRect,
                 kFrameRate.num, kFrameRate.den, NULL, 0) {
     CHECK(FFmpegGlue::GetInstance());
 
@@ -142,7 +143,8 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_Normal) {
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
-  VideoDecoderConfig config(kUnknownVideoCodec, kCodedSize, kVisibleRect,
+  VideoDecoderConfig config(kUnknownVideoCodec, kVideoFormat,
+                            kCodedSize, kVisibleRect,
                             kFrameRate.num, kFrameRate.den,
                             NULL, 0);
 
@@ -153,7 +155,8 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   // Specify Theora w/o extra data so that avcodec_open() fails.
-  VideoDecoderConfig config(kCodecTheora, kCodedSize, kVisibleRect,
+  VideoDecoderConfig config(kCodecTheora, kVideoFormat,
+                            kCodedSize, kVisibleRect,
                             kFrameRate.num, kFrameRate.den,
                             NULL, 0);
   EXPECT_CALL(*this, OnInitializeComplete(false));

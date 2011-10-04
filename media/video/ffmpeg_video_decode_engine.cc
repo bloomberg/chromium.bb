@@ -55,9 +55,7 @@ void FFmpegVideoDecodeEngine::Initialize(
 
   // Initialize AVCodecContext structure.
   codec_context_ = avcodec_alloc_context();
-
-  // TODO(scherkus): should video format get passed in via VideoDecoderConfig?
-  codec_context_->pix_fmt = PIX_FMT_YUV420P;
+  codec_context_->pix_fmt = VideoFormatToPixelFormat(config.format());
   codec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
   codec_context_->codec_id = VideoCodecToCodecID(config.codec());
   codec_context_->coded_width = config.coded_size().width();
@@ -110,11 +108,11 @@ void FFmpegVideoDecodeEngine::Initialize(
   // Create output buffer pool when direct rendering is not used.
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
     scoped_refptr<VideoFrame> video_frame =
-        VideoFrame::CreateFrame(VideoFrame::YV12,
-                                config.visible_rect().width(),
-                                config.visible_rect().height(),
-                                kNoTimestamp,
-                                kNoTimestamp);
+      VideoFrame::CreateFrame(PixelFormatToVideoFormat(codec_context_->pix_fmt),
+                              config.visible_rect().width(),
+                              config.visible_rect().height(),
+                              kNoTimestamp,
+                              kNoTimestamp);
     frame_queue_available_.push_back(video_frame);
   }
 
@@ -244,7 +242,8 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   // output, meaning the data is only valid until the next
   // avcodec_decode_video() call.
   int y_rows = codec_context_->height;
-  int uv_rows = codec_context_->height / 2;
+  int uv_rows = video_frame->rows(VideoFrame::kUPlane);
+
   CopyYPlane(av_frame_->data[0], av_frame_->linesize[0], y_rows, video_frame);
   CopyUPlane(av_frame_->data[1], av_frame_->linesize[1], uv_rows, video_frame);
   CopyVPlane(av_frame_->data[2], av_frame_->linesize[2], uv_rows, video_frame);
