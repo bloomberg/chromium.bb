@@ -7,6 +7,7 @@
 // these urls, and sends "goback" or "proceed" commands and verifies
 // they work.
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,8 +44,8 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &FakeSafeBrowsingService::OnCheckBrowseURLDone,
-                          gurl, client));
+        base::Bind(&FakeSafeBrowsingService::OnCheckBrowseURLDone,
+                   this, gurl, client));
     return false;
   }
 
@@ -66,8 +67,7 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
     // Notify the UI thread that we got a report.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &FakeSafeBrowsingService::OnMalwareDetailsDone));
+        base::Bind(&FakeSafeBrowsingService::OnMalwareDetailsDone, this));
   }
 
   void OnMalwareDetailsDone() {
@@ -114,8 +114,8 @@ class FakeMalwareDetails : public MalwareDetails {
 
     // Notify the UI thread that we got the dom details.
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            NewRunnableMethod(this,
-                            &FakeMalwareDetails::OnDOMDetailsDone));
+                            base::Bind(&FakeMalwareDetails::OnDOMDetailsDone,
+                                       this));
   }
 
   void OnDOMDetailsDone() {
