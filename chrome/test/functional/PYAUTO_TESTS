@@ -415,6 +415,8 @@
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
+      # Media files test uses internal media files
+      '-chromeos_file_browser.ChromeosFileBrowserTest.testOpenMediaFiles',
     ],
   },
 
