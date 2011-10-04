@@ -4631,6 +4631,21 @@
    fun:_ZN8remoting18TestEncoderDecoderEPNS_7EncoderEPNS_7DecoderEb
    fun:_ZN8remoting35DecoderVp8Test_EncodeAndDecode_Test8TestBodyEv
 }
+{
+   bug_98967_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base5Value17CreateStringValueERKSs
+   fun:_ZN36V8ValueConverterTest_WeirdTypes_Test8TestBodyEv
+}
+{
+   bug_98967_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base5Value17CreateDoubleValueEd
+   fun:_ZN36V8ValueConverterTest_WeirdTypes_Test8TestBodyEv
+}
+
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
