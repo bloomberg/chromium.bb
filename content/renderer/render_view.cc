@@ -2477,8 +2477,6 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
   if (BindingsPolicy::is_web_ui_enabled(enabled_bindings_) &&
       (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
       frame_url.SchemeIs(chrome::kDataScheme))) {
-    GetWebUIBindings()->set_message_sender(this);
-    GetWebUIBindings()->set_routing_id(routing_id_);
     GetWebUIBindings()->BindToJavascript(frame, "chrome");
   }
 }
@@ -3091,7 +3089,7 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
 
 WebUIBindings* RenderView::GetWebUIBindings() {
   if (!web_ui_bindings_.get()) {
-    web_ui_bindings_.reset(new WebUIBindings());
+    web_ui_bindings_.reset(new WebUIBindings(this, routing_id_));
   }
   return web_ui_bindings_.get();
 }

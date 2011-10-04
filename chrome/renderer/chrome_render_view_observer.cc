@@ -721,8 +721,6 @@ void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {
 
   if (BindingsPolicy::is_external_host_enabled(
           render_view()->enabled_bindings())) {
-    GetExternalHostBindings()->set_message_sender(render_view());
-    GetExternalHostBindings()->set_routing_id(routing_id());
     GetExternalHostBindings()->BindToJavascript(frame, "externalHost");
   }
 }
@@ -992,8 +990,10 @@ void ChromeRenderViewObserver::BindDOMAutomationController(WebFrame* frame) {
 }
 
 ExternalHostBindings* ChromeRenderViewObserver::GetExternalHostBindings() {
-  if (!external_host_bindings_.get())
-    external_host_bindings_.reset(new ExternalHostBindings());
+  if (!external_host_bindings_.get()) {
+    external_host_bindings_.reset(new ExternalHostBindings(
+        render_view(), routing_id()));
+  }
   return external_host_bindings_.get();
 }
 

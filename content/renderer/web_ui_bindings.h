@@ -18,28 +18,10 @@ class DOMBoundBrowserObject : public CppBoundClass {
   CONTENT_EXPORT DOMBoundBrowserObject();
   CONTENT_EXPORT virtual ~DOMBoundBrowserObject();
 
-  // Set the message channel back to the browser.
-  void set_message_sender(IPC::Message::Sender* sender) {
-    sender_ = sender;
-  }
-
-  // Set the routing id for messages back to the browser.
-  void set_routing_id(int routing_id) {
-    routing_id_ = routing_id;
-  }
-
-  IPC::Message::Sender* sender() { return sender_; }
-  int routing_id() { return routing_id_; }
-
   // Sets a property with the given name and value.
   void SetProperty(const std::string& name, const std::string& value);
 
  private:
-  // Our channel back to the browser is a message sender
-  // and routing id.
-  IPC::Message::Sender* sender_;
-  int routing_id_;
-
   // The list of properties that have been set.  We keep track of this so we
   // can free them on destruction.
   typedef std::vector<CppVariant*> PropertyList;
@@ -57,12 +39,17 @@ class DOMBoundBrowserObject : public CppBoundClass {
 // delegate.
 class WebUIBindings : public DOMBoundBrowserObject {
  public:
-  WebUIBindings();
+  WebUIBindings(IPC::Message::Sender* sender,
+                int routing_id);
   virtual ~WebUIBindings();
 
-  // The send() function provided to Javascript.
-  void send(const CppArgumentList& args, CppVariant* result);
  private:
+  // The send() function provided to Javascript.
+  void Send(const CppArgumentList& args, CppVariant* result);
+
+  IPC::Message::Sender* sender_;
+  int routing_id_;
+
   DISALLOW_COPY_AND_ASSIGN(WebUIBindings);
 };
 
