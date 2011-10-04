@@ -77,6 +77,12 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_->proxy()->RegisterClient(client);
   }
 
+  void GetUsageInfo() {
+    usage_info_.clear();
+    quota_manager_->GetUsageInfo(callback_factory_.NewCallback(
+        &QuotaManagerTest::DidGetUsageInfo));
+  }
+
   void GetUsageAndQuota(const GURL& origin, StorageType type) {
     quota_status_ = kQuotaStatusUnknown;
     usage_ = -1;
@@ -245,6 +251,10 @@ class QuotaManagerTest : public testing::Test {
             &QuotaManagerTest::DidDumpOriginInfoTable));
   }
 
+  void DidGetUsageInfo(const UsageInfoEntries& entries) {
+    usage_info_.insert(usage_info_.begin(), entries.begin(), entries.end());
+  }
+
   void DidGetUsageAndQuota(QuotaStatusCode status, int64 usage, int64 quota) {
     quota_status_ = status;
     usage_ = usage;
@@ -339,6 +349,7 @@ class QuotaManagerTest : public testing::Test {
   }
 
   QuotaStatusCode status() const { return quota_status_; }
+  const UsageInfoEntries& usage_info() const { return usage_info_; }
   const std::string& host() const { return host_; }
   StorageType type() const { return type_; }
   int64 usage() const { return usage_; }
@@ -369,6 +380,7 @@ class QuotaManagerTest : public testing::Test {
   scoped_refptr<MockSpecialStoragePolicy> mock_special_storage_policy_;
 
   QuotaStatusCode quota_status_;
+  UsageInfoEntries usage_info_;
   std::string host_;
   StorageType type_;
   int64 usage_;
@@ -388,6 +400,43 @@ class QuotaManagerTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManagerTest);
 };
+
+TEST_F(QuotaManagerTest, GetUsageInfo) {
+  static const MockOriginData kData1[] = {
+    { "http://foo.com/",       kTemp,  10 },
+    { "http://foo.com:8080/",  kTemp,  15 },
+    { "http://bar.com/",       kTemp,  20 },
+    { "http://bar.com/",       kPerm,  50 },
+  };
+  static const MockOriginData kData2[] = {
+    { "https://foo.com/",      kTemp,  30 },
+    { "https://foo.com:8081/", kTemp,  35 },
+    { "http://bar.com/",       kPerm,  40 },
+    { "http://example.com/",   kPerm,  40 },
+  };
+  RegisterClient(CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1)));
+  RegisterClient(CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2)));
+
+  GetUsageInfo();
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(4U, usage_info().size());
+  for (size_t i = 0; i < usage_info().size(); ++i) {
+    const UsageInfo& info = usage_info()[i];
+    if (info.host == "foo.com" && info.type == kTemp) {
+      EXPECT_EQ(10 + 15 + 30 + 35, info.usage);
+    } else if (info.host == "bar.com" && info.type == kTemp) {
+      EXPECT_EQ(20, info.usage);
+    } else if (info.host == "bar.com" && info.type == kPerm) {
+      EXPECT_EQ(50 + 40, info.usage);
+    } else if (info.host == "example.com" && info.type == kPerm) {
+      EXPECT_EQ(40, info.usage);
+    } else {
+      ADD_FAILURE()
+          << "Unexpected host, type: " << info.host << ", " << info.type;
+    }
+  }
+}
 
 TEST_F(QuotaManagerTest, GetUsageAndQuota_Simple) {
   static const MockOriginData kData[] = {

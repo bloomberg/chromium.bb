@@ -43,6 +43,7 @@ class UsageTracker : public QuotaTaskObserver {
   void UpdateUsageCache(QuotaClient::ID client_id,
                         const GURL& origin,
                         int64 delta);
+  void GetCachedHostsUsage(std::map<std::string, int64>* host_usage) const;
   void GetCachedOrigins(std::set<GURL>* origins) const;
   bool IsWorking() const {
     return global_usage_callbacks_.HasCallbacks() ||
@@ -92,6 +93,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void GetGlobalUsage(GlobalUsageCallback* callback);
   void GetHostUsage(const std::string& host, HostUsageCallback* callback);
   void UpdateUsageCache(const GURL& origin, int64 delta);
+  void GetCachedHostsUsage(std::map<std::string, int64>* host_usage) const;
   void GetCachedOrigins(std::set<GURL>* origins) const;
 
  private:
@@ -110,7 +112,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void GatherGlobalUsageComplete();
   void GatherHostUsageComplete(const std::string& host);
 
-  int64 GetCachedHostUsage(const std::string& host);
+  int64 GetCachedHostUsage(const std::string& host) const;
   int64 GetCachedGlobalUnlimitedUsage();
   virtual void OnSpecialStoragePolicyChanged() OVERRIDE;
   void NoopHostUsageCallback(

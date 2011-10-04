@@ -272,6 +272,16 @@ void UsageTracker::UpdateUsageCache(
   client_tracker->UpdateUsageCache(origin, delta);
 }
 
+void UsageTracker::GetCachedHostsUsage(
+    std::map<std::string, int64>* host_usage) const {
+  DCHECK(host_usage);
+  host_usage->clear();
+  for (ClientTrackerMap::const_iterator iter = client_tracker_map_.begin();
+       iter != client_tracker_map_.end(); ++iter) {
+    iter->second->GetCachedHostsUsage(host_usage);
+  }
+}
+
 void UsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
   DCHECK(origins);
   origins->clear();
@@ -393,6 +403,16 @@ void ClientUsageTracker::UpdateUsageCache(
                NewCallback(this, &ClientUsageTracker::NoopHostUsageCallback));
 }
 
+void ClientUsageTracker::GetCachedHostsUsage(
+    std::map<std::string, int64>* host_usage) const {
+  DCHECK(host_usage);
+  for (HostUsageMap::const_iterator host_iter = cached_usage_.begin();
+       host_iter != cached_usage_.end(); host_iter++) {
+    host_usage->operator[](host_iter->first) +=
+        GetCachedHostUsage(host_iter->first);
+  }
+}
+
 void ClientUsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
   DCHECK(origins);
   for (HostUsageMap::const_iterator host_iter = cached_usage_.begin();
@@ -449,7 +469,7 @@ void ClientUsageTracker::GatherHostUsageComplete(const std::string& host) {
   host_usage_callbacks_.Run(host, host, type_, GetCachedHostUsage(host));
 }
 
-int64 ClientUsageTracker::GetCachedHostUsage(const std::string& host) {
+int64 ClientUsageTracker::GetCachedHostUsage(const std::string& host) const {
   HostUsageMap::const_iterator found = cached_usage_.find(host);
   if (found == cached_usage_.end())
     return 0;

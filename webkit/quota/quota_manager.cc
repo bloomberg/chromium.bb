@@ -290,6 +290,67 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaDispatcherTask);
 };
 
+class QuotaManager::GetUsageInfoTask : public QuotaTask {
+ private:
+  typedef QuotaManager::GetUsageInfoTask self_type;
+
+ public:
+  GetUsageInfoTask(
+      QuotaManager* manager,
+      GetUsageInfoCallback* callback)
+      : QuotaTask(manager),
+        callback_(callback),
+        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  }
+ protected:
+  virtual void Run() OVERRIDE {
+    remaining_trackers_ = 2;
+    // This will populate cached hosts and usage info.
+    manager()->GetUsageTracker(kStorageTypeTemporary)->GetGlobalUsage(
+        callback_factory_.NewCallback(&GetUsageInfoTask::DidGetGlobalUsage));
+    manager()->GetUsageTracker(kStorageTypePersistent)->GetGlobalUsage(
+        callback_factory_.NewCallback(&GetUsageInfoTask::DidGetGlobalUsage));
+  }
+
+  virtual void Completed() OVERRIDE {
+    callback_->Run(entries_);
+    DeleteSoon();
+  }
+
+  virtual void Aborted() OVERRIDE {
+    callback_->Run(UsageInfoEntries());
+    DeleteSoon();
+  }
+
+ private:
+  void AddEntries(StorageType type, UsageTracker* tracker) {
+    std::map<std::string, int64> host_usage;
+    tracker->GetCachedHostsUsage(&host_usage);
+    for (std::map<std::string, int64>::const_iterator iter = host_usage.begin();
+         iter != host_usage.end();
+         ++iter) {
+      entries_.push_back(UsageInfo(iter->first, type, iter->second));
+    }
+    if (--remaining_trackers_ == 0)
+      CallCompleted();
+  }
+
+  void DidGetGlobalUsage(StorageType type, int64, int64) {
+    AddEntries(type, manager()->GetUsageTracker(type));
+  }
+
+  QuotaManager* manager() const {
+    return static_cast<QuotaManager*>(observer());
+  }
+
+  scoped_ptr<GetUsageInfoCallback> callback_;
+  UsageInfoEntries entries_;
+  base::ScopedCallbackFactory<GetUsageInfoTask> callback_factory_;
+  int remaining_trackers_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetUsageInfoTask);
+};
+
 class QuotaManager::UsageAndQuotaDispatcherTaskForTemporary
     : public QuotaManager::UsageAndQuotaDispatcherTask {
  public:
@@ -962,6 +1023,12 @@ QuotaManager::~QuotaManager() {
                 std::mem_fun(&QuotaClient::OnQuotaManagerDestroyed));
   if (database_.get())
     db_thread_->DeleteSoon(FROM_HERE, database_.release());
+}
+
+void QuotaManager::GetUsageInfo(GetUsageInfoCallback* callback) {
+  LazyInitialize();
+  GetUsageInfoTask* get_usage_info = new GetUsageInfoTask(this, callback);
+  get_usage_info->Start();
 }
 
 void QuotaManager::GetUsageAndQuota(

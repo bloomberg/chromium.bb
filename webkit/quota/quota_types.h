@@ -36,6 +36,9 @@ enum QuotaStatusCode {
   kQuotaStatusUnknown = -1,
 };
 
+struct UsageInfo;
+typedef std::vector<UsageInfo> UsageInfoEntries;
+
 // Common callback types that are used throughout in the quota module.
 typedef Callback2<StorageType, int64>::Type UsageCallback;
 typedef Callback3<StorageType, int64, int64>::Type GlobalUsageCallback;
@@ -53,6 +56,7 @@ typedef Callback2<QuotaStatusCode,
                   int64>::Type AvailableSpaceCallback;
 typedef Callback1<QuotaStatusCode>::Type StatusCallback;
 typedef Callback2<const std::set<GURL>&, StorageType>::Type GetOriginsCallback;
+typedef Callback1<const UsageInfoEntries&>::Type GetUsageInfoCallback;
 
 // Simple template wrapper for a callback queue.
 template <typename CallbackType>
@@ -272,6 +276,7 @@ class CallbackQueueMap4
   }
 };
 
+typedef CallbackQueueMap1<UsageCallback*, GURL, int64> OriginUsageCallbackMap;
 typedef CallbackQueueMap3<HostUsageCallback*, std::string,
                           const std::string&,
                           StorageType, int64> HostUsageCallbackMap;
