@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import os
 
 import pyauto_functional  # Must be imported before pyauto
@@ -628,7 +629,7 @@ class NTPTest(pyauto.PyUITest):
     # Turn on menu mode for the Apps section and verify that it's turned on.
     self.SetNTPMenuMode('apps', True)
     menu_info = self.GetNTPMenuMode()
-    expected_menu_info = self._EXPECTED_DEFAULT_MENU_INFO
+    expected_menu_info = copy.copy(self._EXPECTED_DEFAULT_MENU_INFO)
     expected_menu_info[u'apps'] = True
     self._VerifyThumbnailOrMenuMode(menu_info, expected_menu_info)
 
