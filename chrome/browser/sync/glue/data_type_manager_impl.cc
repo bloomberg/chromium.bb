@@ -397,9 +397,6 @@ void DataTypeManagerImpl::Stop() {
     // If Stop() is called while waiting for download, cancel all
     // outstanding tasks.
     weak_ptr_factory_.InvalidateWeakPtrs();
-    syncable::ModelType type = syncable::UNSPECIFIED;
-    if (needs_start_.size() > 0)
-      type = needs_start_[0]->type();
     Abort(ABORTED, SyncError());
     return;
   }
