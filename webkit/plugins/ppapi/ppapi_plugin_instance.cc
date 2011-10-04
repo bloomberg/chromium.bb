@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -299,6 +300,7 @@ void PluginInstance::Delete() {
 void PluginInstance::Paint(WebCanvas* canvas,
                            const gfx::Rect& plugin_rect,
                            const gfx::Rect& paint_rect) {
+  TRACE_EVENT0("ppapi", "PluginInstance::Paint");
   if (module()->is_crashed()) {
     // Crashed plugin painting.
     if (!sad_plugin_)  // Lazily initialize bitmap.
@@ -308,8 +310,9 @@ void PluginInstance::Paint(WebCanvas* canvas,
     return;
   }
 
-  if (GetBoundGraphics2D())
-    GetBoundGraphics2D()->Paint(canvas, plugin_rect, paint_rect);
+  PPB_Graphics2D_Impl* bound_graphics_2d = GetBoundGraphics2D();
+  if (bound_graphics_2d)
+    bound_graphics_2d->Paint(canvas, plugin_rect, paint_rect);
 }
 
 void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
@@ -453,6 +456,7 @@ bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
                                       WebCursorInfo* cursor_info) {
+  TRACE_EVENT0("ppapi", "PluginInstance::HandleInputEvent");
   // Don't dispatch input events to crashed plugins.
   if (module()->is_crashed())
     return false;
@@ -502,6 +506,7 @@ void PluginInstance::HandlePolicyUpdate(const std::string& policy_json) {
 }
 
 void PluginInstance::HandleMessage(PP_Var message) {
+  TRACE_EVENT0("ppapi", "PluginInstance::HandleMessage");
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
   if (!LoadMessagingInterface())
