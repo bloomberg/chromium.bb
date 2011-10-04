@@ -838,8 +838,8 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
   if (highlight_app_id_.empty())
     return;
 
-  scoped_ptr<StringValue> app_id(Value::CreateStringValue(highlight_app_id_));
-  web_ui_->CallJavascriptFunction("ntp4.setAppToBeHighlighted", *app_id);
+  StringValue app_id(highlight_app_id_);
+  web_ui_->CallJavascriptFunction("ntp4.setAppToBeHighlighted", app_id);
   highlight_app_id_.clear();
 }
 
@@ -916,8 +916,8 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
     extension_service_->EnableExtension(extension_id);
 
     // Launch app asynchronously so the image will update.
-    scoped_ptr<StringValue> app_id(Value::CreateStringValue(extension_id));
-    web_ui_->CallJavascriptFunction("launchAppAfterEnable", *app_id);
+    StringValue app_id(extension_id);
+    web_ui_->CallJavascriptFunction("launchAppAfterEnable", app_id);
     return;
   }
 
@@ -966,8 +966,8 @@ void AppLauncherHandler::InstallUIProceed() {
   // If we don't launch the app asynchronously, then the app's disabled
   // icon disappears but isn't replaced by the enabled icon, making a poor
   // visual experience.
-  scoped_ptr<StringValue> app_id(Value::CreateStringValue(extension->id()));
-  web_ui_->CallJavascriptFunction("launchAppAfterEnable", *app_id);
+  StringValue app_id(extension->id());
+  web_ui_->CallJavascriptFunction("launchAppAfterEnable", app_id);
 
   extension_id_prompting_ = "";
 }
