@@ -114,23 +114,28 @@ base::MessagePumpObserver::EventStatus TooltipManagerViews::WillProcessEvent(
   return base::MessagePumpObserver::EVENT_CONTINUE;
 }
 #elif defined(USE_X11)
-base::MessagePumpObserver::EventStatus TooltipManagerViews::WillProcessXEvent(
-    XEvent* xevent) {
-  XGenericEventCookie* cookie = &xevent->xcookie;
+base::EventStatus TooltipManagerViews::WillProcessEvent(
+    const base::NativeEvent& event) {
+  XGenericEventCookie* cookie = &event->xcookie;
   if (cookie->evtype == XI_Motion) {
-    XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(cookie->data);
+    const XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(cookie->data);
     OnMouseMoved(static_cast<int>(xievent->event_x),
                  static_cast<int>(xievent->event_y));
   }
-  return base::MessagePumpObserver::EVENT_CONTINUE;
-}
-#elif defined(OS_WIN)
-void TooltipManagerViews::WillProcessMessage(const MSG& msg) {
-  if (msg.message == WM_MOUSEMOVE)
-    OnMouseMoved(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+  return base::EVENT_CONTINUE;
 }
 
-void TooltipManagerViews::DidProcessMessage(const MSG& msg) {
+void TooltipManagerViews::DidProcessEvent(const base::NativeEvent& event) {
+}
+#elif defined(OS_WIN)
+base::EventStatus TooltipManagerViews::WillProcessEvent(
+    const base::NativeEvent& event) {
+  if (msg.message == WM_MOUSEMOVE)
+    OnMouseMoved(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+  return base::EVENT_CONTINUE;
+}
+
+void TooltipManagerViews::DidProcessEvent(const base::NativeEvent& event) {
 }
 #endif
 

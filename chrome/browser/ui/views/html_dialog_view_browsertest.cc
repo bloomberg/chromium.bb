@@ -67,7 +67,6 @@ class HtmlDialogBrowserTest : public InProcessBrowserTest {
  public:
   HtmlDialogBrowserTest() {}
 
-#if defined(OS_WIN)
   class WindowChangedObserver : public MessageLoopForUI::Observer {
    public:
     WindowChangedObserver() {}
@@ -76,41 +75,49 @@ class HtmlDialogBrowserTest : public InProcessBrowserTest {
       return Singleton<WindowChangedObserver>::get();
     }
 
+#if defined(OS_WIN)
     // This method is called before processing a message.
-    virtual void WillProcessMessage(const MSG& msg) {}
+    virtual base::EventStatus WillProcessEvent(
+        const base::NativeEvent& event) OVERRIDE {
+      return base::EVENT_CONTINUE;
+    }
 
     // This method is called after processing a message.
-    virtual void DidProcessMessage(const MSG& msg) {
+    virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
       // Either WM_PAINT or WM_TIMER indicates the actual work of
       // pushing through the window resizing messages is done since
       // they are lower priority (we don't get to see the
       // WM_WINDOWPOSCHANGED message here).
-      if (msg.message == WM_PAINT || msg.message == WM_TIMER)
+      if (event.message == WM_PAINT || event.message == WM_TIMER)
         MessageLoop::current()->Quit();
     }
-  };
-#elif !defined(OS_MACOSX)
-  class WindowChangedObserver : public MessageLoopForUI::Observer {
-   public:
-    WindowChangedObserver() {}
-
-    static WindowChangedObserver* GetInstance() {
-      return Singleton<WindowChangedObserver>::get();
+#elif defined(TOUCH_UI) || defined(USE_AURA)
+    // This method is called before processing a message.
+    virtual base::EventStatus WillProcessEvent(
+        const base::NativeEvent& event) OVERRIDE {
+      return base::EVENT_CONTINUE;
     }
 
+    // This method is called after processing a message.
+    virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
+      // TODO(oshima): X11/Xlib.h imports various definitions that
+      // caused compilation error.
+      NOTIMPLEMENTED();
+    }
+#elif defined(TOOLKIT_USES_GTK)
     // This method is called before processing a message.
-    virtual void WillProcessEvent(GdkEvent* event) {}
+    virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}
 
     // This method is called after processing a message.
-    virtual void DidProcessEvent(GdkEvent* event) {
+    virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
       // Quit once the GDK_CONFIGURE event has been processed - seeing
       // this means the window sizing request that was made actually
       // happened.
       if (event->type == GDK_CONFIGURE)
         MessageLoop::current()->Quit();
     }
-  };
 #endif
+  };
 };
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

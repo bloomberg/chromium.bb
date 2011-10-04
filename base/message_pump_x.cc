@@ -193,7 +193,7 @@ bool MessagePumpX::ProcessXEvent(XEvent* xev) {
     have_cookie = true;
   }
 
-  if (WillProcessXEvent(xev) == MessagePumpObserver::EVENT_CONTINUE) {
+  if (WillProcessXEvent(xev) == EVENT_CONTINUE) {
     MessagePumpDispatcher::DispatchStatus status =
         GetDispatcher()->Dispatch(xev);
 
@@ -203,6 +203,7 @@ bool MessagePumpX::ProcessXEvent(XEvent* xev) {
     } else if (status == MessagePumpDispatcher::EVENT_IGNORED) {
       VLOG(1) << "Event (" << xev->type << ") not handled.";
     }
+    DidProcessXEvent(xev);
   }
 
   if (have_cookie) {
@@ -264,10 +265,18 @@ bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
   ObserverListBase<MessagePumpObserver>::Iterator it(observers());
   MessagePumpObserver* obs;
   while ((obs = it.GetNext()) != NULL) {
-    if (obs->WillProcessXEvent(xevent))
+    if (obs->WillProcessEvent(xevent))
       return true;
   }
   return false;
+}
+
+void MessagePumpX::DidProcessXEvent(XEvent* xevent) {
+  ObserverListBase<MessagePumpObserver>::Iterator it(observers());
+  MessagePumpObserver* obs;
+  while ((obs = it.GetNext()) != NULL) {
+    obs->DidProcessEvent(xevent);
+  }
 }
 
 #if defined(TOOLKIT_USES_GTK)
@@ -327,10 +336,5 @@ void MessagePumpX::InitializeEventsToCapture(void) {
 COMPILE_ASSERT(XLASTEvent >= LASTEvent, XLASTEvent_too_small);
 
 #endif  // defined(TOOLKIT_USES_GTK)
-
-MessagePumpObserver::EventStatus
-    MessagePumpObserver::WillProcessXEvent(XEvent* xev) {
-  return EVENT_CONTINUE;
-}
 
 }  // namespace base

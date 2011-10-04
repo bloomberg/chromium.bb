@@ -54,13 +54,13 @@ class BalloonCollectionImpl : public BalloonCollection
   virtual const Balloons& GetActiveBalloons();
 
   // MessageLoopForUI::Observer interface.
-#if defined(OS_WIN)
-  virtual void WillProcessMessage(const MSG& event) {}
-  virtual void DidProcessMessage(const MSG& event);
-#endif
-#if defined(TOOLKIT_USES_GTK)
-  virtual void WillProcessEvent(GdkEvent* event) {}
-  virtual void DidProcessEvent(GdkEvent* event);
+#if defined(OS_WIN) || defined(TOUCH_UI) || defined(USE_AURA)
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
+#elif defined(TOOLKIT_USES_GTK)
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
 #endif
 
  protected:

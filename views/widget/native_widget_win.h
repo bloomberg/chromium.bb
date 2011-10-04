@@ -279,8 +279,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   };
 
   // Overridden from MessageLoop::Observer:
-  void WillProcessMessage(const MSG& msg) OVERRIDE;
-  virtual void DidProcessMessage(const MSG& msg) OVERRIDE;
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Overridden from WindowImpl:
   virtual HICON GetDefaultWindowIcon() const OVERRIDE;

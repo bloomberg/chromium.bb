@@ -260,7 +260,15 @@ class NativeWidgetGtk::DropObserver : public MessageLoopForUI::Observer {
   static DropObserver* GetInstance() {
     return Singleton<DropObserver>::get();
   }
+#if defined(TOUCH_UI)
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE {
+    return base::EVENT_CONTINUE;
+  }
 
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
+  }
+#else
   virtual void WillProcessEvent(GdkEvent* event) {
     if (event->type == GDK_DROP_START) {
       NativeWidgetGtk* widget = GetNativeWidgetGtkForEvent(event);
@@ -271,6 +279,7 @@ class NativeWidgetGtk::DropObserver : public MessageLoopForUI::Observer {
 
   virtual void DidProcessEvent(GdkEvent* event) {
   }
+#endif
 
  private:
   NativeWidgetGtk* GetNativeWidgetGtkForEvent(GdkEvent* event) {

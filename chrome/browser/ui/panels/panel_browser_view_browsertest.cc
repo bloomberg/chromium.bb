@@ -48,8 +48,10 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
 #if defined(OS_WIN)
       MSG msg;
       msg.message = WM_MOUSEMOVE;
-      DidProcessMessage(msg);
-#else
+      DidProcessEvent(msg);
+#elif defined(TOUCH_UI) || defined(USE_AURA)
+      NOTIMPLEMENTED();
+#elif defined(TOOLKIT_USES_GTK)
       GdkEvent event;
       event.type = GDK_MOTION_NOTIFY;
       DidProcessEvent(&event);

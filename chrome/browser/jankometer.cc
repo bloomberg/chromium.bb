@@ -304,9 +304,10 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
   }
 
 #if defined(OS_WIN)
-  virtual void WillProcessMessage(const MSG& msg) {
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE {
     if (!helper_.MessageWillBeMeasured())
-      return;
+      return base::EVENT_CONTINUE;
     // GetMessageTime returns a LONG (signed 32-bit) and GetTickCount returns
     // a DWORD (unsigned 32-bit). They both wrap around when the time is longer
     // than they can hold. I'm not sure if GetMessageTime wraps around to 0,
@@ -316,16 +317,25 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
     // Therefore, I cast to DWORD so if it wraps to -1 we will correct it. If
     // it doesn't, then our time delta will be negative if a message happens
     // to straddle the wraparound point, it will still be OK.
-    DWORD cur_message_issue_time = static_cast<DWORD>(msg.time);
+    DWORD cur_message_issue_time = static_cast<DWORD>(event.time);
     DWORD cur_time = GetTickCount();
     base::TimeDelta queueing_time =
         base::TimeDelta::FromMilliseconds(cur_time - cur_message_issue_time);
 
     helper_.StartProcessingTimers(queueing_time);
+    return base::EVENT_CONTINUE;
   }
 
-  virtual void DidProcessMessage(const MSG& msg) {
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
     helper_.EndProcessingTimers();
+  }
+#elif defined(TOUCH_UI) || defined(USE_AURA)
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE {
+    return base::EVENT_CONTINUE;
+  }
+
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
   }
 #elif defined(TOOLKIT_USES_GTK)
   virtual void WillProcessEvent(GdkEvent* event) {

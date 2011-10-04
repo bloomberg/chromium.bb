@@ -1596,7 +1596,7 @@
         'browser/notifications/balloon_collection_base.h',
         'browser/notifications/balloon_collection_impl.cc',
         'browser/notifications/balloon_collection_impl.h',
-        'browser/notifications/balloon_collection_linux.cc',
+        'browser/notifications/balloon_collection_gtk.cc',
         'browser/notifications/balloon_collection_mac.mm',
         'browser/notifications/balloon_collection_win.cc',
         'browser/notifications/balloon_host.cc',

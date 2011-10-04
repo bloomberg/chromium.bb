@@ -170,11 +170,14 @@ bool PanelBrowserFrameView::MouseWatcher::IsCursorInViewBounds() const {
 }
 
 #if defined(OS_WIN)
-void PanelBrowserFrameView::MouseWatcher::WillProcessMessage(const MSG& msg) {
+base::EventStatus PanelBrowserFrameView::MouseWatcher::WillProcessEvent(
+    const base::NativeEvent& event) {
+  return base::EVENT_CONTINUE;
 }
 
-void PanelBrowserFrameView::MouseWatcher::DidProcessMessage(const MSG& msg) {
-  switch (msg.message) {
+void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(
+    const base::NativeEvent& event) {
+  switch (event.message) {
     case WM_MOUSEMOVE:
     case WM_NCMOUSEMOVE:
     case WM_MOUSELEAVE:
@@ -184,6 +187,16 @@ void PanelBrowserFrameView::MouseWatcher::DidProcessMessage(const MSG& msg) {
     default:
       break;
   }
+}
+#elif defined(TOUCH_UI) || defined(USE_AURA)
+base::EventStatus PanelBrowserFrameView::MouseWatcher::WillProcessEvent(
+    const base::NativeEvent& event) {
+  return base::EVENT_CONTINUE;
+}
+
+void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(
+    const base::NativeEvent& event) {
+  NOTIMPLEMENTED();
 }
 #elif defined(TOOLKIT_USES_GTK)
 void PanelBrowserFrameView::MouseWatcher::WillProcessEvent(GdkEvent* event) {

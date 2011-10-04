@@ -1121,10 +1121,12 @@ gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, MessageLoop::Observer implementation:
 
-void NativeWidgetWin::WillProcessMessage(const MSG& msg) {
+base::EventStatus NativeWidgetWin::WillProcessEvent(
+    const base::NativeEvent& event) {
+  return base::EVENT_CONTINUE;
 }
 
-void NativeWidgetWin::DidProcessMessage(const MSG& msg) {
+void NativeWidgetWin::DidProcessEvent(const base::NativeEvent& event) {
   RedrawInvalidRect();
 }
 

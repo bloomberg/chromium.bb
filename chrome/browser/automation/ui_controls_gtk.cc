@@ -41,7 +41,16 @@ class EventWaiter : public MessageLoopForUI::Observer {
   virtual ~EventWaiter() {
     MessageLoopForUI::current()->RemoveObserver(this);
   }
+#if defined(TOUCH_UI)
+  // MessageLoop::Observer implementation:
+  virtual base::EventStatus WillProcessEvent(const base::NativeEvent& event) {
+    NOTIMPLEMENTED();
+    return base::EVENT_CONTINUE;
+  }
 
+  virtual void DidProcessEvent(const base::NativeEvent& event) {
+  }
+#else
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event) {
     if ((event->type == type_) && (--count_ == 0)) {
@@ -59,6 +68,7 @@ class EventWaiter : public MessageLoopForUI::Observer {
   virtual void DidProcessEvent(GdkEvent* event) {
     // No-op.
   }
+#endif
 
  private:
   // We pass ownership of task_ to MessageLoop when the current event is

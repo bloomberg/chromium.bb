@@ -45,13 +45,11 @@ class TooltipManagerViews : public TooltipManager,
 #if defined(USE_WAYLAND)
   virtual base::MessagePumpObserver::EventStatus WillProcessEvent(
       ui::WaylandEvent* event) OVERRIDE;
-#elif defined(USE_X11)
+#else
   // MessageLoopForUI::Observer
-  virtual base::MessagePumpObserver::EventStatus WillProcessXEvent(
-      XEvent* xevent) OVERRIDE;
-#elif defined(OS_WIN)
-  virtual void WillProcessMessage(const MSG& msg) OVERRIDE;
-  virtual void DidProcessMessage(const MSG& msg) OVERRIDE;
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 #endif
 
  private:

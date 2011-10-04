@@ -176,10 +176,13 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
   }
 }
 
-#if defined(TOUCH_UI)
-base::MessagePumpObserver::EventStatus
-    SystemKeyEventListener::WillProcessXEvent(XEvent* xevent) {
-  return ProcessedXEvent(xevent) ? EVENT_HANDLED : EVENT_CONTINUE;
+#if defined(TOUCH_UI) || defined(USE_AURA)
+base::EventStatus SystemKeyEventListener::WillProcessEvent(
+    const base::NativeEvent& event) {
+  return ProcessedXEvent(event) ? EVENT_HANDLED : EVENT_CONTINUE;
+}
+
+void SystemKeyEventListener::DidProcessEvent(const NativeEvent& event) {
 }
 #else  // defined(TOUCH_UI)
 // static

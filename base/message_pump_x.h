@@ -7,6 +7,7 @@
 
 #include "base/message_pump.h"
 #include "base/message_pump_glib.h"
+#include "base/message_pump_observer.h"
 
 #include <bitset>
 
@@ -16,28 +17,9 @@
 #include <gtk/gtk.h>
 #endif
 
-typedef union _XEvent XEvent;
 typedef struct _XDisplay Display;
 
 namespace base {
-
-// The documentation for this class is in message_pump_glib.h
-class BASE_EXPORT MessagePumpObserver {
- public:
-   enum EventStatus {
-     EVENT_CONTINUE,    // The event should be dispatched as normal.
-     EVENT_HANDLED      // The event should not be processed any farther.
-   };
-
-  // This method is called before processing an XEvent. If the method returns
-  // EVENT_HANDLED, it indicates the event has already been handled, so the
-  // event is not processed any farther. If the method returns EVENT_CONTINUE,
-  // the event dispatching proceeds as normal.
-  virtual EventStatus WillProcessXEvent(XEvent* xevent);
-
- protected:
-  virtual ~MessagePumpObserver() {}
-};
 
 // The documentation for this class is in message_pump_glib.h
 //
@@ -97,6 +79,7 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   // not send the event to any other observers and returns true. Returns false
   // if no observer returns true.
   bool WillProcessXEvent(XEvent* xevent);
+  void DidProcessXEvent(XEvent* xevent);
 #if defined(TOOLKIT_USES_GTK)
   // Some XEvent's can't be directly read from X event queue and will go
   // through GDK's dispatching process and may get discarded. This function

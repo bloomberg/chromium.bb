@@ -33,8 +33,13 @@ void BalloonCollectionImpl::PositionBalloons(bool reposition) {
   PositionBalloonsInternal(reposition);
 }
 
-void BalloonCollectionImpl::DidProcessMessage(const MSG& msg) {
-  switch (msg.message) {
+base::EventStatus BalloonCollectionImpl::WillProcessEvent(
+    const base::NativeEvent& event) {
+  return base::EVENT_CONTINUE;
+}
+
+void BalloonCollectionImpl::DidProcessEvent(const base::NativeEvent& event) {
+  switch (event.message) {
     case WM_MOUSEMOVE:
     case WM_MOUSELEAVE:
     case WM_NCMOUSELEAVE:

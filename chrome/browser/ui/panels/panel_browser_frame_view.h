@@ -114,14 +114,13 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
     virtual bool IsCursorInViewBounds() const;
 
-  #if defined(OS_WIN)
-    virtual void WillProcessMessage(const MSG& msg) OVERRIDE;
-    virtual void DidProcessMessage(const MSG& msg) OVERRIDE;
+  #if defined(OS_WIN) || defined(TOUCH_UI) || defined(USE_AURA)
+    virtual base::EventStatus WillProcessEvent(
+        const base::NativeEvent& event) OVERRIDE;
+    virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
   #elif defined(TOOLKIT_USES_GTK)
     virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
     virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
-  #elif defined(USE_AURA)
-    virtual EventStatus WillProcessXEvent(XEvent* xevent) OVERRIDE;
   #endif
 
    private:
