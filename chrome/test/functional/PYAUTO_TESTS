@@ -94,6 +94,8 @@
       # Flaky: crbug.com/83459
       '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
+      # crbug.com/99059
+      '-ntp',
       # crbug.com/82629 - real bug.
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/47935
