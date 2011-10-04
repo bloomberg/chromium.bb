@@ -16,10 +16,6 @@
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/webui/web_ui.h"
 
-#if defined(USE_CUPS) && !defined(OS_MACOSX)
-typedef struct cups_option_s cups_option_t;
-#endif
-
 class FilePath;
 class PrintSystemTaskProxy;
 class TabContentsWrapper;
@@ -34,8 +30,10 @@ namespace printing {
 class PrintBackend;
 }
 
-#if defined(USE_CUPS) && !defined(OS_MACOSX)
-namespace printingInternal {
+#if defined(UNIT_TEST) && defined(USE_CUPS) && !defined(OS_MACOSX)
+typedef struct cups_option_s cups_option_t;
+
+namespace printing_internal {
 
 // Helper function to parse the lpoptions custom settings. |num_options| and
 // |options| will be updated if the custom settings for |printer_name| are
@@ -44,7 +42,7 @@ namespace printingInternal {
 void parse_lpoptions(const FilePath& filepath, const std::string& printer_name,
                      int* num_options, cups_option_t** options);
 
-}
+}  // namespace printing_internal
 #endif
 
 // The handler for Javascript messages related to the print preview dialog.

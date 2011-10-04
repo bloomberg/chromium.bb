@@ -12,9 +12,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#if !defined(OS_CHROMEOS)
-#include "base/command_line.h"
-#endif
 #include "base/i18n/file_util_icu.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
@@ -42,9 +39,6 @@
 #include "chrome/browser/ui/webui/cloud_print_signin_dialog.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/chrome_paths.h"
-#if !defined(OS_CHROMEOS)
-#include "chrome/common/chrome_switches.h"
-#endif
 #include "chrome/common/print_messages.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -62,8 +56,13 @@
 #include "base/file_util.h"
 #endif
 
+#if !defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
+#endif
+
 #if defined(USE_CUPS) && !defined(OS_MACOSX)
-namespace printingInternal {
+namespace printing_internal {
 
 void parse_lpoptions(const FilePath& filepath, const std::string& printer_name,
                      int* num_options, cups_option_t** options) {
@@ -144,7 +143,7 @@ void mark_lpoptions(const std::string& printer_name, ppd_file_t** ppd) {
   }
 }
 
-}  // printingInternal namespace
+}  // printing_internal namespace
 #endif
 
 namespace {
@@ -400,34 +399,32 @@ class PrintSystemTaskProxy
     ppd_file_t* ppd = ppdOpenFile(ppd_file_path.value().c_str());
     if (ppd) {
 #if !defined(OS_MACOSX)
-      printingInternal::mark_lpoptions(printer_name, &ppd);
+      printing_internal::mark_lpoptions(printer_name, &ppd);
 #endif
       ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, NULL);
       if (attr && attr->value)
         supports_color = ppd->color_device;
 
       ppd_choice_t* duplex_choice = ppdFindMarkedChoice(ppd, kDuplex);
-      if (duplex_choice == NULL) {
+      if (duplex_choice) {
         ppd_option_t* option = ppdFindOption(ppd, kDuplex);
-        if (option != NULL)
+        if (option)
           duplex_choice = ppdFindChoice(option, option->defchoice);
       }
 
-      if (duplex_choice != NULL &&
-          strcmp(duplex_choice->choice, kDuplexNone) != 0)
-        set_duplex_as_default = true;
-
-      if (duplex_choice != NULL) {
-        if (strcmp(duplex_choice->choice, kDuplexNone) != 0)
+      if (duplex_choice) {
+        if (base::strcasecmp(duplex_choice->choice, kDuplexNone) != 0) {
+          set_duplex_as_default = true;
           default_duplex_setting_value = printing::LONG_EDGE;
-        else
+        } else {
           default_duplex_setting_value = printing::SIMPLEX;
+        }
       }
 
       if (supports_color) {
         // Identify the color space (COLOR/CMYK) for this printer.
         ppd_option_t* color_model = ppdFindOption(ppd, kColorModel);
-        if (color_model != NULL) {
+        if (color_model) {
           if (ppdFindChoice(color_model, kColorModelForColor))
             printer_color_space = printing::COLOR;
           else if (ppdFindChoice(color_model, kCMYK))

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <cups/cups.h>
-#include <string.h>
+
+#include <cstring>
+#include <string>
 #include <vector>
 
 #include "base/file_path.h"
@@ -12,16 +14,16 @@
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_CUPS) && !defined(OS_MACOSX)
 namespace {
 
 // TestEntry stores the printer name and the expected number of options.
 struct TestEntry {
-  std::string printer_name;
-  int expected_option_count;
   TestEntry(std::string name, int count)
       : printer_name(name),
         expected_option_count(count) {}
+
+  std::string printer_name;
+  int expected_option_count;
 };
 
 // Verify the option marked in |ppd|.
@@ -40,7 +42,7 @@ void verifyOptionValue(ppd_file_t* ppd,
 
 }  // namespace
 
-using namespace printingInternal;
+using printing_internal::parse_lpoptions;
 
 // Test to verify that lpoption custom settings are marked on the ppd file.
 TEST(PrintPreviewHandlerTest, MarkLpoptionsInPPD) {
@@ -62,21 +64,22 @@ TEST(PrintPreviewHandlerTest, MarkLpoptionsInPPD) {
   system_lpoptions.append(kDuplexNone+" ");
 
   // Create and write the system lpoptions to a temp file.
-  FilePath systemLpOptionsFile;
+  FilePath system_lp_options_file;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_directory.path(),
-                                                  &systemLpOptionsFile));
-  ASSERT_TRUE(file_util::WriteFile(
-      systemLpOptionsFile, system_lpoptions.c_str(), system_lpoptions.size()));
+                                                  &system_lp_options_file));
+  ASSERT_TRUE(file_util::WriteFile(system_lp_options_file,
+                                   system_lpoptions.c_str(),
+                                   system_lpoptions.size()));
 
   // Specifies the user lpoption data.
   std::string user_lpoptions;
   user_lpoptions.append("Dest printerE          Duplex="+kDuplexNoTumble+"\n");
 
   // Create and write the user lpoptions to a temp file.
-  FilePath userLpOptionsFile;
+  FilePath user_lp_options_file;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_directory.path(),
-                                                  &userLpOptionsFile));
-  ASSERT_TRUE(file_util::WriteFile(userLpOptionsFile, user_lpoptions.c_str(),
+                                                  &user_lp_options_file));
+  ASSERT_TRUE(file_util::WriteFile(user_lp_options_file, user_lpoptions.c_str(),
                                    user_lpoptions.size()));
   // Specifies the test ppd data.
   std::string test_ppd_data;
@@ -120,7 +123,7 @@ TEST(PrintPreviewHandlerTest, MarkLpoptionsInPPD) {
   // Parse the system lpoptions data.
   int num_options = 0;
   cups_option_t* options = NULL;
-  parse_lpoptions(systemLpOptionsFile, kTestPrinterName, &num_options,
+  parse_lpoptions(system_lp_options_file, kTestPrinterName, &num_options,
                   &options);
   ASSERT_EQ(num_options, 2);
   EXPECT_EQ(num_options != 0, options != NULL);
@@ -134,7 +137,8 @@ TEST(PrintPreviewHandlerTest, MarkLpoptionsInPPD) {
   // Parse the user lpoptions data.
   num_options = 0;
   options = NULL;
-  parse_lpoptions(userLpOptionsFile, kTestPrinterName, &num_options, &options);
+  parse_lpoptions(user_lp_options_file, kTestPrinterName, &num_options,
+                  &options);
   ASSERT_EQ(num_options, 1);
   EXPECT_EQ(num_options != 0, options != NULL);
   cupsMarkOptions(ppd, num_options, options);
@@ -209,11 +213,10 @@ TEST(PrintPreviewHandlerTest, ParseLpoptionData) {
        it != test_cases.end(); ++it) {
     num_options = 0;
     options = NULL;
-    printingInternal::parse_lpoptions(userLpOptionsFile, it->printer_name,
-                                      &num_options, &options);
+    printing_internal::parse_lpoptions(userLpOptionsFile, it->printer_name,
+                                       &num_options, &options);
     ASSERT_EQ(num_options, it->expected_option_count);
     EXPECT_EQ(num_options != 0, options != NULL);
     cupsFreeOptions(num_options, options);
   }
 }
-#endif
