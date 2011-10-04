@@ -2302,10 +2302,6 @@ TEST_F(ViewTest, GetViewByID) {
 
 namespace {
 
-static ui::Compositor* TestCreateCompositor() {
-  return new ui::TestCompositor();
-}
-
 // Test implementation of LayerPropertySetter;
 class TestLayerPropertySetter : public LayerPropertySetter {
  public:
