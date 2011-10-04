@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppb_file_system_proxy.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "ppapi/c/pp_errors.h"
@@ -76,7 +77,7 @@ FileSystem::~FileSystem() {
   if (current_open_callback_.func) {
     // TODO(brettw) the callbacks at this level should be refactored with a
     // more automatic tracking system like we have in the renderer.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         current_open_callback_.func, current_open_callback_.user_data,
         static_cast<int32_t>(PP_ERROR_ABORTED)));
   }

@@ -4,6 +4,7 @@
 
 #include "ppapi/thunk/common.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -21,7 +22,7 @@ int32_t MayForceCallback(PP_CompletionCallback callback, int32_t result) {
   // TODO(polina): make this work off the main thread as well
   // (At this point this should not be an issue because PPAPI is only supported
   // on the main thread).
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       callback.func, callback.user_data, result));
   return PP_OK_COMPLETIONPENDING;
 }

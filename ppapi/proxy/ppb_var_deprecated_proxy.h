@@ -90,7 +90,7 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
   void SetAllowPluginReentrancy();
 
   void DoReleaseObject(int64 object_id);
-  ScopedRunnableMethodFactory<PPB_Var_Deprecated_Proxy> task_factory_;
+  base::WeakPtrFactory<PPB_Var_Deprecated_Proxy> task_factory_;
 
   const PPB_Var_Deprecated* ppb_var_impl_;
 

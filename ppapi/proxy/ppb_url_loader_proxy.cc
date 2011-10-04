@@ -8,6 +8,7 @@
 #include <deque>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -165,7 +166,7 @@ URLLoader::~URLLoader() {
   if (current_read_callback_.func) {
     // TODO(brettw) the callbacks at this level should be refactored with a
     // more automatic tracking system like we have in the renderer.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         current_read_callback_.func, current_read_callback_.user_data,
         static_cast<int32_t>(PP_ERROR_ABORTED)));
   }

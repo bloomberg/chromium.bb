@@ -6,6 +6,7 @@
 
 #include <stdlib.h>  // For malloc
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -386,8 +387,9 @@ void PPB_Var_Deprecated_Proxy::OnMsgReleaseObject(int64 object_id) {
   // TODO(piman): See if we can fix the IPC code to enforce strict ordering, and
   // then remove this.
   MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-      task_factory_.NewRunnableMethod(
-          &PPB_Var_Deprecated_Proxy::DoReleaseObject, object_id));
+      base::Bind(&PPB_Var_Deprecated_Proxy::DoReleaseObject,
+                 task_factory_.GetWeakPtr(),
+                 object_id));
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgHasProperty(

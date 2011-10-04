@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
@@ -314,8 +315,8 @@ bool ModuleLocalThreadAdapter::Send(PP_Instance instance, IPC::Message* msg) {
   // random place, but it should actually still work (since the Flash file
   // operations are global).
   io_thread_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &ModuleLocalThreadAdapter::SendFromIOThread,
-      dispatcher, msg));
+      base::Bind(&ModuleLocalThreadAdapter::SendFromIOThread, this,
+                 dispatcher, msg));
 
   // Now we block the current thread waiting for the reply.
   event.Wait();

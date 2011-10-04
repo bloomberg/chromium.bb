@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
+#include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "ipc/ipc_sync_channel.h"
@@ -345,12 +346,12 @@ void TwoWayTest::SetUp() {
   base::WaitableEvent remote_harness_set_up(true, false);
   plugin_thread_.message_loop_proxy()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&SetUpRemoteHarness,
-                          remote_harness_,
-                          handle,
-                          io_thread_.message_loop_proxy(),
-                          &shutdown_event_,
-                          &remote_harness_set_up));
+      base::Bind(&SetUpRemoteHarness,
+                 remote_harness_,
+                 handle,
+                 io_thread_.message_loop_proxy(),
+                 &shutdown_event_,
+                 &remote_harness_set_up));
   remote_harness_set_up.Wait();
   local_harness_->SetUpHarnessWithChannel(handle,
                                           io_thread_.message_loop_proxy(),
@@ -362,9 +363,9 @@ void TwoWayTest::TearDown() {
   base::WaitableEvent remote_harness_torn_down(true, false);
   plugin_thread_.message_loop_proxy()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&TearDownRemoteHarness,
-                          remote_harness_,
-                          &remote_harness_torn_down));
+      base::Bind(&TearDownRemoteHarness,
+                 remote_harness_,
+                 &remote_harness_torn_down));
   remote_harness_torn_down.Wait();
 
   local_harness_->TearDownHarness();

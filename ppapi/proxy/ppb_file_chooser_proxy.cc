@@ -6,6 +6,7 @@
 
 #include <queue>
 
+#include "base/bind.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
@@ -64,7 +65,7 @@ FileChooser::~FileChooser() {
   if (current_show_callback_.func) {
     // TODO(brettw) the callbacks at this level should be refactored with a
     // more automatic tracking system like we have in the renderer.
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         current_show_callback_.func, current_show_callback_.user_data,
         static_cast<int32_t>(PP_ERROR_ABORTED)));
   }

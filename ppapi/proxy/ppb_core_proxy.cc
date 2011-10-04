@@ -6,6 +6,7 @@
 
 #include <stdlib.h>  // For malloc
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -58,7 +59,7 @@ void CallOnMainThread(int delay_in_ms,
                       int32_t result) {
   GetMainThreadMessageLoop()->PostDelayedTask(
       FROM_HERE,
-      NewRunnableFunction(&CallbackWrapper, callback, result),
+      base::Bind(&CallbackWrapper, callback, result),
       delay_in_ms);
 }
 
