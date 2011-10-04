@@ -37,7 +37,7 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
   using URLBlacklistManager::ScheduleUpdate;
 
   // Post tasks without a delay during tests.
-  virtual void PostUpdateTask(Task* task) OVERRIDE {
+  virtual void PostUpdateTask(const base::Closure& task) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE, task);
   }
 

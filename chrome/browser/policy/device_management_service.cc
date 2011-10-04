@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/device_management_service.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/browser_process.h"
@@ -144,11 +145,11 @@ DeviceManagementBackend* DeviceManagementService::CreateBackend() {
 void DeviceManagementService::ScheduleInitialization(int64 delay_milliseconds) {
   if (initialized_)
     return;
-  CancelableTask* initialization_task = method_factory_.NewRunnableMethod(
-      &DeviceManagementService::Initialize);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          initialization_task,
-                                          delay_milliseconds);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&DeviceManagementService::Initialize,
+                 weak_ptr_factory_.GetWeakPtr()),
+      delay_milliseconds);
 }
 
 void DeviceManagementService::Initialize() {
@@ -179,7 +180,7 @@ DeviceManagementService::DeviceManagementService(
     const std::string& server_url)
     : server_url_(server_url),
       initialized_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 void DeviceManagementService::AddJob(DeviceManagementJob* job) {

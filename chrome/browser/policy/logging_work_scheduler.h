@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/delayed_work_scheduler.h"
 
 // Utilities for testing users of DelayedWorkScheduler. There are no
@@ -88,8 +88,8 @@ class EventLogger {
   std::priority_queue<Task> scheduled_tasks_;
 
   // Machinery to put a call to |Step| at the end of the message loop.
-  CancelableTask* step_task_;
-  ScopedRunnableMethodFactory<EventLogger> method_factory_;
+  bool step_pending_;
+  base::WeakPtrFactory<EventLogger> weak_ptr_factory_;
 
   // Ascending list of observation-times of the logged events.
   std::vector<int64> events_;

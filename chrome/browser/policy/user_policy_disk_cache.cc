@@ -4,10 +4,10 @@
 
 #include "chrome/browser/policy/user_policy_disk_cache.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/task.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "content/browser/browser_thread.h"
@@ -25,7 +25,7 @@ void SampleUMAOnUIThread(policy::MetricPolicy sample) {
 void SampleUMA(policy::MetricPolicy sample) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableFunction(&SampleUMAOnUIThread, sample));
+                          base::Bind(&SampleUMAOnUIThread, sample));
 }
 
 }  // namespace
@@ -44,7 +44,7 @@ void UserPolicyDiskCache::Load() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &UserPolicyDiskCache::LoadOnFileThread));
+      base::Bind(&UserPolicyDiskCache::LoadOnFileThread, this));
 }
 
 void UserPolicyDiskCache::Store(
@@ -52,7 +52,7 @@ void UserPolicyDiskCache::Store(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &UserPolicyDiskCache::StoreOnFileThread, policy));
+      base::Bind(&UserPolicyDiskCache::StoreOnFileThread, this, policy));
 }
 
 UserPolicyDiskCache::~UserPolicyDiskCache() {}
@@ -91,9 +91,8 @@ void UserPolicyDiskCache::LoadDone(
     const em::CachedCloudPolicyResponse& policy) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &UserPolicyDiskCache::ReportResultOnUIThread,
-                        result, policy));
+      base::Bind(&UserPolicyDiskCache::ReportResultOnUIThread, this,
+                 result, policy));
 }
 
 void UserPolicyDiskCache::ReportResultOnUIThread(

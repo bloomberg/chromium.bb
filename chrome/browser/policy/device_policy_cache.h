@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_POLICY_DEVICE_POLICY_CACHE_H_
 #pragma once
 
-#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
@@ -76,7 +76,7 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
 
   chromeos::SignedSettingsHelper* signed_settings_helper_;
 
-  base::ScopedCallbackFactory<DevicePolicyCache> callback_factory_;
+  base::WeakPtrFactory<DevicePolicyCache> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCache);
 };

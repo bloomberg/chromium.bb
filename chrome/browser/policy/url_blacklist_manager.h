@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
 
@@ -98,7 +98,7 @@ class URLBlacklist {
 // changes are received from, and the IO thread, which owns it (in the
 // ProfileIOData) and checks for blacklisted URLs (from ChromeNetworkDelegate).
 //
-// It must be constructed on the UI thread, to set up |ui_method_factory_| and
+// It must be constructed on the UI thread, to set up |ui_weak_ptr_factory_| and
 // the prefs listeners.
 //
 // ShutdownOnUIThread must be called from UI before destruction, to release
@@ -134,8 +134,9 @@ class URLBlacklistManager : public NotificationObserver {
   // These are used to delay updating the blacklist while the preferences are
   // changing, and execute only one update per simultaneous prefs changes.
   void ScheduleUpdate();
-  virtual void PostUpdateTask(Task* task);  // Virtual for testing.
-  virtual void Update();  // Virtual for testing.
+  // The following methods are virtual for testing.
+  virtual void PostUpdateTask(const base::Closure& task);
+  virtual void Update();
 
   // Starts the blacklist update on the IO thread, using the filters in
   // |block| and |allow|. Protected for testing.
@@ -151,7 +152,7 @@ class URLBlacklistManager : public NotificationObserver {
   // ---------
 
   // Used to post update tasks to the UI thread.
-  ScopedRunnableMethodFactory<URLBlacklistManager> ui_method_factory_;
+  base::WeakPtrFactory<URLBlacklistManager> ui_weak_ptr_factory_;
 
   // Used to track the policies and update the blacklist on changes.
   PrefChangeRegistrar pref_change_registrar_;

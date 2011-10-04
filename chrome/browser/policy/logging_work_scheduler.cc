@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/browser/browser_thread.h"
 
@@ -79,8 +80,8 @@ base::Closure EventLogger::Task::GetAndResetCallback() {
 }
 
 EventLogger::EventLogger()
-    : step_task_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+    : step_pending_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       current_time_(0),
       task_counter_(0) {
 }
@@ -95,9 +96,11 @@ void EventLogger::PostDelayedWork(
   int64 trigger_time = current_time_ + delay;
   task_counter_++;
   scheduled_tasks_.push(Task(trigger_time, task_counter_, callback));
-  if (!step_task_) {
-    step_task_ = method_factory_.NewRunnableMethod(&EventLogger::Step);
-    MessageLoop::current()->PostTask(FROM_HERE, step_task_);
+  if (!step_pending_) {
+    step_pending_ = true;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&EventLogger::Step, weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -124,8 +127,8 @@ int EventLogger::CountEvents(const std::vector<int64>& events,
 }
 
 void EventLogger::Step() {
-  DCHECK(step_task_);
-  step_task_ = NULL;
+  DCHECK(step_pending_);
+  step_pending_ = false;
   if (scheduled_tasks_.empty())
     return;
   // Take the next scheduled task from the queue.
@@ -137,12 +140,14 @@ void EventLogger::Step() {
   // Execute the next scheduled task if it was not cancelled.
   if (!callback.is_null()) {
     current_time_ = trigger_time;
-    callback.Run(); // Note: new items may be added to scheduled_tasks_ here.
+    callback.Run();  // Note: new items may be added to scheduled_tasks_ here.
   }
   // Trigger calling this method if there are remaining tasks.
-  if (!step_task_ && !scheduled_tasks_.empty()) {
-    step_task_ = method_factory_.NewRunnableMethod(&EventLogger::Step);
-    MessageLoop::current()->PostTask(FROM_HERE, step_task_);
+  if (!step_pending_ && !scheduled_tasks_.empty()) {
+    step_pending_ = true;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&EventLogger::Step, weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

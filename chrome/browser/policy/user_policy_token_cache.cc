@@ -4,9 +4,9 @@
 
 #include "chrome/browser/policy/user_policy_token_cache.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
-#include "base/task.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "content/browser/browser_thread.h"
@@ -24,7 +24,7 @@ void SampleUMAOnUIThread(policy::MetricToken sample) {
 void SampleUMA(policy::MetricToken sample) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableFunction(&SampleUMAOnUIThread, sample));
+                          base::Bind(&SampleUMAOnUIThread, sample));
 }
 
 }  // namespace
@@ -45,7 +45,7 @@ void UserPolicyTokenLoader::Load() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &UserPolicyTokenLoader::LoadOnFileThread));
+      base::Bind(&UserPolicyTokenLoader::LoadOnFileThread, this));
 }
 
 void UserPolicyTokenLoader::Store(const std::string& token,
@@ -53,10 +53,10 @@ void UserPolicyTokenLoader::Store(const std::string& token,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &UserPolicyTokenLoader::StoreOnFileThread,
-                        token,
-                        device_id));
+      base::Bind(&UserPolicyTokenLoader::StoreOnFileThread,
+                 this,
+                 token,
+                 device_id));
 }
 
 UserPolicyTokenLoader::~UserPolicyTokenLoader() {
@@ -82,10 +82,10 @@ void UserPolicyTokenLoader::LoadOnFileThread() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &UserPolicyTokenLoader::NotifyOnUIThread,
-                        device_token,
-                        device_id));
+      base::Bind(&UserPolicyTokenLoader::NotifyOnUIThread,
+                 this,
+                 device_token,
+                 device_id));
 }
 
 void UserPolicyTokenLoader::NotifyOnUIThread(const std::string& token,

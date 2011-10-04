@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/browser_policy_connector.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
@@ -262,7 +263,7 @@ const CloudPolicyDataStore*
 }
 
 BrowserPolicyConnector::BrowserPolicyConnector()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   managed_platform_provider_.reset(CreateManagedPlatformProvider());
   recommended_platform_provider_.reset(CreateRecommendedPlatformProvider());
 
@@ -287,7 +288,7 @@ BrowserPolicyConnector::BrowserPolicyConnector(
       recommended_platform_provider_(recommended_platform_provider),
       managed_cloud_provider_(managed_cloud_provider),
       recommended_cloud_provider_(recommended_cloud_provider),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
 
 void BrowserPolicyConnector::Observe(int type,
                                      const NotificationSource& source,
@@ -336,8 +337,8 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
     // Initialize the subsystem once the message loops are spinning.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &BrowserPolicyConnector::InitializeDevicePolicySubsystem));
+        base::Bind(&BrowserPolicyConnector::InitializeDevicePolicySubsystem,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 #endif
 }

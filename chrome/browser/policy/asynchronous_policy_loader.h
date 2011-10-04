@@ -9,18 +9,18 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
-class CancelableTask;
 class MessageLoop;
 
 namespace policy {
 
 // Used by the implementation of asynchronous policy provider to manage the
-// tasks on the file thread that do the heavy lifting of loading policies.
+// tasks on the FILE thread that do the heavy lifting of loading policies.
 class AsynchronousPolicyLoader
     : public base::RefCountedThreadSafe<AsynchronousPolicyLoader> {
  public:
@@ -32,7 +32,7 @@ class AsynchronousPolicyLoader
   virtual void Init(const base::Closure& callback);
 
   // Reloads policy, sending notification of changes if necessary. Must be
-  // called on the file thread.
+  // called on the FILE thread.
   virtual void Reload();
 
   // Stops any pending reload tasks. Updates callbacks won't be performed
@@ -42,8 +42,6 @@ class AsynchronousPolicyLoader
   const DictionaryValue* policy() const { return policy_.get(); }
 
  protected:
-  friend class UpdatePolicyTask;
-
   // AsynchronousPolicyLoader objects should only be deleted by
   // RefCountedThreadSafe.
   friend class base::RefCountedThreadSafe<AsynchronousPolicyLoader>;
@@ -57,23 +55,23 @@ class AsynchronousPolicyLoader
     return delegate_.get();
   }
 
-  // Performs start operations that must be performed on the file thread.
+  // Performs start operations that must be performed on the FILE thread.
   virtual void InitOnFileThread();
 
-  // Performs stop operations that must be performed on the file thread.
+  // Performs stop operations that must be performed on the FILE thread.
   virtual void StopOnFileThread();
 
   // Schedules a reload task to run when |delay| expires. Must be called on the
-  // file thread.
+  // FILE thread.
   void ScheduleReloadTask(const base::TimeDelta& delay);
 
   // Schedules a reload task to run after the number of minutes specified
-  // in |reload_interval_minutes_|. Must be called on the file thread.
+  // in |reload_interval_minutes_|. Must be called on the FILE thread.
   void ScheduleFallbackReloadTask();
 
   void CancelReloadTask();
 
-  // Invoked from the reload task on the file thread.
+  // Invoked from the reload task on the FILE thread.
   void ReloadFromTask();
 
  private:
@@ -95,9 +93,9 @@ class AsynchronousPolicyLoader
   // Current policy.
   scoped_ptr<DictionaryValue> policy_;
 
-  // The reload task. Access only on the file thread. Holds a reference to the
-  // currently posted task, so we can cancel and repost it if necessary.
-  CancelableTask* reload_task_;
+  // Used to create and invalidate WeakPtrs on the FILE thread. These are only
+  // used to post reload tasks that can be cancelled.
+  base::WeakPtrFactory<AsynchronousPolicyLoader> weak_ptr_factory_;
 
   // The interval at which a policy reload will be triggered as a fallback.
   const base::TimeDelta  reload_interval_;

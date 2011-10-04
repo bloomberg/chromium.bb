@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
@@ -107,8 +107,8 @@ class DeviceManagementService : public URLFetcher::Delegate {
   // If it is not initialized, incoming requests are queued.
   bool initialized_;
 
-  // Creates tasks used for running |Initialize| delayed on the UI thread.
-  ScopedRunnableMethodFactory<DeviceManagementService> method_factory_;
+  // Used to create tasks to run |Initialize| delayed on the UI thread.
+  base::WeakPtrFactory<DeviceManagementService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementService);
 };

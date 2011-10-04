@@ -295,7 +295,7 @@ void URLBlacklist::AddFilter(const std::string& filter, bool block) {
 }
 
 URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui_method_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
       pref_service_(pref_service),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_weak_ptr_factory_(this)),
       blacklist_(new URLBlacklist) {
@@ -314,7 +314,7 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
 void URLBlacklistManager::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Cancel any pending updates, and stop listening for pref change updates.
-  ui_method_factory_.RevokeAll();
+  ui_weak_ptr_factory_.InvalidateWeakPtrs();
   pref_change_registrar_.RemoveAll();
 }
 
@@ -337,12 +337,12 @@ void URLBlacklistManager::Observe(int type,
 void URLBlacklistManager::ScheduleUpdate() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Cancel pending updates, if any.
-  ui_method_factory_.RevokeAll();
-  PostUpdateTask(
-      ui_method_factory_.NewRunnableMethod(&URLBlacklistManager::Update));
+  ui_weak_ptr_factory_.InvalidateWeakPtrs();
+  PostUpdateTask(base::Bind(&URLBlacklistManager::Update,
+                            ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void URLBlacklistManager::PostUpdateTask(Task* task) {
+void URLBlacklistManager::PostUpdateTask(const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // This is overridden in tests to post the task without the delay.
   MessageLoop::current()->PostDelayedTask(FROM_HERE, task, kUpdateDelayMs);

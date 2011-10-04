@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -33,11 +35,11 @@ namespace {
 class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
                              public chromeos::OwnerManager::KeyUpdateDelegate {
  public:
-  typedef Callback1<chromeos::SignedSettings::ReturnCode>::Type Callback;
+  typedef base::Callback<void(chromeos::SignedSettings::ReturnCode)> Callback;
 
   StorePolicyOperation(chromeos::SignedSettingsHelper* signed_settings_helper,
                        const em::PolicyFetchResponse& policy,
-                       Callback* callback)
+                       const Callback& callback)
       : signed_settings_helper_(signed_settings_helper),
         policy_(policy),
         callback_(callback) {
@@ -51,7 +53,7 @@ class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
   virtual void OnStorePolicyCompleted(
       chromeos::SignedSettings::ReturnCode code) OVERRIDE {
     if (code != chromeos::SignedSettings::SUCCESS) {
-      callback_->Run(code);
+      callback_.Run(code);
       delete this;
       return;
     }
@@ -67,7 +69,7 @@ class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
       return;
     } else {
       UpdateUserCrosSettings();
-      callback_->Run(chromeos::SignedSettings::SUCCESS);
+      callback_.Run(chromeos::SignedSettings::SUCCESS);
       delete this;
       return;
     }
@@ -76,7 +78,7 @@ class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
   // OwnerManager::KeyUpdateDelegate implementation:
   virtual void OnKeyUpdated() OVERRIDE {
     UpdateUserCrosSettings();
-    callback_->Run(chromeos::SignedSettings::SUCCESS);
+    callback_.Run(chromeos::SignedSettings::SUCCESS);
     delete this;
   }
 
@@ -90,7 +92,7 @@ class StorePolicyOperation : public chromeos::SignedSettingsHelper::Callback,
 
   chromeos::SignedSettingsHelper* signed_settings_helper_;
   em::PolicyFetchResponse policy_;
-  scoped_ptr<Callback> callback_;
+  Callback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(StorePolicyOperation);
 };
@@ -118,7 +120,7 @@ DevicePolicyCache::DevicePolicyCache(
     : data_store_(data_store),
       install_attributes_(install_attributes),
       signed_settings_helper_(chromeos::SignedSettingsHelper::Get()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 DevicePolicyCache::DevicePolicyCache(
@@ -128,7 +130,7 @@ DevicePolicyCache::DevicePolicyCache(
     : data_store_(data_store),
       install_attributes_(install_attributes),
       signed_settings_helper_(signed_settings_helper),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 DevicePolicyCache::~DevicePolicyCache() {
@@ -178,10 +180,10 @@ void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   set_last_policy_refresh_time(base::Time::NowFromSystemTime());
 
   // Start a store operation.
-  new StorePolicyOperation(signed_settings_helper_,
-                           policy,
-                           callback_factory_.NewCallback(
-                               &DevicePolicyCache::PolicyStoreOpCompleted));
+  StorePolicyOperation::Callback callback =
+      base::Bind(&DevicePolicyCache::PolicyStoreOpCompleted,
+                 weak_ptr_factory_.GetWeakPtr());
+  new StorePolicyOperation(signed_settings_helper_, policy, callback);
 }
 
 void DevicePolicyCache::SetUnmanaged() {
