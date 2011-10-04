@@ -420,12 +420,13 @@ void WifiConfigView::RefreshShareCheckbox() {
     // user certificates are enabled.
     share_network_checkbox_->SetEnabled(false);
     share_network_checkbox_->SetChecked(false);
+  } else if (!UserManager::Get()->user_is_logged_in()) {
+    // If not logged in, networks must be shared.
+    share_network_checkbox_->SetEnabled(false);
+    share_network_checkbox_->SetChecked(true);
   } else {
     share_network_checkbox_->SetEnabled(true);
-    if (UserManager::Get()->user_is_logged_in())
-      share_network_checkbox_->SetChecked(false);  // Default to unshared.
-    else
-      share_network_checkbox_->SetChecked(true);  // Default to shared.
+    share_network_checkbox_->SetChecked(false);  // Default to unshared.
   }
 }
 
