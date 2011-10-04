@@ -1371,7 +1371,7 @@ void BrowserView::ActiveTabChanged(TabContentsWrapper* old_contents,
                                    TabContentsWrapper* new_contents,
                                    int index,
                                    bool user_gesture) {
-  ProcessTabSelected(new_contents, true);
+  ProcessTabSelected(new_contents);
 }
 
 void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
@@ -1390,16 +1390,9 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
     old_container->ChangeTabContents(NULL);
     delete old_container;
     preview_container_ = NULL;
-
-    // Update the UI for what was the preview contents and is now active. Pass
-    // in false to ProcessTabSelected as new_contents is already parented
-    // correctly.
-    ProcessTabSelected(new_contents, false);
-  } else {
-    // Update the UI for the new contents. Pass in true to ProcessTabSelected as
-    // new_contents is not parented correctly.
-    ProcessTabSelected(new_contents, true);
   }
+  // Update the UI for the new contents.
+  ProcessTabSelected(new_contents);
 }
 
 void BrowserView::TabStripEmpty() {
@@ -2497,8 +2490,15 @@ void BrowserView::UpdateAcceleratorMetrics(
 #endif
 }
 
-void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents,
-                                     bool change_tab_contents) {
+void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
+  // If |contents_container_| already has the correct TabContents, we can save
+  // some work.  This also prevents extra events from being reported by the
+  // Visibility API under Windows, as ChangeTabContents will briefly hide
+  // the TabContents window.
+  DCHECK(new_contents);
+  bool change_tab_contents =
+      contents_container_->tab_contents() != new_contents->tab_contents();
+
   // Update various elements that are interested in knowing the current
   // TabContents.
 

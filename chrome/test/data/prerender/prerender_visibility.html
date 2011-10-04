@@ -5,49 +5,33 @@ This test checks the visibility API when a prerendered page is displayed.
 <head>
 <title>Prerender Visibility</title>
 
+<script src="prerender_visibility_shared.js"></script>
+
 <script>
-// Checks visibility state while the page is still loading.
-var loadingStatePassed = document.webkitHidden &&
-                         document.webkitVisibilityState == 'prerender';
-
-// True if any visibility change event has occurred.
-var visibilityChangeCalled = false;
-
-// True if the last visibility change event set the document's state to visible.
-var visibilityChangePassed = false;
-
 // Checks that no visibility change events have occurred, current visibility
 // state is "prerender", and visibility state while the page was loading was
 // also "prerender".
 function DidPrerenderPass() {
-  return !visibilityChangeCalled &&
-         loadingStatePassed &&
-         document.webkitHidden &&
-         'prerender' == document.webkitVisibilityState;
+  return visibilityStates.length == 1 &&
+         hiddenValues.length == 1 &&
+         visibilityStates[0] == 'prerender' &&
+         hiddenValues[0] == true &&
+         document.webkitVisibilityState == 'prerender' &&
+         document.webkitHidden == true;
 }
 
-function onVisibilityChange(event) {
-  // TODO(mmenke):  Currently, we get 4 events when a page is shown -
-  //                hidden -> visible -> hidden -> visible.
-  //                Once that's fixed, add check to make sure we only have
-  //                hidden -> visible, or just visible.
-  visibilityChangePassed =
-      !document.webkitHidden &&
-      'visible' == document.webkitVisibilityState;
-  visibilityChangeCalled = true;
-}
-
-document.addEventListener("webkitvisibilitychange",
-                          onVisibilityChange,
-                          false);
-
-// Checks that the last visibility change resulted in a visible state, and that
-// the current state is also visible.
+// Checks that we've only had three visibility states:
+//   prerender -> hidden -> visible.
+// Also checks current visibility state.
 function DidDisplayPass() {
-  return visibilityChangeCalled &&
-         visibilityChangePassed &&
-         !document.webkitHidden &&
-         'visible' == document.webkitVisibilityState;
+  return visibilityStates.length == 3 &&
+         hiddenValues.length == 3 &&
+         visibilityStates[1] == 'hidden' &&
+         hiddenValues[1] == true &&
+         visibilityStates[2] == 'visible' &&
+         hiddenValues[2] == false &&
+         document.webkitVisibilityState == 'visible' &&
+         document.webkitHidden == false;
 }
 </script>
 

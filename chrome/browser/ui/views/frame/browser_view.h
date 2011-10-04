@@ -532,12 +532,9 @@ class BrowserView : public BrowserBubbleHost,
   void UpdateAcceleratorMetrics(const views::Accelerator& accelerator,
                                 int command_id);
 
-  // Invoked from ActiveTabChanged or when instant is made active.  If
-  // |change_tab_contents| is true, |new_contents| is added to the view
-  // hierarchy, if |change_tab_contents| is false, it's assumed |new_contents|
-  // has already been added to the view hierarchy.
-  void ProcessTabSelected(TabContentsWrapper* new_contents,
-                          bool change_tab_contents);
+  // Invoked from ActiveTabChanged or when instant is made active.
+  // |new_contents| must not be NULL.
+  void ProcessTabSelected(TabContentsWrapper* new_contents);
 
   // Exposes resize corner size to BrowserViewLayout.
   gfx::Size GetResizeCornerSize() const;
