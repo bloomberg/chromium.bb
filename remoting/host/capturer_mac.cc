@@ -5,22 +5,35 @@
 #include "remoting/host/capturer.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <dlfcn.h>
 #include <OpenGL/CGLMacro.h>
 #include <OpenGL/OpenGL.h>
-
 #include <stddef.h>
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "remoting/base/util.h"
 #include "remoting/host/capturer_helper.h"
 #include "skia/ext/skia_utils_mac.h"
 
+
 namespace remoting {
 
 namespace {
+
+#if (MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5)
+// Possibly remove CapturerMac::CgBlitPreLion as well depending on performance
+// of CapturerMac::CgBlitPostLion on 10.6.
+#error No longer need to import CGDisplayCreateImage.
+#else
+// Declared here because CGDisplayCreateImage does not exist in the 10.5 SDK,
+// which we are currently compiling against, and it is required on 10.7 to do
+// screen capture.
+typedef CGImageRef (*CGDisplayCreateImageFunc)(CGDirectDisplayID displayID);
+#endif
 
 // The amount of time allowed for displays to reconfigure.
 const int64 kDisplayReconfigurationTimeoutInSeconds = 10;
@@ -147,7 +160,8 @@ class CapturerMac : public Capturer {
  private:
   void GlBlitFast(const VideoFrameBuffer& buffer, const SkRegion& region);
   void GlBlitSlow(const VideoFrameBuffer& buffer);
-  void CgBlit(const VideoFrameBuffer& buffer, const SkRegion& region);
+  void CgBlitPreLion(const VideoFrameBuffer& buffer, const SkRegion& region);
+  void CgBlitPostLion(const VideoFrameBuffer& buffer, const SkRegion& region);
   void CaptureRegion(const SkRegion& region,
                      CaptureCompletedCallback* callback);
 
@@ -195,6 +209,9 @@ class CapturerMac : public Capturer {
   // structures. Specifically cgl_context_ and pixel_buffer_object_.
   base::WaitableEvent display_configuration_capture_event_;
 
+  // Will be non-null on lion.
+  CGDisplayCreateImageFunc display_create_image_func_;
+
   DISALLOW_COPY_AND_ASSIGN(CapturerMac);
 };
 
@@ -203,7 +220,8 @@ CapturerMac::CapturerMac()
       current_buffer_(0),
       last_buffer_(NULL),
       pixel_format_(media::VideoFrame::RGB32),
-      display_configuration_capture_event_(false, true) {
+      display_configuration_capture_event_(false, true),
+      display_create_image_func_(NULL) {
 }
 
 CapturerMac::~CapturerMac() {
@@ -236,6 +254,15 @@ bool CapturerMac::Init() {
     return false;
   }
 
+  if (base::mac::IsOSLionOrLater()) {
+    display_create_image_func_ =
+        reinterpret_cast<CGDisplayCreateImageFunc>(
+            dlsym(RTLD_NEXT, "CGDisplayCreateImage"));
+    if (!display_create_image_func_) {
+      LOG(ERROR) << "Unable to load CGDisplayCreateImage on Lion";
+      return false;
+    }
+  }
   ScreenConfigurationChanged();
   return true;
 }
@@ -266,6 +293,11 @@ void CapturerMac::ScreenConfigurationChanged() {
 
   if (!CGDisplayUsesOpenGLAcceleration(mainDevice)) {
     VLOG(3) << "OpenGL support not available.";
+    return;
+  }
+
+  if (display_create_image_func_ != NULL) {
+    // No need for any OpenGL support on Lion
     return;
   }
 
@@ -323,8 +355,12 @@ void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
   VideoFrameBuffer& current_buffer = buffers_[current_buffer_];
   current_buffer.Update();
 
-  bool flip = true;  // GL capturers need flipping.
-  if (cgl_context_) {
+  bool flip = false;  // GL capturers need flipping.
+  if (display_create_image_func_ != NULL) {
+    // Lion requires us to use their new APIs for doing screen capture.
+    CgBlitPostLion(current_buffer, region);
+  } else if (cgl_context_) {
+    flip = true;
     if (pixel_buffer_object_.get() != 0) {
       GlBlitFast(current_buffer, region);
     } else {
@@ -333,8 +369,7 @@ void CapturerMac::CaptureInvalidRegion(CaptureCompletedCallback* callback) {
       GlBlitSlow(current_buffer);
     }
   } else {
-    CgBlit(current_buffer, region);
-    flip = false;
+    CgBlitPreLion(current_buffer, region);
   }
 
   DataPlanes planes;
@@ -439,8 +474,8 @@ void CapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
   glPopClientAttrib();
 }
 
-void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
-                         const SkRegion& region) {
+void CapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
+                                const SkRegion& region) {
   const int buffer_height = buffer.size().height();
   const int buffer_width = buffer.size().width();
 
@@ -448,14 +483,52 @@ void CapturerMac::CgBlit(const VideoFrameBuffer& buffer,
   SkIRect clip_rect = SkIRect::MakeWH(buffer_width, buffer_height);
 
   if (last_buffer_)
-    memcpy(buffer.ptr(), last_buffer_,
-           buffer.bytes_per_row() * buffer_height);
+    memcpy(buffer.ptr(), last_buffer_, buffer.bytes_per_row() * buffer_height);
   last_buffer_ = buffer.ptr();
   CGDirectDisplayID main_display = CGMainDisplayID();
   uint8* display_base_address =
       reinterpret_cast<uint8*>(CGDisplayBaseAddress(main_display));
   int src_bytes_per_row = CGDisplayBytesPerRow(main_display);
   int src_bytes_per_pixel = CGDisplayBitsPerPixel(main_display) / 8;
+  // TODO(hclam): We can reduce the amount of copying here by subtracting
+  // |capturer_helper_|s region from |last_invalid_region_|.
+  // http://crbug.com/92354
+  for(SkRegion::Iterator i(region); !i.done(); i.next()) {
+    SkIRect copy_rect = i.rect();
+    if (copy_rect.intersect(clip_rect)) {
+      CopyRect(display_base_address,
+               src_bytes_per_row,
+               buffer.ptr(),
+               buffer.bytes_per_row(),
+               src_bytes_per_pixel,
+               copy_rect);
+    }
+  }
+}
+
+void CapturerMac::CgBlitPostLion(const VideoFrameBuffer& buffer,
+                                 const SkRegion& region) {
+  const int buffer_height = buffer.size().height();
+  const int buffer_width = buffer.size().width();
+
+  // Clip to the size of our current screen.
+  SkIRect clip_rect = SkIRect::MakeWH(buffer_width, buffer_height);
+
+  if (last_buffer_)
+    memcpy(buffer.ptr(), last_buffer_, buffer.bytes_per_row() * buffer_height);
+  last_buffer_ = buffer.ptr();
+  CGDirectDisplayID display = CGMainDisplayID();
+  base::mac::ScopedCFTypeRef<CGImageRef> image(
+      display_create_image_func_(display));
+  if (image.get() == NULL)
+    return;
+  CGDataProviderRef provider = CGImageGetDataProvider(image);
+  base::mac::ScopedCFTypeRef<CFDataRef> data(CGDataProviderCopyData(provider));
+  if (data.get() == NULL)
+    return;
+  const uint8* display_base_address = CFDataGetBytePtr(data);
+  int src_bytes_per_row = CGImageGetBytesPerRow(image);
+  int src_bytes_per_pixel = CGImageGetBitsPerPixel(image) / 8;
   // TODO(hclam): We can reduce the amount of copying here by subtracting
   // |capturer_helper_|s region from |last_invalid_region_|.
   // http://crbug.com/92354
