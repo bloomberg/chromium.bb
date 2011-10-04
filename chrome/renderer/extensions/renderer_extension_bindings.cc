@@ -15,6 +15,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
+#include "chrome/renderer/extensions/extension_bindings_context_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
@@ -253,14 +254,14 @@ v8::Extension* RendererExtensionBindings::Get(ExtensionDispatcher* dispatcher) {
 }
 
 void RendererExtensionBindings::DeliverMessage(
+    const ExtensionBindingsContextSet::ContextSet& contexts,
     int target_port_id,
     const std::string& message,
     RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope;
 
-  ExtensionBindingsContext::ContextList contexts =
-      ExtensionBindingsContext::GetAll();
-  for (ExtensionBindingsContext::ContextList::iterator it = contexts.begin();
+  for (ExtensionBindingsContextSet::ContextSet::const_iterator it =
+           contexts.begin();
        it != contexts.end(); ++it) {
 
     if (restrict_to_render_view &&

@@ -14,6 +14,8 @@
 #include "base/timer.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/renderer/extensions/extension_bindings_context_set.h"
+#include "v8/include/v8.h"
 
 class GURL;
 class RenderThread;
@@ -30,10 +32,6 @@ namespace WebKit {
 class WebFrame;
 }
 
-namespace v8 {
-class Extension;
-}
-
 // Dispatches extension control messages sent to the renderer and stores
 // renderer extension related state.
 class ExtensionDispatcher : public content::RenderProcessObserver {
@@ -47,6 +45,9 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   bool is_extension_process() const { return is_extension_process_; }
   const ExtensionSet* extensions() const { return &extensions_; }
+  const ExtensionBindingsContextSet& bindings_context_set() const {
+    return bindings_context_set_;
+  }
   UserScriptSlave* user_script_slave() { return user_script_slave_.get(); }
 
   bool IsApplicationActive(const std::string& extension_id) const;
@@ -56,6 +57,15 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   bool AllowScriptExtension(WebKit::WebFrame* frame,
                             const std::string& v8_extension_name,
                             int extension_group);
+
+  void DidCreateScriptContext(WebKit::WebFrame* frame,
+                              v8::Handle<v8::Context> context,
+                              int world_id);
+  void WillReleaseScriptContext(WebKit::WebFrame* frame,
+                                v8::Handle<v8::Context> context,
+                                int world_id);
+
+  void SetTestExtensionId(const std::string& extension_id);
 
  private:
   friend class RenderViewTest;
@@ -107,6 +117,10 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // about all extensions currently loaded by the browser.
   ExtensionSet extensions_;
 
+  // All the bindings contexts that are currently loaded for this renderer.
+  // There is zero or one for each v8 context.
+  ExtensionBindingsContextSet bindings_context_set_;
+
   scoped_ptr<UserScriptSlave> user_script_slave_;
 
   // Same as above, but on a longer timer and will run even if the process is
@@ -127,6 +141,8 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   // True once WebKit has been initialized (and it is therefore safe to poke).
   bool is_webkit_initialized_;
+
+  std::string test_extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

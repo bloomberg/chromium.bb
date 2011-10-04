@@ -229,8 +229,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   return true;
 }
 
-void UserScriptSlave::InjectScripts(WebFrame* frame,
-                                    UserScript::RunLocation location) {
+GURL UserScriptSlave::GetLatestURLForFrame(WebFrame* frame) {
   // Normally we would use frame->document().url() to determine the document's
   // URL, but to decide whether to inject a content script, we use the URL from
   // the data source. This "quirk" helps prevents content scripts from
@@ -239,10 +238,15 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
   // changes to match the parent document after Gmail document.writes into
   // it to create the editor.
   // http://code.google.com/p/chromium/issues/detail?id=86742
-  WebKit::WebDataSource* data_source = frame->dataSource() ?
-      frame->dataSource() : frame->provisionalDataSource();
+  WebKit::WebDataSource* data_source = frame->provisionalDataSource() ?
+      frame->provisionalDataSource() : frame->dataSource();
   CHECK(data_source);
-  GURL data_source_url = GURL(data_source->request().url());
+  return GURL(data_source->request().url());
+}
+
+void UserScriptSlave::InjectScripts(WebFrame* frame,
+                                    UserScript::RunLocation location) {
+  GURL data_source_url = GetLatestURLForFrame(frame);
   if (data_source_url.is_empty())
     return;
 

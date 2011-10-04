@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "chrome/renderer/extensions/extension_bindings_context_set.h"
+
 class ExtensionDispatcher;
 class RenderView;
 
@@ -22,11 +24,14 @@ class RendererExtensionBindings {
   // Creates an instance of the extension.
   static v8::Extension* Get(ExtensionDispatcher* dispatcher);
 
-  // Delivers a message sent using content script messaging. If
-  // restrict_to_render_view is specified, only contexts in that render view
-  // will receive the message.
-  static void DeliverMessage(int target_port_id, const std::string& message,
-                             RenderView* restrict_to_render_view);
+  // Delivers a message sent using content script messaging to some of the
+  // contexts in |bindings_context_set|. If |restrict_to_render_view| is
+  // specified, only contexts in that render view will receive the message.
+  static void DeliverMessage(
+      const ExtensionBindingsContextSet::ContextSet& context_set,
+      int target_port_id,
+      const std::string& message,
+      RenderView* restrict_to_render_view);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_

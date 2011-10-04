@@ -8,11 +8,10 @@
 #define CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_BINDINGS_H_
 #pragma once
 
-#include <set>
 #include <string>
-#include <vector>
 
 class ExtensionDispatcher;
+class ExtensionBindingsContextSet;
 class GURL;
 class URLPattern;
 
@@ -29,7 +28,9 @@ class ExtensionProcessBindings {
   static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);
 
   // Handles a response to an API request.
-  static void HandleResponse(int request_id, bool success,
+  static void HandleResponse(const ExtensionBindingsContextSet& contexts,
+                             int request_id,
+                             bool success,
                              const std::string& response,
                              const std::string& error);
 };

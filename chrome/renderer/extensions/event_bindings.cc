@@ -15,6 +15,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
+#include "chrome/renderer/extensions/extension_bindings_context_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -70,7 +71,7 @@ class ExtensionImpl : public ChromeV8Extension {
     if (name->Equals(v8::String::New("AttachEvent"))) {
       return v8::FunctionTemplate::New(AttachEvent, v8::External::New(this));
     } else if (name->Equals(v8::String::New("DetachEvent"))) {
-      return v8::FunctionTemplate::New(DetachEvent);
+      return v8::FunctionTemplate::New(DetachEvent, v8::External::New(this));
     } else if (name->Equals(v8::String::New("GetExternalFileEntry"))) {
       return v8::FunctionTemplate::New(GetExternalFileEntry);
     }
@@ -84,14 +85,15 @@ class ExtensionImpl : public ChromeV8Extension {
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
 
     if (args[0]->IsString()) {
-      ExtensionBindingsContext* context =
-          ExtensionBindingsContext::GetCurrent();
+      ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
+      const ExtensionBindingsContextSet& context_set =
+          v8_extension->extension_dispatcher()->bindings_context_set();
+      ExtensionBindingsContext* context = context_set.GetCurrent();
       CHECK(context);
       EventListenerCounts& listener_counts =
           GetListenerCounts(context->extension_id());
       std::string event_name(*v8::String::AsciiValue(args[0]));
 
-      ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
       if (!v8_extension->CheckPermissionForCurrentRenderView(event_name))
         return v8::Undefined();
 
@@ -111,8 +113,10 @@ class ExtensionImpl : public ChromeV8Extension {
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
 
     if (args[0]->IsString()) {
-      ExtensionBindingsContext* context =
-          ExtensionBindingsContext::GetCurrent();
+      ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
+      const ExtensionBindingsContextSet& context_set =
+          v8_extension->extension_dispatcher()->bindings_context_set();
+      ExtensionBindingsContext* context = context_set.GetCurrent();
       if (!context)
         return v8::Undefined();
 

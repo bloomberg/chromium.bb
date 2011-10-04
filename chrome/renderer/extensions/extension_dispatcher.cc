@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
@@ -136,7 +137,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
                                           const std::string& function_name,
                                           const ListValue& args,
                                           const GURL& event_url) {
-  ExtensionBindingsContext::DispatchChromeHiddenMethod(
+  bindings_context_set_.DispatchChromeHiddenMethod(
       extension_id, function_name, args, NULL, event_url);
 
   // Reset the idle handler each time there's any activity like event or message
@@ -149,9 +150,11 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
 
 void ExtensionDispatcher::OnDeliverMessage(int target_port_id,
                                            const std::string& message) {
-  RendererExtensionBindings::DeliverMessage(target_port_id,
-                                            message,
-                                            NULL);  // All render views.
+  RendererExtensionBindings::DeliverMessage(
+      bindings_context_set_.GetAll(),
+      target_port_id,
+      message,
+      NULL);  // All render views.
 }
 
 void ExtensionDispatcher::OnLoaded(const ExtensionMsg_Loaded_Params& params) {
@@ -208,22 +211,53 @@ bool ExtensionDispatcher::AllowScriptExtension(
   if (!restricted_v8_extensions_.count(v8_extension_name))
     return true;
 
-  // Note: we prefer the provisional URL here instead of the document URL
-  // because we might be currently loading an URL into a blank page.
-  // See http://code.google.com/p/chromium/issues/detail?id=10924
-  WebDataSource* ds = frame->provisionalDataSource();
-  if (!ds)
-    ds = frame->dataSource();
-
   // Extension-only bindings should be restricted to content scripts and
   // extension-blessed URLs.
   if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS ||
-      extensions_.ExtensionBindingsAllowed(ds->request().url())) {
+      extensions_.ExtensionBindingsAllowed(
+          UserScriptSlave::GetLatestURLForFrame(frame))) {
     return true;
   }
 
   return false;
+}
 
+void ExtensionDispatcher::DidCreateScriptContext(
+    WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
+  // TODO(aa): Create a BindingsPolicy object that encapsulates all the rules
+  // about when to allow each type of bindings. This just becomes looking to see
+  // if any bindings are allowed for this v8_context and creating an
+  // ExtensionBindingsContext if so.
+  std::string extension_id;
+  if (!test_extension_id_.empty()) {
+    extension_id = test_extension_id_;
+  } else if (world_id != 0) {
+    extension_id = user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
+  } else {
+    GURL frame_url = UserScriptSlave::GetLatestURLForFrame(frame);
+    extension_id = extensions_.GetIdByURL(frame_url);
+    if (extension_id.empty() ||
+        !extensions_.ExtensionBindingsAllowed(frame_url)) {
+      return;
+    }
+  }
+
+  ExtensionBindingsContext* context =
+      new ExtensionBindingsContext(v8_context, frame, extension_id);
+  bindings_context_set_.Add(context);
+  context->FireOnLoadEvent(is_extension_process_,
+                           ChromeRenderProcessObserver::is_incognito_process());
+  VLOG(1) << "Num tracked contexts: " << bindings_context_set_.size();
+}
+
+void ExtensionDispatcher::WillReleaseScriptContext(
+    WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
+  bindings_context_set_.RemoveByV8Context(v8_context);
+  VLOG(1) << "Num tracked contexts: " << bindings_context_set_.size();
+}
+
+void ExtensionDispatcher::SetTestExtensionId(const std::string& id) {
+  test_extension_id_ = id;
 }
 
 void ExtensionDispatcher::OnActivateApplication(

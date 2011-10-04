@@ -67,6 +67,8 @@
         'renderer/extensions/event_bindings.h',
         'renderer/extensions/extension_bindings_context.cc',
         'renderer/extensions/extension_bindings_context.h',
+        'renderer/extensions/extension_bindings_context_set.cc',
+        'renderer/extensions/extension_bindings_context_set.h',
         'renderer/extensions/extension_dispatcher.cc',
         'renderer/extensions/extension_dispatcher.h',
         'renderer/extensions/extension_groups.h',

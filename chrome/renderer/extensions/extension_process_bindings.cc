@@ -30,6 +30,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
+#include "chrome/renderer/extensions/extension_bindings_context_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -589,9 +590,12 @@ v8::Extension* ExtensionProcessBindings::Get(
 }
 
 // static
-void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
-                                              const std::string& response,
-                                              const std::string& error) {
+void ExtensionProcessBindings::HandleResponse(
+    const ExtensionBindingsContextSet& contexts,
+    int request_id,
+    bool success,
+    const std::string& response,
+    const std::string& error) {
   PendingRequestMap::iterator request =
       g_pending_requests.Get().find(request_id);
   if (request == g_pending_requests.Get().end()) {
@@ -602,7 +606,7 @@ void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
   }
 
   ExtensionBindingsContext* bindings_context =
-      ExtensionBindingsContext::GetByV8Context(request->second->context);
+      contexts.GetByV8Context(request->second->context);
   if (!bindings_context)
     return;  // The frame went away.
 

@@ -196,20 +196,25 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
                                           const std::string& response,
                                           const std::string& error) {
   ExtensionProcessBindings::HandleResponse(
-      request_id, success, response, error);
+      extension_dispatcher_->bindings_context_set(), request_id, success,
+      response, error);
 }
 
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
                                                const std::string& function_name,
                                                const ListValue& args,
                                                const GURL& event_url) {
-  ExtensionBindingsContext::DispatchChromeHiddenMethod(
+  extension_dispatcher_->bindings_context_set().DispatchChromeHiddenMethod(
       extension_id, function_name, args, render_view(), event_url);
 }
 
 void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
                                                 const std::string& message) {
-  RendererExtensionBindings::DeliverMessage(target_id, message, render_view());
+  RendererExtensionBindings::DeliverMessage(
+      extension_dispatcher_->bindings_context_set().GetAll(),
+      target_id,
+      message,
+      render_view());
 }
 
 void ExtensionHelper::OnExecuteCode(

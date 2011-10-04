@@ -1830,6 +1830,7 @@
         'common/worker_thread_ticker_unittest.cc',
         'common/zip_unittest.cc',
         'renderer/extensions/extension_api_json_validity_unittest.cc',
+        'renderer/extensions/extension_bindings_context_set_unittest.cc',
         'renderer/extensions/json_schema_unittest.cc',
         'renderer/net/predictor_queue_unittest.cc',
         'renderer/net/renderer_predictor_unittest.cc',

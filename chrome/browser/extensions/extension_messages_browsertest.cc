@@ -8,6 +8,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
+#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/test/base/render_view_test.h"
 #include "content/common/view_messages.h"
@@ -17,22 +18,25 @@ namespace {
 
 static const char kTestingExtensionId[] = "oooooooooooooooooooooooooooooooo";
 
-void DispatchOnConnect(int source_port_id, const std::string& name,
-                              const std::string& tab_json) {
+void DispatchOnConnect(const ExtensionBindingsContextSet& bindings_context_set,
+                       int source_port_id, const std::string& name,
+                       const std::string& tab_json) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
   args.Set(1, Value::CreateStringValue(name));
   args.Set(2, Value::CreateStringValue(tab_json));
   args.Set(3, Value::CreateStringValue(kTestingExtensionId));
   args.Set(4, Value::CreateStringValue(kTestingExtensionId));
-  ExtensionBindingsContext::DispatchChromeHiddenMethod(
+  bindings_context_set.DispatchChromeHiddenMethod(
       "", ExtensionMessageService::kDispatchOnConnect, args, NULL, GURL());
 }
 
-void DispatchOnDisconnect(int source_port_id) {
+void DispatchOnDisconnect(
+    const ExtensionBindingsContextSet& bindings_context_set,
+    int source_port_id) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
-  ExtensionBindingsContext::DispatchChromeHiddenMethod(
+  bindings_context_set.DispatchChromeHiddenMethod(
       "", ExtensionMessageService::kDispatchOnDisconnect, args, NULL, GURL());
 }
 
@@ -40,8 +44,12 @@ void DispatchOnDisconnect(int source_port_id) {
 
 // Tests that the bindings for opening a channel to an extension and sending
 // and receiving messages through that channel all works.
+//
+// TODO(aa): Refactor RendererProcessBindings to have fewer dependencies and
+// make this into a unit test. That will allow us to get rid of cruft like
+// SetTestExtensionId().
 TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
-  ExtensionBindingsContext::SetTestExtensionId(kTestingExtensionId);
+  extension_dispatcher_->SetTestExtensionId(kTestingExtensionId);
   render_thread_.sink().ClearMessages();
   LoadHTML("<body></body>");
   ExecuteJavaScript(
@@ -73,7 +81,9 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   // Now simulate getting a message back from the other side.
   render_thread_.sink().ClearMessages();
   const int kPortId = 0;
-  RendererExtensionBindings::DeliverMessage(kPortId, "{\"val\": 42}", NULL);
+  RendererExtensionBindings::DeliverMessage(
+      extension_dispatcher_->bindings_context_set().GetAll(),
+      kPortId, "{\"val\": 42}", NULL);
 
   // Verify that we got it.
   const IPC::Message* alert_msg =
@@ -89,7 +99,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
 // Tests that the bindings for handling a new channel connection and channel
 // closing all works.
 TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
-  ExtensionBindingsContext::SetTestExtensionId(kTestingExtensionId);
+  extension_dispatcher_->SetTestExtensionId(kTestingExtensionId);
   LoadHTML("<body></body>");
   ExecuteJavaScript(
     "chrome.extension.onConnect.addListener(function (port) {"
@@ -111,7 +121,8 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
   // Simulate a new connection being opened.
   const int kPortId = 0;
   const std::string kPortName = "testName";
-  DispatchOnConnect(kPortId, kPortName, "{\"url\":\"foo://bar\"}");
+  DispatchOnConnect(extension_dispatcher_->bindings_context_set(),
+                    kPortId, kPortName, "{\"url\":\"foo://bar\"}");
 
   // Verify that we handled the new connection by posting a message.
   const IPC::Message* post_msg =
@@ -126,7 +137,9 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
 
   // Now simulate getting a message back from the channel opener.
   render_thread_.sink().ClearMessages();
-  RendererExtensionBindings::DeliverMessage(kPortId, "{\"val\": 42}", NULL);
+  RendererExtensionBindings::DeliverMessage(
+      extension_dispatcher_->bindings_context_set().GetAll(),
+      kPortId, "{\"val\": 42}", NULL);
 
   // Verify that we got it.
   const IPC::Message* alert_msg =
@@ -140,7 +153,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
 
   // Now simulate the channel closing.
   render_thread_.sink().ClearMessages();
-  DispatchOnDisconnect(kPortId);
+  DispatchOnDisconnect(extension_dispatcher_->bindings_context_set(), kPortId);
 
   // Verify that we got it.
   alert_msg =

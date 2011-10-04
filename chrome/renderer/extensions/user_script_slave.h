@@ -20,6 +20,7 @@
 
 class Extension;
 class ExtensionSet;
+class GURL;
 
 namespace WebKit {
 class WebFrame;
@@ -30,6 +31,10 @@ using WebKit::WebScriptSource;
 // Manages installed UserScripts for a render process.
 class UserScriptSlave {
  public:
+  // Utility to get the URL we will match against for a frame. If the frame has
+  // committed, this is the commited URL. Otherwise it is the provisional URL.
+  static GURL GetLatestURLForFrame(WebKit::WebFrame* frame);
+
   explicit UserScriptSlave(const ExtensionSet* extensions);
   ~UserScriptSlave();
 

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
@@ -581,7 +581,7 @@ bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
   // Extensions and apps always allowed to create unrequested popups. The second
   // check is necessary to include content scripts.
   return extension_dispatcher_->extensions()->GetByURL(creator) ||
-      ExtensionBindingsContext::GetCurrent();
+      extension_dispatcher_->bindings_context_set().GetCurrent();
 }
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
@@ -645,19 +645,12 @@ bool ChromeContentRendererClient::ShouldPumpEventsDuringCookieMessage() {
 
 void ChromeContentRendererClient::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> context, int world_id) {
-  ExtensionBindingsContext::HandleV8ContextCreated(
-      frame,
-      context,
-      extension_dispatcher_.get(),
-      world_id);
+  extension_dispatcher_->DidCreateScriptContext(frame, context, world_id);
 }
 
 void ChromeContentRendererClient::WillReleaseScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> context, int world_id) {
-  ExtensionBindingsContext::HandleV8ContextReleased(
-      frame,
-      context,
-      world_id);
+  extension_dispatcher_->WillReleaseScriptContext(frame, context, world_id);
 }
 
 unsigned long long ChromeContentRendererClient::VisitedLinkHash(
