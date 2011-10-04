@@ -342,17 +342,16 @@
       '-sync',
       # crbug.com/87837
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
-
       # Deal with i18n chars.  crosbug.com/12639
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       '-downloads.DownloadsTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testCrazyFilenames',
-
       # crosbug.com/16977
       '-chromeos_wifi_sanity.ChromeosWifiSanity.testConnectToHiddenWiFiNonExistent',
-
       # crosbug.com/20025
       '-chromeos_browser.ChromeosBrowserTest.testFullScreen',
+      # crosbug.com/19556
+      '-pyauto_webdriver',
     ],
   },
 
@@ -399,6 +398,11 @@
       '-popups.PopupsTest.testPopupBlockedEverySec',
       '-process_count.ProcessCountTest.testProcessCountCombination',
       '-process_count.ProcessCountTest.testProcessCountFlashProcess',
+      '-omnibox.OmniboxTest.testAppComboNameWithSpecialCharSearch',
+      '-omnibox.OmniboxTest.testAppNameWithNumberSearch',
+      '-omnibox.OmniboxTest.testAppNameWithSpaceSearch',
+      '-omnibox.OmniboxTest.testAppSearchWithVeryLongAppName',
+      '-omnibox.OmniboxTest.testBasicAppSearch',
     ],
 
     'win': [
