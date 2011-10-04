@@ -7,13 +7,14 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_reader.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
-#include "content/common/notification_observer.h"
+
+namespace policy {
+class CloudPolicyDataStore;
+}
 
 // The base class handler of Javascript messages of the about:policy page.
 class PolicyUIHandler : public WebUIMessageHandler,
@@ -26,7 +27,7 @@ class PolicyUIHandler : public WebUIMessageHandler,
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
-  // policy::ConfigurationPolicyReader::Observer implementation.
+  // policy::PolicyStatus::Observer implementation.
   virtual void OnPolicyValuesChanged() OVERRIDE;
 
  private:

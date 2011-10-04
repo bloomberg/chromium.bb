@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
@@ -26,7 +27,7 @@ EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
     : WizardScreen(observer),
       actor_(actor),
       is_showing_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   actor_->SetController(this);
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
@@ -277,7 +278,7 @@ void EnterpriseEnrollmentScreen::HandleAuthError(
 
 void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
   // Since this method is also called directly.
-  runnable_method_factory_.RevokeAll();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   switch (g_browser_process->browser_policy_connector()->LockDevice(user_)) {
     case policy::EnterpriseInstallAttributes::LOCK_SUCCESS: {
@@ -294,8 +295,8 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
                    << kLockRetryIntervalMs << "ms.";
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
-          runnable_method_factory_.NewRunnableMethod(
-              &EnterpriseEnrollmentScreen::WriteInstallAttributesData),
+          base::Bind(&EnterpriseEnrollmentScreen::WriteInstallAttributesData,
+                     weak_ptr_factory_.GetWeakPtr()),
           kLockRetryIntervalMs);
       return;
     }

@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
@@ -89,8 +89,7 @@ class EnterpriseEnrollmentScreen
   std::string user_;
   std::string captcha_token_;
   scoped_ptr<policy::CloudPolicySubsystem::ObserverRegistrar> registrar_;
-  ScopedRunnableMethodFactory<EnterpriseEnrollmentScreen>
-      runnable_method_factory_;
+  base::WeakPtrFactory<EnterpriseEnrollmentScreen> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentScreen);
 };

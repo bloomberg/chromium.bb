@@ -18,10 +18,10 @@
 #include "content/common/page_transition_types.h"
 #include "ipc/ipc_channel.h"
 
-class WebUIMessageHandler;
 class GURL;
 class RenderViewHost;
 class TabContents;
+class WebUIMessageHandler;
 
 namespace base {
 class DictionaryValue;

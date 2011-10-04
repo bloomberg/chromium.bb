@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/webui/policy_ui.h"
 
-#include "base/i18n/time_formatting.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
+#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -93,10 +96,14 @@ WebUIMessageHandler* PolicyUIHandler::Attach(WebUI* web_ui) {
 }
 
 void PolicyUIHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("requestData",
-      NewCallback(this, &PolicyUIHandler::HandleRequestData));
-  web_ui_->RegisterMessageCallback("fetchPolicy",
-      NewCallback(this, &PolicyUIHandler::HandleFetchPolicy));
+  web_ui_->RegisterMessageCallback(
+      "requestData",
+      base::Bind(&PolicyUIHandler::HandleRequestData,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "fetchPolicy",
+      base::Bind(&PolicyUIHandler::HandleFetchPolicy,
+                 base::Unretained(this)));
 }
 
 void PolicyUIHandler::OnPolicyValuesChanged() {

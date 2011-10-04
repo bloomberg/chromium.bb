@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/enterprise_enrollment_ui.h"
 
-#include "base/json/json_writer.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
@@ -18,16 +19,18 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/bindings_policy.h"
-#include "content/common/property_bag.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 
-static const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
+namespace {
+
+const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
+
+}  // namespace
 
 // Work around EnterpriseEnrollmentScreenHandler, which is suitable for the
 // stand alone enterprise enrollment screen (views implementation).
@@ -78,8 +81,8 @@ void SingleEnterpriseEnrollmentScreenHandler::RegisterMessages() {
   EnterpriseEnrollmentScreenHandler::RegisterMessages();
   web_ui_->RegisterMessageCallback(
       "enrollmentScreenReady",
-      NewCallback(this,
-                  &SingleEnterpriseEnrollmentScreenHandler::HandleScreenReady));
+      base::Bind(&SingleEnterpriseEnrollmentScreenHandler::HandleScreenReady,
+                 base::Unretained(this)));
 }
 
 void SingleEnterpriseEnrollmentScreenHandler::HandleScreenReady(
