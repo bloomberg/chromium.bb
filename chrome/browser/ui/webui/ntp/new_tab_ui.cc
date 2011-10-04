@@ -68,7 +68,7 @@ const int kTimeoutMs = 2000;
 // Strings sent to the page via jstemplates used to set the direction of the
 // HTML document based on locale.
 const char kRTLHtmlTextDirection[] = "rtl";
-const char kDefaultHtmlTextDirection[] = "ltr";
+const char kLTRHtmlTextDirection[] = "ltr";
 
 ///////////////////////////////////////////////////////////////////////////////
 // MetricsHandler
@@ -397,27 +397,13 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
   // http://yahoo.com is "Yahoo!". In RTL locales, in the [New Tab] page, the
   // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
   // "ltr".
-  //
-  // Since the title can contain BiDi text, we need to mark the text as either
-  // RTL or LTR, depending on the characters in the string. If we use the URL
-  // as the title, we mark the title as LTR since URLs are always treated as
-  // left to right strings. Simply setting the title's "dir" attribute works
-  // fine for rendering and truncating the title. However, it does not work for
-  // entire title within a tooltip when the mouse is over the title link.. For
-  // example, without LRE-PDF pair, the title "Yahoo!" will be rendered as
-  // "!Yahoo" within the tooltip when the mouse is over the title link.
-  std::string direction = kDefaultHtmlTextDirection;
-  if (base::i18n::IsRTL()) {
-    if (using_url_as_the_title) {
-      base::i18n::WrapStringWithLTRFormatting(&title_to_set);
-    } else {
-      if (base::i18n::StringContainsStrongRTLChars(title)) {
-        base::i18n::WrapStringWithRTLFormatting(&title_to_set);
-        direction = kRTLHtmlTextDirection;
-      } else {
-        base::i18n::WrapStringWithLTRFormatting(&title_to_set);
-      }
-    }
+  std::string direction;
+  if (!using_url_as_the_title &&
+      base::i18n::IsRTL() &&
+      base::i18n::StringContainsStrongRTLChars(title)) {
+    direction = kRTLHtmlTextDirection;
+  } else {
+    direction = kLTRHtmlTextDirection;
   }
   dictionary->SetString("title", title_to_set);
   dictionary->SetString("direction", direction);

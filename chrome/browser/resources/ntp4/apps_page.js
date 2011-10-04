@@ -111,7 +111,7 @@ cr.define('ntp4', function() {
     setupForApp: function(app) {
       this.app_ = app;
 
-      this.launch_.textContent = app.appData.name;
+      this.launch_.textContent = app.appData.title;
 
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
@@ -198,15 +198,15 @@ cr.define('ntp4', function() {
       if (this.useSmallIcon_) {
         this.imgDiv_ = this.querySelector('.app-icon-div');
         this.addLaunchClickTarget_(this.imgDiv_);
-        this.imgDiv_.title = this.appData_.name;
+        this.imgDiv_.title = this.appData_.title;
         chrome.send('getAppIconDominantColor', [this.id]);
       } else {
         this.addLaunchClickTarget_(this.appImgContainer_);
-        this.appImgContainer_.title = this.appData_.name;
+        this.appImgContainer_.title = this.appData_.title;
       }
 
       var appSpan = this.appContents_.querySelector('.title');
-      appSpan.textContent = appSpan.title = this.appData_.name;
+      appSpan.textContent = appSpan.title = this.appData_.title;
       this.addLaunchClickTarget_(appSpan);
 
       var notification = this.appData_.notification;
@@ -523,8 +523,8 @@ cr.define('ntp4', function() {
      * data for this tile.
      */
     setDragData: function(dataTransfer) {
-      dataTransfer.setData('Text', this.appData_.name);
-      dataTransfer.setData('URL', this.appData_.launch_url);
+      dataTransfer.setData('Text', this.appData_.title);
+      dataTransfer.setData('URL', this.appData_.url);
     },
   };
 
