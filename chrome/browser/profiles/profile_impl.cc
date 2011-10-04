@@ -586,7 +586,7 @@ void ProfileImpl::RegisterComponentExtensions() {
   AddFileManagerExtension(&component_extensions);
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
   component_extensions.push_back(std::make_pair(
       FILE_PATH_LITERAL("keyboard"),
       IDR_KEYBOARD_MANIFEST));

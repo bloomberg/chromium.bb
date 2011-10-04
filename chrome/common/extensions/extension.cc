@@ -2042,7 +2042,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       std::string val;
       // Restrict override pages to a list of supported URLs.
       if ((page != chrome::kChromeUINewTabHost &&
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
            page != chrome::kChromeUIKeyboardHost &&
 #endif
 #if defined(OS_CHROMEOS)

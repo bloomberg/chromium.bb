@@ -24,7 +24,7 @@ class SendKeyboardEventInputFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.sendKeyboardEvent");
 };
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
 class HideKeyboardFunction : public AsyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;

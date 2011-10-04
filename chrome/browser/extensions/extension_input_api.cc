@@ -19,7 +19,7 @@
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
 #include "content/common/notification_service.h"
 #endif
 
@@ -164,7 +164,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
   return true;
 }
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
 bool HideKeyboardFunction::RunImpl() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,

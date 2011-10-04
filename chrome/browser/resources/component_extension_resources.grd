@@ -94,7 +94,7 @@
         <include name="IDR_FILE_MANAGER_BUTTON_ICON_PASTE" file="file_manager/images/button-icon-paste.png" type="BINDATA" />
       </if>
 
-      <if expr="pp_ifdef('touchui')">
+      <if expr="pp_ifdef('use_virtual_keyboard')">
         <include name="IDR_KEYBOARD_INDEX" file="keyboard/index.html" flattenhtml="true" type="BINDATA" />
       </if>
     </includes>

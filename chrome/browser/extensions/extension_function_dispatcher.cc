@@ -308,7 +308,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SendKeyboardEventInputFunction>();
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
   RegisterFunction<HideKeyboardFunction>();
   RegisterFunction<SetKeyboardHeightFunction>();
 #endif

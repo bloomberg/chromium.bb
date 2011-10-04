@@ -62,7 +62,7 @@
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/webui/keyboard_ui.h"
 #endif
 
@@ -177,7 +177,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
   if (url.host() == chrome::kChromeUIKeyboardHost)
     return &NewWebUI<KeyboardUI>;
 #endif

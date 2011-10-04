@@ -868,7 +868,7 @@ enum NotificationType {
   // Sent when a new web store promo has been loaded.
   NOTIFICATION_WEB_STORE_PROMO_LOADED,
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
   // Sent when the keyboard visibility has changed. Used for testing purposes
   // only. Source is the keyboard manager, and Details is a boolean indicating
   // whether the keyboard is visibile or not.

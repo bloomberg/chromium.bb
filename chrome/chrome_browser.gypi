@@ -4023,8 +4023,6 @@
             ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.h'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views_touch.cc'],
             ['exclude', '^browser/ui/touch/*'],
-            ['exclude', '^browser/ui/virtual_keyboard/*'],
-            ['exclude', '^browser/ui/webui/keyboard_ui.*'],
           ],
         }],
         ['touchui==1', {
@@ -4122,6 +4120,12 @@
           ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
+          ],
+        }],
+        ['use_virtual_keyboard==0', {
+          'sources/': [
+            ['exclude', '^browser/ui/virtual_keyboard/*'],
+            ['exclude', '^browser/ui/webui/keyboard_ui.*'],
           ],
         }],
         ['OS=="linux" and use_aura==1', {

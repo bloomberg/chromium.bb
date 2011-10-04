@@ -30,7 +30,7 @@
 #include "views/widget/native_widget_gtk.h"
 #include "views/widget/widget.h"
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 #endif
 
@@ -111,7 +111,7 @@ WebUILoginView::WebUILoginView()
       status_window_(NULL),
       host_window_frozen_(false),
       status_area_visibility_on_init_(true) {
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
   // Make sure the singleton VirtualKeyboardManager object is created.
   VirtualKeyboardManager::GetInstance();
 #endif

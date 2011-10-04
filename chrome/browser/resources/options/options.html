@@ -51,7 +51,7 @@
   <link rel="stylesheet" href="chromeos/proxy.css">
   <link rel="stylesheet" href="chromeos/system_options_page.css">
 </if>
-<if expr="pp_ifdef('chromeos') and pp_ifdef('touchui')">
+<if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
   <link rel="stylesheet" href="chromeos/virtual_keyboard.css">
 </if>
 
@@ -165,7 +165,7 @@
                <include src="chromeos/language_mozc_options.html">
                <include src="chromeos/language_pinyin_options.html">
              </if>
-             <if expr="pp_ifdef('chromeos') and pp_ifdef('touchui')">
+             <if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
                <include src="chromeos/virtual_keyboard.html">
              </if>
              <include src="cookies_view.html">
