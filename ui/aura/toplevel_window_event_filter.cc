@@ -34,7 +34,6 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
     case ui::ET_MOUSE_MOVED:
       window_component_ =
           target->delegate()->GetNonClientComponent(event->location());
-      UpdateCursorForWindowComponent();
       break;
     case ui::ET_MOUSE_PRESSED:
       mouse_down_offset_ = event->location();
@@ -68,21 +67,6 @@ void ToplevelWindowEventFilter::MoveWindowToFront(Window* target) {
       break;
     parent = parent->parent();
     child = child->parent();
-  }
-}
-
-void ToplevelWindowEventFilter::UpdateCursorForWindowComponent() {
-  switch (window_component_) {
-    case HTLEFT:
-    case HTRIGHT:
-      Desktop::GetInstance()->SetCursor(CURSOR_SIZE_HORIZONTAL);
-      break;
-    case HTBOTTOM:
-      Desktop::GetInstance()->SetCursor(CURSOR_SIZE_VERTICAL);
-      break;
-    default:
-      Desktop::GetInstance()->SetCursor(CURSOR_POINTER);
-      break;
   }
 }
 

@@ -66,6 +66,7 @@ class AURA_SHELL_EXPORT ToplevelFrameView : public views::NonClientFrameView {
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual views::View* GetEventHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
 
   gfx::Rect client_view_bounds_;
 

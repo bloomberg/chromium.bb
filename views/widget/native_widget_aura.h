@@ -123,6 +123,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
   virtual bool ShouldActivate(aura::MouseEvent* event) OVERRIDE;
@@ -151,6 +152,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   // Map used by Set/GetNativeWindowProperty.
   PropsMap props_map_;
+
+  gfx::NativeCursor cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };

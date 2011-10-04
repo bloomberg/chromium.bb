@@ -38,6 +38,9 @@ class WindowDelegateImpl : public WindowDelegate {
   virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE {
     return false;
   }
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+    return NULL;
+  }
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return HTCLIENT;
   }

@@ -19,8 +19,15 @@ EventFilter::~EventFilter() {
 }
 
 bool EventFilter::OnMouseEvent(Window* target, MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED) {
-    ActivateIfNecessary(target, event);
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+      ActivateIfNecessary(target, event);
+      break;
+    case ui::ET_MOUSE_MOVED:
+      Desktop::GetInstance()->SetCursor(target->GetCursor(event->location()));
+      break;
+    default:
+      break;
   }
   return false;
 }

@@ -58,26 +58,10 @@ void DesktopHostWin::SetSize(const gfx::Size& size) {
       SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_NOREPOSITION);
 }
 
-void DesktopHostWin::SetCursor(CursorType cursor_type) {
-  switch (cursor_type) {
-    case CURSOR_POINTER:
-      ::SetCursor(LoadCursor(NULL, IDC_ARROW));
-      break;
-    case CURSOR_LINK:
-      ::SetCursor(LoadCursor(NULL, IDC_HAND));
-      break;
-    case CURSOR_WAIT:
-      ::SetCursor(LoadCursor(NULL, IDC_WAIT));
-      break;
-    case CURSOR_SIZE_HORIZONTAL:
-      ::SetCursor(LoadCursor(NULL, IDC_SIZEWE));
-      break;
-    case CURSOR_SIZE_VERTICAL:
-      ::SetCursor(LoadCursor(NULL, IDC_SIZENS));
-      break;
-    default:
-      break;
-  }
+void DesktopHostWin::SetCursor(gfx::NativeCursor cursor) {
+  if (!cursor)
+    cursor = LoadCursor(NULL, IDC_ARROW);
+  ::SetCursor(cursor);
 }
 
 void DesktopHostWin::OnClose() {

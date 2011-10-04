@@ -4,6 +4,7 @@
 
 #include "views/widget/native_widget_aura.h"
 
+#include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -28,7 +29,8 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
-      can_activate_(true) {
+      can_activate_(true),
+      cursor_(NULL) {
 }
 
 NativeWidgetAura::~NativeWidgetAura() {
@@ -358,7 +360,8 @@ void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
-  //NOTIMPLEMENTED();
+  cursor_ = cursor;
+  aura::Desktop::GetInstance()->SetCursor(cursor);
 }
 
 void NativeWidgetAura::ClearNativeFocus() {
@@ -405,6 +408,10 @@ void NativeWidgetAura::OnBlur() {
 
 bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
   return delegate_->OnKeyEvent(KeyEvent(event));
+}
+
+gfx::NativeCursor NativeWidgetAura::GetCursor(const gfx::Point& point) {
+  return cursor_;
 }
 
 int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {

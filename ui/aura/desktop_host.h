@@ -43,7 +43,7 @@ class DesktopHost : public MessageLoop::Dispatcher {
   virtual void SetSize(const gfx::Size& size) = 0;
 
   // Sets the currently displayed cursor.
-  virtual void SetCursor(CursorType cursor_type) = 0;
+  virtual void SetCursor(gfx::NativeCursor cursor) = 0;
 };
 
 }  // namespace aura

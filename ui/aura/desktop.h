@@ -43,7 +43,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   void SetSize(const gfx::Size& size);
 
   // Shows the specified cursor.
-  void SetCursor(CursorType cursor_type);
+  void SetCursor(gfx::NativeCursor cursor);
 
   // Shows the desktop host and runs an event loop for it.
   void Run();

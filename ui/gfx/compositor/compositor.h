@@ -124,6 +124,8 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // Notifies the compositor that the size of the widget that it is
   // drawing to has changed.
   void WidgetSizeChanged(const gfx::Size& size) {
+    if (size.IsEmpty())
+      return;
     size_ = size;
     OnWidgetSizeChanged();
   }

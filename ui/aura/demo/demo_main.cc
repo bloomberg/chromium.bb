@@ -37,6 +37,9 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE {
     return false;
   }
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+    return NULL;
+  }
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return HTCAPTION;
   }

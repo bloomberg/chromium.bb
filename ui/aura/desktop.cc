@@ -70,8 +70,8 @@ void Desktop::SetSize(const gfx::Size& size) {
   host_->SetSize(size);
 }
 
-void Desktop::SetCursor(CursorType cursor_type) {
-  host_->SetCursor(cursor_type);
+void Desktop::SetCursor(gfx::NativeCursor cursor) {
+  host_->SetCursor(cursor);
 }
 
 void Desktop::Run() {

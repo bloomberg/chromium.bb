@@ -471,5 +471,30 @@ views::View* ToplevelFrameView::GetEventHandlerForPoint(
   return View::GetEventHandlerForPoint(point);
 }
 
+gfx::NativeCursor ToplevelFrameView::GetCursor(const views::MouseEvent& event) {
+#if defined(OS_WIN)
+  switch (current_hittest_code_) {
+    case HTTOPLEFT:
+    case HTBOTTOMRIGHT:
+      return LoadCursor(NULL, IDC_SIZENWSE);
+    case HTTOP:
+    case HTBOTTOM:
+      return LoadCursor(NULL, IDC_SIZENS);
+    case HTTOPRIGHT:
+    case HTBOTTOMLEFT:
+      return LoadCursor(NULL, IDC_SIZENESW);
+    case HTRIGHT:
+    case HTLEFT:
+      return LoadCursor(NULL, IDC_SIZEWE);
+    default:
+      break;
+  }
+  return NULL;
+#elif defined(OS_LINUX)
+  NOTIMPLEMENTED();
+  return NULL;
+#endif
+}
+
 }  // namespace internal
 }  // namespace aura_shell

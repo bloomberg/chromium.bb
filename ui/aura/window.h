@@ -13,6 +13,7 @@
 #include "base/string16.h"
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/compositor/layer_delegate.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
 class SkCanvas;
@@ -104,6 +105,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   static void ConvertPointToWindow(Window* source,
                                    Window* target,
                                    gfx::Point* point);
+
+  // Returns the cursor for the specified point, in window coordinates.
+  gfx::NativeCursor GetCursor(const gfx::Point& point) const;
 
   // Window takes ownership of the EventFilter.
   void SetEventFilter(EventFilter* event_filter);

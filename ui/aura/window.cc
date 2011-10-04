@@ -174,6 +174,10 @@ void Window::ConvertPointToWindow(Window* source,
   ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
 }
 
+gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
+  return delegate_ ? delegate_->GetCursor(point) : NULL;
+}
+
 void Window::SetEventFilter(EventFilter* event_filter) {
   event_filter_.reset(event_filter);
 }
