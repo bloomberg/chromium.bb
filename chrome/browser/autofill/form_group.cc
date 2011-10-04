@@ -102,24 +102,15 @@ bool FormGroup::IntersectionOfTypesHasEqualValues(
 }
 
 void FormGroup::MergeWith(const FormGroup& form_group) {
-  FieldTypeSet a, b, intersection;
+  FieldTypeSet a, b, difference;
   GetNonEmptyTypes(&a);
   form_group.GetNonEmptyTypes(&b);
   std::set_difference(b.begin(), b.end(),
                       a.begin(), a.end(),
-                      std::inserter(intersection, intersection.begin()));
+                      std::inserter(difference, difference.begin()));
 
-  for (FieldTypeSet::const_iterator iter = intersection.begin();
-       iter != intersection.end(); ++iter) {
-    SetInfo(*iter, form_group.GetInfo(*iter));
-  }
-}
-
-void FormGroup::OverwriteWith(const FormGroup& form_group) {
-  FieldTypeSet a;;
-  form_group.GetNonEmptyTypes(&a);
-
-  for (FieldTypeSet::const_iterator iter = a.begin(); iter != a.end(); ++iter) {
+  for (FieldTypeSet::const_iterator iter = difference.begin();
+       iter != difference.end(); ++iter) {
     SetInfo(*iter, form_group.GetInfo(*iter));
   }
 }

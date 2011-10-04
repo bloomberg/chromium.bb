@@ -52,6 +52,12 @@ class CreditCard : public FormGroup {
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);
 
+  // If the card numbers for |this| and |imported_card| match, overwrites |this|
+  // card's data with the data in |credit_card| and returns true.  Otherwise,
+  // returns false.
+  bool UpdateFromImportedCard(const CreditCard& imported_card)
+      WARN_UNUSED_RESULT;
+
   // Comparison for Sync.  Returns 0 if the credit card is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
   // culling duplicates.  The ordering is based on collation order of the

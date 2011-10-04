@@ -63,9 +63,6 @@ class FormGroup {
   // Merges the field data in |form_group| with this FormGroup.
   void MergeWith(const FormGroup& form_group);
 
-  // Overwrites the field data in |form_group| with this FormGroup.
-  void OverwriteWith(const FormGroup& form_group);
-
  protected:
   // AutofillProfile needs to call into GetSupportedTypes() for objects of
   // non-AutofillProfile type, for which mere inheritance is insufficient.

@@ -307,11 +307,15 @@ bool PersonalDataManager::ImportFormData(
   }
 
   // Don't import if we already have this info.
+  // Don't present an infobar if we have already saved this card number.
+  bool merged_credit_card = false;
   if (local_imported_credit_card.get()) {
     for (std::vector<CreditCard*>::const_iterator iter = credit_cards_.begin();
          iter != credit_cards_.end();
          ++iter) {
-      if (local_imported_credit_card->IsSubsetOf(**iter)) {
+      if ((*iter)->UpdateFromImportedCard(*local_imported_credit_card.get())) {
+        merged_credit_card = true;
+        UpdateCreditCard(**iter);
         local_imported_credit_card.reset();
         break;
       }
@@ -324,7 +328,7 @@ bool PersonalDataManager::ImportFormData(
   }
   *imported_credit_card = local_imported_credit_card.release();
 
-  if (imported_profile.get() || *imported_credit_card) {
+  if (imported_profile.get() || *imported_credit_card || merged_credit_card) {
     return true;
   } else {
     FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
@@ -845,8 +849,12 @@ void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
 
 void PersonalDataManager::SaveImportedProfile(
     const AutofillProfile& imported_profile) {
-  if (profile_->IsOffTheRecord())
+  if (profile_->IsOffTheRecord()) {
+    // The |IsOffTheRecord| check should happen earlier in the import process,
+    // upon form submission.
+    NOTREACHED();
     return;
+  }
 
   // Don't save a web profile if the data in the profile is a subset of an
   // auxiliary profile.
@@ -865,34 +873,27 @@ void PersonalDataManager::SaveImportedProfile(
 
 void PersonalDataManager::SaveImportedCreditCard(
     const CreditCard& imported_credit_card) {
-  if (profile_->IsOffTheRecord())
+  DCHECK(!imported_credit_card.number().empty());
+  if (profile_->IsOffTheRecord()) {
+    // The |IsOffTheRecord| check should happen earlier in the import process,
+    // upon form submission.
+    NOTREACHED();
     return;
+  }
 
   // Set to true if |imported_credit_card| is merged into the credit card list.
   bool merged = false;
 
   std::vector<CreditCard> creditcards;
-  for (std::vector<CreditCard*>::const_iterator iter = credit_cards_.begin();
-       iter != credit_cards_.end();
-       ++iter) {
-    if (imported_credit_card.IsSubsetOf(**iter)) {
-      // In this case, the existing credit card already contains all of the data
-      // in |imported_credit_card|, so consider the credit cards already
-      // merged.
+  for (std::vector<CreditCard*>::const_iterator card = credit_cards_.begin();
+       card != credit_cards_.end();
+       ++card) {
+    // If |imported_credit_card| has not yet been merged, check whether it
+    // should be with the current |card|.
+    if (!merged && (*card)->UpdateFromImportedCard(imported_credit_card))
       merged = true;
-    } else if ((*iter)->IntersectionOfTypesHasEqualValues(
-        imported_credit_card)) {
-      // |imported_credit_card| contains all of the data in this credit card,
-      // plus more.
-      merged = true;
-      (*iter)->MergeWith(imported_credit_card);
-    } else if (!imported_credit_card.number().empty() &&
-               (*iter)->number() == imported_credit_card.number()) {
-      merged = true;
-      (*iter)->OverwriteWith(imported_credit_card);
-    }
 
-    creditcards.push_back(**iter);
+    creditcards.push_back(**card);
   }
 
   if (!merged)

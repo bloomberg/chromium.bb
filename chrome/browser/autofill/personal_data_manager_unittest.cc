@@ -1386,9 +1386,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   form_structure2.DetermineHeuristicTypes();
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));
-  ASSERT_TRUE(imported_credit_card);
-  personal_data_->SaveImportedCreditCard(*imported_credit_card);
-  delete imported_credit_card;
+  EXPECT_FALSE(imported_credit_card);
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
@@ -1528,11 +1526,14 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_FALSE(personal_data_->ImportFormData(form_structure2,
-                                              &imported_credit_card));
-  ASSERT_FALSE(imported_credit_card);
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
+                                             &imported_credit_card));
+  EXPECT_FALSE(imported_credit_card);
 
-  // Note: no refresh here.
+  // Wait for the refresh, which in this case is a no-op.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
 
   // No change is expected.
   CreditCard expected2;
@@ -1609,9 +1610,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
-  ASSERT_TRUE(imported_credit_card);
-  personal_data_->SaveImportedCreditCard(*imported_credit_card);
-  delete imported_credit_card;
+  EXPECT_FALSE(imported_credit_card);
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
@@ -1626,6 +1625,59 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
+}
+
+// We allow the user to store a credit card number with separators via the UI.
+// We should not try to re-aggregate the same card with the separators stripped.
+TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
+  // Start with a single valid credit card stored via the preferences.
+  // Note the separators in the credit card number.
+  CreditCard saved_credit_card;
+  autofill_test::SetCreditCardInfo(&saved_credit_card,
+      "Biggie Smalls", "4111 1111 1111 1111" /* Visa */, "01", "2011");
+  personal_data_->AddCreditCard(saved_credit_card);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  const std::vector<CreditCard*>& results1 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results1.size());
+  EXPECT_EQ(0, saved_credit_card.Compare(*results1[0]));
+
+  // Import the same card info, but with different separators in the number.
+  FormData form;
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2011", "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
+                                             &imported_credit_card));
+  EXPECT_FALSE(imported_credit_card);
+
+  // Wait for the refresh, which in this case is a no-op.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  // Expect that no new card is saved.
+  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results2.size());
+  EXPECT_EQ(0, saved_credit_card.Compare(*results2[0]));
 }
 
 TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
