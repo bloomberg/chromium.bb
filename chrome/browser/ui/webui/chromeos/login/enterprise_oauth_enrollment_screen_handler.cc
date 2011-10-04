@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +33,41 @@ const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepWorking[] = "working";
 const char kEnrollmentStepError[] = "error";
 const char kEnrollmentStepSuccess[] = "success";
+
+// A helper class that takes care of asynchronously revoking a given token. It
+// will delete itself once done.
+class TokenRevoker : public GaiaOAuthConsumer {
+ public:
+  TokenRevoker(const std::string& token,
+               const std::string& secret,
+               Profile* profile)
+      : oauth_fetcher_(this, profile->GetRequestContext(), profile,
+                       kServiceScopeChromeOSDeviceManagement) {
+    if (secret.empty())
+      oauth_fetcher_.StartOAuthRevokeWrapToken(token);
+    else
+      oauth_fetcher_.StartOAuthRevokeAccessToken(token, secret);
+  }
+
+  virtual ~TokenRevoker() {}
+
+  virtual void OnOAuthRevokeTokenSuccess() OVERRIDE {
+    LOG(INFO) << "Successfully revoked OAuth token.";
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  }
+
+  virtual void OnOAuthRevokeTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE {
+    LOG(ERROR) << "Failed to revoke OAuth token!";
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  }
+
+ private:
+  GaiaOAuthFetcher oauth_fetcher_;
+  std::string token_;
+
+  DISALLOW_COPY_AND_ASSIGN(TokenRevoker);
+};
 
 }  // namespace
 
@@ -99,6 +135,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::SetEditableUser(bool editable) {
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowConfirmationScreen() {
   ShowStep(kEnrollmentStepSuccess);
+  ResetAuth();
   NotifyObservers(true);
 }
 
@@ -183,6 +220,13 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnGetOAuthTokenFailure(
   ShowFatalAuthError();
 }
 
+void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthGetAccessTokenSuccess(
+    const std::string& token,
+    const std::string& secret) {
+  access_token_ = token;
+  access_token_secret_ = secret;
+}
+
 void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthGetAccessTokenFailure(
     const GoogleServiceAuthError& error) {
   ShowAuthError(error);
@@ -193,6 +237,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthWrapBridgeSuccess(
     const std::string& token,
     const std::string& expires_in) {
   DCHECK_EQ(service_scope, GaiaConstants::kDeviceManagementServiceOAuth);
+
+  wrap_token_ = token;
 
   if (!controller_ || user_.empty()) {
     NOTREACHED();
@@ -239,6 +285,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::Initialize() {
 
 void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
     const base::ListValue* value) {
+  RevokeTokens();
   action_on_browsing_data_removed_ =
       base::Bind(&EnterpriseOAuthEnrollmentScreenHandler::DoClose,
                  base::Unretained(this));
@@ -277,6 +324,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry(
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowStep(const char* step) {
+  RevokeTokens();
+
   base::StringValue step_value(step);
   web_ui_->CallJavascriptFunction("oobe.OAuthEnrollmentScreen.showStep",
                                   step_value);
@@ -284,6 +333,8 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowStep(const char* step) {
 
 void EnterpriseOAuthEnrollmentScreenHandler::ShowError(int message_id,
                                                        bool retry) {
+  RevokeTokens();
+
   const std::string message(l10n_util::GetStringUTF8(message_id));
   base::StringValue message_value(message);
   base::FundamentalValue retry_value(retry);
@@ -298,12 +349,29 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
   if (browsing_data_remover_)
     return;
 
-  browsing_data_remover_ = new BrowsingDataRemover(
-      Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context()),
-      BrowsingDataRemover::EVERYTHING,
-      base::Time());
+  Profile* profile =
+      Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context());
+  browsing_data_remover_ =
+      new BrowsingDataRemover(profile,
+                              BrowsingDataRemover::EVERYTHING,
+                              base::Time());
   browsing_data_remover_->AddObserver(this);
   browsing_data_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
+}
+
+void EnterpriseOAuthEnrollmentScreenHandler::RevokeTokens() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context());
+
+  if (!access_token_.empty()) {
+    new TokenRevoker(access_token_, access_token_secret_, profile);
+    access_token_.clear();
+  }
+
+  if (!wrap_token_.empty()) {
+    new TokenRevoker(wrap_token_, "", profile);
+    wrap_token_.clear();
+  }
 }
 
 void EnterpriseOAuthEnrollmentScreenHandler::DoShow() {
