@@ -4632,6 +4632,13 @@
    fun:_ZN8remoting35DecoderVp8Test_EncodeAndDecode_Test8TestBodyEv
 }
 {
+   bug_98867
+   Memcheck:Jump
+   obj:*
+   obj:*
+   obj:*
+}
+{
    bug_98967_a
    Memcheck:Leak
    fun:_Znw*
