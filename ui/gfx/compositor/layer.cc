@@ -137,7 +137,7 @@ void Layer::SetVisible(bool visible) {
   visible_ = visible;
   if (!visible_)
     DropTextures();
-  if (fills_bounds_opaquely_ && parent_)
+  if (parent_)
     parent_->RecomputeHole();
 }
 
@@ -439,14 +439,14 @@ void Layer::StopAnimatingIfNecessary(
 void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
   bounds_ = bounds;
 
-  if (parent() && fills_bounds_opaquely_)
+  if (parent())
     parent()->RecomputeHole();
 }
 
 void Layer::SetTransformImmediately(const ui::Transform& transform) {
   transform_ = transform;
 
-  if (parent() && fills_bounds_opaquely_)
+  if (parent())
     parent()->RecomputeHole();
 }
 

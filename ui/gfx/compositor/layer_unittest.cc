@@ -16,6 +16,13 @@ namespace ui {
 
 namespace {
 
+// Use
+// - LayerWithRealCompositorTest when a real compositor is required for testing.
+//    - Slow because they bring up a window.
+//
+// - LayerWithDelegateTest for testing functionality of the LayerDelegate.
+// - LayerWithNullDelegateTest for testing all other functionality.
+
 class LayerWithRealCompositorTest : public testing::Test {
  public:
   LayerWithRealCompositorTest() {}
@@ -187,11 +194,10 @@ TEST_F(LayerWithRealCompositorTest, Hierarchy) {
   DrawTree(l1.get());
 }
 
-// LayerTest uses TestCompositor as the Compositor implementation.
-class LayerTest : public testing::Test {
+class LayerWithDelegateTest : public testing::Test {
  public:
-  LayerTest() {}
-  virtual ~LayerTest() {}
+  LayerWithDelegateTest() {}
+  virtual ~LayerWithDelegateTest() {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
@@ -203,7 +209,7 @@ class LayerTest : public testing::Test {
 
   Compositor* compositor() { return compositor_.get(); }
 
-  Layer* CreateLayer(Layer::LayerType type) {
+  virtual Layer* CreateLayer(Layer::LayerType type) {
     return new Layer(compositor(), type);
   }
 
@@ -214,7 +220,7 @@ class LayerTest : public testing::Test {
     return layer;
   }
 
-  Layer* CreateNoTextureLayer(const gfx::Rect& bounds) {
+  virtual Layer* CreateNoTextureLayer(const gfx::Rect& bounds) {
     Layer* layer = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
     layer->SetBounds(bounds);
     return layer;
@@ -252,12 +258,12 @@ class LayerTest : public testing::Test {
  private:
   scoped_refptr<TestCompositor> compositor_;
 
-  DISALLOW_COPY_AND_ASSIGN(LayerTest);
+  DISALLOW_COPY_AND_ASSIGN(LayerWithDelegateTest);
 };
 
 // L1
 //  +-- L2
-TEST_F(LayerTest, ConvertPointToLayer_Simple) {
+TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Simple) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
@@ -279,7 +285,7 @@ TEST_F(LayerTest, ConvertPointToLayer_Simple) {
 // L1
 //  +-- L2
 //       +-- L3
-TEST_F(LayerTest, ConvertPointToLayer_Medium) {
+TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Medium) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
@@ -301,7 +307,7 @@ TEST_F(LayerTest, ConvertPointToLayer_Medium) {
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
 }
 
-TEST_F(LayerTest, Delegate) {
+TEST_F(LayerWithDelegateTest, Delegate) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorBLACK,
                                         gfx::Rect(20, 20, 400, 400)));
   TestLayerDelegate delegate(l1.get());
@@ -328,7 +334,7 @@ TEST_F(LayerTest, Delegate) {
   EXPECT_EQ(delegate.paint_size(), gfx::Size(50, 50));
 }
 
-TEST_F(LayerTest, DrawTree) {
+TEST_F(LayerWithDelegateTest, DrawTree) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
@@ -361,7 +367,7 @@ TEST_F(LayerTest, DrawTree) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_F(LayerTest, HierarchyNoTexture) {
+TEST_F(LayerWithDelegateTest, HierarchyNoTexture) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateNoTextureLayer(gfx::Rect(10, 10, 350, 350)));
@@ -391,18 +397,170 @@ TEST_F(LayerTest, HierarchyNoTexture) {
   EXPECT_TRUE(d3.painted());
 }
 
+class LayerWithNullDelegateTest : public LayerWithDelegateTest {
+ public:
+  LayerWithNullDelegateTest() {}
+  virtual ~LayerWithNullDelegateTest() {}
+
+  // Overridden from testing::Test:
+  virtual void SetUp() OVERRIDE {
+    LayerWithDelegateTest::SetUp();
+    default_layer_delegate_.reset(new NullLayerDelegate());
+  }
+
+  virtual void TearDown() OVERRIDE {
+  }
+
+  Layer* CreateLayer (Layer::LayerType type) OVERRIDE {
+    Layer* layer = new Layer(compositor(), type);
+    layer->set_delegate(default_layer_delegate_.get());
+    return layer;
+  }
+
+  Layer* CreateTextureRootLayer(const gfx::Rect& bounds) {
+    Layer* layer = CreateTextureLayer(bounds);
+    compositor()->SetRootLayer(layer);
+    return layer;
+  }
+
+  Layer* CreateTextureLayer(const gfx::Rect& bounds) {
+    Layer* layer = CreateLayer(Layer::LAYER_HAS_TEXTURE);
+    layer->SetBounds(bounds);
+    return layer;
+  }
+
+  Layer* CreateNoTextureLayer(const gfx::Rect& bounds) OVERRIDE {
+    Layer* layer = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
+    layer->SetBounds(bounds);
+    return layer;
+  }
+
+ private:
+  scoped_ptr<NullLayerDelegate> default_layer_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerWithNullDelegateTest);
+};
+
 // Verifies that a layer which is set never to have a texture does not
 // get a texture when SetFillsBoundsOpaquely is called.
-TEST_F(LayerTest, LayerHasNoTextureSetFillsOpaquely) {
-  Layer* parent = CreateLayer(Layer::LAYER_HAS_NO_TEXTURE);
-  parent->SetBounds(gfx::Rect(0, 0, 400, 400));
+TEST_F(LayerWithNullDelegateTest, LayerNoTextureSetFillsBoundsOpaquely) {
+  scoped_ptr<Layer> parent(CreateNoTextureLayer(gfx::Rect(0, 0, 400, 400)));
+  scoped_ptr<Layer> child(CreateNoTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  parent->Add(child.get());
 
-  Layer* child = CreateLayer(Layer::LAYER_HAS_TEXTURE);
-  child->SetBounds(gfx::Rect(50, 50, 100, 100));
-  child->SetFillsBoundsOpaquely(true);
-
-  parent->Add(child);
+  compositor()->SetRootLayer(parent.get());
+  Draw();
+  EXPECT_TRUE(child->texture() == NULL);
   EXPECT_TRUE(parent->texture() == NULL);
+}
+
+// Verifies that a layer does not have a texture when the hole is the size
+// of the parent layer.
+TEST_F(LayerWithNullDelegateTest, LayerNoTextureHoleSizeOfLayer) {
+  scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
+  scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  parent->Add(child.get());
+
+  Draw();
+  EXPECT_EQ(gfx::Rect(50, 50, 100, 100), parent->hole_rect());
+  EXPECT_TRUE(parent->texture() != NULL);
+
+  child->SetBounds(gfx::Rect(0, 0, 400, 400));
+  Draw();
+  EXPECT_TRUE(parent->texture() == NULL);
+}
+
+// Verifies that a layer which has opacity == 0 does not have a texture.
+TEST_F(LayerWithNullDelegateTest, LayerNoTextureTransparent) {
+  scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
+  scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  parent->Add(child.get());
+
+  parent->SetOpacity(0.0f);
+  child->SetOpacity(0.0f);
+  Draw();
+  EXPECT_TRUE(parent->texture() == NULL);
+  EXPECT_TRUE(child->texture() == NULL);
+
+  parent->SetOpacity(1.0f);
+  Draw();
+  EXPECT_TRUE(parent->texture() != NULL);
+  EXPECT_TRUE(child->texture() == NULL);
+
+  child->SetOpacity(1.0f);
+  Draw();
+  EXPECT_TRUE(parent->texture() != NULL);
+  EXPECT_TRUE(child->texture() != NULL);
+}
+
+// Verifies that no texture is created for a layer with empty bounds.
+TEST_F(LayerWithNullDelegateTest, LayerTextureNonEmptySchedulePaint) {
+  scoped_ptr<Layer> layer(CreateTextureRootLayer(gfx::Rect(0, 0, 0, 0)));
+  Draw();
+  EXPECT_TRUE(layer->texture() == NULL);
+
+  layer->SetBounds(gfx::Rect(0, 0, 400, 400));
+  Draw();
+  EXPECT_TRUE(layer->texture() != NULL);
+}
+
+// Verifies that a hole in a layer does not intersect non completely-opaque
+// layers.
+TEST_F(LayerWithNullDelegateTest, HoleDoesNotIntersectNonOpaque) {
+  scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
+  scoped_ptr<Layer> child1(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  parent->Add(child1.get());
+
+  scoped_ptr<Layer> child2(CreateLayer(Layer::LAYER_HAS_NO_TEXTURE));
+  child2->SetFillsBoundsOpaquely(false);
+  parent->Add(child2.get());
+  Draw();
+
+  // Ensure largest non intersecting hole picked.
+  // largest fragment on bottom.
+  child2->SetBounds(gfx::Rect(20, 20, 60, 80));
+  EXPECT_EQ(gfx::Rect(50, 100, 100, 50), parent->hole_rect());
+
+  // largest fragment on right.
+  child2->SetBounds(gfx::Rect(20, 20, 60, 200));
+  EXPECT_EQ(gfx::Rect(80, 50, 70, 100), parent->hole_rect());
+
+  // largest fragment on top.
+  child2->SetBounds(gfx::Rect(130, 110, 50, 50));
+  EXPECT_EQ(gfx::Rect(50, 50, 100, 60), parent->hole_rect());
+
+  // largest fragment on left.
+  child2->SetBounds(gfx::Rect(130, 20, 50, 200));
+  EXPECT_EQ(gfx::Rect(50, 50, 80, 100), parent->hole_rect());
+}
+
+// Verifies that when there are many potential holes, the largest one is picked.
+TEST_F(LayerWithNullDelegateTest, LargestHole) {
+  scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
+
+  scoped_ptr<Layer> child1(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  parent->Add(child1.get());
+
+  scoped_ptr<Layer> child2(CreateTextureLayer(gfx::Rect(75, 75, 200, 200)));
+  parent->Add(child2.get());
+
+  EXPECT_EQ(gfx::Rect(75, 75, 200, 200), parent->hole_rect());
+}
+
+// Verifies that there is no hole present when one of the child layers has a
+// transform.
+TEST_F(LayerWithNullDelegateTest, NoHoleWithTransform) {
+  scoped_ptr<Layer> parent(CreateTextureLayer(gfx::Rect(0, 0, 400, 400)));
+  scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
+  parent->Add(child.get());
+
+  EXPECT_TRUE(!parent->hole_rect().IsEmpty());
+
+  ui::Transform t;
+  t.SetRotate(90.0f);
+  child->SetTransform(t);
+
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), parent->hole_rect());
 }
 
 // Create this hierarchy:
@@ -411,23 +569,12 @@ TEST_F(LayerTest, LayerHasNoTextureSetFillsOpaquely) {
 //  +- L12 (no texture) (added after L1 is already set as root-layer)
 //    +- L121 (texture)
 //    +- L122 (texture)
-TEST_F(LayerTest, NoCompositor) {
-  scoped_ptr<Layer> l1(new Layer(NULL, Layer::LAYER_HAS_NO_TEXTURE));
-  scoped_ptr<Layer> l11(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
-  scoped_ptr<Layer> l12(new Layer(NULL, Layer::LAYER_HAS_NO_TEXTURE));
-  scoped_ptr<Layer> l121(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
-  scoped_ptr<Layer> l122(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
-
-  NullLayerDelegate d1;
-  NullLayerDelegate d11;
-  NullLayerDelegate d12;
-  NullLayerDelegate d121;
-  NullLayerDelegate d122;
-  l1->set_delegate(&d1);
-  l11->set_delegate(&d11);
-  l12->set_delegate(&d12);
-  l121->set_delegate(&d121);
-  l122->set_delegate(&d122);
+TEST_F(LayerWithNullDelegateTest, NoCompositor) {
+  scoped_ptr<Layer> l1(CreateLayer(Layer::LAYER_HAS_NO_TEXTURE));
+  scoped_ptr<Layer> l11(CreateLayer(Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l12(CreateLayer(Layer::LAYER_HAS_NO_TEXTURE));
+  scoped_ptr<Layer> l121(CreateLayer(Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l122(CreateLayer(Layer::LAYER_HAS_TEXTURE));
 
   EXPECT_EQ(NULL, l1->texture());
   EXPECT_EQ(NULL, l11->texture());
@@ -477,4 +624,3 @@ TEST_F(LayerTest, NoCompositor) {
 }
 
 } // namespace ui
-
