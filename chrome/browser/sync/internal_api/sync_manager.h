@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
@@ -387,8 +387,6 @@ class SyncManager {
     virtual ~Observer();
   };
 
-  typedef Callback0::Type ModeChangeCallback;
-
   // Create an uninitialized SyncManager.  Callers must Init() before using.
   explicit SyncManager(const std::string& name);
   virtual ~SyncManager();
@@ -464,7 +462,7 @@ class SyncManager {
   // will occur, but calls to RequestConfig will be supported.  If |callback|
   // is provided, it will be invoked (from the internal SyncScheduler) when
   // the thread has changed to configuration mode.
-  void StartConfigurationMode(ModeChangeCallback* callback);
+  void StartConfigurationMode(const base::Closure& callback);
 
   // Switches the mode of operation to CONFIGURATION_MODE and
   // schedules a config task to fetch updates for |types|.

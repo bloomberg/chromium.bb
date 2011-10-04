@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/location.h"
-#include "base/task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/net/gaia/token_service.h"
@@ -243,11 +242,11 @@ void SyncBackendHost::ConfigureDataTypes(
             &SyncBackendHost::Core::DoRequestCleanupDisabledTypes));
   }
 
-  StartConfiguration(NewCallback(core_.get(),
-      &SyncBackendHost::Core::FinishConfigureDataTypes));
+  StartConfiguration(base::Bind(
+      &SyncBackendHost::Core::FinishConfigureDataTypes, core_.get()));
 }
 
-void SyncBackendHost::StartConfiguration(Callback0::Type* callback) {
+void SyncBackendHost::StartConfiguration(const base::Closure& callback) {
   // Put syncer in the config mode. DTM will put us in normal mode once it is
   // done. This is to ensure we dont do a normal sync when we are doing model
   // association.
@@ -640,7 +639,8 @@ void SyncBackendHost::Core::DoRequestConfig(
   sync_manager_->RequestConfig(types_to_config, reason);
 }
 
-void SyncBackendHost::Core::DoStartConfiguration(Callback0::Type* callback) {
+void SyncBackendHost::Core::DoStartConfiguration(
+    const base::Closure& callback) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   sync_manager_->StartConfigurationMode(callback);
 }

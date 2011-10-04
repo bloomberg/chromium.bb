@@ -45,7 +45,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   virtual sync_api::HttpPostProviderFactory* MakeHttpBridgeFactory(
       const scoped_refptr<net::URLRequestContextGetter>& getter) OVERRIDE;
 
-  virtual void StartConfiguration(Callback0::Type* callback) OVERRIDE;
+  virtual void StartConfiguration(const base::Closure& callback) OVERRIDE;
 
   static void SetDefaultExpectationsForWorkerCreation(ProfileMock* profile);
 

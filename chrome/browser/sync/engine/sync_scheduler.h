@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
@@ -61,14 +61,12 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // Calls Stop().
   virtual ~SyncScheduler();
 
-  typedef Callback0::Type ModeChangeCallback;
-
   // Start the scheduler with the given mode.  If the scheduler is
   // already started, switch to the given mode, although some
   // scheduled tasks from the old mode may still run.  If non-NULL,
   // |callback| will be invoked when the mode has been changed to
   // |mode|.  Takes ownership of |callback|.
-  void Start(Mode mode, ModeChangeCallback* callback);
+  void Start(Mode mode, const base::Closure& callback);
 
   // Request that any running syncer task stop as soon as possible.
   // This function can be called from any thread.  Stop must still be
@@ -249,12 +247,14 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   static const char* GetDecisionString(JobProcessDecision decision);
 
   // Helpers that log before posting to |sync_loop_|.
-  // TODO(akalin): Use base::Closure.
 
   void PostTask(const tracked_objects::Location& from_here,
-                const char* name, Task* task);
+                const char* name,
+                const base::Closure& task);
   void PostDelayedTask(const tracked_objects::Location& from_here,
-                       const char* name, Task* task, int64 delay_ms);
+                       const char* name,
+                       const base::Closure& task,
+                       int64 delay_ms);
 
   // Helper to assemble a job and post a delayed task to sync.
   void ScheduleSyncSessionJob(
@@ -306,7 +306,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
 
   // 'Impl' here refers to real implementation of public functions, running on
   // |thread_|.
-  void StartImpl(Mode mode, ModeChangeCallback* callback);
+  void StartImpl(Mode mode, const base::Closure& callback);
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
@@ -359,8 +359,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
 
   virtual void OnActionableError(const sessions::SyncSessionSnapshot& snapshot);
 
-
-  ScopedRunnableMethodFactory<SyncScheduler> method_factory_;
+  base::WeakPtrFactory<SyncScheduler> weak_ptr_factory_;
 
   // Used for logging.
   const std::string name_;

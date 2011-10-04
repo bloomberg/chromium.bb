@@ -93,8 +93,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
 }
 
 void SyncBackendHostForProfileSyncTest::StartConfiguration(
-    Callback0::Type* callback) {
-  scoped_ptr<Callback0::Type> scoped_callback(callback);
+    const base::Closure& callback) {
   SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop();
   if (initialization_state_ == DOWNLOADING_NIGORI) {
     syncable::ModelTypeBitSet sync_ended;

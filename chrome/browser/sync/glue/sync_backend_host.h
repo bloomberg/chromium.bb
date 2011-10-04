@@ -173,7 +173,7 @@ class SyncBackendHost {
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
   // syncer will call us back on FinishConfigureDataTypes.
-  virtual void StartConfiguration(Callback0::Type* callback);
+  virtual void StartConfiguration(const base::Closure& callback);
 
   // Turns on encryption of all present and future sync data.
   virtual void EnableEncryptEverything();
@@ -363,7 +363,7 @@ class SyncBackendHost {
 
     // Start the configuration mode.  |callback| is called on the sync
     // thread.
-    virtual void DoStartConfiguration(Callback0::Type* callback);
+    virtual void DoStartConfiguration(const base::Closure& callback);
 
     // Set the base request context to use when making HTTP calls.
     // This method will add a reference to the context to persist it

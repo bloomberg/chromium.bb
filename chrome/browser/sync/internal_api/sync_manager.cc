@@ -707,11 +707,11 @@ void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types,
         << "null";
     return;
   }
-  StartConfigurationMode(NULL);
+  StartConfigurationMode(base::Closure());
   data_->scheduler()->ScheduleConfig(types, GetSourceFromReason(reason));
 }
 
-void SyncManager::StartConfigurationMode(ModeChangeCallback* callback) {
+void SyncManager::StartConfigurationMode(const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!data_->scheduler()) {
     LOG(INFO)
@@ -795,7 +795,7 @@ bool SyncManager::SyncInternal::Init(
   if (signed_in || setup_for_test_mode_) {
     if (scheduler()) {
       scheduler()->Start(
-          browser_sync::SyncScheduler::CONFIGURATION_MODE, NULL);
+          browser_sync::SyncScheduler::CONFIGURATION_MODE, base::Closure());
     }
 
     initialized_ = true;
@@ -875,7 +875,7 @@ void SyncManager::SyncInternal::StartSyncingNormally() {
   // syncing until at least the DirectoryManager broadcasts the OPENED
   // event, and a valid server connection is detected.
   if (scheduler())  // NULL during certain unittests.
-    scheduler()->Start(SyncScheduler::NORMAL_MODE, NULL);
+    scheduler()->Start(SyncScheduler::NORMAL_MODE, base::Closure());
 }
 
 bool SyncManager::SyncInternal::OpenDirectory() {

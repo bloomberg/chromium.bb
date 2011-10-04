@@ -5,9 +5,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/sync_scheduler.h"
@@ -73,7 +72,7 @@ static const size_t kMinNumSamples = 5;
 class SyncSchedulerTest : public testing::Test {
  public:
   SyncSchedulerTest()
-      : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         context_(NULL),
         syncer_(NULL),
         delay_(NULL) {}
@@ -140,7 +139,8 @@ class SyncSchedulerTest : public testing::Test {
   void StartSyncScheduler(SyncScheduler::Mode mode) {
     scheduler()->Start(
         mode,
-        callback_factory_.NewCallback(&SyncSchedulerTest::DoQuitLoopNow));
+        base::Bind(&SyncSchedulerTest::DoQuitLoopNow,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   bool GetBackoffAndResetTest() {
@@ -190,7 +190,7 @@ class SyncSchedulerTest : public testing::Test {
   SyncSessionContext* context() { return context_; }
 
  private:
-  base::ScopedCallbackFactory<SyncSchedulerTest> callback_factory_;
+  base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
   MessageLoop message_loop_;
   scoped_ptr<SyncScheduler> scheduler_;
   scoped_ptr<MockConnectionManager> connection_;
