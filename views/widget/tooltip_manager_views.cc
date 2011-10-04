@@ -130,8 +130,8 @@ void TooltipManagerViews::DidProcessEvent(const base::NativeEvent& event) {
 #elif defined(OS_WIN)
 base::EventStatus TooltipManagerViews::WillProcessEvent(
     const base::NativeEvent& event) {
-  if (msg.message == WM_MOUSEMOVE)
-    OnMouseMoved(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+  if (event.message == WM_MOUSEMOVE)
+    OnMouseMoved(GET_X_LPARAM(event.lParam), GET_Y_LPARAM(event.lParam));
   return base::EVENT_CONTINUE;
 }
 
