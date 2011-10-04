@@ -34,6 +34,21 @@ Task* ScopedTaskRunner::Release() {
   return tmp;
 }
 
+ScopedClosureRunner::ScopedClosureRunner(const Closure& closure)
+    : closure_(closure) {
+}
+
+ScopedClosureRunner::~ScopedClosureRunner() {
+  if (!closure_.is_null())
+    closure_.Run();
+}
+
+Closure ScopedClosureRunner::Release() {
+  Closure result = closure_;
+  closure_.Reset();
+  return result;
+}
+
 namespace subtle {
 
 TaskClosureAdapter::TaskClosureAdapter(Task* task)

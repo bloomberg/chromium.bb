@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/base_export.h"
+#include "base/callback.h"
 #include "base/debug/alias.h"
 #include "base/memory/raw_scoped_refptr_mismatch_checker.h"
 #include "base/memory/weak_ptr.h"
@@ -564,6 +565,19 @@ class BASE_EXPORT ScopedTaskRunner {
   Task* task_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedTaskRunner);
+};
+
+class BASE_EXPORT ScopedClosureRunner {
+ public:
+  explicit ScopedClosureRunner(const Closure& closure);
+  ~ScopedClosureRunner();
+
+  Closure Release();
+
+ private:
+  Closure closure_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedClosureRunner);
 };
 
 namespace subtle {
