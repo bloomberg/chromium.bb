@@ -419,6 +419,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kUseMoreWebUI)
   },
+  {
+    "enable-ntp-bookmark-features",
+    IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_NAME,
+    IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableNTPBookmarkFeatures)
+  },
 };
 
 const Experiment* experiments = kExperiments;

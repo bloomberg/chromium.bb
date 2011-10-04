@@ -195,7 +195,7 @@ NewTabUI::NewTabUI(TabContents* contents)
   // Override some options on the Web UI.
   hide_favicon_ = true;
 
-  if (!NTP4Enabled() &&
+  if (!NTP4BookmarkFeaturesEnabled() &&
       GetProfile()->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar) &&
       browser_defaults::bookmarks_enabled) {
     set_force_bookmark_bar_visible(true);
@@ -430,6 +430,12 @@ bool NewTabUI::NTP4Enabled() {
 #else
   return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage);
 #endif
+}
+
+// static
+bool NewTabUI::NTP4BookmarkFeaturesEnabled() {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  return NTP4Enabled() && cl->HasSwitch(switches::kEnableNTPBookmarkFeatures);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

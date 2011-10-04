@@ -4589,6 +4589,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_USE_MORE_WEBUI_DESCRIPTION" desc="Description for the flag to use more WebUI.">
         Enable experimental HTML implementations of some minor UI components such as various dialogs.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_NAME" desc="Title for the flag to enable NTP bookmark features.">
+        Enable NTP bookmark features
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_DESCRIPTION" desc="Description for the flag to enable NTP bookmark features.">
+        Enable experimental bookmark features within the NewTabPage.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

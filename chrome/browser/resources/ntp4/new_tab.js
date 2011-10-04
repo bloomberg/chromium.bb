@@ -208,9 +208,12 @@ cr.define('ntp4', function() {
       chrome.send('introMessageSeen');
     }
 
-    bookmarksPage = new ntp4.BookmarksPage();
-    appendTilePage(bookmarksPage, localStrings.getString('bookmarksPage'));
-    chrome.send('getBookmarksData');
+    var bookmarkFeatures = localStrings.getString('bookmark_features');
+    if (bookmarkFeatures == 'true') {
+      bookmarksPage = new ntp4.BookmarksPage();
+      appendTilePage(bookmarksPage, localStrings.getString('bookmarksPage'));
+      chrome.send('getBookmarksData');
+    }
 
     var serverpromo = localStrings.getString('serverpromo');
     if (serverpromo) {
@@ -417,7 +420,10 @@ cr.define('ntp4', function() {
     // Set the App dot names. Skip the first and last dots (Most Visited and
     // Bookmarks).
     var dots = dotList.getElementsByClassName('dot');
-    for (var i = 1; i < dots.length - 2; ++i) {
+    // TODO(csilv): Remove this calcluation if/when we remove the flag for
+    // for the bookmarks page.
+    var length = bookmarksPage ? dots.length - 2 : dots.Length - 1;
+    for (var i = 1; i < length; ++i) {
       dots[i].displayTitle = data.appPageNames[i - 1] || '';
     }
   }
@@ -453,7 +459,8 @@ cr.define('ntp4', function() {
             appsPages[Math.min(shownPageIndex, appsPages.length - 1)]);
         break;
       case templateData['bookmarks_page_id']:
-        cardSlider.selectCardByValue(bookmarksPage);
+        if (bookmarksPage)
+          cardSlider.selectCardByValue(bookmarksPage);
         break;
       case templateData['most_visited_page_id']:
         cardSlider.selectCardByValue(mostVisitedPage);

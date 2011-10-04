@@ -423,6 +423,10 @@ void NTPResourceCache::CreateNewTabHTML() {
     UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
   }
 
+  // Enable or disable bookmark features based on an about flag.
+  localized_strings.SetString("bookmark_features",
+      NewTabUI::NTP4BookmarkFeaturesEnabled() ? "true" : "false");
+
   // Load the new tab page appropriate for this build
   // Note that some builds (eg. TOUCHUI) don't make use of everything we
   // do here (all of the template data, etc.), but we keep the back end

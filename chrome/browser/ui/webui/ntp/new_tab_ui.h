@@ -49,6 +49,9 @@ class NewTabUI : public ChromeWebUI,
   // Returns whether NTP4 is enabled.
   static bool NTP4Enabled();
 
+  // Returns whether NTP4 bookmark features are enabled.
+  static bool NTP4BookmarkFeaturesEnabled();
+
   class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
    public:
     explicit NewTabHTMLSource(Profile* profile);
