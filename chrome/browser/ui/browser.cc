@@ -3186,7 +3186,7 @@ void Browser::TabDeactivated(TabContentsWrapper* contents) {
   if (contents == fullscreened_tab_)
     ExitTabbedFullscreenModeIfNecessary();
   if (instant())
-    instant()->DestroyPreviewContents();
+    instant()->DestroyPreviewContentsAndLeaveActive();
 
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.

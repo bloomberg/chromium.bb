@@ -141,6 +141,16 @@ void InstantLoaderManager::RemoveLoaderFromInstant(InstantLoader* loader) {
   instant_loaders_.erase(i);
 }
 
+void InstantLoaderManager::DestroyNonInstantLoaders() {
+  if (current_loader_ && !current_loader_->template_url_id())
+    delete current_loader_;
+  current_loader_ = NULL;
+
+  if (pending_loader_ && !pending_loader_->template_url_id())
+    delete pending_loader_;
+  pending_loader_ = NULL;
+}
+
 InstantLoader* InstantLoaderManager::GetInstantLoader(TemplateURLID id) {
   Loaders::iterator i = instant_loaders_.find(id);
   return i == instant_loaders_.end() ? CreateLoader(id) : i->second;

@@ -65,6 +65,9 @@ class InstantLoaderManager {
   // If |loader| is in |instant_loaders_| it is removed.
   void RemoveLoaderFromInstant(InstantLoader* loader);
 
+  // Destroys non-instant loaders (leaves instant loaders alone).
+  void DestroyNonInstantLoaders();
+
   // Returns the loader for loading instant results with the specified id. If
   // there is no loader for the specified id a new one is created.
   InstantLoader* GetInstantLoader(TemplateURLID id);

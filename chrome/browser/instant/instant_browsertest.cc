@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -35,7 +36,8 @@ class InstantTest : public InProcessBrowserTest {
  public:
   InstantTest()
       : location_bar_(NULL),
-        preview_(NULL) {
+        preview_(NULL),
+        template_url_id_(0) {
     set_show_window(true);
     EnableDOMAutomation();
   }
@@ -73,6 +75,7 @@ class InstantTest : public InProcessBrowserTest {
 
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);
+    template_url_id_ = template_url->id();
   }
 
   void FindLocationBar() {
@@ -305,9 +308,16 @@ class InstantTest : public InProcessBrowserTest {
         CheckBoolValueFromJavascript(true, "true", tab->tab_contents()));
   }
 
+  InstantLoaderManager* manager() const {
+    return browser()->instant()->loader_manager_.get();
+  }
+
  protected:
   LocationBar* location_bar_;
   TabContents* preview_;
+
+  // ID of the default search engine's template_url (in the installed model).
+  TemplateURLID template_url_id_;
 };
 
 // TODO(tonyg): Add the following tests:
@@ -1024,4 +1034,69 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PendingRenderViewHost) {
   // Make sure we navigated to the correct URL.
   notification_observer.Wait();
   EXPECT_EQ(contents->GetURL().spec(), std::string(chrome::kChromeUIAboutURL));
+}
+
+// Tests that instant search is preloaded whenever the omnibox gets focus.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_PreloadsInstant) {
+#else
+IN_PROC_BROWSER_TEST_F(InstantTest, PreloadsInstant) {
+#endif  // OS_LINUX
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kPreloadInstantSearch);
+
+  // The omnibox gets focus before the test begins. At that time, there's no
+  // instant controller (which is only created after EnableInstant()), so no
+  // preloading happens. Unfocus the omnibox with ClickOnView(), so that when
+  // we focus it again, the controller will preload instant search.
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+  SetupInstantProvider("search.html");
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+
+  // Verify that there are no instant loaders initially.
+  EXPECT_TRUE(!manager() || !manager()->num_instant_loaders());
+
+  ui_test_utils::WindowedNotificationObserver instant_support_observer(
+      chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
+      NotificationService::AllSources());
+
+  // Focusing the omnibox should cause instant to be preloaded.
+  FindLocationBar();
+  location_bar_->FocusLocation(false);
+  ASSERT_TRUE(manager());
+  EXPECT_EQ(1u, manager()->num_instant_loaders());
+
+  // Stash a pointer to the instant loader for use below.
+  InstantLoader* loader = manager()->GetInstantLoader(template_url_id_);
+  ASSERT_TRUE(loader);
+
+  instant_support_observer.Wait();
+
+  // However, instant should still not be active.
+  EXPECT_FALSE(browser()->instant()->is_active());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(browser()->instant()->IsShowingInstant());
+  EXPECT_FALSE(browser()->instant()->MightSupportInstant());
+
+  // Adding a new tab shouldn't delete (or recreate) the loader, since the
+  // omnibox doesn't lose focus. Comparing pointers is not the best way to
+  // assert this, but short of hooking the loader constructor or destructor,
+  // there seems to be no cleaner way.
+  AddBlankTabAndShow(browser());
+  EXPECT_EQ(loader, manager()->GetInstantLoader(template_url_id_));
+
+  // Doing a search should still use the same loader for the preview.
+  SetLocationBarText("def");
+  EXPECT_EQ(loader, manager()->GetInstantLoader(template_url_id_));
+  EXPECT_EQ(loader, manager()->current_loader());
+
+  // Verify that the preview is in fact showing instant search.
+  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_TRUE(browser()->instant()->is_displayable());
+  EXPECT_TRUE(browser()->instant()->IsShowingInstant());
+  EXPECT_TRUE(browser()->instant()->MightSupportInstant());
+  EXPECT_TRUE(browser()->instant()->IsCurrent());
 }

@@ -1000,19 +1000,15 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
   if (!tab)
     return false;
 
+  // The destination is typically the current URL when the user presses the
+  // down arrow in the omnibox, in which case we shouldn't load a preview.
   bool instant_is_active = false;
-  if (user_input_in_progress() && popup_->IsOpen()) {
-    if (match.destination_url == PermanentURL()) {
-      // The destination is the same as the current url. This typically
-      // happens if the user presses the down arrow in the omnibox, in which
-      // case we don't want to load a preview.
-      instant->DestroyPreviewContentsAndLeaveActive();
-    } else {
-      instant_is_active = instant->Update(tab, match, view_->GetText(),
-                                          UseVerbatimInstant(), suggested_text);
-    }
+  if (user_input_in_progress() && popup_->IsOpen() &&
+      match.destination_url != PermanentURL()) {
+    instant_is_active = instant->Update(tab, match, view_->GetText(),
+                                        UseVerbatimInstant(), suggested_text);
   } else {
-    instant->DestroyPreviewContents();
+    instant->DestroyPreviewContentsAndLeaveActive();
   }
 
   *might_support_instant = instant->MightSupportInstant();

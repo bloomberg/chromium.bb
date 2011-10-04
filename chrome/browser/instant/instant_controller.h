@@ -72,9 +72,8 @@ class InstantController : public InstantLoaderDelegate {
   // Returns false if there is no instant preview showing.
   static bool CommitIfCurrent(InstantController* controller);
 
-  // Invoked as the user types in the omnibox with the url to navigate to.  If
-  // the url is empty and there is a preview TabContents it is destroyed. If url
-  // is non-empty and the preview TabContents has not been created it is
+  // Invoked as the user types in the omnibox with the url to navigate to. If
+  // the url is valid and a preview TabContents has not been created, it is
   // created. If |verbatim| is true search results are shown for |user_text|
   // rather than the best guess as to what the search thought the user meant.
   // |verbatim| only matters if the AutocompleteMatch is for a search engine

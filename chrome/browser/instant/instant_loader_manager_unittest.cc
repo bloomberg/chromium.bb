@@ -309,3 +309,32 @@ TEST_F(InstantLoaderManagerTest, UpdateWithReadyPending) {
   manager.UpdateLoader(0, &loader);
   ASSERT_NE(loader.get(), non_instant_loader);
 }
+
+// Make sure that DestroyNonInstantLoaders works.
+TEST_F(InstantLoaderManagerTest, DestroyNonInstantLoaders) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
+
+  manager.UpdateLoader(0, &loader);
+  InstantLoader* non_instant_loader = manager.current_loader();
+  EXPECT_TRUE(non_instant_loader);
+  EXPECT_EQ(0, non_instant_loader->template_url_id());
+  EXPECT_EQ(NULL, loader.get());
+  MarkReady(non_instant_loader);
+
+  manager.UpdateLoader(1, &loader);
+  InstantLoader* instant_loader = manager.pending_loader();
+  EXPECT_TRUE(instant_loader);
+  EXPECT_EQ(1, instant_loader->template_url_id());
+  EXPECT_EQ(NULL, loader.get());
+  EXPECT_EQ(1u, manager.num_instant_loaders());
+
+  manager.DestroyNonInstantLoaders();
+
+  EXPECT_EQ(NULL, manager.current_loader());
+  EXPECT_EQ(NULL, manager.pending_loader());
+
+  // The instant loader should still exist.
+  EXPECT_EQ(1u, manager.num_instant_loaders());
+}

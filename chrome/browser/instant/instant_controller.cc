@@ -179,18 +179,15 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
                                string16* suggested_text) {
   suggested_text->clear();
 
-  if (tab_contents != tab_contents_)
-    DestroyPreviewContents();
-
   const GURL& url = match.destination_url;
   tab_contents_ = tab_contents;
   commit_on_mouse_up_ = false;
   last_transition_type_ = match.transition;
   const TemplateURL* template_url = NULL;
 
+  // The url should not normally be empty or invalid.
   if (url.is_empty() || !url.is_valid()) {
-    // Assume we were invoked with GURL() and should destroy all.
-    DestroyPreviewContents();
+    DestroyPreviewContentsAndLeaveActive();
     return false;
   }
 
@@ -264,9 +261,8 @@ void InstantController::DestroyPreviewContentsAndLeaveActive() {
     delegate_->HideInstant();
   }
 
-  // TODO(sky): this shouldn't nuke the loader. It should just nuke non-instant
-  // loaders and hide instant loaders.
-  loader_manager_.reset(new InstantLoaderManager(this));
+  if (loader_manager_.get())
+    loader_manager_->DestroyNonInstantLoaders();
   show_timer_.Stop();
   update_timer_.Stop();
 }
@@ -410,9 +406,6 @@ void InstantController::OnAutocompleteGotFocus(
     return;
   }
 
-  if (is_active_)
-    return;
-
   TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
       tab_contents->profile());
   if (!model)
@@ -422,8 +415,6 @@ void InstantController::OnAutocompleteGotFocus(
   if (!template_url || !template_url->instant_url() || !template_url->id())
     return;
 
-  if (tab_contents != tab_contents_)
-    DestroyPreviewContents();
   tab_contents_ = tab_contents;
 
   if (!loader_manager_.get())
