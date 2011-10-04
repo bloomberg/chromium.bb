@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/password_manager/login_database.h"
@@ -35,6 +36,7 @@ class PasswordStoreMac : public PasswordStore {
 
   // Schedules tasks on |thread_|.
   virtual void ScheduleTask(Task* task) OVERRIDE;
+  virtual void ScheduleTask(const base::Closure& task) OVERRIDE;
 
  private:
   virtual void ReportMetricsImpl() OVERRIDE;

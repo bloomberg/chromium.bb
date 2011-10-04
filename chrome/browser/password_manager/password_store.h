@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/callback_old.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -142,7 +143,9 @@ class PasswordStore
   virtual GetLoginsRequest* NewGetLoginsRequest(GetLoginsCallback* callback);
 
   // Schedule the given |task| to be run in the PasswordStore's own thread.
+  // TODO(mdm): Remove the Task* version of this when it is no longer needed.
   virtual void ScheduleTask(Task* task);
+  virtual void ScheduleTask(const base::Closure& task);
 
   // These will be run in PasswordStore's own thread.
   // Synchronous implementation that reports usage metrics.
@@ -190,13 +193,12 @@ class PasswordStore
                   const ArgA& a);
 
  private:
-  // Wrapper method called on the destination thread (DB for non-mac) that calls
-  // the method specified in |task| and then calls back into the source thread
-  // to notify observers that the password store may have been modified via
+  // Wrapper method called on the destination thread (DB for non-mac) that
+  // invokes |task| and then calls back into the source thread to notify
+  // observers that the password store may have been modified via
   // NotifyLoginsChanged(). Note that there is no guarantee that the called
-  // method will actually modify the password store data. |task| may not be
-  // NULL. This method owns and will delete |task|.
-  void WrapModificationTask(Task* task);
+  // method will actually modify the password store data.
+  void WrapModificationTask(base::Closure task);
 
   // Post a message to the UI thread to run NotifyLoginsChanged(). Called by
   // WrapModificationTask() above, and split out as a separate method so that

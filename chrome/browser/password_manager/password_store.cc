@@ -38,30 +38,26 @@ void PasswordStore::Shutdown() {
 }
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
-  Task* task = NewRunnableMethod(this, &PasswordStore::AddLoginImpl, form);
-  ScheduleTask(
-      NewRunnableMethod(this, &PasswordStore::WrapModificationTask, task));
+  ScheduleTask(base::Bind(&PasswordStore::WrapModificationTask, this,
+      base::Closure(base::Bind(&PasswordStore::AddLoginImpl, this, form))));
 }
 
 void PasswordStore::UpdateLogin(const PasswordForm& form) {
-  Task* task = NewRunnableMethod(this, &PasswordStore::UpdateLoginImpl, form);
-  ScheduleTask(
-      NewRunnableMethod(this, &PasswordStore::WrapModificationTask, task));
+  ScheduleTask(base::Bind(&PasswordStore::WrapModificationTask, this,
+      base::Closure(base::Bind(&PasswordStore::UpdateLoginImpl, this, form))));
 }
 
 void PasswordStore::RemoveLogin(const PasswordForm& form) {
-  Task* task = NewRunnableMethod(this, &PasswordStore::RemoveLoginImpl, form);
-  ScheduleTask(
-      NewRunnableMethod(this, &PasswordStore::WrapModificationTask, task));
+  ScheduleTask(base::Bind(&PasswordStore::WrapModificationTask, this,
+      base::Closure(base::Bind(&PasswordStore::RemoveLoginImpl, this, form))));
 }
 
 void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
                                                const base::Time& delete_end) {
-  Task* task = NewRunnableMethod(this,
-                                 &PasswordStore::RemoveLoginsCreatedBetweenImpl,
-                                 delete_begin, delete_end);
-  ScheduleTask(
-      NewRunnableMethod(this, &PasswordStore::WrapModificationTask, task));
+  ScheduleTask(base::Bind(&PasswordStore::WrapModificationTask, this,
+      base::Closure(
+          base::Bind(&PasswordStore::RemoveLoginsCreatedBetweenImpl, this,
+                     delete_begin, delete_end))));
 }
 
 CancelableRequestProvider::Handle PasswordStore::GetLogins(
@@ -80,7 +76,7 @@ CancelableRequestProvider::Handle PasswordStore::GetBlacklistLogins(
 }
 
 void PasswordStore::ReportMetrics() {
-  ScheduleTask(NewRunnableMethod(this, &PasswordStore::ReportMetricsImpl));
+  ScheduleTask(base::Bind(&PasswordStore::ReportMetricsImpl, this));
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
@@ -102,6 +98,10 @@ void PasswordStore::ScheduleTask(Task* task) {
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
 }
 
+void PasswordStore::ScheduleTask(const base::Closure& task) {
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
+}
+
 void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
   request->ForwardResult(GetLoginsRequest::TupleType(request->handle(),
                                                      request->value));
@@ -114,7 +114,7 @@ CancelableRequestProvider::Handle PasswordStore::Schedule(
       NewCallback(consumer,
                   &PasswordStoreConsumer::OnPasswordStoreRequestDone)));
   AddRequest(request, consumer->cancelable_consumer());
-  ScheduleTask(NewRunnableMethod(this, func, request));
+  ScheduleTask(base::Bind(func, this, request));
   return request->handle();
 }
 
@@ -125,19 +125,15 @@ CancelableRequestProvider::Handle PasswordStore::Schedule(
       NewCallback(consumer,
                   &PasswordStoreConsumer::OnPasswordStoreRequestDone)));
   AddRequest(request, consumer->cancelable_consumer());
-  ScheduleTask(NewRunnableMethod(this, func, request, a));
+  ScheduleTask(base::Bind(func, this, request, a));
   return request->handle();
 }
 
-void PasswordStore::WrapModificationTask(Task* task) {
+void PasswordStore::WrapModificationTask(base::Closure task) {
 #if !defined(OS_MACOSX)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 #endif  // !defined(OS_MACOSX)
-
-  DCHECK(task);
-  task->Run();
-  delete task;
-
+  task.Run();
   PostNotifyLoginsChanged();
 }
 
@@ -148,7 +144,7 @@ void PasswordStore::PostNotifyLoginsChanged() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PasswordStore::NotifyLoginsChanged));
+      base::Bind(&PasswordStore::NotifyLoginsChanged, this));
 }
 
 void PasswordStore::NotifyLoginsChanged() {
