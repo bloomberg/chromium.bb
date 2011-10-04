@@ -32,6 +32,7 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_stream_url.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/npapi/webplugin_ime_win.h"
 
 using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
@@ -84,6 +85,10 @@ base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_set_cursor(
 
 // Helper object for patching the RegEnumKeyExW API.
 base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_reg_enum_key_ex_w(
+    base::LINKER_INITIALIZED);
+
+// Helper object for patching the GetProcAddress API.
+base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_get_proc_address(
     base::LINKER_INITIALIZED);
 
 // Helper object for patching the GetKeyState API.
@@ -348,6 +353,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       quirks_ |= PLUGIN_QUIRK_REPARENT_IN_BROWSER |
                  PLUGIN_QUIRK_PATCH_GETKEYSTATE;
     }
+    quirks_ |= PLUGIN_QUIRK_EMULATE_IME;
   } else if (filename == kAcrobatReaderPlugin) {
     // Check for the version number above or equal 9.
     int major_version = GetPluginMajorVersion(plugin_info);
@@ -486,6 +492,17 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
     g_iat_patch_reg_enum_key_ex_w.Pointer()->Patch(
         L"wmpdxm.dll", "advapi32.dll", "RegEnumKeyExW",
         WebPluginDelegateImpl::RegEnumKeyExWPatch);
+  }
+
+  // Flash retrieves the pointers to IMM32 functions with GetProcAddress() calls
+  // and use them to retrieve IME data. We add a patch to this function so we
+  // can dispatch these IMM32 calls to the WebPluginIMEWin class, which emulates
+  // IMM32 functions for Flash.
+  if (!g_iat_patch_get_proc_address.Pointer()->is_patched() &&
+      (quirks_ & PLUGIN_QUIRK_EMULATE_IME)) {
+    g_iat_patch_get_proc_address.Pointer()->Patch(
+        GetPluginPath().value().c_str(), "kernel32.dll", "GetProcAddress",
+        GetProcAddressPatch);
   }
 
   // Under UIPI the key state does not get forwarded properly to the child
@@ -1480,6 +1497,41 @@ LONG WINAPI WebPluginDelegateImpl::RegEnumKeyExWPatch(
   }
 
   return rv;
+}
+
+void WebPluginDelegateImpl::ImeCompositionUpdated(
+    const string16& text,
+    const std::vector<int>& clauses,
+    const std::vector<int>& target,
+    int cursor_position) {
+  if (!plugin_ime_.get())
+    plugin_ime_.reset(new WebPluginIMEWin);
+
+  plugin_ime_->CompositionUpdated(text, clauses, target, cursor_position);
+  plugin_ime_->SendEvents(instance());
+}
+
+void WebPluginDelegateImpl::ImeCompositionCompleted(const string16& text) {
+  if (!plugin_ime_.get())
+    plugin_ime_.reset(new WebPluginIMEWin);
+  plugin_ime_->CompositionCompleted(text);
+  plugin_ime_->SendEvents(instance());
+}
+
+bool WebPluginDelegateImpl::GetIMEStatus(int* input_type,
+                                         gfx::Rect* caret_rect) {
+  if (!plugin_ime_.get())
+    return false;
+  return plugin_ime_->GetStatus(input_type, caret_rect);
+}
+
+// static
+FARPROC WINAPI WebPluginDelegateImpl::GetProcAddressPatch(HMODULE module,
+                                                          LPCSTR name) {
+  FARPROC imm_function = WebPluginIMEWin::GetProcAddress(name);
+  if (imm_function)
+    return imm_function;
+  return ::GetProcAddress(module, name);
 }
 
 void WebPluginDelegateImpl::HandleCaptureForMessage(HWND window,

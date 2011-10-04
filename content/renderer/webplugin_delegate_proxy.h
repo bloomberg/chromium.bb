@@ -82,6 +82,18 @@ class WebPluginDelegateProxy
   // Informs the plugin that its containing content view has gained or lost
   // first responder status.
   virtual void SetContentAreaFocus(bool has_focus);
+#if defined(OS_WIN)
+  // Informs the plugin that plugin IME has updated its status.
+  virtual void ImeCompositionUpdated(
+      const string16& text,
+      const std::vector<int>& clauses,
+      const std::vector<int>& target,
+      int cursor_position,
+      int plugin_id);
+  // Informs the plugin that plugin IME has completed.
+  // If |text| is empty, composition was cancelled.
+  virtual void ImeCompositionCompleted(const string16& text, int plugin_id);
+#endif
 #if defined(OS_MACOSX)
   // Informs the plugin that its enclosing window has gained or lost focus.
   virtual void SetWindowFocus(bool window_has_focus);
@@ -139,6 +151,7 @@ class WebPluginDelegateProxy
   void OnSetWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
   void OnSetWindowlessPumpEvent(HANDLE modal_loop_pump_messages_event);
+  void OnNotifyIMEStatus(const int input_mode, const gfx::Rect& caret_rect);
 #endif
   void OnCompleteURL(const std::string& url_in, std::string* url_out,
                      bool* result);

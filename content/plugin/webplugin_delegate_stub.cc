@@ -110,6 +110,12 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_SendJavaScriptStream,
                         OnSendJavaScriptStream)
     IPC_MESSAGE_HANDLER(PluginMsg_SetContentAreaFocus, OnSetContentAreaFocus)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(PluginMsg_ImeCompositionUpdated,
+                        OnImeCompositionUpdated)
+    IPC_MESSAGE_HANDLER(PluginMsg_ImeCompositionCompleted,
+                        OnImeCompositionCompleted)
+#endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginMsg_SetWindowFocus, OnSetWindowFocus)
     IPC_MESSAGE_HANDLER(PluginMsg_ContainerHidden, OnContainerHidden)
@@ -323,6 +329,25 @@ void WebPluginDelegateStub::OnSetContentAreaFocus(bool has_focus) {
   if (delegate_)
     delegate_->SetContentAreaHasFocus(has_focus);
 }
+
+#if defined(OS_WIN)
+void WebPluginDelegateStub::OnImeCompositionUpdated(
+    const string16& text,
+    const std::vector<int>& clauses,
+    const std::vector<int>& target,
+    int cursor_position) {
+  if (delegate_)
+    delegate_->ImeCompositionUpdated(text, clauses, target, cursor_position);
+#if defined(OS_WIN)
+  webplugin_->UpdateIMEStatus();
+#endif
+}
+
+void WebPluginDelegateStub::OnImeCompositionCompleted(const string16& text) {
+  if (delegate_)
+    delegate_->ImeCompositionCompleted(text);
+}
+#endif
 
 #if defined(OS_MACOSX)
 void WebPluginDelegateStub::OnSetWindowFocus(bool has_focus) {

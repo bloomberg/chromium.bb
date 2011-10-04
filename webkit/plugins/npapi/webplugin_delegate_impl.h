@@ -55,6 +55,10 @@ class QuickDrawDrawingManager;
 #endif  // NP_NO_QUICKDRAW
 #endif  // OS_MACOSX
 
+#if defined(OS_WIN)
+class WebPluginIMEWin;
+#endif  // OS_WIN
+
 // An implementation of WebPluginDelegate that runs in the plugin process,
 // proxied from the renderer by WebPluginDelegateProxy.
 class WebPluginDelegateImpl : public WebPluginDelegate {
@@ -79,6 +83,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
     PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL = 65536,  // Windows.
     PLUGIN_QUIRK_REPARENT_IN_BROWSER = 131072,  // Windows
     PLUGIN_QUIRK_PATCH_GETKEYSTATE = 262144,  // Windows
+    PLUGIN_QUIRK_EMULATE_IME = 524288,  // Windows.
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,
@@ -141,6 +146,21 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   // Informs the plugin that the view it is in has gained or lost focus.
   void SetContentAreaHasFocus(bool has_focus);
+
+#if defined(OS_WIN)
+  // Informs the plug-in that an IME has changed its status.
+  void ImeCompositionUpdated(const string16& text,
+                             const std::vector<int>& clauses,
+                             const std::vector<int>& target,
+                             int cursor_position);
+
+  // Informs the plugin that IME composition has completed./ If |text| is empty,
+  // IME was cancelled.
+  void ImeCompositionCompleted(const string16& text);
+
+  // Returns the IME status retrieved from a plug-in.
+  bool GetIMEStatus(int* input_type, gfx::Rect* caret_rect);
+#endif
 
 #if defined(OS_MACOSX)
   // Informs the plugin that the geometry has changed, as with UpdateGeometry,
@@ -318,6 +338,10 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Used to throttle WM_USER+1 messages in Flash.
   uint32 last_message_;
   bool is_calling_wndproc;
+
+  // An IME emulator used by a windowless plug-in to retrieve IME data through
+  // IMM32 functions.
+  scoped_ptr<WebPluginIMEWin> plugin_ime_;
 #endif  // defined(OS_WIN)
 
 #if defined(USE_X11)
@@ -388,6 +412,9 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   static LONG WINAPI RegEnumKeyExWPatch(
       HKEY key, DWORD index, LPWSTR name, LPDWORD name_size, LPDWORD reserved,
       LPWSTR class_name, LPDWORD class_size, PFILETIME last_write_time);
+
+  // GetProcAddress intercepter for windowless plugins.
+  static FARPROC WINAPI GetProcAddressPatch(HMODULE module, LPCSTR name);
 
   // The mouse hook proc which handles mouse capture in windowed plugins.
   static LRESULT CALLBACK MouseHookProc(int code, WPARAM wParam,

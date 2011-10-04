@@ -190,7 +190,7 @@ WebPluginDelegateProxy::SharedBitmap::SharedBitmap() {}
 WebPluginDelegateProxy::SharedBitmap::~SharedBitmap() {}
 
 void WebPluginDelegateProxy::PluginDestroyed() {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   // Ensure that the renderer doesn't think the plugin still has focus.
   if (render_view_)
     render_view_->PluginFocusChanged(false, instance_id_);
@@ -425,6 +425,8 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindowlessPumpEvent,
                         OnSetWindowlessPumpEvent)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_NotifyIMEStatus,
+                        OnNotifyIMEStatus)
 #endif
     IPC_MESSAGE_HANDLER(PluginHostMsg_CancelResource, OnCancelResource)
     IPC_MESSAGE_HANDLER(PluginHostMsg_InvalidateRect, OnInvalidateRect)
@@ -482,7 +484,7 @@ void WebPluginDelegateProxy::OnChannelError() {
   if (!channel_host_->expecting_shutdown())
     render_view_->PluginCrashed(info_.path);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   // Ensure that the renderer doesn't think the plugin still has focus.
   if (render_view_)
     render_view_->PluginFocusChanged(false, instance_id_);
@@ -939,6 +941,10 @@ void WebPluginDelegateProxy::DidFinishLoadWithReason(
 
 void WebPluginDelegateProxy::SetFocus(bool focused) {
   Send(new PluginMsg_SetFocus(instance_id_, focused));
+#if defined(OS_WIN)
+  if (render_view_)
+    render_view_->PluginFocusChanged(focused, instance_id_);
+#endif
 }
 
 bool WebPluginDelegateProxy::HandleInputEvent(
@@ -970,6 +976,35 @@ void WebPluginDelegateProxy::SetContentAreaFocus(bool has_focus) {
   msg->set_unblock(true);
   Send(msg);
 }
+
+#if defined(OS_WIN)
+void WebPluginDelegateProxy::ImeCompositionUpdated(
+    const string16& text,
+    const std::vector<int>& clauses,
+    const std::vector<int>& target,
+    int cursor_position,
+    int plugin_id) {
+  // Dispatch the raw IME data if this plug-in is the focused one.
+  if (instance_id_ != plugin_id)
+    return;
+
+  IPC::Message* msg = new PluginMsg_ImeCompositionUpdated(instance_id_,
+      text, clauses, target, cursor_position);
+  msg->set_unblock(true);
+  Send(msg);
+}
+
+void WebPluginDelegateProxy::ImeCompositionCompleted(const string16& text,
+                                                     int plugin_id) {
+  // Dispatch the IME text if this plug-in is the focused one.
+  if (instance_id_ != plugin_id)
+    return;
+
+  IPC::Message* msg = new PluginMsg_ImeCompositionCompleted(instance_id_, text);
+  msg->set_unblock(true);
+  Send(msg);
+}
+#endif
 
 #if defined(OS_MACOSX)
 void WebPluginDelegateProxy::SetWindowFocus(bool window_has_focus) {
@@ -1055,6 +1090,18 @@ void WebPluginDelegateProxy::OnSetWindowlessPumpEvent(
 
   modal_loop_pump_messages_event_.reset(
       new base::WaitableEvent(modal_loop_pump_messages_event));
+}
+
+void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
+                                               const gfx::Rect& caret_rect) {
+  if (!render_view_)
+    return;
+
+  render_view_->Send(new ViewHostMsg_ImeUpdateTextInputState(
+      render_view_->routing_id(),
+      static_cast<ui::TextInputType>(input_type),
+      true,
+      caret_rect));
 }
 #endif
 

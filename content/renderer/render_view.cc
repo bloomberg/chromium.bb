@@ -327,6 +327,9 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       cached_has_main_frame_horizontal_scrollbar_(false),
       cached_has_main_frame_vertical_scrollbar_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
+#if defined(OS_WIN)
+      focused_plugin_id_(-1),
+#endif
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
       speech_input_dispatcher_(NULL),
@@ -4045,6 +4048,32 @@ void RenderView::OnImeSetComposition(
   // TODO(kinaba) This temporal remedy can be removed after PPAPI is extended
   // with an IME handling interface.
   if (!pepper_delegate_.IsPluginFocused()) {
+#if defined(OS_WIN)
+    // When a plug-in has focus, we create platform-specific IME data used by
+    // our IME emulator and send it directly to the focused plug-in, i.e. we
+    // bypass WebKit. (WebPluginDelegate dispatches this IME data only when its
+    // instance ID is the same one as the specified ID.)
+    if (focused_plugin_id_ >= 0) {
+      std::vector<int> clauses;
+      std::vector<int> target;
+      for (size_t i = 0; i < underlines.size(); ++i) {
+        clauses.push_back(underlines[i].startOffset);
+        clauses.push_back(underlines[i].endOffset);
+        if (underlines[i].thick) {
+          target.clear();
+          target.push_back(underlines[i].startOffset);
+          target.push_back(underlines[i].endOffset);
+        }
+      }
+      std::set<WebPluginDelegateProxy*>::iterator it;
+      for (it = plugin_delegates_.begin();
+           it != plugin_delegates_.end(); ++it) {
+        (*it)->ImeCompositionUpdated(text, clauses, target, selection_end,
+                                     focused_plugin_id_);
+      }
+      return;
+    }
+#endif
     RenderWidget::OnImeSetComposition(text,
                                       underlines,
                                       selection_start,
@@ -4069,6 +4098,19 @@ void RenderView::OnImeConfirmComposition(const string16& text) {
         webwidget_->handleInputEvent(char_event);
     }
   } else {
+#if defined(OS_WIN)
+    // Same as OnImeSetComposition(), we send the text from IMEs directly to
+    // plug-ins. When we send IME text directly to plug-ins, we should not send
+    // it to WebKit to prevent WebKit from controlling IMEs.
+    if (focused_plugin_id_ >= 0) {
+      std::set<WebPluginDelegateProxy*>::iterator it;
+      for (it = plugin_delegates_.begin();
+           it != plugin_delegates_.end(); ++it) {
+        (*it)->ImeCompositionCompleted(text, focused_plugin_id_);
+      }
+      return;
+    }
+#endif
     RenderWidget::OnImeConfirmComposition(text);
   }
 }
@@ -4098,6 +4140,15 @@ bool RenderView::CanComposeInline() {
   }
   return true;
 }
+
+#if defined(OS_WIN)
+void RenderView::PluginFocusChanged(bool focused, int plugin_id) {
+  if (focused)
+    focused_plugin_id_ = plugin_id;
+  else
+    focused_plugin_id_ = -1;
+}
+#endif
 
 #if defined(OS_MACOSX)
 void RenderView::PluginFocusChanged(bool focused, int plugin_id) {

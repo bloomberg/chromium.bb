@@ -180,6 +180,8 @@
         '../plugins/npapi/webplugin_delegate_impl_gtk.cc',
         '../plugins/npapi/webplugin_delegate_impl_mac.mm',
         '../plugins/npapi/webplugin_delegate_impl_win.cc',
+        '../plugins/npapi/webplugin_ime_win.cc',
+        '../plugins/npapi/webplugin_ime_win.h',
         '../plugins/npapi/webplugin_impl.cc',
         '../plugins/npapi/webplugin_impl.h',
         '../plugins/npapi/webview_plugin.cc',

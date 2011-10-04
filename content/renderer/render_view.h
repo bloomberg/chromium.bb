@@ -309,10 +309,12 @@ class RenderView : public RenderWidget,
   // Request updated policy regarding firewall NAT traversal being enabled.
   void RequestRemoteAccessClientFirewallTraversal();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   // Informs the render view that the given plugin has gained or lost focus.
   void PluginFocusChanged(bool focused, int plugin_id);
+#endif
 
+#if defined(OS_MACOSX)
   // Starts plugin IME.
   void StartPluginIme();
 
@@ -1129,6 +1131,11 @@ class RenderView : public RenderWidget,
   // we can enumerate them to send updates about things like window location
   // or tab focus and visibily. These are non-owning references.
   std::set<WebPluginDelegateProxy*> plugin_delegates_;
+
+#if defined(OS_WIN)
+  // The ID of the focused NPAPI plug-in.
+  int focused_plugin_id_;
+#endif
 
   // Helper objects ------------------------------------------------------------
 

@@ -747,3 +747,16 @@ void WebPluginProxy::ResourceClientDeleted(
 void WebPluginProxy::URLRedirectResponse(bool allow, int resource_id) {
   Send(new PluginHostMsg_URLRedirectResponse(route_id_, allow, resource_id));
 }
+
+#if defined(OS_WIN)
+void WebPluginProxy::UpdateIMEStatus() {
+  // Retrieve the IME status from a plug-in and send it to a renderer process
+  // when the plug-in has updated it.
+  int input_type;
+  gfx::Rect caret_rect;
+  if (!delegate_->GetIMEStatus(&input_type, &caret_rect))
+    return;
+
+  Send(new PluginHostMsg_NotifyIMEStatus(route_id_, input_type, caret_rect));
+}
+#endif
