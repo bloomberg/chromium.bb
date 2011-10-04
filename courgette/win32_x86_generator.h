@@ -61,9 +61,9 @@ class CourgetteWin32X86PatchGenerator : public TransformationPatchGenerator {
     // TODO(sra): refactor to use same code from patcher_.
     AssemblyProgram* old_program = NULL;
     Status old_parse_status =
-        ParseWin32X86PE(old_element_->region().start(),
-                        old_element_->region().length(),
-                        &old_program);
+        ParseDetectedExecutable(old_element_->region().start(),
+                                old_element_->region().length(),
+                                &old_program);
     if (old_parse_status != C_OK) {
       LOG(ERROR) << "Cannot parse as Win32X86PE " << old_element_->Name();
       return old_parse_status;
@@ -71,9 +71,9 @@ class CourgetteWin32X86PatchGenerator : public TransformationPatchGenerator {
 
     AssemblyProgram* new_program = NULL;
     Status new_parse_status =
-        ParseWin32X86PE(new_element_->region().start(),
-                        new_element_->region().length(),
-                        &new_program);
+        ParseDetectedExecutable(new_element_->region().start(),
+                                new_element_->region().length(),
+                                &new_program);
     if (new_parse_status != C_OK) {
       DeleteAssemblyProgram(old_program);
       LOG(ERROR) << "Cannot parse as Win32X86PE " << new_element_->Name();

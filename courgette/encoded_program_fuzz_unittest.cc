@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,8 @@ void DecodeFuzzTest::FuzzExe(const char* file_name) const {
 
   courgette::AssemblyProgram* program = NULL;
   const courgette::Status parse_status =
-      courgette::ParseWin32X86PE(original_buffer, original_length, &program);
+      courgette::ParseDetectedExecutable(original_buffer, original_length,
+                                         &program);
   EXPECT_EQ(courgette::C_OK, parse_status);
 
   courgette::EncodedProgram* encoded = NULL;
