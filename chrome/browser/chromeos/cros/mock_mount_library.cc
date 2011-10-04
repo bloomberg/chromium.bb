@@ -63,6 +63,7 @@ void MockMountLibrary::FireDeviceInsertEvents() {
       false,
       false,
       true,
+      false,
       false));
 
   disks_.clear();
@@ -93,6 +94,7 @@ void MockMountLibrary::FireDeviceInsertEvents() {
       false,
       false,
       true,
+      false,
       false));
   disks_.clear();
   disks_.insert(std::pair<std::string, MountLibrary::Disk*>(
@@ -116,6 +118,7 @@ void MockMountLibrary::FireDeviceRemoveEvents() {
       false,
       false,
       true,
+      false,
       false));
   disks_.clear();
   disks_.insert(std::pair<std::string, MountLibrary::Disk*>(

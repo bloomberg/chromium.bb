@@ -155,6 +155,9 @@ void ExtensionFileBrowserEventRouter::RemoveFileWatch(
 void ExtensionFileBrowserEventRouter::DiskChanged(
     chromeos::MountLibraryEventType event,
     const chromeos::MountLibrary::Disk* disk) {
+  // Disregard hidden devices.
+  if (disk->is_hidden())
+    return;
   if (event == chromeos::MOUNT_DISK_ADDED) {
     OnDiskAdded(disk);
   } else if (event == chromeos::MOUNT_DISK_REMOVED) {
@@ -172,6 +175,7 @@ void ExtensionFileBrowserEventRouter::DeviceChanged(
   } else if (event == chromeos::MOUNT_DEVICE_SCANNED) {
     OnDeviceScanned(device_path);
   } else if (event == chromeos::MOUNT_FORMATTING_STARTED) {
+  // TODO(tbarzic): get rid of '!'.
     if (device_path[0] == '!') {
       OnFormattingStarted(device_path.substr(1), false);
     } else {

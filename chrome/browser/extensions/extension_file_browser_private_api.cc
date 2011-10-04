@@ -1462,7 +1462,8 @@ bool GetVolumeMetadataFunction::RunImpl() {
   chromeos::MountLibrary::DiskMap::const_iterator volume_it =
       mount_lib->disks().find(volume_device_path);
 
-  if (volume_it != mount_lib->disks().end()) {
+  if (volume_it != mount_lib->disks().end() &&
+      !volume_it->second->is_hidden()) {
     chromeos::MountLibrary::Disk* volume = volume_it->second;
     DictionaryValue* volume_info = new DictionaryValue();
     result_.reset(volume_info);

@@ -76,7 +76,8 @@ MountLibrary::Disk::Disk(const std::string& device_path,
     bool is_parent,
     bool is_read_only,
     bool has_media,
-    bool on_boot_device)
+    bool on_boot_device,
+    bool is_hidden)
     : device_path_(device_path),
       mount_path_(mount_path),
       system_path_(system_path),
@@ -90,7 +91,8 @@ MountLibrary::Disk::Disk(const std::string& device_path,
       is_parent_(is_parent),
       is_read_only_(is_read_only),
       has_media_(has_media),
-      on_boot_device_(on_boot_device) {
+      on_boot_device_(on_boot_device),
+      is_hidden_(is_hidden) {
 }
 
 MountLibrary::Disk::~Disk() {}
@@ -192,6 +194,15 @@ class MountLibraryImpl : public MountLibrary {
   virtual void MountPath(const char* source_path,
                          MountType type,
                          const MountPathOptions& options) OVERRIDE {
+    // Hidden and non-existent devices should not be mounted.
+    if (type == MOUNT_TYPE_DEVICE) {
+      DiskMap::const_iterator it = disks_.find(source_path);
+      if (it == disks_.end() || it->second->is_hidden()) {
+        MountCompletedHandler(this, MOUNT_ERROR_INTERNAL, source_path, type,
+            NULL);
+        return;
+      }
+    }
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     libcros_proxy_->CallMountPath(source_path, type, options,
                                   &MountCompletedHandler, this);
@@ -537,9 +548,8 @@ class MountLibraryImpl : public MountLibrary {
     }
   }
 
-
   void OnGetDiskProperties(const char* device_path,
-                           const DiskInfo* disk1,
+                           const DiskInfo* disk,
                            MountMethodErrorType error,
                            const char* error_message) {
     DCHECK(device_path);
@@ -550,8 +560,6 @@ class MountLibraryImpl : public MountLibrary {
 
       // This cast is temporal solution, until we merge DiskInfo and
       // DiskInfoAdvanced into single interface.
-      const DiskInfoAdvanced* disk =
-          reinterpret_cast<const DiskInfoAdvanced*>(disk1);
       if (disk->on_boot_device())
         return;
 
@@ -608,7 +616,8 @@ class MountLibraryImpl : public MountLibrary {
                                 disk->is_drive(),
                                 disk->is_read_only(),
                                 disk->has_media(),
-                                disk->on_boot_device());
+                                disk->on_boot_device(),
+                                disk->is_hidden());
       disks_.insert(
           std::pair<std::string, Disk*>(device_path_string, new_disk));
       FireDiskStatusUpdate(is_new ? MOUNT_DISK_ADDED : MOUNT_DISK_CHANGED,

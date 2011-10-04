@@ -61,6 +61,7 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
                                              false,
                                              false,
                                              false,
+                                             false,
                                              false)));
     volumes_.insert(
         std::pair<std::string, chromeos::MountLibrary::Disk*>(
@@ -78,7 +79,8 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
                                              true,
                                              true,
                                              true,
-                                             true)));
+                                             true,
+                                             false)));
     volumes_.insert(
         std::pair<std::string, chromeos::MountLibrary::Disk*>(
             "device_path3",
@@ -95,7 +97,8 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
                                              true,
                                              false,
                                              false,
-                                             true)));
+                                             true,
+                                             false)));
   }
 
   void DeleteVolumeMap() {
