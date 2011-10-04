@@ -20,8 +20,8 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 
@@ -96,7 +96,9 @@ const char* kCapsLockRemapped[] = {
 
 }  // namespace
 
-XKeyboard::XKeyboard(const InputMethodUtil& util) {
+XKeyboard::XKeyboard(const InputMethodUtil& util)
+    : is_running_on_chrome_os_(
+        system::runtime_environment::IsRunningOnChromeOS()) {
   for (size_t i = 0; i < arraysize(kCustomizableKeys); ++i) {
     ModifierKey key = kCustomizableKeys[i];
     current_modifier_map_.push_back(ModifierKeyPair(key, key));
@@ -126,9 +128,10 @@ XKeyboard::~XKeyboard() {
 bool XKeyboard::SetLayoutInternal(const std::string& layout_name,
                                   const ModifierMap& modifier_map,
                                   bool force) {
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    // We should not try to change a layout inside ui_tests.
-    return false;
+  if (!is_running_on_chrome_os_) {
+    // We should not try to change a layout on Linux or inside ui_tests. Just
+    // return true.
+    return true;
   }
 
   const std::string layout_to_set = CreateFullXkbLayoutName(

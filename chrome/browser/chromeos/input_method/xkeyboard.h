@@ -137,6 +137,8 @@ class XKeyboard {
   std::set<std::string> keep_right_alt_xkb_layout_names_;
   std::set<std::string> caps_lock_remapped_xkb_layout_names_;
 
+  const bool is_running_on_chrome_os_;
+
   DISALLOW_COPY_AND_ASSIGN(XKeyboard);
 };
 
