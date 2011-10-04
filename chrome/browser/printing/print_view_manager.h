@@ -69,16 +69,15 @@ class PrintViewManager : public NotificationObserver,
   void ResetTitleOverride();
 
   // PrintedPagesSource implementation.
-  virtual string16 RenderSourceName();
-  virtual GURL RenderSourceUrl();
+  virtual string16 RenderSourceName() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // TabContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Terminates or cancels the print job if one was pending.
   virtual void RenderViewGone();
@@ -98,8 +97,8 @@ class PrintViewManager : public NotificationObserver,
   void OnNotifyPrintJobEvent(const JobEventDetails& event_details);
 
   // Requests the RenderView to render all the missing pages for the print job.
-  // No-op if no print job is pending. Returns true if at least one page has been
-  // requested to the renderer.
+  // No-op if no print job is pending. Returns true if at least one page has
+  // been requested to the renderer.
   bool RenderAllMissingPagesNow();
 
   // Quits the current message loop if these conditions hold true: a document is

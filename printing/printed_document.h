@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
-#include "googleurl/src/gurl.h"
 #include "printing/print_settings.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -94,10 +93,7 @@ class PRINTING_EXPORT PrintedDocument
 
   // Getters. All these items are immutable hence thread-safe.
   const PrintSettings& settings() const { return immutable_.settings_; }
-  const string16& name() const {
-    return immutable_.name_;
-  }
-  const GURL& url() const { return immutable_.url_; }
+  const string16& name() const { return immutable_.name_; }
   int cookie() const { return immutable_.cookie_; }
 
   // Sets a path where to dump printing output files for debugging. If never set
@@ -160,9 +156,6 @@ class PRINTING_EXPORT PrintedDocument
 
     // Document name. Immutable.
     string16 name_;
-
-    // URL that generated this document. Immutable.
-    GURL url_;
 
     // Cookie to uniquely identify this document. It is used to make sure that a
     // PrintedPage is correctly belonging to the PrintedDocument. Since

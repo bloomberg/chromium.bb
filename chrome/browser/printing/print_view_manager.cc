@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
@@ -157,13 +156,6 @@ string16 PrintViewManager::RenderSourceName() {
   if (is_title_overridden_)
     return overridden_title_;
   return GenerateRenderSourceName(tab_contents());
-}
-
-GURL PrintViewManager::RenderSourceUrl() {
-  NavigationEntry* entry = tab_contents()->controller().GetActiveEntry();
-  if (entry)
-    return entry->virtual_url();
-  return GURL();
 }
 
 void PrintViewManager::OnDidGetPrintedPagesCount(int cookie, int number_pages) {

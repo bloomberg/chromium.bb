@@ -224,7 +224,6 @@ PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
     : settings_(settings),
       source_message_loop_(MessageLoop::current()),
       name_(source->RenderSourceName()),
-      url_(source->RenderSourceUrl()),
       cookie_(cookie) {
 }
 
