@@ -5,6 +5,7 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
+    '../build/temp_gyp/googleurl.gyp:googleurl',
     '../gpu/gpu.gyp:gpu_ipc',
     '../ipc/ipc.gyp:ipc',
     '../media/media.gyp:media',

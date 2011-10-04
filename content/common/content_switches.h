@@ -90,7 +90,7 @@ CONTENT_EXPORT extern const char kExperimentalLocationFeatures[];
 CONTENT_EXPORT extern const char kExtensionProcess[];
 extern const char kExtraPluginDir[];
 extern const char kForceFieldTestNameAndValue[];
-extern const char kForceRendererAccessibility[];
+CONTENT_EXPORT extern const char kForceRendererAccessibility[];
 extern const char kGpuLauncher[];
 CONTENT_EXPORT extern const char kGpuProcess[];
 extern const char kGpuStartupDialog[];
@@ -123,7 +123,7 @@ CONTENT_EXPORT extern const char kPpapiBrokerProcess[];
 CONTENT_EXPORT extern const char kPpapiFlashArgs[];
 CONTENT_EXPORT extern const char kPpapiFlashPath[];
 CONTENT_EXPORT extern const char kPpapiFlashVersion[];
-extern const char kPpapiOutOfProcess[];
+CONTENT_EXPORT extern const char kPpapiOutOfProcess[];
 extern const char kPpapiPluginLauncher[];
 CONTENT_EXPORT extern const char kPpapiPluginProcess[];
 extern const char kPpapiStartupDialog[];
@@ -131,11 +131,11 @@ extern const char kProcessPerSite[];
 CONTENT_EXPORT extern const char kProcessPerTab[];
 CONTENT_EXPORT extern const char kProcessType[];
 CONTENT_EXPORT extern const char kRecordMode[];
-extern const char kRegisterPepperPlugins[];
+CONTENT_EXPORT extern const char kRegisterPepperPlugins[];
 CONTENT_EXPORT extern const char kRemoteShellPort[];
-extern const char kRendererAssertTest[];
+CONTENT_EXPORT extern const char kRendererAssertTest[];
 extern const char kRendererCmdPrefix[];
-extern const char kRendererCrashTest[];
+CONTENT_EXPORT extern const char kRendererCrashTest[];
 CONTENT_EXPORT extern const char kRendererProcess[];
 extern const char kRendererStartupDialog[];
 // TODO(jam): this doesn't belong in content.
@@ -144,7 +144,7 @@ extern const char kShowPaintRects[];
 extern const char kSimpleDataSource[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSQLiteIndexedDatabase[];
-extern const char kTestSandbox[];
+CONTENT_EXPORT extern const char kTestSandbox[];
 extern const char kUnlimitedQuotaForFiles[];
 CONTENT_EXPORT extern const char kUserAgent[];
 extern const char kUtilityCmdPrefix[];
@@ -167,7 +167,7 @@ extern const char kUseSystemSSL[];
 #endif
 
 #if !defined(OFFICIAL_BUILD)
-extern const char kRendererCheckFalseTest[];
+CONTENT_EXPORT extern const char kRendererCheckFalseTest[];
 #endif
 
 }  // namespace switches

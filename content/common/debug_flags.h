@@ -7,10 +7,11 @@
 #pragma once
 
 #include "content/common/child_process_info.h"
+#include "content/common/content_export.h"
 
 class CommandLine;
 
-class DebugFlags {
+class CONTENT_EXPORT DebugFlags {
  public:
 
   // Updates the command line arguments with debug-related flags. If

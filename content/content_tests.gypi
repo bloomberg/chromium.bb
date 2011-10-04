@@ -209,6 +209,7 @@
     {
       'target_name': 'content_browsertests',
       'type': 'executable',
+      'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         'content_browser',
         'content_gpu',
@@ -218,6 +219,8 @@
         '../base/base.gyp:test_support_base',
         '../net/net.gyp:net_test_support',
         '../testing/gtest.gyp:gtest',
+        '../ui/ui.gyp:ui',
+        '../webkit/support/webkit_support.gyp:glue',
       ],
       'include_dirs': [
         '..',

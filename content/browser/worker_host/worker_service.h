@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/common/content_export.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
@@ -63,8 +64,8 @@ class WorkerService {
   static const int kMaxWorkerProcessesWhenSharing;
 
   // Used when we run each worker in a separate process.
-  static const int kMaxWorkersWhenSeparate;
-  static const int kMaxWorkersPerTabWhenSeparate;
+  CONTENT_EXPORT static const int kMaxWorkersWhenSeparate;
+  CONTENT_EXPORT static const int kMaxWorkersPerTabWhenSeparate;
 
  private:
   friend struct DefaultSingletonTraits<WorkerService>;

@@ -105,6 +105,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base_static',
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/media/media.gyp:yuv_convert',
         '<(DEPTH)/net/net.gyp:net',

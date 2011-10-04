@@ -649,6 +649,7 @@
         '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
+        '../content/content.gyp:content_common',
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/bzip2/bzip2.gyp:bzip2',
