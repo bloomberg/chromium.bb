@@ -44,11 +44,12 @@ bool AutofillDataTypeController::StartModels() {
   }
 
   web_data_service_ = profile()->GetWebDataService(Profile::IMPLICIT_ACCESS);
-  if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
+  if (web_data_service_->IsDatabaseLoaded()) {
     return true;
   } else {
-    notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-                                NotificationService::AllSources());
+    notification_registrar_.Add(
+        this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
+        Source<WebDataService>(web_data_service_.get()));
     return false;
   }
 }
@@ -58,7 +59,7 @@ void AutofillDataTypeController::OnPersonalDataChanged() {
   DCHECK_EQ(state(), MODEL_STARTING);
   personal_data_->RemoveObserver(this);
   web_data_service_ = profile()->GetWebDataService(Profile::IMPLICIT_ACCESS);
-  if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
+  if (web_data_service_->IsDatabaseLoaded()) {
     set_state(ASSOCIATING);
     if (!StartAssociationAsync()) {
       SyncError error(FROM_HERE,
@@ -67,8 +68,9 @@ void AutofillDataTypeController::OnPersonalDataChanged() {
       StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
     }
   } else {
-    notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-                                NotificationService::AllSources());
+    notification_registrar_.Add(
+        this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
+        Source<WebDataService>(web_data_service_.get()));
   }
 }
 
