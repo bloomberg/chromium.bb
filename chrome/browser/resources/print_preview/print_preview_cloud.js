@@ -422,6 +422,7 @@ cr.define('cloudprint', function() {
                                            false,
                                            false);
         trackCloudPrinterAdded(SIGN_IN);
+        chrome.send('signIn');
       }
     }
     var selectedPrinter = printerList.selectedIndex;

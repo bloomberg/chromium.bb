@@ -241,16 +241,6 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudEmpty', function() {
   assertNotEquals(null, printerList);
 });
 
-// Test that the printer list is structured correctly after calling
-// addCloudPrinters with a null list.
-TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudNull', function() {
-  cloudprint.addCloudPrinters(null, addDestinationListOptionAtPosition);
-  var printerList = $('printer-list');
-  assertNotEquals(null, printerList);
-  expectEquals(localStrings.getString('signIn'),
-               printerList.options[0].text);
-});
-
 // Test that the printer list is structured correctly after attempting to add
 // individual cloud printers until no more can be added.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloud', function() {

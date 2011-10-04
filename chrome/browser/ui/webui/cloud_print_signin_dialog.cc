@@ -30,6 +30,8 @@ namespace cloud_print_signin_dialog {
 // and closes the dialog when sign in is complete.
 class CloudPrintSigninFlowHandler : public WebUIMessageHandler,
                                     public NotificationObserver {
+ public:
+  explicit CloudPrintSigninFlowHandler(TabContents* parent_tab);
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
@@ -41,7 +43,12 @@ class CloudPrintSigninFlowHandler : public WebUIMessageHandler,
   // Records the final size of the dialog in prefs.
   void StoreDialogSize();
   NotificationRegistrar registrar_;
+  TabContents* parent_tab_;
 };
+
+CloudPrintSigninFlowHandler::CloudPrintSigninFlowHandler(
+    TabContents* parent_tab) : parent_tab_(parent_tab) {
+}
 
 void CloudPrintSigninFlowHandler::RegisterMessages() {
   if (web_ui_ && web_ui_->tab_contents()) {
@@ -67,6 +74,7 @@ void CloudPrintSigninFlowHandler::Observe(int type,
         url.scheme() == dialog_url.scheme()) {
       StoreDialogSize();
       web_ui_->tab_contents()->render_view_host()->ClosePage();
+      parent_tab_->controller().Reload(false);
     }
   }
 }
@@ -123,7 +131,7 @@ GURL CloudPrintSigninDelegate::GetDialogContentURL() const {
 
 void CloudPrintSigninDelegate::GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const {
-  handlers->push_back(new CloudPrintSigninFlowHandler());
+  handlers->push_back(new CloudPrintSigninFlowHandler(parent_tab_));
 }
 
 void CloudPrintSigninDelegate::GetDialogSize(gfx::Size* size) const {
@@ -151,7 +159,6 @@ std::string CloudPrintSigninDelegate::GetDialogArgs() const {
 }
 
 void CloudPrintSigninDelegate::OnDialogClosed(const std::string& json_retval) {
-  parent_tab_->controller().Reload(false);
 }
 
 void CloudPrintSigninDelegate::OnCloseContents(TabContents* source,
