@@ -98,6 +98,31 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
       node, ASCIIToUTF16("google ABC"), std::string()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
       node, ASCIIToUTF16("http://www.google.com/search?q=A"), std::string()));
+
+  // Test with accents.
+  node = model.AddURL(model.other_node(), 0,
+      WideToUTF16(L"fr\u00E4n\u00E7\u00F3s\u00EA"),
+      GURL("http://www.google.com/search?q=FBA"));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, ASCIIToUTF16("francose"), std::string()));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, ASCIIToUTF16("FrAnCoSe"), std::string()));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, WideToUTF16(L"fr\u00E4ncose"), std::string()));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, WideToUTF16(L"fran\u00E7ose"), std::string()));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, WideToUTF16(L"franc\u00F3se"), std::string()));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, WideToUTF16(L"francos\u00EA"), std::string()));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, WideToUTF16(L"Fr\u00C4n\u00C7\u00F3S\u00EA"), std::string()));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, WideToUTF16(L"fr\u00C4n\u00C7\u00D3s\u00CA"), std::string()));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, ASCIIToUTF16("fba"), std::string()));
+  EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
+      node, ASCIIToUTF16("FBA"), std::string()));
 }
 
 #if !defined(OS_MACOSX)

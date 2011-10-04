@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/i18n/case_conversion.h"
+#include "base/i18n/string_search.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
@@ -204,7 +205,7 @@ bool MoreRecentlyModified(const BookmarkNode* n1, const BookmarkNode* n2) {
 bool DoesBookmarkTextContainWords(const string16& text,
                                   const std::vector<string16>& words) {
   for (size_t i = 0; i < words.size(); ++i) {
-    if (text.find(words[i]) == string16::npos)
+    if (!base::i18n::StringSearchIgnoringCaseAndAccents(words[i], text))
       return false;
   }
   return true;
@@ -216,13 +217,11 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
                               const std::vector<string16>& words,
                               const std::string& languages) {
   return
-      DoesBookmarkTextContainWords(
-          base::i18n::ToLower(node->GetTitle()), words) ||
-      DoesBookmarkTextContainWords(
-          base::i18n::ToLower(UTF8ToUTF16(node->url().spec())), words) ||
-      DoesBookmarkTextContainWords(base::i18n::ToLower(
-          net::FormatUrl(node->url(), languages, net::kFormatUrlOmitNothing,
-                         UnescapeRule::NORMAL, NULL, NULL, NULL)), words);
+      DoesBookmarkTextContainWords(node->GetTitle(), words) ||
+      DoesBookmarkTextContainWords(UTF8ToUTF16(node->url().spec()), words) ||
+      DoesBookmarkTextContainWords(net::FormatUrl(
+          node->url(), languages, net::kFormatUrlOmitNothing,
+          UnescapeRule::NORMAL, NULL, NULL, NULL), words);
 }
 
 }  // namespace
