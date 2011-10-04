@@ -25,7 +25,7 @@ class DictionaryValue;
 // The sequence of loading the extension list:
 // 1.) StartLoading() - checks if a loading task is already running
 // 2.) Load() - implemented in subclasses
-// 3.) FinishLoading()
+// 3.) LoadFinished()
 // 4.) owner_->SetPrefs()
 class ExternalExtensionLoader
     : public base::RefCountedThreadSafe<ExternalExtensionLoader> {

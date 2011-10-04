@@ -351,7 +351,7 @@ bool PathProvider(int key, FilePath* result) {
       break;
 
 #if defined(OS_MACOSX)
-    case DIR_DEPRICATED_EXTERNAL_EXTENSIONS:
+    case DIR_DEPRECATED_EXTERNAL_EXTENSIONS:
       // TODO(skerner): Reading external extensions from a file inside the
       // app budle causes several problems.  Once users have a chance to
       // migrate, remove this path.  crbug/67203

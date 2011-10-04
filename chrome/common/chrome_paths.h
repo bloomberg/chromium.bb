@@ -59,7 +59,7 @@ enum {
   DIR_EXTERNAL_EXTENSIONS,      // Directory where installer places .crx files.
 
 #if defined(OS_MACOSX)
-  DIR_DEPRICATED_EXTERNAL_EXTENSIONS,  // Former home of external extensions.
+  DIR_DEPRECATED_EXTERNAL_EXTENSIONS,  // Former home of external extensions.
                                        // We read from the old path for now,
                                        // to give users time to migrate.
 #endif

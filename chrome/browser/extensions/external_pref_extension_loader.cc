@@ -116,7 +116,7 @@ void ExternalPrefExtensionLoader::LoadOnFileThread() {
   // automatic migration methods we implement.
 #if defined(OS_MACOSX)
   // The deprecated path only exists on mac for now.
-  if (base_path_key_ == chrome::DIR_DEPRICATED_EXTERNAL_EXTENSIONS) {
+  if (base_path_key_ == chrome::DIR_DEPRECATED_EXTERNAL_EXTENSIONS) {
     UMA_HISTOGRAM_COUNTS_100("Extensions.DepricatedExternalJsonCount",
                              prefs_->size());
   }

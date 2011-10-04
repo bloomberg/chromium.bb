@@ -293,7 +293,7 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
           new ExternalExtensionProviderImpl(
               service,
               new ExternalPrefExtensionLoader(
-                  chrome::DIR_DEPRICATED_EXTERNAL_EXTENSIONS,
+                  chrome::DIR_DEPRECATED_EXTERNAL_EXTENSIONS,
                   ExternalPrefExtensionLoader::NONE),
               Extension::EXTERNAL_PREF,
               Extension::EXTERNAL_PREF_DOWNLOAD)));
