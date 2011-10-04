@@ -62,7 +62,7 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
       typed_url_node_id_(sync_api::kInvalidId),
       expected_loop_(MessageLoop::current()) {
   DCHECK(sync_service_);
-  DCHECK(history_backend_);
+  // history_backend_ may be null for unit tests (since it's not mockable).
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -103,7 +103,8 @@ bool TypedUrlModelAssociator::FixupURLAndGetVisits(
 bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   VLOG(1) << "Associating TypedUrl Models";
   DCHECK(expected_loop_ == MessageLoop::current());
-
+  if (IsAbortPending())
+    return false;
   std::vector<history::URLRow> typed_urls;
   if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
     error->Reset(FROM_HERE,
@@ -116,6 +117,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   std::map<history::URLID, history::VisitVector> visit_vectors;
   for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
        ix != typed_urls.end(); ++ix) {
+    if (IsAbortPending())
+      return false;
     if (!FixupURLAndGetVisits(
             history_backend_, &(*ix), &(visit_vectors[ix->id()]))) {
       error->Reset(FROM_HERE, "Could not get the url's visits.", model_type());
@@ -142,6 +145,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
     std::set<std::string> current_urls;
     for (std::vector<history::URLRow>::iterator ix = typed_urls.begin();
          ix != typed_urls.end(); ++ix) {
+      if (IsAbortPending())
+        return false;
       std::string tag = ix->url().spec();
 
       // Should never see an empty tag.
@@ -238,6 +243,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
     std::vector<int64> obsolete_nodes;
     int64 sync_child_id = typed_url_root.GetFirstChildId();
     while (sync_child_id != sync_api::kInvalidId) {
+      if (IsAbortPending())
+        return false;
       sync_api::ReadNode sync_child_node(&trans);
       if (!sync_child_node.InitByIdLookup(sync_child_id)) {
         error->Reset(FROM_HERE, "Failed to fetch child node.", model_type());
@@ -273,6 +280,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
             typed_url, &new_url);
 
         for (int c = 0; c < typed_url.visits_size(); ++c) {
+          if (IsAbortPending())
+            return false;
           // Allow duplicate visits - they aren't technically legal, but they
           // still show up in the data sometimes and we can't figure out the
           // source (http://crbug.com/91473).
@@ -299,6 +308,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
       for (std::vector<int64>::const_iterator it = obsolete_nodes.begin();
            it != obsolete_nodes.end();
            ++it) {
+          if (IsAbortPending())
+            return false;
         sync_api::WriteNode sync_node(&trans);
         if (!sync_node.InitByIdLookup(*it)) {
           error->Reset(FROM_HERE,
@@ -375,10 +386,6 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   // children.
   *has_nodes = sync_api::kInvalidId != typed_url_node.GetFirstChildId();
   return true;
-}
-
-void TypedUrlModelAssociator::AbortAssociation() {
-  // TODO(atwilson): Implement this.
 }
 
 const std::string* TypedUrlModelAssociator::GetChromeNodeFromSyncId(

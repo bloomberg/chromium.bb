@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
 class SyncError;
@@ -87,6 +88,31 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
 
   // Remove the association that corresponds to the given sync id.
   virtual void Disassociate(int64 sync_id) = 0;
+};
+
+template <class Node, class IDType>
+class AbortablePerDataTypeAssociatorInterface
+    : public PerDataTypeAssociatorInterface<Node, IDType> {
+ public:
+  AbortablePerDataTypeAssociatorInterface() : pending_abort_(false) {}
+
+  // Implementation of AssociatorInterface methods.
+  virtual void AbortAssociation() {
+    base::AutoLock lock(pending_abort_lock_);
+    pending_abort_ = true;
+  }
+
+ protected:
+  // Overridable by tests.
+  virtual bool IsAbortPending() {
+    base::AutoLock lock(pending_abort_lock_);
+    return pending_abort_;
+  }
+
+  // Lock to ensure exclusive access to the pending_abort_ flag.
+  base::Lock pending_abort_lock_;
+  // Set to true if there's a pending abort.
+  bool pending_abort_;
 };
 
 }  // namespace browser_sync

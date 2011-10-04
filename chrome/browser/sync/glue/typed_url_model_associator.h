@@ -43,7 +43,7 @@ extern const char kTypedUrlTag[];
 // We do not check if we have local data before this run; we always
 // merge and sync.
 class TypedUrlModelAssociator
-  : public PerDataTypeAssociatorInterface<std::string, std::string> {
+  : public AbortablePerDataTypeAssociatorInterface<std::string, std::string> {
  public:
   typedef std::vector<std::pair<GURL, string16> > TypedUrlTitleVector;
   typedef std::vector<history::URLRow> TypedUrlVector;
@@ -71,8 +71,6 @@ class TypedUrlModelAssociator
   // The has_nodes out param is true if the sync model has nodes other
   // than the permanent tagged nodes.
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
-
-  virtual void AbortAssociation();
 
   virtual bool CryptoReadyIfNecessary();
 

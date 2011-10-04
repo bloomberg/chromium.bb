@@ -3,11 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/string_piece.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/test/test_timeouts.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
+#include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -325,4 +331,66 @@ TEST_F(TypedUrlModelAssociatorTest, NoTypedVisits) {
   EXPECT_EQ(1000, typed_url.visits(0));
   EXPECT_EQ(PageTransition::RELOAD, static_cast<PageTransition::Type>(
       typed_url.visit_transitions(0)));
+}
+
+class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
+ public:
+  TestTypedUrlModelAssociator(base::WaitableEvent* startup,
+                              base::WaitableEvent* aborted)
+      : TypedUrlModelAssociator(&mock_, NULL),
+        startup_(startup),
+        aborted_(aborted) {}
+  virtual bool IsAbortPending() {
+    // Let the main thread know that we've been started up, and block until
+    // they've called Abort().
+    startup_->Signal();
+    EXPECT_TRUE(aborted_->TimedWait(base::TimeDelta::FromMilliseconds(
+      TestTimeouts::action_timeout_ms())));
+    return TypedUrlModelAssociator::IsAbortPending();
+  }
+ private:
+  ProfileSyncServiceMock mock_;
+  base::WaitableEvent* startup_;
+  base::WaitableEvent* aborted_;
+};
+
+static void CreateModelAssociator(base::WaitableEvent* startup,
+                                  base::WaitableEvent* aborted,
+                                  base::WaitableEvent* done,
+                                  TypedUrlModelAssociator** associator) {
+  // Grab the done lock - when we exit, this will be released and allow the
+  // test to finish.
+  *associator = new TestTypedUrlModelAssociator(startup, aborted);
+  // AssociateModels should be aborted and should return false.
+  EXPECT_FALSE((*associator)->AssociateModels(NULL));
+  delete *associator;
+  done->Signal();
+}
+
+// This test verifies that we can abort model association from the UI thread.
+// We start up the model associator on the DB thread, block until we abort the
+// association on the UI thread, then ensure that AssociateModels() returns
+// false.
+TEST_F(TypedUrlModelAssociatorTest, TestAbort) {
+  BrowserThread db_thread(BrowserThread::DB);
+  base::WaitableEvent startup(false, false);
+  base::WaitableEvent aborted(false, false);
+  base::WaitableEvent done(false, false);
+  TypedUrlModelAssociator* associator;
+  // Fire off to the DB thread to create the model associator and start
+  // model association.
+  db_thread.Start();
+  base::Closure callback = base::Bind(
+      &CreateModelAssociator, &startup, &aborted, &done, &associator);
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, callback);
+  // Wait for the model associator to get created and start assocation.
+  ASSERT_TRUE(startup.TimedWait(base::TimeDelta::FromMilliseconds(
+      TestTimeouts::action_timeout_ms())));
+  // Abort the model assocation - this should be callable from any thread.
+  associator->AbortAssociation();
+  // Tell the remote thread to continue.
+  aborted.Signal();
+  // Block until CreateModelAssociator() exits.
+  ASSERT_TRUE(done.TimedWait(base::TimeDelta::FromMilliseconds(
+      TestTimeouts::action_timeout_ms())));
 }
