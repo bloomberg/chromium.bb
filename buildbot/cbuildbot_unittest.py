@@ -184,7 +184,7 @@ class InterfaceTest(mox.MoxTestBase):
     """Test that debug and buildbot flags are set by default."""
     args = ['-r', self._BUILD_ROOT, self._X86_PREFLIGHT]
     (options, args) = self.parser.parse_args(args=args)
-    cbuildbot._PostParseCheck(options)
+    cbuildbot._PostParseCheck(options, args)
     self.assertEquals(options.debug, True)
     self.assertEquals(options.buildbot, False)
 
@@ -261,7 +261,7 @@ class InterfaceTest(mox.MoxTestBase):
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     (options, args) = self.parser.parse_args(args=args)
-    self.assertRaises(Exception, cbuildbot._PostParseCheck, options)
+    self.assertRaises(Exception, cbuildbot._PostParseCheck, options, args)
     self.mox.VerifyAll()
 
   def testBuildBotWithBadChromeRootOption(self):
@@ -275,7 +275,7 @@ class InterfaceTest(mox.MoxTestBase):
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     (options, args) = self.parser.parse_args(args=args)
-    self.assertRaises(Exception, cbuildbot._PostParseCheck, options)
+    self.assertRaises(Exception, cbuildbot._PostParseCheck, options, args)
     self.mox.VerifyAll()
 
   def testBuildBotWithBadChromeRevOptionLocal(self):
@@ -288,7 +288,7 @@ class InterfaceTest(mox.MoxTestBase):
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     (options, args) = self.parser.parse_args(args=args)
-    self.assertRaises(Exception, cbuildbot._PostParseCheck, options)
+    self.assertRaises(Exception, cbuildbot._PostParseCheck, options, args)
     self.mox.VerifyAll()
 
   def testBuildBotWithGoodChromeRootOption(self):
@@ -300,7 +300,7 @@ class InterfaceTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_lib, 'Die')
     self.mox.ReplayAll()
     (options, args) = self.parser.parse_args(args=args)
-    cbuildbot._PostParseCheck(options)
+    cbuildbot._PostParseCheck(options, args)
     self.mox.VerifyAll()
     self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
     self.assertNotEquals(options.chrome_root, None)
@@ -323,7 +323,7 @@ class InterfaceTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_lib, 'Die')
     self.mox.ReplayAll()
     (options, args) = self.parser.parse_args(args=args)
-    cbuildbot._PostParseCheck(options)
+    cbuildbot._PostParseCheck(options, args)
     self.mox.VerifyAll()
     self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
     self.assertNotEquals(options.chrome_root, None)
@@ -393,6 +393,20 @@ class FullInterfaceTest(unittest.TestCase):
 
   def tearDown(self):
     self.mox.UnsetStubs()
+
+  def testNullArgsStripped(self):
+    """Test that null args are stripped out and don't cause error."""
+    self.mox.ReplayAll()
+    cbuildbot.main(['-r', self._BUILD_ROOT, '', '',
+                    'x86-generic-pre-flight-queue'])
+
+  def testMultipleConfigsError(self):
+    """Test that multiple configs cause error if --remote is not used."""
+    self.mox.ReplayAll()
+    self.assertRaises(TestExitedException, cbuildbot.main,
+                     ['-r', self._BUILD_ROOT,
+                      'arm-generic-pre-flight-queue',
+                      'x86-generic-pre-flight-queue'])
 
   def testDontInferBuildrootForBuildBotRuns(self):
     """Test that we don't infer buildroot if run with --buildbot option."""

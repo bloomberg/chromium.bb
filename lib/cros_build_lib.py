@@ -657,6 +657,12 @@ def GetProjectManifestBranch(buildroot, project):
   return project_branch['remote'], project_branch['revision']
 
 
+def GetProjectUserEmail(cwd):
+  """Get the email configured for the project ."""
+  return RunCommand(['git', 'config', 'user.email'], redirect_stdout=True,
+                     cwd=cwd).output.strip()
+
+
 def GetManifestDefaultBranch(cwd):
   """Gets the manifest checkout branch from the manifest."""
   manifest = RunCommand(['repo', 'manifest', '-o', '-'], print_cmd=False,
