@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -155,13 +156,17 @@ WebUIMessageHandler* PluginsDOMHandler::Attach(WebUI* web_ui) {
 
 void PluginsDOMHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("requestPluginsData",
-      NewCallback(this, &PluginsDOMHandler::HandleRequestPluginsData));
+      base::Bind(&PluginsDOMHandler::HandleRequestPluginsData,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("enablePlugin",
-      NewCallback(this, &PluginsDOMHandler::HandleEnablePluginMessage));
+      base::Bind(&PluginsDOMHandler::HandleEnablePluginMessage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("saveShowDetailsToPrefs",
-      NewCallback(this, &PluginsDOMHandler::HandleSaveShowDetailsToPrefs));
+      base::Bind(&PluginsDOMHandler::HandleSaveShowDetailsToPrefs,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("getShowDetails",
-      NewCallback(this, &PluginsDOMHandler::HandleGetShowDetails));
+      base::Bind(&PluginsDOMHandler::HandleGetShowDetails,
+                 base::Unretained(this)));
 }
 
 void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
