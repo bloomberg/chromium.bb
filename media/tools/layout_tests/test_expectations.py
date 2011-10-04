@@ -109,7 +109,7 @@ class TestExpectations(object):
       ValueError when there is no test name match.
     """
     # First try to find test name ending with .html.
-    matches = re.search(r':\s+(\S+.html)', line)
+    matches = re.search(r':\s+(\S+(.html|.svg))', line)
     # Next try to find directory name.
     if matches:
       return matches.group(1)

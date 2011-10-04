@@ -14,8 +14,7 @@ class TestLayoutTests(unittest.TestCase):
   """Unit tests for the LayoutTests class."""
 
   def testJoinWithTestExpectation(self):
-    layouttests = LayoutTests(csv_file_path=os.path.join('testname',
-                                                         'media.csv'))
+    layouttests = LayoutTests(parent_location_list=['media/'])
     test_expectations = TestExpectations()
     test_info_map = layouttests.JoinWithTestExpectation(test_expectations)
     # TODO(imasaki): have better assertion below. Currently, the test

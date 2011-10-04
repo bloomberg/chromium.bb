@@ -34,3 +34,7 @@ class TestTrendGraph(unittest.TestCase):
       if '2008,0,1,13,45,00' in line:
         lineCount += 1
     self.assertEqual(lineCount, 2)
+
+
+if __name__ == '__main__':
+  unittest.main()

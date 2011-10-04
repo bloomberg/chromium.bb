@@ -40,6 +40,11 @@ class TestTestExpectations(unittest.TestCase):
     self.assertEquals(TestExpectations.ExtractTestOrDirectoryName(line),
                       'compositing/scaling/tiled-layer-recursion.html')
 
+  def testExtractTestOrDirectoryNameWithSvg(self):
+    line = 'BUGWK43668 SKIP : media/track/x.svg = TIMEOUT'
+    self.assertEquals(TestExpectations.ExtractTestOrDirectoryName(line),
+                      'media/track/x.svg')
+
   def testExtractTestOrDirectoryNameWithDirName(self):
     line = 'BUGWK43668 SKIP : media/track/ = TIMEOUT'
     self.assertEquals(TestExpectations.ExtractTestOrDirectoryName(line),

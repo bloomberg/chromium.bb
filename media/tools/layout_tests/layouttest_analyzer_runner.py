@@ -121,7 +121,8 @@ test expectation file and were not skipped.
   file_object.write('<th>Failing Rate</th>')
   file_object.write('<th>Passing Rate</th>')
   file_object.write('<th>Last Revision Number</th>')
-  file_object.write('<th>Last Revision Date</th></tr>\n')
+  file_object.write('<th>Last Revision Date</th>')
+  file_object.write('<th>Owner Email</th></tr>\n')
   test_group_list.sort()
   for i, test_group in enumerate(test_group_list):
     file_object.write('<tr class="d' + str(i % 2) + '">\n')
@@ -173,11 +174,14 @@ def main():
       os.chmod(graph_file, 0744)
     anno_file = os.path.join(options.annotation_directory_location,
                              test_group_name_for_data + '.csv')
-    cmd = ('python layouttest_analyzer.py -x %s -n %s -r %s -d %s -t %s'
-           ' -q %s -a %s -c') % (
-               test_group, run_config_map[test_group][0],
-               run_config_map[test_group][1], result_dir, graph_file,
-               dashboard_file_location, anno_file)
+    cmd = ('python layouttest_analyzer.py -x %s -d %s -t %s'
+           ' -q %s -a %s -c ') % (
+               test_group, result_dir, graph_file, dashboard_file_location,
+               anno_file)
+    if run_config_map[test_group][0]:
+      cmd += '-n ' + run_config_map[test_group][0] + ' '
+    if run_config_map[test_group][1]:
+      cmd += '-r ' + run_config_map[test_group][1] + ' '
     if options.email_appended_text_file_location:
       cmd += ' -b ' + options.email_appended_text_file_location
     print 'Running ' + cmd

@@ -173,7 +173,7 @@ class LayoutTests(object):
           file_name = file_name[0].repos_path.encode(default_encoding)
           # Remove the word '/truck/LayoutTests'.
           file_name = file_name.replace('/trunk/LayoutTests/', '')
-          if file_name.endswith('.html'):
+          if file_name.endswith('.html') or file_name.endswith('.svg'):
             name_map[file_name] = True
     return name_map
 
@@ -245,14 +245,20 @@ class LayoutTests(object):
       root_path: the root path of the Webkit SVN directory.
 
     Returns:
-      A test description string.
+      A test description string. Returns an empty string is returned if the
+          test description cannot be extracted.
 
     Raises:
       A URLError when the layout test is not available.
     """
     if test_location.endswith('.html'):
       url = root_path + test_location
-      resp = urllib2.urlopen(url)
+      try:
+        resp = urllib2.urlopen(url)
+      except urllib2.HTTPError:
+        # Some files with different languages cause this exception.
+        # Return an empty description in this case.
+        return ''
       if resp.code == 200:
         return LayoutTests.ExtractTestDescription(resp.read())
       raise urllib2.URLError(

@@ -142,7 +142,8 @@ def GetCurrentAndPreviousResults(debug, test_group_file_location,
       #   http://svn.webkit.org/repository/webkit/trunk/LayoutTests/media
       # Filtering is not set so all HTML files are considered as valid tests.
       # Also, we look for the tests recursively.
-      if not os.path.exists(test_group_file_location):
+      if not test_group_file_location or (
+          not os.path.exists(test_group_file_location)):
         print ('Warning: CSV file (%s) does not exist. So it is ignored and '
                '%s is used for obtaining test names') % (
                    test_group_file_location, test_group_name)
@@ -359,7 +360,7 @@ def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
 
 
 def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
-                    layouttest_root_path, rev, rev_date):
+                    layouttest_root_path, rev, rev_date, email):
   """Update dashboard HTML file.
 
   Args:
@@ -374,6 +375,7 @@ def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
         stored.
     rev: the latest revision number for the given test group.
     rev_date: the latest revision date for the given test group.
+    email: email address of the owner for the given test group.
   """
   # Generate a HTML file that contains all test names for each test group.
   escaped_tg_name = test_group_name.replace('/', '_')
@@ -399,7 +401,7 @@ def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
              '<td><a href="%s">%s</a></td><td><a href="%s">%s</a></td>'
              '<td><a href="%s">%s</a></td><td>%d%%</td><td>%s%%</td>'
              '<td><a href="http://trac.webkit.org/changeset/%s">%s</a></td>'
-             '<td>%s</td>\n') % (
+             '<td>%s</td><td><a href="mailto:%s">%s</a></td>\n') % (
                  # Dashboard file and graph must be in the same directory
                  # to make the following link work.
                  layouttest_root_path + '/' + test_group_name,
@@ -409,7 +411,8 @@ def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
                  len(data_map['skip'][0]), escaped_tg_name + '_nonskip.html',
                  len(data_map['nonskip'][0]),
                  100 - int(data_map['passingrate'][0]),
-                 data_map['passingrate'][0], rev, rev, rev_date)
+                 data_map['passingrate'][0], rev, rev, rev_date, email,
+                 email)
   layouttest_analyzer_helpers.ReplaceLineInFile(
       dashboard_file_location, '<td>' + test_group_name + '</td>', new_str)
 
@@ -445,7 +448,7 @@ def main():
     if options.dashboard_file_location:
       UpdateDashboard(options.dashboard_file_location, options.test_group_name,
                       data_map, layouttests.DEFAULT_LAYOUTTEST_LOCATION, rev,
-                      rev_date)
+                      rev_date, options.receiver_email_address)
 
 
 if '__main__' == __name__:
