@@ -19,6 +19,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(BASE_DIR))
 
 import gclient
+import gclient_utils
 from tests import trial_dir
 
 
@@ -162,6 +163,7 @@ class GclientTest(trial_dir.TestCase):
           'svn://example.com/foo/dir1/dir2/dir3/dir4/dir1/another',
         ],
         actual)
+
     self._check_requirements(
         obj.dependencies[0],
         {
@@ -192,6 +194,7 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals({}, expected)
 
   def _get_processed(self):
+    """Retrieves the item in the order they were processed."""
     items = []
     try:
       while True:
@@ -239,9 +242,13 @@ class GclientTest(trial_dir.TestCase):
 
 
 if __name__ == '__main__':
+  sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
+  sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout, include_zero=True)
+  sys.stderr = gclient_utils.MakeFileAutoFlush(sys.stderr)
+  sys.stderr = gclient_utils.MakeFileAnnotated(sys.stderr, include_zero=True)
   logging.basicConfig(
       level=[logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG][
         min(sys.argv.count('-v'), 3)],
-      format='%(asctime).19s %(levelname)s %(filename)s:'
-              '%(lineno)s %(message)s')
+      format='%(relativeCreated)4d %(levelname)5s %(module)13s('
+              '%(lineno)d) %(message)s')
   unittest.main()

@@ -247,7 +247,7 @@ def MakeFileAutoFlush(fileobj, delay=10):
   return new_fileobj
 
 
-def MakeFileAnnotated(fileobj):
+def MakeFileAnnotated(fileobj, include_zero=False):
   """Creates a file object clone to automatically prepends every line in worker
   threads with a NN> prefix."""
   if hasattr(fileobj, 'output_buffers'):
@@ -265,9 +265,11 @@ def MakeFileAnnotated(fileobj):
   def annotated_write(out):
     index = getattr(threading.currentThread(), 'index', None)
     if index is None:
-      # Undexed threads aren't buffered.
-      new_fileobj.old_annotated_write(out)
-      return
+      if not include_zero:
+        # Unindexed threads aren't buffered.
+        new_fileobj.old_annotated_write(out)
+        return
+      index = 0
 
     new_fileobj.lock.acquire()
     try:
@@ -557,7 +559,7 @@ class ExecutionQueue(object):
           self._flush_terminated_threads()
           if (not self.queued and not self.running or
               self.jobs == len(self.running)):
-            # No more worker threads or can't queue anything.
+            logging.debug('No more worker threads or can\'t queue anything.')
             break
 
           # Check for new tasks to start.
@@ -644,7 +646,7 @@ class ExecutionQueue(object):
     """One thread to execute one WorkItem."""
     def __init__(self, item, index, args, kwargs):
       threading.Thread.__init__(self, name=item.name or 'Worker')
-      logging.info(item.name)
+      logging.info('_Worker(%s) reqs:%s' % (item.name, item.requirements))
       self.item = item
       self.index = index
       self.args = args
@@ -652,7 +654,7 @@ class ExecutionQueue(object):
 
     def run(self):
       """Runs in its own thread."""
-      logging.debug('running(%s)' % self.item.name)
+      logging.debug('_Worker.run(%s)' % self.item.name)
       work_queue = self.kwargs['work_queue']
       try:
         self.item.run(*self.args, **self.kwargs)
@@ -661,7 +663,7 @@ class ExecutionQueue(object):
         logging.info('Caught exception in thread %s' % self.item.name)
         logging.info(str(sys.exc_info()))
         work_queue.exceptions.put(sys.exc_info())
-      logging.info('Task %s done' % self.item.name)
+      logging.info('_Worker.run(%s) done' % self.item.name)
 
       work_queue.ready_cond.acquire()
       try:

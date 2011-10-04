@@ -314,12 +314,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     Manages From() keyword accordingly. Do not touch self.parsed_url nor
     self.url because it may called with other urls due to From()."""
     assert self.parsed_url == None or not self.should_process, self.parsed_url
-    overriden_url = self.get_custom_deps(self.name, url)
-    if overriden_url != url:
-      logging.info('%s, %s was overriden to %s' % (self.name, url,
-          overriden_url))
-      return overriden_url
-    elif isinstance(url, self.FromImpl):
+    parsed_url = self.get_custom_deps(self.name, url)
+    if parsed_url != url:
+      logging.info('LateOverride(%s, %s) -> %s' % (self.name, url, parsed_url))
+      return parsed_url
+
+    if isinstance(url, self.FromImpl):
       ref = [
           dep for dep in self.root.subtree(True) if url.module_name == dep.name
       ]
@@ -345,9 +345,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
       # Call LateOverride() again.
       parsed_url = found_dep.LateOverride(found_dep.url)
-      logging.info('%s, %s to %s' % (self.name, url, parsed_url))
+      logging.info(
+          'LateOverride(%s, %s) -> %s (From)' % (self.name, url, parsed_url))
       return parsed_url
-    elif isinstance(url, basestring):
+
+    if isinstance(url, basestring):
       parsed_url = urlparse.urlparse(url)
       if not parsed_url[0]:
         # A relative url. Fetch the real base.
@@ -363,16 +365,18 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         parsed_url = scm.FullUrlForRelativeUrl(url)
       else:
         parsed_url = url
-      logging.info('%s, %s -> %s' % (self.name, url, parsed_url))
+      logging.info('LateOverride(%s, %s) -> %s' % (self.name, url, parsed_url))
       return parsed_url
-    elif isinstance(url, self.FileImpl):
-      parsed_url = url
-      logging.info('%s, %s -> %s (File)' % (self.name, url, parsed_url))
-      return parsed_url
-    elif url is None:
-      return None
+
+    if isinstance(url, self.FileImpl):
+      logging.info('LateOverride(%s, %s) -> %s (File)' % (self.name, url, url))
+      return url
+
+    if url is None:
+      logging.info('LateOverride(%s, %s) -> %s' % (self.name, url, url))
+      return url
     else:
-      raise gclient_utils.Error('Unkown url type')
+      raise gclient_utils.Error('Unknown url type')
 
   def ParseDepsFile(self):
     """Parses the DEPS file for this dependency."""
@@ -391,11 +395,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     }
     filepath = os.path.join(self.root.root_dir, self.name, self.deps_file)
     if not os.path.isfile(filepath):
-      logging.info('%s: No %s file found at %s' % (self.name, self.deps_file,
-                                                   filepath))
+      logging.info(
+          'ParseDepsFile(%s): No %s file found at %s' % (
+            self.name, self.deps_file, filepath))
     else:
       deps_content = gclient_utils.FileRead(filepath)
-      logging.debug(deps_content)
+      logging.debug('ParseDepsFile(%s) read:\n%s' % (self.name, deps_content))
       # Eval the content.
       try:
         exec(deps_content, global_scope, local_scope)
@@ -829,7 +834,7 @@ solutions = [
             pprint.pformat(entry.parsed_url))
     result += '}\n'
     file_path = os.path.join(self.root_dir, self._options.entries_filename)
-    logging.info(result)
+    logging.debug(result)
     gclient_utils.FileWrite(file_path, result)
 
   def _ReadEntries(self):
@@ -1388,11 +1393,8 @@ def Parser():
   old_parser = parser.parse_args
   def Parse(args):
     (options, args) = old_parser(args)
-    level = None
-    if options.verbose == 2:
-      level = logging.INFO
-    elif options.verbose > 2:
-      level = logging.DEBUG
+    level = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG][
+        min(options.verbose, 3)]
     logging.basicConfig(level=level,
         format='%(module)s(%(lineno)d) %(funcName)s:%(message)s')
     options.entries_filename = options.config_filename + '_entries'
