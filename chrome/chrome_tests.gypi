@@ -2500,6 +2500,26 @@
         '../content/test/test_launcher.cc',
         '../content/test/test_launcher.h',
       ],
+      'rules': [
+        {
+          'rule_name': 'js2webui',
+          'extension': 'js',
+          'inputs': [
+            '<(gypv8sh)',
+            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
+            '<(mock_js)',
+            '<(test_api_js)',
+            '<(js2webui)',
+          ],
+          'outputs': [
+            '<(js2webui_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).cc',
+          ],
+          'process_outputs_as_sources': 1,
+          'action': [
+            'python', '<@(_inputs)', '<(RULE_INPUT_PATH)', '<@(_outputs)',
+          ],
+        },
+      ],
       'conditions': [
         ['chromeos==0', {
           'sources/': [
@@ -2691,26 +2711,6 @@
           ],
         }],
         ['target_arch!="arm"', {
-          'rules': [
-            {
-              'rule_name': 'js2webui',
-              'extension': 'js',
-              'inputs': [
-                '<(gypv8sh)',
-                '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
-                '<(mock_js)',
-                '<(test_api_js)',
-                '<(js2webui)',
-              ],
-              'outputs': [
-                '<(js2webui_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).cc',
-              ],
-              'process_outputs_as_sources': 1,
-              'action': [
-                'python', '<@(_inputs)', '<(RULE_INPUT_PATH)', '<@(_outputs)',
-              ],
-            },
-          ],
           'dependencies': [
             # build time dependency.
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
