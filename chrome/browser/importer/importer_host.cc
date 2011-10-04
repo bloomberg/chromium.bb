@@ -172,9 +172,9 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
     BrowserList::GetLastActive()->AddSelectedTabWithURL(
         url, PageTransition::TYPED);
 
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ImporterHost::OnImportLockDialogEnd, false));
-    } else {
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &ImporterHost::OnImportLockDialogEnd, this, false));
+  } else {
     is_source_readable_ = true;
     InvokeTaskIfDone();
   }

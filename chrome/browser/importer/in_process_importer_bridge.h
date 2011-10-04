@@ -27,7 +27,7 @@ class InProcessImporterBridge : public ImporterBridge {
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,
       const string16& first_folder_name) OVERRIDE;
 
-  virtual void AddHomePage(const GURL &home_page) OVERRIDE;
+  virtual void AddHomePage(const GURL& home_page) OVERRIDE;
 
 #if defined(OS_WIN)
   virtual void AddIE7PasswordInfo(

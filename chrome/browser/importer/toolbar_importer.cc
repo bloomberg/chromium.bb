@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/bind.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -91,7 +92,7 @@ void Toolbar5Importer::Cancel() {
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &Toolbar5Importer::Cancel));
+        base::Bind(&Toolbar5Importer::Cancel, this));
   }
 }
 

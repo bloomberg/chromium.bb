@@ -16,6 +16,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -112,8 +113,8 @@ class ImporterTest : public testing::Test {
     int items = importer::HISTORY | importer::PASSWORDS | importer::FAVORITES;
     if (import_search_plugins)
       items = items | importer::SEARCH_ENGINES;
-    loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
-        &ImporterHost::StartImportSettings, source_profile,
+    loop->PostTask(FROM_HERE, base::Bind(
+        &ImporterHost::StartImportSettings, host.get(), source_profile,
         profile_.get(), items, make_scoped_refptr(writer), true));
     loop->Run();
   }
@@ -371,8 +372,9 @@ TEST_F(ImporterTest, IEImporter) {
   source_profile.importer_type = importer::TYPE_IE;
   source_profile.source_path = temp_dir_.path();
 
-  loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
+  loop->PostTask(FROM_HERE, base::Bind(
       &ImporterHost::StartImportSettings,
+      host.get(),
       source_profile,
       profile_.get(),
       importer::HISTORY | importer::PASSWORDS | importer::FAVORITES,
@@ -657,9 +659,9 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
   source_profile.app_path = app_path_;
   source_profile.source_path = profile_path_;
 
-  loop->PostTask(FROM_HERE, NewRunnableMethod(
-      host.get(),
+  loop->PostTask(FROM_HERE, base::Bind(
       &ImporterHost::StartImportSettings,
+      host.get(),
       source_profile,
       profile_.get(),
       importer::HISTORY | importer::PASSWORDS |

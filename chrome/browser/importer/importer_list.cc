@@ -4,6 +4,7 @@
 
 #include "chrome/browser/importer/importer_list.h"
 
+#include "base/bind.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
@@ -125,7 +126,7 @@ void ImporterList::DetectSourceProfiles(
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      NewRunnableMethod(this, &ImporterList::DetectSourceProfilesWorker));
+      base::Bind(&ImporterList::DetectSourceProfilesWorker, this));
 }
 
 void ImporterList::SetObserver(importer::ImporterListObserver* observer) {
@@ -196,7 +197,7 @@ void ImporterList::DetectSourceProfilesWorker() {
     BrowserThread::PostTask(
         source_thread_id_,
         FROM_HERE,
-        NewRunnableMethod(this, &ImporterList::SourceProfilesLoaded, profiles));
+        base::Bind(&ImporterList::SourceProfilesLoaded, this, profiles));
   } else {
     source_profiles_->assign(profiles.begin(), profiles.end());
     source_profiles_loaded_ = true;

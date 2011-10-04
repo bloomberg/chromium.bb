@@ -4,6 +4,7 @@
 
 #include "chrome/browser/importer/firefox_importer_unittest_utils.h"
 
+#include "base/bind.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -170,7 +171,7 @@ class CancellableQuitMsgLoop : public base::RefCounted<CancellableQuitMsgLoop> {
 // Spin until either a client response arrives or a timeout occurs.
 bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
   // What we're trying to do here is to wait for an RPC message to go over the
-  // wire and the client to reply.  If the client does not replyy by a given
+  // wire and the client to reply.  If the client does not reply by a given
   // timeout we kill the message loop.
   // The way we do this is to post a CancellableQuitMsgLoop for 3 seconds in
   // the future and cancel it if an RPC message comes back earlier.
@@ -180,7 +181,7 @@ bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
       new CancellableQuitMsgLoop());
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      NewRunnableMethod(quit_task.get(), &CancellableQuitMsgLoop::QuitNow),
+      base::Bind(&CancellableQuitMsgLoop::QuitNow, quit_task.get()),
       TestTimeouts::action_max_timeout_ms());
 
   message_loop_->Run();

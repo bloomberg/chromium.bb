@@ -4,6 +4,7 @@
 
 #include "chrome/browser/importer/external_process_importer_client.h"
 
+#include "base/bind.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
@@ -65,10 +66,9 @@ void ExternalProcessImporterClient::Start() {
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_id));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &ExternalProcessImporterClient::StartProcessOnIOThread,
-          thread_id));
+      base::Bind(&ExternalProcessImporterClient::StartProcessOnIOThread,
+                 this,
+                 thread_id));
 }
 
 void ExternalProcessImporterClient::StartProcessOnIOThread(
@@ -118,8 +118,9 @@ void ExternalProcessImporterClient::Cancel() {
   if (utility_process_host_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-            &ExternalProcessImporterClient::CancelImportProcessOnIOThread));
+        base::Bind(
+            &ExternalProcessImporterClient::CancelImportProcessOnIOThread,
+            this));
   }
   Release();
 }
@@ -202,9 +203,9 @@ void ExternalProcessImporterClient::OnImportItemFinished(int item_data) {
   bridge_->NotifyItemEnded(import_item);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-          &ExternalProcessImporterClient::NotifyItemFinishedOnIOThread,
-          import_item));
+      base::Bind(&ExternalProcessImporterClient::NotifyItemFinishedOnIOThread,
+                 this,
+                 import_item));
 }
 
 void ExternalProcessImporterClient::OnHistoryImportStart(
