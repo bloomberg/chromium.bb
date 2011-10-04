@@ -38,7 +38,7 @@
         'drt_application_mac.mm',
         'platform_support.h',
         'platform_support_android.cc',
-        'platform_support_gtk.cc',
+        'platform_support_linux.cc',
         'platform_support_mac.mm',
         'platform_support_win.cc',
         'test_webkit_platform_support.cc',

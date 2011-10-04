@@ -37,7 +37,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
 #include "ui/gfx/gl/gl_context.h"
@@ -631,7 +631,7 @@ void OpenFileSystem(WebFrame* frame, WebFileSystem::Type type,
 }
 
 // Keyboard code
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 int NativeKeyCodeForWindowsKeyCode(int keycode, bool shift) {
   ui::KeyboardCode code = static_cast<ui::KeyboardCode>(keycode);
   return ui::GdkNativeKeyCodeForWindowsKeyCode(code, shift);

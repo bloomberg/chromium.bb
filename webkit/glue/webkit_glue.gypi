@@ -463,9 +463,6 @@
           'sources!': [
             'plugins/plugin_stubs.cc',
           ],
-        }, { # else: toolkit_uses_gtk != 1
-          'sources/': [['exclude', '_(linux|gtk)(_data)?\\.cc$'],
-                       ['exclude', r'/gtk_']],
         }],
         ['use_aura==1', {
           'sources/': [
