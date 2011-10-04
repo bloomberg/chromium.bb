@@ -1,0 +1,33 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the <code>PPB_Find_Dev</code> interface.
+ */
+
+label Chrome {
+  M14 = 0.3
+};
+
+interface PPB_Find_Dev {
+  /**
+   * Updates the number of find results for the current search term.  If
+   * there are no matches 0 should be passed in.  Only when the plugin has
+   * finished searching should it pass in the final count with final_result set
+   * to PP_TRUE.
+   */
+  void NumberOfFindResultsChanged(
+      [in] PP_Instance instance,
+      [in] int32_t total,
+      [in] PP_Bool final_result);
+
+  /**
+   * Updates the index of the currently selected search item.
+   */
+  void SelectedFindResultChanged(
+      [in] PP_Instance instance,
+      [in] int32_t index);
+};
+
