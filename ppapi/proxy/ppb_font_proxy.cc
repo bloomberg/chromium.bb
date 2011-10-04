@@ -77,11 +77,14 @@ bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
 Font::Font(const HostResource& resource,
            const PP_FontDescription_Dev& desc)
     : Resource(resource),
-      webkit_event_(false, false) {
+      webkit_event_(false, false),
+      font_forwarding_(NULL) {
   TRACE_EVENT0("ppapi proxy", "Font::Font");
   StringVar* face = StringVar::FromPPVar(desc.face);
 
   PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
+  if (!dispatcher)
+    return;
   WebKitForwarding* forwarding = dispatcher->GetWebKitForwarding();
 
   RunOnWebKitThread(true,
@@ -94,7 +97,10 @@ Font::Font(const HostResource& resource,
 }
 
 Font::~Font() {
-  RunOnWebKitThread(false, base::Bind(&DeleteFontForwarding, font_forwarding_));
+  if (font_forwarding_) {
+    RunOnWebKitThread(false,
+                      base::Bind(&DeleteFontForwarding, font_forwarding_));
+  }
 }
 
 PPB_Font_API* Font::AsPPB_Font_API() {
@@ -106,11 +112,13 @@ PP_Bool Font::Describe(PP_FontDescription_Dev* description,
   TRACE_EVENT0("ppapi proxy", "Font::Describe");
   std::string face;
   PP_Bool result = PP_FALSE;
-  RunOnWebKitThread(true,
-                    base::Bind(&WebKitForwarding::Font::Describe,
-                               base::Unretained(font_forwarding_),
-                               &webkit_event_, description, &face, metrics,
-                               &result));
+  if (font_forwarding_) {
+    RunOnWebKitThread(true,
+                      base::Bind(&WebKitForwarding::Font::Describe,
+                                 base::Unretained(font_forwarding_),
+                                 &webkit_event_, description, &face, metrics,
+                                 &result));
+  }
 
   if (PP_ToBool(result))
     description->face = StringVar::StringToPPVar(0, face);
@@ -126,6 +134,9 @@ PP_Bool Font::DrawTextAt(PP_Resource pp_image_data,
                          const PP_Rect* clip,
                          PP_Bool image_data_is_opaque) {
   TRACE_EVENT0("ppapi proxy", "Font::DrawTextAt");
+  if (!font_forwarding_)
+    return PP_FALSE;
+
   // Convert to an ImageData object.
   EnterResourceNoLock<PPB_ImageData_API> enter(pp_image_data, true);
   if (enter.failed())
@@ -164,7 +175,7 @@ PP_Bool Font::DrawTextAt(PP_Resource pp_image_data,
 int32_t Font::MeasureText(const PP_TextRun_Dev* text) {
   TRACE_EVENT0("ppapi proxy", "Font::MeasureText");
   WebKitForwarding::Font::TextRun run;
-  if (!PPTextRunToTextRun(text, &run))
+  if (!font_forwarding_ || !PPTextRunToTextRun(text, &run))
     return -1;
   int32_t result = -1;
   RunOnWebKitThread(true,
@@ -178,7 +189,7 @@ uint32_t Font::CharacterOffsetForPixel(const PP_TextRun_Dev* text,
                                        int32_t pixel_position) {
   TRACE_EVENT0("ppapi proxy", "Font::CharacterOffsetForPixel");
   WebKitForwarding::Font::TextRun run;
-  if (!PPTextRunToTextRun(text, &run))
+  if (!font_forwarding_ || !PPTextRunToTextRun(text, &run))
     return -1;
   uint32_t result = -1;
   RunOnWebKitThread(true,
@@ -192,7 +203,7 @@ int32_t Font::PixelOffsetForCharacter(const PP_TextRun_Dev* text,
                                       uint32_t char_offset) {
   TRACE_EVENT0("ppapi proxy", "Font::PixelOffsetForCharacter");
   WebKitForwarding::Font::TextRun run;
-  if (!PPTextRunToTextRun(text, &run))
+  if (!font_forwarding_ || !PPTextRunToTextRun(text, &run))
     return -1;
   int32_t result = -1;
   RunOnWebKitThread(true,
