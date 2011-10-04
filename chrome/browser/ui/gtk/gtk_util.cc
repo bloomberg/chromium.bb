@@ -559,6 +559,12 @@ int MirroredLeftPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
   return widget->allocation.width - bounds.x() - bounds.width();
 }
 
+int MirroredRightPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
+  if (!base::i18n::IsRTL())
+    return bounds.right();
+  return widget->allocation.width - bounds.x();
+}
+
 int MirroredXCoordinate(GtkWidget* widget, int x) {
   if (base::i18n::IsRTL())
     return widget->allocation.width - x;

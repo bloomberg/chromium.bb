@@ -3005,6 +3005,8 @@
         'browser/ui/gtk/tab_contents_drag_source.h',
         'browser/ui/gtk/tabs/dragged_tab_controller_gtk.cc',
         'browser/ui/gtk/tabs/dragged_tab_controller_gtk.h',
+        'browser/ui/gtk/tabs/dragged_tab_data.cc',
+        'browser/ui/gtk/tabs/dragged_tab_data.h',
         'browser/ui/gtk/tabs/dragged_tab_gtk.cc',
         'browser/ui/gtk/tabs/dragged_tab_gtk.h',
         'browser/ui/gtk/tabs/tab_gtk.cc',

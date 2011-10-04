@@ -259,7 +259,8 @@ TabRendererGtk::TabRendererGtk(ThemeService* theme_service)
       background_offset_x_(0),
       background_offset_y_(kInactiveTabBackgroundOffsetY),
       theme_service_(theme_service),
-      close_button_color_(0) {
+      close_button_color_(0),
+      is_active_(false) {
   InitResources();
 
   tab_.Own(gtk_fixed_new());
@@ -351,7 +352,7 @@ bool TabRendererGtk::is_blocked() const {
 }
 
 bool TabRendererGtk::IsActive() const {
-  return true;
+  return is_active_;
 }
 
 bool TabRendererGtk::IsSelected() const {

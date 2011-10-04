@@ -134,6 +134,9 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // Returns true if the Tab is active, false otherwise.
   virtual bool IsActive() const;
 
+  // Set |is_active_| property of this tab.
+  void set_is_active(bool is_active) { is_active_ = is_active; }
+
   // Returns true if the Tab is selected, false otherwise.
   virtual bool IsSelected() const;
 
@@ -448,6 +451,9 @@ class TabRendererGtk : public ui::AnimationDelegate,
 
   // The current color of the close button.
   SkColor close_button_color_;
+
+  // Indicates whether this tab is the active one.
+  bool is_active_;
 
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;

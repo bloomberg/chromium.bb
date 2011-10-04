@@ -870,7 +870,7 @@ void TabStripGtk::DestroyDragController() {
   drag_controller_.reset();
 }
 
-void TabStripGtk::DestroyDraggedSourceTab(TabGtk* tab) {
+void TabStripGtk::DestroyDraggedTab(TabGtk* tab) {
   // We could be running an animation that references this Tab.
   StopAnimation();
 
@@ -964,7 +964,7 @@ void TabStripGtk::TabInsertedAt(TabContentsWrapper* contents,
   // has the Tab already constructed and we can just insert it into our list
   // again.
   if (IsDragSessionActive()) {
-    tab = drag_controller_->GetDragSourceTabForContents(
+    tab = drag_controller_->GetDraggedTabForContents(
         contents->tab_contents());
     if (tab) {
       // If the Tab was detached, it would have been animated closed but not
@@ -1250,7 +1250,14 @@ void TabStripGtk::MaybeStartDrag(TabGtk* tab, const gfx::Point& point) {
   if (IsAnimating() || tab->closing() || !HasAvailableDragActions())
     return;
 
-  drag_controller_.reset(new DraggedTabControllerGtk(tab, this));
+  std::vector<TabGtk*> tabs;
+  for (size_t i = 0; i < model()->selection_model().size(); i++) {
+    TabGtk* tab = GetTabAt(model()->selection_model().selected_indices()[i]);
+    if (!tab->closing())
+      tabs.push_back(tab);
+  }
+
+  drag_controller_.reset(new DraggedTabControllerGtk(this, tab, tabs));
   drag_controller_->CaptureDragInfo(point);
 }
 
@@ -1370,7 +1377,7 @@ void TabStripGtk::RemoveTabAt(int index) {
   // Remove the Tab from the TabStrip's list.
   tab_data_.erase(tab_data_.begin() + index);
 
-  if (!IsDragSessionActive() || !drag_controller_->IsDragSourceTab(removed)) {
+  if (!IsDragSessionActive() || !drag_controller_->IsDraggingTab(removed)) {
     gtk_container_remove(GTK_CONTAINER(tabstrip_.get()), removed->widget());
     delete removed;
   }

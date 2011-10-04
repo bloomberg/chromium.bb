@@ -9,9 +9,11 @@
 #include <gtk/gtk.h>
 
 #include <set>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/ui/gtk/tabs/dragged_tab_data.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_observer.h"
@@ -21,12 +23,18 @@
 class DraggedTabGtk;
 class TabGtk;
 class TabStripGtk;
+class TabStripModel;
 class TabContentsWrapper;
 
 class DraggedTabControllerGtk : public NotificationObserver,
                                 public TabContentsDelegate {
  public:
-  DraggedTabControllerGtk(TabGtk* source_tab, TabStripGtk* source_tabstrip);
+  // |source_tabstrip| is the tabstrip where the tabs reside before any
+  // dragging occurs. |source_tab| is the tab that is under the mouse pointer
+  // when dragging starts, it also becomes the active tab if not active
+  // already. |tabs| contains all the selected tabs when dragging starts.
+  DraggedTabControllerGtk(TabStripGtk* source_tabstrip, TabGtk* source_tab,
+                          const std::vector<TabGtk*>& tabs);
   virtual ~DraggedTabControllerGtk();
 
   // Capture information needed to be used during a drag session for this
@@ -45,16 +53,19 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // begun. Returns whether the tab has been destroyed.
   bool EndDrag(bool canceled);
 
-  // Retrieve the source tab if the TabContents specified matches the one being
-  // dragged by this controller, or NULL if the specified TabContents is not
-  // the same as the one being dragged.
-  TabGtk* GetDragSourceTabForContents(TabContents* contents) const;
+  // Retrieve the tab that corresponds to |contents| if it is being dragged by
+  // this controller, or NULL if |contents| does not correspond to any tab
+  // being dragged.
+  TabGtk* GetDraggedTabForContents(TabContents* contents);
 
-  // Returns true if the specified tab matches the tab being dragged.
-  bool IsDragSourceTab(const TabGtk* tab) const;
+  // Returns true if |tab| matches any tab being dragged.
+  bool IsDraggingTab(const TabGtk* tab);
+
+  // Returns true if |tab_contents| matches any tab contents being dragged.
+  bool IsDraggingTabContents(const TabContentsWrapper* tab_contents);
 
   // Returns true if the specified tab is detached.
-  bool IsTabDetached(const TabGtk* tab) const;
+  bool IsTabDetached(const TabGtk* tab);
 
  private:
   // Enumeration of the ways a drag session can end.
@@ -68,6 +79,8 @@ class DraggedTabControllerGtk : public NotificationObserver,
     // The tab (NavigationController) was destroyed during the drag.
     TAB_DESTROYED
   };
+
+  DraggedTabData InitDraggedTabData(TabGtk* tab);
 
   // Overridden from TabContentsDelegate:
   // Deprecated. Please use the two-arguments variant instead.
@@ -96,23 +109,22 @@ class DraggedTabControllerGtk : public NotificationObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Initialize the offset used to calculate the position to create windows
-  // in |GetWindowCreatePoint|.
-  void InitWindowCreatePoint();
-
   // Returns the point where a detached window should be created given the
   // current mouse position.
   gfx::Point GetWindowCreatePoint() const;
-
-  // Sets the TabContents being dragged with the specified |new_contents|.
-  void SetDraggedContents(TabContentsWrapper* new_contents);
 
   // Move the DraggedTabView according to the current mouse screen position,
   // potentially updating the source and other TabStrips.
   void ContinueDragging();
 
-  // Handles moving the Tab within a TabStrip as well as updating the View.
-  void MoveTab(const gfx::Point& screen_point);
+  // Handles dragging tabs while the tabs are attached.
+  void MoveAttached(const gfx::Point& screen_point);
+
+  // Handles dragging while the tabs are detached.
+  void MoveDetached(const gfx::Point& screen_point);
+
+  // Selects the dragged tabs within |model|.
+  void RestoreSelection(TabStripModel* model);
 
   // Returns the compatible TabStrip that is under the specified point (screen
   // coordinates), or NULL if there is none.
@@ -135,21 +147,30 @@ class DraggedTabControllerGtk : public NotificationObserver,
 
   // Retrieve the bounds of the DraggedTabGtk, relative to the attached
   // TabStrip, given location of the dragged tab in screen coordinates.
-  gfx::Rect GetDraggedTabTabStripBounds(const gfx::Point& screen_point);
+  gfx::Rect GetDraggedViewTabStripBounds(const gfx::Point& screen_point);
 
   // Returns the index where the dragged TabContents should be inserted into
   // the attached TabStripModel given the DraggedTabView's bounds
   // |dragged_bounds| in coordinates relative to the attached TabStrip.
-  // |is_tab_attached| is true if the tab has already been added.
-  int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds,
-                                        bool is_tab_attached) const;
+  int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds);
 
-  // Get the position of the dragged tab relative to the attached tab strip.
+  // Get the position of the dragged view relative to the upper left corner of
+  // the screen. |screen_point| is the current position of mouse cursor.
+  // TODO(dpapad): rename to GetDraggedViewPoint.
   gfx::Point GetDraggedTabPoint(const gfx::Point& screen_point);
 
   // Finds the Tab within the specified TabStrip that corresponds to the
   // dragged TabContents.
-  TabGtk* GetTabMatchingDraggedContents(TabStripGtk* tabstrip) const;
+  TabGtk* GetTabMatchingDraggedContents(TabStripGtk* tabstrip,
+                                        TabContentsWrapper* contents);
+
+  // Finds all the tabs within the specified TabStrip that correspond to the
+  // dragged TabContents.
+  std::vector<TabGtk*> GetTabsMatchingDraggedContents(TabStripGtk* tabstrip);
+
+  // Sets the visible and draggging property of all dragged tabs. If |repaint|
+  // is true it also schedules a repaint.
+  void SetDraggedTabsVisible(bool visible, bool repaint);
 
   // Does the work for EndDrag. Returns whether the tab has been destroyed.
   bool EndDragImpl(EndDragType how_end);
@@ -162,14 +183,14 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // be destroyed immediately, false otherwise.
   bool CompleteDrag();
 
+  // Resets the delegates of the TabContents.
+  void ResetDelegates();
+
   // Create the DraggedTabGtk if it does not yet exist.
   void EnsureDraggedTab();
 
-  // Utility for getting the mouse position in screen coordinates.
-  gfx::Point GetCursorScreenPoint() const;
-
-  // Gets the screen bounds of a tab.
-  static gfx::Rect GetTabScreenBounds(TabGtk* tab);
+  // Gets the bounds to animate the dragged view when dragging is over.
+  gfx::Rect GetAnimateBounds();
 
   // Utility to convert the specified TabStripModel index to something valid
   // for the attached TabStrip.
@@ -185,8 +206,8 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // Closes a hidden frame at the end of a drag session.
   void CleanUpHiddenFrame();
 
-  // Cleans up a source tab that is no longer used.
-  void CleanUpSourceTab();
+  // Cleans up all the dragged tabs when they are no longer used.
+  void CleanUpDraggedTabs();
 
   // Completes the drag session after the view has animated to its final
   // position.
@@ -195,26 +216,18 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // Activates whichever window is under the mouse.
   void BringWindowUnderMouseToFront();
 
+  // Returns true if the tabs were originally one after the other in
+  // |source_tabstrip_|.
+  bool AreTabsConsecutive();
+
   // Handles registering for notifications.
   NotificationRegistrar registrar_;
-
-  // The TabContents being dragged.
-  TabContentsWrapper* dragged_contents_;
-
-  // The original TabContentsDelegate of |dragged_contents_|, before it was
-  // detached from the browser window. We store this so that we can forward
-  // certain delegate notifications back to it if we can't handle them locally.
-  TabContentsDelegate* original_delegate_;
-
-  // The tab that initiated the drag session.
-  TabGtk* source_tab_;
 
   // The tab strip |source_tab_| originated from.
   TabStripGtk* source_tabstrip_;
 
-  // This is the index of the |source_tab_| in |source_tabstrip_| when the drag
-  // began. This is used to restore the previous state if the drag is aborted.
-  int source_model_index_;
+  // Holds various data for each dragged tab needed to handle dragging.
+  scoped_ptr<DragData> drag_data_;
 
   // The TabStrip the dragged Tab is currently attached to, or NULL if the
   // dragged Tab is detached.
@@ -234,12 +247,6 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // detached window is created at the right location.
   gfx::Point mouse_offset_;
 
-  // A hint to use when positioning new windows created by detaching Tabs. This
-  // is the distance of the mouse from the top left of the dragged tab as if it
-  // were the distance of the mouse from the top left of the first tab in the
-  // attached TabStrip from the top left of the window.
-  gfx::Point window_create_point_;
-
   // Whether we're in the destructor or not.  Makes sure we don't destroy the
   // drag controller more than once.
   bool in_destructor_;
@@ -248,17 +255,14 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // time of the last re-order event.
   int last_move_screen_x_;
 
+  // True until |MoveAttached| is invoked once.
+  bool initial_move_;
+
   // DockInfo for the tabstrip.
   DockInfo dock_info_;
 
   typedef std::set<GtkWidget*> DockWindows;
   DockWindows dock_windows_;
-
-  // Is the tab mini?
-  const bool mini_;
-
-  // Is the tab pinned?
-  const bool pinned_;
 
   // Timer used to bring the window under the cursor to front. If the user
   // stops moving the mouse for a brief time over a browser window, it is

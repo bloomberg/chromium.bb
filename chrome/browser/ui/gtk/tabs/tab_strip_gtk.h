@@ -84,8 +84,8 @@ class TabStripGtk : public TabStripModelObserver,
   // Destroys the active drag controller.
   void DestroyDragController();
 
-  // Removes the drag source tab from this tabstrip, and deletes it.
-  void DestroyDraggedSourceTab(TabGtk* tab);
+  // Removes |dragged_tab| from this tabstrip, and deletes it.
+  void DestroyDraggedTab(TabGtk* dragged_tab);
 
   // Retrieve the ideal bounds for the Tab at the specified index.
   gfx::Rect GetIdealBounds(int index);

@@ -262,6 +262,15 @@ void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
   NotifyIfActiveOrSelectionChanged(old_contents, user_gesture, old_model);
 }
 
+void TabStripModel::AddTabAtToSelection(int index) {
+  DCHECK(ContainsIndex(index));
+  TabContentsWrapper* old_contents = GetActiveTabContents();
+  TabStripSelectionModel old_model;
+  old_model.Copy(selection_model_);
+  selection_model_.AddIndexToSelection(index);
+  NotifyIfActiveOrSelectionChanged(old_contents, false, old_model);
+}
+
 void TabStripModel::MoveTabContentsAt(int index,
                                       int to_position,
                                       bool select_after_move) {
