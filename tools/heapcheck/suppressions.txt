@@ -1635,3 +1635,17 @@
    fun:ExtensionContentSettingsStore::GetEffectiveContentSetting
    fun:ExtensionContentSettingsStoreTest_*
 }
+{
+   bug_98967_a
+   Heapcheck:Leak
+   fun:base::Value::Create*Value
+   fun:V8ValueConverterTest_WeirdTypes_Test::TestBody
+}
+{
+   bug_98967_b
+   Heapcheck:Leak
+   ...
+   fun:std::basic_string::basic_string
+   fun:V8ValueConverterTest_WeirdTypes_Test::TestBody
+}
+
