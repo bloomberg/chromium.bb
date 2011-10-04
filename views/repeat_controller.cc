@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,13 +10,13 @@ namespace views {
 
 // The delay before the first and then subsequent repeats. Values taken from
 // XUL code: http://mxr.mozilla.org/seamonkey/source/layout/xul/base/src/nsRepeatService.cpp#52
-static const int kInitialRepeatDelay = 250;
-static const int kRepeatDelay = 50;
+const int kInitialRepeatDelay = 250;
+const int kRepeatDelay = 50;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RepeatController, public:
 
-RepeatController::RepeatController(RepeatCallback* callback)
+RepeatController::RepeatController(const base::Closure& callback)
     : callback_(callback) {
 }
 
@@ -39,7 +39,7 @@ void RepeatController::Stop() {
 void RepeatController::Run() {
   timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(kRepeatDelay), this,
                &RepeatController::Run);
-  callback_->Run();
+  callback_.Run();
 }
 
 }  // namespace views

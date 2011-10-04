@@ -4,24 +4,27 @@
 
 #include "views/controls/scrollbar/base_scroll_bar.h"
 
-#if defined(OS_LINUX)
-#include "ui/gfx/screen.h"
-#endif
-
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "grit/ui_strings.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_runner.h"
-#include "views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "views/controls/scroll_view.h"
+#include "views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "views/widget/widget.h"
+
+#if defined(OS_LINUX)
+#include "ui/gfx/screen.h"
+#endif
 
 #undef min
 #undef max
@@ -39,8 +42,7 @@ BaseScrollBar::BaseScrollBar(bool horizontal, BaseScrollBarThumb* thumb)
       thumb_track_state_(CustomButton::BS_NORMAL),
       last_scroll_amount_(SCROLL_NONE),
       ALLOW_THIS_IN_INITIALIZER_LIST(repeater_(
-          NewCallback<BaseScrollBar>(this,
-                                       &BaseScrollBar::TrackClicked))),
+          base::Bind(&BaseScrollBar::TrackClicked, base::Unretained(this)))),
       context_menu_mouse_position_(0) {
   AddChildView(thumb_);
 

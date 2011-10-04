@@ -4,13 +4,16 @@
 
 #include "views/controls/scrollbar/base_scroll_bar_button.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+
 namespace views {
 
 BaseScrollBarButton::BaseScrollBarButton(ButtonListener* listener)
     : CustomButton(listener),
       ALLOW_THIS_IN_INITIALIZER_LIST(repeater_(
-          NewCallback<BaseScrollBarButton>(this,
-              &BaseScrollBarButton::RepeaterNotifyClick))) {
+          base::Bind(&BaseScrollBarButton::RepeaterNotifyClick,
+                     base::Unretained(this)))) {
 }
 
 BaseScrollBarButton::~BaseScrollBarButton() {

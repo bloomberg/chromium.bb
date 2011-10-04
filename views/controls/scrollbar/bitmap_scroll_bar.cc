@@ -4,24 +4,27 @@
 
 #include "views/controls/scrollbar/bitmap_scroll_bar.h"
 
-#if defined(OS_LINUX)
-#include "views/screen.h"
-#endif
-
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/menu/menu.h"
-#include "views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "views/controls/scroll_view.h"
+#include "views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "views/widget/widget.h"
+
+#if defined(OS_LINUX)
+#include "views/screen.h"
+#endif
 
 #undef min
 #undef max
@@ -32,7 +35,7 @@ namespace {
 
 // The distance the mouse can be dragged outside the bounds of the thumb during
 // dragging before the scrollbar will snap back to its regular position.
-static const int kScrollThumbDragOutSnap = 100;
+const int kScrollThumbDragOutSnap = 100;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -48,8 +51,8 @@ class AutorepeatButton : public ImageButton {
   explicit AutorepeatButton(ButtonListener* listener)
       : ImageButton(listener),
         ALLOW_THIS_IN_INITIALIZER_LIST(repeater_(
-            NewCallback<AutorepeatButton>(this,
-                                          &AutorepeatButton::NotifyClick))) {
+            base::Bind(&AutorepeatButton::NotifyClick,
+                       base::Unretained(this)))) {
   }
   virtual ~AutorepeatButton() {}
 

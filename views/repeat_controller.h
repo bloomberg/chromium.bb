@@ -6,8 +6,7 @@
 #define VIEWS_REPEAT_CONTROLLER_H_
 #pragma once
 
-#include "base/callback_old.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/callback.h"
 #include "base/timer.h"
 
 namespace views {
@@ -24,10 +23,8 @@ namespace views {
 ///////////////////////////////////////////////////////////////////////////////
 class RepeatController {
  public:
-  typedef Callback0::Type RepeatCallback;
-
   // The RepeatController takes ownership of this callback object.
-  explicit RepeatController(RepeatCallback* callback);
+  explicit RepeatController(const base::Closure& callback);
   virtual ~RepeatController();
 
   // Start repeating.
@@ -37,15 +34,13 @@ class RepeatController {
   void Stop();
 
  private:
-  RepeatController();
-
   // Called when the timer expires.
   void Run();
 
   // The current timer.
   base::OneShotTimer<RepeatController> timer_;
 
-  scoped_ptr<RepeatCallback> callback_;
+  base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RepeatController);
 };
