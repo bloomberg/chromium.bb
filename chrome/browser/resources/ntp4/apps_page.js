@@ -616,7 +616,7 @@ cr.define('ntp4', function() {
     /** @inheritDoc */
     shouldAcceptDrag: function(e) {
       var tile = ntp4.getCurrentlyDraggingTile();
-      if (tile.querySelector('.bookmark'))
+      if (tile && tile.querySelector('.bookmark'))
         return !!tile.firstChild.data.url;
 
       return tile ||
