@@ -25,10 +25,15 @@ class NetflixTest(pyauto.PyUITest):
     self._SignOut()
     pyauto.PyUITest.tearDown(self) 
 
+  def _IsNetflixPluginEnabled(self):
+    """Determine Netflix plugin availability and its state"""
+    return [x for x in self.GetPluginsInfo().Plugins() \
+               if x['name'] == 'Netflix' and x['enabled']]
+
   def _LoginToNetflix(self):
     """Login to Netflix"""
-    self.NavigateToURL('https://signup.netflix.com/Login')
     credentials = self.GetPrivateInfo()['test_netflix_acct']
+    self.NavigateToURL(credentials['login_url'])
     login_js = """
         document.getElementById('email').value='%s';
         document.getElementById('password').value='%s';
@@ -71,6 +76,8 @@ class NetflixTest(pyauto.PyUITest):
 
   def _LoginAndStartPlaying(self):
     """Login and start playing the video"""
+    self.assertTrue(self._IsNetflixPluginEnabled(), 
+                    msg='Netflix plugin is disabled or not available') 
     self._LoginToNetflix()
     self.assertTrue(self.WaitUntil(
         lambda:self.GetActiveTabURL().spec(),

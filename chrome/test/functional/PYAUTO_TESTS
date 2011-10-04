@@ -421,6 +421,9 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # Media files test uses internal media files
       '-chromeos_file_browser.ChromeosFileBrowserTest.testOpenMediaFiles',
+      # Netflix tests 
+      '-netflix.NetflixTest.testPlayerLoadsAndPlays',
+      '-netflix.NetflixTest.testPlaying',
     ],
   },
 
@@ -561,6 +564,13 @@
   'CHROMEOS_LOGIN': {
     'chromeos': [
       'chromeos_login',
+    ],
+  },
+
+  # ChromeOS Netflix tests.
+  'CHROMEOS_NETFLIX': {
+    'chromeos': [
+      'netflix',
     ],
   },
 
