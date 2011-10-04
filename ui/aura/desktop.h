@@ -12,6 +12,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/events.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -90,6 +91,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   // Invoked from RootWindow when |window| is being destroyed.
   void WindowDestroying(Window* window);
+
+  // Dispatch NativeEvent.
+  bool DispatchNativeEvent(const ui::NativeEvent& event);
 
   static Desktop* GetInstance();
 

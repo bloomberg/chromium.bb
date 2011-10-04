@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas_skia.h"
@@ -22,6 +23,10 @@
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
+
+#if defined(USE_AURA) && !defined(OS_WIN)
+#include "ui/aura/desktop.h"
+#endif
 
 #if defined(OS_LINUX)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
@@ -842,9 +847,11 @@ bool MenuController::Dispatch(const MSG& msg) {
 
     // NOTE: focus wasn't changed when the menu was shown. As such, don't
     // dispatch key events otherwise the focused window will get the events.
-    case WM_KEYDOWN:
-      return OnKeyDown(msg.wParam, msg);
-
+    case WM_KEYDOWN: {
+      bool result = OnKeyDown(ui::KeyboardCodeFromNative(msg));
+      TranslateMessage(&msg);
+      return result;
+    }
     case WM_CHAR:
       return !SelectByChar(static_cast<char16>(msg.wParam));
 
@@ -877,11 +884,34 @@ base::MessagePumpDispatcher::DispatchStatus
       base::MessagePumpDispatcher::EVENT_QUIT :
       base::MessagePumpDispatcher::EVENT_PROCESSED;
 }
+
 #elif defined(USE_AURA)
 base::MessagePumpDispatcher::DispatchStatus
     MenuController::Dispatch(XEvent* xev) {
-  NOTREACHED();
-  return EVENT_PROCESSED;
+  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
+    aura::Desktop::GetInstance()->DispatchNativeEvent(xev);
+    return base::MessagePumpDispatcher::EVENT_QUIT;
+  }
+  switch (ui::EventTypeFromNative(xev)) {
+    case ui::ET_KEY_PRESSED:
+      OnKeyDown(ui::KeyboardCodeFromNative(xev));
+      // OnKeyDown may have set exit_type_.
+      if (exit_type_ != EXIT_NONE)
+        return base::MessagePumpDispatcher::EVENT_QUIT;
+
+      // TODO(oshima): support SelectChar
+      break;
+    case ui::ET_KEY_RELEASED:
+      return base::MessagePumpDispatcher::EVENT_PROCESSED;
+    default:
+      break;
+  }
+
+  if (!aura::Desktop::GetInstance()->DispatchNativeEvent(xev))
+    return EVENT_IGNORED;
+  return exit_type_ != EXIT_NONE ?
+      base::MessagePumpDispatcher::EVENT_QUIT :
+      base::MessagePumpDispatcher::EVENT_PROCESSED;
 }
 #elif defined(TOUCH_UI)
 base::MessagePumpDispatcher::DispatchStatus
@@ -902,10 +932,7 @@ bool MenuController::Dispatch(GdkEvent* event) {
 
   switch (event->type) {
     case GDK_KEY_PRESS: {
-      ui::KeyboardCode win_keycode =
-          ui::WindowsKeyCodeForGdkKeyCode(event->key.keyval);
-
-      if (!OnKeyDown(win_keycode))
+      if (!OnKeyDown(ui::WindowsKeyCodeForGdkKeyCode(event->key.keyval)))
         return false;
 
       // OnKeyDown may have set exit_type_.
@@ -933,12 +960,7 @@ bool MenuController::Dispatch(GdkEvent* event) {
 }
 #endif
 
-bool MenuController::OnKeyDown(int key_code
-#if defined(OS_WIN)
-                               , const MSG& msg
-#else
-#endif
-                               ) {
+bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
   DCHECK(blocking_run_);
 
   switch (key_code) {
@@ -1001,9 +1023,6 @@ bool MenuController::OnKeyDown(int key_code
 #endif
 
     default:
-#if defined(OS_WIN)
-      TranslateMessage(&msg);
-#endif
       break;
   }
   return true;
