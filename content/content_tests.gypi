@@ -116,6 +116,7 @@
         'browser/device_orientation/provider_unittest.cc',
         'browser/download/base_file_unittest.cc',
         'browser/download/download_file_unittest.cc',
+        'browser/download/download_id_unittest.cc',
         'browser/download/download_status_updater_unittest.cc',
         'browser/download/save_package_unittest.cc',
         'browser/geolocation/device_data_provider_unittest.cc',

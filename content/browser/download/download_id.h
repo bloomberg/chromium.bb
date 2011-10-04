@@ -44,8 +44,8 @@ class DownloadId {
     // GCC does not require it for hash_map, MSVC requires operator< for
     // hash_map. We don't ifdef it out here because we will probably make a
     // set<DownloadId> at some point, when GCC will require it.
-    return ((that.local_id_ < local_id_) &&
-            (that.manager_ < manager_));
+    return ((manager_ < that.manager_) ||
+            ((manager_ == that.manager_) && (local_id_ < that.local_id_)));
   }
 
   size_t hash() const {
