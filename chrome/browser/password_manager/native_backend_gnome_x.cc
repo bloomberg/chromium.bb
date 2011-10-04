@@ -413,10 +413,6 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
 
 }  // namespace
 
-// GKRMethod isn't reference counted, but it always outlasts runnable
-// methods against it because the caller waits for those methods to run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(GKRMethod);
-
 NativeBackendGnome::NativeBackendGnome(LocalProfileId id, PrefService* prefs)
     : profile_id_(id), prefs_(prefs) {
   if (PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
@@ -440,9 +436,9 @@ bool NativeBackendGnome::RawAddLogin(const PasswordForm& form) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(&method,
-                                            &GKRMethod::AddLogin,
-                                            form, app_string_.c_str()));
+                          base::Bind(&GKRMethod::AddLogin,
+                                     base::Unretained(&method),
+                                     form, app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring save failed: "
@@ -464,9 +460,9 @@ bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(&method,
-                                            &GKRMethod::AddLoginSearch,
-                                            form, app_string_.c_str()));
+                          base::Bind(&GKRMethod::AddLoginSearch,
+                                     base::Unretained(&method),
+                                     form, app_string_.c_str()));
   PasswordFormList forms;
   GnomeKeyringResult result = method.WaitResult(&forms);
   if (result != GNOME_KEYRING_RESULT_OK &&
@@ -504,9 +500,9 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                         NewRunnableMethod(&method,
-                                           &GKRMethod::UpdateLoginSearch,
-                                           form, app_string_.c_str()));
+                          base::Bind(&GKRMethod::UpdateLoginSearch,
+                                     base::Unretained(&method),
+                                     form, app_string_.c_str()));
   PasswordFormList forms;
   GnomeKeyringResult result = method.WaitResult(&forms);
   if (result != GNOME_KEYRING_RESULT_OK) {
@@ -550,9 +546,9 @@ bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(&method,
-                                            &GKRMethod::RemoveLogin,
-                                            form, app_string_.c_str()));
+                          base::Bind(&GKRMethod::RemoveLogin,
+                                     base::Unretained(&method),
+                                     form, app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring delete failed: "
@@ -595,9 +591,9 @@ bool NativeBackendGnome::GetLogins(const PasswordForm& form,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(&method,
-                                            &GKRMethod::GetLogins,
-                                            form, app_string_.c_str()));
+                          base::Bind(&GKRMethod::GetLogins,
+                                     base::Unretained(&method),
+                                     form, app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
@@ -652,10 +648,9 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
 
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(&method,
-                                            &GKRMethod::GetLoginsList,
-                                            blacklisted_by_user,
-                                            app_string_.c_str()));
+                          base::Bind(&GKRMethod::GetLoginsList,
+                                     base::Unretained(&method),
+                                     blacklisted_by_user, app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
@@ -673,9 +668,9 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
 bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(&method,
-                                            &GKRMethod::GetAllLogins,
-                                            app_string_.c_str()));
+                          base::Bind(&GKRMethod::GetAllLogins,
+                                     base::Unretained(&method),
+                                     app_string_.c_str()));
   GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;

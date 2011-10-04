@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -69,9 +70,8 @@ class DBThreadObserverHelper
     BrowserThread::PostTask(
         BrowserThread::DB,
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &DBThreadObserverHelper::AddObserverTask,
-                          make_scoped_refptr(password_store)));
+        base::Bind(&DBThreadObserverHelper::AddObserverTask,
+                   this, make_scoped_refptr(password_store)));
     done_event_.Wait();
   }
 
@@ -267,10 +267,6 @@ void InitExpectedForms(bool autofillable, size_t count, VectorOfForms* forms) {
 }
 
 }  // anonymous namespace
-
-// LoginDatabase isn't reference counted, but in these unit tests that won't be
-// a problem as it always outlives the threads we post tasks to.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(LoginDatabase);
 
 enum BackendType {
   NO_BACKEND,
@@ -632,19 +628,17 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // Populate the login DB with logins that should be migrated.
   for (VectorOfForms::iterator it = expected_autofillable.begin();
        it != expected_autofillable.end(); ++it) {
-    BrowserThread::PostTask(BrowserThread::DB,
-                           FROM_HERE,
-                           NewRunnableMethod(login_db,
-                                             &LoginDatabase::AddLogin,
-                                             **it));
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+                            base::IgnoreReturn(base::Callback<bool(void)>(
+                                base::Bind(&LoginDatabase::AddLogin,
+                                           base::Unretained(login_db), **it))));
   }
   for (VectorOfForms::iterator it = expected_blacklisted.begin();
        it != expected_blacklisted.end(); ++it) {
-    BrowserThread::PostTask(BrowserThread::DB,
-                           FROM_HERE,
-                           NewRunnableMethod(login_db,
-                                             &LoginDatabase::AddLogin,
-                                             **it));
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+                            base::IgnoreReturn(base::Callback<bool(void)>(
+                                base::Bind(&LoginDatabase::AddLogin,
+                                           base::Unretained(login_db), **it))));
   }
 
   // Schedule another task on the DB thread to notify us that it's safe to

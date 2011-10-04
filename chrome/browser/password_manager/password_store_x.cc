@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_change.h"
@@ -297,7 +298,6 @@ void PasswordStoreX::SetPasswordsUseLocalProfileId(PrefService* prefs) {
   // This method should work on any thread, but we expect the DB thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableFunction(UISetPasswordsUseLocalProfileId,
-                                              prefs));
+                          base::Bind(UISetPasswordsUseLocalProfileId, prefs));
 }
 #endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
