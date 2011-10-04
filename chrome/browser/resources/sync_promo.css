@@ -62,3 +62,14 @@ h1 {
 #promo-skip-message {
   font-size: 85%;
 }
+
+#promo-information > h3 {
+  font-size: 85%;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+#promo-information > p {
+  font-size: 85%;
+  margin-top: 0;
+}

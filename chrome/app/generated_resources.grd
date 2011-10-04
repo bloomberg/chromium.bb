@@ -10168,19 +10168,35 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Sync promo page chrome://syncpromo -->
       <message name="IDS_SYNC_PROMO_TITLE" desc="The title at the top of the sync promo">
-        Welcome To <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       </message>
       <message name="IDS_SYNC_PROMO_MESSAGE_TITLE" desc="The first part of the sync promo message.">
         Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account
       </message>
       <message name="IDS_SYNC_PROMO_MESSAGE_BODY" desc="The body of the sync promo message. This is followed by a learn more link.">
-        Automatically &lt;strong&gt; back up &lt;/strong&gt; and &lt;strong&gt; sync &lt;/strong&gt; your bookmarks and settings.
+        Automatically &lt;strong&gt;back up&lt;/strong&gt; and &lt;strong&gt;sync&lt;/strong&gt; your bookmarks, history, and settings.
       </message>
       <message name="IDS_SYNC_PROMO_SKIP_MESSAGE" desc="The text at the bottom to let the user skip the sync promo.">
         or
       </message>
       <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The button at the bottom to let the user skip the sync promo.">
         Skip setup for now
+      </message>
+      <message name="IDS_SYNC_PROMO_LEARN_MORE_SHOW" desc="Text for the link at the end of the message body to show more information about sync.">
+        Learn more
+      </message>
+      <message name="IDS_SYNC_PROMO_LEARN_MORE_HIDE" desc="Text for the link to hide the sync information.">
+        Hide
+      </message>
+      <message name="IDS_SYNC_PROMO_INFORMATION" desc="Information about sync displayed when the user clicks the Learn More link.">
+        &lt;h3&gt;Backup&lt;/h3&gt;
+        &lt;p&gt;
+        Signing in to Chrome saves your bookmarks, history, and settings securely to your Google Account, so they’re always backed up online. If something happens to your computer, just sign in to Chrome on your new machine to get all your Chrome data back.
+        &lt;/p&gt;
+        &lt;h3&gt;Sync&lt;/h3&gt;
+        &lt;p&gt;
+        When you sign in to Chrome on multiple computers, anything you change on one computer instantly syncs to all your other computers—no wires needed. For example, add a bookmark on your laptop, and it will also appear on your desktop. That way, you can always pick up right where you left off.
+        &lt;/p&gt;
       </message>
 
       <!-- Translate Info Bar -->

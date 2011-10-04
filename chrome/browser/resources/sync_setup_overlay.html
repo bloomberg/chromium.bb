@@ -7,9 +7,16 @@
       </div>
       <div id="promo-message-body">
         <span i18n-values=".innerHTML:promoMessageBody"></span>
-        <a i18n-content="promoLearnMore"></a>
+        <a id="promo-learn-more-show" i18n-content="promoLearnMoreShow"
+            href="#"></a>
+        <a id="promo-learn-more-hide" i18n-content="promoLearnMoreHide"
+            href="#" hidden> </a>
       </div>
-      <img src="chrome://theme/IRD_SYNC_PROMO_INFO_GRAPHIC">
+      <img id="promo-infographic"
+          src="chrome://theme/IRD_SYNC_PROMO_INFO_GRAPHIC">
+      <div id="promo-information" i18n-values=".innerHTML:promoInformation"
+          hidden>
+      </div>
     </div>
 
     <div id="sync-setup-login-content-column">

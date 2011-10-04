@@ -44,6 +44,23 @@ cr.define('sync_promo', function() {
       $('promo-skip-button').addEventListener('click', function() {
         self.closeOverlay_();
       });
+      $('promo-learn-more-show').addEventListener('click', function() {
+        self.showLearnMore_(true);
+      });
+      $('promo-learn-more-hide').addEventListener('click', function() {
+        self.showLearnMore_(false);
+      });
+    },
+
+    // Shows or hides the sync information.
+    // @param {Boolean} show True if sync information should be shown, false
+    //     otherwise.
+    // @private
+    showLearnMore_: function(show) {
+      $('promo-learn-more-show').hidden = show;
+      $('promo-learn-more-hide').hidden = !show;
+      $('promo-infographic').hidden = show;
+      $('promo-information').hidden = !show;
     },
   };
 

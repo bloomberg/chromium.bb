@@ -306,9 +306,11 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "aspWarningText", IDS_SYNC_ASP_PASSWORD_WARNING_TEXT },
     { "promoPageTitle", IDS_NEW_TAB_TITLE},
     { "promoMessageBody", IDS_SYNC_PROMO_MESSAGE_BODY},
-    { "promoLearnMore", IDS_LEARN_MORE},
     { "promoSkipMessage", IDS_SYNC_PROMO_SKIP_MESSAGE},
     { "promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON},
+    { "promoLearnMoreShow", IDS_SYNC_PROMO_LEARN_MORE_SHOW},
+    { "promoLearnMoreHide", IDS_SYNC_PROMO_LEARN_MORE_HIDE},
+    { "promoInformation", IDS_SYNC_PROMO_INFORMATION},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
