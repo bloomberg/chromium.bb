@@ -129,9 +129,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
     chrome::NOTIFICATION_PROFILE_DESTROYED, Source<Profile>(this),
     NotificationService::NoDetails());
 
-  // There shouldn't be any browser window associated with this profile.
-  CHECK(!BrowserList::FindBrowserWithProfile(this));
-
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
     &GetResourceContext());
 

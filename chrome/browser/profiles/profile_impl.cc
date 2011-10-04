@@ -694,10 +694,6 @@ ProfileImpl::~ProfileImpl() {
       Source<Profile>(this),
       NotificationService::NoDetails());
 
-  // There shouldn't be any browser window associated with this profile or an
-  // incognito profile based on this profile.
-  CHECK(!BrowserList::FindAnyBrowser(this, false /* match_incognito */));
-
   if (appcache_service_ && clear_local_state_on_exit_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
