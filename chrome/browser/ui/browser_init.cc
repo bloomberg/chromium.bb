@@ -967,7 +967,11 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
 Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
     const std::vector<GURL>& urls_to_open) {
   SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
-  std::vector<Tab> tabs = PinnedTabCodec::ReadPinnedTabs(profile_);
+  std::vector<Tab> tabs;
+  // Pinned tabs should not be displayed when chrome is launched
+  // in icognito mode.
+  if (!IncognitoIsForced(command_line_, profile_->GetPrefs()))
+    tabs = PinnedTabCodec::ReadPinnedTabs(profile_);
 
   RecordAppLaunches(profile_, urls_to_open, tabs);
 
