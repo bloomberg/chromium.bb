@@ -7,6 +7,8 @@
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -50,12 +52,18 @@ DictionaryValue* CreateCookieValue(
     const std::string& store_id) {
   DictionaryValue* result = new DictionaryValue();
 
-  result->SetString(keys::kNameKey, cookie.Name());
-  result->SetString(keys::kValueKey, cookie.Value());
+  // A cookie is a raw byte sequence. By explicitly parsing it as UTF8, we
+  // apply error correction, so the string can be safely passed to the
+  // renderer.
+  result->SetString(keys::kNameKey, UTF8ToUTF16(cookie.Name()));
+  result->SetString(keys::kValueKey, UTF8ToUTF16(cookie.Value()));
   result->SetString(keys::kDomainKey, cookie.Domain());
   result->SetBoolean(keys::kHostOnlyKey,
                      net::CookieMonster::DomainIsHostOnly(cookie.Domain()));
-  result->SetString(keys::kPathKey, cookie.Path());
+
+  // A non-UTF8 path is invalid, so we just replace it with an empty string.
+  result->SetString(keys::kPathKey,
+                    IsStringUTF8(cookie.Path()) ? cookie.Path() : "");
   result->SetBoolean(keys::kSecureKey, cookie.IsSecure());
   result->SetBoolean(keys::kHttpOnlyKey, cookie.IsHttpOnly());
   result->SetBoolean(keys::kSessionKey, !cookie.DoesExpire());

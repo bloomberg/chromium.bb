@@ -211,3 +211,20 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
     EXPECT_EQ(tests[i].matches, filter.MatchesCookie(cookie));
   }
 }
+
+TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
+  net::CookieMonster::CanonicalCookie cookie(GURL(), "",
+                                             "011Q255bNX_1!yd\203e+",
+                                             "test.com",
+                                             "/path\203", "", "", base::Time(),
+                                             base::Time(), base::Time(),
+                                             false, false, false);
+  scoped_ptr<DictionaryValue> cookie_value(
+      extension_cookies_helpers::CreateCookieValue(
+          cookie, "some cookie store"));
+  std::string string_value;
+  EXPECT_TRUE(cookie_value->GetString(keys::kValueKey, &string_value));
+  EXPECT_EQ(std::string("011Q255bNX_1!yd\xEF\xBF\xBD" "e+"), string_value);
+  EXPECT_TRUE(cookie_value->GetString(keys::kPathKey, &string_value));
+  EXPECT_EQ(std::string(""), string_value);
+}
