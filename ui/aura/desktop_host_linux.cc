@@ -30,7 +30,7 @@ class DesktopHostLinux : public DesktopHost {
   virtual void Show() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
-  virtual void UpdateCursor(gfx::NativeCursor cursor_type) OVERRIDE;
+  virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
 
   Desktop* desktop_;
 
