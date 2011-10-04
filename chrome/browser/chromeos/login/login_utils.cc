@@ -941,6 +941,12 @@ Authenticator* LoginUtilsImpl::CreateAuthenticator(
   if (ScreenLocker::default_screen_locker())
     authenticator_ = NULL;
 
+  // In case of non-WebUI login new instance of Authenticator is supposed
+  // to be created on each call.
+  // TODO(nkostylev): Clean up after WebUI login migration is complete.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin))
+    authenticator_ = NULL;
+
   if (authenticator_ == NULL) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kParallelAuth))
       authenticator_ = new ParallelAuthenticator(consumer);
