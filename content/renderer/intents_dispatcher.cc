@@ -5,12 +5,12 @@
 #include "content/renderer/intents_dispatcher.h"
 
 #include "content/common/intents_messages.h"
-#include "content/renderer/v8_value_converter.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "v8/include/v8.h"
 #include "webkit/glue/cpp_bound_class.h"
 
 using WebKit::WebCString;

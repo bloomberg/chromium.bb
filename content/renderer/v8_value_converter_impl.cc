@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/v8_value_converter.h"
+#include "content/renderer/v8_value_converter_impl.h"
 
 #include <string>
 
@@ -11,27 +11,36 @@
 #include "base/values.h"
 #include "v8/include/v8.h"
 
-V8ValueConverter::V8ValueConverter()
+namespace content {
+
+V8ValueConverter* V8ValueConverter::create() {
+  return new V8ValueConverterImpl();
+}
+
+}
+
+V8ValueConverterImpl::V8ValueConverterImpl()
     : allow_undefined_(false),
       allow_date_(false),
       allow_regexp_(false) {
 }
 
-v8::Handle<v8::Value> V8ValueConverter::ToV8Value(
+v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Value(
     Value* value, v8::Handle<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
   return handle_scope.Close(ToV8ValueImpl(value));
 }
 
-Value* V8ValueConverter::FromV8Value(v8::Handle<v8::Value> val,
-                                     v8::Handle<v8::Context> context) const {
+Value* V8ValueConverterImpl::FromV8Value(
+    v8::Handle<v8::Value> val,
+    v8::Handle<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
   return FromV8ValueImpl(val);
 }
 
-v8::Handle<v8::Value> V8ValueConverter::ToV8ValueImpl(Value* value) const {
+v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(Value* value) const {
   CHECK(value);
   switch (value->GetType()) {
     case Value::TYPE_NULL:
@@ -73,7 +82,7 @@ v8::Handle<v8::Value> V8ValueConverter::ToV8ValueImpl(Value* value) const {
   }
 }
 
-v8::Handle<v8::Value> V8ValueConverter::ToV8Array(ListValue* val) const {
+v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(ListValue* val) const {
   v8::Handle<v8::Array> result(v8::Array::New(val->GetSize()));
 
   for (size_t i = 0; i < val->GetSize(); ++i) {
@@ -92,7 +101,8 @@ v8::Handle<v8::Value> V8ValueConverter::ToV8Array(ListValue* val) const {
   return result;
 }
 
-v8::Handle<v8::Value> V8ValueConverter::ToV8Object(DictionaryValue* val) const {
+v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
+    DictionaryValue* val) const {
   v8::Handle<v8::Object> result(v8::Object::New());
 
   for (DictionaryValue::key_iterator iter = val->begin_keys();
@@ -115,7 +125,7 @@ v8::Handle<v8::Value> V8ValueConverter::ToV8Object(DictionaryValue* val) const {
   return result;
 }
 
-Value* V8ValueConverter::FromV8ValueImpl(v8::Handle<v8::Value> val) const {
+Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val) const {
   CHECK(!val.IsEmpty());
 
   if (val->IsNull())
@@ -159,7 +169,7 @@ Value* V8ValueConverter::FromV8ValueImpl(v8::Handle<v8::Value> val) const {
   return Value::CreateNullValue();
 }
 
-ListValue* V8ValueConverter::FromV8Array(v8::Handle<v8::Array> val) const {
+ListValue* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val) const {
   ListValue* result = new ListValue();
   for (uint32 i = 0; i < val->Length(); ++i) {
     v8::TryCatch try_catch;
@@ -182,7 +192,7 @@ ListValue* V8ValueConverter::FromV8Array(v8::Handle<v8::Array> val) const {
   return result;
 }
 
-DictionaryValue* V8ValueConverter::FromV8Object(
+DictionaryValue* V8ValueConverterImpl::FromV8Object(
     v8::Handle<v8::Object> val) const {
   DictionaryValue* result = new DictionaryValue();
   v8::Handle<v8::Array> property_names(val->GetPropertyNames());

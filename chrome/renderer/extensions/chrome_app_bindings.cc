@@ -14,13 +14,14 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebFrame;
+using content::V8ValueConverter;
 
 namespace {
 
@@ -174,8 +175,8 @@ class ChromeAppExtensionWrapper : public v8::Extension {
     scoped_ptr<DictionaryValue> manifest_copy(
         extension->manifest_value()->DeepCopy());
     manifest_copy->SetString("id", extension->id());
-    V8ValueConverter converter;
-    return converter.ToV8Value(manifest_copy.get(),
+    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    return converter->ToV8Value(manifest_copy.get(),
                                frame->mainWorldScriptContext());
   }
 

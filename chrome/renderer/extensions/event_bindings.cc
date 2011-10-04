@@ -21,7 +21,6 @@
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/v8_value_converter.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"

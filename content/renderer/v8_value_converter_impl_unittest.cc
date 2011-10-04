@@ -6,11 +6,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "content/renderer/v8_value_converter.h"
+#include "content/renderer/v8_value_converter_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
-class V8ValueConverterTest : public testing::Test {
+class V8ValueConverterImplTest : public testing::Test {
  protected:
   virtual void SetUp() {
     v8::HandleScope handle_scope;
@@ -97,7 +97,7 @@ class V8ValueConverterTest : public testing::Test {
     return child->IsNull();
   }
 
-  void TestWeirdType(const V8ValueConverter& converter,
+  void TestWeirdType(const V8ValueConverterImpl& converter,
                      v8::Handle<v8::Value> val,
                      base::Value::Type expected_type,
                      Value* expected_value) {
@@ -135,7 +135,7 @@ class V8ValueConverterTest : public testing::Test {
   v8::Persistent<v8::Context> context_;
 };
 
-TEST_F(V8ValueConverterTest, BasicRoundTrip) {
+TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
   DictionaryValue original_root;
   original_root.Set("null", Value::CreateNullValue());
   original_root.Set("true", Value::CreateBooleanValue(true));
@@ -164,7 +164,7 @@ TEST_F(V8ValueConverterTest, BasicRoundTrip) {
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
 
-  V8ValueConverter converter;
+  V8ValueConverterImpl converter;
   v8::Handle<v8::Object> v8_object =
       converter.ToV8Value(&original_root, context_).As<v8::Object>();
   ASSERT_FALSE(v8_object.IsEmpty());
@@ -191,14 +191,14 @@ TEST_F(V8ValueConverterTest, BasicRoundTrip) {
   EXPECT_TRUE(original_root.Equals(new_root.get()));
 }
 
-TEST_F(V8ValueConverterTest, KeysWithDots) {
+TEST_F(V8ValueConverterImplTest, KeysWithDots) {
   DictionaryValue original;
   original.SetWithoutPathExpansion("foo.bar", Value::CreateStringValue("baz"));
 
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
 
-  V8ValueConverter converter;
+  V8ValueConverterImpl converter;
   scoped_ptr<Value> copy(
       converter.FromV8Value(
           converter.ToV8Value(&original, context_), context_));
@@ -206,7 +206,7 @@ TEST_F(V8ValueConverterTest, KeysWithDots) {
   EXPECT_TRUE(original.Equals(copy.get()));
 }
 
-TEST_F(V8ValueConverterTest, ObjectExceptions) {
+TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
 
@@ -224,7 +224,7 @@ TEST_F(V8ValueConverterTest, ObjectExceptions) {
   object->Set(v8::String::New("bar"), v8::String::New("bar"));
 
   // Converting from v8 value should replace the foo property with null.
-  V8ValueConverter converter;
+  V8ValueConverterImpl converter;
   scoped_ptr<DictionaryValue> converted(static_cast<DictionaryValue*>(
       converter.FromV8Value(object, context_)));
   EXPECT_TRUE(converted.get());
@@ -243,7 +243,7 @@ TEST_F(V8ValueConverterTest, ObjectExceptions) {
   EXPECT_EQ("bar", GetString(copy, "bar"));
 }
 
-TEST_F(V8ValueConverterTest, ArrayExceptions) {
+TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
 
@@ -262,7 +262,7 @@ TEST_F(V8ValueConverterTest, ArrayExceptions) {
   ASSERT_FALSE(array.IsEmpty());
 
   // Converting from v8 value should replace the first item with null.
-  V8ValueConverter converter;
+  V8ValueConverterImpl converter;
   scoped_ptr<ListValue> converted(static_cast<ListValue*>(
       converter.FromV8Value(array, context_)));
   ASSERT_TRUE(converted.get());
@@ -281,14 +281,14 @@ TEST_F(V8ValueConverterTest, ArrayExceptions) {
   EXPECT_EQ("bar", GetString(copy, 1));
 }
 
-TEST_F(V8ValueConverterTest, WeirdTypes) {
+TEST_F(V8ValueConverterImplTest, WeirdTypes) {
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
 
   v8::Handle<v8::RegExp> regex(
       v8::RegExp::New(v8::String::New("."), v8::RegExp::kNone));
 
-  V8ValueConverter converter;
+  V8ValueConverterImpl converter;
   TestWeirdType(converter, v8::Undefined(), Value::TYPE_NULL, NULL);
   TestWeirdType(converter, v8::Date::New(1000), Value::TYPE_DICTIONARY, NULL);
   TestWeirdType(converter, regex, Value::TYPE_DICTIONARY, NULL);
@@ -305,7 +305,7 @@ TEST_F(V8ValueConverterTest, WeirdTypes) {
                 Value::CreateStringValue("/./"));
 }
 
-TEST_F(V8ValueConverterTest, Prototype) {
+TEST_F(V8ValueConverterImplTest, Prototype) {
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
 
@@ -318,7 +318,7 @@ TEST_F(V8ValueConverterTest, Prototype) {
   v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
 
-  V8ValueConverter converter;
+  V8ValueConverterImpl converter;
   scoped_ptr<DictionaryValue> result(
       static_cast<DictionaryValue*>(converter.FromV8Value(object, context_)));
   ASSERT_TRUE(result.get());

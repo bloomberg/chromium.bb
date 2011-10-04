@@ -9,15 +9,17 @@
 #include "base/tracked_objects.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "content/common/url_constants.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/v8_value_converter.h"
 #include "v8/include/v8.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+
+using content::V8ValueConverter;
 
 namespace {
 
@@ -124,7 +126,7 @@ void ExtensionBindingsContextSet::DispatchChromeHiddenMethod(
   // out from under us.
   ContextSet contexts = GetAll();
 
-  V8ValueConverter converter;
+  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   for (ContextSet::iterator it = contexts.begin(); it != contexts.end();
        ++it) {
     if ((*it)->v8_context().IsEmpty())
@@ -148,7 +150,7 @@ void ExtensionBindingsContextSet::DispatchChromeHiddenMethod(
     for (size_t i = 0; i < arguments.GetSize(); ++i) {
       base::Value* item = NULL;
       CHECK(arguments.Get(i, &item));
-      v8_arguments.push_back(converter.ToV8Value(item, context));
+      v8_arguments.push_back(converter->ToV8Value(item, context));
     }
 
     v8::Handle<v8::Value> retval = (*it)->CallChromeHiddenMethod(

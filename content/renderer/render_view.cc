@@ -68,7 +68,7 @@
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/speech_input_dispatcher.h"
 #include "content/renderer/text_input_client_observer.h"
-#include "content/renderer/v8_value_converter.h"
+#include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_ui_bindings.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "content/renderer/websharedworker_proxy.h"
@@ -240,6 +240,7 @@ using base::TimeDelta;
 using content::NavigationState;
 using content::RenderViewObserver;
 using content::RenderViewVisitor;
+using content::V8ValueConverter;
 using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
@@ -3419,7 +3420,7 @@ void RenderView::EvaluateScript(const string16& frame_xpath,
       v8::HandleScope handle_scope;
       v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
       v8::Context::Scope context_scope(context);
-      V8ValueConverter converter;
+      V8ValueConverterImpl converter;
       converter.set_allow_date(true);
       converter.set_allow_regexp(true);
       list.Set(0, converter.FromV8Value(result, context));
