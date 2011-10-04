@@ -21,6 +21,16 @@
 #include <gtk/gtk.h>
 
 class MessageLoopObserver : public MessageLoopForUI::Observer {
+#if defined(TOUCH_UI) || defined(USE_AURA)
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE {
+    return base::EVENT_CONTINUE;
+  }
+
+  virtual void DidProcessEvent(
+      const base::NativeEvent& event) OVERRIDE {
+  }
+#else
   virtual void WillProcessEvent(GdkEvent* event) {
     // On chromeos we want to map Alt-left click to right click.
     // This code only changes presses and releases. We could decide to also
@@ -47,6 +57,7 @@ class MessageLoopObserver : public MessageLoopForUI::Observer {
 
   virtual void DidProcessEvent(GdkEvent* event) {
   }
+#endif
 };
 
 static base::LazyInstance<MessageLoopObserver> g_message_loop_observer(

@@ -16,6 +16,16 @@ WmMessageListener* WmMessageListener::GetInstance() {
   return instance;
 }
 
+#if defined(TOUCH_UI)
+// MessageLoopForUI::Observer overrides.
+base::EventStatus WmMessageListener::WillProcessEvent(
+    const base::NativeEvent& event) OVERRIDE {
+  return base::EVENT_CONTINUE;
+}
+
+void WmMessageListener::DidProcessEvent(const base::NativeEvent& event) {
+}
+#else
 void WmMessageListener::WillProcessEvent(GdkEvent* event) {
 }
 
@@ -35,6 +45,7 @@ void WmMessageListener::DidProcessEvent(GdkEvent* event) {
       WmIpc::instance()->HandleRootWindowPropertyEvent(*property_event);
   }
 }
+#endif
 
 WmMessageListener::WmMessageListener() {
 }

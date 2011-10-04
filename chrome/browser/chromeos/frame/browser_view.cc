@@ -597,7 +597,16 @@ void BrowserView::ButtonVisibilityChanged(views::View* button_view) {
 }
 
 // BrowserView, MessageLoopForUI::Observer implementation.
+#if defined(TOUCH_UI) || defined(USE_AURA)
+base::EventStatus BrowserView::WillProcessEvent(
+    const base::NativeEvent& event) OVERRIDE {
+  return base::EVENT_CONTINUE;
+}
 
+void BrowserView::DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
+  // TODO(oshima): On Aura, WM should notify chrome someshow.
+}
+#else
 void BrowserView::DidProcessEvent(GdkEvent* event) {
   if (event->type == GDK_PROPERTY_NOTIFY) {
     if (!frame()->GetNativeWindow())
@@ -616,6 +625,7 @@ void BrowserView::DidProcessEvent(GdkEvent* event) {
     }
   }
 }
+#endif
 
 // BrowserView protected:
 

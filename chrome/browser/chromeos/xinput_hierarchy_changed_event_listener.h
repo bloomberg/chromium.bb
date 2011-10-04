@@ -35,7 +35,9 @@ class XInputHierarchyChangedEventListener : public MessageLoopForUI::Observer {
 
 #if defined(TOUCH_UI)
   // MessageLoopForUI::Observer overrides.
-  virtual EventStatus WillProcessXEvent(XEvent* xevent) OVERRIDE;
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 #else
   // When TOUCH_UI is not defined, WillProcessXEvent() will not be called
   // automatically. We have to call the function manually by adding the Gdk

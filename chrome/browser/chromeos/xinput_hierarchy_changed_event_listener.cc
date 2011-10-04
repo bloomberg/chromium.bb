@@ -97,9 +97,13 @@ void XInputHierarchyChangedEventListener::Stop() {
 }
 
 #if defined(TOUCH_UI)
-base::MessagePumpObserver::EventStatus
-    XInputHierarchyChangedEventListener::WillProcessXEvent(XEvent* xevent) {
-  return ProcessedXEvent(xevent) ? EVENT_HANDLED : EVENT_CONTINUE;
+base::EventStatus XInputHierarchyChangedEventListener::WillProcessEvent(
+    const base::NativeEvent& event) {
+  return ProcessedXEvent(event) ? base::EVENT_HANDLED : base::EVENT_CONTINUE;
+}
+
+void XInputHierarchyChangedEventListener::DidProcessEvent(
+    const base::NativeEvent& event) {
 }
 #else  // defined(TOUCH_UI)
 // static

@@ -58,8 +58,9 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
 
 #if defined(TOUCH_UI) || defined(USE_AURA)
   // MessageLoopForUI::Observer overrides.
-  virtual EventStatus WillProcessEvent(const NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const NativeEvent& event) OVERRIDE;
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 #else
   // This event filter intercepts events before they reach GDK, allowing us to
   // check for system level keyboard events regardless of which window has

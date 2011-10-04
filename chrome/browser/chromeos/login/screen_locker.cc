@@ -645,6 +645,15 @@ class InputEventObserver : public MessageLoopForUI::Observer {
         activated_(false) {
   }
 
+#if defined(TOUCH_UI)
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE {
+    return base::EVENT_CONTINUE;
+  }
+
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
+  }
+#else
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {
     if ((event->type == GDK_KEY_PRESS ||
          event->type == GDK_BUTTON_PRESS ||
@@ -663,6 +672,7 @@ class InputEventObserver : public MessageLoopForUI::Observer {
 
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
   }
+#endif
 
  private:
   chromeos::ScreenLocker* screen_locker_;
@@ -685,6 +695,15 @@ class LockerInputEventObserver : public MessageLoopForUI::Observer {
                    &LockerInputEventObserver::StartScreenSaver)) {
   }
 
+#if defined(TOUCH_UI)
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE {
+    return base::EVENT_CONTINUE;
+  }
+
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
+  }
+#else
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {
     if ((event->type == GDK_KEY_PRESS ||
          event->type == GDK_BUTTON_PRESS ||
@@ -696,6 +715,7 @@ class LockerInputEventObserver : public MessageLoopForUI::Observer {
 
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
   }
+#endif
 
  private:
   void StartScreenSaver() {
