@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/sync_promo_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/url_constants.h"
@@ -22,9 +24,11 @@ WebUIMessageHandler* SyncPromoHandler::Attach(WebUI* web_ui) {
 
 void SyncPromoHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("InitializeSyncPromo",
-      NewCallback(this, &SyncPromoHandler::HandleInitializeSyncPromo));
+      base::Bind(&SyncPromoHandler::HandleInitializeSyncPromo,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("CloseSyncPromo",
-      NewCallback(this, &SyncPromoHandler::HandleCloseSyncPromo));
+      base::Bind(&SyncPromoHandler::HandleCloseSyncPromo,
+                 base::Unretained(this)));
   SyncSetupHandler::RegisterMessages();
 }
 

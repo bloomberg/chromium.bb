@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_message_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,11 +19,14 @@ WebUIMessageHandler* CloudPrintSetupMessageHandler::Attach(WebUI* web_ui) {
 
 void CloudPrintSetupMessageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("SubmitAuth",
-      NewCallback(this, &CloudPrintSetupMessageHandler::HandleSubmitAuth));
+      base::Bind(&CloudPrintSetupMessageHandler::HandleSubmitAuth,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("PrintTestPage",
-      NewCallback(this, &CloudPrintSetupMessageHandler::HandlePrintTestPage));
+      base::Bind(&CloudPrintSetupMessageHandler::HandlePrintTestPage,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("LearnMore",
-      NewCallback(this, &CloudPrintSetupMessageHandler::HandleLearnMore));
+      base::Bind(&CloudPrintSetupMessageHandler::HandleLearnMore,
+                 base::Unretained(this)));
 }
 
 void CloudPrintSetupMessageHandler::HandleSubmitAuth(const ListValue* args) {

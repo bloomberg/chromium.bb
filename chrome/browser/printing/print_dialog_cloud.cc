@@ -6,6 +6,8 @@
 #include "chrome/browser/printing/print_dialog_cloud_internal.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -282,15 +284,15 @@ void CloudPrintFlowHandler::RegisterMessages() {
 
   // TODO(scottbyer) - This is where we will register messages for the
   // UI JS to use.  Needed: Call to update page setup parameters.
-  web_ui_->RegisterMessageCallback(
-      "ShowDebugger",
-      NewCallback(this, &CloudPrintFlowHandler::HandleShowDebugger));
-  web_ui_->RegisterMessageCallback(
-      "SendPrintData",
-      NewCallback(this, &CloudPrintFlowHandler::HandleSendPrintData));
-  web_ui_->RegisterMessageCallback(
-      "SetPageParameters",
-      NewCallback(this, &CloudPrintFlowHandler::HandleSetPageParameters));
+  web_ui_->RegisterMessageCallback("ShowDebugger",
+      base::Bind(&CloudPrintFlowHandler::HandleShowDebugger,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("SendPrintData",
+      base::Bind(&CloudPrintFlowHandler::HandleSendPrintData,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("SetPageParameters",
+      base::Bind(&CloudPrintFlowHandler::HandleSetPageParameters,
+                 base::Unretained(this)));
 
   // Register for appropriate notifications, and re-direct the URL
   // to the real server URL, now that we've gotten an HTML dialog

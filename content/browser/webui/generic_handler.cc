@@ -4,6 +4,8 @@
 
 #include "content/browser/webui/generic_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "content/browser/disposition_utils.h"
@@ -20,9 +22,9 @@ GenericHandler::~GenericHandler() {
 
 void GenericHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("navigateToUrl",
-      NewCallback(this, &GenericHandler::HandleNavigateToUrl));
+      base::Bind(&GenericHandler::HandleNavigateToUrl, base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setIsLoading",
-      NewCallback(this, &GenericHandler::HandleSetIsLoading));
+      base::Bind(&GenericHandler::HandleSetIsLoading, base::Unretained(this)));
 }
 
 bool GenericHandler::IsLoading() const {
