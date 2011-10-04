@@ -144,9 +144,6 @@ void WindowTypeLauncher::TileWindows() {
 }
 
 void WindowTypeLauncher::RestoreTiledWindows() {
-  aura::Window* window_container =
-      aura::Desktop::GetInstance()->window()->GetChildById(
-          internal::kShellWindowId_DefaultContainer);
   ui::Transform identity_transform;
   for (size_t i = 0; i < to_restore_.size(); ++i) {
     to_restore_[i].first->layer()->SetAnimation(
