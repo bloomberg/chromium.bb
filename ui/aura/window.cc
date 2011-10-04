@@ -10,7 +10,6 @@
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/animation/multi_animation.h"

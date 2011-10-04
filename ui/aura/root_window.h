@@ -6,6 +6,7 @@
 #define UI_AURA_ROOT_WINDOW_H_
 #pragma once
 
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
 
 namespace aura {
@@ -14,11 +15,10 @@ class MouseEvent;
 
 namespace internal {
 
-class FocusManager;
-
 // A Window subclass that handles event targeting for certain types of
 // MouseEvent.
-class RootWindow : public Window {
+class RootWindow : public Window,
+                   public FocusManager {
  public:
   RootWindow();
   virtual ~RootWindow();
@@ -45,11 +45,13 @@ class RootWindow : public Window {
   // Current handler for mouse events.
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
 
-  // Overridden from Window:
-  virtual FocusManager* GetFocusManager() OVERRIDE;
+  // Overridden from FocusManager:
+  virtual void SetFocusedWindow(Window* window) OVERRIDE;
+  virtual Window* GetFocusedWindow() OVERRIDE;
 
  protected:
   // Overridden from Window:
+  virtual internal::FocusManager* GetFocusManager() OVERRIDE;
   virtual internal::RootWindow* GetRoot() OVERRIDE;
 
  private:
@@ -59,7 +61,7 @@ class RootWindow : public Window {
 
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;
-  scoped_ptr<FocusManager> focus_manager_;
+  Window* focused_window_;
   Window* capture_window_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);

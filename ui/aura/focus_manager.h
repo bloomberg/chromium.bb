@@ -13,22 +13,22 @@ class Window;
 
 namespace internal {
 
-// The FocusManager, when attached to a Window, tracks changes to keyboard input
-// focus within that Window's hierarchy.
+// An interface implemented by the RootWindow to expose the focused window and
+// allow for it to be changed.
 class FocusManager {
  public:
-  explicit FocusManager(Window* owner);
-  ~FocusManager();
+  // Sets the currently focused window. Before the currently focused window is
+  // changed, the previous focused window's delegate is sent a blur
+  // notification, and after it is changed the new focused window is sent a
+  // focused notification. Nothing happens if |window| and GetFocusedWindow()
+  // match.
+  virtual void SetFocusedWindow(Window* window) = 0;
 
-  void SetFocusedWindow(Window* window);
+  // Returns the currently focused window or NULL if there is none.
+  virtual Window* GetFocusedWindow() = 0;
 
-  Window* focused_window() { return focused_window_; }
-
- private:
-  Window* owner_;
-  Window* focused_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusManager);
+ protected:
+  virtual ~FocusManager() {}
 };
 
 }  // namespace internal

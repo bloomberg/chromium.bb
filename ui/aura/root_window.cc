@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events.h"
 
@@ -19,7 +18,7 @@ RootWindow::RootWindow()
     : Window(NULL),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(focus_manager_(new FocusManager(this))),
+      focused_window_(NULL),
       capture_window_(NULL) {
   set_name("RootWindow");
 }
@@ -54,10 +53,9 @@ bool RootWindow::HandleMouseEvent(const MouseEvent& event) {
 }
 
 bool RootWindow::HandleKeyEvent(const KeyEvent& event) {
-  Window* focused_window = GetFocusManager()->focused_window();
-  if (focused_window) {
+  if (focused_window_) {
     KeyEvent translated_event(event);
-    return focused_window->OnKeyEvent(&translated_event);
+    return focused_window_->OnKeyEvent(&translated_event);
   }
   return false;
 }
@@ -87,10 +85,9 @@ void RootWindow::ReleaseCapture(Window* window) {
 }
 
 void RootWindow::WindowDestroying(Window* window) {
-  // Update the FocusManager if the window was focused.
-  internal::FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager && focus_manager->focused_window() == window)
-    focus_manager->SetFocusedWindow(NULL);
+  // Update the focused window state if the window was focused.
+  if (focused_window_ == window)
+    SetFocusedWindow(NULL);
 
   Desktop::GetInstance()->WindowDestroying(window);
 
@@ -105,11 +102,25 @@ void RootWindow::WindowDestroying(Window* window) {
     capture_window_ = NULL;
 }
 
-FocusManager* RootWindow::GetFocusManager() {
-  return focus_manager_.get();
+void RootWindow::SetFocusedWindow(Window* focused_window) {
+  if (focused_window == focused_window_)
+    return;
+  if (focused_window_)
+    focused_window_->delegate()->OnBlur();
+  focused_window_ = focused_window;
+  if (focused_window_)
+    focused_window_->delegate()->OnFocus();
 }
 
-internal::RootWindow* RootWindow::GetRoot() {
+Window* RootWindow::GetFocusedWindow() {
+  return focused_window_;
+}
+
+FocusManager* RootWindow::GetFocusManager() {
+  return this;
+}
+
+RootWindow* RootWindow::GetRoot() {
   return this;
 }
 

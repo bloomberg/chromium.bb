@@ -308,7 +308,7 @@ TEST_F(WindowTest, Focus) {
   desktop->OnMouseEvent(
       MouseEvent(ui::ET_MOUSE_PRESSED, click_point, ui::EF_LEFT_BUTTON_DOWN));
   internal::FocusManager* focus_manager = w121->GetFocusManager();
-  EXPECT_EQ(w121.get(), focus_manager->focused_window());
+  EXPECT_EQ(w121.get(), focus_manager->GetFocusedWindow());
 
   // The key press should be sent to the focused sub-window.
   desktop->OnKeyEvent(KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_E, 0));
@@ -524,7 +524,7 @@ TEST_F(WindowTest, ActivateOnMouse) {
   // Activate window1.
   desktop->SetActiveWindow(w1.get(), NULL);
   EXPECT_EQ(w1.get(), desktop->active_window());
-  EXPECT_EQ(w1.get(), focus_manager->focused_window());
+  EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
   d1.Clear();
@@ -537,7 +537,7 @@ TEST_F(WindowTest, ActivateOnMouse) {
 
   // Window2 should have become active.
   EXPECT_EQ(w2.get(), desktop->active_window());
-  EXPECT_EQ(w2.get(), focus_manager->focused_window());
+  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(0, d1.activated_count());
   EXPECT_EQ(1, d1.lost_active_count());
   EXPECT_EQ(1, d2.activated_count());
@@ -554,7 +554,7 @@ TEST_F(WindowTest, ActivateOnMouse) {
 
   // Window2 should still be active and focused.
   EXPECT_EQ(w2.get(), desktop->active_window());
-  EXPECT_EQ(w2.get(), focus_manager->focused_window());
+  EXPECT_EQ(w2.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(0, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
   EXPECT_EQ(0, d2.activated_count());
@@ -568,7 +568,7 @@ TEST_F(WindowTest, ActivateOnMouse) {
   EXPECT_EQ(0, d2.activated_count());
   EXPECT_EQ(0, d2.lost_active_count());
   EXPECT_EQ(w1.get(), desktop->active_window());
-  EXPECT_EQ(w1.get(), focus_manager->focused_window());
+  EXPECT_EQ(w1.get(), focus_manager->GetFocusedWindow());
   EXPECT_EQ(1, d1.activated_count());
   EXPECT_EQ(0, d1.lost_active_count());
 }
