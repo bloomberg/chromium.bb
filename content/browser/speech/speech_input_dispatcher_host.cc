@@ -105,6 +105,10 @@ int SpeechInputDispatcherHost::SpeechInputCallers::request_id(int id) {
 
 SpeechInputManager* SpeechInputDispatcherHost::manager_;
 
+void SpeechInputDispatcherHost::set_manager(SpeechInputManager* manager) {
+  manager_ = manager;
+}
+
 SpeechInputDispatcherHost::SpeechInputDispatcherHost(
     int render_process_id,
     net::URLRequestContextGetter* context_getter,

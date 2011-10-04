@@ -38,10 +38,10 @@ CONTENT_EXPORT bool ParseDownloadMetadata(const string16& metadata,
 // Create a new file at the specified path. If the file already exists, try to
 // insert the sequential unifier to produce a new file, like foo-01.txt.
 // Return a FileStream if successful.
-net::FileStream* CreateFileStreamForDrop(FilePath* file_path);
+CONTENT_EXPORT net::FileStream* CreateFileStreamForDrop(FilePath* file_path);
 
 // Implementation of DownloadFileObserver to finalize the download process.
-class PromiseFileFinalizer : public ui::DownloadFileObserver {
+class CONTENT_EXPORT PromiseFileFinalizer : public ui::DownloadFileObserver {
  public:
   explicit PromiseFileFinalizer(DragDownloadFile* drag_file_downloader);
   virtual ~PromiseFileFinalizer();

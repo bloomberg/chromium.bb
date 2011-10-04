@@ -17,11 +17,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 
 struct Geoposition;
 class LibGpsLibraryWrapper;
 
-class LibGps {
+class CONTENT_EXPORT LibGps {
  public:
   virtual ~LibGps();
   // Attempts to dynamically load the libgps.so library, and creates and
@@ -65,7 +66,7 @@ struct gps_data_t;
 
 // Wraps the low-level shared object, binding C++ member functions onto the
 // underlying C functions obtained from the library.
-class LibGpsLibraryWrapper {
+class CONTENT_EXPORT LibGpsLibraryWrapper {
  public:
   typedef gps_data_t* (*gps_open_fn)(const char*, const char*);
   typedef int (*gps_close_fn)(gps_data_t*);

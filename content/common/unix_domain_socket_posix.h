@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,11 @@
 #include <sys/types.h>
 #include <vector>
 
+#include "content/common/content_export.h"
+
 class Pickle;
 
-class UnixDomainSocket {
+class CONTENT_EXPORT UnixDomainSocket {
  public:
   // Use sendmsg to write the given msg and include a vector of file
   // descriptors. Returns true if successful.

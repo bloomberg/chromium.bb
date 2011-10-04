@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
+#include "content/common/child_process_sandbox_support_linux.h"
 #include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_thread.h"
 #include "grit/webkit_resources.h"
@@ -23,7 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/usearch.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -44,7 +44,7 @@ class PrivateFontFile : public ppapi::Resource {
                     void* output,
                     uint32_t* output_length) {
     size_t temp_size = static_cast<size_t>(*output_length);
-    bool rv = webkit_glue::GetFontTable(
+    bool rv = child_process_sandbox_support::GetFontTable(
         fd_, table, static_cast<uint8_t*>(output), &temp_size);
     *output_length = static_cast<uint32_t>(temp_size);
     return rv;
@@ -187,7 +187,7 @@ PP_Resource GetFontFileWithFallback(
   if (!face_name)
     return 0;
 
-  int fd = webkit_glue::MatchFontWithFallback(
+  int fd = child_process_sandbox_support::MatchFontWithFallback(
       face_name->value().c_str(),
       description->weight >= PP_FONTWEIGHT_BOLD,
       description->italic,

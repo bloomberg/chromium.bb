@@ -11,6 +11,7 @@
 #include <string>
 
 #include "content/common/edit_command.h"
+#include "content/common/content_export.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 struct NativeWebKeyboardEvent;
@@ -34,7 +35,7 @@ struct NativeWebKeyboardEvent;
 // definition of webkit edit commands.
 // See webkit/glue/editor_client_impl.cc for key bindings predefined in our
 // webkit glue.
-class GtkKeyBindingsHandler {
+class CONTENT_EXPORT GtkKeyBindingsHandler {
  public:
   explicit GtkKeyBindingsHandler(GtkWidget* parent_widget);
   ~GtkKeyBindingsHandler();

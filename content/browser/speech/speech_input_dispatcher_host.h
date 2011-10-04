@@ -39,9 +39,7 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
                                  bool* message_was_ok);
 
   // Singleton manager setter useful for tests.
-  CONTENT_EXPORT static void set_manager(SpeechInputManager* manager) {
-    manager_ = manager;
-  }
+  CONTENT_EXPORT static void set_manager(SpeechInputManager* manager);
 
  private:
   virtual ~SpeechInputDispatcherHost();

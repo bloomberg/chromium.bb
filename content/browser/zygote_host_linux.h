@@ -15,6 +15,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 
 template<typename Type>
 struct DefaultSingletonTraits;
@@ -25,7 +26,7 @@ static const char kZygoteMagic[] = "ZYGOTE_OK";
 
 // The zygote host is the interface, in the browser process, to the zygote
 // process.
-class ZygoteHost {
+class CONTENT_EXPORT ZygoteHost {
  public:
   // Returns the singleton instance.
   static ZygoteHost* GetInstance();

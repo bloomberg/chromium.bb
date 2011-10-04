@@ -210,7 +210,8 @@ class CancelableRequestConsumerBase {
 // The type T should be small and easily copyable (like a pointer
 // or an integer).
 template<class T>
-class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
+class CONTENT_EXPORT CancelableRequestConsumerTSimple
+    : public CancelableRequestConsumerBase {
  public:
   CancelableRequestConsumerTSimple();
 
@@ -451,7 +452,8 @@ void CancelableRequestConsumerTSimple<T>::DidExecute(
 // See CancelableRequestConsumerTSimple. The default value for T
 // is given in |initial_t|.
 template<class T, T initial_t>
-class CancelableRequestConsumerT : public CancelableRequestConsumerTSimple<T> {
+class CONTENT_EXPORT CancelableRequestConsumerT
+    : public CancelableRequestConsumerTSimple<T> {
  public:
   CancelableRequestConsumerT();
   virtual ~CancelableRequestConsumerT();

@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "content/browser/geolocation/location_provider.h"
+#include "content/common/content_export.h"
 #include "content/common/geoposition.h"
 
 class LibGps;
@@ -23,7 +24,7 @@ class LibGps;
 // IO thread). As the older libgps API is not designed to support polling,
 // there's a chance it could block, so better move this into its own worker
 // thread.
-class GpsLocationProviderLinux : public LocationProviderBase {
+class CONTENT_EXPORT GpsLocationProviderLinux : public LocationProviderBase {
  public:
   typedef LibGps* (*LibGpsFactory)();
   // |factory| will be used to create the gpsd client library wrapper. (Note

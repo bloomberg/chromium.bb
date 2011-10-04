@@ -29,7 +29,7 @@ extern const size_t kMaxTitleChars;
 // We have different values for "max accepted" and "max displayed" because
 // a data: URI may be legitimately massive, but the full URI would kill all
 // known operating systems if you dropped it into a UI control.
-extern const size_t kMaxURLChars;
+CONTENT_EXPORT extern const size_t kMaxURLChars;
 CONTENT_EXPORT extern const size_t kMaxURLDisplayChars;
 
 // The render view and render process id associated with the default plugin

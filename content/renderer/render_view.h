@@ -353,7 +353,8 @@ class RenderView : public RenderWidget,
 
   // Asks the host to create a block of shared memory for the renderer.
   // The shared memory handle allocated by the host is returned back.
-  base::SharedMemoryHandle HostAllocateSharedMemoryBuffer(uint32 buffer_size);
+  CONTENT_EXPORT base::SharedMemoryHandle HostAllocateSharedMemoryBuffer(
+      uint32 buffer_size);
 
   // IPC::Channel::Listener implementation -------------------------------------
 

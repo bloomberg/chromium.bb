@@ -78,7 +78,8 @@ class RenderWidgetHostView {
   //
   // The RenderWidgetHost must already be created (because we can't know if it's
   // going to be a regular RenderWidgetHost or a RenderViewHost (a subclass).
-  static RenderWidgetHostView* CreateViewForWidget(RenderWidgetHost* widget);
+  CONTENT_EXPORT static RenderWidgetHostView* CreateViewForWidget(
+      RenderWidgetHost* widget);
 
   // Perform all the initialization steps necessary for this object to represent
   // a popup (such as a <select> dropdown), then shows the popup at |pos|.

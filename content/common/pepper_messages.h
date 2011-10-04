@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 // Multiply-included message file, no traditional include guard
+#include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START PepperMsgStart
 
 // Pepper (non-file-system) messages sent from the browser to the renderer.

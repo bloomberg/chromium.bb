@@ -22,7 +22,7 @@ struct GlobalRequestID;
 
 // Makes decisions about delaying or not each net::URLRequest in the queue.
 // All methods are called on the IO thread.
-class ResourceQueueDelegate {
+class CONTENT_EXPORT ResourceQueueDelegate {
  public:
   // Gives the delegate a pointer to the queue object.
   virtual void Initialize(ResourceQueue* resource_queue) = 0;
@@ -40,7 +40,7 @@ class ResourceQueueDelegate {
   virtual void WillShutdownResourceQueue() = 0;
 
  protected:
-  CONTENT_EXPORT virtual ~ResourceQueueDelegate();
+  virtual ~ResourceQueueDelegate();
 };
 
 // Makes it easy to delay starting URL requests until specified conditions are

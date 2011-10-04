@@ -65,7 +65,7 @@ class BackingStoreManager {
   // Expires the given backing store. This emulates something getting evicted
   // from the cache for the purpose of testing. Returns true if the host was
   // removed, false if it wasn't found.
-  static bool ExpireBackingStoreForTest(RenderWidgetHost* host);
+  CONTENT_EXPORT static bool ExpireBackingStoreForTest(RenderWidgetHost* host);
 
   // Current size in bytes of the backing store cache.
   CONTENT_EXPORT static size_t MemorySize();

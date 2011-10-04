@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/content_export.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -41,8 +42,8 @@ typedef struct _GtkSelectionData GtkSelectionData;
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
-class RenderWidgetHostViewGtk : public RenderWidgetHostView,
-                                public ui::AnimationDelegate {
+class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
+                                               public ui::AnimationDelegate {
  public:
   explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
   virtual ~RenderWidgetHostViewGtk();

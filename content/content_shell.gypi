@@ -27,6 +27,7 @@
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/ui.gyp:ui',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:appcache',
