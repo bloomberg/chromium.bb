@@ -18,58 +18,31 @@ gfx::Point Screen::GetCursorScreenPoint() {
   return gfx::Point(x, y);
 }
 
-gfx::Rect static GetPrimaryMonitorBounds() {
-  guchar* raw_data = NULL;
-  gint data_len = 0;
-  gboolean success = gdk_property_get(gdk_get_default_root_window(),
-                                      gdk_atom_intern("_NET_WORKAREA", FALSE),
-                                      gdk_atom_intern("CARDINAL", FALSE),
-                                      0, 0xFF, false, NULL, NULL, &data_len,
-                                      &raw_data);
-  int top_left_x = 0;
-  int top_left_y = 0;
-  int width = 0;
-  int height = 0;
-
-  if (success) {
-    glong* data = reinterpret_cast<glong*>(raw_data);
-    top_left_x = data[0];
-    top_left_y = data[1];
-    width = data[2];
-    height = data[3];
-    g_free(raw_data);
-  } else {
-    // If there's no window manager, we can ask X for Monitor info directly.
-    XWindowAttributes attributes;
-    Status status = XGetWindowAttributes(gdk_x11_get_default_xdisplay(),
-                                         gdk_x11_get_default_root_xwindow(),
-                                         &attributes);
-    if (status) {
-      top_left_x = attributes.x;
-      top_left_y = attributes.y;
-      width = attributes.width;
-      height = attributes.height;
-      success = true;
-    }
-  }
-  DCHECK(success);
-  return gfx::Rect(top_left_x, top_left_y, width, height);
-}
-
 // static
 gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeView view) {
-  // TODO(beng): use |view|.
-  return GetPrimaryMonitorBounds();
+  // Do not use the _NET_WORKAREA here, this is supposed to be an area on a
+  // specific monitor, and _NET_WORKAREA is a hint from the WM that generally
+  // spans across all monitors.  This would make the work area larger than the
+  // monitor.
+  // TODO(danakj) This is a work-around as there is no standard way to get this
+  // area, but it is a rect that we should be computing.  The standard means
+  // to compute this rect would be to watch all windows with
+  // _NET_WM_STRUT(_PARTIAL) hints, and subtract their space from the physical
+  // area of the monitor to construct a work area.
+  return GetMonitorAreaNearestWindow(view);
 }
 
 // static
 gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeView view) {
-  GtkWidget* top_level = gtk_widget_get_toplevel(view);
-  DCHECK(GTK_IS_WINDOW(top_level));
-  GtkWindow* window = GTK_WINDOW(top_level);
-  GdkScreen* screen = gtk_window_get_screen(window);
-  gint monitor_num = gdk_screen_get_monitor_at_window(screen,
-                                                      top_level->window);
+  GdkScreen* screen = gdk_screen_get_default();
+  gint monitor_num = 0;
+  if (view) {
+    GtkWidget* top_level = gtk_widget_get_toplevel(view);
+    DCHECK(GTK_IS_WINDOW(top_level));
+    GtkWindow* window = GTK_WINDOW(top_level);
+    screen = gtk_window_get_screen(window);
+    monitor_num = gdk_screen_get_monitor_at_window(screen, top_level->window);
+  }
   GdkRectangle bounds;
   gdk_screen_get_monitor_geometry(screen, monitor_num, &bounds);
   return gfx::Rect(bounds);

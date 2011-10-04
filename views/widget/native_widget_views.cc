@@ -541,9 +541,6 @@ bool NativeWidgetViews::ConvertPointFromAncestor(
 }
 
 gfx::Rect NativeWidgetViews::GetWorkAreaBoundsInScreen() const {
-  // TODO(oshima): This should return the views desktop window's
-  // working area when the system is running under views desktop
-  // rather than native window's working area.
   return GetParentNativeWidget()->GetWorkAreaBoundsInScreen();
 }
 

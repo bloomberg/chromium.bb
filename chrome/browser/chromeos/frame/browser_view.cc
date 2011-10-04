@@ -457,11 +457,7 @@ bool BrowserView::GetSavedWindowPlacement(
     // non-full screen size, layout/paint at that size, then the window manager
     // will snap us to full screen size. This results in an ugly
     // resize/paint. To avoid this we always request a full screen size.
-    // Use the monitor area and not the *work area* because there may not
-    // be a WM to provide a work area and then we don't get something
-    // reliable.
-    *bounds = gfx::Screen::GetMonitorAreaNearestWindow(
-        GTK_WIDGET(GetWidget()->GetNativeWindow()));
+    *bounds = GetWidget()->GetWorkAreaBoundsInScreen();
     *show_state = ui::SHOW_STATE_NORMAL;
     return true;
   }

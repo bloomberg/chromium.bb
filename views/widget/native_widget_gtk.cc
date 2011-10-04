@@ -1356,7 +1356,14 @@ bool NativeWidgetGtk::ConvertPointFromAncestor(
 }
 
 gfx::Rect NativeWidgetGtk::GetWorkAreaBoundsInScreen() const {
-  return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
+  ViewsDelegate *delegate = ViewsDelegate::views_delegate;
+  if (delegate && delegate->GetDefaultParentView()) {
+    // For views-desktop, the work area is the entire space inside this
+    // containter window.
+    return gfx::Rect(gfx::Point(0, 0),
+                     delegate->GetDefaultParentView()->size());
+  } else
+    return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
