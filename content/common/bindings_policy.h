@@ -11,10 +11,10 @@
 class BindingsPolicy {
  public:
   enum {
-    // HTML-based UI bindings that allows he js content to send JSON-encoded
+    // HTML-based UI bindings that allows the JS content to send JSON-encoded
     // data back to the browser process.
     WEB_UI = 1 << 0,
-    // DOM automation bindings that allows the js content to send JSON-encoded
+    // DOM automation bindings that allows the JS content to send JSON-encoded
     // data back to automation in the parent process.  (By default this isn't
     // allowed unless the app has been started up with the --dom-automation
     // switch.)
