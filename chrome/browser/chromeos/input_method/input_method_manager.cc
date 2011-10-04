@@ -168,8 +168,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       }
     }
 
-    // Register global input method hotkeys: Control+space and Shift+Alt.
-    InitHotkeyManager();
+    AddHotkeys();
+    hotkey_manager_.AddObserver(this);
   }
 
   virtual ~InputMethodManagerImpl() {
@@ -516,6 +516,39 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       iter = active_input_method_ids_.begin();
     }
     ChangeInputMethod(*iter);
+  }
+
+  virtual void AddHotkeys() {
+    // Add Ctrl+space.
+    hotkey_manager_.AddHotkey(kPreviousInputMethod,
+                              XK_space,
+                              ControlMask,
+                              true /* trigger on key press */);
+
+    // Add Alt+Shift. For this hotkey, we use "trigger on key release" so that
+    // the current IME is not changed on pressing Alt+Shift+something.
+    hotkey_manager_.AddHotkey(kNextInputMethod,
+                              XK_Shift_L,
+                              ShiftMask | Mod1Mask,
+                              false /* trigger on key release. */);
+    hotkey_manager_.AddHotkey(kNextInputMethod,
+                              XK_Shift_R,
+                              ShiftMask | Mod1Mask,
+                              false);
+    hotkey_manager_.AddHotkey(kNextInputMethod,
+                              XK_Meta_L,
+                              ShiftMask | Mod1Mask,
+                              false);
+    hotkey_manager_.AddHotkey(kNextInputMethod,
+                              XK_Meta_R,
+                              ShiftMask | Mod1Mask,
+                              false);
+    // Input method specific hotkeys will be added in SetImeConfig().
+  }
+
+  virtual void RemoveHotkeys() {
+    hotkey_manager_.RemoveHotkey(kPreviousInputMethod);
+    hotkey_manager_.RemoveHotkey(kNextInputMethod);
   }
 
   static InputMethodManagerImpl* GetInstance() {
@@ -1090,36 +1123,6 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       candidate_window_controller_.reset(NULL);
 #endif
     }
-  }
-
-  void InitHotkeyManager() {
-    // Add Ctrl+space.
-    hotkey_manager_.AddHotkey(kPreviousInputMethod,
-                              XK_space,
-                              ControlMask,
-                              true /* trigger on key press */);
-
-    // Add Alt+Shift. For this hotkey, we use "trigger on key release" so that
-    // the current IME is not changed on pressing Alt+Shift+something.
-    hotkey_manager_.AddHotkey(kNextInputMethod,
-                              XK_Shift_L,
-                              ShiftMask | Mod1Mask,
-                              false /* trigger on key release. */);
-    hotkey_manager_.AddHotkey(kNextInputMethod,
-                              XK_Shift_R,
-                              ShiftMask | Mod1Mask,
-                              false);
-    hotkey_manager_.AddHotkey(kNextInputMethod,
-                              XK_Meta_L,
-                              ShiftMask | Mod1Mask,
-                              false);
-    hotkey_manager_.AddHotkey(kNextInputMethod,
-                              XK_Meta_R,
-                              ShiftMask | Mod1Mask,
-                              false);
-    // Input method specific hotkeys will be added in SetImeConfig().
-
-    hotkey_manager_.AddObserver(this);
   }
 
   void UpdateInputMethodSpecificHotkeys() {

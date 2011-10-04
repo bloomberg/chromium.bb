@@ -224,6 +224,10 @@ class InputMethodManager {
   // Returns a hotkey manager object which could be used to detect Control+space
   // and Shift+Alt key presses.
   virtual HotkeyManager* GetHotkeyManager() = 0;
+  // Register all global input method hotkeys: Control+space and Shift+Alt.
+  virtual void AddHotkeys() = 0;
+  // Removes all global input method hotkeys.
+  virtual void RemoveHotkeys() = 0;
 
   // Switches the current input method (or keyboard layout) to the next one.
   virtual void SwitchToNextInputMethod() = 0;
