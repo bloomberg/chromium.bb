@@ -168,7 +168,9 @@ class InputMethodManager {
   virtual bool StartInputMethodDaemon() = 0;
 
   // Disables the IME, and kills the daemon process if they are running.
-  virtual void StopInputMethodDaemon() = 0;
+  // Returns true if the daemon is stopped. Otherwise, e.g. the daemon is
+  // already stopped, returns false.
+  virtual bool StopInputMethodDaemon() = 0;
 
   // Controls whether the IME process is started when preload engines are
   // specificed, or defered until a non-default method is activated.

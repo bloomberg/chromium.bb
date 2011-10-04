@@ -362,8 +362,6 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
 
     // Stop input method process if necessary.
     MaybeStopInputMethodDaemon(section, config_name, value);
-    // Change the current keyboard layout if necessary.
-    MaybeChangeCurrentKeyboardLayout(section, config_name, value);
     return pending_config_requests_.empty();
   }
 
@@ -645,24 +643,12 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
         config_name == language_prefs::kPreloadEnginesConfigName &&
         ContainOnlyKeyboardLayout(value) &&
         enable_auto_ime_shutdown_) {
-      StopInputMethodDaemon();
-    }
-  }
-
-  // Change the keyboard layout per input method configuration being
-  // updated, if necessary. See also: MaybeStartInputMethodDaemon().
-  void MaybeChangeCurrentKeyboardLayout(const std::string& section,
-                                        const std::string& config_name,
-                                        const ImeConfigValue& value) {
-    // If there is only one input method which is a keyboard layout, we'll
-    // change the keyboard layout per the only one input method now
-    // available.
-    if (section == language_prefs::kGeneralSectionName &&
-        config_name == language_prefs::kPreloadEnginesConfigName &&
-        ContainOnlyKeyboardLayout(value)) {
-      // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
-      // comments at ChangeCurrentInputMethod() for details.
-      ChangeCurrentInputMethodFromId(value.string_list_value[0]);
+      if (StopInputMethodDaemon()) {
+        // The process is killed. Change the current keyboard layout.
+        // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
+        // comments at ChangeCurrentInputMethod() for details.
+        ChangeCurrentInputMethodFromId(value.string_list_value[0]);
+      }
     }
   }
 
@@ -1089,8 +1075,10 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
 
   // Stops the backend input method daemon. This function should also be
   // called from MaybeStopInputMethodDaemon(), except one case where we
-  // stop the input method daemon at Chrome shutdown in Observe().
-  void StopInputMethodDaemon() {
+  // stop the input method daemon at Chrome shutdown in Observe(). Returns true
+  // if the daemon is stopped. Otherwise, e.g. the daemon is already stopped,
+  // returns false.
+  bool StopInputMethodDaemon() {
     should_launch_ime_ = false;
     if (ibus_daemon_process_handle_ != base::kNullProcessHandle) {
       const base::ProcessId pid = base::GetProcId(ibus_daemon_process_handle_);
@@ -1101,7 +1089,9 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       }
       VLOG(1) << "ibus-daemon (PID=" << pid << ") is terminated";
       ibus_daemon_process_handle_ = base::kNullProcessHandle;
+      return true;
     }
+    return false;
   }
 
   void SetDeferImeStartup(bool defer) {
