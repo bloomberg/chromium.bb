@@ -17,19 +17,14 @@
 #include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
 
-#if defined(USE_AURA)
-// TODO(tfarina): Remove this include when crbug.com/94995 is fixed!
-#include "ui/aura/window.h"
-#endif
-
 namespace views {
 
 // static
 const char ButtonDropDown::kViewClassName[] =
     "views/controls/button/ButtonDropDown";
 
-// How long to wait before showing the menu
-static const int kMenuTimerDelay = 500;
+// How long to wait before showing the menu.
+const int kMenuTimerDelay = 500;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -37,8 +32,7 @@ static const int kMenuTimerDelay = 500;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-ButtonDropDown::ButtonDropDown(ButtonListener* listener,
-                               ui::MenuModel* model)
+ButtonDropDown::ButtonDropDown(ButtonListener* listener, ui::MenuModel* model)
     : ImageButton(listener),
       model_(model),
       y_position_on_lbuttondown_(0),
