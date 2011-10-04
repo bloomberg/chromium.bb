@@ -64,6 +64,10 @@
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -2306,6 +2310,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetMultiProfileInfo;
   handler_map["GetProcessInfo"] =
       &TestingAutomationProvider::GetProcessInfo;
+  handler_map["SetPolicies"] =
+      &TestingAutomationProvider::SetPolicies;
+  handler_map["GetPolicyDefinitionList"] =
+      &TestingAutomationProvider::GetPolicyDefinitionList;
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
@@ -5827,6 +5835,71 @@ void TestingAutomationProvider::WaitForAllTabsToStopLoading(
 
   // This class will send the message immediately if no tab is loading.
   new AllTabsStoppedLoadingObserver(this, reply_message);
+}
+
+void TestingAutomationProvider::SetPolicies(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+
+#if defined(OFFICIAL_BUILD)
+  reply.SendError("Disabled on official builds.");
+#else
+  const policy::ConfigurationPolicyProvider::PolicyDefinitionList* list =
+      policy::ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  struct {
+    std::string name;
+    policy::ConfigurationPolicyProvider* provider;
+  } providers[] = {
+    { "managed_cloud",        connector->GetManagedCloudProvider()        },
+    { "managed_platform",     connector->GetManagedPlatformProvider()     },
+    { "recommended_cloud",    connector->GetRecommendedCloudProvider()    },
+    { "recommended_platform", connector->GetRecommendedPlatformProvider() }
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(providers); ++i) {
+    if (!providers[i].provider)
+      continue;
+    policy::PolicyMap* map = NULL;
+    DictionaryValue* policies = NULL;
+    if (args->GetDictionary(providers[i].name, &policies) && policies) {
+      map = new policy::PolicyMap;
+      map->LoadFrom(policies, list);
+    }
+    providers[i].provider->OverridePolicies(map);
+  }
+
+  reply.SendSuccess(NULL);
+#endif  // defined(OFFICIAL_BUILD)
+}
+
+void TestingAutomationProvider::GetPolicyDefinitionList(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  DictionaryValue response;
+
+  const policy::ConfigurationPolicyProvider::PolicyDefinitionList* list =
+      policy::ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+  // Value::Type to python type.
+  std::map<Value::Type, std::string> types;
+  types[Value::TYPE_BOOLEAN] = "bool";
+  types[Value::TYPE_INTEGER] = "int";
+  types[Value::TYPE_STRING] = "str";
+  types[Value::TYPE_LIST] = "list";
+
+  const policy::ConfigurationPolicyProvider::PolicyDefinitionList::Entry* entry;
+  for (entry = list->begin; entry != list->end; ++entry) {
+    if (types.find(entry->value_type) == types.end()) {
+      std::string error("Unrecognized policy type for policy ");
+      reply.SendError(error + entry->name);
+      return;
+    }
+    response.SetString(entry->name, types[entry->value_type]);
+  }
+
+  reply.SendSuccess(&response);
 }
 
 void TestingAutomationProvider::GetIndicesFromTab(

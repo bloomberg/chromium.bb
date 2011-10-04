@@ -260,7 +260,7 @@ class RequestHandler(object):
 
     Args:
       group_message: The protobuf message.
-      field: The field of the message to set, it shuold be a member of
+      field: The field of the message to set, it should be a member of
           group_message.DESCRIPTOR.fields.
       field_value: The value to set.
     '''

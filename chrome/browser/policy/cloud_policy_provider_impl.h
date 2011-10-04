@@ -22,7 +22,7 @@ class CloudPolicyProviderImpl : public CloudPolicyProvider,
   virtual ~CloudPolicyProviderImpl();
 
   // ConfigurationPolicyProvider implementation.
-  virtual bool Provide(PolicyMap* result) OVERRIDE;
+  virtual bool ProvideInternal(PolicyMap* result) OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
 
   // CloudPolicyCacheBase::Observer implementation.

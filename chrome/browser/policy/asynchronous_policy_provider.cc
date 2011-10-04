@@ -27,7 +27,7 @@ AsynchronousPolicyProvider::~AsynchronousPolicyProvider() {
   loader_->Stop();
 }
 
-bool AsynchronousPolicyProvider::Provide(PolicyMap* map) {
+bool AsynchronousPolicyProvider::ProvideInternal(PolicyMap* map) {
   DCHECK(CalledOnValidThread());
   DCHECK(loader_->policy());
   map->LoadFrom(loader_->policy(), policy_definition_list());

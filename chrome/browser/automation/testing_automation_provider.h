@@ -1207,6 +1207,38 @@ class TestingAutomationProvider : public AutomationProvider,
   void CreateNewAutomationProvider(base::DictionaryValue* args,
                                    IPC::Message* reply_message);
 
+  // Enforces the policies in |args|. The policies are provided as a dictionary
+  // of policy names to their values. The top-level dictionary maps the policy
+  // provider level to its dictionary.
+  // Example:
+  //   input: { "managed_platform": {
+  //                                  "ShowHomeButton": true,
+  //                                  "SafeBrowsingEnabled": false,
+  //                                },
+  //            "recommended_platform": {
+  //                                      ...
+  //                                    },
+  //            "managed_cloud": {
+  //                               ...
+  //                             },
+  //            "recommended_cloud": {
+  //                                   ...
+  //                                 }
+  //          }
+  //  output: none
+  void SetPolicies(base::DictionaryValue* args,
+                   IPC::Message* reply_message);
+
+  // Gets a list of supported policies. The output is a map of policy name to
+  // its value type.
+  // Example:
+  //   input: none
+  //   output: { "ShowHomeButton": "bool",
+  //             "DefaultSearchProviderSearchURL": "str"
+  //           }
+  void GetPolicyDefinitionList(base::DictionaryValue* args,
+                               IPC::Message* reply_message);
+
 #if defined(OS_CHROMEOS)
   // Login.
   void GetLoginInfo(base::DictionaryValue* args, IPC::Message* reply_message);

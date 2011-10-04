@@ -24,7 +24,7 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   void SetInitializationComplete(bool initialization_complete);
 
   // ConfigurationPolicyProvider method overrides.
-  virtual bool Provide(PolicyMap* policies) OVERRIDE;
+  virtual bool ProvideInternal(PolicyMap* policies) OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
 
  private:

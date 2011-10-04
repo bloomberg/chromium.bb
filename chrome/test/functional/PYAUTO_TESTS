@@ -63,6 +63,7 @@
       'pdf',
       'plugins',
       'plugins_check',
+      'policy_prefs_ui',
       'popups',
       'prefs',
       'process_count',
@@ -438,6 +439,12 @@
       # TODO(nirnimesh): Re-enable when 'Google Chrome' bots have a build
       # newer than 16.0.895.1000. (09/29/2011)
       '-multiprofile',
+
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      # Can't use automation to change the policy data on Chrome builds.
+      '-policy_prefs_ui',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.

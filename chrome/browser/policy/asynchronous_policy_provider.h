@@ -38,7 +38,7 @@ class AsynchronousPolicyProvider
   virtual ~AsynchronousPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.
-  virtual bool Provide(PolicyMap* map) OVERRIDE;
+  virtual bool ProvideInternal(PolicyMap* map) OVERRIDE;
 
   // For tests to trigger reloads.
   scoped_refptr<AsynchronousPolicyLoader> loader();

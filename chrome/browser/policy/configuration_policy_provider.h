@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "policy/configuration_policy_type.h"
@@ -47,22 +48,32 @@ class ConfigurationPolicyProvider {
 
   virtual ~ConfigurationPolicyProvider();
 
-  // Must be implemented by provider subclasses to specify the provider-specific
-  // policy decisions. The ConfigurationPolicyPrefStore invokes this |Provide|
-  // method when it needs a policy provider to specify its policy choices. In
-  // |Provide|, the |ConfigurationPolicyProvider| fills the given |result| with
-  // policy values. Returns true if the policy could be provided and false
-  // otherwise.
-  virtual bool Provide(PolicyMap* result) = 0;
+  // Fills the given |result| with the current policy values. Returns true if
+  // the policies were provided. This is used mainly by the
+  // ConfigurationPolicyPrefStore, which retrieves policy values from here.
+  bool Provide(PolicyMap* result);
 
   // Check whether this provider has completed initialization. This is used to
   // detect whether initialization is done in case providers implementations
   // need to do asynchronous operations for initialization.
   virtual bool IsInitializationComplete() const;
 
+#if !defined(OFFICIAL_BUILD)
+  // Overrides the policy values that are obtained in calls to |Provide|.
+  // The default behavior is restored if |policies| is NULL.
+  // Takes ownership of |policies|.
+  // This is meant for tests only, and is disabled on official builds.
+  void OverridePolicies(PolicyMap* policies);
+#endif
+
  protected:
   // Sends a policy update notification to observers.
   void NotifyPolicyUpdated();
+
+  // Must be implemented by subclasses to provide their policy values. The
+  // values actually provided by |Provide| can be overridden using
+  // |OverridePolicies|.
+  virtual bool ProvideInternal(PolicyMap* result) = 0;
 
   const PolicyDefinitionList* policy_definition_list() const {
     return policy_definition_list_;
@@ -71,15 +82,18 @@ class ConfigurationPolicyProvider {
  private:
   friend class ConfigurationPolicyObserverRegistrar;
 
-  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer);
-  virtual void RemoveObserver(
-      ConfigurationPolicyProvider::Observer* observer);
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
 
   // Contains the default mapping from policy values to the actual names.
-  const ConfigurationPolicyProvider::PolicyDefinitionList*
-      policy_definition_list_;
+  const PolicyDefinitionList* policy_definition_list_;
 
-  ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
+  ObserverList<Observer, true> observer_list_;
+
+#if !defined(OFFICIAL_BUILD)
+  // Usually NULL, but can be used in tests to override the policies provided.
+  scoped_ptr<PolicyMap> override_policies_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
 };

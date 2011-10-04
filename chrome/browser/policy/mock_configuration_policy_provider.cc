@@ -31,7 +31,7 @@ void MockConfigurationPolicyProvider::SetInitializationComplete(
   initialization_complete_ = initialization_complete;
 }
 
-bool MockConfigurationPolicyProvider::Provide(PolicyMap* policies) {
+bool MockConfigurationPolicyProvider::ProvideInternal(PolicyMap* policies) {
   policies->CopyFrom(policy_map_);
   return true;
 }

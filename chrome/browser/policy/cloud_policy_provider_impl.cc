@@ -20,7 +20,7 @@ CloudPolicyProviderImpl::~CloudPolicyProviderImpl() {
     (*i)->RemoveObserver(this);
 }
 
-bool CloudPolicyProviderImpl::Provide(PolicyMap* result) {
+bool CloudPolicyProviderImpl::ProvideInternal(PolicyMap* result) {
   result->CopyFrom(combined_);
   return true;
 }

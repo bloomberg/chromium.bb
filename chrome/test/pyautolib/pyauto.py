@@ -1094,7 +1094,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     example: "session.restore_on_startup"
 
     Some preferences are managed, that is, they cannot be changed by the
-    user. It's upto the user to know which ones can be changed. Typically,
+    user. It's up to the user to know which ones can be changed. Typically,
     the options available via Chromium preferences can be changed.
 
     Args:
@@ -3225,6 +3225,51 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'GetMultiProfileInfo'
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  def SetPolicies(self, managed_platform=None, recommended_platform=None,
+                  managed_cloud=None, recommended_cloud=None):
+    """Sets the policies on the browser. Always fails on official builds.
+
+    Args:
+      managed_platform: a dictionary with the policy values for the managed
+                        platform provider.
+      recommended_platform: a dictionary with the policy values for the
+                            recommended platform provider.
+      managed_cloud: a dictionary with the policy values for the managed
+                     cloud provider.
+      recommended_cloud: a dictionary with the policy values for the recommended
+                         cloud provider.
+
+    Leaving an argument to None will restore the default behavior for that
+    provider.
+    """
+    assert not self.GetBrowserInfo()['properties']['is_official']
+    cmd_dict = {
+        'command': 'SetPolicies',
+        'managed_cloud': managed_cloud,
+        'managed_platform': managed_platform,
+        'recommended_cloud': recommended_cloud,
+        'recommended_platform': recommended_platform
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
+  def GetPolicyDefinitionList(self):
+    """Gets a dictionary of existing policies mapped to their value types.
+
+    SAMPLE OUTPUT:
+    {
+      'ShowHomeButton': 'bool',
+      'DefaultSearchProviderSearchURL': 'str',
+      ...
+    }
+
+    Returns:
+      A dictionary mapping policy names to their value types.
+    """
+    cmd_dict = {
+        'command': 'GetPolicyDefinitionList'
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
 
   ## ChromeOS section
 
