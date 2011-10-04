@@ -97,8 +97,23 @@ var chrome = chrome || {};
         var port = chromeHidden.Port.createPort(portId, channelName);
         port.onMessage.addListener(function(request) {
           requestEvent.dispatch(request, sender, function(response) {
-            port.postMessage(response);
-            port = null;
+            if (port) {
+              port.postMessage(response);
+              port = null;
+            } else {
+              // We nulled out port when sending the response, and now the page
+              // is trying to send another response for the same request.
+              var errorMsg =
+                  "Cannot send a response more than once per " +
+                  "chrome.extension.onRequest listener per document (message " +
+                  "was sent by extension " + sourceExtensionId;
+              if (sourceExtensionId != targetExtensionId) {
+                errorMsg += " for extension " + targetExtensionId;
+              }
+              errorMsg += ").";
+              chrome.extension.lastError = {"message": errorMsg};
+              console.error("Could not send response: " + errorMsg);
+            }
           });
         });
       }
@@ -126,7 +141,7 @@ var chrome = chrome || {};
       CloseChannel(portId, false);
       if (connectionInvalid) {
         var errorMsg =
-          "Could not establish connection. Receiving end does not exist.";
+            "Could not establish connection. Receiving end does not exist.";
         chrome.extension.lastError = {"message": errorMsg};
         console.error("Port error: " + errorMsg);
       }

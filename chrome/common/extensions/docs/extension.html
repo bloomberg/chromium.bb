@@ -3101,7 +3101,7 @@ For details, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response.</dd>
+          <dd>Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response. If you have more than one <code>onRequest</code> listener in the same document, then only one may send a response.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
