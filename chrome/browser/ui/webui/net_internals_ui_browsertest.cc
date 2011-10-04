@@ -290,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderViewSucceed) {
 }
 
 // Prerender a page that is expected to fail.
-IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsPrerenderViewFail) {
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, FLAKY_NetInternalsPrerenderViewFail) {
   ASSERT_TRUE(test_server()->Start());
   EXPECT_TRUE(RunJavascriptAsyncTest(
       "netInternalsPrerenderView",
