@@ -13,7 +13,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/navigation_state.h"
+#include "content/public/renderer/navigation_state.h"
 #include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -22,12 +22,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
-using base::Time;
-using base::TimeDelta;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebPerformance;
 using WebKit::WebString;
+using base::Time;
+using base::TimeDelta;
+using content::NavigationState;
 
 static const TimeDelta kPLTMin(TimeDelta::FromMilliseconds(10));
 static const TimeDelta kPLTMax(TimeDelta::FromMinutes(10));
@@ -49,7 +50,7 @@ static URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
 static void DumpWebTiming(const Time& navigation_start,
                           const Time& load_event_start,
                           const Time& load_event_end,
-                          NavigationState* navigation_state) {
+                          content::NavigationState* navigation_state) {
   if (navigation_start.is_null() ||
       load_event_start.is_null() ||
       load_event_end.is_null())

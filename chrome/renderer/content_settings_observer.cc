@@ -8,7 +8,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/common/database_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/navigation_state.h"
+#include "content/public/renderer/navigation_state.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -25,6 +25,7 @@ using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebView;
+using content::NavigationState;
 
 namespace {
 

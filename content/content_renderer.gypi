@@ -24,6 +24,8 @@
   ],
   'sources': [
     'public/renderer/content_renderer_client.h',
+    'public/renderer/navigation_state.cc',
+    'public/renderer/navigation_state.h',
     'public/renderer/render_process_observer.cc',
     'public/renderer/render_process_observer.h',
     'public/renderer/render_view_observer.cc',
@@ -91,8 +93,6 @@
     'renderer/media/video_capture_message_filter.h',
     'renderer/mhtml_generator.cc',
     'renderer/mhtml_generator.h',
-    'renderer/navigation_state.cc',
-    'renderer/navigation_state.h',
     'renderer/notification_provider.cc',
     'renderer/notification_provider.h',
     'renderer/paint_aggregator.cc',

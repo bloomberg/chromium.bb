@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/navigation_state.h"
+#include "content/public/renderer/navigation_state.h"
 
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/password_form.h"
+
+namespace content {
 
 NavigationState::~NavigationState() {}
 
@@ -45,3 +47,5 @@ NavigationState::NavigationState(PageTransition::Type transition_type,
       was_prefetcher_(false),
       was_referred_by_prefetcher_(false) {
 }
+
+}  // namespace content

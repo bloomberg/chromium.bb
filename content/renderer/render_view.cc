@@ -42,6 +42,7 @@
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/device_orientation_dispatcher.h"
@@ -56,7 +57,6 @@
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/mhtml_generator.h"
-#include "content/renderer/navigation_state.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
@@ -237,6 +237,7 @@ using WebKit::WebWorkerClient;
 using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
+using content::NavigationState;
 using content::RenderViewObserver;
 using content::RenderViewVisitor;
 using webkit_glue::AltErrorPageResourceFetcher;

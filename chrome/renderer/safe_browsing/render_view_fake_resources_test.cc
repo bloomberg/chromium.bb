@@ -18,7 +18,6 @@
 #include "content/common/resource_response.h"
 #include "content/common/sandbox_init_wrapper.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/navigation_state.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/renderer_main_platform_delegate.h"

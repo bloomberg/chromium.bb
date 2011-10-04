@@ -8,8 +8,11 @@
 #include "base/basictypes.h"
 #include "content/public/renderer/render_view_observer.h"
 
-class NavigationState;
 class RendererHistogramSnapshots;
+
+namespace content {
+class NavigationState;
+}
 
 class PageLoadHistograms : public content::RenderViewObserver {
  public:
@@ -44,7 +47,7 @@ class PageLoadHistograms : public content::RenderViewObserver {
 
   void ResetCrossFramePropertyAccess();
 
-  void LogPageLoadTime(const NavigationState* state,
+  void LogPageLoadTime(const content::NavigationState* state,
                        const WebKit::WebDataSource* ds) const;
 
   // Site isolation metric counts.

@@ -63,7 +63,6 @@ class GURL;
 class IntentsDispatcher;
 class LoadProgressTracker;
 class MediaStreamImpl;
-class NavigationState;
 class NotificationProvider;
 class PepperDeviceTest;
 class PrintWebViewHelper;
@@ -86,6 +85,7 @@ class WaitableEvent;
 }  // namespace base
 
 namespace content {
+class NavigationState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
 class RenderViewVisitor;
@@ -1012,7 +1012,7 @@ class RenderView : public RenderWidget,
   // the WebDataSource::ExtraData attribute.  We use pending_navigation_state_
   // as a temporary holder for the state until the WebDataSource corresponding
   // to the new navigation is created.  See DidCreateDataSource.
-  scoped_ptr<NavigationState> pending_navigation_state_;
+  scoped_ptr<content::NavigationState> pending_navigation_state_;
 
   // Timer used to delay the updating of nav state (see SyncNavigationState).
   base::OneShotTimer<RenderView> nav_state_sync_timer_;

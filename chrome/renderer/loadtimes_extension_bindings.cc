@@ -7,13 +7,14 @@
 #include <math.h>
 
 #include "base/time.h"
-#include "content/renderer/navigation_state.h"
+#include "content/public/renderer/navigation_state.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebNavigationType;
+using content::NavigationState;
 
 // Values for CSI "tran" property
 const int kTransitionLink = 0;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_NAVIGATION_STATE_H_
-#define CHROME_RENDERER_NAVIGATION_STATE_H_
+#ifndef CONTENT_PUBLIC_RENDERER_NAVIGATION_STATE_H_
+#define CONTENT_PUBLIC_RENDERER_NAVIGATION_STATE_H_
 #pragma once
 
 #include <string>
@@ -19,6 +19,8 @@ namespace webkit_glue {
 struct PasswordForm;
 class AltErrorPageResourceFetcher;
 }
+
+namespace content {
 
 // The RenderView stores an instance of this class in the "extra data" of each
 // WebDataSource (see RenderView::DidCreateDataSource).
@@ -310,4 +312,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };
 
-#endif  // CHROME_RENDERER_NAVIGATION_STATE_H_
+#endif  // CONTENT_PUBLIC_RENDERER_NAVIGATION_STATE_H_
+
+}  // namespace content
