@@ -335,11 +335,12 @@ void PluginInstance::ScrollRect(int dx, int dy, const gfx::Rect& rect) {
   if (fullscreen_container_) {
     fullscreen_container_->ScrollRect(dx, dy, rect);
   } else {
-    if (full_frame_) {
+    if (full_frame_ && !IsViewAccelerated()) {
       container_->scrollRect(dx, dy, rect);
     } else {
       // Can't do optimized scrolling since there could be other elements on top
-      // of us.
+      // of us or the view renders via the accelerated compositor which is
+      // incompatible with the move and backfill scrolling model.
       InvalidateRect(rect);
     }
   }
@@ -1050,6 +1051,21 @@ int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
   WebString target_str = WebString::fromUTF8(target);
   container_->loadFrameRequest(web_request, target_str, false, NULL);
   return PP_OK;
+}
+
+bool PluginInstance::IsViewAccelerated() {
+  if (!container_)
+    return false;
+
+  WebDocument document = container_->element().document();
+  WebFrame* frame = document.frame();
+  if (!frame)
+    return false;
+  WebView* view = frame->view();
+  if (!view)
+    return false;
+
+  return view->isAcceleratedCompositingActive();
 }
 
 PluginDelegate::PlatformContext3D* PluginInstance::CreateContext3D() {
