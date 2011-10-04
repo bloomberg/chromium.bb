@@ -457,6 +457,7 @@
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
+          'sources/': [['exclude', '_x11\\.cc$']],
           'sources!': [
             'plugins/plugin_stubs.cc',
           ],
