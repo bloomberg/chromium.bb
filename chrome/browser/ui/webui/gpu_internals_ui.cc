@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -23,6 +24,7 @@
 #include "content/browser/webui/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "third_party/angle/src/common/version.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -204,6 +206,10 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
         CommandLine::ForCurrentProcess()->GetCommandLineString());
   }
 
+  dict->SetString("operating_system",
+                  base::SysInfo::OperatingSystemName() + " " +
+                  base::SysInfo::OperatingSystemVersion());
+  dict->SetString("angle_revision", base::UintToString(BUILD_REVISION));
   dict->SetString("blacklist_version",
       GpuDataManager::GetInstance()->GetBlacklistVersion());
 
