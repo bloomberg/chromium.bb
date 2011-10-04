@@ -18,6 +18,7 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
@@ -96,9 +97,7 @@ class DnsCertProvenanceCheck : public base::NonThreadSafe {
         dnsrr_resolver_(dnsrr_resolver),
         delegate_(delegate),
         der_certs_(der_certs.size()),
-        handle_(DnsRRResolver::kInvalidHandle),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-              this, &DnsCertProvenanceCheck::ResolutionComplete)) {
+        handle_(DnsRRResolver::kInvalidHandle) {
     for (size_t i = 0; i < der_certs.size(); i++)
       der_certs_[i] = der_certs[i].as_string();
   }
@@ -133,8 +132,10 @@ class DnsCertProvenanceCheck : public base::NonThreadSafe {
     domain_.append(kBaseCertName);
 
     handle_ = dnsrr_resolver_->Resolve(
-        domain_, kDNS_TXT, 0 /* flags */, &callback_, &response_,
-        0 /* priority */, BoundNetLog());
+        domain_, kDNS_TXT, 0 /* flags */,
+        base::Bind(&DnsCertProvenanceCheck::ResolutionComplete,
+                   base::Unretained(this)),
+        &response_, 0 /* priority */, BoundNetLog());
     if (handle_ == DnsRRResolver::kInvalidHandle) {
       LOG(ERROR) << "Failed to resolve " << domain_ << " for " << hostname_;
       delete this;
@@ -200,7 +201,6 @@ class DnsCertProvenanceCheck : public base::NonThreadSafe {
   std::vector<std::string> der_certs_;
   RRResponse response_;
   DnsRRResolver::Handle handle_;
-  OldCompletionCallbackImpl<DnsCertProvenanceCheck> callback_;
 };
 
 SECKEYPublicKey* GetServerPubKey() {
