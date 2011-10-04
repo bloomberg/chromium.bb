@@ -154,3 +154,8 @@ fun:__gen_tempname
 # The sqlite cache is racing against a few different stacktraces,
 # so let's ignore it recursively. See http://crbug.com/84094
 fun_r:pcache1Fetch
+
+# "Suppress" a data race in TraceLog::GetCategory which has
+# fun:MessageLoop::RunTask at the top of the "current" stack which we don't want
+# to suppress. See http://crbug.com/98926
+fun:*base*debug*TraceLog*GetCategoryInternal*
