@@ -165,7 +165,7 @@ bool ExternalProcessImporterClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyKeywordsReady,
                         OnKeywordsImportReady)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 
