@@ -527,6 +527,12 @@ class ScrollTest(BasePerfTest):
     self._RunScrollTest(
         self.GetFileURLForDataPath('scroll', 'text.html'), 'ScrollTextPage')
 
+  def testGooglePlusScroll(self):
+    """Runs the scroll test on a Google Plus anonymized page."""
+    self._RunScrollTest(
+        self.GetFileURLForDataPath('scroll', 'plus.html'),
+        'ScrollGooglePlusPage')
+
 
 class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   """Request handler for the local performance test server."""
