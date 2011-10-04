@@ -44,7 +44,7 @@ Option('build_debug', 'Debug tree building.')
 Option('parse_debug', 'Debug parse reduction steps.')
 Option('token_debug', 'Debug token generation.')
 Option('dump_tree', 'Dump the tree.')
-Option('srcroot', 'Working directory.', default='../api')
+Option('srcroot', 'Working directory.', default=os.path.join('..', 'api'))
 
 #
 # ERROR_REMAP

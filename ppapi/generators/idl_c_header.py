@@ -20,8 +20,8 @@ from idl_parser import ParseFiles
 from idl_c_proto import CGen, GetNodeComments, CommentLines, Comment
 from idl_generator import Generator, GeneratorByFile
 
-Option('dstroot', 'Base directory of output', default='../c')
-Option('guard', 'Include guard prefix', default='ppapi/c')
+Option('dstroot', 'Base directory of output', default=os.path.join('..', 'c'))
+Option('guard', 'Include guard prefix', default=os.path.join('ppapi', 'c'))
 Option('out', 'List of output files', default='')
 
 def GetOutFileName(filenode, relpath=None, prefix=None):
@@ -135,7 +135,7 @@ class HGen(GeneratorByFile):
     gpath = GetOption('guard')
     release = releases[0]
     def_guard = GetOutFileName(filenode, relpath=gpath)
-    def_guard = def_guard.replace('/','_').replace('.','_').upper() + '_'
+    def_guard = def_guard.replace(os.sep,'_').replace('.','_').upper() + '_'
 
     cright_node = filenode.GetChildren()[0]
     assert(cright_node.IsA('Copyright'))
@@ -144,7 +144,8 @@ class HGen(GeneratorByFile):
 
     out.Write('%s\n' % cgen.Copyright(cright_node))
     out.Write('/* From %s modified %s. */\n\n'% (
-        filenode.GetProperty('NAME'), filenode.GetProperty('DATETIME')))
+        filenode.GetProperty('NAME').replace(os.sep,'/'),
+        filenode.GetProperty('DATETIME')))
     out.Write('#ifndef %s\n#define %s\n\n' % (def_guard, def_guard))
     # Generate set of includes
 
@@ -157,7 +158,8 @@ class HGen(GeneratorByFile):
       depfile = dep.GetProperty('FILE')
       if depfile:
         includes.add(depfile)
-    includes = [GetOutFileName(include, relpath=gpath) for include in includes]
+    includes = [GetOutFileName(
+        include, relpath=gpath).replace(os.sep, '/') for include in includes]
     includes.append('ppapi/c/pp_macros.h')
 
     # Assume we need stdint if we "include" C or C++ code
@@ -165,7 +167,7 @@ class HGen(GeneratorByFile):
       includes.append('ppapi/c/pp_stdint.h')
 
     includes = sorted(set(includes))
-    cur_include = GetOutFileName(filenode, relpath=gpath)
+    cur_include = GetOutFileName(filenode, relpath=gpath).replace(os.sep, '/')
     for include in includes:
       if include == cur_include: continue
       out.Write('#include "%s"\n' % include)
@@ -197,7 +199,7 @@ class HGen(GeneratorByFile):
   def GenerateTail(self, out, filenode, releases, options):
     gpath = GetOption('guard')
     def_guard = GetOutFileName(filenode, relpath=gpath)
-    def_guard = def_guard.replace('/','_').replace('.','_').upper() + '_'
+    def_guard = def_guard.replace(os.sep,'_').replace('.','_').upper() + '_'
     out.Write('#endif  /* %s */\n\n' % def_guard)
 
 
