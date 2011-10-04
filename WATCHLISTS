@@ -96,6 +96,11 @@
     'ftp': {
       'filepath': 'ftp',
     },
+    'dns': {
+      'filepath': 'net/base/host_resolver.*|' \
+        'net/base/host_cache.*|' \
+        'net/dns/.*'
+    },
     'installer': {
       'filepath': 'chrome/installer/.*',
     },
@@ -301,6 +306,7 @@
     'net_error_list': ['mmenke@chromium.org'],
     'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
+    'dns': ['mmenke@chromium.org'],
     'media': ['acolwell+watch@chromium.org', 'ajwong+watch@chromium.org',
               'annacc+watch@chromium.org', 'ddorwin+watch@chromium.org',
               'fischman+watch@chromium.org', 'hclam+watch@chromium.org',
