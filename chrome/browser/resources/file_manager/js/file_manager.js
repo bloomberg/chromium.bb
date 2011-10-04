@@ -204,36 +204,49 @@ FileManager.prototype = {
    */
   var localStrings;
 
-  /**
-   * Map of icon types to regular expressions and functions
-   *
-   * The first regexp/function to match the entry name determines the icon type
-   * assigned to dom elements for a file. Order of evaluation is not
-   * defined, so don't depend on it.
-   */
-  const iconTypes = {
-    'audio': /\.(flac|mp3|m4a|oga|ogg|wav)$/i,
-    'html': /\.(html?)$/i,
-    'image': /\.(bmp|gif|jpe?g|ico|png|webp)$/i,
-    'pdf' : /\.(pdf)$/i,
-    'text': /\.(pod|rst|txt|log)$/i,
-    'video': /\.(3gp|avi|mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i,
-    'device': function(self, entry) {
-      var deviceNumber = self.getDeviceNumber(entry);
-      if (deviceNumber != undefined)
-        return (self.mountPoints_[deviceNumber].mountCondition == '');
-      return false;
-    },
-    'unreadable': function(self, entry) {
-      var deviceNumber = self.getDeviceNumber(entry);
-      if (deviceNumber != undefined) {
-        return self.mountPoints_[deviceNumber].mountCondition ==
-               'unknown_filesystem' ||
-               self.mountPoints_[deviceNumber].mountCondition ==
-               'unsupported_filesystem';
-      }
-      return false;
-    }
+  const fileTypes = {
+    // Images
+    'jpeg': {icon: 'image', name: 'IMAGE_FILE_TYPE'},
+    'jpg':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
+    'bmp':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
+    'gif':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
+    'ico':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
+    'png':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
+    'webp': {icon: 'image', name: 'IMAGE_FILE_TYPE'},
+
+    // Video
+    '3gp':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'avi':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'mov':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'mp4':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'mpg':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'mpeg': {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'mpg4': {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'mpeg4': {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'ogm':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'ogv':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'ogx':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    'webm': {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+
+    // Audio
+    'flac': {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
+    'mp3':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
+    'm4a':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
+    'oga':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
+    'ogg':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
+    'wav':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
+
+    // Text
+    'pod': {icon: 'text', name: 'PLAIN_TEXT_FILE_TYPE'},
+    'rst': {icon: 'text', name: 'PLAIN_TEXT_FILE_TYPE'},
+    'txt': {icon: 'text', name: 'PLAIN_TEXT_FILE_TYPE'},
+    'log': {icon: 'text', name: 'PLAIN_TEXT_FILE_TYPE'},
+
+    // Others
+    'zip': {name: 'ZIP_ARCHIVE_FILE_TYPE'},
+    'pdf': {icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE'},
+    'html': {icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE'},
+    'htm': {icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE'}
   };
 
   const previewArt = {
@@ -609,6 +622,8 @@ FileManager.prototype = {
                                        this.compareMtime_.bind(this));
     this.dataModel_.setCompareFunction('cachedSize_',
                                        this.compareSize_.bind(this));
+    this.dataModel_.setCompareFunction('type',
+                                       this.compareType_.bind(this));
     this.dataModel_.prepareSort = this.prepareSort_.bind(this);
 
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
@@ -638,49 +653,79 @@ FileManager.prototype = {
    *     'unknown'.
    */
   FileManager.prototype.getIconType = function(entry) {
-    if (entry.cachedIconType_)
-      return entry.cachedIconType_;
+    if (!('cachedIconType_' in entry))
+      entry.cachedIconType_ = this.computeIconType_(entry);
+    return entry.cachedIconType_;
+  }
 
-    var rv = 'unknown';
-   if (entry.isDirectory)
-      rv = 'folder';
-    for (var name in iconTypes) {
-      var value = iconTypes[name];
+  /**
+   * Extract extension from the file name and cat it to to lower case.
+   *
+   * @param {string} name.
+   * @return {strin}
+   */
+  function getFileExtension(name) {
+    var extIndex = name.lastIndexOf('.');
+    if (extIndex < 0)
+      return '';
 
-      if (value instanceof RegExp) {
-        if (value.test(entry.name))  {
-          rv = name;
-          break;
-        }
-      } else if (typeof value == 'function') {
-        try {
-          if (value(this,entry)) {
-            rv = name;
-            break;
-          }
-        } catch (ex) {
-          console.error('Caught exception while evaluating iconType: ' +
-                        name, ex);
-        }
-      } else {
-        console.log('Unexpected value in iconTypes[' + name + ']: ' + value);
-      }
+    return name.substr(extIndex + 1).toLowerCase();
+  }
+
+  FileManager.prototype.computeIconType_ = function(entry) {
+    var deviceNumber = this.getDeviceNumber(entry);
+    if (deviceNumber != undefined) {
+      if (this.mountPoints_[deviceNumber].mountCondition == '')
+        return 'device';
+      var mountCondition = this.mountPoints_[deviceNumber].mountCondition;
+      if (mountCondition == 'unknown_filesystem' ||
+          mountCondition == 'unsupported_filesystem')
+        return 'unreadable';
     }
-    entry.cachedIconType_ = rv;
-    return rv;
+    if (entry.isDirectory)
+      return 'folder';
+
+    var extension = getFileExtension(entry.name);
+    if (extension in fileTypes)
+      return fileTypes[extension].icon;
+    return 'undefined';
+  };
+
+  /**
+   * Get the file type for a given Entry.
+   *
+   * @param {Entry} entry An Entry subclass (FileEntry or DirectoryEntry).
+   * @return {string} One of the values from FileManager.fileTypes, 'FOLDER',
+   *                  or undefined.
+   */
+  FileManager.prototype.getFileType = function(entry) {
+    if (!('cachedFileType_' in entry))
+      entry.cachedFileType_ = this.computeFileType_(entry);
+    return entry.cachedFileType_;
+  };
+
+  FileManager.prototype.computeFileType_ = function(entry) {
+    if (entry.isDirectory) {
+      var deviceNumber = this.getDeviceNumber(entry);
+      if (deviceNumber != undefined)
+        return str('DEVICE');
+      return str('FOLDER');
+    }
+
+    var extension = getFileExtension(entry.name);
+    if (extension in fileTypes)
+      return str(fileTypes[extension].name);
+
+    return undefined;
   };
 
 
   /**
    * Get the icon type of a file, caching the result.
    *
-   * When this method completes, the fileEntry object will get a
+   * When this method completes, the entry object will get a
    * 'cachedIconType_' property (if it doesn't already have one) containing the
    * icon type of the file as a string.
-   *
-   * The successCallback is always invoked synchronously, since this does not
-   * actually require an async call.  You should not depend on this, as it may
-   * change if we were to start reading magic numbers (for example).
    *
    * @param {Entry} entry An HTML5 Entry object.
    * @param {function(Entry)} successCallback The function to invoke once the
@@ -690,7 +735,25 @@ FileManager.prototype = {
     this.getIconType(entry);
     if (successCallback)
       setTimeout(function() { successCallback(entry) }, 0);
-  }
+  };
+
+  /**
+   * Get the file type of the entry, caching the result.
+   *
+   * When this method completes, the entry object will get a
+   * 'cachedIconType_' property (if it doesn't already have one) containing the
+   * icon type of the file as a string.
+   *
+   * @param {Entry} entry An HTML5 Entry object.
+   * @param {function(Entry)} successCallback The function to invoke once the
+   *     file size is known.
+   */
+  FileManager.prototype.cacheEntryFileType = function(entry, successCallback) {
+    this.getFileType(entry);
+
+    if (successCallback)
+      setTimeout(function() { successCallback(entry) }, 0);
+  };
 
   /**
    * Compare by mtime first, then by name.
@@ -714,6 +777,17 @@ FileManager.prototype = {
 
     if (a.cachedSize_ < b.cachedSize_)
       return -1;
+
+    return this.collator_.compare(a.name, b.name);
+  };
+
+  /**
+   * Compare by type first, then by name.
+   */
+  FileManager.prototype.compareType_ = function(a, b) {
+    var result = this.collator_.compare(a.cachedFileType_, b.cachedFileType_);
+    if (result != 0)
+      return result;
 
     return this.collator_.compare(a.name, b.name);
   };
@@ -958,6 +1032,8 @@ FileManager.prototype = {
                                     64 - checkWidth),
         new cr.ui.table.TableColumn('cachedSize_',
                                     str('SIZE_COLUMN_LABEL'), 15.5),
+        new cr.ui.table.TableColumn('type',
+                                    str('TYPE_COLUMN_LABEL'), 15.5),
         new cr.ui.table.TableColumn('cachedMtime_',
                                     str('DATE_COLUMN_LABEL'), 21)
     ];
@@ -965,7 +1041,8 @@ FileManager.prototype = {
     columns[0].renderFunction = this.renderIconType_.bind(this);
     columns[1].renderFunction = this.renderName_.bind(this);
     columns[2].renderFunction = this.renderSize_.bind(this);
-    columns[3].renderFunction = this.renderDate_.bind(this);
+    columns[3].renderFunction = this.renderType_.bind(this);
+    columns[4].renderFunction = this.renderDate_.bind(this);
 
     this.table_ = this.dialogDom_.querySelector('.detail-table');
     cr.ui.Table.decorate(this.table_);
@@ -1290,6 +1367,8 @@ FileManager.prototype = {
       cacheFunction = cacheEntryDate;
     } else if (field == 'cachedSize_') {
       cacheFunction = cacheEntrySize;
+    } else if (field == 'type') {
+      cacheFunction = this.cacheEntryFileType.bind(this);
     } else if (field == 'cachedIconType_') {
       cacheFunction = this.cacheEntryIconType.bind(this);
     } else {
@@ -1398,7 +1477,7 @@ FileManager.prototype = {
 
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
-    entry.cachedIconType_ = this.getIconType(entry);
+    this.cacheEntryIconType(entry);
     icon.setAttribute('iconType', entry.cachedIconType_);
     div.appendChild(icon);
 
@@ -1459,6 +1538,25 @@ FileManager.prototype = {
       } else {
         div.textContent = util.bytesToSi(entry.cachedSize_);
       }
+    });
+
+    return div;
+  };
+
+  /**
+   * Render the Type column of the detail table.
+   *
+   * @param {Entry} entry The Entry object to render.
+   * @param {string} columnId The id of the column to be rendered.
+   * @param {cr.ui.Table} table The table doing the rendering.
+   */
+  FileManager.prototype.renderType_ = function(entry, columnId, table) {
+    var div = this.document_.createElement('div');
+    div.className = 'detail-type';
+
+    div.textContent = '...';
+    this.cacheEntryFileType(entry, function(entry) {
+      div.textContent = entry.cachedFileType_;
     });
 
     return div;

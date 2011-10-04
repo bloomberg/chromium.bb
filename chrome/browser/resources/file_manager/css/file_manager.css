@@ -353,7 +353,7 @@ li.thumbnail-item[selected] .file-checkbox {
 }
 
 /* Column text containers. */
-.detail-name, .detail-size, .detail-date {
+.detail-name, .detail-size, .detail-type, .detail-date {
   padding-top: 2px;
 }
 

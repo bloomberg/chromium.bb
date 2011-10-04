@@ -9166,6 +9166,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_SIZE_COLUMN_LABEL" desc="Size column label.">
         Size
       </message>
+      <message name="IDS_FILE_BROWSER_TYPE_COLUMN_LABEL" desc="Type column label.">
+        Type
+      </message>
       <message name="IDS_FILE_BROWSER_DATE_COLUMN_LABEL" desc="Date column label.">
         Date
       </message>
@@ -9468,6 +9471,31 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FILE_BROWSER_ID3_USER_DEFINED_URL_LINK_FRAME" desc="User defined URL link frame">
         User defined URL link frame
+      </message>
+
+      <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">
+        Folder
+      </message>
+      <message name="IDS_FILE_BROWSER_DEVICE" desc="Mounted external device volume entry type">
+        Device
+      </message>
+      <message name="IDS_FILE_BROWSER_IMAGE_FILE_TYPE" desc="Image file type">
+        Image file
+      </message>
+      <message name="IDS_FILE_BROWSER_VIDEO_FILE_TYPE" desc="Video file type">
+        Video file
+      </message>
+      <message name="IDS_FILE_BROWSER_AUDIO_FILE_TYPE" desc="Audio file type">
+        Audio file
+      </message>
+      <message name="IDS_FILE_BROWSER_HTML_DOCUMENT_FILE_TYPE" desc="HTML document file type">
+        HTML document
+      </message>
+      <message name="IDS_FILE_BROWSER_ZIP_ARCHIVE_FILE_TYPE" desc="Zip archive file type">
+        Zip archive
+      </message>
+      <message name="IDS_FILE_BROWSER_PLAIN_TEXT_FILE_TYPE" desc="Zip archive file type">
+        Zip archive
       </message>
 
       <!-- Bookmark manager -->

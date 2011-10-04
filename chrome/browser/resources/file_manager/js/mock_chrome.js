@@ -206,6 +206,7 @@ chrome.fileBrowserPrivate = {
       MEDIA_DIRECTORY_LABEL: 'External Storage',
       NAME_COLUMN_LABEL: 'Name',
       SIZE_COLUMN_LABEL: 'Size',
+      TYPE_COLUMN_LABEL: 'Type',
       DATE_COLUMN_LABEL: 'Date',
       PREVIEW_COLUMN_LABEL: 'Preview',
 
@@ -319,7 +320,16 @@ chrome.fileBrowserPrivate = {
       ID3_OFFICIAL_ARTIST: 'Official artist',  // WOAR
       ID3_OFFICIAL_AUDIO_SOURCE_WEBPAGE: 'Official audio source webpage', //WOAS
       ID3_PUBLISHERS_OFFICIAL_WEBPAGE: 'Publishers official webpage',  // WPUB
-      ID3_USER_DEFINED_URL_LINK_FRAME: 'User defined URL link frame'  // WXXX
+      ID3_USER_DEFINED_URL_LINK_FRAME: 'User defined URL link frame',  // WXXX
+
+      FOLDER: 'Folder',
+      DEVICE: 'Device',
+      IMAGE_FILE_TYPE: 'Image file',
+      VIDEO_FILE_TYPE: 'Video file',
+      AUDIO_FILE_TYPE: 'Audio file',
+      HTML_DOCUMENT_FILE_TYPE: 'HTML document',
+      ZIP_ARCHIVE_FILE_TYPE: 'Zip archive',
+      PLAIN_TEXT_FILE_TYPE: 'Plain text file'
     });
   }
 };
