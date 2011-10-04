@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-// C++ class that connects a BookmarkNode (or the entire model) to a Cocoa class
-// that manages an NSMenu.  Commonly this is for the main menu and that instance
-// is owned by the AppController.  This is also used by the folder menus on the
-// bookmark bar.
+// C++ controller for the bookmark menu; one per AppController (which
+// means there is only one).  When bookmarks are changed, this class
+// takes care of updating Cocoa bookmark menus.  This is not named
+// BookmarkMenuController to help avoid confusion between languages.
+// This class needs to be C++, not ObjC, since it derives from
+// BookmarkModelObserver.
 //
-// In the main menu case, most Chromium Cocoa menu items are static from a nib
-// (e.g. New Tab), but may be enabled/disabled under certain circumstances
+// Most Chromium Cocoa menu items are static from a nib (e.g. New
+// Tab), but may be enabled/disabled under certain circumstances
 // (e.g. Cut and Paste).  In addition, most Cocoa menu items have
 // firstResponder: as a target.  Unusually, bookmark menu items are
 // created dynamically.  They also have a target of
@@ -36,14 +37,7 @@ class Profile;
 class BookmarkMenuBridge : public BookmarkModelObserver,
                            public MainMenuItem {
  public:
-  // Constructor for the main menu which lists all bookmarks.
   BookmarkMenuBridge(Profile* profile, NSMenu* menu);
-
-  // Constructor for a submenu.
-  BookmarkMenuBridge(const BookmarkNode* root_node,
-                     Profile* profile,
-                     NSMenu* menu);
-
   virtual ~BookmarkMenuBridge();
 
   // BookmarkModelObserver:
@@ -78,17 +72,9 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   // Rebuilds a bookmark menu that's a submenu of another menu.
   void UpdateSubMenu(NSMenu* bookmark_menu);
 
-  // If this bridge is managing a menu for the "Off the Side" chevron button,
-  // this sets the index in the menu of the first node to display.
-  void set_off_the_side_node_start_index(size_t index) {
-    off_the_side_node_start_index_ = index;
-    InvalidateMenu();
-  }
-
   // I wish I had a "friend @class" construct.
   BookmarkModel* GetBookmarkModel();
   Profile* GetProfile();
-  BookmarkMenuCocoaController* controller() { return controller_.get(); }
 
  protected:
   // Rebuilds the bookmark content of supplied menu.
@@ -98,7 +84,7 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   void ClearBookmarkMenu(NSMenu* menu);
 
   // Mark the bookmark menu as being invalid.
-  void InvalidateMenu()  { menu_is_valid_ = false; }
+  void InvalidateMenu()  { menuIsValid_ = false; }
 
   // Helper for adding the node as a submenu to the menu with the
   // given title.
@@ -114,8 +100,7 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   // If |add_extra_items| is true, also adds extra menu items at bottom of
   // menu, such as "Open All Bookmarks".
   // TODO(jrg): add a counter to enforce maximum nodes added
-  void AddNodeToMenu(const BookmarkNode* node,
-                     NSMenu* menu,
+  void AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
                      bool add_extra_items);
 
   // Helper for adding an item to our bookmark menu. An item which has a
@@ -148,24 +133,11 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
  private:
   friend class BookmarkMenuBridgeTest;
 
-  // Performs the actual work for AddNodeToMenu(), keeping count of the
-  // recursion depth.
-  void AddNodeToMenuRecursive(const BookmarkNode* node,
-                              NSMenu* menu,
-                              bool add_extra_items,
-                              int recursion_depth);
-
   // True iff the menu is up-to-date with the actual BookmarkModel.
-  bool menu_is_valid_;
+  bool menuIsValid_;
 
-  // The root node of the menu.
-  const BookmarkNode* root_node_;
-
-  // Index from which to start adding children from the model.
-  size_t off_the_side_node_start_index_;
-
-  Profile* profile_;  // Weak.
-  scoped_nsobject<BookmarkMenuCocoaController> controller_;
+  Profile* profile_;  // weak
+  BookmarkMenuCocoaController* controller_;  // strong
 
   // The folder image so we can use one copy for all.
   scoped_nsobject<NSImage> folder_image_;

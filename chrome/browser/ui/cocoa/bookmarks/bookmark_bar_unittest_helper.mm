@@ -4,25 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_unittest_helper.h"
 
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
-#include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
-
-NSUInteger NumberOfMenuItems(BookmarkBarFolderController* folder) {
-  if (![folder menuBridge])
-    return 0;
-  return [[[[folder menuBridge]->controller() menu] itemArray] count];
-}
-
-void CloseFolderAfterDelay(BookmarkBarFolderController* folder,
-                           NSTimeInterval delay) {
-  NSArray* modes = [NSArray arrayWithObjects:NSDefaultRunLoopMode,
-      NSEventTrackingRunLoopMode, nil];
-  [folder performSelector:@selector(closeMenu)
-               withObject:nil
-               afterDelay:delay
-                  inModes:modes];
-}
-
 @interface NSArray (BookmarkBarUnitTestHelper)
 
 // A helper function for scanning an array of buttons looking for the
@@ -45,6 +26,14 @@ void CloseFolderAfterDelay(BookmarkBarFolderController* folder,
 @end
 
 @implementation BookmarkBarController (BookmarkBarUnitTestHelper)
+
+- (BookmarkButton*)buttonWithTitleEqualTo:(NSString*)title {
+  return [[self buttons] buttonWithTitleEqualTo:title];
+}
+
+@end
+
+@implementation BookmarkBarFolderController(BookmarkBarUnitTestHelper)
 
 - (BookmarkButton*)buttonWithTitleEqualTo:(NSString*)title {
   return [[self buttons] buttonWithTitleEqualTo:title];

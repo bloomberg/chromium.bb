@@ -133,6 +133,12 @@ class ThemeProvider;
 // Return the theme provider associated with this browser window.
 - (ui::ThemeProvider*)themeProvider;
 
+// Called just before a child folder puts itself on screen.
+- (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child;
+
+// Called just before a child folder closes.
+- (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child;
+
 // Return a controller's folder controller for a subfolder, or nil.
 - (BookmarkBarFolderController*)folderController;
 

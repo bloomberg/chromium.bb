@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
+#import "content/common/chrome_application_mac.h"
 #include "webkit/glue/window_open_disposition.h"
 
 @class BookmarkBarController;
@@ -45,9 +46,79 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 // Vertical frame inset for buttons in the bookmark bar.
 const CGFloat kBookmarkVerticalPadding = 2.0;
 
+// Used as a min/max width for buttons on menus (not on the bar).
+const CGFloat kBookmarkMenuButtonMinimumWidth = 100.0;
+const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
+
+// The minimum separation between a folder menu and the edge of the screen.
+// If the menu gets closer to the edge of the screen (either right or left)
+// then it is pops up in the opposite direction.
+// (See -[BookmarkBarFolderController childFolderWindowLeftForWidth:]).
+const CGFloat kBookmarkHorizontalScreenPadding = 8.0;
+
+// Our NSScrollView is supposed to be just barely big enough to fit its
+// contentView.  It is actually a hair too small.
+// This turns on horizontal scrolling which, although slight, is awkward.
+// Make sure our window (and NSScrollView) are wider than its documentView
+// by at least this much.
+const CGFloat kScrollViewContentWidthMargin = 2;
+
+// Make subfolder menus overlap their parent menu a bit to give a better
+// perception of a menuing system.
+const CGFloat kBookmarkMenuOverlap = 2.0;
+
+// When constraining a scrolling bookmark bar folder window to the
+// screen, shrink the "constrain" by this much vertically.  Currently
+// this is 0.0 to avoid a problem with tracking areas leaving the
+// window, but should probably be 8.0 or something.
+const CGFloat kScrollWindowVerticalMargin = 6.0;
+
 // How far to offset a folder menu from the top of the bookmark bar. This
 // is set just above the bar so that it become distinctive when drawn.
 const CGFloat kBookmarkBarMenuOffset = 2.0;
+
+// How far to offset a folder menu's left edge horizontally in relation to
+// the left edge of the button from which it springs. Because of drawing
+// differences, simply aligning the |frame| of each does not render the
+// pproper result, so we have to offset.
+const CGFloat kBookmarkBarButtonOffset = 2.0;
+
+// Delay before opening a subfolder (and closing the previous one)
+// when hovering over a folder button.
+const NSTimeInterval kHoverOpenDelay = 0.3;
+
+// Delay on hover before a submenu opens when dragging.
+// Experimentally a drag hover open delay needs to be bigger than a
+// normal (non-drag) menu hover open such as used in the bookmark folder.
+//  TODO(jrg): confirm feel of this constant with ui-team.
+//  http://crbug.com/36276
+const NSTimeInterval kDragHoverOpenDelay = 0.7;
+
+// Notes on use of kDragHoverCloseDelay in
+// -[BookmarkBarFolderController draggingEntered:].
+//
+// We have an implicit delay on stop-hover-open before a submenu
+// closes.  This cannot be zero since it's nice to move the mouse in a
+// direct line from "current position" to "position of item in
+// submenu".  However, by doing so, it's possible to overlap a
+// different button on the current menu.  Example:
+//
+//  Folder1
+//  Folder2  ---> Sub1
+//  Folder3       Sub2
+//                Sub3
+//
+// If you hover over the F in Folder2 to open the sub, and then want to
+// select Sub3, a direct line movement of the mouse may cross over
+// Folder3.  Without this delay, that'll cause Sub to be closed before
+// you get there, since a "hover over" of Folder3 gets activated.
+// It's subtle but without the delay it feels broken.
+//
+// This is only really a problem with vertical menu --> vertical menu
+// movement; the bookmark bar (horizontal menu, sort of) seems fine,
+// perhaps because mouse move direction is purely vertical so there is
+// no opportunity for overlap.
+const NSTimeInterval kDragHoverCloseDelay = 0.4;
 
 }  // namespace bookmarks
 
@@ -78,6 +149,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
                      BookmarkBarToolbarViewController,
                      BookmarkButtonDelegate,
                      BookmarkButtonControllerProtocol,
+                     CrApplicationEventHookProtocol,
                      NSUserInterfaceValidations> {
  @private
   // The visual state of the bookmark bar. If an animation is running, this is

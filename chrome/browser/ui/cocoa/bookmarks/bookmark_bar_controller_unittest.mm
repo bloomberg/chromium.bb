@@ -16,13 +16,12 @@
 #import "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_unittest_helper.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
-#include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/test/base/model_test_utils.h"
@@ -577,6 +576,80 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
                   GURL("http://superfriends.hall-of-justice.edu"));
   }
   EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
+
+  // Open the "off the side" and start deleting nodes.  Make sure
+  // deletion of the last node in "off the side" causes the folder to
+  // close.
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
+  NSButton* offTheSideButton = [bar_ offTheSideButton];
+  // Open "off the side" menu.
+  [bar_ openOffTheSideFolderFromButton:offTheSideButton];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+  [bbfc setIgnoreAnimations:YES];
+  while (!parent->empty()) {
+    // We've completed the job so we're done.
+    if ([bar_ offTheSideButtonIsHidden])
+      break;
+    // Delete the last button.
+    model->Remove(parent, parent->child_count() - 1);
+    // If last one make sure the menu is closed and the button is hidden.
+    // Else make sure menu stays open.
+    if ([bar_ offTheSideButtonIsHidden]) {
+      EXPECT_FALSE([bar_ folderController]);
+    } else {
+      EXPECT_TRUE([bar_ folderController]);
+    }
+  }
+}
+
+// http://crbug.com/46175 is a crash when deleting bookmarks from the
+// off-the-side menu while it is open.  This test tries to bang hard
+// in this area to reproduce the crash.
+TEST_F(BookmarkBarControllerTest, DeleteFromOffTheSideWhileItIsOpen) {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  [bar_ setIgnoreAnimations:YES];
+  [bar_ loaded:model];
+
+  // Add a lot of bookmarks (per the bug).
+  const BookmarkNode* parent = model->bookmark_bar_node();
+  for (int i = 0; i < 100; i++) {
+    std::ostringstream title;
+    title << "super duper wide title " << i;
+    model->AddURL(parent, parent->child_count(), ASCIIToUTF16(title.str()),
+                  GURL("http://superfriends.hall-of-justice.edu"));
+  }
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
+
+  // Open "off the side" menu.
+  NSButton* offTheSideButton = [bar_ offTheSideButton];
+  [bar_ openOffTheSideFolderFromButton:offTheSideButton];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+  [bbfc setIgnoreAnimations:YES];
+
+  // Start deleting items; try and delete randomish ones in case it
+  // makes a difference.
+  int indices[] = { 2, 4, 5, 1, 7, 9, 2, 0, 10, 9 };
+  while (!parent->empty()) {
+    for (unsigned int i = 0; i < arraysize(indices); i++) {
+      if (indices[i] < parent->child_count()) {
+        // First we mouse-enter the button to make things harder.
+        NSArray* buttons = [bbfc buttons];
+        for (BookmarkButton* button in buttons) {
+          if ([button bookmarkNode] == parent->GetChild(indices[i])) {
+            [bbfc mouseEnteredButton:button event:nil];
+            break;
+          }
+        }
+        // Then we remove the node.  This triggers the button to get
+        // deleted.
+        model->Remove(parent, indices[i]);
+        // Force visual update which is otherwise delayed.
+        [[bbfc window] displayIfNeeded];
+      }
+    }
+  }
 }
 
 // Test whether |-dragShouldLockBarVisibility| returns NO iff the bar is
@@ -1214,10 +1287,109 @@ TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
   }
 }
 
+TEST_F(BookmarkBarControllerTest, TestFolders) {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+
+  // Create some folder buttons.
+  const BookmarkNode* parent = model->bookmark_bar_node();
+  const BookmarkNode* folder = model->AddFolder(parent,
+                                                parent->child_count(),
+                                                ASCIIToUTF16("folder"));
+  model->AddURL(folder, folder->child_count(),
+                ASCIIToUTF16("f1"), GURL("http://framma-lamma.com"));
+  folder = model->AddFolder(parent, parent->child_count(),
+                            ASCIIToUTF16("empty"));
+
+  EXPECT_EQ([[bar_ buttons] count], 2U);
+
+  // First confirm mouseEntered does nothing if "menus" aren't active.
+  NSEvent* event = cocoa_test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0);
+  [bar_ mouseEnteredButton:[[bar_ buttons] objectAtIndex:0] event:event];
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Make one active.  Entering it is now a no-op.
+  [bar_ openBookmarkFolderFromButton:[[bar_ buttons] objectAtIndex:0]];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+  [bar_ mouseEnteredButton:[[bar_ buttons] objectAtIndex:0] event:event];
+  EXPECT_EQ(bbfc, [bar_ folderController]);
+
+  // Enter a different one; a new folderController is active.
+  [bar_ mouseEnteredButton:[[bar_ buttons] objectAtIndex:1] event:event];
+  EXPECT_NE(bbfc, [bar_ folderController]);
+
+  // Confirm exited is a no-op.
+  [bar_ mouseExitedButton:[[bar_ buttons] objectAtIndex:1] event:event];
+  EXPECT_NE(bbfc, [bar_ folderController]);
+
+  // Clean up.
+  [bar_ closeBookmarkFolder:nil];
+}
+
+// Verify that the folder menu presentation properly tracks mouse movements
+// over the bar. Until there is a click no folder menus should show. After a
+// click on a folder folder menus should show until another click on a folder
+// button, and a click outside the bar and its folder menus.
+TEST_F(BookmarkBarControllerTest, TestFolderButtons) {
+  BookmarkModel& model(*profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.bookmark_bar_node();
+  const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b 4f:[ 4f1b 4f2b ] ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model and that we do not have a folder controller.
+  std::string actualModelString = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actualModelString);
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Add a real bookmark so we can click on it.
+  const BookmarkNode* folder = root->GetChild(3);
+  model.AddURL(folder, folder->child_count(), ASCIIToUTF16("CLICK ME"),
+               GURL("http://www.google.com/"));
+
+  // Click on a folder button.
+  BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"4f"];
+  EXPECT_TRUE(button);
+  [bar_ openBookmarkFolderFromButton:button];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+
+  // Make sure a 2nd click on the same button closes things.
+  [bar_ openBookmarkFolderFromButton:button];
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Next open is a different button.
+  button = [bar_ buttonWithTitleEqualTo:@"2f"];
+  EXPECT_TRUE(button);
+  [bar_ openBookmarkFolderFromButton:button];
+  EXPECT_TRUE([bar_ folderController]);
+
+  // Mouse over a non-folder button and confirm controller has gone away.
+  button = [bar_ buttonWithTitleEqualTo:@"1b"];
+  EXPECT_TRUE(button);
+  NSEvent* event = cocoa_test_event_utils::MouseEventAtPoint([button center],
+                                                             NSMouseMoved, 0);
+  [bar_ mouseEnteredButton:button event:event];
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Mouse over the original folder and confirm a new controller.
+  button = [bar_ buttonWithTitleEqualTo:@"2f"];
+  EXPECT_TRUE(button);
+  [bar_ mouseEnteredButton:button event:event];
+  BookmarkBarFolderController* oldBBFC = [bar_ folderController];
+  EXPECT_TRUE(oldBBFC);
+
+  // 'Jump' over to a different folder and confirm a new controller.
+  button = [bar_ buttonWithTitleEqualTo:@"4f"];
+  EXPECT_TRUE(button);
+  [bar_ mouseEnteredButton:button event:event];
+  BookmarkBarFolderController* newBBFC = [bar_ folderController];
+  EXPECT_TRUE(newBBFC);
+  EXPECT_NE(oldBBFC, newBBFC);
+}
+
 // Make sure the "off the side" folder looks like a bookmark folder
 // but only contains "off the side" items.
-// TODO(rsesek): Fix the off the side folder.
-TEST_F(BookmarkBarControllerTest, DISABLED_OffTheSideFolder) {
+TEST_F(BookmarkBarControllerTest, OffTheSideFolder) {
 
   // It starts hidden.
   EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
@@ -1250,15 +1422,54 @@ TEST_F(BookmarkBarControllerTest, DISABLED_OffTheSideFolder) {
   // making sure that none of the nodes in the off-the-side folder are
   // found in bar buttons.  Be careful since not all the bar buttons
   // may be currently displayed.
-  NSArray* folderItems = [[[bbfc menuBridge]->controller() menu] itemArray];
+  NSArray* folderButtons = [bbfc buttons];
   NSArray* barButtons = [bar_ buttons];
-  for (NSMenuItem* folderItem in folderItems) {
+  for (BookmarkButton* folderButton in folderButtons) {
     for (BookmarkButton* barButton in barButtons) {
       if ([barButton superview]) {
-        EXPECT_NE([folderItem tag], [barButton bookmarkNode]->id());
+        EXPECT_NE([folderButton bookmarkNode], [barButton bookmarkNode]);
       }
     }
   }
+
+  // Delete a bookmark in the off-the-side and verify it's gone.
+  BookmarkButton* button = [bbfc buttonWithTitleEqualTo:@"DELETE_ME"];
+  EXPECT_TRUE(button);
+  model->Remove(parent, parent->child_count() - 2);
+  button = [bbfc buttonWithTitleEqualTo:@"DELETE_ME"];
+  EXPECT_FALSE(button);
+}
+
+TEST_F(BookmarkBarControllerTest, EventToExitCheck) {
+  NSEvent* event = cocoa_test_event_utils::MakeMouseEvent(NSMouseMoved, 0);
+  EXPECT_FALSE([bar_ isEventAnExitEvent:event]);
+
+  BookmarkBarFolderWindow* folderWindow = [[[BookmarkBarFolderWindow alloc]
+                                             init] autorelease];
+  [[[bar_ view] window] addChildWindow:folderWindow
+                               ordered:NSWindowAbove];
+  event = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(NSMakePoint(1,1),
+                                                               folderWindow);
+  EXPECT_FALSE([bar_ isEventAnExitEvent:event]);
+
+  event = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
+      NSMakePoint(100,100), test_window());
+  EXPECT_TRUE([bar_ isEventAnExitEvent:event]);
+
+  // Many components are arbitrary (e.g. location, keycode).
+  event = [NSEvent keyEventWithType:NSKeyDown
+                           location:NSMakePoint(1,1)
+                      modifierFlags:0
+                          timestamp:0
+                       windowNumber:0
+                            context:nil
+                         characters:@"x"
+        charactersIgnoringModifiers:@"x"
+                          isARepeat:NO
+                            keyCode:87];
+  EXPECT_FALSE([bar_ isEventAnExitEvent:event]);
+
+  [[[bar_ view] window] removeChildWindow:folderWindow];
 }
 
 TEST_F(BookmarkBarControllerTest, DropDestination) {
@@ -1300,6 +1511,45 @@ TEST_F(BookmarkBarControllerTest, DropDestination) {
   }
 }
 
+TEST_F(BookmarkBarControllerTest, NodeDeletedWhileMenuIsOpen) {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  [bar_ loaded:model];
+
+  const BookmarkNode* parent = model->bookmark_bar_node();
+  const BookmarkNode* initialNode = model->AddURL(
+      parent, parent->child_count(),
+      ASCIIToUTF16("initial"),
+      GURL("http://www.google.com"));
+
+  NSMenuItem* item = ItemForBookmarkBarMenu(initialNode);
+  EXPECT_EQ(0U, noOpenBar()->urls_.size());
+
+  // Basic check of the menu item and an IBOutlet it can call.
+  EXPECT_EQ(initialNode, [bar_ nodeFromMenuItem:item]);
+  [bar_ openBookmarkInNewWindow:item];
+  EXPECT_EQ(1U, noOpenBar()->urls_.size());
+  [bar_ clear];
+
+  // Now delete the node and make sure things are happy (no crash,
+  // NULL node caught).
+  model->Remove(parent, parent->GetIndexOf(initialNode));
+  EXPECT_EQ(nil, [bar_ nodeFromMenuItem:item]);
+  // Should not crash by referencing a deleted node.
+  [bar_ openBookmarkInNewWindow:item];
+  // Confirm the above did nothing in case it somehow didn't crash.
+  EXPECT_EQ(0U, noOpenBar()->urls_.size());
+
+  // Confirm some more non-crashes.
+  [bar_ openBookmarkInNewForegroundTab:item];
+  [bar_ openBookmarkInIncognitoWindow:item];
+  [bar_ editBookmark:item];
+  [bar_ copyBookmark:item];
+  [bar_ deleteBookmark:item];
+  [bar_ openAllBookmarks:item];
+  [bar_ openAllBookmarksNewWindow:item];
+  [bar_ openAllBookmarksIncognitoWindow:item];
+}
+
 TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
   BookmarkModel* model = profile()->GetBookmarkModel();
   [bar_ loaded:model];
@@ -1324,6 +1574,39 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
   // Restore, then confirm cancelTracking was called.
   [bar_ setButtonContextMenu:origMenu];
   EXPECT_OCMOCK_VERIFY(fakeMenu);
+}
+
+TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->bookmark_bar_node();
+  const BookmarkNode* folder = model->AddFolder(parent,
+                                                parent->child_count(),
+                                                ASCIIToUTF16("folder"));
+  model->AddFolder(parent, parent->child_count(),
+                  ASCIIToUTF16("sibbling folder"));
+  model->AddURL(folder, folder->child_count(), ASCIIToUTF16("title a"),
+                GURL("http://www.google.com/a"));
+  model->AddURL(folder, folder->child_count(),
+      ASCIIToUTF16("title super duper long long whoa momma title you betcha"),
+      GURL("http://www.google.com/b"));
+  BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];
+  EXPECT_FALSE([bar_ folderController]);
+  [bar_ openBookmarkFolderFromButton:button];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  // The following tells us that the folder menu is showing. We want to make
+  // sure the folder menu goes away if the bookmark bar is hidden.
+  EXPECT_TRUE(bbfc);
+  EXPECT_TRUE([bar_ isVisible]);
+
+  // Hide the bookmark bar.
+  [bar_ updateAndShowNormalBar:NO
+               showDetachedBar:YES
+                 withAnimation:YES];
+  EXPECT_TRUE([bar_ isAnimationRunning]);
+
+  // Now that we've closed the bookmark bar (with animation) the folder menu
+  // should have been closed thus releasing the folderController.
+  EXPECT_FALSE([bar_ folderController]);
 }
 
 TEST_F(BookmarkBarControllerTest, MoveRemoveAddButtons) {
@@ -1587,9 +1870,7 @@ class BookmarkBarControllerDragDropTest : public BookmarkBarControllerTestBase {
   }
 };
 
-// TODO(rsesek): Fix off the side menu for new-style menus.
-TEST_F(BookmarkBarControllerDragDropTest,
-    DISABLED_DragMoveBarBookmarkToOffTheSide) {
+TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
   BookmarkModel& model(*profile()->GetBookmarkModel());
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1bWithLongName 2fWithLongName:[ "
@@ -1614,31 +1895,88 @@ TEST_F(BookmarkBarControllerDragDropTest,
   // Pop up the off-the-side menu.
   BookmarkButton* otsButton = (BookmarkButton*)[bar_ offTheSideButton];
   ASSERT_TRUE(otsButton);
-
+  [[otsButton target] performSelector:@selector(openOffTheSideFolderFromButton:)
+                           withObject:otsButton];
   BookmarkBarFolderController* otsController = [bar_ folderController];
   EXPECT_TRUE(otsController);
-
+  NSWindow* toWindow = [otsController window];
+  EXPECT_TRUE(toWindow);
   BookmarkButton* draggedButton =
       [bar_ buttonWithTitleEqualTo:@"3bWithLongName"];
   ASSERT_TRUE(draggedButton);
-
-  int oldOTSCount = NumberOfMenuItems(otsController);
+  int oldOTSCount = (int)[[otsController buttons] count];
   EXPECT_EQ(oldOTSCount, oldChildCount - oldDisplayedButtons);
-
-  NSRect frame = [otsButton frame];
-  [bar_ dragButton:draggedButton
-                to:NSMakePoint(NSMidX(frame), NSMidY(frame))
-              copy:YES];
-
+  BookmarkButton* targetButton = [[otsController buttons] objectAtIndex:0];
+  ASSERT_TRUE(targetButton);
+  [otsController dragButton:draggedButton
+                         to:[targetButton center]
+                       copy:YES];
   // There should still be the same number of buttons in the bar
   // and off-the-side should have one more.
   int newDisplayedButtons = [bar_ displayedButtonCount];
   int newChildCount = root->child_count();
-  int newOTSCount = NumberOfMenuItems(otsController);
+  int newOTSCount = (int)[[otsController buttons] count];
   EXPECT_EQ(oldDisplayedButtons, newDisplayedButtons);
   EXPECT_EQ(oldChildCount + 1, newChildCount);
   EXPECT_EQ(oldOTSCount + 1, newOTSCount);
   EXPECT_EQ(newOTSCount, newChildCount - newDisplayedButtons);
+}
+
+TEST_F(BookmarkBarControllerDragDropTest, DragOffTheSideToOther) {
+  BookmarkModel& model(*profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.bookmark_bar_node();
+  const std::string model_string("1bWithLongName 2bWithLongName "
+      "3bWithLongName 4bWithLongName 5bWithLongName 6bWithLongName "
+      "7bWithLongName 8bWithLongName 9bWithLongName 10bWithLongName "
+      "11bWithLongName 12bWithLongName 13bWithLongName 14bWithLongName "
+      "15bWithLongName 16bWithLongName 17bWithLongName 18bWithLongName "
+      "19bWithLongName 20bWithLongName ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  const BookmarkNode* other = model.other_node();
+  const std::string other_string("1other 2other 3other ");
+  model_test_utils::AddNodesFromModelString(model, other, other_string);
+
+  // Validate initial model.
+  std::string actualModelString = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actualModelString);
+  std::string actualOtherString = model_test_utils::ModelStringFromNode(other);
+  EXPECT_EQ(other_string, actualOtherString);
+
+  // Insure that the off-the-side is showing.
+  ASSERT_FALSE([bar_ offTheSideButtonIsHidden]);
+
+  // Remember how many buttons are showing and are available.
+  int oldDisplayedButtons = [bar_ displayedButtonCount];
+  int oldRootCount = root->child_count();
+  int oldOtherCount = other->child_count();
+
+  // Pop up the off-the-side menu.
+  BookmarkButton* otsButton = (BookmarkButton*)[bar_ offTheSideButton];
+  ASSERT_TRUE(otsButton);
+  [[otsButton target] performSelector:@selector(openOffTheSideFolderFromButton:)
+                           withObject:otsButton];
+  BookmarkBarFolderController* otsController = [bar_ folderController];
+  EXPECT_TRUE(otsController);
+  int oldOTSCount = (int)[[otsController buttons] count];
+  EXPECT_EQ(oldOTSCount, oldRootCount - oldDisplayedButtons);
+
+  // Pick an off-the-side button and drag it to the other bookmarks.
+  BookmarkButton* draggedButton =
+      [otsController buttonWithTitleEqualTo:@"20bWithLongName"];
+  ASSERT_TRUE(draggedButton);
+  BookmarkButton* targetButton = [bar_ otherBookmarksButton];
+  ASSERT_TRUE(targetButton);
+  [bar_ dragButton:draggedButton to:[targetButton center] copy:NO];
+
+  // There should one less button in the bar, one less in off-the-side,
+  // and one more in other bookmarks.
+  int newRootCount = root->child_count();
+  int newOTSCount = (int)[[otsController buttons] count];
+  int newOtherCount = other->child_count();
+  EXPECT_EQ(oldRootCount - 1, newRootCount);
+  EXPECT_EQ(oldOTSCount - 1, newOTSCount);
+  EXPECT_EQ(oldOtherCount + 1, newOtherCount);
 }
 
 TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkData) {

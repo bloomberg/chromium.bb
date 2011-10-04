@@ -10,6 +10,7 @@
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "content/browser/user_metrics.h"
@@ -259,11 +260,77 @@ BookmarkButton* gDraggedButton = nil; // Weak
 }
 
 - (DraggableButtonResult)performMouseDownAction:(NSEvent*)theEvent {
+  int eventMask = NSLeftMouseUpMask | NSMouseEnteredMask | NSMouseExitedMask |
+      NSLeftMouseDraggedMask;
+
+  BOOL keepGoing = YES;
   [[self target] performSelector:[self action] withObject:self];
   self.draggableButton.actionHasFired = YES;
+
+  DraggableButton* insideBtn = nil;
+
+  while (keepGoing) {
+    theEvent = [[self window] nextEventMatchingMask:eventMask];
+    if (!theEvent)
+      continue;
+
+    NSPoint mouseLoc = [self convertPoint:[theEvent locationInWindow]
+                                 fromView:nil];
+    BOOL isInside = [self mouse:mouseLoc inRect:[self bounds]];
+
+    switch ([theEvent type]) {
+      case NSMouseEntered:
+      case NSMouseExited: {
+        NSView* trackedView = (NSView*)[[theEvent trackingArea] owner];
+        if (trackedView && [trackedView isKindOfClass:[self class]]) {
+          BookmarkButton* btn = static_cast<BookmarkButton*>(trackedView);
+          if (![btn acceptsTrackInFrom:self])
+            break;
+          if ([theEvent type] == NSMouseEntered) {
+            [[NSCursor arrowCursor] set];
+            [[btn cell] mouseEntered:theEvent];
+            insideBtn = btn;
+          } else {
+            [[btn cell] mouseExited:theEvent];
+            if (insideBtn == btn)
+              insideBtn = nil;
+          }
+        }
+        break;
+      }
+      case NSLeftMouseDragged: {
+        if (insideBtn)
+          [insideBtn mouseDragged:theEvent];
+        break;
+      }
+      case NSLeftMouseUp: {
+        self.draggableButton.durationMouseWasDown =
+            [theEvent timestamp] - self.draggableButton.whenMouseDown;
+        if (!isInside && insideBtn && insideBtn != self) {
+          // Has tracked onto another BookmarkButton menu item, and released,
+          // so fire its action.
+          [[insideBtn target] performSelector:[insideBtn action]
+                                   withObject:insideBtn];
+
+        } else {
+          [self secondaryMouseUpAction:isInside];
+          [[self cell] mouseExited:theEvent];
+          [[insideBtn cell] mouseExited:theEvent];
+        }
+        keepGoing = NO;
+        break;
+      }
+      default:
+        /* Ignore any other kind of event. */
+        break;
+    }
+  }
   return kDraggableButtonMixinDidWork;
 }
 
+
+
+// mouseEntered: and mouseExited: are called from our
 // BookmarkButtonCell.  We redirect this information to our delegate.
 // The controller can then perform menu-like actions (e.g. "hover over
 // to open menu").
@@ -291,7 +358,8 @@ BookmarkButton* gDraggedButton = nil; // Weak
 }
 
 - (BOOL)canBecomeKeyView {
-  return NO;
+  // If button is an item in a folder menu, don't become key.
+  return ![[self cell] isFolderButtonCell];
 }
 
 // This only gets called after a click that wasn't a drag, and only on folders.

@@ -152,4 +152,29 @@ TEST_F(BookmarkButtonCellTest, Awake) {
   EXPECT_EQ(NSLeftTextAlignment, [cell alignment]);
 }
 
+// Subfolder arrow details.
+TEST_F(BookmarkButtonCellTest, FolderArrow) {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  const BookmarkNode* bar = model->bookmark_bar_node();
+  const BookmarkNode* node = model->AddURL(bar, bar->child_count(),
+                                           ASCIIToUTF16("title"),
+                                           GURL("http://www.google.com"));
+  scoped_nsobject<BookmarkButtonCell> cell(
+    [[BookmarkButtonCell alloc] initForNode:node
+                                contextMenu:nil
+                                   cellText:@"small"
+                                  cellImage:nil]);
+  EXPECT_TRUE(cell.get());
+
+  NSSize size = [cell cellSize];
+  // sanity check
+  EXPECT_GE(size.width, 2);
+  EXPECT_GE(size.height, 2);
+
+  // Once we turn on arrow drawing make sure there is now room for it.
+  [cell setDrawFolderArrow:YES];
+  NSSize arrowSize = [cell cellSize];
+  EXPECT_GT(arrowSize.width, size.width);
+}
+
 }  // namespace

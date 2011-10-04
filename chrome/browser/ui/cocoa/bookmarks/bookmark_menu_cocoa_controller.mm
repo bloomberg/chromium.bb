@@ -26,8 +26,6 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 @implementation BookmarkMenuCocoaController
 
-@synthesize delegate = delegate_;
-
 + (NSString*)menuTitleForNode:(const BookmarkNode*)node {
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   gfx::Font font(base::SysNSStringToUTF16([nsfont fontName]),
@@ -76,24 +74,10 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   return [controller keyWindowIsNotModal];
 }
 
-// NSMenuDelegate //////////////////////////////////////////////////////////////
-
 // NSMenu delegate method: called just before menu is displayed.
 - (void)menuNeedsUpdate:(NSMenu*)menu {
   bridge_->UpdateMenu(menu);
 }
-
-- (void)menuWillOpen:(NSMenu*)menu {
-  if ([delegate_ respondsToSelector:@selector(bookmarkMenuWillOpen:)])
-    [delegate_ bookmarkMenuWillOpen:self];
-}
-
-- (void)menuDidClose:(NSMenu*)menu {
-  if ([delegate_ respondsToSelector:@selector(bookmarkMenuDidClose:)])
-    [delegate_ bookmarkMenuDidClose:self];
-}
-
-// Private /////////////////////////////////////////////////////////////////////
 
 // Return the a BookmarkNode that has the given id (called
 // "identifier" here to avoid conflict with objc's concept of "id").

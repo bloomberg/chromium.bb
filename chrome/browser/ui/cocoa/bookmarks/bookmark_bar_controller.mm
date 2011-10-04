@@ -21,6 +21,7 @@
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
@@ -210,6 +211,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)addButtonsToView;
 - (void)centerNoItemsLabel;
 - (void)setNodeForBarMenu;
+- (void)watchForExitEvent:(BOOL)watch;
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate;
 - (BOOL)animationEnabled;
 
@@ -325,6 +327,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   bridge_.reset(NULL);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [self watchForExitEvent:NO];
   [super dealloc];
 }
 
@@ -366,6 +369,18 @@ void RecordAppLaunch(Profile* profile, GURL url) {
            name:NSViewFrameDidChangeNotification
          object:[self view]];
 
+  // Watch for things going to or from fullscreen.
+  [[NSNotificationCenter defaultCenter]
+    addObserver:self
+       selector:@selector(willEnterOrLeaveFullscreen:)
+           name:kWillEnterFullscreenNotification
+         object:nil];
+  [[NSNotificationCenter defaultCenter]
+    addObserver:self
+       selector:@selector(willEnterOrLeaveFullscreen:)
+           name:kWillLeaveFullscreenNotification
+         object:nil];
+
   // Don't pass ourself along (as 'self') until our init is completely
   // done.  Thus, this call is (almost) last.
   bridge_.reset(new BookmarkBarBridge(self, bookmarkModel_));
@@ -394,6 +409,23 @@ void RecordAppLaunch(Profile* profile, GURL url) {
                     selector:@selector(parentWindowDidResignMain:)
                         name:NSWindowDidResignMainNotification
                       object:[[self view] window]];
+}
+
+// When going fullscreen we can run into trouble.  Our view is removed
+// from the non-fullscreen window before the non-fullscreen window
+// loses key, so our parentDidResignKey: callback never gets called.
+// In addition, a bookmark folder controller needs to be autoreleased
+// (in case it's in the event chain when closed), but the release
+// implicitly needs to happen while it's connected to the original
+// (non-fullscreen) window to "unlock bar visibility".  Such a
+// contract isn't honored when going fullscreen with the menu option
+// (not with the keyboard shortcut).  We fake it as best we can here.
+// We have a similar problem leaving fullscreen.
+- (void)willEnterOrLeaveFullscreen:(NSNotification*)notification {
+  if (folderController_) {
+    [self childFolderWillClose:folderController_];
+    [self closeFolderAndStopTrackingMenus];
+  }
 }
 
 // NSNotificationCenter callback.
@@ -516,9 +548,79 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 #pragma mark Actions
 
+// Helper methods called on the main thread by runMenuFlashThread.
+
+- (void)setButtonFlashStateOn:(id)sender {
+  [sender highlight:YES];
+}
+
+- (void)setButtonFlashStateOff:(id)sender {
+  [sender highlight:NO];
+}
+
+-(void)cleanupAfterMenuFlashThread:(id)sender {
+  [self closeFolderAndStopTrackingMenus];
+
+  // Items retained by doMenuFlashOnSeparateThread below.
+  [sender release];
+  [self release];
+}
+
+// End runMenuFlashThread helper methods.
+
+// This call is invoked only by doMenuFlashOnSeparateThread below.
+// It makes the selected BookmarkButton (which is masquerading as a menu item)
+// flash a few times to give confirmation feedback, then it closes the menu.
+// It spends all its time sleeping or scheduling UI work on the main thread.
+- (void)runMenuFlashThread:(id)sender {
+
+  // Check this is not running on the main thread, as it sleeps.
+  DCHECK(![NSThread isMainThread]);
+
+  // Duration of flash phases and number of flashes designed to evoke a
+  // slightly retro "more mac-like than the Mac" feel.
+  // Current Cocoa UI has a barely perceptible flash,probably because Apple
+  // doesn't fire the action til after the animation and so there's a hurry.
+  // As this code is fully asynchronous, it can take its time.
+  const float kBBOnFlashTime = 0.08;
+  const float kBBOffFlashTime = 0.08;
+  const int kBookmarkButtonMenuFlashes = 3;
+
+  for (int count = 0 ; count < kBookmarkButtonMenuFlashes ; count++) {
+    [self performSelectorOnMainThread:@selector(setButtonFlashStateOn:)
+                           withObject:sender
+                        waitUntilDone:NO];
+    [NSThread sleepForTimeInterval:kBBOnFlashTime];
+    [self performSelectorOnMainThread:@selector(setButtonFlashStateOff:)
+                           withObject:sender
+                        waitUntilDone:NO];
+    [NSThread sleepForTimeInterval:kBBOffFlashTime];
+  }
+  [self performSelectorOnMainThread:@selector(cleanupAfterMenuFlashThread:)
+                         withObject:sender
+                      waitUntilDone:NO];
+}
+
+// Non-blocking call which starts the process to make the selected menu item
+// flash a few times to give confirmation feedback, after which it closes the
+// menu. The item is of course actually a BookmarkButton masquerading as a menu
+// item).
+- (void)doMenuFlashOnSeparateThread:(id)sender {
+
+  // Ensure that self and sender don't go away before the animation completes.
+  // These retains are balanced in cleanupAfterMenuFlashThread above.
+  [self retain];
+  [sender retain];
+  [NSThread detachNewThreadSelector:@selector(runMenuFlashThread:)
+                           toTarget:self
+                         withObject:sender];
+}
+
 - (IBAction)openBookmark:(id)sender {
-  BOOL isMenuItem = [sender isFolder];
+  BOOL isMenuItem = [[sender cell] isFolderButtonCell];
   BOOL animate = isMenuItem && [self animationEnabled];
+  if (animate)
+    [self doMenuFlashOnSeparateThread:sender];
   DCHECK([sender respondsToSelector:@selector(bookmarkNode)]);
   const BookmarkNode* node = [sender bookmarkNode];
   WindowOpenDisposition disposition =
@@ -536,6 +638,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   DCHECK([[sender cell] isKindOfClass:[BookmarkButtonCell class]]);
 
   showFolderMenus_ = !showFolderMenus_;
+
+  if (sender == offTheSideButton_)
+    [[sender cell] setStartingChildIndex:displayedButtonCount_];
 
   // Toggle presentation of bar folder menus.
   [folderTarget_ openBookmarkFolderFromButton:sender];
@@ -754,8 +859,16 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Configure the off-the-side button (e.g. specify the node range,
 // check if we should enable or disable it, etc).
 - (void)configureOffTheSideButtonContentsAndVisibility {
+  // If deleting a button while off-the-side is open, buttons may be
+  // promoted from off-the-side to the bar.  Accomodate.
+  if (folderController_ &&
+      ([folderController_ parentButton] == offTheSideButton_)) {
+    [folderController_ reconfigureMenu];
+  }
+
+  [[offTheSideButton_ cell] setStartingChildIndex:displayedButtonCount_];
   [[offTheSideButton_ cell]
-      setBookmarkNode:bookmarkModel_->bookmark_bar_node()];
+   setBookmarkNode:bookmarkModel_->bookmark_bar_node()];
   int bookmarkChildren = bookmarkModel_->bookmark_bar_node()->child_count();
   if (bookmarkChildren > displayedButtonCount_) {
     [offTheSideButton_ setHidden:NO];
@@ -768,6 +881,59 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     // (And hide the button, too.)
     [offTheSideButton_ setHidden:YES];
   }
+}
+
+// Main menubar observation code, so we can know to close our fake menus if the
+// user clicks on the actual menubar, as multiple unconnected menus sharing
+// the screen looks weird.
+// Needed because the hookForEvent method doesn't see the click on the menubar.
+
+// Gets called when the menubar is clicked.
+- (void)begunTracking:(NSNotification *)notification {
+  [self closeFolderAndStopTrackingMenus];
+}
+
+// Install the callback.
+- (void)startObservingMenubar {
+  NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+  [nc addObserver:self
+         selector:@selector(begunTracking:)
+             name:NSMenuDidBeginTrackingNotification
+           object:[NSApp mainMenu]];
+}
+
+// Remove the callback.
+- (void)stopObservingMenubar {
+  NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+  [nc removeObserver:self
+                name:NSMenuDidBeginTrackingNotification
+              object:[NSApp mainMenu]];
+}
+
+// End of menubar observation code.
+
+// Begin (or end) watching for a click outside this window.  Unlike
+// normal NSWindows, bookmark folder "fake menu" windows do not become
+// key or main.  Thus, traditional notification (e.g. WillResignKey)
+// won't work.  Our strategy is to watch (at the app level) for a
+// "click outside" these windows to detect when they logically lose
+// focus.
+- (void)watchForExitEvent:(BOOL)watch {
+  CrApplication* app = static_cast<CrApplication*>([NSApplication
+                                                    sharedApplication]);
+  DCHECK([app isKindOfClass:[CrApplication class]]);
+  if (watch) {
+    if (!watchingForExitEvent_) {
+      [app addEventHook:self];
+      [self startObservingMenubar];
+    }
+  } else {
+    if (watchingForExitEvent_) {
+      [app removeEventHook:self];
+      [self stopObservingMenubar];
+    }
+  }
+  watchingForExitEvent_ = watch;
 }
 
 // Keep the "no items" label centered in response to a frame size change.
@@ -1641,6 +1807,66 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [[otherBookmarksButton_ cell] setTextColor:color];
 }
 
+// Return YES if the event indicates an exit from the bookmark bar
+// folder menus.  E.g. "click outside" of the area we are watching.
+// At this time we are watching the area that includes all popup
+// bookmark folder windows.
+- (BOOL)isEventAnExitEvent:(NSEvent*)event {
+  NSWindow* eventWindow = [event window];
+  NSWindow* myWindow = [[self view] window];
+  switch ([event type]) {
+    case NSLeftMouseDown:
+    case NSRightMouseDown:
+      // If the click is in my window but NOT in the bookmark bar, consider
+      // it a click 'outside'. Clicks directly on an active button (i.e. one
+      // that is a folder and for which its folder menu is showing) are 'in'.
+      // All other clicks on the bookmarks bar are counted as 'outside'
+      // because they should close any open bookmark folder menu.
+      if (eventWindow == myWindow) {
+        NSView* hitView =
+            [[eventWindow contentView] hitTest:[event locationInWindow]];
+        if (hitView == [folderController_ parentButton])
+          return NO;
+        if (![hitView isDescendantOf:[self view]] || hitView == buttonView_)
+          return YES;
+      }
+      // If a click in a bookmark bar folder window and that isn't
+      // one of my bookmark bar folders, YES is click outside.
+      if (![eventWindow isKindOfClass:[BookmarkBarFolderWindow
+                                       class]]) {
+        return YES;
+      }
+      break;
+    case NSKeyDown: {
+      // Event hooks often see the same keydown event twice due to the way key
+      // events get dispatched and redispatched, so ignore if this keydown
+      // event has the EXACT same timestamp as the previous keydown.
+      static NSTimeInterval lastKeyDownEventTime;
+      NSTimeInterval thisTime = [event timestamp];
+      if (lastKeyDownEventTime != thisTime) {
+        lastKeyDownEventTime = thisTime;
+        if ([event modifierFlags] & NSCommandKeyMask)
+          return YES;
+        else if (folderController_)
+          return [folderController_ handleInputText:[event characters]];
+      }
+      return NO;
+    }
+    case NSKeyUp:
+      return NO;
+    case NSLeftMouseDragged:
+      // We can get here with the following sequence:
+      // - open a bookmark folder
+      // - right-click (and unclick) on it to open context menu
+      // - move mouse to window titlebar then click-drag it by the titlebar
+      // http://crbug.com/49333
+      return NO;
+    default:
+      break;
+  }
+  return NO;
+}
+
 #pragma mark Drag & Drop
 
 // Find something like std::is_between<T>?  I can't believe one doesn't exist.
@@ -1979,6 +2205,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       return;
     }
   }
+
+  if (folderController_)
+    [folderController_ faviconLoadedForNode:node];
 }
 
 // TODO(jrg): for now this is brute force.
@@ -2087,6 +2316,16 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // If already opened, then we exited but re-entered the button, so do nothing.
   if ([folderController_ parentButton] == sender)
     return;
+  // Else open a new one if it makes sense to do so.
+  if ([sender bookmarkNode]->is_folder()) {
+    // Update |hoverButton_| so that it corresponds to the open folder.
+    hoverButton_.reset([sender retain]);
+    [folderTarget_ openBookmarkFolderFromButton:sender];
+  } else {
+    // We're over a non-folder bookmark so close any old folders.
+    [folderController_ close];
+    folderController_ = nil;
+  }
 }
 
 // BookmarkButtonDelegate protocol implementation.
@@ -2127,7 +2366,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Close all bookmark folders.  "Folder" here is the fake menu for
 // bookmark folders, not a button context menu.
 - (void)closeAllBookmarkFolders {
-  [folderController_ closeMenu];
+  [self watchForExitEvent:NO];
+  [folderController_ close];
   folderController_ = nil;
 }
 
@@ -2182,9 +2422,17 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       hoverButton_.reset();
     }
     hoverButton_.reset([button retain]);
+    DCHECK([[hoverButton_ target]
+            respondsToSelector:@selector(openBookmarkFolderFromButton:)]);
+    [[hoverButton_ target]
+     performSelector:@selector(openBookmarkFolderFromButton:)
+     withObject:hoverButton_
+     afterDelay:bookmarks::kDragHoverOpenDelay
+     inModes:[NSArray arrayWithObject:NSRunLoopCommonModes]];
   }
   if (!button) {
     if (hoverButton_) {
+      [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_ target]];
       [[hoverButton_ target] closeBookmarkFolder:hoverButton_];
       hoverButton_.reset();
     }
@@ -2289,6 +2537,29 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return x;
 }
 
+- (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child {
+  // If the bookmarkbar is not in detached mode, lock bar visibility, forcing
+  // the overlay to stay open when in fullscreen mode.
+  if (![self isInState:bookmarks::kDetachedState] &&
+      ![self isAnimatingToState:bookmarks::kDetachedState]) {
+    BrowserWindowController* browserController =
+        [BrowserWindowController browserWindowControllerForView:[self view]];
+    [browserController lockBarVisibilityForOwner:child
+                                   withAnimation:NO
+                                           delay:NO];
+  }
+}
+
+- (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
+  // Release bar visibility, allowing the overlay to close if in fullscreen
+  // mode.
+  BrowserWindowController* browserController =
+      [BrowserWindowController browserWindowControllerForView:[self view]];
+  [browserController releaseBarVisibilityForOwner:child
+                                    withAnimation:NO
+                                            delay:NO];
+}
+
 // Add a new folder controller as triggered by the given folder button.
 - (void)addNewFolderControllerWithParentButton:(BookmarkButton*)parentButton {
 
@@ -2308,15 +2579,13 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // Folder controller, like many window controllers, owns itself.
   folderController_ =
       [[BookmarkBarFolderController alloc] initWithParentButton:parentButton
-                                                  bookmarkModel:bookmarkModel_
+                                               parentController:nil
                                                   barController:self];
-  [folderController_ autorelease];
+  [folderController_ showWindow:self];
 
-  // If this is for the off-the-side menu, set the display count.
-  if (parentButton == offTheSideButton_)
-    [folderController_ setOffTheSideNodeStartIndex:displayedButtonCount_];
-
-  [folderController_ openMenu];
+  // Only BookmarkBarController has this; the
+  // BookmarkBarFolderController does not.
+  [self watchForExitEvent:YES];
 
   // No longer need to hold the lock; the folderController_ now owns it.
   [browserController releaseBarVisibilityForOwner:self
@@ -2357,6 +2626,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // A button from somewhere else (not the bar) is being moved to the
     // off-the-side so insure it gets redrawn if its showing.
     [self reconfigureBookmarkBar];
+    [folderController_ reconfigureMenu];
   }
 }
 
@@ -2424,6 +2694,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       // while possibly re-laying out the bookmark bar.
       [self removeButton:fromIndex animate:NO];
       [self reconfigureBookmarkBar];
+      [folderController_ reconfigureMenu];
     } else if (toIndex < buttonCount) {
       // A button is being added to the bar and removed from off-the-side.
       // By now the node has already been inserted into the model so the
@@ -2433,6 +2704,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       DCHECK(movedNode);
       [self addButtonForNode:movedNode atIndex:toIndex];
       [self reconfigureBookmarkBar];
+    } else {
+      // A button is being moved within the off-the-side.
+      fromIndex -= buttonCount;
+      toIndex -= buttonCount;
+      [folderController_ moveButtonFromIndex:fromIndex toIndex:toIndex];
     }
   }
 }
@@ -2457,6 +2733,12 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     --displayedButtonCount_;
     [self resetAllButtonPositionsWithAnimation:YES];
     [self reconfigureBookmarkBar];
+  } else if (folderController_ &&
+             [folderController_ parentButton] == offTheSideButton_) {
+    // The button being removed is in the OTS (off-the-side) and the OTS
+    // menu is showing so we need to remove the button.
+    NSInteger index = buttonIndex - displayedButtonCount_;
+    [folderController_ removeButton:index animate:YES];
   }
 }
 
@@ -2466,7 +2748,15 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // folder menus.
   if (bookmarkModel_->bookmark_bar_node() == node)
     return self;
-  return nil;
+  return [folderController_ controllerForNode:node];
+}
+
+#pragma mark BookmarkButtonControllerProtocol
+
+// NOT an override of a standard Cocoa call made to NSViewControllers.
+- (void)hookForEvent:(NSEvent*)theEvent {
+  if ([self isEventAnExitEvent:theEvent])
+    [self closeFolderAndStopTrackingMenus];
 }
 
 #pragma mark TestingAPI Only

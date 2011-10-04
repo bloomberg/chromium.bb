@@ -42,6 +42,27 @@ class BookmarkFolderTargetTest : public CocoaProfileTest {
   const BookmarkNode* bmbNode_;
 };
 
+TEST_F(BookmarkFolderTargetTest, StartWithNothing) {
+  // Need a fake "button" which has a bookmark node.
+  id sender = [OCMockObject mockForClass:[BookmarkButton class]];
+  [[[sender stub] andReturnValue:OCMOCK_VALUE(bmbNode_)] bookmarkNode];
+
+  // Fake controller
+  id controller = [OCMockObject mockForClass:[BookmarkBarFolderController
+                                               class]];
+  // No current folder
+  [[[controller stub] andReturn:nil] folderController];
+
+  // Make sure we get an addNew
+  [[controller expect] addNewFolderControllerWithParentButton:sender];
+
+  scoped_nsobject<BookmarkFolderTarget> target(
+    [[BookmarkFolderTarget alloc] initWithController:controller]);
+
+  [target openBookmarkFolderFromButton:sender];
+  EXPECT_OCMOCK_VERIFY(controller);
+}
+
 TEST_F(BookmarkFolderTargetTest, ReopenSameFolder) {
   // Need a fake "button" which has a bookmark node.
   id sender = [OCMockObject mockForClass:[BookmarkButton class]];
@@ -53,22 +74,18 @@ TEST_F(BookmarkFolderTargetTest, ReopenSameFolder) {
   // YES a current folder.  Self-mock that as well, so "same" will be
   // true.  Note this creates a retain cycle in OCMockObject; we
   // accomodate at the end of this function.
+  [[[controller stub] andReturn:controller] folderController];
   [[[controller stub] andReturn:sender] parentButton];
-
-  // Fake bookmark bar.
-  id barController = [OCMockObject mockForClass:[BookmarkBarController class]];
-  [[[barController stub] andReturn:controller] folderController];
 
   // The folder is open, so a click should close just that folder (and
   // any subfolders).
-  [[barController expect] closeBookmarkFolder:barController];
+  [[controller expect] closeBookmarkFolder:controller];
 
   scoped_nsobject<BookmarkFolderTarget> target(
-      [[BookmarkFolderTarget alloc] initWithController:barController]);
+      [[BookmarkFolderTarget alloc] initWithController:controller]);
 
   [target openBookmarkFolderFromButton:sender];
   EXPECT_OCMOCK_VERIFY(controller);
-  EXPECT_OCMOCK_VERIFY(barController);
 
   // Our use of OCMockObject means an object can return itself.  This
   // creates a retain cycle, since OCMock retains all objects used in
@@ -86,22 +103,18 @@ TEST_F(BookmarkFolderTargetTest, ReopenNotSame) {
   id controller = [OCMockObject mockForClass:[BookmarkBarFolderController
                                                class]];
   // YES a current folder but NOT same.
+  [[[controller stub] andReturn:controller] folderController];
   [[[controller stub] andReturn:nil] parentButton];
-
-  // Fake bookmark bar.
-  id barController = [OCMockObject mockForClass:[BookmarkBarController class]];
-  [[[barController stub] andReturn:controller] folderController];
 
   // Insure the controller gets a chance to decide which folders to
   // close and open.
-  [[barController expect] addNewFolderControllerWithParentButton:sender];
+  [[controller expect] addNewFolderControllerWithParentButton:sender];
 
   scoped_nsobject<BookmarkFolderTarget> target(
-    [[BookmarkFolderTarget alloc] initWithController:barController]);
+    [[BookmarkFolderTarget alloc] initWithController:controller]);
 
   [target openBookmarkFolderFromButton:sender];
   EXPECT_OCMOCK_VERIFY(controller);
-  EXPECT_OCMOCK_VERIFY(barController);
 
   // Break retain cycles.
   [controller clearRecordersAndExpectations];

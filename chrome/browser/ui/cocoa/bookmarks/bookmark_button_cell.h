@@ -19,11 +19,23 @@ class BookmarkNode;
  @private
   BOOL empty_;  // is this an "empty" button placeholder button cell?
 
+  // Starting index of bookmarkFolder children that we care to use.
+  int startingChildIndex_;
+
+  // Should we draw the folder arrow as needed?  Not used for the bar
+  // itself but used on the folder windows.
+  BOOL drawFolderArrow_;
+
+  // Arrow for folders
+  scoped_nsobject<NSImage> arrowImage_;
+
   // Text color for title.
   scoped_nsobject<NSColor> textColor_;
 }
 
 @property(nonatomic, readwrite, assign) const BookmarkNode* bookmarkNode;
+@property(nonatomic, readwrite, assign) int startingChildIndex;
+@property(nonatomic, readwrite, assign) BOOL drawFolderArrow;
 
 // Create a button cell which draws with a theme.
 + (id)buttonCellForNode:(const BookmarkNode*)node
@@ -50,6 +62,8 @@ class BookmarkNode;
 
 // Set the color of text in this cell.
 - (void)setTextColor:(NSColor*)color;
+
+- (BOOL)isFolderButtonCell;
 
 @end
 
