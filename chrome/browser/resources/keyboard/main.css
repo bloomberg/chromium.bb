@@ -96,7 +96,10 @@ div.row > div {
   /* Reserving equivalent space to .key:active so
      keys don't shift when selected. */
   border: 1px solid transparent;
+  /* Do not use box shadow until performance improves
+   * http://code.google.com/p/chromium/issues/detail?id=99045
   box-shadow: 0px 1px 1px #000;
+  */
   color: #535353;
   display: -webkit-box;
   font-family: sans-serif;
@@ -130,7 +133,10 @@ div.row > div {
 .key:active {
   background: -webkit-linear-gradient(#d6d6d6, #acacac);
   border: 1px solid rgba(125,125,125,0.5);
+  /* Do not use box shadow until performance improves
+   * http://code.google.com/p/chromium/issues/detail?id=99045
   box-shadow: 0px 0px 15px #fff;
+  */
 }
 
 div.moddown {
