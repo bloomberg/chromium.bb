@@ -8,7 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/number_formatting.h"
@@ -1365,7 +1366,8 @@ ChromeOSAboutVersionHandler::ChromeOSAboutVersionHandler(
     : source_(source),
       request_id_(request_id) {
   loader_.GetVersion(&consumer_,
-                     NewCallback(this, &ChromeOSAboutVersionHandler::OnVersion),
+                     base::Bind(&ChromeOSAboutVersionHandler::OnVersion,
+                                base::Unretained(this)),
                      chromeos::VersionLoader::VERSION_FULL);
 }
 

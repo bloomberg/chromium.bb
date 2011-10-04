@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -41,7 +43,7 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     version_loader_.GetVersion(
         &version_consumer_,
-        NewCallback(this, &VersionInfoUpdater::OnVersion),
+        base::Bind(&VersionInfoUpdater::OnVersion, base::Unretained(this)),
         is_official_build ?
             VersionLoader::VERSION_SHORT_WITH_DATE :
             VersionLoader::VERSION_FULL);

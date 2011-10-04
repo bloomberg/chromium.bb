@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "content/browser/cancelable_request.h"
 
 class CancelableRequestConsumerBase;
@@ -24,8 +24,8 @@ class SyslogsProvider : public CancelableRequestProvider {
   static SyslogsProvider* GetInstance();
 
   // The callback type used with RequestSyslogs().
-  typedef Callback2<LogDictionaryType*,
-                    std::string*>::Type ReadCompleteCallback;
+  typedef base::Callback<void(LogDictionaryType*,
+                              std::string*)> ReadCompleteCallback;
 
   // Used to specify the syslogs context with RequestSyslogs().
   enum SyslogsContext {
@@ -44,7 +44,7 @@ class SyslogsProvider : public CancelableRequestProvider {
       bool compress_logs,
       SyslogsContext context,
       CancelableRequestConsumerBase* consumer,
-      ReadCompleteCallback* callback) = 0;
+      const ReadCompleteCallback& callback) = 0;
 
  protected:
   virtual ~SyslogsProvider() {}

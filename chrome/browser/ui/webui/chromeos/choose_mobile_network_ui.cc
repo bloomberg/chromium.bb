@@ -7,6 +7,8 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -153,13 +155,16 @@ ChooseMobileNetworkHandler::~ChooseMobileNetworkHandler() {
 void ChooseMobileNetworkHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       kJsApiCancel,
-      NewCallback(this, &ChooseMobileNetworkHandler::HandleCancel));
+      base::Bind(&ChooseMobileNetworkHandler::HandleCancel,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       kJsApiConnect,
-      NewCallback(this, &ChooseMobileNetworkHandler::HandleConnect));
+      base::Bind(&ChooseMobileNetworkHandler::HandleConnect,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       kJsApiPageReady,
-      NewCallback(this, &ChooseMobileNetworkHandler::HandlePageReady));
+      base::Bind(&ChooseMobileNetworkHandler::HandlePageReady,
+                 base::Unretained(this)));
 }
 
 void ChooseMobileNetworkHandler::OnNetworkDeviceFoundNetworks(

@@ -175,7 +175,7 @@ class SyslogsProviderImpl : public SyslogsProvider {
       bool compress_logs,
       SyslogsContext context,
       CancelableRequestConsumerBase* consumer,
-      ReadCompleteCallback* callback);
+      const ReadCompleteCallback& callback);
 
   // Reads system logs, compresses content if requested.
   // Called from FILE thread.
@@ -208,7 +208,7 @@ CancelableRequestProvider::Handle SyslogsProviderImpl::RequestSyslogs(
     bool compress_logs,
     SyslogsContext context,
     CancelableRequestConsumerBase* consumer,
-    ReadCompleteCallback* callback) {
+    const ReadCompleteCallback& callback) {
   // Register the callback request.
   scoped_refptr<CancelableRequest<ReadCompleteCallback> > request(
          new CancelableRequest<ReadCompleteCallback>(callback));
@@ -285,8 +285,7 @@ class SyslogsMemoryHandler : public MemoryDetails {
     }
     (*logs_)["mem_usage"] = mem_string;
     // This will call the callback on the calling thread.
-    request_->ForwardResult(
-        Tuple2<LogDictionaryType*, std::string*>(logs_, zip_content_));
+    request_->ForwardResult(logs_, zip_content_);
   }
 
  private:

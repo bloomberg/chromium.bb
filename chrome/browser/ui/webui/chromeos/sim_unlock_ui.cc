@@ -482,7 +482,7 @@ void SimUnlockHandler::HandleCancel(const ListValue* args) {
   }
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &TaskProxy::HandleCancel));
+      base::Bind(&TaskProxy::HandleCancel, task.get()));
 }
 
 void SimUnlockHandler::HandleChangePinCode(const ListValue* args) {
@@ -503,7 +503,7 @@ void SimUnlockHandler::HandleEnterCode(SimUnlockCode code_type,
                                        const std::string& code) {
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), code, code_type);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &TaskProxy::HandleEnterCode));
+      base::Bind(&TaskProxy::HandleEnterCode, task.get()));
 }
 
 void SimUnlockHandler::HandleEnterPinCode(const ListValue* args) {
@@ -538,7 +538,7 @@ void SimUnlockHandler::HandleProceedToPukInput(const ListValue* args) {
   }
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &TaskProxy::HandleProceedToPukInput));
+      base::Bind(&TaskProxy::HandleProceedToPukInput, task.get()));
 }
 
 void SimUnlockHandler::HandleSimStatusInitialize(const ListValue* args) {
@@ -553,7 +553,7 @@ void SimUnlockHandler::HandleSimStatusInitialize(const ListValue* args) {
   VLOG(1) << "Initializing SIM dialog in mode: " << dialog_mode_;
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &TaskProxy::HandleInitialize));
+      base::Bind(&TaskProxy::HandleInitialize, task.get()));
 }
 
 void SimUnlockHandler::InitializeSimStatus() {

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
@@ -200,7 +201,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
 
-  // Network state infromer used to keep offline message screen up.
+  // Network state informer used to keep offline message screen up.
   scoped_ptr<NetworkStateInformer> network_state_informer_;
 
   // Email to pre-populate with.
@@ -212,7 +213,7 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   BrowsingDataRemover* cookie_remover_;
 
-  ScopedRunnableMethodFactory<SigninScreenHandler> method_factory_;
+  base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

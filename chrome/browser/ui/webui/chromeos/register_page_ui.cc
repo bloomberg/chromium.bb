@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_piece.h"
@@ -241,8 +240,7 @@ void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
      version_loader_.GetVersion(
          &version_consumer_,
-         NewCallback(this,
-                     &RegisterPageHandler::OnVersion),
+         base::Bind(&RegisterPageHandler::OnVersion, base::Unretained(this)),
          chromeos::VersionLoader::VERSION_FULL);
   } else {
     SkipRegistration("CrosLibrary is not loaded.");

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -99,7 +100,8 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
         false,  // don't compress.
         chromeos::system::SyslogsProvider::SYSLOGS_SYSINFO,
         &consumer_,
-        NewCallback(this, &SystemInfoUIHTMLSource::SyslogsComplete));
+        base::Bind(&SystemInfoUIHTMLSource::SyslogsComplete,
+                   base::Unretained(this)));
   }
 }
 

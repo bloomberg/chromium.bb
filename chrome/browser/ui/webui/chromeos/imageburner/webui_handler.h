@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/string16.h"
 #include "base/values.h"
@@ -56,7 +57,7 @@ class WebUIHandlerTaskProxy
   void DeleteOnUIThread() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &WebUIHandlerTaskProxy::DoNothing));
+        base::Bind(&WebUIHandlerTaskProxy::DoNothing, this));
   }
 
   void DoNothing() {}

@@ -44,7 +44,7 @@ const char VersionLoader::kFirmwarePrefix[] = "version";
 
 VersionLoader::Handle VersionLoader::GetVersion(
     CancelableRequestConsumerBase* consumer,
-    VersionLoader::GetVersionCallback* callback,
+    const VersionLoader::GetVersionCallback& callback,
     VersionFormat format) {
   if (!g_browser_process->file_thread()) {
     // This should only happen if Chrome is shutting down, so we don't do
@@ -63,7 +63,7 @@ VersionLoader::Handle VersionLoader::GetVersion(
 
 VersionLoader::Handle VersionLoader::GetFirmware(
     CancelableRequestConsumerBase* consumer,
-    VersionLoader::GetFirmwareCallback* callback) {
+    const VersionLoader::GetFirmwareCallback& callback) {
   if (!g_browser_process->file_thread()) {
     // This should only happen if Chrome is shutting down, so we don't do
     // anything.
@@ -154,8 +154,7 @@ void VersionLoader::Backend::GetVersion(
     }
   }
 
-  request->ForwardResult(GetVersionCallback::TupleType(request->handle(),
-                                                       version));
+  request->ForwardResult(request->handle(), version);
 }
 
 void VersionLoader::Backend::GetFirmware(
@@ -171,8 +170,7 @@ void VersionLoader::Backend::GetFirmware(
     firmware = ParseFirmware(contents);
   }
 
-  request->ForwardResult(GetFirmwareCallback::TupleType(request->handle(),
-                                                        firmware));
+  request->ForwardResult(request->handle(), firmware);
 }
 
 }  // namespace chromeos

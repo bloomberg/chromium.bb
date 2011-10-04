@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_old.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -434,7 +433,8 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
         true,  // don't compress.
         chromeos::system::SyslogsProvider::SYSLOGS_FEEDBACK,
         &syslogs_consumer_,
-        NewCallback(bug_report_data_, &BugReportData::SyslogsComplete));
+        base::Bind(&BugReportData::SyslogsComplete,
+                   base::Unretained(bug_report_data_)));
   }
   // 2: user e-mail
   dialog_defaults.Append(new StringValue(GetUserEmail()));

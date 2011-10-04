@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
@@ -495,7 +497,8 @@ void NetInternalsMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   web_ui_->RegisterMessageCallback(
       "notifyReady",
-      NewCallback(this, &NetInternalsMessageHandler::OnRendererReady));
+      base::Bind(&NetInternalsMessageHandler::OnRendererReady,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "getProxySettings",
       proxy_->CreateCallback(&IOThreadImpl::OnGetProxySettings));
@@ -559,20 +562,24 @@ void NetInternalsMessageHandler::RegisterMessages() {
 #ifdef OS_CHROMEOS
   web_ui_->RegisterMessageCallback(
       "refreshSystemLogs",
-      NewCallback(this, &NetInternalsMessageHandler::OnRefreshSystemLogs));
+      base::Bind(&NetInternalsMessageHandler::OnRefreshSystemLogs,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "getSystemLog",
-      NewCallback(this, &NetInternalsMessageHandler::OnGetSystemLog));
+      base::Bind(&NetInternalsMessageHandler::OnGetSystemLog,
+                 base::Unretained(this)));
 #endif
   web_ui_->RegisterMessageCallback(
       "setLogLevel",
       proxy_->CreateCallback(&IOThreadImpl::OnSetLogLevel));
   web_ui_->RegisterMessageCallback(
       "enableHttpThrottling",
-      NewCallback(this, &NetInternalsMessageHandler::OnEnableHttpThrottling));
+      base::Bind(&NetInternalsMessageHandler::OnEnableHttpThrottling,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback(
       "getPrerenderInfo",
-      NewCallback(this, &NetInternalsMessageHandler::OnGetPrerenderInfo));
+      base::Bind(&NetInternalsMessageHandler::OnGetPrerenderInfo,
+                 base::Unretained(this)));
 }
 
 void NetInternalsMessageHandler::SendJavascriptCommand(
@@ -708,9 +715,9 @@ void NetInternalsMessageHandler::SystemLogsGetter::LoadSystemLogs() {
       false,  // compress logs.
       chromeos::system::SyslogsProvider::SYSLOGS_NETWORK,
       &consumer_,
-      NewCallback(
-          this,
-          &NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded));
+      base::Bind(
+          &NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded,
+          base::Unretained(this)));
 }
 
 void NetInternalsMessageHandler::SystemLogsGetter::OnSystemLogsLoaded(

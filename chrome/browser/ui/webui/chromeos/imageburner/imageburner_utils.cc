@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_utils.h"
 
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -236,8 +237,7 @@ void BurnManager::OnDownloadUpdated(DownloadItem* download) {
         new BurnManagerTaskProxy();
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(task.get(),
-            &BurnManagerTaskProxy::OnConfigFileDownloaded));
+        base::Bind(&BurnManagerTaskProxy::OnConfigFileDownloaded, task.get()));
   }
 }
 

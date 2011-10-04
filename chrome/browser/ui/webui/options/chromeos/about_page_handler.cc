@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_old.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
@@ -249,10 +248,12 @@ void AboutPageHandler::RegisterMessages() {
 void AboutPageHandler::PageReady(const ListValue* args) {
   // Version information is loaded from a callback
   loader_.GetVersion(&consumer_,
-                     NewCallback(this, &AboutPageHandler::OnOSVersion),
+                     base::Bind(&AboutPageHandler::OnOSVersion,
+                                base::Unretained(this)),
                      VersionLoader::VERSION_FULL);
   loader_.GetFirmware(&consumer_,
-                      NewCallback(this, &AboutPageHandler::OnOSFirmware));
+                      base::Bind(&AboutPageHandler::OnOSFirmware,
+                                 base::Unretained(this)));
 
   UpdateLibrary* update_library =
       CrosLibrary::Get()->GetUpdateLibrary();

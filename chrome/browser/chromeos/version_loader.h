@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "content/browser/cancelable_request.h"
 
@@ -43,21 +43,21 @@ class VersionLoader : public CancelableRequestProvider {
   };
 
   // Signature
-  typedef Callback2<Handle, std::string>::Type GetVersionCallback;
+  typedef base::Callback<void(Handle, std::string)> GetVersionCallback;
   typedef CancelableRequest<GetVersionCallback> GetVersionRequest;
 
-  typedef Callback2<Handle, std::string>::Type GetFirmwareCallback;
+  typedef base::Callback<void(Handle, std::string)> GetFirmwareCallback;
   typedef CancelableRequest<GetFirmwareCallback> GetFirmwareRequest;
 
   // Asynchronously requests the version.
   // If |full_version| is true version string with extra info is extracted,
   // otherwise it's in short format x.x.xx.x.
   Handle GetVersion(CancelableRequestConsumerBase* consumer,
-                    GetVersionCallback* callback,
+                    const GetVersionCallback& callback,
                     VersionFormat format);
 
   Handle GetFirmware(CancelableRequestConsumerBase* consumer,
-                     GetFirmwareCallback* callback);
+                     const GetFirmwareCallback& callback);
 
   // Parse the version information as a Chrome platfrom, not Chrome OS
   // TODO(rkc): Change this and everywhere it is used once we switch Chrome OS

@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -114,7 +116,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // The backend is owned by ChromeURLRequestContext and always outlives us.
   ChromeURLDataManagerBackend* backend_;
 
-  ScopedRunnableMethodFactory<URLRequestChromeJob> method_factory_;
+  base::WeakPtrFactory<URLRequestChromeJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestChromeJob);
 };
@@ -125,7 +127,7 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       data_offset_(0),
       pending_buf_size_(0),
       backend_(backend),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(backend);
 }
 
@@ -136,8 +138,10 @@ URLRequestChromeJob::~URLRequestChromeJob() {
 void URLRequestChromeJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  MessageLoop::current()->PostTask(FROM_HERE, method_factory_.NewRunnableMethod(
-      &URLRequestChromeJob::StartAsync));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&URLRequestChromeJob::StartAsync,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestChromeJob::Kill() {
@@ -367,9 +371,8 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
     // usually the UI thread, for this path.
     target_message_loop->PostTask(
         FROM_HERE,
-        NewRunnableMethod(source,
-                          &ChromeURLDataManager::DataSource::StartDataRequest,
-                          path, context->is_incognito(), request_id));
+        base::Bind(&ChromeURLDataManager::DataSource::StartDataRequest, source,
+                   path, context->is_incognito(), request_id));
   }
   return true;
 }

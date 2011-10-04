@@ -66,11 +66,21 @@ std::string SanitizeEmail(const std::string& email) {
   return sanitized;
 }
 
+// The Task posted to PostTaskAndReply in StartClearingDnsCache on the IO
+// thread.
+void ClearDnsCache(IOThread* io_thread) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (browser_shutdown::IsTryingToQuit())
+    return;
+
+  io_thread->globals()->dnsrr_resolver.get()->OnIPAddressChanged();
+}
+
 }  // namespace
 
 namespace chromeos {
 
-// Class which observes network state changes and calls registerd callbacks.
+// Class which observes network state changes and calls registered callbacks.
 // State is considered changed if connection or the active network has been
 // changed. Also, it answers to the requests about current network state.
 class NetworkStateInformer
@@ -101,30 +111,6 @@ class NetworkStateInformer
   std::string network_name_;
   State state_;
   WebUI* web_ui_;
-};
-
-// Clears DNS cache on IO thread.
-class ClearDnsCacheTaskOnIOThread : public Task {
- public:
-  ClearDnsCacheTaskOnIOThread(Task* callback, IOThread* io_thread)
-      : callback_(callback), io_thread_(io_thread) {
-  }
-  virtual ~ClearDnsCacheTaskOnIOThread() {}
-
-  // Task overrides.
-  virtual void Run() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (browser_shutdown::IsTryingToQuit())
-     return;
-
-    io_thread_->globals()->dnsrr_resolver.get()->OnIPAddressChanged();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
-  }
-
- private:
-  Task* callback_;
-  IOThread* io_thread_;
-  DISALLOW_COPY_AND_ASSIGN(ClearDnsCacheTaskOnIOThread);
 };
 
 // NetworkStateInformer implementation -----------------------------------------
@@ -199,12 +185,12 @@ SigninScreenHandler::SigninScreenHandler()
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kWebUILogin)),
       cookie_remover_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   delegate_->SetWebUIHandler(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   if (cookie_remover_)
     cookie_remover_->RemoveObserver(this);
 }
@@ -616,10 +602,11 @@ void SigninScreenHandler::StartClearingDnsCache() {
     return;
 
   dns_cleared_ = false;
-  ClearDnsCacheTaskOnIOThread* clear_dns_task = new ClearDnsCacheTaskOnIOThread(
-      method_factory_.NewRunnableMethod(&SigninScreenHandler::OnDnsCleared),
-      g_browser_process->io_thread());
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, clear_dns_task);
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ClearDnsCache, g_browser_process->io_thread()),
+      base::Bind(&SigninScreenHandler::OnDnsCleared,
+                 weak_factory_.GetWeakPtr()));
   dns_clear_task_running_ = true;
 }
 

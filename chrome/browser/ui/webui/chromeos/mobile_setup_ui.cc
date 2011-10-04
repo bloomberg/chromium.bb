@@ -527,13 +527,13 @@ void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
     return;
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), status);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &TaskProxy::HandleSetTransactionStatus));
+      base::Bind(&TaskProxy::HandleSetTransactionStatus, task.get()));
 }
 
 void MobileSetupHandler::InitiateActivation() {
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), 0);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &TaskProxy::HandleStartActivation));
+      base::Bind(&TaskProxy::HandleStartActivation, task.get()));
 }
 
 void MobileSetupHandler::StartActivation() {
@@ -684,8 +684,7 @@ bool MobileSetupHandler::ConnectToNetwork(
     scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(),
                                                   delay);
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(task.get(), &TaskProxy::ContinueConnecting),
-        delay);
+        base::Bind(&TaskProxy::ContinueConnecting, task.get()), delay);
     return false;
   }
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
@@ -709,8 +708,7 @@ void MobileSetupHandler::ForceReconnect(
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(),
                                                 delay);
   BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &TaskProxy::ContinueConnecting),
-      delay);
+      base::Bind(&TaskProxy::ContinueConnecting, task.get()), delay);
 }
 
 bool MobileSetupHandler::ConnectionTimeout() {
@@ -1104,8 +1102,7 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
       UMA_HISTOGRAM_COUNTS("Cellular.RetryOTASP", 1);
       scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), 0);
       BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(task.get(), &TaskProxy::RetryOTASP),
-          kOTASPRetryDelay);
+          base::Bind(&TaskProxy::RetryOTASP, task.get()), kOTASPRetryDelay);
       break;
     }
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
