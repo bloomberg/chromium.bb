@@ -16,12 +16,12 @@ class NTPTest(pyauto.PyUITest):
 
   # Default apps are registered in ProfileImpl::RegisterComponentExtensions().
   _EXPECTED_DEFAULT_APPS = [
-    {u'name': u'Chrome Web Store'},
+    {u'title': u'Chrome Web Store'},
   ]
   if pyauto.PyUITest.IsChromeOS():
-    _EXPECTED_DEFAULT_APPS.append({u'name': u'File Manager'})
+    _EXPECTED_DEFAULT_APPS.append({u'title': u'File Manager'})
   else:
-    _EXPECTED_DEFAULT_APPS.append({u'name': u'Cloud Print'})
+    _EXPECTED_DEFAULT_APPS.append({u'title': u'Cloud Print'})
 
   # Default menu and thumbnail mode preferences are set in
   # ShownSectionsHandler::RegisterUserPrefs.
@@ -336,7 +336,7 @@ class NTPTest(pyauto.PyUITest):
     """Ensures that the actual app info contains the expected app info.
 
     This method assumes that both the actual and expected information for each
-    app contains at least the 'name' attribute.  Both sets of info are
+    app contains at least the 'title' attribute.  Both sets of info are
     considered to match if the actual info contains at least the specified
     expected info (if the actual info contains additional values that are not
     specified in the expected info, that's ok).  This function will fail the
@@ -348,14 +348,14 @@ class NTPTest(pyauto.PyUITest):
       expected_info: A corrresponding list of dictionaries representing the
                      information that is expected.
     """
-    # Ensure all app info dictionaries contain at least the 'name' attribute.
-    self.assertTrue(all(map(lambda app: 'name' in app, actual_info)) and
-                    all(map(lambda app: 'name' in app, expected_info)),
-                    msg='At least one app is missing the "name" attribute.')
+    # Ensure all app info dictionaries contain at least the 'title' attribute.
+    self.assertTrue(all(map(lambda app: 'title' in app, actual_info)) and
+                    all(map(lambda app: 'title' in app, expected_info)),
+                    msg='At least one app is missing the "title" attribute.')
 
-    # Sort both app lists by name to ensure they're in a known order.
-    actual_info = sorted(actual_info, key=lambda app: app['name'])
-    expected_info = sorted(expected_info, key=lambda app: app['name'])
+    # Sort both app lists by title to ensure they're in a known order.
+    actual_info = sorted(actual_info, key=lambda app: app['title'])
+    expected_info = sorted(expected_info, key=lambda app: app['title'])
 
     # Ensure the expected info matches the actual info.
     self.assertTrue(len(actual_info) == len(expected_info),
@@ -394,7 +394,7 @@ class NTPTest(pyauto.PyUITest):
     app_info = self.GetNTPApps()
     expected_app_info = [
       {
-        u'name': u'Countdown'
+        u'title': u'Countdown'
       }
     ]
     expected_app_info.extend(self._EXPECTED_DEFAULT_APPS)
@@ -421,7 +421,7 @@ class NTPTest(pyauto.PyUITest):
     app_info = self.GetNTPApps()
     expected_app_info = [
       {
-        u'name': u'Countdown'
+        u'title': u'Countdown'
       }
     ]
     expected_app_info.extend(self._EXPECTED_DEFAULT_APPS)
