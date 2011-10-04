@@ -111,6 +111,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
   int color;
   bool landscape;
   bool print_to_pdf;
+  bool is_cloud_dialog;
   int copies;
   int duplex_mode;
   std::string device_name;
@@ -121,13 +122,14 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
       !job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf) ||
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
-      !job_settings.GetString(kSettingDeviceName, &device_name)) {
+      !job_settings.GetString(kSettingDeviceName, &device_name) ||
+      !job_settings.GetBoolean(kSettingCloudPrintDialog, &is_cloud_dialog)) {
     return OnError();
   }
 
   bool print_to_cloud = job_settings.HasKey(printing::kSettingCloudPrintId);
 
-  if (!print_to_pdf && !print_to_cloud) {
+  if (!print_to_pdf && !print_to_cloud && !is_cloud_dialog) {
     if (!SetPrinter(device_name))
       return OnError();
 
