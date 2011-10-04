@@ -530,6 +530,7 @@ void RegisterComponentsForUpdate() {
   // a task to the UI thread to do registration once you done the necessary
   // file IO to know your current version.
   RegisterPepperFlashComponent(cus);
+  RegisterNPAPIFlashComponent(cus);
 
   // CRLSetFetcher attempts to load a CRL set from either the local disk
   // or network.

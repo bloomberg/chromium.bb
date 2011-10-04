@@ -14,7 +14,10 @@ namespace base {
 class DictionaryValue;
 }
 
-// Our job is to 1) find what pepper flash is installed (if any) and 2) register
+// Component update registration for built-in flash player (non-Pepper).
+void RegisterNPAPIFlashComponent(ComponentUpdateService* cus);
+
+// Our job is to 1) find what Pepper flash is installed (if any) and 2) register
 // with the component updater to download the latest version when available.
 // The first part is IO intensive so we do it asynchronously in the file thread.
 void RegisterPepperFlashComponent(ComponentUpdateService* cus);
