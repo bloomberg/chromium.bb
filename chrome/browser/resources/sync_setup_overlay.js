@@ -777,6 +777,7 @@ cr.define('options', function() {
 
     showSuccessAndSettingUp_: function() {
       $('sign-in').value = localStrings.getString('settingUp');
+      $('top-blurb-error').style.visibility = "hidden";
     },
 
     /**
