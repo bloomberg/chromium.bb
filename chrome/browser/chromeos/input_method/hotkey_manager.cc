@@ -178,7 +178,7 @@ int HotkeyManager::FilterKeyEventInternal(
       if ((keysym != previous_keysym_) &&
           (!IsModifier(keysym) || !IsModifier(previous_keysym_))) {
         // This check is useful when e.g. Alt is released after Shift+Alt+X is
-        // pressed, and the release event if X is intercepted by the window
+        // pressed, and the release event of X is intercepted by the window
         // manager. In this case, we should not switch IME, but the first check
         // does not work.
         // The IsModifier() checks are necessary for the 'press Alt, press
