@@ -138,7 +138,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // This must be called on the UI thread.
   static void RecordPerceivedPageLoadTime(
       base::TimeDelta perceived_page_load_time,
-      TabContents* tab_contents);
+      TabContents* tab_contents,
+      const GURL& url);
 
   // Returns whether prerendering is currently enabled for this manager.
   // Must be called on the UI thread.

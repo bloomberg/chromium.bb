@@ -674,7 +674,8 @@ void PrerenderManager::DeletePendingDeleteEntries() {
 // static
 void PrerenderManager::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
-    TabContents* tab_contents) {
+    TabContents* tab_contents,
+    const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* profile =
       Profile::FromBrowserContext(tab_contents->browser_context());
@@ -689,7 +690,7 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
        (mode_ == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP &&
         prerender_manager->IsTabContentsPrerendered(tab_contents)));
   prerender_manager->histograms_->RecordPerceivedPageLoadTime(
-      perceived_page_load_time, was_prerender);
+      perceived_page_load_time, was_prerender, url);
 }
 
 bool PrerenderManager::is_enabled() const {

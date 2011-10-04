@@ -76,10 +76,10 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   switch (prerender_option) {
     case PRERENDER_OPTION_AUTO: {
       const base::FieldTrial::Probability kPrerenderDivisor = 1000;
-      const base::FieldTrial::Probability kPrerenderExp1Probability = 495;
-      const base::FieldTrial::Probability kPrerenderControl1Probability = 5;
-      const base::FieldTrial::Probability kPrerenderExp2Probability = 495;
-      const base::FieldTrial::Probability kPrerenderControl2Probability = 5;
+      const base::FieldTrial::Probability kPrerenderExp1Probability = 250;
+      const base::FieldTrial::Probability kPrerenderControl1Probability = 250;
+      const base::FieldTrial::Probability kPrerenderExp2Probability = 250;
+      const base::FieldTrial::Probability kPrerenderControl2Probability = 250;
       COMPILE_ASSERT(
           kPrerenderExp1Probability + kPrerenderControl1Probability +
           kPrerenderExp2Probability + kPrerenderControl2Probability ==

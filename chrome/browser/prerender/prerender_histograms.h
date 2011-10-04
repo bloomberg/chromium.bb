@@ -31,7 +31,7 @@ class PrerenderHistograms {
   // when the user navigates to a page to when it finishes loading.  The actual
   // load may have started prior to navigation due to prerender hints.
   void RecordPerceivedPageLoadTime(base::TimeDelta perceived_page_load_time,
-                                   bool was_prerender) const;
+                                   bool was_prerender, const GURL& url);
 
   // Records the time from when a page starts prerendering to when the user
   // navigates to it. This must be called on the UI thread.
@@ -55,6 +55,9 @@ class PrerenderHistograms {
 
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
+
+  // Returns the time elapsed since the last prerender happened.
+  base::TimeDelta GetTimeSinceLastPrerender() const;
 
   // Returns whether the PrerenderManager is currently within the prerender
   // window - effectively, up to 30 seconds after a prerender tag has been
@@ -86,6 +89,12 @@ class PrerenderHistograms {
   // This is used to record perceived PLT's for a certain amount of time
   // from the point that we last saw a <link rel=prerender> tag.
   base::TimeTicks last_prerender_seen_time_;
+
+  // Indicates whether we have recorded page load events after the most
+  // recent prerender.  These must be initialized to true, so that we don't
+  // start recording events before the first prerender occurs.
+  bool seen_any_pageload_;
+  bool seen_pageload_started_after_prerender_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderHistograms);
 };

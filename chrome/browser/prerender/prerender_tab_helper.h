@@ -76,6 +76,9 @@ class PrerenderTabHelper : public TabContentsObserver {
   GURL current_hover_url_;
   base::TimeTicks current_hover_time_;
 
+  // Current URL being loaded.
+  GURL url_;
+
   DISALLOW_COPY_AND_ASSIGN(PrerenderTabHelper);
 };
 

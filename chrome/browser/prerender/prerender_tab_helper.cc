@@ -189,6 +189,7 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(const GURL& url,
   if (prerender_manager->IsTabContentsPrerendering(tab_contents()))
     return;
   prerender_manager->MarkTabContentsAsNotPrerendered(tab_contents());
+  url_ = url;
   MaybeUsePrerenderedPage(url, has_opener_set);
 }
 
@@ -210,7 +211,7 @@ void PrerenderTabHelper::DidStopLoading() {
   // Compute the PPLT metric and report it in a histogram, if needed.
   if (!pplt_load_start_.is_null() && !IsPrerendering()) {
     PrerenderManager::RecordPerceivedPageLoadTime(
-        base::TimeTicks::Now() - pplt_load_start_, tab_contents());
+        base::TimeTicks::Now() - pplt_load_start_, tab_contents(), url_);
   }
 
   // Reset the PPLT metric.
@@ -271,7 +272,7 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
   if (pplt_load_start_.is_null()) {
     // If we have already finished loading, report a 0 PPLT.
     PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta(),
-                                                  tab_contents());
+                                                  tab_contents(), url_);
   } else {
     // If we have not finished loading yet, rebase the start time to now.
     pplt_load_start_ = base::TimeTicks::Now();

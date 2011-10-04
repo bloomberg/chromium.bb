@@ -90,7 +90,9 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
 PrerenderHistograms::PrerenderHistograms()
     : last_experiment_id_(kNoExperiment),
       last_origin_(ORIGIN_LINK_REL_PRERENDER),
-      origin_experiment_wash_(false) {
+      origin_experiment_wash_(false),
+      seen_any_pageload_(true),
+      seen_pageload_started_after_prerender_(true) {
 }
 
 void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
@@ -118,6 +120,8 @@ void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
   // reset the window to begin at the most recent occurrence, so that we will
   // always be in a window in the 30 seconds from each occurrence.
   last_prerender_seen_time_ = GetCurrentTimeTicks();
+  seen_any_pageload_ = false;
+  seen_pageload_started_after_prerender_ = false;
 }
 
 base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
@@ -136,25 +140,43 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 }
 
 void PrerenderHistograms::RecordPerceivedPageLoadTime(
-    base::TimeDelta perceived_page_load_time, bool was_prerender) const {
+    base::TimeDelta perceived_page_load_time, bool was_prerender,
+    const GURL& url) {
   bool within_window = WithinWindow();
+  bool is_google_url = IsGoogleDomain(url);
   RECORD_PLT("PerceivedPLT", perceived_page_load_time);
   if (within_window)
     RECORD_PLT("PerceivedPLTWindowed", perceived_page_load_time);
   if (was_prerender) {
     RECORD_PLT("PerceivedPLTMatched", perceived_page_load_time);
-  } else {
-    if (within_window)
-      RECORD_PLT("PerceivedPLTWindowNotMatched", perceived_page_load_time);
+    seen_any_pageload_ = true;
+    seen_pageload_started_after_prerender_ = true;
+  } else if (within_window) {
+    RECORD_PLT("PerceivedPLTWindowNotMatched", perceived_page_load_time);
+    if (!is_google_url) {
+      if (!seen_any_pageload_) {
+        seen_any_pageload_ = true;
+        RECORD_PLT("PerceivedPLTFirstAfterMiss", perceived_page_load_time);
+      }
+      if (!seen_pageload_started_after_prerender_ &&
+          perceived_page_load_time <= GetTimeSinceLastPrerender()) {
+        seen_pageload_started_after_prerender_ = true;
+        RECORD_PLT("PerceivedPLTFirstAfterMissNonOverlapping",
+                   perceived_page_load_time);
+      }
+    }
   }
+}
+
+base::TimeDelta PrerenderHistograms::GetTimeSinceLastPrerender() const {
+  return base::TimeTicks::Now() - last_prerender_seen_time_;
 }
 
 bool PrerenderHistograms::WithinWindow() const {
   if (last_prerender_seen_time_.is_null())
     return false;
-  base::TimeDelta elapsed_time =
-      base::TimeTicks::Now() - last_prerender_seen_time_;
-  return elapsed_time <= base::TimeDelta::FromSeconds(kWindowDurationSeconds);
+  return GetTimeSinceLastPrerender() <=
+      base::TimeDelta::FromSeconds(kWindowDurationSeconds);
 }
 
 
