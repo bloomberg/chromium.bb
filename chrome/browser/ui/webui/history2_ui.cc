@@ -6,7 +6,9 @@
 
 #include <set>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_old.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
@@ -112,13 +114,17 @@ WebUIMessageHandler* BrowsingHistoryHandler2::Attach(WebUI* web_ui) {
 
 void BrowsingHistoryHandler2::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getHistory",
-      NewCallback(this, &BrowsingHistoryHandler2::HandleGetHistory));
+      base::Bind(&BrowsingHistoryHandler2::HandleGetHistory,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("searchHistory",
-      NewCallback(this, &BrowsingHistoryHandler2::HandleSearchHistory));
+      base::Bind(&BrowsingHistoryHandler2::HandleSearchHistory,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("removeURLsOnOneDay",
-      NewCallback(this, &BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay));
+      base::Bind(&BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("clearBrowsingData",
-      NewCallback(this, &BrowsingHistoryHandler2::HandleClearBrowsingData));
+      base::Bind(&BrowsingHistoryHandler2::HandleClearBrowsingData,
+                 base::Unretained(this)));
 }
 
 void BrowsingHistoryHandler2::HandleGetHistory(const ListValue* args) {

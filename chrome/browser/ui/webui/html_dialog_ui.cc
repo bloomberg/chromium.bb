@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -47,7 +48,7 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
   // Hook up the javascript function calls, also known as chrome.send("foo")
   // calls in the HTML, to the actual C++ functions.
   RegisterMessageCallback("DialogClose",
-                          NewCallback(this, &HtmlDialogUI::OnDialogClosed));
+      base::Bind(&HtmlDialogUI::OnDialogClosed, base::Unretained(this)));
 
   // Pass the arguments to the renderer supplied by the delegate.
   std::string dialog_args;

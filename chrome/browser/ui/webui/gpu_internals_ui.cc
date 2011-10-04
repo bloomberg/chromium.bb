@@ -6,6 +6,9 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_old.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -102,12 +105,12 @@ WebUIMessageHandler* GpuMessageHandler::Attach(WebUI* web_ui) {
 void GpuMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  web_ui_->RegisterMessageCallback(
-      "browserBridgeInitialized",
-      NewCallback(this, &GpuMessageHandler::OnBrowserBridgeInitialized));
-  web_ui_->RegisterMessageCallback(
-      "callAsync",
-      NewCallback(this, &GpuMessageHandler::OnCallAsync));
+  web_ui_->RegisterMessageCallback("browserBridgeInitialized",
+      base::Bind(&GpuMessageHandler::OnBrowserBridgeInitialized,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("callAsync",
+      base::Bind(&GpuMessageHandler::OnCallAsync,
+                 base::Unretained(this)));
 }
 
 void GpuMessageHandler::OnCallAsync(const ListValue* args) {

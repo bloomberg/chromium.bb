@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_old.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -142,7 +145,8 @@ FlashDOMHandler::FlashDOMHandler()
 
 void FlashDOMHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("requestFlashInfo",
-      NewCallback(this, &FlashDOMHandler::HandleRequestFlashInfo));
+      base::Bind(&FlashDOMHandler::HandleRequestFlashInfo,
+                 base::Unretained(this)));
 }
 
 void FlashDOMHandler::OnCrashListAvailable() {

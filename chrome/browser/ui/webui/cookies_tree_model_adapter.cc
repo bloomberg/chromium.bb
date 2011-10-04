@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/cookies_tree_model_adapter.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
@@ -38,7 +40,8 @@ void CookiesTreeModelAdapter::Init(WebUI* web_ui) {
   web_ui_ = web_ui;
 
   web_ui_->RegisterMessageCallback(GetRequestChildrenCallbackName(this),
-      NewCallback(this, &CookiesTreeModelAdapter::RequestChildren));
+      base::Bind(&CookiesTreeModelAdapter::RequestChildren,
+                 base::Unretained(this)));
 }
 
 void CookiesTreeModelAdapter::Bind(const std::string& tree_id,

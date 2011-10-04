@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/webui_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -184,13 +186,14 @@ WebUIMessageHandler* WebUIHandler::Attach(WebUI* web_ui) {
 
 void WebUIHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getDevices",
-      NewCallback(this, &WebUIHandler::HandleGetDevices));
+      base::Bind(&WebUIHandler::HandleGetDevices, base::Unretained(this)));
   web_ui_->RegisterMessageCallback("burnImage",
-      NewCallback(this, &WebUIHandler::HandleBurnImage));
+      base::Bind(&WebUIHandler::HandleBurnImage, base::Unretained(this)));
   web_ui_->RegisterMessageCallback("cancelBurnImage",
-      NewCallback(this, &WebUIHandler::HandleCancelBurnImage));
+      base::Bind(&WebUIHandler::HandleCancelBurnImage, base::Unretained(this)));
   web_ui_->RegisterMessageCallback("webuiInitialized",
-      NewCallback(this, &WebUIHandler::HandleWebUIInitialized));
+      base::Bind(&WebUIHandler::HandleWebUIInitialized,
+                 base::Unretained(this)));
 }
 
 void WebUIHandler::DiskChanged(chromeos::MountLibraryEventType event,

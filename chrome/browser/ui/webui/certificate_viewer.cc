@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "base/string_number_conversions.h"
@@ -120,14 +122,14 @@ CertificateViewerDialogHandler::~CertificateViewerDialogHandler() {
 
 void CertificateViewerDialogHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("exportCertificate",
-      NewCallback(this,
-          &CertificateViewerDialogHandler::ExportCertificate));
+      base::Bind(&CertificateViewerDialogHandler::ExportCertificate,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("requestCertificateInfo",
-      NewCallback(this,
-          &CertificateViewerDialogHandler::RequestCertificateInfo));
+      base::Bind(&CertificateViewerDialogHandler::RequestCertificateInfo,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("requestCertificateFields",
-      NewCallback(this,
-          &CertificateViewerDialogHandler::RequestCertificateFields));
+      base::Bind(&CertificateViewerDialogHandler::RequestCertificateFields,
+                 base::Unretained(this)));
 }
 
 void CertificateViewerDialogHandler::ExportCertificate(

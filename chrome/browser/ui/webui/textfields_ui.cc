@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
@@ -45,7 +47,8 @@ TextfieldsDOMHandler::TextfieldsDOMHandler() : WebUIMessageHandler() {}
 
 void TextfieldsDOMHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("textfieldValue",
-      NewCallback(this, &TextfieldsDOMHandler::HandleTextfieldValue));
+      base::Bind(&TextfieldsDOMHandler::HandleTextfieldValue,
+                 base::Unretained(this)));
 }
 
 void TextfieldsDOMHandler::HandleTextfieldValue(const ListValue* args) {
