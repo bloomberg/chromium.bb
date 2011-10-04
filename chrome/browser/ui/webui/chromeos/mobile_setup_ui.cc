@@ -402,8 +402,9 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                                                bool is_incognito,
                                                int request_id) {
   chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
-  DCHECK(network);
-  if (!network->SupportsActivation()) {
+  // If we are activating, shutting down, or logging in, |network| may not
+  // be available.
+  if (!network || !network->SupportsActivation()) {
     scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
     SendResponse(request_id, html_bytes);
     return;
