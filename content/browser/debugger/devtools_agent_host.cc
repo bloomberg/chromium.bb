@@ -10,14 +10,10 @@
 DevToolsAgentHost::DevToolsAgentHost() : close_listener_(NULL) {
 }
 
-void DevToolsAgentHost::Attach() {
-  SendMessageToAgent(new DevToolsAgentMsg_Attach(MSG_ROUTING_NONE));
-}
-
-void DevToolsAgentHost::Reattach(const std::string& saved_agent_state) {
-  SendMessageToAgent(new DevToolsAgentMsg_Reattach(
+void DevToolsAgentHost::Attach(const DevToolsRuntimeProperties& properties) {
+  SendMessageToAgent(new DevToolsAgentMsg_Attach(
       MSG_ROUTING_NONE,
-      saved_agent_state));
+      properties));
 }
 
 void DevToolsAgentHost::Detach() {

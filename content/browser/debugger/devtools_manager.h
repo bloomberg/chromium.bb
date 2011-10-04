@@ -25,6 +25,8 @@ class PrefService;
 class RenderViewHost;
 class TabContents;
 
+typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
+
 // This class is a singleton that manages DevToolsClientHost instances and
 // routes messages between developer tools clients and agents.
 //
@@ -55,8 +57,9 @@ class CONTENT_EXPORT DevToolsManager
   void ForwardToDevToolsClient(DevToolsAgentHost* agent_host,
                                const IPC::Message& message);
 
-  void SaveAgentRuntimeState(DevToolsAgentHost* agent_host,
-                             const std::string& state);
+  void RuntimePropertyChanged(DevToolsAgentHost* agent_host,
+                              const std::string& name,
+                              const std::string& value);
 
   // Sends 'Attach' message to the agent using |dest_rvh| in case
   // there is a DevToolsClientHost registered for the |inspected_rvh|.
@@ -98,7 +101,8 @@ class CONTENT_EXPORT DevToolsManager
   DevToolsAgentHost* GetAgentHost(DevToolsClientHost* client_host);
 
   void BindClientHost(DevToolsAgentHost* agent_host,
-                      DevToolsClientHost* client_host);
+                      DevToolsClientHost* client_host,
+                      const DevToolsRuntimeProperties& runtime_properties);
   void UnbindClientHost(DevToolsAgentHost* agent_host,
                         DevToolsClientHost* client_host);
 
@@ -116,10 +120,12 @@ class CONTENT_EXPORT DevToolsManager
       ClientHostToInspectedRvhMap;
   ClientHostToInspectedRvhMap client_to_agent_host_;
 
-  typedef std::map<DevToolsAgentHost*, std::string> AgentRuntimeStates;
-  AgentRuntimeStates agent_runtime_states_;
+  typedef std::map<DevToolsAgentHost*, DevToolsRuntimeProperties>
+      RuntimePropertiesMap;
+  RuntimePropertiesMap runtime_properties_map_;
 
-  typedef std::map<int, std::pair<DevToolsClientHost*, std::string> >
+  typedef std::map<int,
+                   std::pair<DevToolsClientHost*, DevToolsRuntimeProperties> >
       OrphanClientHosts;
   OrphanClientHosts orphan_client_hosts_;
   int last_orphan_cookie_;

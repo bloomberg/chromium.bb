@@ -32,7 +32,6 @@ class WorkerDevToolsAgentImpl : public WorkerDevToolsAgent {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(WorkerDevToolsAgentImpl, message)
       IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Attach, OnAttach)
-      IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Reattach, OnReattach)
       IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Detach, OnDetach)
       IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                           OnDispatchOnInspectorBackend)
@@ -43,12 +42,8 @@ class WorkerDevToolsAgentImpl : public WorkerDevToolsAgent {
 
   virtual void SendDevToolsMessage(const WebKit::WebString& message);
 
-  void OnAttach() {
+  void OnAttach(const DevToolsRuntimeProperties&) {
     webworker_->attachDevTools();
-  }
-
-  void OnReattach(const std::string&) {
-    OnAttach();
   }
 
   void OnDetach() {

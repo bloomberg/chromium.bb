@@ -45,6 +45,14 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 
+// Singly-included section.
+#ifndef CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
+#define CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
+
+typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
+
+#endif  // CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
+
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
@@ -65,12 +73,8 @@ IPC_MESSAGE_ROUTED1(DevToolsClientMsg_DebuggerOutput,
 // These are messages sent from DevToolsClient to DevToolsAgent through the
 // browser.
 // Tells agent that there is a client host connected to it.
-IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_Attach)
-
-// Tells agent that a client host was disconnected from another agent and
-// connected to this one.
-IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_Reattach,
-                    std::string /* agent_state */)
+IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_Attach,
+                    DevToolsRuntimeProperties /* properties */)
 
 // Tells agent that there is no longer a client host connected to it.
 IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_Detach)
@@ -140,10 +144,11 @@ IPC_MESSAGE_ROUTED2(DevToolsHostMsg_SaveAs,
                     std::string /* file_name */,
                     std::string /* content */)
 
-// Updates agent runtime state stored in devtools manager in order to support
+// Updates runtime features store in devtools manager in order to support
 // cross-navigation instrumentation.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_SaveAgentRuntimeState,
-                    std::string /* state */)
+IPC_MESSAGE_ROUTED2(DevToolsHostMsg_RuntimePropertyChanged,
+                    std::string /* name */,
+                    std::string /* value */)
 
 // Clears browser cache.
 IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ClearBrowserCache)

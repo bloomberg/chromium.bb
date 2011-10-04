@@ -78,7 +78,6 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DevToolsAgent, message)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Attach, OnAttach)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Reattach, OnReattach)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_FrontendLoaded, OnFrontendLoaded)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
@@ -112,9 +111,22 @@ int DevToolsAgent::hostIdentifier() {
   return routing_id();
 }
 
-void DevToolsAgent::saveAgentRuntimeState(
-    const WebKit::WebString& state) {
-  Send(new DevToolsHostMsg_SaveAgentRuntimeState(routing_id(), state.utf8()));
+void DevToolsAgent::runtimeFeatureStateChanged(
+    const WebKit::WebString& feature,
+    bool enabled) {
+  Send(new DevToolsHostMsg_RuntimePropertyChanged(
+      routing_id(),
+      feature.utf8(),
+      enabled ? "true" : "false"));
+}
+
+void DevToolsAgent::runtimePropertyChanged(
+    const WebKit::WebString& name,
+    const WebKit::WebString& value) {
+  Send(new DevToolsHostMsg_RuntimePropertyChanged(
+      routing_id(),
+      name.utf8(),
+      value.utf8()));
 }
 
 WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
@@ -144,19 +156,18 @@ DevToolsAgent* DevToolsAgent::FromHostId(int host_id) {
   return NULL;
 }
 
-void DevToolsAgent::OnAttach() {
+void DevToolsAgent::OnAttach(
+    const DevToolsRuntimeProperties& runtime_properties) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
     web_agent->attach();
     is_attached_ = true;
-  }
-}
-
-void DevToolsAgent::OnReattach(const std::string& agent_state) {
-  WebDevToolsAgent* web_agent = GetWebAgent();
-  if (web_agent) {
-    web_agent->reattach(WebString::fromUTF8(agent_state));
-    is_attached_ = true;
+    for (DevToolsRuntimeProperties::const_iterator it =
+             runtime_properties.begin();
+         it != runtime_properties.end(); ++it) {
+      web_agent->setRuntimeProperty(WebString::fromUTF8(it->first),
+                                    WebString::fromUTF8(it->second));
+    }
   }
 }
 
