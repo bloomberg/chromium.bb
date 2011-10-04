@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/examples/example_factory.h"
@@ -29,7 +30,7 @@ class LockView : public views::WidgetDelegateView {
   // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->FillRectInt(SK_ColorYELLOW, 0, 0, width(), height());
-    string16 text = L"LOCKED!";
+    string16 text = ASCIIToUTF16("LOCKED!");
     int string_width = font_.GetStringWidth(text);
     canvas->DrawStringInt(text, font_, SK_ColorRED, (width() - string_width)/ 2,
                           (height() - font_.GetHeight()) / 2,
