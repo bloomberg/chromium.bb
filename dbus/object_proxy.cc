@@ -95,14 +95,11 @@ void ObjectProxy::CallMethod(MethodCall* method_call,
   DBusMessage* request_message = method_call->raw_message();
   dbus_message_ref(request_message);
 
-  // Bind() won't compile if we pass request_message as-is since
-  // DBusMessage is an opaque struct which Bind() cannot handle.
-  // Hence we cast it to void* to workaround the issue.
   const base::TimeTicks start_time = base::TimeTicks::Now();
   base::Closure task = base::Bind(&ObjectProxy::StartAsyncMethodCall,
                                   this,
                                   timeout_ms,
-                                  static_cast<void*>(request_message),
+                                  request_message,
                                   callback,
                                   start_time);
   // Wait for the response in the D-Bus thread.
@@ -153,7 +150,7 @@ ObjectProxy::OnPendingCallIsCompleteData::~OnPendingCallIsCompleteData() {
 }
 
 void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
-                                       void* in_request_message,
+                                       DBusMessage* request_message,
                                        ResponseCallback response_callback,
                                        base::TimeTicks start_time) {
   bus_->AssertOnDBusThread();
@@ -161,18 +158,16 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
   if (!bus_->Connect() || !bus_->SetUpAsyncOperations()) {
     // In case of a failure, run the callback with NULL response, that
     // indicates a failure.
-    Response* response = NULL;
+    DBusMessage* response_message = NULL;
     base::Closure task = base::Bind(&ObjectProxy::RunResponseCallback,
                                     this,
                                     response_callback,
                                     start_time,
-                                    response);
+                                    response_message);
     bus_->PostTaskToOriginThread(FROM_HERE, task);
     return;
   }
 
-  DBusMessage* request_message =
-      static_cast<DBusMessage*>(in_request_message);
   DBusPendingCall* pending_call = NULL;
 
   bus_->SendWithReply(request_message, &pending_call, timeout_ms);
@@ -201,23 +196,18 @@ void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
   bus_->AssertOnDBusThread();
 
   DBusMessage* response_message = dbus_pending_call_steal_reply(pending_call);
-  // |response_message| will be unref'ed in RunResponseCallback().
-  // Bind() won't compile if we pass response_message as-is.
-  // See CallMethod() for details.
   base::Closure task = base::Bind(&ObjectProxy::RunResponseCallback,
                                   this,
                                   response_callback,
                                   start_time,
-                                  static_cast<void*>(response_message));
+                                  response_message);
   bus_->PostTaskToOriginThread(FROM_HERE, task);
 }
 
 void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
                                       base::TimeTicks start_time,
-                                      void* in_response_message) {
+                                      DBusMessage* response_message) {
   bus_->AssertOnOriginThread();
-  DBusMessage* response_message =
-      static_cast<DBusMessage*>(in_response_message);
 
   bool response_callback_called = false;
   if (!response_message) {

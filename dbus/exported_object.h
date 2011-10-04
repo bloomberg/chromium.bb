@@ -108,7 +108,7 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
 
   // Helper function for SendSignal().
   void SendSignalInternal(base::TimeTicks start_time,
-                          void* signal_message);
+                          DBusMessage* signal_message);
 
   // Registers this object to the bus.
   // Returns true on success, or the object is already registered.

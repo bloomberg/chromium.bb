@@ -105,13 +105,11 @@ void ExportedObject::SendSignal(Signal* signal) {
   dbus_message_ref(signal_message);
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  // Bind() won't compile if we pass signal_message. See the comment at
-  // ObjectProxy::CallMethod() for details.
   bus_->PostTaskToDBusThread(FROM_HERE,
                              base::Bind(&ExportedObject::SendSignalInternal,
                                         this,
                                         start_time,
-                                        static_cast<void*>(signal_message)));
+                                        signal_message));
 }
 
 void ExportedObject::Unregister() {
@@ -153,9 +151,7 @@ void ExportedObject::OnExported(OnExportedCallback on_exported_callback,
 }
 
 void ExportedObject::SendSignalInternal(base::TimeTicks start_time,
-                                        void* in_signal_message) {
-  DBusMessage* signal_message =
-      static_cast<DBusMessage*>(in_signal_message);
+                                        DBusMessage* signal_message) {
   uint32 serial = 0;
   bus_->Send(signal_message, &serial);
   dbus_message_unref(signal_message);

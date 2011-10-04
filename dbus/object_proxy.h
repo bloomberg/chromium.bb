@@ -129,7 +129,7 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   // Starts the async method call. This is a helper function to implement
   // CallMethod().
   void StartAsyncMethodCall(int timeout_ms,
-                            void* request_message,
+                            DBusMessage* request_message,
                             ResponseCallback response_callback,
                             base::TimeTicks start_time);
 
@@ -141,7 +141,7 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   // Runs the response callback with the given response object.
   void RunResponseCallback(ResponseCallback response_callback,
                            base::TimeTicks start_time,
-                           void* response_message);
+                           DBusMessage* response_message);
 
   // Redirects the function call to OnPendingCallIsComplete().
   static void OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
