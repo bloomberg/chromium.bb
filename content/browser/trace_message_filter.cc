@@ -9,6 +9,7 @@
 
 
 TraceMessageFilter::TraceMessageFilter() :
+    has_child_(false),
     is_awaiting_end_ack_(false),
     is_awaiting_bpf_ack_(false) {
 }
@@ -19,21 +20,21 @@ TraceMessageFilter::~TraceMessageFilter() {
 void TraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   // Always on IO thread (BrowserMessageFilter guarantee).
   BrowserMessageFilter::OnFilterAdded(channel);
-
-  TraceController::GetInstance()->AddFilter(this);
 }
 
 void TraceMessageFilter::OnChannelClosing() {
   // Always on IO thread (BrowserMessageFilter guarantee).
   BrowserMessageFilter::OnChannelClosing();
 
-  if (is_awaiting_bpf_ack_)
-    OnEndTracingAck(std::vector<std::string>());
+  if (has_child_) {
+    if (is_awaiting_bpf_ack_)
+      OnEndTracingAck(std::vector<std::string>());
 
-  if (is_awaiting_end_ack_)
-    OnTraceBufferPercentFullReply(0.0f);
+    if (is_awaiting_end_ack_)
+      OnTraceBufferPercentFullReply(0.0f);
 
-  TraceController::GetInstance()->RemoveFilter(this);
+    TraceController::GetInstance()->RemoveFilter(this);
+  }
 }
 
 bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message,
@@ -41,6 +42,8 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message,
   // Always on IO thread (BrowserMessageFilter guarantee).
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(TraceMessageFilter, message, *message_was_ok)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ChildSupportsTracing,
+                        OnChildSupportsTracing)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_EndTracingAck, OnEndTracingAck)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TraceDataCollected,
                         OnTraceDataCollected)
@@ -73,6 +76,11 @@ void TraceMessageFilter::SendGetTraceBufferPercentFull() {
   DCHECK(!is_awaiting_bpf_ack_);
   is_awaiting_bpf_ack_ = true;
   Send(new ChildProcessMsg_GetTraceBufferPercentFull);
+}
+
+void TraceMessageFilter::OnChildSupportsTracing() {
+  has_child_ = true;
+  TraceController::GetInstance()->AddFilter(this);
 }
 
 void TraceMessageFilter::OnEndTracingAck(

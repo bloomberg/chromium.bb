@@ -33,10 +33,14 @@ class TraceMessageFilter : public BrowserMessageFilter {
 
  private:
   // Message handlers.
+  void OnChildSupportsTracing();
   void OnEndTracingAck(const std::vector<std::string>& known_categories);
   void OnTraceBufferFull();
   void OnTraceBufferPercentFullReply(float percent_full);
   void OnTraceDataCollected(const std::string& data);
+
+  // ChildTraceMessageFilter exists:
+  bool has_child_;
 
   // Awaiting ack for previously sent SendEndTracing
   bool is_awaiting_end_ack_;

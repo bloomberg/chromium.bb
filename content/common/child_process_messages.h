@@ -48,6 +48,9 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_DumpHandles)
 
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
 
+// Notify the browser that this child process supports tracing.
+IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ChildSupportsTracing)
+
 // Reply from child processes acking ChildProcessMsg_TraceChangeStatus(false).
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_EndTracingAck,
                      std::vector<std::string> /* known_categories */)

@@ -23,6 +23,7 @@ void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
       base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
   base::debug::TraceLog::GetInstance()->SetBufferFullCallback(
       base::Bind(&ChildTraceMessageFilter::OnTraceBufferFull, this));
+  channel_->Send(new ChildProcessHostMsg_ChildSupportsTracing());
 }
 
 void ChildTraceMessageFilter::OnFilterRemoved() {
