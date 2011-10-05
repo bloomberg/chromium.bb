@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <sys/nacl_imc_api.h>
-#include <sys/nacl_syscalls.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
