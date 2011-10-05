@@ -578,13 +578,6 @@ PrefProxyConfigTracker* OffTheRecordProfileImpl::GetProxyConfigTracker() {
   return pref_proxy_config_tracker_;
 }
 
-prerender::PrerenderManager* OffTheRecordProfileImpl::GetPrerenderManager() {
-  // We do not allow prerendering in OTR profiles at this point.
-  // TODO(tburkard): Figure out if we want to support this, and how, at some
-  // point in the future.
-  return NULL;
-}
-
 chrome_browser_net::Predictor* OffTheRecordProfileImpl::GetNetworkPredictor() {
   // We do not store information about websites visited in OTR profiles which
   // is necessary for a Predictor, so we do not have a Predictor at all.

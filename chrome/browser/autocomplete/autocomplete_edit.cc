@@ -25,6 +25,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -1022,7 +1023,7 @@ void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
   if (user_input_in_progress() && popup_->IsOpen()) {
     TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
     prerender::PrerenderManager* prerender_manager =
-        tab->profile()->GetPrerenderManager();
+        prerender::PrerenderManagerFactory::GetForProfile(tab->profile());
     if (prerender_manager)
       prerender_manager->AddPrerenderFromOmnibox(match.destination_url);
   }

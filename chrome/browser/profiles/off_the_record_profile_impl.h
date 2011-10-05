@@ -127,7 +127,6 @@ class OffTheRecordProfileImpl : public Profile,
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
-  virtual prerender::PrerenderManager* GetPrerenderManager() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void DeleteTransportSecurityStateSince(base::Time time) OVERRIDE;
 

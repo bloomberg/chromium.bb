@@ -21,6 +21,7 @@
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_history.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -249,8 +250,10 @@ PrerenderManager::PrerenderManager(Profile* profile,
 }
 
 PrerenderManager::~PrerenderManager() {
-  DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
-  STLDeleteElements(&prerender_conditions_);
+}
+
+void PrerenderManager::Shutdown() {
+  DoShutdown();
 }
 
 void PrerenderManager::SetPrerenderContentsFactory(
@@ -677,9 +680,9 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
     TabContents* tab_contents,
     const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
-  PrerenderManager* prerender_manager = profile->GetPrerenderManager();
+  PrerenderManager* prerender_manager =
+      PrerenderManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(tab_contents->browser_context()));
   if (!prerender_manager)
     return;
   if (!prerender_manager->is_enabled())
@@ -727,6 +730,12 @@ PrerenderContents* PrerenderManager::FindEntry(const GURL& url) {
   }
   // Entry not found.
   return NULL;
+}
+
+void PrerenderManager::DoShutdown() {
+  DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
+  STLDeleteElements(&prerender_conditions_);
+  profile_ = NULL;
 }
 
 bool PrerenderManager::DoesRateLimitAllowPrerender() const {

@@ -39,10 +39,6 @@ namespace net {
 class SSLConfigService;
 }
 
-namespace prerender {
-class PrerenderManager;
-}
-
 namespace speech_input {
 class SpeechRecognizer;
 }
@@ -482,10 +478,6 @@ class Profile : public content::BrowserContext {
   // Returns the helper object that provides the proxy configuration service
   // access to the the proxy configuration possibly defined by preferences.
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() = 0;
-
-  // Returns the PrerenderManager used to prerender entire webpages for this
-  // profile.
-  virtual prerender::PrerenderManager* GetPrerenderManager() = 0;
 
   // Returns the Predictor object used for dns prefetch.
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() = 0;

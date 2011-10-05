@@ -84,6 +84,7 @@ class TestPrerenderManager : public PrerenderManager {
          it != used_prerender_contents_.end(); ++it) {
       (*it)->set_final_status(FINAL_STATUS_USED);
     }
+    DoShutdown();
   }
 
   void AdvanceTime(base::TimeDelta delta) {
