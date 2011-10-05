@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 
-#include <math.h>
+#include <algorithm>
+#include <cmath>
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -14,6 +15,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
+
+using std::max;
+using std::min;
 
 namespace chromeos {
 
@@ -33,7 +37,8 @@ SkBitmap kBarsImagesAnimating[kNumBarsImages - 1];
 const int kNumArcsImages = 5;
 SkBitmap kArcsImagesAnimating[kNumArcsImages - 1];
 
-// Badge offsets.
+// Badge offsets.  If a badge is large enough that it won't fit within the icon
+// when using the right or bottom offset, it gets shifted inwards so it will.
 const int kBadgeLeftX = 0;
 const int kBadgeRightX = 14;
 const int kBadgeTopY = 0;
@@ -50,7 +55,7 @@ int StrengthIndex(int strength, int count) {
     float findex = (static_cast<float>(strength) / 100.0f) *
         nextafter(static_cast<float>(count), 0);
     int index = 1 + static_cast<int>(findex);
-    index = std::max(std::min(index, count), 1);
+    index = max(min(index, count), 1);
     return index;
   }
 }
@@ -480,7 +485,7 @@ void NetworkMenuIcon::SetConnectingIcon(const Network* network,
   }
   int index = static_cast<int>(
       animation * nextafter(static_cast<float>(image_count), 0));
-  index = std::max(std::min(index, image_count - 1), 0);
+  index = max(min(index, image_count - 1), 0);
 
   // Lazily cache images.
   if (images[index].empty()) {
@@ -618,20 +623,20 @@ const SkBitmap NetworkMenuIcon::GenerateBitmapFromComponents(
   canvas.DrawBitmapInt(icon, 0, 0);
 
   if (top_left_badge) {
-    canvas.DrawBitmapInt(
-        *top_left_badge, kBadgeLeftX, kBadgeTopY);
+    canvas.DrawBitmapInt(*top_left_badge, kBadgeLeftX, kBadgeTopY);
   }
   if (top_right_badge) {
-    canvas.DrawBitmapInt(
-        *top_right_badge, kBadgeRightX, kBadgeTopY);
+    int x = min(kBadgeRightX, icon.width() - top_right_badge->width());
+    canvas.DrawBitmapInt(*top_right_badge, x, kBadgeTopY);
   }
   if (bottom_left_badge) {
-    canvas.DrawBitmapInt(
-        *bottom_left_badge, kBadgeLeftX, kBadgeBottomY);
+    int y = min(kBadgeBottomY, icon.height() - bottom_left_badge->height());
+    canvas.DrawBitmapInt(*bottom_left_badge, kBadgeLeftX, y);
   }
   if (bottom_right_badge) {
-    canvas.DrawBitmapInt(
-        *bottom_right_badge, kBadgeRightX, kBadgeBottomY);
+    int x = min(kBadgeRightX, icon.width() - bottom_right_badge->width());
+    int y = min(kBadgeBottomY, icon.height() - bottom_right_badge->height());
+    canvas.DrawBitmapInt(*bottom_right_badge, x, y);
   }
 
   return canvas.ExtractBitmap();
