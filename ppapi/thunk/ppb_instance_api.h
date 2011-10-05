@@ -45,7 +45,7 @@ class PPB_Instance_FunctionAPI {
   virtual void SelectedFindResultChanged(PP_Instance instance,
                                          int32_t index) = 0;
 
-  // FlashFullscreen.
+  // Fullscreen.
   virtual PP_Bool IsFullscreen(PP_Instance instance) = 0;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) = 0;

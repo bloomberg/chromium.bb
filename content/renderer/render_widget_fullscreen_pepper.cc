@@ -293,7 +293,7 @@ void RenderWidgetFullscreenPepper::Close() {
   // If the fullscreen window is closed (e.g. user pressed escape), reset to
   // normal mode.
   if (plugin_)
-    plugin_->SetFullscreen(false, false);
+    plugin_->FlashSetFullscreen(false, false);
 
   // Call Close on the base class to destroy the WebWidget instance.
   RenderWidget::Close();
