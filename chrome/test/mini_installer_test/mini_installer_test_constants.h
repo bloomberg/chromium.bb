@@ -14,8 +14,8 @@ extern const wchar_t kChromeAppDir[];
 extern const wchar_t kChromeFrameAppDir[];
 extern const wchar_t kChromeFrameProductName[];
 extern const wchar_t kChromeMetaInstallerExecutable[];
-extern const wchar_t kChromeMiniInstallerExecutable[];
 extern const wchar_t kChromeProductName[];
+extern const wchar_t kChromeMiniInstallerExecutable[];
 extern const wchar_t kChromeSetupExecutable[];
 extern const wchar_t kChromeUserDataBackupDir[];
 extern const wchar_t kChromeUserDataDir[];
@@ -25,8 +25,6 @@ extern const wchar_t kFullInstall[];
 extern const wchar_t kFullInstallerPattern[];
 extern const wchar_t kGoogleUpdateExecutable[];
 extern const wchar_t kIEExecutable[];
-extern const wchar_t kSystemInstall[];
-extern const wchar_t kUserInstall[];
 extern const wchar_t kWinFolder[];
 
 // Window names.

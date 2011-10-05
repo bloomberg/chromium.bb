@@ -12,11 +12,12 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/command_line.h"
+#include "chrome/installer/util/browser_distribution.h"
 
 // This class has methods to install and uninstall Chrome mini installer.
 class ChromeMiniInstaller {
  public:
-  ChromeMiniInstaller(const std::wstring& install_type, bool is_chrome_frame);
+  ChromeMiniInstaller(bool system_install, bool is_chrome_frame);
   ~ChromeMiniInstaller() {}
 
   enum RepairChrome {
@@ -26,10 +27,12 @@ class ChromeMiniInstaller {
 
   // This method returns path to either program files
   // or documents and setting based on the install type.
-  std::wstring GetChromeInstallDirectoryLocation();
+  bool GetChromeInstallDirectoryLocation(FilePath* path);
 
   // Installs the latest full installer.
   void InstallFullInstaller(bool over_install);
+
+  void InstallUsingMultiInstall();
 
   // Installs chrome.
   void Install();
@@ -63,7 +66,7 @@ class ChromeMiniInstaller {
   // This method will perform a over install
   void OverInstall();
 
-  void SetBuildUnderTest(const std::wstring& build);
+  void SetBuildUnderTest(const std::string& build);
 
  private:
   // Will clean up the machine if Chrome install is messed up.
@@ -81,9 +84,6 @@ class ChromeMiniInstaller {
   // Checks for registry key on uninstall.
   bool CheckRegistryKeyOnUninstall(const std::wstring& key_path);
 
-  // Deletes specified folder after getting the install path.
-  void DeleteFolder(const wchar_t* folder_name);
-
   // Will delete user data profile.
   void DeleteUserDataFolder();
 
@@ -97,29 +97,20 @@ class ChromeMiniInstaller {
   HKEY GetRootRegistryKey();
 
   // Returns Chrome pv registry key value.
-  bool GetChromeVersionFromRegistry(std::wstring* reg_key_value);
+  bool GetChromeVersionFromRegistry(std::string* reg_key_value);
 
   // This method gets the shortcut path from start menu based on install type.
   FilePath GetStartMenuShortcutPath();
 
-  // Get path for uninstall.
-  std::wstring GetUninstallPath();
-
   // Get user data directory path.
   FilePath GetUserDataDirPath();
 
-  // Gets the path to launch Chrome.
-  bool GetChromeLaunchPath(FilePath* launch_path);
-
-  // This method will get Chrome.exe path and launch it.
-  void VerifyChromeLaunch(bool expected_status);
+  // Launch Chrome, assert process started.
+  // If |kill|, kill process after launch.
+  void LaunchChrome(bool kill);
 
   // This method verifies if Chrome/Chrome Frame installed correctly.
   void VerifyInstall(bool over_install);
-
-  // This method verifies installation of Chrome/Chrome Frame via machine
-  // introspection.
-  void VerifyMachineState();
 
   // This method will verify if ChromeFrame got successfully installed on the
   // machine.
@@ -128,44 +119,38 @@ class ChromeMiniInstaller {
   // Launch IE with |navigate_url|.
   void LaunchIE(const std::wstring& navigate_url);
 
-  // Launches the chrome installer and waits for it to end.
-  void LaunchInstaller(const FilePath& path,
-                       const wchar_t* process_name);
-
-  // Verifies if Chrome launches after install.
-  void LaunchAndCloseChrome(bool over_install);
-
-  // Launches any requested browser.
-  void LaunchBrowser(const FilePath& path,
-                     const std::wstring& args,
-                     bool expected_status);
+  // Run installer using provided |command|.
+  void RunInstaller(const CommandLine& command);
 
   // Compares the registry key values after overinstall.
-  bool VerifyOverInstall(const std::wstring& reg_key_value_before_overinstall,
-                         const std::wstring& reg_key_value_after_overinstall);
+  bool VerifyOverInstall(const std::string& reg_key_value_before_overinstall,
+                         const std::string& reg_key_value_after_overinstall);
 
   // This method will verify if the installed build is correct.
   bool VerifyStandaloneInstall();
 
-  // Get all the latest installers base on last modified date.
-  bool LocateInstallers(const std::wstring& build);
-
   // This method will create a command line to run apply tag.
   CommandLine GetCommandForTagging();
 
-  // This variable holds the install type.
-  // Install type can be either system or user level.
-  std::wstring install_type_;
+  bool GetFullInstaller(FilePath* path);
+  bool GetDiffInstaller(FilePath* path);
+  bool GetMiniInstaller(FilePath* path);
+  bool GetPreviousInstaller(FilePath* path);
+  bool GetStandaloneInstaller(FilePath* path);
+  bool GetInstaller(const std::string& pattern, FilePath* path);
+
+  // Get current browser distribution.
+  BrowserDistribution* GetCurrentBrowserDistribution();
+
+  // If true install system level. Otherwise install user level.
+  bool system_install_;
 
   bool is_chrome_frame_;
 
-  FilePath full_installer_;
-  FilePath diff_installer_;
-  FilePath previous_installer_;
-  FilePath standalone_installer_;
-
+  // Build under test.
+  std::string build_;
   // Build numbers.
-  std::wstring current_build_, previous_build_;
+  std::string current_build_, previous_build_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMiniInstaller);
 };

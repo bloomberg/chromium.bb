@@ -39,8 +39,6 @@ const wchar_t kGoogleUpdateExecutable[] = L"GoogleUpdate.exe";
 const wchar_t kIEExecutable[] = L"iexplore.exe";
 const wchar_t kInstallerWindow[] = L"Chrome Installer";
 const wchar_t kStandaloneInstaller[] = L"ChromeSetupTest.exe";
-const wchar_t kSystemInstall[] = L"system";
-const wchar_t kUserInstall[] = L"user";
 const wchar_t kUntaggedInstallerPattern[] = L"ChromeStandaloneSetup_";
 const wchar_t kWinFolder[] = L"win";
 
