@@ -40,7 +40,7 @@ struct NCDecodeTestCase NCDecoderTests[] = {
   },
   {
     "test2",
-    342,
+    341,
     (uint8_t *)"\x8d\x4c\x24\x04"
     "\x83\xe4\xf0"
     "\xff\x71\xfc"
