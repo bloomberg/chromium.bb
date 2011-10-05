@@ -7,6 +7,8 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/common/notification_service.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 
 namespace {
@@ -171,6 +173,18 @@ void PanelBrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
     cairo_paint(cr);
     gdk_region_destroy(dest_region);
   }
+}
+
+void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
+  bool was_active = IsActive();
+  BrowserWindowGtk::ActiveWindowChanged(active_window);
+  if (was_active == IsActive())  // State didn't change.
+    return;
+
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
+      Source<Panel>(panel_.get()),
+      NotificationService::NoDetails());
 }
 
 BrowserWindowGtk::TitleDecoration PanelBrowserWindowGtk::GetWindowTitle(
@@ -526,6 +540,7 @@ class NativePanelTestingGtk : public NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
+  virtual bool VerifyDrawingAttention() const OVERRIDE;
 
   PanelBrowserWindowGtk* panel_browser_window_gtk_;
 };
@@ -592,3 +607,12 @@ void NativePanelTestingGtk::FinishDragTitlebar() {
       GTK_DRAG_RESULT_NO_TARGET);
   MessageLoopForUI::current()->RunAllPending();
 }
+
+bool NativePanelTestingGtk::VerifyDrawingAttention() const {
+  std::string title;
+  BrowserWindowGtk::TitleDecoration decoration =
+      panel_browser_window_gtk_->GetWindowTitle(&title);
+  return panel_browser_window_gtk_->IsDrawingAttention() &&
+         decoration == BrowserWindowGtk::PANGO_MARKUP;
+}
+

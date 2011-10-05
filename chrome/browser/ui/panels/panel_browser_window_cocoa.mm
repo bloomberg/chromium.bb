@@ -64,6 +64,11 @@ bool PanelBrowserWindowCocoa::isClosed() {
 }
 
 void PanelBrowserWindowCocoa::ShowPanel() {
+  ShowPanelInactive();
+  ActivatePanel();
+}
+
+void PanelBrowserWindowCocoa::ShowPanelInactive() {
   if (isClosed())
     return;
 
@@ -76,11 +81,6 @@ void PanelBrowserWindowCocoa::ShowPanel() {
 
   NSRect finalFrame = ConvertCoordinatesToCocoa(bounds_);
   [controller_ revealAnimatedWithFrame:finalFrame];
-}
-
-void PanelBrowserWindowCocoa::ShowPanelInactive() {
-  // TODO(dimich): to be implemented.
-  ShowPanel();
 }
 
 gfx::Rect PanelBrowserWindowCocoa::GetPanelBounds() const {
@@ -272,9 +272,10 @@ class NativePanelTestingCocoa : public NativePanelTesting {
   virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
+  virtual bool VerifyDrawingAttention() const OVERRIDE;
 
  private:
-  PanelTitlebarViewCocoa* titlebar();
+  PanelTitlebarViewCocoa* titlebar() const;
   // Weak, assumed always to outlive this test API object.
   PanelBrowserWindowCocoa* native_panel_window_;
 };
@@ -288,7 +289,7 @@ NativePanelTestingCocoa::NativePanelTestingCocoa(NativePanel* native_panel)
   : native_panel_window_(static_cast<PanelBrowserWindowCocoa*>(native_panel)) {
 }
 
-PanelTitlebarViewCocoa* NativePanelTestingCocoa::titlebar() {
+PanelTitlebarViewCocoa* NativePanelTestingCocoa::titlebar() const {
   return [native_panel_window_->controller_ titlebarView];
 }
 
@@ -312,3 +313,8 @@ void NativePanelTestingCocoa::CancelDragTitlebar() {
 void NativePanelTestingCocoa::FinishDragTitlebar() {
   [titlebar() finishDragTitlebar];
 }
+
+bool NativePanelTestingCocoa::VerifyDrawingAttention() const {
+  return [titlebar() isDrawingAttention];
+}
+

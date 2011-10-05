@@ -99,6 +99,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
  private:
   friend class PanelBrowserViewTest;
+  friend class NativePanelTestingWin;
 
   enum PaintState {
     NOT_PAINTED,
