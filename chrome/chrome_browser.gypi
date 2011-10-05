@@ -4149,7 +4149,7 @@
               '-lXss',
             ],
           },
-        }],
+        }],        
         ['OS=="linux" and use_aura==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
@@ -4166,6 +4166,24 @@
             ['exclude', '^browser/ui/webui/certificate_viewer.h'],
             ['exclude', '^browser/ui/webui/certificate_viewer_ui.cc'],
             ['exclude', '^browser/ui/webui/certificate_viewer_ui.h'],
+          ],
+        }],
+        ['use_nss==1', {
+          'sources': [
+            'third_party/mozilla_security_manager/nsNSSCertHelper.cpp',
+            'third_party/mozilla_security_manager/nsNSSCertHelper.h',
+            'third_party/mozilla_security_manager/nsNSSCertificate.cpp',
+            'third_party/mozilla_security_manager/nsNSSCertificate.h',
+            'third_party/mozilla_security_manager/nsUsageArrayHelper.cpp',
+            'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
+          ],
+        }],
+        ['use_nss==0 and use_openssl==0', {
+          'sources!': [
+            'browser/certificate_manager_model.cc',
+            'browser/certificate_manager_model.h',
+            'browser/ui/webui/options/certificate_manager_handler.cc',
+            'browser/ui/webui/options/certificate_manager_handler.h',
           ],
         }],
         ['toolkit_uses_gtk == 1', {
@@ -4221,24 +4239,6 @@
                 'browser/crash_handler_host_linux_stub.cc',
               ],
             }],
-            ['use_openssl==0', {
-              'sources': [
-                'third_party/mozilla_security_manager/nsNSSCertHelper.cpp',
-                'third_party/mozilla_security_manager/nsNSSCertHelper.h',
-                'third_party/mozilla_security_manager/nsNSSCertificate.cpp',
-                'third_party/mozilla_security_manager/nsNSSCertificate.h',
-                'third_party/mozilla_security_manager/nsUsageArrayHelper.cpp',
-                'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
-              ],
-            }],
-          ],
-        }, {  # toolkit_uses_gtk != 1
-          'sources!': [
-            # TODO(mattm): Cert manager stuff is really !USE_NSS.
-            'browser/certificate_manager_model.cc',
-            'browser/certificate_manager_model.h',
-            'browser/ui/webui/options/certificate_manager_handler.cc',
-            'browser/ui/webui/options/certificate_manager_handler.h',
           ],
         }],
         ['OS=="mac"', {
@@ -4999,7 +4999,6 @@
             ['include', '^browser/ui/views/importer/import_lock_dialog_view.cc'],
             ['include', '^browser/ui/views/select_file_dialog.cc'],
             ['include', '^browser/ui/views/stubs_aura.cc'],
-            ['include', '^browser/ui/webui/options/certificate_manager_handler.cc'],
           ],
         }],
         [ 'use_openssl==1', {
