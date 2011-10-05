@@ -55,6 +55,7 @@ fetch_logs() {
   echo "Fetching the list of builders..."
   download $1 "$LOGS_DIR/builders"
   SLAVES=$(grep "<a href=\"builders\/" "$LOGS_DIR/builders" | \
+           grep 'td class="box"' | \
            sed "s/.*<a href=\"builders\///" | sed "s/\".*//" | \
            sort | uniq)
 
@@ -68,9 +69,21 @@ fetch_logs() {
     # We speed up the 'fetch' step by skipping the builds/tests which succeeded.
     # TODO(timurrrr): OTOH, we won't be able to check
     # if some suppression is not used anymore.
-    LIST_OF_BUILDS=$(grep "rev.*<a href=\"\.\./builders/.*/builds/[0-9]\+" \
-                     "$LOGS_DIR/slave_$S" | head -n 2 | \
-                     grep "failed" | grep -v "failed compile" | \
+    #
+    # The awk script here joins the lines ending with </td> to make it possible
+    # to find the failed builds.
+    LIST_OF_BUILDS=$(cat "$LOGS_DIR/slave_$S" | \
+                     awk 'BEGIN { buf = "" }
+                          {
+                            if ($0 ~ /<\/td>/) { buf = (buf $0); }
+                            else {
+                              if (buf) { print buf; buf="" }
+                              print $0
+                            }
+                          }
+                          END {if (buf) print buf}' | \
+                     grep "Failed" | \
+                     grep -v "failed compile" | \
                      sed "s/.*\/builds\///" | sed "s/\".*//")
 
     for BUILD in $LIST_OF_BUILDS
