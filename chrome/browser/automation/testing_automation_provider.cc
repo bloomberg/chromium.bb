@@ -64,10 +64,6 @@
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_prefs.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -124,6 +120,13 @@
 #include "ui/base/message_box_flags.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/plugins/webplugininfo.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
@@ -5842,8 +5845,8 @@ void TestingAutomationProvider::SetPolicies(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
 
-#if defined(OFFICIAL_BUILD)
-  reply.SendError("Disabled on official builds.");
+#if !defined(ENABLE_CONFIGURATION_POLICY) || defined(OFFICIAL_BUILD)
+  reply.SendError("Configuration Policy disabled");
 #else
   const policy::ConfigurationPolicyProvider::PolicyDefinitionList* list =
       policy::ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
@@ -5878,6 +5881,10 @@ void TestingAutomationProvider::GetPolicyDefinitionList(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
+
+#if !defined(ENABLE_CONFIGURATION_POLICY)
+  reply.SendError("Configuration Policy disabled");
+#else
   DictionaryValue response;
 
   const policy::ConfigurationPolicyProvider::PolicyDefinitionList* list =
@@ -5900,6 +5907,7 @@ void TestingAutomationProvider::GetPolicyDefinitionList(
   }
 
   reply.SendSuccess(&response);
+#endif
 }
 
 void TestingAutomationProvider::GetIndicesFromTab(
