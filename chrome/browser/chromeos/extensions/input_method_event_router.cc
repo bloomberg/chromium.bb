@@ -48,12 +48,6 @@ base::LazyInstance<InputMethodPrivateExtensionsWhitelist>
 
 namespace chromeos {
 
-// static
-ExtensionInputMethodEventRouter*
-    ExtensionInputMethodEventRouter::GetInstance() {
-  return Singleton<ExtensionInputMethodEventRouter>::get();
-}
-
 ExtensionInputMethodEventRouter::ExtensionInputMethodEventRouter() {
   input_method::InputMethodManager::GetInstance()->AddObserver(this);
 }
@@ -102,7 +96,6 @@ void ExtensionInputMethodEventRouter::PropertyListChanged(
     const input_method::ImePropertyList & current_ime_properties) {
 }
 
-// static
 std::string ExtensionInputMethodEventRouter::GetInputMethodForXkb(
     const std::string& xkb_id) {
   size_t prefix_length = std::string(kXkbPrefix).length();
@@ -110,7 +103,6 @@ std::string ExtensionInputMethodEventRouter::GetInputMethodForXkb(
   return xkb_id.substr(prefix_length);
 }
 
-// static
 bool ExtensionInputMethodEventRouter::IsExtensionWhitelisted(
     const std::string& extension_id) {
   return g_input_method_private_extensions_whitelist.Get().HasId(extension_id);

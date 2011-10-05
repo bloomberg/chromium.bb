@@ -7,6 +7,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 
 namespace {
 
@@ -21,16 +23,21 @@ GetInputMethodFunction::~GetInputMethodFunction() {
 }
 
 bool GetInputMethodFunction::RunImpl() {
-  if (!chromeos::ExtensionInputMethodEventRouter::
-      IsExtensionWhitelisted(extension_id())) {
+#if !defined(OS_CHROMEOS)
+  error_ = kErrorInputMethodPrivateApi;
+  return false;
+#else
+  chromeos::ExtensionInputMethodEventRouter* router =
+      profile_->GetExtensionService()->input_method_event_router();
+  if (!router->IsExtensionWhitelisted(extension_id())) {
     error_ = kErrorInputMethodPrivateApi;
     return false;
   }
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::GetInstance();
-  std::string input_method =
-      chromeos::ExtensionInputMethodEventRouter::GetInputMethodForXkb(
-          manager->current_input_method().id());
+  const std::string input_method =
+      router->GetInputMethodForXkb(manager->current_input_method().id());
   result_.reset(Value::CreateStringValue(input_method));
   return true;
+#endif
 }

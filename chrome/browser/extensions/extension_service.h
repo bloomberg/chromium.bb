@@ -67,6 +67,10 @@ class Profile;
 class SyncData;
 class Version;
 
+namespace chromeos {
+class ExtensionInputMethodEventRouter;
+}  // namespace chromeos
+
 // This is an interface class to encapsulate the dependencies that
 // various classes have on ExtensionService. This allows easy mocking.
 class ExtensionServiceInterface : public SyncableService {
@@ -469,6 +473,9 @@ class ExtensionService
   ExtensionFileBrowserEventRouter* file_browser_event_router() {
     return file_browser_event_router_.get();
   }
+  chromeos::ExtensionInputMethodEventRouter* input_method_event_router() {
+    return input_method_event_router_.get();
+  }
 #endif
 
   // Notify the frontend that there was an error loading an extension.
@@ -778,6 +785,8 @@ class ExtensionService
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<ExtensionFileBrowserEventRouter> file_browser_event_router_;
+  scoped_ptr<chromeos::ExtensionInputMethodEventRouter>
+      input_method_event_router_;
 #endif
 
   // A collection of external extension providers.  Each provider reads

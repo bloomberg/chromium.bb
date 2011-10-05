@@ -726,8 +726,9 @@ void ExtensionService::InitEventRouters() {
   file_browser_event_router_.reset(
       new ExtensionFileBrowserEventRouter(profile_));
   file_browser_event_router_->ObserveFileSystemEvents();
-  // Lazy initialization.
-  chromeos::ExtensionInputMethodEventRouter::GetInstance();
+
+  input_method_event_router_.reset(
+      new chromeos::ExtensionInputMethodEventRouter);
 
   ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
   ExtensionInputImeEventRouter::GetInstance()->Init();
