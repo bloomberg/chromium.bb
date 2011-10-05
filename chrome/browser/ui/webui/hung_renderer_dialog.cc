@@ -34,21 +34,31 @@ const int kHungRendererDialogHeight = 200;
 namespace browser {
 
 void ShowHungRendererDialog(TabContents* contents) {
+#if defined(USE_AURA)
+  // TODO(saintlou): Aura uses always "more WebUI".
+  HungRendererDialog::ShowHungRendererDialog(contents);
+#else
   if (ChromeWebUI::IsMoreWebUI()) {
     HungRendererDialog::ShowHungRendererDialog(contents);
     return;
   }
 
   ShowNativeHungRendererDialog(contents);
+#endif
 }
 
 void HideHungRendererDialog(TabContents* contents) {
+#if defined(USE_AURA)
+  // TODO(saintlou): Aura uses always "more WebUI".
+  HungRendererDialog::HideHungRendererDialog(contents);
+#else
   if (ChromeWebUI::IsMoreWebUI()) {
     HungRendererDialog::HideHungRendererDialog(contents);
     return;
   }
 
   HideNativeHungRendererDialog(contents);
+#endif
 }
 
 }  // namespace browser

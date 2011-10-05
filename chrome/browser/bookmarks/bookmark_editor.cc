@@ -40,6 +40,14 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
                           Profile* profile,
                           const EditDetails& details,
                           Configuration configuration) {
+#if defined(USE_AURA)
+  // TODO(saintlou): Aura uses always "more WebUI". Remove test when flackr is
+  // done as per his note below.
+  if (details.type == EditDetails::EXISTING_NODE ||
+        details.type == EditDetails::NEW_URL) {
+    ShowWebUI(profile, details);
+  }
+#else
   // TODO(flackr): Implement NEW_FOLDER type in WebUI and remove the type check.
   if (ChromeWebUI::IsMoreWebUI() && (
         details.type == EditDetails::EXISTING_NODE ||
@@ -51,4 +59,5 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
   // Delegate to the platform native bookmark editor code.
   ShowNative(parent_window, profile, details.parent_node, details,
       configuration);
+#endif
 }

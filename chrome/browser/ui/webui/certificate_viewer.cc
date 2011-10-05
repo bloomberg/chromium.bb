@@ -31,11 +31,16 @@ const int kDefaultHeight = 600;
 // Shows a certificate using the native or WebUI certificate viewer.
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
+#if defined(USE_AURA)
+  // TODO(saintlou): Aura uses always "more WebUI".
+  CertificateViewerDialog::ShowDialog(parent, cert);
+#else
   if (ChromeWebUI::IsMoreWebUI()) {
     CertificateViewerDialog::ShowDialog(parent, cert);
   } else {
     ShowNativeCertificateViewer(parent, cert);
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
