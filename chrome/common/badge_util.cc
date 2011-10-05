@@ -92,7 +92,8 @@ SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
   // add 'font_size - 1' to the height.
   SkScalar x = (badge_width - text_width)/2;
   SkScalar y = (icon.height() - font_size)/2 + font_size - 1;
-  canvas->drawText(badge_text.c_str(), badge_text.size(), x, y, *paint);
+  canvas->sk_canvas()->drawText(
+      badge_text.c_str(), badge_text.size(), x, y, *paint);
 
   // Return the generated image.
   return canvas->ExtractBitmap();

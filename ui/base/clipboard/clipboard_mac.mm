@@ -258,7 +258,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
 
   gfx::CanvasSkia canvas(width, height, false);
   {
-    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     CGContextRef gc = scoped_platform_paint.GetPlatformSurface();
     NSGraphicsContext* cocoa_gc =
         [NSGraphicsContext graphicsContextWithGraphicsPort:gc flipped:NO];

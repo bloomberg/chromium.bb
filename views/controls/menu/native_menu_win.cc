@@ -250,10 +250,11 @@ class NativeMenuWin::MenuHostWindow {
         // We currently don't support items with both icons and checkboxes.
         DCHECK(type != ui::MenuModel::TYPE_CHECK);
         gfx::CanvasSkia canvas(icon.width(), icon.height(), false);
-        canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+        canvas.sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
         canvas.DrawBitmapInt(icon, 0, 0);
         skia::DrawToNativeContext(
-            &canvas, dc, draw_item_struct->rcItem.left + kItemLeftMargin,
+            canvas.sk_canvas(), dc,
+            draw_item_struct->rcItem.left + kItemLeftMargin,
             draw_item_struct->rcItem.top + (draw_item_struct->rcItem.bottom -
                 draw_item_struct->rcItem.top - icon.height()) / 2, NULL);
       } else if (type == ui::MenuModel::TYPE_CHECK &&
@@ -280,12 +281,13 @@ class NativeMenuWin::MenuHostWindow {
 
         // Draw the background and the check.
         NativeTheme::instance()->Paint(
-            &canvas, NativeTheme::kMenuCheckBackground, state, bounds, extra);
+            canvas.sk_canvas(), NativeTheme::kMenuCheckBackground,
+            state, bounds, extra);
         NativeTheme::instance()->Paint(
-            &canvas, NativeTheme::kMenuCheck, state, bounds, extra);
+            canvas.sk_canvas(), NativeTheme::kMenuCheck, state, bounds, extra);
 
         // Draw checkbox to menu.
-        skia::DrawToNativeContext(&canvas, dc,
+        skia::DrawToNativeContext(canvas.sk_canvas(), dc,
             draw_item_struct->rcItem.left + kItemLeftMargin,
             draw_item_struct->rcItem.top + (draw_item_struct->rcItem.bottom -
                 draw_item_struct->rcItem.top - config.check_height) / 2, NULL);

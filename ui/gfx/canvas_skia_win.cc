@@ -281,16 +281,6 @@ void DivideRect(const gfx::Rect& rect,
 
 namespace gfx {
 
-CanvasSkia::CanvasSkia(int width, int height, bool is_opaque)
-    : skia::PlatformCanvas(width, height, is_opaque) {
-}
-
-CanvasSkia::CanvasSkia() : skia::PlatformCanvas() {
-}
-
-CanvasSkia::~CanvasSkia() {
-}
-
 // static
 void CanvasSkia::SizeStringInt(const string16& text,
                                const gfx::Font& font,
@@ -336,7 +326,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
                                int x, int y, int w, int h,
                                int flags) {
   SkRect fclip;
-  if (!getClipBounds(&fclip))
+  if (!canvas_->getClipBounds(&fclip))
     return;
   RECT text_bounds = { x, y, x + w, y + h };
   SkIRect clip;
@@ -354,7 +344,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
   HDC dc;
   HFONT old_font;
   {
-    skia::ScopedPlatformPaint scoped_platform_paint(this);
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas_);
     dc = scoped_platform_paint.GetPlatformSurface();
     SetBkMode(dc, TRANSPARENT);
     old_font = (HFONT)SelectObject(dc, font);
@@ -373,7 +363,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
   // Windows will have cleared the alpha channel of the text we drew. Assume
   // we're drawing to an opaque surface, or at least the text rect area is
   // opaque.
-  skia::MakeOpaque(this, clip.fLeft, clip.fTop, clip.width(),
+  skia::MakeOpaque(canvas_, clip.fLeft, clip.fTop, clip.width(),
                    clip.height());
 }
 
@@ -438,11 +428,11 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
   // opaque. We have to do this first since pixelShouldGetHalo will check for
   // 0 to see if a pixel has been modified to transparent, and black text that
   // Windows draw will look transparent to it!
-  skia::MakeOpaque(&text_canvas, 0, 0, w + 2, h + 2);
+  skia::MakeOpaque(text_canvas.sk_canvas(), 0, 0, w + 2, h + 2);
 
   uint32_t halo_premul = SkPreMultiplyColor(halo_color);
   SkBitmap& text_bitmap = const_cast<SkBitmap&>(
-      skia::GetTopDevice(text_canvas)->accessBitmap(true));
+      skia::GetTopDevice(*text_canvas.sk_canvas())->accessBitmap(true));
   for (int cur_y = 0; cur_y < h + 2; cur_y++) {
     uint32_t* text_row = text_bitmap.getAddr32(0, cur_y);
     for (int cur_x = 0; cur_x < w + 2; cur_x++) {
@@ -541,7 +531,7 @@ void CanvasSkia::DrawFadeTruncatingString(
 
   // Move the origin to |display_rect.origin()|. This simplifies all the
   // drawing so that both the source and destination can be (0,0).
-  save(kMatrix_SaveFlag);
+  canvas_->save(SkCanvas::kMatrix_SaveFlag);
   TranslateInt(display_rect.x(), display_rect.y());
 
   gfx::Rect solid_part(gfx::Point(), display_rect.size());
@@ -565,7 +555,7 @@ void CanvasSkia::DrawFadeTruncatingString(
       display_rect.width(), display_rect.height(), false));
 
   {
-    skia::ScopedPlatformPaint scoped_platform_paint(this);
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas_);
     HDC hdc = scoped_platform_paint.GetPlatformSurface();
     if (is_truncating_head)
       DrawTextGradientPart(hdc, gradient_canvas.get(), text, color,
@@ -578,15 +568,15 @@ void CanvasSkia::DrawFadeTruncatingString(
   }
 
   // Draw the solid part.
-  save(kClip_SaveFlag);
+  canvas_->save(SkCanvas::kClip_SaveFlag);
   ClipRectInt(solid_part.x(), solid_part.y(),
               solid_part.width(), solid_part.height());
   DrawStringInt(text, font, color,
                 text_rect.x(), text_rect.y(),
                 text_rect.width(), text_rect.height(),
                 flags);
-  restore();
-  restore();
+  canvas_->restore();
+  canvas_->restore();
 }
 
 }  // namespace gfx

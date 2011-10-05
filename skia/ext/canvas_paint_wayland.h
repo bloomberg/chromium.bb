@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/logging.h"
+#include "skia/ext/canvas_paint_common.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace skia {
@@ -39,7 +40,8 @@ class CanvasPaintT : public T {
 
   virtual ~CanvasPaintT() {
     if (!is_empty()) {
-      T::restoreToCount(1);
+      PlatformCanvas* canvas = GetPlatformCanvas(this);
+      canvas->restoreToCount(1);
 
       // Blit the dirty rect to the window.
       CHECK(cairo_window_surface_);
@@ -79,16 +81,17 @@ class CanvasPaintT : public T {
 
  private:
   void init(bool opaque) {
-    if (!T::initialize(region_->width, region_->height, opaque, NULL)) {
+    PlatformCanvas* canvas = GetPlatformCanvas(this);
+    if (!canvas->initialize(region_->width, region_->height, opaque, NULL)) {
       // Cause a deliberate crash;
       CHECK(false);
     }
 
     // Need to translate so that the dirty region appears at the origin of the
     // surface.
-    T::translate(-SkIntToScalar(region_->x), -SkIntToScalar(region_->y));
+    canvas->translate(-SkIntToScalar(region_->x), -SkIntToScalar(region_->y));
 
-    context_ = BeginPlatformPaint(this);
+    context_ = BeginPlatformPaint(canvas);
   }
 
   cairo_t* context_;

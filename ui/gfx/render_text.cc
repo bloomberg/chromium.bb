@@ -352,11 +352,11 @@ void RenderText::Draw(Canvas* canvas) {
       paint.setStyle(SkPaint::kFill_Style);
       paint.setColor(i->foreground);
       paint.setStrokeWidth(kStrikeWidth);
-      canvas->AsCanvasSkia()->drawLine(SkIntToScalar(bounds.x()),
-                                       SkIntToScalar(bounds.bottom()),
-                                       SkIntToScalar(bounds.right()),
-                                       SkIntToScalar(bounds.y()),
-                                       paint);
+      canvas->GetSkCanvas()->drawLine(SkIntToScalar(bounds.x()),
+                                      SkIntToScalar(bounds.bottom()),
+                                      SkIntToScalar(bounds.right()),
+                                      SkIntToScalar(bounds.y()),
+                                      paint);
     }
 
     bounds.set_x(bounds.x() + bounds.width());

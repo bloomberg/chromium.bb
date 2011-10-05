@@ -522,7 +522,7 @@ void AutocompleteResultView::Layout() {
 void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
   const ResultViewState state = GetState();
   if (state != NORMAL)
-    canvas->AsCanvasSkia()->drawColor(GetColor(state, BACKGROUND));
+    canvas->GetSkCanvas()->drawColor(GetColor(state, BACKGROUND));
 
   // Paint the icon.
   canvas->DrawBitmapInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),

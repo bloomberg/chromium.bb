@@ -176,7 +176,7 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
   border_paint.setAntiAlias(true);
   border_paint.setARGB(0xFF, 0xC8, 0xC8, 0xC8);
 
-  canvas->AsCanvasSkia()->drawRoundRect(
+  canvas->GetSkCanvas()->drawRoundRect(
       border_rect, SkIntToScalar(2), SkIntToScalar(2), border_paint);
 
   SkRect inner_rect = {
@@ -189,7 +189,7 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
   SkPaint inner_paint;
   inner_paint.setAntiAlias(true);
   inner_paint.setARGB(0xFF, 0xF8, 0xF8, 0xF8);
-  canvas->AsCanvasSkia()->drawRoundRect(
+  canvas->GetSkCanvas()->drawRoundRect(
       inner_rect, SkDoubleToScalar(1.5), SkDoubleToScalar(1.5), inner_paint);
 }
 

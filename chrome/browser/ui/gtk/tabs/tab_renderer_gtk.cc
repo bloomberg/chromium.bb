@@ -419,15 +419,16 @@ void TabRendererGtk::PaintFaviconArea(GdkEventExpose* event) {
       SkRect bounds;
       bounds.set(favicon_bounds_.x(), favicon_bounds_.y(),
           favicon_bounds_.right(), favicon_bounds_.bottom());
-      canvas.saveLayerAlpha(&bounds, static_cast<int>(throb_value * 0xff),
-                            SkCanvas::kARGB_ClipLayer_SaveFlag);
-      canvas.drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+      canvas.sk_canvas()->saveLayerAlpha(
+          &bounds, static_cast<int>(throb_value * 0xff),
+          SkCanvas::kARGB_ClipLayer_SaveFlag);
+      canvas.sk_canvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
       SkBitmap* active_bg = theme_service_->GetBitmapNamed(IDR_THEME_TOOLBAR);
       canvas.TileImageInt(*active_bg,
           x() + favicon_bounds_.x(), favicon_bounds_.y(),
           favicon_bounds_.x(), favicon_bounds_.y(),
           favicon_bounds_.width(), favicon_bounds_.height());
-      canvas.restore();
+      canvas.sk_canvas()->restore();
     }
   }
 
@@ -655,7 +656,7 @@ cairo_surface_t* TabRendererGtk::PaintToSurface() {
   gfx::CanvasSkia canvas(width(), height(), false);
   Paint(&canvas);
   return cairo_surface_reference(cairo_get_target(
-      skia::BeginPlatformPaint(&canvas)));
+      skia::BeginPlatformPaint(canvas.sk_canvas())));
 }
 
 void TabRendererGtk::SchedulePaint() {
@@ -887,8 +888,8 @@ void TabRendererGtk::PaintTabBackground(gfx::Canvas* canvas) {
     if (throb_value > 0) {
       canvas->SaveLayerAlpha(static_cast<int>(throb_value * 0xff),
                              gfx::Rect(width(), height()));
-      canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
-                                       SkXfermode::kClear_Mode);
+      canvas->GetSkCanvas()->drawARGB(0, 255, 255, 255,
+                                      SkXfermode::kClear_Mode);
       PaintActiveTabBackground(canvas);
       canvas->Restore();
     }

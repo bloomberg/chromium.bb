@@ -744,8 +744,8 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     const SkScalar radius(SkIntToScalar(
         views::BubbleBorder::GetCornerRadius()));
     bounds.Inset(kNormalHorizontalEdgeThickness, 0);
-    canvas->AsCanvasSkia()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
-                                          radius, paint);
+    canvas->GetSkCanvas()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
+                                         radius, paint);
   } else {
     canvas->FillRectInt(color, bounds.x(), bounds.y(), bounds.width(),
                         bounds.height());

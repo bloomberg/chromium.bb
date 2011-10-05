@@ -2309,25 +2309,25 @@ void NativeWidgetWin::RedrawLayeredWindowContents() {
     return;
 
   // We need to clip to the dirty rect ourselves.
-  layered_window_contents_->save(SkCanvas::kClip_SaveFlag);
+  layered_window_contents_->sk_canvas()->save(SkCanvas::kClip_SaveFlag);
   layered_window_contents_->ClipRectInt(invalid_rect_.x(),
                                         invalid_rect_.y(),
                                         invalid_rect_.width(),
                                         invalid_rect_.height());
   GetWidget()->GetRootView()->Paint(layered_window_contents_.get());
-  layered_window_contents_->restore();
+  layered_window_contents_->sk_canvas()->restore();
 
   RECT wr;
   GetWindowRect(&wr);
   SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
   POINT position = {wr.left, wr.top};
-  HDC dib_dc = skia::BeginPlatformPaint(layered_window_contents_.get());
+  HDC dib_dc = skia::BeginPlatformPaint(layered_window_contents_->sk_canvas());
   POINT zero = {0, 0};
   BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
   UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
                       RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
   invalid_rect_.SetRect(0, 0, 0, 0);
-  skia::EndPlatformPaint(layered_window_contents_.get());
+  skia::EndPlatformPaint(layered_window_contents_->sk_canvas());
 }
 
 void NativeWidgetWin::LockUpdates() {

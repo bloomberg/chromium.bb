@@ -431,7 +431,8 @@ TEST_F(RenderWidgetHostTest, Background) {
   canvas.FillRectInt(SK_ColorWHITE, 2, 0, 2, 2);
   canvas.FillRectInt(SK_ColorWHITE, 0, 2, 2, 2);
   canvas.FillRectInt(SK_ColorBLACK, 2, 2, 2, 2);
-  const SkBitmap& background = canvas.getDevice()->accessBitmap(false);
+  const SkBitmap& background =
+      canvas.sk_canvas()->getDevice()->accessBitmap(false);
 
   // Set the background and make sure we get back a copy.
   view->SetBackground(background);

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/canvas.h"
@@ -34,7 +35,7 @@ class Canvas;
 // source and destination colors are combined. Unless otherwise specified,
 // the variant that does not take a SkXfermode::Mode uses a transfer mode
 // of kSrcOver_Mode.
-class UI_EXPORT CanvasSkia : public skia::PlatformCanvas, public Canvas {
+class UI_EXPORT CanvasSkia : public Canvas {
  public:
   enum TruncateFadeMode {
     TruncateFadeTail,
@@ -47,6 +48,7 @@ class UI_EXPORT CanvasSkia : public skia::PlatformCanvas, public Canvas {
   CanvasSkia();
 
   CanvasSkia(int width, int height, bool is_opaque);
+  explicit CanvasSkia(SkCanvas* canvas);
 
   virtual ~CanvasSkia();
 
@@ -163,6 +165,10 @@ class UI_EXPORT CanvasSkia : public skia::PlatformCanvas, public Canvas {
   virtual ui::TextureID GetTextureID();
   virtual CanvasSkia* AsCanvasSkia();
   virtual const CanvasSkia* AsCanvasSkia() const;
+  virtual SkCanvas* GetSkCanvas();
+  virtual const SkCanvas* GetSkCanvas() const;
+  SkCanvas* sk_canvas() const { return canvas_; }
+  skia::PlatformCanvas* platform_canvas() const { return owned_canvas_.get(); }
 
  private:
   // Test whether the provided rectangle intersects the current clip rect.
@@ -179,6 +185,8 @@ class UI_EXPORT CanvasSkia : public skia::PlatformCanvas, public Canvas {
                      int flags);
 #endif
 
+  scoped_ptr<skia::PlatformCanvas> owned_canvas_;
+  SkCanvas* canvas_;
   DISALLOW_COPY_AND_ASSIGN(CanvasSkia);
 };
 

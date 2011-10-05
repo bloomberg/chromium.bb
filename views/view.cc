@@ -1137,7 +1137,7 @@ void View::UpdateChildLayerBounds(const gfx::Point& offset) {
 }
 
 void View::OnPaintLayer(gfx::Canvas* canvas) {
-  canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+  canvas->GetSkCanvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   PaintCommon(canvas);
 }
 

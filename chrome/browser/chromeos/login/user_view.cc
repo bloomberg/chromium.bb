@@ -52,7 +52,7 @@ class SignoutBackgroundPainter : public views::Painter {
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
     paint.setColor(kSignoutBackgroundColor);
-    canvas->AsCanvasSkia()->drawPath(path, paint);
+    canvas->GetSkCanvas()->drawPath(path, paint);
   }
 };
 

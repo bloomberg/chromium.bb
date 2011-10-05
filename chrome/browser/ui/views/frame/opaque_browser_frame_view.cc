@@ -802,7 +802,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   canvas->SaveLayerAlpha(
       255, gfx::Rect(x - kClientEdgeThickness, y, w + kClientEdgeThickness * 3,
                      h));
-  canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+  canvas->GetSkCanvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
   SkColor theme_toolbar_color =
       tp->GetColor(ThemeService::COLOR_TOOLBAR);

@@ -41,7 +41,7 @@ class TabBackground : public Background {
     gfx::Rect r(0, 0, view->width(), view->height());
     gfx::NativeTheme::ExtraParams extra;
     gfx::NativeTheme::instance()->Paint(
-        canvas->AsCanvasSkia(), gfx::NativeTheme::kTabPanelBackground,
+        canvas->GetSkCanvas(), gfx::NativeTheme::kTabPanelBackground,
         gfx::NativeTheme::kNormal, r, extra);
   }
 

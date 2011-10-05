@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ template <typename C>
 void RoundedView<C>::Paint(gfx::Canvas* canvas) {
   // Setup clip region.
   canvas->Save();
-  canvas->AsCanvasSkia()->clipPath(GetClipPath());
+  canvas->GetSkCanvas()->clipPath(GetClipPath());
   // Do original painting.
   C::Paint(canvas);
   canvas->Restore();
@@ -112,7 +112,7 @@ void RoundedView<C>::DrawFrame(gfx::Canvas* canvas) {
   view_rect.fTop -= kOriginShift;
   view_rect.inset(rounded_view::kStrokeWidth, rounded_view::kStrokeWidth);
   paint.setColor(rounded_view::kInnerFrameColor);
-  canvas->AsCanvasSkia()->
+  canvas->GetSkCanvas()->
       drawRoundRect(view_rect,
                     rounded_view::kCornerRadius - rounded_view::kStrokeWidth,
                     rounded_view::kCornerRadius - rounded_view::kStrokeWidth,
@@ -124,7 +124,7 @@ void RoundedView<C>::DrawFrame(gfx::Canvas* canvas) {
   view_rect.offset(rounded_view::kStrokeWidth - kDelta,
                    rounded_view::kStrokeWidth - kDelta);
   paint.setColor(rounded_view::kOuterFrameColor);
-  canvas->AsCanvasSkia()->drawRoundRect(view_rect, rounded_view::kCornerRadius,
+  canvas->GetSkCanvas()->drawRoundRect(view_rect, rounded_view::kCornerRadius,
                                         rounded_view::kCornerRadius, paint);
 }
 

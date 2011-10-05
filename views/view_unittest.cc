@@ -400,7 +400,7 @@ TEST_F(ViewTest, TouchEvent) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void TestView::Paint(gfx::Canvas* canvas) {
-  canvas->AsCanvasSkia()->getClipBounds(&last_clip_);
+  canvas->GetSkCanvas()->getClipBounds(&last_clip_);
 }
 
 void TestView::SchedulePaintInRect(const gfx::Rect& rect) {

@@ -294,7 +294,7 @@ void NativeComboboxViews::DrawArrow(gfx::Canvas* canvas,
   path.lineTo(SkIntToScalar(tip_x + shift_x), SkIntToScalar(tip_y + shift_y));
   path.lineTo(SkIntToScalar(tip_x - shift_x), SkIntToScalar(tip_y + shift_y));
   path.close();
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
 

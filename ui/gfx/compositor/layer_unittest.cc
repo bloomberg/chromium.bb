@@ -71,7 +71,7 @@ class LayerWithRealCompositorTest : public testing::Test {
     scoped_ptr<gfx::Canvas> canvas(CreateCanvasForLayer(layer));
     canvas->FillRectInt(color, 0, 0, layer->bounds().width(),
                         layer->bounds().height());
-    layer->SetCanvas(*canvas->AsCanvasSkia(), layer->bounds().origin());
+    layer->SetCanvas(*canvas->GetSkCanvas(), layer->bounds().origin());
   }
 
   void DrawTree(Layer* root) {
@@ -238,7 +238,7 @@ class LayerWithDelegateTest : public testing::Test {
     scoped_ptr<gfx::Canvas> canvas(CreateCanvasForLayer(layer));
     canvas->FillRectInt(color, 0, 0, layer->bounds().width(),
                         layer->bounds().height());
-    layer->SetCanvas(*canvas->AsCanvasSkia(), layer->bounds().origin());
+    layer->SetCanvas(canvas->GetSkCanvas(), layer->bounds().origin());
   }
 
   void DrawTree(Layer* root) {

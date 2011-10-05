@@ -261,7 +261,7 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
     foreground_paint.setShader(shader);
     foreground_paint.setAntiAlias(true);
     shader->unref();
-    canvas->AsCanvasSkia()->drawPath(path, foreground_paint);
+    canvas->GetSkCanvas()->drawPath(path, foreground_paint);
     return;
   }
 
@@ -301,7 +301,7 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
                    PI/2) / 2 + 0.5;
 
   canvas->SaveLayerAlpha(static_cast<int>(255.0 * opacity), complete_bounds);
-  canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+  canvas->GetSkCanvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
   canvas->DrawBitmapInt(*complete, complete_bounds.x(), complete_bounds.y());
   canvas->Restore();
 }
@@ -337,7 +337,7 @@ void PaintDownloadInterrupted(gfx::Canvas* canvas,
           0.5;
 
   canvas->SaveLayerAlpha(static_cast<int>(255.0 * opacity), complete_bounds);
-  canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+  canvas->GetSkCanvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
   canvas->DrawBitmapInt(*complete, complete_bounds.x(), complete_bounds.y());
   canvas->Restore();
 }

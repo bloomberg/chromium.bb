@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ static void DrawRoundedRect(
   } else {
     paint.setColor(top_color);
   }
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->GetSkCanvas()->drawPath(path, paint);
 
   if (stroke_color != 0) {
     // Expand rect by 0.5px so resulting stroke will take the whole pixel.
@@ -66,7 +66,7 @@ static void DrawRoundedRect(
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(SK_Scalar1));
     paint.setColor(stroke_color);
-    canvas->AsCanvasSkia()->drawRoundRect(
+    canvas->GetSkCanvas()->drawRoundRect(
       rect,
       SkIntToScalar(corner_radius), SkIntToScalar(corner_radius),
       paint);
@@ -91,7 +91,7 @@ static void DrawRoundedRectShadow(
   rect.set(
       SkIntToScalar(x + shadow / 2), SkIntToScalar(y + shadow / 2),
       SkIntToScalar(x + w - shadow / 2), SkIntToScalar(y + h - shadow / 2));
-  canvas->AsCanvasSkia()->drawRoundRect(
+  canvas->GetSkCanvas()->drawRoundRect(
       rect,
       SkIntToScalar(corner_radius), SkIntToScalar(corner_radius),
       paint);
@@ -112,7 +112,7 @@ static void DrawRectWithBorder(int w,
   if (padding > 0) {
     SkPaint paint;
     paint.setColor(padding_color);
-    canvas->AsCanvasSkia()->drawRectCoords(
+    canvas->GetSkCanvas()->drawRectCoords(
         SkIntToScalar(0), SkIntToScalar(0), SkIntToScalar(w), SkIntToScalar(h),
         paint);
   }
@@ -207,12 +207,12 @@ class RoundedBackground : public views::Background {
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
     paint.setColor(get_color());
-    canvas->AsCanvasSkia()->drawPath(path, paint);
+    canvas->GetSkCanvas()->drawPath(path, paint);
     // Redraw boundary region with correspoinding color.
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(stroke_width_));
     paint.setColor(stroke_color_);
-    canvas->AsCanvasSkia()->drawPath(path, paint);
+    canvas->GetSkCanvas()->drawPath(path, paint);
   }
 
  private:

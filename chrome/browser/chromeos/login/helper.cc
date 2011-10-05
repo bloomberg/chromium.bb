@@ -62,7 +62,7 @@ class BackgroundPainter : public views::Painter {
         NULL);
     paint.setShader(s);
     s->unref();
-    canvas->AsCanvasSkia()->drawRect(rect, paint);
+    canvas->GetSkCanvas()->drawRect(rect, paint);
   }
 
  private:

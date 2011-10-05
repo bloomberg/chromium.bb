@@ -100,7 +100,7 @@ int RenderTextWin::GetStringWidth() {
 }
 
 void RenderTextWin::Draw(Canvas* canvas) {
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas->AsCanvasSkia());
+  skia::ScopedPlatformPaint scoped_platform_paint(canvas->GetSkCanvas());
   HDC hdc = scoped_platform_paint.GetPlatformSurface();
   int saved_dc = SaveDC(hdc);
   DrawSelection(canvas);
@@ -590,7 +590,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   if (text().empty())
     return;
 
-  CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
+  SkCanvas* canvas_skia = canvas->GetSkCanvas();
   skia::ScopedPlatformPaint scoped_platform_paint(canvas_skia);
 
   Point offset(ToViewPoint(Point()));
@@ -645,11 +645,11 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
       strike.setStyle(SkPaint::kFill_Style);
       strike.setColor(run->foreground);
       strike.setStrokeWidth(kStrikeWidth);
-      canvas->AsCanvasSkia()->drawLine(SkIntToScalar(bounds.x()),
-                                       SkIntToScalar(bounds.bottom()),
-                                       SkIntToScalar(bounds.right()),
-                                       SkIntToScalar(bounds.y()),
-                                       strike);
+      canvas->GetSkCanvas()->drawLine(SkIntToScalar(bounds.x()),
+                                      SkIntToScalar(bounds.bottom()),
+                                      SkIntToScalar(bounds.right()),
+                                      SkIntToScalar(bounds.y()),
+                                      strike);
     }
     offset.Offset(run->width, 0);
   }

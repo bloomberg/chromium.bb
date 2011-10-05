@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SKIA_EXT_CANVAS_PAINT_WIN_H_
 #pragma once
 
+#include "skia/ext/canvas_paint_common.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace skia {
@@ -60,9 +61,10 @@ class CanvasPaintT : public T {
 
   virtual ~CanvasPaintT() {
     if (!isEmpty()) {
-      restoreToCount(1);
+      PlatformCanvas* canvas = GetPlatformCanvas(this);
+      canvas->restoreToCount(1);
       // Commit the drawing to the screen
-      skia::DrawToNativeContext(this, paint_dc_, ps_.rcPaint.left,
+      skia::DrawToNativeContext(canvas, paint_dc_, ps_.rcPaint.left,
                                 ps_.rcPaint.top, NULL);
     }
     if (for_paint_)
@@ -100,21 +102,22 @@ class CanvasPaintT : public T {
   }
 
   void init(bool opaque) {
+    PlatformCanvas* canvas = GetPlatformCanvas(this);
     // FIXME(brettw) for ClearType, we probably want to expand the bounds of
     // painting by one pixel so that the boundaries will be correct (ClearType
     // text can depend on the adjacent pixel). Then we would paint just the
     // inset pixels to the screen.
     const int width = ps_.rcPaint.right - ps_.rcPaint.left;
     const int height = ps_.rcPaint.bottom - ps_.rcPaint.top;
-    if (!initialize(width, height, opaque, NULL)) {
+    if (!canvas->initialize(width, height, opaque, NULL)) {
       // Cause a deliberate crash;
       *(char*) 0 = 0;
     }
 
     // This will bring the canvas into the screen coordinate system for the
     // dirty rect
-    translate(SkIntToScalar(-ps_.rcPaint.left),
-              SkIntToScalar(-ps_.rcPaint.top));
+    canvas->translate(SkIntToScalar(-ps_.rcPaint.left),
+                      SkIntToScalar(-ps_.rcPaint.top));
   }
 
   // If true, this canvas was created for a BeginPaint.

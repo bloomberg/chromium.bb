@@ -31,7 +31,7 @@ BackingStoreSkia::~BackingStoreSkia() {
 
 void BackingStoreSkia::SkiaShowRect(const gfx::Point& point,
                                     gfx::Canvas* canvas) {
-  canvas->AsCanvasSkia()->drawBitmap(bitmap_,
+  canvas->GetSkCanvas()->drawBitmap(bitmap_,
       SkIntToScalar(point.x()), SkIntToScalar(point.y()));
 }
 

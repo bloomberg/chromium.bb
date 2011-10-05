@@ -807,7 +807,7 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
     // rect does not include the icon).
     gfx::CanvasSkia canvas(kImageSize, kImageSize, false);
     // Make the background completely transparent.
-    canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+    canvas.sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
     {
       base::win::ScopedHICON empty_icon(
           IconUtil::CreateHICONFromSkBitmap(canvas.ExtractBitmap()));
@@ -1157,7 +1157,8 @@ void TableView::PaintAltText() {
   canvas.DrawStringWithHalo(alt_text_, font, SK_ColorDKGRAY, SK_ColorWHITE, 1,
                             1, bounds.width() - 2, bounds.height() - 2,
                             gfx::CanvasSkia::DefaultCanvasTextAlignment());
-  skia::DrawToNativeContext(&canvas, dc, bounds.x(), bounds.y(), NULL);
+  skia::DrawToNativeContext(
+      canvas.sk_canvas(), dc, bounds.x(), bounds.y(), NULL);
   ReleaseDC(GetNativeControlHWND(), dc);
 }
 
@@ -1255,7 +1256,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
               // NOTE: This may be invoked without the ListView filling in the
               // background (or rather windows paints background, then invokes
               // this twice). As such, we always fill in the background.
-              canvas.drawColor(
+              canvas.sk_canvas()->drawColor(
                   skia::COLORREFToSkColor(GetSysColor(bg_color_index)),
                   SkXfermode::kSrc_Mode);
               // + 1 for padding (we declared the image as 18x18 in the list-
@@ -1273,9 +1274,9 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
                               (intersection.right - intersection.left);
               to_draw.bottom = to_draw.top +
                               (intersection.bottom - intersection.top);
-              skia::DrawToNativeContext(&canvas, draw_info->nmcd.hdc,
-                                       intersection.left, intersection.top,
-                                       &to_draw);
+              skia::DrawToNativeContext(canvas.sk_canvas(), draw_info->nmcd.hdc,
+                                        intersection.left, intersection.top,
+                                        &to_draw);
               r = CDRF_SKIPDEFAULT;
             }
           }

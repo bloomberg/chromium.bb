@@ -94,7 +94,7 @@ void RenderTextLinux::Draw(Canvas* canvas) {
   Rect bounds(display_rect());
 
   // Clip the canvas to the text display area.
-  CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
+  SkCanvas* canvas_skia = canvas->GetSkCanvas();
 
   skia::ScopedPlatformPaint scoped_platform_paint(canvas_skia);
   cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
@@ -498,7 +498,7 @@ SelectionModel RenderTextLinux::RightSelectionModelByWord(
 PangoLayout* RenderTextLinux::EnsureLayout() {
   if (layout_ == NULL) {
     CanvasSkia canvas(display_rect().width(), display_rect().height(), false);
-    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
 
     layout_ = pango_cairo_create_layout(cr);

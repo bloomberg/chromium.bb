@@ -449,7 +449,7 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
     size_box_bounds_.set_x(size_box_bounds_.right() - gripper_size.width());
     size_box_bounds_.set_y(size_box_bounds_.bottom() - gripper_size.height());
 
-    gfx::NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+    gfx::NativeTheme::instance()->Paint(canvas->GetSkCanvas(),
                                         gfx::NativeTheme::kWindowResizeGripper,
                                         gfx::NativeTheme::kNormal,
                                         size_box_bounds_,

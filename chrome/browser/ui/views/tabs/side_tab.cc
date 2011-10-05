@@ -85,10 +85,10 @@ void SideTab::OnPaint(gfx::Canvas* canvas) {
     paint.setAntiAlias(true);
     SkRect border_rect = { SkIntToScalar(0), SkIntToScalar(0),
                            SkIntToScalar(width()), SkIntToScalar(height()) };
-    canvas->AsCanvasSkia()->drawRoundRect(border_rect,
-                                          SkIntToScalar(kRoundRectRadius),
-                                          SkIntToScalar(kRoundRectRadius),
-                                          paint);
+    canvas->GetSkCanvas()->drawRoundRect(border_rect,
+                                         SkIntToScalar(kRoundRectRadius),
+                                         SkIntToScalar(kRoundRectRadius),
+                                         paint);
   }
 
   if (ShouldShowIcon())

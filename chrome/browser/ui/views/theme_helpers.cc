@@ -31,7 +31,7 @@ void GetRebarGradientColors(int width, int x1, int x2,
   // On Windows XP+, if using a Theme, we can ask the theme to render the
   // gradient for us.
   if (!theme.IsThemeNull()) {
-    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     HDC dc = scoped_platform_paint.GetPlatformSurface();
     RECT rect = { 0, 0, width, 1 };
     theme.DrawThemeBackground(dc, 0, 0, &rect, NULL);
@@ -56,14 +56,15 @@ void GetRebarGradientColors(int width, int x1, int x2,
     // the gradient.
     gradient_shader->unref();
     paint.setStyle(SkPaint::kFill_Style);
-    canvas.drawRectCoords(SkIntToScalar(0), SkIntToScalar(0),
-                          SkIntToScalar(width), SkIntToScalar(1), paint);
+    canvas.sk_canvas()->drawRectCoords(
+        SkIntToScalar(0), SkIntToScalar(0),
+        SkIntToScalar(width), SkIntToScalar(1), paint);
   }
 
   // Extract the color values from the selected pixels
   // The | in the following operations forces the alpha to 0xFF. This is
   // needed as windows sets the alpha to 0 when it renders.
-  SkDevice* device = skia::GetTopDevice(canvas);
+  SkDevice* device = skia::GetTopDevice(*canvas.sk_canvas());
   const SkBitmap& bitmap = device->accessBitmap(false);
   SkAutoLockPixels lock(bitmap);
 

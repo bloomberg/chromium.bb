@@ -178,7 +178,7 @@ void InfoBarContainerGtk::PaintArrowOn(GtkWidget* widget,
   paint.setShader(gradient_shader);
   gradient_shader->unref();
 
-  gfx::CanvasSkiaPaint canvas(expose, false);
+  skia::PlatformCanvasPaint canvas(expose, false);
   canvas.drawPath(path, paint);
 
   paint.setShader(NULL);

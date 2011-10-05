@@ -68,8 +68,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // only need the background when we want it to look different, as when we're
   // selected.
   if (render_selection)
-    canvas->AsCanvasSkia()->drawColor(kSelectedBackgroundColor,
-                                      SkXfermode::kSrc_Mode);
+    canvas->GetSkCanvas()->drawColor(kSelectedBackgroundColor,
+                                     SkXfermode::kSrc_Mode);
 
   // Render the check.
   if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {

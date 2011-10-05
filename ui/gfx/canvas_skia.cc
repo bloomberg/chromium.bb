@@ -47,6 +47,25 @@ namespace gfx {
 ////////////////////////////////////////////////////////////////////////////////
 // CanvasSkia, public:
 
+CanvasSkia::CanvasSkia(int width, int height, bool is_opaque)
+    : owned_canvas_(new skia::PlatformCanvas(width, height, is_opaque)),
+      canvas_(owned_canvas_.get()) {
+}
+
+CanvasSkia::CanvasSkia()
+    : owned_canvas_(new skia::PlatformCanvas()),
+      canvas_(owned_canvas_.get()) {
+}
+
+CanvasSkia::CanvasSkia(SkCanvas* canvas)
+    : owned_canvas_(),
+      canvas_(canvas) {
+  DCHECK(canvas);
+}
+
+CanvasSkia::~CanvasSkia() {
+}
+
 // static
 int CanvasSkia::DefaultCanvasTextAlignment() {
   if (!base::i18n::IsRTL())
@@ -55,7 +74,7 @@ int CanvasSkia::DefaultCanvasTextAlignment() {
 }
 
 SkBitmap CanvasSkia::ExtractBitmap() const {
-  const SkBitmap& device_bitmap = getDevice()->accessBitmap(false);
+  const SkBitmap& device_bitmap = canvas_->getDevice()->accessBitmap(false);
 
   // Make a bitmap to return, and a canvas to draw into it. We don't just want
   // to call extractSubset or the copy constructor, since we want an actual copy
@@ -69,11 +88,11 @@ SkBitmap CanvasSkia::ExtractBitmap() const {
 // CanvasSkia, Canvas implementation:
 
 void CanvasSkia::Save() {
-  save();
+  canvas_->save();
 }
 
 void CanvasSkia::SaveLayerAlpha(uint8 alpha) {
-  saveLayerAlpha(NULL, alpha);
+  canvas_->saveLayerAlpha(NULL, alpha);
 }
 
 
@@ -83,26 +102,26 @@ void CanvasSkia::SaveLayerAlpha(uint8 alpha, const gfx::Rect& layer_bounds) {
              SkIntToScalar(layer_bounds.y()),
              SkIntToScalar(layer_bounds.right()),
              SkIntToScalar(layer_bounds.bottom()));
-  saveLayerAlpha(&bounds, alpha);
+  canvas_->saveLayerAlpha(&bounds, alpha);
 }
 
 void CanvasSkia::Restore() {
-  restore();
+  canvas_->restore();
 }
 
 bool CanvasSkia::ClipRectInt(int x, int y, int w, int h) {
   SkRect new_clip;
   new_clip.set(SkIntToScalar(x), SkIntToScalar(y),
                SkIntToScalar(x + w), SkIntToScalar(y + h));
-  return clipRect(new_clip);
+  return canvas_->clipRect(new_clip);
 }
 
 void CanvasSkia::TranslateInt(int x, int y) {
-  translate(SkIntToScalar(x), SkIntToScalar(y));
+  canvas_->translate(SkIntToScalar(x), SkIntToScalar(y));
 }
 
 void CanvasSkia::ScaleInt(int x, int y) {
-  scale(SkIntToScalar(x), SkIntToScalar(y));
+  canvas_->scale(SkIntToScalar(x), SkIntToScalar(y));
 }
 
 void CanvasSkia::FillRectInt(const SkColor& color, int x, int y, int w, int h) {
@@ -149,7 +168,7 @@ void CanvasSkia::DrawRectInt(const SkColor& color,
 
 void CanvasSkia::DrawRectInt(int x, int y, int w, int h, const SkPaint& paint) {
   SkIRect rc = { x, y, x + w, y + h };
-  drawIRect(rc, paint);
+  canvas_->drawIRect(rc, paint);
 }
 
 void CanvasSkia::DrawLineInt(const SkColor& color,
@@ -158,8 +177,8 @@ void CanvasSkia::DrawLineInt(const SkColor& color,
   SkPaint paint;
   paint.setColor(color);
   paint.setStrokeWidth(SkIntToScalar(1));
-  drawLine(SkIntToScalar(x1), SkIntToScalar(y1), SkIntToScalar(x2),
-           SkIntToScalar(y2), paint);
+  canvas_->drawLine(SkIntToScalar(x1), SkIntToScalar(y1), SkIntToScalar(x2),
+                    SkIntToScalar(y2), paint);
 }
 
 void CanvasSkia::DrawFocusRect(int x, int y, int width, int height) {
@@ -207,13 +226,13 @@ void CanvasSkia::DrawFocusRect(int x, int y, int width, int height) {
 }
 
 void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {
-  drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y));
+  canvas_->drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y));
 }
 
 void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap,
                                int x, int y,
                                const SkPaint& paint) {
-  drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y), &paint);
+  canvas_->drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y), &paint);
 }
 
 void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap,
@@ -249,7 +268,7 @@ void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap,
     // Workaround for apparent bug in Skia that causes image to occasionally
     // shift.
     SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
-    drawBitmapRect(bitmap, &src_rect, dest_rect, &paint);
+    canvas_->drawBitmapRect(bitmap, &src_rect, dest_rect, &paint);
     return;
   }
 
@@ -275,7 +294,7 @@ void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap,
   shader->unref();
 
   // The rect will be filled by the bitmap.
-  drawRect(dest_rect, p);
+  canvas_->drawRect(dest_rect, p);
 }
 
 void CanvasSkia::DrawStringInt(const string16& text,
@@ -316,24 +335,25 @@ void CanvasSkia::TileImageInt(const SkBitmap& bitmap,
   // CreateBitmapShader returns a Shader with a reference count of one, we
   // need to unref after paint takes ownership of the shader.
   shader->unref();
-  save();
-  translate(SkIntToScalar(dest_x - src_x), SkIntToScalar(dest_y - src_y));
+  canvas_->save();
+  canvas_->translate(SkIntToScalar(dest_x - src_x),
+                     SkIntToScalar(dest_y - src_y));
   ClipRectInt(src_x, src_y, w, h);
-  drawPaint(paint);
-  restore();
+  canvas_->drawPaint(paint);
+  canvas_->restore();
 }
 
 gfx::NativeDrawingContext CanvasSkia::BeginPlatformPaint() {
-  return skia::BeginPlatformPaint(this);
+  return skia::BeginPlatformPaint(canvas_);
 }
 
 void CanvasSkia::EndPlatformPaint() {
-  skia::EndPlatformPaint(this);
+  skia::EndPlatformPaint(canvas_);
 }
 
 #if !defined(OS_MACOSX)
 void CanvasSkia::Transform(const ui::Transform& transform) {
-  concat(transform.matrix());
+  canvas_->concat(transform.matrix());
 }
 #endif
 
@@ -345,12 +365,20 @@ const CanvasSkia* CanvasSkia::AsCanvasSkia() const {
   return this;
 }
 
+SkCanvas* CanvasSkia::GetSkCanvas() {
+  return canvas_;
+}
+
+const SkCanvas* CanvasSkia::GetSkCanvas() const {
+  return canvas_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CanvasSkia, private:
 
 bool CanvasSkia::IntersectsClipRectInt(int x, int y, int w, int h) {
   SkRect clip;
-  return getClipBounds(&clip) &&
+  return canvas_->getClipBounds(&clip) &&
       clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
                      SkIntToScalar(y + h));
 }

@@ -28,7 +28,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
         config.gutter_to_label - config.gutter_width, 0,
         config.gutter_width, height());
     gfx::NativeTheme::ExtraParams extra;
-    theme->Paint(canvas->AsCanvasSkia(), gfx::NativeTheme::kMenuPopupGutter,
+    theme->Paint(canvas->GetSkCanvas(), gfx::NativeTheme::kMenuPopupGutter,
                  gfx::NativeTheme::kNormal, gutter_bounds, extra);
     start_x = gutter_bounds.x() + config.gutter_width;
   }
@@ -36,7 +36,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect separator_bounds(start_x, 0, width(), height());
   gfx::NativeTheme::ExtraParams extra;
   extra.menu_separator.has_gutter = config.render_gutter;
-  theme->Paint(canvas->AsCanvasSkia(), gfx::NativeTheme::kMenuPopupSeparator,
+  theme->Paint(canvas->GetSkCanvas(), gfx::NativeTheme::kMenuPopupSeparator,
                gfx::NativeTheme::kNormal, separator_bounds, extra);
 }
 

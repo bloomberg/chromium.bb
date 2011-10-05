@@ -47,13 +47,13 @@ SkBitmap* CreateRadioButtonImage(bool selected) {
   paint.setShader(shader);
   shader->unref();
   int radius = kIndicatorSize / 2;
-  canvas.drawCircle(radius, radius, radius, paint);
+  canvas.sk_canvas()->drawCircle(radius, radius, radius, paint);
 
   paint.setStrokeWidth(SkIntToScalar(0));
   paint.setShader(NULL);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setColor(kBaseStroke);
-  canvas.drawCircle(radius, radius, radius, paint);
+  canvas.sk_canvas()->drawCircle(radius, radius, radius, paint);
 
   if (selected) {
     SkPoint selected_gradient_points[2];
@@ -69,15 +69,15 @@ SkBitmap* CreateRadioButtonImage(bool selected) {
     paint.setShader(shader);
     shader->unref();
     paint.setStyle(SkPaint::kFill_Style);
-    canvas.drawCircle(radius, radius,
-                      kSelectedIndicatorSize / 2, paint);
+    canvas.sk_canvas()->drawCircle(radius, radius,
+                                   kSelectedIndicatorSize / 2, paint);
 
     paint.setStrokeWidth(SkIntToScalar(0));
     paint.setShader(NULL);
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setColor(kIndicatorStroke);
-    canvas.drawCircle(radius, radius,
-                      kSelectedIndicatorSize / 2, paint);
+    canvas.sk_canvas()->drawCircle(radius, radius,
+                                   kSelectedIndicatorSize / 2, paint);
   }
   return new SkBitmap(canvas.ExtractBitmap());
 }

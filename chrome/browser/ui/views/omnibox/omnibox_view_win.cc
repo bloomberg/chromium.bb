@@ -2275,7 +2275,8 @@ void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
   // it to fully transparent so any antialiasing will look nice when painted
   // atop the edit.
   gfx::CanvasSkia canvas(scheme_rect.Width(), scheme_rect.Height(), false);
-  canvas.getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
+  SkCanvas* sk_canvas = canvas.sk_canvas();
+  sk_canvas->getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
 
   // Calculate the start and end of the stroke, which are just the lower left
   // and upper right corners of the canvas, inset by the radius of the endcap
@@ -2299,26 +2300,26 @@ void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
       SkIntToScalar(scheme_rect.Height()) };
 
   // Draw the unselected portion of the stroke.
-  canvas.save();
+  sk_canvas->save();
   if (selection_rect.isEmpty() ||
-      canvas.clipRect(selection_rect, SkRegion::kDifference_Op)) {
+      sk_canvas->clipRect(selection_rect, SkRegion::kDifference_Op)) {
     paint.setColor(LocationBarView::GetColor(security_level_,
                                              LocationBarView::SECURITY_TEXT));
-    canvas.drawLine(start_point.fX, start_point.fY,
-                    end_point.fX, end_point.fY, paint);
+    sk_canvas->drawLine(start_point.fX, start_point.fY,
+                        end_point.fX, end_point.fY, paint);
   }
-  canvas.restore();
+  sk_canvas->restore();
 
   // Draw the selected portion of the stroke.
-  if (!selection_rect.isEmpty() && canvas.clipRect(selection_rect)) {
+  if (!selection_rect.isEmpty() && sk_canvas->clipRect(selection_rect)) {
     paint.setColor(LocationBarView::GetColor(security_level_,
                                              LocationBarView::SELECTED_TEXT));
-    canvas.drawLine(start_point.fX, start_point.fY,
-                    end_point.fX, end_point.fY, paint);
+    sk_canvas->drawLine(start_point.fX, start_point.fY,
+                        end_point.fX, end_point.fY, paint);
   }
 
   // Now copy what we drew to the target HDC.
-  skia::DrawToNativeContext(&canvas, hdc,
+  skia::DrawToNativeContext(sk_canvas, hdc,
       scheme_rect.left + canvas_paint_clip_rect.left - canvas_clip_rect.left,
       std::max(scheme_rect.top, client_rect.top) + canvas_paint_clip_rect.top -
           canvas_clip_rect.top, &canvas_paint_clip_rect);

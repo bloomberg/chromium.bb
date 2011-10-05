@@ -293,7 +293,7 @@ void Layer::UpdateLayerCanvas() {
       draw_rect.width(), draw_rect.height(), false));
   canvas->TranslateInt(-draw_rect.x(), -draw_rect.y());
   delegate_->OnPaintLayer(canvas.get());
-  SetCanvas(*canvas->AsCanvasSkia(), draw_rect.origin());
+  SetCanvas(*canvas->GetSkCanvas(), draw_rect.origin());
 }
 
 void Layer::RecomputeHole() {

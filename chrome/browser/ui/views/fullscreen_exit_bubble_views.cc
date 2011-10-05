@@ -96,7 +96,7 @@ void FullscreenExitBubbleViews::FullscreenExitView::OnPaint(
   paint.setStyle(SkPaint::kFill_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setColor(SK_ColorBLACK);
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
 // FullscreenExitBubbleViews ---------------------------------------------------

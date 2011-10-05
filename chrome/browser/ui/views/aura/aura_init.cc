@@ -48,7 +48,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual void OnCaptureLost() OVERRIDE {
   }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
+    canvas->GetSkCanvas()->drawColor(color_, SkXfermode::kSrc_Mode);
   }
   virtual void OnWindowDestroying() OVERRIDE {
   }

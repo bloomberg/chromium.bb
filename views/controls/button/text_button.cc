@@ -141,8 +141,8 @@ void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
       // handle the case of having a non-NULL |normal_set_|.
       canvas->SaveLayerAlpha(static_cast<uint8>(
           button->GetAnimation()->CurrentValueBetween(0, 255)));
-      canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
-                                       SkXfermode::kClear_Mode);
+      canvas->GetSkCanvas()->drawARGB(0, 255, 255, 255,
+                                      SkXfermode::kClear_Mode);
       Paint(view, canvas, *set);
       canvas->Restore();
     } else {
@@ -213,7 +213,6 @@ void TextButtonNativeThemeBorder::Paint(const View& view,
   const TextButtonBase* tb = static_cast<const TextButton*>(&view);
   const gfx::NativeTheme* native_theme = gfx::NativeTheme::instance();
   gfx::NativeTheme::Part part = delegate_->GetThemePart();
-  gfx::CanvasSkia* skia_canvas = canvas->AsCanvasSkia();
   gfx::Rect rect(delegate_->GetThemePaintRect());
 
   if (tb->show_multiple_icon_states() &&
@@ -223,19 +222,20 @@ void TextButtonNativeThemeBorder::Paint(const View& view,
     gfx::NativeTheme::ExtraParams prev_extra;
     gfx::NativeTheme::State prev_state =
         delegate_->GetBackgroundThemeState(&prev_extra);
-    native_theme->Paint(skia_canvas, part, prev_state, rect, prev_extra);
+    native_theme->Paint(
+        canvas->GetSkCanvas(), part, prev_state, rect, prev_extra);
 
     // Composite foreground state above it.
     gfx::NativeTheme::ExtraParams extra;
     gfx::NativeTheme::State state = delegate_->GetForegroundThemeState(&extra);
     int alpha = delegate_->GetThemeAnimation()->CurrentValueBetween(0, 255);
-    skia_canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
-    native_theme->Paint(skia_canvas, part, state, rect, extra);
-    skia_canvas->Restore();
+    canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
+    native_theme->Paint(canvas->GetSkCanvas(), part, state, rect, extra);
+    canvas->Restore();
   } else {
     gfx::NativeTheme::ExtraParams extra;
     gfx::NativeTheme::State state = delegate_->GetThemeState(&extra);
-    native_theme->Paint(skia_canvas, part, state, rect, extra);
+    native_theme->Paint(canvas->GetSkCanvas(), part, state, rect, extra);
   }
 }
 

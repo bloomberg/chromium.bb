@@ -60,7 +60,7 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   paint.setColor(has_focus_ ? kFocusedBorderColor : kDefaultBorderColor);
   paint.setStrokeWidth(SkIntToScalar(has_focus_ ? 2 : 1));
 
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
 void FocusableBorder::GetInsets(gfx::Insets* insets) const {

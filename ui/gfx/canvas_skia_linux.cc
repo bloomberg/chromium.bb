@@ -93,7 +93,7 @@ DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
       text_direction_(base::i18n::GetFirstStrongCharacterDirection(text)) {
   DCHECK(!bounds_.IsEmpty());
 
-  cr_ = skia::BeginPlatformPaint(canvas_);
+  cr_ = skia::BeginPlatformPaint(canvas_->sk_canvas());
   layout_ = pango_cairo_create_layout(cr_);
 
   gfx::SetupPangoLayout(
@@ -120,7 +120,7 @@ DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
 
 DrawStringContext::~DrawStringContext() {
   cairo_restore(cr_);
-  skia::EndPlatformPaint(canvas_);
+  skia::EndPlatformPaint(canvas_->sk_canvas());
   g_object_unref(layout_);
   // NOTE: BeginPlatformPaint returned its surface, we shouldn't destroy it.
 }
@@ -176,7 +176,7 @@ void DrawStringContext::DrawWithHalo(const SkColor& text_color,
       0, 0, bounds_.width() + 2, bounds_.height() + 2);
 
   {
-    skia::ScopedPlatformPaint scoped_platform_paint(&text_canvas);
+    skia::ScopedPlatformPaint scoped_platform_paint(text_canvas.sk_canvas());
     cairo_t* text_cr = scoped_platform_paint.GetPlatformSurface();
 
     // TODO: The current approach (stroking the text path to generate the halo
@@ -216,7 +216,7 @@ void DrawStringContext::DrawWithHalo(const SkColor& text_color,
   }
 
   const SkBitmap& text_bitmap = const_cast<SkBitmap&>(
-      skia::GetTopDevice(text_canvas)->accessBitmap(false));
+      skia::GetTopDevice(*text_canvas.sk_canvas())->accessBitmap(false));
   canvas_->DrawBitmapInt(text_bitmap, text_x_ - 1, text_y_ - 1);
 }
 
@@ -236,16 +236,6 @@ void DrawStringContext::DrawUnderline(cairo_t* cr, double extra_edge_width) {
 }  // namespace
 
 namespace gfx {
-
-CanvasSkia::CanvasSkia(int width, int height, bool is_opaque)
-    : skia::PlatformCanvas(width, height, is_opaque) {
-}
-
-CanvasSkia::CanvasSkia() : skia::PlatformCanvas() {
-}
-
-CanvasSkia::~CanvasSkia() {
-}
 
 // static
 void CanvasSkia::SizeStringInt(const string16& text,
@@ -338,7 +328,7 @@ void CanvasSkia::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
     return;
   }
 
-  skia::ScopedPlatformPaint scoped_platform_paint(this);
+  skia::ScopedPlatformPaint scoped_platform_paint(canvas_);
   cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
   gdk_cairo_set_source_pixbuf(cr, pixbuf, x, y);
   cairo_paint(cr);

@@ -15,16 +15,6 @@
 
 namespace gfx {
 
-CanvasSkia::CanvasSkia(int width, int height, bool is_opaque)
-    : skia::PlatformCanvas(width, height, is_opaque) {
-}
-
-CanvasSkia::CanvasSkia() : skia::PlatformCanvas() {
-}
-
-CanvasSkia::~CanvasSkia() {
-}
-
 // static
 void CanvasSkia::SizeStringInt(const string16& text,
                                const gfx::Font& font,
@@ -48,7 +38,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
-  skia::ScopedPlatformPaint scoped_platform_paint(this);
+  skia::ScopedPlatformPaint scoped_platform_paint(canvas_);
   CGContextRef context = scoped_platform_paint.GetPlatformSurface();
   CGContextSaveGState(context);
 

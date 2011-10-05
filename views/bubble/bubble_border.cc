@@ -423,7 +423,7 @@ void BubbleBorder::DrawArrowInterior(gfx::Canvas* canvas,
   else
     path.lineTo(SkIntToScalar(tip_x + shift_x), SkIntToScalar(tip_y - shift_y));
   path.close();
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
 /////////////////////////
@@ -444,7 +444,7 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
   SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
   path.addRoundRect(rect, radius, radius);
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
 }  // namespace views

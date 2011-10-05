@@ -129,7 +129,7 @@ void ThemeInstallBubbleView::OnPaint(gfx::Canvas* canvas) {
            SkIntToScalar(height()));
   SkPath path;
   path.addRoundRect(rect, rad, SkPath::kCW_Direction);
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->GetSkCanvas()->drawPath(path, paint);
 
   int text_width = views::Label::font().GetStringWidth(text_);
   gfx::Rect body_bounds(kTextHorizPadding / 2, 0, text_width, height());

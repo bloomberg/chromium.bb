@@ -86,7 +86,7 @@ class MenuScrollButton : public View {
     gfx::Rect item_bounds(0, 0, width(), height());
     NativeTheme::ExtraParams extra;
     extra.menu_item.is_selected = false;
-    NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+    NativeTheme::instance()->Paint(canvas->GetSkCanvas(),
                                    NativeTheme::kMenuItemBackground,
                                    NativeTheme::kNormal, item_bounds, extra);
     SkColor arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
@@ -186,7 +186,7 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
   HDC dc = canvas->BeginPlatformPaint();
   gfx::Rect bounds(0, 0, width(), height());
   NativeTheme::ExtraParams extra;
-  NativeTheme::instance()->Paint(canvas->AsCanvasSkia(),
+  NativeTheme::instance()->Paint(canvas->GetSkCanvas(),
       NativeTheme::kMenuPopupBackground, NativeTheme::kNormal, bounds, extra);
   canvas->EndPlatformPaint();
 #elif defined(OS_CHROMEOS)
@@ -219,8 +219,8 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
   canvas->DrawRectInt(0, 0, width(), height(), paint);
 #else
   // This is the same as COLOR_TOOLBAR.
-  canvas->AsCanvasSkia()->drawColor(SkColorSetRGB(210, 225, 246),
-                                    SkXfermode::kSrc_Mode);
+  canvas->GetSkCanvas()->drawColor(SkColorSetRGB(210, 225, 246),
+                                   SkXfermode::kSrc_Mode);
 #endif
 }
 

@@ -63,7 +63,7 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
   margin_width_ = bounds.height() * kMarginRatio;
   gfx::CanvasSkia canvas(bounds.width(), bounds.height(), false);
   // Draw transparent background.
-  canvas.drawColor(0);
+  canvas.sk_canvas()->drawColor(0);
 
   // Calculate needed space.
   int flags = gfx::Canvas::TEXT_ALIGN_LEFT |
@@ -108,7 +108,7 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
 
     SkPaint paint;
     paint.setShader(composite_shader)->unref();
-    canvas.drawPaint(paint);
+    canvas.sk_canvas()->drawPaint(paint);
   }
 
   // Draw the text.
@@ -124,7 +124,7 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
 
   if (use_fading_for_text) {
     // Fade out only the text in the end. Use regular background.
-    canvas.drawColor(kLabelBackgoundColor, SkXfermode::kSrc_Mode);
+    canvas.sk_canvas()->drawColor(kLabelBackgoundColor, SkXfermode::kSrc_Mode);
     SkShader* image_shader = SkShader::CreateBitmapShader(
         *text_image_,
         SkShader::kRepeat_TileMode,
@@ -137,7 +137,7 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
 
     SkPaint paint;
     paint.setShader(composite_shader)->unref();
-    canvas.drawPaint(paint);
+    canvas.sk_canvas()->drawPaint(paint);
     text_image_.reset(new SkBitmap(canvas.ExtractBitmap()));
   }
 }

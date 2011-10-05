@@ -1,5 +1,5 @@
 
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #define SKIA_EXT_CANVAS_PAINT_MAC_H_
 #pragma once
 
+#include "skia/ext/canvas_paint_common.h"
 #include "skia/ext/platform_canvas.h"
 
 #import <Cocoa/Cocoa.h>
@@ -36,7 +37,7 @@ class CanvasPaintT : public T {
 
   virtual ~CanvasPaintT() {
     if (!is_empty()) {
-      T::restoreToCount(1);
+      GetPlatformCanvas(this)->restoreToCount(1);
 
       // Blit the dirty rect to the current context.
       CGImageRef image = CGBitmapContextCreateImage(context_);
@@ -81,18 +82,20 @@ class CanvasPaintT : public T {
 
  private:
   void init(bool opaque) {
-    if (!T::initialize(rectangle_.size.width, rectangle_.size.height,
-                       opaque, NULL)) {
+    PlatformCanvas* canvas = GetPlatformCanvas(this);
+    if (!canvas->initialize(rectangle_.size.width,
+                            rectangle_.size.height,
+                            opaque, NULL)) {
       // Cause a deliberate crash;
       *(volatile char*) 0 = 0;
     }
 
     // Need to translate so that the dirty region appears at the origin of the
     // surface.
-    T::translate(-SkDoubleToScalar(rectangle_.origin.x),
-                 -SkDoubleToScalar(rectangle_.origin.y));
+    canvas->translate(-SkDoubleToScalar(rectangle_.origin.x),
+                      -SkDoubleToScalar(rectangle_.origin.y));
 
-    context_ = GetBitmapContext(GetTopDevice(*this));
+    context_ = GetBitmapContext(GetTopDevice(*canvas));
   }
 
   CGContext* context_;

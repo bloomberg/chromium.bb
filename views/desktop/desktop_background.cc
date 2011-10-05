@@ -37,7 +37,7 @@ void DesktopBackground::Paint(gfx::Canvas* canvas, View* view) const {
     path.close();
 
     paint.setColor(SK_ColorGREEN);
-    canvas->AsCanvasSkia()->drawPath(path, paint);
+    canvas->GetSkCanvas()->drawPath(path, paint);
   }
 
   // Paint the shining sun.
@@ -47,7 +47,7 @@ void DesktopBackground::Paint(gfx::Canvas* canvas, View* view) const {
     path.close();
 
     paint.setColor(SK_ColorYELLOW);
-    canvas->AsCanvasSkia()->drawPath(path, paint);
+    canvas->GetSkCanvas()->drawPath(path, paint);
   }
 }
 

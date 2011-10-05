@@ -15,6 +15,8 @@
 #include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 
+class SkCanvas;
+
 namespace ui {
 class Transform;
 
@@ -233,6 +235,8 @@ class UI_EXPORT Canvas {
   // A quick and dirty way to obtain the underlying SkCanvas.
   virtual CanvasSkia* AsCanvasSkia();
   virtual const CanvasSkia* AsCanvasSkia() const;
+  virtual SkCanvas* GetSkCanvas();
+  virtual const SkCanvas* GetSkCanvas() const;
 };
 
 class UI_EXPORT CanvasPaint {

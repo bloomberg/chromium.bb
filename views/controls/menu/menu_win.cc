@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,10 +186,10 @@ class MenuHostWindow : public ui::WindowImpl {
       // by the label.
       if (data->icon.width() != 0 && data->icon.height() != 0) {
         gfx::CanvasSkia canvas(data->icon.width(), data->icon.height(), false);
-        canvas.drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+        canvas.sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
         canvas.DrawBitmapInt(data->icon, 0, 0);
         skia::DrawToNativeContext(
-            &canvas, hDC, lpdis->rcItem.left + kItemLeftMargin,
+            canvas.sk_canvas(), hDC, lpdis->rcItem.left + kItemLeftMargin,
             lpdis->rcItem.top + (lpdis->rcItem.bottom - lpdis->rcItem.top -
                 data->icon.height()) / 2, NULL);
       }

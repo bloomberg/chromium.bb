@@ -215,7 +215,7 @@ void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
   rect.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
   path.addRect(rect);
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
 void BubbleFrameView::ButtonPressed(views::Button* sender,

@@ -490,7 +490,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   gfx::CanvasSkia canvas(bitmap->bmiHeader.biWidth, bitmap->bmiHeader.biHeight,
                          false);
   {
-    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     HDC dc = scoped_platform_paint.GetPlatformSurface();
     ::SetDIBitsToDevice(dc, 0, 0, bitmap->bmiHeader.biWidth,
                         bitmap->bmiHeader.biHeight, 0, 0, 0,
@@ -505,7 +505,8 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   // we assume the alpha channel contains garbage and force the bitmap to be
   // opaque as well. Note that this  heuristic will fail on a transparent bitmap
   // containing only black pixels...
-  const SkBitmap& device_bitmap = canvas.getDevice()->accessBitmap(true);
+  const SkBitmap& device_bitmap =
+      canvas.sk_canvas()->getDevice()->accessBitmap(true);
   {
     SkAutoLockPixels lock(device_bitmap);
     bool has_invalid_alpha_channel = bitmap->bmiHeader.biBitCount < 32 ||

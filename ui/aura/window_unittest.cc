@@ -162,7 +162,7 @@ class TestWindowDelegate : public WindowDelegateImpl {
     delete this;
   }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
+    canvas->GetSkCanvas()->drawColor(color_, SkXfermode::kSrc_Mode);
   }
 
  private:

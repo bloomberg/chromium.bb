@@ -162,7 +162,7 @@ void DrawDeemphasized(const SkColor& color,
                       HDC paint_dc) {
   gfx::CanvasSkia canvas(paint_rect.width(), paint_rect.height(), true);
   {
-    skia::ScopedPlatformPaint scoped_platform_paint(&canvas);
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     HDC dc = scoped_platform_paint.GetPlatformSurface();
     BitBlt(dc,
            0,
@@ -175,7 +175,7 @@ void DrawDeemphasized(const SkColor& color,
            SRCCOPY);
   }
   canvas.FillRectInt(color, 0, 0, paint_rect.width(), paint_rect.height());
-  skia::DrawToNativeContext(&canvas, paint_dc, paint_rect.x(),
+  skia::DrawToNativeContext(canvas.sk_canvas(), paint_dc, paint_rect.x(),
                             paint_rect.y(), NULL);
 }
 
@@ -966,8 +966,8 @@ void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
                         dc_rect.right - dc_rect.left,
                         dc_rect.bottom - dc_rect.top);
 
-    skia::DrawToNativeContext(&canvas, *dc, dirty_rect.left, dirty_rect.top,
-                              NULL);
+    skia::DrawToNativeContext(canvas.sk_canvas(), *dc, dirty_rect.left,
+                              dirty_rect.top, NULL);
   } else {
     HBRUSH white_brush = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
     dc->FillRect(&dirty_rect, white_brush);

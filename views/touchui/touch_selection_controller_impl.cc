@@ -81,7 +81,7 @@ void PaintCircle(const Circle& circle, gfx::Canvas* canvas) {
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
   SkScalar radius = SkIntToScalar(circle.radius);
   path.addRoundRect(rect, radius, radius);
-  canvas->AsCanvasSkia()->drawPath(path, paint);
+  canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
 // The points may not match exactly, since the selection range computation may
@@ -278,8 +278,8 @@ class TouchSelectionControllerImpl::TouchContextMenuView
     canvas->DrawRectInt(0, 0, width(), height(), paint);
 #else
     // This is the same as COLOR_TOOLBAR.
-    canvas->AsCanvasSkia()->drawColor(SkColorSetRGB(210, 225, 246),
-                                      SkXfermode::kSrc_Mode);
+    canvas->GetSkCanvas()->drawColor(SkColorSetRGB(210, 225, 246),
+                                     SkXfermode::kSrc_Mode);
 #endif
   }
 
