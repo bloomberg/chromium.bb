@@ -381,18 +381,19 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
     chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
 #endif
 
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
 #if defined(OS_MACOSX)
-    // TODO(shess): Enable zombies for everyone.  http://crbug.com/94551
-    DCHECK(ObjcEvilDoers::ZombieEnable(true, 1000));
+    // Give the browser process a longer treadmill, since crashes
+    // there have more impact.
+    const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
+    ObjcEvilDoers::ZombieEnable(true, is_browser ? 10000 : 1000);
+
     SetUpBundleOverrides();
     chrome::common::mac::EnableCFBundleBlocker();
 #endif
 
     Profiling::ProcessStarted();
-
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    std::string process_type =
-        command_line.GetSwitchValueASCII(switches::kProcessType);
 
 #if defined(OS_POSIX)
     if (HandleVersionSwitches(command_line)) {
@@ -420,7 +421,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
     }
 #endif
 
-    if (process_type == "" &&
+    if (!command_line.HasSwitch(switches::kProcessType) &&
         command_line.HasSwitch(switches::kEnableBenchmarking)) {
       base::FieldTrial::EnableBenchmarking();
     }
