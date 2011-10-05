@@ -757,6 +757,19 @@ void ChromeActiveDocument::UpdateNavigationState(
     url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
 
   if (is_internal_navigation) {
+    // IE6 does not support tabs. If Chrome sent us a window open request
+    // indicating that the navigation needs to occur in a foreground tab or
+    // a popup window, then we need to ensure that the new window in IE6 is
+    // brought to the foreground.
+    if (GetIEVersion() == IE_6 &&
+        is_attach_external_tab_url &&
+        (cf_url.disposition() == NEW_FOREGROUND_TAB ||
+         cf_url.disposition() == NEW_POPUP)) {
+      base::win::ScopedComPtr<IWebBrowser2> wb2;
+      DoQueryService(SID_SWebBrowserApp, m_spClientSite, wb2.Receive());
+      if (wb2)
+        BaseActiveX::BringWebBrowserWindowToTop(wb2);
+    }
     base::win::ScopedComPtr<IDocObjectService> doc_object_svc;
     base::win::ScopedComPtr<IWebBrowserEventsService> web_browser_events_svc;
 
