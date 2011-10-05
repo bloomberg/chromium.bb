@@ -40,6 +40,7 @@
 #define TCMALLOC_FREE_LIST_H_
 
 #include <stddef.h>
+#include "internal_logging.h"  // For CRASH() macro.
 #include "linked_list.h"
 
 namespace tcmalloc {
@@ -69,7 +70,11 @@ inline void FL_Init(void *t) {
 }
 
 inline void FL_Push(void **list, void *element) {
-  SLL_Push(list,element);
+  if(*list != element) {
+    SLL_Push(list,element);
+    return;
+  }
+  CRASH("Double Free of %p detected", element);
 }
 
 inline void *FL_Pop(void **list) {

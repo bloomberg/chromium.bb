@@ -62,12 +62,20 @@
 #ifdef TCMALLOC_USE_DOUBLYLINKED_FREELIST
 
 #include <stddef.h>
-#include "internal_logging.h" //for ASSERT
+#include "free_list.h"
 
+// TODO(jar): We should use C++ rather than a macro here.
 #define MEMORY_CHECK(v1, v2) \
   if (v1 != v2) CRASH("Memory corruption detected.\n")
 
 namespace {
+void EnsureNonLoop(void* node, void* next) {
+  // We only have time to do minimal checking.  We don't traverse the list, but
+  // only look for an immediate loop (cycle back to ourself).
+  if (node != next) return;
+  CRASH("Circular loop in list detected: %p\n", next);
+}
+
 // Returns value of the |previous| pointer w/out running a sanity
 // check.
 inline void *FL_Previous_No_Check(void *t) {
@@ -88,10 +96,12 @@ void *FL_Previous(void *t) {
 }
 
 inline void FL_SetPrevious(void *t, void *n) {
+  EnsureNonLoop(t, n);
   reinterpret_cast<void**>(t)[1] = n;
 }
 
 inline void FL_SetNext(void *t, void *n) {
+  EnsureNonLoop(t, n);
   reinterpret_cast<void**>(t)[0] = n;
 }
 
