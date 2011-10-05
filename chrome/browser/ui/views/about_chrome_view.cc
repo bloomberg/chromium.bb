@@ -252,17 +252,17 @@ void AboutChromeView::Init() {
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::vector<size_t> url_offsets;
-  text = UTF16ToWide(l10n_util::GetStringFUTF16(IDS_ABOUT_TERMS_OF_SERVICE,
-                                                string16(),
-                                                string16(),
-                                                &url_offsets));
+  text = l10n_util::GetStringFUTF16(IDS_ABOUT_TERMS_OF_SERVICE,
+                                    string16(),
+                                    string16(),
+                                    &url_offsets);
 
   main_label_chunk4_ = text.substr(0, url_offsets[0]);
   main_label_chunk5_ = text.substr(url_offsets[0]);
 
   // The Terms of Service URL at the bottom.
   terms_of_service_url_ = new views::Link(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TERMS_OF_SERVICE)));
+      l10n_util::GetStringUTF16(IDS_TERMS_OF_SERVICE));
   AddChildView(terms_of_service_url_);
   terms_of_service_url_->set_listener(this);
 
@@ -422,12 +422,13 @@ void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
 
   // And now the Terms of Service and position the TOS url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      main_label_chunk4_, terms_of_service_url_, &terms_of_service_url_rect_,
-      &position, text_direction_is_rtl_, label_bounds, font);
+      UTF16ToWideHack(main_label_chunk4_), terms_of_service_url_,
+      &terms_of_service_url_rect_, &position, text_direction_is_rtl_,
+      label_bounds, font);
   // The last text chunk doesn't have a URL associated with it.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-       main_label_chunk5_, NULL, NULL, &position, text_direction_is_rtl_,
-       label_bounds, font);
+       UTF16ToWideHack(main_label_chunk5_), NULL, NULL, &position,
+       text_direction_is_rtl_, label_bounds, font);
 
   // Position the TOS URL within the main label.
   terms_of_service_url_->SetBounds(terms_of_service_url_rect_.x(),
