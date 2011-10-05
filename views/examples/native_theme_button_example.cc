@@ -10,12 +10,34 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/canvas.h"
-#include "views/examples/example_combobox_model.h"
 #include "views/controls/label.h"
 #include "views/layout/grid_layout.h"
 #include "views/native_theme_painter.h"
 
 namespace {
+
+class ExampleComboboxModel : public ui::ComboboxModel {
+ public:
+  ExampleComboboxModel(const char** strings, int count)
+      : strings_(strings), count_(count) {
+  }
+
+  virtual ~ExampleComboboxModel() {}
+
+  // Overridden from ui::ComboboxModel:
+  virtual int GetItemCount() OVERRIDE {
+    return count_;
+  }
+  virtual string16 GetItemAt(int index) OVERRIDE {
+    return ASCIIToUTF16(strings_[index]);
+  }
+
+ private:
+  const char** strings_;
+  int count_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExampleComboboxModel);
+};
 
 const char* kParts[] = {
     "PushButton",

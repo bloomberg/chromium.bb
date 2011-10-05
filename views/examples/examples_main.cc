@@ -30,7 +30,6 @@
 #include "views/examples/single_split_view_example.h"
 #include "views/examples/tabbed_pane_example.h"
 #include "views/examples/table2_example.h"
-#include "views/examples/text_example.h"
 #include "views/examples/textfield_example.h"
 #include "views/examples/throbber_example.h"
 #include "views/examples/widget_example.h"
@@ -87,7 +86,6 @@ void ExamplesMain::Init() {
   examples_.push_back(new NativeWidgetViewsExample(this));
   examples_.push_back(new TextfieldExample(this));
   examples_.push_back(new ButtonExample(this));
-  examples_.push_back(new TextExample(this));
   examples_.push_back(new BubbleExample(this));
   examples_.push_back(new ThrobberExample(this));
   examples_.push_back(new ComboboxExample(this));
@@ -105,8 +103,8 @@ void ExamplesMain::Init() {
   examples_.push_back(new WidgetExample(this));
   examples_.push_back(new MenuExample(this));
 
-  for (std::vector<ExampleBase*>::const_iterator i(examples_.begin());
-       i != examples_.end(); ++i)
+  for(std::vector<ExampleBase*>::const_iterator i(examples_.begin());
+      i != examples_.end(); ++i)
     AddExample(*i);
 
   window->Show();
