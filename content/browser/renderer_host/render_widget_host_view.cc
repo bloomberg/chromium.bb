@@ -28,7 +28,13 @@ void RenderWidgetHostView::GetDefaultScreenInfo(
 }
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(OS_POSIX) && defined(USE_AURA)
+// static
+void RenderWidgetHostView::GetDefaultScreenInfo(
+    WebKit::WebScreenInfo* results) {
+  NOTIMPLEMENTED();
+}
+#elif defined(TOUCH_UI)
 // static
 void RenderWidgetHostView::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
