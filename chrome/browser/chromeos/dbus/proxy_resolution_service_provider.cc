@@ -80,13 +80,17 @@ class ProxyResolverImpl : public ProxyResolverInterface {
       scoped_refptr<dbus::ExportedObject> exported_object) {
     DCHECK(OnOriginThread());
 
-    // GetDefaultProfile() must be called on UI thread.
+    // GetDefaultProfile() and GetRequestContext() must be called on UI
+    // thread.
     Profile* profile = ProfileManager::GetDefaultProfile();
+    scoped_refptr<net::URLRequestContextGetter> getter =
+        profile->GetRequestContext();
+
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ProxyResolverImpl::ResolveProxyInternal,
                    this,
-                   profile,
+                   getter,
                    source_url,
                    signal_interface,
                    signal_name,
@@ -96,7 +100,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
  private:
   // Helper function for ResolveProxy().
   void ResolveProxyInternal(
-      Profile* profile,
+      scoped_refptr<net::URLRequestContextGetter> getter,
       const std::string& source_url,
       const std::string& signal_interface,
       const std::string& signal_name,
@@ -120,8 +124,6 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     }
 
     // Check if we have the URLRequestContextGetter.
-    scoped_refptr<net::URLRequestContextGetter> getter =
-        profile->GetRequestContext();
     if (!getter) {
       request->error_ = "No URLRequestContextGetter";
       request->OnCompletion(net::ERR_UNEXPECTED);
