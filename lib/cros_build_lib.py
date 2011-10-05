@@ -92,11 +92,12 @@ class RunCommandError(Exception):
 
 
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
-               exit_code=False, redirect_stdout=False, redirect_stderr=False,
+               exit_code=True, redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False,
                env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
-               chroot_args=None, debug_level=DebugLevel.INFO):
+               chroot_args=None, debug_level=DebugLevel.INFO,
+               error_code_ok=False):
   """Runs a command.
 
   Args:
@@ -104,9 +105,11 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       must be true. Otherwise the command must be an array of arguments, and
       shell must be false.
     print_cmd: prints the command before running it.
-    error_ok: does not raise an exception on error.
+    error_ok: ***DEPRECATED, use error_code_ok instead***
+              Does not raise an exception on any errors.
     error_message: prints out this message when an error occurrs.
-    exit_code: returns the return code of the shell command.
+    exit_code: ***DEPRECATED, RunCommand always returns the exit code, unless
+                  subprocess.Popen raises an exception.***
     redirect_stdout: returns the stdout.
     redirect_stderr: holds stderr output until input is communicated.
     cwd: the working directory to run this cmd.
@@ -135,6 +138,9 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                  coming from subprocess as well.  Having a debug level less than
                  the global debug level has the effect of muting this command.
                  Valid debug levels for RunCommand are DEBUG and INFO.
+    error_code_ok: Does not raise an exception when command returns a non-zero
+                   exit code.  Instead, returns the CommandResult object
+                   containing the exit code.
   Returns:
     A CommandResult object.
 
@@ -219,10 +225,9 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       if ignore_sigint:
         signal.signal(signal.SIGINT, old_sigint)
 
-    if exit_code:
-      cmd_result.returncode = proc.returncode
+    cmd_result.returncode = proc.returncode
 
-    if not error_ok and proc.returncode:
+    if not error_ok and not error_code_ok and proc.returncode:
       msg = ('Failed command "%r" with extra env %r\n' % (cmd, extra_env) +
              (error_message or cmd_result.error or cmd_result.output or ''))
       raise RunCommandError(msg, cmd, proc.returncode)

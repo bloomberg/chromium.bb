@@ -7,13 +7,27 @@
 import errno
 import os
 import shutil
-import shlex
 import signal
 import subprocess
 import tempfile
 import unittest
 import cros_build_lib
 import mox
+
+
+class TestRunCommandNoMock(unittest.TestCase):
+  """Class that tests RunCommand by not mocking subprocess.Popen"""
+
+  def testErrorCodeNotRaisesError(self):
+    """Don't raise exception when command returns non-zero exit code."""
+    result = cros_build_lib.RunCommand(['ls', '/does/not/exist'],
+                                        error_code_ok=True)
+    self.assertTrue(result.returncode != 0)
+
+  def testReturnCodeNotZeroErrorOkNotRaisesError(self):
+    """Raise error when proc.communicate() returns non-zero."""
+    self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.RunCommand,
+                      ['/does/not/exist'])
 
 
 class TestRunCommand(unittest.TestCase):
@@ -119,15 +133,10 @@ class TestRunCommand(unittest.TestCase):
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
     real_cmd = ['cros_sdk', '--'] + cmd_list
-    self._TestCmd(cmd_list, real_cmd, rc_kv=dict(enter_chroot=True))
+    self._TestCmd(cmd_list, real_cmd, rc_kv=dict(exit_code=True,
+                                                 enter_chroot=True))
 
-  def testReturnCodeNotZeroErrorOkNotRaisesError(self):
-    """Raise error when proc.communicate() returns non-zero."""
-    self.proc_mock.returncode = 1
-    cmd = 'test cmd'
-    real_cmd = [ '/bin/sh', '-c', cmd ]
-    self._TestCmd(cmd, real_cmd,
-                  rc_kv=dict(error_ok=True, shell=True))
+
 
   def testCommandFailureRaisesError(self, ignore_sigint=False):
     """Verify error raised by communicate() is caught.
@@ -210,6 +219,7 @@ class TestRunCommand(unittest.TestCase):
     self.mox.VerifyAll()
 
     self._AssertCrEqual(expected_result, actual_result)
+
 
   def testEnvWorks(self):
     """Test RunCommand(..., env=xyz) works."""
