@@ -3742,6 +3742,13 @@
             # files which, as of swig 1.3.31 that comes with 10.5 and 10.6,
             # may not compile cleanly at -Wall.
             'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',  # -Wno-error
+
+            # Link with python2.6. Using -L/usr/lib and -lpython2.6 does not
+            # work with the -isysroot argument passed in. Even if it did,
+            # the linker shouldn't use any other lib not in the 10.5 sdk.
+            'OTHER_LDFLAGS': [
+              '/usr/lib/libpython2.6.dylib'
+            ],
           },
           'conditions': [
             ['os_posix == 1 and OS!="mac"', {
@@ -3767,13 +3774,8 @@
               ],
               'include_dirs': [
                 '..',
-                '$(SDKROOT)/usr/include/python2.5',
+                '/usr/include/python2.6',
               ],
-              'link_settings': {
-                'libraries': [
-                  '$(SDKROOT)/usr/lib/libpython2.5.dylib',
-                ],
-              }
             }],
             ['OS=="win"', {
               'product_extension': 'pyd',

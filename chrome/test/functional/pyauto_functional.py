@@ -54,7 +54,9 @@ def RunWithCorrectPythonIfNecessary():
       cmd = [os.path.join(pyauto_paths.GetThirdPartyDir(), 'python_26',
                           'python_slave.exe')]
     elif sys.platform.startswith('darwin'):
-      cmd = ['python2.5']
+      # Arch runs the specified architecture of a universal binary. Run
+      # the 32 bit one.
+      cmd = ['arch', '-i386', 'python2.6']
     elif sys.platform.startswith('linux'):
       cmd = ['python2.6']
 
@@ -65,10 +67,7 @@ def RunWithCorrectPythonIfNecessary():
     sys.exit(proc.returncode)
 
   # Check this is the right python version.
-  if sys.platform.startswith('darwin'):
-    if sys.version_info[0:2] != (2, 5):
-      RunAgain()
-  elif sys.version_info[0:2] != (2, 6):
+  if sys.version_info[0:2] != (2, 6):
     RunAgain()
 
   # Check this is the right bitness on mac.
