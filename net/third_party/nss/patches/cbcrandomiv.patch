@@ -1,14 +1,14 @@
-From 03c5c660f3668ed1e9c9b6277d64c96d2ab3d890 Mon Sep 17 00:00:00 2001
+From fb2d182ed92f38bd9c1134bb929f095ea6d3e752 Mon Sep 17 00:00:00 2001
 From: Adam Langley <agl@chromium.org>
 Date: Mon, 3 Oct 2011 12:23:29 -0400
 Subject: [PATCH] cbcrandomiv.patch
 
 ---
- mozilla/security/nss/lib/ssl/ssl3con.c |   96 +++++++++++++++++++++++---------
- 1 files changed, 69 insertions(+), 27 deletions(-)
+ mozilla/security/nss/lib/ssl/ssl3con.c |   97 +++++++++++++++++++++++---------
+ 1 files changed, 70 insertions(+), 27 deletions(-)
 
 diff --git a/mozilla/security/nss/lib/ssl/ssl3con.c b/mozilla/security/nss/lib/ssl/ssl3con.c
-index dd99962..2648cbe 100644
+index dd99962..d561307 100644
 --- a/mozilla/security/nss/lib/ssl/ssl3con.c
 +++ b/mozilla/security/nss/lib/ssl/ssl3con.c
 @@ -2039,24 +2039,24 @@ ssl3_ClientAuthTokenPresent(sslSessionID *sid) {
@@ -90,7 +90,7 @@ index dd99962..2648cbe 100644
  }
  
  /* Process the plain text before sending it.
-@@ -2227,20 +2221,70 @@ ssl3_SendRecord(   sslSocket *        ss,
+@@ -2227,20 +2221,71 @@ ssl3_SendRecord(   sslSocket *        ss,
  
      while (nIn > 0) {
  	PRUint32  contentLen = PR_MIN(nIn, MAX_FRAGMENT_LENGTH);
@@ -100,6 +100,7 @@ index dd99962..2648cbe 100644
 +	ssl_GetSpecReadLock(ss);    /********************************/
 +
 +	if (nIn > 1 &&
++	    ss->opt.enableFalseStart &&
 +	    ss->ssl3.cwSpec->version <= SSL_LIBRARY_VERSION_3_1_TLS &&
 +	    type == content_application_data &&
 +	    ss->ssl3.cwSpec->cipher_def->type == type_block /* CBC mode */) {
@@ -125,10 +126,9 @@ index dd99962..2648cbe 100644
 -		return SECFailure; /* sslBuffer_Grow set a memory error code. */
 +			 SSL_GETPID(), ss->fd, spaceNeeded));
 +		goto spec_locked_loser; /* sslBuffer_Grow set a memory error code. */
- 	    }
- 	}
- 
--	rv = ssl3_CompressMACEncryptRecord( ss, type, pIn, contentLen);
++	    }
++	}
++
 +	if (numRecords == 2) {
 +	    sslBuffer secondRecord;
 +
@@ -160,16 +160,17 @@ index dd99962..2648cbe 100644
 +	    if (rv == SECSuccess) {
 +	        PRINT_BUF(50, (ss, "send (encrypted) record data [1/1]:",
 +	                       wrBuf->buf, wrBuf->len));
-+	    }
-+	}
-+
+ 	    }
+ 	}
+ 
+-	rv = ssl3_CompressMACEncryptRecord( ss, type, pIn, contentLen);
 +spec_locked_loser:
 +	ssl_ReleaseSpecReadLock(ss); /************************************/
 +
  	if (rv != SECSuccess)
  	    return SECFailure;
  
-@@ -2248,8 +2292,6 @@ ssl3_SendRecord(   sslSocket *        ss,
+@@ -2248,8 +2293,6 @@ ssl3_SendRecord(   sslSocket *        ss,
  	nIn -= contentLen;
  	PORT_Assert( nIn >= 0 );
  
