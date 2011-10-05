@@ -82,22 +82,25 @@ WHITELISTED_LICENSES = [
 
 
 PATH_SPECIFIC_WHITELISTED_LICENSES = {
-    'base/third_party/dmg_fp': [
+    'base/third_party/dmg_fp': [  # http://crbug.com/98086
         'UNKNOWN',
     ],
-    'base/third_party/icu': [
+    'base/third_party/icu': [  # http://crbug.com/98087
         'UNKNOWN',
     ],
+
+    # http://code.google.com/p/google-breakpad/issues/detail?id=450
     'breakpad/src': [
         'UNKNOWN',
     ],
-    'chrome/common/extensions/docs/examples': [
+
+    'chrome/common/extensions/docs/examples': [  # http://crbug.com/98092
         'UNKNOWN',
     ],
     'chrome/test/data/layout_tests/LayoutTests': [
         'UNKNOWN',
     ],
-    'courgette/third_party/bsdiff_create.cc': [
+    'courgette/third_party/bsdiff_create.cc': [  # http://crbug.com/98095
         'UNKNOWN',
     ],
     'data/mozilla_js_tests': [
@@ -110,9 +113,11 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'data/tab_switching': [
         'UNKNOWN',
     ],
-    'googleurl': [
+    'googleurl': [  # http://code.google.com/p/google-url/issues/detail?id=15
         'UNKNOWN',
     ],
+
+    # http://crbug.com/98097
     'gpu/GLES2': [
         'UNKNOWN',
     ],
@@ -122,7 +127,8 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'gpu/gles2_conform_support/egl/native/EGL': [
         'UNKNOWN',
     ],
-    'native_client': [
+
+    'native_client': [  # http://crbug.com/98099
         'UNKNOWN',
     ],
     'native_client/toolchain': [
@@ -142,13 +148,15 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         # TODO(phajdan.jr): Make licensecheck not print the comma after 3.1.
         'GPL (v3.1,)',
     ],
-    'net/disk_cache/hash.cc': [
+    'net/disk_cache/hash.cc': [  # http://crbug.com/98100
         'UNKNOWN',
     ],
     'net/tools/spdyshark': [
         'GPL (v2 or later)',
         'UNKNOWN',
     ],
+
+    # http://crbug.com/98107
     'ppapi/c/documentation/check.sh': [
         'UNKNOWN',
     ],
@@ -161,9 +169,12 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'ppapi/native_client/tests/earth/earth_image.inc': [
         'UNKNOWN',
     ],
+
+    # http://code.google.com/p/open-vcdiff/issues/detail?id=31
     'sdch/open-vcdiff': [
         'UNKNOWN',
     ],
+
     'third_party/WebKit': [
         'UNKNOWN',
     ],
@@ -174,16 +185,19 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL',
         'GPL (unversioned/unknown version)',
     ],
-    'third_party/active_doc': [
+    'third_party/active_doc': [  # http://crbug.com/98113
         'UNKNOWN',
     ],
+
+    # http://code.google.com/p/angleproject/issues/detail?id=217
     'third_party/angle': [
         'UNKNOWN',
     ],
+
     'third_party/angle/src/compiler': [
         'GPL',
     ],
-    'third_party/ashmem/ashmem.h': [
+    'third_party/ashmem/ashmem.h': [  # http://crbug.com/98116
         'UNKNOWN',
     ],
     'third_party/bsdiff/mbsdiff.cc': [
@@ -192,45 +206,45 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/bzip2': [
         'UNKNOWN',
     ],
-    'third_party/cld/encodings/compact_lang_det': [
+    'third_party/cld/encodings/compact_lang_det': [  # http://crbug.com/98120
         'UNKNOWN',
     ],
     'third_party/devscripts': [
         'GPL (v2 or later)',
     ],
-    'third_party/expat/files/lib': [
+    'third_party/expat/files/lib': [  # http://crbug.com/98121
         'UNKNOWN',
     ],
     'third_party/ffmpeg': [
         'GPL',
         'GPL (v2 or later)',
+        'UNKNOWN',  # http://crbug.com/98123
+    ],
+    'third_party/gles2_book': [  # http://crbug.com/98130
         'UNKNOWN',
     ],
-    'third_party/gles2_book': [
+    'third_party/gles2_conform/GTF_ES': [  # http://crbug.com/98131
         'UNKNOWN',
     ],
-    'third_party/gles2_conform/GTF_ES': [
+    'third_party/gpsd/release-2.38/gps.h': [  # http://crbug.com/98132
         'UNKNOWN',
     ],
-    'third_party/gpsd/release-2.38/gps.h': [
+    'third_party/harfbuzz': [  # http://crbug.com/98133
         'UNKNOWN',
     ],
-    'third_party/harfbuzz': [
+    'third_party/hunspell': [  # http://crbug.com/98134
         'UNKNOWN',
     ],
-    'third_party/hunspell': [
+    'third_party/iccjpeg': [  # http://crbug.com/98137
         'UNKNOWN',
     ],
-    'third_party/iccjpeg': [
+    'third_party/icu': [  # http://crbug.com/98301
         'UNKNOWN',
     ],
-    'third_party/icu': [
+    'third_party/jemalloc': [  # http://crbug.com/98302
         'UNKNOWN',
     ],
-    'third_party/jemalloc': [
-        'UNKNOWN',
-    ],
-    'third_party/lcov': [
+    'third_party/lcov': [  # http://crbug.com/98304
         'UNKNOWN',
     ],
     'third_party/lcov/contrib/galaxy/genflat.pl': [
@@ -239,34 +253,34 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/lcov-1.9/contrib/galaxy/genflat.pl': [
         'GPL (v2 or later)',
     ],
-    'third_party/leveldatabase/src/util/posix_logger.h': [
+    'third_party/leveldatabase/src/util/posix_logger.h': [  # http://crbug.com/98306
         'UNKNOWN',
     ],
-    'third_party/libevent': [
+    'third_party/libevent': [  # http://crbug.com/98309
         'UNKNOWN',
     ],
-    'third_party/libjingle/source/talk': [
+    'third_party/libjingle/source/talk': [  # http://crbug.com/98310
         'UNKNOWN',
     ],
-    'third_party/libjpeg': [
+    'third_party/libjpeg': [  # http://crbug.com/98313
         'UNKNOWN',
     ],
-    'third_party/libjpeg_turbo': [
+    'third_party/libjpeg_turbo': [  # http://crbug.com/98314
         'UNKNOWN',
     ],
-    'third_party/libphonenumber/cpp/src': [
+    'third_party/libphonenumber/cpp/src': [  # http://crbug.com/98316
         'UNKNOWN',
     ],
-    'third_party/libpng': [
+    'third_party/libpng': [  # http://crbug.com/98318
         'UNKNOWN',
     ],
-    'third_party/libvpx/source': [
+    'third_party/libvpx/source': [  # http://crbug.com/98319
         'UNKNOWN',
     ],
     'third_party/libvpx/source/libvpx/examples/includes': [
         'GPL (v2 or later)',
     ],
-    'third_party/libwebp': [
+    'third_party/libwebp': [  # http://crbug.com/98448
         'UNKNOWN',
     ],
     'third_party/libxml': [
@@ -281,7 +295,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/mesa/MesaLib': [
         'GPL (v2)',
         'GPL (v3 or later)',
-        'UNKNOWN',
+        'UNKNOWN',  # http://crbug.com/98450
     ],
     'third_party/modp_b64': [
         'UNKNOWN',
@@ -289,77 +303,80 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/npapi/npspy/extern/java': [
         'GPL (unversioned/unknown version)',
     ],
-    'third_party/openssl': [
+    'third_party/openssl': [  # http://crbug.com/98451
         'UNKNOWN',
     ],
-    'third_party/ots/tools/ttf-checksum.py': [
+    'third_party/ots/tools/ttf-checksum.py': [  # http://code.google.com/p/ots/issues/detail?id=2
         'UNKNOWN',
     ],
-    'third_party/molokocacao/NSBezierPath+MCAdditions.h': [
+    'third_party/molokocacao/NSBezierPath+MCAdditions.h': [  # http://crbug.com/98453
         'UNKNOWN',
     ],
     'third_party/npapi/npspy': [
         'UNKNOWN',
     ],
-    'third_party/ocmock/OCMock': [
+    'third_party/ocmock/OCMock': [  # http://crbug.com/98454
         'UNKNOWN',
     ],
     'third_party/ply/__init__.py': [
         'UNKNOWN',
     ],
-    'third_party/protobuf': [
+    'third_party/protobuf': [  # http://crbug.com/98455
         'UNKNOWN',
     ],
-    'third_party/psutil': [
+    'third_party/psutil': [  # http://crbug.com/98456
         'UNKNOWN',
     ],
+
+    # http://code.google.com/p/pyftpdlib/issues/detail?id=185
     'third_party/pyftpdlib/src': [
         'UNKNOWN',
     ],
+
     'third_party/pylib': [
         'UNKNOWN',
     ],
-    'third_party/scons-2.0.1/engine/SCons': [
+    'third_party/scons-2.0.1/engine/SCons': [  # http://crbug.com/98462
         'UNKNOWN',
     ],
     'third_party/simplejson': [
         'UNKNOWN',
     ],
-    'third_party/skia': [
+    'third_party/skia': [  # http://crbug.com/98463
         'UNKNOWN',
     ],
-    'third_party/snappy/src': [
+    'third_party/snappy/src': [  # http://crbug.com/98464
         'UNKNOWN',
     ],
-    'third_party/smhasher/src': [
+    'third_party/smhasher/src': [  # http://crbug.com/98465
         'UNKNOWN',
     ],
     'third_party/sqlite': [
         'UNKNOWN',
     ],
-    'third_party/swig/Lib/linkruntime.c': [
+    'third_party/swig/Lib/linkruntime.c': [  # http://crbug.com/98585
         'UNKNOWN',
     ],
     'third_party/talloc': [
         'GPL (v3 or later)',
-        'UNKNOWN',
+        'UNKNOWN',  # http://crbug.com/98588
     ],
     'third_party/tcmalloc': [
-        'UNKNOWN',
+        'UNKNOWN',  # http://crbug.com/98589
     ],
     'third_party/tlslite': [
         'UNKNOWN',
     ],
-    'third_party/webdriver': [
+    'third_party/webdriver': [  # http://crbug.com/98590
         'UNKNOWN',
     ],
-    'third_party/webrtc': [
+    'third_party/webrtc': [  # http://crbug.com/98592
         'UNKNOWN',
     ],
-    'third_party/xdg-utils': [
+    'third_party/xdg-utils': [  # http://crbug.com/98593
         'UNKNOWN',
     ],
-    'third_party/yasm/source': [
+    'third_party/yasm/source': [  # http://crbug.com/98594
         'UNKNOWN',
     ],
     'third_party/zlib/contrib/minizip': [
@@ -371,7 +388,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'tools/dromaeo_benchmark_runner/dromaeo_benchmark_runner.py': [
         'UNKNOWN',
     ],
-    'tools/emacs': [
+    'tools/emacs': [  # http://crbug.com/98595
         'UNKNOWN',
     ],
     'tools/grit/grit/node/custom/__init__.py': [
@@ -401,7 +418,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'tools/symsrc/pefile.py': [
         'UNKNOWN',
     ],
-    'v8/test/cctest': [
+    'v8/test/cctest': [  # http://crbug.com/98597
         'UNKNOWN',
     ],
     'webkit/data/ico_decoder': [
