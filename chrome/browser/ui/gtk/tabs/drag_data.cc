@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/tabs/dragged_tab_data.h"
+#include "chrome/browser/ui/gtk/tabs/drag_data.h"
 
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/gtk/tabs/tab_gtk.h"

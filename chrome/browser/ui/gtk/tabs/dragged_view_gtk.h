@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_TABS_DRAGGED_TAB_GTK_H_
-#define CHROME_BROWSER_UI_GTK_TABS_DRAGGED_TAB_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_TABS_DRAGGED_VIEW_GTK_H_
+#define CHROME_BROWSER_UI_GTK_TABS_DRAGGED_VIEW_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -24,12 +24,12 @@ class DragData;
 class TabContents;
 class TabRendererGtk;
 
-class DraggedTabGtk : public ui::AnimationDelegate {
+class DraggedViewGtk : public ui::AnimationDelegate {
  public:
-  DraggedTabGtk(DragData* drag_data,
+  DraggedViewGtk(DragData* drag_data,
                 const gfx::Point& mouse_tab_offset,
                 const gfx::Size& contents_size);
-  virtual ~DraggedTabGtk();
+  virtual ~DraggedViewGtk();
 
   // Moves the attached dragged view to the appropriate location.
   // |tabstrip_point| is the location of the upper left corner of the dragged
@@ -134,7 +134,7 @@ class DraggedTabGtk : public ui::AnimationDelegate {
   void PaintTab(int index, cairo_t* cr, int widget_width);
 
   // expose-event handler that notifies when the tab needs to be redrawn.
-  CHROMEGTK_CALLBACK_1(DraggedTabGtk, gboolean, OnExpose, GdkEventExpose*);
+  CHROMEGTK_CALLBACK_1(DraggedViewGtk, gboolean, OnExpose, GdkEventExpose*);
 
   // The window that contains the dragged tab or tab contents.
   GtkWidget* container_;
@@ -188,7 +188,7 @@ class DraggedTabGtk : public ui::AnimationDelegate {
   gfx::Rect animation_start_bounds_;
   gfx::Rect animation_end_bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(DraggedTabGtk);
+  DISALLOW_COPY_AND_ASSIGN(DraggedViewGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_TABS_DRAGGED_TAB_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_TABS_DRAGGED_VIEW_GTK_H_

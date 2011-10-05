@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/tabs/dragged_tab_gtk.h"
+#include "chrome/browser/ui/gtk/tabs/dragged_view_gtk.h"
 
 #include <gdk/gdk.h>
 
@@ -16,7 +16,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/tabs/dragged_tab_data.h"
+#include "chrome/browser/ui/gtk/tabs/drag_data.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/backing_store_gtk.h"
@@ -46,11 +46,11 @@ const double kDraggedTabBorderColor[] = { 103.0 / 0xff,
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// DraggedTabGtk, public:
+// DraggedViewGtk, public:
 
-DraggedTabGtk::DraggedTabGtk(DragData* drag_data,
-                             const gfx::Point& mouse_tab_offset,
-                             const gfx::Size& contents_size)
+DraggedViewGtk::DraggedViewGtk(DragData* drag_data,
+                               const gfx::Point& mouse_tab_offset,
+                               const gfx::Size& contents_size)
     : drag_data_(drag_data),
       mini_width_(-1),
       normal_width_(-1),
@@ -95,12 +95,12 @@ DraggedTabGtk::DraggedTabGtk(DragData* drag_data,
   gtk_widget_show_all(container_);
 }
 
-DraggedTabGtk::~DraggedTabGtk() {
+DraggedViewGtk::~DraggedViewGtk() {
   gtk_widget_destroy(container_);
   STLDeleteElements(&renderers_);
 }
 
-void DraggedTabGtk::MoveDetachedTo(const gfx::Point& screen_point) {
+void DraggedViewGtk::MoveDetachedTo(const gfx::Point& screen_point) {
   DCHECK(!attached_);
   gfx::Point distance_from_origin =
       GetDistanceFromTabStripOriginToMousePointer();
@@ -109,7 +109,7 @@ void DraggedTabGtk::MoveDetachedTo(const gfx::Point& screen_point) {
   gtk_window_move(GTK_WINDOW(container_), x, y);
 }
 
-void DraggedTabGtk::MoveAttachedTo(const gfx::Point& tabstrip_point) {
+void DraggedViewGtk::MoveAttachedTo(const gfx::Point& tabstrip_point) {
   DCHECK(attached_);
   int x = tabstrip_point.x() + GetWidthInTabStripUpToMousePointer() -
       ScaleValue(GetWidthInTabStripUpToMousePointer());
@@ -118,7 +118,7 @@ void DraggedTabGtk::MoveAttachedTo(const gfx::Point& tabstrip_point) {
   gtk_window_move(GTK_WINDOW(container_), x, y);
 }
 
-gfx::Point DraggedTabGtk::GetDistanceFromTabStripOriginToMousePointer() {
+gfx::Point DraggedViewGtk::GetDistanceFromTabStripOriginToMousePointer() {
   gfx::Point start_point(GetWidthInTabStripUpToMousePointer(),
                          mouse_tab_offset_.y());
   if (base::i18n::IsRTL())
@@ -126,7 +126,8 @@ gfx::Point DraggedTabGtk::GetDistanceFromTabStripOriginToMousePointer() {
   return start_point;
 }
 
-void DraggedTabGtk::Attach(int normal_width, int mini_width, int window_width) {
+void DraggedViewGtk::Attach(
+    int normal_width, int mini_width, int window_width) {
   attached_ = true;
   parent_window_width_ = window_width;
   normal_width_ = normal_width;
@@ -141,12 +142,12 @@ void DraggedTabGtk::Attach(int normal_width, int mini_width, int window_width) {
     gdk_window_set_opacity(container_->window, kOpaqueAlpha);
 }
 
-void DraggedTabGtk::Resize(int width) {
+void DraggedViewGtk::Resize(int width) {
   attached_tab_size_.set_width(width);
   ResizeContainer();
 }
 
-void DraggedTabGtk::Detach() {
+void DraggedViewGtk::Detach() {
   attached_ = false;
   ResizeContainer();
 
@@ -154,11 +155,11 @@ void DraggedTabGtk::Detach() {
     gdk_window_set_opacity(container_->window, kTransparentAlpha);
 }
 
-void DraggedTabGtk::Update() {
+void DraggedViewGtk::Update() {
   gtk_widget_queue_draw(container_);
 }
 
-int DraggedTabGtk::GetWidthInTabStripFromTo(int from, int to) {
+int DraggedViewGtk::GetWidthInTabStripFromTo(int from, int to) {
   DCHECK(from <= static_cast<int>(drag_data_->size()));
   DCHECK(to <= static_cast<int>(drag_data_->size()));
 
@@ -171,11 +172,11 @@ int DraggedTabGtk::GetWidthInTabStripFromTo(int from, int to) {
   return width;
 }
 
-int DraggedTabGtk::GetTotalWidthInTabStrip() {
+int DraggedViewGtk::GetTotalWidthInTabStrip() {
   return GetWidthInTabStripFromTo(0, drag_data_->size());
 }
 
-int DraggedTabGtk::GetWidthInTabStripUpToSourceTab() {
+int DraggedViewGtk::GetWidthInTabStripUpToSourceTab() {
   if (!base::i18n::IsRTL()) {
     return GetWidthInTabStripFromTo(0, drag_data_->source_tab_index());
   } else {
@@ -184,7 +185,7 @@ int DraggedTabGtk::GetWidthInTabStripUpToSourceTab() {
   }
 }
 
-int DraggedTabGtk::GetWidthInTabStripUpToMousePointer() {
+int DraggedViewGtk::GetWidthInTabStripUpToMousePointer() {
    int width = GetWidthInTabStripUpToSourceTab() + mouse_tab_offset_.x();
    if (!base::i18n::IsRTL() && drag_data_->source_tab_index() > 0) {
      width -= 16;
@@ -196,7 +197,7 @@ int DraggedTabGtk::GetWidthInTabStripUpToMousePointer() {
    return width;
 }
 
-void DraggedTabGtk::AnimateToBounds(const gfx::Rect& bounds,
+void DraggedViewGtk::AnimateToBounds(const gfx::Rect& bounds,
                                     AnimateToBoundsCallback* callback) {
   animation_callback_.reset(callback);
 
@@ -217,9 +218,9 @@ void DraggedTabGtk::AnimateToBounds(const gfx::Rect& bounds,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DraggedTabGtk, ui::AnimationDelegate implementation:
+// DraggedViewGtk, ui::AnimationDelegate implementation:
 
-void DraggedTabGtk::AnimationProgressed(const ui::Animation* animation) {
+void DraggedViewGtk::AnimationProgressed(const ui::Animation* animation) {
   int delta_x = (animation_end_bounds_.x() - animation_start_bounds_.x());
   int x = animation_start_bounds_.x() +
       static_cast<int>(delta_x * animation->GetCurrentValue());
@@ -227,18 +228,18 @@ void DraggedTabGtk::AnimationProgressed(const ui::Animation* animation) {
   gdk_window_move(container_->window, x, y);
 }
 
-void DraggedTabGtk::AnimationEnded(const ui::Animation* animation) {
+void DraggedViewGtk::AnimationEnded(const ui::Animation* animation) {
   animation_callback_->Run();
 }
 
-void DraggedTabGtk::AnimationCanceled(const ui::Animation* animation) {
+void DraggedViewGtk::AnimationCanceled(const ui::Animation* animation) {
   AnimationEnded(animation);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DraggedTabGtk, private:
+// DraggedViewGtk, private:
 
-void DraggedTabGtk::Layout() {
+void DraggedViewGtk::Layout() {
   if (attached_) {
     for (size_t i = 0; i < renderers_.size(); i++) {
       gfx::Rect rect(GetPreferredSize());
@@ -259,7 +260,7 @@ void DraggedTabGtk::Layout() {
   }
 }
 
-gfx::Size DraggedTabGtk::GetPreferredSize() {
+gfx::Size DraggedViewGtk::GetPreferredSize() {
   if (attached_) {
     gfx::Size preferred_size(attached_tab_size_);
     preferred_size.set_width(GetTotalWidthInTabStrip());
@@ -273,29 +274,29 @@ gfx::Size DraggedTabGtk::GetPreferredSize() {
   return gfx::Size(width, height);
 }
 
-void DraggedTabGtk::ResizeContainer() {
+void DraggedViewGtk::ResizeContainer() {
   gfx::Size size = GetPreferredSize();
   gtk_window_resize(GTK_WINDOW(container_),
                     ScaleValue(size.width()), ScaleValue(size.height()));
   Layout();
 }
 
-int DraggedTabGtk::ScaleValue(int value) {
+int DraggedViewGtk::ScaleValue(int value) {
   return attached_ ? value : static_cast<int>(value * kScalingFactor);
 }
 
-gfx::Rect DraggedTabGtk::bounds() const {
+gfx::Rect DraggedViewGtk::bounds() const {
   gint x, y, width, height;
   gtk_window_get_position(GTK_WINDOW(container_), &x, &y);
   gtk_window_get_size(GTK_WINDOW(container_), &width, &height);
   return gfx::Rect(x, y, width, height);
 }
 
-int DraggedTabGtk::GetAttachedTabWidthAt(int index) {
+int DraggedViewGtk::GetAttachedTabWidthAt(int index) {
   return drag_data_->get(index)->mini_? mini_width_ : normal_width_;
 }
 
-void DraggedTabGtk::SetContainerColorMap() {
+void DraggedViewGtk::SetContainerColorMap() {
   GdkScreen* screen = gtk_widget_get_screen(container_);
   GdkColormap* colormap = gdk_screen_get_rgba_colormap(screen);
 
@@ -306,7 +307,7 @@ void DraggedTabGtk::SetContainerColorMap() {
   gtk_widget_set_colormap(container_, colormap);
 }
 
-void DraggedTabGtk::SetContainerTransparency() {
+void DraggedViewGtk::SetContainerTransparency() {
   cairo_t* cairo_context = gdk_cairo_create(container_->window);
   if (!cairo_context)
     return;
@@ -322,7 +323,7 @@ void DraggedTabGtk::SetContainerTransparency() {
   cairo_destroy(cairo_context);
 }
 
-void DraggedTabGtk::SetContainerShapeMask() {
+void DraggedViewGtk::SetContainerShapeMask() {
   // Create a 1bpp bitmap the size of |container_|.
   gfx::Size size(GetPreferredSize());
   GdkPixmap* pixmap = gdk_pixmap_new(NULL, size.width(), size.height(), 1);
@@ -367,7 +368,7 @@ void DraggedTabGtk::SetContainerShapeMask() {
   g_object_unref(pixmap);
 }
 
-gboolean DraggedTabGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
+gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   if (gtk_util::IsScreenComposited())
     SetContainerTransparency();
   else
@@ -431,7 +432,7 @@ gboolean DraggedTabGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   return TRUE;
 }
 
-void DraggedTabGtk::PaintTab(int index, cairo_t* cr, int widget_width) {
+void DraggedViewGtk::PaintTab(int index, cairo_t* cr, int widget_width) {
   renderers_[index]->set_mini(drag_data_->get(index)->mini_);
   cairo_surface_t* surface = renderers_[index]->PaintToSurface();
 

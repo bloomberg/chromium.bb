@@ -13,14 +13,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/ui/gtk/tabs/dragged_tab_data.h"
+#include "chrome/browser/ui/gtk/tabs/drag_data.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/x/x11_util.h"
 
-class DraggedTabGtk;
+class DraggedViewGtk;
 class TabGtk;
 class TabStripGtk;
 class TabStripModel;
@@ -156,8 +156,7 @@ class DraggedTabControllerGtk : public NotificationObserver,
 
   // Get the position of the dragged view relative to the upper left corner of
   // the screen. |screen_point| is the current position of mouse cursor.
-  // TODO(dpapad): rename to GetDraggedViewPoint.
-  gfx::Point GetDraggedTabPoint(const gfx::Point& screen_point);
+  gfx::Point GetDraggedViewPoint(const gfx::Point& screen_point);
 
   // Finds the Tab within the specified TabStrip that corresponds to the
   // dragged TabContents.
@@ -186,8 +185,8 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // Resets the delegates of the TabContents.
   void ResetDelegates();
 
-  // Create the DraggedTabGtk if it does not yet exist.
-  void EnsureDraggedTab();
+  // Create the DraggedViewGtk if it does not yet exist.
+  void EnsureDraggedView();
 
   // Gets the bounds to animate the dragged view when dragging is over.
   gfx::Rect GetAnimateBounds();
@@ -233,8 +232,8 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // dragged Tab is detached.
   TabStripGtk* attached_tabstrip_;
 
-  // The visual representation of the dragged Tab.
-  scoped_ptr<DraggedTabGtk> dragged_tab_;
+  // The visual representation of all the dragged tabs.
+  scoped_ptr<DraggedViewGtk> dragged_view_;
 
   // The position of the mouse (in screen coordinates) at the start of the drag
   // operation. This is used to calculate minimum elasticity before a
