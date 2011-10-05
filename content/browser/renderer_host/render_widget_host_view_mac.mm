@@ -1966,7 +1966,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (BOOL)accessibilityIsIgnored {
-  return NO;
+  return !renderWidgetHostView_->browser_accessibility_manager_.get();
 }
 
 - (NSUInteger)accessibilityGetIndexOf:(id)child {
