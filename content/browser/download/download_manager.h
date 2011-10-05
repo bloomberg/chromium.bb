@@ -426,7 +426,7 @@ class CONTENT_EXPORT DownloadManager
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   DownloadManagerDelegate* delegate_;
 
-  // TODO(rdsmith): Remove when http://crbug.com/84508 is fixed.
+  // TODO(rdsmith): Remove when http://crbug.com/85408 is fixed.
   // For debugging only.
   int64 largest_db_handle_in_history_;
 

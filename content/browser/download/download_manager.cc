@@ -814,7 +814,7 @@ void DownloadManager::FileSelectionCanceled(void* params) {
 void DownloadManager::OnPersistentStoreQueryComplete(
     std::vector<DownloadPersistentStoreInfo>* entries) {
   // TODO(rdsmith): Remove this and related logic when
-  // http://crbug.com/84508 is fixed.
+  // http://crbug.com/85408 is fixed.
   largest_db_handle_in_history_ = 0;
 
   for (size_t i = 0; i < entries->size(); ++i) {
@@ -837,14 +837,14 @@ void DownloadManager::AddDownloadItemToHistory(DownloadItem* download,
                                                int64 db_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/84508
+  // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/85408
   // is fixed.
   CHECK_NE(DownloadItem::kUninitializedHandle, db_handle);
 
   DCHECK(download->db_handle() == DownloadItem::kUninitializedHandle);
   download->set_db_handle(db_handle);
 
-  // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/84508
+  // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/85408
   // is fixed.
   CHECK(!ContainsKey(history_downloads_, download->db_handle()));
   history_downloads_[download->db_handle()] = download;
@@ -904,7 +904,7 @@ void DownloadManager::OnDownloadItemAddedToPersistentStore(int32 download_id,
   if (download->IsInProgress()) {
     MaybeCompleteDownload(download);
   } else {
-    // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/84508
+    // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/85408
     // is fixed.
     CHECK(download->IsCancelled())
         << " download = " << download->DebugString(true);

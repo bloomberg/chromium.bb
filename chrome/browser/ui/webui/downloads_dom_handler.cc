@@ -237,7 +237,7 @@ void DownloadsDOMHandler::ModelChanged() {
     if (static_cast<int>(it - download_items_.begin()) > kMaxDownloads)
       break;
 
-    // TODO(rdsmith): Convert to DCHECK()s when http://crbug.com/84508 is
+    // TODO(rdsmith): Convert to DCHECK()s when http://crbug.com/85408 is
     // fixed.
     // We should never see anything that isn't already in the history.
     CHECK(*it);
@@ -317,7 +317,7 @@ void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_REMOVE);
   DownloadItem* file = GetDownloadByValue(args);
   if (file) {
-    // TODO(rdsmith): Change to DCHECK when http://crbug.com/84508 is fixed.
+    // TODO(rdsmith): Change to DCHECK when http://crbug.com/85408 is fixed.
     CHECK_NE(DownloadItem::kUninitializedHandle, file->db_handle());
     file->Remove();
   }
