@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,10 @@
 namespace chrome {
 
 void RegisterInternalDefaultPlugin() {
+#if defined(OS_WIN)
+  // TODO(bauerb): On Windows the default plug-in can download and install
+  // missing plug-ins, which we don't support in the browser yet, so keep
+  // using the default plug-in on Windows until we do.
   const webkit::npapi::PluginEntryPoints entry_points = {
 #if !defined(OS_POSIX) || defined(OS_MACOSX)
     default_plugin::NP_GetEntryPoints,
@@ -24,6 +28,7 @@ void RegisterInternalDefaultPlugin() {
       "Provides functionality for installing third-party plug-ins",
       "*",
       entry_points);
+#endif  // defined OS(WIN)
 }
 
 }  // namespace chrome

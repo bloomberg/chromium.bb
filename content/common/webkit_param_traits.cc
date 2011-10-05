@@ -341,6 +341,70 @@ void ParamTraits<NPIdentifier_Param>::Log(const param_type& p, std::string* l) {
   }
 }
 
+void ParamTraits<webkit::WebPluginMimeType>::Write(Message* m,
+                                                   const param_type& p) {
+  WriteParam(m, p.mime_type);
+  WriteParam(m, p.file_extensions);
+  WriteParam(m, p.description);
+  WriteParam(m, p.additional_param_names);
+  WriteParam(m, p.additional_param_values);
+}
+
+bool ParamTraits<webkit::WebPluginMimeType>::Read(const Message* m,
+                                                  void** iter,
+                                                  param_type* p) {
+  return
+      ReadParam(m, iter, &p->mime_type) &&
+      ReadParam(m, iter, &p->file_extensions) &&
+      ReadParam(m, iter, &p->description) &&
+      ReadParam(m, iter, &p->additional_param_names) &&
+      ReadParam(m, iter, &p->additional_param_values);
+}
+
+void ParamTraits<webkit::WebPluginMimeType>::Log(
+    const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.mime_type, l);               l->append(", ");
+  LogParam(p.file_extensions, l);         l->append(", ");
+  LogParam(p.description, l);             l->append(", ");
+  LogParam(p.additional_param_names, l);  l->append(", ");
+  LogParam(p.additional_param_values, l);
+  l->append(")");
+}
+
+void ParamTraits<webkit::WebPluginInfo>::Write(Message* m,
+                                               const param_type& p) {
+  WriteParam(m, p.name);
+  WriteParam(m, p.path);
+  WriteParam(m, p.version);
+  WriteParam(m, p.desc);
+  WriteParam(m, p.mime_types);
+  WriteParam(m, p.type);
+}
+
+bool ParamTraits<webkit::WebPluginInfo>::Read(const Message* m,
+                                              void** iter,
+                                              param_type* p) {
+  return
+      ReadParam(m, iter, &p->name) &&
+      ReadParam(m, iter, &p->path) &&
+      ReadParam(m, iter, &p->version) &&
+      ReadParam(m, iter, &p->desc) &&
+      ReadParam(m, iter, &p->mime_types) &&
+      ReadParam(m, iter, &p->type);
+}
+void ParamTraits<webkit::WebPluginInfo>::Log(const param_type& p,
+                                                 std::string* l) {
+  l->append("(");
+  LogParam(p.name, l);       l->append(", ");
+  LogParam(p.path, l);       l->append(", ");
+  LogParam(p.version, l);    l->append(", ");
+  LogParam(p.desc, l);       l->append(", ");
+  LogParam(p.mime_types, l); l->append(", ");
+  LogParam(p.type, l);
+  l->append(")");
+}
+
 void ParamTraits<webkit_glue::PasswordForm>::Write(Message* m,
                                                    const param_type& p) {
   WriteParam(m, p.signon_realm);

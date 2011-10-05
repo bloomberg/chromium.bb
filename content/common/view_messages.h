@@ -39,7 +39,6 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
@@ -299,23 +298,6 @@ IPC_STRUCT_TRAITS_BEGIN(webkit::npapi::WebPluginGeometry)
   IPC_STRUCT_TRAITS_MEMBER(cutout_rects)
   IPC_STRUCT_TRAITS_MEMBER(rects_valid)
   IPC_STRUCT_TRAITS_MEMBER(visible)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(webkit::WebPluginMimeType)
-  IPC_STRUCT_TRAITS_MEMBER(mime_type)
-  IPC_STRUCT_TRAITS_MEMBER(file_extensions)
-  IPC_STRUCT_TRAITS_MEMBER(description)
-  IPC_STRUCT_TRAITS_MEMBER(additional_param_names)
-  IPC_STRUCT_TRAITS_MEMBER(additional_param_values)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(webkit::WebPluginInfo)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(path)
-  IPC_STRUCT_TRAITS_MEMBER(version)
-  IPC_STRUCT_TRAITS_MEMBER(desc)
-  IPC_STRUCT_TRAITS_MEMBER(mime_types)
-  IPC_STRUCT_TRAITS_MEMBER(type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
@@ -1478,8 +1460,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
 // Return information about a plugin for the given URL and MIME
 // type. If there is no matching plugin, |found| is false.
 // |actual_mime_type| is the actual mime type supported by the
-// plugin found that match the URL given (one for each item in
-// |info|).
+// found plugin.
 IPC_SYNC_MESSAGE_CONTROL4_3(ViewHostMsg_GetPluginInfo,
                             int /* routing_id */,
                             GURL /* url */,

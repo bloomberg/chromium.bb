@@ -497,6 +497,37 @@ struct ParamTraits<std::vector<char> > {
   }
 };
 
+template <>
+struct ParamTraits<std::vector<bool> > {
+  typedef std::vector<bool> param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p.size()));
+    for (size_t i = 0; i < p.size(); i++)
+      WriteParam(m, p[i]);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int size;
+    // ReadLength() checks for < 0 itself.
+    if (!m->ReadLength(iter, &size))
+      return false;
+    r->resize(size);
+    for (int i = 0; i < size; i++) {
+      bool value;
+      if (!ReadParam(m, iter, &value))
+        return false;
+      (*r)[i] = value;
+    }
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    for (size_t i = 0; i < p.size(); ++i) {
+      if (i != 0)
+        l->append(" ");
+      LogParam((p[i]), l);
+    }
+  }
+};
+
 template <class P>
 struct ParamTraits<std::vector<P> > {
   typedef std::vector<P> param_type;

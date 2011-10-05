@@ -120,7 +120,17 @@ class CONTENT_EXPORT PluginService
   void CancelOpenChannelToNpapiPlugin(PluginProcessHost::Client* client);
 
   // Gets the plugin in the list of plugins that matches the given url and mime
-  // type. Must be called on the FILE thread if |use_stale| is NULL.
+  // type. Returns true if the data is frome a stale plugin list, false if it
+  // is up to date. This can be called from any thread.
+  bool GetPluginInfoArray(const GURL& url,
+                          const std::string& mime_type,
+                          bool allow_wildcard,
+                          std::vector<webkit::WebPluginInfo>* info,
+                          std::vector<std::string>* actual_mime_types);
+
+  // Gets plugin info for an individual plugin and filters the plugins using
+  // the |context| and renderer IDs. This will report whether the data is stale
+  // via |is_stale| and returns whether or not the plugin can be found.
   bool GetPluginInfo(int render_process_id,
                      int render_view_id,
                      const content::ResourceContext& context,

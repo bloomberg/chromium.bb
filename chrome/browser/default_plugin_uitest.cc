@@ -17,11 +17,7 @@ class DefaultPluginUITest : public UITest {
 };
 
 #if defined(OS_WIN)
-#define MAYBE_DefaultPluginLoadTest DefaultPluginLoadTest
-#else
-#define MAYBE_DefaultPluginLoadTest DefaultPluginLoadTest
-#endif
-TEST_F(DefaultPluginUITest, MAYBE_DefaultPluginLoadTest) {
+TEST_F(DefaultPluginUITest, DefaultPluginLoadTest) {
   // Open page with default plugin.
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("default_plugin.html");
@@ -36,3 +32,4 @@ TEST_F(DefaultPluginUITest, MAYBE_DefaultPluginLoadTest) {
       L"document.getElementById('result').innerHTML)", &out));
   ASSERT_EQ(L"DONE", out);
 }
+#endif

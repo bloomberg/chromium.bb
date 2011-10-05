@@ -56,16 +56,17 @@ static const BlockedPlugin* g_last_active_menu;
 
 BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              WebFrame* frame,
-                             const webkit::npapi::PluginGroup& info,
                              const WebPluginParams& params,
                              const WebPreferences& preferences,
                              int template_id,
+                             const string16& name,
                              const string16& message,
                              bool is_blocked_for_prerendering,
                              bool allow_loading)
     : content::RenderViewObserver(render_view),
       frame_(frame),
       plugin_params_(params),
+      name_(name),
       is_blocked_for_prerendering_(is_blocked_for_prerendering),
       hidden_(false),
       allow_loading_(allow_loading) {
@@ -77,7 +78,6 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
 
   DictionaryValue values;
   values.SetString("message", message);
-  name_ = info.GetGroupName();
   values.SetString("name", name_);
   values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
 
@@ -106,17 +106,22 @@ void BlockedPlugin::WillDestroyPlugin() {
 
 void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
   WebContextMenuData menu_data;
-  WebVector<WebMenuItemInfo> custom_items(static_cast<size_t>(4));
 
-  WebMenuItemInfo name_item;
-  name_item.label = name_;
-  name_item.hasTextDirectionOverride = false;
-  name_item.textDirection =  WebKit::WebTextDirectionDefault;
-  custom_items[0] = name_item;
+  size_t num_items = name_.empty() ? 2u : 4u;
+  WebVector<WebMenuItemInfo> custom_items(num_items);
 
-  WebMenuItemInfo separator_item;
-  separator_item.type = WebMenuItemInfo::Separator;
-  custom_items[1] = separator_item;
+  size_t i = 0;
+  if (!name_.empty()) {
+    WebMenuItemInfo name_item;
+    name_item.label = name_;
+    name_item.hasTextDirectionOverride = false;
+    name_item.textDirection =  WebKit::WebTextDirectionDefault;
+    custom_items[i++] = name_item;
+
+    WebMenuItemInfo separator_item;
+    separator_item.type = WebMenuItemInfo::Separator;
+    custom_items[i++] = separator_item;
+  }
 
   WebMenuItemInfo run_item;
   run_item.action = kMenuActionLoad;
@@ -126,7 +131,7 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
       l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_PLUGIN_RUN).c_str());
   run_item.hasTextDirectionOverride = false;
   run_item.textDirection =  WebKit::WebTextDirectionDefault;
-  custom_items[2] = run_item;
+  custom_items[i++] = run_item;
 
   WebMenuItemInfo hide_item;
   hide_item.action = kMenuActionRemove;
@@ -135,7 +140,7 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
       l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_PLUGIN_HIDE).c_str());
   hide_item.hasTextDirectionOverride = false;
   hide_item.textDirection =  WebKit::WebTextDirectionDefault;
-  custom_items[3] = hide_item;
+  custom_items[i++] = hide_item;
 
   menu_data.customItems.swap(custom_items);
   menu_data.mousePosition = WebPoint(event.windowX, event.windowY);

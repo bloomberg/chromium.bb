@@ -29,10 +29,10 @@ class BlockedPlugin : public content::RenderViewObserver,
  public:
   BlockedPlugin(RenderView* render_view,
                 WebKit::WebFrame* frame,
-                const webkit::npapi::PluginGroup& info,
                 const WebKit::WebPluginParams& params,
                 const WebPreferences& settings,
                 int template_id,
+                const string16& name,
                 const string16& message,
                 bool is_blocked_for_prerendering,
                 bool allow_loading);

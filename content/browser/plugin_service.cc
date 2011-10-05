@@ -472,6 +472,18 @@ void PluginService::FinishOpenChannelToPlugin(
   }
 }
 
+bool PluginService::GetPluginInfoArray(
+    const GURL& url,
+    const std::string& mime_type,
+    bool allow_wildcard,
+    std::vector<webkit::WebPluginInfo>* plugins,
+    std::vector<std::string>* actual_mime_types) {
+  bool use_stale = false;
+  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
+      url, mime_type, allow_wildcard, &use_stale, plugins, actual_mime_types);
+  return use_stale;
+}
+
 bool PluginService::GetPluginInfo(int render_process_id,
                                   int render_view_id,
                                   const content::ResourceContext& context,

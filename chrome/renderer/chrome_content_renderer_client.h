@@ -98,14 +98,13 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   WebKit::WebPlugin* CreatePlugin(
       RenderView* render_view,
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
-      bool* is_default_plugin);
+      const WebKit::WebPluginParams& params);
 
   WebKit::WebPlugin* CreatePluginPlaceholder(
       RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
-      const webkit::npapi::PluginGroup& group,
+      const webkit::npapi::PluginGroup* group,
       int resource_id,
       int message_id,
       bool is_blocked_for_prerendering,

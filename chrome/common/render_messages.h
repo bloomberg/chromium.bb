@@ -25,6 +25,7 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "content/common/common_param_traits.h"
+#include "content/common/webkit_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -48,6 +49,22 @@ class SkBitmap;
 enum ViewHostMsg_JavaScriptStressTestControl_Commands {
   kJavaScriptStressTestSetStressRunType = 0,
   kJavaScriptStressTestPrepareStressRun = 1,
+};
+
+// This enum is inside a struct so that we can forward-declare the struct in
+// others headers without having to include this one.
+struct ChromeViewHostMsg_GetPluginInfo_Status {
+  // TODO(bauerb): Add more status values (blocked, click-to-play, out of date,
+  // requires authorization).
+  enum Value {
+    kAllowed,
+    kDisabled,
+    kNotFound,
+  };
+
+  ChromeViewHostMsg_GetPluginInfo_Status() : value(kAllowed) {}
+
+  Value value;
 };
 
 namespace IPC {
@@ -91,11 +108,16 @@ struct ParamTraits<ContentSettings> {
 
 #define IPC_MESSAGE_START ChromeMsgStart
 
+IPC_ENUM_TRAITS(ChromeViewHostMsg_GetPluginInfo_Status::Value)
 IPC_ENUM_TRAITS(InstantCompleteBehavior)
 IPC_ENUM_TRAITS(search_provider::OSDDType)
 IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(TranslateErrors::Type)
 IPC_ENUM_TRAITS(WebKit::WebConsoleMessage::Level)
+
+IPC_STRUCT_TRAITS_BEGIN(ChromeViewHostMsg_GetPluginInfo_Status)
+IPC_STRUCT_TRAITS_MEMBER(value)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ThumbnailScore)
   IPC_STRUCT_TRAITS_MEMBER(boring_score)
@@ -383,6 +405,19 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ChromeViewHostMsg_GetPluginContentSetting,
                             GURL /* policy_url */,
                             std::string  /* resource */,
                             ContentSetting /* setting */)
+
+// Return information about a plugin for the given URL and MIME type.
+// In contrast to ViewHostMsg_GetPluginInfo in content/, this IPC call knows
+// about specific reasons why a plug-in can't be used, for example because it's
+// disabled.
+IPC_SYNC_MESSAGE_CONTROL4_3(ChromeViewHostMsg_GetPluginInfo,
+                            int /* render_view_id */,
+                            GURL /* url */,
+                            GURL /* top origin url */,
+                            std::string /* mime_type */,
+                            ChromeViewHostMsg_GetPluginInfo_Status /* status */,
+                            webkit::WebPluginInfo /* plugin */,
+                            std::string /* actual_mime_type */)
 
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.

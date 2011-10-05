@@ -14,6 +14,7 @@
 #include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
+struct ChromeViewHostMsg_GetPluginInfo_Status;
 struct ExtensionHostMsg_Request_Params;
 class ExtensionInfoMap;
 class FilePath;
@@ -22,6 +23,10 @@ class HostContentSettingsMap;
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace webkit {
+struct WebPluginInfo;
 }
 
 // This class filters out incoming Chrome-specific IPC messages for the renderer
@@ -42,6 +47,8 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
  private:
   friend class BrowserThread;
   friend class DeleteTask<ChromeRenderMessageFilter>;
+
+  struct GetPluginInfo_Params;
 
   virtual ~ChromeRenderMessageFilter();
 
@@ -117,6 +124,23 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   void OnGetPluginContentSetting(const GURL& policy_url,
                                  const std::string& resource,
                                  ContentSetting* setting);
+  void OnGetPluginInfo(int render_view_id,
+                       const GURL& url,
+                       const GURL& top_origin_url,
+                       const std::string& mime_type,
+                       IPC::Message* reply_msg);
+  // |params| wraps the parameters passed to |OnGetPluginInfo|, because
+  // |base::Bind| doesn't support the required arity <http://crbug.com/98542>.
+  void PluginsLoaded(const GetPluginInfo_Params& params,
+                     IPC::Message* reply_msg,
+                     const std::vector<webkit::WebPluginInfo>& plugins);
+  void GetPluginInfo(int render_view_id,
+                     const GURL& url,
+                     const GURL& top_origin_url,
+                     const std::string& mime_type,
+                     ChromeViewHostMsg_GetPluginInfo_Status* status,
+                     webkit::WebPluginInfo* plugin,
+                     std::string* actual_mime_type);
   void OnCanTriggerClipboardRead(const GURL& url, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& url, bool* allowed);
   void OnGetCookies(const GURL& url,
@@ -136,6 +160,8 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   // Used to look up permissions at database creation time.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+
+  const content::ResourceContext& resource_context_;
 
   BooleanPrefMember allow_outdated_plugins_;
   BooleanPrefMember always_authorize_plugins_;
