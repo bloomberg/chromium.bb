@@ -248,7 +248,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<ConstrainedHtmlUI>;
 
 #if !defined(OS_CHROMEOS)
-  if (SyncPromoUI::ShouldShowSyncPromo()) {
+  if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
     if (url.host() == chrome::kChromeUISyncPromoHost)
       return &NewWebUI<SyncPromoUI>;
   }

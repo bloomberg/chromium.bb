@@ -8,6 +8,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/sync_promo_handler.h"
@@ -76,7 +77,7 @@ SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
-bool SyncPromoUI::ShouldShowSyncPromo() {
+bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // There's no need to show the sync promo on cros since cros users are logged
   // into sync already.
@@ -85,7 +86,20 @@ bool SyncPromoUI::ShouldShowSyncPromo() {
 
   // Temporarily hide this feature behind a command line flag.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kSyncShowPromo);
+  if (!command_line->HasSwitch(switches::kSyncShowPromo))
+    return false;
+
+  // Honor the sync policies.
+  if (!profile->GetOriginalProfile()->IsSyncAccessible())
+    return false;
+
+  // If the user is already signed into sync then don't show the promo.
+  ProfileSyncService* service =
+      profile->GetOriginalProfile()->GetProfileSyncService();
+  if (!service || service->HasSyncSetupCompleted())
+    return false;
+
+  return true;
 }
 
 bool IsFirstRun(Profile* profile) {
@@ -94,7 +108,7 @@ bool IsFirstRun(Profile* profile) {
 
 bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
                                                bool is_new_profile) {
-  if (!ShouldShowSyncPromo())
+  if (!ShouldShowSyncPromo(profile))
     return false;
 
   RegisterSyncPromoPrefs(profile);

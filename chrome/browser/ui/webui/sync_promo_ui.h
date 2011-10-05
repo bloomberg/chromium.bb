@@ -18,7 +18,8 @@ class SyncPromoUI : public ChromeWebUI {
   explicit SyncPromoUI(TabContents* contents);
 
   // Returns true if the sync promo should be visible.
-  static bool ShouldShowSyncPromo();
+  // |profile| is the profile of the tab the promo would be shown on.
+  static bool ShouldShowSyncPromo(Profile* profile);
 
   // Returns true if we should show the sync promo at startup.
   static bool ShouldShowSyncPromoAtStartup(Profile* profile,
