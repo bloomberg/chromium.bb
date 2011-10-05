@@ -19,7 +19,9 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -65,10 +67,12 @@ class NewProfileLauncher : public ProfileManagerObserver {
   virtual void OnProfileCreated(Profile* profile, Status status) {
     if (status == STATUS_INITIALIZED) {
       DCHECK(profile);
-      Browser* browser = Browser::Create(profile);
-      browser->AddSelectedTabWithURL(GURL(chrome::kChromeUINewTabURL),
-                                     PageTransition::LINK);
-      browser->window()->Show();
+      CommandLine command_line(CommandLine::NO_PROGRAM);
+      int return_code;
+      BrowserInit browser_init;
+      browser_init.LaunchBrowser(
+          command_line, profile, FilePath(), BrowserInit::IS_PROCESS_STARTUP,
+          BrowserInit::IS_FIRST_RUN, &return_code);
     }
   }
 

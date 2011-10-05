@@ -1115,6 +1115,9 @@ const char kShouldUseMinimalFirstRunBubble[] = "show-minimal-first-run-bubble";
 // Signal that we should show the welcome page when we launch Chrome.
 const char kShouldShowWelcomePage[] = "show-welcome-page";
 
+// Tracks the number of times that we have shown the sync promo at startup.
+const char kSyncPromoStartupCount[] = "sync-promo-startup-count";
+
 // String containing the last known Google URL.  We re-detect this on startup in
 // most cases, and use it to send traffic to the correct Google host or with the
 // correct Google domain/country code for whatever location the user is in.

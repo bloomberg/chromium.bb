@@ -5,12 +5,15 @@
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/sync_promo_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
@@ -22,6 +25,16 @@ namespace {
 
 const char kStringsJsFile[] = "strings.js";
 const char kSyncPromoJsFile[]  = "sync_promo.js";
+
+// The maximum number of times we want to show the sync promo at startup.
+const int kSyncPromoShowAtStartupMaxiumum = 10;
+
+void RegisterSyncPromoPrefs(Profile* profile) {
+  if (!profile->GetPrefs()->FindPreference(prefs::kSyncPromoStartupCount)) {
+    profile->GetPrefs()->RegisterIntegerPref(
+        prefs::kSyncPromoStartupCount, 0, PrefService::UNSYNCABLE_PREF);
+  }
+}
 
 // The Web UI data source for the sync promo page.
 class SyncPromoUIHTMLSource : public ChromeWebUIDataSource {
@@ -73,4 +86,32 @@ bool SyncPromoUI::ShouldShowSyncPromo() {
   // Temporarily hide this feature behind a command line flag.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kSyncShowPromo);
+}
+
+bool IsFirstRun(Profile* profile) {
+  return FirstRun::IsChromeFirstRun();
+}
+
+bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
+                                               bool is_new_profile) {
+  if (!ShouldShowSyncPromo())
+    return false;
+
+  RegisterSyncPromoPrefs(profile);
+  if (!is_new_profile) {
+    if (!profile->GetPrefs()->HasPrefPath(prefs::kSyncPromoStartupCount))
+      return false;
+  }
+
+  int show_count = profile->GetPrefs()->GetInteger(
+      prefs::kSyncPromoStartupCount);
+  return show_count < kSyncPromoShowAtStartupMaxiumum;
+}
+
+void SyncPromoUI::DidShowSyncPromoAtStartup(Profile* profile) {
+  RegisterSyncPromoPrefs(profile);
+  int show_count = profile->GetPrefs()->GetInteger(
+      prefs::kSyncPromoStartupCount);
+  show_count++;
+  profile->GetPrefs()->SetInteger(prefs::kSyncPromoStartupCount, show_count);
 }

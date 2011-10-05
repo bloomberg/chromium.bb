@@ -24,6 +24,15 @@ class TabContentsWrapper;
 // initialize the profile.
 class BrowserInit {
  public:
+  enum IsProcessStartup {
+    IS_NOT_PROCESS_STARTUP,
+    IS_PROCESS_STARTUP
+  };
+  enum IsFirstRun {
+    IS_NOT_FIRST_RUN,
+    IS_FIRST_RUN
+  };
+
   BrowserInit();
   ~BrowserInit();
 
@@ -64,8 +73,12 @@ class BrowserInit {
   // be the command line passed to this process. |cur_dir| can be empty, which
   // implies that the directory of the executable should be used.
   // |process_startup| indicates whether this is the first browser.
-  bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
-                     const FilePath& cur_dir, bool process_startup,
+  // |is_first_run| indicates that this is a new profile.
+  bool LaunchBrowser(const CommandLine& command_line,
+                     Profile* profile,
+                     const FilePath& cur_dir,
+                     IsProcessStartup is_process_startup,
+                     IsFirstRun is_first_run,
                      int* return_code);
 
   // LaunchWithProfile ---------------------------------------------------------
@@ -97,10 +110,14 @@ class BrowserInit {
     // There are two ctors. The first one implies a NULL browser_init object
     // and thus no access to distribution-specific first-run behaviors. The
     // second one is always called when the browser starts even if it is not
-    // the first run.
-    LaunchWithProfile(const FilePath& cur_dir, const CommandLine& command_line);
-    LaunchWithProfile(const FilePath& cur_dir, const CommandLine& command_line,
-                      BrowserInit* browser_init);
+    // the first run.  |is_first_run| indicates that this is a new profile.
+    LaunchWithProfile(const FilePath& cur_dir,
+                      const CommandLine& command_line,
+                      IsFirstRun is_first_run);
+    LaunchWithProfile(const FilePath& cur_dir,
+                      const CommandLine& command_line,
+                      BrowserInit* browser_init,
+                      IsFirstRun is_first_run);
     ~LaunchWithProfile();
 
     // Creates the necessary windows for startup. Returns true on success,
@@ -213,6 +230,7 @@ class BrowserInit {
     const CommandLine& command_line_;
     Profile* profile_;
     BrowserInit* browser_init_;
+    bool is_first_run_;
     DISALLOW_COPY_AND_ASSIGN(LaunchWithProfile);
   };
 

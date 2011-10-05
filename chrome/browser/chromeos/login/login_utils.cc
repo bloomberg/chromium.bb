@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
@@ -1183,10 +1184,13 @@ void LoginUtils::DoBrowserLaunch(Profile* profile,
   VLOG(1) << "Launching browser...";
   BrowserInit browser_init;
   int return_code;
+  BrowserInit::IsFirstRun first_run = FirstRun::IsChromeFirstRun() ?
+      BrowserInit::IS_FIRST_RUN: BrowserInit::IS_NOT_FIRST_RUN;
   browser_init.LaunchBrowser(*CommandLine::ForCurrentProcess(),
                              profile,
                              FilePath(),
-                             true,
+                             BrowserInit::IS_PROCESS_STARTUP,
+                             first_run,
                              &return_code);
 
   // Mark login host for deletion after browser starts.  This

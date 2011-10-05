@@ -395,6 +395,7 @@ extern const char kShouldShowFirstRunBubble[];
 extern const char kShouldUseOEMFirstRunBubble[];
 extern const char kShouldUseMinimalFirstRunBubble[];
 extern const char kShouldShowWelcomePage[];
+extern const char kSyncPromoStartupCount[];
 
 extern const char kLastKnownGoogleURL[];
 extern const char kLastPromptedGoogleURL[];

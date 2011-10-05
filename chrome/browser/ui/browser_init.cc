@@ -58,6 +58,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -561,9 +562,10 @@ bool BrowserInit::InProcessStartup() {
 bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
                                 Profile* profile,
                                 const FilePath& cur_dir,
-                                bool process_startup,
+                                IsProcessStartup process_startup,
+                                IsFirstRun is_first_run,
                                 int* return_code) {
-  in_startup = process_startup;
+  in_startup = process_startup == IS_PROCESS_STARTUP;
   DCHECK(profile);
 
   // Continue with the incognito profile from here on if Incognito mode
@@ -575,10 +577,10 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
                  << "browser session.";
   }
 
-  BrowserInit::LaunchWithProfile lwp(cur_dir, command_line, this);
+  BrowserInit::LaunchWithProfile lwp(cur_dir, command_line, this, is_first_run);
   std::vector<GURL> urls_to_launch = BrowserInit::GetURLsFromCommandLine(
       command_line, cur_dir, profile);
-  bool launched = lwp.Launch(profile, urls_to_launch, process_startup);
+  bool launched = lwp.Launch(profile, urls_to_launch, in_startup);
   in_startup = false;
 
   if (!launched) {
@@ -645,21 +647,25 @@ BrowserInit::LaunchWithProfile::Tab::~Tab() {}
 
 BrowserInit::LaunchWithProfile::LaunchWithProfile(
     const FilePath& cur_dir,
-    const CommandLine& command_line)
+    const CommandLine& command_line,
+    IsFirstRun is_first_run)
         : cur_dir_(cur_dir),
           command_line_(command_line),
           profile_(NULL),
-          browser_init_(NULL) {
+          browser_init_(NULL),
+          is_first_run_(is_first_run == IS_FIRST_RUN) {
 }
 
 BrowserInit::LaunchWithProfile::LaunchWithProfile(
     const FilePath& cur_dir,
     const CommandLine& command_line,
-    BrowserInit* browser_init)
+    BrowserInit* browser_init,
+    IsFirstRun is_first_run)
         : cur_dir_(cur_dir),
           command_line_(command_line),
           profile_(NULL),
-          browser_init_(browser_init) {
+          browser_init_(browser_init),
+          is_first_run_(is_first_run == IS_FIRST_RUN) {
 }
 
 BrowserInit::LaunchWithProfile::~LaunchWithProfile() {
@@ -1246,6 +1252,7 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
   // and nothing else.
   if (!startup_urls->empty())
     return;
+
   // If we have urls specified by the first run master preferences use them
   // and nothing else.
   if (browser_init_) {
@@ -1254,7 +1261,13 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
       while (it != browser_init_->first_run_tabs_.end()) {
         // Replace magic names for the actual urls.
         if (it->host() == "new_tab_page") {
-          startup_urls->push_back(GURL(chrome::kChromeUINewTabURL));
+          if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_,
+              is_first_run_)) {
+            SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
+            startup_urls->push_back(GURL(chrome::kChromeUISyncPromoURL));
+          } else {
+            startup_urls->push_back(GURL(chrome::kChromeUINewTabURL));
+          }
         } else if (it->host() == "welcome_page") {
           startup_urls->push_back(GetWelcomePageURL());
         } else {
@@ -1270,7 +1283,12 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
   // Otherwise open at least the new tab page (and the welcome page, if this
   // is the first time the browser is being started), or the set of URLs
   // specified on the command line.
-  startup_urls->push_back(GURL());  // New tab page.
+  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
+    SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
+    startup_urls->push_back(GURL(chrome::kChromeUISyncPromoURL));
+  } else {
+    startup_urls->push_back(GURL());  // New tab page.
+  }
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->FindPreference(prefs::kShouldShowWelcomePage) &&
       prefs->GetBoolean(prefs::kShouldShowWelcomePage)) {
@@ -1286,7 +1304,7 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
   // - this is the first launch after the first run flow.
   // - There is a policy in control of this setting.
   if (!profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser) ||
-      FirstRun::IsChromeFirstRun()) {
+      is_first_run_) {
     return;
   }
   if (g_browser_process->local_state()->IsManagedPreference(
@@ -1492,8 +1510,12 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   // If we don't want to launch a new browser window or tab (in the case
   // of an automation request), we are done here.
   if (!silent_launch) {
-    return browser_init->LaunchBrowser(
-        command_line, profile, cur_dir, process_startup, return_code);
+    IsProcessStartup is_process_startup = process_startup ?
+        IS_PROCESS_STARTUP : IS_NOT_PROCESS_STARTUP;
+    IsFirstRun is_first_run = FirstRun::IsChromeFirstRun() ?
+        IS_FIRST_RUN : IS_NOT_FIRST_RUN;
+    return browser_init->LaunchBrowser(command_line, profile, cur_dir,
+        is_process_startup, is_first_run, return_code);
   }
   return true;
 }
