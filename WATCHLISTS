@@ -277,6 +277,9 @@
     'tools_emacs': {
       'filepath': 'tools/emacs/.*',
     },
+    'browser_compositor': {
+      'filepath': 'ui/gfx/compositor/.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -378,5 +381,6 @@
     'aura': ['ben+watch@chromium.org'],
     'views_core': ['ben+watch@chromium.org'],
     'tools_emacs': ['fischman+watch@chromium.org'],
+    'browser_compositor': ['backer@chromium.org'],
   },
 }
