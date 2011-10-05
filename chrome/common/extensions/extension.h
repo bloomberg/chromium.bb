@@ -329,7 +329,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Generates an extension ID from arbitrary input. The same input string will
   // always generate the same output ID.
-  static bool GenerateId(const std::string& input, std::string* output);
+  static bool GenerateId(const std::string& input,
+                         std::string* output) WARN_UNUSED_RESULT;
 
   // Expects base64 encoded |input| and formats into |output| including
   // the appropriate header & footer.

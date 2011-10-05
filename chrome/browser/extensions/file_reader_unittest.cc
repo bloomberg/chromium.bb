@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,8 +53,7 @@ class Receiver {
 void RunBasicTest(const char* filename) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  std::string extension_id;
-  Extension::GenerateId("test", &extension_id);
+  std::string extension_id = extension_test_util::MakeId("test");
   ExtensionResource resource(extension_id, path,
                              FilePath().AppendASCII(filename));
   path = path.AppendASCII(filename);
@@ -84,8 +84,7 @@ TEST_F(FileReaderTest, BiggerFile) {
 TEST_F(FileReaderTest, NonExistantFile) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  std::string extension_id;
-  Extension::GenerateId("test", &extension_id);
+  std::string extension_id = extension_test_util::MakeId("test");
   ExtensionResource resource(extension_id, path, FilePath(
       FILE_PATH_LITERAL("file_that_does_not_exist")));
   path = path.AppendASCII("file_that_does_not_exist");

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "base/values.h"
 #include "googleurl/src/gurl.h"
 
 // This class is used to represent a notification for an installed app, to be
@@ -29,7 +30,17 @@ class AppNotification {
   const GURL& link_url() const { return link_url_; }
   const std::string& link_text() const { return link_text_; }
 
+  // Useful methods for serialization.
+  void ToDictionaryValue(DictionaryValue* result);
+  static AppNotification* FromDictionaryValue(const DictionaryValue& value);
+
+  // Return whether |other| is equal to this object. Useful for tests.
+  bool Equals(const AppNotification& other) const;
+
  private:
+  // If you add to the list of data members, make sure to add appropriate checks
+  // to the Equals and {To,From}DictionaryValue methods, keeping in mind
+  // backwards compatibility.
   std::string title_;
   std::string body_;
   GURL link_url_;

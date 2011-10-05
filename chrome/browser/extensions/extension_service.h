@@ -21,7 +21,6 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/tuple.h"
-#include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
@@ -45,6 +44,7 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/property_bag.h"
 
+class AppNotificationManager;
 class CrxInstaller;
 class ExtensionBookmarkEventRouter;
 class ExtensionBrowserEventRouter;
@@ -454,7 +454,7 @@ class ExtensionService
   ExtensionMenuManager* menu_manager() { return &menu_manager_; }
 
   AppNotificationManager* app_notification_manager() {
-    return &app_notification_manager_;
+    return app_notification_manager_.get();
   }
 
   ExtensionPermissionsManager* permissions_manager() {
@@ -741,7 +741,7 @@ class ExtensionService
   ExtensionMenuManager menu_manager_;
 
   // Keeps track of app notifications.
-  AppNotificationManager app_notification_manager_;
+  scoped_refptr<AppNotificationManager> app_notification_manager_;
 
   // Keeps track of extension permissions.
   ExtensionPermissionsManager permissions_manager_;

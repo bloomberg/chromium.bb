@@ -899,6 +899,8 @@
         'browser/extensions/app_notification.h',
         'browser/extensions/app_notification_manager.cc',
         'browser/extensions/app_notification_manager.h',
+        'browser/extensions/app_notification_storage.cc',
+        'browser/extensions/app_notification_storage.h',
         'browser/extensions/apps_promo.cc',
         'browser/extensions/apps_promo.h',
         'browser/extensions/default_apps_trial.cc',

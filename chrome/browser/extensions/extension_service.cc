@@ -25,6 +25,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
+#include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
@@ -594,6 +595,7 @@ ExtensionService::ExtensionService(Profile* profile,
       show_extensions_prompts_(true),
       ready_(false),
       toolbar_model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      app_notification_manager_(new AppNotificationManager(profile)),
       permissions_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false) {
@@ -634,6 +636,8 @@ ExtensionService::ExtensionService(Profile* profile,
   backend_ =
       new ExtensionServiceBackend(weak_ptr_factory_.GetWeakPtr(),
                                   install_directory_);
+
+  app_notification_manager_->Init();
 
   if (extensions_enabled_) {
     ExternalExtensionProviderImpl::CreateExternalProviders(

@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -33,8 +34,7 @@ TEST(ExtensionResourceTest, CreateWithMissingResourceOnDisk) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &root_path));
   FilePath relative_path;
   relative_path = relative_path.AppendASCII("cira.js");
-  std::string extension_id;
-  Extension::GenerateId("test", &extension_id);
+  std::string extension_id = extension_test_util::MakeId("test");
   ExtensionResource resource(extension_id, root_path, relative_path);
 
   // The path doesn't exist on disk, we will be returned an empty path.
@@ -69,8 +69,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   }
 
   FilePath path;
-  std::string extension_id;
-  Extension::GenerateId("test", &extension_id);
+  std::string extension_id = extension_test_util::MakeId("test");
   ExtensionResource resource(extension_id, temp.path(),
                              FilePath().AppendASCII(filename));
   FilePath resolved_path = resource.GetFilePath();

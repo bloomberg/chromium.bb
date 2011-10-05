@@ -9,17 +9,24 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/app_notification.h"
-#include "content/common/notification_details.h"
+#include "chrome/browser/extensions/app_notification_storage.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/notification_source.h"
+
+class Profile;
 
 // This class keeps track of notifications for installed apps.
-class AppNotificationManager : public NotificationObserver {
+class AppNotificationManager
+    : public base::RefCountedThreadSafe<AppNotificationManager>,
+      public NotificationObserver {
  public:
-  AppNotificationManager();
-  virtual ~AppNotificationManager();
+  explicit AppNotificationManager(Profile* profile);
+
+  // Starts up the process of reading from persistent storage.
+  void Init();
 
   // Takes ownership of |notification|.
   void Add(const std::string& extension_id, AppNotification* item);
@@ -39,11 +46,30 @@ class AppNotificationManager : public NotificationObserver {
                        const NotificationDetails& details) OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<AppNotificationManager>;
+
   // Maps extension id to a list of notifications for that extension.
   typedef std::map<std::string, AppNotificationList> NotificationMap;
 
+  virtual ~AppNotificationManager();
+
+  // Starts loading storage_ using |storage_path|.
+  void LoadOnFileThread(const FilePath& storage_path);
+
+  // Called on the UI thread to handle the loaded results from storage_.
+  void HandleLoadResults(const NotificationMap& map);
+
+  void SaveOnFileThread(const std::string& extension_id,
+                        const AppNotificationList& list);
+
+  void DeleteOnFileThread(const std::string& extension_id);
+
+  Profile* profile_;
   NotificationRegistrar registrar_;
   NotificationMap notifications_;
+
+  // This should only be used on the FILE thread.
+  scoped_ptr<AppNotificationStorage> storage_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotificationManager);
 };
