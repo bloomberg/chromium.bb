@@ -94,6 +94,10 @@ extern "C" {
 #define BREAKPAD_SERVER_PARAMETER_PREFIX  "BreakpadServerParameterPrefix_"
 #define BREAKPAD_ON_DEMAND                "BreakpadOnDemand"
 
+// A service name associated with the original bootstrap parent port, saved in
+// OnDemandServer and restored in Inspector.
+#define BREAKPAD_BOOTSTRAP_PARENT_PORT    "com.Breakpad.BootstrapParent"
+
 // Optional user-defined function to dec to decide if we should handle
 // this crash or forward it along.
 // Return true if you want Breakpad to handle it.

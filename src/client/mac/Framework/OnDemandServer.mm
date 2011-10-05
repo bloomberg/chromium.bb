@@ -28,6 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #import "OnDemandServer.h"
+#import "Breakpad.h"
 
 #if DEBUG
   #define PRINT_MACH_RESULT(result_, message_) \
@@ -81,7 +82,7 @@ kern_return_t OnDemandServer::Initialize(const char *server_command,
 
   mach_port_t bootstrap_subset_port;
   kr = bootstrap_subset(bootstrap_port, self_task, &bootstrap_subset_port);
-  if (kr != KERN_SUCCESS) {
+  if (kr != BOOTSTRAP_SUCCESS) {
     PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_subset(): ");
     return kr;
   }
@@ -94,9 +95,9 @@ kern_return_t OnDemandServer::Initialize(const char *server_command,
   // recover this port and set it as its own bootstrap port in Inspector.mm
   // Inspector::ResetBootstrapPort.
   kr = bootstrap_register(bootstrap_subset_port,
-                          const_cast<char*>("BootstrapParentPort"),
+                          const_cast<char*>(BREAKPAD_BOOTSTRAP_PARENT_PORT),
                           bootstrap_port);
-  if (kr != KERN_SUCCESS) {
+  if (kr != BOOTSTRAP_SUCCESS) {
     PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_register(): ");
     return kr;
   }
@@ -106,7 +107,7 @@ kern_return_t OnDemandServer::Initialize(const char *server_command,
                                geteuid(),       // server uid
                                true,
                                &server_port_);
-  if (kr != KERN_SUCCESS) {
+  if (kr != BOOTSTRAP_SUCCESS) {
     PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_create_server(): ");
     return kr;
   }
@@ -118,13 +119,13 @@ kern_return_t OnDemandServer::Initialize(const char *server_command,
   kr = bootstrap_create_service(server_port_,
                                 const_cast<char*>(service_name),
                                 &service_port_);
-  if (kr != KERN_SUCCESS) {
+  if (kr != BOOTSTRAP_SUCCESS) {
     PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_create_service(): ");
 
     // perhaps the service has already been created - try to look it up
     kr = bootstrap_look_up(bootstrap_port, (char*)service_name, &service_port_);
 
-    if (kr != KERN_SUCCESS) {
+    if (kr != BOOTSTRAP_SUCCESS) {
       PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_look_up(): ");
       Unregister();  // clean up server port
       return kr;

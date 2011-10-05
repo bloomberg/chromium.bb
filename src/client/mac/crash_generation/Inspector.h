@@ -175,7 +175,7 @@ class Inspector {
   // (ensuring that children like the sender will inherit it), and saves the
   // subset in bootstrap_subset_port_ for use by ServiceCheckIn and
   // ServiceCheckOut.
-  void            ResetBootstrapPort();
+  kern_return_t   ResetBootstrapPort();
 
   kern_return_t   ServiceCheckIn(const char *receive_port_name);
   kern_return_t   ServiceCheckOut(const char *receive_port_name);

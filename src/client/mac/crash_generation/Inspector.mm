@@ -203,9 +203,12 @@ void ConfigFile::WriteFile(const SimpleStringDictionary *configurationParameters
 
 //=============================================================================
 void Inspector::Inspect(const char *receive_port_name) {
-  ResetBootstrapPort();
+  kern_return_t result = ResetBootstrapPort();
+  if (result != KERN_SUCCESS) {
+    return;
+  }
 
-  kern_return_t result = ServiceCheckIn(receive_port_name);
+  result = ServiceCheckIn(receive_port_name);
 
   if (result == KERN_SUCCESS) {
     result = ReadMessages();
@@ -243,7 +246,7 @@ void Inspector::Inspect(const char *receive_port_name) {
 }
 
 //=============================================================================
-void Inspector::ResetBootstrapPort() {
+kern_return_t Inspector::ResetBootstrapPort() {
   // A reasonable default, in case anything fails.
   bootstrap_subset_port_ = bootstrap_port;
 
@@ -254,29 +257,31 @@ void Inspector::ResetBootstrapPort() {
   if (kr != KERN_SUCCESS) {
     NSLog(@"ResetBootstrapPort: task_get_bootstrap_port failed: %s (%d)",
           mach_error_string(kr), kr);
-    return;
+    return kr;
   }
 
   mach_port_t bootstrap_parent_port;
   kr = bootstrap_look_up(bootstrap_subset_port_,
-                         "BootstrapParentPort",
+                         const_cast<char*>(BREAKPAD_BOOTSTRAP_PARENT_PORT),
                          &bootstrap_parent_port);
-  if (kr != KERN_SUCCESS) {
+  if (kr != BOOTSTRAP_SUCCESS) {
     NSLog(@"ResetBootstrapPort: bootstrap_look_up failed: %s (%d)",
           bootstrap_strerror(kr), kr);
-    return;
+    return kr;
   }
 
   kr = task_set_bootstrap_port(self_task, bootstrap_parent_port);
   if (kr != KERN_SUCCESS) {
     NSLog(@"ResetBootstrapPort: task_set_bootstrap_port failed: %s (%d)",
           mach_error_string(kr), kr);
-    return;
+    return kr;
   }
 
   // Some things access the bootstrap port through this global variable
   // instead of calling task_get_bootstrap_port.
   bootstrap_port = bootstrap_parent_port;
+
+  return KERN_SUCCESS;
 }
 
 //=============================================================================
