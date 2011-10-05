@@ -54,8 +54,11 @@ class PluginGraphics3D : public PluginResource {
 
 
  private:
-  static __thread PP_Resource cached_graphics3d_id;
-  static __thread gpu::gles2::GLES2Implementation* cached_implementation;
+  // TODO(nfullagar): make cached_* variables TLS once 64bit NaCl is faster,
+  // and the proxy has support for being called off the main thread.
+  // see: http://code.google.com/p/chromium/issues/detail?id=99217
+  static PP_Resource cached_graphics3d_id;
+  static gpu::gles2::GLES2Implementation* cached_implementation;
 
   // GLES2 Implementation objects.
   scoped_ptr<gpu::CommandBuffer> command_buffer_;

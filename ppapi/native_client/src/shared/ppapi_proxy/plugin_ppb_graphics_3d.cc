@@ -170,8 +170,11 @@ int32_t SwapBuffs(PP_Resource graphics3d_id,
 
 }  // namespace
 
-__thread PP_Resource PluginGraphics3D::cached_graphics3d_id = 0;
-__thread gpu::gles2::GLES2Implementation*
+  // TODO(nfullagar): make cached_* variables TLS once 64bit NaCl TLS is faster,
+  // and the proxy has support for being called off the main thread.
+  // see: http://code.google.com/p/chromium/issues/detail?id=99217
+  PP_Resource PluginGraphics3D::cached_graphics3d_id = 0;
+  gpu::gles2::GLES2Implementation*
   PluginGraphics3D::cached_implementation = NULL;
 
 PluginGraphics3D::PluginGraphics3D() : instance_id_(0) { }
