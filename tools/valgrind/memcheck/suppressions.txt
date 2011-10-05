@@ -4652,7 +4652,12 @@
    fun:_ZN4base5Value17CreateDoubleValueEd
    fun:_ZN36V8ValueConverterTest_WeirdTypes_Test8TestBodyEv
 }
-
+{
+   bug_99166
+   Memcheck:Leak
+   ...
+   fun:_ZN22AppNotificationStorage6CreateERK8FilePath
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

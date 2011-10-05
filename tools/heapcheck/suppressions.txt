@@ -1648,4 +1648,15 @@
    fun:std::basic_string::basic_string
    fun:V8ValueConverterTest_WeirdTypes_Test::TestBody
 }
-
+{
+   bug_99166_a
+   Heapcheck:Leak
+   ...
+   fun:AppNotificationStorage::Create
+}
+{
+   bug_99166_b
+   Heapcheck:Leak
+   ...
+   fun:AppNotificationManager::Init
+}
