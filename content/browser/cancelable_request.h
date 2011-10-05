@@ -966,6 +966,11 @@ class CancelableRequest1 : public CancelableRequest<CB> {
       : CancelableRequest<CB>(callback) {
   }
 
+  explicit CancelableRequest1(
+      const typename CancelableRequest<CB>::CallbackType& callback)
+      : CancelableRequest<CB>(callback) {
+  }
+
   // The value.
   Type value;
 

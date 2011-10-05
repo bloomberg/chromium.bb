@@ -7,6 +7,8 @@
 #include <map>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
@@ -249,8 +251,8 @@ void BrowserFeatureExtractor::StartExtractFeatures(
       GURL(request->url()),
       true /* wants_visits */,
       &request_consumer_,
-      NewCallback(this,
-                  &BrowserFeatureExtractor::QueryUrlHistoryDone));
+      base::Bind(&BrowserFeatureExtractor::QueryUrlHistoryDone,
+                 base::Unretained(this)));
 
   StorePendingQuery(handle, request, callback);
 }

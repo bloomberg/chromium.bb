@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
@@ -148,7 +149,8 @@ class RemoveHistoryTester : public BrowsingDataRemoverTester {
         url,
         true,
         &consumer_,
-        NewCallback(this, &RemoveHistoryTester::SaveResultAndQuit));
+        base::Bind(&RemoveHistoryTester::SaveResultAndQuit,
+                   base::Unretained(this)));
     BlockUntilNotified();
     return query_url_success_;
   }

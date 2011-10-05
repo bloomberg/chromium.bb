@@ -23,6 +23,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -203,7 +205,8 @@ class HistoryTest : public testing::Test {
   // found, this will return false and those structures will not be changed.
   bool QueryURL(HistoryService* history, const GURL& url) {
     history->QueryURL(url, true, &consumer_,
-                      NewCallback(this, &HistoryTest::SaveURLAndQuit));
+                      base::Bind(&HistoryTest::SaveURLAndQuit,
+                                 base::Unretained(this)));
     MessageLoop::current()->Run();  // Will be exited in SaveURLAndQuit.
     return query_url_success_;
   }

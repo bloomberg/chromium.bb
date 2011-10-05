@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
@@ -941,7 +943,8 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   CancelableRequestConsumer consumer;
   QueryHistoryCallbackImpl callback;
   history->QueryURL(GURL("http://keyword"), true, &consumer,
-      NewCallback(&callback, &QueryHistoryCallbackImpl::Callback));
+      base::Bind(&QueryHistoryCallbackImpl::Callback,
+                 base::Unretained(&callback)));
 
   // Wait for the request to be processed.
   profile()->BlockUntilHistoryProcessesPendingRequests();

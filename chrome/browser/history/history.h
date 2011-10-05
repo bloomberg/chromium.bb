@@ -266,11 +266,11 @@ class HistoryService : public CancelableRequestProvider,
   // empty.
   //
   // If success is false, neither the row nor the vector will be valid.
-  typedef Callback4<Handle,
-                    bool,  // Success flag, when false, nothing else is valid.
-                    const history::URLRow*,
-                    history::VisitVector*>::Type
-      QueryURLCallback;
+  typedef base::Callback<void(
+      Handle,
+      bool,  // Success flag, when false, nothing else is valid.
+      const history::URLRow*,
+      history::VisitVector*)> QueryURLCallback;
 
   // Queries the basic information about the URL in the history database. If
   // the caller is interested in the visits (each time the URL is visited),
@@ -279,7 +279,7 @@ class HistoryService : public CancelableRequestProvider,
   Handle QueryURL(const GURL& url,
                   bool want_visits,
                   CancelableRequestConsumerBase* consumer,
-                  QueryURLCallback* callback);
+                  const QueryURLCallback& callback);
 
   // Provides the result of a query. See QueryResults in history_types.h.
   // The common use will be to use QueryResults.Swap to suck the contents of

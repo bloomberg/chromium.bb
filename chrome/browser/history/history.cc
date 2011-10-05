@@ -497,7 +497,7 @@ HistoryService::Handle HistoryService::QueryURL(
     const GURL& url,
     bool want_visits,
     CancelableRequestConsumerBase* consumer,
-    QueryURLCallback* callback) {
+    const QueryURLCallback& callback) {
   return Schedule(PRIORITY_UI, &HistoryBackend::QueryURL, consumer,
                   new history::QueryURLRequest(callback), url, want_visits);
 }

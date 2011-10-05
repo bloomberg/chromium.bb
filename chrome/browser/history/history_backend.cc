@@ -988,8 +988,7 @@ void HistoryBackend::QueryURL(scoped_refptr<QueryURLRequest> request,
         db_->GetVisitsForURL(row->id(), visits);
     }
   }
-  request->ForwardResult(QueryURLRequest::TupleType(request->handle(), success,
-                                                    row, visits));
+  request->ForwardResult(request->handle(), success, row, visits);
 }
 
 // Segment usage ---------------------------------------------------------------

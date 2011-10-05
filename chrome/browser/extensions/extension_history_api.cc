@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_history_api.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
@@ -218,7 +220,8 @@ bool GetVisitsHistoryFunction::RunAsyncImpl() {
   hs->QueryURL(url,
                true,  // Retrieve full history of a URL.
                &cancelable_consumer_,
-               NewCallback(this, &GetVisitsHistoryFunction::QueryComplete));
+               base::Bind(&GetVisitsHistoryFunction::QueryComplete,
+                          base::Unretained(this)));
 
   return true;
 }
