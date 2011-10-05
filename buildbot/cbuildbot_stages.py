@@ -795,8 +795,13 @@ class ArchiveStage(NonHaltingBuilderStage):
       test_results = self._GetTestResults()
       if test_results:
         if self._WaitForBreakpadSymbols():
-          commands.GenerateMinidumpStackTraces(buildroot, board, test_results)
-        filename = commands.ArchiveTestTarball(test_results, archive_path)
+          filenames = commands.GenerateMinidumpStackTraces(buildroot,
+                                                           board, test_results,
+                                                           archive_path)
+          for filename in filenames:
+            commands.UploadArchivedFile(archive_path, upload_url,
+                                        filename, debug)
+        filename = commands.ArchiveFile(test_results, archive_path)
         commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
 
     def ArchiveDebugSymbols():

@@ -86,6 +86,7 @@ class CBuildBotTest(mox.MoxTestBase):
     symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
                               'breakpad')
     cwd = os.path.join(buildroot, 'src', 'scripts')
+    archive_dir = '/archive/dir'
 
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
     tempfile.mkdtemp(dir=mox.IgnoreArg(), prefix=mox.IgnoreArg()). \
@@ -96,6 +97,7 @@ class CBuildBotTest(mox.MoxTestBase):
                                        [dump_file_name])])
     self.mox.StubOutWithMock(cros_lib, 'ReinterpretPathForChroot')
     cros_lib.ReinterpretPathForChroot(mox.IgnoreArg()).AndReturn(dump_file)
+    self.mox.StubOutWithMock(commands, 'ArchiveFile')
     self.mox.StubOutWithMock(os, 'unlink')
     self.mox.StubOutWithMock(shutil, 'rmtree')
 
@@ -109,14 +111,16 @@ class CBuildBotTest(mox.MoxTestBase):
          error_ok=True,
          exit_code=True,
          redirect_stderr=True).AndReturn(cros_lib.CommandResult())
+    stack_trace = '%s.txt' % dump_file
     cros_lib.RunCommand(['minidump_stackwalk',
                          dump_file,
                          symbol_dir, ],
                         cwd=cwd,
                         enter_chroot=True,
                         error_ok=True,
-                        log_stdout_to_file='%s.txt' % dump_file,
+                        log_stdout_to_file=stack_trace,
                         redirect_stderr=True)
+    commands.ArchiveFile(stack_trace, archive_dir)
     cros_lib.RunCommand(['tar',
                          'uf',
                          test_tarball,
@@ -130,7 +134,8 @@ class CBuildBotTest(mox.MoxTestBase):
 
     self.mox.ReplayAll();
     commands.GenerateMinidumpStackTraces(buildroot, board,
-                                         gzipped_test_tarball)
+                                         gzipped_test_tarball,
+                                         archive_dir)
     self.mox.VerifyAll();
 
   def testUprevAllPackages(self):

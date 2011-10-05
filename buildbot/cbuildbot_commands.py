@@ -401,14 +401,21 @@ def ArchiveTestResults(buildroot, test_results_dir):
     cros_lib.Warning(str(e))
     cros_lib.Warning('========================================================')
 
-def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball):
+
+def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
+                                archive_dir):
   """Generates stack traces for all minidumps in the gzipped_test_tarball.
 
   Arguments:
     buildroot: Root directory where build occurs.
     board: Name of the board being worked on.
     gzipped_test_tarball: Path to the gzipped test tarball.
+    archive_dir: Local directory for archiving.
+
+  Returns:
+    List of stack trace file names.
   """
+  stack_trace_filenames = []
   chroot_tmp = os.path.join(buildroot, 'chroot', 'tmp')
   temp_dir = tempfile.mkdtemp(prefix='cbuildbot_dumps', dir=chroot_tmp)
 
@@ -432,8 +439,11 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball):
                               'breakpad')
     for curr_dir, subdirs, files in os.walk(temp_dir):
       for curr_file in files:
+        # Skip crash files that were purposely generated.
+        if curr_file.find('crasher_nobreakpad') == 0: continue
         full_file_path = os.path.join(curr_dir, curr_file)
         minidump = cros_lib.ReinterpretPathForChroot(full_file_path)
+        minidump_stack_trace = '%s.txt' % full_file_path
         cwd = os.path.join(buildroot, 'src', 'scripts')
         cros_lib.RunCommand(['minidump_stackwalk',
                              minidump,
@@ -442,7 +452,9 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball):
                             enter_chroot=True,
                             error_ok=True,
                             redirect_stderr=True,
-                            log_stdout_to_file='%s.txt' % full_file_path)
+                            log_stdout_to_file=minidump_stack_trace)
+        filename = ArchiveFile(minidump_stack_trace, archive_dir)
+        stack_trace_filenames.append(filename)
     cros_lib.RunCommand(['tar',
                          'uf',
                          test_tarball,
@@ -453,18 +465,24 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball):
   os.unlink(test_tarball)
   shutil.rmtree(temp_dir)
 
-def ArchiveTestTarball(test_tarball, archive_dir):
-  """Archives the test results tarball.
+  return stack_trace_filenames
+
+
+def ArchiveFile(file_to_archive, archive_dir):
+  """Archives the specified file.
 
   Arguments:
-    test_tarball: Path to test tarball.
-    archive_dir: Local directory for archive tarball.
+    file_to_archive: Full path to file to archive.
+    archive_dir: Local directory for archiving.
+
+  Returns:
+    The base name of the archived file.
   """
-  filename = os.path.basename(test_tarball)
+  filename = os.path.basename(file_to_archive)
   if archive_dir:
-    archived_tarball = os.path.join(archive_dir, filename)
-    shutil.copy(test_tarball, archived_tarball)
-    os.chmod(archived_tarball, 0644)
+    archived_file = os.path.join(archive_dir, filename)
+    shutil.copy(file_to_archive, archived_file)
+    os.chmod(archived_file, 0644)
 
   return filename
 
