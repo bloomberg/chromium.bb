@@ -221,8 +221,7 @@ void GLES2DecoderTestBase::TearDown() {
       .RetiresOnSaturation();
   decoder_->Destroy();
   decoder_.reset();
-  group_->set_have_context(false);
-  group_ = NULL;
+  group_->Destroy(false);
   engine_.reset();
   ::gfx::GLInterface::SetGLInterface(NULL);
   gl_.reset();

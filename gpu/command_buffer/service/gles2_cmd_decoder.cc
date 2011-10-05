@@ -2360,9 +2360,6 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
 void GLES2DecoderImpl::Destroy() {
   bool have_context = context_.get() && MakeCurrent();
 
-  if (group_.get())
-    group_->set_have_context(have_context);
-
   SetParent(NULL, 0);
 
   if (have_context) {
@@ -2396,10 +2393,6 @@ void GLES2DecoderImpl::Destroy() {
       offscreen_resolved_frame_buffer_->Destroy();
     if (offscreen_resolved_color_texture_.get())
       offscreen_resolved_color_texture_->Destroy();
-
-    // must release the ContextGroup before destroying the context as its
-    // destructor uses GL.
-    group_ = NULL;
   } else {
     if (offscreen_target_frame_buffer_.get())
       offscreen_target_frame_buffer_->Invalidate();
@@ -2420,6 +2413,9 @@ void GLES2DecoderImpl::Destroy() {
     if (offscreen_resolved_color_texture_.get())
       offscreen_resolved_color_texture_->Invalidate();
   }
+
+  group_->Destroy(have_context);
+  group_ = NULL;
 
   if (context_.get()) {
     context_->ReleaseCurrent(NULL);

@@ -39,14 +39,14 @@ class ContextGroup : public base::RefCounted<ContextGroup> {
   explicit ContextGroup(bool bind_generates_resource);
   ~ContextGroup();
 
-  // This should only be called by GLES2Decoder.
+  // This should only be called by GLES2Decoder. This must be paired with a
+  // call to destroy if it succeeds.
   bool Initialize(const DisallowedFeatures& disallowed_features,
                   const char* allowed_features);
 
-  // Sets the ContextGroup has having a lost context.
-  void set_have_context(bool have_context) {
-    have_context_ = have_context;
-  }
+  // Destroys all the resources when called for the last context in the group.
+  // It should only be called by GLES2Decoder.
+  void Destroy(bool have_context);
 
   bool bind_generates_resource() {
     return bind_generates_resource_;
@@ -111,12 +111,8 @@ class ContextGroup : public base::RefCounted<ContextGroup> {
   IdAllocatorInterface* GetIdAllocator(unsigned namespace_id);
 
  private:
-  // Destroys all the resources.
-  void Destroy();
-
   // Whether or not this context is initialized.
-  bool initialized_;
-  bool have_context_;
+  int num_contexts_;
   bool bind_generates_resource_;
 
   uint32 max_vertex_attribs_;
