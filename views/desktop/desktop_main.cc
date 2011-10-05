@@ -24,6 +24,13 @@
 #include "ui/wayland/wayland_message_pump.h"
 #endif
 
+#if defined(TOOLKIT_USES_GTK)
+#include <gtk/gtk.h>
+#elif defined(OS_LINUX)
+#include <glib.h>
+#include <glib-object.h>
+#endif
+
 int main(int argc, char** argv) {
 #if defined(OS_WIN)
   OleInitialize(NULL);
@@ -31,7 +38,7 @@ int main(int argc, char** argv) {
   // Initializes gtk stuff.
   g_thread_init(NULL);
   g_type_init();
-#if !defined(USE_WAYLAND)
+#if defined(TOOLKIT_USES_GTK) && !defined(USE_WAYLAND)
   gtk_init(&argc, &argv);
 #endif
 #endif

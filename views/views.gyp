@@ -23,6 +23,7 @@
         'sources/': [ ['exclude', '_win\\.(h|cc)$'],
                       ['exclude', '_gtk\\.(h|cc)$'],
                       ['exclude', '_x\\.(h|cc)$'] ],
+        'dependencies': [ '../ui/aura/aura.gyp:aura', ],
       }],
     ],
   },
@@ -428,9 +429,6 @@
           ],
         }],
         ['use_aura==1', {
-          'dependencies': [
-            '../ui/aura/aura.gyp:aura',
-          ],
           'sources/': [
             ['exclude', '_(gtk|x)\\.cc$'],
             ['exclude', '/(gtk|x)_[^/]*\\.cc$'],
@@ -854,6 +852,12 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+          ],
+        },
+        ],
+        ['use_glib == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:glib',
             '../chrome/chrome.gyp:packed_resources',
           ],
           'conditions': [
@@ -863,8 +867,7 @@
                ],
             }],
           ],
-        },
-        ],
+        }],
         ['OS=="win"', {
           'link_settings': {
             'libraries': [

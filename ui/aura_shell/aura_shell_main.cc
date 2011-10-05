@@ -22,10 +22,6 @@ int main(int argc, char** argv) {
   icu_util::Initialize();
   ResourceBundle::InitSharedInstance("en-US");
 
-#if defined(TOOLKIT_USES_GTK)
-  base::MessagePumpX::DisableGtkMessagePump();
-#endif
-
   // Create the message-loop here before creating the desktop.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
 
