@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -94,13 +93,6 @@ PrintPreviewUI* PrintPreviewMessageHandler::OnFailure(int document_cookie) {
   // User might have closed it already.
   if (!print_preview_tab || !print_preview_tab->web_ui())
     return NULL;
-
-  if (g_browser_process->background_printing_manager()->
-          HasPrintPreviewTab(print_preview_tab)) {
-    // Preview tab was hidden to serve the print request.
-    delete print_preview_tab;
-    return NULL;
-  }
 
   return static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
 }
