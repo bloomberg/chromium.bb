@@ -223,6 +223,7 @@ GL_APICALL void         GL_APIENTRY glPlaceholder447CHROMIUM (void);
 GL_APICALL GLuint       GL_APIENTRY glCreateStreamTextureCHROMIUM (GLuint texture);
 GL_APICALL void         GL_APIENTRY glDestroyStreamTextureCHROMIUM (GLuint texture);
 GL_APICALL void         GL_APIENTRY glPlaceholder453CHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLidShader shader, GLsizeiNotNegative bufsize, GLsizei* length, char* source);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -431,6 +432,7 @@ _CMD_ID_TABLE = {
   'Placeholder453CHROMIUM':                                    453,
   'GetMultipleIntegervCHROMIUM':                               454,
   'GetProgramInfoCHROMIUM':                                    455,
+  'GetTranslatedShaderSourceANGLE':                            456,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -831,6 +833,7 @@ _ENUM_LISTS = {
       'GL_COMPILE_STATUS',
       'GL_INFO_LOG_LENGTH',
       'GL_SHADER_SOURCE_LENGTH',
+      'GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE',
     ],
   },
   'ShaderPrecision': {
@@ -1424,6 +1427,12 @@ _FUNCTION_INFO = {
   },
   'GetTexParameterfv': {'type': 'GETn', 'result': ['SizedResult<GLfloat>']},
   'GetTexParameteriv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
+  'GetTranslatedShaderSourceANGLE': {
+    'type': 'STRn',
+    'get_len_func': 'DoGetShaderiv',
+    'get_len_enum': 'GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE',
+    'unit_test': False,
+    },
   'GetUniformfv': {
     'type': 'Custom',
     'immediate': False,
@@ -4169,7 +4178,8 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
 
 
 class STRnHandler(TypeHandler):
-  """Handler for GetProgramInfoLog, GetShaderInfoLog and GetShaderSource."""
+  """Handler for GetProgramInfoLog, GetShaderInfoLog, GetShaderSource, and
+  GetTranslatedShaderSourceANGLE."""
 
   def __init__(self):
     TypeHandler.__init__(self)

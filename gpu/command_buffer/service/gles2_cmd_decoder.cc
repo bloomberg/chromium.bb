@@ -4674,7 +4674,7 @@ error::Error GLES2DecoderImpl::ShaderSourceHelper(
   }
   // Note: We don't actually call glShaderSource here. We wait until
   // the call to glCompileShader.
-  info->Update(std::string(data, data + data_size).c_str());
+  info->UpdateSource(std::string(data, data + data_size).c_str());
   return error::kNoError;
 }
 
@@ -4731,10 +4731,26 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
       return;
     }
     shader_src = translator->translated_shader();
+    if (!IsAngle())
+      info->UpdateTranslatedSource(shader_src);
   }
 
   glShaderSource(info->service_id(), 1, &shader_src, NULL);
   glCompileShader(info->service_id());
+  if (IsAngle()) {
+    GLint max_len = 0;
+    glGetShaderiv(info->service_id(),
+                  GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
+                  &max_len);
+    scoped_array<char> temp(new char[max_len]);
+    GLint len = 0;
+    glGetTranslatedShaderSourceANGLE(
+        info->service_id(), max_len, &len, temp.get());
+    DCHECK(max_len == 0 || len < max_len);
+    DCHECK(len == 0 || temp[len] == '\0');
+    info->UpdateTranslatedSource(temp.get());
+  }
+
   GLint status = GL_FALSE;
   glGetShaderiv(info->service_id(),  GL_COMPILE_STATUS, &status);
   if (status) {
@@ -4751,7 +4767,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
     GLint len = 0;
     glGetShaderInfoLog(info->service_id(), max_len, &len, temp.get());
     DCHECK(max_len == 0 || len < max_len);
-    DCHECK(len ==0 || temp[len] == '\0');
+    DCHECK(len == 0 || temp[len] == '\0');
     info->SetStatus(false, std::string(temp.get(), len).c_str(), NULL);
   }
 };
@@ -4773,6 +4789,10 @@ void GLES2DecoderImpl::DoGetShaderiv(
     case GL_INFO_LOG_LENGTH:
       *params = info->log_info() ? info->log_info()->size() + 1 : 0;
       return;
+    case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
+      *params = info->translated_source() ?
+          info->translated_source()->size() + 1 : 0;
+      return;
     default:
       break;
   }
@@ -4791,6 +4811,25 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(
     return error::kNoError;
   }
   bucket->SetFromString(info->source()->c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetTranslatedShaderSourceANGLE(
+    uint32 immediate_data_size,
+    const gles2::GetTranslatedShaderSourceANGLE& c) {
+  GLuint shader = c.shader;
+
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  Bucket* bucket = CreateBucket(bucket_id);
+  ShaderManager::ShaderInfo* info = GetShaderInfoNotProgram(
+      shader, "glTranslatedGetShaderSourceANGLE");
+  if (!info) {
+    bucket->SetSize(0);
+    return error::kNoError;
+  }
+
+  bucket->SetFromString(info->translated_source() ?
+      info->translated_source()->c_str() : NULL);
   return error::kNoError;
 }
 

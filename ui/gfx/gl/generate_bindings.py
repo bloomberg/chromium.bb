@@ -149,6 +149,8 @@ GL_FUNCTIONS = [
 ['void', ['glGetTexParameterfv'],
     'GLenum target, GLenum pname, GLfloat* params'],
 ['void', ['glGetTexParameteriv'], 'GLenum target, GLenum pname, GLint* params'],
+['void', ['glGetTranslatedShaderSourceANGLE'],
+    'GLuint shader, GLsizei bufsize, GLsizei* length, char* source'],
 ['void', ['glGetUniformfv'], 'GLuint program, GLint location, GLfloat* params'],
 ['void', ['glGetUniformiv'], 'GLuint program, GLint location, GLint* params'],
 ['GLint', ['glGetUniformLocation'], 'GLuint program, const char* name'],

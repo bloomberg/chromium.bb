@@ -9127,6 +9127,44 @@ COMPILE_ASSERT(sizeof(Placeholder453CHROMIUM) == 4,
 COMPILE_ASSERT(offsetof(Placeholder453CHROMIUM, header) == 0,
                OffsetOf_Placeholder453CHROMIUM_header_not_0);
 
+struct GetTranslatedShaderSourceANGLE {
+  typedef GetTranslatedShaderSourceANGLE ValueType;
+  static const CommandId kCmdId = kGetTranslatedShaderSourceANGLE;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _shader, uint32 _bucket_id) {
+    SetHeader();
+    shader = _shader;
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _shader, uint32 _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_shader, _bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 shader;
+  uint32 bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(GetTranslatedShaderSourceANGLE) == 12,
+               Sizeof_GetTranslatedShaderSourceANGLE_is_not_12);
+COMPILE_ASSERT(offsetof(GetTranslatedShaderSourceANGLE, header) == 0,
+               OffsetOf_GetTranslatedShaderSourceANGLE_header_not_0);
+COMPILE_ASSERT(offsetof(GetTranslatedShaderSourceANGLE, shader) == 4,
+               OffsetOf_GetTranslatedShaderSourceANGLE_shader_not_4);
+COMPILE_ASSERT(offsetof(GetTranslatedShaderSourceANGLE, bucket_id) == 8,
+               OffsetOf_GetTranslatedShaderSourceANGLE_bucket_id_not_8);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

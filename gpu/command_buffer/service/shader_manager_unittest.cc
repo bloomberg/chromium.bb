@@ -119,8 +119,13 @@ TEST_F(ShaderManagerTest, ShaderInfo) {
   EXPECT_TRUE(info1->IsValid());
   EXPECT_STREQ(kLog, info1->log_info()->c_str());
   // Check we can set its source.
-  info1->Update(kClient1Source);
+  info1->UpdateSource(kClient1Source);
   EXPECT_STREQ(kClient1Source, info1->source()->c_str());
+  EXPECT_EQ(NULL, info1->translated_source());
+  // Check we can set its translated source.
+  info1->UpdateTranslatedSource(kClient1Source);
+  EXPECT_STREQ(kClient1Source,
+               info1->translated_source()->c_str());
 }
 
 TEST_F(ShaderManagerTest, GetInfo) {

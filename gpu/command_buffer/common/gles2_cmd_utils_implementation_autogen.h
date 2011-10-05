@@ -345,6 +345,7 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x84C4, "GL_TEXTURE4", },
   { 0x85B5, "GL_VERTEX_ARRAY_BINDING_OES", },
   { 0x8253, "GL_GUILTY_CONTEXT_RESET_ARB", },
+  { 0x6900, "GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE", },
   { 0x00200000, "GL_STENCIL_BUFFER_BIT5_QCOM", },
   { 0x8D68, "GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES", },
   { 0x8D61, "GL_HALF_FLOAT_OES", },
@@ -869,6 +870,8 @@ std::string GLES2Util::GetStringShaderParameter(uint32 value) {
     { GL_COMPILE_STATUS, "GL_COMPILE_STATUS" },
     { GL_INFO_LOG_LENGTH, "GL_INFO_LOG_LENGTH" },
     { GL_SHADER_SOURCE_LENGTH, "GL_SHADER_SOURCE_LENGTH" },
+    { GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
+    "GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE" },
   };
   return GLES2Util::GetQualifiedEnumString(
       string_table, arraysize(string_table), value);

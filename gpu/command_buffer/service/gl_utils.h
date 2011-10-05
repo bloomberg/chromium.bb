@@ -39,6 +39,9 @@
 #define GL_TEXTURE_BINDING_EXTERNAL_OES        0x8D67
 #define GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES    0x8D68
 
+// GL_ANGLE_translated_shader_source
+#define GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE 0x6900
+
 #define GL_GLEXT_PROTOTYPES 1
 
 // Define this for extra GL error debugging (slower).

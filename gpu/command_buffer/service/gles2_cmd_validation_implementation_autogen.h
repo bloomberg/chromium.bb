@@ -303,6 +303,7 @@ static GLenum valid_shader_parameter_table[] = {
   GL_COMPILE_STATUS,
   GL_INFO_LOG_LENGTH,
   GL_SHADER_SOURCE_LENGTH,
+  GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
 };
 
 static GLenum valid_shader_precision_table[] = {

@@ -1079,6 +1079,21 @@ typedef void (GL_APIENTRYP PFNGLENABLEFEATURECHROMIUM) (const GLchar *feature);
 #endif
 #endif
 
+/* GL_ANGLE_translated_shader_source */
+#ifndef GL_ANGLE_translated_shader_source
+#define GL_ANGLE_translated_shader_source 1
+#ifndef GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE
+#define GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE 0x6900
+#endif
+#ifdef GL_GLEXT_PROTOTYPES
+#define glGetTranslatedShaderSourceANGLE GLES2_GET_FUN(GetTranslatedShaderSourceANGLE)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL void GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* source);
+#endif
+#endif
+typedef void (GL_APIENTRYP PFNGLGETTRANSLATEDSHADERSOURCEANGLEPROC) (GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* source);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

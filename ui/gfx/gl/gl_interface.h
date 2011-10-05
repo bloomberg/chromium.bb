@@ -306,6 +306,11 @@ class GL_EXPORT GLInterface {
                                  GLenum pname,
                                  GLint* params) = 0;
 
+  virtual void GetTranslatedShaderSourceANGLE(GLuint shader,
+                                              GLsizei bufsize,
+                                              GLsizei* length,
+                                              char* source) = 0;
+
   virtual void GetUniformfv(GLuint program,
                             GLint location,
                             GLfloat* params) = 0;

@@ -1272,5 +1272,30 @@ GLuint CreateStreamTextureCHROMIUM(GLuint texture);
 
 void DestroyStreamTextureCHROMIUM(GLuint texture);
 
+void GetTranslatedShaderSourceANGLE(
+    GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLsizei, length);
+  GPU_CLIENT_LOG("[" << this << "] glGetTranslatedShaderSourceANGLE" << "("
+      << shader << ", "
+      << bufsize << ", "
+      << static_cast<void*>(length) << ", "
+      << static_cast<void*>(source) << ")");
+  helper_->SetBucketSize(kResultBucketId, 0);
+  helper_->GetTranslatedShaderSourceANGLE(shader, kResultBucketId);
+  std::string str;
+  GLsizei max_size = 0;
+  if (GetBucketAsString(kResultBucketId, &str)) {
+    if (bufsize > 0) {
+      max_size =
+          std::min(static_cast<size_t>(bufsize) - 1, str.size());
+      memcpy(source, str.c_str(), max_size);
+      source[max_size] = '\0';
+      GPU_CLIENT_LOG("------\n" << source << "\n------");
+    }
+  }
+  if (length != NULL) {
+    *length = max_size;
+  }
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

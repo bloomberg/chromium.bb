@@ -581,6 +581,11 @@ GLuint GLES2CreateStreamTextureCHROMIUM(GLuint texture) {
 void GLES2DestroyStreamTextureCHROMIUM(GLuint texture) {
   gles2::GetGLContext()->DestroyStreamTextureCHROMIUM(texture);
 }
+void GLES2GetTranslatedShaderSourceANGLE(
+    GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
+  gles2::GetGLContext()->GetTranslatedShaderSourceANGLE(
+      shader, bufsize, length, source);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

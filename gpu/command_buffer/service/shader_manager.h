@@ -32,8 +32,14 @@ class ShaderManager {
     typedef scoped_refptr<ShaderInfo> Ref;
     typedef ShaderTranslator::VariableInfo VariableInfo;
 
-    void Update(const char* source) {
+    void UpdateSource(const char* source) {
       source_.reset(source ? new std::string(source) : NULL);
+      translated_source_.reset(NULL);
+    }
+
+    void UpdateTranslatedSource(const char* translated_source) {
+      translated_source_.reset(
+          translated_source ? new std::string(translated_source) : NULL);
     }
 
     GLuint service_id() const {
@@ -46,6 +52,10 @@ class ShaderManager {
 
     const std::string* source() const {
       return source_.get();
+    }
+
+    const std::string* translated_source() const {
+      return translated_source_.get();
     }
 
     void SetStatus(
@@ -97,6 +107,9 @@ class ShaderManager {
 
     // The shader source as passed to glShaderSource.
     scoped_ptr<std::string> source_;
+
+    // The translated shader source.
+    scoped_ptr<std::string> translated_source_;
 
     // The shader translation log.
     scoped_ptr<std::string> log_info_;

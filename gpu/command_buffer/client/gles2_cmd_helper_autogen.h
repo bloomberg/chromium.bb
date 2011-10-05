@@ -1241,5 +1241,11 @@
     c.Init(texture);
   }
 
+  void GetTranslatedShaderSourceANGLE(GLuint shader, uint32 bucket_id) {
+    gles2::GetTranslatedShaderSourceANGLE& c =
+        GetCmdSpace<gles2::GetTranslatedShaderSourceANGLE>();
+    c.Init(shader, bucket_id);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

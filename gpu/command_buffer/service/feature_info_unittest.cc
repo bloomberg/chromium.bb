@@ -69,6 +69,8 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
   // Check default extensions are there
   EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_resource_safe"));
   EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_strict_attribs"));
+  EXPECT_THAT(info_.extensions(),
+              HasSubstr("GL_ANGLE_translated_shader_source"));
 
   // Check a couple of random extensions that should not be there.
   EXPECT_THAT(info_.extensions(), Not(HasSubstr("GL_CHROMIUM_webglsl")));
