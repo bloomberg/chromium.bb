@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
@@ -24,14 +25,24 @@ class AppNotificationStorageTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
-    storage_.reset(AppNotificationStorage::Create(dir_.path()));
+    storage_path_ = dir_.path().AppendASCII("App Notifications");
+    storage_.reset(AppNotificationStorage::Create(storage_path_));
     ASSERT_TRUE(storage_.get() != NULL);
   }
 
  protected:
+  // Returns whether the database file(s) exist on disk yet.
+  bool DatabaseExistsOnDisk() {
+    if (!storage_.get())
+      return false;
+
+    return file_util::PathExists(storage_path_);
+  }
+
   MessageLoop message_loop_;
   BrowserThread file_thread_;
   ScopedTempDir dir_;
+  FilePath storage_path_;
   scoped_ptr<AppNotificationStorage> storage_;
 };
 
@@ -47,11 +58,13 @@ TEST_F(AppNotificationStorageTest, Basics) {
   EXPECT_TRUE(storage_->Get(id1, &tmp_list));
   EXPECT_TRUE(tmp_list.empty());
   EXPECT_TRUE(storage_->Delete(id1));
+  EXPECT_FALSE(DatabaseExistsOnDisk());
 
   // Add some items.
   AppNotificationList list;
   util::AddNotifications(&list, 2, "whatever");
   EXPECT_TRUE(storage_->Set(id1, list));
+  EXPECT_TRUE(DatabaseExistsOnDisk());
 
   // Try getting them back.
   tmp_list.clear();

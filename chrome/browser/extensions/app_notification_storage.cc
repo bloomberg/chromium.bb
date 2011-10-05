@@ -26,11 +26,6 @@ class LevelDbAppNotificationStorage : public AppNotificationStorage {
   explicit LevelDbAppNotificationStorage(const FilePath& path);
   virtual ~LevelDbAppNotificationStorage();
 
-  // Must be called exactly once before any other operations. This will return
-  // false if any condition would prevent further operations from being
-  // successful (eg unable to create files at |path_|).
-  bool Initialize();
-
   // Implementing the AppNotificationStorage interface.
   virtual bool GetExtensionIds(std::set<std::string>* result) OVERRIDE;
   virtual bool Get(const std::string& extension_id,
@@ -40,13 +35,20 @@ class LevelDbAppNotificationStorage : public AppNotificationStorage {
   virtual bool Delete(const std::string& extension_id) OVERRIDE;
 
  private:
+  // If |db_| is NULL, attempt to open it. You should pass true for
+  // |create_if_missing| if you need to write data into the database and want to
+  // ensure it has been created after this call.
+  bool OpenDbIfNeeded(bool create_if_missing);
+
   // The path where the database will reside.
   FilePath path_;
 
   // This should be used for all read operations on the db.
   leveldb::ReadOptions read_options_;
 
-  // The leveldb database object - will be NULL until Initialize is called.
+  // The leveldb database object - might be NULL if there was nothing found on
+  // disk at |path_| and OpenDbIfNeeded hasn't been called with
+  // create_if_missing=true yet.
   scoped_ptr<leveldb::DB> db_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDbAppNotificationStorage);
@@ -55,11 +57,7 @@ class LevelDbAppNotificationStorage : public AppNotificationStorage {
 // static
 AppNotificationStorage* AppNotificationStorage::Create(
     const FilePath& path) {
-  scoped_ptr<LevelDbAppNotificationStorage> result(
-      new LevelDbAppNotificationStorage(path));
-  if (!result->Initialize())
-    return NULL;
-  return result.release();
+  return new LevelDbAppNotificationStorage(path);
 }
 
 AppNotificationStorage::~AppNotificationStorage() {}
@@ -121,34 +119,14 @@ LevelDbAppNotificationStorage::~LevelDbAppNotificationStorage() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-bool LevelDbAppNotificationStorage::Initialize() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  CHECK(!db_.get());
-  CHECK(!path_.empty());
-
-#if defined(OS_POSIX)
-  std::string os_path = path_.value();
-#elif defined(OS_WIN)
-  std::string os_path = base::SysWideToUTF8(path_.value());
-#endif
-
-  leveldb::Options options;
-  options.create_if_missing = true;
-  leveldb::DB* db = NULL;
-  leveldb::Status status = leveldb::DB::Open(options, os_path, &db);
-  if (!status.ok()) {
-    LogLevelDbError(FROM_HERE, status);
-    return false;
-  }
-  db_.reset(db);
-  return true;
-}
-
 bool LevelDbAppNotificationStorage::GetExtensionIds(
     std::set<std::string>* result) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  CHECK(db_.get());
   CHECK(result);
+  if (!OpenDbIfNeeded(false))
+    return false;
+  if (!db_.get())
+    return true;
 
   scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options_));
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
@@ -163,8 +141,11 @@ bool LevelDbAppNotificationStorage::GetExtensionIds(
 bool LevelDbAppNotificationStorage::Get(const std::string& extension_id,
                                         AppNotificationList* result) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  CHECK(db_.get());
   CHECK(result);
+  if (!OpenDbIfNeeded(false))
+    return false;
+  if (!db_.get())
+    return true;
 
   std::string json;
   leveldb::Status status = db_->Get(read_options_, extension_id, &json);
@@ -181,6 +162,8 @@ bool LevelDbAppNotificationStorage::Get(const std::string& extension_id,
 bool LevelDbAppNotificationStorage::Set(const std::string& extension_id,
                                         const AppNotificationList& list) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!OpenDbIfNeeded(true))
+    return false;
   CHECK(db_.get());
 
   std::string json;
@@ -197,7 +180,12 @@ bool LevelDbAppNotificationStorage::Set(const std::string& extension_id,
 
 bool LevelDbAppNotificationStorage::Delete(const std::string& extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  CHECK(db_.get());
+
+  if (!OpenDbIfNeeded(false))
+    return false;
+
+  if (!db_.get())
+    return true; // The database doesn't exist on disk.
 
   // Leveldb does not consider it an error if the key to delete isn't present,
   // so we don't bother checking that first.
@@ -207,5 +195,34 @@ bool LevelDbAppNotificationStorage::Delete(const std::string& extension_id) {
     LogLevelDbError(FROM_HERE, status);
     return false;
   }
+  return true;
+}
+
+bool LevelDbAppNotificationStorage::OpenDbIfNeeded(bool create_if_missing) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (db_.get())
+    return true;
+
+  // If the file doesn't exist and the caller doesn't want it created, just
+  // return early.
+  if (!create_if_missing && !file_util::PathExists(path_))
+    return true;
+
+#if defined(OS_POSIX)
+  std::string os_path = path_.value();
+#elif defined(OS_WIN)
+  std::string os_path = base::SysWideToUTF8(path_.value());
+#endif
+
+  leveldb::Options options;
+  options.create_if_missing = true;
+  leveldb::DB* db = NULL;
+  leveldb::Status status = leveldb::DB::Open(options, os_path, &db);
+  if (!status.ok()) {
+    LogLevelDbError(FROM_HERE, status);
+    return false;
+  }
+  db_.reset(db);
   return true;
 }

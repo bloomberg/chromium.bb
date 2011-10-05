@@ -87,7 +87,7 @@ TEST_F(AppNotificationManagerTest, Simple) {
   EXPECT_EQ(NULL, mgr_->GetAll(id));
 }
 
-// Test that AppNotificationManager correctly lists to EXTENSION_UNINSTALLED
+// Test that AppNotificationManager correctly listens to EXTENSION_UNINSTALLED
 // notifications and removes associated data when that happens.
 TEST_F(AppNotificationManagerTest, ExtensionUninstall) {
   // Add some items from two test extension ids.
