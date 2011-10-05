@@ -60,6 +60,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   window_->set_user_data(this);
   window_->Init();
+  // TODO(beng): respect |params| authoritah wrt transparency.
+  window_->layer()->SetFillsBoundsOpaquely(false);
   delegate_->OnNativeWidgetCreated();
   window_->SetBounds(params.bounds);
   window_->SetParent(params.parent);
