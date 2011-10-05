@@ -107,12 +107,15 @@ void FFmpegVideoDecodeEngine::Initialize(
 
   // Create output buffer pool when direct rendering is not used.
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
+    VideoFrame::Format format =
+        PixelFormatToVideoFormat(codec_context_->pix_fmt);
+
     scoped_refptr<VideoFrame> video_frame =
-      VideoFrame::CreateFrame(PixelFormatToVideoFormat(codec_context_->pix_fmt),
-                              config.visible_rect().width(),
-                              config.visible_rect().height(),
-                              kNoTimestamp,
-                              kNoTimestamp);
+        VideoFrame::CreateFrame(format,
+                                config.visible_rect().width(),
+                                config.visible_rect().height(),
+                                kNoTimestamp,
+                                kNoTimestamp);
     frame_queue_available_.push_back(video_frame);
   }
 
@@ -241,8 +244,14 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
   // output, meaning the data is only valid until the next
   // avcodec_decode_video() call.
+  //
+  // TODO(scherkus): use VideoFrame dimensions instead and re-allocate
+  // VideoFrame if dimensions changes, but for now adjust size locally.
   int y_rows = codec_context_->height;
-  int uv_rows = video_frame->rows(VideoFrame::kUPlane);
+  int uv_rows = codec_context_->height;
+  if (codec_context_->pix_fmt == PIX_FMT_YUV420P) {
+    uv_rows /= 2;
+  }
 
   CopyYPlane(av_frame_->data[0], av_frame_->linesize[0], y_rows, video_frame);
   CopyUPlane(av_frame_->data[1], av_frame_->linesize[1], uv_rows, video_frame);
