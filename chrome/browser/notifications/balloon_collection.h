@@ -11,8 +11,7 @@
 #include <deque>
 #include <string>
 
-#include "base/callback_old.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/callback.h"
 
 class Balloon;
 class GURL;
@@ -21,7 +20,7 @@ class Profile;
 
 namespace gfx {
 class Size;
-}  // namespace gfx
+}
 
 class BalloonCollection {
  public:
@@ -93,8 +92,8 @@ class BalloonCollection {
     space_change_listener_ = listener;
   }
 
-  void set_on_collection_changed_callback(Callback0::Type* callback) {
-    on_collection_changed_callback_.reset(callback);
+  void set_on_collection_changed_callback(const base::Closure& callback) {
+    on_collection_changed_callback_ = callback;
   }
 
  protected:
@@ -103,7 +102,7 @@ class BalloonCollection {
 
   // For use only with testing. This callback is invoked when a balloon
   // is added or removed from the collection.
-  scoped_ptr<Callback0::Type> on_collection_changed_callback_;
+  base::Closure on_collection_changed_callback_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_BALLOON_COLLECTION_H_

@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
@@ -2472,8 +2474,9 @@ OnNotificationBalloonCountObserver::OnNotificationBalloonCountObserver(
       count_(count) {
   registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
                  NotificationService::AllSources());
-  collection_->set_on_collection_changed_callback(NewCallback(
-      this, &OnNotificationBalloonCountObserver::CheckBalloonCount));
+  collection_->set_on_collection_changed_callback(
+      base::Bind(&OnNotificationBalloonCountObserver::CheckBalloonCount,
+                 base::Unretained(this)));
   CheckBalloonCount();
 }
 
@@ -2497,7 +2500,7 @@ void OnNotificationBalloonCountObserver::CheckBalloonCount() {
   }
 
   if (balloon_count_met || !automation_) {
-    collection_->set_on_collection_changed_callback(NULL);
+    collection_->set_on_collection_changed_callback(base::Closure());
     delete this;
   }
 }

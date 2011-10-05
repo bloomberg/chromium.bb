@@ -50,8 +50,8 @@ void BalloonCollectionImpl::Add(const Notification& notification,
     space_change_listener_->OnBalloonSpaceChanged();
 
   // This is used only for testing.
-  if (on_collection_changed_callback_.get())
-    on_collection_changed_callback_->Run();
+  if (!on_collection_changed_callback_.is_null())
+    on_collection_changed_callback_.Run();
 }
 
 bool BalloonCollectionImpl::AddWebUIMessageCallback(
@@ -138,8 +138,8 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
     space_change_listener_->OnBalloonSpaceChanged();
 
   // This is used only for testing.
-  if (on_collection_changed_callback_.get())
-    on_collection_changed_callback_->Run();
+  if (!on_collection_changed_callback_.is_null())
+    on_collection_changed_callback_.Run();
 }
 
 const BalloonCollectionImpl::Balloons&

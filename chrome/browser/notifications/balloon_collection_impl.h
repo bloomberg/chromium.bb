@@ -11,6 +11,7 @@
 #include <deque>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/notifications/balloon_collection.h"
