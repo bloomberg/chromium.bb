@@ -9,8 +9,10 @@
 #include "base/memory/linked_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
@@ -336,9 +338,25 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
           kDefaultAppsTrial_Name)->group_name() !=
               kDefaultAppsTrial_NoAppsGroup);
   if (install_apps) {
-    provider_list->push_back(
-        linked_ptr<ExternalExtensionProviderInterface>(
-            new DefaultAppsProvider(service, profile)));
+    // Don't bother installing default apps in locales where its known that
+    // they don't work.
+    // TODO(rogerta): Do this check dynamically once the webstore can expose
+    // an API.
+    const std::string& locale = g_browser_process->GetApplicationLocale();
+    static const char* unsupported_locales[] = {"CN", "TR", "IR"};
+    bool supported_locale = true;
+    for (size_t i = 0; i < arraysize(unsupported_locales); ++i) {
+      if (EndsWith(locale, unsupported_locales[i], false)) {
+        supported_locale = false;
+        break;
+      }
+    }
+
+    if (supported_locale) {
+      provider_list->push_back(
+          linked_ptr<ExternalExtensionProviderInterface>(
+              new DefaultAppsProvider(service, profile)));
+    }
   }
 #endif
 }
