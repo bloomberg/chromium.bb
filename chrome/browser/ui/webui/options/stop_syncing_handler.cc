@@ -24,7 +24,8 @@ void StopSyncingHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   localized_strings->SetString("stopSyncingExplanation",
-      l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL));
+      l10n_util::GetStringFUTF16(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings->SetString("stopSyncingTitle",
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE));
   localized_strings->SetString("stopSyncingConfirm",

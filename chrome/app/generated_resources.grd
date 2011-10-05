@@ -9649,12 +9649,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Sync options dialog strings -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
-          Sync
+          Sign in
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="In Title Case: The name of the sync group in the options dialog.">
-          Sync
+          Sign In
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
@@ -9671,19 +9671,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Everything
       </message>
       <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> securely syncs your data with your Google account.
-      </message>
-      <message name="IDS_SYNC_FURTHER_OVERVIEW" desc="The second message that appears in the options dialog when sync has not been set up by the user.">
-        Keep everything synced or choose what data to sync from this computer.
+        Sign into <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any computer. You'll also be automatically signed into your favorite Google services.
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
-          Set up sync...
+          Sign into <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="In Title Case. The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
-          Set Up Sync...
+          Sign Into <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>
         </message>
       </if>
       <message name="IDS_SYNC_SETUP_ERROR" desc="The message displayed when an unspecified but unrecoverable error occurs during sync setup.">
@@ -9696,7 +9693,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Synced as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Last synced: <ph name="LAST_SYNC_TIME">$2<ex>12 seconds ago</ex></ph>
       </message>
       <message name="IDS_SYNC_ACCOUNT_SYNCING_TO_USER" desc="The message that appears in the options dialog indicating that account is syncing to a user with the given email address.">
-        Last synced as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Manage sync data on <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;.</ph>
+        Signed into <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Manage your synced data on <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;.</ph>
       </message>
       <message name="IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED" desc="The sync setup is underway and the user has not yet entered credentials.">
         Account sign-in details are not yet entered.
@@ -9781,36 +9778,36 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sign in again
       </message>
       <message name="IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL" desc="The label on a link that brings users to the Google Privacy Dashboard to control sync">
-        Remove synced data on Google Dashboard
+        Manage your synced data on the Google Dashboard
       </message>
       <message name="IDS_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
         Customize...
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
-          Stop syncing this account...
+          Disconnect your Google Account
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="In title case: the text to display on the button to indicate stop syncing functionality.">
-          Stop Syncing This Account...
+          Disconnect Your Google Account
         </message>
       </if>
       <message name="IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL" desc="The text to display on the button to confirm the user wishes to stop syncing.">
-        Stop syncing
+        Disconnect account
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="The title of the dialog that explains what 'stop syncing' means.">
-          Stop syncing this account
+          Disconnect your Google Account
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="In title case: the title of the dialog that explains what 'stop syncing' means.">
-          Stop Syncing This Account
+          Disconnect Your Google Account
         </message>
       </if>
       <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
-        If you stop syncing, the data stored on this computer as well as the data stored in your Google Account will remain in both places. However, new data or changes you make to your data will not be synchronized between them.
+        By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, changes to your data on this computer will no longer be synced to your Google Account. Data already stored in your Google Account will remain there.
       </message>
       <!-- Sync time strings -->
       <message name="IDS_SYNC_TIME_NEVER" desc="Indicates that the first sync has never completed.">
