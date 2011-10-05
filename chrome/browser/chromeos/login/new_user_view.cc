@@ -289,10 +289,11 @@ void NewUserView::UpdateLocalizedStringsAndFonts() {
   const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
 
   title_label_->SetFont(title_font);
-  title_label_->SetText(
-      l10n_util::GetStringUTF16(IDS_LOGIN_TITLE));
+  title_label_->SetText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_LOGIN_TITLE)));
   title_hint_label_->SetFont(title_hint_font);
-  title_hint_label_->SetText(l10n_util::GetStringUTF16(IDS_LOGIN_TITLE_HINT));
+  title_hint_label_->SetText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_LOGIN_TITLE_HINT)));
   SetAndCorrectTextfieldFont(username_field_, base_font);
   username_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
@@ -303,13 +304,13 @@ void NewUserView::UpdateLocalizedStringsAndFonts() {
       l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON)));
   if (need_guest_link_) {
     guest_link_->SetFont(base_font);
-    guest_link_->SetText(
-        l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
+    guest_link_->SetText(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON)));
   }
   if (need_create_account_) {
     create_account_link_->SetFont(base_font);
     create_account_link_->SetText(
-        l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON)));
   }
   delegate_->ClearErrors();
   languages_menubutton_->SetText(
@@ -426,7 +427,7 @@ void NewUserView::Layout() {
   y += setViewBounds(password_field_, x, y, width, true) + kRowPad;
 
   int sign_in_button_width = sign_in_button_->GetPreferredSize().width();
-  setViewBounds(sign_in_button_, x, y, sign_in_button_width, true);
+  setViewBounds(sign_in_button_, x, y, sign_in_button_width,true);
 
   SchedulePaint();
 }
@@ -570,7 +571,7 @@ bool NewUserView::NavigateAway() {
 }
 
 void NewUserView::InitLink(views::Link** link) {
-  *link = new views::Link(string16());
+  *link = new views::Link(std::wstring());
   (*link)->set_listener(this);
   (*link)->SetNormalColor(login::kLinkColor);
   (*link)->SetHighlightedColor(login::kLinkColor);

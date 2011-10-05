@@ -101,7 +101,7 @@ void UpdateView::Init() {
   InitLabel(&escape_to_skip_label_);
   escape_to_skip_label_->SetColor(kSkipLabelColor);
   escape_to_skip_label_->SetText(
-      ASCIIToUTF16("Press ESCAPE to skip (Non-official builds only)"));
+      L"Press ESCAPE to skip (Non-official builds only)");
 #endif
 
   UpdateLocalizedStrings();
@@ -113,17 +113,17 @@ void UpdateView::Reset() {
 }
 
 void UpdateView::UpdateLocalizedStrings() {
-  installing_updates_label_->SetText(l10n_util::GetStringFUTF16(
+  installing_updates_label_->SetText(UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_INSTALLING_UPDATE,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME)));
+      l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME))));
   preparing_updates_label_->SetText(
-      l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE)));
   reboot_label_->SetText(
-      l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE_DESC));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE_DESC)));
   manual_reboot_label_->SetText(
-      l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED)));
   checking_label_->SetText(
-      l10n_util::GetStringUTF16(IDS_CHECKING_FOR_UPDATES));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CHECKING_FOR_UPDATES)));
 }
 
 void UpdateView::AddProgress(int ticks) {
@@ -260,7 +260,7 @@ void UpdateView::UpdateVisibility() {
     NOTREACHED();
   }
   const std::string text =
-      label_spoken ? UTF16ToUTF8(label_spoken->GetText()) : std::string();
+      label_spoken ? WideToUTF8(label_spoken->GetText()) : std::string();
   WizardAccessibilityHelper::GetInstance()->MaybeSpeak(text.c_str(), false,
                                                        true);
 }

@@ -47,8 +47,8 @@ void UninstallView::SetupControls() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, column_set_id);
-  confirm_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_UNINSTALL_VERIFY));
+  confirm_label_ = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_UNINSTALL_VERIFY)));
   confirm_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(confirm_label_);
 

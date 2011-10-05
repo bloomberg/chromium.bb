@@ -118,11 +118,11 @@ class AboutChromeView : public views::DialogDelegateView,
   // The text to display as the main label of the About box. We draw this text
   // word for word with the help of the WordIterator, and make room for URLs
   // which are drawn using views::Link. See also |url_offsets_|.
-  string16 main_label_chunk1_;
-  string16 main_label_chunk2_;
-  string16 main_label_chunk3_;
-  string16 main_label_chunk4_;
-  string16 main_label_chunk5_;
+  std::wstring main_label_chunk1_;
+  std::wstring main_label_chunk2_;
+  std::wstring main_label_chunk3_;
+  std::wstring main_label_chunk4_;
+  std::wstring main_label_chunk5_;
   // Determines the order of the two links we draw in the main label.
   bool chromium_url_appears_first_;
 

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/user_view.h"
 
-#include <algorithm>
-
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -74,12 +72,12 @@ class SignoutView : public views::View {
     const gfx::Font& font = rb.GetFont(ResourceBundle::SmallFont);
 
     active_user_label_ = new views::Label(
-        l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_ACTIVE_USER));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_ACTIVE_USER)));
     active_user_label_->SetFont(font);
     active_user_label_->SetColor(kTextColor);
 
     signout_link_ = new views::Link(
-        l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT)));
     signout_link_->set_listener(link_listener);
     signout_link_->SetFont(font);
     signout_link_->SetColor(kTextColor);

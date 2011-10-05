@@ -31,7 +31,7 @@ const int kTitleHorizontalPadding = 3;
 // The vertical offset of the wrench bubble from the wrench menu button.
 const int kWrenchBubblePointOffsetY = 6;
 
-}  // namespace
+} // namespace
 
 GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
                                              GlobalError* error)
@@ -43,13 +43,15 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   image_view->SetImage(rb.GetImageNamed(resource_id).ToSkBitmap());
 
   string16 title_string(error_->GetBubbleViewTitle());
-  scoped_ptr<views::Label> title_label(new views::Label(title_string));
+  scoped_ptr<views::Label> title_label(
+      new views::Label(UTF16ToWideHack(title_string)));
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label->SetFont(title_label->font().DeriveFont(1));
 
   string16 message_string(error_->GetBubbleViewMessage());
-  scoped_ptr<views::Label> message_label(new views::Label(message_string));
+  scoped_ptr<views::Label> message_label(
+      new views::Label(UTF16ToWideHack(message_string)));
   message_label->SetMultiLine(true);
   message_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 

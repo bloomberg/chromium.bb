@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 
-#if defined(OS_WIN)
-#include <shellapi.h>
-#endif
-
 #include <algorithm>
 
 #include "base/memory/scoped_ptr.h"
@@ -37,6 +33,8 @@
 #include "views/window/non_client_view.h"
 
 #if defined(OS_WIN)
+#include <shellapi.h>
+
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/win/hwnd_util.h"
@@ -78,7 +76,7 @@ InfoBarView::~InfoBarView() {
 
 // static
 views::Label* InfoBarView::CreateLabel(const string16& text) {
-  views::Label* label = new views::Label(text,
+  views::Label* label = new views::Label(UTF16ToWideHack(text),
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   label->SetColor(SK_ColorBLACK);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -90,7 +88,7 @@ views::Link* InfoBarView::CreateLink(const string16& text,
                                      views::LinkListener* listener,
                                      const SkColor& background_color) {
   views::Link* link = new views::Link;
-  link->SetText(text);
+  link->SetText(UTF16ToWideHack(text));
   link->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

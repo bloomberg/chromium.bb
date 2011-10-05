@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/username_view.h"
 
-#include <algorithm>
-
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/rounded_view.h"
@@ -27,11 +25,14 @@ namespace {
 const SkColor kLabelBackgoundColor = 0x55000000;
 // Holds margin to height ratio.
 const double kMarginRatio = 1.0 / 3.0;
+// Holds the frame width for the small shaped username view.
+const SkScalar kSmallShapeFrameWidth = SkIntToScalar(1);
+
 }  // namespace
 
 UsernameView::UsernameView(const std::wstring& username, bool use_small_shape)
     : views::Label(username.empty()
-          ? l10n_util::GetStringUTF16(IDS_GUEST) : WideToUTF16Hack(username)),
+          ? UTF16ToWide(l10n_util::GetStringUTF16(IDS_GUEST)) : username),
       use_small_shape_(use_small_shape),
       is_guest_(username.empty()) {
 }
@@ -69,7 +70,7 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
       gfx::Canvas::TEXT_VALIGN_MIDDLE |
       gfx::Canvas::NO_ELLIPSIS;
   int text_height, text_width;
-  gfx::CanvasSkia::SizeStringInt(GetText(), font(),
+  gfx::CanvasSkia::SizeStringInt(WideToUTF16Hack(GetText()), font(),
                                  &text_width, &text_height,
                                  flags);
   text_width += margin_width_;
@@ -114,7 +115,7 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
   // Note, direct call of the DrawStringInt method produces the green dots
   // along the text perimeter (when the label is place on the white background).
   SkColor kInvisibleHaloColor = 0x00000000;
-  canvas.DrawStringWithHalo(GetText(), font(), GetColor(),
+  canvas.DrawStringWithHalo(WideToUTF16Hack(GetText()), font(), GetColor(),
                             kInvisibleHaloColor, bounds.x() + margin_width_,
                             bounds.y(), bounds.width() - 2 * margin_width_,
                             bounds.height(), flags);
@@ -143,7 +144,7 @@ void UsernameView::PaintUsername(const gfx::Rect& bounds) {
 
 void UsernameView::OnLocaleChanged() {
   if (is_guest_) {
-    SetText(l10n_util::GetStringUTF16(IDS_GUEST));
+    SetText(UTF16ToWide(l10n_util::GetStringUTF16(IDS_GUEST)));
   }
   // Repaint because the font may have changed.
   text_image_.reset();

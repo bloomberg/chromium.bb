@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 
-#include <vector>
-
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -67,11 +65,12 @@ void KeywordHintView::SetKeyword(const string16& keyword) {
                                                          &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
-  const string16 keyword_hint = l10n_util::GetStringFUTF16(
-      message_id,
-      string16(),
-      short_name,
-      &content_param_offsets);
+  const std::wstring keyword_hint =
+      UTF16ToWide(l10n_util::GetStringFUTF16(
+          message_id,
+          string16(),
+          short_name,
+          &content_param_offsets));
   if (content_param_offsets.size() == 2) {
     leading_label_->SetText(
         keyword_hint.substr(0, content_param_offsets.front()));

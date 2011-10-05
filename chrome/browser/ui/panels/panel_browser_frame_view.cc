@@ -277,7 +277,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   AddChildView(title_icon_);
   title_icon_->Update();
 
-  title_label_ = new views::Label(string16());
+  title_label_ = new views::Label(std::wstring());
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(title_label_);
 
@@ -690,7 +690,8 @@ void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
 }
 
 void PanelBrowserFrameView::UpdateTitleBar() {
-  title_label_->SetText(frame_->widget_delegate()->GetWindowTitle());
+  title_label_->SetText(
+      UTF16ToWideHack(frame_->widget_delegate()->GetWindowTitle()));
 }
 
 void PanelBrowserFrameView::OnFocusChanged(bool focused) {

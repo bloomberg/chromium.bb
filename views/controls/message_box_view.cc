@@ -32,7 +32,7 @@ MessageBoxView::MessageBoxView(int dialog_flags,
                                const std::wstring& message,
                                const std::wstring& default_prompt,
                                int message_width)
-    : message_label_(new Label(WideToUTF16Hack(message))),
+    : message_label_(new Label(message)),
       prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
@@ -43,7 +43,7 @@ MessageBoxView::MessageBoxView(int dialog_flags,
 MessageBoxView::MessageBoxView(int dialog_flags,
                                const std::wstring& message,
                                const std::wstring& default_prompt)
-    : message_label_(new Label(WideToUTF16Hack(message))),
+    : message_label_(new Label(message)),
       prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
@@ -119,7 +119,7 @@ bool MessageBoxView::AcceleratorPressed(
     return false;
 
   ui::ScopedClipboardWriter scw(clipboard);
-  scw.WriteText(message_label_->GetText());
+  scw.WriteText(WideToUTF16Hack(message_label_->GetText()));
   return true;
 }
 
@@ -135,7 +135,7 @@ void MessageBoxView::Init(int dialog_flags,
     // with strong directionality.
     base::i18n::TextDirection direction =
         base::i18n::GetFirstStrongCharacterDirection(
-            message_label_->GetText());
+            WideToUTF16(message_label_->GetText()));
     Label::Alignment alignment;
     if (direction == base::i18n::RIGHT_TO_LEFT)
       alignment = Label::ALIGN_RIGHT;

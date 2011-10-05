@@ -74,14 +74,14 @@ void LocalStorageSetItemInfoView::Init() {
 
   // TODO(jorlow): These strings are not quite right, but we're post-freeze.
   // http://crbug.com/68688
-  views::Label* host_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_DOMAIN_LABEL));
+  views::Label* host_label = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_DOMAIN_LABEL)));
   host_value_field_ = new views::Textfield;
-  views::Label* key_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_KEY_LABEL));
+  views::Label* key_label = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_KEY_LABEL)));
   key_value_field_ = new views::Textfield;
-  views::Label* value_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_VALUE_LABEL));
+  views::Label* value_label = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_VALUE_LABEL)));
   value_value_field_ = new views::Textfield;
 
   using views::GridLayout;

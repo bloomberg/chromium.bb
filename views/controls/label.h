@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
@@ -53,21 +52,21 @@ class VIEWS_EXPORT Label : public View {
   static const int kFocusBorderPadding;
 
   Label();
-  explicit Label(const string16& text);
-  Label(const string16& text, const gfx::Font& font);
+  explicit Label(const std::wstring& text);
+  Label(const std::wstring& text, const gfx::Font& font);
   virtual ~Label();
 
   // Set the font.
   virtual void SetFont(const gfx::Font& font);
 
   // Set the label text.
-  void SetText(const string16& text);
+  void SetText(const std::wstring& text);
 
   // Return the font used by this label.
   gfx::Font font() const { return font_; }
 
   // Return the label text.
-  const string16 GetText() const;
+  const std::wstring GetText() const;
 
   // Set URL Value - text_ is set to spec().
   void SetURL(const GURL& url);
@@ -183,7 +182,7 @@ class VIEWS_EXPORT Label : public View {
   // Called by Paint to paint the text.  Override this to change how
   // text is painted.
   virtual void PaintText(gfx::Canvas* canvas,
-                         const string16& text,
+                         const std::wstring& text,
                          const gfx::Rect& text_bounds,
                          int flags);
 
@@ -209,7 +208,7 @@ class VIEWS_EXPORT Label : public View {
 
   static gfx::Font GetDefaultFont();
 
-  void Init(const string16& text, const gfx::Font& font);
+  void Init(const std::wstring& text, const gfx::Font& font);
 
   // If the mouse is over the text, SetContainsMouse(true) is invoked, otherwise
   // SetContainsMouse(false) is invoked.
@@ -228,7 +227,7 @@ class VIEWS_EXPORT Label : public View {
   gfx::Rect GetAvailableRect() const;
 
   // Returns parameters to be used for the DrawString call.
-  void CalculateDrawStringParams(string16* paint_text,
+  void CalculateDrawStringParams(std::wstring* paint_text,
                                  gfx::Rect* text_bounds,
                                  int* flags) const;
 

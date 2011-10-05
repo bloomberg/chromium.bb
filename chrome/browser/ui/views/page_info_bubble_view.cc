@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/page_info_bubble_view.h"
 
-#include <algorithm>
-
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/google/google_util.h"
@@ -224,7 +222,7 @@ void PageInfoBubbleView::LayoutSections() {
   if (!only_internal_section) {
     layout->StartRow(0, 1);
     help_center_link_ = new views::Link(
-        l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK)));
     help_center_link_->set_listener(this);
     layout->AddView(help_center_link_);
   }
@@ -364,7 +362,7 @@ Section::Section(PageInfoBubbleView* owner,
 
   // Can't make this a text field to enable copying until multiline support is
   // added to text fields.
-  description_label_ = new views::Label(info_.description);
+  description_label_ = new views::Label(UTF16ToWideHack(info_.description));
   description_label_->set_background(
       views::Background::CreateSolidBackground(SK_ColorWHITE));
   description_label_->SetMultiLine(true);
@@ -376,7 +374,7 @@ Section::Section(PageInfoBubbleView* owner,
 
   if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY && show_cert) {
     link_ = new views::Link(
-        l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON)));
     link_->set_listener(this);
     AddChildView(link_);
   }
@@ -504,4 +502,5 @@ void ShowPageInfoBubble(BrowserView* browser_view,
                    page_info_bubble, page_info_bubble);
   page_info_bubble->set_bubble(bubble);
 }
+
 }

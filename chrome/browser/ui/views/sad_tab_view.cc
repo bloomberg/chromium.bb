@@ -101,16 +101,16 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
   layout->StartRowWithPadding(0, column_set_id, 1, kPadding);
   layout->AddView(image);
 
-  views::Label* title = new views::Label(l10n_util::GetStringUTF16(
-      (kind_ == CRASHED) ? IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE));
+  views::Label* title = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      (kind_ == CRASHED) ? IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE)));
   const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
   title->SetFont(base_font.DeriveFont(kTitleFontSizeDelta, gfx::Font::BOLD));
   title->SetColor(kTextColor);
   layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
   layout->AddView(title);
 
-  message_ = new views::Label(l10n_util::GetStringUTF16(
-      (kind_ == CRASHED) ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE));
+  message_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      (kind_ == CRASHED) ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE)));
   message_->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
   message_->SetColor(kTextColor);
   message_->SetMultiLine(true);
@@ -118,8 +118,8 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
   layout->AddView(message_);
 
   if (tab_contents_) {
-    string16 help_link(l10n_util::GetStringUTF16(
-        (kind_ == CRASHED) ? IDS_SAD_TAB_HELP_LINK : IDS_LEARN_MORE));
+    std::wstring help_link(UTF16ToWide(l10n_util::GetStringUTF16(
+        (kind_ == CRASHED) ? IDS_SAD_TAB_HELP_LINK : IDS_LEARN_MORE)));
     help_link_ = new views::Link(help_link);
     help_link_->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
     help_link_->SetNormalColor(kTextColor);
@@ -130,10 +130,11 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
       string16 help_text(l10n_util::GetStringFUTF16(IDS_SAD_TAB_HELP_MESSAGE,
                                                     string16(), &offset));
       views::Label* help_prefix =
-          new views::Label(help_text.substr(0, offset));
+          new views::Label(UTF16ToWide(help_text.substr(0, offset)));
       help_prefix->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
       help_prefix->SetColor(kTextColor);
-      views::Label* help_suffix = new views::Label(help_text.substr(offset));
+      views::Label* help_suffix =
+          new views::Label(UTF16ToWide(help_text.substr(offset)));
       help_suffix->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
       help_suffix->SetColor(kTextColor);
 
@@ -154,8 +155,8 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
       layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
       layout->AddView(help_link_);
 
-      feedback_link_ = new views::Link(
-          l10n_util::GetStringUTF16(IDS_KILLED_TAB_FEEDBACK_LINK));
+      feedback_link_ = new views::Link(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_KILLED_TAB_FEEDBACK_LINK)));
       feedback_link_->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
       feedback_link_->SetNormalColor(kTextColor);
       feedback_link_->set_listener(this);

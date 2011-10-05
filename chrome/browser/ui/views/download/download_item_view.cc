@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/download/download_item_view.h"
 
-#include <algorithm>
 #include <vector>
 
 #include "base/callback.h"
@@ -277,7 +276,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
       }
     }
 
-    dangerous_download_label_ = new views::Label(dangerous_label);
+    dangerous_download_label_ = new views::Label(UTF16ToWide(dangerous_label));
     dangerous_download_label_->SetMultiLine(true);
     dangerous_download_label_->SetHorizontalAlignment(
         views::Label::ALIGN_LEFT);
@@ -1035,7 +1034,7 @@ void DownloadItemView::SizeLabelToMinWidth() {
   if (dangerous_download_label_sized_)
     return;
 
-  string16 text = dangerous_download_label_->GetText();
+  string16 text = WideToUTF16(dangerous_download_label_->GetText());
   TrimWhitespace(text, TRIM_ALL, &text);
   DCHECK_EQ(string16::npos, text.find('\n'));
 
@@ -1066,7 +1065,7 @@ void DownloadItemView::SizeLabelToMinWidth() {
       current_text.replace(pos - 1, 1, 1, char16('\n'));
     else
       current_text.insert(pos, 1, char16('\n'));
-    dangerous_download_label_->SetText(current_text);
+    dangerous_download_label_->SetText(UTF16ToWide(current_text));
     size = dangerous_download_label_->GetPreferredSize();
 
     if (min_width == -1)
@@ -1074,7 +1073,7 @@ void DownloadItemView::SizeLabelToMinWidth() {
 
     // If the width is growing again, it means we passed the optimal width spot.
     if (size.width() > min_width) {
-      dangerous_download_label_->SetText(prev_text);
+      dangerous_download_label_->SetText(UTF16ToWide(prev_text));
       break;
     } else {
       min_width = size.width();
@@ -1108,7 +1107,7 @@ bool DownloadItemView::InDropDownButtonXCoordinateRange(int x) {
 void DownloadItemView::UpdateAccessibleName() {
   string16 new_name;
   if (download_->safety_state() == DownloadItem::DANGEROUS) {
-    new_name = dangerous_download_label_->GetText();
+    new_name = WideToUTF16Hack(dangerous_download_label_->GetText());
   } else {
     new_name = status_text_ + char16(' ') +
         download_->GetFileNameToReportUser().LossyDisplayName();

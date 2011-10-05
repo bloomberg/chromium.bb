@@ -87,7 +87,6 @@ class ServerCACertComboboxModel : public ui::ComboboxModel {
     int cert_index = combo_index - 1;
     return cert_library_->GetCACertificates().GetDisplayStringAt(cert_index);
   }
-
  private:
   CertLibrary* cert_library_;
   DISALLOW_COPY_AND_ASSIGN(ServerCACertComboboxModel);
@@ -116,7 +115,6 @@ class UserCertComboboxModel : public ui::ComboboxModel {
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
     return cert_library_->GetUserCertificates().GetDisplayStringAt(combo_index);
   }
-
  private:
   CertLibrary* cert_library_;
   DISALLOW_COPY_AND_ASSIGN(UserCertComboboxModel);
@@ -346,7 +344,7 @@ const std::string VPNConfigView::GetServerCACertNssNickname() const {
     return std::string();
   } else {
     DCHECK(cert_library_);
-    DCHECK_GT(cert_library_->GetCACertificates().Size(), 0);
+    DCHECK(cert_library_->GetCACertificates().Size() > 0);
     int cert_index = selected - 1;
     return cert_library_->GetCACertificates().GetNicknameAt(cert_index);
   }
@@ -393,8 +391,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 
   // Server label and input.
   layout->StartRow(0, column_view_set_id);
-  layout->AddView(new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME)));
+  layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME))));
   if (!vpn) {
     server_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
     server_textfield_->SetController(this);
@@ -402,7 +400,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     server_text_ = NULL;
   } else {
     server_hostname_ = vpn->server_hostname();
-    server_text_ = new views::Label(UTF8ToUTF16(server_hostname_));
+    server_text_ = new views::Label(UTF8ToWide(server_hostname_));
     server_text_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(server_text_);
     server_textfield_ = NULL;
@@ -411,15 +409,15 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 
   // Service label and name or input.
   layout->StartRow(0, column_view_set_id);
-  layout->AddView(new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME)));
+  layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME))));
   if (!vpn) {
     service_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
     service_textfield_->SetController(this);
     layout->AddView(service_textfield_);
     service_text_ = NULL;
   } else {
-    service_text_ = new views::Label(ASCIIToUTF16(vpn->name()));
+    service_text_ = new views::Label(ASCIIToWide(vpn->name()));
     service_text_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(service_text_);
     service_textfield_ = NULL;
@@ -428,8 +426,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 
   // Provider type label and select.
   layout->StartRow(0, column_view_set_id);
-  layout->AddView(new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE)));
+  layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE))));
   if (!vpn) {
     provider_type_combobox_ =
         new views::Combobox(new ProviderTypeComboboxModel());
@@ -438,7 +436,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     provider_type_text_label_ = NULL;
   } else {
     provider_type_text_label_ =
-        new views::Label(ProviderTypeToString(provider_type_));
+        new views::Label(UTF16ToWide(ProviderTypeToString(provider_type_)));
     provider_type_text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(provider_type_text_label_);
     provider_type_combobox_ = NULL;
@@ -447,8 +445,9 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 
   // PSK passphrase label, input and visible button.
   layout->StartRow(0, column_view_set_id);
-  psk_passphrase_label_ =  new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PSK_PASSPHRASE));
+  psk_passphrase_label_ =  new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PSK_PASSPHRASE)));
   layout->AddView(psk_passphrase_label_);
   psk_passphrase_textfield_ = new views::Textfield(
       views::Textfield::STYLE_PASSWORD);
@@ -461,8 +460,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   // Server CA certificate
   layout->StartRow(0, column_view_set_id);
   server_ca_cert_label_ =
-      new views::Label(l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA));
+      new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA)));
   layout->AddView(server_ca_cert_label_);
   ServerCACertComboboxModel* server_ca_cert_model =
       new ServerCACertComboboxModel(cert_library_);
@@ -472,8 +471,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 
   // User certificate label and input.
   layout->StartRow(0, column_view_set_id);
-  user_cert_label_ = new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT));
+  user_cert_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT)));
   layout->AddView(user_cert_label_);
   UserCertComboboxModel* user_cert_model =
       new UserCertComboboxModel(cert_library_);
@@ -484,8 +483,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 
   // Username label and input.
   layout->StartRow(0, column_view_set_id);
-  layout->AddView(new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME)));
+  layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME))));
   username_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
   username_textfield_->SetController(this);
   if (vpn && !vpn->username().empty())
@@ -495,8 +494,9 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 
   // User passphrase label, input and visble button.
   layout->StartRow(0, column_view_set_id);
-  layout->AddView(new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE)));
+  layout->AddView(new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE))));
   user_passphrase_textfield_ = new views::Textfield(
       views::Textfield::STYLE_PASSWORD);
   user_passphrase_textfield_->SetController(this);
@@ -507,8 +507,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 
   // OTP label and input.
   layout->StartRow(0, column_view_set_id);
-  otp_label_ = new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_OTP));
+  otp_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_OTP)));
   layout->AddView(otp_label_);
   otp_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
   otp_textfield_->SetController(this);
@@ -523,8 +523,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   // Group Name label and input.
   if (show_group_name) {
     layout->StartRow(0, column_view_set_id);
-    group_name_label_ = new views::Label(l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_GROUP_NAME));
+    group_name_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_GROUP_NAME)));
     layout->AddView(group_name_label_);
     group_name_textfield_ =
         new views::Textfield(views::Textfield::STYLE_DEFAULT);
@@ -639,6 +639,7 @@ void VPNConfigView::UpdateControls() {
     group_name_label_->SetEnabled(enable_group_name);
   if (group_name_textfield_)
     group_name_textfield_->SetEnabled(enable_group_name);
+
 }
 
 void VPNConfigView::UpdateErrorLabel() {
@@ -668,7 +669,7 @@ void VPNConfigView::UpdateErrorLabel() {
     }
   }
   if (!error_msg.empty()) {
-    error_label_->SetText(UTF8ToUTF16(error_msg));
+    error_label_->SetText(UTF8ToWide(error_msg));
     error_label_->SetVisible(true);
   } else {
     error_label_->SetVisible(false);

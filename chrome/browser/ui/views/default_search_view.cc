@@ -59,7 +59,7 @@ void GetShortNameAndLogoId(PrefService* prefs,
 
 views::Label* CreateProviderLabel(int message_id) {
   views::Label* choice_label =
-      new views::Label(l10n_util::GetStringUTF16(message_id));
+      new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(message_id)));
   choice_label->SetColor(SK_ColorBLACK);
   choice_label->SetFont(
       choice_label->font().DeriveFont(1, gfx::Font::NORMAL));
@@ -279,9 +279,9 @@ void DefaultSearchView::SetupControls(PrefService* prefs) {
   // Add text informing the user about the requested default change.
   layout->StartRowWithPadding(0, kPaddedWholeDialogViewSetId,
                               1, views::kLabelToControlVerticalSpacing);
-  Label* summary_label = new Label(l10n_util::GetStringFUTF16(
+  Label* summary_label = new Label(UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_DEFAULT_SEARCH_SUMMARY,
-      WideToUTF16(proposed_short_name)));
+      WideToUTF16(proposed_short_name))));
   summary_label->SetColor(SK_ColorBLACK);
   summary_label->SetFont(
       summary_label->font().DeriveFont(1, gfx::Font::NORMAL));

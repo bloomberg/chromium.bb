@@ -343,26 +343,26 @@ void NetworkSelectionView::UpdateLocalizedStringsAndFonts() {
       UTF16ToWide(actor_->keyboard_switch_menu()->GetCurrentKeyboardName()));
   welcome_label_->SetFont(welcome_label_font);
   welcome_label_->SetText(
-      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE)));
   select_language_label_->SetFont(select_label_font);
   select_language_label_->SetText(
-      l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT)));
   languages_menubutton_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT));
   select_keyboard_label_->SetFont(select_label_font);
   select_keyboard_label_->SetText(
-      l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT)));
   keyboards_menubutton_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT));
   select_network_label_->SetFont(select_label_font);
   select_network_label_->SetText(
-      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT)));
   SetMenuButtonFont(network_dropdown_, base_font);
   network_dropdown_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT));
   proxy_settings_link_->SetFont(base_font);
-  proxy_settings_link_->SetText(
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
+  proxy_settings_link_->SetText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON)));
   connecting_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
   RecreateNativeControls();
   UpdateConnectingNetworkLabel();
@@ -472,8 +472,8 @@ void NetworkSelectionView::RecreateNativeControls() {
 }
 
 void NetworkSelectionView::UpdateConnectingNetworkLabel() {
-  connecting_network_label_->SetText(l10n_util::GetStringFUTF16(
-      IDS_NETWORK_SELECTION_CONNECTING, network_id_));
+  connecting_network_label_->SetText(UTF16ToWide(l10n_util::GetStringFUTF16(
+      IDS_NETWORK_SELECTION_CONNECTING, network_id_)));
 }
 
 }  // namespace chromeos

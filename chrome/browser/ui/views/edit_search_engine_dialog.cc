@@ -226,7 +226,7 @@ void EditSearchEngineDialog::Init() {
 
 views::Label* EditSearchEngineDialog::CreateLabel(int message_id) {
   views::Label* label =
-      new views::Label(l10n_util::GetStringUTF16(message_id));
+      new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(message_id)));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   return label;
 }

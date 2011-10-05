@@ -28,10 +28,10 @@ using views::GridLayout;
 LoginView::LoginView(const std::wstring& explanation, LoginModel* model)
     : username_field_(new views::Textfield),
       password_field_(new views::Textfield(views::Textfield::STYLE_PASSWORD)),
-      username_label_(new views::Label(
-          l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_USERNAME_FIELD))),
-      password_label_(new views::Label(
-          l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_PASSWORD_FIELD))),
+      username_label_(new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_USERNAME_FIELD)))),
+      password_label_(new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_PASSWORD_FIELD)))),
       message_label_(new views::Label(explanation)),
       login_model_(model) {
   message_label_->SetMultiLine(true);

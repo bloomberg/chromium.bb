@@ -93,7 +93,7 @@ void AppInfoView::Init(const string16& title_text,
   icon_->SetImage(icon);
   icon_->SetImageSize(gfx::Size(kAppIconSize, kAppIconSize));
 
-  title_ = new views::Label(title_text);
+  title_ = new views::Label(UTF16ToWide(title_text));
   title_->SetMultiLine(true);
   title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
@@ -110,9 +110,9 @@ void AppInfoView::PrepareDescriptionLabel(const string16& description) {
   DCHECK(!description.empty());
 
   static const size_t kMaxLength = 200;
-  static const string16 kEllipsis(ASCIIToUTF16(" ... "));
+  static const wchar_t* const kEllipsis = L" ... ";
 
-  string16 text = description;
+  std::wstring text = UTF16ToWide(description);
   if (text.length() > kMaxLength) {
     text = text.substr(0, kMaxLength);
     text += kEllipsis;
@@ -152,7 +152,7 @@ void AppInfoView::SetupLayout() {
 
 void AppInfoView::UpdateText(const string16& title,
                              const string16& description) {
-  title_->SetText(title);
+  title_->SetText(UTF16ToWideHack(title));
   PrepareDescriptionLabel(description);
 
   SetupLayout();
@@ -249,7 +249,7 @@ void CreateApplicationShortcutView::InitControls() {
   app_info_ = new AppInfoView(shortcut_info_.title, shortcut_info_.description,
                               shortcut_info_.favicon);
   create_shortcuts_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL)));
   create_shortcuts_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   desktop_check_box_ = AddCheckbox(UTF16ToWide(

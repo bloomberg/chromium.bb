@@ -167,7 +167,7 @@ string16 FindBarView::GetFindSelectedText() const {
 }
 
 string16 FindBarView::GetMatchCountText() const {
-  return match_count_text_->GetText();
+  return WideToUTF16Hack(match_count_text_->GetText());
 }
 
 void FindBarView::UpdateForResult(const FindNotificationDetails& result,
@@ -184,17 +184,17 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   }
 
   if (!find_text.empty() && have_valid_range) {
-    match_count_text_->SetText(
+    match_count_text_->SetText(UTF16ToWide(
         l10n_util::GetStringFUTF16(IDS_FIND_IN_PAGE_COUNT,
             base::IntToString16(result.active_match_ordinal()),
-            base::IntToString16(result.number_of_matches())));
+            base::IntToString16(result.number_of_matches()))));
 
     UpdateMatchCountAppearance(result.number_of_matches() == 0 &&
                                result.final_update());
   } else {
     // If there was no text entered, we don't show anything in the result count
     // area.
-    match_count_text_->SetText(string16());
+    match_count_text_->SetText(std::wstring());
 
     UpdateMatchCountAppearance(false);
   }
@@ -207,7 +207,7 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
 }
 
 void FindBarView::ClearMatchCount() {
-  match_count_text_->SetText(string16());
+  match_count_text_->SetText(L"");
   UpdateMatchCountAppearance(false);
   Layout();
   SchedulePaint();

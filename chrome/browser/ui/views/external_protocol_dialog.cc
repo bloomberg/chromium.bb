@@ -154,8 +154,8 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
       message_text,
       std::wstring(),
       kMessageWidth);
-  message_box_view_->SetCheckBoxLabel(
-      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
+  message_box_view_->SetCheckBoxLabel(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT)));
 
   HWND root_hwnd;
   if (tab_contents_) {

@@ -197,7 +197,7 @@ void ContentView::InitControlLayout() {
                 GridLayout::USE_PREF, kTextfieldWidth, kTextfieldWidth);
 
   layout->StartRow(0, 0);
-  views::Label* label = new views::Label(delegate_->label());
+  views::Label* label = new views::Label(UTF16ToWideHack(delegate_->label()));
   layout->AddView(label);
   layout->AddView(text_field_);
 

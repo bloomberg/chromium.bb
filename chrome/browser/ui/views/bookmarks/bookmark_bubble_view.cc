@@ -190,8 +190,8 @@ void BookmarkBubbleView::Init() {
     initialized = true;
   }
 
-  remove_link_ = new views::Link(l10n_util::GetStringUTF16(
-      IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
+  remove_link_ = new views::Link(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK)));
   remove_link_->set_listener(this);
 
   edit_button_ = new views::NativeTextButton(
@@ -203,17 +203,18 @@ void BookmarkBubbleView::Init() {
   close_button_->SetIsDefault(true);
 
   views::Label* combobox_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_FOLDER_TEXT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_FOLDER_TEXT)));
 
   parent_combobox_ = new views::Combobox(&parent_model_);
   parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
   parent_combobox_->set_listener(this);
-  parent_combobox_->SetAccessibleName(combobox_label->GetText());
+  parent_combobox_->SetAccessibleName(
+      WideToUTF16Hack(combobox_label->GetText()));
 
   views::Label* title_label = new views::Label(
-      l10n_util::GetStringUTF16(
+      UTF16ToWide(l10n_util::GetStringUTF16(
           newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :
-                              IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
+                              IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK)));
   title_label->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   title_label->SetColor(kTitleColor);
@@ -256,8 +257,8 @@ void BookmarkBubbleView::Init() {
 
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, 2);
-  layout->AddView(new views::Label(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_TITLE_TEXT)));
+  layout->AddView(new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_TITLE_TEXT))));
   title_tf_ = new views::Textfield();
   title_tf_->SetText(GetTitle());
   layout->AddView(title_tf_);

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/user_image_view.h"
 
-#include <string>
-
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/default_images_view.h"
@@ -49,7 +47,7 @@ const int kSplitterHeight = 1;
 enum ColumnSets {
   kTitleRow,     // Column set for screen title.
   kImagesRow,    // Column set for image from camera and snapshot button.
-  kSplitterRow,  // Place for the splitter.
+  kSplitterRow, // Place for the splitter.
   kButtonsRow,   // Column set for OK button.
 };
 
@@ -82,8 +80,8 @@ void UserImageView::Init() {
       &BorderDefinition::kScreenBorder);
   set_background(views::Background::CreateBackgroundPainter(true, painter));
 
-  title_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
+  title_label_ = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT)));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
   CorrectLabelFontSize(title_label_);

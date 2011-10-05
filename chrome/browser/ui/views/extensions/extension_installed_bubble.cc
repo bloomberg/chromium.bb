@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/extensions/extension_installed_bubble.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
@@ -77,7 +76,7 @@ void ShowExtensionInstalledBubble(
   ExtensionInstalledBubble::Show(extension, browser, icon);
 }
 
-}  // namespace browser
+} // namespace browser
 
 // InstalledBubbleContent is the content view which is placed in the
 // ExtensionInstalledBubble. It displays the install icon and explanatory
@@ -109,9 +108,9 @@ class InstalledBubbleContent : public views::View,
 
     string16 extension_name = UTF8ToUTF16(extension->name());
     base::i18n::AdjustStringForLocaleDirection(&extension_name);
-    heading_ = new views::Label(
+    heading_ = new views::Label(UTF16ToWide(
         l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALLED_HEADING,
-                                   extension_name));
+                                   extension_name)));
     heading_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -119,8 +118,8 @@ class InstalledBubbleContent : public views::View,
 
     switch (type_) {
       case ExtensionInstalledBubble::PAGE_ACTION: {
-        info_ = new views::Label(l10n_util::GetStringUTF16(
-            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO));
+        info_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO)));
         info_->SetFont(font);
         info_->SetMultiLine(true);
         info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -128,9 +127,9 @@ class InstalledBubbleContent : public views::View,
         break;
       }
       case ExtensionInstalledBubble::OMNIBOX_KEYWORD: {
-        info_ = new views::Label(l10n_util::GetStringFUTF16(
+        info_ = new views::Label(UTF16ToWide(l10n_util::GetStringFUTF16(
             IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
-            UTF8ToUTF16(extension->omnibox_keyword())));
+            UTF8ToUTF16(extension->omnibox_keyword()))));
         info_->SetFont(font);
         info_->SetMultiLine(true);
         info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -138,8 +137,8 @@ class InstalledBubbleContent : public views::View,
         break;
       }
       case ExtensionInstalledBubble::APP: {
-        views::Link* link = new views::Link(
-            l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_APP_INFO));
+        views::Link* link = new views::Link(UTF16ToWide(
+            l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_APP_INFO)));
         link->set_listener(this);
         manage_ = link;
         manage_->SetFont(font);
@@ -153,8 +152,8 @@ class InstalledBubbleContent : public views::View,
     }
 
     if (type_ != ExtensionInstalledBubble::APP) {
-      manage_ = new views::Label(
-          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO));
+      manage_ = new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO)));
       manage_->SetFont(font);
       manage_->SetMultiLine(true);
       manage_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

@@ -4,12 +4,6 @@
 
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 
-#if defined(OS_WIN)
-#include <commctrl.h>
-#include <dwmapi.h>
-#include <objidl.h>
-#endif
-
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
@@ -39,6 +33,10 @@
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
+#include <commctrl.h>
+#include <dwmapi.h>
+#include <objidl.h>
+
 #include "base/win/scoped_gdi_object.h"
 #if !defined(USE_AURA)
 #include "views/widget/native_widget_win.h"
@@ -150,7 +148,7 @@ class AutocompletePopupContentsView::AutocompletePopupWidget
   virtual ~AutocompletePopupWidget() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
+   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
 };
 
 class AutocompletePopupContentsView::InstantOptInView
@@ -165,7 +163,7 @@ class AutocompletePopupContentsView::InstantOptInView
                         SkColorSetRGB(255, 242, 183),
                         SkColorSetRGB(250, 230, 145))) {
     views::Label* label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_LABEL));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_LABEL)));
     label->SetFont(label_font);
 
     views::GridLayout* layout = new views::GridLayout(this);
@@ -213,8 +211,8 @@ class AutocompletePopupContentsView::InstantOptInView
   views::View* CreateButton(int id, const gfx::Font& font) {
     // NOTE: we can't use NativeButton as the popup is a layered window and
     // native buttons don't draw  in layered windows.
-    // TODO(sky): these buttons look crap. Figure out the right
-    // border/background to use.
+    // TODO: these buttons look crap. Figure out the right border/background to
+    // use.
     views::TextButton* button =
         new views::TextButton(this, UTF16ToWide(l10n_util::GetStringUTF16(id)));
     button->set_border(new OptInButtonBorder());
@@ -322,7 +320,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   // we have enough row views.
   size_t child_rv_count = child_count();
   if (opt_in_view_) {
-    DCHECK_GT(child_rv_count, 0u);
+    DCHECK(child_rv_count > 0);
     child_rv_count--;
   }
   for (size_t i = 0; i < model_->result().size(); ++i) {
@@ -375,8 +373,8 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     if (!popup_.get()) {
       // For some IMEs GetRelativeWindowForPopup triggers the omnibox to lose
       // focus, thereby closing (and destroying) the popup.
-      // TODO(sky): this won't be needed once we close the omnibox on input
-      // window showing.
+      // TODO: this won't be needed once we close the omnibox on input window
+      // showing.
       return;
     }
     popup_->Show();

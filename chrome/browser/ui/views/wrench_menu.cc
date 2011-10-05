@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/views/wrench_menu.h"
 
-#include <algorithm>
 #include <cmath>
-#include <set>
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -398,7 +396,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
         NULL, IDS_ACCNAME_ZOOM_MINUS2);
 
     zoom_label_ = new Label(
-        l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100));
+        UTF16ToWide(l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100)));
     zoom_label_->SetColor(MenuConfig::instance().text_color);
     zoom_label_->SetHorizontalAlignment(Label::ALIGN_RIGHT);
     MenuButtonBackground* center_bg =
@@ -504,8 +502,9 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
       zoom = selected_tab->GetZoomPercent(&enable_increment, &enable_decrement);
     increment_button_->SetEnabled(enable_increment);
     decrement_button_->SetEnabled(enable_decrement);
-    zoom_label_->SetText(
-        l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, zoom));
+    zoom_label_->SetText(UTF16ToWide(l10n_util::GetStringFUTF16Int(
+                                     IDS_ZOOM_PERCENT,
+                                     zoom)));
 
     zoom_label_width_ = MaxWidthForZoomLabel();
   }

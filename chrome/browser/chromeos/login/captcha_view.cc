@@ -170,7 +170,7 @@ void CaptchaView::Init() {
                         views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, column_view_set_id);
   Label* label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_LOGIN_CAPTCHA_INSTRUCTIONS));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_CAPTCHA_INSTRUCTIONS)));
   label->SetMultiLine(true);
   layout->AddView(label);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -189,8 +189,8 @@ void CaptchaView::Init() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, column_view_set_id);
-  label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_SYNC_GAIA_CAPTCHA_CASE_INSENSITIVE_TIP));
+  label = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_SYNC_GAIA_CAPTCHA_CASE_INSENSITIVE_TIP)));
   label->SetMultiLine(true);
   layout->AddView(label);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
