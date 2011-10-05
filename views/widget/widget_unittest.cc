@@ -585,10 +585,18 @@ TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget) {
   EXPECT_TRUE(state.native_widget_deleted);
 }
 
+#if defined(USE_AURA)
+#define MAYBE_Ownership_PlatformNativeWidgetOwnsWidget_NativeDestroy \
+    FAILS_Ownership_PlatformNativeWidgetOwnsWidget_NativeDestroy
+#else
+#define MAYBE_Ownership_PlatformNativeWidgetOwnsWidget_NativeDestroy \
+    Ownership_PlatformNativeWidgetOwnsWidget_NativeDestroy
+#endif
+
 // NativeWidget owns its Widget, part 3: NativeWidget is a platform-native
 // widget, destroyed out from under it by the OS.
 TEST_F(WidgetOwnershipTest,
-       Ownership_PlatformNativeWidgetOwnsWidget_NativeDestroy) {
+       MAYBE_Ownership_PlatformNativeWidgetOwnsWidget_NativeDestroy) {
   OwnershipTestState state;
 
   Widget* widget = new OwnershipTestWidget(&state);

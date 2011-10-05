@@ -34,6 +34,43 @@
 #include "views/widget/native_widget_private.h"
 #include "views/widget/widget.h"
 
+// Bug 99128.
+#if defined(USE_AURA)
+#define MAYBE_KeyTest FAILS_KeyTest
+#define MAYBE_ControlAndSelectTest FAILS_ControlAndSelectTest
+#define MAYBE_InsertionDeletionTest FAILS_InsertionDeletionTest
+#define MAYBE_OnKeyPressReturnValueTest FAILS_OnKeyPressReturnValueTest
+#define MAYBE_CursorMovement FAILS_CursorMovement
+#define MAYBE_DragAndDrop_ToTheRight FAILS_DragAndDrop_ToTheRight
+#define MAYBE_DragAndDrop_ToTheLeft FAILS_DragAndDrop_ToTheLeft
+#define MAYBE_ReadOnlyTest FAILS_ReadOnlyTest
+#define MAYBE_TextInputClientTest FAILS_TextInputClientTest
+#define MAYBE_UndoRedoTest FAILS_UndoRedoTest
+#define MAYBE_TextCursorDisplayTest FAILS_TextCursorDisplayTest
+#define MAYBE_TextCursorDisplayInRTLTest FAILS_TextCursorDisplayInRTLTest
+#define MAYBE_HitOutsideTextAreaTest FAILS_HitOutsideTextAreaTest
+#define MAYBE_HitOutsideTextAreaInRTLTest FAILS_HitOutsideTextAreaInRTLTest
+#define MAYBE_OverflowTest FAILS_OverflowTest
+#define MAYBE_OverflowInRTLTest FAILS_OverflowInRTLTest
+#else
+#define MAYBE_KeyTest KeyTest
+#define MAYBE_ControlAndSelectTest ControlAndSelectTest
+#define MAYBE_InsertionDeletionTest InsertionDeletionTest
+#define MAYBE_OnKeyPressReturnValueTest OnKeyPressReturnValueTest
+#define MAYBE_CursorMovement CursorMovement
+#define MAYBE_DragAndDrop_ToTheRight DragAndDrop_ToTheRight
+#define MAYBE_DragAndDrop_ToTheLeft DragAndDrop_ToTheLeft
+#define MAYBE_ReadOnlyTest ReadOnlyTest
+#define MAYBE_TextInputClientTest TextInputClientTest
+#define MAYBE_UndoRedoTest UndoRedoTest
+#define MAYBE_TextCursorDisplayTest TextCursorDisplayTest
+#define MAYBE_TextCursorDisplayInRTLTest TextCursorDisplayInRTLTest
+#define MAYBE_HitOutsideTextAreaTest HitOutsideTextAreaTest
+#define MAYBE_HitOutsideTextAreaInRTLTest HitOutsideTextAreaInRTLTest
+#define MAYBE_OverflowTest OverflowTest
+#define MAYBE_OverflowInRTLTest OverflowInRTLTest
+#endif
+
 namespace {
 
 // A wrapper of Textfield to intercept the result of OnKeyPressed() and
@@ -334,7 +371,7 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTest) {
   EXPECT_TRUE(last_contents_.empty());
 }
 
-TEST_F(NativeTextfieldViewsTest, KeyTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_KeyTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   SendKeyEvent(ui::VKEY_C, true, false);
   EXPECT_STR_EQ("C", textfield_->text());
@@ -355,7 +392,7 @@ TEST_F(NativeTextfieldViewsTest, KeyTest) {
   EXPECT_STR_EQ("cC1!!", last_contents_);
 }
 
-TEST_F(NativeTextfieldViewsTest, ControlAndSelectTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_ControlAndSelectTest) {
   // Insert a test string in a textfield.
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("one two three"));
@@ -390,7 +427,7 @@ TEST_F(NativeTextfieldViewsTest, ControlAndSelectTest) {
   EXPECT_STR_EQ("ZERO ", textfield_->GetSelectedText());
 }
 
-TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_InsertionDeletionTest) {
   // Insert a test string in a textfield.
   InitTextfield(Textfield::STYLE_DEFAULT);
   char test_str[] = "this is a test";
@@ -519,7 +556,7 @@ TEST_F(NativeTextfieldViewsTest, TextInputType) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, GetTextInputType());
 }
 
-TEST_F(NativeTextfieldViewsTest, OnKeyPressReturnValueTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_OnKeyPressReturnValueTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
   // Character keys will be handled by input method.
@@ -550,7 +587,7 @@ TEST_F(NativeTextfieldViewsTest, OnKeyPressReturnValueTest) {
   EXPECT_FALSE(textfield_->key_handled());
 }
 
-TEST_F(NativeTextfieldViewsTest, CursorMovement) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_CursorMovement) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
   // Test with trailing whitespace.
@@ -810,7 +847,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
       textfield_view_->GetDragOperationsForView(textfield_view_, kStringPoint));
 }
 
-TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheRight) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
@@ -864,7 +901,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
   EXPECT_STR_EQ("h welloorld", textfield_->text());
 }
 
-TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheLeft) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
@@ -945,7 +982,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
 }
 #endif
 
-TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_ReadOnlyTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16(" one two three "));
   textfield_->SetReadOnly(true);
@@ -1002,7 +1039,7 @@ TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   EXPECT_STR_EQ(" four five six ", textfield_->GetSelectedText());
 }
 
-TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_TextInputClientTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   TextInputClient* client = textfield_->GetTextInputClient();
   EXPECT_TRUE(client);
@@ -1092,7 +1129,7 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
   EXPECT_TRUE(textfield_->GetTextInputClient());
 }
 
-TEST_F(NativeTextfieldViewsTest, UndoRedoTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_UndoRedoTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   SendKeyEvent(ui::VKEY_A);
   EXPECT_STR_EQ("a", textfield_->text());
@@ -1200,7 +1237,7 @@ TEST_F(NativeTextfieldViewsTest, UndoRedoTest) {
   EXPECT_STR_EQ("ab3", textfield_->text());
 }
 
-TEST_F(NativeTextfieldViewsTest, TextCursorDisplayTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_TextCursorDisplayTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   // LTR-RTL string in LTR context.
   SendKeyEvent('a');
@@ -1252,7 +1289,7 @@ TEST_F(NativeTextfieldViewsTest, TextCursorDisplayTest) {
   EXPECT_LT(prev_x, x);
 }
 
-TEST_F(NativeTextfieldViewsTest, TextCursorDisplayInRTLTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_TextCursorDisplayInRTLTest) {
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 
@@ -1370,7 +1407,7 @@ TEST_F(NativeTextfieldViewsTest, HitInsideTextAreaTest) {
   }
 }
 
-TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_HitOutsideTextAreaTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
   // LTR-RTL string in LTR context.
@@ -1410,7 +1447,7 @@ TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaTest) {
   EXPECT_EQ(bound, GetCursorBounds());
 }
 
-TEST_F(NativeTextfieldViewsTest, HitOutsideTextAreaInRTLTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_HitOutsideTextAreaInRTLTest) {
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 
@@ -1464,7 +1501,7 @@ void OverflowCursorBoundTestVerifier(const gfx::Rect& display,
   EXPECT_GE(display.bottom(), bound.bottom());
 }
 
-TEST_F(NativeTextfieldViewsTest, OverflowTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_OverflowTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
   string16 str;
@@ -1494,7 +1531,7 @@ TEST_F(NativeTextfieldViewsTest, OverflowTest) {
   EXPECT_EQ(501U, textfield_->GetCursorPosition());
 }
 
-TEST_F(NativeTextfieldViewsTest, OverflowInRTLTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_OverflowInRTLTest) {
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 

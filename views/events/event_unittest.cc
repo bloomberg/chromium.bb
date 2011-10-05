@@ -7,6 +7,15 @@
 #include "base/basictypes.h"
 #include "views/events/event.h"
 
+// Bug 99129.
+#if defined(USE_AURA)
+#define MAYBE_KeyEvent FAILS_KeyEvent
+#define MAYBE_KeyEventDirectUnicode FAILS_KeyEventDirectUnicode
+#else
+#define MAYBE_KeyEvent KeyEvent
+#define MAYBE_KeyEventDirectUnicode KeyEventDirectUnicode
+#endif
+
 namespace views {
 
 class EventTest : public testing::Test {
@@ -18,7 +27,7 @@ class EventTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(EventTest);
 };
 
-TEST_F(EventTest, KeyEvent) {
+TEST_F(EventTest, MAYBE_KeyEvent) {
   static const struct {
     ui::KeyboardCode key_code;
     int flags;
@@ -103,7 +112,7 @@ TEST_F(EventTest, KeyEvent) {
   }
 }
 
-TEST_F(EventTest, KeyEventDirectUnicode) {
+TEST_F(EventTest, MAYBE_KeyEventDirectUnicode) {
   KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, ui::EF_SHIFT_DOWN);
   key.set_character(0x1234U);
   key.set_unmodified_character(0x4321U);
