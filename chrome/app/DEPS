@@ -7,7 +7,6 @@ include_rules = [
   "+chrome/utility/chrome_content_utility_client.h",
   "+content/app",
   "+content/browser/renderer_host/render_process_host.h",
-  "+content/renderer/renderer_main.h",
   "+grit",  # For generated headers
   "+media/base",  # For initializing media library.
   "+policy",  # For generated headers and source

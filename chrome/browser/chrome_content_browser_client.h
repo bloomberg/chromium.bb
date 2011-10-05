@@ -121,8 +121,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // Can return an optional fd for crash handling, otherwise returns -1.
-  virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;
+  virtual int GetCrashSignalFD(const CommandLine& command_line) OVERRIDE;
 #endif
 #if defined(OS_WIN)
   virtual const wchar_t* GetResourceDllName() OVERRIDE;

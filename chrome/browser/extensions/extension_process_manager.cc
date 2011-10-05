@@ -239,8 +239,8 @@ void ExtensionProcessManager::RegisterExtensionSiteInstance(
   }
 
   int site_instance_id = site_instance->id();
-  int host_id = site_instance->GetProcess()->id();
-  process_ids_[host_id].insert(site_instance_id);
+  int render_process_id = site_instance->GetProcess()->id();
+  process_ids_[render_process_id].insert(site_instance_id);
 
   // Register process hosting extensions that have access to extension bindings
   // with the ExtensionInfoMap on the IO thread.
@@ -254,7 +254,7 @@ void ExtensionProcessManager::RegisterExtensionSiteInstance(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ExtensionInfoMap::BindingsEnabledForProcess,
                    profile->GetExtensionInfoMap(),
-                   host_id));
+                   render_process_id));
   }
 
   SiteInstanceIDMap::const_iterator it = extension_ids_.find(site_instance_id);
@@ -275,8 +275,8 @@ void ExtensionProcessManager::UnregisterExtensionSiteInstance(
     extension_ids_.erase(it++);
   }
   if (site_instance->HasProcess()) {
-    int host_id = site_instance->GetProcess()->id();
-    ProcessIDMap::iterator host = process_ids_.find(host_id);
+    int render_process_id = site_instance->GetProcess()->id();
+    ProcessIDMap::iterator host = process_ids_.find(render_process_id);
     if (host != process_ids_.end()) {
       host->second.erase(site_instance_id);
       if (host->second.empty()) {
@@ -287,15 +287,20 @@ void ExtensionProcessManager::UnregisterExtensionSiteInstance(
             BrowserThread::IO, FROM_HERE,
             base::Bind(&ExtensionInfoMap::BindingsDisabledForProcess,
                        profile->GetExtensionInfoMap(),
-                       host_id));
+                       render_process_id));
       }
     }
   }
 }
 
-bool ExtensionProcessManager::AreBindingsEnabledForProcess(int host_id) {
-  ProcessIDMap::iterator it = process_ids_.find(host_id);
-  if (process_ids_.find(host_id) == process_ids_.end())
+bool ExtensionProcessManager::IsExtensionProcess(int render_process_id) {
+  return process_ids_.find(render_process_id) != process_ids_.end();
+}
+
+bool ExtensionProcessManager::AreBindingsEnabledForProcess(
+    int render_process_id) {
+  ProcessIDMap::iterator it = process_ids_.find(render_process_id);
+  if (it == process_ids_.end())
     return false;
 
   Profile* profile =

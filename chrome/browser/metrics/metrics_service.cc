@@ -156,6 +156,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -524,16 +525,9 @@ void MetricsService::Observe(int type,
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
         RenderProcessHost::RendererClosedDetails* process_details =
             Details<RenderProcessHost::RendererClosedDetails>(details).ptr();
-        if (process_details->status ==
-            base::TERMINATION_STATUS_PROCESS_CRASHED ||
-            process_details->status ==
-            base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
-          if (process_details->was_extension_renderer) {
-            LogExtensionRendererCrash();
-          } else {
-            LogRendererCrash();
-          }
-        }
+        RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
+        LogRendererCrash(
+            host, process_details->status, process_details->was_alive);
       }
       break;
 
@@ -1241,12 +1235,36 @@ void MetricsService::LogLoadStarted() {
   // might be lost due to a crash :-(.
 }
 
-void MetricsService::LogRendererCrash() {
-  IncrementPrefValue(prefs::kStabilityRendererCrashCount);
-}
+void MetricsService::LogRendererCrash(RenderProcessHost* host,
+                                      base::TerminationStatus status,
+                                      bool was_alive) {
+  Profile* profile = Profile::FromBrowserContext(host->browser_context());
+  ExtensionProcessManager* extension_process_manager =
+      profile->GetExtensionProcessManager();
+  bool was_extension_process = extension_process_manager ?
+      extension_process_manager->IsExtensionProcess(host->id()) :
+      false;
+  if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
+      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
+    if (was_extension_process)
+      IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
+    else
+      IncrementPrefValue(prefs::kStabilityRendererCrashCount);
 
-void MetricsService::LogExtensionRendererCrash() {
-  IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
+    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
+                             was_extension_process ? 2 : 1);
+    if (was_alive) {
+      UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashesWasAlive",
+                               was_extension_process ? 2 : 1);
+    }
+  } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
+    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
+                             was_extension_process ? 2 : 1);
+    if (was_alive) {
+      UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKillsWasAlive",
+                               was_extension_process ? 2 : 1);
+    }
+  }
 }
 
 void MetricsService::LogRendererHang() {

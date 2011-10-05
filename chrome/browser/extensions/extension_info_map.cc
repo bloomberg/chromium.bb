@@ -95,16 +95,18 @@ bool ExtensionInfoMap::CanCrossIncognito(const Extension* extension) {
       !extension->incognito_split_mode();
 }
 
-// These are duplicated from ExtensionProcessManager :(.
-void ExtensionInfoMap::BindingsEnabledForProcess(int host_id) {
-  extension_bindings_process_ids_.insert(host_id);
+// These are duplicated from ExtensionProcessManager so that we can have the
+// information on the IO thread :(.
+void ExtensionInfoMap::BindingsEnabledForProcess(int render_process_id) {
+  extension_bindings_process_ids_.insert(render_process_id);
 }
 
-void ExtensionInfoMap::BindingsDisabledForProcess(int host_id) {
-  extension_bindings_process_ids_.erase(host_id);
+void ExtensionInfoMap::BindingsDisabledForProcess(int render_process_id) {
+  extension_bindings_process_ids_.erase(render_process_id);
 }
 
-bool ExtensionInfoMap::AreBindingsEnabledForProcess(int host_id) const {
-  return extension_bindings_process_ids_.find(host_id) !=
+bool ExtensionInfoMap::AreBindingsEnabledForProcess(
+    int render_process_id) const {
+  return extension_bindings_process_ids_.find(render_process_id) !=
       extension_bindings_process_ids_.end();
 }

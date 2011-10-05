@@ -72,8 +72,6 @@ void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
       profile->GetExtensionProcessManager();
   CHECK(process_manager);
 
-  site_instance->GetProcess()->mark_is_extension_process();
-
   // Register the association between extension and SiteInstance with
   // ExtensionProcessManager.
   // TODO(creis): Use this to replace SetInstalledAppForRenderer.

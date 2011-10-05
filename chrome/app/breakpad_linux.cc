@@ -892,7 +892,6 @@ void InitCrashReporter() {
   if (process_type.empty()) {
     EnableCrashDumping(getenv(env_vars::kHeadless) != NULL);
   } else if (process_type == switches::kRendererProcess ||
-             process_type == switches::kExtensionProcess ||
              process_type == switches::kPluginProcess ||
              process_type == switches::kPpapiPluginProcess ||
              process_type == switches::kZygoteProcess ||

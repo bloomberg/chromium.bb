@@ -34,15 +34,6 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
     } else {
       sandbox_process_type = Sandbox::SANDBOX_TYPE_RENDERER;
     }
-  } else if (process_type == switches::kExtensionProcess) {
-    // Extension processes are just renderers [they use RenderMain()] with a
-    // different set of command line flags.
-    // If we ever get here it means something has changed in regards
-    // to the extension process mechanics and we should probably reexamine
-    // how we sandbox extension processes since they are no longer identical
-    // to renderers.
-    NOTREACHED();
-    return true;
   } else if (process_type == switches::kUtilityProcess) {
     // Utility process sandbox.
     sandbox_process_type = Sandbox::SANDBOX_TYPE_UTILITY;

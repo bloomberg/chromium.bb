@@ -42,10 +42,10 @@ using WebKit::WebString;
 
 ExtensionDispatcher::ExtensionDispatcher()
     : is_webkit_initialized_(false) {
-  std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kProcessType);
-  is_extension_process_ = type_str == switches::kExtensionProcess ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
+  const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
+  is_extension_process_ =
+      command_line.HasSwitch(switches::kExtensionProcess) ||
+      command_line.HasSwitch(switches::kSingleProcess);
 
   if (is_extension_process_) {
     RenderThread::current()->set_idle_notification_delay_in_s(

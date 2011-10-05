@@ -140,7 +140,7 @@ class ShellContentBrowserClient : public ContentBrowserClient
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;
+  virtual int GetCrashSignalFD(const CommandLine& command_line) OVERRIDE;
 #endif
 
 #if defined(OS_WIN)

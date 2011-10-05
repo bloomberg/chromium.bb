@@ -269,7 +269,7 @@ FilePath MockContentBrowserClient::GetDefaultDownloadDirectory() {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int MockContentBrowserClient::GetCrashSignalFD(
-    const std::string& process_type) {
+    const CommandLine& command_line) {
   return -1;
 }
 #endif

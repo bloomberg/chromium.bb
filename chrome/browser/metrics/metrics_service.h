@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/metrics_helpers.h"
 #include "content/common/notification_observer.h"
@@ -33,6 +34,7 @@ class MetricsLogBase;
 class MetricsReportingScheduler;
 class PrefService;
 class Profile;
+class RenderProcessHost;
 class TemplateURLService;
 
 namespace base {
@@ -253,10 +255,9 @@ class MetricsService : public NotificationObserver,
   void IncrementLongPrefsValue(const char* path);
 
   // Records a renderer process crash.
-  void LogRendererCrash();
-
-  // Records an extension renderer process crash.
-  void LogExtensionRendererCrash();
+  void LogRendererCrash(RenderProcessHost* host,
+                        base::TerminationStatus status,
+                        bool was_alive);
 
   // Records a renderer process hang.
   void LogRendererHang();

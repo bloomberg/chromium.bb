@@ -30,7 +30,6 @@
 #include "content/app/content_main.h"
 #include "content/app/content_main_delegate.h"
 #include "content/browser/renderer_host/render_process_host.h"
-#include "content/renderer/renderer_main.h"
 #include "content/common/content_client.h"
 #include "content/common/content_counters.h"
 #include "content/common/content_paths.h"
@@ -237,14 +236,12 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
     // For zygotes and unlabeled process types, we want to still make
     // them killable by the OOM killer.
     score = kZygoteScore;
-  } else if (process_type == switches::kExtensionProcess ||
-             process_type == switches::kRendererProcess) {
-    LOG(WARNING) << "process type '" << process_type << "' "
+  } else if (process_type == switches::kRendererProcess) {
+    LOG(WARNING) << "process type 'renderer' "
                  << "should be created through the zygote.";
-    // When debugging, these process types can end up being run
-    // directly, but this isn't the typical path for assigning the OOM
-    // score for them.  Still, we want to assign a score that is
-    // somewhat representative for debugging.
+    // When debugging, this process type can end up being run directly, but
+    // this isn't the typical path for assigning the OOM score for it.  Still,
+    // we want to assign a score that is somewhat representative for debugging.
     score = kRendererScore;
   } else {
     NOTREACHED() << "Unknown process type";
@@ -276,8 +273,7 @@ void InitializeChromeContentClient(const std::string& process_type) {
   } else if (process_type == switches::kPluginProcess) {
     content::GetContentClient()->set_plugin(
         &g_chrome_content_plugin_client.Get());
-  } else if (process_type == switches::kRendererProcess ||
-             process_type == switches::kExtensionProcess) {
+  } else if (process_type == switches::kRendererProcess) {
     InitializeChromeContentRendererClient();
   } else if (process_type == switches::kUtilityProcess) {
     content::GetContentClient()->set_utility(
@@ -303,23 +299,24 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       process_type == switches::kWorkerProcess ||
 #endif
       process_type == switches::kRendererProcess ||
-      process_type == switches::kExtensionProcess ||
       process_type == switches::kUtilityProcess;
 }
 
 #if defined(OS_MACOSX)
 // Update the name shown in Activity Monitor so users are less likely to ask
 // why Chrome has so many processes.
-void SetMacProcessName(const std::string& process_type) {
+void SetMacProcessName(const CommandLine& command_line) {
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
   // Don't worry about the browser process, its gets the stock name.
   int name_id = 0;
-  if (process_type == switches::kRendererProcess) {
+  if (command_line.HasSwitch(switches::kExtensionProcess)) {
+    name_id = IDS_WORKER_APP_NAME;
+  } else if (process_type == switches::kRendererProcess) {
     name_id = IDS_RENDERER_APP_NAME;
   } else if (process_type == switches::kPluginProcess ||
              process_type == switches::kPpapiPluginProcess) {
     name_id = IDS_PLUGIN_APP_NAME;
-  } else if (process_type == switches::kExtensionProcess) {
-    name_id = IDS_WORKER_APP_NAME;
   } else if (process_type == switches::kUtilityProcess) {
     name_id = IDS_UTILITY_APP_NAME;
   }
@@ -615,7 +612,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #if defined(OS_MACOSX)
       // Update the process name (need resources to get the strings, so
       // only do this when ResourcesBundle has been initialized).
-      SetMacProcessName(process_type);
+      SetMacProcessName(command_line);
 #endif  // defined(OS_MACOSX)
     }
 
@@ -650,9 +647,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       const std::string& process_type,
       const MainFunctionParams& main_function_params) OVERRIDE {
     static const MainFunction kMainFunctions[] = {
-      // An extension process is just a renderer process. We use a different
-      // command line argument to differentiate crash reports.
-      { switches::kExtensionProcess,   RendererMain },
       { switches::kServiceProcess,     ServiceProcessMain },
 #if defined(OS_MACOSX)
       { switches::kRelauncherProcess,
@@ -682,8 +676,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #if defined(OS_MACOSX)
   virtual bool ProcessRegistersWithSystemProcess(
       const std::string& process_type) OVERRIDE {
-    return process_type == switches::kNaClLoaderProcess ||
-           process_type == switches::kExtensionProcess;
+    return process_type == switches::kNaClLoaderProcess;
   }
 
   virtual bool ShouldSendMachPort(const std::string& process_type) OVERRIDE {
@@ -693,11 +686,9 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 
   virtual bool DelaySandboxInitialization(
       const std::string& process_type) OVERRIDE {
-    // Extensions are really renderers.
     // NaClLoader does this in NaClMainPlatformDelegate::EnableSandbox().
     // No sandbox needed for relauncher.
-    return process_type == switches::kExtensionProcess ||
-           process_type == switches::kNaClLoaderProcess ||
+    return process_type == switches::kNaClLoaderProcess ||
            process_type == switches::kRelauncherProcess;
   }
 #elif defined(OS_POSIX)

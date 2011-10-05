@@ -76,9 +76,12 @@ class ExtensionProcessManager : public NotificationObserver {
   // Unregisters the extension associated with |site_instance|.
   void UnregisterExtensionSiteInstance(SiteInstance* site_instance);
 
+  // True if this process host is hosting an extension.
+  bool IsExtensionProcess(int render_process_id);
+
   // True if this process host is hosting an extension with extension bindings
   // enabled.
-  bool AreBindingsEnabledForProcess(int host_id);
+  bool AreBindingsEnabledForProcess(int render_process_id);
 
   // Returns the extension process that |url| is associated with if it exists.
   // This is not valid for hosted apps without the background permission, since

@@ -267,9 +267,7 @@ bool ChromeContentBrowserClient::IsSuitableHost(
     return true;
 
   bool is_extension_host =
-      process_host->is_extension_process() ||
-      extension_process_manager->AreBindingsEnabledForProcess(
-          process_host->id());
+      extension_process_manager->IsExtensionProcess(process_host->id());
   return site_url.SchemeIs(chrome::kExtensionScheme) == is_extension_host;
 }
 
@@ -298,8 +296,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (process_type == switches::kExtensionProcess ||
-      process_type == switches::kRendererProcess) {
+  if (process_type == switches::kRendererProcess) {
     FilePath user_data_dir =
         browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
     if (!user_data_dir.empty())
@@ -314,6 +311,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     RenderProcessHost* process = RenderProcessHost::FromID(child_process_id);
 
     Profile* profile = Profile::FromBrowserContext(process->browser_context());
+
+    ExtensionProcessManager* extension_process_manager =
+        profile->GetExtensionProcessManager();
+    if (extension_process_manager->IsExtensionProcess(
+        process->id())) {
+      command_line->AppendSwitch(switches::kExtensionProcess);
+    }
+
     PrefService* prefs = profile->GetPrefs();
     // Currently this pref is only registered if applied via a policy.
     if (prefs->HasPrefPath(prefs::kDisable3DAPIs) &&
@@ -797,15 +802,18 @@ FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
 
 #if defined(OS_LINUX)
 int ChromeContentBrowserClient::GetCrashSignalFD(
-    const std::string& process_type) {
-  if (process_type == switches::kRendererProcess)
-    return RendererCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
-
-  if (process_type == switches::kExtensionProcess) {
+    const CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kExtensionProcess)) {
     ExtensionCrashHandlerHostLinux* crash_handler =
         ExtensionCrashHandlerHostLinux::GetInstance();
     return crash_handler->GetDeathSignalSocket();
   }
+
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  if (process_type == switches::kRendererProcess)
+    return RendererCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
 
   if (process_type == switches::kPluginProcess)
     return PluginCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();

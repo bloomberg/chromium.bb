@@ -33,7 +33,6 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
   if (command_line.HasSwitch(switches::kNoSandbox))
     return true;
   if ((process_type == switches::kRendererProcess) ||
-      (process_type == switches::kExtensionProcess) ||
       (process_type == switches::kWorkerProcess) ||
       (process_type == switches::kNaClLoaderProcess) ||
       (process_type == switches::kUtilityProcess)) {

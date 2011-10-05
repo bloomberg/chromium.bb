@@ -490,11 +490,8 @@ int BrowserRenderProcessHost::VisibleWidgetCount() const {
 void BrowserRenderProcessHost::AppendRendererCommandLine(
     CommandLine* command_line) const {
   // Pass the process type first, so it shows first in process listings.
-  // Extensions use a special pseudo-process type to make them distinguishable,
-  // even though they're just renderers.
   command_line->AppendSwitchASCII(switches::kProcessType,
-      is_extension_process_ ? switches::kExtensionProcess :
-                              switches::kRendererProcess);
+                                  switches::kRendererProcess);
 
   if (accessibility_enabled_)
     command_line->AppendSwitch(switches::kEnableAccessibility);
@@ -864,24 +861,7 @@ void BrowserRenderProcessHost::ProcessDied(
   // calls to a renderer. If we don't have a valid channel here it means we
   // already handled the error.
 
-  if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
-      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
-    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
-                             is_extension_process_ ? 2 : 1);
-    if (was_alive) {
-      UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashesWasAlive",
-                               is_extension_process_ ? 2 : 1);
-    }
-  } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
-    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
-                             is_extension_process_ ? 2 : 1);
-    if (was_alive) {
-      UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKillsWasAlive",
-                               is_extension_process_ ? 2 : 1);
-    }
-  }
-
-  RendererClosedDetails details(status, exit_code, is_extension_process_);
+  RendererClosedDetails details(status, exit_code, was_alive);
   NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),

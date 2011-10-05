@@ -129,7 +129,7 @@ class ChildProcessLauncher::Context
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
     int crash_signal_fd =
-        content::GetContentClient()->browser()->GetCrashSignalFD(process_type);
+        content::GetContentClient()->browser()->GetCrashSignalFD(*cmd_line);
     if (use_zygote) {
       base::GlobalDescriptors::Mapping mapping;
       mapping.push_back(std::pair<uint32_t, int>(kPrimaryIPCChannel, ipcfd));

@@ -85,8 +85,6 @@ extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLogging[];
 CONTENT_EXPORT extern const char kEnableWebIntents[];
 CONTENT_EXPORT extern const char kExperimentalLocationFeatures[];
-// TODO(jam): this doesn't belong in content.
-CONTENT_EXPORT extern const char kExtensionProcess[];
 extern const char kExtraPluginDir[];
 extern const char kForceFieldTestNameAndValue[];
 CONTENT_EXPORT extern const char kForceRendererAccessibility[];

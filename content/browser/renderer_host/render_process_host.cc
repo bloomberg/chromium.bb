@@ -95,7 +95,6 @@ RenderProcessHost::RenderProcessHost(content::BrowserContext* browser_context)
     : max_page_id_(-1),
       fast_shutdown_started_(false),
       deleting_soon_(false),
-      is_extension_process_(false),
       pending_views_(0),
       id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
       browser_context_(browser_context),

@@ -50,14 +50,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
   struct RendererClosedDetails {
     RendererClosedDetails(base::TerminationStatus status,
                           int exit_code,
-                          bool was_extension_renderer) {
+                          bool was_alive) {
       this->status = status;
       this->exit_code = exit_code;
-      this->was_extension_renderer = was_extension_renderer;
+      this->was_alive = was_alive;
     }
     base::TerminationStatus status;
     int exit_code;
-    bool was_extension_renderer;
+    bool was_alive;
   };
 
   explicit RenderProcessHost(content::BrowserContext* browser_context);
@@ -84,9 +84,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
   void set_sudden_termination_allowed(bool enabled) {
     sudden_termination_allowed_ = enabled;
   }
-
-  bool is_extension_process() const { return is_extension_process_; }
-  void mark_is_extension_process() { is_extension_process_ = true; }
 
   // Used for refcounting, each holder of this object must Attach and Release
   // just like it would for a COM object. This object should be allocated on
@@ -295,10 +292,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
 
   // True if we've posted a DeleteTask and will be deleted soon.
   bool deleting_soon_;
-
-  // True iff this process is being used as an extension process. Not valid
-  // when running in single-process mode.
-  bool is_extension_process_;
 
   // The count of currently swapped out but pending RenderViews.  We have
   // started to swap these in, so the renderer process should not exit if

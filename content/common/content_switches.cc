@@ -252,9 +252,6 @@ const char kExperimentalLocationFeatures[]  = "experimental-location-features";
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 
-// Causes the process to run as an extension subprocess.
-const char kExtensionProcess[]              = "extension";
-
 // Some field tests may rendomized in the browser, and the randomly selected
 // outcome needs to be propagated to the renderer.  For instance, this is used
 // to modify histograms recorded in the renderer, or to get the renderer to

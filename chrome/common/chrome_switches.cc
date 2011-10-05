@@ -567,6 +567,9 @@ const char kExperimentalSpellcheckerFeatures[] =
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
 
+// Marks a renderer as extension process.
+const char kExtensionProcess[]              = "extension-process";
+
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 

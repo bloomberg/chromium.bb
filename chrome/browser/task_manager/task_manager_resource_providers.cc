@@ -257,8 +257,11 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
   // was installed as an app.)
   ExtensionService* extensions_service =
       tab_contents_->profile()->GetExtensionService();
+  ExtensionProcessManager* extension_process_manager =
+      tab_contents_->profile()->GetExtensionProcessManager();
   bool is_app = extensions_service->IsInstalledApp(url) &&
-      contents->GetRenderProcessHost()->is_extension_process();
+      extension_process_manager->IsExtensionProcess(
+          contents->GetRenderProcessHost()->id());
 
   int message_id = GetMessagePrefixID(
       is_app,

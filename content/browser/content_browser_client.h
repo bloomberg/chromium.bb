@@ -302,8 +302,9 @@ class ContentBrowserClient {
   virtual FilePath GetDefaultDownloadDirectory() = 0;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // Can return an optional fd for crash handling, otherwise returns -1.
-  virtual int GetCrashSignalFD(const std::string& process_type) = 0;
+  // Can return an optional fd for crash handling, otherwise returns -1. The
+  // passed |command_line| will be used to start the process in question.
+  virtual int GetCrashSignalFD(const CommandLine& command_line) = 0;
 #endif
 
 #if defined(OS_WIN)

@@ -50,14 +50,15 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   // sub-profile (incognito to original profile, or vice versa).
   bool CanCrossIncognito(const Extension* extension);
 
-  // Registers a RenderProcessHost with |host_id| as hosting an extension.
-  void BindingsEnabledForProcess(int host_id);
+  // Registers a RenderProcessHost with |render_process_id| as hosting an
+  // extension.
+  void BindingsEnabledForProcess(int render_process_id);
 
-  // Unregisters the RenderProcessHost with |host_id|.
-  void BindingsDisabledForProcess(int host_id);
+  // Unregisters the RenderProcessHost with |render_process_id|.
+  void BindingsDisabledForProcess(int render_process_id);
 
   // True if this process host is hosting an extension.
-  bool AreBindingsEnabledForProcess(int host_id) const;
+  bool AreBindingsEnabledForProcess(int render_process_id) const;
 
  private:
   // Extra dynamic data related to an extension.

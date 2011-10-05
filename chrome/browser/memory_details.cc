@@ -177,7 +177,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         }
         TabContents* contents = host_delegate->GetAsTabContents();
         if (!contents) {
-          if (host->process()->is_extension_process()) {
+          if (extension_process_manager->IsExtensionProcess(
+              host->process()->id())) {
             const Extension* extension =
                 extension_service->GetExtensionByURL(url);
             if (extension) {
