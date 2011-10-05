@@ -129,6 +129,7 @@ bool IntentsDispatcher::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(IntentsDispatcher, message)
     IPC_MESSAGE_HANDLER(IntentsMsg_SetWebIntentData, OnSetIntent)
+    IPC_MESSAGE_HANDLER(IntentsMsg_WebIntentReply, OnWebIntentReply);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -140,10 +141,18 @@ void IntentsDispatcher::OnSetIntent(const webkit_glue::WebIntentData& intent,
   intent_id_ = intent_id;
 }
 
+void IntentsDispatcher::OnWebIntentReply(
+    webkit_glue::WebIntentReplyType reply_type,
+    const WebKit::WebString& data,
+    int intent_id) {
+  LOG(INFO) << "RenderView got reply to intent type " << reply_type;
+}
+
+
 void IntentsDispatcher::OnResult(const WebKit::WebString& data) {
   Send(new IntentsMsg_WebIntentReply(
       routing_id(),
-      IntentsMsg_WebIntentReply_Type::Reply,
+      webkit_glue::WEB_INTENT_REPLY_SUCCESS,
       data,
       intent_id_));
 }
@@ -151,7 +160,7 @@ void IntentsDispatcher::OnResult(const WebKit::WebString& data) {
 void IntentsDispatcher::OnFailure(const WebKit::WebString& data) {
   Send(new IntentsMsg_WebIntentReply(
       routing_id(),
-      IntentsMsg_WebIntentReply_Type::Failure,
+      webkit_glue::WEB_INTENT_REPLY_FAILURE,
       data,
       intent_id_));
 }

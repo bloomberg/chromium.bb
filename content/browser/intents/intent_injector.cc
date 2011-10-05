@@ -12,6 +12,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ipc/ipc_message_macros.h"
 #include "webkit/glue/web_intent_data.h"
+#include "webkit/glue/web_intent_reply_data.h"
 
 IntentInjector::IntentInjector(TabContents* tab_contents)
     : TabContentsObserver(tab_contents),
@@ -79,7 +80,7 @@ bool IntentInjector::OnMessageReceived(const IPC::Message& message) {
 }
 
 void IntentInjector::OnReply(const IPC::Message& message,
-                             IntentsMsg_WebIntentReply_Type::Value reply_type,
+                             webkit_glue::WebIntentReplyType reply_type,
                              const string16& data,
                              int intent_id) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))

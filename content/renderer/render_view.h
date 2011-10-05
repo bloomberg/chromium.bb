@@ -459,10 +459,6 @@ class RenderView : public RenderWidget,
                              const WebKit::WebString& type,
                              const WebKit::WebString& data,
                              int intent_id);
-  virtual void OnWebIntentReply(
-      IntentsMsg_WebIntentReply_Type::Value reply_type,
-      const WebKit::WebString& data,
-      int intent_id);
 
   // WebKit::WebFrameClient implementation -------------------------------------
 

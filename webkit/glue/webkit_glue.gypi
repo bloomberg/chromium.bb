@@ -431,6 +431,7 @@
         'webvideoframe_impl.h',
         'web_intent_data.cc',
         'web_intent_data.h',
+        'web_intent_reply_data.h',
         'web_intent_service_data.cc',
         'web_intent_service_data.h',
         'web_io_operators.cc',

@@ -9,6 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "webkit/glue/web_intent_data.h"
+#include "webkit/glue/web_intent_reply_data.h"
 
 namespace webkit_glue {
 struct WebIntentData;
@@ -42,8 +44,15 @@ class IntentsDispatcher : public content::RenderViewObserver {
   // TODO(gbillock): Do we need various ***ClientRedirect methods to implement
   // intent cancelling policy? Figure this out.
 
-  // Handler method for the IntentsMsg_SetWebIntent message.
+  // On the service page, handler method for the IntentsMsg_SetWebIntent
+  // message.
   void OnSetIntent(const webkit_glue::WebIntentData& intent, int intent_id);
+
+  // On the client page, handler method for the IntentsMsg_WebIntentReply
+  // message.
+  void OnWebIntentReply(webkit_glue::WebIntentReplyType reply_type,
+                        const WebKit::WebString& data,
+                        int intent_id);
 
   // Delivered intent data from the caller.
   scoped_ptr<webkit_glue::WebIntentData> intent_;

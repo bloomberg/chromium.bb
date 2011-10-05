@@ -689,7 +689,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
                         OnSetHistoryLengthAndPrune)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
-    IPC_MESSAGE_HANDLER(IntentsMsg_WebIntentReply, OnWebIntentReply);
     IPC_MESSAGE_HANDLER(ViewMsg_LockMouse_ACK, OnLockMouseACK)
     IPC_MESSAGE_HANDLER(ViewMsg_MouseLockLost, OnMouseLockLost)
 
@@ -4355,14 +4354,6 @@ void RenderView::startActivity(const WebKit::WebString& action,
       routing_id_, intent_data, intent_id));
 }
 
-void RenderView::OnWebIntentReply(
-    IntentsMsg_WebIntentReply_Type::Value reply_type,
-    const WebKit::WebString& data,
-    int intent_id) {
-  // TODO(gbillock): Implement once the webkit side lands.
-  LOG(INFO) << "RenderView got reply to intent type " << reply_type;
-}
-
 bool RenderView::IsNonLocalTopLevelNavigation(
     const GURL& url, WebKit::WebFrame* frame, WebKit::WebNavigationType type) {
   // Must be a top level frame.
@@ -4469,4 +4460,3 @@ void RenderView::OnLockMouseACK(bool succeeded) {
 void RenderView::OnMouseLockLost() {
   pepper_delegate_.OnMouseLockLost();
 }
-

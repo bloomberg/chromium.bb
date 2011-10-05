@@ -53,7 +53,7 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
 
   // Handles receiving a reply from the intent delivery page.
   void OnReply(const IPC::Message& message,
-               IntentsMsg_WebIntentReply_Type::Value reply_type,
+               webkit_glue::WebIntentReplyType reply_type,
                const string16& data,
                int intent_id);
 
