@@ -21,7 +21,9 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(Interpreter* next)
       screen_x_scale_(1.0),
       screen_y_scale_(1.0),
       pressure_scale_(1.0),
-      pressure_translate_(0.0) {
+      pressure_scale_prop_(NULL),
+      pressure_translate_(0.0),
+      pressure_translate_prop_(NULL) {
   next_.reset(next);
 }
 
