@@ -174,36 +174,6 @@ void NineBox::RenderTopCenterStrip(cairo_t* cr, int x, int y,
   TileImage(cr, images_[1], x, y, width, height, 1.0);
 }
 
-void NineBox::ChangeWhiteToTransparent() {
-  for (int image_idx = 0; image_idx < 9; ++image_idx) {
-    GdkPixbuf* pixbuf = images_[image_idx];
-    if (!pixbuf)
-      continue;
-
-    if (!gdk_pixbuf_get_has_alpha(pixbuf))
-      continue;
-
-    guchar* pixels = gdk_pixbuf_get_pixels(pixbuf);
-    int rowstride = gdk_pixbuf_get_rowstride(pixbuf);
-    int width = gdk_pixbuf_get_width(pixbuf);
-    int height = gdk_pixbuf_get_height(pixbuf);
-
-    if (width * 4 > rowstride) {
-      NOTREACHED();
-      continue;
-    }
-
-    for (int i = 0; i < height; ++i) {
-      for (int j = 0; j < width; ++j) {
-         guchar* pixel = &pixels[i * rowstride + j * 4];
-         if (pixel[0] == 0xff && pixel[1] == 0xff && pixel[2] == 0xff) {
-           pixel[3] = 0;
-         }
-      }
-    }
-  }
-}
-
 void NineBox::ContourWidget(GtkWidget* widget) const {
   int width = widget->allocation.width;
   int height = widget->allocation.height;

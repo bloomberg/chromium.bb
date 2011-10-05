@@ -43,9 +43,6 @@ class NineBox {
   // This is split from RenderToWidget so the toolbar can use it.
   void RenderTopCenterStrip(cairo_t* cr, int x, int y, int width) const;
 
-  // Change all pixels that are white in |images_| to have 0 opacity.
-  void ChangeWhiteToTransparent();
-
   // Set the shape of |widget| to match that of the ninebox. Note that |widget|
   // must have its own window and be allocated. Also, currently only the top
   // three images are used.

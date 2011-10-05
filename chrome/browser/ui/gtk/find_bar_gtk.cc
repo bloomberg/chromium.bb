@@ -134,7 +134,6 @@ void SetDialogShape(GtkWidget* widget) {
       IDR_FIND_DLG_MIDDLE_BACKGROUND,
       IDR_FIND_DLG_RIGHT_BACKGROUND,
       0, 0, 0, 0, 0, 0);
-    dialog_shape->ChangeWhiteToTransparent();
   }
 
   dialog_shape->ContourWidget(widget);
