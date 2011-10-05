@@ -94,6 +94,7 @@
     "chrome.experimental.webRequest.onBeforeSendHeaders": "experimental.webRequest.html#event-onBeforeSendHeaders",
     "chrome.experimental.webRequest.onCompleted": "experimental.webRequest.html#event-onCompleted",
     "chrome.experimental.webRequest.onErrorOccurred": "experimental.webRequest.html#event-onErrorOccurred",
+    "chrome.experimental.webRequest.onHeadersReceived": "experimental.webRequest.html#event-onHeadersReceived",
     "chrome.experimental.webRequest.onResponseStarted": "experimental.webRequest.html#event-onResponseStarted",
     "chrome.experimental.webRequest.onSendHeaders": "experimental.webRequest.html#event-onSendHeaders",
     "chrome.extension.connect": "extension.html#method-connect",

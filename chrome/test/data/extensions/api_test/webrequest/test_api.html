@@ -7,6 +7,8 @@ chrome.test.runTests([
         function(details) {});
     chrome.experimental.webRequest.onSendHeaders.addListener(
         function(details) {});
+    chrome.experimental.webRequest.onHeadersReceived.addListener(
+        function(details) {});
     chrome.experimental.webRequest.onBeforeRedirect.addListener(
         function(details) {});
     chrome.experimental.webRequest.onResponseStarted.addListener(

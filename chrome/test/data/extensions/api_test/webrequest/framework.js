@@ -139,7 +139,10 @@ function captureEvent(name, details) {
   var currentIndex = capturedEventData.length;
   var extraOptions;
   if (expectedEventData.length > currentIndex) {
-    retval = expectedEventData[currentIndex].retval;
+    retval =
+        expectedEventData[currentIndex].retval_function ?
+        expectedEventData[currentIndex].retval_function(name, details) :
+        expectedEventData[currentIndex].retval;
   }
 
   // Check that the frameId can be used to reliably determine the URL of the
@@ -211,6 +214,10 @@ function initListeners(filter, extraInfoSpec) {
       function(details) {
     return captureEvent("onSendHeaders", details);
   }, filter, intersect(extraInfoSpec, ["requestHeaders"]));
+  chrome.experimental.webRequest.onHeadersReceived.addListener(
+      function(details) {
+    return captureEvent("onHeadersReceived", details);
+  }, filter, intersect(extraInfoSpec, ["blocking", "responseHeaders"]));
   chrome.experimental.webRequest.onAuthRequired.addListener(
       function(details) {
     return captureEvent("onAuthRequired", details);
@@ -247,6 +254,7 @@ function removeListeners() {
   helper(chrome.experimental.webRequest.onBeforeSendHeaders);
   helper(chrome.experimental.webRequest.onAuthRequired);
   helper(chrome.experimental.webRequest.onSendHeaders);
+  helper(chrome.experimental.webRequest.onHeadersReceived);
   helper(chrome.experimental.webRequest.onResponseStarted);
   helper(chrome.experimental.webRequest.onBeforeRedirect);
   helper(chrome.experimental.webRequest.onCompleted);

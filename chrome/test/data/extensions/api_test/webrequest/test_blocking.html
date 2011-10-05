@@ -8,6 +8,14 @@ function getURLEchoUserAgent() {
   return getServerURL('echoheader?User-Agent');
 }
 
+function getURLSetCookie() {
+  return getServerURL('set-cookie?Foo=Bar');
+}
+
+function getURLHttpSimpleLoad() {
+  return getServerURL('files/extensions/api_test/webrequest/simpleLoad/a.html');
+}
+
 runTests([
   // Navigates to a page with subresources, with a blocking handler that
   // cancels the page request. The page will not load, and we should not
@@ -48,6 +56,64 @@ runTests([
         tabId = tab.id;
       }));
     });
+  },
+
+  // Navigates to a page with subresources, with a blocking handler that
+  // cancels the page request. The page will not load, and we should not
+  // see the subresources.
+  function simpleLoadCancelledOnReceiveHeaders() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: getURLHttpSimpleLoad(),
+            frameUrl: getURLHttpSimpleLoad()
+          },
+          retval: {cancel: false}
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLHttpSimpleLoad()
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            statusLine: "HTTP/1.0 200 OK",
+          },
+          retval: {cancel: true}
+        },
+        // Cancelling is considered an error.
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            fromCache: false,
+            error: "net::ERR_EMPTY_RESPONSE"
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onErrorOccurred"]
+      ],
+      {},  // filter
+      ["blocking"]);
+    navigateAndWait(getURLHttpSimpleLoad());
   },
 
   // Navigates to a page with a blocking handler that redirects to a different
@@ -139,6 +205,13 @@ runTests([
             url: getURLEchoUserAgent()
           }
         },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLEchoUserAgent(),
+            statusLine: "HTTP/1.0 200 OK",
+          }
+        },
         { label: "onResponseStarted",
           event: "onResponseStarted",
           details: {
@@ -162,7 +235,7 @@ runTests([
       ],
       [  // event order
         ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
-         "onResponseStarted", "onCompleted"]
+         "onHeadersReceived", "onResponseStarted", "onCompleted"]
       ],
       {}, ["blocking"]);
     // Check the page content for our modified User-Agent string.
@@ -177,5 +250,96 @@ runTests([
         });
     });
   },
+
+  // Loads a testserver page that sets a cookie "Foo=Bar" but removes
+  // the cookies from the response headers so that they are not set.
+  function modifyResponseHeaders() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            tabId: tabId,
+            type: "main_frame",
+            url: getURLSetCookie(),
+            frameUrl: getURLSetCookie()
+          }
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLSetCookie(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLSetCookie(),
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLSetCookie(),
+            statusLine: "HTTP/1.0 200 OK",
+            responseHeadersExist: true,
+          },
+          retval_function: function(name, details) {
+            responseHeaders = details.responseHeaders;
+            var found = false;
+            for (var i = 0; i < responseHeaders.length; ++i) {
+              if (responseHeaders[i].name === "Set-Cookie" &&
+                  responseHeaders[i].value.indexOf("Foo") != -1) {
+                found = true;
+                responseHeaders.splice(i);
+                break;
+              }
+            }
+            chrome.test.assertTrue(found);
+            return {responseHeaders: responseHeaders};
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLSetCookie(),
+            fromCache: false,
+            statusCode: 200,
+            statusLine: "HTTP/1.0 200 OK",
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLSetCookie(),
+            fromCache: false,
+            statusCode: 200,
+            statusLine: "HTTP/1.0 200 OK",
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onResponseStarted", "onCompleted"]
+      ],
+      {}, ["blocking", "responseHeaders"]);
+    // Check that the cookie was really removed.
+    navigateAndWait(getURLSetCookie(), function() {
+      chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+        chrome.test.assertTrue(request.pass, "Cookie was not removed.");
+      });
+      chrome.tabs.executeScript(tabId,
+      { code: "chrome.extension.sendRequest(" +
+            "{pass: document.cookie.indexOf('Foo') == -1});"
+        });
+    });
+  },
+
 ]);
 </script>

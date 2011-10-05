@@ -49,11 +49,12 @@ class ExtensionWebRequestEventRouter {
     kOnBeforeRequest = 1 << 0,
     kOnBeforeSendHeaders = 1 << 1,
     kOnSendHeaders = 1 << 2,
-    kOnBeforeRedirect = 1 << 3,
-    kOnAuthRequired = 1 << 4,
-    kOnResponseStarted = 1 << 5,
-    kOnErrorOccurred = 1 << 6,
-    kOnCompleted = 1 << 7,
+    kOnHeadersReceived = 1 << 3,
+    kOnBeforeRedirect = 1 << 4,
+    kOnAuthRequired = 1 << 5,
+    kOnResponseStarted = 1 << 6,
+    kOnErrorOccurred = 1 << 7,
+    kOnCompleted = 1 << 8,
   };
 
   // Internal representation of the webRequest.RequestFilter type, used to
@@ -101,6 +102,8 @@ class ExtensionWebRequestEventRouter {
     bool cancel;
     GURL new_url;
     scoped_ptr<net::HttpRequestHeaders> request_headers;
+    // Contains all header lines after the status line, lines are \n separated.
+    std::string response_headers_string;
 
     EventResponse(const std::string& extension_id,
                   const base::Time& extension_install_time);
@@ -128,6 +131,9 @@ class ExtensionWebRequestEventRouter {
 
     // Keys of request headers to be deleted.
     std::vector<std::string> deleted_request_headers;
+
+    // Complete set of response headers that will replace the original ones.
+    scoped_refptr<net::HttpResponseHeaders> new_response_headers;
 
     EventResponseDelta(const std::string& extension_id,
                        const base::Time& extension_install_time);
@@ -168,6 +174,23 @@ class ExtensionWebRequestEventRouter {
                      ExtensionInfoMap* extension_info_map,
                      net::URLRequest* request,
                      const net::HttpRequestHeaders& headers);
+
+  // Dispatches the onHeadersReceived event. This is fired for HTTP(s)
+  // requests only, and allows modification of incoming response headers.
+  // Returns net::ERR_IO_PENDING if an extension is intercepting the request,
+  // OK otherwise. |original_response_headers| is reference counted. |callback|
+  // and |override_response_headers| are owned by a URLRequestJob. They are
+  // guaranteed to be valid until |callback| is called or OnURLRequestDestroyed
+  // is called (whatever comes first).
+  // Do not modify |original_response_headers| directly but write new ones
+  // into |override_response_headers|.
+  int OnHeadersReceived(
+      void* profile,
+      ExtensionInfoMap* extension_info_map,
+      net::URLRequest* request,
+      net::OldCompletionCallback* callback,
+      net::HttpResponseHeaders* original_response_headers,
+      scoped_refptr<net::HttpResponseHeaders>* override_response_headers);
 
   // Dispatches the onAuthRequired event.
   void OnAuthRequired(void* profile,
@@ -307,18 +330,20 @@ class ExtensionWebRequestEventRouter {
       BlockedRequest* blocked_request,
       EventResponse* response) const;
 
-  // These function merges the responses of blocked onBeforeRequest and
-  // onBeforeSendHeaders handlers, assuming that |request| contains valid
-  // |deltas| representing the changes done by the respective handlers.
-  // The |deltas| need to be sorted in decreasing order of precedence of
-  // extensions.
-  // The functions update the target url or the request headers in |request|
+  // These functions merge the responses of blocked request handlers,
+  // assuming that |request| contains valid |respone_deltas| representing the
+  // changes done by the respective handlers. The |response_deltas| need to be
+  // sorted in decreasing order of precedence of extensions.
+  // The functions update the target url or the headers in |request|
   // and reports extension IDs of extensions whose wishes could not be honored
   // in |conflicting_extensions|.
   void MergeOnBeforeRequestResponses(
       BlockedRequest* request,
       std::list<std::string>* conflicting_extensions) const;
   void MergeOnBeforeSendHeadersResponses(
+      BlockedRequest* request,
+      std::list<std::string>* conflicting_extensions) const;
+  void MergeOnHeadersReceivedResponses(
       BlockedRequest* request,
       std::list<std::string>* conflicting_extensions) const;
 

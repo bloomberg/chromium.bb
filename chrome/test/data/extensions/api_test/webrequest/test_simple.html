@@ -74,6 +74,14 @@ runTests([
             requestHeadersValid: true
           }
         },
+        { label: "onHeadersReceived-1",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLHttpSimpleLoadRedirect(),
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 301 Moved Permanently"
+          }
+        },
         { label: "onBeforeRedirect",
           event: "onBeforeRedirect",
           details: {
@@ -107,6 +115,14 @@ runTests([
             requestHeadersValid: true
           }
         },
+        { label: "onHeadersReceived-2",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 200 OK",
+          }
+        },
         { label: "onResponseStarted",
           event: "onResponseStarted",
           details: {
@@ -132,9 +148,9 @@ runTests([
       ],
       [  // event order
         ["onBeforeRequest-1", "onBeforeSendHeaders-1", "onSendHeaders-1",
-         "onBeforeRedirect",
+         "onHeadersReceived-1", "onBeforeRedirect",
          "onBeforeRequest-2", "onBeforeSendHeaders-2", "onSendHeaders-2",
-         "onResponseStarted", "onCompleted"] ],
+         "onHeadersReceived-2", "onResponseStarted", "onCompleted"] ],
       {},  // filter
       ["requestHeaders", "responseHeaders"]);
     navigateAndWait(getURLHttpSimpleLoadRedirect());

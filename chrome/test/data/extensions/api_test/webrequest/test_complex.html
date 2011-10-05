@@ -227,6 +227,14 @@ runTests([
             url: getURLAuthRequired(),
           }
         },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLAuthRequired(),
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          }
+        },
         { label: "onAuthRequired",
           event: "onAuthRequired",
           details: {
@@ -264,7 +272,8 @@ runTests([
       ],
       [  // event order
         ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
-         "onAuthRequired", "onResponseStarted", "onCompleted"]
+         "onHeadersReceived", "onAuthRequired", "onResponseStarted",
+         "onCompleted"]
       ],
       {}, ["responseHeaders"]);
     navigateAndWait(getURLAuthRequired());
@@ -294,6 +303,14 @@ runTests([
           details: {
             type: "main_frame",
             url: getURLHttpXHR(),
+          }
+        },
+        { label: "onHeadersReceived-1",
+          event: "onHeadersReceived",
+          details: {
+            type: "main_frame",
+            url: getURLHttpXHR(),
+            statusLine: "HTTP/1.0 200 OK",
           }
         },
         { label: "onResponseStarted-1",
@@ -340,6 +357,14 @@ runTests([
             url: getURLHttpXHRData(),
           }
         },
+        { label: "onHeadersReceived-2",
+          event: "onHeadersReceived",
+          details: {
+            type: "xmlhttprequest",
+            url: getURLHttpXHRData(),
+            statusLine: "HTTP/1.0 200 OK",
+          }
+        },
         { label: "onResponseStarted-2",
           event: "onResponseStarted",
           details: {
@@ -365,9 +390,9 @@ runTests([
       ],
       [  // event order
         ["onBeforeRequest-1", "onBeforeSendHeaders-1", "onSendHeaders-1",
-         "onResponseStarted-1", "onCompleted-1",
+         "onHeadersReceived-1", "onResponseStarted-1", "onCompleted-1",
          "onBeforeRequest-2", "onBeforeSendHeaders-2", "onSendHeaders-2",
-         "onResponseStarted-2", "onCompleted-2"] ],
+         "onHeadersReceived-2", "onResponseStarted-2", "onCompleted-2"] ],
       {}, []);
     navigateAndWait(getURLHttpXHR());
   },
