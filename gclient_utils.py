@@ -497,6 +497,10 @@ class WorkItem(object):
   def requirements(self):
     return tuple(self._requirements)
 
+  @lockedmethod
+  def add_requirement(self, new):
+    self._requirements.add(new)
+
 
 class ExecutionQueue(object):
   """Runs a set of WorkItem that have interdependencies and were WorkItem are

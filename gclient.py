@@ -264,7 +264,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # self.parent is implicitly a requirement. This will be recursive by
     # definition.
     if self.parent and self.parent.name:
-      self._requirements.add(self.parent.name)
+      self.add_requirement(self.parent.name)
 
     # For a tree with at least 2 levels*, the leaf node needs to depend
     # on the level higher up in an orderly way.
@@ -283,10 +283,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         if i is self.parent:
           break
         if i.name:
-          self._requirements.add(i.name)
+          self.add_requirement(i.name)
 
     if isinstance(self.url, self.FromImpl):
-      self._requirements.add(self.url.module_name)
+      self.add_requirement(self.url.module_name)
 
     if self.name and self.should_process:
       for obj in self.root.depth_first_tree():
@@ -294,16 +294,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           continue
         # Step 1: Find any requirements self may need.
         if self.name.startswith(posixpath.join(obj.name, '')):
-          self._requirements.add(obj.name)
+          self.add_requirement(obj.name)
         # Step 2: Find any requirements self may impose.
         if obj.name.startswith(posixpath.join(self.name, '')):
-          try:
-            # Access to a protected member _requirements of a client class
-            # pylint: disable=W0212
-            obj.lock.acquire()
-            obj._requirements.add(self.name)
-          finally:
-            obj.lock.release()
+          obj.add_requirement(self.name)
 
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
