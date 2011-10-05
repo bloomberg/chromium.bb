@@ -98,6 +98,32 @@ void ModuleInitDoneRpc(NaClSrpcRpc* rpc,
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+void ModuleExitRpc(NaClSrpcRpc* rpc,
+                   NaClSrpcArg** in_args,
+                   NaClSrpcArg** out_args,
+                   NaClSrpcClosure* done) {
+  nacl::ReverseService* service = reinterpret_cast<nacl::ReverseService*>(
+      rpc->channel->server_instance_data);
+  NaClSrpcClosureRunner on_return(done);
+
+  UNREFERENCED_PARAMETER(out_args);
+
+  NaClLog(4, "Entered ModuleExitRpc\n");
+  NaClLog(4, "service: 0x%"NACL_PRIxPTR, (uintptr_t) service);
+
+  int exit_status = in_args[0]->u.ival;
+  NaClLog(4, "exit_status: 0x%d\n", exit_status);
+
+  if (NULL == service->reverse_interface()) {
+    NaClLog(4, "ModuleExitRpc: no reverse_interface.  Nothing to do.\n");
+  } else {
+    NaClLog(4, "ModuleExitRpc: invoking ReportExitStatus\n");
+    service->reverse_interface()->ReportExitStatus(exit_status);
+  }
+  NaClLog(4, "Leaving ModuleExitRpc\n");
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 // Manifest name service, internal APIs.
 //
 // Manifest file lookups result in read-only file descriptors with a
@@ -367,6 +393,7 @@ NaClSrpcHandlerDesc const ReverseService::handlers[] = {
   { NACL_REVERSE_CONTROL_LOG, RevLog, },
   { NACL_REVERSE_CONTROL_ADD_CHANNEL, AddChannel, },
   { NACL_REVERSE_CONTROL_INIT_DONE, ModuleInitDoneRpc, },
+  { NACL_REVERSE_CONTROL_REPORT_STATUS, ModuleExitRpc, },
   { NACL_MANIFEST_LIST, ManifestListRpc, },
   { NACL_MANIFEST_LOOKUP, ManifestLookupRpc, },
   { NACL_MANIFEST_UNREF, ManifestUnrefRpc, },

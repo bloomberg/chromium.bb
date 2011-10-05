@@ -625,6 +625,7 @@ ACCEPTABLE_TEST_SUITES = set([
   'toolchain_tests',
   'pnacl_abi_tests',
   'performance_tests',
+  'exit_status_tests',
   ])
 
 # Under --mode=nacl_irt_test we build variants of numerous tests normally
@@ -3096,6 +3097,7 @@ nonvariant_tests = [
     'tests/barebones/nacl.scons',
     'tests/chrome_extension/nacl.scons',
     'tests/earth/nacl.scons',
+    'tests/exit_status/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',
     'tests/inbrowser_crash_test/nacl.scons',

@@ -56,6 +56,12 @@ class ReverseInterface : public RefCountBase {
   virtual bool CloseManifestEntry(int32_t desc) = 0;
   virtual void ReportCrash() = 0;
 
+  // The low-order 8 bits of the |exit_status| should be reported to
+  // any interested parties.
+  virtual void ReportExitStatus(int exit_status) {
+    UNREFERENCED_PARAMETER(exit_status);
+  } // = 0;
+
   // covariant impl of Ref()
   ReverseInterface* Ref() {  // down_cast
     return reinterpret_cast<ReverseInterface*>(RefCountBase::Ref());
