@@ -122,15 +122,29 @@
                 },
               ],
             }],
-          ],
-          'dependencies': [
-            # On Linux, link the dependencies (libraries) that make up actual
-            # Chromium functionality directly into the executable.
-            '<@(chromium_dependencies)',
-            # Needed for chrome_main.cc initialization of libraries.
-            '../build/linux/system.gyp:gtk',
-            # Needed to use the master_preferences functions
-            'installer_util',
+            ['toolkit_uses_gtk == 1', {
+              'dependencies': [
+                # On Linux, link the dependencies (libraries) that make up actual
+                # Chromium functionality directly into the executable.
+                '<@(chromium_dependencies)',
+                # Needed for chrome_main.cc initialization of libraries.
+                '../build/linux/system.gyp:gtk',
+                # Needed to use the master_preferences functions
+                'installer_util',
+              ],
+            }, { # else toolkit_uses_gtk == 1
+              'dependencies': [
+                # On Linux, link the dependencies (libraries) that make up actual
+                # Chromium functionality directly into the executable.
+                '<@(chromium_dependencies)',
+                # Needed for chrome_main.cc initialization of libraries.
+                '../build/linux/system.gyp:x11',
+                '../build/linux/system.gyp:pangocairo',
+                '../build/linux/system.gyp:xext',
+                # Needed to use the master_preferences functions
+                'installer_util',
+              ],  
+            }],
           ],
           'sources': [
             'app/chrome_dll_resource.h',

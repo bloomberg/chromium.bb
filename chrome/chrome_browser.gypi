@@ -4141,6 +4141,13 @@
             ['exclude', '^browser/ui/webui/keyboard_ui.*'],
           ],
         }],
+        ['OS=="linux"', {
+          'link_settings': {
+            'libraries': [
+              '-lXss',
+            ],
+          },
+        }],
         ['OS=="linux" and use_aura==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',

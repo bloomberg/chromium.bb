@@ -79,10 +79,13 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #endif
 
-#if defined(USE_X11)
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#endif
+
+#if defined(USE_X11)
 #include <stdlib.h>
 #include <string.h>
 #include "ui/base/x/x11_util.h"
