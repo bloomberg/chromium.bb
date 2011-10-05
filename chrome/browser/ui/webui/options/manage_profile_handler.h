@@ -27,8 +27,10 @@ class ManageProfileHandler : public OptionsPageUIHandler {
                        const NotificationDetails& details);
 
  private:
-  // Send the array of default profile icon URLs to WebUI.
-  void InitializeDefaultProfileIcons();
+  // Callback for the "requestDefaultProfileIcons" message.
+  // Sends the array of default profile icon URLs to WebUI.
+  // |args| is of the form: [ {string} iconURL ]
+  void RequestDefaultProfileIcons(const base::ListValue* args);
 
   // Sends an object to WebUI of the form:
   //   profileNames = {
@@ -52,8 +54,18 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   // |args| is of the form: [ {string} profileFilePath ]
   void DeleteProfile(const base::ListValue* args);
 
+  // Callback for the "requestProfileInfo" message.
+  // Given |args| of the form: [ {number} profileIndex ]
+  // Sends an object to WebUI of the form:
+  //   profileInfo = {
+  //     name: "Profile Name",
+  //     iconURL: "chrome://path/to/icon/image",
+  //     filePath: "/path/to/profile/data/on/disk"
+  //     isCurrentProfile: false,
+  //   };
+  void RequestProfileInfo(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(ManageProfileHandler);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_MANAGE_PROFILE_HANDLER_H_
-

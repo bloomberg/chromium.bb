@@ -389,15 +389,13 @@ void PersonalOptionsHandler::SendProfilesInfo() {
   FilePath current_profile_path =
       web_ui_->tab_contents()->browser_context()->GetPath();
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
-    DictionaryValue *profile_value = new DictionaryValue();
+    DictionaryValue* profile_value = new DictionaryValue();
     size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(i);
     FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
     profile_value->SetString("name", cache.GetNameOfProfileAtIndex(i));
     profile_value->SetString("iconURL",
                              cache.GetDefaultAvatarIconUrl(icon_index));
-    profile_value->Set("filePath",
-                       base::CreateFilePathValue(
-                          profile_path));
+    profile_value->Set("filePath", base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean("isCurrentProfile",
                               profile_path == current_profile_path);
     profile_info_list.Append(profile_value);

@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 
@@ -44,7 +45,6 @@ void ManageProfileHandler::GetLocalizedValues(
 void ManageProfileHandler::Initialize() {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  NotificationService::AllSources());
-  InitializeDefaultProfileIcons();
   SendProfileNames();
 }
 
@@ -54,6 +54,12 @@ void ManageProfileHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("deleteProfile",
       base::Bind(&ManageProfileHandler::DeleteProfile,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("requestDefaultProfileIcons",
+      base::Bind(&ManageProfileHandler::RequestDefaultProfileIcons,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("requestProfileInfo",
+      base::Bind(&ManageProfileHandler::RequestProfileInfo,
                  base::Unretained(this)));
 }
 
@@ -66,7 +72,7 @@ void ManageProfileHandler::Observe(int type,
     OptionsPageUIHandler::Observe(type, source, details);
 }
 
-void ManageProfileHandler::InitializeDefaultProfileIcons() {
+void ManageProfileHandler::RequestDefaultProfileIcons(const ListValue* args) {
   ListValue image_url_list;
   for (size_t i = 0; i < ProfileInfoCache::GetDefaultAvatarIconCount(); i++) {
     std::string url = ProfileInfoCache::GetDefaultAvatarIconUrl(i);
@@ -91,6 +97,8 @@ void ManageProfileHandler::SendProfileNames() {
 }
 
 void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
+  DCHECK(args);
+
   Value* file_path_value;
   FilePath profile_file_path;
   if (!args->Get(0, &file_path_value) ||
@@ -119,6 +127,8 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
 }
 
 void ManageProfileHandler::DeleteProfile(const ListValue* args) {
+  DCHECK(args);
+
   Value* file_path_value;
   FilePath profile_file_path;
   if (!args->Get(0, &file_path_value) ||
@@ -129,3 +139,35 @@ void ManageProfileHandler::DeleteProfile(const ListValue* args) {
       profile_file_path);
 }
 
+void ManageProfileHandler::RequestProfileInfo(const ListValue* args) {
+  DCHECK(args);
+
+  DictionaryValue profile_value;
+
+  Value* index_value;
+  double index_double;
+  if (!args->Get(0, &index_value) || !index_value->GetAsDouble(&index_double))
+    return;
+
+  int index = static_cast<int>(index_double);
+
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  int profile_count = cache.GetNumberOfProfiles();
+  if (index < 0 && index >= profile_count)
+    return;
+
+  FilePath current_profile_path =
+      web_ui_->tab_contents()->browser_context()->GetPath();
+  size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(index);
+  FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
+  profile_value.SetString("name", cache.GetNameOfProfileAtIndex(index));
+  profile_value.SetString("iconURL",
+                           cache.GetDefaultAvatarIconUrl(icon_index));
+  profile_value.Set("filePath", base::CreateFilePathValue(profile_path));
+  profile_value.SetBoolean("isCurrentProfile",
+                            profile_path == current_profile_path);
+
+  web_ui_->CallJavascriptFunction("ManageProfileOverlay.setProfileInfo",
+                                  profile_value);
+}

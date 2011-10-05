@@ -61,11 +61,17 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     didShowPage: function() {
-      var grid = $('manage-profile-icon-grid');
-      // Recalculate the measured item size.
-      grid.measured_ = null;
-      grid.columns = 0;
-      grid.redraw();
+      chrome.send('requestDefaultProfileIcons');
+
+      // Use the hash to specify the profile index.
+      var hash = location.hash;
+      if (hash) {
+        $('manage-profile-overlay-manage').hidden = false;
+        $('manage-profile-overlay-delete').hidden = true;
+        ManageProfileOverlay.getInstance().hideErrorBubble_();
+
+        chrome.send('requestProfileInfo', [parseInt(hash.slice(1), 10)]);
+      }
 
       $('manage-profile-name').focus();
     },
@@ -95,6 +101,12 @@ cr.define('options', function() {
      */
     receiveDefaultProfileIcons_: function(iconURLs) {
       $('manage-profile-icon-grid').dataModel = new ArrayDataModel(iconURLs);
+
+      var grid = $('manage-profile-icon-grid');
+      // Recalculate the measured item size.
+      grid.measured_ = null;
+      grid.columns = 0;
+      grid.redraw();
     },
 
     /**

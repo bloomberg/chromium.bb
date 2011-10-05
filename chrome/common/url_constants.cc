@@ -233,6 +233,7 @@ const char kExtensionsSubPage[] = "extensions";
 const char kImportDataSubPage[] = "importData";
 const char kInstantConfirmPage[] = "instantConfirm";
 const char kLanguageOptionsSubPage[] = "languages";
+const char kManageProfileSubPage[] = "manageProfile";
 const char kPersonalOptionsSubPage[] = "personal";
 const char kPasswordManagerSubPage[] = "passwords";
 const char kSearchEnginesSubPage[] = "searchEngines";

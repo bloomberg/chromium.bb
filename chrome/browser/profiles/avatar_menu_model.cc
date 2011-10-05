@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/avatar_menu_model.h"
 
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -90,7 +91,10 @@ void AvatarMenuModel::EditProfile(size_t index) {
         profile_info_->GetPathOfProfileAtIndex(GetItemAt(index).model_index));
     browser = Browser::Create(profile);
   }
-  browser->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
+  std::string page = chrome::kManageProfileSubPage;
+  page += "#";
+  page += base::IntToString(static_cast<int>(index));
+  browser->ShowOptionsTab(page);
 }
 
 void AvatarMenuModel::AddNewProfile() {
