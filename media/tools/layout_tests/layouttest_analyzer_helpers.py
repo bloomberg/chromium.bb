@@ -255,7 +255,7 @@ class AnalyzerResultMap:
 
 def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
                     bug_anno_map, receiver_email_address, test_group_name,
-                    appended_text_to_email, rev_str):
+                    appended_text_to_email, email_content, rev_str):
   """Send status email.
 
   Args:
@@ -281,21 +281,20 @@ def SendStatusEmail(prev_time, analyzer_result_map, diff_map,
     test_group_name: string representing the test group name (e.g., 'media').
     appended_text_to_email: a text which is appended at the end of the status
         email.
+    email_content: an email content string that will be shown on the dashboard.
     rev_str: a revision string that contains revision information that is sent
         out in the status email. It is obtained by calling
         |GetRevisionString()|.
   """
-  output_str = analyzer_result_map.ConvertToString(prev_time, diff_map,
-                                                   bug_anno_map)
   if rev_str:
-    output_str += '<br><b>Revision Information:</b>'
-    output_str += rev_str
+    email_content += '<br><b>Revision Information:</b>'
+    email_content += rev_str
   localtime = time.asctime(time.localtime(time.time()))
   # TODO(imasaki): remove my name from here.
   subject = 'Layout Test Analyzer Result (%s): %s' % (test_group_name,
                                                       localtime)
   SendEmail('imasaki@chromium.org', [receiver_email_address],
-            subject, output_str + appended_text_to_email)
+            subject, email_content + appended_text_to_email)
 
 
 def GetRevisionString(prev_time, current_time, diff_map):

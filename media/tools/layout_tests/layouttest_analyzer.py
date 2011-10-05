@@ -240,9 +240,12 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
             the email.
         rev: the latest revision number for the given test group.
         rev_date: the latest revision date for the given test group.
+        email_content:  email content string (without
+            |appended_text_to_email|) that will be shown on the dashboard.
   """
   rev = ''
   rev_date = ''
+  email_content = ''
   if prev_analyzer_result_map:
     diff_map = analyzer_result_map.CompareToOtherResultMap(
         prev_analyzer_result_map)
@@ -264,11 +267,13 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
           layouttest_analyzer_helpers.GetRevisionString(prev_time_in_float,
                                                         cur_time_in_float,
                                                         diff_map))
+      email_content = analyzer_result_map.ConvertToString(prev_time, diff_map,
+                                                          anno_map)
       if receiver_email_address:
         layouttest_analyzer_helpers.SendStatusEmail(
             prev_time, analyzer_result_map, diff_map, anno_map,
             receiver_email_address, test_group_name,
-            appended_text_to_email, rev_str)
+            appended_text_to_email, email_content, rev_str)
     if simple_rev_str:
       simple_rev_str = '\'' + simple_rev_str + '\''
     else:
@@ -279,7 +284,8 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
     result_change = True
     diff_map = None
     simple_rev_str = 'undefined'
-  return (result_change, diff_map, simple_rev_str, rev, rev_date)
+  return (result_change, diff_map, simple_rev_str, rev, rev_date,
+          email_content)
 
 
 def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
@@ -360,7 +366,8 @@ def UpdateTrendGraph(start_time, analyzer_result_map, diff_map, simple_rev_str,
 
 
 def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
-                    layouttest_root_path, rev, rev_date, email):
+                    layouttest_root_path, rev, rev_date, email,
+                    email_content):
   """Update dashboard HTML file.
 
   Args:
@@ -376,6 +383,8 @@ def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
     rev: the latest revision number for the given test group.
     rev_date: the latest revision date for the given test group.
     email: email address of the owner for the given test group.
+    email_content:  email content string (without |appended_text_to_email|)
+        that will be shown on the dashboard.
   """
   # Generate a HTML file that contains all test names for each test group.
   escaped_tg_name = test_group_name.replace('/', '_')
@@ -397,11 +406,21 @@ def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
           data_map[tg][0][testname]))
     file_object.write('</table>')
     file_object.close()
+  email_content_with_link = ''
+  if email_content:
+    file_name = os.path.join(os.path.dirname(dashboard_file_location),
+                             escaped_tg_name + '_email.html')
+    file_object = open(file_name, 'wb')
+    file_object.write(email_content)
+    file_object.close()
+    email_content_with_link = '<a href="%s_email.html">info</a>' % (
+        escaped_tg_name)
   new_str = ('<td><a href="%s">%s</a></td><td><a href="%s">%s</a></td>'
              '<td><a href="%s">%s</a></td><td><a href="%s">%s</a></td>'
              '<td><a href="%s">%s</a></td><td>%d%%</td><td>%s%%</td>'
              '<td><a href="http://trac.webkit.org/changeset/%s">%s</a></td>'
-             '<td>%s</td><td><a href="mailto:%s">%s</a></td>\n') % (
+             '<td>%s</td><td><a href="mailto:%s">%s</a></td>'
+             '<td>%s</td>\n') % (
                  # Dashboard file and graph must be in the same directory
                  # to make the following link work.
                  layouttest_root_path + '/' + test_group_name,
@@ -412,7 +431,7 @@ def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
                  len(data_map['nonskip'][0]),
                  100 - int(data_map['passingrate'][0]),
                  data_map['passingrate'][0], rev, rev, rev_date, email,
-                 email)
+                 email, email_content_with_link)
   layouttest_analyzer_helpers.ReplaceLineInFile(
       dashboard_file_location, '<td>' + test_group_name + '</td>', new_str)
 
@@ -430,7 +449,7 @@ def main():
   (anno_map, appended_text_to_email) = ReadEmailInformation(
       options.bug_annotation_file_location,
       options.email_appended_text_file_location)
-  (result_change, diff_map, simple_rev_str, rev, rev_date) = (
+  (result_change, diff_map, simple_rev_str, rev, rev_date, email_content) = (
       SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
                 anno_map, appended_text_to_email,
                 options.email_only_change_mode, options.debug,
@@ -448,7 +467,8 @@ def main():
     if options.dashboard_file_location:
       UpdateDashboard(options.dashboard_file_location, options.test_group_name,
                       data_map, layouttests.DEFAULT_LAYOUTTEST_LOCATION, rev,
-                      rev_date, options.receiver_email_address)
+                      rev_date, options.receiver_email_address,
+                      email_content)
 
 
 if '__main__' == __name__:

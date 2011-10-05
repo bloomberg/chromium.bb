@@ -122,7 +122,8 @@ test expectation file and were not skipped.
   file_object.write('<th>Passing Rate</th>')
   file_object.write('<th>Last Revision Number</th>')
   file_object.write('<th>Last Revision Date</th>')
-  file_object.write('<th>Owner Email</th></tr>\n')
+  file_object.write('<th>Owner Email</th>')
+  file_object.write('<th>Bug Information</th></tr>\n')
   test_group_list.sort()
   for i, test_group in enumerate(test_group_list):
     file_object.write('<tr class="d' + str(i % 2) + '">\n')
