@@ -56,12 +56,8 @@ ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
   source->AddLocalizedString("pluginDisabled", IDS_PLUGINS_DISABLED_PLUGIN);
   source->AddLocalizedString("pluginDisabledByPolicy",
                              IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN);
-  source->AddLocalizedString("pluginCannotBeEnabledDueToPolicy",
-                             IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY);
   source->AddLocalizedString("pluginEnabledByPolicy",
                              IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN);
-  source->AddLocalizedString("pluginCannotBeDisabledDueToPolicy",
-                             IDS_PLUGINS_CANNOT_DISABLE_DUE_TO_POLICY);
   source->AddLocalizedString("pluginDownload", IDS_PLUGINS_DOWNLOAD);
   source->AddLocalizedString("pluginName", IDS_PLUGINS_NAME);
   source->AddLocalizedString("pluginVersion", IDS_PLUGINS_VERSION);
@@ -248,9 +244,6 @@ void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
   PluginPrefs* plugin_prefs =
       PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui_));
 
-  bool all_plugins_enabled_by_policy = true;
-  bool all_plugins_disabled_by_policy = true;
-
   // Construct DictionaryValues to return to the UI
   ListValue* plugin_groups_data = new ListValue();
   for (size_t i = 0; i < groups.size(); ++i) {
@@ -258,6 +251,8 @@ void PluginsDOMHandler::PluginsLoaded(const std::vector<PluginGroup>& groups) {
     const PluginGroup& group = groups[i];
     string16 group_name = group.GetGroupName();
     bool group_enabled = false;
+    bool all_plugins_enabled_by_policy = true;
+    bool all_plugins_disabled_by_policy = true;
     const WebPluginInfo* active_plugin = NULL;
     for (size_t j = 0; j < group.web_plugin_infos().size(); ++j) {
       const WebPluginInfo& group_plugin = group.web_plugin_infos()[j];

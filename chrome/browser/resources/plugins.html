@@ -108,8 +108,6 @@
                   <div><table><tr>
                     <td class="plugin-details-label">&nbsp;</td>
                     <td>
-                      <span jsdisplay="enabledMode == 'disabledByUser'"
-                          i18n-content="pluginDisabled">(DISABLED)</span>
                       <span jsdisplay="enabledMode == 'disabledByPolicy'"
                           i18n-content="pluginDisabledByPolicy">(DISABLED_BY_POLICY)</span>
                       <span jsdisplay="enabledMode == 'enabledByPolicy'"
@@ -129,14 +127,6 @@
                           href="#"
                           i18n-content="enable"
                           >ENABLE</a>
-                        <span
-                          jsdisplay="enabledMode == 'enabledByPolicy'"
-                          i18n-content="pluginCannotBeDisabledDueToPolicy"
-                          >CANNOT_DISABLE</span>
-                        <span
-                          jsdisplay="enabledMode == 'disabledByPolicy'"
-                          i18n-content="pluginCannotBeEnabledDueToPolicy"
-                          >CANNOT_ENABLE</span>
                       </span>
                     </td>
                   </tr></table></div>
@@ -186,14 +176,6 @@
                 href="#"
                 i18n-content="enable"
                 >ENABLE</a>
-              <span
-                jsdisplay="enabledMode == 'enabledByPolicy'"
-                i18n-content="pluginCannotBeDisabledDueToPolicy"
-                >CANNOT_DISABLE</span>
-              <span
-                jsdisplay="enabledMode == 'disabledByPolicy'"
-                i18n-content="pluginCannotBeEnabledDueToPolicy"
-                >CANNOT_ENABLE</span>
             </span>
           </div>
         </td>

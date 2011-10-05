@@ -4108,14 +4108,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plug-in is currently disabled by enterprise policy.">
         (Disabled by enterprise policy)
       </message>
-      <message name="IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY" desc="Text that indicates a plug-in cannot be enabled because it has been disabled by enterprise policy.">
-        Cannot enable plug-ins that are disabled by enterprise policy
-      </message>
       <message name="IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plug-in is currently enabled by enterprise policy.">
         (Enabled by enterprise policy)
-      </message>
-      <message name="IDS_PLUGINS_CANNOT_DISABLE_DUE_TO_POLICY" desc="Text that indicates a plug-in cannot be disabled because it has been enabled by enterprise policy.">
-        Cannot disable plug-ins that are enabled by enterprise policy
       </message>
       <message name="IDS_PLUGINS_VERSION" desc="The label in front of a plug-in version number.">
         Version:
