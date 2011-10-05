@@ -141,11 +141,9 @@ void VideoCaptureImpl::DoStartCapture(
     const VideoCaptureCapability& capability) {
   DCHECK(ml_proxy_->BelongsToCurrentThread());
 
-  ClientInfo::iterator it = pending_clients_.find(handler);
-
-  if (it != pending_clients_.end()) {
-    handler->OnError(this, 1);
-    handler->OnRemoved(this);
+  if (pending_clients_.find(handler) != pending_clients_.end() ||
+      clients_.find(handler) != clients_.end() ) {
+    // This client has started.
     return;
   }
 
@@ -154,13 +152,18 @@ void VideoCaptureImpl::DoStartCapture(
     return;
   }
 
-  if (capability.resolution_fixed && master_clients_.size() &&
-      (capability.width != current_params_.width ||
-       capability.height != current_params_.height)) {
-    // Can't have 2 master clients with different resolutions.
-    handler->OnError(this, 1);
-    handler->OnRemoved(this);
-    return;
+  if (capability.resolution_fixed && master_clients_.size()) {
+    bool matches_current_params =
+        CapabilityMatchesParameters(capability, current_params_);
+    bool matches_new_params =
+        CapabilityMatchesParameters(capability, new_params_);
+    if ((state_ == kStarted && !matches_current_params) ||
+        (state_ == kStopping && !matches_new_params)) {
+      // Can't have 2 master clients with different resolutions.
+      handler->OnError(this, 1);
+      handler->OnRemoved(this);
+      return;
+    }
   }
 
   handler->OnStarted(this);
@@ -168,8 +171,6 @@ void VideoCaptureImpl::DoStartCapture(
   if (capability.resolution_fixed) {
     master_clients_.push_back(handler);
     if (master_clients_.size() > 1) {
-      // TODO(wjia): OnStarted might be called twice if VideoCaptureImpl will
-      // receive kStarted from browser process later.
       if (device_info_available_)
         handler->OnDeviceInfoReceived(this, device_info_);
       return;
@@ -179,9 +180,7 @@ void VideoCaptureImpl::DoStartCapture(
   if (state_ == kStarted) {
     // Take the resolution of master client.
     if (capability.resolution_fixed &&
-        (capability.width != current_params_.width ||
-         capability.height != current_params_.height ||
-         capability.max_fps != current_params_.frame_per_second)) {
+        !CapabilityMatchesParameters(capability, current_params_)) {
       new_params_.width = capability.width;
       new_params_.height = capability.height;
       new_params_.frame_per_second = capability.max_fps;
@@ -189,9 +188,8 @@ void VideoCaptureImpl::DoStartCapture(
                  << new_params_.width << ", " << new_params_.height << ") "
                  << "during started, try to restart.";
       StopDevice();
-    } else {
-      if (device_info_available_)
-        handler->OnDeviceInfoReceived(this, device_info_);
+    } else if (device_info_available_) {
+      handler->OnDeviceInfoReceived(this, device_info_);
     }
     return;
   }
@@ -391,6 +389,8 @@ void VideoCaptureImpl::DoStateChanged(const media::VideoCapture::State& state) {
 void VideoCaptureImpl::DoDeviceInfoReceived(
     const media::VideoCaptureParams& device_info) {
   DCHECK(ml_proxy_->BelongsToCurrentThread());
+  if (state_ != kStarted)
+    return;
 
   device_info_ = device_info;
   device_info_available_ = true;
@@ -465,4 +465,12 @@ void VideoCaptureImpl::Send(IPC::Message* message) {
   io_message_loop_proxy->PostTask(FROM_HERE,
       NewRunnableMethod(message_filter_.get(),
                         &VideoCaptureMessageFilter::Send, message));
+}
+
+bool VideoCaptureImpl::CapabilityMatchesParameters(
+    const VideoCaptureCapability& capability,
+    const media::VideoCaptureParams& params) {
+  return (capability.width == params.width &&
+          capability.height == params.height &&
+          capability.max_fps == params.frame_per_second);
 }

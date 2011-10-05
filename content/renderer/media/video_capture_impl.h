@@ -87,6 +87,10 @@ class CONTENT_EXPORT VideoCaptureImpl
   void RemoveDelegateOnIOThread(Task* task);
   virtual void Send(IPC::Message* message);
 
+  // Helpers.
+  bool CapabilityMatchesParameters(const VideoCaptureCapability& capability,
+                                   const media::VideoCaptureParams& params);
+
   scoped_refptr<VideoCaptureMessageFilter> message_filter_;
   scoped_refptr<base::MessageLoopProxy> ml_proxy_;
   int device_id_;
