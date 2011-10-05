@@ -1489,7 +1489,9 @@ def _GetCopies(spec):
 
 
 def _GetPathDict(root, path):
-  if not path:
+  # |path| will eventually be empty (in the recursive calls) if it was initially
+  # relative; otherwise it will eventually end up as '\', 'D:\', etc.
+  if not path or path.endswith(os.sep):
     return root
   parent, folder = os.path.split(path)
   parent_dict = _GetPathDict(root, parent)
