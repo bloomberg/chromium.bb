@@ -220,9 +220,11 @@
         'content_gpu',
         'content_plugin',
         'content_renderer',
+        'content_shell_lib',
         'test_support_content',
         '../base/base.gyp:test_support_base',
         '../net/net.gyp:net_test_support',
+        '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
         '../webkit/support/webkit_support.gyp:glue',
@@ -242,13 +244,41 @@
       ],
       'conditions': [
         ['OS=="win"', {
-          'dependencies': [
-            '../sandbox/sandbox.gyp:sandbox',
-          ],
           'link_settings': {
             'libraries': [
               '-lcomctl32.lib',
             ],
+          },
+          'resource_include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit',
+          ],
+          'sources': [
+            'shell/resource.h',
+            'shell/shell.rc',
+            # TODO:  It would be nice to have these pulled in
+            # automatically from direct_dependent_settings in
+            # their various targets (net.gyp:net_resources, etc.),
+            # but that causes errors in other targets when
+            # resulting .res files get referenced multiple times.
+            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
+          ],
+          'dependencies': [
+            '<(DEPTH)/net/net.gyp:net_resources',
+            '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
+            '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
           },
         }],
         ['OS=="win" and win_use_allocator_shim==1', {

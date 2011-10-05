@@ -4,10 +4,20 @@
 
 #include "content/test/test_launcher.h"
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "content/test/content_test_suite.h"
+#include "base/test/test_suite.h"
+#include "content/app/content_main.h"
+#include "content/common/content_switches.h"
+#include "content/shell/shell_main_delegate.h"
+
+#if defined(OS_WIN)
+#include "content/app/startup_helper_win.h"
+#include "sandbox/src/sandbox_types.h"
+#endif  // defined(OS_WIN)
 
 class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
  public:
@@ -21,26 +31,31 @@ class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   }
 
   virtual bool Run(int argc, char** argv, int* return_code) OVERRIDE {
+#if defined(OS_WIN)
     CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-    // TODO(pkasting): This "single_process vs. single-process" design is
-    // terrible UI.  Instead, there should be some sort of signal flag on the
-    // command line, with all subsequent arguments passed through to the
-    // underlying browser.
-    if (command_line->HasSwitch(test_launcher::kSingleProcessTestsFlag) ||
-        command_line->HasSwitch(
-            test_launcher::kSingleProcessTestsAndChromeFlag) ||
-        command_line->HasSwitch(test_launcher::kGTestListTestsFlag) ||
-        command_line->HasSwitch(test_launcher::kGTestHelpFlag)) {
-      *return_code = ContentTestSuite(argc, argv).Run();
+    if (command_line->HasSwitch(switches::kProcessType)) {
+      sandbox::SandboxInterfaceInfo sandbox_info = {0};
+      content::InitializeSandboxInfo(&sandbox_info);
+      ShellMainDelegate delegate;
+      *return_code =
+          content::ContentMain(GetModuleHandle(NULL), &sandbox_info, &delegate);
       return true;
     }
+#endif  // defined(OS_WIN)
 
     return false;
   }
 
+  virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
+    return base::TestSuite(argc, argv).Run();
+  }
+
   virtual bool AdjustChildProcessCommandLine(
       CommandLine* command_line) OVERRIDE {
+    FilePath file_exe;
+    if (!PathService::Get(base::FILE_EXE, &file_exe))
+      return false;
+    command_line->AppendSwitchPath(switches::kBrowserSubprocessPath, file_exe);
     return true;
   }
 

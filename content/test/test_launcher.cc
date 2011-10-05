@@ -27,6 +27,14 @@
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "base/base_switches.h"
+#include "content/common/sandbox_policy.h"
+#include "sandbox/src/dep.h"
+#include "sandbox/src/sandbox_factory.h"
+#include "sandbox/src/sandbox_types.h"
+#endif
+
 namespace test_launcher {
 
 namespace {
@@ -550,9 +558,37 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     return 0;
   }
 
+  // TODO(pkasting): This "single_process vs. single-process" design is
+  // terrible UI.  Instead, there should be some sort of signal flag on the
+  // command line, with all subsequent arguments passed through to the
+  // underlying browser.
+  if (command_line->HasSwitch(kSingleProcessTestsFlag) ||
+      command_line->HasSwitch(kSingleProcessTestsAndChromeFlag) ||
+      command_line->HasSwitch(kGTestListTestsFlag) ||
+      command_line->HasSwitch(kGTestHelpFlag)) {
+#if defined(OS_WIN)
+    if (command_line->HasSwitch(kSingleProcessTestsFlag)) {
+      // This is the browser process, so setup the sandbox broker.
+      sandbox::BrokerServices* broker_services =
+          sandbox::SandboxFactory::GetBrokerServices();
+      if (broker_services) {
+        sandbox::InitBrokerServices(broker_services);
+        // Precreate the desktop and window station used by the renderers.
+        sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
+        sandbox::ResultCode result = policy->CreateAlternateDesktop(true);
+        CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
+        policy->Release();
+      }
+    }
+#endif
+    return launcher_delegate->RunTestSuite(argc, argv);
+  }
+
   int return_code = 0;
   if (launcher_delegate->Run(argc, argv, &return_code))
     return return_code;
+
+  base::AtExitManager at_exit;
 
   int32 total_shards;
   int32 shard_index;

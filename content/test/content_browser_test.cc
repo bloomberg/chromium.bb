@@ -7,6 +7,8 @@
 #include "base/debug/stack_trace.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
+#include "content/shell/shell.h"
+#include "content/shell/shell_main_delegate.h"
 #include "content/test/test_content_client.h"
 
 ContentBrowserTest::ContentBrowserTest() {
@@ -17,11 +19,8 @@ ContentBrowserTest::~ContentBrowserTest() {
 
 void ContentBrowserTest::SetUp() {
   DCHECK(!content::GetContentClient());
-  content_client_.reset(new TestContentClient);
-  content::SetContentClient(content_client_.get());
-
-  content_browser_client_.reset(new content::MockContentBrowserClient());
-  content_client_->set_browser(content_browser_client_.get());
+  shell_main_delegate_.reset(new ShellMainDelegate);
+  shell_main_delegate_->PreSandboxStartup();
 
   BrowserTestBase::SetUp();
 }
@@ -29,11 +28,7 @@ void ContentBrowserTest::SetUp() {
 void ContentBrowserTest::TearDown() {
   BrowserTestBase::TearDown();
 
-  DCHECK_EQ(content_client_.get(), content::GetContentClient());
-  content::SetContentClient(NULL);
-  content_client_.reset();
-
-  content_browser_client_.reset();
+  shell_main_delegate_.reset();
 }
 
 #if defined(OS_POSIX)

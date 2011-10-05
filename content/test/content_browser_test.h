@@ -7,13 +7,9 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/mock_content_browser_client.h"
 #include "content/test/browser_test_base.h"
 
-namespace content {
-class ContentBrowserClient;
-class ContentClient;
-}
+class ShellMainDelegate;
 
 class ContentBrowserTest : public BrowserTestBase {
  protected:
@@ -28,8 +24,7 @@ class ContentBrowserTest : public BrowserTestBase {
   virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
  private:
-  scoped_ptr<content::ContentClient> content_client_;
-  scoped_ptr<content::ContentBrowserClient> content_browser_client_;
+  scoped_ptr<ShellMainDelegate> shell_main_delegate_;
 };
 
 #endif  // CONTENT_TEST_CONTENT_BROWSER_TEST_H_

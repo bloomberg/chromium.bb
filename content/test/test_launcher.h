@@ -29,6 +29,7 @@ class TestLauncherDelegate {
  public:
   virtual void EarlyInitialize() = 0;
   virtual bool Run(int argc, char** argv, int* return_code) = 0;
+  virtual int RunTestSuite(int argc, char** argv) = 0;
   virtual bool AdjustChildProcessCommandLine(CommandLine* command_line) = 0;
 
  protected:

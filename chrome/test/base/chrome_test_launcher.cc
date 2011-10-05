@@ -41,37 +41,8 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   }
 
   virtual bool Run(int argc, char** argv, int* return_code) OVERRIDE {
+#if defined(OS_WIN)
     CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-    // TODO(pkasting): This "single_process vs. single-process" design is
-    // terrible UI.  Instead, there should be some sort of signal flag on the
-    // command line, with all subsequent arguments passed through to the
-    // underlying browser.
-    if (command_line->HasSwitch(test_launcher::kSingleProcessTestsFlag) ||
-        command_line->HasSwitch(
-            test_launcher::kSingleProcessTestsAndChromeFlag) ||
-        command_line->HasSwitch(test_launcher::kGTestListTestsFlag) ||
-        command_line->HasSwitch(test_launcher::kGTestHelpFlag)) {
-#if defined(OS_WIN)
-      if (command_line->HasSwitch(test_launcher::kSingleProcessTestsFlag)) {
-        // This is the browser process, so setup the sandbox broker.
-        sandbox::BrokerServices* broker_services =
-            sandbox::SandboxFactory::GetBrokerServices();
-        if (broker_services) {
-          sandbox::InitBrokerServices(broker_services);
-          // Precreate the desktop and window station used by the renderers.
-          sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
-          sandbox::ResultCode result = policy->CreateAlternateDesktop(true);
-          CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
-          policy->Release();
-        }
-      }
-#endif
-      *return_code = ChromeTestSuite(argc, argv).Run();
-      return true;
-    }
-
-#if defined(OS_WIN)
     if (command_line->HasSwitch(switches::kProcessType)) {
       // This is a child process, call ChromeMain.
       FilePath chrome_path(command_line->GetProgram().DirName());
@@ -91,7 +62,12 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
       return true;
     }
 #endif  // defined(OS_WIN)
+
     return false;
+  }
+
+  virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
+    return ChromeTestSuite(argc, argv).Run();
   }
 
   virtual bool AdjustChildProcessCommandLine(

@@ -5,8 +5,8 @@
 {
   'targets': [
     {
-      'target_name': 'content_shell',
-      'type': 'executable',
+      'target_name': 'content_shell_lib',
+      'type': 'static_library',
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'variables': {
         'chromium_code': 1,
@@ -65,7 +65,8 @@
         'shell/shell_content_utility_client.h',
         'shell/shell_download_manager_delegate.cc',
         'shell/shell_download_manager_delegate.h',
-        'shell/shell_main.cc',
+        'shell/shell_main_delegate.cc',
+        'shell/shell_main_delegate.h',
         'shell/shell_resource_context.cc',
         'shell/shell_resource_context.h',
         'shell/shell_url_request_context_getter.cc',
@@ -86,24 +87,51 @@
           'resource_include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
-          'sources': [
-            'shell/resource.h',
-            'shell/shell.rc',
-            # TODO:  It would be nice to have these pulled in
-            # automatically from direct_dependent_settings in
-            # their various targets (net.gyp:net_resources, etc.),
-            # but that causes errors in other targets when
-            # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
-          ],
           'dependencies': [
             '<(DEPTH)/net/net.gyp:net_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
           ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
+        }],
+      ],
+    },
+    {
+      'target_name': 'content_shell',
+      'type': 'executable',
+      'defines!': ['CONTENT_IMPLEMENTATION'],
+      'variables': {
+        'chromium_code': 1,
+      },
+      'dependencies': [
+        'content_shell_lib',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'shell/shell_main.cc',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+        },
+      },
+      'conditions': [
+        ['OS=="win" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+        ['OS=="win"', {
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {

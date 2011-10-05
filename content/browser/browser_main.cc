@@ -340,6 +340,9 @@ void BrowserMainParts::PreMainMessageLoopRun() {
 }
 
 void BrowserMainParts::MainMessageLoopRun() {
+  if (parameters().ui_task)
+    MessageLoopForUI::current()->PostTask(FROM_HERE, parameters().ui_task);
+
 #if defined(OS_MACOSX)
   MessageLoopForUI::current()->Run();
 #else
