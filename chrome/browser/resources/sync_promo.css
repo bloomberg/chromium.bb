@@ -3,7 +3,18 @@
  * found in the LICENSE file.
  */
 
+html {
+  font-family: segoe ui, arial, helvetica, sans-serif;
+  height: 100%;
+}
+
+body {
+  background-image: -webkit-linear-gradient(
+      rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.04));
+}
+
 #sync-setup-overlay {
+  background-color: transparent;
   width: 100%;
 }
 
@@ -38,12 +49,12 @@
 }
 
 h1 {
-  font-size: 185%;
+  font-size: 180%;
   font-weight: normal;
 }
 
 #promo-message-title {
-  font-size: 125%;
+  font-size: 120%;
 }
 
 #promo-message-body {
