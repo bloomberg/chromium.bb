@@ -56,14 +56,14 @@ const char kExtraInfo[] =
   #elif defined(__i386__)
     "os=linux&arch=x86";
   #else
-    #error "unknown linux architecture"
+    "os=linux&arch=unknown";
   #endif
 #elif defined(OS_CHROMEOS)
   #if defined(__i386__)
     "os=cros&arch=x86";
   #else
     // TODO(cpu): Fix this for ARM.
-    "os=none&arch=none";
+    "os=cros&arch=unknown";
   #endif
 #else
     #error "unknown os or architecture"
