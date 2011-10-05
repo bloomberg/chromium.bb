@@ -130,6 +130,12 @@ class ContentBrowserClient {
   virtual bool IsSuitableHost(RenderProcessHost* process_host,
                               const GURL& site_url) = 0;
 
+  // Returns true if for the navigation from |current_url| to |new_url|,
+  // processes should be swapped (even if we are in a process model that
+  // doesn't usually swap).
+  virtual bool ShouldSwapProcessesForNavigation(const GURL& current_url,
+                                                const GURL& new_url) = 0;
+
   // See CharacterEncoding's comment.
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name) = 0;

@@ -360,15 +360,13 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
       return true;
   }
 
-  if (!cur_entry) {
-    // Always choose a new process when navigating to extension URLs. The
-    // process grouping logic will combine all of a given extension's pages
-    // into the same process.
-    if (new_entry->url().SchemeIs(chrome::kExtensionScheme))
-      return true;
-
-    return false;
+  if (content::GetContentClient()->browser()->ShouldSwapProcessesForNavigation(
+          cur_entry ? cur_entry->url() : GURL(), new_entry->url())) {
+    return true;
   }
+
+  if (!cur_entry)
+    return false;
 
   // We can't switch a RenderView between view source and non-view source mode
   // without screwing up the session history sometimes (when navigating between
@@ -376,14 +374,6 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   // it as a new navigation). So require a view switch.
   if (cur_entry->IsViewSourceMode() != new_entry->IsViewSourceMode())
     return true;
-
-  // Also, we must switch if one is an extension and the other is not the exact
-  // same extension.
-  if (cur_entry->url().SchemeIs(chrome::kExtensionScheme) ||
-      new_entry->url().SchemeIs(chrome::kExtensionScheme)) {
-    if (cur_entry->url().GetOrigin() != new_entry->url().GetOrigin())
-      return true;
-  }
 
   return false;
 }

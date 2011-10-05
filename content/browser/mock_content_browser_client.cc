@@ -74,6 +74,12 @@ bool MockContentBrowserClient::IsSuitableHost(
   return true;
 }
 
+bool MockContentBrowserClient::ShouldSwapProcessesForNavigation(
+    const GURL& current_url,
+    const GURL& new_url) {
+  return false;
+}
+
 std::string MockContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return std::string();

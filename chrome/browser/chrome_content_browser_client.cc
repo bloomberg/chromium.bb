@@ -271,6 +271,30 @@ bool ChromeContentBrowserClient::IsSuitableHost(
   return site_url.SchemeIs(chrome::kExtensionScheme) == is_extension_host;
 }
 
+bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(
+    const GURL& current_url,
+    const GURL& new_url) {
+  if (current_url.is_empty()) {
+    // Always choose a new process when navigating to extension URLs. The
+    // process grouping logic will combine all of a given extension's pages
+    // into the same process.
+    if (new_url.SchemeIs(chrome::kExtensionScheme))
+      return true;
+
+    return false;
+  }
+
+  // Also, we must switch if one is an extension and the other is not the exact
+  // same extension.
+  if (current_url.SchemeIs(chrome::kExtensionScheme) ||
+      new_url.SchemeIs(chrome::kExtensionScheme)) {
+    if (current_url.GetOrigin() != new_url.GetOrigin())
+      return true;
+  }
+
+  return false;
+}
+
 std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return CharacterEncoding::GetCanonicalEncodingNameByAliasName(alias_name);

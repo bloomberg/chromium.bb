@@ -82,6 +82,12 @@ bool ShellContentBrowserClient::IsSuitableHost(
   return true;
 }
 
+bool ShellContentBrowserClient::ShouldSwapProcessesForNavigation(
+    const GURL& current_url,
+    const GURL& new_url) {
+  return false;
+}
+
 std::string ShellContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return std::string();
