@@ -86,6 +86,21 @@ kern_return_t OnDemandServer::Initialize(const char *server_command,
     return kr;
   }
 
+  // The inspector will be invoked with its bootstrap port set to the subset,
+  // but the sender will need access to the original bootstrap port. Although
+  // the original port is the subset's parent, bootstrap_parent can't be used
+  // because it requires extra privileges. Stash the original bootstrap port
+  // in the subset by registering it under a known name. The inspector will
+  // recover this port and set it as its own bootstrap port in Inspector.mm
+  // Inspector::ResetBootstrapPort.
+  kr = bootstrap_register(bootstrap_subset_port,
+                          const_cast<char*>("BootstrapParentPort"),
+                          bootstrap_port);
+  if (kr != KERN_SUCCESS) {
+    PRINT_BOOTSTRAP_RESULT(kr, "bootstrap_register(): ");
+    return kr;
+  }
+
   kr = bootstrap_create_server(bootstrap_subset_port,
                                const_cast<char*>(server_command),
                                geteuid(),       // server uid

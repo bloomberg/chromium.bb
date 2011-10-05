@@ -33,6 +33,8 @@
 #import "common/mac/SimpleStringDictionary.h"
 
 #import <Foundation/Foundation.h>
+#include <mach/mach.h>
+
 #import "client/mac/handler/minidump_generator.h"
 
 #define VERBOSE 0
@@ -163,6 +165,18 @@ class Inspector {
   void            Inspect(const char *receive_port_name);
 
  private:
+  // The Inspector is invoked with its bootstrap port set to the bootstrap
+  // subset established in OnDemandServer.mm OnDemandServer::Initialize.
+  // For proper communication with the system, the sender (which will inherit
+  // the Inspector's bootstrap port) needs the per-session bootstrap namespace
+  // available directly in its bootstrap port. OnDemandServer stashed this
+  // port into the subset namespace under a special name. ResetBootstrapPort
+  // recovers this port and switches this task to use it as its own bootstrap
+  // (ensuring that children like the sender will inherit it), and saves the
+  // subset in bootstrap_subset_port_ for use by ServiceCheckIn and
+  // ServiceCheckOut.
+  void            ResetBootstrapPort();
+
   kern_return_t   ServiceCheckIn(const char *receive_port_name);
   kern_return_t   ServiceCheckOut(const char *receive_port_name);
 
@@ -173,6 +187,10 @@ class Inspector {
   void            LaunchReporter(const char *inConfigFilePath);
 
   void            SetCrashTimeParameters();
+
+  // The bootstrap port in which the inspector is registered and into which it
+  // must check in.
+  mach_port_t     bootstrap_subset_port_;
 
   mach_port_t     service_rcv_port_;
 

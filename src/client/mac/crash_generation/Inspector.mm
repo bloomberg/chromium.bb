@@ -203,6 +203,8 @@ void ConfigFile::WriteFile(const SimpleStringDictionary *configurationParameters
 
 //=============================================================================
 void Inspector::Inspect(const char *receive_port_name) {
+  ResetBootstrapPort();
+
   kern_return_t result = ServiceCheckIn(receive_port_name);
 
   if (result == KERN_SUCCESS) {
@@ -241,10 +243,47 @@ void Inspector::Inspect(const char *receive_port_name) {
 }
 
 //=============================================================================
+void Inspector::ResetBootstrapPort() {
+  // A reasonable default, in case anything fails.
+  bootstrap_subset_port_ = bootstrap_port;
+
+  mach_port_t self_task = mach_task_self();
+
+  kern_return_t kr = task_get_bootstrap_port(self_task,
+                                             &bootstrap_subset_port_);
+  if (kr != KERN_SUCCESS) {
+    NSLog(@"ResetBootstrapPort: task_get_bootstrap_port failed: %s (%d)",
+          mach_error_string(kr), kr);
+    return;
+  }
+
+  mach_port_t bootstrap_parent_port;
+  kr = bootstrap_look_up(bootstrap_subset_port_,
+                         "BootstrapParentPort",
+                         &bootstrap_parent_port);
+  if (kr != KERN_SUCCESS) {
+    NSLog(@"ResetBootstrapPort: bootstrap_look_up failed: %s (%d)",
+          bootstrap_strerror(kr), kr);
+    return;
+  }
+
+  kr = task_set_bootstrap_port(self_task, bootstrap_parent_port);
+  if (kr != KERN_SUCCESS) {
+    NSLog(@"ResetBootstrapPort: task_set_bootstrap_port failed: %s (%d)",
+          mach_error_string(kr), kr);
+    return;
+  }
+
+  // Some things access the bootstrap port through this global variable
+  // instead of calling task_get_bootstrap_port.
+  bootstrap_port = bootstrap_parent_port;
+}
+
+//=============================================================================
 kern_return_t Inspector::ServiceCheckIn(const char *receive_port_name) {
   // We need to get the mach port representing this service, so we can
   // get information from the crashed process.
-  kern_return_t kr = bootstrap_check_in(bootstrap_port,
+  kern_return_t kr = bootstrap_check_in(bootstrap_subset_port_,
                                         (char*)receive_port_name,
                                         &service_rcv_port_);
 
@@ -275,7 +314,7 @@ kern_return_t Inspector::ServiceCheckOut(const char *receive_port_name) {
   }
 
   // Unregister the service associated with the receive port.
-  kr = bootstrap_register(bootstrap_port,
+  kr = bootstrap_register(bootstrap_subset_port_,
                           (char*)receive_port_name,
                           MACH_PORT_NULL);
 
