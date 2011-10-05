@@ -529,9 +529,25 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
 
   for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
        ++iter) {
-    if (StringToLowerASCII(GetInfo(*iter)) !=
-            StringToLowerASCII(profile.GetInfo(*iter)))
+    if (*iter == NAME_FULL) {
+      // Ignore the compound "full name" field type.  We are only interested in
+      // comparing the constituent parts.  For example, if |this| has a middle
+      // name saved, but |profile| lacks one, |profile| could still be a subset
+      // of |this|.
+      continue;
+    } else if (AutofillType(*iter).group() == AutofillType::PHONE_HOME) {
+      // Phone numbers should be canonicalized prior to being compared.
+      if (*iter != PHONE_HOME_WHOLE_NUMBER) {
+        continue;
+      } else if (!autofill_i18n::PhoneNumbersMatch(GetInfo(*iter),
+                                                   profile.GetInfo(*iter),
+                                                   CountryCode())) {
+        return false;
+      }
+    } else if (StringToLowerASCII(GetInfo(*iter)) !=
+                   StringToLowerASCII(profile.GetInfo(*iter))) {
       return false;
+    }
   }
 
   return true;

@@ -148,6 +148,8 @@ class PersonalDataManager
   // PersonalDataManager.
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FirstMiddleLast);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           AggregateExistingAuxiliaryProfile);
   friend class PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
   friend class scoped_ptr<PersonalDataManager>;

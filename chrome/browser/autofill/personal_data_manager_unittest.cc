@@ -1184,6 +1184,64 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
   ASSERT_EQ(0U, credit_cards.size());
 }
 
+TEST_F(PersonalDataManagerTest, AggregateExistingAuxiliaryProfile) {
+  // Simulate having access to an auxiliary profile.
+  // |auxiliary_profile| will be owned by |personal_data_|.
+  AutofillProfile* auxiliary_profile = new AutofillProfile;
+  autofill_test::SetProfileInfo(auxiliary_profile,
+      "Tester", "Frederick", "McAddressBookTesterson",
+      "tester@example.com", "Acme Inc.", "1 Main", "Apt A", "San Francisco",
+      "CA", "94102", "USA", "1.415.888.9999");
+  ScopedVector<AutofillProfile>& auxiliary_profiles =
+      personal_data_->auxiliary_profiles_;
+  auxiliary_profiles.push_back(auxiliary_profile);
+
+  // Simulate a form submission with a subset of the info.
+  // Note that the phone number format is different from the saved format.
+  FormData form;
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "First name:", "first_name", "Tester", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Last name:", "last_name", "McAddressBookTesterson", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Email:", "email", "tester@example.com", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address:", "address1", "1 Main", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "State:", "state", "CA", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Phone:", "phone", "4158889999", "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
+                                             &imported_credit_card));
+  EXPECT_FALSE(imported_credit_card);
+
+  // Note: No refresh.
+
+  // Expect no change.
+  const std::vector<AutofillProfile*>& web_profiles =
+      personal_data_->web_profiles();
+  EXPECT_EQ(0U, web_profiles.size());
+  ASSERT_EQ(1U, auxiliary_profiles.size());
+  EXPECT_EQ(0, auxiliary_profile->Compare(*auxiliary_profiles[0]));
+}
+
 TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   FormData form1;
 
