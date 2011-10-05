@@ -93,7 +93,7 @@ def Escape(name):
 
 class SCM(object):
   """Simplistic base class to implement one function: ProcessOptions."""
-  def __init__(self, options, path):
+  def __init__(self, options, path, file_list):
     items = path.split('@')
     assert len(items) <= 2
     self.checkout_root = items[0]
@@ -103,8 +103,8 @@ class SCM(object):
     # Lazy-load file list from the SCM unless files were specified in options.
     self._files = None
     self._file_tuples = None
-    if self.options.files:
-      self._files = self.options.files
+    if file_list:
+      self._files = file_list
       self._file_tuples = [('M', f) for f in self.files]
     self.options.files = None
     self.codereview_settings = None
@@ -436,7 +436,7 @@ def PrintSuccess(options):
     print(text)
 
 
-def GuessVCS(options, path):
+def GuessVCS(options, path, file_list):
   """Helper to guess the version control system.
 
   NOTE: Very similar to upload.GuessVCS. Doesn't look for hg since we don't
@@ -454,7 +454,7 @@ def GuessVCS(options, path):
   logging.info("GuessVCS(%s)" % path)
   # Subversion has a .svn in all working directories.
   if os.path.isdir(os.path.join(real_path, '.svn')):
-    return SVN(options, path)
+    return SVN(options, path, file_list)
 
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
@@ -462,7 +462,7 @@ def GuessVCS(options, path):
     subprocess2.check_output(
         ['git', 'rev-parse', '--is-inside-work-tree'], cwd=real_path,
         stderr=subprocess2.VOID)
-    return GIT(options, path)
+    return GIT(options, path, file_list)
   except subprocess2.CalledProcessError, e:
     if e.returncode != errno.ENOENT and e.returncode != 128:
       # ENOENT == 2 = they don't have git installed.
@@ -499,10 +499,6 @@ def TryChange(argv,
     change: Change instance corresponding to the CL.
     swallow_exception: Whether we raise or swallow exceptions.
   """
-  file_list = []
-  if change:
-    file_list = [f.LocalPath() for f in change.AffectedFiles()]
-
   # Parse argv
   parser = optparse.OptionParser(usage=USAGE,
                                  version=__version__,
@@ -569,7 +565,7 @@ def TryChange(argv,
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Patch to run")
-  group.add_option("-f", "--file", default=file_list, dest="files",
+  group.add_option("-f", "--file", default=[], dest="files",
                    metavar="FILE", action="append",
                    help="Use many times to list the files to include in the "
                         "try, relative to the repository root")
@@ -679,13 +675,23 @@ def TryChange(argv,
     # Always include os.getcwd() in the checkout settings.
     checkouts = []
     path = os.getcwd()
+
+    file_list = []
+    if options.files:
+      file_list = options.files
+    elif change:
+      file_list = [f.LocalPath() for f in change.AffectedFiles()]
+
     if options.upstream_branch:
       path += '@' + options.upstream_branch
-    checkouts.append(GuessVCS(options, path))
+      # Clear file list so that the correct list will be retrieved from the
+      # upstream branch.
+      file_list = []
+    checkouts.append(GuessVCS(options, path, file_list))
     checkouts[0].AutomagicalSettings()
     for item in options.sub_rep:
       checkout = GuessVCS(options, os.path.join(checkouts[0].checkout_root,
-                                                item))
+                                                item), file_list)
       if checkout.checkout_root in [c.checkout_root for c in checkouts]:
         parser.error('Specified the root %s two times.' %
                      checkout.checkout_root)
