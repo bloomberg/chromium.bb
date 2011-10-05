@@ -149,6 +149,7 @@ cr.define('cr.ui', function() {
 
       var rv = arr.splice.apply(arr, arguments);
 
+      var status = this.sortStatus;
       // if sortStatus.field is null, this restores original order.
       var sortPermutation = this.doSort_(this.sortStatus.field,
                                          this.sortStatus.direction);
@@ -162,6 +163,14 @@ cr.define('cr.ui', function() {
       }
 
       this.dispatchEvent(spliceEvent);
+
+      // If real sorting is needed, we should first call prepareSort (data may
+      // change), and then sort again.
+      // Still need to finish the sorting above (including events), so
+      // list will not go to inconsistent state.
+      if (status.field) {
+        setTimeout(this.sort.bind(this, status.field, status.direction), 0);
+      }
       return rv;
     },
 
@@ -197,10 +206,15 @@ cr.define('cr.ui', function() {
       this.dispatchEvent(e);
 
       if (this.sortStatus.field) {
+        var status = this.sortStatus;
         var sortPermutation = this.doSort_(this.sortStatus.field,
                                            this.sortStatus.direction);
         if (sortPermutation)
           this.dispatchPermutedEvent_(sortPermutation);
+        // We should first call prepareSort (data may change), and then sort.
+        // Still need to finish the sorting above (including events), so
+        // list will not go to inconsistent state.
+        setTimeout(this.sort.bind(this, status.field, status.direction), 0);
       }
     },
 

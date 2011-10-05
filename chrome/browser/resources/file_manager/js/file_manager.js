@@ -1372,7 +1372,7 @@ FileManager.prototype = {
     } else if (field == 'cachedIconType_') {
       cacheFunction = this.cacheEntryIconType.bind(this);
     } else {
-      callback();
+      setTimeout(callback, 0);
       return;
     }
 
