@@ -26,7 +26,12 @@ AudioInputDevice::AudioInputDevice(size_t buffer_size,
       pending_device_ready_(false) {
   filter_ = RenderThread::current()->audio_input_message_filter();
   audio_data_.reserve(channels);
+#if defined(OS_MACOSX)
+  VLOG(1) << "Using AUDIO_PCM_LOW_LATENCY as input mode on Mac OS X.";
+  audio_parameters_.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
+#else
   audio_parameters_.format = AudioParameters::AUDIO_PCM_LINEAR;
+#endif
   audio_parameters_.channels = channels;
   audio_parameters_.sample_rate = static_cast<int>(sample_rate);
   audio_parameters_.bits_per_sample = 16;
