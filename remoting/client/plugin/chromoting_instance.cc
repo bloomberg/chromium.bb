@@ -462,12 +462,12 @@ void ChromotingInstance::PolicyUpdatedThunk(PP_Instance pp_instance,
 }
 
 void ChromotingInstance::SubscribeToNatTraversalPolicy() {
-  pp::Module::Get()->AddPluginInterface(PPP_POLICY_UPDATE_DEV_INTERFACE,
+  pp::Module::Get()->AddPluginInterface(PPP_POLICYUPDATE_DEV_INTERFACE,
                                         &kPolicyUpdatedInterface);
   const PPB_QueryPolicy_Dev* query_policy_interface =
       static_cast<PPB_QueryPolicy_Dev const*>(
           pp::Module::Get()->GetBrowserInterface(
-              PPB_QUERY_POLICY_DEV_INTERFACE));
+              PPB_QUERYPOLICY_DEV_INTERFACE));
   query_policy_interface->SubscribeToPolicyUpdates(pp_instance());
 }
 

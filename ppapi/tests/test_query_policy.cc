@@ -32,8 +32,8 @@ static PPP_PolicyUpdate_Dev policy_updated_interface = {
 
 bool TestQueryPolicy::Init() {
   query_policy_interface_ = static_cast<PPB_QueryPolicy_Dev const*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_QUERY_POLICY_DEV_INTERFACE));
-  pp::Module::Get()->AddPluginInterface(PPP_POLICY_UPDATE_DEV_INTERFACE,
+      pp::Module::Get()->GetBrowserInterface(PPB_QUERYPOLICY_DEV_INTERFACE));
+  pp::Module::Get()->AddPluginInterface(PPP_POLICYUPDATE_DEV_INTERFACE,
                                         &policy_updated_interface);
 
   return query_policy_interface_ && InitTestingInterface();
