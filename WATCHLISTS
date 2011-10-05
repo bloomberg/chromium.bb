@@ -69,6 +69,10 @@
         'content/browser/tab_contents/.*|'\
         'chrome/browser/ui/tab_contents/.*',
     },
+    'site_instance': {
+      'filepath': 'content/browser/site_instance.*|'\
+        'content/browser/browsing_instance.*',
+    },
     'webkit': {
       'filepath': 'webkit/.*',
     },
@@ -297,7 +301,9 @@
     'history': ['brettw-cc@chromium.org'],
     'renderer': ['darin-cc@chromium.org',
                  'brettw-cc@chromium.org'],
-    'tab_contents': ['brettw-cc@chromium.org', 'avi@chromium.org'],
+    'tab_contents': ['brettw-cc@chromium.org', 'avi@chromium.org',
+                     'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
+    'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
     'plugin': ['darin-cc@chromium.org', 'jam@chromium.org',
                'stuartmorgan+watch@chromium.org'],
