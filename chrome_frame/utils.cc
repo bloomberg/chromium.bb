@@ -83,6 +83,11 @@ const wchar_t kChromeFrameAccessibleMode[] = L"ChromeFrameAccessibleMode";
 // DLL pinning, such as the perf tests.
 const wchar_t kChromeFrameUnpinnedMode[] = L"kChromeFrameUnpinnedMode";
 
+// Controls whether we download subresources, etc on the chrome frame page in
+// the background worker thread. Defaults to true.
+const wchar_t kUseBackgroundThreadForSubResources[]
+    = L"BackgroundHTTPWorkerThread";
+
 // {1AF32B6C-A3BA-48B9-B24E-8AA9C41F6ECD}
 static const IID IID_IWebBrowserPriv2IE7 = { 0x1AF32B6C, 0xA3BA, 0x48B9,
     { 0xB2, 0x4E, 0x8A, 0xA9, 0xC4, 0x1F, 0x6E, 0xCD } };

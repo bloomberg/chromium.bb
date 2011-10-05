@@ -43,6 +43,7 @@ extern const wchar_t kRenderInHostUrlList[];
 extern const wchar_t kEnableGCFRendererByDefault[];
 extern const wchar_t kIexploreProfileName[];
 extern const wchar_t kRundllProfileName[];
+extern const wchar_t kUseBackgroundThreadForSubResources[];
 
 // This function is very similar to the AtlRegisterTypeLib function except
 // that it takes a parameter that specifies whether to register the typelib

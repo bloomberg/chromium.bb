@@ -22,6 +22,16 @@ class UrlmonUrlRequestManager
     : public PluginUrlRequestManager,
       public PluginUrlRequestDelegate {
  public:
+  // Sub resources on the pages in chrome frame are fetched on this thread.
+  class ResourceFetcherThread : public base::Thread {
+   public:
+    explicit ResourceFetcherThread(const char* name);
+    virtual ~ResourceFetcherThread();
+
+    virtual void Init();
+    virtual void CleanUp();
+  };
+
   // Contains the privacy information for all requests issued by this instance.
   struct PrivacyInfo {
    public:
@@ -74,7 +84,10 @@ class UrlmonUrlRequestManager
  private:
   friend class MessageLoop;
   friend struct RunnableMethodTraits<UrlmonUrlRequestManager>;
+
+  // This method is needed to support PostTask on this object.
   static bool ImplementsThreadSafeReferenceCounting() { return true; }
+
   void AddRef() {}
   void Release() {}
 
@@ -109,14 +122,39 @@ class UrlmonUrlRequestManager
   void BindTerminated(IMoniker* moniker, IBindCtx* bind_ctx,
                       IStream* post_data, const char* request_headers);
 
+  // Helper function to initiate a download request in the host.
+  void DownloadRequestInHostHelper(UrlmonUrlRequest* request);
+
   // Map for (request_id <-> UrlmonUrlRequest)
   typedef std::map<int, scoped_refptr<UrlmonUrlRequest> > RequestMap;
   RequestMap request_map_;
-  scoped_refptr<UrlmonUrlRequest> LookupRequest(int request_id);
+  RequestMap background_request_map_;
+
+  // The caller is responsible for acquiring any locks needed to access the
+  // request map.
+  scoped_refptr<UrlmonUrlRequest> LookupRequest(int request_id,
+                                                RequestMap* request_map);
+  // The background_request_map_ is referenced from multiple threads. Lock to
+  // synchronize access.
+  base::Lock background_resource_map_lock_;
+
+  // Helper function to stop all requests in the request map.
+  void StopAllRequestsHelper(RequestMap* request_map,
+                             base::Lock* request_map_lock);
+  // Helper function for initiating a new IE request.
+  void StartRequestHelper(int request_id,
+                          const AutomationURLRequest& request_info,
+                          RequestMap* request_map,
+                          base::Lock* request_map_lock);
+
   scoped_refptr<UrlmonUrlRequest> pending_request_;
+  scoped_ptr<ResourceFetcherThread> background_thread_;
 
   bool stopping_;
-  int calling_delegate_;  // re-entrancy protection (debug only check)
+
+  // Controls whether we download subresources on the page in a background
+  // worker thread.
+  bool background_worker_thread_enabled_;
 
   PrivacyInfo privacy_info_;
   // The window to be used to fire notifications on.
