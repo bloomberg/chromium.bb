@@ -1,0 +1,33 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+
+/**
+ * This file defines the <code>PPB_FileChooser_Trusted</code> interface.
+ */
+
+label Chrome {
+  M16 = 0.5
+};
+
+interface PPB_FileChooser_Trusted {
+  /**
+   * This function displays a previously created file chooser resource as a
+   * dialog box, prompting the user to choose a file or files. The callback is
+   * called with PP_OK on successful completion with a file (or files) selected
+   * or PP_ERROR_USERCANCEL if the user selected no file.
+   *
+   * @param[in] chooser The file chooser resource.
+   * @param[in] callback A <code>CompletionCallback</code> to be called after
+   * the user has closed the file chooser dialog.
+   *
+   * @return PP_OK_COMPLETIONPENDING if request to show the dialog was
+   * successful, another error code from pp_errors.h on failure.
+   */
+  int32_t ShowWithoutUserGesture(
+      [in] PP_Resource chooser,
+      [in] PP_CompletionCallback callback);
+};
+
