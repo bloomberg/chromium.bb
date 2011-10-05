@@ -385,6 +385,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
 
     // Stop input method process if necessary.
     MaybeStopInputMethodDaemon(section, config_name, value);
+    // Change the current keyboard layout if necessary.
+    MaybeChangeCurrentKeyboardLayout(section, config_name, value);
     return pending_config_requests_.empty();
   }
 
@@ -672,6 +674,30 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
         // comments at ChangeCurrentInputMethod() for details.
         ChangeCurrentInputMethodFromId(value.string_list_value[0]);
       }
+    }
+  }
+
+  // Change the keyboard layout per input method configuration being
+  // updated, if necessary. See also: MaybeStartInputMethodDaemon().
+  void MaybeChangeCurrentKeyboardLayout(const std::string& section,
+                                        const std::string& config_name,
+                                        const ImeConfigValue& value) {
+    if (section == language_prefs::kGeneralSectionName &&
+        config_name == language_prefs::kPreloadEnginesConfigName) {
+      if (value.string_list_value.size() == 1) {
+        // This is necessary to initialize current_input_method_. This is also
+        // necessary when the current layout (e.g. INTL) out of two (e.g. US and
+        // INTL) is disabled.
+        ChangeCurrentInputMethodFromId(value.string_list_value[0]);
+      }
+      // Update the indicator.
+      // TODO(yusukes): Remove ActiveInputMethodsChanged notification in
+      // FlushImeConfig().
+      const size_t num_active_input_methods = GetNumActiveInputMethods();
+      FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
+                        ActiveInputMethodsChanged(this,
+                                                  current_input_method_,
+                                                  num_active_input_methods));
     }
   }
 
