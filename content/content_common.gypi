@@ -100,9 +100,9 @@
     'common/font_config_ipc_linux.cc',
     'common/font_config_ipc_linux.h',
     'common/font_list.h',
-    'common/font_list_gtk.cc',
     'common/font_list_mac.mm',
     'common/font_list_win.cc',
+    'common/font_list_x11.cc',
     'common/geolocation_messages.h',
     'common/geoposition.cc',
     'common/geoposition.h',
@@ -290,6 +290,11 @@
     ['toolkit_uses_gtk == 1', {
       'dependencies': [
         '../build/linux/system.gyp:gtk',
+      ],
+    }],
+    ['use_x11 == 1', {
+      'dependencies': [
+        '../build/linux/system.gyp:pangocairo',
       ],
     }],
     ['use_x11 == 1 and target_arch != "arm"', {
