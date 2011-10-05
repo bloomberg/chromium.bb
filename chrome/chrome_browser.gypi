@@ -4992,6 +4992,7 @@
             ['include', '^browser/ui/views/browser_bubble_aura.cc'],
             ['include', '^browser/ui/views/constrained_html_delegate_views.cc'],
             ['include', '^browser/ui/views/dropdown_bar_host_aura.cc'],
+            ['include', '^browser/ui/views/find_bar_host_aura.cc'],
             ['include', '^browser/ui/views/frame/browser_frame_aura.cc'],
             ['include', '^browser/ui/views/importer/import_lock_dialog_view.cc'],
             ['include', '^browser/ui/views/select_file_dialog.cc'],
