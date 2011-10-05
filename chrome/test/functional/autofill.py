@@ -14,6 +14,8 @@ import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import test_utils
 
+from webdriver_pages import settings
+
 
 class AutofillTest(pyauto.PyUITest):
   """Tests that autofill works correctly"""
@@ -735,49 +737,38 @@ class AutofillTest(pyauto.PyUITest):
     test_data = simplejson.loads(open(data_file).read())
 
     driver = self.NewWebDriver()
-    self.NavigateToURL('chrome://settings/autofillEditAddress')
+    page = settings.AutofillEditAddressDialog.FromNavigation(driver)
     # Initial check of State and ZIP labels.
-    self.assertEqual('State', driver.find_element_by_id('state-label').text)
-    self.assertEqual('ZIP code',
-                     driver.find_element_by_id('postal-code-label').text)
+    self.assertEqual('State', page.GetStateLabel())
+    self.assertEqual('ZIP code', page.GetPostalCodeLabel())
 
     for country_code in test_data:
-      query = self._SelectOptionXpath(country_code)
-      driver.find_element_by_id('country').find_element_by_xpath(query).click()
-      # Compare postal labels.
-      actual_postal_label = driver.find_element_by_id(
-          'postal-code-label').text
-      expected_postal_label = test_data[country_code]['postalCodeLabel']
+      page.Fill(country_code=country_code)
+
+      # Compare postal code labels.
+      actual_postal_label = page.GetPostalCodeLabel()
       self.assertEqual(
-          expected_postal_label, actual_postal_label,
+          test_data[country_code]['postalCodeLabel'],
+          actual_postal_label,
           msg=('Postal code label "%s" does not match Country "%s"' %
                (actual_postal_label, country_code)))
+
       # Compare state labels.
-      actual_state_label = driver.find_element_by_id('state-label').text
-      expected_state_label = test_data[country_code]['stateLabel']
+      actual_state_label = page.GetStateLabel()
       self.assertEqual(
-          expected_state_label, actual_state_label,
+          test_data[country_code]['stateLabel'],
+          actual_state_label,
           msg=('State label "%s" does not match Country "%s"' %
                (actual_state_label, country_code)))
 
   def testNoDuplicatePhoneNumsInPrefs(self):
     """Test duplicate phone numbers entered in prefs are removed."""
     driver = self.NewWebDriver()
-    self.NavigateToURL('chrome://settings/autofillEditAddress')
-    driver.find_element_by_id('full-name-list').find_element_by_tag_name(
-        'input').send_keys('John Doe')
-    driver.find_element_by_id('addr-line-1').send_keys('123 Cherry St')
-    driver.find_element_by_id('city').send_keys('Mountain View')
-    driver.find_element_by_id('state').send_keys('CA')
-    driver.find_element_by_id('postal-code').send_keys('94043')
-    query = self._SelectOptionXpath('US')
-    driver.find_element_by_id('country').find_element_by_xpath(query).click()
-    driver.find_element_by_id('phone-list').find_elements_by_tag_name(
-        'input')[0].send_keys('650-555-1234\n')  # Press Enter key after phone.
-    phone_field2 = driver.find_element_by_id(
-        'phone-list').find_elements_by_tag_name('input')[1]
-    phone_field2.send_keys('650-555-1234\n')
-    self.assertEqual(phone_field2.get_attribute('value'), '',
+    page = settings.AutofillEditAddressDialog.FromNavigation(driver)
+    non_duplicates = ['111-1111', '222-2222']
+    duplicates = ['111-1111']
+    page.Fill(phones=non_duplicates + duplicates)
+    self.assertEqual(non_duplicates, page.GetPhones(),
         msg='Duplicate phone number in prefs unexpectedly saved.')
 
   def testDisplayLineItemForEntriesWithNoCCNum(self):
