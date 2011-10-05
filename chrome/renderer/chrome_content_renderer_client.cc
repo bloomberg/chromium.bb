@@ -766,7 +766,15 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
       return true;
   }
 
-  return !extensions->InSameExtent(old_url, new_url);
+  // TODO(creis): Temporary workaround for crbug.com/59285: Only return true if
+  // we would enter an extension app's extent from a non-app, or if we leave an
+  // extension with no web extent.  We avoid swapping processes to exit a hosted
+  // app for now, since we do not yet support postMessage calls from outside the
+  // app back into it (e.g., as in Facebook OAuth 2.0).
+  bool old_url_is_hosted_app = extensions->GetByURL(old_url) &&
+       !extensions->GetByURL(old_url)->web_extent().is_empty();
+  return !extensions->InSameExtent(old_url, new_url) &&
+         !old_url_is_hosted_app;
 }
 
 void ChromeContentRendererClient::OnPurgeMemory() {

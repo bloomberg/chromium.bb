@@ -134,9 +134,12 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
                    base_url.Resolve("path1/empty.html"), true);
   WindowOpenHelper(browser(), host,
                    base_url.Resolve("path2/empty.html"), true);
-  // This should open in a new process (i.e., false for the last argument).
+  // TODO(creis): This should open in a new process (i.e., false for the last
+  // argument), but we temporarily avoid swapping processes away from an app
+  // until we're able to support cross-process postMessage calls.
+  // See crbug.com/59285.
   WindowOpenHelper(browser(), host,
-                   base_url.Resolve("path3/empty.html"), false);
+                   base_url.Resolve("path3/empty.html"), true);
 
   // Now let's have these pages navigate, into or out of the extension web
   // extent. They should switch processes.
@@ -144,7 +147,10 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
   NavigateTabHelper(browser()->GetTabContentsAt(2), non_app_url);
   NavigateTabHelper(browser()->GetTabContentsAt(3), app_url);
-  EXPECT_NE(host->process(),
+  // TODO(creis): This should swap out of the app's process (i.e., EXPECT_NE),
+  // but we temporarily avoid swapping away from an app in case the window
+  // tries to send a postMessage to the app.  See crbug.com/59285.
+  EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(2)->render_view_host()->process());
   EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(3)->render_view_host()->process());
