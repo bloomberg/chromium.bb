@@ -1337,7 +1337,7 @@
         "type": "function",
         "description": "Fired when the currently focused window changes. Will be chrome.windows.WINDOW_ID_NONE if all chrome windows have lost focus. Note: On some Linux window managers, WINDOW_ID_NONE will always be sent immediately preceding a switch from one chrome window to another.",
         "parameters": [
-          {"type": "integer", "name": "windowId", "minimum": 0, "description": "ID of the newly focused window."}
+          {"type": "integer", "name": "windowId", "minimum": -1, "description": "ID of the newly focused window."}
         ]
       }
     ]
