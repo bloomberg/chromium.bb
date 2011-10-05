@@ -15,6 +15,7 @@
 #include <cairo.h>
 #endif
 
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "ui/gfx/insets.h"
 
@@ -264,6 +265,17 @@ Rect Rect::Center(const gfx::Size& size) const {
   int new_x = x() + (width() - new_width) / 2;
   int new_y = y() + (height() - new_height) / 2;
   return Rect(new_x, new_y, new_width, new_height);
+}
+
+void Rect::SplitVertically(gfx::Rect* left_half, gfx::Rect* right_half) const {
+  DCHECK(left_half);
+  DCHECK(right_half);
+
+  left_half->SetRect(this->x(), this->y(), this->width() / 2, this->height());
+  right_half->SetRect(left_half->right(),
+                      this->y(),
+                      this->width() - left_half->width(),
+                      this->height());
 }
 
 bool Rect::SharesEdgeWith(const gfx::Rect& rect) const {

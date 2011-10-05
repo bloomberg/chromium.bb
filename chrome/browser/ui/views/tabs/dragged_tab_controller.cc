@@ -976,11 +976,8 @@ int DraggedTabController::GetInsertionIndexForDraggedBounds(
   for (int i = 0; i < attached_tabstrip_->tab_count(); ++i) {
     const gfx::Rect& ideal_bounds = attached_tabstrip_->ideal_bounds(i);
     if (attached_tabstrip_->type() == BaseTabStrip::HORIZONTAL_TAB_STRIP) {
-      gfx::Rect left_half = ideal_bounds;
-      left_half.set_width(left_half.width() / 2);
-      gfx::Rect right_half = ideal_bounds;
-      right_half.set_width(ideal_bounds.width() - left_half.width());
-      right_half.set_x(left_half.right());
+      gfx::Rect left_half, right_half;
+      ideal_bounds.SplitVertically(&left_half, &right_half);
       right_tab_x = right_half.right();
       if (dragged_bounds.x() >= right_half.x() &&
           dragged_bounds.x() < right_half.right()) {

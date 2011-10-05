@@ -44,18 +44,6 @@ gfx::Rect GetEffectiveBounds(const gfx::Rect& bounds) {
   return effective_bounds;
 }
 
-// Splits |rectangle| in two halves, |left_half| and |right_half|.
-// TODO(dpapad): Make this a method of gfx:Rect and use pointers instead of
-// references.
-void SplitRectangleInTwo(
-  const gfx::Rect rectangle, gfx::Rect& left_half, gfx::Rect& right_half) {
-  left_half = rectangle;
-  left_half.set_width(rectangle.width() / 2);
-  right_half = rectangle;
-  right_half.set_width(rectangle.width() - left_half.width());
-  right_half.set_x(left_half.right());
-}
-
 }  // namespace
 
 DraggedTabControllerGtk::DraggedTabControllerGtk(
@@ -549,7 +537,7 @@ int DraggedTabControllerGtk::GetInsertionIndexForDraggedBounds(
     // the halfway boundary necessary to move past the next tab.
     gfx::Rect ideal_bounds = attached_tabstrip_->GetIdealBounds(i);
     gfx::Rect left_half, right_half;
-    SplitRectangleInTwo(ideal_bounds, left_half, right_half);
+    ideal_bounds.SplitVertically(&left_half, &right_half);
     right_tab_x = right_half.x();
 
     if (dragged_bounds_start >= right_half.x() &&
