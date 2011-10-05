@@ -129,10 +129,15 @@ def OverrideConfigForTrybot(config):
   Returns:
     A build configuration dictionary with the overrides applied.
   """
-  copy_config = copy.copy(config)
+  copy_config = copy.deepcopy(config)
   copy_config['uprev'] = True
   if IsInternalBuild(config):
     copy_config['overlays'] = 'both'
+
+  # Most users don't have access to the pdf repository so disable pdf.
+  useflags = copy_config['useflags']
+  if useflags and 'chrome_pdf' in useflags:
+    useflags.remove('chrome_pdf')
 
   return copy_config
 
