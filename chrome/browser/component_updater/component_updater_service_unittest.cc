@@ -56,6 +56,8 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   virtual GURL UpdateUrl() OVERRIDE { return GURL("http://localhost/upd"); }
 
+  virtual const char* ExtraRequestParams() OVERRIDE { return "extra=foo"; }
+
   virtual size_t UrlSizeLimit() OVERRIDE { return 256; }
 
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE {
@@ -238,7 +240,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   RegisterComponent(&com, kTestComponent_abag, Version("1.1"));
 
   const char expected_update_url[] =
-      "http://localhost/upd?x=id%3D"
+      "http://localhost/upd?extra=foo&x=id%3D"
       "abagagagagagagagagagagagagagagag%26v%3D1.1%26uc";
 
   interceptor->SetResponse(expected_update_url,
@@ -324,12 +326,12 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   RegisterComponent(&com2, kTestComponent_abag, Version("2.2"));
   
   const char expected_update_url_1[] =
-      "http://localhost/upd?x=id%3D"
+      "http://localhost/upd?extra=foo&x=id%3D"
       "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
       "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc";
 
   const char expected_update_url_2[] =
-      "http://localhost/upd?x=id%3D"
+      "http://localhost/upd?extra=foo&x=id%3D"
       "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
       "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc";
 
@@ -388,7 +390,7 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   RegisterComponent(&com, kTestComponent_jebg, Version("0.9"));
 
   const char expected_update_url[] =
-      "http://localhost/upd?x=id%3D"
+      "http://localhost/upd?extra=foo&x=id%3D"
       "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc";
 
   interceptor->SetResponse(expected_update_url,

@@ -40,9 +40,25 @@ bool AddQueryString(std::string id, std::string version,
   additional = "x=" + net::EscapeQueryParamValue(additional, true);
   if ((additional.size() + query->size() + 1) > limit)
     return false;
-  query->append(1,  query->empty()? '?' : '&');
+  if (!query->empty())
+    query->append(1, '&');
   query->append(additional);
   return true;
+}
+
+// Create the final omaha compatible query. The |extra| is optional and can
+// be null. It should contain top level (non-escaped) parameters.
+std::string MakeFinalQuery(const std::string& host,
+                           const std::string& query,
+                           const char* extra) {
+  std::string request(host);
+  request.append(1, '?');
+  if (extra) {
+    request.append(extra);
+    request.append(1, '&');
+  }
+  request.append(query);
+  return request;
 }
 
 // Produces an extension-like friendly |id|. This might be removed in the
@@ -530,8 +546,10 @@ void CrxUpdateService::ProcessPendingItems() {
   }
 
   // We got components to check. Start the url request.
-  GURL url(config_->UpdateUrl().spec() + query);
-  url_fetcher_.reset(URLFetcher::Create(0, url, URLFetcher::GET,
+  const std::string full_query = MakeFinalQuery(config_->UpdateUrl().spec(),
+                                                query,
+                                                config_->ExtraRequestParams());
+  url_fetcher_.reset(URLFetcher::Create(0, GURL(full_query), URLFetcher::GET,
       MakeContextDelegate(this, new UpdateContext())));
   StartFetch(url_fetcher_.get(), config_->RequestContext(), false);
 }

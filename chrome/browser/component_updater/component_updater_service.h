@@ -101,6 +101,8 @@ class ComponentUpdateService {
     virtual int MinimumReCheckWait() = 0;
     // The url that is going to be used update checks over Omaha protocol.
     virtual GURL UpdateUrl() = 0;
+    // Parameters added to each url request. It can be null if none are needed.
+    virtual const char* ExtraRequestParams() = 0;
     // How big each update request can be. Don't go above 2000.
     virtual size_t UrlSizeLimit() = 0;
     // The source of contexts for all the url requests.

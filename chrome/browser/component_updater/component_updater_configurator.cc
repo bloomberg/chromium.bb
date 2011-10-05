@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -30,6 +31,43 @@ bool HasDebugValue(const std::vector<std::string>& vec, const char* test) {
   return (std::find(vec.begin(), vec.end(), test) != vec.end());
 }
 
+// The request extra information is the OS and architecture, this helps
+// the server select the right package to be delivered.
+const char kExtraInfo[] =
+#if defined(OS_MACOSX)
+  #if defined(__amd64__)
+    "os=mac&arch=x64";
+  #elif defined(__i386__)
+     "os=mac&arch=x86";
+  #else
+     #error "unknown mac architecture"
+  #endif
+#elif defined(OS_WIN)
+  #if defined(_WIN64)
+    "os=win&arch=x64";
+  #elif defined(_WIN32)
+    "os=win&arch=x86";
+  #else
+    #error "unknown windows architecture"
+  #endif
+#elif defined(OS_LINUX)
+  #if defined(__amd64__)
+    "os=linux&arch=x64";
+  #elif defined(__i386__)
+    "os=linux&arch=x86";
+  #else
+    #error "unknown linux architecture"
+  #endif
+#elif defined(OS_CHROMEOS)
+  #if defined(__i386__)
+    "os=cros&arch=x86";
+  #else
+    #error "unknown chromeOs architecture"
+  #endif
+#else
+    #error "unknown os or architecture"
+#endif
+
 }  // namespace
 
 class ChromeConfigurator : public ComponentUpdateService::Configurator {
@@ -44,6 +82,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   virtual int StepDelay() OVERRIDE;
   virtual int MinimumReCheckWait() OVERRIDE;
   virtual GURL UpdateUrl() OVERRIDE;
+  virtual const char* ExtraRequestParams() OVERRIDE;
   virtual size_t UrlSizeLimit() OVERRIDE;
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
   virtual bool InProcess() OVERRIDE;
@@ -53,6 +92,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   net::URLRequestContextGetter* url_request_getter_;
   bool fast_update_;
   bool out_of_process_;
+  std::string extra_info_;
 };
 
 ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
@@ -84,6 +124,10 @@ int ChromeConfigurator::MinimumReCheckWait() {
 
 GURL ChromeConfigurator::UpdateUrl() {
   return GURL("http://clients2.google.com/service/update2/crx");
+}
+
+const char* ChromeConfigurator::ExtraRequestParams() {
+  return kExtraInfo;
 }
 
 size_t ChromeConfigurator::UrlSizeLimit() {
