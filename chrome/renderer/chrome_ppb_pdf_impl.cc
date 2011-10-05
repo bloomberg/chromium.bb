@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/child_process_sandbox_support_linux.h"
-#include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_thread.h"
+#include "content/renderer/render_view.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
 #include "ppapi/c/pp_resource.h"
@@ -20,6 +20,11 @@
 #include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -29,6 +34,8 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
+
+using WebKit::WebView;
 
 namespace chrome {
 
@@ -318,12 +325,10 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
   if (!instance->IsFullPagePlugin())
     return;
 
-  PepperPluginDelegateImpl* pepper_delegate =
-      static_cast<PepperPluginDelegateImpl*>(instance->delegate());
-
-  RenderThread::current()->Send(
-      new ChromeViewHostMsg_PDFHasUnsupportedFeature(
-          pepper_delegate->GetRoutingId()));
+  WebView* view = instance->container()->element().document().frame()->view();
+  RenderView* render_view = RenderView::FromWebView(view);
+  render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
+      render_view->routing_id()));
 }
 
 void SaveAs(PP_Instance instance_id) {

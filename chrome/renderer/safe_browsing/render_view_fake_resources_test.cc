@@ -6,21 +6,17 @@
 
 #include <string.h>
 
-#include "base/command_line.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/mock_render_process.h"
 #include "content/common/dom_storage_common.h"
-#include "content/common/main_function_params.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_response.h"
-#include "content/common/sandbox_init_wrapper.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/mock_render_process.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/renderer_main_platform_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
@@ -32,6 +28,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(OS_MACOSX)
+#include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
+#endif
 
 namespace safe_browsing {
 
@@ -63,13 +63,6 @@ void RenderViewFakeResourcesTest::SetUp() {
   // to fetch network resources.  These are then served canned content
   // in OnRequestResource().
   content::GetContentClient()->set_renderer(&chrome_content_renderer_client_);
-  sandbox_init_wrapper_.reset(new SandboxInitWrapper);
-  command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  params_.reset(new MainFunctionParams(*command_line_,
-                                       *sandbox_init_wrapper_, NULL));
-  platform_.reset(new RendererMainPlatformDelegate(*params_));
-  platform_->PlatformInitialize();
-
   static const char kThreadName[] = "RenderViewFakeResourcesTest";
   channel_.reset(new IPC::Channel(kThreadName,
                                   IPC::Channel::MODE_SERVER, this));
@@ -79,6 +72,9 @@ void RenderViewFakeResourcesTest::SetUp() {
   mock_process_.reset(new MockRenderProcess);
   render_thread_ = new RenderThread(kThreadName);
   mock_process_->set_main_thread(render_thread_);
+#if defined(OS_MACOSX)
+  InitWebCoreSystemInterface();
+#endif
 
   // Tell the renderer to create a view, then wait until it's ready.
   // We can't call View::Create() directly here or else we won't get
@@ -105,10 +101,6 @@ void RenderViewFakeResourcesTest::TearDown() {
   } while (view_);
 
   mock_process_.reset();
-  platform_->PlatformUninitialize();
-  platform_.reset();
-  command_line_.reset();
-  sandbox_init_wrapper_.reset();
 }
 
 WebKit::WebFrame* RenderViewFakeResourcesTest::GetMainFrame() {

@@ -53,6 +53,8 @@
         'gpu/gpu_idirect3d9_mock_win.cc',
         'gpu/gpu_idirect3d9_mock_win.h',
         'renderer/mock_content_renderer_client.cc',
+        'renderer/mock_render_process.cc',
+        'renderer/mock_render_process.h',
         'test/browser_test.h',
         'test/browser_test_base.cc',
         'test/browser_test_base.h',

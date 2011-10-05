@@ -133,8 +133,6 @@
         'renderer/mock_keyboard_driver_win.h',
         'renderer/mock_printer.cc',
         'renderer/mock_printer.h',
-        'renderer/mock_render_process.cc',
-        'renderer/mock_render_process.h',
         'renderer/mock_render_thread.cc',
         'renderer/mock_render_thread.h',
         'renderer/safe_browsing/mock_feature_extractor_clock.cc',

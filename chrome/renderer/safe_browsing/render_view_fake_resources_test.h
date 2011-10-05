@@ -52,13 +52,10 @@
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class CommandLine;
 class MockRenderProcess;
 class RendererMainPlatformDelegate;
 class RenderThread;
 class RenderView;
-class SandboxInitWrapper;
-struct MainFunctionParams;
 struct ResourceHostMsg_Request;
 
 namespace WebKit {
@@ -134,10 +131,6 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   RenderThread* render_thread_;  // owned by mock_process_
   scoped_ptr<MockRenderProcess> mock_process_;
   RenderView* view_;  // not owned, deletes itself on close
-  scoped_ptr<RendererMainPlatformDelegate> platform_;
-  scoped_ptr<MainFunctionParams> params_;
-  scoped_ptr<CommandLine> command_line_;
-  scoped_ptr<SandboxInitWrapper> sandbox_init_wrapper_;
 
   // Map of url -> response body for network requests from the renderer.
   // Any urls not in this map are served a 404 error.
