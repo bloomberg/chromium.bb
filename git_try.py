@@ -57,7 +57,7 @@ if __name__ == '__main__':
     cl = git_cl.Changelist()
     change = cl.GetChange(cl.GetUpstreamBranch(), None)
     sys.exit(trychange.TryChange(
-        args, change, file_list=[], swallow_exception=False,
+        args, change, swallow_exception=False,
         prog='git try',
         extra_epilog='\n'
                      'git try will diff against your tracked branch and will '

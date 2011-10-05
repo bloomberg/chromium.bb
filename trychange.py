@@ -490,16 +490,19 @@ def GetMungedDiff(path_diff, diff):
 
 def TryChange(argv,
               change,
-              file_list,
               swallow_exception,
               prog=None,
               extra_epilog=None):
   """
   Args:
     argv: Arguments and options.
-    file_list: Default value to pass to --file.
+    change: Change instance corresponding to the CL.
     swallow_exception: Whether we raise or swallow exceptions.
   """
+  file_list = []
+  if change:
+    file_list = [f.LocalPath() for f in change.AffectedFiles()]
+
   # Parse argv
   parser = optparse.OptionParser(usage=USAGE,
                                  version=__version__,
@@ -806,4 +809,4 @@ def TryChange(argv,
 
 if __name__ == "__main__":
   fix_encoding.fix_encoding()
-  sys.exit(TryChange(None, None, [], False))
+  sys.exit(TryChange(None, None, False))
