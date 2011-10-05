@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -104,8 +106,9 @@ void ExtensionInstalledBubbleGtk::Observe(int type,
     const Extension* extension = Details<const Extension>(details).ptr();
     if (extension == extension_) {
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
-      MessageLoopForUI::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &ExtensionInstalledBubbleGtk::ShowInternal));
+      MessageLoopForUI::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ExtensionInstalledBubbleGtk::ShowInternal, this));
     }
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const Extension* extension =
@@ -131,7 +134,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
     if (toolbar->animating() && animation_wait_retries_-- > 0) {
       MessageLoopForUI::current()->PostDelayedTask(
           FROM_HERE,
-          NewRunnableMethod(this, &ExtensionInstalledBubbleGtk::ShowInternal),
+          base::Bind(&ExtensionInstalledBubbleGtk::ShowInternal, this),
           kAnimationWaitMS);
       return;
     }
@@ -312,8 +315,9 @@ void ExtensionInstalledBubbleGtk::BubbleClosing(BubbleGtk* bubble,
   // We need to allow the bubble to close and remove the widgets from
   // the window before we call Release() because close_button_ depends
   // on all references being cleared before it is destroyed.
-  MessageLoopForUI::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ExtensionInstalledBubbleGtk::Close));
+  MessageLoopForUI::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ExtensionInstalledBubbleGtk::Close, this));
 }
 
 void ExtensionInstalledBubbleGtk::Close() {

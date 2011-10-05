@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
@@ -71,7 +73,8 @@ class TopSitesQuerier {
     int start_number_of_callbacks = number_of_callbacks_;
     top_sites->GetMostVisitedURLs(
         &consumer_,
-        NewCallback(this, &TopSitesQuerier::OnTopSitesAvailable));
+        base::Bind(&TopSitesQuerier::OnTopSitesAvailable,
+                   base::Unretained(this)));
     if (wait && start_number_of_callbacks == number_of_callbacks_) {
       waiting_ = true;
       MessageLoop::current()->Run();

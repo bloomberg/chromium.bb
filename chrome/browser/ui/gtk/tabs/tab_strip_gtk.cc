@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -703,7 +704,7 @@ TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
       model_(model),
       window_(window),
       theme_service_(GtkThemeService::GetFrom(model->profile())),
-      resize_layout_factory_(this),
+      weak_factory_(this),
       added_as_message_loop_observer_(false),
       hover_tab_selector_(model) {
   theme_service_->InitThemesFor(this);
@@ -1387,17 +1388,18 @@ void TabStripGtk::HandleGlobalMouseMoveEvent() {
   if (!IsCursorInTabStripZone()) {
     // Mouse moved outside the tab slop zone, start a timer to do a resize
     // layout after a short while...
-    if (resize_layout_factory_.empty()) {
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          resize_layout_factory_.NewRunnableMethod(
-              &TabStripGtk::ResizeLayoutTabs),
+    if (!weak_factory_.HasWeakPtrs()) {
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&TabStripGtk::ResizeLayoutTabsWithoutResult,
+                     weak_factory_.GetWeakPtr()),
           kResizeTabsTimeMs);
     }
   } else {
     // Mouse moved quickly out of the tab strip and then into it again, so
     // cancel the timer so that the strip doesn't move when the mouse moves
     // back over it.
-    resize_layout_factory_.RevokeAll();
+    weak_factory_.InvalidateWeakPtrs();
   }
 }
 
@@ -1555,7 +1557,7 @@ int TabStripGtk::tab_start_x() const {
 }
 
 bool TabStripGtk::ResizeLayoutTabs() {
-  resize_layout_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 
   // It is critically important that this is unhooked here, otherwise we will
   // keep spying on messages forever.
@@ -1581,6 +1583,10 @@ bool TabStripGtk::ResizeLayoutTabs() {
   }
 
   return false;
+}
+
+void TabStripGtk::ResizeLayoutTabsWithoutResult() {
+  ResizeLayoutTabs();
 }
 
 bool TabStripGtk::IsCursorInTabStripZone() const {

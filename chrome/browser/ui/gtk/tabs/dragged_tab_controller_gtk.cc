@@ -6,7 +6,8 @@
 
 #include <algorithm>
 
-#include "base/callback_old.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -772,7 +773,8 @@ bool DraggedTabControllerGtk::CompleteDrag() {
     // We don't need to do anything other than make the tabs visible again,
     // since the dragged view is going away.
     dragged_view_->AnimateToBounds(GetAnimateBounds(),
-        NewCallback(this, &DraggedTabControllerGtk::OnAnimateToBoundsComplete));
+        base::Bind(&DraggedTabControllerGtk::OnAnimateToBoundsComplete,
+                   base::Unretained(this)));
     destroy_immediately = false;
   } else {
     // Compel the model to construct a new window for the detached TabContents.

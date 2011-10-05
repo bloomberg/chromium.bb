@@ -142,7 +142,8 @@ void MostVisitedHandler::StartQueryForMostVisited() {
   if (ts) {
     ts->GetMostVisitedURLs(
         &topsites_consumer_,
-        NewCallback(this, &MostVisitedHandler::OnMostVisitedURLsAvailable));
+        base::Bind(&MostVisitedHandler::OnMostVisitedURLsAvailable,
+                   base::Unretained(this)));
   }
 }
 

@@ -8,6 +8,9 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "chrome/browser/debugger/devtools_window.h"
@@ -43,7 +46,7 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
       host_(host),
       anchor_(anchor),
       being_inspected_(inspect),
-      method_factory_(this) {
+      weak_factory_(this) {
   host_->view()->SetContainer(this);
 
   // If the host had somehow finished loading, then we'd miss the notification
@@ -60,6 +63,20 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
 }
 
 ExtensionPopupGtk::~ExtensionPopupGtk() {
+}
+
+// static
+void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
+    GtkWidget* anchor, bool inspect) {
+  ExtensionProcessManager* manager =
+      browser->profile()->GetExtensionProcessManager();
+  DCHECK(manager);
+  if (!manager)
+    return;
+
+  ExtensionHost* host = manager->CreatePopupHost(url, browser);
+  // This object will delete itself when the bubble is closed.
+  new ExtensionPopupGtk(browser, host, anchor, inspect);
 }
 
 void ExtensionPopupGtk::Observe(int type,
@@ -82,12 +99,40 @@ void ExtensionPopupGtk::Observe(int type,
       // If the devtools window is closing, we post a task to ourselves to
       // close the popup. This gives the devtools window a chance to finish
       // detaching from the inspected RenderViewHost.
-      MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(&ExtensionPopupGtk::DestroyPopup));
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ExtensionPopupGtk::DestroyPopupWithoutResult,
+                     weak_factory_.GetWeakPtr()));
       break;
     default:
       NOTREACHED() << "Received unexpected notification";
   }
+}
+
+void ExtensionPopupGtk::BubbleClosing(BubbleGtk* bubble,
+                                      bool closed_by_escape) {
+  current_extension_popup_ = NULL;
+  delete this;
+}
+
+void ExtensionPopupGtk::OnExtensionPreferredSizeChanged(
+    ExtensionViewGtk* view,
+    const gfx::Size& new_size) {
+  int width = std::max(kMinWidth, std::min(kMaxWidth, new_size.width()));
+  int height = std::max(kMinHeight, std::min(kMaxHeight, new_size.height()));
+
+  view->render_view_host()->view()->SetSize(gfx::Size(width, height));
+  gtk_widget_set_size_request(view->native_view(), width, height);
+}
+
+bool ExtensionPopupGtk::DestroyPopup() {
+  if (!bubble_) {
+    NOTREACHED();
+    return false;
+  }
+
+  bubble_->Close();
+  return true;
 }
 
 void ExtensionPopupGtk::ShowPopup() {
@@ -128,44 +173,8 @@ void ExtensionPopupGtk::ShowPopup() {
                             this);
 }
 
-bool ExtensionPopupGtk::DestroyPopup() {
-  if (!bubble_) {
-    NOTREACHED();
-    return false;
-  }
-
-  bubble_->Close();
-  return true;
-}
-
-void ExtensionPopupGtk::BubbleClosing(BubbleGtk* bubble,
-                                      bool closed_by_escape) {
-  current_extension_popup_ = NULL;
-  delete this;
-}
-
-void ExtensionPopupGtk::OnExtensionPreferredSizeChanged(
-    ExtensionViewGtk* view,
-    const gfx::Size& new_size) {
-  int width = std::max(kMinWidth, std::min(kMaxWidth, new_size.width()));
-  int height = std::max(kMinHeight, std::min(kMaxHeight, new_size.height()));
-
-  view->render_view_host()->view()->SetSize(gfx::Size(width, height));
-  gtk_widget_set_size_request(view->native_view(), width, height);
-}
-
-// static
-void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
-    GtkWidget* anchor, bool inspect) {
-  ExtensionProcessManager* manager =
-      browser->profile()->GetExtensionProcessManager();
-  DCHECK(manager);
-  if (!manager)
-    return;
-
-  ExtensionHost* host = manager->CreatePopupHost(url, browser);
-  // This object will delete itself when the bubble is closed.
-  new ExtensionPopupGtk(browser, host, anchor, inspect);
+void ExtensionPopupGtk::DestroyPopupWithoutResult() {
+  DestroyPopup();
 }
 
 gfx::Rect ExtensionPopupGtk::GetViewBounds() {

@@ -6,6 +6,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -189,8 +190,9 @@ gboolean TabGtk::OnDragButtonReleased(GtkWidget* widget,
   // get a follow up event to tell us the drag has finished (either a
   // drag-failed or a drag-end).  So we post a task to manually end the drag.
   // If GTK+ does send the drag-failed or drag-end event, we cancel the task.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      drag_end_factory_.NewRunnableMethod(&TabGtk::EndDrag, false));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&TabGtk::EndDrag, drag_end_factory_.GetWeakPtr(), false));
   return TRUE;
 }
 
@@ -330,13 +332,14 @@ void TabGtk::StartDragging(gfx::Point drag_offset) {
 void TabGtk::EndDrag(bool canceled) {
   // Make sure we only run EndDrag once by canceling any tasks that want
   // to call EndDrag.
-  drag_end_factory_.RevokeAll();
+  drag_end_factory_.InvalidateWeakPtrs();
 
   // We must let gtk clean up after we handle the drag operation, otherwise
   // there will be outstanding references to the drag widget when we try to
   // destroy it.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      destroy_factory_.NewRunnableMethod(&TabGtk::DestroyDragWidget));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&TabGtk::DestroyDragWidget, destroy_factory_.GetWeakPtr()));
 
   if (last_mouse_down_) {
     gdk_event_free(last_mouse_down_);

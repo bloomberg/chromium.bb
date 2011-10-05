@@ -7,6 +7,8 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -210,8 +212,9 @@ void SelectFileDialogImplKDE::CallKDialogOutput(
   std::set<GtkWindow*>::iterator iter = parents_.find(parent);
   if (iter != parents_.end())
     parents_.erase(iter);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, callback, output, exit_code, params));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, this, output, exit_code, params));
 }
 
 void SelectFileDialogImplKDE::GetKDialogCommandLine(const std::string& type,

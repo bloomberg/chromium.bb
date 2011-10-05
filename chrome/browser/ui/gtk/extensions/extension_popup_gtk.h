@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
@@ -71,6 +72,11 @@ class ExtensionPopupGtk : public NotificationObserver,
   // Shows the popup widget. Called after loading completes.
   void ShowPopup();
 
+  // See DestroyPopup. Does not return success or failure. Necessitated by
+  // base::Bind and friends, which cannot handle a WeakPtr for a function that
+  // has a return value.
+  void DestroyPopupWithoutResult();
+
   Browser* browser_;
 
   BubbleGtk* bubble_;
@@ -88,7 +94,7 @@ class ExtensionPopupGtk : public NotificationObserver,
   // Whether a devtools window is attached to this bubble.
   bool being_inspected_;
 
-  ScopedRunnableMethodFactory<ExtensionPopupGtk> method_factory_;
+  base::WeakPtrFactory<ExtensionPopupGtk> weak_factory_;
 
   // Used for testing. ---------------------------------------------------------
   gfx::Rect GetViewBounds();

@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -97,7 +98,7 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   // Stores if |ShowConstrainedWindow()| has been called.
   bool visible_;
 
-  ScopedRunnableMethodFactory<ConstrainedWindowGtk> factory_;
+  base::WeakPtrFactory<ConstrainedWindowGtk> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowGtk);
 };

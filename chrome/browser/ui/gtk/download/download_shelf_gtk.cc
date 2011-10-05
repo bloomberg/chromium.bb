@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -66,7 +67,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
       theme_service_(GtkThemeService::GetFrom(browser->profile())),
       close_on_mouse_out_(false),
       mouse_in_shelf_(false),
-      auto_close_factory_(this) {
+      weak_factory_(this) {
   // Logically, the shelf is a vbox that contains two children: a one pixel
   // tall event box, which serves as the top border, and an hbox, which holds
   // the download items and other shelf widgets (close button, show-all-
@@ -303,7 +304,7 @@ void DownloadShelfGtk::AutoCloseIfPossible() {
 
 void DownloadShelfGtk::CancelAutoClose() {
   SetCloseOnMouseOut(false);
-  auto_close_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void DownloadShelfGtk::ItemOpened() {
@@ -369,10 +370,10 @@ void DownloadShelfGtk::MouseLeftShelf() {
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      auto_close_factory_.NewRunnableMethod(&DownloadShelfGtk::Close),
+      base::Bind(&DownloadShelfGtk::Close, weak_factory_.GetWeakPtr()),
       kAutoCloseDelayMs);
 }
 
 void DownloadShelfGtk::MouseEnteredShelf() {
-  auto_close_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }

@@ -2126,7 +2126,8 @@ void NTPInfoObserver::Observe(int type,
     if (request_ == *request_details.ptr()) {
       top_sites_->GetMostVisitedURLs(
           consumer_,
-          NewCallback(this, &NTPInfoObserver::OnTopSitesReceived));
+          base::Bind(&NTPInfoObserver::OnTopSitesReceived,
+                     base::Unretained(this)));
     }
   }
 }

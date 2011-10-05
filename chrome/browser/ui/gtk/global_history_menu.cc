@@ -6,6 +6,8 @@
 
 #include <gtk/gtk.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -130,7 +132,8 @@ void GlobalHistoryMenu::GetTopSitesData() {
 
   top_sites_->GetMostVisitedURLs(
       &top_sites_consumer_,
-      NewCallback(this, &GlobalHistoryMenu::OnTopSitesReceived));
+      base::Bind(&GlobalHistoryMenu::OnTopSitesReceived,
+                 base::Unretained(this)));
 }
 
 void GlobalHistoryMenu::OnTopSitesReceived(

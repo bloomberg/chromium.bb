@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
@@ -143,7 +144,7 @@ class DownloadShelfGtk : public DownloadShelf,
   // we received.
   bool mouse_in_shelf_;
 
-  ScopedRunnableMethodFactory<DownloadShelfGtk> auto_close_factory_;
+  base::WeakPtrFactory<DownloadShelfGtk> weak_factory_;
 
   friend class DownloadItemGtk;
 };

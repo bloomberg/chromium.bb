@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
@@ -65,7 +66,7 @@ class TopSites
                         const ThumbnailScore& score);
 
   // Callback for GetMostVisitedURLs.
-  typedef Callback1<const MostVisitedURLList&>::Type GetTopSitesCallback;
+  typedef base::Callback<void(const MostVisitedURLList&)> GetTopSitesCallback;
   typedef std::set<scoped_refptr<CancelableRequest<GetTopSitesCallback> > >
       PendingCallbackSet;
 
@@ -73,12 +74,12 @@ class TopSites
   // This may be invoked on any thread.
   // NOTE: the callback is called immediately if we have the data cached.
   void GetMostVisitedURLs(CancelableRequestConsumer* consumer,
-                          GetTopSitesCallback* callback);
+                          const GetTopSitesCallback& callback);
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   // This may be invoked on any thread.
   // As this method may be invoked on any thread the ref count needs to be
-  // upped before this method returns, so this takes a scoped_refptr*.
+  // incremented before this method returns, so this takes a scoped_refptr*.
   bool GetPageThumbnail(const GURL& url,
                         scoped_refptr<RefCountedBytes>* bytes);
 

@@ -226,7 +226,7 @@ bool TopSites::SetPageThumbnail(const GURL& url,
 }
 
 void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
-                                  GetTopSitesCallback* callback) {
+                                  const GetTopSitesCallback& callback) {
   // WARNING: this may be invoked on any thread.
   scoped_refptr<CancelableRequest<GetTopSitesCallback> > request(
       new CancelableRequest<GetTopSitesCallback>(callback));
@@ -245,7 +245,7 @@ void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
 
     filtered_urls = thread_safe_cache_->top_sites();
   }
-  request->ForwardResult(GetTopSitesCallback::TupleType(filtered_urls));
+  request->ForwardResult(filtered_urls);
 }
 
 bool TopSites::GetPageThumbnail(const GURL& url,
@@ -788,7 +788,7 @@ void TopSites::ProcessPendingCallbacks(
        i != pending_callbacks.end(); ++i) {
     scoped_refptr<CancelableRequest<GetTopSitesCallback> > request = *i;
     if (!request->canceled())
-      request->ForwardResult(GetTopSitesCallback::TupleType(urls));
+      request->ForwardResult(urls);
   }
 }
 

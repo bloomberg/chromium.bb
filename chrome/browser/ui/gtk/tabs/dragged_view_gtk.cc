@@ -198,8 +198,8 @@ int DraggedViewGtk::GetWidthInTabStripUpToMousePointer() {
 }
 
 void DraggedViewGtk::AnimateToBounds(const gfx::Rect& bounds,
-                                    AnimateToBoundsCallback* callback) {
-  animation_callback_.reset(callback);
+                                     const base::Closure& callback) {
+  animation_callback_ = callback;
 
   gint x, y, width, height;
   gdk_window_get_origin(container_->window, &x, &y);
@@ -229,7 +229,7 @@ void DraggedViewGtk::AnimationProgressed(const ui::Animation* animation) {
 }
 
 void DraggedViewGtk::AnimationEnded(const ui::Animation* animation) {
-  animation_callback_->Run();
+  animation_callback_.Run();
 }
 
 void DraggedViewGtk::AnimationCanceled(const ui::Animation* animation) {

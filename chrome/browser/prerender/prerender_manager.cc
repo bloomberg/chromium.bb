@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time.h"
@@ -178,9 +180,8 @@ class PrerenderManager::MostVisitedSites : public NotificationObserver {
     if (top_sites) {
       top_sites->GetMostVisitedURLs(
           &topsites_consumer_,
-          NewCallback(this,
-                      &prerender::PrerenderManager::MostVisitedSites::
-                      OnMostVisitedURLsAvailable));
+          base::Bind(&prerender::PrerenderManager::MostVisitedSites::
+              OnMostVisitedURLsAvailable, base::Unretained(this)));
     }
   }
 

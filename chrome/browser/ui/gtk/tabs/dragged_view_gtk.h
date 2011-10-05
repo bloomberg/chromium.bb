@@ -62,9 +62,7 @@ class DraggedViewGtk : public ui::AnimationDelegate {
 
   // Animates the dragged tab to the specified bounds, then calls back to
   // |callback|.
-  typedef Callback0::Type AnimateToBoundsCallback;
-  void AnimateToBounds(const gfx::Rect& bounds,
-                       AnimateToBoundsCallback* callback);
+  void AnimateToBounds(const gfx::Rect& bounds, const base::Closure& callback);
 
   // Returns the size of the dragged tab. Used when attaching to a tabstrip
   // to determine where to place the tab in the attached tabstrip.
@@ -182,7 +180,7 @@ class DraggedViewGtk : public ui::AnimationDelegate {
   ui::SlideAnimation close_animation_;
 
   // A callback notified when the animation is complete.
-  scoped_ptr<Callback0::Type> animation_callback_;
+  base::Closure animation_callback_;
 
   // The start and end bounds of the animation sequence.
   gfx::Rect animation_start_bounds_;

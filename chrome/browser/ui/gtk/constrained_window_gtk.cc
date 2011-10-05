@@ -6,6 +6,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include "base/bind.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -39,7 +40,7 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
     : wrapper_(wrapper),
       delegate_(delegate),
       visible_(false),
-      factory_(this) {
+      weak_factory_(this) {
   DCHECK(wrapper);
   DCHECK(delegate);
   GtkWidget* dialog = delegate->GetWidgetRoot();
@@ -144,9 +145,10 @@ gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
   if (key->keyval == GDK_Escape) {
     // Let the stack unwind so the event handler can release its ref
     // on widget().
-    MessageLoop::current()->PostTask(FROM_HERE,
-        factory_.NewRunnableMethod(
-            &ConstrainedWindowGtk::CloseConstrainedWindow));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ConstrainedWindowGtk::CloseConstrainedWindow,
+                   weak_factory_.GetWeakPtr()));
     return TRUE;
   }
 

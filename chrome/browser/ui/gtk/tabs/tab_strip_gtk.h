@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -327,6 +328,11 @@ class TabStripGtk : public TabStripModelObserver,
   // value returned indicates whether a resize actually took place.
   bool ResizeLayoutTabs();
 
+  // See ResizeLayoutTabs. Does not return success or failure. Necessitated by
+  // base::Bind and friends, which cannot handle a WeakPtr for a closure that
+  // has a return value.
+  void ResizeLayoutTabsWithoutResult();
+
   // Returns whether or not the cursor is currently in the "tab strip zone"
   // which is defined as the region above the TabStrip and a bit below it.
   bool IsCursorInTabStripZone() const;
@@ -473,7 +479,7 @@ class TabStripGtk : public TabStripModelObserver,
 
   // A factory that is used to construct a delayed callback to the
   // ResizeLayoutTabsNow method.
-  ScopedRunnableMethodFactory<TabStripGtk> resize_layout_factory_;
+  base::WeakPtrFactory<TabStripGtk> weak_factory_;
 
   // True if the tabstrip has already been added as a MessageLoop observer.
   bool added_as_message_loop_observer_;
