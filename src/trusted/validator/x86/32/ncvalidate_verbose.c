@@ -35,6 +35,7 @@ static NaClValidationStatus NCApplyValidatorVerbosely_x86_32(
   struct NCValidatorState *vstate =
       NCValidateInitDetailed(guest_addr, guest_addr + size, bundle_size);
   if (vstate == NULL) return NaClValidationFailedOutOfMemory;
+  NCValidateSetNumDiagnostics(vstate, -1);  /* Reports all errors. */
   if (!local_cpu) {
     CPUFeatures features;
     NaClSetAllCPUFeatures(&features);

@@ -35,6 +35,7 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
       NaClValidatorStateCreate(guest_addr, size, bundle_size, RegR15);
   if (vstate == NULL) return NaClValidationFailedOutOfMemory;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
+  NaClValidatorStateSetMaxReportedErrors(vstate, -1);  /* Report all errors. */
   if (!local_cpu) {
     NaClSetAllCPUFeatures(&features);
     NaClValidatorStateSetCPUFeatures(vstate, &features);

@@ -77,12 +77,18 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             'nccopy_x86_32',
             'ncdis_seg_sfi_x86_32',
             'ncval_base_x86_32',
+            # When turning on the DEBUGGING flag in the x86-32 validator
+            # or decoder, add the following:
+            #'nc_opcode_modeling_verbose_x86_32',
             ],
         }),
     'x86-64': _AddDefaultLibraryDependencies({
         'nc_decoder_x86_64': [
             'ncval_base_x86_64',
             'nc_opcode_modeling_x86_64',
+            # When turning on the DEBUGGING flag in the x86-64 validator
+            # or decoder, add the following:
+            #'nc_opcode_modeling_verbose_x86_64',
             ],
         'ncdis_util_x86_64': [
             'ncval_reg_sfi_verbose_x86_64',
