@@ -418,7 +418,7 @@ def main(args):
   if home_dot_gyp != None:
     default_include = os.path.join(home_dot_gyp, 'include.gypi')
     if os.path.exists(default_include):
-      print >>sys.stderr, 'Using overrides found in ' + default_include
+      print 'Using overrides found in ' + default_include
       includes.append(default_include)
 
   # Command-line --include files come after the default include.

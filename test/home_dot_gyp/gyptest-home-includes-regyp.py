@@ -18,9 +18,7 @@ test = TestGyp.TestGyp(formats=['make'])
 
 os.environ['HOME'] = os.path.abspath('home')
 
-dotgyp = test.workpath(os.path.join('home', '.gyp', 'include.gypi'))
-test.run_gyp('all.gyp', chdir='src',
-             stderr='Using overrides found in %s\n' % dotgyp)
+test.run_gyp('all.gyp', chdir='src')
 
 # After relocating, we should still be able to build (build file shouldn't
 # contain relative reference to ~/.gyp/includes.gypi)
@@ -37,8 +35,7 @@ test.sleep()
 
 test.write('home/.gyp/include.gypi', test.read('home2/.gyp/include.gypi'))
 
-test.build('all.gyp', test.ALL, chdir='relocate/src',
-           stderr='Using overrides found in %s\n' % dotgyp)
+test.build('all.gyp', test.ALL, chdir='relocate/src')
 
 test.run_built_executable('printfoo',
                           chdir='relocate/src',
