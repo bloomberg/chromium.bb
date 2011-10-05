@@ -499,7 +499,7 @@ void BrowserWindowCocoa::Paste() {
 }
 
 void BrowserWindowCocoa::ToggleTabStripMode() {
-  [controller_ toggleTabStripDisplayMode];
+  NOTIMPLEMENTED();
 }
 
 void BrowserWindowCocoa::OpenTabpose() {

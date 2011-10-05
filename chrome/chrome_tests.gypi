@@ -1694,7 +1694,6 @@
         'browser/ui/cocoa/tab_view_picker_table_unittest.mm',
         'browser/ui/cocoa/table_row_nsimage_cache_unittest.mm',
         'browser/ui/cocoa/tabpose_window_unittest.mm',
-        'browser/ui/cocoa/tabs/side_tab_strip_view_unittest.mm',
         'browser/ui/cocoa/tabs/tab_controller_unittest.mm',
         'browser/ui/cocoa/tabs/tab_strip_controller_unittest.mm',
         'browser/ui/cocoa/tabs/tab_strip_view_unittest.mm',

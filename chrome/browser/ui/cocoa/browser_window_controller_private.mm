@@ -25,7 +25,6 @@
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/side_tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -79,8 +78,6 @@ const CGFloat kLocBarBottomInset = 1;
 // tabs are enabled.
 - (void)createTabStripController {
   Class factory = [TabStripController class];
-  if ([self useVerticalTabs])
-    factory = [SideTabStripController class];
 
   DCHECK([previewableContentsController_ activeContainer]);
   DCHECK([[previewableContentsController_ activeContainer] window]);
@@ -226,7 +223,7 @@ willPositionSheet:(NSWindow*)sheet
   [self layoutPresentationModeToggleAtOverlayMaxX:NSMaxX([window frame])
                                       overlayMaxY:overlayMaxY];
 
-  if ([self hasTabStrip] && ![self useVerticalTabs]) {
+  if ([self hasTabStrip]) {
     // If we need to lay out the top tab strip, replace |maxY| and |startMaxY|
     // with higher values, and then lay out the tab strip.
     NSRect windowFrame = [contentView convertRect:[window frame] fromView:nil];
@@ -239,16 +236,6 @@ willPositionSheet:(NSWindow*)sheet
   // Sanity-check |maxY|.
   DCHECK_GE(maxY, minY);
   DCHECK_LE(maxY, NSMaxY(contentBounds) + yOffset);
-
-  // The base class already positions the side tab strip on the left side
-  // of the window's content area and sizes it to take the entire vertical
-  // height. All that's needed here is to push everything over to the right,
-  // if necessary.
-  if ([self useVerticalTabs]) {
-    const CGFloat sideTabWidth = [[self tabStripView] bounds].size.width;
-    minX += sideTabWidth;
-    width -= sideTabWidth;
-  }
 
   // Place the toolbar at the top of the reserved area.
   maxY = [self layoutToolbarAtMinX:minX maxY:maxY width:width];
@@ -612,7 +599,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // Retain the tab strip view while we remove it from its superview.
   scoped_nsobject<NSView> tabStripView;
-  if ([self hasTabStrip] && ![self useVerticalTabs]) {
+  if ([self hasTabStrip]) {
     tabStripView.reset([[self tabStripView] retain]);
     [tabStripView removeFromSuperview];
   }
@@ -646,7 +633,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // Add the tab strip after setting the content view and moving the incognito
   // badge (if any), so that the tab strip will be on top (in the z-order).
-  if ([self hasTabStrip] && ![self useVerticalTabs])
+  if ([self hasTabStrip])
     [[[destWindow contentView] superview] addSubview:tabStripView];
 
   [sourceWindow setWindowController:nil];

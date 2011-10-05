@@ -64,10 +64,6 @@ class ToolbarModel;
            URLDropTargetController,
            GTMWindowSheetControllerDelegate,
            TabContentsControllerDelegate> {
- @protected
-  // YES if tabs are to be laid out vertically instead of horizontally.
-  BOOL verticalLayout_;
-
  @private
   scoped_nsobject<TabStripView> tabStripView_;
   NSView* switchView_;  // weak

@@ -1846,17 +1846,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   return NSMakeSize(x, y);
 }
 
-// Override to swap in the correct tab strip controller based on the new
-// tab strip mode.
-- (void)toggleTabStripDisplayMode {
-  [super toggleTabStripDisplayMode];
-  [self createTabStripController];
-}
-
-- (BOOL)useVerticalTabs {
-  return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
-}
-
 - (void)showInstant:(TabContents*)previewContents {
   [previewableContentsController_ showPreview:previewContents];
   [self updateBookmarkBarVisibilityWithAnimation:NO];

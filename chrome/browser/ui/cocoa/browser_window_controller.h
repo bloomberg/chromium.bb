@@ -297,11 +297,6 @@ class TabContents;
 // Return the point to which a bubble window's arrow should point.
 - (NSPoint)bookmarkBubblePoint;
 
-// Call when the user changes the tab strip display mode, enabling or
-// disabling vertical tabs for this browser. Re-flows the contents of the
-// browser.
-- (void)toggleTabStripDisplayMode;
-
 // Shows or hides the Instant preview contents.
 - (void)showInstant:(TabContents*)previewContents;
 - (void)hideInstant;
