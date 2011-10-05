@@ -374,6 +374,7 @@ class LoginUtilsImpl : public LoginUtils,
     net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
   }
 
+  // LoginUtils implementation:
   virtual void PrepareProfile(
       const std::string& username,
       const std::string& password,
@@ -382,62 +383,24 @@ class LoginUtilsImpl : public LoginUtils,
       bool using_oauth,
       bool has_cookies,
       LoginUtils::Delegate* delegate) OVERRIDE;
-
   virtual void DelegateDeleted(Delegate* delegate) OVERRIDE;
-
-  // Invoked after the tmpfs is successfully mounted.
-  // Launches a browser in the incognito mode.
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE;
-
-  // Invoked when the user is logging in for the first time, or is logging in as
-  // a guest user.
   virtual void SetFirstLoginPrefs(PrefService* prefs) OVERRIDE;
-
-  // Creates and returns the authenticator to use. The caller owns the returned
-  // Authenticator and must delete it when done.
-  virtual Authenticator* CreateAuthenticator(
+  virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
-
-  // Warms the url used by authentication.
   virtual void PrewarmAuthentication() OVERRIDE;
-
-  // Given the authenticated credentials from the cookie jar, try to exchange
-  // fetch OAuth request, v1 and v2 tokens.
-  void FetchOAuth1AccessToken(Profile* auth_profile);
-
-  // Given the credentials try to exchange them for
-  // full-fledged Google authentication cookies.
   virtual void FetchCookies(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
-
-  // Starts process of fetching OAuth2 tokens (based on OAuth1 tokens found
-  // in |user_profile|) and kicks off internal services that depend on them.
   virtual void StartTokenServices(Profile* user_profile) OVERRIDE;
-
-  // Supply credentials for sync and others to use.
   virtual void StartSync(
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
-
-  // Sets the current background view.
   virtual void SetBackgroundView(
       chromeos::BackgroundView* background_view) OVERRIDE;
-
-  // Gets the current background view.
   virtual chromeos::BackgroundView* GetBackgroundView() OVERRIDE;
-
-  // Transfers cookies from the |default_profile| into the |new_profile|.
-  // If authentication was performed by an extension, then
-  // the set of cookies that was acquired through such that process will be
-  // automatically transfered into the profile.
   virtual void TransferDefaultCookies(Profile* default_profile,
                                       Profile* new_profile) OVERRIDE;
-
-  // Transfers HTTP authentication cache from the |default_profile|
-  // into the |new_profile|. If user was required to authenticate with a proxy
-  // during the login, this authentication information will be transferred
-  // into the new session.
   virtual void TransferDefaultAuthCache(Profile* default_profile,
                                         Profile* new_profile) OVERRIDE;
 
@@ -455,6 +418,10 @@ class LoginUtilsImpl : public LoginUtils,
 
   // net::NetworkChangeNotifier::OnlineStateObserver overrides.
   virtual void OnOnlineStateChanged(bool online) OVERRIDE;
+
+  // Given the authenticated credentials from the cookie jar, try to exchange
+  // fetch OAuth request, v1 and v2 tokens.
+  void FetchOAuth1AccessToken(Profile* auth_profile);
 
  protected:
   virtual std::string GetOffTheRecordCommandLine(
@@ -936,7 +903,7 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
   prefs->ScheduleSavePersistentPrefs();
 }
 
-Authenticator* LoginUtilsImpl::CreateAuthenticator(
+scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   // Screen locker needs new Authenticator instance each time.
   if (ScreenLocker::default_screen_locker())
@@ -954,7 +921,7 @@ Authenticator* LoginUtilsImpl::CreateAuthenticator(
     else
       authenticator_ = new GoogleAuthenticator(consumer);
   }
-  return authenticator_.get();
+  return authenticator_;
 }
 
 // We use a special class for this so that it can be safely leaked if we

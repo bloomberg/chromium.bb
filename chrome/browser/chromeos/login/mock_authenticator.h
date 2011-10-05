@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -103,7 +104,8 @@ class MockLoginUtils : public LoginUtils {
 
   virtual void SetFirstLoginPrefs(PrefService* prefs) {}
 
-  virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer);
+  virtual scoped_refptr<Authenticator> CreateAuthenticator(
+      LoginStatusConsumer* consumer);
 
   virtual void PrewarmAuthentication() {}
 

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
 class CommandLine;
@@ -73,9 +74,17 @@ class LoginUtils {
   // a guest user.
   virtual void SetFirstLoginPrefs(PrefService* prefs) = 0;
 
-  // Creates and returns the authenticator to use. The caller owns the returned
-  // Authenticator and must delete it when done.
-  virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) = 0;
+  // Creates and returns the authenticator to use.
+  // Before WebUI login (Up to R14) the caller owned the returned
+  // Authenticator instance and had to delete it when done.
+  // New instance was created on each new login attempt.
+  // Starting with WebUI login (R15) single Authenticator instance is used for
+  // entire login process, even for multiple retries. Authenticator instance
+  // holds reference to login profile and is later used during fetching of
+  // OAuth tokens.
+  // TODO(nkostylev): Cleanup after WebUI login migration is complete.
+  virtual scoped_refptr<Authenticator> CreateAuthenticator(
+      LoginStatusConsumer* consumer) = 0;
 
   // Prewarms the authentication network connection.
   virtual void PrewarmAuthentication() = 0;
@@ -86,8 +95,9 @@ class LoginUtils {
       Profile* profile,
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
-  // Starts OAuth2 token retrieval and kicks off services that depend on it.
-  virtual void StartTokenServices(Profile* profile) = 0;
+  // Starts process of fetching OAuth2 tokens (based on OAuth1 tokens found
+  // in |user_profile|) and kicks off internal services that depend on them.
+  virtual void StartTokenServices(Profile* user_profile) = 0;
 
   // Supply credentials for sync and others to use.
   virtual void StartSync(

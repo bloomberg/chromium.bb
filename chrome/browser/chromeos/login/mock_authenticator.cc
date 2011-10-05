@@ -103,7 +103,7 @@ void MockLoginUtils::PrepareProfile(
 void MockLoginUtils::DelegateDeleted(Delegate* delegate) {
 }
 
-Authenticator* MockLoginUtils::CreateAuthenticator(
+scoped_refptr<Authenticator> MockLoginUtils::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   return new MockAuthenticator(
       consumer, expected_username_, expected_password_);
