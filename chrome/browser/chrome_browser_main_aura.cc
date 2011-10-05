@@ -20,3 +20,6 @@ void ChromeBrowserMainPartsAura::PostMainMessageLoopStart() {
   NOTIMPLEMENTED();
 }
 
+void ShowMissingLocaleMessageBox() {
+  NOTIMPLEMENTED();
+}
