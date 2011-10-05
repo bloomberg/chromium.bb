@@ -1186,9 +1186,9 @@ void NativeWidgetWin::OnActivateApp(BOOL active, DWORD thread_id) {
     // Another application was activated, we should reset any state that
     // disables inactive rendering now.
     delegate_->EnableInactiveRendering();
-    // Update the native frame too, since it could be rendering the non-client
-    // area.
-    DefWindowProcWithRedrawLock(WM_NCACTIVATE, FALSE, 0);
+    // Also update the native frame if it is rendering the non-client area.
+    if (GetWidget()->ShouldUseNativeFrame())
+      DefWindowProcWithRedrawLock(WM_NCACTIVATE, FALSE, 0);
   }
 }
 
@@ -1625,6 +1625,12 @@ LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
   bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
   if (IsActive())
     delegate_->EnableInactiveRendering();
+
+  // Avoid DefWindowProc non-client rendering over our custom frame.
+  if (!GetWidget()->ShouldUseNativeFrame()) {
+    SetMsgHandled(TRUE);
+    return TRUE;
+  }
 
   return DefWindowProcWithRedrawLock(WM_NCACTIVATE,
                                      inactive_rendering_disabled || active, 0);
