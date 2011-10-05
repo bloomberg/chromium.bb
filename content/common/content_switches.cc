@@ -10,10 +10,6 @@ namespace switches {
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 
-// By default, an https page cannot run JavaScript, CSS or plug-ins from http
-// URLs. This provides an override to get the old insecure behavior.
-const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
-
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
@@ -321,10 +317,6 @@ const char kNaClBrokerProcess[]             = "nacl-broker";
 
 // Causes the process to run as a NativeClient loader.
 const char kNaClLoaderProcess[]             = "nacl-loader";
-
-// By default, an https page can load images, fonts or frames from an http page.
-// This switch overrides this to block this lesser mixed-content problem.
-const char kNoDisplayingInsecureContent[]   = "no-displaying-insecure-content";
 
 // Support a separate switch that enables the v8 playback extension.
 // The extension causes javascript calls to Date.now() and Math.random()

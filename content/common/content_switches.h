@@ -14,7 +14,6 @@
 namespace switches {
 
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
-CONTENT_EXPORT extern const char kAllowRunningInsecureContent[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAuditHandles[];
 extern const char kAuditAllHandles[];
@@ -110,7 +109,6 @@ CONTENT_EXPORT extern const char kNaClLoaderProcess[];
 // This switch enables the experimental lightweight nacl_helper for Linux.
 // It will be going away soon, when the helper is enabled permanently.
 extern const char kNaClLinuxHelper[];
-CONTENT_EXPORT extern const char kNoDisplayingInsecureContent[];
 extern const char kNoJsRandomness[];
 CONTENT_EXPORT extern const char kNoReferrers[];
 CONTENT_EXPORT extern const char kNoSandbox[];

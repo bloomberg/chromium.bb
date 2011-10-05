@@ -25,8 +25,9 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kAllowFileAccess[];
-extern const char kAllowOutdatedPlugins[];
 extern const char kAllowHTTPBackgroundPage[];
+extern const char kAllowOutdatedPlugins[];
+extern const char kAllowRunningInsecureContent[];
 extern const char kAllowScriptingGallery[];
 extern const char kAllowWebSocketProxy[];
 extern const char kAllowWebUICompositing[];
@@ -206,11 +207,13 @@ extern const char kNaClStartupDialog[];
 extern const char kNetLogLevel[];
 extern const char kNewTabPage[];
 extern const char kNoDefaultBrowserCheck[];
+extern const char kNoDisplayingInsecureContent[];
 extern const char kNoEvents[];
 extern const char kNoExperiments[];
 extern const char kNoFirstRun[];
 extern const char kNoProxyServer[];
 extern const char kNoPings[];
+extern const char kNoRunningInsecureContent[];
 extern const char kNoServiceAutorun[];
 extern const char kNoStartupWindow[];
 extern const char kNotifyCloudPrintTokenExpired[];

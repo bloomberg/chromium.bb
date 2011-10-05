@@ -28,6 +28,10 @@ const char kAllowHTTPBackgroundPage[]       = "allow-http-background-page";
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 
+// By default, an https page cannot run JavaScript, CSS or plug-ins from http
+// URLs. This provides an override to get the old insecure behavior.
+const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
+
 // Allows injecting extensions and user scripts on the extensions
 // gallery site. Normally prevented for security reasons, but can be
 // useful for automation testing of the gallery.
@@ -744,6 +748,10 @@ const char kNewTabPage[]                    = "new-tab-page";
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";
 
+// By default, an https page can load images, fonts or frames from an http page.
+// This switch overrides this to block this lesser mixed-content problem.
+const char kNoDisplayingInsecureContent[]   = "no-displaying-insecure-content";
+
 // Don't record/playback events when using record & playback.
 const char kNoEvents[]                      = "no-events";
 
@@ -763,6 +771,11 @@ const char kNoPings[]                       = "no-pings";
 // Don't use a proxy server, always make direct connections. Overrides any
 // other proxy server flags that are passed.
 const char kNoProxyServer[]                 = "no-proxy-server";
+
+// Stronger version of insecure content blocking, for the case where the
+// blocking would only be applied to a whitelist of domains.  Switch is
+// expected to become obsolete once the whitelist goes away.
+const char kNoRunningInsecureContent[]      = "no-running-insecure-content";
 
 // Disables the service process from adding itself as an autorun process. This
 // does not delete existing autorun registrations, it just prevents the service
