@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -176,7 +177,7 @@ void NativeComboboxViews::UpdateFromModel() {
     // text is displayed correctly in right-to-left UIs.
     base::i18n::AdjustStringForLocaleDirection(&text);
 
-    menu->AppendMenuItem(i + kFirstMenuItemId, UTF16ToWide(text),
+    menu->AppendMenuItem(i + kFirstMenuItemId, UTF16ToWideHack(text),
                          MenuItemView::NORMAL);
     max_width = std::max(max_width, font.GetStringWidth(text));
   }

@@ -348,13 +348,12 @@ char16 MenuItemView::GetMnemonic() {
   if (!GetRootMenuItem()->has_mnemonics_)
     return 0;
 
-  string16 title = WideToUTF16(GetTitle());
   size_t index = 0;
   do {
-    index = title.find('&', index);
+    index = title_.find('&', index);
     if (index != string16::npos) {
-      if (index + 1 != title.size() && title[index + 1] != '&') {
-        char16 char_array[] = { title[index + 1], 0 };
+      if (index + 1 != title_.size() && title_[index + 1] != '&') {
+        char16 char_array[] = { title_[index + 1], 0 };
         // TODO(jshin): What about Turkish locale? See http://crbug.com/81719.
         // If the mnemonic is capital I and the UI language is Turkish,
         // lowercasing it results in 'small dotless i', which is different
@@ -411,7 +410,7 @@ void MenuItemView::Layout() {
   if (!has_children())
     return;
 
-  if (child_count() == 1 && GetTitle().size() == 0) {
+  if (child_count() == 1 && title_.empty()) {
     // We only have one child and no title so let the view take over all the
     // space.
     View* child = child_at(0);
@@ -667,7 +666,7 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
   if (!has_children())
     return gfx::Size();
 
-  if (GetTitle().size() == 0 && child_count() == 1) {
+  if (title_.empty() && child_count() == 1) {
     View* child = child_at(0);
     return child->GetPreferredSize();
   }

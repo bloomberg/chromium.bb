@@ -14,8 +14,6 @@
 #endif
 
 #include "base/logging.h"
-// TODO(avi): remove when not needed
-#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"
 
@@ -224,12 +222,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the parent menu item.
   MenuItemView* GetParentMenuItem() const { return parent_menu_item_; }
 
-  // Sets the title
+  // Sets/Gets the title.
   void SetTitle(const std::wstring& title);
-
-  // Returns the title.
-  // TODO(avi): switch back to returning a const reference.
-  const std::wstring GetTitle() const { return UTF16ToWideHack(title_); }
+  const string16& title() const { return title_; }
 
   // Returns the type of this menu.
   const Type& GetType() { return type_; }
