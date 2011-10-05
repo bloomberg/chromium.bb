@@ -459,8 +459,14 @@ void AudioRendererImpl::Run() {
 
   int bytes;
   while (sizeof(bytes) == socket_->Receive(&bytes, sizeof(bytes))) {
-    if (bytes == media::AudioOutputController::kPauseMark)
+    if (bytes == media::AudioOutputController::kPauseMark) {
+      // When restarting playback, host should get new data,
+      // not what is currently in the buffer.
+      media::SetActualDataSizeInBytes(shared_memory_.get(),
+                                      shared_memory_size_,
+                                      0);
       continue;
+    }
     else if (bytes < 0)
       break;
     base::AutoLock auto_lock(lock_);
