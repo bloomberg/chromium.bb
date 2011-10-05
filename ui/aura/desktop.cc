@@ -50,6 +50,7 @@ Desktop::~Desktop() {
 
 void Desktop::Init() {
   window_->Init();
+  window_->Show();
   compositor()->SetRootLayer(window_->layer());
 }
 
@@ -145,7 +146,7 @@ Window* Desktop::GetTopmostWindowToActivate(Window* ignore) {
   Window::Windows windows(default_parent_->children());
   for (Window::Windows::const_reverse_iterator i = windows.rbegin();
        i != windows.rend(); ++i) {
-    if (*i != ignore && (*i)->visible() &&
+    if (*i != ignore && (*i)->IsVisible() &&
         (*i)->delegate()->ShouldActivate(NULL))
       return *i;
   }

@@ -102,9 +102,13 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   float opacity() const { return opacity_; }
   void SetOpacity(float opacity);
 
-  // Sets |visible_|. The Layer is drawn by Draw() only when visible_ is true.
-  bool visible() const { return visible_; }
+  // Sets the visibility of the Layer. A Layer may be visible but not
+  // drawn. This happens if any ancestor of a Layer is not visible.
   void SetVisible(bool visible);
+
+  // Returns true if this Layer is drawn. A Layer is drawn only if all ancestors
+  // are visible.
+  bool IsDrawn() const;
 
   // Returns true if this layer can have a texture (has_texture_ is true)
   // and is not completely obscured by a child.
@@ -244,6 +248,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
 
   gfx::Rect bounds_;
 
+  // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;
 
   bool fills_bounds_opaquely_;

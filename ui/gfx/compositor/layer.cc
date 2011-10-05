@@ -134,11 +134,26 @@ void Layer::SetOpacity(float opacity) {
 }
 
 void Layer::SetVisible(bool visible) {
+  if (visible_ == visible)
+    return;
+
+  bool was_drawn = IsDrawn();
   visible_ = visible;
-  if (!visible_)
+  bool is_drawn = IsDrawn();
+  if (was_drawn == is_drawn)
+    return;
+
+  if (!is_drawn)
     DropTextures();
   if (parent_)
     parent_->RecomputeHole();
+}
+
+bool Layer::IsDrawn() const {
+  const Layer* layer = this;
+  while (layer && layer->visible_)
+    layer = layer->parent_;
+  return layer == NULL;
 }
 
 bool Layer::ShouldDraw() {
@@ -290,14 +305,14 @@ void Layer::RecomputeHole() {
 
   // 1) We cannot do any hole punching if any child has a transform.
   for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->transform().HasChange() && children_[i]->visible())
+    if (children_[i]->transform().HasChange() && children_[i]->visible_)
       return;
   }
 
   // 2) Find the largest hole.
   for (size_t i = 0; i < children_.size(); ++i) {
     // Ignore non-opaque and hidden children.
-    if (!children_[i]->IsCompletelyOpaque() || !children_[i]->visible())
+    if (!children_[i]->IsCompletelyOpaque() || !children_[i]->visible_)
       continue;
 
     if (children_[i]->bounds().size().GetArea() > hole_rect_.size().GetArea()) {
@@ -308,7 +323,7 @@ void Layer::RecomputeHole() {
   // 3) Make sure hole does not intersect with non-opaque children.
   for (size_t i = 0; i < children_.size(); ++i) {
     // Ignore opaque and hidden children.
-    if (children_[i]->IsCompletelyOpaque() || !children_[i]->visible())
+    if (children_[i]->IsCompletelyOpaque() || !children_[i]->visible_)
       continue;
 
     // Ignore non-intersecting children.

@@ -23,7 +23,6 @@ using internal::RootWindow;
 
 Window::Window(WindowDelegate* delegate)
     : delegate_(delegate),
-      visible_(false),
       parent_(NULL),
       id_(-1),
       user_data_(NULL),
@@ -60,6 +59,10 @@ void Window::Init() {
   if (delegate_)
     type = ui::Layer::LAYER_HAS_TEXTURE;
   layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), type));
+  // Windows (and therefore the layer) should initially be hidden.
+  // TODO: when we distinguish control (child) windows, they should be initially
+  // visible.
+  layer_->SetVisible(false);
   layer_->set_delegate(this);
 }
 
@@ -74,6 +77,10 @@ void Window::Hide() {
       !Desktop::GetInstance()->active_window()) {
     Desktop::GetInstance()->ActivateTopmostWindow();
   }
+}
+
+bool Window::IsVisible() const {
+  return layer_->IsDrawn();
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
@@ -205,7 +212,7 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
   Windows::const_reverse_iterator i = children_.rbegin();
   for (; i != children_.rend(); ++i) {
     Window* child = *i;
-    if (!child->visible())
+    if (!child->IsVisible())
       continue;
     gfx::Point point_in_child_coords(point);
     Window::ConvertPointToWindow(this, child, &point_in_child_coords);
@@ -225,7 +232,7 @@ internal::FocusManager* Window::GetFocusManager() {
 }
 
 void Window::SetCapture() {
-  if (!visible_)
+  if (!IsVisible())
     return;
 
   RootWindow* root = GetRoot();
@@ -262,12 +269,11 @@ internal::RootWindow* Window::GetRoot() {
 }
 
 void Window::SetVisible(bool visible) {
-  if (visible_ == visible)
-    return;
-
-  visible_ = visible;
-  layer_->SetVisible(visible_);
-  SchedulePaint();
+  bool was_visible = IsVisible();
+  layer_->SetVisible(visible);
+  bool is_visible = IsVisible();
+  if (was_visible != is_visible)
+    SchedulePaint();
 }
 
 void Window::SchedulePaint() {

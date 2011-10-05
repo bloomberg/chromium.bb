@@ -283,7 +283,7 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
 }
 
 bool NativeWidgetAura::IsVisible() const {
-  return window_->visible();
+  return window_->IsVisible();
 }
 
 void NativeWidgetAura::Activate() {

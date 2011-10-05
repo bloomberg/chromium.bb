@@ -62,7 +62,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Changes the visibility of the window.
   void Show();
   void Hide();
-  bool visible() const { return visible_; }
+  // Returns true if this window and all its ancestors are visible.
+  bool IsVisible() const;
 
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.
@@ -178,8 +179,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
 
   WindowDelegate* delegate_;
-
-  bool visible_;
 
   scoped_ptr<ui::Layer> layer_;
 

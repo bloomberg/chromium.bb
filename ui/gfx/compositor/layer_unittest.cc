@@ -16,13 +16,15 @@ namespace ui {
 
 namespace {
 
-// Use
+// There are three test classes in here that configure the Compositor and
+// Layer's slightly differently:
+// - LayerWithNullDelegateTest uses TestCompositor and NullLayerDelegate as the
+//   LayerDelegate. This is typically the base class you want to use.
+// - LayerWithDelegateTest uses TestCompositor and does not set a LayerDelegate
+//   on the delegates.
 // - LayerWithRealCompositorTest when a real compositor is required for testing.
-//    - Slow because they bring up a window.
-//
-// - LayerWithDelegateTest for testing functionality of the LayerDelegate.
-// - LayerWithNullDelegateTest for testing all other functionality.
-
+//    - Slow because they bring up a window and run the real compositor. This
+//      is typically not what you want.
 class LayerWithRealCompositorTest : public testing::Test {
  public:
   LayerWithRealCompositorTest() {}
@@ -621,6 +623,44 @@ TEST_F(LayerWithNullDelegateTest, NoCompositor) {
   EXPECT_EQ(NULL, l12->texture());
   EXPECT_EQ(NULL, l121->texture());
   EXPECT_EQ(NULL, l122->texture());
+}
+
+// Various visibile/drawn assertions.
+TEST_F(LayerWithNullDelegateTest, Visibility) {
+  scoped_ptr<Layer> l1(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l2(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l3(new Layer(NULL, Layer::LAYER_HAS_TEXTURE));
+  l1->Add(l2.get());
+  l2->Add(l3.get());
+
+  NullLayerDelegate delegate;
+  l1->set_delegate(&delegate);
+  l2->set_delegate(&delegate);
+  l3->set_delegate(&delegate);
+
+  // Layers should initially be drawn.
+  EXPECT_TRUE(l1->IsDrawn());
+  EXPECT_TRUE(l2->IsDrawn());
+  EXPECT_TRUE(l3->IsDrawn());
+
+  compositor()->SetRootLayer(l1.get());
+
+  Draw();
+
+  l1->SetVisible(false);
+  EXPECT_FALSE(l1->IsDrawn());
+  EXPECT_FALSE(l2->IsDrawn());
+  EXPECT_FALSE(l3->IsDrawn());
+
+  l3->SetVisible(false);
+  EXPECT_FALSE(l1->IsDrawn());
+  EXPECT_FALSE(l2->IsDrawn());
+  EXPECT_FALSE(l3->IsDrawn());
+
+  l1->SetVisible(true);
+  EXPECT_TRUE(l1->IsDrawn());
+  EXPECT_TRUE(l2->IsDrawn());
+  EXPECT_FALSE(l3->IsDrawn());
 }
 
 } // namespace ui

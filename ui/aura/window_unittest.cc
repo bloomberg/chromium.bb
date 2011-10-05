@@ -594,6 +594,43 @@ TEST_F(WindowTest, GetEventHandlerForPoint_NoDelegate) {
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(target_point));
 }
 
+// Verifies show/hide propagate correctly to children and the layer.
+TEST_F(WindowTest, Visibility) {
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w2(CreateTestWindowWithId(2, w1.get()));
+  scoped_ptr<Window> w3(CreateTestWindowWithId(3, w2.get()));
+
+  // Create shows all the windows.
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(w3->IsVisible());
+
+  w1->Hide();
+  EXPECT_FALSE(w1->IsVisible());
+  EXPECT_FALSE(w2->IsVisible());
+  EXPECT_FALSE(w3->IsVisible());
+
+  w2->Show();
+  EXPECT_FALSE(w1->IsVisible());
+  EXPECT_FALSE(w2->IsVisible());
+  EXPECT_FALSE(w3->IsVisible());
+
+  w3->Hide();
+  EXPECT_FALSE(w1->IsVisible());
+  EXPECT_FALSE(w2->IsVisible());
+  EXPECT_FALSE(w3->IsVisible());
+
+  w1->Show();
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_FALSE(w3->IsVisible());
+
+  w3->Show();
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(w3->IsVisible());
+}
+
 // When set_consume_events() is called with |true| for a Window, that Window
 // should make sure that none behind it in the z-order see events if it has
 // children. If it does not have children, event targeting works as usual.

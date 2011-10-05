@@ -2375,6 +2375,7 @@ class ViewLayerTest : public ViewsTestBase {
     Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(50, 50, 200, 200);
     widget_->Init(params);
+    widget_->Show();
     widget_->GetRootView()->SetBounds(0, 0, 200, 200);
   }
 
