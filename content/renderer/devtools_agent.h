@@ -49,17 +49,15 @@ class DevToolsAgent : public content::RenderViewObserver,
   virtual void sendDebuggerOutput(const WebKit::WebString& data);
 
   virtual int hostIdentifier();
-  virtual void runtimeFeatureStateChanged(const WebKit::WebString& feature,
-                                          bool enabled);
-  virtual void runtimePropertyChanged(const WebKit::WebString& name,
-                                      const WebKit::WebString& value);
+  virtual void saveAgentRuntimeState(const WebKit::WebString& state);
   virtual WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop();
   virtual bool exposeV8DebuggerProtocol();
   virtual void clearBrowserCache();
   virtual void clearBrowserCookies();
 
-  void OnAttach(const DevToolsRuntimeProperties& runtime_properties);
+  void OnAttach();
+  void OnReattach(const std::string& agent_state);
   void OnDetach();
   void OnFrontendLoaded();
   void OnDispatchOnInspectorBackend(const std::string& message);

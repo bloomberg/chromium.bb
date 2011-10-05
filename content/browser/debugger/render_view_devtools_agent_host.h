@@ -36,8 +36,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnForwardToClient(const IPC::Message& message);
-  void OnRuntimePropertyChanged(const std::string& name,
-                                const std::string& value);
+  void OnSaveAgentRuntimeState(const std::string& state);
   void OnClearBrowserCache();
   void OnClearBrowserCookies();
 
