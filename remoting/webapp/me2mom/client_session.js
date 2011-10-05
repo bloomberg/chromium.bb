@@ -355,7 +355,6 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
  * Refreshes the plugin's dimensions, taking into account the sizes of the
  * remote desktop and client window, and the current scale-to-fit setting.
  *
- * @param {boolean} shouldScale If the plugin should scale itself.
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.updateDimensions = function() {

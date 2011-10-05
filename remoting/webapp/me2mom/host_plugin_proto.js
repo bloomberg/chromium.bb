@@ -38,3 +38,6 @@ remoting.HostPlugin.prototype.localize = function(callback) {};
 /** @type {number} */ remoting.HostPlugin.prototype.accessCodeLifetime;
 
 /** @type {string} */ remoting.HostPlugin.prototype.client;
+
+/** @type {function(boolean):void} */
+remoting.HostPlugin.prototype.onNatTraversalPolicyChanged;

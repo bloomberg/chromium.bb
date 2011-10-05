@@ -246,6 +246,8 @@ remoting.tryShare = function() {
   plugin.width = 0;
   plugin.height = 0;
   div.appendChild(plugin);
+  onNatTraversalPolicyChanged_(true);  // Hide warning by default.
+  plugin.onNatTraversalPolicyChanged = onNatTraversalPolicyChanged_;
   plugin.onStateChanged = onStateChanged_;
   plugin.logDebugInfo = debugInfoCallback_;
   plugin.localize(chrome.i18n.getMessage);
@@ -301,6 +303,11 @@ remoting.updateAccessCodeTimeoutElement_ = function() {
   if (!updateTimeoutStyles_()) {
     disableTimeoutCountdown_();
   }
+}
+
+function onNatTraversalPolicyChanged_(enabled) {
+  var container = document.getElementById('nat-box-container');
+  container.hidden = enabled;
 }
 
 function onStateChanged_() {

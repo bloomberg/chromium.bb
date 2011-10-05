@@ -41,6 +41,7 @@ namespace remoting {
 // }
 //
 // attribute Function void logDebugInfo(string);
+// attribute Function void onNatTraversalPolicyChanged(boolean);
 // attribute Function void onStateChanged();
 //
 // // The |auth_service_with_token| parameter should be in the format
@@ -56,6 +57,8 @@ const char* kAttrNameAccessCodeLifetime = "accessCodeLifetime";
 const char* kAttrNameClient = "client";
 const char* kAttrNameState = "state";
 const char* kAttrNameLogDebugInfo = "logDebugInfo";
+const char* kAttrNameOnNatTraversalPolicyChanged =
+    "onNatTraversalPolicyChanged";
 const char* kAttrNameOnStateChanged = "onStateChanged";
 const char* kFuncNameConnect = "connect";
 const char* kFuncNameDisconnect = "disconnect";
@@ -180,6 +183,7 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
           property_name == kAttrNameClient ||
           property_name == kAttrNameState ||
           property_name == kAttrNameLogDebugInfo ||
+          property_name == kAttrNameOnNatTraversalPolicyChanged ||
           property_name == kAttrNameOnStateChanged ||
           property_name == kAttrNameDisconnected ||
           property_name == kAttrNameStarting ||
@@ -199,7 +203,10 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
     return false;
   }
 
-  if (property_name == kAttrNameOnStateChanged) {
+  if (property_name == kAttrNameOnNatTraversalPolicyChanged) {
+    OBJECT_TO_NPVARIANT(on_nat_traversal_policy_changed_func_.get(), *result);
+    return true;
+  } else if (property_name == kAttrNameOnStateChanged) {
     OBJECT_TO_NPVARIANT(on_state_changed_func_.get(), *result);
     return true;
   } else if (property_name == kAttrNameLogDebugInfo) {
@@ -250,6 +257,26 @@ bool HostNPScriptObject::SetProperty(const std::string& property_name,
                                      const NPVariant* value) {
   VLOG(2) <<  "SetProperty " << property_name;
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+
+  if (property_name == kAttrNameOnNatTraversalPolicyChanged) {
+    if (NPVARIANT_IS_OBJECT(*value)) {
+      on_nat_traversal_policy_changed_func_ = NPVARIANT_TO_OBJECT(*value);
+      bool policy_received, nat_traversal_enabled;
+      {
+        base::AutoLock lock(nat_policy_lock_);
+        policy_received = policy_received_;
+        nat_traversal_enabled = nat_traversal_enabled_;
+      }
+      if (policy_received) {
+        UpdateWebappNatPolicy(nat_traversal_enabled);
+      }
+      return true;
+    } else {
+      SetException("SetProperty: unexpected type for property " +
+                   property_name);
+    }
+    return false;
+  }
 
   if (property_name == kAttrNameOnStateChanged) {
     if (NPVARIANT_IS_OBJECT(*value)) {
@@ -578,8 +605,13 @@ void HostNPScriptObject::OnNatPolicyUpdate(bool nat_traversal_enabled) {
     DisconnectInternal();
   }
 
-  policy_received_ = true;
-  nat_traversal_enabled_ = nat_traversal_enabled;
+  {
+    base::AutoLock lock(nat_policy_lock_);
+    policy_received_ = true;
+    nat_traversal_enabled_ = nat_traversal_enabled;
+  }
+
+  UpdateWebappNatPolicy(nat_traversal_enabled_);
 
   if (!pending_connect_.is_null()) {
     pending_connect_.Run();
@@ -763,6 +795,21 @@ bool HostNPScriptObject::LocalizeString(NPObject* localize_func,
   }
   *result = UTF8ToUTF16(translation);
   return true;
+}
+
+void HostNPScriptObject::UpdateWebappNatPolicy(bool nat_traversal_enabled) {
+  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
+    plugin_message_loop_proxy_->PostTask(
+        FROM_HERE, base::Bind(&HostNPScriptObject::UpdateWebappNatPolicy,
+                              base::Unretained(this), nat_traversal_enabled));
+    return;
+  }
+  if (on_nat_traversal_policy_changed_func_.get()) {
+    NPVariant policy;
+    BOOLEAN_TO_NPVARIANT(nat_traversal_enabled, policy);
+    InvokeAndIgnoreResult(on_nat_traversal_policy_changed_func_.get(),
+                          &policy, 1);
+  }
 }
 
 bool HostNPScriptObject::InvokeAndIgnoreResult(NPObject* func,

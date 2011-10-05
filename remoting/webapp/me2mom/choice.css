@@ -135,6 +135,17 @@ label {
   vertical-align: top;
 }
 
+.information-box {
+  background-color: #f9e9be;
+  border: 1px solid #cacaca;
+  bottom: 8px;
+  color: black;
+  padding: 20px;
+  position: absolute;
+  text-align: center;
+  width: 600px; /* body width - 2*padding */
+}
+
 .message {
   text-align:center;
   margin-bottom: 10px;
