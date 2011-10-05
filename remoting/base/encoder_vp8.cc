@@ -5,6 +5,7 @@
 #include "remoting/base/encoder_vp8.h"
 
 #include "base/logging.h"
+#include "base/sys_info.h"
 #include "media/base/yuv_convert.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
@@ -110,9 +111,11 @@ bool EncoderVp8::Init(const SkISize& size) {
   // encoding.
   config.g_profile = 2;
 
-  // Using 2 threads would give a great boost in performance in most systems
-  // while hurting single core systems just a little bit.
-  config.g_threads = 2;
+  // Using 2 threads gives a great boost in performance for most systems with
+  // adequate processing power. NB: Going to multiple threads on low end
+  // windows systems can really hurt performance.
+  // http://crbug.com/99179
+  config.g_threads = (base::SysInfo::NumberOfProcessors() > 2) ? 2 : 1;
   config.rc_min_quantizer = 20;
   config.rc_max_quantizer = 30;
   config.g_timebase.num = 1;
