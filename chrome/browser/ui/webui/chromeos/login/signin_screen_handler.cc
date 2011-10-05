@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/profiles/profile.h"
@@ -185,7 +186,8 @@ SigninScreenHandler::SigninScreenHandler()
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kWebUILogin)),
       cookie_remover_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      key_event_listener_(NULL) {
   delegate_->SetWebUIHandler(this);
 }
 
@@ -193,6 +195,8 @@ SigninScreenHandler::~SigninScreenHandler() {
   weak_factory_.InvalidateWeakPtrs();
   if (cookie_remover_)
     cookie_remover_->RemoveObserver(this);
+  if (key_event_listener_)
+    key_event_listener_->RemoveCapsLockObserver(this);
 }
 
 void SigninScreenHandler::GetLocalizedStrings(
@@ -251,6 +255,9 @@ void SigninScreenHandler::Show(bool oobe_ui) {
     // figure out how to make it fast enough.
     SendUserList(false);
 
+    // Reset Caps Lock state when login screen is shown.
+    input_method::XKeyboard::SetCapsLockEnabled(false);
+
     ShowScreen(kAccountPickerScreen, NULL);
   }
 }
@@ -258,6 +265,11 @@ void SigninScreenHandler::Show(bool oobe_ui) {
 // SigninScreenHandler, private: -----------------------------------------------
 
 void SigninScreenHandler::Initialize() {
+  // Register for Caps Lock state change notifications;
+  key_event_listener_ = SystemKeyEventListener::GetInstance();
+  if (key_event_listener_)
+    key_event_listener_->AddCapsLockObserver(this);
+
   if (show_on_init_) {
     show_on_init_ = false;
     Show(oobe_ui_);
@@ -351,6 +363,14 @@ void SigninScreenHandler::OnBrowsingDataRemoverDone() {
   cookie_remover_ = NULL;
   cookies_cleared_ = true;
   ShowSigninScreenIfReady();
+}
+
+void SigninScreenHandler::OnCapsLockChange(bool enabled) {
+  if (page_is_ready()) {
+    base::FundamentalValue capsLockState(enabled);
+    web_ui_->CallJavascriptFunction(
+        "login.AccountPickerScreen.setCapsLockState", capsLockState);
+  }
 }
 
 void SigninScreenHandler::OnDnsCleared() {

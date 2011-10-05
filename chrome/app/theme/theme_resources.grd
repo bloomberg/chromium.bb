@@ -455,6 +455,7 @@
         <include name="IDR_LOGIN_GUEST" file="login_guest.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER" file="login_add_user.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER_HOVER" file="login_add_user_hover.png" type="BINDATA" />
+        <include name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="login_password_capslock.png" type="BINDATA" />
         <include name="IDR_NETWORK_SHOW_PASSWORD_OFF" file="network_show_password_off.png" type="BINDATA" />
         <include name="IDR_NETWORK_SHOW_PASSWORD_ON" file="network_show_password_on.png" type="BINDATA" />
         <include name="IDR_NETWORK_SHOW_PASSWORD_HOVER" file="network_show_password_hover.png" type="BINDATA" />

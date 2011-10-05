@@ -353,7 +353,7 @@ cr.define('cr.ui.login', function() {
       helpLink.textContent = link;
       helpLink.onclick = function(e) {
         chrome.send('launchHelpApp', [helpId]);
-      }
+      };
       error.appendChild(helpLink);
     }
 

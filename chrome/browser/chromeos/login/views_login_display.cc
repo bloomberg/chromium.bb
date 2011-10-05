@@ -9,6 +9,7 @@
 
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
@@ -205,6 +206,14 @@ void ViewsLoginDisplay::ShowError(int error_msg_id,
         error_msg_id, delegate()->GetConnectedNetworkName());
   } else {
     error_text = l10n_util::GetStringUTF16(error_msg_id);
+  }
+
+  // Display a warning if Caps Lock is on and error is authentication-related.
+  if (input_method::XKeyboard::CapsLockIsEnabled() &&
+      error_msg_id != IDS_LOGIN_ERROR_WHITELIST) {
+    // TODO(ivankr): use a format string instead of concatenation.
+    error_text += ASCIIToUTF16("\n") +
+        l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
   }
 
   gfx::Rect bounds =

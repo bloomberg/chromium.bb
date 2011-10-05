@@ -25,7 +25,7 @@ podrow {
   width: 170px;
 }
 
-.pod img {
+.pod .user-image {
   -webkit-box-shadow: 0 3px 12px #ccc;
   -webkit-transition: all .14s ease;
   background-color: #fff;
@@ -46,7 +46,7 @@ podrow {
   opacity: .75;
 }
 
-.pod.focused img {
+.pod.focused .user-image {
   -webkit-box-shadow: 0 6px 16px #a4a4a4;
   -webkit-transform: translateY(-1px);
 }
@@ -154,6 +154,25 @@ podrow {
 }
 
 .pod.focused input[type='password']:not([hidden]).empty + .password-hint {
+  visibility: visible;
+}
+
+.pod .capslock-hint {
+  cursor: text;
+  padding: 4px 8px;
+  position: absolute;
+  right: 10px;
+  top: 194px;
+  z-index: 1;
+  visibility: hidden;
+}
+
+html[dir=rtl] .pod .capslock-hint {
+  left: 10px;
+  right: auto;
+}
+
+.capslock-on .pod.focused input[type='password']:not([hidden]) ~ .capslock-hint {
   visibility: visible;
 }
 

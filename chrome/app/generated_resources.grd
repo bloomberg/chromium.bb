@@ -13480,8 +13480,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY" desc="Couldn't sign in because nework library couldn't be loaded">
         Can't access network library
       </message>
-      <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens">
+      <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about layout switching">
         Hit Shift-Alt to switch keyboard layout
+      </message>
+      <message name="IDS_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
+        Caps Lock is on
       </message>
       <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL" desc="An error message shown when we suggest that user may be behind the captive portal.">
         Before signing in, please start a Guest session to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>

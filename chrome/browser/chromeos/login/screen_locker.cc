@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -871,8 +872,15 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
 
   string16 msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_AUTHENTICATING);
   const std::string error_text = error.GetErrorString();
+  // TODO(ivankr): use a format string instead of concatenation.
   if (!error_text.empty())
     msg += ASCIIToUTF16("\n") + ASCIIToUTF16(error_text);
+
+  // Display a warning if Caps Lock is on.
+  if (input_method::XKeyboard::CapsLockIsEnabled()) {
+    msg += ASCIIToUTF16("\n") +
+        l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
+  }
 
   input_method::InputMethodManager* input_method_manager =
       input_method::InputMethodManager::GetInstance();

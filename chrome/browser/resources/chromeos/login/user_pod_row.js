@@ -119,11 +119,19 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets Caps Lock hint image.
+     * @type {!HTMLImageElement}
+     */
+    get capslockHintElement() {
+      return this.enterButtonElement.previousElementSibling;
+    },
+
+    /**
      * Gets guest enter button.
      * @type {!HTMLInputElement}
      */
     get enterButtonElement() {
-      return this.passwordHintElement.nextElementSibling;
+      return this.signinButtonElement.previousElementSibling;
     },
 
     /**
@@ -131,7 +139,7 @@ cr.define('login', function() {
      * @type {!HTMLInputElement}
      */
     get signinButtonElement() {
-      return this.enterButtonElement.nextElementSibling;
+      return this.removeUserButtonElement.previousElementSibling;
     },
 
     /**
