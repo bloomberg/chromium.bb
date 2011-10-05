@@ -756,7 +756,7 @@ bool PluginInstance::LoadPolicyUpdateInterface() {
   if (!plugin_policy_updated_interface_) {
     plugin_policy_updated_interface_ =
         static_cast<const PPP_PolicyUpdate_Dev*>(module_->GetPluginInterface(
-            PPP_POLICY_UPDATE_DEV_INTERFACE));
+            PPP_POLICYUPDATE_DEV_INTERFACE));
   }
 
   return !!plugin_policy_updated_interface_;
