@@ -26,6 +26,7 @@ SCons.Warnings.warningAsException()
 
 sys.path.append("tools")
 import command_tester
+import test_lib
 
 # NOTE: Underlay for  src/third_party_mod/gtest
 # TODO: try to eliminate this hack
@@ -1343,6 +1344,37 @@ def GeneratedManifestNode(env, manifest):
   return result
 
 
+# Compares output_file and golden_file.
+# If they are different, prints the difference and returns 1.
+# Otherwise, returns 0.
+def CheckGoldenFile(golden_file, output_file,
+                    filter_regex, filter_inverse, filter_group_only):
+  golden = open(golden_file).read()
+  actual = open(output_file).read()
+  if filter_regex is not None:
+    actual = test_lib.RegexpFilterLines(
+        filter_regex,
+        filter_inverse,
+        filter_group_only,
+        actual)
+  if command_tester.DifferentFromGolden(actual, golden, output_file):
+    return 1
+  return 0
+
+
+# Returns action that compares output_file and golden_file.
+# This action can be attached to the node with
+# env.AddPostAction(target, action)
+def GoldenFileCheckAction(env, output_file, golden_file,
+                          filter_regex=None, filter_inverse=False,
+                          filter_group_only=False):
+  def ActionFunc(target, source, env):
+    return CheckGoldenFile(env.subst(golden_file), env.subst(output_file),
+                           filter_regex, filter_inverse, filter_group_only)
+
+  return env.Action(ActionFunc)
+
+
 def PPAPIBrowserTester(env,
                        target,
                        url,
@@ -1358,6 +1390,10 @@ def PPAPIBrowserTester(env,
                        test_args=(),
                        # list of "--flag=value" pairs (no spaces!)
                        browser_flags=(),
+                       # redirect streams of NaCl program to files
+                       nacl_exe_stdin=None,
+                       nacl_exe_stdout=None,
+                       nacl_exe_stderr=None,
                        python_tester_script=None,
                        **extra):
   if 'TRUSTED_ENV' not in env:
@@ -1435,18 +1471,45 @@ def PPAPIBrowserTester(env,
     command.extend(['--browser_flag', flag])
   for key, value in test_args:
     command.extend(['--test_arg', str(key), str(value)])
+
+  # Set a given file to be the nexe's stdin.
+  if nacl_exe_stdin is not None:
+    command.extend(['--nacl_exe_stdin', env.subst(nacl_exe_stdin['file'])])
+
+  post_actions = []
+  # Set a given file to be the nexe's stdout or stderr.  The tester also
+  # compares this output against a golden file.
+  for stream, params in (
+      ('stdout', nacl_exe_stdout),
+      ('stderr', nacl_exe_stderr)):
+    if params is None:
+      continue
+    stream_file = env.subst(params['file'])
+    command.extend(['--nacl_exe_' + stream, stream_file])
+    golden_file = env.subst(params['golden'])
+    filter_regex = params.get('filter_regex', None)
+    filter_inverse = params.get('filter_inverse', False)
+    filter_group_only = params.get('filter_group_only', False)
+    post_actions.append(
+        GoldenFileCheckAction(
+            env, stream_file, golden_file,
+            filter_regex, filter_inverse, filter_group_only))
+
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(target, log_verbosity, extra)
   # Heuristic for when to capture output...
   capture_output = (extra.pop('capture_output', False)
                     or 'process_output' in extra)
-  return env.CommandTest(target,
+  node = env.CommandTest(target,
                          command,
                          # Set to 'huge' so that the browser tester's timeout
                          # takes precedence over the default of the test_suite.
                          size='huge',
                          capture_output=capture_output,
                          **extra)
+  for action in post_actions:
+    env.AddPostAction(node, action)
+  return node
 
 pre_base_env.AddMethod(PPAPIBrowserTester)
 

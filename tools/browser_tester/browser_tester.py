@@ -121,6 +121,15 @@ def BuildArgParser():
   parser.add_option('--enable_ppapi_dev', dest='enable_ppapi_dev',
                     action='store', type='int', default=1,
                     help='Enable/disable PPAPI Dev interfaces while testing.')
+  parser.add_option('--nacl_exe_stdin', dest='nacl_exe_stdin',
+                    type='string', default=None,
+                    help='Redirect standard input of NaCl executable.')
+  parser.add_option('--nacl_exe_stdout', dest='nacl_exe_stdout',
+                    type='string', default=None,
+                    help='Redirect standard output of NaCl executable.')
+  parser.add_option('--nacl_exe_stderr', dest='nacl_exe_stderr',
+                    type='string', default=None,
+                    help='Redirect standard error of NaCl executable.')
 
   return parser
 

@@ -139,6 +139,21 @@ class BrowserLauncher(object):
     self.profile = tempfile.mkdtemp(prefix='browserprofile_')
     return self.profile
 
+  def SetStandardStream(self, env, var_name, redirect_file, is_output):
+    if redirect_file is None:
+      return
+    redirect_file = os.path.abspath(redirect_file)
+    env[var_name] = redirect_file
+    if is_output:
+      # sel_ldr appends program output to the file so we need to clear it
+      # in order to get the stable result.
+      if os.path.exists(redirect_file):
+        os.remove(redirect_file)
+      parent_dir = os.path.dirname(redirect_file)
+      # parent directory may not exist.
+      if not os.path.exists(parent_dir):
+        os.makedirs(parent_dir)
+
   def Launch(self, cmd, env):
     browser_path = cmd[0]
     if not os.path.exists(browser_path):
@@ -154,6 +169,12 @@ class BrowserLauncher(object):
       env['NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS'] = '1'
     if self.options.prefer_portable_in_manifest:
       env['NACL_PREFER_PORTABLE_IN_MANIFEST'] = '1'
+    self.SetStandardStream(env, 'NACL_EXE_STDIN',
+                           self.options.nacl_exe_stdin, False)
+    self.SetStandardStream(env, 'NACL_EXE_STDOUT',
+                           self.options.nacl_exe_stdout, True)
+    self.SetStandardStream(env, 'NACL_EXE_STDERR',
+                           self.options.nacl_exe_stderr, True)
     print 'ENV:', ' '.join(['='.join(pair) for pair in env.iteritems()])
     print 'LAUNCHING: %s' % ' '.join(cmd)
     sys.stdout.flush()
@@ -238,11 +259,17 @@ class ChromeLauncher(BrowserLauncher):
             '--user-data-dir=%s' % self.profile]
     if self.options.ppapi_plugin is None:
       cmd.append('--enable-nacl')
-      if PLATFORM == 'linux':
-        # Sandboxing Chrome on Linux requires a SUIDed helper binary.  This
-        # binary may not be installed, so disable sandboxing to avoid the
-        # corner cases where it may fail.  This is a little scarry, because it
-        # means we are not testing NaCl inside the outer sandbox on Linux.
+      disable_sandbox = False
+      # Sandboxing Chrome on Linux requires a SUIDed helper binary.  This
+      # binary may not be installed, so disable sandboxing to avoid the
+      # corner cases where it may fail.  This is a little scarry, because it
+      # means we are not testing NaCl inside the outer sandbox on Linux.
+      disable_sandbox |= PLATFORM == 'linux'
+      # Chrome process can't access file within sandbox
+      disable_sandbox |= self.options.nacl_exe_stdin is not None
+      disable_sandbox |= self.options.nacl_exe_stdout is not None
+      disable_sandbox |= self.options.nacl_exe_stderr is not None
+      if disable_sandbox:
         cmd.append('--no-sandbox')
     else:
       cmd.append('--register-pepper-plugins=%s;application/x-nacl'
