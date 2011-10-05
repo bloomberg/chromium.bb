@@ -21,7 +21,7 @@ function MetadataDispatcher() {
   importScripts('mpeg_parser.js');
   importScripts('id3_parser.js');
 
-  var patterns = [];
+  var patterns = ['blob:'];  // We use blob urls in gallery_demo.js
 
   for (var i = 0; i < MetadataDispatcher.parserClasses_.length; i++) {
     var parserClass = MetadataDispatcher.parserClasses_[i];
@@ -159,6 +159,43 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
       parser.parse(file, callback, onError);
     }
   ];
+
+  if (fileURL.indexOf('blob:') == 0) {
+    // Blob urls require different steps:
+    steps =
+    [ // Read the blob into an array buffer and get the content type
+      function readBlob() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', fileURL, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = function(e) {
+          if (xhr.status == 200) {
+            nextStep(xhr.getResponseHeader('Content-Type'), xhr.response);
+          } else {
+            onError('HTTP ' + xhr.status);
+          }
+        };
+        xhr.send();
+      },
+
+      // Step two, find the parser matching the content type.
+      function detectFormat(mimeType, arrayBuffer) {
+        for (var i = 0; i != self.parserInstances_.length; i++) {
+          var parser = self.parserInstances_[i];
+          if (parser.mimeType && mimeType.match(parser.mimeType)) {
+            var blobBuilder = new WebKitBlobBuilder();
+            blobBuilder.append(arrayBuffer);
+            nextStep(blobBuilder.getBlob(), parser);
+            return;
+          }
+        }
+        callback({mimeType: mimeType});  // Unrecognized mime type.
+      },
+
+      // Reuse the last step from the standard sequence.
+      steps[steps.length - 1]
+    ];
+  }
 
   nextStep();
 };

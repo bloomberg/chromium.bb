@@ -30,21 +30,23 @@ filter.create = function(name, options) {
  *
  * To be used with large images to avoid freezing up the UI.
  *
- * @param {CanvasRenderingContext2D} context
+ * @param {HTMLCanvasElement} dstCanvas
+ * @param {HTMLCanvasElement} srcCanvas
  * @param {function(ImageData,ImageData,number,number)} filterFunc
  * @param {function(number,number} progressCallback
  * @param {number} maxPixelsPerStrip
  */
 filter.applyByStrips = function(
-    context, filterFunc, progressCallback, maxPixelsPerStrip) {
-  var source = context.getImageData(
-      0, 0, context.canvas.width, context.canvas.height);
+    dstCanvas, srcCanvas, filterFunc, progressCallback, maxPixelsPerStrip) {
+  var dstContext = dstCanvas.getContext('2d');
+  var srcContext = srcCanvas.getContext('2d');
+  var source = srcContext.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
 
-  var stripCount = Math.ceil (source.width * source.height /
+  var stripCount = Math.ceil (srcCanvas.width * srcCanvas.height /
       (maxPixelsPerStrip || 1000000));  // 1 Mpix is a reasonable default.
 
-  var strip = context.getImageData(0, 0,
-      source.width, Math.ceil (source.height / stripCount));
+  var strip = srcContext.getImageData(0, 0,
+      srcCanvas.width, Math.ceil (srcCanvas.height / stripCount));
 
   var offset = 0;
 
@@ -59,16 +61,20 @@ filter.applyByStrips = function(
     }
 
     filterFunc(strip, source, 0, offset);
-    context.putImageData(strip, 0, offset);
+    dstContext.putImageData(strip, 0, offset);
 
     offset += strip.height;
-    progressCallback(offset, source.height);
 
     if (offset < source.height) {
       setTimeout(filterStrip, 0);
+    } else {
+      ImageUtil.trace.reportTimer('filter-commit');
     }
+
+    progressCallback(offset, source.height);
   }
 
+  ImageUtil.trace.resetTimer('filter-commit');
   filterStrip();
 };
 

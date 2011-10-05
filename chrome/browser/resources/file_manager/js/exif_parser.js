@@ -18,10 +18,13 @@ const EXIF_TAG_JPG_THUMB_OFFSET = 0x0201;  // Pointer from TIFF to thumbnail.
 const EXIF_TAG_JPG_THUMB_LENGTH = 0x0202;  // Length of thumbnail data.
 
 const EXIF_TAG_ORIENTATION = 0x0112;
+const EXIF_TAG_X_DIMENSION = 0xA002;
+const EXIF_TAG_Y_DIMENSION = 0xA003;
 
 function ExifParser(parent) {
   MetadataParser.apply(this, [parent]);
   this.verbose = false;
+  this.mimeType = 'image/jpeg';
 }
 
 ExifParser.parserType = 'exif';
@@ -102,17 +105,14 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
         return onError('Invalid TIFF tag: ' + tag.toString(16));
 
       var metadata = {
-        metadataType: 'exif',
-        mimeType: 'image/jpeg',
+        metadataType: ExifParser.parserType,
+        mimeType: self.mimeType,
         littleEndian: (order == EXIF_ALIGN_LITTLE),
         ifd: {
           image: {},
-          thumbnail: {},
-          exif: {},
-          gps: {}
+          thumbnail: {}
         }
       };
-
       var directoryOffset = br.readScalar(4);
 
       // Image directory.
@@ -135,7 +135,19 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
         self.vlog('Read EXIF directory.');
         directoryOffset = metadata.ifd.image[EXIF_TAG_EXIFDATA].value;
         br.seek(directoryOffset);
+        metadata.ifd.exif = {};
         self.readDirectory(br, metadata.ifd.exif);
+
+        if (EXIF_TAG_X_DIMENSION in metadata.ifd.exif &&
+            EXIF_TAG_Y_DIMENSION in metadata.ifd.exif) {
+          if (metadata.imageTransform && metadata.imageTransform.rotate90) {
+            metadata.width = metadata.ifd.exif[EXIF_TAG_Y_DIMENSION].value;
+            metadata.height = metadata.ifd.exif[EXIF_TAG_X_DIMENSION].value;
+          } else {
+            metadata.width = metadata.ifd.exif[EXIF_TAG_X_DIMENSION].value;
+            metadata.height = metadata.ifd.exif[EXIF_TAG_Y_DIMENSION].value;
+          }
+        }
       }
 
       // GPS Directory may also be linked from the image directory.
@@ -143,6 +155,7 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
         self.vlog('Read GPS directory.');
         directoryOffset = metadata.ifd.image[EXIF_TAG_GPSDATA].value;
         br.seek(directoryOffset);
+        metadata.ifd.gps = {};
         self.readDirectory(br, metadata.ifd.gps);
       }
 
@@ -256,7 +269,9 @@ ExifParser.prototype.readTagValue = function(br, tag) {
 
     case 2: // String
       safeRead(1);
-      if (tag.componentCount == 1) {
+      if (tag.componentCount == 0) {
+        tag.value = '';
+      } else if (tag.componentCount == 1) {
         tag.value = String.fromCharCode(tag.value);
       } else {
         tag.value = String.fromCharCode.apply(null, tag.value);

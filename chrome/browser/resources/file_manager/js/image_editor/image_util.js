@@ -182,6 +182,10 @@ Rect.prototype.clamp = function(bounds) {
   return rect;
 };
 
+Rect.prototype.toString = function() {
+  return '(' + this.left + ',' + this.top + '):' +
+         '(' + (this.left + this.width) + ',' + (this.top + this.height) + ')';
+};
 /*
  * Useful shortcuts for drawing (static functions).
  */
@@ -275,7 +279,7 @@ ImageUtil.drawImageTransformed = function(dst, src, scaleX, scaleY, angle) {
 
 
 ImageUtil.deepCopy = function(obj) {
-  if (typeof obj != 'object')
+  if (obj == null || typeof obj != 'object')
     return obj;  // Copy built-in types as is.
 
   var res;
@@ -293,4 +297,90 @@ ImageUtil.deepCopy = function(obj) {
     }
   }
   return res;
+};
+
+ImageUtil.setAttribute = function(element, attribute, on) {
+  if (on)
+    element.setAttribute(attribute, attribute);
+  else
+    element.removeAttribute(attribute);
+};
+
+/**
+ * Load image into a canvas taking the transform into account.
+ *
+ * The source image is copied to the canvas stripe-by-stripe to avoid
+ * freezing up the UI.
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @param {string|HTMLImageElement|HTMLCanvasElement} source
+ * @param {{scaleX: number, scaleY: number, rotate90: number}} transform
+ * @param {number} delay
+ * @param {function} callback
+ * @return {function()} Function to call to cancel the load.
+ */
+ImageUtil.loadImageAsync = function(
+    canvas, source, transform, delay, callback) {
+  var image;
+  var timeout = setTimeout(resolveURL, delay);
+
+  function resolveURL() {
+    timeout = null;
+    if (typeof source == 'string') {
+      image = new Image();
+      image.onload = function(e) { image = null; loadImage(e.target); };
+      image.src = source;
+    } else {
+      loadImage(source);
+    }
+  }
+
+  function loadImage(image) {
+    transform = transform || { scaleX: 1, scaleY: 1, rotate90: 0};
+
+    if (transform.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
+      canvas.width = image.height;
+      canvas.height = image.width;
+    } else  {
+      canvas.width = image.width;
+      canvas.height = image.height;
+    }
+
+    ImageUtil.trace.resetTimer('load-draw');
+
+    var context = canvas.getContext('2d');
+    context.save();
+    context.translate(context.canvas.width / 2, context.canvas.height / 2);
+    context.rotate(transform.rotate90 * Math.PI/2);
+    context.scale(transform.scaleX, transform.scaleY);
+
+    var stripCount = Math.ceil (image.width * image.height / ( 1 << 20));
+    var to = 0;
+    var step = Math.max(16, Math.ceil(image.height / stripCount)) & 0xFFFFF0;
+
+    function copyStrip() {
+      var from = to;
+      to = Math.min (from + step, image.height);
+
+      context.drawImage(image,
+          0, from, image.width, to - from,
+          - image.width/2, from - image.height/2, image.width, to - from);
+
+      if (to == image.height) {
+        context.restore();
+        timeout = null;
+        ImageUtil.trace.reportTimer('load-draw');
+        callback();
+      } else {
+        timeout = setTimeout(copyStrip, 0);
+      }
+    }
+
+    copyStrip();
+  }
+
+  return function () {
+    if (image) image.onload = function(){};
+    if (timeout) clearTimeout(timeout);
+  };
 };

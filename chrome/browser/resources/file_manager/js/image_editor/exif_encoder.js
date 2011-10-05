@@ -66,6 +66,9 @@ ExifEncoder.prototype.setImageData = function(canvas) {
   ExifEncoder.findOrCreateTag(exif, EXIF_TAG_X_DIMENSION).value = canvas.width;
   ExifEncoder.findOrCreateTag(exif, EXIF_TAG_Y_DIMENSION).value = canvas.height;
 
+  this.metadata_.width = canvas.width;
+  this.metadata_.height = canvas.height;
+
   // Always save in default orientation.
   delete this.metadata_.imageTransform;
   ExifEncoder.findOrCreateTag(image, EXIF_TAG_ORIENTATION).value = 1;
@@ -486,7 +489,7 @@ ByteWriter.prototype.forward = function(key, width) {
  */
 ByteWriter.prototype.resolve = function(key, value) {
   if (!(key in this.forwards_))
-    throw new Error('Undeclared forward key ' + key);
+    throw new Error('Undeclared forward key ' + key.toString(16));
   var forward = this.forwards_[key];
   var curPos = this.pos_;
   this.pos_ = forward.pos;
@@ -507,6 +510,6 @@ ByteWriter.prototype.resolveOffset = function(key) {
  */
 ByteWriter.prototype.checkResolved = function() {
   for (var key in this.forwards_) {
-    throw new Error('Unresolved forward pointer ' + key);
+    throw new Error ('Unresolved forward pointer ' + key.toString(16));
   }
 };

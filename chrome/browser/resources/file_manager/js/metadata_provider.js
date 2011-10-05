@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function MetadataProvider() {
+/**
+ * @param {string} opt_workerPath path to the worker source JS file.
+ */
+function MetadataProvider(opt_workerPath) {
   this.cache_ = {};
 
   // Pass all URLs to the metadata reader until we have a correct filter.
   this.urlFilter = /.*/;
 
-  this.dispatcher_ = new Worker('js/metadata_dispatcher.js');
+  this.dispatcher_ = new Worker(opt_workerPath || 'js/metadata_dispatcher.js');
   this.dispatcher_.onmessage = this.onMessage_.bind(this);
   this.dispatcher_.postMessage({verb: 'init'});
   // Initialization is not complete until the Worker sends back the

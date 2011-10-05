@@ -5,9 +5,7 @@
 /**
  * Viewport class controls the way the image is displayed (scale, offset etc).
  */
-function Viewport(repaintCallback) {
-  this.repaintCallback_ = repaintCallback;
-
+function Viewport() {
   this.imageBounds_ = new Rect();
   this.screenBounds_ = new Rect();
 
@@ -18,7 +16,7 @@ function Viewport(repaintCallback) {
   this.generation_ = 0;
 
   this.scaleControl_ = null;
-
+  this.repaintCallbacks_ = [];
   this.update();
 }
 
@@ -43,6 +41,19 @@ Viewport.prototype.setScreenSize = function(width, height) {
   this.invalidateCaches();
 };
 
+Viewport.prototype.sizeByFrame = function(frame) {
+  this.setScreenSize(frame.clientWidth, frame.clientHeight);
+};
+
+Viewport.prototype.sizeByFrameAndFit = function(frame) {
+  var wasFitting = this.getScale() == this.getFittingScale();
+  this.sizeByFrame(frame);
+  var minScale = this.getFittingScale();
+  if (wasFitting || (this.getScale() < minScale)) {
+    this.setScale(minScale, true);
+  }
+};
+
 Viewport.prototype.getScale = function() { return this.scale_ };
 
 Viewport.prototype.setScale = function(scale, notify) {
@@ -55,7 +66,7 @@ Viewport.prototype.setScale = function(scale, notify) {
 Viewport.prototype.getFittingScale = function() {
   var scaleX = this.screenBounds_.width / this.imageBounds_.width;
   var scaleY = this.screenBounds_.height / this.imageBounds_.height;
-  return Math.min(scaleX, scaleY) * 0.85;
+  return Math.min(scaleX, scaleY);
 };
 
 Viewport.prototype.fitImage = function() {
@@ -199,8 +210,8 @@ Viewport.prototype.imageToScreenRect = function(rect) {
   return new Rect(
       this.imageToScreenX(rect.left),
       this.imageToScreenY(rect.top),
-      this.imageToScreenSize(rect.width),
-      this.imageToScreenSize(rect.height));
+      Math.round(this.imageToScreenSize(rect.width)),
+      Math.round(this.imageToScreenSize(rect.height)));
 };
 
 /**
@@ -277,6 +288,12 @@ Viewport.prototype.update = function() {
   }
 };
 
+Viewport.prototype.addRepaintCallback = function (callback) {
+  this.repaintCallbacks_.push(callback);
+};
+
 Viewport.prototype.repaint = function () {
-  if (this.repaintCallback_) this.repaintCallback_();
+  this.update();
+  for (var i = 0; i != this.repaintCallbacks_.length; i++)
+    this.repaintCallbacks_[i]();
 };

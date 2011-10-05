@@ -79,12 +79,19 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CROP_SELECTED" file="file_manager/images/gallery/icon_crop_selected.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_BRIGHTNESS" file="file_manager/images/gallery/icon_brightness.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_BRIGHTNESS_SELECTED" file="file_manager/images/gallery/icon_brightness_selected.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CONTRAST" file="file_manager/images/gallery/icon_contrast.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CONTRAST_SELECTED" file="file_manager/images/gallery/icon_contrast_selected.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_ROTATE" file="file_manager/images/gallery/icon_rotate.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_ROTATE_SELECTED" file="file_manager/images/gallery/icon_rotate_selected.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_ROTATE_LEFT" file="file_manager/images/gallery/icon_rotate_left.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_ROTATE_LEFT_SELECTED" file="file_manager/images/gallery/icon_rotate_left_selected.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_UNDO" file="file_manager/images/gallery/icon_undo.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_REDO" file="file_manager/images/gallery/icon_redo.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_OK" file="file_manager/images/gallery/icon_ok_check.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CANCEL" file="file_manager/images/gallery/icon_cancel_x.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CLOSE" file="file_manager/images/gallery/close_x.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_FADE_LEFT" file="file_manager/images/gallery/thumb_fade_left.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_FADE_RIGHT" file="file_manager/images/gallery/thumb_fade_right.png" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_ICON_DETAIL_VIEW" file="file_manager/images/icon-detail-view.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW" file="file_manager/images/icon-thumb-view.png" type="BINDATA" />

@@ -2000,14 +2000,32 @@ FileManager.prototype = {
     galleryFrame.className = 'overlay-pane';
     galleryFrame.scrolling = 'no';
 
+    var selectedUrl;
+    if (urls.length == 1) {
+      // Single item selected. Pass to the Gallery as a selected.
+      selectedUrl = urls[0];
+      // Pass every image in the directory so that it shows up in the ribbon.
+      urls = [];
+      for (var i = 0; i != this.dataModel_.length; i++) {
+        var url = this.dataModel_.item(i).toURL();
+        if (url.match(iconTypes.image))
+          urls.push(url);
+      }
+    } else {
+      // Multiple selection. Pass just those items, select the first entry.
+      selectedUrl = urls[0];
+    }
+
     galleryFrame.onload = function() {
       galleryFrame.contentWindow.Gallery.open(
           self.currentDirEntry_,
           urls,
+          selectedUrl,
           function () {
             // TODO(kaznacheev): keep selection.
             self.rescanDirectoryNow_();  // Make sure new files show up.
             self.dialogDom_.removeChild(galleryFrame);
+            self.refocus();
           },
           self.metadataProvider_,
           shareActions);
@@ -2015,6 +2033,7 @@ FileManager.prototype = {
 
     galleryFrame.src = 'js/image_editor/gallery.html';
     this.dialogDom_.appendChild(galleryFrame);
+    galleryFrame.focus();
   };
 
   /**

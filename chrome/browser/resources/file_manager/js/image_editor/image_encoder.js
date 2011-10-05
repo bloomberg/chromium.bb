@@ -24,8 +24,9 @@ ImageEncoder.registerMetadataEncoder = function(constructor, mimeType) {
  * @return {ImageEncoder.MetadataEncoder}
  */
 ImageEncoder.createMetadataEncoder = function(metadata) {
-  var constructor = ImageEncoder.metadataEncoders[metadata.mimeType];
-  return constructor ? new constructor(ImageUtil.deepCopy(metadata)) : null;
+  var constructor = ImageEncoder.metadataEncoders[metadata.mimeType] ||
+      ImageEncoder.MetadataEncoder;
+  return new constructor(metadata);
 };
 
 
@@ -41,7 +42,7 @@ ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
   var encoder = ImageEncoder.createMetadataEncoder(metadata);
   if (encoder) {
     encoder.setImageData(canvas);
-    ImageEncoder.encodeThumbnail(canvas, encoder, quality);
+    ImageEncoder.encodeThumbnail(canvas, encoder, quality || 1);
   }
   return encoder;
 };
@@ -55,10 +56,11 @@ ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
  * @return {Blob}
  */
 ImageEncoder.getBlob = function(canvas, metadataEncoder, quality) {
+  var mimeType = metadataEncoder.getMetadata().mimeType;
   var blobBuilder = new WebKitBlobBuilder();
-  ImageEncoder.buildBlob(blobBuilder, canvas,
-      metadataEncoder, metadataEncoder.getMetadata().mimeType, quality);
-  return blobBuilder.getBlob();
+  ImageEncoder.buildBlob(
+      blobBuilder, canvas, metadataEncoder, mimeType, quality);
+  return blobBuilder.getBlob(mimeType);
 };
 
 /**
@@ -228,7 +230,9 @@ ImageEncoder.MetadataEncoder.prototype.setImageData = function(canvas) {};
  * @param {String} dataUrl Data url containing the thumbnail.
  */
 ImageEncoder.MetadataEncoder.prototype.
-    setThumbnailData = function(canvas, dataUrl) {};
+    setThumbnailData = function(canvas, dataUrl) {
+  this.metadata_.thumbnailURL = dataUrl;
+};
 
 /**
  * Return a range where the metadata is (or should be) located.
@@ -243,4 +247,6 @@ ImageEncoder.MetadataEncoder.prototype.
  * The return type is optimized for passing to Blob.append.
  * @return {ArrayBuffer}
  */
-ImageEncoder.MetadataEncoder.prototype.encode = function() { return null };
+ImageEncoder.MetadataEncoder.prototype.encode = function() {
+  return new Uint8Array(0).buffer;
+};

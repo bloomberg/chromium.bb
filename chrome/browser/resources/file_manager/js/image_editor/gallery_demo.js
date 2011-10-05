@@ -2,40 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var mockDirEntry = {
-  getFile: function(name, options, onSuccess, onError) {
-    onError('File write not supported');
-  }
-};
+var metadataProvider = new MetadataProvider('../metadata_dispatcher.js');
 
-var mockMetadataProvider = {
-  fetch: function(url, callback) {
-    setTimeout(function(){ callback({mimeType: 'image/jpeg'}) }, 0);
-  },
+function toggleSize(check) {
+  var iframe = document.querySelector('.gallery-frame');
+  iframe.classList.toggle('chromebook');
+}
 
-  reset: function() {}
-};
+var mockActions = [
+  {
+    title: 'Send',
+    iconUrl: 'http://google.com/favicon.ico',
+    execute: function() { alert('Sending is not supported') }
+  }];
 
-function initGallery(urls) {
-  var contentWindow = document.querySelector('.gallery-frame').contentWindow;
+function loadGallery(items) {
+  if (!items) items = [createTestGrid()];
+
+  var iframe = document.querySelector('.gallery-frame');
+  var contentWindow = iframe.contentWindow;
 
   contentWindow.ImageUtil.trace.bindToDOM(
       document.querySelector('.debug-output'));
 
   contentWindow.Gallery.open(
-      mockDirEntry, urls, function(){}, mockMetadataProvider);
-}
+      null,  // No local file access
+      items,
+      items[0],
+      function() {},  // Do nothing on Close
+      metadataProvider,
+      mockActions);
 
-function openFiles(files) {
-  var urls = [];
-  for (var i = 0; i != files.length; i++) {
-    urls.push(window.webkitURL.createObjectURL(files[i]));
-  }
-  initGallery(urls);
-}
-
-function loadTestGrid() {
-  initGallery([createTestGrid().toDataURL('image/jpeg')]);
+  iframe.focus();
 }
 
 function createTestGrid() {

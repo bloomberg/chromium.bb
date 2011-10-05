@@ -5,10 +5,12 @@
   -->
 <html>
 <head>
+  <script type="text/javascript" src="../metadata_provider.js"></script>
   <script type="text/javascript" src="gallery_demo.js"></script>
 
   <style type="text/css">
     body {
+      -webkit-user-select: none;
       margin: 0
     }
 
@@ -18,8 +20,14 @@
       border: none;
     }
 
+    .gallery-frame.chromebook {
+      width: 1280px;
+      height: 700px;
+    }
+
     .debug-buttons {
       position: absolute;
+      color: white;
       left: 1px;
       top: 1px;
     }
@@ -30,6 +38,11 @@
       top: 28px;
       text-align: left;
       color: white;
+      opacity: 0.3;
+    }
+
+    .debug-output:hover {
+      opacity: 1;
     }
   </style>
 
@@ -37,12 +50,15 @@
 <body>
   <iframe class="gallery-frame"
           scrolling="no"
-          src="gallery.html">
+          src="gallery.html"
+          onload="loadGallery()"/>
   </iframe>
 
   <div class="debug-buttons">
-    <button onclick="loadTestGrid()">Test grid</button>
-    <input type="file" multiple onchange="openFiles(this.files)"/>
+    <input type="checkbox" onchange="toggleSize(this);"/>
+    <span>Chromebook size</span>
+    <button onclick="loadGallery()">Test grid</button>
+    <input type="file" multiple onchange="loadGallery(this.files)"/>
   </div>
 
   <div class="debug-output"></div>

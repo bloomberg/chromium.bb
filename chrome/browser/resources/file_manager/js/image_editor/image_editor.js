@@ -8,35 +8,30 @@
  * @param {HTMLElement} container
  * @param {HTMLElement} mainToolbarContainer
  * @param {HTMLElement} modeToolbarContainer
- * @param {Array.<ImageEditor.Mode>} tools
+ * @param {Array.<ImageEditor.Mode>} modes
  * @param {Object} displayStrings
  */
 function ImageEditor(
     container, mainToolbarContainer, modeToolbarContainer,
-    tools, displayStrings) {
+    modes, displayStrings) {
   this.container_ = container;
-  this.tools_ = tools || ImageEditor.Mode.constructors;
   this.displayStrings_ = displayStrings;
 
   this.container_.innerHTML = '';
 
   var document = this.container_.ownerDocument;
 
-  this.canvasWrapper_ = document.createElement('div');
-  this.canvasWrapper_.className = 'canvas-wrapper';
-  container.appendChild(this.canvasWrapper_);
+  this.viewport_ = new Viewport();
+  this.viewport_.sizeByFrame(this.container_);
 
-  var canvas = document.createElement('canvas');
-  this.canvasWrapper_.appendChild(canvas);
-  canvas.width = this.canvasWrapper_.clientWidth;
-  canvas.height = this.canvasWrapper_.clientHeight;
+  this.buffer_ = new ImageBuffer();
+  this.viewport_.addRepaintCallback(this.buffer_.draw.bind(this.buffer_));
 
-  this.buffer_ = new ImageBuffer(canvas);
-  this.modified_ = false;
+  this.imageView_ = new ImageView(this.container_, this.viewport_);
+  this.buffer_.addOverlay(this.imageView_);
 
-  // TODO(dgozman): consider adding a ScaleControl in v2.
-
-  this.panControl_ = new ImageEditor.MouseControl(canvas, this.getBuffer());
+  this.panControl_ = new ImageEditor.MouseControl(
+      this.container_, this.getBuffer());
 
   this.mainToolbar_ = new ImageEditor.Toolbar(
       mainToolbarContainer, displayStrings);
@@ -44,95 +39,132 @@ function ImageEditor(
   this.modeToolbar_ = new ImageEditor.Toolbar(
       modeToolbarContainer, displayStrings, this.onOptionsChange.bind(this));
 
-  this.createToolButtons();
+  this.prompt_ = new ImageEditor.Prompt(
+      this.container_, this.getDisplayString.bind(this));
+
+  this.createToolButtons(modes);
+
+  this.commandQueue_ = null;
 }
 
-/**
- * Create an ImageEditor instance bound to a current web page, load the content.
- *
- * Use this method when image_editor.html is loaded into an iframe.
- *
- * @param {function(Blob)} saveCallback
- * @param {function()} closeCallback
- * @param {HTMLCanvasElement|HTMLImageElement|String} source
- * @param {Object} opt_metadata
- * @return {ImageEditor}
- */
-ImageEditor.open = function(saveCallback, closeCallback, source, opt_metadata) {
-  var container = document.getElementsByClassName('image-editor')[0];
-  var toolbar = document.getElementsByClassName('toolbar-container')[0];
-  var editor = new ImageEditor(container, toolbar, saveCallback, closeCallback);
-  if (ImageEditor.resizeListener) {
+ImageEditor.prototype.trackWindow = function(window) {
+  if (window.resizeListener) {
     // Make sure we do not leak the previous instance.
-    window.removeEventListener('resize', ImageEditor.resizeListener, false);
+    window.removeEventListener('resize', window.resizeListener, false);
   }
-  ImageEditor.resizeListener = editor.resizeFrame.bind(editor);
-  window.addEventListener('resize', ImageEditor.resizeListener, false);
-  editor.load(source, opt_metadata);
-  return editor;
+  window.resizeListener = this.resizeFrame.bind(this);
+  window.addEventListener('resize', window.resizeListener, false);
+};
+
+ImageEditor.prototype.isLocked = function() {
+  return !this.commandQueue_ || this.commandQueue_.isBusy();
+};
+
+ImageEditor.prototype.lockUI = function(on) {
+  ImageUtil.setAttribute(this.container_.parentNode, 'locked', on);
+  this.container_.style.cursor = on ? 'wait' : 'default';
+  return true;
+};
+
+ImageEditor.prototype.openSession = function(
+    source, metadata, slide, opt_callback) {
+  var self = this;
+  this.imageView_.load(source, metadata, slide, function() {
+    self.commandQueue_ = new CommandQueue(
+        self.container_.ownerDocument, self.imageView_.getCanvas());
+    self.commandQueue_.attachUI(
+        self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
+    self.updateUndoRedo();
+    if (opt_callback) opt_callback();
+  });
 };
 
 /**
- * Loads a new image and its metadata.
- *
- * Takes into account the image orientation encoded in metadata.
- *
- * @param {HTMLCanvasElement|HTMLImageElement|String} source
- * @param {Object} opt_metadata
+ * @param {function(HTMLCanvasElement,boolean) opt_callback Passes the current
+ *    image and the modified flag.
  */
-ImageEditor.prototype.load = function(source, opt_metadata) {
-  this.onModeLeave();
-  this.originalSource_ = source;
-  this.originalMetadata_ = opt_metadata || {};
-  this.getBuffer().load(
-      this.originalSource_, this.originalMetadata_.imageTransform);
-  this.modified_ = false;
+ImageEditor.prototype.closeSession = function(opt_callback) {
+  if (this.imageView_.isLoading()) {
+    this.imageView_.cancelLoad();
+    return;
+  }
+
+  if (!this.commandQueue_) return;
+
+  this.leaveModeGently();
+
+  this.commandQueue_.detachUI();
+  var detachedQueue = this.commandQueue_;
+  this.commandQueue_ = null;
+
+  if (opt_callback) {
+    // The detached command queue can still be busy. Let it finish.
+    detachedQueue.requestCurrentImage(function(canvas) {
+      opt_callback(canvas, detachedQueue.canUndo());
+    });
+  }
 };
 
-ImageEditor.prototype.reload = function() {
-  this.load(this.originalSource_, this.originalMetadata_);
+ImageEditor.prototype.undo = function() {
+  if (this.commandQueue_.isBusy()) return;
+  this.getPrompt().hide();
+  this.leaveMode(false);
+  this.commandQueue_.undo();
+  this.updateUndoRedo();
 };
 
-/**
- * Create a metadata encoder object that holds metadata corresponding to
- * the current image.
- *
- * @param {number} quality
- */
-ImageEditor.prototype.encodeMetadata = function(quality) {
-  return ImageEncoder.encodeMetadata(this.originalMetadata_,
-      this.getBuffer().getContent().getCanvas(), quality || 1);
+ImageEditor.prototype.redo = function() {
+  if (this.commandQueue_.isBusy()) return;
+  this.getPrompt().hide();
+  this.leaveMode(false);
+  this.commandQueue_.redo();
+  this.updateUndoRedo();
 };
 
-ImageEditor.prototype.isModified = function() { return this.modified_ };
+ImageEditor.prototype.updateUndoRedo = function() {
+  var canUndo = this.commandQueue_ && this.commandQueue_.canUndo();
+  var canRedo = this.commandQueue_ && this.commandQueue_.canRedo();
+  ImageUtil.setAttribute(this.undoButton_, 'disabled', !canUndo);
+  ImageUtil.setAttribute(this.redoButton_, 'hidden', !canRedo);
+};
+
+ImageEditor.prototype.getCanvas = function() {
+  return this.getImageView().getCanvas();
+};
 
 /**
  * Window resize handler.
  */
 ImageEditor.prototype.resizeFrame = function() {
-  this.getBuffer().resizeScreen(
-      this.canvasWrapper_.clientWidth, this.canvasWrapper_.clientHeight, true);
+  this.getViewport().sizeByFrameAndFit(this.container_);
+  this.getViewport().repaint();
 };
 
 /**
  * @return {ImageBuffer}
  */
-ImageEditor.prototype.getBuffer = function () {
-  return this.buffer_;
-};
+ImageEditor.prototype.getBuffer = function () { return this.buffer_ };
 
 /**
- * Destroys the UI and calls the close callback.
+ * @return {ImageView}
  */
-ImageEditor.prototype.close = function() {
-  this.container_.innerHTML = '';
-  this.closeCallback_();
-};
+ImageEditor.prototype.getImageView = function () { return this.imageView_ };
+
+/**
+ * @return {Viewport}
+ */
+ImageEditor.prototype.getViewport = function () { return this.viewport_ };
+
+/**
+ * @return {ImageEditor.Prompt}
+ */
+ImageEditor.prototype.getPrompt = function () { return this.prompt_ };
 
 ImageEditor.prototype.onOptionsChange = function(options) {
   ImageUtil.trace.resetTimer('update');
-  if (this.currentMode_)
+  if (this.currentMode_) {
     this.currentMode_.update(options);
+  }
   ImageUtil.trace.reportTimer('update');
 };
 
@@ -153,30 +185,20 @@ ImageEditor.Mode = function(name, displayName) {
 
 ImageEditor.Mode.prototype = {__proto__: ImageBuffer.Overlay.prototype };
 
-ImageEditor.Mode.prototype.getBuffer = function() {
-  return this.buffer_;
-};
+ImageEditor.Mode.prototype.getViewport = function() { return this.viewport_ };
 
-ImageEditor.Mode.prototype.repaint = function(opt_fromOverlay) {
-  return this.buffer_.repaint(opt_fromOverlay);
-};
-
-ImageEditor.Mode.prototype.getViewport = function() {
-  return this.viewport_;
-};
-
-ImageEditor.Mode.prototype.getContent = function() {
-  return this.content_;
-};
+ImageEditor.Mode.prototype.getImageView = function() { return this.imageView_ };
 
 /**
  * Called before entering the mode.
  */
-ImageEditor.Mode.prototype.setUp = function(buffer) {
-  this.buffer_ = buffer;
-  this.viewport_ = buffer.getViewport();
-  this.content_ = buffer.getContent();
-  this.buffer_.addOverlay(this);
+ImageEditor.Mode.prototype.setUp = function(editor) {
+  this.editor_ = editor;
+  this.viewport_ = editor.getViewport();
+  this.imageView_ = editor.getImageView();
+  this.editor_.getBuffer().addOverlay(this);
+
+  this.updated_ = false;
 };
 
 /**
@@ -188,7 +210,7 @@ ImageEditor.Mode.prototype.createTools = function(toolbar) {};
  * Called before exiting the mode.
  */
 ImageEditor.Mode.prototype.cleanUpUI = function() {
-  this.buffer_.removeOverlay(this);
+  this.editor_.getBuffer().removeOverlay(this);
 };
 
 /**
@@ -199,93 +221,140 @@ ImageEditor.Mode.prototype.cleanUpCaches = function() {};
 /**
  * Called when any of the controls changed its value.
  */
-ImageEditor.Mode.prototype.update = function(options) {};
-
-/**
- * The user clicked 'OK'. Finalize the change.
- */
-ImageEditor.Mode.prototype.commit = function() {};
-
-/**
- * The user clicker 'Reset' or 'Cancel'. Undo the change.
- */
-ImageEditor.Mode.prototype.rollback = function() {};
-
-
-ImageEditor.Mode.constructors = [];
-
-ImageEditor.Mode.register = function(constructor) {
-  ImageEditor.Mode.constructors.push(constructor);
+ImageEditor.Mode.prototype.update = function(options) {
+  this.markUpdated();
 };
 
-ImageEditor.prototype.createToolButtons = function() {
+ImageEditor.Mode.prototype.markUpdated = function() {
+  this.editor_.getPrompt().hide();
+  this.updated_ = true;
+};
+
+/**
+ * One-click editor tool, requires no interaction, just executes the command.
+ * @param {string} name
+ * @param {Command} command
+ * @constructor
+ */
+ImageEditor.Mode.OneClick = function(name, command) {
+  ImageEditor.Mode.call(this, name);
+  this.instant = true;
+  this.command_ = command;
+};
+
+ImageEditor.Mode.OneClick.prototype = {__proto__: ImageEditor.Mode.prototype};
+
+ImageEditor.Mode.OneClick.prototype.getCommand = function() {
+  return this.command_;
+};
+
+
+ImageEditor.prototype.createToolButtons = function(modes) {
   this.mainToolbar_.clear();
-  for (var i = 0; i != this.tools_.length; i++) {
-    var mode = new this.tools_[i];
+  for (var i = 0; i != modes.length; i++) {
+    var mode = modes[i];
     this.mainToolbar_.addButton(this.getDisplayString(mode.name),
-        this.onModeEnter.bind(this, mode), mode.name);
+        this.enterMode.bind(this, mode), mode.name);
   }
-  this.mainToolbar_.addButton(this.getDisplayString('undo'),
-      this.reload.bind(this), 'undo');
+  this.undoButton_ = this.mainToolbar_.addButton(this.getDisplayString('undo'),
+      this.undo.bind(this), 'undo');
+  this.redoButton_ = this.mainToolbar_.addButton(this.getDisplayString('redo'),
+      this.redo.bind(this), 'redo');
 };
+
+ImageEditor.prototype.isModal = function() { return !!this.currentMode_ };
 
 /**
  * The user clicked on the mode button.
  */
-ImageEditor.prototype.onModeEnter = function(mode, event) {
-  var previousMode = this.currentMode_;
-  this.onModeLeave(false);
+ImageEditor.prototype.enterMode = function(mode, event) {
+  if (this.commandQueue_.isBusy()) return;
 
-  if (previousMode == mode) return;
+  if (this.currentMode_ == mode) {
+    // Currently active editor tool clicked, commit if modified.
+    this.leaveMode(this.currentMode_.updated_);
+    return;
+  }
+
+  this.leaveModeGently();
 
   this.currentTool_ = event.target;
-  this.currentTool_.setAttribute('pressed', 'pressed');
+
+  ImageUtil.setAttribute(this.currentTool_, 'pressed', true);
 
   this.currentMode_ = mode;
-  this.currentMode_.setUp(this.getBuffer());
+  this.currentMode_.setUp(this);
 
-  if (this.currentMode_.oneClick) {
-    this.currentMode_.oneClick();
-    this.onModeLeave(true);
+  if (this.currentMode_.instant) {  // Instant tool.
+    this.leaveMode(true);
     return;
   }
 
   this.modeToolbar_.clear();
   this.currentMode_.createTools(this.modeToolbar_);
 
-  this.modeToolbar_.addButton(this.getDisplayString('OK'),
-      this.onModeLeave.bind(this, true), 'mode', 'ok'),
-  this.modeToolbar_.addButton(this.getDisplayString('Cancel'),
-      this.onModeLeave.bind(this, false), 'mode', 'cancel');
-
-  this.modeToolbar_.show(this.currentTool_);
-
-  this.getBuffer().repaint();
+  this.modeToolbar_.show(true);
+  this.getPrompt().show('enter-when-done');
 };
 
 /**
  * The user clicked on 'OK' or 'Cancel' or on a different mode button.
  */
-ImageEditor.prototype.onModeLeave = function(save) {
+ImageEditor.prototype.leaveMode = function(commit) {
   if (!this.currentMode_) return;
 
-  this.modeToolbar_.hide();
+  if (!this.currentMode_.instant) {
+    this.getPrompt().hide();
+  }
+
+  this.modeToolbar_.show(false);
 
   this.currentMode_.cleanUpUI();
-  if (save) {
-    this.currentMode_.commit();
-    this.modified_ = true;
-  } else {
-    this.currentMode_.rollback();
+  if (commit) {
+    var self = this;
+    this.commandQueue_.execute(this.currentMode_.getCommand());
+    this.updateUndoRedo();
   }
   this.currentMode_.cleanUpCaches();
   this.currentMode_ = null;
 
-  this.currentTool_.removeAttribute('pressed');
+  ImageUtil.setAttribute(this.currentTool_, 'pressed', false);
   this.currentTool_ = null;
+};
 
-  this.getBuffer().repaint();
+ImageEditor.prototype.leaveModeGently = function() {
+  this.leaveMode(this.currentMode_ &&
+                 this.currentMode_.updated_ &&
+                 this.currentMode_.implicitCommit);
+};
 
+ImageEditor.prototype.onKeyDown = function(event) {
+  switch(event.keyIdentifier) {
+    case 'U+001B': // Escape
+    case 'Enter':
+      if (this.isModal()) {
+        this.leaveMode(event.keyIdentifier == 'Enter');
+        return true;
+      }
+      break;
+
+    case 'U+005A':  // 'z'
+      if (event.ctrlKey) {
+        if (event.shiftKey) {
+          if (this.commandQueue_.canRedo()) {
+            this.redo();
+            return true;
+          }
+        } else {
+          if (this.commandQueue_.canUndo()) {
+            this.undo();
+            return true;
+          }
+        }
+      }
+      break;
+  }
+  return false;
 };
 
 /**
@@ -440,12 +509,12 @@ ImageEditor.ScaleControl.prototype.on1to1Button = function () {
  * A helper object for panning the ImageBuffer.
  * @constructor
  */
-ImageEditor.MouseControl = function(canvas, buffer) {
-  this.canvas_ = canvas;
+ImageEditor.MouseControl = function(container, buffer) {
+  this.container_ = container;
   this.buffer_ = buffer;
-  canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-  canvas.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-  canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+  container.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+  container.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+  container.addEventListener('mousemove', this.onMouseMove.bind(this), false);
 };
 
 ImageEditor.MouseControl.getPosition = function(e) {
@@ -461,8 +530,7 @@ ImageEditor.MouseControl.prototype.onMouseDown = function(e) {
 
   this.dragHandler_ = this.buffer_.getDragHandler(position.x, position.y);
   this.dragHappened_ = false;
-  this.canvas_.style.cursor =
-      this.buffer_.getCursorStyle(position.x, position.y, !!this.dragHandler_);
+  this.updateCursor_(position);
   e.preventDefault();
 };
 
@@ -474,19 +542,37 @@ ImageEditor.MouseControl.prototype.onMouseUp = function(e) {
   }
   this.dragHandler_ = null;
   this.dragHappened_ = false;
+  this.lockMouse_(false);
   e.preventDefault();
 };
 
 ImageEditor.MouseControl.prototype.onMouseMove = function(e) {
   var position = ImageEditor.MouseControl.getPosition(e);
 
-  this.canvas_.style.cursor =
-      this.buffer_.getCursorStyle(position.x, position.y, !!this.dragHandler_);
+  if (this.dragHandler_ && !e.which) {
+    // mouseup must have happened while the mouse was outside our window.
+    this.dragHandler_ = null;
+    this.lockMouse_(false);
+  }
+
+  this.updateCursor_(position);
   if (this.dragHandler_) {
     this.dragHandler_(position.x, position.y);
     this.dragHappened_ = true;
+    this.lockMouse_(true);
   }
   e.preventDefault();
+};
+
+ImageEditor.MouseControl.prototype.lockMouse_ = function(on) {
+  ImageUtil.setAttribute(this.container_.parentNode, 'mousedrag', on);
+};
+
+ImageEditor.MouseControl.prototype.updateCursor_ = function(position) {
+  this.container_.style.cursor =
+      this.container_.parentNode.hasAttribute('locked') ?
+      '' :
+      this.buffer_.getCursorStyle(position.x, position.y, !!this.dragHandler_);
 };
 
 /**
@@ -523,11 +609,10 @@ ImageEditor.Toolbar.prototype.addLabel = function(text) {
 };
 
 ImageEditor.Toolbar.prototype.addButton = function(
-    text, handler, opt_class1, opt_class2) {
+    text, handler, opt_class1) {
   var button = this.create_('div');
   button.classList.add('button');
   if (opt_class1) button.classList.add(opt_class1);
-  if (opt_class2) button.classList.add(opt_class2);
   button.textContent = this.getDisplayString(text);
   button.addEventListener('click', handler, false);
   return this.add(button);
@@ -586,7 +671,7 @@ ImageEditor.Toolbar.prototype.addRange = function(
 
   var label = this.create_('div');
   label.textContent = this.getDisplayString(name);
-  label.className = 'label';
+  label.className = 'label ' + name;
   this.add(label);
   this.add(range);
   if (opt_showNumeric) this.add(numeric);
@@ -609,19 +694,71 @@ ImageEditor.Toolbar.prototype.reset = function() {
   }
 };
 
-ImageEditor.Toolbar.prototype.show = function(parentButton) {
-  this.wrapper_.removeAttribute('hidden');
+ImageEditor.Toolbar.prototype.show = function(on) {
+  if (!this.wrapper_.firstChild)
+    return;  // Do not show empty toolbar;
 
-  this.wrapper_.style.left = '0';
-
-  var parentRect = parentButton.getBoundingClientRect();
-  var wrapperRect = this.wrapper_.getBoundingClientRect();
-
-  // Align the horizontal center of the toolbar with the center of the parent.
-  this.wrapper_.style.left =
-      (parentRect.left + (parentRect.width - wrapperRect.width) / 2) + 'px';
+  ImageUtil.setAttribute(this.wrapper_, 'hidden', !on);
 };
 
-ImageEditor.Toolbar.prototype.hide = function() {
-  this.wrapper_.setAttribute('hidden', 'hidden');
+/** A prompt panel for the editor.
+ *
+ * @param {HTMLElement} container
+ */
+ImageEditor.Prompt = function(container, localizeFunction) {
+  this.container_ = container.parentNode;
+  this.localizeFunction_ = localizeFunction;
+};
+
+ImageEditor.Prompt.prototype.reset = function() {
+  this.cancelTimer();
+  if (this.wrapper_) {
+    this.container_.removeChild(this.wrapper_);
+    this.wrapper_ = null;
+    this.prompt_ = null;
+  }
+};
+
+ImageEditor.Prompt.prototype.cancelTimer = function() {
+  if (this.timer_) {
+    clearTimeout(this.timer_);
+    this.timer_ = null;
+  }
+};
+
+ImageEditor.Prompt.prototype.setTimer = function(callback, timeout) {
+  this.cancelTimer();
+  var self = this;
+  this.timer_ = setTimeout(function() {
+    self.timer_ = null;
+    callback();
+  }, timeout);
+};
+
+ImageEditor.Prompt.prototype.show = function(text, timeout) {
+  this.reset();
+
+  var document = this.container_.ownerDocument;
+  this.wrapper_ = document.createElement('div');
+  this.wrapper_.className = 'prompt-wrapper';
+  this.container_.appendChild(this.wrapper_);
+
+  this.prompt_ = document.createElement('div');
+  this.prompt_.className = 'prompt';
+  this.wrapper_.appendChild(this.prompt_);
+
+  this.prompt_.textContent = this.localizeFunction_(text);
+
+  setTimeout(
+      this.prompt_.setAttribute.bind(this.prompt_, 'state', 'fadein'), 0);
+
+  if (timeout)
+    this.setTimer(this.hide.bind(this), timeout);
+};
+
+ImageEditor.Prompt.prototype.hide = function() {
+  if (!this.prompt_) return;
+  this.prompt_.setAttribute('state', 'fadeout');
+  // Allow some time for the animation to play out.
+  this.setTimer(this.reset.bind(this), 500);
 };

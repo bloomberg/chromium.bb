@@ -23,47 +23,65 @@ function Gallery(container, closeCallback, metadataProvider, shareActions) {
   this.initDom_(shareActions);
 }
 
-Gallery.open = function(
-    parentDirEntry, urls, closeCallback, metadataProvider, shareActions) {
+Gallery.open = function(parentDirEntry, items, selectedItem,
+                        closeCallback, metadataProvider, shareActions) {
   var container = document.querySelector('.gallery');
   container.innerHTML = '';
-  var gallery = new Gallery(container, closeCallback, metadataProvider,
-      shareActions);
-  gallery.load(parentDirEntry, urls);
+  var gallery = new Gallery(
+      container, closeCallback, metadataProvider, shareActions);
+  gallery.load(parentDirEntry, items, selectedItem);
 };
 
 // TODO(kaznacheev): localization.
 Gallery.displayStrings = {
-  close: 'Close',
   edit: 'Edit',
   share: 'Share',
   autofix: 'Auto-fix',
   crop: 'Crop',
-  exposure: 'Brightness / contrast',
+  exposure: 'Brightness',
   brightness: 'Brightness',
   contrast: 'Contrast',
-  rotate: 'Rotate',
-  undo: 'Undo'
+  'rotate-left': 'Left',
+  'rotate-right': 'Right',
+  'enter-when-done': 'Press Enter when done',
+  fixed: 'Fixed',
+  undo: 'Undo',
+  redo: 'Redo'
 };
 
 
 Gallery.editorModes = [
-  ImageEditor.Mode.InstantAutofix,
-  ImageEditor.Mode.Crop,
-  ImageEditor.Mode.Exposure,
-  ImageEditor.Mode.InstantRotate
+  new ImageEditor.Mode.InstantAutofix(),
+  new ImageEditor.Mode.Crop(),
+  new ImageEditor.Mode.Exposure(),
+  new ImageEditor.Mode.OneClick('rotate-left', new Command.Rotate(-1)),
+  new ImageEditor.Mode.OneClick('rotate-right', new Command.Rotate(1))
 ];
 
-Gallery.FADE_TIMEOUT = 5000;
+Gallery.FADE_TIMEOUT = 3000;
+Gallery.FIRST_FADE_TIMEOUT = 1000;
 
 Gallery.prototype.initDom_ = function(shareActions) {
   var doc = this.document_;
-  this.container_.addEventListener('keydown', this.onKeyDown_.bind(this));
-  this.container_.addEventListener('mousemove', this.onMouseMove_.bind(this));
+
+  // Clean up after the previous instance of Gallery.
+  this.container_.removeAttribute('editing');
+  this.container_.removeAttribute('tools');
+  if (window.galleryKeyDown) {
+    doc.body.removeEventListener('keydown', window.galleryKeyDown);
+  }
+  if (window.galleryMouseMove) {
+    doc.body.removeEventListener('keydown', window.galleryMouseMove);
+  }
+
+  window.galleryKeyDown = this.onKeyDown_.bind(this);
+  doc.body.addEventListener('keydown', window.galleryKeyDown);
+
+  window.galleryMouseMove = this.onMouseMove_.bind(this);
+  doc.body.addEventListener('mousemove', window.galleryMouseMove);
 
   this.closeButton_ = doc.createElement('div');
   this.closeButton_.className = 'close';
-  this.closeButton_.textContent = Gallery.displayStrings['close'];
   this.closeButton_.addEventListener('click', this.onClose_.bind(this));
   this.container_.appendChild(this.closeButton_);
 
@@ -75,11 +93,28 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.toolbar_.className = 'toolbar';
   this.container_.appendChild(this.toolbar_);
 
-  this.ribbon_ = new Ribbon(this.toolbar_, this.onSelect_.bind(this));
+  this.ribbonSpacer_ = doc.createElement('div');
+  this.ribbonSpacer_.className = 'ribbon-spacer';
+  this.toolbar_.appendChild(this.ribbonSpacer_);
+
+  this.toolbar_.addEventListener('mouseover',
+      this.enableFading_.bind(this, false));
+  this.toolbar_.addEventListener('mouseout',
+      this.enableFading_.bind(this, true));
+
+  this.arrowLeft_ = this.document_.createElement('div');
+  this.arrowLeft_.className = 'arrow left';
+  this.container_.appendChild(this.arrowLeft_);
+
+  this.arrowRight_ = this.document_.createElement('div');
+  this.arrowRight_.className = 'arrow right';
+  this.container_.appendChild(this.arrowRight_);
+
+  this.ribbon_ = new Ribbon(this.ribbonSpacer_, this.onSelect_.bind(this),
+      this.arrowLeft_, this.arrowRight_);
 
   this.editBar_  = doc.createElement('div');
   this.editBar_.className = 'edit-bar';
-  this.editBar_.setAttribute('hidden', 'hidden');
   this.toolbar_.appendChild(this.editBar_);
 
   this.editButton_ = doc.createElement('div');
@@ -98,13 +133,16 @@ Gallery.prototype.initDom_ = function(shareActions) {
 
   this.editBarMain_  = doc.createElement('div');
   this.editBarMain_.className = 'edit-main';
-  this.editBarMain_.setAttribute('hidden', 'hidden');
   this.editBar_.appendChild(this.editBarMain_);
 
   this.editBarMode_  = doc.createElement('div');
   this.editBarMode_.className = 'edit-modal';
-  this.editBarMode_.setAttribute('hidden', 'hidden');
-  this.editBar_.appendChild(this.editBarMode_);
+  this.container_.appendChild(this.editBarMode_);
+
+  this.editBarModeWrapper_  = doc.createElement('div');
+  ImageUtil.setAttribute(this.editBarModeWrapper_, 'hidden', true);
+  this.editBarModeWrapper_.className = 'edit-modal-wrapper';
+  this.editBarMode_.appendChild(this.editBarModeWrapper_);
 
   this.shareMenu_ = doc.createElement('div');
   this.shareMenu_.className = 'share-menu';
@@ -126,88 +164,83 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.editor_ = new ImageEditor(
       this.imageContainer_,
       this.editBarMain_,
-      this.editBarMode_,
+      this.editBarModeWrapper_,
       Gallery.editorModes,
       Gallery.displayStrings);
+
+  this.imageView_ = this.editor_.getImageView();
+
+  this.editor_.trackWindow(doc.defaultView);
 };
 
-Gallery.prototype.load = function(parentDirEntry, urls) {
-  this.editBar_.setAttribute('hidden', 'hidden');
-  this.editBarMain_.setAttribute('hidden', 'hidden');
+Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
+  this.parentDirEntry_ = parentDirEntry;
+
   this.editButton_.removeAttribute('pressed');
   this.shareButton_.removeAttribute('pressed');
-  this.toolbar_.removeAttribute('hidden');
+
   this.shareMenu_.setAttribute('hidden', 'hidden');
   this.editing_ = false;
   this.sharing_ = false;
 
-  if (urls.length == 0)
-    return;
-
-  // TODO(kaznacheev): instead of always selecting the 0-th url
-  // select the url passed from the FileManager.
-  this.ribbon_.load(urls, urls[0], this.metadataProvider_);
-  this.parentDirEntry_ = parentDirEntry;
-
+  this.cancelFading_();
   this.initiateFading_();
+
+  var urls = [];
+  var selectedURL;
+
+  // Convert canvas and blob items to blob urls.
+  for (var i = 0; i != items.length; i++) {
+    var item = items[i];
+    var selected = (item == selectedItem);
+
+    if (item.constructor.name == 'HTMLCanvasElement') {
+      item = ImageEncoder.getBlob(item,
+          ImageEncoder.encodeMetadata({mimeType: 'image/jpeg'}, item), 1);
+    }
+    if (item.constructor.name == 'Blob' ||
+        item.constructor.name == 'File') {
+      item = window.webkitURL.createObjectURL(item);
+    }
+    if (typeof item == 'string') {
+      urls.push(item);
+      if (selected) selectedURL = item;
+    } else {
+      console.error('Unsupported image type');
+    }
+  }
+
+  if (urls.length == 0)
+    throw new Error('Cannot open the gallery for 0 items');
+
+  selectedURL = selectedURL || urls[0];
+
+  var self = this;
+
+  function initRibbon() {
+    self.currentItem_ =
+        self.ribbon_.load(urls, selectedURL, self.metadataProvider_);
+    // Flash the ribbon briefly to let the user know it is there.
+    self.initiateFading_(Gallery.FIRST_FADE_TIMEOUT);
+  }
+
+  // Initialize the ribbon only after the selected image is fully loaded.
+  this.metadataProvider_.fetch(selectedURL, function (metadata) {
+    self.editor_.openSession(selectedURL, metadata, 0, initRibbon);
+  });
 };
 
 Gallery.prototype.saveChanges_ = function(opt_callback) {
-  if (!this.editor_.isModified()) {
-    if (opt_callback) opt_callback();
-    return;
-  }
-
-  var currentItem = this.currentItem_;
-
-  var metadataEncoder = this.editor_.encodeMetadata();
-  var canvas = this.editor_.getBuffer().getContent().detachCanvas();
-
-  currentItem.overrideContent(canvas, metadataEncoder.getMetadata());
-
-  if (currentItem.isFromLocalFile()) {
-    var newFile = currentItem.isOriginal();
-    var name = currentItem.getCopyName();
-
-    var self = this;
-
-    function onSuccess(url) {
-      console.log('Saved from gallery', name);
-      // Force the metadata provider to reread the metadata from the file.
-      self.metadataProvider_.reset(url);
-      currentItem.onSaveSuccess(url);
+  var item = this.currentItem_;
+  var self = this;
+  this.editor_.closeSession(function(canvas, modified) {
+    if (modified) {
+      item.save(
+          self.parentDirEntry_, self.metadataProvider_, canvas, opt_callback);
+    } else {
       if (opt_callback) opt_callback();
     }
-
-    function onError(error) {
-      console.log('Error saving from gallery', name, error);
-      currentItem.onSaveError(error);
-      if (opt_callback) opt_callback();
-    }
-
-    this.parentDirEntry_.getFile(
-        name, {create: newFile, exclusive: newFile}, function(fileEntry) {
-          fileEntry.createWriter(function(fileWriter) {
-            function writeContent() {
-              fileWriter.onwriteend = onSuccess.bind(null, fileEntry.toURL());
-              fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder));
-            }
-            fileWriter.onerror = onError;
-            if (newFile) {
-              writeContent();
-            } else {
-              fileWriter.onwriteend = writeContent;
-              fileWriter.truncate(0);
-            }
-          },
-      onError);
-    }, onError);
-  } else {
-    // This branch is needed only for gallery_demo.js
-    currentItem.onSaveSuccess(
-        canvas.toDataURL(metadataEncoder.getMetadata().mimeType));
-    if (opt_callback) opt_callback();
-  }
+  });
 };
 
 Gallery.prototype.onActionExecute_ = function(action) {
@@ -226,47 +259,32 @@ Gallery.prototype.onClose_ = function() {
 };
 
 Gallery.prototype.onSelect_ = function(item) {
-  if (this.currentItem_) {
-    this.saveChanges_();
-  }
+  if (this.currentItem_ == item)
+    return;
+
+  this.saveChanges_();
+  var slide = item.getIndex() - this.currentItem_.getIndex();
 
   this.currentItem_ = item;
 
-  this.editor_.load(this.currentItem_.getContent(),
-                    ImageUtil.deepCopy(this.currentItem_.getMetadata()));
+  this.editor_.openSession(
+      this.currentItem_.getContent(), this.currentItem_.getMetadata(), slide);
 };
 
-Gallery.prototype.onEdit_ = function(event) {
-  this.toolbar_.removeAttribute('hidden');
-
-  var self = this;
+Gallery.prototype.onEdit_ = function() {
   if (this.editing_) {
-    this.editor_.onModeLeave();
-    this.editBar_.setAttribute('hidden', 'hidden');
-    this.editButton_.removeAttribute('pressed');
-    this.editing_ = false;
+    this.editor_.leaveModeGently();
     this.initiateFading_();
-    window.setTimeout(function() {
-      // Hide the toolbar, so it will not overlap with buttons.
-      self.editBarMain_.setAttribute('hidden', 'hidden');
-      self.ribbon_.redraw();
-    }, 500);
   } else {
     this.cancelFading_();
-    // Show the toolbar.
-    this.editBarMain_.removeAttribute('hidden');
-    // Use setTimeout, so computed style will be recomputed.
-    window.setTimeout(function() {
-      self.editBar_.removeAttribute('hidden');
-      self.editButton_.setAttribute('pressed', 'pressed');
-      self.editing_ = true;
-      self.ribbon_.redraw();
-    }, 0);
   }
+  this.editing_ = !this.editing_;
+  ImageUtil.setAttribute(this.container_, 'editing', this.editing_);
+  ImageUtil.setAttribute(this.editButton_, 'pressed', this.editing_);
 };
 
 Gallery.prototype.onShare_ = function(event) {
-  this.toolbar_.removeAttribute('hidden');
+  ImageUtil.setAttribute(this.container_, 'tools', true);
 
   if (this.sharing_) {
     this.shareMenu_.setAttribute('hidden', 'hidden');
@@ -277,177 +295,293 @@ Gallery.prototype.onShare_ = function(event) {
 };
 
 Gallery.prototype.onKeyDown_ = function(event) {
-  if (this.editing_ || this.sharing_)
+  if (this.sharing_)
     return;
+
+  if (this.editing_ && this.editor_.onKeyDown(event))
+    return;
+
   switch (event.keyIdentifier) {
+    case 'U+001B':  // Escape
+      if (this.editing_) {
+        this.onEdit_();
+      } else {
+        this.onClose_();
+      }
+      break;
+
+    case 'U+0045':  // 'e'
+      if (!this.editing_)
+        this.onEdit_();
+      break;
+
     case 'Home':
-      this.ribbon_.scrollToFirst();
+      this.ribbon_.selectFirst();
       break;
     case 'Left':
-      this.ribbon_.scrollLeft();
+      this.ribbon_.selectPrevious();
       break;
     case 'Right':
-      this.ribbon_.scrollRight();
+      this.ribbon_.selectNext();
       break;
     case 'End':
-      this.ribbon_.scrollToLast();
+      this.ribbon_.selectLast();
       break;
   }
 };
 
 Gallery.prototype.onMouseMove_ = function(e) {
   this.cancelFading_();
-  this.toolbar_.removeAttribute('hidden');
   this.initiateFading_();
 };
 
 Gallery.prototype.onFadeTimeout_ = function() {
   this.fadeTimeoutId_ = null;
   if (this.editing_ || this.sharing_) return;
-  this.toolbar_.setAttribute('hidden', 'hidden');
+  this.container_.removeAttribute('tools');
 };
 
-Gallery.prototype.initiateFading_ = function() {
+Gallery.prototype.enableFading_ = function(on) {
+  this.fadingEnabled_ = on;
+  if (this.fadingEnabled_)
+    this.initiateFading_();
+  else
+    this.cancelFading_();
+};
+
+Gallery.prototype.initiateFading_ = function(opt_timeout) {
+  if (!this.fadingEnabled_)
+      return;
+
   if (this.editing_ || this.sharing_ || this.fadeTimeoutId_) {
     return;
   }
   this.fadeTimeoutId_ = window.setTimeout(
-      this.onFadeTimeoutBound_, Gallery.FADE_TIMEOUT);
+      this.onFadeTimeoutBound_, opt_timeout || Gallery.FADE_TIMEOUT);
 };
 
 Gallery.prototype.cancelFading_ = function() {
+  ImageUtil.setAttribute(this.container_, 'tools', true);
+
   if (this.fadeTimeoutId_) {
     window.clearTimeout(this.fadeTimeoutId_);
     this.fadeTimeoutId_ = null;
   }
 };
 
-function Ribbon(parentNode, onSelect) {
-  this.container_ = parentNode;
-  this.document_ = parentNode.ownerDocument;
+function Ribbon(container, onSelect, arrowLeft, arrowRight) {
+  this.container_ = container;
+  this.document_ = container.ownerDocument;
 
-  this.left_ = this.document_.createElement('div');
-  this.left_.className = 'ribbon-left';
-  this.left_.addEventListener('click', this.scrollLeft.bind(this));
-  this.container_.appendChild(this.left_);
+  this.arrowLeft_ = arrowLeft;
+  this.arrowLeft_.addEventListener('click', this.selectPrevious.bind(this));
+
+  this.arrowRight_ = arrowRight;
+  this.arrowRight_.addEventListener('click', this.selectNext.bind(this));
+
+  this.fadeLeft_ = this.document_.createElement('div');
+  this.fadeLeft_.className = 'fade left';
+  this.container_.appendChild(this.fadeLeft_);
 
   this.bar_ = this.document_.createElement('div');
   this.bar_.className = 'ribbon';
   this.container_.appendChild(this.bar_);
 
-  this.right_ = this.document_.createElement('div');
-  this.right_.className = 'ribbon-right';
-  this.right_.addEventListener('click', this.scrollRight.bind(this));
-  this.container_.appendChild(this.right_);
-
-  this.spacer_ = this.document_.createElement('div');
-  this.spacer_.className = 'ribbon-spacer';
+  this.fadeRight_ = this.document_.createElement('div');
+  this.fadeRight_.className = 'fade right';
+  this.container_.appendChild(this.fadeRight_);
 
   this.onSelect_ = onSelect;
   this.items_ = [];
-  this.selectedItem_ = null;
-  this.firstIndex_ = 0;
+  this.selectedIndex_ = -1;
+  this.firstVisibleIndex_ = 0;
+  this.lastVisibleIndex_ = 0;
 }
 
 Ribbon.prototype.clear = function() {
   this.bar_.textContent = '';
   this.items_ = [];
-  this.selectedItem_ = null;
-  this.firstIndex_ = 0;
+  this.selectedIndex_ = -1;
+  this.firstVisibleIndex_ = 0;
+  this.lastVisibleIndex_ = 0;
 };
 
-Ribbon.prototype.add = function(url, selected, metadataProvider) {
+Ribbon.prototype.add = function(url, metadataProvider) {
   var index = this.items_.length;
-  var selectClosure = this.select.bind(this);
-  var item =
-      new Ribbon.Item(this.document_, url, selectClosure);
+  var selectClosure = this.select.bind(this, index);
+  var item = new Ribbon.Item(index, url, this.document_, selectClosure);
   this.items_.push(item);
+  var self = this;
   metadataProvider.fetch(url, function(metadata) {
     item.setMetadata(metadata);
-    if (selected) selectClosure(item);
+    if (item.isSelected()) {
+      self.onSelect_(item);
+    }
   });
+  return item;
 };
 
-Ribbon.prototype.load = function(urls, selectedUrl, metadataProvider) {
+Ribbon.prototype.load = function(urls, selectedURL, metadataProvider) {
   this.clear();
+  var selectedIndex = -1;
   for (var index = 0; index < urls.length; ++index) {
-    this.add(urls[index], urls[index] == selectedUrl, metadataProvider);
+    var item = this.add(urls[index], metadataProvider);
+    if (urls[index] == selectedURL)
+      selectedIndex = index;
   }
-
+  this.select(selectedIndex);
   window.setTimeout(this.redraw.bind(this), 0);
+  return this.items_[this.selectedIndex_];
 };
 
-Ribbon.prototype.select = function(item) {
-  if (this.selectedItem_) {
-    this.selectedItem_.select(false);
+Ribbon.prototype.select = function(index) {
+  if (index == this.selectedIndex_)
+    return;  // Do not reselect.
+
+  if (this.selectedIndex_ != -1) {
+    this.items_[this.selectedIndex_].select(false);
   }
 
-  this.selectedItem_ = item;
+  this.selectedIndex_ = index;
 
-  if (this.selectedItem_) {
-    this.selectedItem_.select(true);
-    if (this.onSelect_)
-      this.onSelect_(this.selectedItem_);
+  if (this.selectedIndex_ < this.firstVisibleIndex_) {
+    if (this.selectedIndex_ == this.firstVisibleIndex_ - 1) {
+      this.scrollLeft();
+    } else {
+      this.redraw();
+    }
   }
+  if (this.selectedIndex_ > this.lastVisibleIndex_) {
+    if (this.selectedIndex_ == this.lastVisibleIndex_ + 1) {
+      this.scrollRight();
+    } else {
+      this.redraw();
+    }
+  }
+
+  if (this.selectedIndex_ != -1) {
+    var selectedItem = this.items_[this.selectedIndex_];
+    selectedItem.select(true);
+    if (selectedItem.getMetadata()) {
+      this.onSelect_(selectedItem);
+    } // otherwise onSelect is called from the metadata callback.
+  }
+
+  ImageUtil.setAttribute(this.arrowLeft_, 'active', this.selectedIndex_ > 0);
+  ImageUtil.setAttribute(this.arrowRight_, 'active',
+      this.selectedIndex_ + 1 < this.items_.length);
+
+  ImageUtil.setAttribute(this.fadeLeft_, 'active', this.firstVisibleIndex_ > 0);
+  ImageUtil.setAttribute(this.fadeRight_, 'active',
+      this.lastVisibleIndex_ + 1 < this.items_.length);
 };
 
 Ribbon.prototype.redraw = function() {
   this.bar_.textContent = '';
 
-  // TODO(dgozman): get rid of these constants.
-  var itemWidth = 49;
-  var width = this.bar_.clientWidth - 40;
+  // The thumbnails are square.
+  var itemWidth = this.bar_.parentNode.clientHeight;
+  var width = this.bar_.parentNode.clientWidth;
 
-  var fit = Math.round(Math.floor(width / itemWidth));
-  var lastIndex = Math.min(this.items_.length, this.firstIndex_ + fit);
-  this.firstIndex_ = Math.max(0, lastIndex - fit);
-  for (var index = this.firstIndex_; index < lastIndex; ++index) {
+  var fullItems = Math.floor(width / itemWidth);
+
+  this.bar_.style.width = fullItems * itemWidth + 'px';
+
+  this.firstVisibleIndex_ =
+      Math.min(this.firstVisibleIndex_, this.selectedIndex_);
+
+  this.lastVisibleIndex_ =
+      Math.min(this.items_.length, this.firstVisibleIndex_ + fullItems) - 1;
+
+  this.lastVisibleIndex_ =
+      Math.max(this.lastVisibleIndex_, this.selectedIndex_);
+
+  this.firstVisibleIndex_ =
+      Math.max(0, this.lastVisibleIndex_ - fullItems + 1);
+
+  fullItems = this.lastVisibleIndex_ - this.firstVisibleIndex_ + 1;
+
+  for (var index = this.firstVisibleIndex_;
+       index <= this.lastVisibleIndex_;
+       ++index) {
     this.bar_.appendChild(this.items_[index].getBox());
   }
-  this.bar_.appendChild(this.spacer_);
 };
 
+// TODO(kaznacheev) The animation logic below does not really work for fast
+// repetitive scrolling.
+
 Ribbon.prototype.scrollLeft = function() {
-  if (this.firstIndex_ > 0) {
-    this.firstIndex_--;
-    this.redraw();
-  }
+  console.log('scrollLeft');
+  this.firstVisibleIndex_--;
+  var fadeIn = this.items_[this.firstVisibleIndex_].getBox();
+  ImageUtil.setAttribute(fadeIn, 'shifted', true);
+  this.bar_.insertBefore(fadeIn, this.bar_.firstElementChild);
+  setTimeout(
+      function() { ImageUtil.setAttribute(fadeIn, 'shifted', false) },
+      0);
+
+  var pushOut = this.bar_.lastElementChild;
+  pushOut.parentNode.removeChild(pushOut);
+
+  this.lastVisibleIndex_--;
 };
 
 Ribbon.prototype.scrollRight = function() {
-  if (this.firstIndex_ < this.items_.length - 1) {
-    this.firstIndex_++;
-    this.redraw();
-  }
+  console.log('scrollRight');
+
+  var fadeOut = this.items_[this.firstVisibleIndex_].getBox();
+  ImageUtil.setAttribute(fadeOut, 'shifted', true);
+  setTimeout(function() {
+    fadeOut.parentNode.removeChild(fadeOut);
+    ImageUtil.setAttribute(fadeOut, 'shifted', false);
+  }, 500);
+
+  this.firstVisibleIndex_++;
+  this.lastVisibleIndex_++;
+
+  var pushIn = this.items_[this.lastVisibleIndex_].getBox();
+  this.bar_.appendChild(pushIn);
 };
 
-Ribbon.prototype.scrollToFirst = function() {
-  if (this.firstIndex_ > 0) {
-    this.firstIndex_ = 0;
-    this.redraw();
-  }
+Ribbon.prototype.selectPrevious = function() {
+  if (this.selectedIndex_ > 0)
+    this.select(this.selectedIndex_ - 1);
 };
 
-Ribbon.prototype.scrollToLast = function() {
-  if (this.firstIndex_ < this.items_.length - 1) {
-    this.firstIndex_ = this.items_.length - 1;
-    this.redraw();
-  }
+Ribbon.prototype.selectNext = function() {
+  if (this.selectedIndex_ < this.items_.length - 1)
+    this.select(this.selectedIndex_ + 1);
+};
+
+Ribbon.prototype.selectFirst = function() {
+  this.select(0);
+};
+
+Ribbon.prototype.selectLast = function() {
+  this.select(this.items_.length - 1);
 };
 
 
-Ribbon.Item = function(document, url, selectClosure) {
+Ribbon.Item = function(index, url, document, selectClosure) {
+  this.index_ = index;
   this.url_ = url;
-
-  this.img_ = document.createElement('img');
 
   this.box_ = document.createElement('div');
   this.box_.className = 'ribbon-image';
-  this.box_.addEventListener('click', selectClosure.bind(null, this));
-  this.box_.appendChild(this.img_);
+  this.box_.addEventListener('click', selectClosure);
+
+  this.wrapper_ = document.createElement('div');
+  this.wrapper_.className = 'image-wrapper';
+  this.box_.appendChild(this.wrapper_);
+
+  this.img_ = document.createElement('img');
+  this.wrapper_.appendChild(this.img_);
 
   this.original_ = true;
 };
+
+Ribbon.Item.prototype.getIndex = function () { return this.index_ };
 
 Ribbon.Item.prototype.getBox = function () { return this.box_ };
 
@@ -455,19 +589,69 @@ Ribbon.Item.prototype.isOriginal = function () { return this.original_ };
 
 Ribbon.Item.prototype.getUrl = function () { return this.url_ };
 
+Ribbon.Item.prototype.isSelected = function() {
+  return this.box_.hasAttribute('selected');
+};
+
 Ribbon.Item.prototype.select = function(on) {
-  if (on)
-    this.box_.setAttribute('selected', 'selected');
-  else
-    this.box_.removeAttribute('selected');
+  ImageUtil.setAttribute(this.box_, 'selected', on);
+};
+
+Ribbon.Item.prototype.save = function(
+    dirEntry, metadataProvider, canvas, opt_callback) {
+  var metadataEncoder =
+      ImageEncoder.encodeMetadata(this.getMetadata(), canvas, 1);
+
+  this.overrideContent(canvas, metadataEncoder.getMetadata());
+
+  var self = this;
+
+  if (!dirEntry) {  // Happens only in gallery_demo.js
+    self.onSaveSuccess(
+        window.webkitURL.createObjectURL(
+            ImageEncoder.getBlob(canvas, metadataEncoder)));
+    if (opt_callback) opt_callback();
+    return;
+  }
+
+  var newFile = this.isOriginal();
+  var name = this.getCopyName();
+
+  function onSuccess(url) {
+    console.log('Saved from gallery', name);
+    // Force the metadata provider to reread the metadata from the file.
+    metadataProvider.reset(url);
+    self.onSaveSuccess(url);
+    if (opt_callback) opt_callback();
+  }
+
+  function onError(error) {
+    console.log('Error saving from gallery', name, error);
+    self.onSaveError(error);
+    if (opt_callback) opt_callback();
+  }
+
+  dirEntry.getFile(
+      name, {create: newFile, exclusive: newFile}, function(fileEntry) {
+        fileEntry.createWriter(function(fileWriter) {
+          function writeContent() {
+            fileWriter.onwriteend = onSuccess.bind(null, fileEntry.toURL());
+            fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder));
+          }
+          fileWriter.onerror = onError;
+          if (newFile) {
+            writeContent();
+          } else {
+            fileWriter.onwriteend = writeContent;
+            fileWriter.truncate(0);
+          }
+        },
+    onError);
+  }, onError);
 };
 
 // TODO: Localize?
 Ribbon.Item.COPY_SIGNATURE = '_Edited_';
-
-Ribbon.Item.prototype.isFromLocalFile = function () {
-  return this.url_.indexOf('filesystem:') == 0;
-};
 
 Ribbon.Item.prototype.getCopyName = function () {
   // When saving a modified image we never overwrite the original file (the one
@@ -553,11 +737,45 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
       metadata.thumbnailTransform :
       metadata.imageTransform;
 
-  this.box_.style.webkitTransform = transform ?
+  this.wrapper_.style.webkitTransform = transform ?
       ('scaleX(' + transform.scaleX + ') ' +
       'scaleY(' + transform.scaleY + ') ' +
       'rotate(' + transform.rotate90 * 90 + 'deg)') :
       '';
+
+  function percent(ratio) { return Math.round(ratio * 100) + '%' }
+
+  function resizeToFill(img, aspect) {
+    if ((aspect > 1)) {
+      img.style.height = percent(1);
+      img.style.width = percent(aspect);
+      img.style.marginLeft = percent((1 - aspect) / 2);
+    } else {
+      aspect = 1 / aspect;
+      img.style.width = percent(1);
+      img.style.height = percent(aspect);
+      img.style.marginTop = percent((1 - aspect) / 2);
+    }
+  }
+
+  if (metadata.width && metadata.height) {
+    var aspect = metadata.width / metadata.height;
+    if (transform && transform.rotate90) {
+      aspect = 1 / aspect;
+    }
+    resizeToFill(this.img_, aspect);
+  } else {
+    // No metadata available, loading the thumbnail first, then adjust the size.
+    this.img_.maxWidth = '100%';
+    this.img_.maxHeight = '100%';
+
+    var img = this.img_;
+    this.img_.onload = function() {
+      img.maxWidth = 'none';
+      img.maxHeight = 'none';
+      resizeToFill(img, img.width / img.height);
+    }
+  }
 
   this.img_.setAttribute('src', metadata.thumbnailURL || this.url_);
 };
