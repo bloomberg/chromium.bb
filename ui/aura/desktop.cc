@@ -133,7 +133,7 @@ void Desktop::WindowDestroying(Window* window) {
   SetActiveWindow(GetTopmostWindowToActivate(window), NULL);
 }
 
-bool Desktop::DispatchNativeEvent(const ui::NativeEvent& event) {
+bool Desktop::DispatchNativeEvent(const base::NativeEvent& event) {
   // TODO(oshima): consolidate windows and linux.
 #if defined(OS_WIN)
   return host_->Dispatch(event);

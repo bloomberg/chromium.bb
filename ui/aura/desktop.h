@@ -93,7 +93,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   void WindowDestroying(Window* window);
 
   // Dispatch NativeEvent.
-  bool DispatchNativeEvent(const ui::NativeEvent& event);
+  bool DispatchNativeEvent(const base::NativeEvent& event);
 
   static Desktop* GetInstance();
 

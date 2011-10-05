@@ -13,7 +13,7 @@
 namespace {
 
 // Get the native mouse key state from the native event message type.
-int GetNativeMouseKey(const ui::NativeEvent& native_event) {
+int GetNativeMouseKey(const base::NativeEvent& native_event) {
   switch (native_event.message) {
     case WM_LBUTTONDBLCLK:
     case WM_LBUTTONDOWN:
@@ -47,26 +47,26 @@ int GetNativeMouseKey(const ui::NativeEvent& native_event) {
   return 0;
 }
 
-bool IsButtonDown(const ui::NativeEvent& native_event) {
+bool IsButtonDown(const base::NativeEvent& native_event) {
   return ((MK_LBUTTON | MK_MBUTTON | MK_RBUTTON | MK_XBUTTON1 | MK_XBUTTON2) &
           native_event.wParam) != 0;
 }
 
-bool IsClientMouseEvent(const ui::NativeEvent& native_event) {
+bool IsClientMouseEvent(const base::NativeEvent& native_event) {
   return native_event.message == WM_MOUSELEAVE ||
          native_event.message == WM_MOUSEHOVER ||
         (native_event.message >= WM_MOUSEFIRST &&
          native_event.message <= WM_MOUSELAST);
 }
 
-bool IsNonClientMouseEvent(const ui::NativeEvent& native_event) {
+bool IsNonClientMouseEvent(const base::NativeEvent& native_event) {
   return native_event.message == WM_NCMOUSELEAVE ||
          native_event.message == WM_NCMOUSEHOVER ||
         (native_event.message >= WM_NCMOUSEMOVE &&
          native_event.message <= WM_NCXBUTTONDBLCLK);
 }
 
-bool IsDoubleClickMouseEvent(const ui::NativeEvent& native_event) {
+bool IsDoubleClickMouseEvent(const base::NativeEvent& native_event) {
   return native_event.message == WM_NCLBUTTONDBLCLK ||
          native_event.message == WM_NCMBUTTONDBLCLK ||
          native_event.message == WM_NCRBUTTONDBLCLK ||
@@ -77,7 +77,7 @@ bool IsDoubleClickMouseEvent(const ui::NativeEvent& native_event) {
          native_event.message == WM_XBUTTONDBLCLK;
 }
 
-bool IsKeyEvent(const ui::NativeEvent& native_event) {
+bool IsKeyEvent(const base::NativeEvent& native_event) {
   return native_event.message == WM_KEYDOWN ||
          native_event.message == WM_SYSKEYDOWN ||
          native_event.message == WM_CHAR ||
@@ -87,7 +87,7 @@ bool IsKeyEvent(const ui::NativeEvent& native_event) {
 
 // Returns a mask corresponding to the set of pressed modifier keys.
 // Checks the current global state and the state sent by client mouse messages.
-int KeyStateFlagsFromNative(const ui::NativeEvent& native_event) {
+int KeyStateFlagsFromNative(const base::NativeEvent& native_event) {
   int flags = 0;
   flags |= (GetKeyState(VK_MENU) & 0x80) ? ui::EF_ALT_DOWN : 0;
   flags |= (GetKeyState(VK_SHIFT) & 0x80) ? ui::EF_SHIFT_DOWN : 0;
@@ -109,7 +109,7 @@ int KeyStateFlagsFromNative(const ui::NativeEvent& native_event) {
 
 // Returns a mask corresponding to the set of pressed mouse buttons.
 // This includes the button of the given message, even if it is being released.
-int MouseStateFlagsFromNative(const ui::NativeEvent& native_event) {
+int MouseStateFlagsFromNative(const base::NativeEvent& native_event) {
   // TODO(msw): ORing the pressed/released button into the flags is _wrong_.
   // It makes it impossible to tell which button was modified when multiple
   // buttons are/were held down. Instead, we need to track the modified button
@@ -133,7 +133,7 @@ int MouseStateFlagsFromNative(const ui::NativeEvent& native_event) {
 
 namespace ui {
 
-EventType EventTypeFromNative(const NativeEvent& native_event) {
+EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   switch (native_event.message) {
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
@@ -183,7 +183,7 @@ EventType EventTypeFromNative(const NativeEvent& native_event) {
   return ET_UNKNOWN;
 }
 
-int EventFlagsFromNative(const NativeEvent& native_event) {
+int EventFlagsFromNative(const base::NativeEvent& native_event) {
   int flags = KeyStateFlagsFromNative(native_event);
   if (IsMouseEvent(native_event))
     flags |= MouseStateFlagsFromNative(native_event);
@@ -191,7 +191,7 @@ int EventFlagsFromNative(const NativeEvent& native_event) {
   return flags;
 }
 
-gfx::Point EventLocationFromNative(const NativeEvent& native_event) {
+gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   // Client message. The position is contained in the LPARAM.
   if (IsClientMouseEvent(native_event))
     return gfx::Point(native_event.lParam);
@@ -204,16 +204,16 @@ gfx::Point EventLocationFromNative(const NativeEvent& native_event) {
   return gfx::Point(native_point);
 }
 
-KeyboardCode KeyboardCodeFromNative(const NativeEvent& native_event) {
+KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeForWindowsKeyCode(native_event.wParam);
 }
 
-bool IsMouseEvent(const NativeEvent& native_event) {
+bool IsMouseEvent(const base::NativeEvent& native_event) {
   return IsClientMouseEvent(native_event) ||
          IsNonClientMouseEvent(native_event);
 }
 
-int GetMouseWheelOffset(const NativeEvent& native_event) {
+int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   DCHECK(native_event.message == WM_MOUSEWHEEL);
   return GET_WHEEL_DELTA_WPARAM(native_event.wParam);
 }

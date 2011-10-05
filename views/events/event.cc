@@ -243,7 +243,7 @@ MouseEvent::MouseEvent(const TouchEvent& touch)
 // MouseWheelEvent, public:
 
 #if !defined(USE_AURA)
-MouseWheelEvent::MouseWheelEvent(const ui::NativeEvent& native_event)
+MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
     : MouseEvent(native_event),
       offset_(ui::GetMouseWheelOffset(native_event)) {
 }

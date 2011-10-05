@@ -36,7 +36,7 @@ int GetEventFlagsFromState(unsigned int state) {
   return flags;
 }
 
-int GetButtonEventFlagsFromNativeEvent(const ui::NativeEvent& native_event) {
+int GetButtonEventFlagsFromNativeEvent(const base::NativeEvent& native_event) {
   // TODO(dnicoara): Need to add double click.
   int flags = 0;
   switch (native_event->button.button) {
@@ -54,7 +54,7 @@ int GetButtonEventFlagsFromNativeEvent(const ui::NativeEvent& native_event) {
 
 namespace ui {
 
-EventType EventTypeFromNative(const NativeEvent& native_event) {
+EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   switch (native_event->type) {
     case WAYLAND_BUTTON:
       switch (native_event->button.button) {
@@ -85,7 +85,7 @@ EventType EventTypeFromNative(const NativeEvent& native_event) {
   return ET_UNKNOWN;
 }
 
-int EventFlagsFromNative(const NativeEvent& native_event) {
+int EventFlagsFromNative(const base::NativeEvent& native_event) {
   switch (native_event->type) {
     case WAYLAND_BUTTON:
       return GetButtonEventFlagsFromNativeEvent(native_event) |
@@ -101,7 +101,7 @@ int EventFlagsFromNative(const NativeEvent& native_event) {
   }
 }
 
-gfx::Point EventLocationFromNative(const NativeEvent& native_event) {
+gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   switch (native_event->type) {
     case WAYLAND_BUTTON:
       return gfx::Point(native_event->button.x, native_event->button.y);
@@ -115,17 +115,17 @@ gfx::Point EventLocationFromNative(const NativeEvent& native_event) {
   }
 }
 
-KeyboardCode KeyboardCodeFromNative(const NativeEvent& native_event) {
+KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeFromXKeysym(native_event->key.sym);
 }
 
-bool IsMouseEvent(const NativeEvent& native_event) {
+bool IsMouseEvent(const base::NativeEvent& native_event) {
   return native_event->type == WAYLAND_BUTTON ||
          native_event->type == WAYLAND_MOTION ||
          native_event->type == WAYLAND_POINTER_FOCUS;
 }
 
-int GetMouseWheelOffset(const NativeEvent& native_event) {
+int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   return native_event->button.button == ui::SCROLL_UP ?
       kWheelScrollAmount : -kWheelScrollAmount;
 }

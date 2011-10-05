@@ -6,6 +6,7 @@
 #define UI_BASE_EVENTS_H_
 #pragma once
 
+#include "base/event_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -13,26 +14,7 @@ namespace gfx {
 class Point;
 }
 
-#if defined(USE_X11)
-typedef union _XEvent XEvent;
-#endif
-#if defined(USE_WAYLAND)
 namespace ui {
-union WaylandEvent;
-}
-#endif
-
-namespace ui {
-
-#if defined(OS_WIN)
-typedef MSG NativeEvent;
-#elif defined(USE_WAYLAND)
-typedef ui::WaylandEvent* NativeEvent;
-#elif defined(USE_X11)
-typedef XEvent* NativeEvent;
-#else
-typedef void* NativeEvent;
-#endif
 
 // Event types. (prefixed because of a conflict with windows headers)
 enum EventType {
@@ -55,10 +37,7 @@ enum EventType {
   ET_FOCUS_CHANGE,
 };
 
-// Event flags currently supported.  Although this is a "views"
-// file, this header is used on non-views platforms (e.g. OSX).  For
-// example, these EventFlags are used by the automation provider for
-// all platforms.
+// Event flags currently supported
 enum EventFlags {
   EF_CAPS_LOCK_DOWN     = 1 << 0,
   EF_SHIFT_DOWN         = 1 << 1,
@@ -92,22 +71,24 @@ enum TouchStatus {
 };
 
 // Get the EventType from a native event.
-UI_EXPORT EventType EventTypeFromNative(const NativeEvent& native_event);
+UI_EXPORT EventType EventTypeFromNative(const base::NativeEvent& native_event);
 
 // Get the EventFlags from a native event.
-UI_EXPORT int EventFlagsFromNative(const NativeEvent& native_event);
+UI_EXPORT int EventFlagsFromNative(const base::NativeEvent& native_event);
 
 // Get the location from a native event.
-UI_EXPORT gfx::Point EventLocationFromNative(const NativeEvent& native_event);
+UI_EXPORT gfx::Point EventLocationFromNative(
+    const base::NativeEvent& native_event);
 
 // Returns the KeyboardCode from a native event.
-UI_EXPORT KeyboardCode KeyboardCodeFromNative(const NativeEvent& native_event);
+UI_EXPORT KeyboardCode KeyboardCodeFromNative(
+    const base::NativeEvent& native_event);
 
 // Returns true if the message is a mouse event.
-UI_EXPORT bool IsMouseEvent(const NativeEvent& native_event);
+UI_EXPORT bool IsMouseEvent(const base::NativeEvent& native_event);
 
 // Get the mouse wheel offset from a native event.
-UI_EXPORT int GetMouseWheelOffset(const NativeEvent& native_event);
+UI_EXPORT int GetMouseWheelOffset(const base::NativeEvent& native_event);
 
 }  // namespace ui
 

@@ -66,7 +66,7 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
   return buttonflags;
 }
 
-ui::EventType GetTouchEventType(const ui::NativeEvent& native_event) {
+ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
   XIDeviceEvent* event =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data);
 #if defined(USE_XI2_MT)
@@ -131,7 +131,7 @@ ui::EventType GetTouchEventType(const ui::NativeEvent& native_event) {
 
 namespace ui {
 
-EventType EventTypeFromNative(const NativeEvent& native_event) {
+EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   switch (native_event->type) {
     case KeyPress:
       return ET_KEY_PRESSED;
@@ -176,7 +176,7 @@ EventType EventTypeFromNative(const NativeEvent& native_event) {
   return ET_UNKNOWN;
 }
 
-int EventFlagsFromNative(const NativeEvent& native_event) {
+int EventFlagsFromNative(const base::NativeEvent& native_event) {
   switch (native_event->type) {
     case KeyPress:
     case KeyRelease:
@@ -207,7 +207,7 @@ int EventFlagsFromNative(const NativeEvent& native_event) {
   return 0;
 }
 
-gfx::Point EventLocationFromNative(const NativeEvent& native_event) {
+gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   switch (native_event->type) {
     case ButtonPress:
     case ButtonRelease:
@@ -224,11 +224,11 @@ gfx::Point EventLocationFromNative(const NativeEvent& native_event) {
   return gfx::Point();
 }
 
-KeyboardCode KeyboardCodeFromNative(const NativeEvent& native_event) {
+KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeFromXKeyEvent(native_event);
 }
 
-bool IsMouseEvent(const NativeEvent& native_event) {
+bool IsMouseEvent(const base::NativeEvent& native_event) {
   if (native_event->type == ButtonPress ||
       native_event->type == ButtonRelease ||
       native_event->type == MotionNotify)
@@ -243,7 +243,7 @@ bool IsMouseEvent(const NativeEvent& native_event) {
   return false;
 }
 
-int GetMouseWheelOffset(const NativeEvent& native_event) {
+int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   if (native_event->type == GenericEvent) {
     XIDeviceEvent* xiev =
         static_cast<XIDeviceEvent*>(native_event->xcookie.data);

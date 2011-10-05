@@ -169,7 +169,7 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, public:
 
-TouchEvent::TouchEvent(const ui::NativeEvent& native_event)
+TouchEvent::TouchEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
       touch_id_(GetTouchIDFromXEvent(native_event)),
       radius_x_(GetTouchParamFromXEvent(native_event,

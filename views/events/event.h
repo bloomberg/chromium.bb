@@ -33,7 +33,7 @@ namespace views {
 #if defined(USE_AURA)
 typedef aura::Event* NativeEvent;
 #else
-typedef ui::NativeEvent NativeEvent;
+typedef base::NativeEvent NativeEvent;
 #endif
 
 class View;
@@ -243,7 +243,7 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT TouchEvent : public LocatedEvent {
  public:
-  explicit TouchEvent(const NativeEvent& native_event);
+  explicit TouchEvent(const base::NativeEvent& native_event);
 
   // Create a new touch event.
   TouchEvent(ui::EventType type,
