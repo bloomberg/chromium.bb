@@ -1744,6 +1744,7 @@ secure.anzmoneymanager.com
 secure.atriacom.com
 secure.cambrianc.on.ca
 secure.click2callu.com
+secure.cloud2ivr.com
 secure.court.gov.il
 secure.cst.org
 secure.cygnusresources.com
@@ -1760,6 +1761,7 @@ secure.merchantcart.net
 secure.my3creditreportsinstantly.com
 secure.mybybox.com
 secure.mycashnow.com
+secure.myphoneassistant.com
 secure.nicoga.jp
 secure.passport.mnginteractive.com
 secure.personalwatercraft.com
@@ -1768,9 +1770,13 @@ secure.reboot.ca
 secure.rfi-walmart.com
 secure.sandhillsregional.com
 secure.sbmonline.com
+secure.serviceevaluation.com
 secure.sjpharmacal.com
 secure.snowmobile.com
+secure.successplanninggroupphones.com
+secure.truckpartsolutions.com
 secure.vivemejor.com
+secure.wsivoicemarketer.com
 secure.www.contracostatimes.com
 secure.www.dailybreeze.com
 secure.www.denverpost.com
@@ -2047,6 +2053,7 @@ twynhamschool.com
 tx.maxim-ic.com
 tylerisd.org
 u-tokyo.ac.jp
+uab.edu
 ube-ind.co.jp
 ubi.pt
 ucar.edu
