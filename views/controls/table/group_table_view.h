@@ -6,13 +6,9 @@
 #define VIEWS_CONTROLS_TABLE_GROUP_TABLE_VIEW_H_
 #pragma once
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/base/models/table_model.h"
 #include "views/controls/table/table_view.h"
-
-// The GroupTableView adds grouping to the TableView class.
-// It allows to have groups of rows that act as a single row from the selection
-// perspective. Groups are visually separated by a horizontal line.
 
 namespace views {
 
@@ -29,6 +25,9 @@ class GroupTableModel : public ui::TableModel {
   virtual void GetGroupRangeForItem(int item, GroupRange* range) = 0;
 };
 
+// GroupTableView adds grouping to the TableView class.
+// It allows to have groups of rows that act as a single row from the selection
+// perspective. Groups are visually separated by a horizontal line.
 class VIEWS_EXPORT GroupTableView : public TableView {
  public:
    // The view class name.
@@ -75,7 +74,7 @@ class VIEWS_EXPORT GroupTableView : public TableView {
   bool draw_group_separators_;
 
   // A factory to make the selection consistent among groups.
-  ScopedRunnableMethodFactory<GroupTableView> sync_selection_factory_;
+  base::WeakPtrFactory<GroupTableView> sync_selection_factory_;
 
   // Maps from model row to start of group.
   std::map<int,int> model_index_to_range_start_map_;

@@ -4,15 +4,15 @@
 
 #include "views/controls/table/group_table_view.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "ui/gfx/canvas.h"
 
 namespace views {
 
-static const COLORREF kSeparatorLineColor = RGB(208, 208, 208);
-static const int kSeparatorLineThickness = 1;
+const COLORREF kSeparatorLineColor = RGB(208, 208, 208);
+const int kSeparatorLineThickness = 1;
 
 const char GroupTableView::kViewClassName[] = "views/GroupTableView";
 
@@ -159,10 +159,11 @@ void GroupTableView::OnSelectedStateChanged() {
   // items. For that reason, we post a task to be performed later, after all
   // selection messages have been processed. In the meantime we just ignore all
   // selection notifications.
-  if (sync_selection_factory_.empty()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        sync_selection_factory_.NewRunnableMethod(
-            &GroupTableView::SyncSelection));
+  if (!sync_selection_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&GroupTableView::SyncSelection,
+                   sync_selection_factory_.GetWeakPtr()));
   }
   TableView::OnSelectedStateChanged();
 }

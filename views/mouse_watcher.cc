@@ -4,7 +4,9 @@
 
 #include "views/mouse_watcher.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "ui/gfx/screen.h"
@@ -140,18 +142,18 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
     if (!in_view || (check_window && !IsMouseOverWindow())) {
       // Mouse moved outside the view's zone, start a timer to notify the
       // listener.
-      if (notify_listener_factory_.empty()) {
+      if (!notify_listener_factory_.HasWeakPtrs()) {
         MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
-            notify_listener_factory_.NewRunnableMethod(
-                &Observer::NotifyListener),
+            base::Bind(&Observer::NotifyListener,
+                       notify_listener_factory_.GetWeakPtr()),
             !in_view ? kNotifyListenerTimeMs :
                        mouse_watcher_->notify_on_exit_time_ms_);
       }
     } else {
       // Mouse moved quickly out of the view and then into it again, so cancel
       // the timer.
-      notify_listener_factory_.RevokeAll();
+      notify_listener_factory_.InvalidateWeakPtrs();
     }
   }
 
@@ -164,7 +166,7 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
   MouseWatcher* mouse_watcher_;
 
   // A factory that is used to construct a delayed callback to the listener.
-  ScopedRunnableMethodFactory<Observer> notify_listener_factory_;
+  base::WeakPtrFactory<Observer> notify_listener_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };

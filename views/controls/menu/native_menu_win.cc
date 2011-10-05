@@ -6,6 +6,7 @@
 
 #include <Windowsx.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
@@ -421,7 +422,7 @@ void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
   HWND hwnd = host_window_->hwnd();
   menu_to_select_ = NULL;
   position_to_select_ = -1;
-  menu_to_select_factory_.RevokeAll();
+  menu_to_select_factory_.InvalidateWeakPtrs();
   bool destroyed = false;
   destroyed_flag_ = &destroyed;
   model_->MenuWillShow();
@@ -437,11 +438,11 @@ void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
     // the delegate can cause destruction leaving the stack in a weird
     // state. Instead post a task, then notify. This mirrors what WM_MENUCOMMAND
     // does.
-    menu_to_select_factory_.RevokeAll();
+    menu_to_select_factory_.InvalidateWeakPtrs();
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        menu_to_select_factory_.NewRunnableMethod(
-            &NativeMenuWin::DelayedSelect));
+        base::Bind(&NativeMenuWin::DelayedSelect,
+                   menu_to_select_factory_.GetWeakPtr()));
     menu_action_ = MENU_ACTION_SELECTED;
   }
   // Send MenuClosed after we schedule the select, otherwise MenuClosed is

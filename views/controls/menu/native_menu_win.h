@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -142,7 +143,7 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   // See comment in MenuMessageHook for details on these.
   NativeMenuWin* menu_to_select_;
   int position_to_select_;
-  ScopedRunnableMethodFactory<NativeMenuWin> menu_to_select_factory_;
+  base::WeakPtrFactory<NativeMenuWin> menu_to_select_factory_;
 
   // If we're a submenu, this is our parent.
   NativeMenuWin* parent_;
