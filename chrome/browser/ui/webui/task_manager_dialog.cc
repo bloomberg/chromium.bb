@@ -41,8 +41,12 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   }
   virtual GURL GetDialogContentURL() const OVERRIDE {
     std::string url_string(chrome::kChromeUITaskManagerURL);
+    url_string += "?";
+#if defined(OS_CHROMEOS)
+    url_string += "showclose=1&showtitle=1&";
+#endif  // defined(OS_CHROMEOS)
     if (is_background_page_mode_)
-      url_string += "#bg";
+      url_string += "background=1";
     return GURL(url_string);
   }
   virtual void GetWebUIMessageHandlers(

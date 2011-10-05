@@ -31,7 +31,7 @@ body {
   font-size: 15px;
   font-weight: bold;
   margin-bottom: 4px;
-  padding: 0px 12px 6px 12px;
+  padding: 0px 12px 4px 12px;
 }
 
 /* Container for the detail list views. */
@@ -40,7 +40,7 @@ body {
   border: 1px #aaa solid;
   border-radius: 3px;
   display: -webkit-box;
-  margin: 4px 6px;
+  margin: 4px;
 }
 
 /* Column text containers. */
@@ -139,7 +139,7 @@ body {
 /* Container for footer area. */
 .dialog-footer {
   display: -webkit-box;
-  margin: 4px 6px 10px 6px;
+  margin: 4px;
 }
 
 /* Container for the ok/cancel buttons. */

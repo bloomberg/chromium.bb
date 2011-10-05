@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/webui/task_manager_dialog.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -227,7 +230,17 @@ void PanelBrowserView::UpdatePanelLoadingAnimations(bool should_animate) {
 }
 
 void PanelBrowserView::ShowTaskManagerForPanel() {
-  ShowTaskManager();
+#if defined(WEBUI_TASK_MANAGER)
+  TaskManagerDialog::Show();
+#else
+  // Uses WebUI TaskManager when swiches is set. It is beta feature.
+  if (CommandLine::ForCurrentProcess()
+        ->HasSwitch(switches::kEnableWebUITaskManager)) {
+    TaskManagerDialog::Show();
+  } else {
+    ShowTaskManager();
+  }
+#endif  // defined(WEBUI_TASK_MANAGER)
 }
 
 FindBar* PanelBrowserView::CreatePanelFindBar() {

@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
+#include "chrome/browser/ui/webui/task_manager_dialog.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -958,11 +959,31 @@ void BrowserWindowGtk::ShowUpdateChromeDialog() {
 }
 
 void BrowserWindowGtk::ShowTaskManager() {
-  TaskManagerGtk::Show(false);
+#if defined(WEBUI_TASK_MANAGER)
+  TaskManagerDialog::Show();
+#else
+  // Uses WebUI TaskManager when swiches is set. It is beta feature.
+  if (CommandLine::ForCurrentProcess()
+        ->HasSwitch(switches::kEnableWebUITaskManager)) {
+    TaskManagerDialog::Show();
+  } else {
+    TaskManagerGtk::Show(false);
+  }
+#endif  // defined(WEBUI_TASK_MANAGER)
 }
 
 void BrowserWindowGtk::ShowBackgroundPages() {
-  TaskManagerGtk::Show(true);
+#if defined(WEBUI_TASK_MANAGER)
+  TaskManagerDialog::ShowBackgroundPages();
+#else
+  // Uses WebUI TaskManager when swiches is set. It is beta feature.
+  if (CommandLine::ForCurrentProcess()
+        ->HasSwitch(switches::kEnableWebUITaskManager)) {
+    TaskManagerDialog::ShowBackgroundPages();
+  } else {
+    TaskManagerGtk::Show(true);
+  }
+#endif  // defined(WEBUI_TASK_MANAGER)
 }
 
 void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
