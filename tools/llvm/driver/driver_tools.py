@@ -924,6 +924,7 @@ ExtensionMap = {
   'cc'  : 'src',
   'cpp' : 'src',
   'C'   : 'src',
+  'm'   : 'src',  # .m = "Objective-C source file"
   'll'  : 'll',
   'bc'  : 'po',
   'po'  : 'po',   # .po = "Portable object file"
