@@ -164,22 +164,22 @@ void UIPerfTest::PrintIOPerfInfo(const char* test_name) {
   PrintResult("read_op_b", "", "r_op_b" + t_name, read_op_b, "", false);
   PrintResult("write_op_b", "", "w_op_b" + t_name, write_op_b, "", false);
   PrintResult("other_op_b", "", "o_op_b" + t_name, other_op_b, "", false);
-  PrintResult("total_op_b", "", "IO_op_b" + t_name, total_op_b, "", true);
+  PrintResult("total_op_b", "", "IO_op_b" + t_name, total_op_b, "", false);
 
   PrintResult("read_byte_b", "", "r_b" + t_name, read_byte_b, "kb", false);
   PrintResult("write_byte_b", "", "w_b" + t_name, write_byte_b, "kb", false);
   PrintResult("other_byte_b", "", "o_b" + t_name, other_byte_b, "kb", false);
-  PrintResult("total_byte_b", "", "IO_b" + t_name, total_byte_b, "kb", true);
+  PrintResult("total_byte_b", "", "IO_b" + t_name, total_byte_b, "kb", false);
 
   PrintResult("read_op_r", "", "r_op_r" + t_name, read_op_r, "", false);
   PrintResult("write_op_r", "", "w_op_r" + t_name, write_op_r, "", false);
   PrintResult("other_op_r", "", "o_op_r" + t_name, other_op_r, "", false);
-  PrintResult("total_op_r", "", "IO_op_r" + t_name, total_op_r, "", true);
+  PrintResult("total_op_r", "", "IO_op_r" + t_name, total_op_r, "", false);
 
   PrintResult("read_byte_r", "", "r_r" + t_name, read_byte_r, "kb", false);
   PrintResult("write_byte_r", "", "w_r" + t_name, write_byte_r, "kb", false);
   PrintResult("other_byte_r", "", "o_r" + t_name, other_byte_r, "kb", false);
-  PrintResult("total_byte_r", "", "IO_r" + t_name, total_byte_r, "kb", true);
+  PrintResult("total_byte_r", "", "IO_r" + t_name, total_byte_r, "kb", false);
 }
 
 void UIPerfTest::PrintMemoryUsageInfo(const char* test_name) {
@@ -253,23 +253,22 @@ void UIPerfTest::PrintMemoryUsageInfo(const char* test_name) {
 #if defined(OS_WIN)
   PrintResult("vm_peak_b", "", "vm_pk_b" + trace_name,
               browser_peak_virtual_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("ws_peak_b", "", "ws_pk_b" + trace_name,
               browser_peak_working_set_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("vm_peak_r", "", "vm_pk_r" + trace_name,
               renderer_total_peak_virtual_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("ws_peak_r", "", "ws_pk_r" + trace_name,
               renderer_total_peak_working_set_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("vm_single_peak_r", "", "vm_spk_r" + trace_name,
               renderer_single_peak_virtual_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("ws_single_peak_r", "", "ws_spk_r" + trace_name,
               renderer_single_peak_working_set_size, "bytes",
-              true /* important */);
-
+              false /* important */);
   PrintResult("vm_final_b", "", "vm_f_b" + trace_name,
               browser_virtual_size, "bytes",
               false /* not important */);
@@ -291,22 +290,22 @@ void UIPerfTest::PrintMemoryUsageInfo(const char* test_name) {
 #elif defined(OS_LINUX) || defined(OS_MACOSX)
   PrintResult("vm_size_final_b", "", "vm_size_f_b" + trace_name,
               browser_virtual_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("vm_rss_final_b", "", "vm_rss_f_b" + trace_name,
               browser_working_set_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("vm_size_final_r", "", "vm_size_f_r" + trace_name,
               renderer_virtual_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("vm_rss_final_r", "", "vm_rss_f_r" + trace_name,
               renderer_working_set_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("vm_size_final_t", "", "vm_size_f_t" + trace_name,
               total_virtual_size, "bytes",
-              true /* important */);
+              false /* not important */);
   PrintResult("vm_rss_final_t", "", "vm_rss_f_t" + trace_name,
               total_working_set_size, "bytes",
-              true /* important */);
+              false /* not important */);
 #else
   NOTIMPLEMENTED();
 #endif
