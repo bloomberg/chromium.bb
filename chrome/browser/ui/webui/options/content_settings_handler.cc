@@ -554,12 +554,13 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
     // secondary pattern is by default a wildcard pattern. Hence users are not
     // able to modify content settings with a secondary pattern other than the
     // wildcard pattern. So only show settings that the user is able to modify.
+    // TODO(bauerb): Support a read-only view for those patterns.
     if (entries[i].b == ContentSettingsPattern::Wildcard()) {
       exceptions.Append(
           GetExceptionForPage(entries[i].a, entries[i].c, entries[i].d));
     } else {
-      LOG(DFATAL) << "Secondary content settings patterns are not"
-                  << "supported by the content settings UI";
+      LOG(ERROR) << "Secondary content settings patterns are not "
+                 << "supported by the content settings UI";
     }
   }
 
@@ -585,9 +586,21 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
 
   ListValue otr_exceptions;
   for (size_t i = 0; i < otr_entries.size(); ++i) {
-    otr_exceptions.Append(GetExceptionForPage(otr_entries[i].a,
-                                              otr_entries[i].c,
-                                              otr_entries[i].d));
+    // The content settings UI does not support secondary content settings
+    // pattern yet. For content settings set through the content settings UI the
+    // secondary pattern is by default a wildcard pattern. Hence users are not
+    // able to modify content settings with a secondary pattern other than the
+    // wildcard pattern. So only show settings that the user is able to modify.
+    // TODO(bauerb): Support a read-only view for those patterns.
+    if (otr_entries[i].b == ContentSettingsPattern::Wildcard()) {
+      otr_exceptions.Append(
+          GetExceptionForPage(otr_entries[i].a,
+                              otr_entries[i].c,
+                              otr_entries[i].d));
+    } else {
+      LOG(ERROR) << "Secondary content settings patterns are not "
+                 << "supported by the content settings UI";
+    }
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
