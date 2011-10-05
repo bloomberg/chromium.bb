@@ -26,7 +26,7 @@ Window::Window(WindowDelegate* delegate)
       parent_(NULL),
       id_(-1),
       user_data_(NULL),
-      consumes_events_(false) {
+      stops_event_propagation_(false) {
 }
 
 Window::~Window() {
@@ -198,6 +198,25 @@ bool Window::OnMouseEvent(MouseEvent* event) {
       delegate_->OnMouseEvent(event);
 }
 
+// For a given window, we determine its focusability by inspecting each sibling
+// after it (i.e. drawn in front of it in the z-order) to see if it stops
+// propagation of events that would otherwise be targeted at windows behind it.
+// We then perform this same check on every window up to the root.
+bool Window::CanFocus() const {
+  // TODO(beng): Figure out how to consult the delegate wrt. focusability also.
+  if (!IsVisible() || !parent_)
+    return false;
+
+  Windows::const_iterator i = std::find(parent_->children().begin(),
+                                        parent_->children().end(),
+                                        this);
+  for (++i; i != parent_->children().end(); ++i) {
+    if ((*i)->StopsEventPropagation())
+      return false;
+  }
+  return parent_->CanFocus();
+}
+
 bool Window::OnKeyEvent(KeyEvent* event) {
   return delegate_->OnKeyEvent(event);
 }
@@ -221,10 +240,20 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
       if (handler && handler->delegate())
         return handler;
     }
-    if (child->consumes_events_ && !child->children().empty())
+    if (child->StopsEventPropagation())
       return NULL;
   }
   return delegate_ ? this : NULL;
+}
+
+void Window::Focus() {
+  DCHECK(GetFocusManager());
+  GetFocusManager()->SetFocusedWindow(this);
+}
+
+void Window::Blur() {
+  DCHECK(GetFocusManager());
+  GetFocusManager()->SetFocusedWindow(NULL);
 }
 
 internal::FocusManager* Window::GetFocusManager() {
@@ -278,6 +307,10 @@ void Window::SetVisible(bool visible) {
 
 void Window::SchedulePaint() {
   SchedulePaintInRect(gfx::Rect(0, 0, bounds().width(), bounds().height()));
+}
+
+bool Window::StopsEventPropagation() const {
+  return stops_event_propagation_ && !children_.empty();
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {

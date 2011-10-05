@@ -49,6 +49,9 @@ class RootWindow : public Window,
   virtual void SetFocusedWindow(Window* window) OVERRIDE;
   virtual Window* GetFocusedWindow() OVERRIDE;
 
+  // Overridden from Window:
+  virtual bool CanFocus() const OVERRIDE;
+
  protected:
   // Overridden from Window:
   virtual internal::FocusManager* GetFocusManager() OVERRIDE;

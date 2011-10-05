@@ -103,8 +103,10 @@ void RootWindow::WindowDestroying(Window* window) {
 }
 
 void RootWindow::SetFocusedWindow(Window* focused_window) {
-  if (focused_window == focused_window_)
+  if (focused_window == focused_window_ ||
+      (focused_window && !focused_window->CanFocus())) {
     return;
+  }
   if (focused_window_)
     focused_window_->delegate()->OnBlur();
   focused_window_ = focused_window;
@@ -114,6 +116,10 @@ void RootWindow::SetFocusedWindow(Window* focused_window) {
 
 Window* RootWindow::GetFocusedWindow() {
   return focused_window_;
+}
+
+bool RootWindow::CanFocus() const {
+  return IsVisible();
 }
 
 FocusManager* RootWindow::GetFocusManager() {

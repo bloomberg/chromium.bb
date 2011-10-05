@@ -37,7 +37,7 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   containers->push_back(launcher_container);
 
   aura::Window* lock_container = new aura::Window(NULL);
-  lock_container->set_consumes_events(true);
+  lock_container->set_stops_event_propagation(true);
   lock_container->set_id(internal::kShellWindowId_LockScreenContainer);
   containers->push_back(lock_container);
 
@@ -52,8 +52,8 @@ void InitDesktopWindow() {
   aura::Window::Windows::const_iterator i;
   for (i = containers.begin(); i != containers.end(); ++i) {
     (*i)->Init();
-    (*i)->Show();
     aura::Desktop::GetInstance()->window()->AddChild(*i);
+    (*i)->Show();
   }
 
   aura::Window* root_window = aura::Desktop::GetInstance()->window();

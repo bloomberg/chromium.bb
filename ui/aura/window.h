@@ -121,13 +121,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   WindowDelegate* delegate() { return delegate_; }
 
-  // When set to true, this Window will consume all events targeted at it or
-  // Windows below it in the z-order, but only if this Window has children. This
-  // is used to implement lock-screen type functionality where we do not want
-  // events to be sent to running logged-in windows when the lock screen is
+  // When set to true, this Window will stop propagation of all events targeted
+  // at Windows below it in the z-order, but only if this Window has children.
+  // This is used to implement lock-screen type functionality where we do not
+  // want events to be sent to running logged-in windows when the lock screen is
   // displayed.
-  void set_consumes_events(bool consumes_events) {
-    consumes_events_ = consumes_events;
+  void set_stops_event_propagation(bool stops_event_propagation) {
+    stops_event_propagation_ = stops_event_propagation;
   }
 
   // Returns true if the mouse pointer at the specified |point| can trigger an
@@ -140,6 +140,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns the Window that most closely encloses |point| for the purposes of
   // event targeting.
   Window* GetEventHandlerForPoint(const gfx::Point& point);
+
+  // Claims or relinquishes the claim to focus.
+  void Focus();
+  void Blur();
+
+  // Returns true if the Window can be focused.
+  virtual bool CanFocus() const;
 
   // Returns the FocusManager for the Window, which may be attached to a parent
   // Window. Can return NULL if the Window has no FocusManager.
@@ -175,6 +182,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Schedules a paint for the Window's entire bounds.
   void SchedulePaint();
 
+  // This window is currently stopping event propagation for any windows behind
+  // it in the z-order.
+  bool StopsEventPropagation() const;
+
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
 
@@ -183,7 +194,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   scoped_ptr<ui::Layer> layer_;
 
   // The Window's parent.
-  // TODO(beng): Implement NULL-ness for toplevels.
   Window* parent_;
 
   // Child windows. Topmost is last.
@@ -198,8 +208,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void* user_data_;
 
   // When true, events are not sent to windows behind this one in the z-order,
-  // provided this window has children. See set_consumes_events().
-  bool consumes_events_;
+  // provided this window has children. See set_stops_event_propagation().
+  bool stops_event_propagation_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };
