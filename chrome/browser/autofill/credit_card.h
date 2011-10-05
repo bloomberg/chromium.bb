@@ -32,8 +32,9 @@ class CreditCard : public FormGroup {
                                     const string16& value) OVERRIDE;
   virtual void GetMatchingTypes(const string16& text,
                                 FieldTypeSet* matching_types) const OVERRIDE;
+
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
-  virtual const string16 Label() const;
+  const string16 Label() const;
 
   // Special method to set value for HTML5 month input type.
   void SetInfoForMonthInputType(const string16& value);

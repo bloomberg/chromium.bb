@@ -996,7 +996,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
-  ASSERT_FALSE(imported_credit_card);
+  EXPECT_FALSE(imported_credit_card);
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,

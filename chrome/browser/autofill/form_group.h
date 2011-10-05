@@ -20,7 +20,7 @@ class FormGroup {
   virtual ~FormGroup() {}
 
   // Used to determine the type of a field based on the text that a user enters
-  // into the field. The field types can then be reported back to the server.
+  // into the field.  The field types can then be reported back to the server.
   // This method is additive on |matching_types|.
   virtual void GetMatchingTypes(const string16& text,
                                 FieldTypeSet* matching_types) const;
@@ -43,25 +43,6 @@ class FormGroup {
   // prior to storing, if appropriate.
   virtual bool SetCanonicalizedInfo(AutofillFieldType type,
                                     const string16& value);
-
-  // Returns the label for this FormGroup item. This should be overridden for
-  // form group items that implement a label.
-  virtual const string16 Label() const;
-
-  // Returns true if the field data in |form_group| does not match the field
-  // data in this FormGroup.
-  virtual bool operator!=(const FormGroup& form_group) const;
-
-  // Returns true if the data in this FormGroup is a subset of the data in
-  // |form_group|.
-  bool IsSubsetOf(const FormGroup& form_group) const;
-
-  // Returns true if the values of the intersection of the available field types
-  // are equal.  If the intersection is empty, the method returns false.
-  bool IntersectionOfTypesHasEqualValues(const FormGroup& form_group) const;
-
-  // Merges the field data in |form_group| with this FormGroup.
-  void MergeWith(const FormGroup& form_group);
 
  protected:
   // AutofillProfile needs to call into GetSupportedTypes() for objects of

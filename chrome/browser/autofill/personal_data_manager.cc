@@ -603,53 +603,28 @@ bool PersonalDataManager::MergeProfile(
     const AutofillProfile& profile,
     const std::vector<AutofillProfile*>& existing_profiles,
     std::vector<AutofillProfile>* merged_profiles) {
-  DCHECK(merged_profiles);
   merged_profiles->clear();
 
   // Set to true if |profile| is merged into |existing_profiles|.
   bool merged = false;
 
-  // First preference is to add missing values to an existing profile.
+  // If we have already saved this address, merge in any missing values.
   // Only merge with the first match.
   for (std::vector<AutofillProfile*>::const_iterator iter =
            existing_profiles.begin();
        iter != existing_profiles.end(); ++iter) {
     if (!merged) {
-      if (profile.IsSubsetOf(**iter)) {
-        // In this case, the existing profile already contains all of the data
-        // in |profile|, so consider the profiles already merged.
+      if (!profile.PrimaryValue().empty() &&
+          StringToLowerASCII((*iter)->PrimaryValue()) ==
+              StringToLowerASCII(profile.PrimaryValue())) {
         merged = true;
-      } else if ((*iter)->IntersectionOfTypesHasEqualValues(profile)) {
-        // |profile| contains all of the data in this profile, plus more.
-        merged = true;
-        (*iter)->MergeWith(profile);
+        (*iter)->OverwriteWithOrAddTo(profile);
       }
     }
     merged_profiles->push_back(**iter);
   }
 
-  // The second preference, if not merged above, is to alter non-primary values
-  // where the primary values match.
-  // Again, only merge with the first match.
-  if (!merged) {
-    merged_profiles->clear();
-    for (std::vector<AutofillProfile*>::const_iterator iter =
-             existing_profiles.begin();
-         iter != existing_profiles.end(); ++iter) {
-      if (!merged) {
-        if (!profile.PrimaryValue().empty() &&
-            StringToLowerASCII((*iter)->PrimaryValue()) ==
-                StringToLowerASCII(profile.PrimaryValue())) {
-          merged = true;
-          (*iter)->OverwriteWithOrAddTo(profile);
-        }
-      }
-      merged_profiles->push_back(**iter);
-    }
-  }
-
-  // Finally, if the new profile was not merged with an existing profile then
-  // add the new profile to the list.
+  // If the new profile was not merged with an existing one, add it to the list.
   if (!merged)
     merged_profiles->push_back(profile);
 

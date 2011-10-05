@@ -532,68 +532,6 @@ TEST_F(AutofillProfileTest, IsSubsetOf) {
   EXPECT_FALSE(a->IsSubsetOf(*b));
 }
 
-TEST_F(AutofillProfileTest, IntersectionOfTypesHasEqualValues) {
-  scoped_ptr<AutofillProfile> a, b;
-
-  // Intersection of types contains the fields NAME_FIRST, NAME_LAST,
-  // EMAIL_ADDRESS.  The values of these field types are equal between the two
-  // profiles.
-  a.reset(new AutofillProfile);
-  b.reset(new AutofillProfile);
-  autofill_test::SetProfileInfo(a.get(), "Thomas", NULL, "Jefferson",
-      "declaration_guy@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-      "12134759123");
-  autofill_test::SetProfileInfo(b.get(), "Thomas", NULL, "Jefferson",
-      "declaration_guy@gmail.com", "United States Government", "Monticello",
-      NULL, "Charlottesville", "Virginia", "22902", NULL, NULL);
-  EXPECT_TRUE(a->IntersectionOfTypesHasEqualValues(*b));
-
-  // Intersection of types contains the fields NAME_FIRST, NAME_LAST,
-  // EMAIL_ADDRESS. The value of EMAIL_ADDRESS differs between the two profiles.
-  a.reset(new AutofillProfile);
-  b.reset(new AutofillProfile);
-  autofill_test::SetProfileInfo(a.get(), "Thomas", NULL, "Jefferson",
-      "poser@yahoo.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-      "12134759123");
-  autofill_test::SetProfileInfo(b.get(), "Thomas", NULL, "Jefferson",\
-      "declaration_guy@gmail.com", "United States Government", "Monticello",
-      NULL, "Charlottesville", "Virginia", "22902", NULL, NULL);
-  EXPECT_FALSE(a->IntersectionOfTypesHasEqualValues(*b));
-
-  // Intersection of types is empty.
-  a.reset(new AutofillProfile);
-  b.reset(new AutofillProfile);
-  autofill_test::SetProfileInfo(a.get(), "Thomas", NULL, "Jefferson",
-      "poser@yahoo.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-      "12134759123");
-  autofill_test::SetProfileInfo(b.get(), NULL, NULL, NULL, NULL,
-      "United States Government", "Monticello", NULL, "Charlottesville",
-      "Virginia", "22902", NULL, NULL);
-  EXPECT_FALSE(a->IntersectionOfTypesHasEqualValues(*b));
-}
-
-TEST_F(AutofillProfileTest, MergeWith) {
-  scoped_ptr<AutofillProfile> a, b;
-
-  // Merge |b| into |a|.
-  a.reset(new AutofillProfile);
-  b.reset(new AutofillProfile);
-  autofill_test::SetProfileInfo(a.get(), "Jimmy", NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL, "12134759123");
-  autofill_test::SetProfileInfo(b.get(), "James", NULL, "Madison",
-      "constitutionalist@gmail.com", "United States Government", "Monticello",
-      NULL, "Charlottesville", "Virginia", "22902", NULL, NULL);
-  AutofillProfile expected_b(*b);
-  a->MergeWith(*b);
-
-  AutofillProfile expected_a;
-  autofill_test::SetProfileInfo(&expected_a, "Jimmy", NULL, "Madison",
-      "constitutionalist@gmail.com", "United States Government", "Monticello",
-      NULL, "Charlottesville", "Virginia", "22902", NULL, "12134759123");
-  EXPECT_EQ(0, expected_a.Compare(*a));
-  EXPECT_EQ(0, expected_b.Compare(*b));
-}
-
 TEST_F(AutofillProfileTest, AssignmentOperator){
   AutofillProfile a, b;
 

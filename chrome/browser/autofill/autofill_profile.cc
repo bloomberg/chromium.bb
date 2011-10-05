@@ -194,6 +194,16 @@ class FindByPhone {
   std::string country_code_;
 };
 
+// Functor used to check for case-insensitive equality of two strings.
+struct CaseInsensitiveStringEquals
+    : public std::binary_function<string16, string16, bool>
+{
+  bool operator()(const string16& x, const string16& y) const {
+    return
+        x.size() == y.size() && StringToLowerASCII(x) == StringToLowerASCII(y);
+  }
+};
+
 }  // namespace
 
 AutofillProfile::AutofillProfile(const std::string& guid)
@@ -513,15 +523,19 @@ const string16 AutofillProfile::PrimaryValue() const {
          GetInfo(ADDRESS_HOME_CITY);
 }
 
-// Functor used to check for case-insensitive equality of two strings.
-struct CaseInsensitiveStringEquals
-    : public std::binary_function<string16, string16, bool>
-{
-  bool operator()(const string16& x, const string16& y) const {
-    if (x.size() != y.size()) return false;
-    return StringToLowerASCII(x) == StringToLowerASCII(y);
+bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
+  FieldTypeSet types;
+  GetNonEmptyTypes(&types);
+
+  for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
+       ++iter) {
+    if (StringToLowerASCII(GetInfo(*iter)) !=
+            StringToLowerASCII(profile.GetInfo(*iter)))
+      return false;
   }
-};
+
+  return true;
+}
 
 void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
   FieldTypeSet field_types;
@@ -538,6 +552,12 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
       profile.GetMultiInfo(*iter, &new_values);
       std::vector<string16> existing_values;
       GetMultiInfo(*iter, &existing_values);
+
+      // GetMultiInfo always returns at least one element, even if the profile
+      // has no data stored for this field type.
+      if (existing_values.size() == 1 && existing_values.front().empty())
+        existing_values.clear();
+
       FieldTypeGroup group = AutofillType(*iter).group();
       for (std::vector<string16>::iterator value_iter = new_values.begin();
            value_iter != new_values.end(); ++value_iter) {
@@ -554,7 +574,9 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
       }
       SetMultiInfo(*iter, existing_values);
     } else {
-      SetInfo(*iter, profile.GetInfo(*iter));
+      string16 new_value = profile.GetInfo(*iter);
+      if (StringToLowerASCII(GetInfo(*iter)) != StringToLowerASCII(new_value))
+        SetInfo(*iter, new_value);
     }
   }
 }

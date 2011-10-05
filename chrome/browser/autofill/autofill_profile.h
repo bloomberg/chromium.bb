@@ -59,7 +59,7 @@ class AutofillProfile : public FormGroup {
   // The user-visible label of the profile, generated in relation to other
   // profiles. Shows at least 2 fields that differentiate profile from other
   // profiles. See AdjustInferredLabels() further down for more description.
-  virtual const string16 Label() const;
+  const string16 Label() const;
 
   // This guid is the primary identifier for |AutofillProfile| objects.
   const std::string guid() const { return guid_; }
@@ -121,6 +121,10 @@ class AutofillProfile : public FormGroup {
   // basis of comparison for new values that are submitted through forms to
   // aid with correct aggregation of new data.
   const string16 PrimaryValue() const;
+
+  // Returns true if the data in this AutofillProfile is a subset of the data in
+  // |profile|.
+  bool IsSubsetOf(const AutofillProfile& profile) const;
 
   // Overwrites the single-valued field data in |profile| with this
   // Profile.  Or, for multi-valued fields append the new values.
