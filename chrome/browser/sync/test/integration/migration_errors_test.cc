@@ -402,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_FALSE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
+  ASSERT_FALSE(GetClient(0)->IsTypeRunning(syncable::SESSIONS));
   ASSERT_FALSE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 
   // Phase 1: Before migrating anything, create & sync a preference.
@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
   VerifyPrefSync();
 
   // Phase 5: Verify that sessions are registered and enabled.
-  ASSERT_TRUE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
+  ASSERT_TRUE(GetClient(0)->IsTypeRunning(syncable::SESSIONS));
   ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 }
 
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabsAndMigrate) {
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_FALSE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
+  ASSERT_FALSE(GetClient(0)->IsTypeRunning(syncable::SESSIONS));
   ASSERT_FALSE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 
   // Phase 1: Before migrating anything, create & sync a preference.
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabsAndMigrate) {
   VerifyPrefSync();
 
   // Phase 6: Verify that sessions are registered and enabled.
-  ASSERT_TRUE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
+  ASSERT_TRUE(GetClient(0)->IsTypeRunning(syncable::SESSIONS));
   ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 }
 

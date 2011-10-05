@@ -170,8 +170,8 @@ class ProfileSyncServiceHarness
   // Check if |type| is encrypted.
   bool IsTypeEncrypted(syncable::ModelType type);
 
-  // Check if |type| is registered.
-  bool IsTypeRegistered(syncable::ModelType types);
+  // Check if |type| is registered and the controller is running.
+  bool IsTypeRunning(syncable::ModelType type);
 
   // Check if |type| is being synced.
   bool IsTypePreferred(syncable::ModelType type);

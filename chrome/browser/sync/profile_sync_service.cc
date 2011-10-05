@@ -757,6 +757,7 @@ void ProfileSyncService::OnDataTypesChanged(
         if (pref_name.empty())
           continue;
         profile_->GetPrefs()->SetBoolean(pref_name.c_str(), true);
+        new_types.insert(*iter);
       }
     }
   }

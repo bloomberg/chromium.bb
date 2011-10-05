@@ -21,6 +21,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -1059,10 +1060,11 @@ bool ProfileSyncServiceHarness::IsTypeEncrypted(syncable::ModelType type) {
   return (encrypted_types.count(type) != 0);
 }
 
-bool ProfileSyncServiceHarness::IsTypeRegistered(syncable::ModelType type) {
-  syncable::ModelTypeSet registered_types;
-  service_->GetRegisteredDataTypes(&registered_types);
-  return (registered_types.count(type) != 0);
+bool ProfileSyncServiceHarness::IsTypeRunning(syncable::ModelType type) {
+  browser_sync::DataTypeController::StateMap state_map;
+  service_->GetDataTypeControllerStates(&state_map);
+  return (state_map.count(type) != 0 &&
+          state_map[type] == browser_sync::DataTypeController::RUNNING);
 }
 
 bool ProfileSyncServiceHarness::IsTypePreferred(syncable::ModelType type) {
