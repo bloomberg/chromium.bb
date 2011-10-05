@@ -46,6 +46,7 @@ echo @@@BUILD_STEP compile_toolchain@@@
     mkdir linux
     cp -aiv {SRC/linux-headers-for-nacl/include/,}linux/getcpu.h
     cp -aiv {../src/untrusted/include/machine/,}_default_types.h
+    cp -aiv ../LICENSE LICENSE
     mv Makefile Makefile.orig
     . REVISIONS
     sed -e s"|^\\(CANNED_REVISION = \\)no$|\\1$BUILDBOT_GOT_REVISION|" \
@@ -56,11 +57,12 @@ echo @@@BUILD_STEP compile_toolchain@@@
         -e s"|\\(export NACL_FAKE_SONAME\\).*|\\1 = ${NACL_GLIBC_COMMIT:0:8}|" \
            < Makefile.orig > Makefile
     tar czSvpf nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
-      Makefile _default_types.h download_SRC.sh linux newlib-libc-script \
+      LICENSE Makefile download_SRC.sh \
+      _default_types.h linux newlib-libc-script \
       create_redirector{,s,s_cygwin}.sh redirector{.c,.exe} redirect_table.txt
     rm Makefile
     mv Makefile.orig Makefile
-    rm linux/getcpu.h _default_types.h
+    rm linux/getcpu.h _default_types.h LICENSE
     rmdir linux
   fi
 )
@@ -121,7 +123,7 @@ else
   for patch in \
       tools/nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
       tools/SRC/*.patch ; do
-    filename="${filename#tools/}"
+    filename="${patch#tools/}"
     filename="${filename#SRC/}"
     $GSUTIL -h Cache-Control:no-cache cp -a public-read \
       $patch \
