@@ -385,6 +385,7 @@ void Bubble::DoClose(bool closed_by_escape) {
     UnregisterEscapeAccelerator();
   if (delegate_)
     delegate_->BubbleClosing(this, closed_by_escape);
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnBubbleClosing());
   show_status_ = kClosed;
 #if defined(USE_AURA)
   // TODO(beng):

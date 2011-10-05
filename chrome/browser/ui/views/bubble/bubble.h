@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BUBBLE_BUBBLE_H_
 #pragma once
 
+#include "base/observer_list.h"
 #include "views/bubble/bubble_border.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/accelerator.h"
@@ -86,6 +87,12 @@ class Bubble
       public views::AcceleratorTarget,
       public ui::AnimationDelegate {
  public:
+  class Observer {
+   public:
+    // See BubbleDelegate::BubbleClosing for when this is called.
+    virtual void OnBubbleClosing() = 0;
+  };
+
   // Shows the Bubble.
   // |parent| is set as the parent window.
   // |contents| are the contents shown in the bubble.
@@ -143,6 +150,14 @@ class Bubble
 #ifdef UNIT_TEST
   views::View* contents() const { return contents_; }
 #endif
+
+  void AddObserver(Observer* obs) {
+    observer_list_.AddObserver(obs);
+  }
+
+  void RemoveObserver(Observer* obs) {
+    observer_list_.RemoveObserver(obs);
+  }
 
   static const SkColor kBackgroundColor;
 
@@ -242,6 +257,8 @@ class Bubble
   views::View* contents_;
 
   bool accelerator_registered_;
+
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(Bubble);
 };
