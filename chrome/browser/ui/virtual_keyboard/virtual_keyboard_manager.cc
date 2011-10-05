@@ -220,15 +220,13 @@ KeyboardWidget::~KeyboardWidget() {
 }
 
 void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
-  if (target_ == widget && IsVisible())
+  if (target_ == widget && IsVisible() && !animation_->is_animating())
     return;
   SetTarget(widget);
 
   transform_.reset(new ui::InterpolatedTranslation(
       gfx::Point(0, keyboard_height_), gfx::Point()));
 
-  GetRootView()->SetTransform(
-      transform_->Interpolate(animation_->GetCurrentValue()));
   animation_->Show();
 
   Show();

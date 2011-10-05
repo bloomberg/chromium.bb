@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -46,6 +47,7 @@ class VirtualKeyboardManagerTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardManagerTest, TestVisibility) {
   SetupNotificationListener();
+  browser()->window()->Show();
 
   // Move focus between the omnibox and the wrench menu a few times. Note that
   // it is necessary to RunAllPendingInMessageLoop each time after moving
