@@ -345,6 +345,24 @@ void RenderWidgetHostViewViews::Destroy() {
     parent()->RemoveChildView(this);
   }
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+
+#if defined(TOUCH_UI)
+  // Send out all outstanding ACKs so that we don't block the GPU
+  // process.
+  for (std::vector< base::Callback<void(void)> >::const_iterator
+      it = on_compositing_ended_callbacks_.begin();
+      it != on_compositing_ended_callbacks_.end(); ++it) {
+    it->Run();
+  }
+  on_compositing_ended_callbacks_.clear();
+
+  // Remove dangling reference.
+  if (GetWidget() && GetWidget()->GetCompositor()) {
+    ui::Compositor *compositor = GetWidget()->GetCompositor();
+    if (compositor->HasObserver(this))
+      compositor->RemoveObserver(this);
+  }
+#endif
 }
 
 void RenderWidgetHostViewViews::SetTooltipText(const string16& tip) {

@@ -54,6 +54,31 @@ class SendOnIOThreadTask : public Task {
   scoped_ptr<IPC::Message> msg_;
 };
 
+class ScopedSendOnIOThread {
+ public:
+  ScopedSendOnIOThread(int host_id, IPC::Message* msg)
+      : host_id_(host_id),
+        msg_(msg),
+        cancelled_(false) {
+  }
+
+  ~ScopedSendOnIOThread() {
+    if (!cancelled_) {
+      BrowserThread::PostTask(BrowserThread::IO,
+                              FROM_HERE,
+                              new SendOnIOThreadTask(host_id_,
+                                                     msg_.release()));
+    }
+  }
+
+  void Cancel() { cancelled_ = true; }
+
+ private:
+  int host_id_;
+  scoped_ptr<IPC::Message> msg_;
+  bool cancelled_;
+};
+
 }  // namespace
 
 RouteToGpuProcessHostUIShimTask::RouteToGpuProcessHostUIShimTask(
@@ -194,41 +219,46 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
                                         int32 render_view_id,
                                         int32 command_buffer_route_id,
                                         gfx::Size size) {
-  RenderViewHost* host = RenderViewHost::FromID(renderer_id, render_view_id);
-  if (host) {
-    RenderWidgetHostView* view = host->view();
-    if (view) {
-      gfx::PluginWindowHandle handle = view->GetCompositingSurface();
-
-      // Resize the window synchronously. The GPU process must not issue GL
-      // calls on the command buffer until the window is the size it expects it
-      // to be.
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
-      GdkWindow* window = reinterpret_cast<GdkWindow*>(
-          gdk_xid_table_lookup(handle));
-      if (window) {
-        Display* display = GDK_WINDOW_XDISPLAY(window);
-        gdk_window_resize(window, size.width(), size.height());
-        XSync(display, False);
-      }
-#elif defined(OS_WIN)
-      // Ensure window does not have zero area because D3D cannot create a zero
-      // area swap chain.
-      SetWindowPos(handle,
-          NULL,
-          0, 0,
-          std::max(1, size.width()),
-          std::max(1, size.height()),
-          SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
-              SWP_NOACTIVATE | SWP_DEFERERASE);
-#endif
-    }
-  }
-
   // Always respond even if the window no longer exists. The GPU process cannot
   // make progress on the resizing command buffer until it receives the
   // response.
-  Send(new GpuMsg_ResizeViewACK(renderer_id, command_buffer_route_id));
+  ScopedSendOnIOThread delayed_send(
+      host_id_,
+      new GpuMsg_ResizeViewACK(renderer_id,
+                               command_buffer_route_id));
+
+  RenderViewHost* host = RenderViewHost::FromID(renderer_id, render_view_id);
+  if (!host)
+    return;
+
+  RenderWidgetHostView* view = host->view();
+  if (!view)
+    return;
+
+  gfx::PluginWindowHandle handle = view->GetCompositingSurface();
+
+  // Resize the window synchronously. The GPU process must not issue GL
+  // calls on the command buffer until the window is the size it expects it
+  // to be.
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+  GdkWindow* window = reinterpret_cast<GdkWindow*>(
+      gdk_xid_table_lookup(handle));
+  if (window) {
+    Display* display = GDK_WINDOW_XDISPLAY(window);
+    gdk_window_resize(window, size.width(), size.height());
+    XSync(display, False);
+  }
+#elif defined(OS_WIN)
+  // Ensure window does not have zero area because D3D cannot create a zero
+  // area swap chain.
+  SetWindowPos(handle,
+      NULL,
+      0, 0,
+      std::max(1, size.width()),
+      std::max(1, size.height()),
+      SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
+          SWP_NOACTIVATE | SWP_DEFERERASE);
+#endif
 }
 
 #endif
@@ -237,10 +267,18 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
     const GpuHostMsg_AcceleratedSurfaceNew_Params& params) {
+  ScopedSendOnIOThread delayed_send(
+      host_id_,
+      new AcceleratedSurfaceMsg_NewACK(
+          params.route_id,
+          params.surface_id,
+          TransportDIB::DefaultHandleValue()));
+
   RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
                                                 params.render_view_id);
   if (!host)
     return;
+
   RenderWidgetHostView* view = host->view();
   if (!view)
     return;
@@ -256,7 +294,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
       TransportDIB::Handle local_handle;
       if (!shared_memory->ShareToProcess(0 /* pid, not needed */,
                                          &local_handle)) {
-        local_handle = TransportDIB::DefaultHandleValue();
+        return;
       } else {
         view->AcceleratedSurfaceSetTransportDIB(params.window,
                                                 params.width,
@@ -265,7 +303,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
         // Create a remote handle for the GPU process to map the SHM.
         if (!shared_memory->ShareToProcess(0 /* pid, not needed */,
                                            &surface_handle)) {
-          surface_handle = TransportDIB::DefaultHandleValue();
+          return;
         }
       }
     }
@@ -279,6 +317,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
   view->AcceleratedSurfaceNew(
       params.width, params.height, &surface_id, &surface_handle);
 #endif
+  delayed_send.Cancel();
   Send(new AcceleratedSurfaceMsg_NewACK(
       params.route_id, surface_id, surface_handle));
 }
@@ -287,13 +326,22 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("renderer",
       "GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped");
+
+  ScopedSendOnIOThread delayed_send(
+      host_id_,
+      new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
+
   RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
                                                 params.render_view_id);
   if (!host)
     return;
+
   RenderWidgetHostView* view = host->view();
   if (!view)
     return;
+
+  delayed_send.Cancel();
+
 #if defined (OS_MACOSX)
   view->AcceleratedSurfaceBuffersSwapped(
       // Parameters needed to swap the IOSurface.
