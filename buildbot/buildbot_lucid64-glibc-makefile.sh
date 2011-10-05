@@ -37,16 +37,31 @@ echo @@@BUILD_STEP compile_toolchain@@@
   make -j8 buildbot-build-with-glibc
   if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
     make install-glibc INST_GLIBC_PREFIX="$PWD"
-    make pinned-src-newlib
-    ../src/trusted/service_runtime/export_header.py \
-      ../src/trusted/service_runtime/include \
-      SRC/newlib/newlib/libc/sys/nacl
-    mkdir SRC/newlib/newlib/libc/sys/nacl/include
+    mkdir -p SRC/newlib/newlib/libc/sys/nacl/include
     cp -aiv ../src/untrusted/pthread/{pthread.h,semaphore.h} \
       SRC/newlib/newlib/libc/sys/nacl/include
     find SRC/newlib/newlib/libc/sys/nacl -name .svn -print0 | xargs -0 rm -rf --
     ( cd SRC/newlib/newlib/libc/sys ; git add nacl )
     make patches
+    mkdir linux
+    cp -aiv {SRC/linux-headers-for-nacl/include/,}linux/getcpu.h
+    cp -aiv {../src/untrusted/include/machine/,}_default_types.h
+    mv Makefile Makefile.orig
+    . REVISIONS
+    sed -e s"|^\\(CANNED_REVISION = \\)no$|\\1$BUILDBOT_GOT_REVISION|" \
+        -e s'|^\(SRCDIR =\).*$|\1|' \
+        -e s'|\(GCC_CC = \)gcc -m$(HOST_TOOLCHAIN_BITS)|\1gcc|' \
+        -e s'|\(GLIBC_CC =.*\)|\1 -I$(abspath $(dir $(THISMAKEFILE)))|' \
+        -e s'|\(LINUX_HEADERS = \).*|\1/usr/include|' \
+        -e s"|\\(export NACL_FAKE_SONAME\\).*|\\1 = ${NACL_GLIBC_COMMIT:0:8}|" \
+           < Makefile.orig > Makefile
+    tar czSvpf nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
+      Makefile _default_types.h download_SRC.sh linux newlib-libc-script \
+      create_redirector{,s,s_cygwin}.sh redirector{.c,.exe} redirect_table.txt
+    rm Makefile
+    mv Makefile.orig Makefile
+    rm linux/getcpu.h _default_types.h
+    rmdir linux
   fi
 )
 
@@ -103,8 +118,11 @@ else
       tools/toolchain.tar.$suffix \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_linux_x86.tar.$suffix
   done
-  for patch in tools/SRC/*.patch ; do
-    filename="${patch#tools/SRC/}"
+  for patch in \
+      tools/nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
+      tools/SRC/*.patch ; do
+    filename="${filename#tools/}"
+    filename="${filename#SRC/}"
     $GSUTIL -h Cache-Control:no-cache cp -a public-read \
       $patch \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/$filename

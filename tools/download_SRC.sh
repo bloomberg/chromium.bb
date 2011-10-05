@@ -38,57 +38,62 @@ set -u
 set -x
 
 mkdir -p "$target"
-wget \
-  "http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r$1/" -O- |
-grep patch |
-while IFS='"' read -r -d $'\n' prefix patchname suffix; do
-  basename="$(basename "$patchname")"
-  version="${basename#*-}"
-  version="${version%-*}"
-  cd "$target"
-  case "$basename" in
-    *binutils*)
-      wget "$mirror_base_address/binutils/binutils-$version.tar.bz2"
-      tar xjSvpf "binutils-$version.tar.bz2"
-      mv "binutils-$version" "binutils"
-      cd "binutils"
-      ;;
-    *gcc*)
-      wget "$mirror_base_address/gcc/gcc-$version/gcc-core-$version.tar.bz2"
-      tar xjSvpf "gcc-core-$version.tar.bz2"
-      wget "$mirror_base_address/gcc/gcc-$version/gcc-fortran-$version.tar.bz2"
-      tar xjSvpf "gcc-fortran-$version.tar.bz2"
-      wget "$mirror_base_address/gcc/gcc-$version/gcc-g++-$version.tar.bz2"
-      tar xjSvpf "gcc-g++-$version.tar.bz2"
-      wget "$mirror_base_address/gcc/gcc-$version/gcc-objc-$version.tar.bz2"
-      tar xjSvpf "gcc-objc-$version.tar.bz2"
-      wget "$mirror_base_address/gcc/gcc-$version/gcc-testsuite-$version.tar.bz2"
-      tar xjSvpf "gcc-testsuite-$version.tar.bz2"
-      mv "gcc-$version" "gcc"
-      cd "gcc"
-      ;;
-    *glibc*)
-      wget "$mirror_base_address/glibc/glibc-$version.tar.bz2"
-      tar xjSvpf "glibc-$version.tar.bz2"
-      wget "$mirror_base_address/glibc/glibc-libidn-$version.tar.bz2"
-      tar xjSvpf "glibc-libidn-$version.tar.bz2"
-      mv "glibc-$version" "glibc"
-      mv "glibc-libidn-$version" "glibc/libidn"
-      cd "glibc"
-      ;;
-    *newlib*)
-      wget "$mirror_base_address/newlib/newlib-$version.tar.gz"
-      tar xzSvpf "newlib-$version.tar.gz"
-      mv "newlib-$version" "newlib"
-      cd "newlib"
-      ;;
-    *)
-      echo "Unknown package: $basename"
-      exit 3
-      ;;
-  esac
-  wget "http://commondatastorage.googleapis.com/$patchname" -O- |
-  patch -p1
-done
-cd "$target"
-rm *.tar.*
+( flock -x 3
+  # We have a lock. Now check: maybe someone downloaded files already?
+  if (($(find "$target" -maxdepth 1 ! -name ".*" | wc -l)<=1)); then
+    wget \
+      "http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r$1/" -O- |
+    grep patch |
+    while IFS='"' read -r -d $'\n' prefix patchname suffix; do
+      basename="$(basename "$patchname")"
+      version="${basename#*-}"
+      version="${version%-*}"
+      cd "$target"
+      case "$basename" in
+        *binutils*)
+          wget "$mirror_base_address/binutils/binutils-$version.tar.bz2"
+          tar xjSvpf "binutils-$version.tar.bz2"
+          mv "binutils-$version" "binutils"
+          cd "binutils"
+          ;;
+        *gcc*)
+          wget "$mirror_base_address/gcc/gcc-$version/gcc-core-$version.tar.bz2"
+          tar xjSvpf "gcc-core-$version.tar.bz2"
+          wget "$mirror_base_address/gcc/gcc-$version/gcc-fortran-$version.tar.bz2"
+          tar xjSvpf "gcc-fortran-$version.tar.bz2"
+          wget "$mirror_base_address/gcc/gcc-$version/gcc-g++-$version.tar.bz2"
+          tar xjSvpf "gcc-g++-$version.tar.bz2"
+          wget "$mirror_base_address/gcc/gcc-$version/gcc-objc-$version.tar.bz2"
+          tar xjSvpf "gcc-objc-$version.tar.bz2"
+          wget "$mirror_base_address/gcc/gcc-$version/gcc-testsuite-$version.tar.bz2"
+          tar xjSvpf "gcc-testsuite-$version.tar.bz2"
+          mv "gcc-$version" "gcc"
+          cd "gcc"
+          ;;
+        *glibc*)
+          wget "$mirror_base_address/glibc/glibc-$version.tar.bz2"
+          tar xjSvpf "glibc-$version.tar.bz2"
+          wget "$mirror_base_address/glibc/glibc-libidn-$version.tar.bz2"
+          tar xjSvpf "glibc-libidn-$version.tar.bz2"
+          mv "glibc-$version" "glibc"
+          mv "glibc-libidn-$version" "glibc/libidn"
+          cd "glibc"
+          ;;
+        *newlib*)
+          wget "$mirror_base_address/newlib/newlib-$version.tar.gz"
+          tar xzSvpf "newlib-$version.tar.gz"
+          mv "newlib-$version" "newlib"
+          cd "newlib"
+          ;;
+        *)
+          echo "Unknown package: $basename"
+          exit 3
+          ;;
+      esac
+      wget "http://commondatastorage.googleapis.com/$patchname" -O- |
+      patch -p1
+    done
+    cd "$target"
+    rm *.tar.*
+  fi
+) 3> "$target/.src-lock"

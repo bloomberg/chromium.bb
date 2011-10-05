@@ -31,7 +31,7 @@ default: build-with-glibc
 
 THISMAKEFILE := $(lastword $(MAKEFILE_LIST))
 
-SHELL=/bin/bash
+SHELL = /bin/bash
 
 # By default, checkout from read-only repository:
 #   http://git.chromium.org/native_client
@@ -43,80 +43,95 @@ SHELL=/bin/bash
 # or add to git-cl codereview.settings:
 #   PUSH_URL_CONFIG: url.ssh://gerrit.chromium.org.pushinsteadof
 #   ORIGIN_URL_CONFIG: http://git.chromium.org
-GIT_BASE_URL=http://git.chromium.org/native_client
+GIT_BASE_URL = http://git.chromium.org/native_client
 
-CROSSARCH=x86_64-nacl
-TOOLCHAINLOC?=out
-SDKLOC?=$(abspath $(TOOLCHAINLOC))
-TOOLCHAINNAME?=nacl-sdk
-SDKNAME?=$(TOOLCHAINNAME)
-SDKROOT?=$(SDKLOC)/$(SDKNAME)
-DESTDIR?=
-BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
+CROSSARCH = x86_64-nacl
+TOOLCHAINLOC ?= out
+SDKLOC ?= $(abspath $(TOOLCHAINLOC))
+TOOLCHAINNAME ?= nacl-sdk
+SDKNAME ?= $(TOOLCHAINNAME)
+SDKROOT ?= $(SDKLOC)/$(SDKNAME)
+DESTDIR ?=
+BUILDNCCDIR = $(SDKROOT)/$(CROSSARCH)
 
 # By default all toolchain executables are x86-32 executables, use
 # HOST_TOOLCHAIN_BITS=64 to make them x86-64 executables.
-HOST_TOOLCHAIN_BITS=32
+HOST_TOOLCHAIN_BITS = 32
 
+# If CANNED_REVISION is "no" then it's "from git build": Makefile uses file
+# named "REVISIONS" to pull infomation from git and builds that.
+# If CANNED_REVISION is set to some revision then Makefile will try to download
+# sources from commondatastorage.googleapis.com and use them.
+# You can also set CANNED_REVISION to "yes" if you want to just build sources
+# already unpacked and ready to be built from SRC subdirectory.
+CANNED_REVISION = no
+ifeq ($(CANNED_REVISION), no)
 include REVISIONS
-export NACL_FAKE_SONAME=$(shell commit=$(NACL_GLIBC_COMMIT);echo $${commit:0:8})
+endif
+export NACL_FAKE_SONAME = $(shell commit=$(NACL_GLIBC_COMMIT);echo $${commit:0:8})
 
 # Toplevel installation directory.
 # MUST be an absolute pathname, for configure --prefix=$(PREFIX)
-PREFIX=$(abspath $(SDKROOT))
+PREFIX = $(abspath $(SDKROOT))
 
 # Convert CROSSARCH (nacl or nacl64) to (32 or 64).
-BITSPLATFORM=64
+BITSPLATFORM = 64
 
-LINUX_HEADERS="$(abspath $(dir $(THISMAKEFILE)))/SRC/linux-headers-for-nacl/include"
-HPREFIX=BUILD/build-nacl-headers
-NACL_SYS_HEADERS= \
+LINUX_HEADERS = "$(abspath $(dir $(THISMAKEFILE)))/SRC/linux-headers-for-nacl/include"
+HPREFIX = SRC/newlib/newlib/libc/sys/nacl
+NACL_SYS_HEADERS = \
       "$(HPREFIX)/sys/nacl_imc_api.h" \
       "$(HPREFIX)/sys/nacl_name_service.h" \
       "$(HPREFIX)/sys/nacl_syscalls.h"
-NACL_BITS_HEADERS= \
+NACL_BITS_HEADERS = \
       "$(HPREFIX)/bits/nacl_imc_api.h" \
       "$(HPREFIX)/bits/nacl_syscalls.h"
-NACL_MACHINE_HEADERS="$(HPREFIX)/machine/_types.h"
+NACL_MACHINE_HEADERS = "$(HPREFIX)/machine/_types.h"
 
 # No 'uname -o' on OSX
 ifeq ($(shell uname -s), Darwin)
-  PLATFORM=mac
+  PLATFORM = mac
   # Ensure that the resulting toolchain works on Mac OS X 10.5, since that
   # is not the default in newer versions of Xcode.
-  export MACOSX_DEPLOYMENT_TARGET=10.5
+  export MACOSX_DEPLOYMENT_TARGET = 10.5
 else
 ifeq ($(shell uname -o), Cygwin)
-  PLATFORM=win
+  PLATFORM = win
 else
-  PLATFORM=linux
+  PLATFORM = linux
 endif
 endif
 
-SRCDIR=../../../third_party
+# SRCDIR should contain tarball for gcc-extras: gmp mpfr mpc ppl cloog-ppl.
+# You can skip use of these tarball if you make SRCDIR value empty.  In this
+# case system-wide libraries will be used (they should be available for such
+# use, obviously - and this is not always the case: for example they are not
+# available on MacOS, on 64bit linux you generally can find 64bit versions of
+# them, but not 32bit versions, etc).
+SRCDIR = ../../../third_party
 
 ifeq ($(PLATFORM), win)
   # Ugh, Cygwin and spaces in paths don't work well.
   # I'm explicitly coding the path.
-  BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin
-  SCONS?=scons.bat
-  SDKLOC_NATIVE=$(shell cygpath -m $(SDKLOC)/$(SDKNAME))
-  CREATE_REDIRECTORS=./create_redirectors_cygwin.sh
+  BUILDPATH = $(DESTDIR)$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin
+  SCONS ?= scons.bat
+  SDKLOC_NATIVE = $(shell cygpath -m $(SDKLOC)/$(SDKNAME))
+  CREATE_REDIRECTORS = ./create_redirectors_cygwin.sh
 else
-  BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
-  SCONS?=scons
-  SDKLOC_NATIVE=$(DESTDIR)$(SDKLOC)/$(SDKNAME)
-  CREATE_REDIRECTORS=./create_redirectors.sh
+  BUILDPATH = $(DESTDIR)$(SDKROOT)/bin:$(PATH)
+  SCONS ?= scons
+  SDKLOC_NATIVE = $(DESTDIR)$(SDKLOC)/$(SDKNAME)
+  CREATE_REDIRECTORS = ./create_redirectors.sh
 endif
 
 ##################################################################
 #  The version numbers for the tools we will be building.
 ##################################################################
-GMP_VERSION=5.0.2
-MPFR_VERSION=3.0.1
-MPC_VERSION=0.9
-PPL_VERSION=0.11.2
-CLOOG_PPL_VERSION=0.15.9
+GMP_VERSION = 5.0.2
+MPFR_VERSION = 3.0.1
+MPC_VERSION = 0.9
+PPL_VERSION = 0.11.2
+CLOOG_PPL_VERSION = 0.15.9
 define GCC_EXTRAS
 gmp: $(GMP_VERSION), \
 mpfr: $(MPFR_VERSION), \
@@ -124,16 +139,16 @@ mpc: $(MPC_VERSION), \
 ppl: $(PPL_VERSION), \
 cloog-ppl: $(CLOOG_PPL_VERSION)
 endef
-BINUTILS_VERSION=2.20.1
-NACL_BINUTILS_GIT_BASE=1beca2258eb9a92e8d6c6f081fc1255773b1fb8b
-GCC_VERSION=4.4.3
-NACL_GCC_GIT_BASE=4e0ae761f59baae95282ab07efa9b831ac524642
-NEWLIB_VERSION=1.18.0
-NACL_NEWLIB_GIT_BASE=65e6baefeb2874011001c2f843cf3083e771b62f
-GDB_VERSION=6.8
-NACL_GDB_GIT_BASE=5540d856ee177a454c2b8871c6498d0524b0c6f9
-GLIBC_VERSION=2.9
-NACL_GLIBC_GIT_BASE=5c46008d0874c9b9d5f5f201a10e975d1fe84787
+BINUTILS_VERSION = 2.20.1
+NACL_BINUTILS_GIT_BASE = 1beca2258eb9a92e8d6c6f081fc1255773b1fb8b
+GCC_VERSION = 4.4.3
+NACL_GCC_GIT_BASE = 4e0ae761f59baae95282ab07efa9b831ac524642
+NEWLIB_VERSION = 1.18.0
+NACL_NEWLIB_GIT_BASE = 65e6baefeb2874011001c2f843cf3083e771b62f
+GDB_VERSION = 6.8
+NACL_GDB_GIT_BASE = 5540d856ee177a454c2b8871c6498d0524b0c6f9
+GLIBC_VERSION = 2.9
+NACL_GLIBC_GIT_BASE = 5c46008d0874c9b9d5f5f201a10e975d1fe84787
 
 ##################################################################
 # Get or update the sources.
@@ -148,7 +163,11 @@ nacl-name = $(patsubst nacl-linux-headers-for-nacl,linux-headers-for-nacl,nacl-$
 
 all-git-sources = $(git-sources:%=SRC/%)
 $(all-git-sources): SRC/%: | SRC
+ifeq ($(CANNED_REVISION), no)
 	git clone $(GIT_BASE_URL)/$(nacl-name).git SRC/$*
+else
+	./download_SRC.sh $(CANNED_REVISION)
+endif
 
 all-fetched-git-sources = $(git-sources:%=fetched-src-%)
 .PHONY: $(all-fetched-git-sources)
@@ -193,7 +212,7 @@ gcc_extra_version = $($(shell echo $*| tr '[:lower:]-' '[:upper:]_')_VERSION)
 all-src-gcc-extras = $(gcc-extras:%=SRC/.gcc-extra-%)
 $(all-src-gcc-extras): SRC/.gcc-extra-%: | SRC
 	rm -rf SRC/.gcc-extra-$*
-	cd SRC && tar xpf ../../../third_party/$(gcc_extra_dir)/$*-$(gcc_extra_version).tar.*
+	cd SRC && tar xpf $(SRCDIR)/$(gcc_extra_dir)/$*-$(gcc_extra_version).tar.*
 	mv SRC/$*-$(gcc_extra_version) SRC/.gcc-extra-$*
 
 # All Macs need Core2 assembly and --enable-fat is broken with stock MacOS gcc.
@@ -241,7 +260,7 @@ fix-cloog-ppl-check: | SRC/.gcc-extra-cloog-ppl
 	    cat $$i.out >$$i; \
 	    rm $$i.out; \
 	done
-	sed -e s'|cloog_LDADD = $(LDADD)|cloog_LDADD = $(LDADD) -lstdc++ -lm |' \
+	sed -e s'|LIBS = @LIBS@|LIBS = @LIBS@ -lstdc++ -lm |' \
 	    <SRC/.gcc-extra-cloog-ppl/Makefile.in \
 	    >SRC/.gcc-extra-cloog-ppl/Makefile.in.out
 	cat SRC/.gcc-extra-cloog-ppl/Makefile.in.out \
@@ -319,8 +338,8 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	# number of warnings in the Mac version of GCC that prevent
 	# us from building with -Werror today.
 	cd BUILD/build-binutils-$(CROSSARCH) && \
-	  CC="gcc" \
-	  CFLAGS="-m$(HOST_TOOLCHAIN_BITS) -O2 $(CFLAGS)" \
+	  CC="$(GCC_CC)" \
+	  CFLAGS="$(CFLAGS)" \
 	  LDFLAGS="-s $(LDFLAGS)" \
 	  ../../SRC/binutils/configure \
 	    --prefix=$(SDKROOT) \
@@ -339,13 +358,28 @@ binutils: BUILD/stamp-$(CROSSARCH)-binutils
 # Builds the cross gcc used to build the libraries.
 ##################################################################
 
-GCC_SRC_DIR=$(abspath SRC/gcc)
+GCC_SRC_DIR = $(abspath SRC/gcc)
 
-GMP_DIR=$(abspath BUILD/.gcc-extra-install-gmp)
-MPFR_DIR=$(abspath BUILD/.gcc-extra-install-mpfr)
-PPL_DIR=$(abspath BUILD/.gcc-extra-install-ppl)
-CLOOG_DIR=$(abspath BUILD/.gcc-extra-install-cloog-ppl)
+GMP_DIR = $(abspath BUILD/.gcc-extra-install-gmp)
+MPFR_DIR = $(abspath BUILD/.gcc-extra-install-mpfr)
+PPL_DIR = $(abspath BUILD/.gcc-extra-install-ppl)
+CLOOG_DIR = $(abspath BUILD/.gcc-extra-install-cloog-ppl)
 
+ifneq ($(SRCDIR),)
+GCC_EXTRAS_FLAGS = \
+    --with-gmp=$(GMP_DIR) \
+    --with-mpfr=$(MPFR_DIR) \
+    --with-ppl=$(PPL_DIR) \
+    --with-host-libstdcxx="-lpwl -lstdc++ -lm" \
+    --with-cloog=$(CLOOG_DIR) \
+    --disable-ppl-version-check
+else
+GCC_EXTRAS_FLAGS = \
+    --with-gmp \
+    --with-mpfr \
+    --with-ppl \
+    --with-cloog
+endif
 
 GCC_CONFIGURE_FLAGS = \
     --disable-decimal-float \
@@ -354,12 +388,7 @@ GCC_CONFIGURE_FLAGS = \
     --disable-libssp \
     --disable-libstdcxx-pch \
     --target=$(CROSSARCH) \
-    --with-gmp=$(GMP_DIR) \
-    --with-mpfr=$(MPFR_DIR) \
-    --with-ppl=$(PPL_DIR) \
-    --with-host-libstdcxx="-lpwl -lstdc++ -lm" \
-    --with-cloog=$(CLOOG_DIR) \
-    --disable-ppl-version-check
+    $(GCC_EXTRAS_FLAGS)
 
 ifdef MULTILIB
 ifeq ($(MULTILIB),no)
@@ -368,7 +397,6 @@ else
 $(error MULTILIB: Bad value)
 endif
 endif
-
 
 GCC_CC = gcc -m$(HOST_TOOLCHAIN_BITS)
 
@@ -413,7 +441,9 @@ GCC_CONFIGURE_FLAGS-glibc = --enable-shared \
 
 
 BUILD/stamp-$(CROSSARCH)-pregcc: | SRC/gcc BUILD
+ifneq ($(SRCDIR),)
 	$(MAKE) -f $(THISMAKEFILE) gcc-extras
+endif
 	rm -rf BUILD/build-pregcc-$(CROSSARCH)
 	mkdir BUILD/build-pregcc-$(CROSSARCH)
 	cd BUILD/build-pregcc-$(CROSSARCH) && \
@@ -457,10 +487,10 @@ pregcc: BUILD/stamp-$(CROSSARCH)-pregcc
 # Pregcc is installed separately so that it is not overwritten with full gcc.
 # Pregcc is needed for rebuilding glibc, while full gcc can't do that because
 # of its incompatible libgcc.
-PREGCC_PREFIX=$(abspath BUILD/install-pregcc-$(CROSSARCH))
+PREGCC_PREFIX = $(abspath BUILD/install-pregcc-$(CROSSARCH))
 
 # Build directory for pregcc.
-PREGCC_BUILD_DIR=BUILD/build-pregcc-$(CROSSARCH)
+PREGCC_BUILD_DIR = BUILD/build-pregcc-$(CROSSARCH)
 
 # Build pregcc:
 # create links to binutils:
@@ -471,7 +501,9 @@ PREGCC_BUILD_DIR=BUILD/build-pregcc-$(CROSSARCH)
 #   DESTDIR should be ignored at this step.
 BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
   BUILD/stamp-$(CROSSARCH)-binutils | SRC/gcc BUILD
+ifneq ($(SRCDIR),)
 	$(MAKE) -f $(THISMAKEFILE) gcc-extras
+endif
 	rm -rf $(PREGCC_PREFIX)
 	mkdir -p $(PREGCC_PREFIX)/$(CROSSARCH)/bin
 	for f in '$(DESTDIR)$(PREFIX)/$(CROSSARCH)/bin/*'; do \
@@ -513,8 +545,6 @@ NEWLIB_CFLAGS = -O2 -D_I386MACH_ALLOW_HW_INTERRUPTS -DSIGNAL_PROVIDED \
 BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 	rm -rf BUILD/build-newlib-$(CROSSARCH)
 	mkdir BUILD/build-newlib-$(CROSSARCH)
-	../src/trusted/service_runtime/export_header.py ../src/trusted/service_runtime/include \
-		SRC/newlib/newlib/libc/sys/nacl
 	PATH=$(BUILDPATH) && export PATH && \
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
 	  ../../SRC/newlib/configure \
@@ -532,7 +562,9 @@ BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 	    --target=$(CROSSARCH) && \
 	  $(MAKE) && \
 	  $(MAKE) DESTDIR=$(DESTDIR) install
+ifeq ($(CANNED_REVISION), no)
 	rm $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pthread.h
+endif
 	for bits in 32 64; do \
 	  mv $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib$$bits/libc.a \
 	     $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib$$bits/libcrt_common.a; \
@@ -550,26 +582,28 @@ newlib: BUILD/stamp-$(CROSSARCH)-newlib
 ##################################################################
 
 # Build directory for glibc.
-GLIBC_BUILD_DIR=BUILD/build-glibc-$(CROSSARCH)
+GLIBC_BUILD_DIR = BUILD/build-glibc-$(CROSSARCH)
 
 # Glibc is built with pregcc.
-GLIBC_CC=$(PREGCC_PREFIX)/bin/$(CROSSARCH)-gcc
+GLIBC_CC = $(PREGCC_PREFIX)/bin/$(CROSSARCH)-gcc
 
 # CFLAGS for building glibc.
-GLIBC_CFLAGS=-O2 -g $(CFLAGS)
+GLIBC_CFLAGS = -O2 -g $(CFLAGS)
 
-ARCH_DEST=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)
-ARCH_DEST_INC_NATIVE=$(SDKLOC_NATIVE)/$(CROSSARCH)/include
+ARCH_DEST = $(DESTDIR)$(SDKROOT)/$(CROSSARCH)
+ARCH_DEST_INC_NATIVE = $(SDKLOC_NATIVE)/$(CROSSARCH)/include
 
 # LIB_BITS is used with different values to execute targets in this Makefile for
 # different architectures (32, 64) when building libraries (glibc and nacl).
 # CROSSARCH and BITSPLATFORM could be used for this, but we better avoid
 # redefining variables with recursive $(MAKE) calls.
-LIB_BITS?=64
-ARCH_DEST_LIB_NATIVE=$(SDKLOC_NATIVE)/$(CROSSARCH)/$(if $(filter 32,$(LIB_BITS)),lib32,lib)
+LIB_BITS ?= 64
+ARCH_DEST_LIB_NATIVE = $(SDKLOC_NATIVE)/$(CROSSARCH)/$(if $(filter 32,$(LIB_BITS)),lib32,lib)
 
-BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
-  | SRC/glibc SRC/linux-headers-for-nacl
+BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone | SRC/glibc
+	if [[ ! -d $(LINUX_HEADERS) ]] ; then \
+	  $(MAKE) -f $(THISMAKEFILE) SRC/linux-headers-for-nacl ; \
+	fi
 	rm -rf BUILD/build-glibc32
 	mkdir -p BUILD/build-glibc32/lib
 	cd BUILD/build-glibc32 && ../../SRC/glibc/configure \
@@ -588,8 +622,10 @@ BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
 	$(MAKE) -C BUILD/build-glibc32 install_root=$(DESTDIR)$(PREFIX)/$(CROSSARCH) install
 	touch $@
 
-BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
-  | SRC/glibc SRC/linux-headers-for-nacl
+BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone | SRC/glibc
+	if [[ ! -d $(LINUX_HEADERS) ]] ; then \
+	  $(MAKE) -f $(THISMAKEFILE) SRC/linux-headers-for-nacl ; \
+	fi
 	rm -rf BUILD/build-glibc64
 	mkdir -p BUILD/build-glibc64
 	cd BUILD/build-glibc64 && ../../SRC/glibc/configure \
@@ -610,7 +646,7 @@ BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone \
 
 # Can be used to make a glibc archive separately from the main install tree.
 # Used, i.e., on buildbots.
-INST_GLIBC_PREFIX?=PREFIX
+INST_GLIBC_PREFIX ?= $(PREFIX)
 .PHONY: install-glibc
 install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	rm -rf "$(INST_GLIBC_PREFIX)"/glibc
@@ -623,26 +659,38 @@ install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	  install_root="$(INST_GLIBC_PREFIX)/glibc/$(CROSSARCH)" install
 
 .PHONY: export-headers
-export-headers:
-	rm -rf $(HPREFIX)
+export-headers: SRC/newlib
+ifeq ($(CANNED_REVISION), no)
+	rm -rf $(HPREFIX)/{bits,sys,machine}
 	../src/trusted/service_runtime/export_header.py \
 	  ../src/trusted/service_runtime/include $(HPREFIX)
+else
+	true
+endif
 
 ##################################################################
 # Ad hoc linker scripts and a selection of NaCl headers for GCC.
 ##################################################################
 .PHONY: glibc-adhoc-files
-glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
+glibc-adhoc-files: | SRC/glibc
+	if [[ ! -d $(LINUX_HEADERS) ]] ; then \
+	  $(MAKE) -f $(THISMAKEFILE) SRC/linux-headers-for-nacl ; \
+	fi
 	install -m 755 -d  $(ARCH_DEST)/lib/ldscripts
 	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* \
 	    $(ARCH_DEST)/lib/ldscripts/
 	mkdir -p $(ARCH_DEST)/include/{sys,machine,bits}
-	cp -rf $(LINUX_HEADERS)/* $(ARCH_DEST)/include
+	cp -rf $(LINUX_HEADERS)/{asm*,linux} $(ARCH_DEST)/include
 	cp -f $(NACL_BITS_HEADERS) $(ARCH_DEST)/include/bits
 	cp -f $(NACL_SYS_HEADERS) $(ARCH_DEST)/include/sys
 	cp -f $(NACL_MACHINE_HEADERS) $(ARCH_DEST)/include/machine
+ifeq ($(CANNED_REVISION), no)
 	cp ../src/untrusted/include/machine/_default_types.h \
 	    $(ARCH_DEST)/include/machine/_default_types.h
+else
+	cp _default_types.h \
+	    $(ARCH_DEST)/include/machine/_default_types.h
+endif
 	for f in catchsegv gencat getconf getent iconv ldd locale \
 	    localedef mtrace pcprofiledump rpcgen sprof tzselect xtrace; do \
 	    rm -f $(ARCH_DEST)/bin/$$f ; \
@@ -663,10 +711,12 @@ glibc-adhoc-files: | SRC/glibc SRC/linux-headers-for-nacl
 # gcc:
 #   Builds GCC with glibc as a C library.
 ##################################################################
-SYSINCLUDE_HACK_TARGET=$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
+SYSINCLUDE_HACK_TARGET = $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 
 BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
+ifneq ($(SRCDIR),)
 	$(MAKE) -f $(THISMAKEFILE) gcc-extras
+endif
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
@@ -684,9 +734,26 @@ BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
 	    --prefix=$(SDKROOT) \
 	    $(GCC_CONFIGURE_FLAGS) \
 	    $(GCC_CONFIGURE_FLAGS-glibc)
+ifeq ($(PLATFORM), linux)
+	if [[ "$(CROSSARCH)" = "x86_64-nacl" ]] ; then \
+	  if file BUILD/build-pregcc-x86_64-nacl/gcc/cc1 | grep -q x86-64; \
+	  then \
+	    export LD_PRELOAD=/lib64/libgcc_s.so.1 ; \
+	  fi ; \
+	else \
+	  if ! (file BUILD/build-pregcc-x86_64-nacl/gcc/cc1 | grep -q x86-64); \
+	  then \
+	    export LD_PRELOAD=/lib/libgcc_s.so.1 ; \
+	  fi ; \
+	fi ; \
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    all
+else
+	PATH=$(BUILDPATH) $(MAKE) \
+	    -C BUILD/build-full-gcc-$(CROSSARCH) \
+	    all
+endif
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-full-gcc-$(CROSSARCH) \
 	    DESTDIR=$(DESTDIR) \
@@ -701,7 +768,9 @@ BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
 ##################################################################
 BUILD/stamp-$(CROSSARCH)-gcc: BUILD/stamp-$(CROSSARCH)-newlib \
   | SRC/gcc BUILD
+ifneq ($(SRCDIR),)
 	$(MAKE) -f $(THISMAKEFILE) gcc-extras
+endif
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
 	cd BUILD/build-gcc-$(CROSSARCH) && \
@@ -791,10 +860,9 @@ endif
 
 # On platforms where glibc build is slow or unavailable you can specify
 # glibc_download.sh (or any other program) to download glibc
-INST_GLIBC_PROGRAM?=none
-GLIBC_VER=2.9
+INST_GLIBC_PROGRAM ?= none
 .PHONY: build-with-glibc
-build-with-glibc:
+build-with-glibc: SRC/gcc
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
@@ -815,14 +883,14 @@ endif
 	    nss_{compat,dns,files,hesiod,nis,nisplus} pthread \
 	    resolv rt util ; do \
 	    for fulllib in lib$$lib.so.* ; do \
-	      mv lib$$lib-$(GLIBC_VER).so "$$fulllib" ; \
-	      ln -sfn "$$fulllib" lib$$lib-$(GLIBC_VER).so ; \
+	      mv lib$$lib-$(GLIBC_VERSION).so "$$fulllib" ; \
+	      ln -sfn "$$fulllib" lib$$lib-$(GLIBC_VERSION).so ; \
 	    done ; \
 	  done ; \
 	  for fulllib in ld-linux.so.* ld-linux-x86-64.so.* ; do \
 	    if [[ "$$fulllib" != *\** ]] ; then \
-	      mv ld-$(GLIBC_VER).so "$$fulllib" ; \
-	      ln -sfn "$$fulllib" ld-$(GLIBC_VER).so ; \
+	      mv ld-$(GLIBC_VERSION).so "$$fulllib" ; \
+	      ln -sfn "$$fulllib" ld-$(GLIBC_VERSION).so ; \
 	    fi ; \
 	  done ; \
 	  for fulllib in libthread_db.so.* ; do \
@@ -839,21 +907,27 @@ endif
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{lib/{*/*/*/*{,/*}.la,*.so*},lib{32,64}}
 
 .PHONY: build-with-newlib
-build-with-newlib:
+build-with-newlib: SRC/gcc
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc
+	$(MAKE) -f $(THISMAKEFILE) export-headers
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-newlib
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
+ifeq ($(CANNED_REVISION), no)
 	$(MAKE) -f $(THISMAKEFILE) headers_for_build
+endif
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gcc
+ifeq ($(CANNED_REVISION), no)
 	case $$(SRC/binutils/config.guess) in \
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb ;; \
 	esac
+endif
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
 
+ifeq ($(CANNED_REVISION), no)
 # Newlib toolchain for buildbot.
 .PHONY: buildbot-build-with-newlib
 buildbot-build-with-newlib: | \
@@ -895,7 +969,8 @@ patches: $(patch-list)
 buildbot-build-with-glibc: | \
   buildbot-mark-version \
   pinned-src-glibc \
-  pinned-src-linux-headers-for-nacl
+  pinned-src-linux-headers-for-nacl \
+  pinned-src-newlib
 	rm -rf SRC/gcc/gmp-* SRC/gcc/mpfr-*
 	find SRC -print0 | xargs -0 touch -r SRC
 	$(MAKE) -f $(THISMAKEFILE) build-with-glibc
@@ -920,12 +995,13 @@ buildbot-mark-version: | \
 	-`cat SRC/gdb/gdb/version.in`\n\
 	+`cat SRC/gdb/gdb/version.in` `LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`LC_ALL=C svnversion`, Git Commit `cd SRC/gdb ; LC_ALL=C git rev-parse HEAD`)\n" |\
 	patch -p0
+endif
 
 ##################################################################
 # Run DejaGnu tests.
 ##################################################################
 
-SEL_LDR=$(abspath ../scons-out/opt-$(PLATFORM)-x86-$(BITSPLATFORM)/staging/sel_ldr)
+SEL_LDR = $(abspath ../scons-out/opt-$(PLATFORM)-x86-$(BITSPLATFORM)/staging/sel_ldr)
 DEJAGNU_TIMESTAMP := $(shell date +%y%m%d%H%M%S)
 
 .PHONY: $(SEL_LDR)
