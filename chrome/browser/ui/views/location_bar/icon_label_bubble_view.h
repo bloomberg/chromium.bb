@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "ui/gfx/size.h"
 #include "views/painter.h"
 #include "views/view.h"
@@ -34,7 +35,7 @@ class IconLabelBubbleView : public views::View {
   virtual ~IconLabelBubbleView();
 
   void SetFont(const gfx::Font& font);
-  void SetLabel(const std::wstring& label);
+  void SetLabel(const string16& label);
   void SetImage(const SkBitmap& bitmap);
   void set_is_extension_icon(bool is_extension_icon) {
     is_extension_icon_ = is_extension_icon;

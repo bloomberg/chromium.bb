@@ -314,7 +314,7 @@ void BookmarkEditorView::Init() {
 
   title_label_ = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NAME_LABEL)));
-  title_tf_.SetAccessibleName(WideToUTF16Hack(title_label_->GetText()));
+  title_tf_.SetAccessibleName(title_label_->GetText());
 
   if (show_tree_) {
     tree_view_ = new views::TreeView();
@@ -383,7 +383,7 @@ void BookmarkEditorView::Init() {
     url_tf_ = new views::Textfield;
     url_tf_->SetText(UTF16ToWide(url_text));
     url_tf_->SetController(this);
-    url_tf_->SetAccessibleName(WideToUTF16Hack(url_label_->GetText()));
+    url_tf_->SetAccessibleName(url_label_->GetText());
 
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 

@@ -47,11 +47,10 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
   link_.set_parent_owned(false);
 #if !defined(OS_CHROMEOS)
   link_.SetText(
-      UTF16ToWide(l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE,
-                                             WideToUTF16(accelerator))));
+      l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE,
+                                 WideToUTF16(accelerator)));
 #else
-  link_.SetText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE)));
+  link_.SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));
 #endif
   link_.set_listener(bubble);
   link_.SetFont(ResourceBundle::GetSharedInstance().GetFont(

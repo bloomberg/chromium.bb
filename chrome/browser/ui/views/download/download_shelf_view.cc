@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -106,7 +107,7 @@ void DownloadShelfView::Init() {
   AddChildView(arrow_image_);
 
   show_all_view_ = new views::Link(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS)));
+      l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS));
   show_all_view_->set_listener(this);
   AddChildView(show_all_view_);
 

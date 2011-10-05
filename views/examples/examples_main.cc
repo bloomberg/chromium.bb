@@ -103,7 +103,7 @@ void ExamplesMain::Init() {
   examples_.push_back(new WidgetExample(this));
   examples_.push_back(new MenuExample(this));
 
-  for(std::vector<ExampleBase*>::const_iterator i(examples_.begin());
+  for (std::vector<ExampleBase*>::const_iterator i(examples_.begin());
       i != examples_.end(); ++i)
     AddExample(*i);
 
@@ -111,7 +111,7 @@ void ExamplesMain::Init() {
 }
 
 void ExamplesMain::SetStatus(const std::string& status) {
-  status_label_->SetText(UTF8ToWide(status));
+  status_label_->SetText(UTF8ToUTF16(status));
 }
 
 void ExamplesMain::AddExample(ExampleBase* example) {

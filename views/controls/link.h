@@ -25,7 +25,7 @@ class LinkListener;
 class VIEWS_EXPORT Link : public Label {
  public:
   Link();
-  explicit Link(const std::wstring& title);
+  explicit Link(const string16& title);
   virtual ~Link();
 
   const LinkListener* listener() { return listener_; }

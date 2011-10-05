@@ -421,9 +421,9 @@ FirstRunMinimalBubbleView::FirstRunMinimalBubbleView(
   const gfx::Font& font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
 
-  label1_ = new views::Label(UTF16ToWide(l10n_util::GetStringFUTF16(
+  label1_ = new views::Label(l10n_util::GetStringFUTF16(
       IDS_FR_SE_BUBBLE_TITLE,
-      GetDefaultSearchEngineName(profile_))));
+      GetDefaultSearchEngineName(profile_)));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
   label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label1_);

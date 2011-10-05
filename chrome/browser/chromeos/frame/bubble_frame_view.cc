@@ -50,8 +50,7 @@ BubbleFrameView::BubbleFrameView(views::Widget* frame,
       close_button_(NULL),
       throbber_(NULL) {
   if (widget_delegate->ShouldShowWindowTitle()) {
-    title_ = new views::Label(
-        UTF16ToWideHack(widget_delegate->GetWindowTitle()));
+    title_ = new views::Label(widget_delegate->GetWindowTitle());
     title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     title_->SetFont(title_->font().DeriveFont(kFontSizeCorrectionDelta,
                                               gfx::Font::BOLD));
@@ -82,7 +81,7 @@ BubbleFrameView::~BubbleFrameView() {
 void BubbleFrameView::StartThrobber() {
   DCHECK(throbber_ != NULL);
   if (title_)
-    title_->SetText(std::wstring());
+    title_->SetText(string16());
   throbber_->Start();
 }
 
@@ -90,8 +89,7 @@ void BubbleFrameView::StopThrobber() {
   DCHECK(throbber_ != NULL);
   throbber_->Stop();
   if (title_)
-    title_->SetText(
-        UTF16ToWideHack(frame_->widget_delegate()->GetWindowTitle()));
+    title_->SetText(frame_->widget_delegate()->GetWindowTitle());
 }
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {

@@ -30,16 +30,16 @@ ImportProgressDialogView::ImportProgressDialogView(
       state_passwords_(new views::CheckmarkThrobber),
       state_history_(new views::CheckmarkThrobber),
       state_cookies_(new views::CheckmarkThrobber),
-      label_bookmarks_(new views::Label(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS)))),
-      label_searches_(new views::Label(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_SEARCH)))),
-      label_passwords_(new views::Label(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_PASSWORDS)))),
-      label_history_(new views::Label(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_HISTORY)))),
-      label_cookies_(new views::Label(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_COOKIES)))),
+      label_bookmarks_(new views::Label(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS))),
+      label_searches_(new views::Label(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_SEARCH))),
+      label_passwords_(new views::Label(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_PASSWORDS))),
+      label_history_(new views::Label(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_HISTORY))),
+      label_cookies_(new views::Label(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_COOKIES))),
       parent_window_(parent_window),
       items_(items),
       importer_host_(importer_host),
@@ -289,7 +289,7 @@ void ShowImportProgressDialog(HWND parent_window,
                               const SourceProfile& source_profile,
                               Profile* target_profile,
                               bool first_run) {
-  DCHECK(items != 0);
+  DCHECK_NE(items, 0u);
   ImportProgressDialogView* progress_view = new ImportProgressDialogView(
       parent_window,
       items,

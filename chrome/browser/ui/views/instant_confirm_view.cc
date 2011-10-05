@@ -22,12 +22,12 @@
 
 InstantConfirmView::InstantConfirmView(Profile* profile) : profile_(profile) {
   views::Label* description_label = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_MESSAGE)));
+      l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_MESSAGE));
   description_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   description_label->SetMultiLine(true);
 
   views::Link* learn_more_link = new views::Link(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more_link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   learn_more_link->set_listener(this);
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/notifications/balloon_view.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/message_loop.h"
@@ -285,7 +286,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
       balloon->notification().display_source());
 
-  source_label_ = new views::Label(UTF16ToWide(source_label_text));
+  source_label_ = new views::Label(source_label_text);
   AddChildView(source_label_);
   options_menu_button_ = new views::MenuButton(NULL, L"", this, false);
   AddChildView(options_menu_button_);

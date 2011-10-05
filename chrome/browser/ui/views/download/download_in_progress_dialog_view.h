@@ -47,8 +47,8 @@ class DownloadInProgressDialogView : public views::DialogDelegateView {
   views::Label* warning_;
   views::Label* explanation_;
 
-  std::wstring ok_button_text_;
-  std::wstring cancel_button_text_;
+  string16 ok_button_text_;
+  string16 cancel_button_text_;
 
   string16 product_name_;
 

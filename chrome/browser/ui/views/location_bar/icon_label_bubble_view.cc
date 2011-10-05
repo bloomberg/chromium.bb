@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -39,7 +40,7 @@ void IconLabelBubbleView::SetFont(const gfx::Font& font) {
   label_->SetFont(font);
 }
 
-void IconLabelBubbleView::SetLabel(const std::wstring& label) {
+void IconLabelBubbleView::SetLabel(const string16& label) {
   label_->SetText(label);
 }
 

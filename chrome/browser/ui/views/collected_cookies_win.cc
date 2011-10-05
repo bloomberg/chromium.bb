@@ -240,8 +240,8 @@ views::View* CollectedCookiesWin::CreateAllowedPane() {
   TabSpecificContentSettings* content_settings = wrapper_->content_settings();
 
   // Create the controls that go into the pane.
-  allowed_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL)));
+  allowed_label_ = new views::Label(l10n_util::GetStringUTF16(
+      IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL));
   allowed_cookies_tree_model_.reset(
       content_settings->GetAllowedCookiesTreeModel());
   allowed_cookies_tree_ = new views::TreeView();

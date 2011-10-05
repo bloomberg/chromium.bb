@@ -4,8 +4,10 @@
 
 #include "views/controls/label.h"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
+#include <vector>
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -33,14 +35,14 @@ const char Label::kViewClassName[] = "views/Label";
 const int Label::kFocusBorderPadding = 1;
 
 Label::Label() {
-  Init(std::wstring(), GetDefaultFont());
+  Init(string16(), GetDefaultFont());
 }
 
-Label::Label(const std::wstring& text) {
+Label::Label(const string16& text) {
   Init(text, GetDefaultFont());
 }
 
-Label::Label(const std::wstring& text, const gfx::Font& font) {
+Label::Label(const string16& text, const gfx::Font& font) {
   Init(text, font);
 }
 
@@ -54,16 +56,16 @@ void Label::SetFont(const gfx::Font& font) {
   SchedulePaint();
 }
 
-void Label::SetText(const std::wstring& text) {
-  text_ = WideToUTF16Hack(text);
+void Label::SetText(const string16& text) {
+  text_ = text;
   url_set_ = false;
   text_size_valid_ = false;
   PreferredSizeChanged();
   SchedulePaint();
 }
 
-const std::wstring Label::GetText() const {
-  return url_set_ ? UTF8ToWide(url_.spec()) : UTF16ToWideHack(text_);
+const string16 Label::GetText() const {
+  return url_set_ ? UTF8ToUTF16(url_.spec()) : text_;
 }
 
 void Label::SetURL(const GURL& url) {
@@ -259,10 +261,10 @@ void Label::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void Label::PaintText(gfx::Canvas* canvas,
-                      const std::wstring& text,
+                      const string16& text,
                       const gfx::Rect& text_bounds,
                       int flags) {
-  canvas->DrawStringInt(WideToUTF16Hack(text), font_, color_,
+  canvas->DrawStringInt(text, font_, color_,
                         text_bounds.x(), text_bounds.y(),
                         text_bounds.width(), text_bounds.height(), flags);
 
@@ -303,7 +305,7 @@ void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 void Label::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
 
-  std::wstring paint_text;
+  string16 paint_text;
   gfx::Rect text_bounds;
   int flags = 0;
   CalculateDrawStringParams(&paint_text, &text_bounds, &flags);
@@ -323,7 +325,7 @@ gfx::Font Label::GetDefaultFont() {
   return ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
 }
 
-void Label::Init(const std::wstring& text, const gfx::Font& font) {
+void Label::Init(const string16& text, const gfx::Font& font) {
   static bool initialized = false;
   if (!initialized) {
 #if defined(OS_WIN)
@@ -432,7 +434,7 @@ gfx::Rect Label::GetAvailableRect() const {
   return bounds;
 }
 
-void Label::CalculateDrawStringParams(std::wstring* paint_text,
+void Label::CalculateDrawStringParams(string16* paint_text,
                                       gfx::Rect* text_bounds,
                                       int* flags) const {
   DCHECK(paint_text && text_bounds && flags);
@@ -440,8 +442,8 @@ void Label::CalculateDrawStringParams(std::wstring* paint_text,
   if (url_set_) {
     // TODO(jungshik) : Figure out how to get 'intl.accept_languages'
     // preference and use it when calling ElideUrl.
-    *paint_text = UTF16ToWideHack(
-        ui::ElideUrl(url_, font_, GetAvailableRect().width(), std::string()));
+    *paint_text = ui::ElideUrl(url_, font_, GetAvailableRect().width(),
+                               std::string());
 
     // An URLs is always treated as an LTR text and therefore we should
     // explicitly mark it as such if the locale is RTL so that URLs containing
@@ -452,13 +454,13 @@ void Label::CalculateDrawStringParams(std::wstring* paint_text,
     // characters. We use the locale settings because an URL is always treated
     // as an LTR string, even if its containing view does not use an RTL UI
     // layout.
-    *paint_text = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
-        WideToUTF16(*paint_text)));
+    *paint_text = base::i18n::GetDisplayStringInLTRDirectionality(
+        *paint_text);
   } else if (elide_in_middle_) {
-    *paint_text = UTF16ToWideHack(ui::ElideText(text_,
-        font_, GetAvailableRect().width(), true));
+    *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
+                                true);
   } else {
-    *paint_text = UTF16ToWideHack(text_);
+    *paint_text = text_;
   }
 
   *text_bounds = GetTextBounds();
