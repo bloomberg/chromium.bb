@@ -62,7 +62,8 @@ const char kExtraInfo[] =
   #if defined(__i386__)
     "os=cros&arch=x86";
   #else
-    #error "unknown chromeOs architecture"
+    // TODO(cpu): Fix this for ARM.
+    "os=none&arch=none";
   #endif
 #else
     #error "unknown os or architecture"
@@ -172,4 +173,3 @@ ComponentUpdateService::Configurator* MakeChromeComponentUpdaterConfigurator(
     const CommandLine* cmdline, net::URLRequestContextGetter* context_getter) {
   return new ChromeConfigurator(cmdline, context_getter);
 }
-
