@@ -1120,9 +1120,6 @@ const char kLoginUserWithNewPassword[]      = "login-user-with-new-password";
 // Attempts to perform Chrome OS offline and online login in parallel.
 const char kParallelAuth[]                  = "parallel-auth";
 
-// Use the frame layout used in chromeos.
-const char kChromeosFrame[]                 = "chromeos-frame";
-
 // Use the given language for UI in the input method candidate window.
 const char kCandidateWindowLang[]           = "lang";
 

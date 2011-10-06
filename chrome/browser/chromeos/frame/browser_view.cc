@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -452,7 +453,8 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
 bool BrowserView::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame)) {
+  if (system::runtime_environment::IsRunningOnChromeOS() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized)) {
     // Typically we don't request a full screen size. This means we'll request a
     // non-full screen size, layout/paint at that size, then the window manager
     // will snap us to full screen size. This results in an ugly

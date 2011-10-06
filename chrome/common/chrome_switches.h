@@ -308,7 +308,6 @@ extern const char kLoginUser[];
 extern const char kLoginPassword[];
 extern const char kLoginUserWithNewPassword[];
 extern const char kParallelAuth[];
-extern const char kChromeosFrame[];
 extern const char kCandidateWindowLang[];
 extern const char kGuestSession[];
 extern const char kStubCros[];
