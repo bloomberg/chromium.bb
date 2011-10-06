@@ -151,8 +151,8 @@ class BookmarkButton : public views::TextButton {
                               string16* tooltip) OVERRIDE {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
-    *tooltip = WideToUTF16Hack(BookmarkBarView::CreateToolTipForURLAndTitle(
-                                   location, url_, text(), profile_));
+    *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(location, url_,
+                                                            text(), profile_);
     return !tooltip->empty();
   }
 
@@ -527,10 +527,10 @@ void BookmarkBarView::StopThrobbing(bool immediate) {
 }
 
 // static
-std::wstring BookmarkBarView::CreateToolTipForURLAndTitle(
+string16 BookmarkBarView::CreateToolTipForURLAndTitle(
     const gfx::Point& screen_loc,
     const GURL& url,
-    const std::wstring& title,
+    const string16& title,
     Profile* profile) {
   int max_width = views::TooltipManager::GetMaxWidth(screen_loc.x(),
                                                      screen_loc.y());
@@ -539,13 +539,13 @@ std::wstring BookmarkBarView::CreateToolTipForURLAndTitle(
 
   // First the title.
   if (!title.empty()) {
-    string16 localized_title = WideToUTF16(title);
+    string16 localized_title = title;
     base::i18n::AdjustStringForLocaleDirection(&localized_title);
     result.append(ui::ElideText(localized_title, tt_font, max_width, false));
   }
 
   // Only show the URL if the url and title differ.
-  if (title != UTF8ToWide(url.spec())) {
+  if (title != UTF8ToUTF16(url.spec())) {
     if (!result.empty())
       result.push_back('\n');
 
@@ -561,7 +561,7 @@ std::wstring BookmarkBarView::CreateToolTipForURLAndTitle(
     elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
     result.append(elided_url);
   }
-  return UTF16ToWide(result);
+  return result;
 }
 
 bool BookmarkBarView::IsDetached() const {

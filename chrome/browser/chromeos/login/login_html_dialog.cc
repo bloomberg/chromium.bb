@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/frame/bubble_frame_view.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -18,6 +19,7 @@
 namespace chromeos {
 
 namespace {
+
 // Default width/height ratio of screen size.
 const double kDefaultWidthRatio = 0.6;
 const double kDefaultHeightRatio = 0.6;

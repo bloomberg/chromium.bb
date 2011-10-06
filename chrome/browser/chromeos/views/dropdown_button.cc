@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/views/dropdown_button.h"
+
+#include "base/utf_string_conversions.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 
 namespace {
+
 // Asset icon particularities makes us offset focus frame.
 const int kFocusFrameTopOffset = 0;
 const int kFocusFrameLeftOffset = 0;

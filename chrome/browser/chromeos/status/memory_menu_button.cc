@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/status/memory_menu_button.h"
 
+#include "base/utf_string_conversions.h"
 #include "base/file_util.h"
 #include "base/process_util.h"  // GetSystemMemoryInfo
 #include "base/stringprintf.h"

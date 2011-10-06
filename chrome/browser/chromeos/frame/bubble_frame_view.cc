@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "grit/theme_resources_standard.h"
@@ -26,15 +27,15 @@
 
 namespace {
 
-static const int kTitleTopPadding = 10;
-static const int kTitleContentPadding = 10;
-static const int kHorizontalPadding = 10;
+const int kTitleTopPadding = 10;
+const int kTitleContentPadding = 10;
+const int kHorizontalPadding = 10;
 
 // Title font size correction.
 #if defined(CROS_FONTS_USING_BCI)
-static const int kTitleFontSizeDelta = 0;
+const int kTitleFontSizeDelta = 0;
 #else
-static const int kTitleFontSizeDelta = 1;
+const int kTitleFontSizeDelta = 1;
 #endif
 
 }  // namespace

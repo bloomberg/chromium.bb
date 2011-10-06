@@ -8,10 +8,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "views/controls/button/checkbox.h"
+#include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/examples/example_base.h"
-#include "views/layout/grid_layout.h"
+
+namespace views {
+class Checkbox;
+class GridLayout;
+}
 
 namespace examples {
 
@@ -28,18 +32,19 @@ class TextExample : public ExampleBase,
  private:
   // Create and add a combo box to the layout.
   views::Combobox* AddCombobox(views::GridLayout* layout,
-                               const char *name,
+                               const char* name,
                                const char** strings,
                                int count);
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* button,
+                             const views::Event& event) OVERRIDE;
 
   // Overridden from views::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* combo_box,
                            int prev_index,
                            int new_index) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* button,
-                             const views::Event& event) OVERRIDE;
 
   class TextExampleView;
   // The content of the scroll view.

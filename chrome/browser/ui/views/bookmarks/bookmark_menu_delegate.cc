@@ -101,9 +101,8 @@ string16 BookmarkMenuDelegate::GetTooltipText(int id,
 
   const BookmarkNode* node = menu_id_to_node_map_[id];
   if (node->is_url()) {
-    return WideToUTF16Hack(BookmarkBarView::CreateToolTipForURLAndTitle(
-                               screen_loc, node->url(),
-                               UTF16ToWide(node->GetTitle()), profile_));
+    return BookmarkBarView::CreateToolTipForURLAndTitle(
+        screen_loc, node->url(), node->GetTitle(), profile_);
   }
   return string16();
 }

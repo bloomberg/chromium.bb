@@ -4,19 +4,21 @@
 
 #include "views/examples/text_example.h"
 
-#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/label.h"
+#include "views/controls/button/checkbox.h"
 #include "views/examples/example_combobox_model.h"
 #include "views/view.h"
+#include "views/layout/grid_layout.h"
 
 namespace {
 
-const char* kShortText = "Batman";
-const char* kMediumText = "The quick brown fox jumps over the lazy dog.";
-const char* kLongText =
+const char kShortText[] = "Batman";
+const char kMediumText[] = "The quick brown fox jumps over the lazy dog.";
+const char kLongText[] =
     "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod "
     "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim "
     "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea "
@@ -122,7 +124,6 @@ class TextExample::TextExampleView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TextExampleView);
 };
 
-
 TextExample::TextExample(ExamplesMain* main)
     : ExampleBase(main, "Text Styles") {
 }
@@ -131,7 +132,7 @@ TextExample::~TextExample() {
 }
 
 views::Combobox* TextExample::AddCombobox(views::GridLayout* layout,
-                                          const char *name,
+                                          const char* name,
                                           const char** strings,
                                           int count) {
   layout->StartRow(0, 0);
@@ -198,6 +199,23 @@ void TextExample::CreateExampleView(views::View* container) {
   layout->AddPaddingRow(0, 8);
 }
 
+void TextExample::ButtonPressed(views::Button* button,
+                                const views::Event& event) {
+  int text_flags = text_view_->text_flags();
+  if (button == multiline_checkbox_) {
+    if (multiline_checkbox_->checked())
+      text_flags |= gfx::Canvas::MULTI_LINE;
+    else
+      text_flags &= ~gfx::Canvas::MULTI_LINE;
+  } else if (button == break_checkbox_) {
+    if (break_checkbox_->checked())
+      text_flags |= gfx::Canvas::CHARACTER_BREAK;
+    else
+      text_flags &= ~gfx::Canvas::CHARACTER_BREAK;
+  }
+  text_view_->set_text_flags(text_flags);
+  text_view_->SchedulePaint();
+}
 
 void TextExample::ItemChanged(views::Combobox* combo_box,
                               int prev_index,
@@ -278,25 +296,5 @@ void TextExample::ItemChanged(views::Combobox* combo_box,
   text_view_->set_text_flags(text_flags);
   text_view_->SchedulePaint();
 }
-
-
-void TextExample::ButtonPressed(views::Button* button,
-                                const views::Event& event) {
-  int text_flags = text_view_->text_flags();
-  if (button == multiline_checkbox_) {
-    if (multiline_checkbox_->checked())
-      text_flags |= gfx::Canvas::MULTI_LINE;
-    else
-      text_flags &= ~gfx::Canvas::MULTI_LINE;
-  } else if (button == break_checkbox_) {
-    if (break_checkbox_->checked())
-      text_flags |= gfx::Canvas::CHARACTER_BREAK;
-    else
-      text_flags &= ~gfx::Canvas::CHARACTER_BREAK;
-  }
-  text_view_->set_text_flags(text_flags);
-  text_view_->SchedulePaint();
-}
-
 
 }  // namespace examples

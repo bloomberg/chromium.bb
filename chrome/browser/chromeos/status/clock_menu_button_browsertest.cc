@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 
-#include "base/string_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
@@ -43,11 +43,11 @@ IN_PROC_BROWSER_TEST_F(ClockMenuButtonTest, TimezoneTest) {
   scoped_ptr<icu::TimeZone> timezone_first(icu::TimeZone::createTimeZone(
       icu::UnicodeString::fromUTF8("Asia/Hong_Kong")));
   system::TimezoneSettings::GetInstance()->SetTimezone(*timezone_first);
-  std::wstring text_before = clock->text();
+  string16 text_before = clock->text();
   scoped_ptr<icu::TimeZone> timezone_second(icu::TimeZone::createTimeZone(
       icu::UnicodeString::fromUTF8("Pacific/Samoa")));
   system::TimezoneSettings::GetInstance()->SetTimezone(*timezone_second);
-  std::wstring text_after = clock->text();
+  string16 text_after = clock->text();
   EXPECT_NE(text_before, text_after);
 }
 

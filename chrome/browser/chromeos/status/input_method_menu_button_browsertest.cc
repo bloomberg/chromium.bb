@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
 
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
@@ -39,8 +39,7 @@ IN_PROC_BROWSER_TEST_F(InputMethodMenuButtonTest, InitialIndicatorTest) {
 
   // By default, show the indicator of the hardware keyboard, which is set
   // to US for tests.
-  std::wstring indicator = input_method->text();
-  EXPECT_EQ(L"US", indicator);
+  EXPECT_EQ(ASCIIToUTF16("US"), input_method->text());
 }
 
 }  // namespace chromeos

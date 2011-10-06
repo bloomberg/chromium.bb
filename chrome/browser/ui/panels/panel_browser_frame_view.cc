@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"

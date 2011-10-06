@@ -4,6 +4,7 @@
 
 #include "views/examples/tabbed_pane_example.h"
 
+#include "base/utf_string_conversions.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/layout/grid_layout.h"
 

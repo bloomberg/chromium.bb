@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/status/accessibility_menu_button.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -23,7 +24,7 @@ enum MenuItemID {
   MENU_ITEM_DISABLE_SPOKEN_FEEDBACK,
 };
 
-}
+}  // namespace
 
 namespace chromeos {
 

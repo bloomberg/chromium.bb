@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/helper.h"
 
+#include "base/utf_string_conversions.h"
 #include "base/file_util.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/google/google_util.h"
