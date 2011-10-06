@@ -22,13 +22,13 @@
 
 namespace {
 
-const wchar_t kWindowTitle[] = L"Content Shell";
-const wchar_t kWindowClass[] = L"CONTENT_SHELL";
+static const wchar_t kWindowTitle[] = L"Content Shell";
+static const wchar_t kWindowClass[] = L"CONTENT_SHELL";
 
-const int kButtonWidth = 72;
-const int kURLBarHeight = 24;
+static const int kButtonWidth = 72;
+static const int kURLBarHeight = 24;
 
-const int kMaxURLLength = 1024;
+static const int kMaxURLLength = 1024;
 
 static base::StringPiece GetRawDataResource(HMODULE module, int resource_id) {
   void* data_ptr;
@@ -94,7 +94,7 @@ void Shell::PlatformSetAddressBarURL(const GURL& url) {
               reinterpret_cast<LPARAM>(url_string.c_str()));
 }
 
-void Shell::PlatformCreateWindow(int width, int height) {
+void Shell::PlatformCreateWindow() {
   window_ = CreateWindow(kWindowClass, kWindowTitle,
                          WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
                          CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
@@ -139,8 +139,6 @@ void Shell::PlatformCreateWindow(int width, int height) {
   ui::SetWindowUserData(url_edit_view_, this);
 
   ShowWindow(window_, SW_SHOW);
-
-  PlatformSizeTo(width, height);
 }
 
 void Shell::PlatformSizeTo(int width, int height) {
@@ -218,11 +216,15 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
           shell->GoBackOrForward(1);
           break;
         case IDC_NAV_RELOAD:
-          shell->Reload();
+        case IDC_NAV_STOP: {
+          if (id == IDC_NAV_RELOAD) {
+            shell->Reload();
+          } else {
+            shell->Stop();
+          }
           break;
-        case IDC_NAV_STOP:
-          shell->Stop();
-          break;
+        }
+        break;
       }
       break;
     }

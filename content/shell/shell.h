@@ -55,12 +55,6 @@ class Shell : public TabContentsDelegate {
 
   TabContents* tab_contents() const { return tab_contents_.get(); }
 
-#if defined(OS_MACOSX)
-  // Public to be called by an ObjC bridge object.
-  void ActionPerformed(int control);
-  void URLEntered(std::string url_string);
-#endif
-
  private:
   enum UIControl {
     BACK_BUTTON,
@@ -75,7 +69,7 @@ class Shell : public TabContentsDelegate {
   // Called from the destructor to let each platform do any necessary cleanup.
   void PlatformCleanUp();
   // Creates the main window GUI.
-  void PlatformCreateWindow(int width, int height);
+  void PlatformCreateWindow();
   // Resizes the main window to the given dimensions.
   void PlatformSizeTo(int width, int height);
   // Resize the content area and GUI.

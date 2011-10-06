@@ -50,7 +50,9 @@ Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
                               int routing_id,
                               TabContents* base_tab_contents) {
   Shell* shell = new Shell();
-  shell->PlatformCreateWindow(kTestWindowWidth, kTestWindowHeight);
+  shell->PlatformCreateWindow();
+
+  shell->PlatformSizeTo(kTestWindowWidth, kTestWindowHeight);
 
   shell->tab_contents_.reset(new TabContents(
       browser_context,
