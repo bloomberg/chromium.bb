@@ -26,8 +26,8 @@ const int64 kMBytes = 1024 * 1024;
 namespace quota {
 
 const double QuotaTemporaryStorageEvictor::kUsageRatioToStartEviction = 0.7;
-const int64 QuotaTemporaryStorageEvictor::
-    kDefaultMinAvailableDiskSpaceToStartEviction = 1000 * 1000 * 500;
+const int QuotaTemporaryStorageEvictor::
+    kMinAvailableDiskSpaceToStartEvictionNotSpecified = -1;
 const int QuotaTemporaryStorageEvictor::kThresholdOfErrorsToStopEviction = 5;
 
 const base::TimeDelta QuotaTemporaryStorageEvictor::kHistogramReportInterval =
@@ -37,7 +37,7 @@ QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
     QuotaEvictionHandler* quota_eviction_handler,
     int64 interval_ms)
     : min_available_disk_space_to_start_eviction_(
-          kDefaultMinAvailableDiskSpaceToStartEviction),
+          kMinAvailableDiskSpaceToStartEvictionNotSpecified),
       quota_eviction_handler_(quota_eviction_handler),
       interval_ms_(interval_ms),
       repeated_eviction_(true),

@@ -211,8 +211,17 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
   }
 
   int64 default_min_available_disk_space_to_start_eviction() const {
-    return QuotaTemporaryStorageEvictor::
-        kDefaultMinAvailableDiskSpaceToStartEviction;
+    return 1000 * 1000 * 500;
+  }
+
+  void set_min_available_disk_space_to_start_eviction(int64 value) const {
+    temporary_storage_evictor_->set_min_available_disk_space_to_start_eviction(
+        value);
+  }
+
+  void reset_min_available_disk_space_to_start_eviction() const {
+    temporary_storage_evictor_->
+        reset_min_available_disk_space_to_start_eviction();
   }
 
   scoped_ptr<QuotaEvictionHandler> quota_eviction_handler_;
@@ -370,6 +379,26 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionWithAccessOriginTest) {
   EXPECT_EQ(0, statistics().num_skipped_eviction_rounds);
 }
 
+TEST_F(QuotaTemporaryStorageEvictorTest, DiskSpaceNonEvictionTest) {
+  quota_eviction_handler()->AddOrigin(GURL("http://www.z.com"), 414);
+  quota_eviction_handler()->AddOrigin(GURL("http://www.x.com"), 450);
+  quota_eviction_handler()->set_quota(10000);
+  quota_eviction_handler()->set_available_space(
+      default_min_available_disk_space_to_start_eviction() - 350);
+  EXPECT_EQ(414 + 450, quota_eviction_handler()->GetUsage());
+  reset_min_available_disk_space_to_start_eviction();
+  set_repeated_eviction(false);
+  temporary_storage_evictor()->Start();
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(414 + 450, quota_eviction_handler()->GetUsage());
+
+  EXPECT_EQ(0, statistics().num_errors_on_evicting_origin);
+  EXPECT_EQ(0, statistics().num_errors_on_getting_usage_and_quota);
+  EXPECT_EQ(0, statistics().num_evicted_origins);
+  EXPECT_EQ(1, statistics().num_eviction_rounds);
+  EXPECT_EQ(1, statistics().num_skipped_eviction_rounds);
+}
+
 TEST_F(QuotaTemporaryStorageEvictorTest, DiskSpaceEvictionTest) {
   quota_eviction_handler()->AddOrigin(GURL("http://www.z.com"), 294);
   quota_eviction_handler()->AddOrigin(GURL("http://www.y.com"), 120);
@@ -379,6 +408,8 @@ TEST_F(QuotaTemporaryStorageEvictorTest, DiskSpaceEvictionTest) {
   quota_eviction_handler()->set_available_space(
       default_min_available_disk_space_to_start_eviction() - 350);
   EXPECT_EQ(294 + 120 + 150 + 300, quota_eviction_handler()->GetUsage());
+  set_min_available_disk_space_to_start_eviction(
+      default_min_available_disk_space_to_start_eviction());
   set_repeated_eviction(false);
   temporary_storage_evictor()->Start();
   MessageLoop::current()->RunAllPending();

@@ -82,6 +82,17 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   void ReportPerHourHistogram();
   void Start();
 
+  int64 min_available_disk_space_to_start_eviction() {
+    return min_available_disk_space_to_start_eviction_;
+  }
+  void reset_min_available_disk_space_to_start_eviction() {
+    min_available_disk_space_to_start_eviction_ =
+        kMinAvailableDiskSpaceToStartEvictionNotSpecified;
+  }
+  void set_min_available_disk_space_to_start_eviction(int64 value) {
+    min_available_disk_space_to_start_eviction_ = value;
+  }
+
  private:
   friend class QuotaTemporaryStorageEvictorTest;
 
@@ -105,11 +116,11 @@ class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   }
 
   static const double kUsageRatioToStartEviction;
-  static const int64 kDefaultMinAvailableDiskSpaceToStartEviction;
+  static const int kMinAvailableDiskSpaceToStartEvictionNotSpecified;
   static const int kThresholdOfErrorsToStopEviction;
   static const base::TimeDelta kHistogramReportInterval;
 
-  const int64 min_available_disk_space_to_start_eviction_;
+  int64 min_available_disk_space_to_start_eviction_;
 
   // Not owned; quota_eviction_handler owns us.
   QuotaEvictionHandler* quota_eviction_handler_;
