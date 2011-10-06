@@ -34,15 +34,21 @@
 #include "views/widget/native_widget_private.h"
 #include "views/widget/widget.h"
 
-// Bug 99128.
-#if defined(USE_AURA)
+// Bug http://crbug.com/99128
+#if defined(USE_AURA) && defined(OS_LINUX)
 #define MAYBE_KeyTest FAILS_KeyTest
 #define MAYBE_ControlAndSelectTest FAILS_ControlAndSelectTest
 #define MAYBE_InsertionDeletionTest FAILS_InsertionDeletionTest
 #define MAYBE_OnKeyPressReturnValueTest FAILS_OnKeyPressReturnValueTest
 #define MAYBE_CursorMovement FAILS_CursorMovement
-#define MAYBE_DragAndDrop_ToTheRight FAILS_DragAndDrop_ToTheRight
-#define MAYBE_DragAndDrop_ToTheLeft FAILS_DragAndDrop_ToTheLeft
+
+// Drag and drop for aura in linux hasn't been implemented yet.
+// Bug http://crbug.com/97845
+#define MAYBE_DragAndDrop_InitiateDrag DISABLED_DragAndDrop_InitiateDrag
+#define MAYBE_DragAndDrop_ToTheLeft DISABLED_DragAndDrop_ToTheLeft
+#define MAYBE_DragAndDrop_ToTheRight DISABLED_DragAndDrop_ToTheRight
+#define MAYBE_DragAndDrop_Canceled DISABLED_DragAndDrop_Canceled
+
 #define MAYBE_ReadOnlyTest FAILS_ReadOnlyTest
 #define MAYBE_TextInputClientTest FAILS_TextInputClientTest
 #define MAYBE_UndoRedoTest FAILS_UndoRedoTest
@@ -58,8 +64,10 @@
 #define MAYBE_InsertionDeletionTest InsertionDeletionTest
 #define MAYBE_OnKeyPressReturnValueTest OnKeyPressReturnValueTest
 #define MAYBE_CursorMovement CursorMovement
-#define MAYBE_DragAndDrop_ToTheRight DragAndDrop_ToTheRight
+#define MAYBE_DragAndDrop_InitiateDrag DragAndDrop_InitiateDrag
 #define MAYBE_DragAndDrop_ToTheLeft DragAndDrop_ToTheLeft
+#define MAYBE_DragAndDrop_ToTheRight DragAndDrop_ToTheRight
+#define MAYBE_DragAndDrop_Canceled DragAndDrop_Canceled
 #define MAYBE_ReadOnlyTest ReadOnlyTest
 #define MAYBE_TextInputClientTest TextInputClientTest
 #define MAYBE_UndoRedoTest UndoRedoTest
@@ -69,7 +77,7 @@
 #define MAYBE_HitOutsideTextAreaInRTLTest HitOutsideTextAreaInRTLTest
 #define MAYBE_OverflowTest OverflowTest
 #define MAYBE_OverflowInRTLTest OverflowInRTLTest
-#endif
+#endif  // OS_LINUX && USE_AURA
 
 namespace {
 
@@ -810,7 +818,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
 #endif
 
 #if !defined(TOUCH_UI)
-TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_InitiateDrag) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello string world"));
 
@@ -954,7 +962,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheLeft) {
   EXPECT_STR_EQ("h worlellod", textfield_->text());
 }
 
-TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_Canceled) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 

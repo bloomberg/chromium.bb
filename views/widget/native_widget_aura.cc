@@ -398,7 +398,7 @@ gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
 // NativeWidgetAura, views::InputMethodDelegate implementation:
 
 void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
-  NOTIMPLEMENTED();
+  delegate_->OnKeyEvent(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

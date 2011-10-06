@@ -28,13 +28,11 @@ KeyEvent::KeyEvent(const NativeEvent& native_event)
 }
 
 uint16 KeyEvent::GetCharacter() const {
-  NOTIMPLEMENTED();
-  return key_code_;
+  return character_;
 }
 
 uint16 KeyEvent::GetUnmodifiedCharacter() const {
-  NOTIMPLEMENTED();
-  return key_code_;
+  return unmodified_character_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

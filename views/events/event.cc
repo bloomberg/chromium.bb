@@ -88,7 +88,7 @@ KeyEvent::KeyEvent(ui::EventType type,
                    int event_flags)
     : Event(type, event_flags),
       key_code_(key_code),
-      character_(0),
+      character_(GetCharacterFromKeyCode(key_code, event_flags)),
       unmodified_character_(0) {
 }
 
