@@ -411,7 +411,7 @@
         'window/window_shape.h',
       ],
       'include_dirs': [
-        '<(DEPTH)/third_party/wtl/include',
+        '../third_party/wtl/include',
       ],
       'conditions': [
         ['use_wayland == 1', {
@@ -530,7 +530,7 @@
         }],
         ['OS=="win"', {
           'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
+            '../third_party/wtl/include',
           ],
         }],
         ['use_x11==0', {
@@ -547,7 +547,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../chrome/chrome.gyp:packed_resources',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -612,7 +611,6 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../chrome/chrome.gyp:packed_resources',
           ],
           'conditions': [
             ['linux_use_tcmalloc==1', {
@@ -628,20 +626,13 @@
               ],
             }],
           ],
-        },
-        ],
+        }],
         ['touchui==0', {
           'sources!': [
             'touchui/touch_selection_controller_impl_unittest.cc',
           ],
         }],
         ['OS=="win"', {
-          'dependencies': [
-            # TODO(jcivelli): ideally the resource needed by views would be
-            #                 factored out. (for some reason it pulls in a bunch
-            #                 unrelated things like v8, sqlite nss...).
-            '../chrome/chrome.gyp:packed_resources',
-          ],
           'link_settings': {
             'libraries': [
               '-limm32.lib',
@@ -649,7 +640,7 @@
             ]
           },
           'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
+            '../third_party/wtl/include',
           ],
         }],
         ['use_ibus!=1', {
@@ -665,6 +656,14 @@
             ['exclude', 'controls/table/table_view_unittest.cc'],
             ['exclude', 'controls/tabbed_pane/tabbed_pane_unittest.cc'],
           ],
+        }],
+        ['OS!="mac"', {
+          'dependencies': [
+            # TODO(jcivelli): ideally the resource needed by views would be
+            #                 factored out. (for some reason it pulls in a bunch
+            #                 unrelated things like v8, sqlite nss...).
+            '../chrome/chrome.gyp:packed_resources',
+           ],
         }],
       ],
     },
@@ -741,7 +740,6 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../chrome/chrome.gyp:packed_resources',
           ],
           'conditions': [
             ['linux_use_tcmalloc==1', {
@@ -760,12 +758,17 @@
             ]
           },
           'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
+            '../third_party/wtl/include',
           ],
           'sources': [
             'examples/table_example.cc',
             'examples/table_example.h',
           ],
+        }],
+        ['OS!="mac"', {
+          'dependencies': [
+            '../chrome/chrome.gyp:packed_resources',
+           ],
         }],
       ],
     },
@@ -797,7 +800,6 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
-            '../chrome/chrome.gyp:packed_resources',
           ],
           'conditions': [
             ['linux_use_tcmalloc==1', {
@@ -816,8 +818,13 @@
             ]
           },
           'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
+            '../third_party/wtl/include',
           ],
+        }],
+        ['OS!="mac"', {
+          'dependencies': [
+            '../chrome/chrome.gyp:packed_resources',
+           ],
         }],
       ],
     },
@@ -858,7 +865,6 @@
         ['use_glib == 1', {
           'dependencies': [
             '../build/linux/system.gyp:glib',
-            '../chrome/chrome.gyp:packed_resources',
           ],
           'conditions': [
             ['linux_use_tcmalloc==1', {
@@ -876,8 +882,13 @@
             ]
           },
           'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
+            '../third_party/wtl/include',
           ],
+        }],
+        ['OS!="mac"', {
+          'dependencies': [
+            '../chrome/chrome.gyp:packed_resources',
+           ],
         }],
       ],
     },
@@ -891,7 +902,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
-            '../chrome/chrome.gyp:packed_resources',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
@@ -920,12 +930,17 @@
                 ]
               },
               'include_dirs': [
-                '<(DEPTH)/third_party/wtl/include',
+                '../third_party/wtl/include',
               ],
+            }],
+            ['OS!="mac"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:packed_resources',
+               ],
             }],
           ],
         },
       ],
-    }],      
+    }],
   ],
 }

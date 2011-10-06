@@ -76,14 +76,13 @@
       'target_name': 'aura_unittests',
       'type': 'executable',
       'dependencies': [
-        '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/chrome/chrome.gyp:packed_resources',
-        '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
-        '<(DEPTH)/ui/ui.gyp:gfx_resources',
-        '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/ui/ui.gyp:ui_resources',
-        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
+        '../../base/base.gyp:test_support_base',
+        '../../skia/skia.gyp:skia',
+        '../../testing/gtest.gyp:gtest',
+        '../gfx/gl/gl.gyp:gl',
+        '../ui.gyp:gfx_resources',
+        '../ui.gyp:ui',
+        '../ui.gyp:ui_resources',
         'aura',
       ],
       'include_dirs': [
@@ -96,6 +95,13 @@
         'test_suite.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+      ],
+      'conditions': [
+        ['OS!="mac"', {
+          'dependencies': [
+            '../../chrome/chrome.gyp:packed_resources',
+           ],
+        }],
       ],
     },
   ],

@@ -20,13 +20,13 @@
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
+        '../../views/views.gyp:views',
+        '../aura/aura.gyp:aura',
         '../base/strings/ui_strings.gyp:ui_strings',
         '../gfx/compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_resources_standard',
-        '../aura/aura.gyp:aura',
-        '../../views/views.gyp:views',
       ],
       'sources': [
         # All .cc, .h under views, except unittests
@@ -79,7 +79,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
-        '../../chrome/chrome.gyp:packed_resources',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
@@ -105,6 +104,13 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
+      'conditions': [
+        ['OS!="mac"', {
+          'dependencies': [
+            '../../chrome/chrome.gyp:packed_resources',
+           ],
+        }],
+      ],
     },
     # It's convenient for aura_shell developers to be able to build all
     # compositor and aura targets from within this solution.
@@ -112,15 +118,15 @@
       'target_name': 'buildbot_targets',
       'type': 'none',
       'dependencies': [
-        'aura_shell_exe',
-        '../aura/aura.gyp:*',
-        '../gfx/compositor/compositor.gyp:*',
         '../../views/views.gyp:views',
         '../../views/views.gyp:views_aura_desktop',
         '../../views/views.gyp:views_desktop',
         '../../views/views.gyp:views_desktop_lib',
         '../../views/views.gyp:views_unittests',
+        '../aura/aura.gyp:*',
+        '../gfx/compositor/compositor.gyp:*',
+        'aura_shell_exe',
       ],
-    },     
+    },
   ],
 }

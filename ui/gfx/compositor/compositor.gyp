@@ -85,7 +85,6 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/chrome/chrome.gyp:packed_resources',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
@@ -108,6 +107,13 @@
         'test_texture.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+      ],
+      'conditions': [
+        ['OS!="mac"', {
+          'dependencies': [
+            '<(DEPTH)/chrome/chrome.gyp:packed_resources',
+           ],
+        }],
       ],
     },
   ],
