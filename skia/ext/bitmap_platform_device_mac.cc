@@ -143,9 +143,11 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
   }
 #endif
 
-  if (!context)
+  if (!context) {
     context = CGContextForData(data, width, height);
-  else
+    if (!context)
+      return NULL;
+  } else
     CGContextRetain(context);
 
   BitmapPlatformDevice* rv = new BitmapPlatformDevice(
