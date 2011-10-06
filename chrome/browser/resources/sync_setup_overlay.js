@@ -16,6 +16,9 @@ cr.define('options', function() {
   // True if the synced account uses a custom passphrase.
   var usePassphrase_ = false;
 
+  // True if the synced account uses 'encrypt everything'.
+  var useEncryptEverything_ = false;
+
   /**
    * SyncSetupOverlay class
    * Encapsulated handling of the 'Sync Setup' overlay page.
@@ -421,6 +424,8 @@ cr.define('options', function() {
           $('customize-sync-encryption').hidden = true;
         this.setCheckboxesAndErrors_(args);
 
+        this.useEncryptEverything_ = args['encryptAllData'];
+
         // Whether to display the 'Sync everything' confirmation page or the
         // customize data types page.
         var syncAllDataTypes = args['syncAllDataTypes'];
@@ -444,8 +449,10 @@ cr.define('options', function() {
       // The default state is to sync everything.
       this.setCheckboxesToKeepEverythingSynced_(true);
 
-      // Reset encryption settings to 'Encrypt passwords'
-      $('encrypt-sensitive-option').checked = true;
+      // Encrypt passwords is the default, but don't set it if the previously
+      // synced account is already set to encrypt everything.
+      if (!this.useEncryptEverything_)
+        $('encrypt-sensitive-option').checked = true;
 
       // If the account is not synced with a custom passphrase, reset the
       // passphrase radio when switching to the 'Sync everything' page.
