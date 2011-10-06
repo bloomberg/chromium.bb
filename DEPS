@@ -10,12 +10,12 @@ vars = {
   # value.  chromebinaries_rev should match LKGR so that we can download
   # the binaries, but sometimes chrome_rev needs to be more recent to get
   # source changes when LKGR is lagging too far back.
-  "chromebinaries_rev": "103729",
-  "chrome_rev": "103729",
+  "chromebinaries_rev": "104279",
+  "chrome_rev": "104279",
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "googlecode_url": "http://%s.googlecode.com/svn",
   "gtest_rev": "560",
-  "gyp_rev": "1046",
+  "gyp_rev": "1064",
   "lcov_rev": "54822",
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
