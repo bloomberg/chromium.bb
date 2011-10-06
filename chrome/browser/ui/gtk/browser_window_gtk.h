@@ -140,7 +140,6 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void Cut();
   virtual void Copy();
   virtual void Paste();
-  virtual void ToggleTabStripMode();
   virtual void PrepareForInstant();
   virtual void ShowInstant(TabContentsWrapper* preview);
   virtual void HideInstant(bool instant_is_active);

@@ -49,8 +49,6 @@
 
 namespace {
 
-// Amount to offset the toolbar by when vertical tabs are enabled.
-const int kVerticalTabStripToolbarOffset = 2;
 // Amount to tweak the position of the status area to get it to look right.
 const int kStatusAreaVerticalAdjustment = -1;
 
@@ -169,19 +167,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     views::View::ConvertPointToView(browser_view_->parent(), browser_view_,
                                     &tabstrip_origin);
     tabstrip_bounds.set_origin(tabstrip_origin);
-    return browser_view_->UseVerticalTabs() ?
-        LayoutTitlebarComponentsWithVerticalTabs(tabstrip_bounds) :
-        LayoutTitlebarComponents(tabstrip_bounds);
-  }
-
-  virtual int LayoutToolbar(int top) OVERRIDE {
-    if (!browser_view_->IsFullscreen() && browser_view_->IsTabStripVisible() &&
-        browser_view_->UseVerticalTabs()) {
-      // For vertical tabs the toolbar is positioned in
-      // LayoutTitlebarComponentsWithVerticalTabs.
-      return top;
-    }
-    return ::BrowserViewLayout::LayoutToolbar(top);
+    return LayoutTitlebarComponents(tabstrip_bounds);
   }
 
   virtual bool IsPositionInWindowCaption(const gfx::Point& point) OVERRIDE {
@@ -220,53 +206,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
       return true;
 
     return false;
-  }
-
-  // Positions the titlebar, toolbar and tabstrip. This is
-  // used when side tabs are enabled.
-  int LayoutTitlebarComponentsWithVerticalTabs(const gfx::Rect& bounds) {
-    if (bounds.IsEmpty())
-      return 0;
-
-    tabstrip_->SetVisible(true);
-    status_area_->SetVisible(true);
-    layout_mode_button_->SetVisible(false);
-    layout_mode_button_->SetBounds(0, 0, 0, 0);
-
-    gfx::Size status_size = status_area_->GetPreferredSize();
-    int status_height = status_size.height();
-
-    int status_x = bounds.x();
-    // Layout the status area.
-    status_area_->SetBounds(status_x, bounds.bottom() - status_height,
-                            status_size.width(), status_height);
-    UpdateStatusAreaBoundsProperty();
-
-    // The tabstrip's width is the bigger of its preferred width and the width
-    // the status area.
-    int tabstrip_w = std::max(status_x + status_size.width(),
-                              tabstrip_->GetPreferredSize().width());
-    tabstrip_->SetBounds(bounds.x(), bounds.y(), tabstrip_w,
-                         bounds.height() - status_height);
-
-    // The toolbar is promoted to the title for vertical tabs.
-    bool toolbar_visible = browser_view_->IsToolbarVisible();
-    int toolbar_height = 0;
-    if (toolbar_) {
-      toolbar_->SetVisible(toolbar_visible);
-      if (toolbar_visible)
-        toolbar_height = toolbar_->GetPreferredSize().height();
-      int tabstrip_max_x = tabstrip_->bounds().right();
-      toolbar_->SetBounds(tabstrip_max_x,
-                          bounds.y() - kVerticalTabStripToolbarOffset,
-                          browser_view_->width() - tabstrip_max_x,
-                          toolbar_height);
-    }
-    // Adjust the available bounds for other components.
-    gfx::Rect available_bounds = vertical_layout_rect();
-    available_bounds.Inset(tabstrip_w, 0, 0, 0);
-    set_vertical_layout_rect(available_bounds);
-    return bounds.y() + toolbar_height;
   }
 
   // Lays out tabstrip, status area, and layout mode button in the title bar

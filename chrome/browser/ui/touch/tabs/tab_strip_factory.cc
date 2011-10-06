@@ -12,8 +12,7 @@
 // The implementation of CreateTabStrip for touchui creates a TouchTabStrip
 AbstractTabStripView* CreateTabStrip(Browser* browser,
                                      views::View* parent,
-                                     TabStripModel* model,
-                                     bool use_vertical_tabs) {
+                                     TabStripModel* model) {
   TouchTabStripController* tabstrip_controller =
       new TouchTabStripController(browser, model);
   // Ownership of this controller is given to a specific tabstrip when we

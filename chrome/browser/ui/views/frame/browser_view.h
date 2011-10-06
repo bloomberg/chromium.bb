@@ -114,8 +114,7 @@ class BrowserView : public BrowserBubbleHost,
   // Returns the apparent bounds of the toolbar, in BrowserView coordinates.
   // These differ from |toolbar_.bounds()| in that they match where the toolbar
   // background image is drawn -- slightly outside the "true" bounds
-  // horizontally, and, when using vertical tabs, behind the tab column. Note
-  // that this returns the bounds for the toolbar area.
+  // horizontally. Note that this returns the bounds for the toolbar area.
   virtual gfx::Rect GetToolbarBounds() const;
 
   // Returns the bounds of the content area, in the coordinates of the
@@ -150,9 +149,6 @@ class BrowserView : public BrowserBubbleHost,
 
   // Returns true if various window components are visible.
   virtual bool IsTabStripVisible() const;
-
-  // Returns true if the vertical tabstrip is in use.
-  bool UseVerticalTabs() const;
 
   // Returns true if the profile associated with this Browser window is
   // incognito.
@@ -316,7 +312,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;
-  virtual void ToggleTabStripMode() OVERRIDE;
   virtual void PrepareForInstant() OVERRIDE;
   virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;
   virtual void HideInstant(bool instant_is_active) OVERRIDE;
@@ -436,9 +431,7 @@ class BrowserView : public BrowserBubbleHost,
   // override to implement different layout policy.
   virtual views::LayoutManager* CreateLayoutManager() const;
 
-  // Initializes a new TabStrip for the browser view. This can be performed
-  // multiple times over the life of the browser, and is run when the display
-  // mode for the tabstrip changes from horizontal to vertical.
+  // Initializes a new TabStrip for the browser view.
   virtual void InitTabStrip(TabStripModel* tab_strip_model);
 
   // Factory Method.

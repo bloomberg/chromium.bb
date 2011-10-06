@@ -64,7 +64,7 @@ views::View* BrowserFrameViewChromeos::GetEventHandlerForPoint(
 
 int BrowserFrameViewChromeos::GetHorizontalTabStripVerticalOffset(
     bool restored) const {
-  return NonClientTopBorderHeight(restored, true) + kTopPad;
+  return NonClientTopBorderHeight(restored) + kTopPad;
 }
 
 void BrowserFrameViewChromeos::ModifyMaximizedFramePainting(

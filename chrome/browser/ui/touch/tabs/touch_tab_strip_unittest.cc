@@ -6,9 +6,6 @@
 
 #include "chrome/browser/ui/views/tabs/base_tab_strip_test_fixture.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/side_tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // BaseTabStrip unit tests using TouchTabStrip.
@@ -28,8 +25,4 @@ class TouchTabStripTestFixture : public testing::Test {
  private:
   TouchTabStrip tab_strip_;
 };
-
-TEST_F(TouchTabStripTestFixture, TouchTabStripIsHorizontal) {
-  EXPECT_EQ(BaseTabStrip::HORIZONTAL_TAB_STRIP, tab_strip()->type());
-}
 

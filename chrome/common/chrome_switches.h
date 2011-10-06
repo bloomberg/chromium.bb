@@ -158,7 +158,6 @@ extern const char kEnableSyncTabsForOtherClients[];
 extern const char kEnableSyncedBookmarksFolder[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableTopSites[];
-extern const char kEnableVerticalTabs[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
 extern const char kEnableWebUITaskManager[];

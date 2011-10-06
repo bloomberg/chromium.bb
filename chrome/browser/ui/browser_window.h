@@ -298,9 +298,6 @@ class BrowserWindow {
   virtual void Copy() = 0;
   virtual void Paste() = 0;
 
-  // Switches between available tabstrip display modes.
-  virtual void ToggleTabStripMode() = 0;
-
 #if defined(OS_MACOSX)
   // Opens the tabpose view.
   virtual void OpenTabpose() = 0;

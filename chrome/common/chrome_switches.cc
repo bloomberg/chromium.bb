@@ -537,10 +537,6 @@ const char kEnableTabGroupsContextMenu[]     = "enable-tab-groups-context-menu";
 // Enable the "synced bookmarks" folder.
 const char kEnableSyncedBookmarksFolder[]   = "enable-synced-bookmarks-folder";
 
-// Enables the option to show tabs as a vertical stack down the side of the
-// browser window.
-const char kEnableVerticalTabs[]            = "enable-vertical-tabs";
-
 // Spawn threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.
 // Usage:   -enable-watchdog=[ui][io]

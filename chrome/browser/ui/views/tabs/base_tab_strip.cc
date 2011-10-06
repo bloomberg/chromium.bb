@@ -115,9 +115,8 @@ class BaseTabStrip::RemoveTabDelegate
   DISALLOW_COPY_AND_ASSIGN(RemoveTabDelegate);
 };
 
-BaseTabStrip::BaseTabStrip(TabStripController* controller, Type type)
+BaseTabStrip::BaseTabStrip(TabStripController* controller)
     : controller_(controller),
-      type_(type),
       attaching_dragged_tab_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)) {
 }
@@ -329,10 +328,7 @@ void BaseTabStrip::MaybeStartDrag(BaseTab* tab,
       tabs.push_back(other_tab);
       if (other_tab == tab) {
         size_to_selected = GetSizeNeededForTabs(tabs);
-        if (type() == HORIZONTAL_TAB_STRIP)
-          x = size_to_selected - tab->width() + x;
-        else
-          y = size_to_selected - tab->height() + y;
+        x = size_to_selected - tab->width() + x;
       }
     }
   }
@@ -438,10 +434,7 @@ void BaseTabStrip::StartRemoveTabAnimation(int model_index) {
 
   // Animate the tab being closed to 0x0.
   gfx::Rect tab_bounds = tab->bounds();
-  if (type() == HORIZONTAL_TAB_STRIP)
-    tab_bounds.set_width(0);
-  else
-    tab_bounds.set_height(0);
+  tab_bounds.set_width(0);
   bounds_animator_.AnimateViewTo(tab, tab_bounds);
 
   // Register delegate to do cleanup when done, BoundsAnimator takes

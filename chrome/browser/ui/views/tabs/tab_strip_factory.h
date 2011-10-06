@@ -17,7 +17,6 @@ class View;
 // Creates and returns a new tabstrip. The tabstrip should be added to |parent|.
 AbstractTabStripView* CreateTabStrip(Browser* browser,
                                      views::View* parent,
-                                     TabStripModel* model,
-                                     bool use_vertical_tabs);
+                                     TabStripModel* model);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_FACTORY_H_

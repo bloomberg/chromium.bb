@@ -35,8 +35,6 @@ class BrowserTabStripController : public TabStripController,
 
   bool IsCommandEnabledForTab(TabStripModel::ContextMenuCommand command_id,
                               BaseTab* tab) const;
-  bool IsCommandCheckedForTab(TabStripModel::ContextMenuCommand command_id,
-                              BaseTab* tab) const;
   void ExecuteCommandForTab(TabStripModel::ContextMenuCommand command_id,
                             BaseTab* tab);
   bool IsTabPinned(BaseTab* tab) const;

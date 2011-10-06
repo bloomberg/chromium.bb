@@ -90,13 +90,6 @@ const Experiment kExperiments[] = {
 #endif
   },
   {
-    "vertical-tabs",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_SIDE_TABS_NAME,
-    IDS_FLAGS_SIDE_TABS_DESCRIPTION,
-    kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableVerticalTabs)
-  },
-  {
     "conflicting-modules-check",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CONFLICTS_CHECK_NAME,
     IDS_FLAGS_CONFLICTS_CHECK_DESCRIPTION,

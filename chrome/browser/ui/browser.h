@@ -615,9 +615,6 @@ class Browser : public TabHandlerDelegate,
 
   virtual void UpdateDownloadShelfVisibility(bool visible);
 
-  // Overridden from TabStripModelDelegate:
-  virtual bool UseVerticalTabs() const;
-
   /////////////////////////////////////////////////////////////////////////////
 
   // Sets the value of homepage related prefs to new values. Since we do not
@@ -787,7 +784,6 @@ class Browser : public TabHandlerDelegate,
   virtual bool CanBookmarkAllTabs() const;
   virtual void BookmarkAllTabs();
   virtual bool CanCloseTab() const;
-  virtual void ToggleUseVerticalTabs();
   virtual bool CanRestoreTab();
   virtual void RestoreTab();
   virtual bool LargeIconsPermitted() const;
@@ -1207,14 +1203,6 @@ class Browser : public TabHandlerDelegate,
   // current tab.
   TabContents* GetOrCloneTabForDisposition(WindowOpenDisposition disposition);
 
-  // Sets the insertion policy of the tabstrip based on whether vertical tabs
-  // are enabled.
-  void UpdateTabStripModelInsertionPolicy();
-
-  // Invoked when the use vertical tabs preference changes. Resets the insertion
-  // policy of the tab strip model and notifies the window.
-  void UseVerticalTabsChanged();
-
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of
   // the browser, otherwise the set of features reflect the possible state of
@@ -1390,9 +1378,6 @@ class Browser : public TabHandlerDelegate,
   // Which deferred action to perform when OnDidGetApplicationInfo is notified
   // from a TabContents. Currently, only one pending action is allowed.
   WebAppAction pending_web_app_action_;
-
-  // Tracks the display mode of the tabstrip.
-  mutable BooleanPrefMember use_vertical_tabs_;
 
   // The profile's tab restore service. The service is owned by the profile,
   // and we install ourselves as an observer.

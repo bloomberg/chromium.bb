@@ -87,10 +87,6 @@ class TestTabStripDelegate : public TabStripModelDelegate {
 
   virtual void BookmarkAllTabs() {}
 
-  virtual bool UseVerticalTabs() const { return false; }
-
-  virtual void ToggleUseVerticalTabs() {}
-
   virtual bool LargeIconsPermitted() const { return true; }
 };
 

@@ -432,7 +432,6 @@ class TabStripModel : public NotificationObserver {
     CommandRestoreTab,
     CommandTogglePinned,
     CommandBookmarkAllTabs,
-    CommandUseVerticalTabs,
     CommandUseCompactNavigationBar,
     CommandSelectByDomain,
     CommandSelectByOpener,
@@ -442,10 +441,6 @@ class TabStripModel : public NotificationObserver {
   // Returns true if the specified command is enabled. If |context_index| is
   // selected the response applies to all selected tabs.
   bool IsContextMenuCommandEnabled(int context_index,
-                                   ContextMenuCommand command_id) const;
-
-  // Returns true if the specified command is checked.
-  bool IsContextMenuCommandChecked(int context_index,
                                    ContextMenuCommand command_id) const;
 
   // Performs the action associated with the specified command for the given

@@ -112,12 +112,6 @@ class TabStripModelDelegate {
   // Returns true if any of the tabs can be closed.
   virtual bool CanCloseTab() const = 0;
 
-  // Returns true if the vertical tabstrip presentation should be used.
-  virtual bool UseVerticalTabs() const = 0;
-
-  // Toggles the use of the vertical tabstrip.
-  virtual void ToggleUseVerticalTabs() = 0;
-
   // Returns true if the tab strip can use large icons.
   virtual bool LargeIconsPermitted() const = 0;
 

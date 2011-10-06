@@ -457,10 +457,6 @@ void Panel::Paste() {
   native_panel_->PanelPaste();
 }
 
-void Panel::ToggleTabStripMode() {
-  NOTIMPLEMENTED();
-}
-
 #if defined(OS_MACOSX)
 void Panel::OpenTabpose() {
   NOTIMPLEMENTED();

@@ -766,10 +766,6 @@ const char kAutofillPersonalDataManagerFirstRun[] = "autofill.pdm.first_run";
 // Modifying bookmarks is completely disabled when this is set to false.
 const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
 
-// Boolean that is true when the tabstrip is to be laid out vertically down the
-// side of the browser window.
-const char kUseVerticalTabs[] = "tabs.use_vertical_tabs";
-
 // Boolean that is true when the translate feature is enabled.
 const char kEnableTranslate[] = "translate.enabled";
 

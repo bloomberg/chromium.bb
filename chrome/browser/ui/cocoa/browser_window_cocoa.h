@@ -103,7 +103,6 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void Cut();
   virtual void Copy();
   virtual void Paste();
-  virtual void ToggleTabStripMode();
   virtual void OpenTabpose();
   virtual void SetPresentationMode(bool presentation_mode);
   virtual bool InPresentationMode();

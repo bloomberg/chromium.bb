@@ -118,9 +118,8 @@ class BrowserViewLayout : public views::LayoutManager {
   BrowserView* browser_view_;
 
   // The bounds within which the vertically-stacked contents of the BrowserView
-  // should be laid out within. When the SideTabstrip is not visible, this is
-  // just the local bounds of the BrowserView, otherwise it's the local bounds
-  // of the BrowserView less the width of the SideTabstrip.
+  // should be laid out within. This is just the local bounds of the
+  // BrowserView.
   gfx::Rect vertical_layout_rect_;
 
   // The distance the FindBar is from the top of the window, in pixels.

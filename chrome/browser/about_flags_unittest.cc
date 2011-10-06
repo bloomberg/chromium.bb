@@ -88,17 +88,6 @@ class AboutFlagsTest : public ::testing::Test {
   AboutFlagsTest() {
     prefs_.RegisterListPref(prefs::kEnabledLabsExperiments,
                             PrefService::UNSYNCABLE_PREF);
-#if defined(OS_CHROMEOS)
-    prefs_.RegisterBooleanPref(prefs::kLabsMediaplayerEnabled,
-                               false,
-                               PrefService::UNSYNCABLE_PREF);
-    prefs_.RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled,
-                               false,
-                               PrefService::UNSYNCABLE_PREF);
-    prefs_.RegisterBooleanPref(prefs::kUseVerticalTabs,
-                               false,
-                               PrefService::UNSYNCABLE_PREF);
-#endif
     testing::ClearState();
   }
 

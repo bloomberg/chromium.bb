@@ -1148,9 +1148,6 @@ void BrowserWindowGtk::Paste() {
   gtk_util::DoPaste(this);
 }
 
-void BrowserWindowGtk::ToggleTabStripMode() {
-}
-
 void BrowserWindowGtk::PrepareForInstant() {
   TabContentsWrapper* contents = contents_container_->tab();
   if (contents)

@@ -263,7 +263,7 @@ void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
 void BrowserViewLayout::Layout(views::View* host) {
   vertical_layout_rect_ = browser_view_->GetLocalBounds();
   int top = LayoutTabStripRegion();
-  if (browser_view_->IsTabStripVisible() && !browser_view_->UseVerticalTabs()) {
+  if (browser_view_->IsTabStripVisible()) {
     tabstrip_->SetBackgroundOffset(gfx::Point(
         tabstrip_->GetMirroredX() + browser_view_->GetMirroredX(),
         browser_view_->frame()->GetHorizontalTabStripVerticalOffset(false)));
@@ -318,13 +318,9 @@ int BrowserViewLayout::LayoutTabStripRegion() {
                                   &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
 
-  if (browser_view_->UseVerticalTabs())
-    vertical_layout_rect_.Inset(tabstrip_bounds.width(), 0, 0, 0);
-
   tabstrip_->SetVisible(true);
   tabstrip_->SetBoundsRect(tabstrip_bounds);
-  return browser_view_->UseVerticalTabs() ?
-      tabstrip_bounds.y() : tabstrip_bounds.bottom();
+  return tabstrip_bounds.bottom();
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {
@@ -332,10 +328,8 @@ int BrowserViewLayout::LayoutToolbar(int top) {
   bool toolbar_visible = browser_view_->IsToolbarVisible();
   toolbar_->location_bar()->set_focusable(toolbar_visible);
   int y = top;
-  if (!browser_view_->UseVerticalTabs()) {
-    y -= (toolbar_visible && browser_view_->IsTabStripVisible()) ?
-          kToolbarTabStripVerticalOverlap : 0;
-  }
+  y -= (toolbar_visible && browser_view_->IsTabStripVisible()) ?
+        kToolbarTabStripVerticalOverlap : 0;
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
   toolbar_->SetVisible(toolbar_visible);
   toolbar_->SetBounds(vertical_layout_rect_.x(), y, browser_view_width, height);

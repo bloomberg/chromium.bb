@@ -338,15 +338,6 @@ Browser::Browser(Type type, Profile* profile)
   // or you'll get a nasty surprise when you run the incognito tests.
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs(), NULL);
-  use_vertical_tabs_.Init(prefs::kUseVerticalTabs, profile_->GetPrefs(), this);
-
-  if (!TabMenuModel::AreVerticalTabsEnabled()) {
-    // If vertical tabs aren't enabled, explicitly turn them off. Otherwise we
-    // might show vertical tabs but not show an option to turn them off.
-    use_vertical_tabs_.SetValue(false);
-  }
-
-  UpdateTabStripModelInsertionPolicy();
 
   tab_restore_service_ = TabRestoreServiceFactory::GetForProfile(profile);
   if (tab_restore_service_) {
@@ -401,7 +392,6 @@ Browser::~Browser() {
   local_pref_registrar_.RemoveAll();
 
   encoding_auto_detect_.Destroy();
-  use_vertical_tabs_.Destroy();
 
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActiveForProfile(profile_)) {
@@ -1343,16 +1333,6 @@ TabContents* Browser::GetOrCloneTabForDisposition(
   return current_tab->tab_contents();
 }
 
-void Browser::UpdateTabStripModelInsertionPolicy() {
-  tab_handler_->GetTabStripModel()->SetInsertionPolicy(UseVerticalTabs() ?
-      TabStripModel::INSERT_BEFORE : TabStripModel::INSERT_AFTER);
-}
-
-void Browser::UseVerticalTabsChanged() {
-  UpdateTabStripModelInsertionPolicy();
-  window()->ToggleTabStripMode();
-}
-
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
                                         bool check_fullscreen) const {
   // On Mac, fullscreen mode has most normal things (in a slide-down panel). On
@@ -2280,9 +2260,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar,
                              true,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kUseVerticalTabs,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableTranslate,
                              true,
                              PrefService::SYNCABLE_PREF);
@@ -2629,7 +2606,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_PRESENTATION_MODE:     TogglePresentationMode();         break;
 #endif
     case IDC_EXIT:                  Exit();                           break;
-    case IDC_TOGGLE_VERTICAL_TABS:  ToggleUseVerticalTabs();          break;
 #if defined(OS_CHROMEOS)
     case IDC_SEARCH:                Search();                         break;
     case IDC_SHOW_KEYBOARD_OVERLAY: ShowKeyboardOverlay();            break;
@@ -3122,11 +3098,6 @@ bool Browser::CanCloseTab() const {
   return !watcher || watcher->CanCloseTab(this);
 }
 
-void Browser::ToggleUseVerticalTabs() {
-  use_vertical_tabs_.SetValue(!UseVerticalTabs());
-  UseVerticalTabsChanged();
-}
-
 bool Browser::LargeIconsPermitted() const {
   // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
   // for those windows, we already have a big icon in the top-left outside any
@@ -3523,10 +3494,6 @@ void Browser::UpdateTargetURL(TabContents* source, int32 page_id,
 void Browser::UpdateDownloadShelfVisibility(bool visible) {
   if (GetStatusBubble())
     GetStatusBubble()->UpdateDownloadShelfVisibility(visible);
-}
-
-bool Browser::UseVerticalTabs() const {
-  return use_vertical_tabs_.GetValue();
 }
 
 void Browser::ContentsZoomChange(bool zoom_in) {
@@ -4072,9 +4039,7 @@ void Browser::Observe(int type,
 
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name = *Details<std::string>(details).ptr();
-      if (pref_name == prefs::kUseVerticalTabs) {
-        UseVerticalTabsChanged();
-      } else if (pref_name == prefs::kPrintingEnabled) {
+      if (pref_name == prefs::kPrintingEnabled) {
         UpdatePrintingState(GetContentRestrictionsForSelectedTab());
       } else if (pref_name == prefs::kInstantEnabled ||
                  pref_name == prefs::kMetricsReportingEnabled ||
@@ -4261,7 +4226,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
-  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, true);
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
 
   // Page-related commands
@@ -4445,7 +4409,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, show_main_ui);
 #if defined (ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 #endif

@@ -16,16 +16,6 @@ TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
   Build(tab_strip, index);
 }
 
-// static
-bool TabMenuModel::AreVerticalTabsEnabled() {
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableVerticalTabs);
-#else
-  return false;
-#endif
-}
-
 void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   bool affects_multiple_tabs =
       (tab_strip->IsTabSelected(index) &&
@@ -61,11 +51,6 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
   AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,
                       IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
-  if (AreVerticalTabsEnabled()) {
-    AddSeparator();
-    AddCheckItemWithStringId(TabStripModel::CommandUseVerticalTabs,
-      IDS_TAB_CXMENU_USE_VERTICAL_TABS);
-  }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTabGroupsContextMenu)) {
     AddSeparator();

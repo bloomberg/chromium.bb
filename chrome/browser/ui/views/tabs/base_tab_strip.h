@@ -24,15 +24,8 @@ class TabStripSelectionModel;
 class BaseTabStrip : public AbstractTabStripView,
                      public TabController {
  public:
-  enum Type {
-    HORIZONTAL_TAB_STRIP,
-    VERTICAL_TAB_STRIP
-  };
-
-  BaseTabStrip(TabStripController* controller, Type type);
+  explicit BaseTabStrip(TabStripController* controller);
   virtual ~BaseTabStrip();
-
-  Type type() const { return type_; }
 
   // Starts highlighting the tab at the specified index.
   virtual void StartHighlight(int model_index) = 0;
@@ -257,8 +250,6 @@ class BaseTabStrip : public AbstractTabStripView,
   void set_attaching_dragged_tab(bool value) { attaching_dragged_tab_ = value; }
 
   scoped_ptr<TabStripController> controller_;
-
-  const Type type_;
 
   std::vector<TabData> tab_data_;
 

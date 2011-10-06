@@ -785,28 +785,12 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return browser_defaults::bookmarks_enabled &&
           delegate_->CanBookmarkAllTabs();
 
-    case CommandUseVerticalTabs:
-      return true;
-
     case CommandSelectByDomain:
     case CommandSelectByOpener:
       return true;
 
     default:
       NOTREACHED();
-  }
-  return false;
-}
-
-bool TabStripModel::IsContextMenuCommandChecked(
-    int context_index,
-    ContextMenuCommand command_id) const {
-  switch (command_id) {
-    case CommandUseVerticalTabs:
-      return delegate()->UseVerticalTabs();
-    default:
-      NOTREACHED();
-      break;
   }
   return false;
 }
@@ -915,14 +899,6 @@ void TabStripModel::ExecuteContextMenuCommand(
           UserMetricsAction("TabContextMenu_BookmarkAllTabs"));
 
       delegate_->BookmarkAllTabs();
-      break;
-    }
-
-    case CommandUseVerticalTabs: {
-      UserMetrics::RecordAction(
-          UserMetricsAction("TabContextMenu_UseVerticalTabs"));
-
-      delegate()->ToggleUseVerticalTabs();
       break;
     }
 
@@ -1047,9 +1023,6 @@ bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
       break;
     case CommandBookmarkAllTabs:
       *browser_cmd = IDC_BOOKMARK_ALL_TABS;
-      break;
-    case CommandUseVerticalTabs:
-      *browser_cmd = IDC_TOGGLE_VERTICAL_TABS;
       break;
     default:
       *browser_cmd = 0;

@@ -98,7 +98,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void Cut() OVERRIDE {}
   virtual void Copy() OVERRIDE {}
   virtual void Paste() OVERRIDE {}
-  virtual void ToggleTabStripMode() OVERRIDE {}
 #if defined(OS_MACOSX)
   virtual void OpenTabpose() OVERRIDE {}
   virtual void SetPresentationMode(bool presentation_mode) OVERRIDE {}

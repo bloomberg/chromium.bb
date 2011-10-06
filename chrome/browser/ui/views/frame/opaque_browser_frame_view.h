@@ -55,10 +55,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Returns the height of the entire nonclient top border, including the window
   // frame, any title area, and any connected client edge.  If |restored| is
-  // true, acts as if the window is restored regardless of the real mode.  If
-  // |ignore_vertical_tabs| is true, acts as if vertical tabs are off regardless
-  // of the real state.
-  int NonClientTopBorderHeight(bool restored, bool ignore_vertical_tabs) const;
+  // true, acts as if the window is restored regardless of the real mode.
+  int NonClientTopBorderHeight(bool restored) const;
 
   // Allows a subclass to tweak the frame. Chromeos uses this to support
   // drawing themes correctly. |theme_offset| is used to adjust the y offset

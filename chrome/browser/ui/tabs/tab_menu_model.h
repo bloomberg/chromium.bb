@@ -20,9 +20,6 @@ class TabMenuModel : public ui::SimpleMenuModel {
                int index);
   virtual ~TabMenuModel() {}
 
-  // Returns true if vertical tabs are enabled.
-  static bool AreVerticalTabsEnabled();
-
  private:
   void Build(TabStripModel* tab_strip, int index);
 

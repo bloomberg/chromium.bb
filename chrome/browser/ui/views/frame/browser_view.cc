@@ -384,10 +384,6 @@ gfx::Rect BrowserView::GetToolbarBounds() const {
   gfx::Rect toolbar_bounds(toolbar_->bounds());
   if (toolbar_bounds.IsEmpty())
     return toolbar_bounds;
-  // When using vertical tabs, the toolbar appears to extend behind the tab
-  // column.
-  if (UseVerticalTabs())
-    toolbar_bounds.Inset(tabstrip_->x() - toolbar_bounds.x(), 0, 0, 0);
   // The apparent toolbar edges are outside the "real" toolbar edges.
   toolbar_bounds.Inset(-views::NonClientFrameView::kClientEdgeThickness, 0);
   return toolbar_bounds;
@@ -430,10 +426,6 @@ int BrowserView::GetSidebarWidth() const {
 
 bool BrowserView::IsTabStripVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
-}
-
-bool BrowserView::UseVerticalTabs() const {
-  return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
 }
 
 bool BrowserView::IsOffTheRecord() const {
@@ -1237,11 +1229,6 @@ void BrowserView::Paste() {
                             true, false, false, false);
 }
 
-void BrowserView::ToggleTabStripMode() {
-  InitTabStrip(browser_->tabstrip_model());
-  frame_->TabStripDisplayModeChanged();
-}
-
 void BrowserView::PrepareForInstant() {
   contents_->FadeActiveContents();
 }
@@ -1816,7 +1803,7 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
   if (tabstrip_)
     tabstrip_->parent()->RemoveChildView(tabstrip_);
 
-  tabstrip_ = CreateTabStrip(browser_.get(), this, model, UseVerticalTabs());
+  tabstrip_ = CreateTabStrip(browser_.get(), this, model);
 }
 
 ToolbarView* BrowserView::CreateToolbar() const {
@@ -1976,9 +1963,6 @@ void BrowserView::LayoutStatusBubble() {
   // frame.
   int overlap = StatusBubbleViews::kShadowThickness +
       (IsMaximized() ? 0 : views::NonClientFrameView::kClientEdgeThickness);
-  int x = -overlap;
-  if (UseVerticalTabs() && IsTabStripVisible())
-    x += tabstrip_->bounds().right();
   int height = status_bubble_->GetPreferredSize().height();
   int contents_height = status_bubble_->base_view()->bounds().height();
   gfx::Point origin(-overlap, contents_height - height + overlap);

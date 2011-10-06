@@ -193,8 +193,7 @@ void BrowserFrameWin::UpdateDWMFrame() {
     if (!browser_view_->IsFullscreen()) {
       gfx::Rect tabstrip_bounds(
           browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
-      margins.cyTopHeight = (browser_view_->UseVerticalTabs() ?
-          tabstrip_bounds.y() : tabstrip_bounds.bottom()) + kDWMFrameTopOffset;
+      margins.cyTopHeight = tabstrip_bounds.bottom() + kDWMFrameTopOffset;
     }
   } else {
     // For popup and app windows we want to use the default margins.
