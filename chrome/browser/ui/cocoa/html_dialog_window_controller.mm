@@ -44,7 +44,8 @@ public:
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog)
-      OVERRIDE { }
+      OVERRIDE;
+  virtual void CloseContents(TabContents* source) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
 
   // HtmlDialogTabContentsDelegate declarations.
@@ -164,6 +165,19 @@ void HtmlDialogWindowDelegateBridge::OnDialogClosed(
     [controller_ close];
   }
   controller_ = nil;
+}
+
+void HtmlDialogWindowDelegateBridge::OnCloseContents(TabContents* source,
+                                                     bool* out_close_dialog) {
+  if (out_close_dialog)
+    *out_close_dialog = true;
+}
+
+void HtmlDialogWindowDelegateBridge::CloseContents(TabContents* source) {
+  bool close_dialog = false;
+  OnCloseContents(source, &close_dialog);
+  if (close_dialog)
+    OnDialogClosed(std::string());
 }
 
 void HtmlDialogWindowDelegateBridge::MoveContents(TabContents* source,
