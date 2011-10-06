@@ -11,19 +11,7 @@
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
-
-namespace {
-
-const float EPSILON = 1e-3f;
-
-bool IsApproximateMultilpleOf(float value, float base) {
-  float remainder = fmod(fabs(value), base);
-  return remainder < EPSILON || base - remainder < EPSILON;
-}
-
-}  // namespace
 
 namespace ui {
 
@@ -315,33 +303,48 @@ void Layer::RecomputeHole() {
   // Reset to default.
   hole_rect_ = gfx::Rect();
 
-  // Find the largest hole
+  // 1) We cannot do any hole punching if any child has a transform.
+  for (size_t i = 0; i < children_.size(); ++i) {
+    if (children_[i]->transform().HasChange() && children_[i]->visible_)
+      return;
+  }
+
+  // 2) Find the largest hole.
   for (size_t i = 0; i < children_.size(); ++i) {
     // Ignore non-opaque and hidden children.
     if (!children_[i]->IsCompletelyOpaque() || !children_[i]->visible_)
       continue;
 
-    // Ignore children that aren't rotated by multiples of 90 degrees.
-    float degrees;
-    if (!InterpolatedTransform::FactorTRS(children_[i]->transform(),
-                                          NULL, &degrees, NULL) ||
-        !IsApproximateMultilpleOf(degrees, 90.0f))
-      continue;
-
-    gfx::Rect candidate_hole = children_[i]->bounds();
-    children_[i]->transform().TransformRect(&candidate_hole);
-
-    // This layer might not contain the child (e.g., a portion of the child may
-    // be offscreen). Only the portion of the child that overlaps this layer is
-    // of any importance, so take the intersection.
-    candidate_hole = bounds().Intersect(candidate_hole);
-
-    // Ensure we have the largest hole.
-    if (candidate_hole.size().GetArea() > hole_rect_.size().GetArea())
-      hole_rect_ = candidate_hole;
+    if (children_[i]->bounds().size().GetArea() > hole_rect_.size().GetArea()) {
+      hole_rect_ = children_[i]->bounds();
+    }
   }
 
-  // Free up texture memory if the hole fills bounds of layer.
+  // 3) Make sure hole does not intersect with non-opaque children.
+  for (size_t i = 0; i < children_.size(); ++i) {
+    // Ignore opaque and hidden children.
+    if (children_[i]->IsCompletelyOpaque() || !children_[i]->visible_)
+      continue;
+
+    // Ignore non-intersecting children.
+    if (!hole_rect_.Intersects(children_[i]->bounds()))
+      continue;
+
+    // Compute surrounding fragments.
+    std::vector<gfx::Rect> fragments;
+    PunchHole(hole_rect_, children_[i]->bounds(), &fragments);
+
+    // Pick the largest surrounding fragment as the new hole.
+    hole_rect_ = fragments[0];
+    for (size_t j = 1; j < fragments.size(); ++j) {
+      if (fragments[j].size().GetArea() > hole_rect_.size().GetArea()) {
+        hole_rect_ = fragments[j];
+      }
+    }
+    DCHECK(!hole_rect_.IsEmpty());
+  }
+
+  // 4) Free up texture memory if the hole fills bounds of layer.
   if (!ShouldDraw() && !layer_updated_externally_)
     texture_ = NULL;
 }
