@@ -706,7 +706,7 @@ class DrMemory(BaseTool):
   """Dr.Memory
   Dynamic memory error detector for Windows.
 
-  http://dev.chromium.org/developers/how-tos/using-valgrind/dr-memory
+  http://dev.chromium.org/developers/how-tos/using-drmemory
   It is not very mature at the moment, some things might not work properly.
   """
 
