@@ -1,0 +1,59 @@
+<script>
+
+var settings = chrome.experimental.settings;
+
+// A different "waiting" message depending on whether this background page runs
+// in incognito mode or not.  This is so that the C++ test can differentiate
+// between messages.
+
+// Returns a function that asserts a result is expected.
+function assertResultEq(expected) {
+  return function(actual) {
+    chrome.test.assertEq(expected, actual);
+  };
+}
+
+// The test from C++ runs "actions", where each action is defined here.
+// This allows the test to be tightly controlled between incognito and
+// non-incognito modes.
+var testActions = {
+  noop: function() {
+    settings.get("", function() {});
+  },
+  assertEmpty: function() {
+    settings.get(null, assertResultEq({}));
+  },
+  assertFoobar: function() {
+    settings.get(null, assertResultEq({foo: "bar"}));
+  },
+  setFoobar: function() {
+    settings.set({foo: "bar"}, assertResultEq({foo: "bar"}));
+  },
+  removeFoo: function() {
+    settings.remove("foo", assertResultEq(undefined));
+  },
+  clear: function() {
+    settings.clear(assertResultEq(undefined));
+  }
+};
+
+// The only test we run.  Runs "actions" (as defined above) until told
+// to stop (when the message has isFinalAction set to true).
+function testEverything() {
+  var waiting = chrome.extension.inIncognitoContext ?
+      "waiting_incognito" : "waiting";
+  function runTestAction(messageJson) {
+    var message = JSON.parse(messageJson);
+    testActions[message.action]();
+    if (message.isFinalAction) {
+      chrome.test.succeed();
+      return;
+    }
+    chrome.test.sendMessage(waiting, runTestAction);
+  }
+  chrome.test.sendMessage(waiting, runTestAction);
+}
+
+chrome.test.runTests([testEverything]);
+
+</script>

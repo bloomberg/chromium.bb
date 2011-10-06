@@ -3,5 +3,5 @@
   "version": "1.0",
   "description": "Tests that the settings API works.",
   "permissions": ["experimental"],
-  "background_page": "test.html"
+  "background_page": "background.html"
 }
