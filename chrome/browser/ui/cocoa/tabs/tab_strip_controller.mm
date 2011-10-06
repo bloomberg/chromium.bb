@@ -837,13 +837,17 @@ private:
   // Need to leave room for the left-side controls even in rapid closure mode.
   availableSpace -= [self leftIndentForControls];
 
+  // If there are any mini tabs, account for the extra spacing between the last
+  // mini tab and the first regular tab.
+  if ([self numberOfOpenMiniTabs])
+    availableSpace -= kLastMiniTabSpacing;
+
   // This may be negative, but that's okay (taken care of by |MAX()| when
   // calculating tab sizes). "mini" tabs in horizontal mode just get a special
   // section, they don't change size.
   CGFloat availableSpaceForNonMini = availableSpace;
   availableSpaceForNonMini -=
       [self numberOfOpenMiniTabs] * (kMiniTabWidth - kTabOverlap);
-  availableSpaceForNonMini -= kLastMiniTabSpacing;
 
   // Initialize |nonMiniTabWidth| in case there aren't any non-mini-tabs; this
   // value shouldn't actually be used.
