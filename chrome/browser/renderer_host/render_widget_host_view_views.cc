@@ -793,8 +793,11 @@ views::View* RenderWidgetHostViewViews::GetOwnerViewOfTextInputClient() {
 }
 
 void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
-  if (is_hidden_ || !host_ || host_->is_accelerated_compositing_active())
+  if (is_hidden_ || !host_)
     return;
+
+  DCHECK(!host_->is_accelerated_compositing_active() ||
+         get_use_acceleration_when_possible());
 
   // Paint a "hole" in the canvas so that the render of the web page is on
   // top of whatever else has already been painted in the views hierarchy.
@@ -864,6 +867,10 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
   } else {
     if (whiteout_start_time_.is_null())
       whiteout_start_time_ = base::TimeTicks::Now();
+
+    if (get_use_acceleration_when_possible())
+      canvas->FillRectInt(SK_ColorWHITE, 0, 0,
+                          bounds().width(), bounds().height());
   }
 }
 
