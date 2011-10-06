@@ -54,6 +54,10 @@ class ToolbarModel {
   // level is EV_SECURE.
   string16 GetEVCertName() const;
 
+  // Returns whether the URL for the current navigation entry should be
+  // in the location bar.
+  bool ShouldDisplayURL() const;
+
   // Getter/setter of whether the text in location bar is currently being
   // edited.
   void set_input_in_progress(bool value) { input_in_progress_ = value; }

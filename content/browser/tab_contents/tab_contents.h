@@ -168,12 +168,6 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // returns the current SiteInstance.
   SiteInstance* GetPendingSiteInstance() const;
 
-  // Defines whether this tab's URL should be displayed in the browser's URL
-  // bar. Normally this is true so you can see the URL. This is set to false
-  // for the new tab page and related pages so that the URL bar is empty and
-  // the user is invited to type into it.
-  virtual bool ShouldDisplayURL();
-
   // Return whether this tab contents is loading a resource, or whether its
   // web_ui is.
   bool IsLoading() const;

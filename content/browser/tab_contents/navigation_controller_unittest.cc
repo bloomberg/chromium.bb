@@ -1825,32 +1825,6 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   EXPECT_EQ(controller().last_committed_entry_index(), 0);
 }
 
-// Test view source redirection is reflected in title bar.
-TEST_F(NavigationControllerTest, ViewSourceRedirect) {
-  const char kUrl[] = "view-source:http://redirect.to/google.com";
-  const char kResult[] = "http://google.com";
-  const char kExpected[] = "view-source:google.com";
-  const GURL url(kUrl);
-  const GURL result_url(kResult);
-
-  controller().LoadURL(url, GURL(), PageTransition::TYPED, std::string());
-
-  ViewHostMsg_FrameNavigate_Params params;
-  params.page_id = 0;
-  params.url = result_url;
-  params.transition = PageTransition::SERVER_REDIRECT;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.is_post = false;
-  params.content_state =
-      webkit_glue::CreateHistoryStateForURL(GURL(result_url));
-  content::LoadCommittedDetails details;
-  controller().RendererDidNavigate(params, &details);
-
-  EXPECT_EQ(ASCIIToUTF16(kExpected), contents()->GetTitle());
-  EXPECT_TRUE(contents()->ShouldDisplayURL());
-}
-
 // Make sure that on cloning a tabcontents and going back needs_reload is false.
 TEST_F(NavigationControllerTest, CloneAndGoBack) {
   const GURL url1("http://foo1");

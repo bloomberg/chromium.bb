@@ -1749,6 +1749,7 @@
         'browser/ui/tests/ui_gfx_image_unittest.mm',
         'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
         'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
+        'browser/ui/toolbar/toolbar_model_unittest.cc',
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
         'browser/ui/touch/tabs/touch_tab_strip_unittest.cc',
         'browser/ui/views/accessibility_event_router_views_unittest.cc',

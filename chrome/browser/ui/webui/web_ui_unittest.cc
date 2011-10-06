@@ -36,7 +36,6 @@ class WebUITest : public TabContentsWrapperTestHarness {
     ASSERT_FALSE(controller->GetLastCommittedEntry());
 
     // Check the things the pending Web UI should have set.
-    EXPECT_FALSE(contents->ShouldDisplayURL());
     EXPECT_FALSE(wrapper->favicon_tab_helper()->ShouldDisplayFavicon());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
@@ -45,7 +44,6 @@ class WebUITest : public TabContentsWrapperTestHarness {
         contents->render_view_host())->SendNavigate(page_id, new_tab_url);
 
     // The same flags should be set as before now that the load has committed.
-    EXPECT_FALSE(contents->ShouldDisplayURL());
     EXPECT_FALSE(wrapper->favicon_tab_helper()->ShouldDisplayFavicon());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
@@ -55,7 +53,6 @@ class WebUITest : public TabContentsWrapperTestHarness {
 
     // Check the flags. Some should reflect the new page (URL, title), some
     // should reflect the old one (bookmark bar) until it has committed.
-    EXPECT_TRUE(contents->ShouldDisplayURL());
     EXPECT_TRUE(wrapper->favicon_tab_helper()->ShouldDisplayFavicon());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
 
@@ -74,7 +71,6 @@ class WebUITest : public TabContentsWrapperTestHarness {
     }
 
     // The state should now reflect a regular page.
-    EXPECT_TRUE(contents->ShouldDisplayURL());
     EXPECT_TRUE(wrapper->favicon_tab_helper()->ShouldDisplayFavicon());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
   }
@@ -114,7 +110,6 @@ TEST_F(WebUITest, WebUIToWebUI) {
   rvh()->SendNavigate(2, new_tab_url);
 
   // The flags should be the same as the non-pending state.
-  EXPECT_FALSE(contents()->ShouldDisplayURL());
   EXPECT_FALSE(
       contents_wrapper()->favicon_tab_helper()->ShouldDisplayFavicon());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
@@ -127,13 +122,11 @@ TEST_F(WebUITest, StandardToWebUI) {
   controller().LoadURL(std_url, GURL(), PageTransition::LINK, std::string());
 
   // The state should now reflect the default.
-  EXPECT_TRUE(contents()->ShouldDisplayURL());
   EXPECT_TRUE(contents_wrapper()->favicon_tab_helper()->ShouldDisplayFavicon());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
   // Commit the load, the state should be the same.
   rvh()->SendNavigate(1, std_url);
-  EXPECT_TRUE(contents()->ShouldDisplayURL());
   EXPECT_TRUE(contents_wrapper()->favicon_tab_helper()->ShouldDisplayFavicon());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
@@ -141,7 +134,6 @@ TEST_F(WebUITest, StandardToWebUI) {
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   controller().LoadURL(new_tab_url, GURL(), PageTransition::LINK,
                        std::string());
-  EXPECT_FALSE(contents()->ShouldDisplayURL());
   EXPECT_TRUE(contents_wrapper()->favicon_tab_helper()->ShouldDisplayFavicon());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 

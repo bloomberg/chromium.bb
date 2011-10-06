@@ -288,8 +288,7 @@ bool ChromeWebUIFactory::UseWebUIForURL(
 bool ChromeWebUIFactory::HasWebUIScheme(const GURL& url) const {
   return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          url.SchemeIs(chrome::kChromeInternalScheme) ||
-         url.SchemeIs(chrome::kChromeUIScheme) ||
-         url.SchemeIs(chrome::kExtensionScheme);
+         url.SchemeIs(chrome::kChromeUIScheme);
 }
 
 bool ChromeWebUIFactory::IsURLAcceptableForWebUI(

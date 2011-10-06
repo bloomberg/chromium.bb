@@ -399,24 +399,6 @@ SiteInstance* TabContents::GetPendingSiteInstance() const {
   return dest_rvh->site_instance();
 }
 
-bool TabContents::ShouldDisplayURL() {
-  // Don't hide the url in view source mode and with interstitials.
-  NavigationEntry* entry = controller_.GetActiveEntry();
-  if (entry && (entry->IsViewSourceMode() ||
-                entry->page_type() == INTERSTITIAL_PAGE)) {
-    return true;
-  }
-
-  // We always display the URL for non-WebUI URLs to prevent spoofing.
-  if (entry && !content::WebUIFactory::Get()->HasWebUIScheme(entry->url()))
-    return true;
-
-  WebUI* web_ui = GetWebUIForCurrentState();
-  if (web_ui)
-    return !web_ui->should_hide_url();
-  return true;
-}
-
 bool TabContents::IsLoading() const {
   return is_loading_ || (web_ui() && web_ui()->IsLoading());
 }

@@ -234,7 +234,6 @@ TEST_F(TabContentsTest, NTPViewSource) {
   controller().RendererDidNavigate(params, &details);
   // Also check title and url.
   EXPECT_EQ(ASCIIToUTF16(kUrl), contents()->GetTitle());
-  EXPECT_TRUE(contents()->ShouldDisplayURL());
 }
 
 // Test simple same-SiteInstance navigation.

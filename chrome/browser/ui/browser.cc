@@ -1616,7 +1616,7 @@ void Browser::WriteCurrentURLToClipboard() {
   // RenderContextViewMenu.
 
   TabContents* contents = GetSelectedTabContents();
-  if (!contents->ShouldDisplayURL())
+  if (!toolbar_model_.ShouldDisplayURL())
     return;
 
   chrome_browser_net::WriteURLToClipboard(
@@ -4445,7 +4445,7 @@ void Browser::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
       current_tab->controller().CanViewSource());
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
-      current_tab->ShouldDisplayURL() && current_tab->GetURL().is_valid());
+      toolbar_model_.ShouldDisplayURL() && current_tab->GetURL().is_valid());
   if (is_devtools())
       command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, false);
 

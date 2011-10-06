@@ -18,6 +18,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/webui/web_ui.h"
 #include "content/common/content_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -44,8 +45,7 @@ string16 ToolbarModel::GetText() const {
         Profile::FromBrowserContext(navigation_controller->browser_context());
     languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
     NavigationEntry* entry = navigation_controller->GetVisibleEntry();
-    if (!navigation_controller->tab_contents()->ShouldDisplayURL()) {
-      // Explicitly hide the URL for this tab.
+    if (!ShouldDisplayURL()) {
       url = GURL();
     } else if (entry) {
       url = entry->virtual_url();
@@ -59,6 +59,31 @@ string16 ToolbarModel::GetText() const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
       url, net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
                           UnescapeRule::NORMAL, NULL, NULL, NULL));
+}
+
+bool ToolbarModel::ShouldDisplayURL() const {
+  // Note: The order here is important.
+  // - The WebUI test must come before the extension scheme test because there
+  //   can be WebUIs that have extension schemes (e.g. the bookmark manager). In
+  //   that case, we should prefer what the WebUI instance says.
+  // - The view-source test must come before the WebUI test because of the case
+  //   of view-source:chrome://newtab, which should display its URL despite what
+  //   chrome://newtab's WebUI says.
+  NavigationController* controller = GetNavigationController();
+  NavigationEntry* entry = controller ? controller->GetVisibleEntry() : NULL;
+  if (entry) {
+    if (entry->IsViewSourceMode() || entry->page_type() == INTERSTITIAL_PAGE)
+      return true;
+  }
+
+  TabContents* tab_contents = browser_->GetSelectedTabContents();
+  if (tab_contents && tab_contents->web_ui())
+    return !tab_contents->web_ui()->should_hide_url();
+
+  if (entry && entry->url().SchemeIs(chrome::kExtensionScheme))
+    return false;
+
+  return true;
 }
 
 ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
