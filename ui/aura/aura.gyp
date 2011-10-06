@@ -96,7 +96,13 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],
+      # osmesa GL implementation is used on linux.
       'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+            '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
+          ],
+        }],
         ['OS!="mac"', {
           'dependencies': [
             '../../chrome/chrome.gyp:packed_resources',
