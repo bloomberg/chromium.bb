@@ -1667,7 +1667,7 @@
    fun:crc32
    ...
    fun:png_write_row
-   fun:_ZN7WebCore*12encodePixelsERKNS_7IntSizeEPhbPN3WTF6VectorIhLj0EEE
+   fun:_ZN7WebCore*12encodePixels*_7IntSizeEPhbPN3WTF6VectorIhLj0EEE
    fun:_ZN7WebCore15PNGImageEncoder6encode*
 }
 {
@@ -4054,11 +4054,6 @@
    ...
    fun:_Z24PP_RunCompletionCallbackP21PP_CompletionCallbacki
    fun:_ZN*pp*5proxy12_GLOBAL__N_115CallbackWrapperE21PP_CompletionCallbacki
-   fun:_Z18DispatchToFunctionIPFv21PP_CompletionCallbackiES0_iEvT_RK6Tuple2IT0_T1_E
-   fun:_ZN16RunnableFunctionIPFv21PP_CompletionCallbackiE6Tuple2IS0_iEE3RunEv
-   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
-   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMNS_6subtle18TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
 {
    bug_90644_b
