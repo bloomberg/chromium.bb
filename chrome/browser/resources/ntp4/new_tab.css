@@ -169,6 +169,39 @@ html[dir='rtl'] #attribution {
   -webkit-transition: none !important;
 }
 
+/* Login Status. **************************************************************/
+
+#login-container {
+  background: transparent none;
+  border: none;
+  color: black;
+  cursor: pointer;
+  float: right;
+  font-size: 84%;
+  /* Leave room for the scrollbar. */
+  margin-right: 13px;
+  margin-top: 5px;
+  position: relative;
+  text-align: right;
+  text-decoration: none;
+  z-index: 100;
+  -webkit-box-shadow: none;
+}
+
+html[dir='rtl'] #login-container {
+  float: left;
+  text-align: left;
+}
+
+#login-status-sub-header {
+  color: #777;
+}
+
+.link-span {
+  color: #06c;
+  text-decoration: underline;
+}
+
 /* Trash. *********************************************************************/
 
 #trash {

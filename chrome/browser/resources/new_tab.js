@@ -1429,7 +1429,7 @@ function fixLinkUnderline(el) {
 updateAttribution();
 
 function initializeLogin() {
-  chrome.send('initializeLogin', []);
+  chrome.send('initializeSyncLogin');
 }
 
 function updateLogin(login) {

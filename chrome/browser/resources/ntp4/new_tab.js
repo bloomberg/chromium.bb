@@ -148,6 +148,11 @@ cr.define('ntp4', function() {
     // invoked at some point after this function returns.
     chrome.send('getApps');
 
+    chrome.send('initializeSyncLogin');
+    $('login-container').addEventListener('click', function() {
+      chrome.send('showSyncLoginUI');
+    });
+
     // Prevent touch events from triggering any sort of native scrolling
     document.addEventListener('touchmove', function(e) {
       e.preventDefault();
@@ -830,7 +835,23 @@ cr.define('ntp4', function() {
     var node = $(id);
     if (node)
       node.stripeColor = color;
-  };
+  }
+
+  /**
+   * Updates the text displayed in the login container. If there is no text then
+   * the login container is hidden.
+   * @param {string} loginHeader The first line of text.
+   * @param {string} loginSubHeader The second line of text.
+   */
+  function updateLogin(loginHeader, loginSubHeader) {
+    if (loginHeader || loginSubHeader) {
+      $('login-container').hidden = false;
+      $('login-status-header').innerHTML = loginHeader;
+      $('login-status-sub-header').innerHTML = loginSubHeader;
+    } else {
+      $('login-container').hidden = true;
+    }
+  }
 
   // Return an object with all the exports
   return {
@@ -860,6 +881,7 @@ cr.define('ntp4', function() {
     setStripeColor: setStripeColor,
     showNotification: showNotification,
     themeChanged: themeChanged,
+    updateLogin: updateLogin,
     updateOfflineEnabledApps: updateOfflineEnabledApps
   };
 });
@@ -873,6 +895,7 @@ var appsPrefChangeCallback = ntp4.appsPrefChangeCallback;
 var themeChanged = ntp4.themeChanged;
 var recentlyClosedTabs = ntp4.setRecentlyClosedTabs;
 var setMostVisitedPages = ntp4.setMostVisitedPages;
+var updateLogin = ntp4.updateLogin;
 
 document.addEventListener('DOMContentLoaded', ntp4.initialize);
 window.addEventListener('online', ntp4.updateOfflineEnabledApps);

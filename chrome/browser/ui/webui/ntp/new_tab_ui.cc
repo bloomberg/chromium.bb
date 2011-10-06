@@ -212,7 +212,6 @@ NewTabUI::NewTabUI(TabContents* contents)
 
   if (!GetProfile()->IsOffTheRecord()) {
     PrefService* pref_service = GetProfile()->GetPrefs();
-    AddMessageHandler((new NTPLoginHandler())->Attach(this));
     AddMessageHandler((new ShownSectionsHandler(pref_service))->Attach(this));
     AddMessageHandler((new browser_sync::ForeignSessionHandler())->
         Attach(this));
@@ -233,6 +232,9 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
     }
   }
+
+  if (NTPLoginHandler::ShouldShow(GetProfile()))
+    AddMessageHandler((new NTPLoginHandler())->Attach(this));
 
   // Initializing the CSS and HTML can require some CPU, so do it after
   // we've hooked up the most visited handler.  This allows the DB query
