@@ -2460,8 +2460,8 @@ void Browser::RegisterProtocolHandlerHelper(TabContents* tab,
 
   ProtocolHandlerRegistry* registry =
       tcw->profile()->GetProtocolHandlerRegistry();
-  if (!registry->enabled() || registry->IsRegistered(handler) ||
-      registry->IsIgnored(handler))
+  if (!registry->enabled() || registry->HasRegisteredEquivalent(handler) ||
+      registry->HasIgnoredEquivalent(handler))
     return;
 
   if (!handler.IsEmpty() &&

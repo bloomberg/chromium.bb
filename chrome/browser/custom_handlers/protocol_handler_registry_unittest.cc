@@ -304,8 +304,24 @@ TEST_F(ProtocolHandlerRegistryTest, DisableDeregistersProtocolHandlers) {
 TEST_F(ProtocolHandlerRegistryTest, IgnoreProtocolHandler) {
   registry()->OnIgnoreRegisterProtocolHandler(test_protocol_handler());
   ASSERT_TRUE(registry()->IsIgnored(test_protocol_handler()));
+
   registry()->RemoveIgnoredHandler(test_protocol_handler());
   ASSERT_FALSE(registry()->IsIgnored(test_protocol_handler()));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, IgnoreEquivalentProtocolHandler) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", GURL("http://test/%s"),
+                                              "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", GURL("http://test/%s"),
+                                              "test2");
+
+  registry()->OnIgnoreRegisterProtocolHandler(ph1);
+  ASSERT_TRUE(registry()->IsIgnored(ph1));
+  ASSERT_TRUE(registry()->HasIgnoredEquivalent(ph2));
+
+  registry()->RemoveIgnoredHandler(ph1);
+  ASSERT_FALSE(registry()->IsIgnored(ph1));
+  ASSERT_FALSE(registry()->HasIgnoredEquivalent(ph2));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, SaveAndLoad) {
@@ -431,6 +447,17 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsRegistered) {
   registry()->OnAcceptRegisterProtocolHandler(ph2);
 
   ASSERT_TRUE(registry()->IsRegistered(ph1));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestIsEquivalentRegistered) {
+  ProtocolHandler ph1 = CreateProtocolHandler("test", GURL("http://test/%s"),
+                                              "test1");
+  ProtocolHandler ph2 = CreateProtocolHandler("test", GURL("http://test/%s"),
+                                              "test2");
+  registry()->OnAcceptRegisterProtocolHandler(ph1);
+
+  ASSERT_TRUE(registry()->IsRegistered(ph1));
+  ASSERT_TRUE(registry()->HasRegisteredEquivalent(ph2));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestRemoveHandlerRemovesDefault) {

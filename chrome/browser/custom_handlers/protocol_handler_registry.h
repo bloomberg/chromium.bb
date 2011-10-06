@@ -135,8 +135,14 @@ class ProtocolHandlerRegistry
   // Returns true if an identical protocol handler has already been registered.
   bool IsRegistered(const ProtocolHandler& handler) const;
 
-  // Returns true if the protocol handler is being ignored.
+  // Returns true if an identical protocol handler is being ignored.
   bool IsIgnored(const ProtocolHandler& handler) const;
+
+  // Returns true if an equivalent protocol handler has already been registered.
+  bool HasRegisteredEquivalent(const ProtocolHandler& handler) const;
+
+  // Returns true if an equivalent protocol handler is being ignored.
+  bool HasIgnoredEquivalent(const ProtocolHandler& handler) const;
 
   // Causes the given protocol handler to not be ignored anymore.
   void RemoveIgnoredHandler(const ProtocolHandler& handler);

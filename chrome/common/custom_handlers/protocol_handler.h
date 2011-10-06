@@ -37,6 +37,11 @@ class ProtocolHandler {
   // Interpolates the given URL into the URL template of this handler.
   GURL TranslateUrl(const GURL& url) const;
 
+  // Returns true if the handlers are considered equivalent when determining
+  // if both handlers can be registered, or if a handler has previously been
+  // ignored.
+  bool IsEquivalent(const ProtocolHandler& other) const;
+
   // Encodes this protocol handler as a DictionaryValue. The caller is
   // responsible for deleting the returned value.
   DictionaryValue* Encode() const;

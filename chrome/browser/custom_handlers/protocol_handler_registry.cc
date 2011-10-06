@@ -84,7 +84,7 @@ void ProtocolHandlerRegistry::RegisterProtocolHandler(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(CanSchemeBeOverridden(handler.protocol()));
   DCHECK(!handler.IsEmpty());
-  if (IsRegistered(handler)) {
+  if (HasRegisteredEquivalent(handler)) {
     return;
   }
   if (enabled_ && !delegate_->IsExternalHandlerRegistered(handler.protocol()))
@@ -305,12 +305,41 @@ bool ProtocolHandlerRegistry::IsRegistered(
       handlers->end();
 }
 
+bool ProtocolHandlerRegistry::HasRegisteredEquivalent(
+    const ProtocolHandler& handler) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const ProtocolHandlerList* handlers = GetHandlerList(handler.protocol());
+  if (!handlers) {
+    return false;
+  }
+  ProtocolHandlerList::const_iterator i;
+  for (i = handlers->begin(); i != handlers->end(); ++i) {
+    if (handler.IsEquivalent(*i)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool ProtocolHandlerRegistry::IsIgnored(const ProtocolHandler& handler) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ProtocolHandlerList::const_iterator i;
   for (i = ignored_protocol_handlers_.begin();
        i != ignored_protocol_handlers_.end(); ++i) {
     if (*i == handler) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ProtocolHandlerRegistry::HasIgnoredEquivalent(
+    const ProtocolHandler& handler) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ProtocolHandlerList::const_iterator i;
+  for (i = ignored_protocol_handlers_.begin();
+       i != ignored_protocol_handlers_.end(); ++i) {
+    if (handler.IsEquivalent(*i)) {
       return true;
     }
   }

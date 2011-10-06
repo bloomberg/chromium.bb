@@ -76,6 +76,10 @@ bool ProtocolHandler::operator==(const ProtocolHandler& other) const {
     title_ == other.title_;
 }
 
+bool ProtocolHandler::IsEquivalent(const ProtocolHandler& other) const {
+  return protocol_ == other.protocol_ && url_ == other.url_;
+}
+
 bool ProtocolHandler::operator<(const ProtocolHandler& other) const {
   return title_ < other.title_;
 }
