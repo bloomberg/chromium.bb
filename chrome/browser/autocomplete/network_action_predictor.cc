@@ -66,6 +66,20 @@ double ConservativeAlgorithm(const history::URLRow& url_row) {
   return base_score / exp(decay_exponent);
 }
 
+bool GetURLRowForAutocompleteMatch(Profile* profile,
+                                   const AutocompleteMatch& match,
+                                   history::URLRow* url_row) {
+  DCHECK(url_row);
+
+  HistoryService* history_service =
+      profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  if (!history_service)
+    return false;
+
+  history::URLDatabase* url_db = history_service->InMemoryDatabase();
+  return url_db && (url_db->GetRowForURL(match.destination_url, url_row) != 0);
+}
+
 }
 
 NetworkActionPredictor::NetworkActionPredictor(Profile* profile)
@@ -76,32 +90,24 @@ NetworkActionPredictor::~NetworkActionPredictor() {
 }
 
 // Given a match, return a recommended action.
-NetworkActionPredictor::Action
-    NetworkActionPredictor::RecommendAction(
-        const string16& user_text, const AutocompleteMatch& match) const {
-  HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (!history_service)
-    return ACTION_NONE;
-
-  history::URLDatabase* url_db = history_service->InMemoryDatabase();
-  if (!url_db)
-    return ACTION_NONE;
-
-  history::URLRow url_row;
-  history::URLID url_id = url_db->GetRowForURL(match.destination_url, &url_row);
-
-  if (url_id == 0)
-    return ACTION_NONE;
-
+NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
+    const string16& user_text,
+    const AutocompleteMatch& match) const {
   double confidence = 0.0;
+
   switch (prerender::GetOmniboxHeuristicToUse()) {
-    case prerender::OMNIBOX_HEURISTIC_ORIGINAL:
-      confidence = OriginalAlgorithm(url_row);
+    case prerender::OMNIBOX_HEURISTIC_ORIGINAL: {
+      history::URLRow url_row;
+      if (GetURLRowForAutocompleteMatch(profile_, match, &url_row))
+        confidence = OriginalAlgorithm(url_row);
       break;
-    case prerender::OMNIBOX_HEURISTIC_CONSERVATIVE:
-      confidence = ConservativeAlgorithm(url_row);
+    }
+    case prerender::OMNIBOX_HEURISTIC_CONSERVATIVE: {
+      history::URLRow url_row;
+      if (GetURLRowForAutocompleteMatch(profile_, match, &url_row))
+        confidence = ConservativeAlgorithm(url_row);
       break;
+    }
     default:
       NOTREACHED();
       break;
@@ -113,10 +119,24 @@ NetworkActionPredictor::Action
                            prerender::GetOmniboxHistogramSuffix(),
                            confidence * 100);
 
-  for (int i = 0; i < LAST_PREDICT_ACTION; ++i)
-    if (confidence >= kConfidenceCutoff[i])
-      return static_cast<Action>(i);
-  return ACTION_NONE;
+  // Map the confidence to an action.
+  Action action = ACTION_NONE;
+  for (int i = 0; i < LAST_PREDICT_ACTION; ++i) {
+    if (confidence >= kConfidenceCutoff[i]) {
+      action = static_cast<Action>(i);
+      break;
+    }
+  }
+
+  // Downgrade prerender to preconnect if this is a search match.
+  if (action == ACTION_PRERENDER &&
+      (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
+       match.type == AutocompleteMatch::SEARCH_SUGGEST ||
+       match.type == AutocompleteMatch::SEARCH_OTHER_ENGINE)) {
+    action = ACTION_PRECONNECT;
+  }
+
+  return action;
 }
 
 // Return true if the suggestion type warrants a TCP/IP preconnection.
