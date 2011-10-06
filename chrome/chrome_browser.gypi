@@ -4134,7 +4134,7 @@
             ['include', '^browser/ui/views/simple_message_box_views.h'],
           ],
           'dependencies': [
-            '../ui/aura/aura.gyp:aura',
+            '../ui/aura_shell/aura_shell.gyp:aura_shell',
           ],
         }],
         ['use_virtual_keyboard==0', {

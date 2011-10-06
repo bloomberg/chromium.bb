@@ -1365,7 +1365,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // just changed it to include experiments.
   child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(USE_AURA)
+  browser::InitAuraDesktop();
+#elif defined(TOOLKIT_VIEWS)
   views::Widget::SetPureViews(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));
   // Launch the views desktop shell window and register it as the default parent
@@ -1388,9 +1390,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
         views::desktop::DesktopWindowView::desktop_window_view;
     }
   }
-#endif
-#if defined(USE_AURA)
-  browser::InitAuraDesktop();
 #endif
 
   InitializeNetworkOptions(parsed_command_line());
