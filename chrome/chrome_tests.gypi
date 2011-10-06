@@ -44,6 +44,7 @@
         'theme_resources',
         '../base/base.gyp:test_support_base',
         '../content/content.gyp:content_gpu',
+        '../content/content.gyp:content_renderer',
         '../content/content.gyp:test_support_content',
         '../ipc/ipc.gyp:test_support_ipc',
         '../media/media.gyp:media_test_support',

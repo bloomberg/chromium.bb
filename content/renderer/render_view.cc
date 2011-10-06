@@ -300,7 +300,7 @@ struct RenderView::PendingFileChooser {
   WebFileChooserCompletion* completion;  // MAY BE NULL to skip callback.
 };
 
-RenderView::RenderView(RenderThreadBase* render_thread,
+RenderView::RenderView(content::RenderThread* render_thread,
                        gfx::NativeViewId parent_hwnd,
                        int32 opener_id,
                        const RendererPreferences& renderer_prefs,
@@ -459,7 +459,7 @@ RenderView* RenderView::FromWebView(WebView* webview) {
 
 /*static*/
 RenderView* RenderView::Create(
-    RenderThreadBase* render_thread,
+    content::RenderThread* render_thread,
     gfx::NativeViewId parent_hwnd,
     int32 opener_id,
     const RendererPreferences& renderer_prefs,
@@ -1530,7 +1530,7 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
       StartsWithASCII(name, "Insert", true) ||
       StartsWithASCII(name, "Delete", true))
     return;
-  RenderThread::RecordUserMetrics(name);
+  RenderThread::current()->RecordUserMetrics(name);
 }
 
 bool RenderView::handleCurrentKeyboardEvent() {

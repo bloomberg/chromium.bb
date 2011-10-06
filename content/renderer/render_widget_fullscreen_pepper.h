@@ -27,7 +27,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
  public:
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
-      RenderThreadBase* render_thread,
+      content::RenderThread* render_thread,
       webkit::ppapi::PluginInstance* plugin,
       const GURL& active_url);
 
@@ -43,7 +43,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   void SwapBuffers();
 
  protected:
-  RenderWidgetFullscreenPepper(RenderThreadBase* render_thread,
+  RenderWidgetFullscreenPepper(content::RenderThread* render_thread,
                                webkit::ppapi::PluginInstance* plugin,
                                const GURL& active_url);
   virtual ~RenderWidgetFullscreenPepper();

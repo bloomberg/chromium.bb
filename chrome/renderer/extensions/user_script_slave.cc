@@ -19,7 +19,7 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_groups.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -38,6 +38,7 @@ using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 using WebKit::WebVector;
 using WebKit::WebView;
+using content::RenderThread;
 
 // These two strings are injected before and after the Greasemonkey API and
 // user script to wrap it in an anonymous scope.
@@ -192,7 +193,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   }
 
   // Push user styles down into WebCore
-  RenderThread::current()->EnsureWebKitInitialized();
+  RenderThread::Get()->EnsureWebKitInitialized();
   WebView::removeAllUserContent();
   for (size_t i = 0; i < scripts_.size(); ++i) {
     UserScript* script = scripts_[i];

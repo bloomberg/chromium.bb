@@ -8,14 +8,20 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
+#include "base/shared_memory.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/mock_printer.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 
 namespace IPC {
 class MessageReplyDeserializer;
+}
+
+namespace base {
+class DictionaryValue;
 }
 
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
@@ -28,7 +34,7 @@ struct PrintMsg_Print_Params;
 // which supports only two messages:
 // ViewHostMsg_CreateWidget : sync message sent by the Widget.
 // ViewMsg_Close : async, send to the Widget.
-class MockRenderThread : public RenderThreadBase {
+class MockRenderThread : public content::RenderThread {
  public:
   MockRenderThread();
   virtual ~MockRenderThread();
@@ -36,27 +42,38 @@ class MockRenderThread : public RenderThreadBase {
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }
 
-  // Called by the Widget. The routing_id must match the routing id assigned
-  // to the Widget in reply to ViewHostMsg_CreateWidget message.
-  virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
-
-  // Called by the Widget. The routing id must match the routing id of AddRoute.
-  virtual void RemoveRoute(int32 routing_id);
-
-  // Called by the Widget. Used to send messages to the browser.
-  // We short-circuit the mechanim and handle the messages right here on this
-  // class.
-  virtual bool Send(IPC::Message* msg);
-
-  // Filtering support.
-  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
-  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
-
-  // Our mock thread doesn't deal with hidden and restored tabs.
-  virtual void WidgetHidden() { }
-  virtual void WidgetRestored() { }
-
-  virtual bool IsIncognitoProcess() const;
+  // content::RenderThread implementation:
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual MessageLoop* GetMessageLoop() OVERRIDE;
+  virtual IPC::SyncChannel* GetChannel() OVERRIDE;
+  virtual ResourceDispatcher* GetResourceDispatcher() OVERRIDE;
+  virtual std::string GetLocale() OVERRIDE;
+  virtual void AddRoute(int32 routing_id,
+                        IPC::Channel::Listener* listener) OVERRIDE;
+  virtual void RemoveRoute(int32 routing_id) OVERRIDE;
+  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
+  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
+  virtual void SetOutgoingMessageFilter(
+      IPC::ChannelProxy::OutgoingMessageFilter* filter) OVERRIDE;
+  virtual void AddObserver(content::RenderProcessObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      content::RenderProcessObserver* observer) OVERRIDE;
+  virtual void WidgetHidden() OVERRIDE;
+  virtual void WidgetRestored() OVERRIDE;
+  virtual void EnsureWebKitInitialized() OVERRIDE;
+  virtual void RecordUserMetrics(const std::string& action) OVERRIDE;
+  virtual void RegisterExtension(v8::Extension* extension) OVERRIDE;
+  virtual bool IsRegisteredExtension(
+      const std::string& v8_extension_name) const OVERRIDE;
+  virtual void ScheduleIdleHandler(double initial_delay_s) OVERRIDE;
+  virtual void IdleHandler() OVERRIDE;
+  virtual double GetIdleNotificationDelayInS() const OVERRIDE;
+  virtual void SetIdleNotificationDelayInS(
+      double idle_notification_delay_in_s) OVERRIDE;
+#if defined(OS_WIN)
+  virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
+  virtual void ReleaseCachedFonts() OVERRIDE;
+#endif
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.
@@ -139,7 +156,7 @@ class MockRenderThread : public RenderThreadBase {
 
   // For print preview, PrintWebViewHelper will update settings.
   void OnUpdatePrintSettings(int document_cookie,
-                             const DictionaryValue& job_settings,
+                             const base::DictionaryValue& job_settings,
                              PrintMsg_PrintPages_Params* params);
 
   IPC::TestSink sink_;

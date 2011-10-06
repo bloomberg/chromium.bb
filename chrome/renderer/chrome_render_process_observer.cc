@@ -23,8 +23,8 @@
 #include "content/common/resource_dispatcher.h"
 #include "content/common/resource_dispatcher_delegate.h"
 #include "content/common/view_messages.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "crypto/nss_util.h"
 #include "media/base/media.h"
@@ -51,6 +51,7 @@ using WebKit::WebCache;
 using WebKit::WebCrossOriginPreflightResultCache;
 using WebKit::WebFontCache;
 using WebKit::WebRuntimeFeatures;
+using content::RenderThread;
 
 namespace {
 
@@ -91,15 +92,14 @@ class RendererResourceDelegate : public ResourceDispatcherDelegate {
       const std::string& mime_type,
       const GURL& url) {
     return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-        current_peer, RenderThread::current(), mime_type, url);
+        current_peer, RenderThread::Get(), mime_type, url);
   }
 
  private:
   void InformHostOfCacheStats() {
     WebCache::UsageStats stats;
     WebCache::getUsageStats(&stats);
-    RenderThread::current()->Send(new ChromeViewHostMsg_UpdatedCacheStats(
-        stats));
+    RenderThread::Get()->Send(new ChromeViewHostMsg_UpdatedCacheStats(stats));
   }
 
   ScopedRunnableMethodFactory<RendererResourceDelegate> method_factory_;
@@ -158,9 +158,9 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
     LOGFONT logfont;
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
       std::vector<char> font_data;
-      if (RenderThread::PreCacheFont(logfont))
-        rv = GetFontData(hdc, table, offset, buffer, length);
-        RenderThread::ReleaseCachedFonts();
+      RenderThread::Get()->PreCacheFont(logfont);
+      rv = GetFontData(hdc, table, offset, buffer, length);
+      RenderThread::Get()->ReleaseCachedFonts();
     }
   }
   return rv;
@@ -207,9 +207,9 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
     base::StatisticsRecorder::set_dump_on_exit(true);
   }
 
-  RenderThread* thread = RenderThread::current();
+  RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
-  thread->resource_dispatcher()->set_delegate(resource_delegate_.get());
+  thread->GetResourceDispatcher()->set_delegate(resource_delegate_.get());
 
 #if defined(OS_POSIX)
   thread->AddFilter(new SuicideOnChannelErrorFilter());
@@ -326,7 +326,7 @@ void ChromeRenderProcessObserver::OnClearCache(bool on_navigation) {
 void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
   WebCache::ResourceTypeStats stats;
   WebCache::getResourceTypeStats(&stats);
-  RenderThread::current()->Send(new ChromeViewHostMsg_ResourceTypeStats(stats));
+  RenderThread::Get()->Send(new ChromeViewHostMsg_ResourceTypeStats(stats));
 }
 
 #if defined(USE_TCMALLOC)
@@ -335,7 +335,7 @@ void ChromeRenderProcessObserver::OnGetRendererTcmalloc() {
   char buffer[1024 * 32];
   MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
   result.append(buffer);
-  RenderThread::current()->Send(new ChromeViewHostMsg_RendererTcmalloc(result));
+  RenderThread::Get()->Send(new ChromeViewHostMsg_RendererTcmalloc(result));
 }
 
 void ChromeRenderProcessObserver::OnSetTcmallocHeapProfiling(
@@ -364,7 +364,7 @@ void ChromeRenderProcessObserver::OnWriteTcmallocHeapProfile(
   // a string and pass it to the handler (which runs on the browser host).
   std::string result(profile);
   delete profile;
-  RenderThread::current()->Send(
+  RenderThread::Get()->Send(
       new ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK(filename, result));
 #endif
 }
@@ -380,7 +380,7 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
 void ChromeRenderProcessObserver::OnGetV8HeapStats() {
   v8::HeapStatistics heap_stats;
   v8::V8::GetHeapStatistics(&heap_stats);
-  RenderThread::current()->Send(new ChromeViewHostMsg_V8HeapStats(
+  RenderThread::Get()->Send(new ChromeViewHostMsg_V8HeapStats(
       heap_stats.total_heap_size(), heap_stats.used_heap_size()));
 }
 

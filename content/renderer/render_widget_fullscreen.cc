@@ -12,7 +12,7 @@ using WebKit::WebWidget;
 
 // static
 RenderWidgetFullscreen* RenderWidgetFullscreen::Create(
-    int32 opener_id, RenderThreadBase* render_thread) {
+    int32 opener_id, content::RenderThread* render_thread) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
   scoped_refptr<RenderWidgetFullscreen> widget(
       new RenderWidgetFullscreen(render_thread));
@@ -46,6 +46,7 @@ void RenderWidgetFullscreen::show(WebKit::WebNavigationPolicy) {
   }
 }
 
-RenderWidgetFullscreen::RenderWidgetFullscreen(RenderThreadBase* render_thread)
+RenderWidgetFullscreen::RenderWidgetFullscreen(
+    content::RenderThread* render_thread)
     : RenderWidget(render_thread, WebKit::WebPopupTypeNone) {
 }

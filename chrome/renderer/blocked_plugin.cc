@@ -11,7 +11,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/plugin_uma.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -44,6 +44,7 @@ using WebKit::WebPoint;
 using WebKit::WebRegularExpression;
 using WebKit::WebString;
 using WebKit::WebVector;
+using content::RenderThread;
 
 static const char* const kBlockedPluginDataURL = "chrome://blockedplugindata/";
 // TODO(cevans) - move these to a shared header file so that there are no
@@ -165,16 +166,16 @@ void BlockedPlugin::ContextMenuAction(unsigned id) {
   if (g_last_active_menu != this)
     return;
   if (id == kMenuActionLoad) {
-    RenderThread::RecordUserMetrics("Plugin_Load_Menu");
+    RenderThread::Get()->RecordUserMetrics("Plugin_Load_Menu");
     LoadPlugin();
   } else if (id == kMenuActionRemove) {
-    RenderThread::RecordUserMetrics("Plugin_Hide_Menu");
+    RenderThread::Get()->RecordUserMetrics("Plugin_Hide_Menu");
     HidePlugin();
   }
 }
 
 void BlockedPlugin::OnLoadBlockedPlugins() {
-  RenderThread::RecordUserMetrics("Plugin_Load_UI");
+  RenderThread::Get()->RecordUserMetrics("Plugin_Load_UI");
   LoadPlugin();
 }
 
@@ -212,12 +213,12 @@ void BlockedPlugin::LoadPlugin() {
 }
 
 void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {
-  RenderThread::RecordUserMetrics("Plugin_Load_Click");
+  RenderThread::Get()->RecordUserMetrics("Plugin_Load_Click");
   LoadPlugin();
 }
 
 void BlockedPlugin::Hide(const CppArgumentList& args, CppVariant* result) {
-  RenderThread::RecordUserMetrics("Plugin_Hide_Click");
+  RenderThread::Get()->RecordUserMetrics("Plugin_Hide_Click");
   HidePlugin();
 }
 

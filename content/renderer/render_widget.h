@@ -29,18 +29,8 @@
 #include "ui/gfx/surface/transport_dib.h"
 #include "webkit/glue/webcursor.h"
 
-class RenderThreadBase;
-
-namespace gfx {
-class Point;
-}
-
 namespace IPC {
 class SyncMessage;
-}
-
-namespace skia {
-class PlatformCanvas;
 }
 
 namespace WebKit {
@@ -49,6 +39,18 @@ class WebMouseEvent;
 class WebTouchEvent;
 class WebWidget;
 struct WebPopupMenuInfo;
+}
+
+namespace content {
+class RenderThread;
+}
+
+namespace gfx {
+class Point;
+}
+
+namespace skia {
+class PlatformCanvas;
 }
 
 namespace webkit {
@@ -71,9 +73,10 @@ class CONTENT_EXPORT RenderWidget
  public:
   // Creates a new RenderWidget.  The opener_id is the routing ID of the
   // RenderView that this widget lives inside. The render_thread is any
-  // RenderThreadBase implementation, mostly commonly RenderThread::current().
+  // content::RenderThread implementation, mostly commonly
+  // RenderThread::current().
   static RenderWidget* Create(int32 opener_id,
-                              RenderThreadBase* render_thread,
+                              content::RenderThread* render_thread,
                               WebKit::WebPopupType popup_type);
 
   // Creates a WebWidget based on the popup type.
@@ -145,7 +148,7 @@ class CONTENT_EXPORT RenderWidget
   // For unit tests.
   friend class RenderWidgetTest;
 
-  RenderWidget(RenderThreadBase* render_thread,
+  RenderWidget(content::RenderThread* render_thread,
                WebKit::WebPopupType popup_type);
   virtual ~RenderWidget();
 
@@ -337,7 +340,7 @@ class CONTENT_EXPORT RenderWidget
   int32 opener_id_;
 
   // The thread that does our IPC.
-  RenderThreadBase* render_thread_;
+  content::RenderThread* render_thread_;
 
   // The position where this view should be initially shown.
   gfx::Rect initial_pos_;

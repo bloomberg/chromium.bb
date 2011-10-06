@@ -140,6 +140,29 @@ class RenderViewZoomer : public content::RenderViewVisitor {
 
 }  // namespace
 
+// TODO(jam): move this to content/public/renderer/render_thread.cc once this file is renamed
+namespace content {
+
+// Keep the global RenderThread in a TLS slot so it is impossible to access
+// incorrectly from the wrong thread.
+static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
+    base::LINKER_INITIALIZED);
+
+RenderThread* RenderThread::Get() {
+  return lazy_tls.Pointer()->Get();
+}
+
+RenderThread::RenderThread() {
+  lazy_tls.Pointer()->Set(this);
+}
+
+RenderThread::~RenderThread() {
+  lazy_tls.Pointer()->Set(NULL);
+}
+
+}  // namespace content
+
+
 static void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
   if (min <= 0)
@@ -152,6 +175,10 @@ static void* CreateHistogram(
 static void AddHistogramSample(void* hist, int sample) {
   base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
+}
+
+RenderThread* RenderThread::current() {
+  return lazy_tls.Pointer()->Get();
 }
 
 // When we run plugins in process, we actually run them on the render thread,
@@ -190,7 +217,7 @@ void RenderThread::Init() {
   idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
 
-  appcache_dispatcher_.reset(new AppCacheDispatcher(this));
+  appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
   indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
 
   db_message_filter_ = new DBMessageFilter();
@@ -258,38 +285,6 @@ RenderThread::~RenderThread() {
   if (RenderProcessImpl::InProcessPlugins())
     CoUninitialize();
 #endif
-}
-
-RenderThread* RenderThread::current() {
-  return lazy_tls.Pointer()->Get();
-}
-
-std::string RenderThread::GetLocale() {
-  // The browser process should have passed the locale to the renderer via the
-  // --lang command line flag.  In single process mode, this will return the
-  // wrong value.  TODO(tc): Fix this for single process mode.
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  const std::string& lang =
-      parsed_command_line.GetSwitchValueASCII(switches::kLang);
-  DCHECK(!lang.empty() ||
-      (!parsed_command_line.HasSwitch(switches::kRendererProcess) &&
-       !parsed_command_line.HasSwitch(switches::kPluginProcess)));
-  return lang;
-}
-
-int32 RenderThread::RoutingIDForCurrentContext() {
-  int32 routing_id = MSG_ROUTING_CONTROL;
-  if (v8::Context::InContext()) {
-    WebFrame* frame = WebFrame::frameForCurrentContext();
-    if (frame) {
-      RenderView* view = RenderView::FromWebView(frame->view());
-      if (view)
-        routing_id = view->routing_id();
-    }
-  } else {
-    DLOG(WARNING) << "Not called within a script context!";
-  }
-  return routing_id;
 }
 
 bool RenderThread::Send(IPC::Message* msg) {
@@ -360,6 +355,31 @@ bool RenderThread::Send(IPC::Message* msg) {
   return rv;
 }
 
+MessageLoop* RenderThread::GetMessageLoop() {
+  return message_loop();
+}
+
+IPC::SyncChannel* RenderThread::GetChannel() {
+  return channel();
+}
+
+ResourceDispatcher* RenderThread::GetResourceDispatcher() {
+  return resource_dispatcher();
+}
+
+std::string RenderThread::GetLocale() {
+  // The browser process should have passed the locale to the renderer via the
+  // --lang command line flag.  In single process mode, this will return the
+  // wrong value.  TODO(tc): Fix this for single process mode.
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const std::string& lang =
+      parsed_command_line.GetSwitchValueASCII(switches::kLang);
+  DCHECK(!lang.empty() ||
+      (!parsed_command_line.HasSwitch(switches::kRendererProcess) &&
+       !parsed_command_line.HasSwitch(switches::kPluginProcess)));
+  return lang;
+}
+
 void RenderThread::AddRoute(int32 routing_id,
                             IPC::Channel::Listener* listener) {
   widget_count_++;
@@ -377,6 +397,18 @@ void RenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
 
 void RenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
   channel()->RemoveFilter(filter);
+}
+
+void RenderThread::SetOutgoingMessageFilter(
+    IPC::ChannelProxy::OutgoingMessageFilter* filter) {
+}
+
+void RenderThread::AddObserver(content::RenderProcessObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void RenderThread::RemoveObserver(content::RenderProcessObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void RenderThread::WidgetHidden() {
@@ -401,37 +433,6 @@ void RenderThread::WidgetRestored() {
   }
 
   idle_timer_.Stop();
-}
-
-void RenderThread::AddObserver(RenderProcessObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void RenderThread::RemoveObserver(RenderProcessObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void RenderThread::DoNotSuspendWebKitSharedTimer() {
-  suspend_webkit_shared_timer_ = false;
-}
-
-void RenderThread::DoNotNotifyWebKitOfModalLoop() {
-  notify_webkit_of_modal_loop_ = false;
-}
-
-void RenderThread::OnSetZoomLevelForCurrentURL(const GURL& url,
-                                               double zoom_level) {
-  RenderViewZoomer zoomer(url, zoom_level);
-  RenderView::ForEach(&zoomer);
-}
-
-void RenderThread::OnDOMStorageEvent(
-    const DOMStorageMsg_Event_Params& params) {
-  if (!dom_storage_event_dispatcher_.get())
-    dom_storage_event_dispatcher_.reset(WebStorageEventDispatcher::create());
-  dom_storage_event_dispatcher_->dispatchStorageEvent(params.key,
-      params.old_value, params.new_value, params.origin, params.url,
-      params.storage_type == DOM_STORAGE_LOCAL);
 }
 
 void RenderThread::EnsureWebKitInitialized() {
@@ -461,7 +462,7 @@ void RenderThread::EnsureWebKitInitialized() {
     RegisterExtension(extensions_v8::PlaybackExtension::Get());
   }
 
-  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
+  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(Get()));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
 
   WebRuntimeFeatures::enableSockets(
@@ -534,25 +535,105 @@ void RenderThread::EnsureWebKitInitialized() {
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 }
 
-// static
 void RenderThread::RecordUserMetrics(const std::string& action) {
-  RenderThread::current()->Send(
-      new ViewHostMsg_UserMetricsRecordAction(action));
+  Send(new ViewHostMsg_UserMetricsRecordAction(action));
+}
+
+void RenderThread::RegisterExtension(v8::Extension* extension) {
+  WebScriptController::registerExtension(extension);
+  v8_extensions_.insert(extension->name());
+}
+
+bool RenderThread::IsRegisteredExtension(
+    const std::string& v8_extension_name) const {
+  return v8_extensions_.find(v8_extension_name) != v8_extensions_.end();
+}
+
+void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
+  idle_notification_delay_in_s_ = initial_delay_s;
+  idle_timer_.Stop();
+  idle_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromSeconds(static_cast<int64>(initial_delay_s)),
+      this, &RenderThread::IdleHandler);
+}
+
+void RenderThread::IdleHandler() {
+  #if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
+  MallocExtension::instance()->ReleaseFreeMemory();
+#endif
+
+  v8::V8::IdleNotification();
+
+  // Schedule next invocation.
+  // Dampen the delay using the algorithm:
+  //    delay = delay + 1 / (delay + 2)
+  // Using floor(delay) has a dampening effect such as:
+  //    1s, 1, 1, 2, 2, 2, 2, 3, 3, ...
+  // Note that idle_notification_delay_in_s_ would be reset to
+  // kInitialIdleHandlerDelayS in RenderThread::WidgetHidden.
+  ScheduleIdleHandler(idle_notification_delay_in_s_ +
+                      1.0 / (idle_notification_delay_in_s_ + 2.0));
+
+  FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
+}
+
+double RenderThread::GetIdleNotificationDelayInS() const {
+  return idle_notification_delay_in_s_;
+}
+
+void RenderThread::SetIdleNotificationDelayInS(
+    double idle_notification_delay_in_s) {
+  idle_notification_delay_in_s_ = idle_notification_delay_in_s;
 }
 
 #if defined(OS_WIN)
-// static
-bool RenderThread::PreCacheFont(const LOGFONT& log_font) {
-  return RenderThread::current()->Send(
-      new ChildProcessHostMsg_PreCacheFont(log_font));
+void RenderThread::PreCacheFont(const LOGFONT& log_font) {
+  Send(new ChildProcessHostMsg_PreCacheFont(log_font));
 }
 
-// static
-bool RenderThread::ReleaseCachedFonts() {
-  return RenderThread::current()->Send(
-      new ChildProcessHostMsg_ReleaseCachedFonts());
+void RenderThread::ReleaseCachedFonts() {
+  Send(new ChildProcessHostMsg_ReleaseCachedFonts());
 }
+
 #endif  // OS_WIN
+
+int32 RenderThread::RoutingIDForCurrentContext() {
+  int32 routing_id = MSG_ROUTING_CONTROL;
+  if (v8::Context::InContext()) {
+    WebFrame* frame = WebFrame::frameForCurrentContext();
+    if (frame) {
+      RenderView* view = RenderView::FromWebView(frame->view());
+      if (view)
+        routing_id = view->routing_id();
+    }
+  } else {
+    DLOG(WARNING) << "Not called within a script context!";
+  }
+  return routing_id;
+}
+
+void RenderThread::DoNotSuspendWebKitSharedTimer() {
+  suspend_webkit_shared_timer_ = false;
+}
+
+void RenderThread::DoNotNotifyWebKitOfModalLoop() {
+  notify_webkit_of_modal_loop_ = false;
+}
+
+void RenderThread::OnSetZoomLevelForCurrentURL(const GURL& url,
+                                               double zoom_level) {
+  RenderViewZoomer zoomer(url, zoom_level);
+  RenderView::ForEach(&zoomer);
+}
+
+void RenderThread::OnDOMStorageEvent(
+    const DOMStorageMsg_Event_Params& params) {
+  if (!dom_storage_event_dispatcher_.get())
+    dom_storage_event_dispatcher_.reset(WebStorageEventDispatcher::create());
+  dom_storage_event_dispatcher_->dispatchStorageEvent(params.key,
+      params.old_value, params.new_value, params.origin, params.url,
+      params.storage_type == DOM_STORAGE_LOCAL);
+}
 
 bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
@@ -678,34 +759,6 @@ GpuChannelHost* RenderThread::GetGpuChannel() {
   return gpu_channel_.get();
 }
 
-void RenderThread::IdleHandler() {
-#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
-  MallocExtension::instance()->ReleaseFreeMemory();
-#endif
-
-  v8::V8::IdleNotification();
-
-  // Schedule next invocation.
-  // Dampen the delay using the algorithm:
-  //    delay = delay + 1 / (delay + 2)
-  // Using floor(delay) has a dampening effect such as:
-  //    1s, 1, 1, 2, 2, 2, 2, 3, 3, ...
-  // Note that idle_notification_delay_in_s_ would be reset to
-  // kInitialIdleHandlerDelayS in RenderThread::WidgetHidden.
-  ScheduleIdleHandler(idle_notification_delay_in_s_ +
-                      1.0 / (idle_notification_delay_in_s_ + 2.0));
-
-  FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
-}
-
-void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
-  idle_notification_delay_in_s_ = initial_delay_s;
-  idle_timer_.Stop();
-  idle_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromSeconds(static_cast<int64>(initial_delay_s)),
-      this, &RenderThread::IdleHandler);
-}
-
 void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   EnsureWebKitInitialized();
   // The call below will cause a GetPlugins call with refresh=true, but at this
@@ -730,14 +783,4 @@ RenderThread::GetFileThreadMessageLoopProxy() {
     file_thread_->Start();
   }
   return file_thread_->message_loop_proxy();
-}
-
-void RenderThread::RegisterExtension(v8::Extension* extension) {
-  WebScriptController::registerExtension(extension);
-  v8_extensions_.insert(extension->name());
-}
-
-bool RenderThread::IsRegisteredExtension(
-    const std::string& v8_extension_name) const {
-  return v8_extensions_.find(v8_extension_name) != v8_extensions_.end();
 }

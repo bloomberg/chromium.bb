@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
 #include "content/common/child_process_sandbox_support_linux.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
@@ -36,6 +36,7 @@
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 using WebKit::WebView;
+using content::RenderThread;
 
 namespace chrome {
 
@@ -240,7 +241,7 @@ void SearchString(PP_Instance instance,
 
   UErrorCode status = U_ZERO_ERROR;
   UStringSearch* searcher = usearch_open(
-      term, -1, string, -1, RenderThread::GetLocale().c_str(), 0,
+      term, -1, string, -1, RenderThread::Get()->GetLocale().c_str(), 0,
       &status);
   DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
          status == U_USING_DEFAULT_WARNING);
@@ -310,9 +311,8 @@ void HistogramPDFPageCount(int count) {
 void UserMetricsRecordAction(PP_Var action) {
   scoped_refptr<ppapi::StringVar> action_str(
       ppapi::StringVar::FromPPVar(action));
-  if (action_str) {
-    RenderThread::RecordUserMetrics(action_str->value());
-  }
+  if (action_str)
+    RenderThread::Get()->RecordUserMetrics(action_str->value());
 }
 
 void HasUnsupportedFeature(PP_Instance instance_id) {

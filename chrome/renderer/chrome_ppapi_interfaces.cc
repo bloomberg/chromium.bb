@@ -11,7 +11,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_ppb_pdf_impl.h"
 #include "content/common/content_switches.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
@@ -20,6 +20,8 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #endif
+
+using content::RenderThread;
 
 namespace chrome {
 
@@ -30,13 +32,13 @@ bool LaunchSelLdr(const char* alleged_url, int socket_count,
 #if !defined(DISABLE_NACL)
   std::vector<nacl::FileDescriptor> sockets;
   base::ProcessHandle nacl_process;
-  if (!RenderThread::current()->Send(
-    new ChromeViewHostMsg_LaunchNaCl(
-        ASCIIToWide(alleged_url),
-        socket_count,
-        &sockets,
-        &nacl_process,
-        reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
+  if (!RenderThread::Get()->Send(
+      new ChromeViewHostMsg_LaunchNaCl(
+          ASCIIToWide(alleged_url),
+          socket_count,
+          &sockets,
+          &nacl_process,
+          reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
     return false;
   }
   CHECK(static_cast<int>(sockets.size()) == socket_count);

@@ -62,7 +62,7 @@ using WebKit::WebTouchEvent;
 using WebKit::WebVector;
 using WebKit::WebWidget;
 
-RenderWidget::RenderWidget(RenderThreadBase* render_thread,
+RenderWidget::RenderWidget(content::RenderThread* render_thread,
                            WebKit::WebPopupType popup_type)
     : routing_id_(MSG_ROUTING_NONE),
       webwidget_(NULL),
@@ -111,7 +111,7 @@ RenderWidget::~RenderWidget() {
 
 // static
 RenderWidget* RenderWidget::Create(int32 opener_id,
-                                   RenderThreadBase* render_thread,
+                                   content::RenderThread* render_thread,
                                    WebKit::WebPopupType popup_type) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderWidget> widget(new RenderWidget(render_thread,

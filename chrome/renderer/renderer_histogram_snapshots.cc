@@ -10,12 +10,13 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/render_messages.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 
 // TODO(raman): Before renderer shuts down send final snapshot lists.
 
 using base::Histogram;
 using base::StatisticsRecorder;
+using content::RenderThread;
 
 RendererHistogramSnapshots::RendererHistogramSnapshots()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -27,7 +28,7 @@ RendererHistogramSnapshots::~RendererHistogramSnapshots() {
 
 // Send data quickly!
 void RendererHistogramSnapshots::SendHistograms(int sequence_number) {
-  RenderThread::current()->message_loop()->PostTask(FROM_HERE,
+  RenderThread::Get()->GetMessageLoop()->PostTask(FROM_HERE,
       renderer_histogram_snapshots_factory_.NewRunnableMethod(
           &RendererHistogramSnapshots::UploadAllHistrograms, sequence_number));
 }
@@ -55,9 +56,8 @@ void RendererHistogramSnapshots::UploadAllHistrograms(int sequence_number) {
 
   // Send the sequence number and list of pickled histograms over synchronous
   // IPC, so we can clear pickled_histograms_ afterwards.
-  RenderThread::current()->Send(
-      new ChromeViewHostMsg_RendererHistograms(
-          sequence_number, pickled_histograms_));
+  RenderThread::Get()->Send(new ChromeViewHostMsg_RendererHistograms(
+      sequence_number, pickled_histograms_));
 
   pickled_histograms_.clear();
 }

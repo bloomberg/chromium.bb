@@ -19,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/common/css_colors.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -66,36 +67,6 @@ namespace v8 {
 class Extension;
 }
 
-// The RenderThreadBase is the minimal interface that a RenderView/Widget
-// expects from a render thread. The interface basically abstracts a way to send
-// and receive messages.
-//
-// TODO(brettw): This has two different and opposing usage patterns which
-// make it confusing. It can be accessed through RenderThread::current(), which
-// can be NULL during tests, or it can be passed as RenderThreadBase, which is
-// mocked during tests. It should be changed to RenderThread::current()
-// everywhere.
-//
-// See crbug.com/98375 for more details.
-class CONTENT_EXPORT RenderThreadBase {
- public:
-  virtual ~RenderThreadBase() {}
-
-  virtual bool Send(IPC::Message* msg) = 0;
-
-  // Called to add or remove a listener for a particular message routing ID.
-  // These methods normally get delegated to a MessageRouter.
-  virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener) = 0;
-  virtual void RemoveRoute(int32 routing_id) = 0;
-
-  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;
-  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;
-
-  // Called by a RenderWidget when it is hidden or restored.
-  virtual void WidgetHidden() = 0;
-  virtual void WidgetRestored() = 0;
-};
-
 // The RenderThread class represents a background thread where RenderView
 // instances live.  The RenderThread supports an API that is used by its
 // consumer to talk indirectly to the RenderViews and supporting objects.
@@ -105,40 +76,52 @@ class CONTENT_EXPORT RenderThreadBase {
 // Most of the communication occurs in the form of IPC messages.  They are
 // routed to the RenderThread according to the routing IDs of the messages.
 // The routing IDs correspond to RenderView instances.
-class CONTENT_EXPORT RenderThread : public RenderThreadBase,
+class CONTENT_EXPORT RenderThread : public content::RenderThread,
                                     public ChildThread {
  public:
-  // Grabs the IPC channel name from the command line.
+  static RenderThread* current();
+
   RenderThread();
   // Constructor that's used when running in single process mode.
   explicit RenderThread(const std::string& channel_name);
   virtual ~RenderThread();
 
-  // Returns the one render thread for this process.  Note that this should only
-  // be accessed when running on the render thread itself
-  //
-  // TODO(brettw) this should be on the abstract base class instead of here,
-  // and return the base class' interface instead. See crbug.com/98375.
-  static RenderThread* current();
-
   // Returns the routing ID of the RenderWidget containing the current script
   // execution context (corresponding to WebFrame::frameForCurrentContext).
   static int32 RoutingIDForCurrentContext();
 
-  // Returns the locale string to be used in WebKit.
-  static std::string GetLocale();
-
-  // Overridden from RenderThreadBase.
-  virtual bool Send(IPC::Message* msg);
-  virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
-  virtual void RemoveRoute(int32 routing_id);
-  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
-  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
-  virtual void WidgetHidden();
-  virtual void WidgetRestored();
-
-  void AddObserver(content::RenderProcessObserver* observer);
-  void RemoveObserver(content::RenderProcessObserver* observer);
+  // content::RenderThread implementation:
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual MessageLoop* GetMessageLoop() OVERRIDE;
+  virtual IPC::SyncChannel* GetChannel() OVERRIDE;
+  virtual ResourceDispatcher* GetResourceDispatcher() OVERRIDE;
+  virtual std::string GetLocale() OVERRIDE;
+  virtual void AddRoute(int32 routing_id,
+                        IPC::Channel::Listener* listener) OVERRIDE;
+  virtual void RemoveRoute(int32 routing_id) OVERRIDE;
+  virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
+  virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
+  virtual void SetOutgoingMessageFilter(
+      IPC::ChannelProxy::OutgoingMessageFilter* filter) OVERRIDE;
+  virtual void AddObserver(content::RenderProcessObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      content::RenderProcessObserver* observer) OVERRIDE;
+  virtual void WidgetHidden() OVERRIDE;
+  virtual void WidgetRestored() OVERRIDE;
+  virtual void EnsureWebKitInitialized() OVERRIDE;
+  virtual void RecordUserMetrics(const std::string& action) OVERRIDE;
+  virtual void RegisterExtension(v8::Extension* extension) OVERRIDE;
+  virtual bool IsRegisteredExtension(
+      const std::string& v8_extension_name) const OVERRIDE;
+  virtual void ScheduleIdleHandler(double initial_delay_s) OVERRIDE;
+  virtual void IdleHandler() OVERRIDE;
+  virtual double GetIdleNotificationDelayInS() const OVERRIDE;
+  virtual void SetIdleNotificationDelayInS(
+      double idle_notification_delay_in_s) OVERRIDE;
+#if defined(OS_WIN)
+  virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
+  virtual void ReleaseCachedFonts() OVERRIDE;
+#endif
 
   // These methods modify how the next message is sent.  Normally, when sending
   // a synchronous message that runs a nested message loop, we need to suspend
@@ -174,13 +157,6 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
 
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
 
-  double idle_notification_delay_in_s() const {
-    return idle_notification_delay_in_s_;
-  }
-  void set_idle_notification_delay_in_s(double idle_notification_delay_in_s) {
-    idle_notification_delay_in_s_ = idle_notification_delay_in_s;
-  }
-
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
@@ -195,33 +171,6 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
   // of the thread on which file operations should be run. Must be called
   // on the renderer's main thread.
   scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
-
-  // Schedule a call to IdleHandler with the given initial delay.
-  void ScheduleIdleHandler(double initial_delay_s);
-
-  // A task we invoke periodically to assist with idle cleanup.
-  void IdleHandler();
-
-  // Registers the given V8 extension with WebKit.
-  void RegisterExtension(v8::Extension* extension);
-
-  // Returns true iff the extension is registered.
-  bool IsRegisteredExtension(const std::string& v8_extension_name) const;
-
-  // We initialize WebKit as late as possible.
-  void EnsureWebKitInitialized();
-
-  // Helper function to send over a string to be recorded by user metrics
-  static void RecordUserMetrics(const std::string& action);
-
-#if defined(OS_WIN)
-  // Request that the given font be loaded by the browser so it's cached by the
-  // OS. Please see ChildProcessHost::PreCacheFont for details.
-  static bool PreCacheFont(const LOGFONT& log_font);
-
-  // Release cached font.
-  static bool ReleaseCachedFonts();
-#endif  // OS_WIN
 
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg);

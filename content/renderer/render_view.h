@@ -87,6 +87,7 @@ class WaitableEvent;
 namespace content {
 class NavigationState;
 class P2PSocketDispatcher;
+class RenderThread;
 class RenderViewObserver;
 class RenderViewVisitor;
 }  // namespace content
@@ -179,7 +180,7 @@ class RenderView : public RenderWidget,
   // |counter| is either a currently initialized counter, or NULL (in which case
   // we treat this RenderView as a top level window).
   CONTENT_EXPORT static RenderView* Create(
-      RenderThreadBase* render_thread,
+    content::RenderThread* render_thread,
       gfx::NativeViewId parent_hwnd,
       int32 opener_id,
       const RendererPreferences& renderer_prefs,
@@ -697,7 +698,7 @@ class RenderView : public RenderWidget,
     CONNECTION_ERROR,
   };
 
-  RenderView(RenderThreadBase* render_thread,
+  RenderView(content::RenderThread* render_thread,
              gfx::NativeViewId parent_hwnd,
              int32 opener_id,
              const RendererPreferences& renderer_prefs,

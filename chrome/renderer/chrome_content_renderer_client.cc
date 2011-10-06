@@ -58,7 +58,7 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/visitedlink_slave.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -80,8 +80,6 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
-using autofill::AutofillAgent;
-using autofill::PasswordAutofillManager;
 using WebKit::WebCache;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
@@ -95,6 +93,9 @@ using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using WebKit::WebVector;
+using autofill::AutofillAgent;
+using autofill::PasswordAutofillManager;
+using content::RenderThread;
 
 namespace {
 
@@ -160,7 +161,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
 #endif
 
-  RenderThread* thread = RenderThread::current();
+  RenderThread* thread = RenderThread::Get();
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
@@ -191,7 +192,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableIPCFuzzing)) {
-    thread->channel()->set_outgoing_message_filter(LoadExternalIPCFuzzer());
+    thread->GetChannel()->set_outgoing_message_filter(LoadExternalIPCFuzzer());
   }
   // chrome:, chrome-devtools:, and chrome-internal: pages should not be
   // accessible by normal content, and should also be unable to script
@@ -482,12 +483,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
   observer->DidBlockContentType(content_type, resource);
   if (plugin_setting == CONTENT_SETTING_ASK) {
-    RenderThread::RecordUserMetrics("Plugin_ClickToPlay");
+    RenderThread::Get()->RecordUserMetrics("Plugin_ClickToPlay");
     return CreatePluginPlaceholder(
         render_view, frame, params, group.get(), IDR_CLICK_TO_PLAY_PLUGIN_HTML,
         IDS_PLUGIN_LOAD, false, true);
   } else {
-    RenderThread::RecordUserMetrics("Plugin_Blocked");
+    RenderThread::Get()->RecordUserMetrics("Plugin_Blocked");
     return CreatePluginPlaceholder(
         render_view, frame, params, group.get(), IDR_BLOCKED_PLUGIN_HTML,
         IDS_PLUGIN_BLOCKED, false, true);
@@ -779,7 +780,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
 
 void ChromeContentRendererClient::OnPurgeMemory() {
   DVLOG(1) << "Resetting spellcheck in renderer client";
-  RenderThread* thread = RenderThread::current();
+  RenderThread* thread = RenderThread::Get();
   if (spellcheck_.get())
     thread->RemoveObserver(spellcheck_.get());
   SpellCheck* new_spellcheck = new SpellCheck();

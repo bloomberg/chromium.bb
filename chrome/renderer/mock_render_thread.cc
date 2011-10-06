@@ -33,35 +33,6 @@ MockRenderThread::MockRenderThread()
 MockRenderThread::~MockRenderThread() {
 }
 
-// Called by the Widget. The routing_id must match the routing id assigned
-// to the Widget in reply to ViewHostMsg_CreateWidget message.
-void MockRenderThread::AddRoute(int32 routing_id,
-                                IPC::Channel::Listener* listener) {
-  EXPECT_EQ(routing_id_, routing_id);
-  widget_ = listener;
-}
-
-// Called by the Widget. The routing id must match the routing id of AddRoute.
-void MockRenderThread::RemoveRoute(int32 routing_id) {
-  EXPECT_EQ(routing_id_, routing_id);
-  widget_ = NULL;
-}
-
-// Called by, for example, RenderView::Init(), when adding a new message filter.
-void MockRenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  filter->OnFilterAdded(&sink());
-}
-
-// Called when the filter is removed.
-void MockRenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  filter->OnFilterRemoved();
-}
-
-
-bool MockRenderThread::IsIncognitoProcess() const {
-  return false;
-}
-
 // Called by the Widget. Used to send messages to the browser.
 // We short-circuit the mechanism and handle the messages right here on this
 // class.
@@ -86,6 +57,95 @@ bool MockRenderThread::Send(IPC::Message* msg) {
   delete msg;
   return true;
 }
+
+MessageLoop* MockRenderThread::GetMessageLoop() {
+  return NULL;
+}
+
+IPC::SyncChannel* MockRenderThread::GetChannel() {
+  return NULL;
+}
+
+ResourceDispatcher* MockRenderThread::GetResourceDispatcher() {
+  return NULL;
+}
+
+std::string MockRenderThread::GetLocale() {
+  return std::string();
+}
+
+void MockRenderThread::AddRoute(int32 routing_id,
+                      IPC::Channel::Listener* listener) {
+  EXPECT_EQ(routing_id_, routing_id);
+  widget_ = listener;
+}
+
+void MockRenderThread::RemoveRoute(int32 routing_id) {
+  EXPECT_EQ(routing_id_, routing_id);
+  widget_ = NULL;
+}
+
+void MockRenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  filter->OnFilterAdded(&sink());
+}
+
+void MockRenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  filter->OnFilterRemoved();
+}
+
+void MockRenderThread::SetOutgoingMessageFilter(
+    IPC::ChannelProxy::OutgoingMessageFilter* filter) {
+}
+
+void MockRenderThread::AddObserver(content::RenderProcessObserver* observer) {
+}
+
+void MockRenderThread::RemoveObserver(
+    content::RenderProcessObserver* observer) {
+}
+
+void MockRenderThread::WidgetHidden() {
+}
+
+void MockRenderThread::WidgetRestored() {
+}
+
+void MockRenderThread::EnsureWebKitInitialized() {
+}
+
+void MockRenderThread::RecordUserMetrics(const std::string& action) {
+}
+
+void MockRenderThread::RegisterExtension(v8::Extension* extension) {
+}
+
+bool MockRenderThread::IsRegisteredExtension(
+    const std::string& v8_extension_name) const {
+  return false;
+}
+
+void MockRenderThread::ScheduleIdleHandler(double initial_delay_s) {
+}
+
+void MockRenderThread::IdleHandler() {
+}
+
+double MockRenderThread::GetIdleNotificationDelayInS() const {
+  return 0.0;
+}
+
+void MockRenderThread::SetIdleNotificationDelayInS(
+    double idle_notification_delay_in_s) {
+}
+
+#if defined(OS_WIN)
+void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
+}
+
+void MockRenderThread::ReleaseCachedFonts() {
+}
+
+#endif  // OS_WIN
 
 void MockRenderThread::SendCloseMessage() {
   ViewMsg_Close msg(routing_id_);
@@ -234,7 +294,7 @@ void MockRenderThread::OnCheckForCancel(const std::string& preview_ui_addr,
 
 void MockRenderThread::OnUpdatePrintSettings(
     int document_cookie,
-    const DictionaryValue& job_settings,
+    const base::DictionaryValue& job_settings,
     PrintMsg_PrintPages_Params* params) {
   // Check and make sure the required settings are all there.
   // We don't actually care about the values.
@@ -258,7 +318,7 @@ void MockRenderThread::OnUpdatePrintSettings(
     printing::PageRanges new_ranges;
     if (job_settings.GetList(printing::kSettingPageRange, &page_range_array)) {
       for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
-        DictionaryValue* dict;
+        base::DictionaryValue* dict;
         if (!page_range_array->GetDictionary(index, &dict))
           continue;
         printing::PageRange range;

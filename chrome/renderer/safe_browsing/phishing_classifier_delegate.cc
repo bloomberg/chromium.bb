@@ -17,7 +17,7 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "content/public/renderer/navigation_state.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -25,6 +25,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using content::NavigationState;
+using content::RenderThread;
 
 namespace safe_browsing {
 
@@ -203,7 +204,7 @@ void PhishingClassifierDelegate::ClassificationDone(
           << " score = " << verdict.client_score();
   if (verdict.client_score() != PhishingClassifier::kInvalidScore) {
     DCHECK_EQ(last_url_sent_to_classifier_.spec(), verdict.url());
-    RenderThread::current()->Send(new SafeBrowsingHostMsg_PhishingDetectionDone(
+    RenderThread::Get()->Send(new SafeBrowsingHostMsg_PhishingDetectionDone(
         routing_id(), verdict.SerializeAsString()));
   }
 }

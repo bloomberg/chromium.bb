@@ -21,7 +21,7 @@
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -39,6 +39,7 @@ using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
+using content::RenderThread;
 
 ExtensionDispatcher::ExtensionDispatcher()
     : is_webkit_initialized_(false) {
@@ -48,7 +49,7 @@ ExtensionDispatcher::ExtensionDispatcher()
       command_line.HasSwitch(switches::kSingleProcess);
 
   if (is_extension_process_) {
-    RenderThread::current()->set_idle_notification_delay_in_s(
+    RenderThread::Get()->SetIdleNotificationDelayInS(
         kInitialExtensionIdleHandlerDelayS);
   }
 
@@ -85,7 +86,7 @@ void ExtensionDispatcher::WebKitInitialized() {
   if (is_extension_process_) {
     forced_idle_timer_.Start(FROM_HERE,
         base::TimeDelta::FromSeconds(kMaxExtensionIdleHandlerDelayS),
-        RenderThread::current(), &RenderThread::IdleHandler);
+        RenderThread::Get(), &RenderThread::IdleHandler);
   }
 
   RegisterExtension(extensions_v8::ChromeAppExtension::Get(this), false);
@@ -117,12 +118,12 @@ void ExtensionDispatcher::IdleNotification() {
     // Dampen the forced delay as well if the extension stays idle for long
     // periods of time.
     int64 forced_delay_s = std::max(static_cast<int64>(
-        RenderThread::current()->idle_notification_delay_in_s()),
+        RenderThread::Get()->GetIdleNotificationDelayInS()),
         kMaxExtensionIdleHandlerDelayS);
     forced_idle_timer_.Stop();
     forced_idle_timer_.Start(FROM_HERE,
         base::TimeDelta::FromSeconds(forced_delay_s),
-        RenderThread::current(), &RenderThread::IdleHandler);
+        RenderThread::Get(), &RenderThread::IdleHandler);
   }
 }
 
@@ -143,7 +144,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
   // Reset the idle handler each time there's any activity like event or message
   // dispatch, for which Invoke is the chokepoint.
   if (is_extension_process_) {
-    RenderThread::current()->ScheduleIdleHandler(
+    RenderThread::Get()->ScheduleIdleHandler(
         kInitialExtensionIdleHandlerDelayS);
   }
 }
@@ -200,11 +201,11 @@ bool ExtensionDispatcher::AllowScriptExtension(
     const std::string& v8_extension_name,
     int extension_group) {
   // NULL in unit tests.
-  if (!RenderThread::current())
+  if (!RenderThread::Get())
     return true;
 
   // If we don't know about it, it was added by WebCore, so we should allow it.
-  if (!RenderThread::current()->IsRegisteredExtension(v8_extension_name))
+  if (!RenderThread::Get()->IsRegisteredExtension(v8_extension_name))
     return true;
 
   // If the V8 extension is not restricted, allow it to run anywhere.
@@ -271,8 +272,7 @@ void ExtensionDispatcher::OnActivateExtension(
 
   // This is called when starting a new extension page, so start the idle
   // handler ticking.
-  RenderThread::current()->ScheduleIdleHandler(
-      kInitialExtensionIdleHandlerDelayS);
+  RenderThread::Get()->ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayS);
 
   UpdateActiveExtensions();
 
@@ -378,5 +378,5 @@ void ExtensionDispatcher::RegisterExtension(v8::Extension* extension,
   if (restrict_to_extensions)
     restricted_v8_extensions_.insert(extension->name());
 
-  RenderThread::current()->RegisterExtension(extension);
+  RenderThread::Get()->RegisterExtension(extension);
 }

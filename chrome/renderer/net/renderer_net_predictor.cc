@@ -4,7 +4,6 @@
 
 // See header file for description of RendererNetPredictor class
 
-
 #include "chrome/renderer/net/renderer_net_predictor.h"
 
 #include <ctype.h>
@@ -14,7 +13,9 @@
 #include "chrome/common/net/predictor_common.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/net/predictor_queue.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
+
+using content::RenderThread;
 
 // The number of hostnames submitted to Browser DNS resolver per call to
 // SubmitHostsnames() (which reads names from our queue).
@@ -52,7 +53,7 @@ void RendererNetPredictor::Resolve(const char* name, size_t length) {
       if (0 != old_size)
         return;  // Overkill safety net: Don't send too many InvokeLater's.
       renderer_predictor_factory_.RevokeAll();
-      RenderThread::current()->message_loop()->PostDelayedTask(FROM_HERE,
+      RenderThread::Get()->GetMessageLoop()->PostDelayedTask(FROM_HERE,
           renderer_predictor_factory_.NewRunnableMethod(
               &RendererNetPredictor::SubmitHostnames), 10);
     }
@@ -86,7 +87,7 @@ void RendererNetPredictor::SubmitHostnames() {
   DnsPrefetchNames(kMAX_SUBMISSION_PER_TASK);
   if (new_name_count_ > 0 || 0 < c_string_queue_.Size()) {
     renderer_predictor_factory_.RevokeAll();
-    RenderThread::current()->message_loop()->PostDelayedTask(FROM_HERE,
+    RenderThread::Get()->GetMessageLoop()->PostDelayedTask(FROM_HERE,
         renderer_predictor_factory_.NewRunnableMethod(
             &RendererNetPredictor::SubmitHostnames), 10);
   } else {
@@ -142,7 +143,7 @@ void RendererNetPredictor::DnsPrefetchNames(size_t max_count) {
   DCHECK_GE(new_name_count_, names.size());
   new_name_count_ -= names.size();
 
-  RenderThread::current()->Send(new ChromeViewHostMsg_DnsPrefetch(names));
+  RenderThread::Get()->Send(new ChromeViewHostMsg_DnsPrefetch(names));
 }
 
 // is_numeric_ip() checks to see if all characters in name are either numeric,

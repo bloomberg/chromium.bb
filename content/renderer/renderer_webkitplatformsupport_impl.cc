@@ -258,7 +258,7 @@ void RendererWebKitPlatformSupportImpl::cacheMetadata(
 }
 
 WebString RendererWebKitPlatformSupportImpl::defaultLocale() {
-  return ASCIIToUTF16(RenderThread::GetLocale());
+  return ASCIIToUTF16(RenderThread::Get()->GetLocale());
 }
 
 void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
@@ -444,8 +444,8 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
     HFONT font) {
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
-  return RenderThread::current()->Send(
-      new ChildProcessHostMsg_PreCacheFont(logfont));
+  RenderThread::current()->PreCacheFont(logfont);
+  return true;
 }
 
 #elif defined(OS_MACOSX)
@@ -604,7 +604,8 @@ RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
 
 WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
   // RenderThread::current can be NULL when running some tests.
-  if (!blob_registry_.get() && RenderThread::current())
-    blob_registry_.reset(new WebBlobRegistryImpl(RenderThread::current()));
+  if (!blob_registry_.get() && RenderThread::current()) {
+    blob_registry_.reset(new WebBlobRegistryImpl(RenderThread::Get()));
+  }
   return blob_registry_.get();
 }

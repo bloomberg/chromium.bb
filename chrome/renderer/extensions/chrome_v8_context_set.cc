@@ -7,10 +7,11 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/tracked_objects.h"
+#include "base/values.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/common/url_constants.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "v8/include/v8.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -19,6 +20,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
+using content::RenderThread;
 using content::V8ValueConverter;
 
 namespace {
@@ -79,7 +81,7 @@ void ChromeV8ContextSet::Remove(ChromeV8Context* context) {
     context->clear_web_frame();
     MessageLoop* loop = delete_loop_ ?
         delete_loop_ :
-        RenderThread::current()->message_loop();
+        RenderThread::Get()->GetMessageLoop();
     loop->DeleteSoon(FROM_HERE, context);
   }
 }

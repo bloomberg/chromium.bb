@@ -17,7 +17,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
@@ -31,6 +31,8 @@
 //   alert('response=' + msg);
 //   port.postMessage('I got your reponse');
 // });
+
+using content::RenderThread;
 
 namespace {
 

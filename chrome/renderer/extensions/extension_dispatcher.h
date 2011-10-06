@@ -18,18 +18,21 @@
 #include "v8/include/v8.h"
 
 class GURL;
-class RenderThread;
 class URLPattern;
 class UserScriptSlave;
 struct ExtensionMsg_Loaded_Params;
 struct ExtensionMsg_UpdatePermissions_Params;
 
+namespace WebKit {
+class WebFrame;
+}
+
 namespace base {
 class ListValue;
 }
 
-namespace WebKit {
-class WebFrame;
+namespace content {
+class RenderThread;
 }
 
 // Dispatches extension control messages sent to the renderer and stores
@@ -125,7 +128,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   // Same as above, but on a longer timer and will run even if the process is
   // not idle, to ensure that IdleHandle gets called eventually.
-  base::RepeatingTimer<RenderThread> forced_idle_timer_;
+  base::RepeatingTimer<content::RenderThread> forced_idle_timer_;
 
   // The v8 extensions which are restricted to extension-related contexts.
   std::set<std::string> restricted_v8_extensions_;

@@ -19,7 +19,7 @@
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
-#include "content/renderer/render_thread.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
@@ -34,11 +34,12 @@
 using WebKit::WebFrame;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebURL;
+using content::RenderThread;
 
 namespace {
 
 // Keep a local cache of RenderThread so that we can mock it out for unit tests.
-static RenderThreadBase* render_thread = NULL;
+static RenderThread* render_thread = NULL;
 
 // A map of event names to the number of listeners for that event. We notify
 // the browser about event listeners when we transition between 0 and 1.
@@ -173,11 +174,11 @@ v8::Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
 }
 
 // static
-void EventBindings::SetRenderThread(RenderThreadBase* thread) {
+void EventBindings::SetRenderThread(RenderThread* thread) {
   render_thread = thread;
 }
 
 // static
-RenderThreadBase* EventBindings::GetRenderThread() {
-  return render_thread ? render_thread : RenderThread::current();
+RenderThread* EventBindings::GetRenderThread() {
+  return render_thread ? render_thread : RenderThread::Get();
 }
