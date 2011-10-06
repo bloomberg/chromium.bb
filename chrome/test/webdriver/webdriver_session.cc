@@ -348,7 +348,7 @@ Error* Session::GetTitle(std::string* tab_title) {
       "  else"
       "    return document.URL;"
       "}";
-  return ExecuteScriptAndParse(current_target_,
+  return ExecuteScriptAndParse(FrameId(current_target_.window_id, FramePath()),
                                kGetTitleScript,
                                "getTitle",
                                new ListValue(),
@@ -939,10 +939,32 @@ Error* Session::GetClickableLocation(const ElementId& element,
   if (!is_displayed)
     return new Error(kElementNotVisible, "Element must be displayed to click");
 
+  // We try 3 methods to determine clickable location. This mostly follows
+  // what FirefoxDriver does. Try the first client rect, then the bounding
+  // client rect, and lastly the size of the element (via closure).
+  // SVG is one case that doesn't have a first client rect.
   Rect rect;
-  error = GetElementFirstClientRect(current_target_, element, &rect);
-  if (error)
-    return error;
+  scoped_ptr<Error> ignore_error(
+      GetElementFirstClientRect(current_target_, element, &rect));
+  if (ignore_error.get()) {
+    Rect client_rect;
+    ignore_error.reset(ExecuteScriptAndParse(
+        current_target_,
+        "function(elem) { return elem.getBoundingClientRect() }",
+        "getBoundingClientRect",
+        CreateListValueFrom(element),
+        CreateDirectValueParser(&client_rect)));
+    rect = Rect(0, 0, client_rect.width(), client_rect.height());
+  }
+  if (ignore_error.get()) {
+    Size size;
+    ignore_error.reset(GetElementSize(current_target_, element, &size));
+    rect = Rect(0, 0, size.width(), size.height());
+  }
+  if (ignore_error.get()) {
+    return new Error(kUnknownError,
+                     "Unable to determine clickable location of element");
+  }
 
   error = GetElementRegionInView(
       element, rect, true /* center */, true /* verify_clickable_at_middle */,
