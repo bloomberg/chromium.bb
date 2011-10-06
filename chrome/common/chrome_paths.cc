@@ -305,8 +305,6 @@ bool PathProvider(int key, FilePath* result) {
 #else
       cur = FilePath(FILE_PATH_LITERAL("/etc/chromium/policies"));
 #endif
-      if (!file_util::PathExists(cur))  // we don't want to create this
-        return false;
       break;
     }
 #endif

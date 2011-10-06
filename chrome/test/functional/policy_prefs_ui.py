@@ -237,7 +237,7 @@ class PolicyPrefsUITest(pyauto.PyUITest):
   def testNoPoliciesNoBanner(self):
     """Verifies that the banner isn't present when no policies are in place."""
 
-    self.SetPolicies({}, {}, {}, {})
+    self.SetPolicies({})
     for page in PolicyPrefsUITest.settings_pages:
       self.NavigateToURL(page)
       self.assertFalse(self.IsBannerVisible(), msg=
@@ -322,14 +322,14 @@ class PolicyPrefsUITest(pyauto.PyUITest):
       policy: policy_test[0]
     }
 
-    self.SetPolicies({}, {}, {}, {})
+    self.SetPolicies({})
     self.NavigateToURL(page)
     self.assertFalse(self.IsBannerVisible())
 
     self.SetPolicies(policy_dict)
     self.assertTrue(self.IsBannerVisible())
 
-    self.SetPolicies({}, {}, {}, {})
+    self.SetPolicies({})
     self.assertFalse(self.IsBannerVisible())
 
 

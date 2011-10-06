@@ -5861,16 +5861,23 @@ void TestingAutomationProvider::SetPolicies(
     { "recommended_cloud",    connector->GetRecommendedCloudProvider()    },
     { "recommended_platform", connector->GetRecommendedPlatformProvider() }
   };
+  // Verify if all the requested providers exist before changing anything.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(providers); ++i) {
-    if (!providers[i].provider)
-      continue;
-    policy::PolicyMap* map = NULL;
+    DictionaryValue* policies = NULL;
+    if (args->GetDictionary(providers[i].name, &policies) &&
+        policies &&
+        !providers[i].provider) {
+      reply.SendError("Provider not available: " + providers[i].name);
+      return;
+    }
+  }
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(providers); ++i) {
     DictionaryValue* policies = NULL;
     if (args->GetDictionary(providers[i].name, &policies) && policies) {
-      map = new policy::PolicyMap;
+      policy::PolicyMap* map = new policy::PolicyMap;
       map->LoadFrom(policies, list);
+      providers[i].provider->OverridePolicies(map);
     }
-    providers[i].provider->OverridePolicies(map);
   }
 
   reply.SendSuccess(NULL);
