@@ -3,5 +3,5 @@
   "version": "0.1",
   "description": "Tests the window.create focus parameter.",
   "background_page": "test.html",
-  "permissions": ["tabs"]
+  "permissions": ["tabs", "experimental"]
 }

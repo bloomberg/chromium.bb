@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -64,6 +65,14 @@ bool PanelBrowserWindowCocoa::isClosed() {
 }
 
 void PanelBrowserWindowCocoa::ShowPanel() {
+  // The Browser associated with this browser window must become the active
+  // browser at the time |Show()| is called. This is the natural behaviour under
+  // Windows, but |-makeKeyAndOrderFront:| won't send |-windowDidBecomeKey:|
+  // until we return to the runloop. Therefore any calls to
+  // |BrowserList::GetLastActive()| (for example, in bookmark_util), will return
+  // the previous browser instead if we don't explicitly set it here.
+  BrowserList::SetLastActive(browser());
+
   ShowPanelInactive();
   ActivatePanel();
 }

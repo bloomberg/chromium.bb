@@ -347,6 +347,7 @@ bool CreateWindowFunction::RunImpl() {
   Profile* window_profile = profile();
   Browser::Type window_type = Browser::TYPE_TABBED;
   bool focused = true;
+  bool saw_focus_key = false;
   std::string extension_id;
 
   if (args) {
@@ -398,9 +399,11 @@ bool CreateWindowFunction::RunImpl() {
         window_profile = window_profile->GetOffTheRecordProfile();
     }
 
-    if (args->HasKey(keys::kFocusedKey))
+    if (args->HasKey(keys::kFocusedKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kFocusedKey,
                                                    &focused));
+      saw_focus_key = true;
+    }
 
     std::string type_str;
     if (args->HasKey(keys::kWindowTypeKey)) {
@@ -423,6 +426,10 @@ bool CreateWindowFunction::RunImpl() {
       }
     }
   }
+
+  // Unlike other window types, Panels do not take focus by default.
+  if (!saw_focus_key && window_type == Browser::TYPE_PANEL)
+    focused = false;
 
   Browser* new_window;
   if (extension_id.empty()) {

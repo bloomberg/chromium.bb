@@ -16,6 +16,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -479,6 +480,8 @@ static BOOL g_reportAnimationStatus = NO;
 // whether it's refactoring more things into BrowserWindowUtils or making a
 // common base controller for browser windows.
 - (void)windowDidBecomeKey:(NSNotification*)notification {
+  BrowserList::SetLastActive(windowShim_->browser());
+
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostViewMac and tell it to activate.
   if (TabContents* contents =
