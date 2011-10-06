@@ -23,6 +23,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "ui/base/gtk/g_object_destructor_filo.h"
 #include "ui/base/gtk/gtk_windowing.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -386,7 +387,8 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
       has_pointer_grab_(false),
       has_keyboard_grab_(false),
       grab_notify_signal_id_(0),
-      is_menu_(false) {
+      is_menu_(false),
+      signal_registrar_(new ui::GtkSignalRegistrar) {
 #if defined(TOUCH_UI)
   // Make sure the touch factory is initialized so that it can setup XInput2 for
   // the widget.
@@ -408,7 +410,17 @@ NativeWidgetGtk::~NativeWidgetGtk() {
     DCHECK(widget_ == NULL);
     delete delegate_;
   } else {
+    // Disconnect from GObjectDestructorFILO because we're
+    // deleting the NativeWidgetGtk.
+    bool has_widget = !!widget_;
+    if (has_widget)
+      ui::GObjectDestructorFILO::GetInstance()->Disconnect(
+          G_OBJECT(widget_), &OnDestroyedThunk, this);
     CloseNow();
+    // Call OnNativeWidgetDestroyed because we're not calling
+    // OnDestroyedThunk
+    if (has_widget)
+      delegate_->OnNativeWidgetDestroyed();
   }
 }
 
@@ -716,76 +728,76 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
                         GDK_KEY_PRESS_MASK |
                         GDK_KEY_RELEASE_MASK);
 
-  g_signal_connect_after(G_OBJECT(window_contents_), "size_request",
-                         G_CALLBACK(&OnSizeRequestThunk), this);
-  g_signal_connect_after(G_OBJECT(window_contents_), "size_allocate",
-                         G_CALLBACK(&OnSizeAllocateThunk), this);
+  signal_registrar_->ConnectAfter(G_OBJECT(window_contents_), "size_request",
+                                  G_CALLBACK(&OnSizeRequestThunk), this);
+  signal_registrar_->ConnectAfter(G_OBJECT(window_contents_), "size_allocate",
+                                  G_CALLBACK(&OnSizeAllocateThunk), this);
   gtk_widget_set_app_paintable(window_contents_, true);
-  g_signal_connect(window_contents_, "expose_event",
-                   G_CALLBACK(&OnPaintThunk), this);
-  g_signal_connect(window_contents_, "enter_notify_event",
-                   G_CALLBACK(&OnEnterNotifyThunk), this);
-  g_signal_connect(window_contents_, "leave_notify_event",
-                   G_CALLBACK(&OnLeaveNotifyThunk), this);
-  g_signal_connect(window_contents_, "motion_notify_event",
-                   G_CALLBACK(&OnMotionNotifyThunk), this);
-  g_signal_connect(window_contents_, "button_press_event",
-                   G_CALLBACK(&OnButtonPressThunk), this);
-  g_signal_connect(window_contents_, "button_release_event",
-                   G_CALLBACK(&OnButtonReleaseThunk), this);
-  g_signal_connect(window_contents_, "grab_broken_event",
-                   G_CALLBACK(&OnGrabBrokeEventThunk), this);
-  g_signal_connect(window_contents_, "scroll_event",
-                   G_CALLBACK(&OnScrollThunk), this);
-  g_signal_connect(window_contents_, "visibility_notify_event",
-                   G_CALLBACK(&OnVisibilityNotifyThunk), this);
+  signal_registrar_->Connect(window_contents_, "expose_event",
+                             G_CALLBACK(&OnPaintThunk), this);
+  signal_registrar_->Connect(window_contents_, "enter_notify_event",
+                             G_CALLBACK(&OnEnterNotifyThunk), this);
+  signal_registrar_->Connect(window_contents_, "leave_notify_event",
+                             G_CALLBACK(&OnLeaveNotifyThunk), this);
+  signal_registrar_->Connect(window_contents_, "motion_notify_event",
+                             G_CALLBACK(&OnMotionNotifyThunk), this);
+  signal_registrar_->Connect(window_contents_, "button_press_event",
+                             G_CALLBACK(&OnButtonPressThunk), this);
+  signal_registrar_->Connect(window_contents_, "button_release_event",
+                             G_CALLBACK(&OnButtonReleaseThunk), this);
+  signal_registrar_->Connect(window_contents_, "grab_broken_event",
+                             G_CALLBACK(&OnGrabBrokeEventThunk), this);
+  signal_registrar_->Connect(window_contents_, "scroll_event",
+                             G_CALLBACK(&OnScrollThunk), this);
+  signal_registrar_->Connect(window_contents_, "visibility_notify_event",
+                             G_CALLBACK(&OnVisibilityNotifyThunk), this);
 
   // In order to receive notification when the window is no longer the front
   // window, we need to install these on the widget.
   // NOTE: this doesn't work with focus follows mouse.
-  g_signal_connect(widget_, "focus_in_event",
-                   G_CALLBACK(&OnFocusInThunk), this);
-  g_signal_connect(widget_, "focus_out_event",
-                   G_CALLBACK(&OnFocusOutThunk), this);
-  g_signal_connect(widget_, "destroy",
-                   G_CALLBACK(&OnDestroyThunk), this);
-  g_signal_connect(widget_, "show",
-                   G_CALLBACK(&OnShowThunk), this);
-  g_signal_connect(widget_, "map",
-                   G_CALLBACK(&OnMapThunk), this);
-  g_signal_connect(widget_, "hide",
-                   G_CALLBACK(&OnHideThunk), this);
-  g_signal_connect(widget_, "configure-event",
-                   G_CALLBACK(&OnConfigureEventThunk), this);
+  signal_registrar_->Connect(widget_, "focus_in_event",
+                             G_CALLBACK(&OnFocusInThunk), this);
+  signal_registrar_->Connect(widget_, "focus_out_event",
+                             G_CALLBACK(&OnFocusOutThunk), this);
+  signal_registrar_->Connect(widget_, "destroy",
+                             G_CALLBACK(&OnDestroyThunk), this);
+  signal_registrar_->Connect(widget_, "show",
+                             G_CALLBACK(&OnShowThunk), this);
+  signal_registrar_->Connect(widget_, "map",
+                             G_CALLBACK(&OnMapThunk), this);
+  signal_registrar_->Connect(widget_, "hide",
+                             G_CALLBACK(&OnHideThunk), this);
+  signal_registrar_->Connect(widget_, "configure-event",
+                             G_CALLBACK(&OnConfigureEventThunk), this);
 
   // Views/FocusManager (re)sets the focus to the root window,
   // so we need to connect signal handlers to the gtk window.
   // See views::Views::Focus and views::FocusManager::ClearNativeFocus
   // for more details.
-  g_signal_connect(widget_, "key_press_event",
-                   G_CALLBACK(&OnEventKeyThunk), this);
-  g_signal_connect(widget_, "key_release_event",
-                   G_CALLBACK(&OnEventKeyThunk), this);
+  signal_registrar_->Connect(widget_, "key_press_event",
+                             G_CALLBACK(&OnEventKeyThunk), this);
+  signal_registrar_->Connect(widget_, "key_release_event",
+                             G_CALLBACK(&OnEventKeyThunk), this);
 
   // Drag and drop.
   gtk_drag_dest_set(window_contents_, static_cast<GtkDestDefaults>(0),
                     NULL, 0, GDK_ACTION_COPY);
-  g_signal_connect(window_contents_, "drag_motion",
-                   G_CALLBACK(&OnDragMotionThunk), this);
-  g_signal_connect(window_contents_, "drag_data_received",
-                   G_CALLBACK(&OnDragDataReceivedThunk), this);
-  g_signal_connect(window_contents_, "drag_drop",
-                   G_CALLBACK(&OnDragDropThunk), this);
-  g_signal_connect(window_contents_, "drag_leave",
-                   G_CALLBACK(&OnDragLeaveThunk), this);
-  g_signal_connect(window_contents_, "drag_data_get",
-                   G_CALLBACK(&OnDragDataGetThunk), this);
-  g_signal_connect(window_contents_, "drag_end",
-                   G_CALLBACK(&OnDragEndThunk), this);
-  g_signal_connect(window_contents_, "drag_failed",
-                   G_CALLBACK(&OnDragFailedThunk), this);
-  g_signal_connect(G_OBJECT(widget_), "window-state-event",
-                   G_CALLBACK(&OnWindowStateEventThunk), this);
+  signal_registrar_->Connect(window_contents_, "drag_motion",
+                             G_CALLBACK(&OnDragMotionThunk), this);
+  signal_registrar_->Connect(window_contents_, "drag_data_received",
+                             G_CALLBACK(&OnDragDataReceivedThunk), this);
+  signal_registrar_->Connect(window_contents_, "drag_drop",
+                             G_CALLBACK(&OnDragDropThunk), this);
+  signal_registrar_->Connect(window_contents_, "drag_leave",
+                             G_CALLBACK(&OnDragLeaveThunk), this);
+  signal_registrar_->Connect(window_contents_, "drag_data_get",
+                             G_CALLBACK(&OnDragDataGetThunk), this);
+  signal_registrar_->Connect(window_contents_, "drag_end",
+                             G_CALLBACK(&OnDragEndThunk), this);
+  signal_registrar_->Connect(window_contents_, "drag_failed",
+                             G_CALLBACK(&OnDragFailedThunk), this);
+  signal_registrar_->Connect(G_OBJECT(widget_), "window-state-event",
+                             G_CALLBACK(&OnWindowStateEventThunk), this);
 
   ui::GObjectDestructorFILO::GetInstance()->Connect(
       G_OBJECT(widget_), &OnDestroyedThunk, this);
@@ -802,8 +814,8 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
 
   // Register for tooltips.
   g_object_set(G_OBJECT(window_contents_), "has-tooltip", TRUE, NULL);
-  g_signal_connect(window_contents_, "query_tooltip",
-                   G_CALLBACK(&OnQueryTooltipThunk), this);
+  signal_registrar_->Connect(window_contents_, "query_tooltip",
+                             G_CALLBACK(&OnQueryTooltipThunk), this);
 
   if (child_) {
     if (modified_params.parent)
@@ -1789,6 +1801,11 @@ void NativeWidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 }
 
 void NativeWidgetGtk::OnDestroy(GtkWidget* object) {
+  signal_registrar_.reset();
+  if (grab_notify_signal_id_) {
+    g_signal_handler_disconnect(window_contents_, grab_notify_signal_id_);
+    grab_notify_signal_id_ = 0;
+  }
   delegate_->OnNativeWidgetDestroying();
   if (!child_)
     ActiveWindowWatcherX::RemoveObserver(this);
@@ -2077,8 +2094,8 @@ void NativeWidgetGtk::ConfigureWidgetForTransparentBackground(
     DCHECK(parent == NULL);
     gtk_widget_set_colormap(widget_, rgba_colormap);
     gtk_widget_set_app_paintable(widget_, true);
-    g_signal_connect(widget_, "expose_event",
-                     G_CALLBACK(&OnWindowPaintThunk), this);
+    signal_registrar_->Connect(widget_, "expose_event",
+                               G_CALLBACK(&OnWindowPaintThunk), this);
     gtk_widget_realize(widget_);
     gdk_window_set_decorations(widget_->window,
                                static_cast<GdkWMDecoration>(0));

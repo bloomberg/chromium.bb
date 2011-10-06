@@ -26,6 +26,7 @@ class Rect;
 namespace ui {
 class OSExchangeData;
 class OSExchangeDataProviderGtk;
+class GtkSignalRegistrar;
 }
 using ui::OSExchangeData;
 using ui::OSExchangeDataProviderGtk;
@@ -454,6 +455,8 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
 
   // If we were created for a menu.
   bool is_menu_;
+
+  scoped_ptr<ui::GtkSignalRegistrar> signal_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetGtk);
 };
