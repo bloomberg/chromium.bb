@@ -43,7 +43,7 @@ def GetChromeDriverExe():
   exe_name = 'chromedriver'
   if sys.platform == 'win32':
     exe_name += '.exe'
-  for dir in GetBuildDirs():
+  for dir in GetBuildDirs() + [os.getcwd()]:
     exe = os.path.join(dir, exe_name)
     if os.path.exists(exe):
       return exe
