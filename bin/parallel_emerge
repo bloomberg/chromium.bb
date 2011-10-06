@@ -919,6 +919,56 @@ def SetupWorkerSignals():
   signal.signal(signal.SIGINT, ExitHandler)
   signal.signal(signal.SIGTERM, ExitHandler)
 
+def EmergeProcess(scheduler, output):
+  """Merge a package in a subprocess.
+
+  Args:
+    scheduler: Scheduler object.
+    output: Temporary file to write output.
+
+  Returns:
+    The exit code returned by the subprocess.
+  """
+  pid = os.fork()
+  if pid == 0:
+    try:
+      # Sanity checks.
+      if sys.stdout.fileno() != 1: raise Exception("sys.stdout.fileno() != 1")
+      if sys.stderr.fileno() != 2: raise Exception("sys.stderr.fileno() != 2")
+
+      # - Redirect 1 (stdout) and 2 (stderr) at our temporary file.
+      # - Redirect 0 to point at sys.stdin. In this case, sys.stdin
+      #   points at a file reading os.devnull, because multiprocessing mucks
+      #   with sys.stdin.
+      # - Leave the sys.stdin and output filehandles alone.
+      fd_pipes = {0: sys.stdin.fileno(),
+                  1: output.fileno(),
+                  2: output.fileno(),
+                  sys.stdin.fileno(): sys.stdin.fileno(),
+                  output.fileno(): output.fileno()}
+      portage.process._setup_pipes(fd_pipes)
+
+      # Portage doesn't like when sys.stdin.fileno() != 0, so point sys.stdin
+      # at the filehandle we just created in _setup_pipes.
+      if sys.stdin.fileno() != 0:
+        sys.stdin = os.fdopen(0, "r")
+
+      # Actually do the merge.
+      retval = scheduler.merge()
+
+    # We catch all exceptions here (including SystemExit, KeyboardInterrupt,
+    # etc) so as to ensure that we don't confuse the multiprocessing module,
+    # which expects that all forked children exit with os._exit().
+    except:
+      traceback.print_exc(file=output)
+      retval = 1
+    sys.stdout.flush()
+    sys.stderr.flush()
+    output.flush()
+    os._exit(retval)
+  else:
+    # Return the exit code of the subprocess.
+    return os.waitpid(pid, 0)[1]
 
 def EmergeWorker(task_queue, job_queue, emerge, package_db):
   """This worker emerges any packages given to it on the task_queue.
@@ -946,9 +996,6 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
 
   opts, spinner = emerge.opts, emerge.spinner
   opts["--nodeps"] = True
-  # When Portage launches new processes, it goes on a rampage and closes all
-  # open file descriptors. Ask Portage not to do that, as it breaks us.
-  portage.process.get_open_fds = lambda: []
   while True:
     # Wait for a new item to show up on the queue. This is a blocking wait,
     # so if there's nothing to do, we just sit here.
@@ -973,11 +1020,7 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
     if "--pretend" in opts:
       retcode = 0
     else:
-      save_stdout = sys.stdout
-      save_stderr = sys.stderr
       try:
-        sys.stdout = output
-        sys.stderr = output
         emerge.scheduler_graph.mergelist = install_list
         scheduler = Scheduler(settings, trees, mtimedb, opts, spinner,
             favorites=emerge.favorites, graph_config=emerge.scheduler_graph)
@@ -986,16 +1029,11 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
         # allows us to unmerge the blocker after we've merged the replacement.
         scheduler._opts_ignore_blockers = frozenset()
 
-        retcode = scheduler.merge()
+        retcode = EmergeProcess(scheduler, output)
       except Exception:
         traceback.print_exc(file=output)
         retcode = 1
-      finally:
-        sys.stdout = save_stdout
-        sys.stderr = save_stderr
-        output.close()
-      if retcode is None:
-        retcode = 0
+      output.close()
 
     if KILLED.is_set():
       return
