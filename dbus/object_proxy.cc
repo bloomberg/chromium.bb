@@ -124,8 +124,11 @@ void ObjectProxy::ConnectToSignal(const std::string& interface_name,
 void ObjectProxy::Detach() {
   bus_->AssertOnDBusThread();
 
-  if (filter_added_)
-    bus_->RemoveFilterFunction(&ObjectProxy::HandleMessageThunk, this);
+  if (filter_added_) {
+    if (!bus_->RemoveFilterFunction(&ObjectProxy::HandleMessageThunk, this)) {
+      LOG(ERROR) << "Failed to remove filter function";
+    }
+  }
 
   for (size_t i = 0; i < match_rules_.size(); ++i) {
     ScopedDBusError error;
@@ -277,8 +280,11 @@ void ObjectProxy::ConnectToSignalInternal(
     // We should add the filter only once. Otherwise, HandleMessage() will
     // be called more than once.
     if (!filter_added_) {
-      bus_->AddFilterFunction(&ObjectProxy::HandleMessageThunk, this);
-      filter_added_ = true;
+      if (bus_->AddFilterFunction(&ObjectProxy::HandleMessageThunk, this)) {
+        filter_added_ = true;
+      } else {
+        LOG(ERROR) << "Failed to add filter function";
+      }
     }
     // Add a match rule so the signal goes through HandleMessage().
     //

@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <dbus/dbus.h>
 
 #include "base/callback.h"
@@ -284,22 +285,24 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   virtual void Send(DBusMessage* request, uint32* serial);
 
   // Adds the message filter function. |filter_function| will be called
-  // when incoming messages are received.
+  // when incoming messages are received. Returns true on success.
   //
   // When a new incoming message arrives, filter functions are called in
   // the order that they were added until the the incoming message is
   // handled by a filter function.
   //
-  // The same filter function must not be added more than once.
+  // The same filter function associated with the same user data cannot be
+  // added more than once. Returns false for this case.
   //
   // BLOCKING CALL.
-  virtual void AddFilterFunction(DBusHandleMessageFunction filter_function,
+  virtual bool AddFilterFunction(DBusHandleMessageFunction filter_function,
                                  void* user_data);
 
   // Removes the message filter previously added by AddFilterFunction().
+  // Returns true on success.
   //
   // BLOCKING CALL.
-  virtual void RemoveFilterFunction(DBusHandleMessageFunction filter_function,
+  virtual bool RemoveFilterFunction(DBusHandleMessageFunction filter_function,
                                     void* user_data);
 
   // Adds the match rule. Messages that match the rule will be processed
@@ -444,7 +447,8 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // are properly cleaned up before destruction of the bus object.
   std::set<std::string> match_rules_added_;
   std::set<std::string> registered_object_paths_;
-  std::set<DBusHandleMessageFunction> filter_functions_added_;
+  std::set<std::pair<DBusHandleMessageFunction, void*> >
+      filter_functions_added_;
 
   // ObjectProxyTable is used to hold the object proxies created by the
   // bus object. Key is a concatenated string of service name + object path,

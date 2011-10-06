@@ -13,6 +13,17 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+// Used to test AddFilterFunction().
+DBusHandlerResult DummyHandler(DBusConnection* connection,
+                               DBusMessage* raw_message,
+                               void* user_data) {
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+}  // namespace
+
 TEST(BusTest, GetObjectProxy) {
   dbus::Bus::Options options;
   scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
@@ -88,4 +99,25 @@ TEST(BusTest, ShutdownAndBlockWithDBusThread) {
   bus->ShutdownOnDBusThreadAndBlock();
   EXPECT_TRUE(bus->shutdown_completed());
   dbus_thread.Stop();
+}
+
+TEST(BusTest, AddFilterFunction) {
+  dbus::Bus::Options options;
+  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  // Should connect before calling AddFilterFunction().
+  bus->Connect();
+
+  int data1 = 100;
+  int data2 = 200;
+  ASSERT_TRUE(bus->AddFilterFunction(&DummyHandler, &data1));
+  // Cannot add the same function with the same data.
+  ASSERT_FALSE(bus->AddFilterFunction(&DummyHandler, &data1));
+  // Can add the same function with different data.
+  ASSERT_TRUE(bus->AddFilterFunction(&DummyHandler, &data2));
+
+  ASSERT_TRUE(bus->RemoveFilterFunction(&DummyHandler, &data1));
+  ASSERT_FALSE(bus->RemoveFilterFunction(&DummyHandler, &data1));
+  ASSERT_TRUE(bus->RemoveFilterFunction(&DummyHandler, &data2));
+
+  bus->ShutdownAndBlock();
 }

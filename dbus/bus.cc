@@ -439,37 +439,45 @@ void Bus::Send(DBusMessage* request, uint32* serial) {
   CHECK(success) << "Unable to allocate memory";
 }
 
-void Bus::AddFilterFunction(DBusHandleMessageFunction filter_function,
+bool Bus::AddFilterFunction(DBusHandleMessageFunction filter_function,
                             void* user_data) {
   DCHECK(connection_);
   AssertOnDBusThread();
 
-  if (filter_functions_added_.find(filter_function) !=
+  std::pair<DBusHandleMessageFunction, void*> filter_data_pair =
+      std::make_pair(filter_function, user_data);
+  if (filter_functions_added_.find(filter_data_pair) !=
       filter_functions_added_.end()) {
-    LOG(ERROR) << "Filter function already exists: " << filter_function;
-    return;
+    VLOG(1) << "Filter function already exists: " << filter_function
+            << " with associated data: " << user_data;
+    return false;
   }
 
   const bool success = dbus_connection_add_filter(
       connection_, filter_function, user_data, NULL);
   CHECK(success) << "Unable to allocate memory";
-  filter_functions_added_.insert(filter_function);
+  filter_functions_added_.insert(filter_data_pair);
+  return true;
 }
 
-void Bus::RemoveFilterFunction(DBusHandleMessageFunction filter_function,
+bool Bus::RemoveFilterFunction(DBusHandleMessageFunction filter_function,
                                void* user_data) {
   DCHECK(connection_);
   AssertOnDBusThread();
 
-  if (filter_functions_added_.find(filter_function) ==
+  std::pair<DBusHandleMessageFunction, void*> filter_data_pair =
+      std::make_pair(filter_function, user_data);
+  if (filter_functions_added_.find(filter_data_pair) ==
       filter_functions_added_.end()) {
-    LOG(ERROR) << "Requested to remove an unknown filter function: "
-               << filter_function;
-    return;
+    VLOG(1) << "Requested to remove an unknown filter function: "
+            << filter_function
+            << " with associated data: " << user_data;
+    return false;
   }
 
   dbus_connection_remove_filter(connection_, filter_function, user_data);
-  filter_functions_added_.erase(filter_function);
+  filter_functions_added_.erase(filter_data_pair);
+  return true;
 }
 
 void Bus::AddMatch(const std::string& match_rule, DBusError* error) {
