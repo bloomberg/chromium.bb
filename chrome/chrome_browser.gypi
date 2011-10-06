@@ -838,6 +838,7 @@
         'browser/content_settings/tab_specific_content_settings.h',
         'browser/cookies_tree_model.cc',
         'browser/cookies_tree_model.h',
+        'browser/crash_handler_host_linux.h',
         'browser/crash_upload_list.cc',
         'browser/crash_upload_list.h',
         'browser/crash_upload_list_win.cc',
@@ -4143,12 +4144,35 @@
             ['exclude', '^browser/ui/webui/keyboard_ui.*'],
           ],
         }],
-        ['OS=="linux"', {
+        ['os_posix == 1 and OS != "mac"', {
           'link_settings': {
             'libraries': [
               '-lXss',
             ],
           },
+          'conditions': [
+            ['linux_breakpad==1', {
+              'sources': [
+                'app/breakpad_linux.cc',
+                'app/breakpad_linux.h',
+                'browser/crash_handler_host_linux.cc',
+              ],
+              'dependencies': [
+                '../breakpad/breakpad.gyp:breakpad_client',
+                # make sure file_version_info_linux.h is generated first.
+                'common',
+              ],
+              'include_dirs': [
+                # breakpad_linux.cc uses generated file_version_info_linux.h.
+                '<(SHARED_INTERMEDIATE_DIR)',
+                '../breakpad/src',
+              ],
+            }, {  # linux_breakpad==0
+              'sources': [
+                'browser/crash_handler_host_linux_stub.cc',
+              ],
+            }],
+          ],
         }],        
         ['OS=="linux" and use_aura==1', {
           'dependencies': [
@@ -4208,7 +4232,6 @@
             'browser/ui/views/extensions/extension_view.h',
           ],
           'sources': [
-            'browser/crash_handler_host_linux.h',
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',
           ],
@@ -4216,27 +4239,6 @@
             ['use_gnome_keyring==1', {
               'dependencies': [
                 '../build/linux/system.gyp:gnome_keyring',
-              ],
-            }],
-            ['linux_breakpad==1', {
-              'sources': [
-                'app/breakpad_linux.cc',
-                'app/breakpad_linux.h',
-                'browser/crash_handler_host_linux.cc',
-              ],
-              'dependencies': [
-                '../breakpad/breakpad.gyp:breakpad_client',
-                # make sure file_version_info_linux.h is generated first.
-                'common',
-              ],
-              'include_dirs': [
-                # breakpad_linux.cc uses generated file_version_info_linux.h.
-                '<(SHARED_INTERMEDIATE_DIR)',
-                '../breakpad/src',
-              ],
-            }, {  # linux_breakpad==0
-              'sources': [
-                'browser/crash_handler_host_linux_stub.cc',
               ],
             }],
           ],
@@ -4995,7 +4997,6 @@
             ['exclude', '^browser/process_singleton_linux.cc'],
             ['exclude', '^browser/ui/input_window_dialog.h'],
             ['exclude', '^browser/ui/input_window_dialog_win.cc'],
-            ['include', '^browser/crash_handler_host_linux_stub.cc'],
             ['include', '^browser/ui/login/login_prompt_ui.cc'],
             ['include', '^browser/ui/views/aura/aura_init.cc'],
             ['include', '^browser/ui/views/browser_bubble_aura.cc'],
