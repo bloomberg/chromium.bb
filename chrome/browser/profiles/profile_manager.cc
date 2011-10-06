@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/ui/browser_init.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -29,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_transaction_factory.h"
@@ -66,13 +67,9 @@ class NewProfileLauncher : public ProfileManagerObserver {
  public:
   virtual void OnProfileCreated(Profile* profile, Status status) {
     if (status == STATUS_INITIALIZED) {
-      DCHECK(profile);
-      CommandLine command_line(CommandLine::NO_PROGRAM);
-      int return_code;
-      BrowserInit browser_init;
-      browser_init.LaunchBrowser(
-          command_line, profile, FilePath(), BrowserInit::IS_PROCESS_STARTUP,
-          BrowserInit::IS_FIRST_RUN, &return_code);
+      ProfileManager::NewWindowWithProfile(profile,
+                                           BrowserInit::IS_PROCESS_STARTUP,
+                                           BrowserInit::IS_FIRST_RUN);
     }
   }
 
@@ -306,6 +303,25 @@ ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(Profile* profile,
 Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
   ProfilesInfoMap::const_iterator iter = profiles_info_.find(path);
   return (iter == profiles_info_.end()) ? NULL : iter->second->profile.get();
+}
+
+// static
+void ProfileManager::NewWindowWithProfile(
+    Profile* profile,
+    BrowserInit::IsProcessStartup process_startup,
+    BrowserInit::IsFirstRun is_first_run) {
+  DCHECK(profile);
+  Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
+  if (browser) {
+    browser->window()->Activate();
+  } else {
+    UserMetrics::RecordAction(UserMetricsAction("NewWindow"));
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    int return_code;
+    BrowserInit browser_init;
+    browser_init.LaunchBrowser(command_line, profile, FilePath(),
+                               process_startup, is_first_run, &return_code);
+  }
 }
 
 void ProfileManager::Observe(

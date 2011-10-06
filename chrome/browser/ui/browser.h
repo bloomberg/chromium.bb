@@ -301,12 +301,6 @@ class Browser : public TabHandlerDelegate,
   // extensions which may run with no windows open.
   static void OpenExtensionsWindow(Profile* profile);
 
-  // Opens a new window with the given profile. This starts the session_service
-  // for the new profile as well; it is the static equivalent of the instance
-  // method Browser::NewWindow(), used for the creation of a Window from the
-  // multi-profile dropdown menu.
-  static void NewWindowWithProfile(Profile* profile);
-
   // State Storage and Retrieval for UI ///////////////////////////////////////
 
   // Save and restore the window position.

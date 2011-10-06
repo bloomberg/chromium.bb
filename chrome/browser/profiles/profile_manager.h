@@ -19,6 +19,7 @@
 #include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -139,6 +140,15 @@ class ProfileManager : public base::NonThreadSafe,
   // return a pointer to the corresponding Profile object;
   // otherwise return NULL.
   Profile* GetProfileByPath(const FilePath& path) const;
+
+  // Opens a new window with the given profile. This launches a new browser for
+  // the profile or activates an existing one; it is the static equivalent of
+  // the instance method Browser::NewWindow(), used for the creation of a
+  // Window from the multi-profile dropdown menu.
+  static void NewWindowWithProfile(
+      Profile* profile,
+      BrowserInit::IsProcessStartup process_startup,
+      BrowserInit::IsFirstRun is_first_run);
 
   // Profile::Delegate implementation:
   virtual void OnProfileCreated(Profile* profile, bool success);

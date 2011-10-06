@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -46,12 +47,9 @@ class ProfileSwitchObserver : public ProfileManagerObserver {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     if (status == STATUS_INITIALIZED) {
-      DCHECK(profile);
-      Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
-      if (browser)
-        browser->window()->Activate();
-      else
-        Browser::NewWindowWithProfile(profile);
+      ProfileManager::NewWindowWithProfile(profile,
+                                           BrowserInit::IS_NOT_PROCESS_STARTUP,
+                                           BrowserInit::IS_NOT_FIRST_RUN);
     }
   }
 
