@@ -175,7 +175,10 @@ cr.define('login', function() {
         this.imageElement.title = userDict.emailAddress;
         this.enterButtonElement.hidden = true;
         this.passwordElement.hidden = needSignin;
-        this.passwordElement.setAttribute('aria-label', userDict.emailAddress);
+        this.passwordElement.setAttribute('aria-label',
+                                          localStrings.getStringF(
+                                              'passwordFieldAriaLabel',
+                                              userDict.emailAddress));
         this.signinButtonElement.hidden = !needSignin;
       }
     },

@@ -13525,6 +13525,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT" desc="Text to display in the password field for user pod when no password has been entered.">
         Enter password
       </message>
+      <message name="IDS_LOGIN_POD_PASSWORD_FIELD_ARIA_LABEL" desc="Text to be spoken when the focus is set to the password field of a user pod on the login screen.">
+        Password for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
+      </message>
       <message name="IDS_LOGIN_VERSION_LABEL_FORMAT" desc="Login screen version text format.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> <ph name="PRODUCT_VERSION">$2<ex>15.0.0.0</ex></ph> (Platform <ph name="PLATFORM_VERSION">$3<ex>900.0-11.09.01</ex></ph>)
       </message>
