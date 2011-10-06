@@ -1,4 +1,8 @@
 /*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
  * tests whether our data type are lowered as expected (ILP32)
  * TODO: sizes of size_sb and size_ue are not quite right.
  */

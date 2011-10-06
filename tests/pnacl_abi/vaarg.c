@@ -1,4 +1,8 @@
 /*
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
  * tests whether vaargs, etc. are lowered as expected (ILP32)
  * NOTE: va_start/va_end bracketing is wrong but we do not plan on running
  * this code
