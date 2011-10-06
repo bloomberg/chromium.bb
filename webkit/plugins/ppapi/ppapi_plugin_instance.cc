@@ -126,7 +126,8 @@ typedef bool (*RenderPDFPageToDCProc)(
     const unsigned char* pdf_buffer, int buffer_size, int page_number, HDC dc,
     int dpi_x, int dpi_y, int bounds_origin_x, int bounds_origin_y,
     int bounds_width, int bounds_height, bool fit_to_bounds,
-    bool stretch_to_bounds, bool keep_aspect_ratio, bool center_in_bounds);
+    bool stretch_to_bounds, bool keep_aspect_ratio, bool center_in_bounds,
+    bool autorotate);
 #endif  // defined(OS_WIN)
 
 namespace {
@@ -1158,7 +1159,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
     ret = render_proc(static_cast<unsigned char*>(mapper.data()), mapper.size(),
                       0, dc, current_print_settings_.dpi,
                       current_print_settings_.dpi, 0, 0, size_in_pixels.width(),
-                      size_in_pixels.height(), true, false, true, true);
+                      size_in_pixels.height(), true, false, true, true, true);
     skia::EndPlatformPaint(canvas);
   }
 #endif  // defined(OS_WIN)

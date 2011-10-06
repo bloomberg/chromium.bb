@@ -17,6 +17,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
+#include "printing/pdf_render_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 
@@ -74,11 +75,10 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_DecodeImageBase64,
                      std::string)  // base64 encoded image contents
 
 // Tell the utility process to render the given PDF into a metafile.
-IPC_MESSAGE_CONTROL5(ChromeUtilityMsg_RenderPDFPagesToMetafile,
+IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToMetafile,
                      base::PlatformFile,       // PDF file
                      FilePath,                 // Location for output metafile
-                     gfx::Rect,                // Render Area
-                     int,                      // DPI
+                     printing::PdfRenderSettings,  // PDF render settitngs
                      std::vector<printing::PageRange>)
 
 // Tell the utility process to parse a JSON string into a Value object.

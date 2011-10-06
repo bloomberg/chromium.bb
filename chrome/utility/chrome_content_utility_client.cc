@@ -171,16 +171,16 @@ void ChromeContentUtilityClient::OnDecodeImageBase64(
 void ChromeContentUtilityClient::OnRenderPDFPagesToMetafile(
     base::PlatformFile pdf_file,
     const FilePath& metafile_path,
-    const gfx::Rect& render_area,
-    int render_dpi,
+    const printing::PdfRenderSettings& pdf_render_settings,
     const std::vector<printing::PageRange>& page_ranges) {
   bool succeeded = false;
 #if defined(OS_WIN)
   int highest_rendered_page_number = 0;
   succeeded = RenderPDFToWinMetafile(pdf_file,
                                      metafile_path,
-                                     render_area,
-                                     render_dpi,
+                                     pdf_render_settings.area(),
+                                     pdf_render_settings.dpi(),
+                                     pdf_render_settings.autorotate(),
                                      page_ranges,
                                      &highest_rendered_page_number);
   if (succeeded) {
@@ -200,7 +200,8 @@ typedef bool (*RenderPDFPageToDCProc)(
     const unsigned char* pdf_buffer, int buffer_size, int page_number, HDC dc,
     int dpi_x, int dpi_y, int bounds_origin_x, int bounds_origin_y,
     int bounds_width, int bounds_height, bool fit_to_bounds,
-    bool stretch_to_bounds, bool keep_aspect_ratio, bool center_in_bounds);
+    bool stretch_to_bounds, bool keep_aspect_ratio, bool center_in_bounds,
+    bool autorotate);
 
 typedef bool (*GetPDFDocInfoProc)(const unsigned char* pdf_buffer,
                                   int buffer_size, int* page_count,
@@ -249,6 +250,7 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
     const FilePath& metafile_path,
     const gfx::Rect& render_area,
     int render_dpi,
+    bool autorotate,
     const std::vector<printing::PageRange>& page_ranges,
     int* highest_rendered_page_number) {
   *highest_rendered_page_number = -1;
@@ -323,7 +325,8 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
       if (render_proc(&buffer.front(), buffer.size(), page_number,
                       metafile.context(), render_dpi, render_dpi,
                       render_area.x(), render_area.y(), render_area.width(),
-                      render_area.height(), true, false, true, true))
+                      render_area.height(), true, false, true, true,
+                      autorotate))
         if (*highest_rendered_page_number < page_number)
           *highest_rendered_page_number = page_number;
         ret = true;

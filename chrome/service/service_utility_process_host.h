@@ -21,6 +21,7 @@
 #include "base/task.h"
 #include "ipc/ipc_channel.h"
 #include "chrome/service/service_child_process_host.h"
+#include "printing/pdf_render_settings.h"
 
 class CommandLine;
 class ScopedTempDir;
@@ -97,8 +98,7 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   // pages than the specified page ranges, it will render as many as available.
   bool StartRenderPDFPagesToMetafile(
       const FilePath& pdf_path,
-      const gfx::Rect& render_area,
-      int render_dpi,
+      const printing::PdfRenderSettings& render_settings,
       const std::vector<printing::PageRange>& page_ranges);
 
   // Starts a process to get capabilities and defaults for the specified

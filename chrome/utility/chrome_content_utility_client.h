@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "content/utility/content_utility_client.h"
+#include "printing/pdf_render_settings.h"
 
 class ExternalProcessImporterBridge;
 class FilePath;
@@ -55,8 +56,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnRenderPDFPagesToMetafile(
       base::PlatformFile pdf_file,
       const FilePath& metafile_path,
-      const gfx::Rect& render_area,
-      int render_dpi,
+      const printing::PdfRenderSettings& pdf_render_settings,
       const std::vector<printing::PageRange>& page_ranges);
   void OnParseJSON(const std::string& json);
 
@@ -68,6 +68,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       const FilePath& metafile_path,
       const gfx::Rect& render_area,
       int render_dpi,
+      bool autorotate,
       const std::vector<printing::PageRange>& page_ranges,
       int* highest_rendered_page_number);
 #endif   // defined(OS_WIN)

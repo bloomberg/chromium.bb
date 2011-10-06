@@ -38,8 +38,7 @@ ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
 
 bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
     const FilePath& pdf_path,
-    const gfx::Rect& render_area,
-    int render_dpi,
+    const printing::PdfRenderSettings& render_settings,
     const std::vector<printing::PageRange>& page_ranges) {
 #if !defined(OS_WIN)
   // This is only implemented on Windows (because currently it is only needed
@@ -79,8 +78,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
       new ChromeUtilityMsg_RenderPDFPagesToMetafile(
           pdf_file_in_utility_process,
           metafile_path_,
-          render_area,
-          render_dpi,
+          render_settings,
           page_ranges));
 #endif  // !defined(OS_WIN)
 }

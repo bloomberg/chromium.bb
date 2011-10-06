@@ -24,6 +24,7 @@
 #include "printing/backend/win_helper.h"
 #include "printing/emf_win.h"
 #include "printing/page_range.h"
+#include "printing/pdf_render_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
@@ -548,10 +549,15 @@ class PrintSystemWin : public PrintSystem {
             BelongsToCurrentThread());
         scoped_ptr<ServiceUtilityProcessHost> utility_host(
             new ServiceUtilityProcessHost(this, client_message_loop_proxy));
-        if (utility_host->StartRenderPDFPagesToMetafile(pdf_path,
-                                                        render_area,
-                                                        render_dpi,
-                                                        page_ranges)) {
+        // TODO(gene): For now we disabling autorotation for CloudPrinting.
+        // Landscape/Portrait setting is passed in the print ticket and
+        // server is generating portrait PDF always.
+        // We should enable autorotation once server will be able to generate
+        // PDF that matches paper size and orientation.
+        if (utility_host->StartRenderPDFPagesToMetafile(
+                pdf_path,
+                printing::PdfRenderSettings(render_area, render_dpi, false),
+                page_ranges)) {
           // The object will self-destruct when the child process dies.
           utility_host.release();
         }
