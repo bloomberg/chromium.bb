@@ -54,7 +54,7 @@
 
 class MockRenderProcess;
 class RendererMainPlatformDelegate;
-class RenderThread;
+class RenderThreadImpl;
 class RenderView;
 struct ResourceHostMsg_Request;
 
@@ -128,7 +128,7 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   // channel that the renderer uses to talk to the browser.
   // For this test, we will handle the browser end of the channel.
   scoped_ptr<IPC::Channel> channel_;
-  RenderThread* render_thread_;  // owned by mock_process_
+  RenderThreadImpl* render_thread_;  // owned by mock_process_
   scoped_ptr<MockRenderProcess> mock_process_;
   RenderView* view_;  // not owned, deletes itself on close
 

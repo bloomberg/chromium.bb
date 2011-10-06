@@ -4,7 +4,7 @@ include_rules = [
   # DO NOT ADD ANY content/renderer includes, we're working on removing these!
   "+content/renderer/mock_render_process.h",
   "+content/renderer/render_view.h",
-  "+content/renderer/render_thread.h",
+  "+content/renderer/render_thread_impl.h", # for phishing browsertest
   "+content/renderer/render_widget_browsertest.h",
   "+grit",  # For generated headers
   "+media/base",  # For initializing media library and media switches.

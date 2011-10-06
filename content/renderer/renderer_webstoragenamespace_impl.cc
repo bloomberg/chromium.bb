@@ -4,7 +4,7 @@
 
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
 
-#include "content/renderer/render_thread.h"
+#include "base/logging.h"
 #include "content/renderer/renderer_webstoragearea_impl.h"
 
 using WebKit::WebStorageArea;

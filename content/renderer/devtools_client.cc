@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/common/content_switches.h"
 #include "content/common/devtools_messages.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontend.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -36,7 +36,7 @@ void DevToolsClient::SendToAgent(const IPC::Message& tools_agent_message) {
 }
 
 bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(RenderThread::current()->message_loop() == MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DevToolsClient, message)

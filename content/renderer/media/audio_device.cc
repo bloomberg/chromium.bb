@@ -10,7 +10,7 @@
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
 
 AudioDevice::AudioDevice(size_t buffer_size,
@@ -25,7 +25,7 @@ AudioDevice::AudioDevice(size_t buffer_size,
       audio_delay_milliseconds_(0),
       volume_(1.0),
       stream_id_(0) {
-  filter_ = RenderThread::current()->audio_message_filter();
+  filter_ = RenderThreadImpl::current()->audio_message_filter();
   audio_data_.reserve(channels);
   for (int i = 0; i < channels; ++i) {
     float* channel_data = new float[buffer_size];
@@ -238,7 +238,7 @@ double AudioDevice::GetAudioHardwareSampleRate() {
   // Uses cached value if possible.
   static double hardware_sample_rate = 0;
   if (!hardware_sample_rate) {
-    RenderThread::current()->Send(
+    RenderThreadImpl::current()->Send(
         new ViewHostMsg_GetHardwareSampleRate(&hardware_sample_rate));
   }
   return hardware_sample_rate;

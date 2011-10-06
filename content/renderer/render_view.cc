@@ -61,7 +61,7 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_accessibility.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
@@ -399,7 +399,7 @@ RenderView::RenderView(content::RenderThread* render_thread,
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableMediaStream)) {
     media_stream_impl_ = new MediaStreamImpl(
-        RenderThread::current()->video_capture_impl_manager());
+        RenderThreadImpl::current()->video_capture_impl_manager());
   }
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
@@ -949,7 +949,7 @@ void RenderView::OnCopyToFindPboard() {
   WebFrame* frame = webview()->focusedFrame();
   if (frame->hasSelection()) {
     string16 selection = frame->selectionAsText();
-    RenderThread::current()->Send(
+    render_thread_->Send(
         new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
   }
 }
@@ -1300,8 +1300,8 @@ bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
   // equivalent of WebView::willEnterModalLoop.  In the case of showModalDialog
   // it is particularly important that we do not call willEnterModalLoop as
   // that would defer resource loads for the dialog itself.
-  if (RenderThread::current())  // Will be NULL during unit tests.
-    RenderThread::current()->DoNotNotifyWebKitOfModalLoop();
+  if (RenderThreadImpl::current())  // Will be NULL during unit tests.
+    RenderThreadImpl::current()->DoNotNotifyWebKitOfModalLoop();
 
   message->EnableMessagePumping();  // Runs a nested message loop.
   return Send(message);
@@ -1530,7 +1530,7 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
       StartsWithASCII(name, "Insert", true) ||
       StartsWithASCII(name, "Delete", true))
     return;
-  RenderThread::current()->RecordUserMetrics(name);
+  RenderThreadImpl::current()->RecordUserMetrics(name);
 }
 
 bool RenderView::handleCurrentKeyboardEvent() {
@@ -1850,8 +1850,8 @@ void RenderView::runModal() {
   // timers so that we do not need to manage the shared timer in such a heavy
   // handed manner.
   //
-  if (RenderThread::current())  // Will be NULL during unit tests.
-    RenderThread::current()->DoNotSuspendWebKitSharedTimer();
+  if (RenderThreadImpl::current())  // Will be NULL during unit tests.
+    RenderThreadImpl::current()->DoNotSuspendWebKitSharedTimer();
 
   SendAndRunNestedMessageLoop(new ViewHostMsg_RunModal(routing_id_));
 }
@@ -1873,7 +1873,7 @@ WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
   WebApplicationCacheHostImpl* appcache_host =
       WebApplicationCacheHostImpl::FromFrame(frame);
   int appcache_host_id = appcache_host ? appcache_host->host_id() : 0;
-  return new WebWorkerProxy(client, RenderThread::current(), routing_id_,
+  return new WebWorkerProxy(client, RenderThreadImpl::current(), routing_id_,
                             appcache_host_id);
 }
 
@@ -1898,7 +1898,7 @@ WebSharedWorker* RenderView::createSharedWorker(
   if (url_mismatch) {
     return NULL;
   } else {
-    return new WebSharedWorkerProxy(RenderThread::current(),
+    return new WebSharedWorkerProxy(RenderThreadImpl::current(),
                                     document_id,
                                     exists,
                                     route_id,
@@ -1948,7 +1948,7 @@ WebApplicationCacheHost* RenderView::createApplicationCacheHost(
     WebFrame* frame, WebApplicationCacheHostClient* client) {
   return new RendererWebApplicationCacheHostImpl(
       FromWebView(frame->view()), client,
-      RenderThread::current()->appcache_dispatcher()->backend_proxy());
+      RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy());
 }
 
 WebCookieJar* RenderView::cookieJar(WebFrame* frame) {
@@ -2973,14 +2973,14 @@ webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
 
 void RenderView::CreatedPluginWindow(gfx::PluginWindowHandle window) {
 #if defined(USE_X11)
-  RenderThread::current()->Send(new ViewHostMsg_CreatePluginContainer(
+  render_thread_->Send(new ViewHostMsg_CreatePluginContainer(
       routing_id(), window));
 #endif
 }
 
 void RenderView::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
 #if defined(USE_X11)
-  RenderThread::current()->Send(new ViewHostMsg_DestroyPluginContainer(
+  render_thread_->Send(new ViewHostMsg_DestroyPluginContainer(
       routing_id(), window));
 #endif
   CleanupWindowInPluginMoves(window);
@@ -4317,23 +4317,21 @@ void RenderView::registerProtocolHandler(const WebString& scheme,
   if (base.GetOrigin() != absolute_url.GetOrigin()) {
     return;
   }
-  RenderThread::current()->Send(
-      new ViewHostMsg_RegisterProtocolHandler(routing_id_,
-                                              UTF16ToUTF8(scheme),
-                                              absolute_url,
-                                              title));
+  Send(new ViewHostMsg_RegisterProtocolHandler(routing_id_,
+                                               UTF16ToUTF8(scheme),
+                                               absolute_url,
+                                               title));
 }
 
 void RenderView::registerIntentHandler(const WebString& action,
                                        const WebString& type,
                                        const WebString& href,
                                        const WebString& title) {
-  RenderThread::current()->Send(
-      new ViewHostMsg_RegisterIntentHandler(routing_id_,
-                                            action,
-                                            type,
-                                            href,
-                                            title));
+  Send(new ViewHostMsg_RegisterIntentHandler(routing_id_,
+                                             action,
+                                             type,
+                                             href,
+                                             title));
 }
 
 WebKit::WebPageVisibilityState RenderView::visibilityState() const {

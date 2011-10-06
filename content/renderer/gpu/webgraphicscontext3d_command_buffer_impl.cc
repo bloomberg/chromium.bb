@@ -24,7 +24,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_switches.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -72,7 +72,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     bool render_directly_to_web_view) {
   DCHECK(!context_);
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
-  RenderThread* render_thread = RenderThread::current();
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (!render_thread)
     return false;
   host_ = render_thread->EstablishGpuChannelSync(

@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
@@ -49,7 +49,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   if (!parent_context_.get())
     return false;
 
-  RenderThread* render_thread = RenderThread::current();
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (!render_thread)
     return false;
 

@@ -9,13 +9,12 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
-#include "chrome/common/render_messages.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_response.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/mock_render_process.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_data.h"
@@ -70,7 +69,7 @@ void RenderViewFakeResourcesTest::SetUp() {
 
   webkit_glue::SetJavaScriptFlags("--expose-gc");
   mock_process_.reset(new MockRenderProcess);
-  render_thread_ = new RenderThread(kThreadName);
+  render_thread_ = new RenderThreadImpl(kThreadName);
   mock_process_->set_main_thread(render_thread_);
 #if defined(OS_MACOSX)
   InitWebCoreSystemInterface();

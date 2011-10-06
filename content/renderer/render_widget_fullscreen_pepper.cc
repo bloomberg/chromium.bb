@@ -8,7 +8,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
@@ -332,8 +332,7 @@ bool RenderWidgetFullscreenPepper::SupportsAsynchronousSwapBuffers() {
 
 void RenderWidgetFullscreenPepper::CreateContext() {
   DCHECK(!context_);
-  RenderThread* render_thread = RenderThread::current();
-  DCHECK(render_thread);
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
   GpuChannelHost* host = render_thread->EstablishGpuChannelSync(
     content::CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT);
   if (!host)

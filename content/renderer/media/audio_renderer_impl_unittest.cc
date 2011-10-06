@@ -13,7 +13,7 @@
 #include "content/renderer/media/audio_renderer_impl.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "content/renderer/render_process.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_channel.h"
 #include "media/base/data_buffer.h"
 #include "media/base/mock_callback.h"
@@ -145,7 +145,7 @@ class AudioRendererImplTest
     ASSERT_TRUE(channel_->Connect());
 
     mock_process_.reset(new MockRenderProcess);
-    render_thread_ = new RenderThread(kThreadName);
+    render_thread_ = new RenderThreadImpl(kThreadName);
     mock_process_->set_main_thread(render_thread_);
 
     // Create temporary shared memory.
@@ -204,7 +204,7 @@ class AudioRendererImplTest
   MessageLoopForIO message_loop_;
   content::MockContentRendererClient mock_content_renderer_client_;
   scoped_ptr<IPC::Channel> channel_;
-  RenderThread* render_thread_;  // owned by mock_process_
+  RenderThreadImpl* render_thread_;  // owned by mock_process_
   scoped_ptr<MockRenderProcess> mock_process_;
   base::SharedMemory shared_mem_;
   media::MockFilterHost host_;

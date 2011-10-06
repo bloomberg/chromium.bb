@@ -31,7 +31,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/plugin_channel_host.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/mime_util.h"
@@ -285,7 +285,7 @@ bool WebPluginDelegateProxy::Initialize(
     webkit::npapi::WebPlugin* plugin,
     bool load_manually) {
   IPC::ChannelHandle channel_handle;
-  if (!RenderThread::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
+  if (!RenderThreadImpl::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
           render_view_->routing_id(), url, page_url_, mime_type_,
           &channel_handle, &info_))) {
     return false;
@@ -652,7 +652,7 @@ bool WebPluginDelegateProxy::CreateSharedBitmap(
 #if defined(OS_MACOSX)
   TransportDIB::Handle handle;
   IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, false, &handle);
-  if (!RenderThread::current()->Send(msg))
+  if (!RenderThreadImpl::current()->Send(msg))
     return false;
   if (handle.fd < 0)
     return false;
@@ -1148,7 +1148,7 @@ void WebPluginDelegateProxy::OnResolveProxy(const GURL& url,
                                             bool* result,
                                             std::string* proxy_list) {
   *result = false;
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new ViewHostMsg_ResolveProxy(url, result, proxy_list));
 }
 

@@ -39,7 +39,7 @@
 #include "content/renderer/p2p/p2p_transport_impl.h"
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/renderer/pepper_platform_video_decoder_impl.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
@@ -128,7 +128,7 @@ class PlatformImage2DImpl
   // On Mac, we have to tell the browser to free the transport DIB.
   virtual ~PlatformImage2DImpl() {
     if (dib_.get()) {
-      RenderThread::current()->Send(
+      RenderThreadImpl::current()->Send(
           new ViewHostMsg_FreeTransportDIB(dib_->id()));
     }
   }
@@ -170,7 +170,7 @@ class PlatformAudioImpl
   PlatformAudioImpl()
       : client_(NULL), stream_id_(0),
         main_message_loop_(MessageLoop::current()) {
-    filter_ = RenderThread::current()->audio_message_filter();
+    filter_ = RenderThreadImpl::current()->audio_message_filter();
   }
 
   virtual ~PlatformAudioImpl() {
@@ -417,7 +417,7 @@ class PlatformVideoCaptureImpl
       : handler_proxy_(new media::VideoCaptureHandlerProxy(
             handler, base::MessageLoopProxy::current())) {
     VideoCaptureImplManager* manager =
-        RenderThread::current()->video_capture_impl_manager();
+        RenderThreadImpl::current()->video_capture_impl_manager();
     // 1 means the "default" video capture device.
     // TODO(piman): Add a way to enumerate devices and pass them through the
     // API.
@@ -427,7 +427,7 @@ class PlatformVideoCaptureImpl
   // Overrides from media::VideoCapture::EventHandler
   virtual ~PlatformVideoCaptureImpl() {
     VideoCaptureImplManager* manager =
-        RenderThread::current()->video_capture_impl_manager();
+        RenderThreadImpl::current()->video_capture_impl_manager();
     manager->RemoveDevice(1, handler_proxy_.get());
   }
 
@@ -906,7 +906,7 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
   IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(buffer_size,
                                                         true,
                                                         &dib_handle);
-  if (!RenderThread::current()->Send(msg))
+  if (!RenderThreadImpl::current()->Send(msg))
     return NULL;
   if (!TransportDIB::is_valid_handle(dib_handle))
     return NULL;
@@ -1243,8 +1243,8 @@ class AsyncOpenFileSystemURLCallbackTranslator
     callback_->Run(base::PLATFORM_FILE_OK, base::PassPlatformFile(&file));
     // Make sure we won't leak file handle if the requester has died.
     if (file != base::kInvalidPlatformFileValue) {
-      base::FileUtilProxy::Close(
-          RenderThread::current()->GetFileThreadMessageLoopProxy(), file, NULL);
+      base::FileUtilProxy::Close(RenderThreadImpl::current()->
+          GetFileThreadMessageLoopProxy(), file, NULL);
     }
   }
 
@@ -1329,13 +1329,13 @@ base::PlatformFileError PepperPluginDelegateImpl::GetDirContents(
 
 void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(
     const GURL& url, FilePath* platform_path) {
-  RenderThread::current()->Send(new FileSystemHostMsg_SyncGetPlatformPath(
+  RenderThreadImpl::current()->Send(new FileSystemHostMsg_SyncGetPlatformPath(
       url, platform_path));
 }
 
 scoped_refptr<base::MessageLoopProxy>
 PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
-  return RenderThread::current()->GetFileThreadMessageLoopProxy();
+  return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy();
 }
 
 int32_t PepperPluginDelegateImpl::ConnectTcp(
@@ -1498,7 +1498,7 @@ void PepperPluginDelegateImpl::SubscribeToPolicyUpdates(
 std::string PepperPluginDelegateImpl::ResolveProxy(const GURL& url) {
   bool result;
   std::string proxy_result;
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new ViewHostMsg_ResolveProxy(url, &result, &proxy_result));
   return proxy_result;
 }

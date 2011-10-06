@@ -12,7 +12,7 @@
 #include "content/common/child_process.h"
 #include "content/common/content_switches.h"
 #include "content/common/media/audio_messages.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_output_controller.h"
@@ -35,7 +35,7 @@ AudioRendererImpl::AudioRendererImpl()
       pending_request_(false),
       prerolling_(false),
       preroll_bytes_(0) {
-  filter_ = RenderThread::current()->audio_message_filter();
+  filter_ = RenderThreadImpl::current()->audio_message_filter();
   // Figure out if we are planning to use high or low latency code path.
   // We are initializing only one variable and double initialization is Ok,
   // so there would not be any issues caused by CPU memory model.

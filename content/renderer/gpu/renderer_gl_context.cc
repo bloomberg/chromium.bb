@@ -16,7 +16,6 @@
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/gpu/transport_texture_host.h"
 #include "content/renderer/gpu/transport_texture_service.h"
-#include "content/renderer/render_thread.h"
 #include "content/renderer/render_widget.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"

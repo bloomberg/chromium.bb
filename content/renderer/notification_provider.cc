@@ -8,7 +8,6 @@
 #include "base/task.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

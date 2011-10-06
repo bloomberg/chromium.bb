@@ -11,7 +11,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
@@ -26,8 +26,7 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
       client_(client) {
   DCHECK(channel_);
   DCHECK(client_);
-  DCHECK(RenderThread::current());
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
 }
 
 GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}

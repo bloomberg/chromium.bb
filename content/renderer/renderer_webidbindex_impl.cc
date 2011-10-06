@@ -6,7 +6,7 @@
 
 #include "content/common/indexed_db_messages.h"
 #include "content/renderer/indexed_db_dispatcher.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webidbtransaction_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
@@ -25,34 +25,34 @@ RendererWebIDBIndexImpl::~RendererWebIDBIndexImpl() {
   // object since inside WebKit, they hold a reference to the object wich owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  RenderThread::current()->Send(new IndexedDBHostMsg_IndexDestroyed(
+  RenderThreadImpl::current()->Send(new IndexedDBHostMsg_IndexDestroyed(
       idb_index_id_));
 }
 
 WebString RendererWebIDBIndexImpl::name() const {
   string16 result;
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new IndexedDBHostMsg_IndexName(idb_index_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBIndexImpl::storeName() const {
   string16 result;
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new IndexedDBHostMsg_IndexStoreName(idb_index_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBIndexImpl::keyPath() const {
   NullableString16 result;
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new IndexedDBHostMsg_IndexKeyPath(idb_index_id_, &result));
   return result;
 }
 
 bool RendererWebIDBIndexImpl::unique() const {
   bool result;
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new IndexedDBHostMsg_IndexUnique(idb_index_id_, &result));
   return result;
 }
@@ -64,7 +64,7 @@ void RendererWebIDBIndexImpl::openObjectCursor(
     const WebKit::WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
+      RenderThreadImpl::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexOpenObjectCursor(
       range, direction, callbacks,  idb_index_id_, transaction, &ec);
 }
@@ -76,7 +76,7 @@ void RendererWebIDBIndexImpl::openKeyCursor(
     const WebKit::WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
+      RenderThreadImpl::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexOpenKeyCursor(
       range, direction, callbacks,  idb_index_id_, transaction, &ec);
 }
@@ -87,7 +87,7 @@ void RendererWebIDBIndexImpl::getObject(
     const WebKit::WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
+      RenderThreadImpl::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexGetObject(
       IndexedDBKey(key), callbacks, idb_index_id_, transaction, &ec);
 }
@@ -98,7 +98,7 @@ void RendererWebIDBIndexImpl::getKey(
     const WebKit::WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
+      RenderThreadImpl::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexGetKey(
       IndexedDBKey(key), callbacks, idb_index_id_, transaction, &ec);
 }

@@ -5,4 +5,25 @@
 #include "content/public/renderer/render_thread.h"
 
 #include "base/lazy_instance.h"
+#include "base/threading/thread_local.h"
 
+namespace content {
+
+// Keep the global RenderThread in a TLS slot so it is impossible to access
+// incorrectly from the wrong thread.
+static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
+    base::LINKER_INITIALIZED);
+
+RenderThread* RenderThread::Get() {
+  return lazy_tls.Pointer()->Get();
+}
+
+RenderThread::RenderThread() {
+  lazy_tls.Pointer()->Set(this);
+}
+
+RenderThread::~RenderThread() {
+  lazy_tls.Pointer()->Set(NULL);
+}
+
+}  // namespace content

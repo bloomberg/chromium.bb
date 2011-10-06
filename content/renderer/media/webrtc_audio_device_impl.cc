@@ -5,7 +5,7 @@
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 
 #include "base/string_util.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
 
 static const int64 kMillisecondsBetweenProcessCalls = 5000;
@@ -30,7 +30,7 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       playing_(false),
       recording_(false) {
     VLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
-    DCHECK(RenderThread::current()) <<
+    DCHECK(RenderThreadImpl::current()) <<
         "WebRtcAudioDeviceImpl must be constructed on the render thread";
 }
 

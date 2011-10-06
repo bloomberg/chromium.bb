@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 
 #include <algorithm>
 #include <limits>
@@ -105,9 +105,9 @@ static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
 static const int kPopupListBoxMinimumRowHeight = 60;
 #endif
 
-// Keep the global RenderThread in a TLS slot so it is impossible to access
+// Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
-static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
+static base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> > lazy_tls(
     base::LINKER_INITIALIZED);
 
 class RenderViewZoomer : public content::RenderViewVisitor {
@@ -140,29 +140,6 @@ class RenderViewZoomer : public content::RenderViewVisitor {
 
 }  // namespace
 
-// TODO(jam): move this to content/public/renderer/render_thread.cc once this file is renamed
-namespace content {
-
-// Keep the global RenderThread in a TLS slot so it is impossible to access
-// incorrectly from the wrong thread.
-static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
-    base::LINKER_INITIALIZED);
-
-RenderThread* RenderThread::Get() {
-  return lazy_tls.Pointer()->Get();
-}
-
-RenderThread::RenderThread() {
-  lazy_tls.Pointer()->Set(this);
-}
-
-RenderThread::~RenderThread() {
-  lazy_tls.Pointer()->Set(NULL);
-}
-
-}  // namespace content
-
-
 static void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
   if (min <= 0)
@@ -177,23 +154,23 @@ static void AddHistogramSample(void* hist, int sample) {
   histogram->Add(sample);
 }
 
-RenderThread* RenderThread::current() {
+RenderThreadImpl* RenderThreadImpl::current() {
   return lazy_tls.Pointer()->Get();
 }
 
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
-RenderThread::RenderThread() {
+RenderThreadImpl::RenderThreadImpl() {
   Init();
 }
 
-RenderThread::RenderThread(const std::string& channel_name)
+RenderThreadImpl::RenderThreadImpl(const std::string& channel_name)
     : ChildThread(channel_name) {
   Init();
 }
 
-void RenderThread::Init() {
-  TRACE_EVENT_BEGIN_ETW("RenderThread::Init", 0, "");
+void RenderThreadImpl::Init() {
+  TRACE_EVENT_BEGIN_ETW("RenderThreadImpl::Init", 0, "");
 
 #if defined(OS_MACOSX)
   // On Mac, the select popups are rendered by the browser.
@@ -215,7 +192,7 @@ void RenderThread::Init() {
   widget_count_ = 0;
   hidden_widget_count_ = 0;
   idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
-  task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
+  task_factory_.reset(new ScopedRunnableMethodFactory<RenderThreadImpl>(this));
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
   indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
@@ -237,10 +214,10 @@ void RenderThread::Init() {
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
-  TRACE_EVENT_END_ETW("RenderThread::Init", 0, "");
+  TRACE_EVENT_END_ETW("RenderThreadImpl::Init", 0, "");
 }
 
-RenderThread::~RenderThread() {
+RenderThreadImpl::~RenderThreadImpl() {
   FOR_EACH_OBSERVER(
       RenderProcessObserver, observers_, OnRenderProcessShutdown());
 
@@ -287,7 +264,7 @@ RenderThread::~RenderThread() {
 #endif
 }
 
-bool RenderThread::Send(IPC::Message* msg) {
+bool RenderThreadImpl::Send(IPC::Message* msg) {
   // Certain synchronous messages cannot always be processed synchronously by
   // the browser, e.g., Chrome frame communicating with the embedding browser.
   // This could cause a complete hang of Chrome if a windowed plug-in is trying
@@ -355,19 +332,19 @@ bool RenderThread::Send(IPC::Message* msg) {
   return rv;
 }
 
-MessageLoop* RenderThread::GetMessageLoop() {
+MessageLoop* RenderThreadImpl::GetMessageLoop() {
   return message_loop();
 }
 
-IPC::SyncChannel* RenderThread::GetChannel() {
+IPC::SyncChannel* RenderThreadImpl::GetChannel() {
   return channel();
 }
 
-ResourceDispatcher* RenderThread::GetResourceDispatcher() {
+ResourceDispatcher* RenderThreadImpl::GetResourceDispatcher() {
   return resource_dispatcher();
 }
 
-std::string RenderThread::GetLocale() {
+std::string RenderThreadImpl::GetLocale() {
   // The browser process should have passed the locale to the renderer via the
   // --lang command line flag.  In single process mode, this will return the
   // wrong value.  TODO(tc): Fix this for single process mode.
@@ -380,38 +357,39 @@ std::string RenderThread::GetLocale() {
   return lang;
 }
 
-void RenderThread::AddRoute(int32 routing_id,
-                            IPC::Channel::Listener* listener) {
+void RenderThreadImpl::AddRoute(int32 routing_id,
+                                IPC::Channel::Listener* listener) {
   widget_count_++;
   return ChildThread::AddRoute(routing_id, listener);
 }
 
-void RenderThread::RemoveRoute(int32 routing_id) {
+void RenderThreadImpl::RemoveRoute(int32 routing_id) {
   widget_count_--;
   return ChildThread::RemoveRoute(routing_id);
 }
 
-void RenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+void RenderThreadImpl::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
   channel()->AddFilter(filter);
 }
 
-void RenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
+void RenderThreadImpl::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
   channel()->RemoveFilter(filter);
 }
 
-void RenderThread::SetOutgoingMessageFilter(
+void RenderThreadImpl::SetOutgoingMessageFilter(
     IPC::ChannelProxy::OutgoingMessageFilter* filter) {
 }
 
-void RenderThread::AddObserver(content::RenderProcessObserver* observer) {
+void RenderThreadImpl::AddObserver(content::RenderProcessObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void RenderThread::RemoveObserver(content::RenderProcessObserver* observer) {
+void RenderThreadImpl::RemoveObserver(
+    content::RenderProcessObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void RenderThread::WidgetHidden() {
+void RenderThreadImpl::WidgetHidden() {
   DCHECK(hidden_widget_count_ < widget_count_);
   hidden_widget_count_++;
 
@@ -424,7 +402,7 @@ void RenderThread::WidgetHidden() {
     ScheduleIdleHandler(kInitialIdleHandlerDelayS);
 }
 
-void RenderThread::WidgetRestored() {
+void RenderThreadImpl::WidgetRestored() {
   DCHECK_GT(hidden_widget_count_, 0);
   hidden_widget_count_--;
   if (!content::GetContentClient()->renderer()->
@@ -435,7 +413,7 @@ void RenderThread::WidgetRestored() {
   idle_timer_.Stop();
 }
 
-void RenderThread::EnsureWebKitInitialized() {
+void RenderThreadImpl::EnsureWebKitInitialized() {
   if (webkit_platform_support_.get())
     return;
 
@@ -535,29 +513,29 @@ void RenderThread::EnsureWebKitInitialized() {
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 }
 
-void RenderThread::RecordUserMetrics(const std::string& action) {
+void RenderThreadImpl::RecordUserMetrics(const std::string& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(action));
 }
 
-void RenderThread::RegisterExtension(v8::Extension* extension) {
+void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
   WebScriptController::registerExtension(extension);
   v8_extensions_.insert(extension->name());
 }
 
-bool RenderThread::IsRegisteredExtension(
+bool RenderThreadImpl::IsRegisteredExtension(
     const std::string& v8_extension_name) const {
   return v8_extensions_.find(v8_extension_name) != v8_extensions_.end();
 }
 
-void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
+void RenderThreadImpl::ScheduleIdleHandler(double initial_delay_s) {
   idle_notification_delay_in_s_ = initial_delay_s;
   idle_timer_.Stop();
   idle_timer_.Start(FROM_HERE,
       base::TimeDelta::FromSeconds(static_cast<int64>(initial_delay_s)),
-      this, &RenderThread::IdleHandler);
+      this, &RenderThreadImpl::IdleHandler);
 }
 
-void RenderThread::IdleHandler() {
+void RenderThreadImpl::IdleHandler() {
   #if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
@@ -570,34 +548,34 @@ void RenderThread::IdleHandler() {
   // Using floor(delay) has a dampening effect such as:
   //    1s, 1, 1, 2, 2, 2, 2, 3, 3, ...
   // Note that idle_notification_delay_in_s_ would be reset to
-  // kInitialIdleHandlerDelayS in RenderThread::WidgetHidden.
+  // kInitialIdleHandlerDelayS in RenderThreadImpl::WidgetHidden.
   ScheduleIdleHandler(idle_notification_delay_in_s_ +
                       1.0 / (idle_notification_delay_in_s_ + 2.0));
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
 }
 
-double RenderThread::GetIdleNotificationDelayInS() const {
+double RenderThreadImpl::GetIdleNotificationDelayInS() const {
   return idle_notification_delay_in_s_;
 }
 
-void RenderThread::SetIdleNotificationDelayInS(
+void RenderThreadImpl::SetIdleNotificationDelayInS(
     double idle_notification_delay_in_s) {
   idle_notification_delay_in_s_ = idle_notification_delay_in_s;
 }
 
 #if defined(OS_WIN)
-void RenderThread::PreCacheFont(const LOGFONT& log_font) {
+void RenderThreadImpl::PreCacheFont(const LOGFONT& log_font) {
   Send(new ChildProcessHostMsg_PreCacheFont(log_font));
 }
 
-void RenderThread::ReleaseCachedFonts() {
+void RenderThreadImpl::ReleaseCachedFonts() {
   Send(new ChildProcessHostMsg_ReleaseCachedFonts());
 }
 
 #endif  // OS_WIN
 
-int32 RenderThread::RoutingIDForCurrentContext() {
+int32 RenderThreadImpl::RoutingIDForCurrentContext() {
   int32 routing_id = MSG_ROUTING_CONTROL;
   if (v8::Context::InContext()) {
     WebFrame* frame = WebFrame::frameForCurrentContext();
@@ -612,21 +590,21 @@ int32 RenderThread::RoutingIDForCurrentContext() {
   return routing_id;
 }
 
-void RenderThread::DoNotSuspendWebKitSharedTimer() {
+void RenderThreadImpl::DoNotSuspendWebKitSharedTimer() {
   suspend_webkit_shared_timer_ = false;
 }
 
-void RenderThread::DoNotNotifyWebKitOfModalLoop() {
+void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
   notify_webkit_of_modal_loop_ = false;
 }
 
-void RenderThread::OnSetZoomLevelForCurrentURL(const GURL& url,
-                                               double zoom_level) {
+void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const GURL& url,
+                                                   double zoom_level) {
   RenderViewZoomer zoomer(url, zoom_level);
   RenderView::ForEach(&zoomer);
 }
 
-void RenderThread::OnDOMStorageEvent(
+void RenderThreadImpl::OnDOMStorageEvent(
     const DOMStorageMsg_Event_Params& params) {
   if (!dom_storage_event_dispatcher_.get())
     dom_storage_event_dispatcher_.reset(WebStorageEventDispatcher::create());
@@ -635,7 +613,7 @@ void RenderThread::OnDOMStorageEvent(
       params.storage_type == DOM_STORAGE_LOCAL);
 }
 
-bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
   RenderProcessObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
@@ -650,7 +628,7 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     return true;
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderThread, msg)
+  IPC_BEGIN_MESSAGE_MAP(RenderThreadImpl, msg)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentURL,
                         OnSetZoomLevelForCurrentURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetNextPageID, OnSetNextPageID)
@@ -666,7 +644,7 @@ bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void RenderThread::OnSetNextPageID(int32 next_page_id) {
+void RenderThreadImpl::OnSetNextPageID(int32 next_page_id) {
   // This should only be called at process initialization time, so we shouldn't
   // have to worry about thread-safety.
   RenderView::SetNextPageID(next_page_id);
@@ -675,7 +653,7 @@ void RenderThread::OnSetNextPageID(int32 next_page_id) {
 // Called when to register CSS Color name->system color mappings.
 // We update the colors one by one and then tell WebKit to refresh all render
 // views.
-void RenderThread::OnSetCSSColors(
+void RenderThreadImpl::OnSetCSSColors(
     const std::vector<CSSColors::CSSColorMapping>& colors) {
   EnsureWebKitInitialized();
   size_t num_colors = colors.size();
@@ -693,7 +671,7 @@ void RenderThread::OnSetCSSColors(
   WebKit::setNamedColors(color_names.get(), web_colors.get(), num_colors);
 }
 
-void RenderThread::OnCreateNewView(const ViewMsg_New_Params& params) {
+void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
   EnsureWebKitInitialized();
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderView::Create(
@@ -708,7 +686,7 @@ void RenderThread::OnCreateNewView(const ViewMsg_New_Params& params) {
       params.frame_name);
 }
 
-GpuChannelHost* RenderThread::EstablishGpuChannelSync(
+GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
     content::CauseForGpuLaunch cause_for_gpu_launch) {
   if (gpu_channel_.get()) {
     // Do nothing if we already have a GPU channel or are already
@@ -749,7 +727,7 @@ GpuChannelHost* RenderThread::EstablishGpuChannelSync(
   return GetGpuChannel();
 }
 
-GpuChannelHost* RenderThread::GetGpuChannel() {
+GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
   if (!gpu_channel_.get())
     return NULL;
 
@@ -759,7 +737,7 @@ GpuChannelHost* RenderThread::GetGpuChannel() {
   return gpu_channel_.get();
 }
 
-void RenderThread::OnPurgePluginListCache(bool reload_pages) {
+void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
   EnsureWebKitInitialized();
   // The call below will cause a GetPlugins call with refresh=true, but at this
   // point we already know that the browser has refreshed its list, so disable
@@ -770,13 +748,13 @@ void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   plugin_refresh_allowed_ = true;
 }
 
-void RenderThread::OnNetworkStateChanged(bool online) {
+void RenderThreadImpl::OnNetworkStateChanged(bool online) {
   EnsureWebKitInitialized();
   WebNetworkStateNotifier::setOnLine(online);
 }
 
 scoped_refptr<base::MessageLoopProxy>
-RenderThread::GetFileThreadMessageLoopProxy() {
+RenderThreadImpl::GetFileThreadMessageLoopProxy() {
   DCHECK(message_loop() == MessageLoop::current());
   if (!file_thread_.get()) {
     file_thread_.reset(new base::Thread("Renderer::FILE"));

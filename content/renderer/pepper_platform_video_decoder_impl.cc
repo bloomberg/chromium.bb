@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "content/common/child_process.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 
 using media::BitstreamBuffer;
 
@@ -29,8 +29,7 @@ bool PlatformVideoDecoderImpl::Initialize(Profile profile) {
   if (decoder_)
     return true;
 
-  RenderThread* render_thread = RenderThread::current();
-  DCHECK(render_thread);
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
   // This is not synchronous, but subsequent IPC messages will be buffered, so
   // it is okay to immediately send IPC messages through the returned channel.
@@ -84,30 +83,30 @@ void PlatformVideoDecoderImpl::Destroy() {
 }
 
 void PlatformVideoDecoderImpl::NotifyEndOfStream() {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
   client_->NotifyEndOfStream();
 }
 
 void PlatformVideoDecoderImpl::NotifyError(
     VideoDecodeAccelerator::Error error) {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
   client_->NotifyError(error);
 }
 
 void PlatformVideoDecoderImpl::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
     const gfx::Size& dimensions) {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
   client_->ProvidePictureBuffers(requested_num_of_buffers, dimensions);
 }
 
 void PlatformVideoDecoderImpl::DismissPictureBuffer(int32 picture_buffer_id) {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
   client_->DismissPictureBuffer(picture_buffer_id);
 }
 
 void PlatformVideoDecoderImpl::PictureReady(const media::Picture& picture) {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
   client_->PictureReady(picture);
 }
 
@@ -117,16 +116,16 @@ void PlatformVideoDecoderImpl::NotifyInitializeDone() {
 
 void PlatformVideoDecoderImpl::NotifyEndOfBitstreamBuffer(
   int32 bitstream_buffer_id) {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
   client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
 }
 
 void PlatformVideoDecoderImpl::NotifyFlushDone() {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
   client_->NotifyFlushDone();
 }
 
 void PlatformVideoDecoderImpl::NotifyResetDone() {
-  DCHECK_EQ(RenderThread::current()->message_loop(), MessageLoop::current());
+  DCHECK(RenderThreadImpl::current());
   client_->NotifyResetDone();
 }

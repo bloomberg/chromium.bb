@@ -78,7 +78,7 @@
 #include "content/common/result_codes.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_process_impl.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
@@ -120,7 +120,7 @@ class RendererMainThread : public base::Thread {
 #endif
 
     render_process_ = new RenderProcessImpl();
-    render_process_->set_main_thread(new RenderThread(channel_id_));
+    render_process_->set_main_thread(new RenderThreadImpl(channel_id_));
     // It's a little lame to manually set this flag.  But the single process
     // RendererThread will receive the WM_QUIT.  We don't need to assert on
     // this thread, so just force the flag manually.

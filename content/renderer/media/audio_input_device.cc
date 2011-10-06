@@ -9,7 +9,7 @@
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
 
 AudioInputDevice::AudioInputDevice(size_t buffer_size,
@@ -24,7 +24,7 @@ AudioInputDevice::AudioInputDevice(size_t buffer_size,
       stream_id_(0),
       session_id_(0),
       pending_device_ready_(false) {
-  filter_ = RenderThread::current()->audio_input_message_filter();
+  filter_ = RenderThreadImpl::current()->audio_input_message_filter();
   audio_data_.reserve(channels);
 #if defined(OS_MACOSX)
   VLOG(1) << "Using AUDIO_PCM_LOW_LATENCY as input mode on Mac OS X.";

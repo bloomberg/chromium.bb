@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDER_THREAD_H_
-#define CONTENT_RENDERER_RENDER_THREAD_H_
+#ifndef CONTENT_RENDERER_RENDER_THREAD_IMPL_H_
+#define CONTENT_RENDERER_RENDER_THREAD_IMPL_H_
 #pragma once
 
 #include <set>
@@ -67,7 +67,7 @@ namespace v8 {
 class Extension;
 }
 
-// The RenderThread class represents a background thread where RenderView
+// The RenderThreadImpl class represents a background thread where RenderView
 // instances live.  The RenderThread supports an API that is used by its
 // consumer to talk indirectly to the RenderViews and supporting objects.
 // Likewise, it provides an API for the RenderViews to talk back to the main
@@ -76,15 +76,15 @@ class Extension;
 // Most of the communication occurs in the form of IPC messages.  They are
 // routed to the RenderThread according to the routing IDs of the messages.
 // The routing IDs correspond to RenderView instances.
-class CONTENT_EXPORT RenderThread : public content::RenderThread,
-                                    public ChildThread {
+class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
+                                        public ChildThread {
  public:
-  static RenderThread* current();
+  static RenderThreadImpl* current();
 
-  RenderThread();
+  RenderThreadImpl();
   // Constructor that's used when running in single process mode.
-  explicit RenderThread(const std::string& channel_name);
-  virtual ~RenderThread();
+  explicit RenderThreadImpl(const std::string& channel_name);
+  virtual ~RenderThreadImpl();
 
   // Returns the routing ID of the RenderWidget containing the current script
   // execution context (corresponding to WebFrame::frameForCurrentContext).
@@ -188,7 +188,7 @@ class CONTENT_EXPORT RenderThread : public content::RenderThread,
   void OnGetAccessibilityTree();
 
   // These objects live solely on the render thread.
-  scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;
+  scoped_ptr<ScopedRunnableMethodFactory<RenderThreadImpl> > task_factory_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
@@ -222,7 +222,7 @@ class CONTENT_EXPORT RenderThread : public content::RenderThread,
   bool notify_webkit_of_modal_loop_;
 
   // Timer that periodically calls IdleHandler.
-  base::RepeatingTimer<RenderThread> idle_timer_;
+  base::RepeatingTimer<RenderThreadImpl> idle_timer_;
 
   // The channel from the renderer process to the GPU process.
   scoped_refptr<GpuChannelHost> gpu_channel_;
@@ -237,7 +237,7 @@ class CONTENT_EXPORT RenderThread : public content::RenderThread,
 
   ObserverList<content::RenderProcessObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderThread);
+  DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
 
-#endif  // CONTENT_RENDERER_RENDER_THREAD_H_
+#endif  // CONTENT_RENDERER_RENDER_THREAD_IMPL_H_

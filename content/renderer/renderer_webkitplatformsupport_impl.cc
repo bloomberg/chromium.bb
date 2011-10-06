@@ -22,7 +22,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/media/audio_device.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/renderer_webaudiodevice_impl.h"
 #include "content/renderer/renderer_webidbfactory_impl.h"
@@ -192,7 +192,7 @@ bool RendererWebKitPlatformSupportImpl::sandboxEnabled() {
 
 bool RendererWebKitPlatformSupportImpl::SendSyncMessageFromAnyThread(
     IPC::SyncMessage* msg) {
-  RenderThread* render_thread = RenderThread::current();
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (render_thread)
     return render_thread->Send(msg);
 
@@ -253,12 +253,12 @@ void RendererWebKitPlatformSupportImpl::cacheMetadata(
   // browser may cache it and return it on subsequent responses to speed
   // the processing of this resource.
   std::vector<char> copy(data, data + size);
-  RenderThread::current()->Send(new ViewHostMsg_DidGenerateCacheableMetadata(
-      url, response_time, copy));
+  RenderThreadImpl::current()->Send(
+      new ViewHostMsg_DidGenerateCacheableMetadata(url, response_time, copy));
 }
 
 WebString RendererWebKitPlatformSupportImpl::defaultLocale() {
-  return ASCIIToUTF16(RenderThread::Get()->GetLocale());
+  return ASCIIToUTF16(RenderThreadImpl::Get()->GetLocale());
 }
 
 void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
@@ -276,7 +276,7 @@ void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
       return;
   }
 
-  RenderThread* thread = RenderThread::current();
+  RenderThreadImpl* thread = RenderThreadImpl::current();
   if (thread)  // NULL in unittests.
     thread->Send(new ViewHostMsg_SuddenTerminationChanged(enabled));
 }
@@ -355,7 +355,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeForExtension(
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   std::string mime_type;
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new MimeRegistryMsg_GetMimeTypeFromExtension(
           webkit_glue::WebStringToFilePathString(file_extension), &mime_type));
   return ASCIIToUTF16(mime_type);
@@ -370,7 +370,7 @@ WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   std::string mime_type;
-  RenderThread::current()->Send(new MimeRegistryMsg_GetMimeTypeFromFile(
+  RenderThreadImpl::current()->Send(new MimeRegistryMsg_GetMimeTypeFromFile(
       FilePath(webkit_glue::WebStringToFilePathString(file_path)),
       &mime_type));
   return ASCIIToUTF16(mime_type);
@@ -386,7 +386,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::preferredExtensionForMIMEType(
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   FilePath::StringType file_extension;
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new MimeRegistryMsg_GetPreferredExtensionForMimeType(
           UTF16ToASCII(mime_type), &file_extension));
   return webkit_glue::FilePathStringToWebString(file_extension);
@@ -410,7 +410,8 @@ void RendererWebKitPlatformSupportImpl::FileUtilities::revealFolderInOS(
     const WebString& path) {
   FilePath file_path(webkit_glue::WebStringToFilePath(path));
   file_util::AbsolutePath(&file_path);
-  RenderThread::current()->Send(new ViewHostMsg_RevealFolderInOS(file_path));
+  RenderThreadImpl::current()->Send(
+      new ViewHostMsg_RevealFolderInOS(file_path));
 }
 
 bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileModificationTime(
@@ -444,7 +445,7 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
     HFONT font) {
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
-  RenderThread::current()->PreCacheFont(logfont);
+  RenderThreadImpl::current()->PreCacheFont(logfont);
   return true;
 }
 
@@ -455,7 +456,7 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
   uint32 font_data_size;
   FontDescriptor src_font_descriptor(src_font);
   base::SharedMemoryHandle font_data;
-  if (!RenderThread::current()->Send(new ViewHostMsg_LoadFont(
+  if (!RenderThreadImpl::current()->Send(new ViewHostMsg_LoadFont(
         src_font_descriptor, &font_data_size, &font_data, font_id))) {
     *out = NULL;
     *font_id = 0;
@@ -592,7 +593,7 @@ RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
     const WebKit::WebString& challenge,
     const WebKit::WebURL& url) {
   std::string signed_public_key;
-  RenderThread::current()->Send(new ViewHostMsg_Keygen(
+  RenderThreadImpl::current()->Send(new ViewHostMsg_Keygen(
       static_cast<uint32>(key_size_index),
       challenge.utf8(),
       GURL(url),
@@ -603,9 +604,9 @@ RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
 //------------------------------------------------------------------------------
 
 WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
-  // RenderThread::current can be NULL when running some tests.
-  if (!blob_registry_.get() && RenderThread::current()) {
-    blob_registry_.reset(new WebBlobRegistryImpl(RenderThread::Get()));
+  // RenderThreadImpl::current can be NULL when running some tests.
+  if (!blob_registry_.get() && RenderThreadImpl::current()) {
+    blob_registry_.reset(new WebBlobRegistryImpl(RenderThreadImpl::Get()));
   }
   return blob_registry_.get();
 }

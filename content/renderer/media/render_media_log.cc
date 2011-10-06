@@ -6,19 +6,19 @@
 
 #include "base/message_loop_proxy.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 
 RenderMediaLog::RenderMediaLog()
     : render_loop_(base::MessageLoopProxy::current()) {
-  DCHECK(RenderThread::current()) <<
+  DCHECK(RenderThreadImpl::current()) <<
       "RenderMediaLog must be constructed on the render thread";
 }
 
 void RenderMediaLog::AddEvent(media::MediaLogEvent* event) {
   scoped_ptr<media::MediaLogEvent> e(event);
 
-  if (RenderThread::current()) {
-    RenderThread::current()->Send(new ViewHostMsg_MediaLogEvent(*e));
+  if (RenderThreadImpl::current()) {
+    RenderThreadImpl::current()->Send(new ViewHostMsg_MediaLogEvent(*e));
   } else {
     render_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &RenderMediaLog::AddEvent, e.release()));

@@ -6,7 +6,7 @@
 
 #include "content/common/indexed_db_messages.h"
 #include "content/renderer/indexed_db_dispatcher.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webidbobjectstore_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
@@ -26,14 +26,14 @@ RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
   // object since inside WebKit, they hold a reference to the object wich owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  RenderThread::current()->Send(new IndexedDBHostMsg_TransactionDestroyed(
+  RenderThreadImpl::current()->Send(new IndexedDBHostMsg_TransactionDestroyed(
       idb_transaction_id_));
 }
 
 int RendererWebIDBTransactionImpl::mode() const
 {
   int mode;
-  RenderThread::current()->Send(new IndexedDBHostMsg_TransactionMode(
+  RenderThreadImpl::current()->Send(new IndexedDBHostMsg_TransactionMode(
       idb_transaction_id_, &mode));
   return mode;
 }
@@ -43,7 +43,7 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
     WebKit::WebExceptionCode& ec)
 {
   int object_store_id;
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new IndexedDBHostMsg_TransactionObjectStore(
           idb_transaction_id_, name, &object_store_id, &ec));
   if (!object_store_id)
@@ -53,13 +53,13 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
 
 void RendererWebIDBTransactionImpl::abort()
 {
-  RenderThread::current()->Send(new IndexedDBHostMsg_TransactionAbort(
+  RenderThreadImpl::current()->Send(new IndexedDBHostMsg_TransactionAbort(
       idb_transaction_id_));
 }
 
 void RendererWebIDBTransactionImpl::didCompleteTaskEvents()
 {
-  RenderThread::current()->Send(
+  RenderThreadImpl::current()->Send(
       new IndexedDBHostMsg_TransactionDidCompleteTaskEvents(
           idb_transaction_id_));
 }
@@ -68,7 +68,7 @@ void RendererWebIDBTransactionImpl::setCallbacks(
     WebIDBTransactionCallbacks* callbacks)
 {
   IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
+      RenderThreadImpl::current()->indexed_db_dispatcher();
   dispatcher->RegisterWebIDBTransactionCallbacks(callbacks,
                                                  idb_transaction_id_);
 }

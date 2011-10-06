@@ -11,7 +11,7 @@
 #include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/gpu/transport_texture_service.h"
 #include "content/renderer/render_process.h"
-#include "content/renderer/render_thread.h"
+#include "content/renderer/render_thread_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
 
@@ -123,7 +123,7 @@ GpuChannelHost::~GpuChannelHost() {
 void GpuChannelHost::Connect(
     const IPC::ChannelHandle& channel_handle,
     base::ProcessHandle renderer_process_for_gpu) {
-  DCHECK(RenderThread::current());
+  DCHECK(RenderThreadImpl::current());
   // Open a channel to the GPU process. We pass NULL as the main listener here
   // since we need to filter everything to route it to the right thread.
   channel_.reset(new IPC::SyncChannel(
@@ -182,12 +182,12 @@ bool GpuChannelHost::Send(IPC::Message* message) {
   // Currently we need to choose between two different mechanisms for sending.
   // On the main thread we use the regular channel Send() method, on another
   // thread we use SyncMessageFilter. We also have to be careful interpreting
-  // RenderThread::current() since it might return NULL during shutdown, while
-  // we are actually calling from the main thread (discard message then).
+  // RenderThreadImpl::current() since it might return NULL during shutdown,
+  // impl we are actually calling from the main thread (discard message then).
   //
   // TODO: Can we just always use sync_filter_ since we setup the channel
   //       without a main listener?
-  if (RenderThread::current()) {
+  if (RenderThreadImpl::current()) {
     if (channel_.get())
       return channel_->Send(message);
   } else if (MessageLoop::current()) {
