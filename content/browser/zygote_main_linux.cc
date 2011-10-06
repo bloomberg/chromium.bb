@@ -655,11 +655,15 @@ static void PreSandboxInit() {
 #if defined(USE_NSS)
   // NSS libraries are loaded before sandbox is activated. This is to allow
   // successful initialization of NSS which tries to load extra library files.
-  // Doing so will allow NSS to be used within sandbox for chromoting.
   crypto::LoadNSSLibraries();
+#elif defined(USE_OPENSSL)
+  // OpenSSL is intentionally not supported in the sandboxed processes, see
+  // http://crbug.com/99163. If that ever changes we'll likely need to init
+  // OpenSSL here (at least, load the library and error strings).
 #else
-    // TODO(bulach): implement openssl support.
-    NOTREACHED() << "Remoting is not supported for openssl";
+  // It's possible that another hypothetical crypto stack would not require
+  // pre-sandbox init, but more likely this is just a build configuration error.
+  #error Which SSL library are you using?
 #endif
 
   // Ensure access to the Pepper plugins before the sandbox is turned on.
