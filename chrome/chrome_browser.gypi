@@ -341,6 +341,8 @@
         'browser/chrome_browser_main_posix.h',
         'browser/chrome_browser_main_win.cc',
         'browser/chrome_browser_main_win.h',
+        'browser/chrome_browser_main_x11.cc',
+        'browser/chrome_browser_main_x11.h',
         'browser/chrome_content_browser_client.cc',
         'browser/chrome_content_browser_client.h',
         'browser/chrome_plugin_message_filter.cc',
