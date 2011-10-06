@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/scoped_gdi_object.h"
@@ -371,7 +372,7 @@ class NativeWidgetWin::ScopedRedrawLock {
 
 NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
-      close_widget_factory_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       active_mouse_tracking_flags_(0),
       use_layered_buffer_(false),
       layered_alpha_(255),
@@ -387,7 +388,7 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       lock_updates_count_(0),
       saved_window_style_(0),
       ignore_window_pos_changes_(false),
-      ignore_pos_changes_factory_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(ignore_pos_changes_factory_(this)),
       last_monitor_(NULL),
       is_right_mouse_pressed_on_caption_(false),
       restored_enabled_(false),
@@ -831,14 +832,15 @@ void NativeWidgetWin::Close() {
   // Let's hide ourselves right away.
   Hide();
 
-  if (close_widget_factory_.empty()) {
+  if (!close_widget_factory_.HasWeakPtrs()) {
     // And we delay the close so that if we are called from an ATL callback,
     // we don't destroy the window before the callback returned (as the caller
     // may delete ourselves on destroy and the ATL callback would still
     // dereference us when the callback returns).
-    MessageLoop::current()->PostTask(FROM_HERE,
-        close_widget_factory_.NewRunnableMethod(
-            &NativeWidgetWin::CloseNow));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&NativeWidgetWin::CloseNow,
+                   close_widget_factory_.GetWeakPtr()));
   }
 
   // If the user activates another app after opening us, then comes back and
@@ -1077,10 +1079,11 @@ void NativeWidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
     // receive calls to DidProcessMessage(). This only seems to affect layered
     // windows, so we schedule a redraw manually using a task, since those never
     // seem to be starved. Also, wtf.
-    if (paint_layered_window_factory_.empty()) {
-      MessageLoop::current()->PostTask(FROM_HERE,
-          paint_layered_window_factory_.NewRunnableMethod(
-          &NativeWidgetWin::RedrawLayeredWindowContents));
+    if (!paint_layered_window_factory_.HasWeakPtrs()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&NativeWidgetWin::RedrawLayeredWindowContents,
+                     paint_layered_window_factory_.GetWeakPtr()));
     }
   } else {
     // InvalidateRect() expects client coordinates.
@@ -2057,10 +2060,11 @@ void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
         // likes to (incorrectly) recalculate what our position/size should be
         // and send us further updates.
         ignore_window_pos_changes_ = true;
-        DCHECK(ignore_pos_changes_factory_.empty());
-        MessageLoop::current()->PostTask(FROM_HERE,
-            ignore_pos_changes_factory_.NewRunnableMethod(
-            &NativeWidgetWin::StopIgnoringPosChanges));
+        DCHECK(!ignore_pos_changes_factory_.HasWeakPtrs());
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(&NativeWidgetWin::StopIgnoringPosChanges,
+                       ignore_pos_changes_factory_.GetWeakPtr()));
       }
       last_monitor_ = monitor;
       last_monitor_rect_ = monitor_rect;

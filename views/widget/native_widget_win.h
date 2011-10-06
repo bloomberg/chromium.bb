@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
@@ -538,7 +539,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   // The following factory is used for calls to close the NativeWidgetWin
   // instance.
-  ScopedRunnableMethodFactory<NativeWidgetWin> close_widget_factory_;
+  base::WeakPtrFactory<NativeWidgetWin> close_widget_factory_;
 
   // The flags currently being used with TrackMouseEvent to track mouse
   // messages. 0 if there is no active tracking. The value of this member is
@@ -574,7 +575,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   gfx::Rect invalid_rect_;
 
   // A factory that allows us to schedule a redraw for layered windows.
-  ScopedRunnableMethodFactory<NativeWidgetWin> paint_layered_window_factory_;
+  base::WeakPtrFactory<NativeWidgetWin> paint_layered_window_factory_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
@@ -637,7 +638,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   // The following factory is used to ignore SetWindowPos() calls for short time
   // periods.
-  ScopedRunnableMethodFactory<NativeWidgetWin> ignore_pos_changes_factory_;
+  base::WeakPtrFactory<NativeWidgetWin> ignore_pos_changes_factory_;
 
   // The last-seen monitor containing us, and its rect and work area.  These are
   // used to catch updates to the rect and work area and react accordingly.

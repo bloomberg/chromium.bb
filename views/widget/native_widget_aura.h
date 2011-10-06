@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/window_delegate.h"
 #include "views/views_export.h"
 #include "views/widget/native_widget_private.h"
@@ -146,7 +147,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
-  ScopedRunnableMethodFactory<NativeWidgetAura> close_widget_factory_;
+  base::WeakPtrFactory<NativeWidgetAura> close_widget_factory_;
 
   bool can_activate_;
 

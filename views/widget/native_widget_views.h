@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/transform.h"
@@ -165,7 +166,7 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   // The following factory is used for calls to close the NativeWidgetViews
   // instance.
-  ScopedRunnableMethodFactory<NativeWidgetViews> close_widget_factory_;
+  base::WeakPtrFactory<NativeWidgetViews> close_widget_factory_;
 
   gfx::Rect restored_bounds_;
   ui::Transform restored_transform_;

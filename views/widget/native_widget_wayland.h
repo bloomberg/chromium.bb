@@ -9,6 +9,7 @@
 #include <wayland-client.h>
 
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -158,7 +159,7 @@ class NativeWidgetWayland : public internal::NativeWidgetPrivate,
   scoped_ptr<TooltipManager> tooltip_manager_;
 
   // The following factory is used to delay destruction.
-  ScopedRunnableMethodFactory<NativeWidgetWayland> close_widget_factory_;
+  base::WeakPtrFactory<NativeWidgetWayland> close_widget_factory_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;

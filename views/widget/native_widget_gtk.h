@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x.h"
@@ -362,7 +363,7 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   scoped_ptr<DropTargetGtk> drop_target_;
 
   // The following factory is used to delay destruction.
-  ScopedRunnableMethodFactory<NativeWidgetGtk> close_widget_factory_;
+  base::WeakPtrFactory<NativeWidgetGtk> close_widget_factory_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;

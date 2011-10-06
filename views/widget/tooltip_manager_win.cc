@@ -5,8 +5,10 @@
 #include "views/widget/tooltip_manager_win.h"
 
 #include <windowsx.h>
+
 #include <limits>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -366,10 +368,11 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   ::SetWindowPos(keyboard_tooltip_hwnd_, NULL, rect_bounds.left,
                  rect_bounds.top, 0, 0,
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      keyboard_tooltip_factory_.NewRunnableMethod(
-      &TooltipManagerWin::DestroyKeyboardTooltipWindow,
-      keyboard_tooltip_hwnd_),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&TooltipManagerWin::DestroyKeyboardTooltipWindow,
+                 keyboard_tooltip_factory_.GetWeakPtr(),
+                 keyboard_tooltip_hwnd_),
       kDefaultTimeout);
 }
 

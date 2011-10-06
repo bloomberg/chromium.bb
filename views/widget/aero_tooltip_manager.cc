@@ -8,6 +8,7 @@
 #include <commctrl.h>
 #include <shlobj.h>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/hwnd_util.h"
@@ -94,8 +95,8 @@ AeroTooltipManager::InitialTimer::InitialTimer(AeroTooltipManager* manager)
 }
 
 void AeroTooltipManager::InitialTimer::Start(int time) {
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-      this, &InitialTimer::Execute), time);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&InitialTimer::Execute, this), time);
 }
 
 void AeroTooltipManager::InitialTimer::Disown() {

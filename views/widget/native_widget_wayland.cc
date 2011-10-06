@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <list>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/view_prop.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -332,10 +333,11 @@ void NativeWidgetWayland::SetShape(gfx::NativeRegion shape) {
 
 void NativeWidgetWayland::Close() {
   Hide();
-  if (close_widget_factory_.empty()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        close_widget_factory_.NewRunnableMethod(
-            &NativeWidgetWayland::CloseNow));
+  if (!close_widget_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&NativeWidgetWayland::CloseNow,
+                   close_widget_factory_.GetWeakPtr()));
   }
 }
 

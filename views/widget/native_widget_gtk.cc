@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -1156,11 +1157,12 @@ void NativeWidgetGtk::Close() {
 
   // Hide first.
   Hide();
-  if (close_widget_factory_.empty()) {
+  if (!close_widget_factory_.HasWeakPtrs()) {
     // And we delay the close just in case we're on the stack.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        close_widget_factory_.NewRunnableMethod(
-            &NativeWidgetGtk::CloseNow));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&NativeWidgetGtk::CloseNow,
+                   close_widget_factory_.GetWeakPtr()));
   }
 }
 

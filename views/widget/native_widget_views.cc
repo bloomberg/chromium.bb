@@ -4,6 +4,7 @@
 
 #include "views/widget/native_widget_views.h"
 
+#include "base/bind.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
@@ -349,9 +350,11 @@ void NativeWidgetViews::SetShape(gfx::NativeRegion region) {
 
 void NativeWidgetViews::Close() {
   Hide();
-  if (close_widget_factory_.empty()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        close_widget_factory_.NewRunnableMethod(&NativeWidgetViews::CloseNow));
+  if (!close_widget_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&NativeWidgetViews::CloseNow,
+                   close_widget_factory_.GetWeakPtr()));
   }
 }
 

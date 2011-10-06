@@ -4,6 +4,7 @@
 
 #include "views/widget/native_widget_aura.h"
 
+#include "base/bind.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
@@ -251,10 +252,11 @@ void NativeWidgetAura::SetShape(gfx::NativeRegion region) {
 void NativeWidgetAura::Close() {
   Hide();
 
-  if (close_widget_factory_.empty()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        close_widget_factory_.NewRunnableMethod(
-            &NativeWidgetAura::CloseNow));
+  if (!close_widget_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&NativeWidgetAura::CloseNow,
+                   close_widget_factory_.GetWeakPtr()));
   }
 }
 

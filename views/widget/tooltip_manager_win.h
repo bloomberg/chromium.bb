@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "views/widget/tooltip_manager.h"
@@ -143,7 +143,7 @@ class TooltipManagerWin : public TooltipManager {
 
   // Used to register DestroyTooltipWindow function with PostDelayedTask
   // function.
-  ScopedRunnableMethodFactory<TooltipManagerWin> keyboard_tooltip_factory_;
+  base::WeakPtrFactory<TooltipManagerWin> keyboard_tooltip_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerWin);
 };
