@@ -308,10 +308,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
         sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
   }
 
-  // Returns true if OnPassphraseRequired has been called for decryption.
+  // Returns true if OnPassphraseRequired has been called for decryption and
+  // we have an encrypted data type enabled.
   bool IsPassphraseRequiredForDecryption() const {
-    return (passphrase_required_reason_ == sync_api::REASON_DECRYPTION ||
-        passphrase_required_reason_ == sync_api::REASON_SET_PASSPHRASE_FAILED);
+    return IsEncryptedDatatypeEnabled() &&
+        (passphrase_required_reason_ == sync_api::REASON_DECRYPTION ||
+         passphrase_required_reason_ == sync_api::REASON_SET_PASSPHRASE_FAILED);
   }
 
   sync_api::PassphraseRequiredReason passphrase_required_reason() const {
@@ -544,6 +546,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   friend class TestProfileSyncService;
   friend class ProfileSyncServiceForWizardTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
+
+  // Called when we've determined that we don't need a passphrase (either
+  // because OnPassphraseAccepted() was called, or because we've gotten a
+  // OnPassphraseRequired() but no data types are enabled).
+  void ResolvePassphraseRequired();
 
   // If |delete_sync_data_folder| is true, then this method will delete all
   // previous "Sync Data" folders. (useful if the folder is partial/corrupt).

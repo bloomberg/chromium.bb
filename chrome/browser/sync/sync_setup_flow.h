@@ -144,13 +144,13 @@ class SyncSetupFlow {
   // We need this to propagate back all user settings changes. Weak reference.
   ProfileSyncService* service_;
 
-  // Set to true if we've tried creating an explicit passphrase, so we
+  // Set to true if the user has tried creating an explicit passphrase, so we
   // can appropriately reflect this in the UI.
-  bool tried_creating_explicit_passphrase_;
+  bool user_tried_creating_explicit_passphrase_;
 
   // Set to true if the user entered a passphrase, so we can appropriately
   // reflect this in the UI.
-  bool tried_setting_passphrase_;
+  bool user_tried_setting_passphrase_;
 
   // We track the passphrase the user entered so we can set it when configuring
   // the ProfileSyncService.

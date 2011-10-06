@@ -183,9 +183,9 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
     args->SetBoolean("need_google_passphrase",
                      !service->IsUsingSecondaryPassphrase());
     args->SetBoolean("passphrase_creation_rejected",
-                     tried_creating_explicit_passphrase_);
+                     user_tried_creating_explicit_passphrase_);
     args->SetBoolean("passphrase_setting_rejected",
-                     tried_setting_passphrase_);
+                     user_tried_setting_passphrase_);
   }
 }
 
@@ -286,7 +286,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
 
   // Note: encryption will not occur until OnUserChoseDatatypes is called.
   service_->SetEncryptEverything(configuration.encrypt_all);
-
+  bool set_new_decryption_passphrase = false;
   if (configuration.set_gaia_passphrase) {
     // Caller passed a gaia passphrase. This is illegal if we are currently
     // using a secondary passphrase.
@@ -294,12 +294,14 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
     service_->SetPassphrase(configuration.gaia_passphrase, false);
     // Since the user entered the passphrase manually, set this flag so we can
     // report an error if the passphrase setting failed.
-    tried_setting_passphrase_ = true;
+    user_tried_setting_passphrase_ = true;
+    set_new_decryption_passphrase = true;
   } else if (!service_->IsUsingSecondaryPassphrase() &&
              !cached_passphrase_.empty()) {
     // Service needs a GAIA passphrase and we have one cached, so try it.
     service_->SetPassphrase(cached_passphrase_, false);
     cached_passphrase_.clear();
+    set_new_decryption_passphrase = true;
   } else {
     // We can get here if the user changes their GAIA passphrase but still has
     // data encrypted with the old passphrase. The UI prompts the user for their
@@ -316,20 +318,36 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   // as an attempt to encrypt the user's data using this new passphrase.
   if (configuration.set_secondary_passphrase) {
     service_->SetPassphrase(configuration.secondary_passphrase, true);
-    if (service_->IsUsingSecondaryPassphrase())
-      tried_setting_passphrase_ = true;
-    else
-      tried_creating_explicit_passphrase_ = true;
+    if (service_->IsUsingSecondaryPassphrase()) {
+      user_tried_setting_passphrase_ = true;
+      set_new_decryption_passphrase = true;
+    } else {
+      user_tried_creating_explicit_passphrase_ = true;
+    }
   }
 
   service_->OnUserChoseDatatypes(configuration.sync_everything,
                                  configuration.data_types);
+
+  // See if we are done configuring (if we don't need a passphrase, and don't
+  // need to hang around waiting for encryption to happen, just exit). This call
+  // to IsPassphraseRequiredForDecryption() takes into account the data types
+  // we just enabled/disabled.
+  if (!service_->IsPassphraseRequiredForDecryption()) {
+    Advance(SyncSetupWizard::DONE);
+  } else if (!set_new_decryption_passphrase) {
+    // We need a passphrase, but the user did not provide one, so transition
+    // directly to ENTER_PASSPHRASE (otherwise we'll have to wait until
+    // the sync engine generates another OnPassphraseRequired() at the end of
+    // the sync cycle which can take a long time).
+    Advance(SyncSetupWizard::ENTER_PASSPHRASE);
+  }
 }
 
 void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
   service_->SetPassphrase(passphrase, true);
-  tried_setting_passphrase_ = true;
+  user_tried_setting_passphrase_ = true;
 }
 
 void SyncSetupFlow::OnPassphraseCancel() {
@@ -352,8 +370,8 @@ SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
       login_start_time_(base::TimeTicks::Now()),
       flow_handler_(NULL),
       service_(service),
-      tried_creating_explicit_passphrase_(false),
-      tried_setting_passphrase_(false) {
+      user_tried_creating_explicit_passphrase_(false),
+      user_tried_setting_passphrase_(false) {
 }
 
 // Returns true if the flow should advance to |state| based on |current_state_|.

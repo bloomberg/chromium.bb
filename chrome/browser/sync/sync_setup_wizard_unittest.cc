@@ -326,7 +326,9 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   // Simulate the user choosing data types; bookmarks, prefs, typed URLS, and
   // apps are on, the rest are off.
   handler_.HandleConfigure(&data_type_choices_value);
-  EXPECT_TRUE(wizard_->IsVisible());
+  // Since we don't need a passphrase, wizard should have transitioned to
+  // DONE state and closed the UI.
+  EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_FALSE(service_->keep_everything_synced_);
   EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::BOOKMARKS));
   EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::PREFERENCES));
@@ -337,8 +339,6 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::TYPED_URLS));
   EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::APPS));
   EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::SEARCH_ENGINES));
-
-  CloseSetupUI();
 }
 
 TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {

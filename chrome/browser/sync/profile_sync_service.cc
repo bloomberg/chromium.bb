@@ -862,15 +862,6 @@ void ProfileSyncService::OnPassphraseRequired(
           << sync_api::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
-  // We will skip the passphrase prompt and suppress the warning if the
-  // passphrase is needed for decryption but the user is not syncing an
-  // encrypted data type on this machine. Otherwise we look for one.
-  if (!IsEncryptedDatatypeEnabled() && IsPassphraseRequiredForDecryption()) {
-    VLOG(1) << "Decrypting and no encrypted datatypes enabled"
-            << ", accepted passphrase.";
-    OnPassphraseAccepted();
-  }
-
   // First try supplying gaia password as the passphrase.
   // TODO(atwilson): This logic seems odd here - we know what kind of passphrase
   // is required (explicit/gaia) so we should not bother setting the wrong kind
@@ -895,9 +886,16 @@ void ProfileSyncService::OnPassphraseRequired(
     return;
   }
 
-  // Prompt the user for a password.
-  if (WizardIsVisible() && IsEncryptedDatatypeEnabled() &&
-      IsPassphraseRequiredForDecryption()) {
+  // If no passphrase is required (due to not having any encrypted data types
+  // enabled), just act as if we don't have any passphrase error. We still
+  // track the auth error in passphrase_required_reason_ in case the user later
+  // re-enables an encrypted data type.
+  if (!IsPassphraseRequiredForDecryption()) {
+    VLOG(1) << "Decrypting and no encrypted datatypes enabled"
+            << ", accepted passphrase.";
+    ResolvePassphraseRequired();
+  } else if (WizardIsVisible()) {
+    // Prompt the user for a password.
     VLOG(1) << "Prompting user for passphrase.";
     wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
   }
@@ -907,6 +905,19 @@ void ProfileSyncService::OnPassphraseRequired(
 
 void ProfileSyncService::OnPassphraseAccepted() {
   VLOG(1) << "Received OnPassphraseAccepted.";
+  // Reset passphrase_required_reason_ before configuring calling
+  // ResolvePassphraseRequired() (which configures the DataTypeManager) since we
+  // know we no longer require the passphrase. We do this here rather
+  // than down in ResolvePassphraseRequired() because that can be called by
+  // OnPassphraseRequired() if no encrypted data types are enabled, and we
+  // don't want to clobber the true passphrase error.
+  passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
+
+  ResolvePassphraseRequired();
+}
+
+void ProfileSyncService::ResolvePassphraseRequired() {
+  DCHECK(!IsPassphraseRequiredForDecryption());
   // Don't hold on to a passphrase in raw form longer than needed.
   cached_passphrases_ = CachedPassphrases();
 
@@ -915,17 +926,21 @@ void ProfileSyncService::OnPassphraseAccepted() {
   syncable::ModelTypeSet types;
   GetPreferredDataTypes(&types);
 
-  // Reset passphrase_required_reason_ before configuring the DataTypeManager
-  // since we know we no longer require the passphrase.
-  passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
-
   if (data_type_manager_.get()) {
     // Unblock the data type manager if necessary.
     // This will always trigger a SYNC_CONFIGURE_DONE on completion, which will
     // step the UI wizard into DONE state (even if no datatypes have changed).
+    // This will be ignored, because we will already have transitioned to DONE
+    // below.
     data_type_manager_->Configure(types,
                                   sync_api::CONFIGURE_REASON_RECONFIGURATION);
   }
+
+  // No encryption is pending, our passphrase has been accepted, so tell the
+  // wizard we're done (no need to hang around waiting for the sync to
+  // complete).
+  if (WizardIsVisible())
+    wizard_.Step(SyncSetupWizard::DONE);
 
   NotifyObservers();
 }
