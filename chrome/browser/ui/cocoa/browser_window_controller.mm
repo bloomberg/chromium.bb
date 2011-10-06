@@ -30,7 +30,7 @@
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
-#import "chrome/browser/ui/cocoa/browser/avatar_button.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -1637,21 +1637,17 @@ enum {
 // view to decorate the window at the upper right. Use the same base y
 // coordinate as the tab strip.
 - (void)installAvatar {
-  // Only install if this browser window is OTR and has a tab strip.
-  if (![self shouldShowAvatar])
-    return;
-
-  // Install the image into the badge view. Hide it for now; positioning,
-  // sizing, and showing will be done by the layout code. The AvatarButton will
-  // choose which image to display based on the browser.
-  avatarButton_.reset([[AvatarButton alloc] initWithBrowser:browser_.get()]);
-  [avatarButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
-  [avatarButton_ setHidden:YES];
-  // The button shouldn't do anything in incognito.
-  [avatarButton_ setOpenMenuOnClick:!browser_->profile()->IsOffTheRecord()];
+  // Install the image into the badge view. Hide it for now; positioning and
+  // sizing will be done by the layout code. The AvatarButton will choose which
+  // image to display based on the browser.
+  avatarButtonController_.reset(
+      [[AvatarButtonController alloc] initWithBrowser:browser_.get()]);
+  NSView* view = [avatarButtonController_ view];
+  [view setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+  [view setHidden:![self shouldShowAvatar]];
 
   // Install the view.
-  [[[[self window] contentView] superview] addSubview:avatarButton_];
+  [[[[self window] contentView] superview] addSubview:view];
 }
 
 // Documented in 10.6+, but present starting in 10.5. Called when we get a

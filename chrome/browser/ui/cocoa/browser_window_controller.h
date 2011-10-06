@@ -28,7 +28,7 @@
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "ui/gfx/rect.h"
 
-@class AvatarButton;
+@class AvatarButtonController;
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
@@ -110,10 +110,10 @@ class TabContents;
   CGFloat totalMagnifyGestureAmount_;
   NSInteger currentZoomStepDelta_;
 
-  // The view that shows the incognito badge or the multi-profile avatar icon.
-  // Nil if neither is present. Needed to access the view to move it to/from the
-  // fullscreen window.
-  scoped_nsobject<AvatarButton> avatarButton_;
+  // The view controller that manages the incognito badge or the multi-profile
+  // avatar icon. The view is always in the view hierarchy, but will be hidden
+  // unless it's appropriate to show it.
+  scoped_nsobject<AvatarButtonController> avatarButtonController_;
 
   // The view that shows the presentation mode toggle when in Lion fullscreen
   // mode.  Nil if not in fullscreen mode or not on Lion.

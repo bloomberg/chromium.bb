@@ -79,12 +79,12 @@ void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
   TestingProfilesMap::iterator it = testing_profiles_.find(name);
   DCHECK(it != testing_profiles_.end());
 
-  scoped_ptr<TestingProfile> profile(it->second);
-
-  profile_manager_->profiles_info_.erase(profile->GetPath());
+  TestingProfile* profile = it->second;
 
   ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
   cache.DeleteProfileFromCache(profile->GetPath());
+
+  profile_manager_->profiles_info_.erase(profile->GetPath());
 }
 
 ProfileManager* TestingProfileManager::profile_manager() {
