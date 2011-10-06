@@ -274,13 +274,15 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
       base::FindThreadIDWithSyscall(crashing_pid,
                                     expected_syscall_data,
                                     &syscall_supported);
-  if (crashing_tid == -1 && syscall_supported) {
+  if (crashing_tid == -1) {
     // We didn't find the thread we want. Maybe it didn't reach
     // sys_read() yet or the thread went away.  We'll just take a
     // guess here and assume the crashing thread is the thread group
     // leader.  If procfs syscall is not supported by the kernel, then
     // we assume the kernel also does not support TID namespacing and
     // trust the TID passed by the crashing process.
+    LOG(WARNING) << "Could not translate tid - assuming crashing thread is "
+        "thread group leader; syscall_supported=" << syscall_supported;
     crashing_tid = crashing_pid;
   }
 
