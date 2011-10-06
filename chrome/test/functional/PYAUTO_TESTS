@@ -215,9 +215,6 @@
       '-passwords',
       # crbug.com/97140
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
-      # WebDriver requires python 2.6, which mac pyauto does not use yet.
-      # crbug.com/49379
-      '-pyauto_webdriver',
       # crbug.com/79263
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/69619
@@ -447,13 +444,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # Disable pyauto+webdriver tests on 'Google Chrome' bots until next
-      # build is generated. 8/15/2011. Remove tomorrow.
-      # crbug.com/95974
-      '-pyauto_webdriver',
-      '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
-      '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
-      '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
       # This test fails due to crbug.com/35485
       '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       # This test fails due to crbug.com/50706
