@@ -24,7 +24,15 @@ class WebClipboardImpl : public WebKit::WebClipboard {
   // WebClipboard methods:
   virtual bool isFormatAvailable(Format, Buffer);
   virtual WebKit::WebString readPlainText(Buffer);
-  virtual WebKit::WebString readHTML(Buffer, WebKit::WebURL* source_url);
+  // TODO(dcheng): This method is deprecated and scheduled to be removed.
+  virtual WebKit::WebString readHTML(
+      Buffer,
+      WebKit::WebURL* source_url);
+  virtual WebKit::WebString readHTML(
+      Buffer,
+      WebKit::WebURL* source_url,
+      unsigned* fragment_start,
+      unsigned* fragment_end);
   virtual WebKit::WebData readImage(Buffer);
   virtual uint64 getSequenceNumber();
   virtual void writeHTML(

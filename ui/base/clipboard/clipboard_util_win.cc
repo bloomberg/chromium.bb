@@ -493,6 +493,25 @@ std::string ClipboardUtil::HtmlToCFHtml(const std::string& html,
 void ClipboardUtil::CFHtmlToHtml(const std::string& cf_html,
                                  std::string* html,
                                  std::string* base_url) {
+  size_t fragment_start = std::string::npos;
+  size_t fragment_end = std::string::npos;
+
+  ClipboardUtil::CFHtmlExtractMetadata(
+      cf_html, base_url, NULL, &fragment_start, &fragment_end);
+
+  if (html &&
+      fragment_start != std::string::npos &&
+      fragment_end != std::string::npos) {
+    *html = cf_html.substr(fragment_start, fragment_end - fragment_start);
+    TrimWhitespace(*html, TRIM_ALL, html);
+  }
+}
+
+void ClipboardUtil::CFHtmlExtractMetadata(const std::string& cf_html,
+                                          std::string* base_url,
+                                          size_t* html_start,
+                                          size_t* fragment_start,
+                                          size_t* fragment_end) {
   // Obtain base_url if present.
   if (base_url) {
     static std::string src_url_str("SourceURL:");
@@ -510,38 +529,31 @@ void ClipboardUtil::CFHtmlToHtml(const std::string& cf_html,
   // Find the markup between "<!--StartFragment-->" and "<!--EndFragment-->".
   // If the comments cannot be found, like copying from OpenOffice Writer,
   // we simply fall back to using StartFragment/EndFragment bytecount values
-  // to get the markup.
-  if (html) {
-    size_t fragment_start = std::string::npos;
-    size_t fragment_end = std::string::npos;
-
-    std::string cf_html_lower = StringToLowerASCII(cf_html);
-    size_t markup_start = cf_html_lower.find("<html", 0);
-    size_t tag_start = cf_html.find("<!--StartFragment", markup_start);
-    if (tag_start == std::string::npos) {
-      static std::string start_fragment_str("StartFragment:");
-      size_t start_fragment_start = cf_html.find(start_fragment_str);
-      if (start_fragment_start != std::string::npos) {
-        fragment_start = static_cast<size_t>(atoi(cf_html.c_str() +
-            start_fragment_start + start_fragment_str.length()));
-      }
-
-      static std::string end_fragment_str("EndFragment:");
-      size_t end_fragment_start = cf_html.find(end_fragment_str);
-      if (end_fragment_start != std::string::npos) {
-        fragment_end = static_cast<size_t>(atoi(cf_html.c_str() +
-            end_fragment_start + end_fragment_str.length()));
-      }
-    } else {
-      fragment_start = cf_html.find('>', tag_start) + 1;
-      size_t tag_end = cf_html.rfind("<!--EndFragment", std::string::npos);
-      fragment_end = cf_html.rfind('<', tag_end);
+  // to determine the fragment indexes.
+  std::string cf_html_lower = StringToLowerASCII(cf_html);
+  size_t markup_start = cf_html_lower.find("<html", 0);
+  if (html_start) {
+    *html_start = markup_start;
+  }
+  size_t tag_start = cf_html.find("<!--StartFragment", markup_start);
+  if (tag_start == std::string::npos) {
+    static std::string start_fragment_str("StartFragment:");
+    size_t start_fragment_start = cf_html.find(start_fragment_str);
+    if (start_fragment_start != std::string::npos) {
+      *fragment_start = static_cast<size_t>(atoi(cf_html.c_str() +
+          start_fragment_start + start_fragment_str.length()));
     }
-    if (fragment_start != std::string::npos &&
-        fragment_end != std::string::npos) {
-      *html = cf_html.substr(fragment_start, fragment_end - fragment_start);
-      TrimWhitespace(*html, TRIM_ALL, html);
+
+    static std::string end_fragment_str("EndFragment:");
+    size_t end_fragment_start = cf_html.find(end_fragment_str);
+    if (end_fragment_start != std::string::npos) {
+      *fragment_end = static_cast<size_t>(atoi(cf_html.c_str() +
+          end_fragment_start + end_fragment_str.length()));
     }
+  } else {
+    *fragment_start = cf_html.find('>', tag_start) + 1;
+    size_t tag_end = cf_html.rfind("<!--EndFragment", std::string::npos);
+    *fragment_end = cf_html.rfind('<', tag_end);
   }
 }
 

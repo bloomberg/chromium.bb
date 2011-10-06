@@ -352,12 +352,17 @@ void Clipboard::ReadFile(FilePath* file) const {
 // TODO(estade): handle different charsets.
 // TODO(port): set *src_url.
 void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
-                         std::string* src_url) const {
+                         std::string* src_url, uint32* fragment_start,
+                         uint32* fragment_end) const {
+  markup->clear();
+  if (src_url)
+    src_url->clear();
+  *fragment_start = 0;
+  *fragment_end = 0;
+
   GtkClipboard* clipboard = LookupBackingClipboard(buffer);
   if (clipboard == NULL)
     return;
-  markup->clear();
-
   GtkSelectionData* data = gtk_clipboard_wait_for_contents(clipboard,
       StringToGdkAtom(GetHtmlFormatType()));
 
@@ -377,6 +382,10 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   // If there is a terminating NULL, drop it.
   if (!markup->empty() && markup->at(markup->length() - 1) == '\0')
     markup->resize(markup->length() - 1);
+
+  *fragment_start = 0;
+  DCHECK(markup->length() <= kuint32max);
+  *fragment_end = static_cast<uint32>(markup->length());
 
   gtk_selection_data_free(data);
 }

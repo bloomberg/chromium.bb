@@ -59,12 +59,17 @@ class UI_EXPORT ClipboardUtil {
                               std::wstring* filename,
                               std::string* file_contents);
 
-  // A helper method for converting between MS CF_HTML format and plain
+  // Helper method for converting between MS CF_HTML format and plain
   // text/html.
   static std::string HtmlToCFHtml(const std::string& html,
                                   const std::string& base_url);
   static void CFHtmlToHtml(const std::string& cf_html, std::string* html,
                            std::string* base_url);
+  static void CFHtmlExtractMetadata(const std::string& cf_html,
+                                    std::string* base_url,
+                                    size_t* html_start,
+                                    size_t* fragment_start,
+                                    size_t* fragment_end);
 };
 
 }

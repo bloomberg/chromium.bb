@@ -37,7 +37,8 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
                             bool* contains_filenames);
   void OnReadText(ui::Clipboard::Buffer buffer, string16* result);
   void OnReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result);
-  void OnReadHTML(ui::Clipboard::Buffer buffer, string16* markup, GURL* url);
+  void OnReadHTML(ui::Clipboard::Buffer buffer, string16* markup, GURL* url,
+                  uint32* fragment_start, uint32* fragment_end);
   void OnReadImage(ui::Clipboard::Buffer buffer, IPC::Message* reply_msg);
   void OnReadImageReply(const SkBitmap& bitmap, IPC::Message* reply_msg);
 #if defined(OS_MACOSX)

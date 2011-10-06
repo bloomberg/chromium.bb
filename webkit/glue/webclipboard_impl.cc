@@ -119,6 +119,7 @@ WebString WebClipboardImpl::readPlainText(Buffer buffer) {
   return WebString();
 }
 
+// TODO(dcheng): For backwards compatibility during the transition.
 WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url) {
   ui::Clipboard::Buffer buffer_type;
   if (!ConvertBufferType(buffer, &buffer_type))
@@ -126,7 +127,25 @@ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url) {
 
   string16 html_stdstr;
   GURL gurl;
-  ClipboardReadHTML(buffer_type, &html_stdstr, &gurl);
+  uint32 fragment_start = 0;
+  uint32 fragment_end = 0;
+  ClipboardReadHTML(buffer_type, &html_stdstr, &gurl, &fragment_start,
+                    &fragment_end);
+  return html_stdstr.substr(fragment_start, fragment_end - fragment_start);
+}
+
+WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
+                                     unsigned* fragment_start,
+                                     unsigned* fragment_end) {
+  ui::Clipboard::Buffer buffer_type;
+  if (!ConvertBufferType(buffer, &buffer_type))
+    return WebString();
+
+  string16 html_stdstr;
+  GURL gurl;
+  ClipboardReadHTML(buffer_type, &html_stdstr, &gurl,
+                    static_cast<uint32*>(fragment_start),
+                    static_cast<uint32*>(fragment_end));
   *source_url = gurl;
   return html_stdstr;
 }

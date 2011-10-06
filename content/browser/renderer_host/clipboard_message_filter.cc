@@ -142,9 +142,11 @@ void ClipboardMessageFilter::OnReadAsciiText(
 }
 
 void ClipboardMessageFilter::OnReadHTML(
-    ui::Clipboard::Buffer buffer, string16* markup, GURL* url) {
+    ui::Clipboard::Buffer buffer, string16* markup, GURL* url,
+    uint32* fragment_start, uint32* fragment_end) {
   std::string src_url_str;
-  GetClipboard()->ReadHTML(buffer, markup, &src_url_str);
+  GetClipboard()->ReadHTML(buffer, markup, &src_url_str, fragment_start,
+                           fragment_end);
   *url = GURL(src_url_str);
 }
 

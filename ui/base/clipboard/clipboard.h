@@ -150,8 +150,12 @@ class UI_EXPORT Clipboard {
   // Reads ASCII text from the clipboard, if available.
   void ReadAsciiText(Buffer buffer, std::string* result) const;
 
-  // Reads HTML from the clipboard, if available.
-  void ReadHTML(Buffer buffer, string16* markup, std::string* src_url) const;
+  // Reads HTML from the clipboard, if available. If the HTML fragment requires
+  // context to parse, |fragment_start| and |fragment_end| are indexes into
+  // markup indicating the beginning and end of the actual fragment. Otherwise,
+  // they will contain 0 and markup->size().
+  void ReadHTML(Buffer buffer, string16* markup, std::string* src_url,
+                uint32* fragment_start, uint32* fragment_end) const;
 
   // Reads an image from the clipboard, if available.
   SkBitmap ReadImage(Buffer buffer) const;

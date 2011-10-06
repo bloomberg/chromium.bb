@@ -151,9 +151,11 @@ void ClipboardReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result) {
 }
 
 void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
-                       GURL* url) {
+                       GURL* url, uint32* fragment_start,
+                       uint32* fragment_end) {
   RenderThread::current()->Send(
-      new ClipboardHostMsg_ReadHTML(buffer, markup, url));
+      new ClipboardHostMsg_ReadHTML(buffer, markup, url, fragment_start,
+                                    fragment_end));
 }
 
 void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data) {

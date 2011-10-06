@@ -184,7 +184,8 @@ void ClipboardReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result);
 
 // Reads HTML from the clipboard, if available.
 void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
-                       GURL* url);
+                       GURL* url, uint32* fragment_start,
+                       uint32* fragment_end);
 
 void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data);
 

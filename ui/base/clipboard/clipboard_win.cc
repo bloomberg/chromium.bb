@@ -424,13 +424,17 @@ void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
 }
 
 void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
-                         std::string* src_url) const {
+                         std::string* src_url, uint32* fragment_start,
+                         uint32* fragment_end) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
-  if (markup)
-    markup->clear();
 
+  markup->clear();
+  // TODO(dcheng): Remove these checks, I don't think they should be optional.
+  DCHECK(src_url);
   if (src_url)
     src_url->clear();
+  *fragment_start = 0;
+  *fragment_end = 0;
 
   // Acquire the clipboard.
   ScopedClipboard clipboard;
@@ -441,14 +445,25 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   if (!data)
     return;
 
-  std::string html_fragment(static_cast<const char*>(::GlobalLock(data)));
+  std::string cf_html(static_cast<const char*>(::GlobalLock(data)));
   ::GlobalUnlock(data);
 
-  std::string markup_utf8;
-  ClipboardUtil::CFHtmlToHtml(html_fragment, markup ? &markup_utf8 : NULL,
-                              src_url);
-  if (markup)
-    markup->assign(UTF8ToWide(markup_utf8));
+  size_t html_start = std::string::npos;
+  size_t start_index = std::string::npos;
+  size_t end_index = std::string::npos;
+  ClipboardUtil::CFHtmlExtractMetadata(cf_html, src_url, &html_start,
+                                       &start_index, &end_index);
+  if (markup) {
+    // Some sanity checks...
+    DCHECK(start_index != std::string::npos);
+    DCHECK(end_index != std::string::npos);
+    DCHECK((start_index - html_start) <= kuint32max);
+    DCHECK((end_index - html_start) <= kuint32max);
+
+    markup->assign(UTF8ToWide(cf_html.data() + html_start));
+    *fragment_start = static_cast<uint32>(start_index - html_start);
+    *fragment_end = static_cast<uint32>(end_index - html_start);
+  }
 }
 
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {

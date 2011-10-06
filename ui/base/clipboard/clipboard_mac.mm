@@ -221,15 +221,22 @@ void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
 }
 
 void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
-                         std::string* src_url) const {
+                         std::string* src_url, uint32* fragment_start,
+                         uint32* fragment_end) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
-  if (markup) {
-    NSPasteboard* pb = GetPasteboard();
-    NSArray* supportedTypes = [NSArray arrayWithObjects:NSHTMLPboardType,
-                                                        NSRTFPboardType,
-                                                        NSStringPboardType,
-                                                        nil];
-    NSString* bestType = [pb availableTypeFromArray:supportedTypes];
+
+  // TODO(avi): src_url?
+  markup->clear();
+  if (src_url)
+    src_url->clear();
+
+  NSPasteboard* pb = GetPasteboard();
+  NSArray* supportedTypes = [NSArray arrayWithObjects:NSHTMLPboardType,
+                                                      NSRTFPboardType,
+                                                      NSStringPboardType,
+                                                      nil];
+  NSString* bestType = [pb availableTypeFromArray:supportedTypes];
+  if (bestType) {
     NSString* contents = [pb stringForType:bestType];
     if ([bestType isEqualToString:NSRTFPboardType])
       contents = [pb htmlFromRtf];
@@ -238,9 +245,9 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
                 markup);
   }
 
-  // TODO(avi): src_url?
-  if (src_url)
-    src_url->clear();
+  *fragment_start = 0;
+  DCHECK(markup->length() <= kuint32max);
+  *fragment_end = static_cast<uint32>(markup->length());
 }
 
 SkBitmap Clipboard::ReadImage(Buffer buffer) const {

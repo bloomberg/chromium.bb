@@ -42,10 +42,12 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadText,
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadAsciiText,
                             ui::Clipboard::Buffer  /* buffer */,
                             std::string /* result */)
-IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadHTML,
+IPC_SYNC_MESSAGE_CONTROL1_4(ClipboardHostMsg_ReadHTML,
                             ui::Clipboard::Buffer  /* buffer */,
                             string16 /* markup */,
-                            GURL /* url */)
+                            GURL /* url */,
+                            uint32 /* fragment start */,
+                            uint32 /* fragment end */)
 IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadImage,
                             ui::Clipboard::Buffer /* buffer */,
                             base::SharedMemoryHandle /* PNG-encoded image */,

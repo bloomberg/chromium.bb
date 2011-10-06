@@ -72,6 +72,14 @@ WebKit::WebString MockWebClipboardImpl::readHTML(
   return m_htmlText;
 }
 
+WebKit::WebString MockWebClipboardImpl::readHTML(
+    WebKit::WebClipboard::Buffer buffer, WebKit::WebURL* url,
+    unsigned* fragmentStart, unsigned* fragmentEnd) {
+  *fragmentStart = 0;
+  *fragmentEnd = static_cast<unsigned>(m_htmlText.length());
+  return m_htmlText;
+}
+
 WebKit::WebData MockWebClipboardImpl::readImage(
     WebKit::WebClipboard::Buffer buffer) {
   std::string data;
