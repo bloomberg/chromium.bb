@@ -2504,8 +2504,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   browser_handler_map["SignInToSync"] =
       &TestingAutomationProvider::SignInToSync;
   browser_handler_map["GetSyncInfo"] = &TestingAutomationProvider::GetSyncInfo;
-  browser_handler_map["AwaitSyncCycleCompletion"] =
-      &TestingAutomationProvider::AwaitSyncCycleCompletion;
+  browser_handler_map["AwaitFullSyncCompletion"] =
+      &TestingAutomationProvider::AwaitFullSyncCompletion;
   browser_handler_map["AwaitSyncRestart"] =
       &TestingAutomationProvider::AwaitSyncRestart;
   browser_handler_map["EnableSyncForDatatypes"] =
@@ -4792,7 +4792,7 @@ void TestingAutomationProvider::GetSyncInfo(Browser* browser,
 }
 
 // Sample json output: { "success": true }
-void TestingAutomationProvider::AwaitSyncCycleCompletion(
+void TestingAutomationProvider::AwaitFullSyncCompletion(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -4817,7 +4817,7 @@ void TestingAutomationProvider::AwaitSyncCycleCompletion(
     reply.SendError("Sync backend host initialization failed.");
     return;
   }
-  if (!sync_waiter_->AwaitSyncCycleCompletion("Waiting for sync cycle")) {
+  if (!sync_waiter_->AwaitFullSyncCompletion("Waiting for sync cycle")) {
     reply.SendError("Sync cycle did not complete.");
     return;
   }
@@ -4908,7 +4908,7 @@ void TestingAutomationProvider::EnableSyncForDatatypes(
         return;
       }
       sync_waiter_->EnableSyncForDatatype(datatype);
-      sync_waiter_->AwaitSyncCycleCompletion(StringPrintf(
+      sync_waiter_->AwaitFullSyncCompletion(StringPrintf(
           "Enabling datatype: %s", datatype_string.c_str()));
     }
   }
@@ -4972,7 +4972,7 @@ void TestingAutomationProvider::DisableSyncForDatatypes(
         return;
       }
       sync_waiter_->DisableSyncForDatatype(datatype);
-      sync_waiter_->AwaitSyncCycleCompletion(StringPrintf(
+      sync_waiter_->AwaitFullSyncCompletion(StringPrintf(
           "Disabling datatype: %s", datatype_string.c_str()));
     }
     ProfileSyncService::Status status = sync_waiter_->GetStatus();

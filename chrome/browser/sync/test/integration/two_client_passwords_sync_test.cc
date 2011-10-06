@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DisableSync) {
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Added a password."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a password."));
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
 
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, SetPassphrase) {
 
   SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Set passphrase."));
+  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Set passphrase."));
 }
 
 // TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
@@ -283,12 +283,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(GetClient(0)->SetupSync());
   SetPassphrase(0, kValidPassphrase);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Initial sync."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Initial sync."));
 
   ASSERT_FALSE(GetClient(1)->SetupSync());
   SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Initial sync."));
+  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Initial sync."));
 
   // Following ensures types are enabled and active (see bug 87572).
   browser_sync::ModelSafeRoutingInfo routes;
@@ -315,9 +315,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
 
   SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Set passphrase."));
+  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Set passphrase."));
 
   SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Set passphrase again."));
+  ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Set passphrase again."));
 }

@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, DisableSync) {
   InstallExtension(GetProfile(0), 0);
   InstallExtension(verifier(), 0);
   ASSERT_TRUE(
-      GetClient(0)->AwaitSyncCycleCompletion("Installed an extension."));
+      GetClient(0)->AwaitFullSyncCompletion("Installed an extension."));
   ASSERT_TRUE(HasSameExtensionsAsVerifier(0));
   ASSERT_FALSE(HasSameExtensionsAsVerifier(1));
 

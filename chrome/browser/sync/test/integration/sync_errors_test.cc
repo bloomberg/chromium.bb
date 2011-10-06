@@ -25,7 +25,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorTest) {
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Offline state change."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Offline state change."));
   TriggerBirthdayError();
 
   // Now make one more change so we will do another sync.
@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, TransientErrorTest) {
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Offline state change."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Offline state change."));
   TriggerTransientError();
 
   // Now make one more change so we will do another sync.
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Sync."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
 
   browser_sync::SyncProtocolError protocol_error;
   protocol_error.error_type = browser_sync::TRANSIENT_ERROR;
@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Sync."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Sync."));
 
   browser_sync::SyncProtocolError protocol_error;
   protocol_error.error_type = browser_sync::NOT_MY_BIRTHDAY;

@@ -31,12 +31,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, OfflineToOnline) {
   DisableNetwork(GetProfile(0));
   const BookmarkNode* node = AddFolder(0, L"title");
   SetTitle(0, node, L"new_title");
-  ASSERT_FALSE(GetClient(0)->AwaitSyncCycleCompletion("Offline state change."));
+  ASSERT_FALSE(GetClient(0)->AwaitFullSyncCompletion("Offline state change."));
   ASSERT_EQ(ProfileSyncService::Status::OFFLINE_UNSYNCED,
             GetClient(0)->GetStatus().summary);
 
   EnableNetwork(GetProfile(0));
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Commit changes."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Commit changes."));
   ASSERT_EQ(ProfileSyncService::Status::READY,
             GetClient(0)->GetStatus().summary);
   ASSERT_TRUE(ModelMatchesVerifier(0));
@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
       0, tier1_b, 0, L"tier1_b_url0", GURL("http://www.nhl.com"));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
       "Waiting for initial sync completed."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
       GURL("http://www.cnn.com"));
   ASSERT_TRUE(cnn != NULL);
   Move(0, tier1_a, bar, 1);
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Bookmark moved."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Bookmark moved."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   const BookmarkNode* porsche = AddURL(0, bar, 2, L"Porsche",
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_EQ(tier1_a, tier1_a_url1->parent());
   Move(0, tier1_a_url2, tier1_a, 0);
   Move(0, tier1_a_url1, tier1_a, 2);
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
       "Rearrange stuff in tier1_a"));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   Move(0, porsche, bar, 0);
   SetTitle(0, wired, L"News Wired");
   SetTitle(0, porsche, L"ICanHazPorsche?");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Change title."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Change title."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   ASSERT_EQ(tier1_a_url0->id(), top->GetChild(top->child_count() - 1)->id());
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
 
   Move(0, wynn, tier3_b, 0);
   Move(0, leafs, tier3_b, 0);
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
       "Move after addition of bookmarks."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }

@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DisableSync) {
   UseCustomTheme(GetProfile(0), 0);
   UseCustomTheme(verifier(), 0);
   ASSERT_TRUE(
-      GetClient(0)->AwaitSyncCycleCompletion("Installed a custom theme."));
+      GetClient(0)->AwaitFullSyncCompletion("Installed a custom theme."));
 
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
   ASSERT_FALSE(UsingCustomTheme(GetProfile(1)));

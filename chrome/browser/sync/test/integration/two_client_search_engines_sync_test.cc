@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DisableSync) {
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   AddSearchEngine(0, 0);
   ASSERT_TRUE(
-      GetClient(0)->AwaitSyncCycleCompletion("Added a search engine."));
+      GetClient(0)->AwaitFullSyncCompletion("Added a search engine."));
   ASSERT_TRUE(ServiceMatchesVerifier(0));
   ASSERT_FALSE(ServiceMatchesVerifier(1));
 

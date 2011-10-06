@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
     InstallApp(verifier(), i);
   }
 
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
       "Waiting for app changes."));
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());

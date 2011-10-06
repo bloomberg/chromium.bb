@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisableSync) {
 
   GetClient(1)->DisableSyncForAllDatatypes();
   ChangeBooleanPref(0, prefs::kPasswordManagerEnabled);
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Changed a preference."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Changed a preference."));
   ASSERT_FALSE(BooleanPrefMatches(
       prefs::kPasswordManagerEnabled));
 

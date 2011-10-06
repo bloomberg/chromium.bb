@@ -1517,7 +1517,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, DisableSync) {
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   ASSERT_TRUE(AddFolder(0, IndexedFolderName(0)) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Added a folder."));
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a folder."));
   ASSERT_FALSE(AllModelsMatch());
 
   ASSERT_TRUE(AddFolder(1, IndexedFolderName(1)) != NULL);

@@ -717,9 +717,9 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Waits for the ongoing sync cycle to complete.
   // Uses the JSON interface for input/output.
-  void AwaitSyncCycleCompletion(Browser* browser,
-                                base::DictionaryValue* args,
-                                IPC::Message* reply_message);
+  void AwaitFullSyncCompletion(Browser* browser,
+                               base::DictionaryValue* args,
+                               IPC::Message* reply_message);
 
   // Waits for sync to reinitialize (for example, after a browser restart).
   // Uses the JSON interface for input/output.

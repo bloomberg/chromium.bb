@@ -23,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
       "Waiting for prefs change."));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }

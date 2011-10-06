@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, Sanity) {
                                         GURL("about:bubba"),
                                         old_windows.GetMutable()));
 
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
       "Waiting for session change."));
 
   // Get foreign session data from client 0.

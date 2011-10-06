@@ -37,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, Sanity) {
   ASSERT_EQ(new_url, urls[0].url());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
       "Waiting for typed url change."));
 
   // Verify client did not change.
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, TwoVisits) {
   ASSERT_EQ(new_url, urls[0].url());
   AssertAllProfilesHaveSameURLsAsVerifier();
 
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion(
       "Waiting for typed url change."));
 
   // Verify client did not change.
