@@ -4,6 +4,7 @@
 
 #include "views/touchui/touch_selection_controller_impl.h"
 
+#include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
