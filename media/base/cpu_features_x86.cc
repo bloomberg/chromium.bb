@@ -50,18 +50,30 @@ static inline void getcpuid(int info_type, int info[4]) {
 #endif
 
 bool hasMMX() {
-  // TODO(hclam): Acutually checks it.
+#if defined(ARCH_CPU_X86_64)
+  // Every X86_64 processor has MMX.
   return true;
+#else
+  int cpu_info[4] = { 0 };
+  getcpuid(1, cpu_info);
+  return (cpu_info[3] & (1<<23)) != 0;
+#endif
 }
 
 bool hasSSE() {
-  // TODO(hclam): Actually checks it.
+#if defined(ARCH_CPU_X86_64)
+  // Every X86_64 processor has SSE.
   return true;
+#else
+  int cpu_info[4] = { 0 };
+  getcpuid(1, cpu_info);
+  return (cpu_info[3] & (1<<25)) != 0;
+#endif
 }
 
 bool hasSSE2() {
 #if defined(ARCH_CPU_X86_64)
-  /* All x86_64 machines have SSE2, so don't even bother checking. */
+  // All X86_64 machines have SSE2, so don't even bother checking.
   return true;
 #else
   int cpu_info[4] = { 0 };
