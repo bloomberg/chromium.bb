@@ -384,7 +384,7 @@ gfx::Rect NativeScrollBarViews::GetTrackBounds() const {
   return bounds;
 }
 
-#if defined(USE_WAYLAND) || (defined(USE_AURA) && defined(OS_LINUX))
+#if defined(USE_WAYLAND) || defined(USE_AURA)
 ////////////////////////////////////////////////////////////////////////////////
 // NativewScrollBarWrapper, public:
 
