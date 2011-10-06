@@ -29,7 +29,7 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
 }
 
-void Shell::PlatformCreateWindow() {
+void Shell::PlatformCreateWindow(int width, int height) {
   NOTIMPLEMENTED();
 }
 
