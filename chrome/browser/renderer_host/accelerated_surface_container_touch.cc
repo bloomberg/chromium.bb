@@ -133,14 +133,7 @@ void AcceleratedSurfaceContainerTouchEGL::Draw(
   DCHECK(instance);
 
   ui::TextureDrawParams modified_params = params;
-
-  // Texture from GPU is flipped vertically.
-  ui::Transform flipped;
-  flipped.SetScaleY(-1.0);
-  flipped.SetTranslateY(size_.height());
-  flipped.ConcatTransform(params.transform);
-
-  modified_params.transform = flipped;
+  modified_params.vertically_flipped = true;
 
   DrawInternal(*instance->program_no_swizzle(),
                modified_params,

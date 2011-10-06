@@ -28,7 +28,8 @@ struct TextureDrawParams {
   TextureDrawParams()
       : blend(false),
         has_valid_alpha_channel(false),
-        opacity(1.0f) {
+        opacity(1.0f),
+        vertically_flipped(false) {
   }
 
   // The transform to be applied to the texture.
@@ -44,6 +45,10 @@ struct TextureDrawParams {
   // This multiplier is applied to all pixels before blending. The intent is to
   // allow alpha to be animated (for effects such as cross fades).
   float opacity;
+
+  // Sometimes the texture is vertically flipped. In this case we have to
+  // draw the texture differently.
+  bool vertically_flipped;
 
   // The size of the surface that the texture is drawn to.
   gfx::Size compositor_size;

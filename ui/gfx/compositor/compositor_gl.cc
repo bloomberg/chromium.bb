@@ -12,6 +12,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/rect.h"
@@ -378,7 +379,7 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
       gfx::Rect(gfx::Point(0, 0), size_));
 
   // Verify that compositor_size has been set.
-  DCHECK(params.compositor_size != gfx::Size(0,0));
+  DCHECK(params.compositor_size != gfx::Size(0, 0));
 
   if (params.blend)
     glEnable(GL_BLEND);
@@ -409,17 +410,26 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
   GLfloat m[16];
   t.matrix().asColMajorf(m);
 
-  SkRect texture_rect = SkRect::MakeXYWH(
-      clip_bounds.x(),
-      clip_bounds.y(),
-      clip_bounds.width(),
-      clip_bounds.height());
+  SkPoint texture_points[4];
+  texture_points[0] = SkPoint::Make(clip_bounds.x(),
+                                    clip_bounds.y() + clip_bounds.height());
+  texture_points[1] = SkPoint::Make(clip_bounds.x() + clip_bounds.width(),
+                                    clip_bounds.y() + clip_bounds.height());
+  texture_points[2] = SkPoint::Make(clip_bounds.x() + clip_bounds.width(),
+                                    clip_bounds.y());
+  texture_points[3] = SkPoint::Make(clip_bounds.x(), clip_bounds.y());
 
   ui::Transform texture_rect_transform;
   texture_rect_transform.ConcatScale(1.0f / size_.width(),
                                      1.0f / size_.height());
+  if (params.vertically_flipped) {
+    ui::Transform vertical_flip;
+    vertical_flip.SetScaleY(-1.0);
+    vertical_flip.SetTranslateY(1.0);
+    texture_rect_transform.ConcatTransform(vertical_flip);
+  }
   SkMatrix texture_transform_matrix = texture_rect_transform.matrix();
-  texture_transform_matrix.mapRect(&texture_rect);
+  texture_transform_matrix.mapPoints(texture_points, 4);
 
   SkRect clip_rect = SkRect::MakeXYWH(
       clip_bounds.x(),
@@ -440,10 +450,10 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
                               clip_rect.right(), clip_rect.bottom(), +0.,
                               clip_rect.left(), clip_rect.bottom(), +0.};
 
-  GLfloat texture_vertices[]  = { texture_rect.left(), texture_rect.bottom(),
-                                  texture_rect.right(), texture_rect.bottom(),
-                                  texture_rect.right(), texture_rect.top(),
-                                  texture_rect.left(), texture_rect.top()};
+  GLfloat texture_vertices[]  = { texture_points[0].x(), texture_points[0].y(),
+                                  texture_points[1].x(), texture_points[1].y(),
+                                  texture_points[2].x(), texture_points[2].y(),
+                                  texture_points[3].x(), texture_points[3].y()};
 
   glVertexAttribPointer(program.a_pos_loc(), 3, GL_FLOAT,
                         GL_FALSE, 3 * sizeof(GLfloat), clip_vertices);
