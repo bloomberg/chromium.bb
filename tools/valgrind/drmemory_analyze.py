@@ -36,7 +36,7 @@ class DrMemoryAnalyze:
     '''
 
     self.reports = []
-    self.used_suppressions = {}
+    self.used_suppressions = []
     for file in files:
       self.ParseReportFile(file)
 
@@ -57,10 +57,9 @@ class DrMemoryAnalyze:
 
     while True:
       self.ReadLine()
-      if (self.line_ == ''):
-        break
-      if re.search("FINAL SUMMARY", self.line_):
-        # DrMemory has finished working.
+      if (self.line_ == ''): break
+      if re.search("FINAL SUMMARY:", self.line_):
+        # No more reports since this point.
         break
       tmp = []
       match = re.search("^Error #[0-9]+: (.*)", self.line_)
@@ -71,11 +70,33 @@ class DrMemoryAnalyze:
       elif self.line_.startswith("ASSERT FAILURE"):
         self.reports.append(self.line_.strip())
 
+    while True:
+      self.ReadLine();
+      if (self.line_ == ''): break
+
+      if re.search("SUPPRESSIONS USED:", self.line_):
+        self.ReadLine()
+        while self.line_.strip() != "":
+          # TODO(timurrrr): use Valgrind format so the suppression dashboard
+          # counts used DrM suppressions too.
+          self.used_suppressions.append(self.line_.strip())
+          self.ReadLine()
+        break
+
     self.cur_fd_.close()
 
   def Report(self, check_sanity):
     sys.stdout.flush()
     #TODO(timurrrr): support positive tests / check_sanity==True
+
+    if self.used_suppressions:
+      print "-----------------------------------------------------"
+      # TODO(timurrrr): sum up the counts from different wrappers (e.g. ui_tests)
+      # or does it work now already? Or add the memcheck-like per-test printing.
+      print "Suppressions used:\n  count name\n ",  # , adds ' ' instead of '\n'
+      print "\n  ".join(self.used_suppressions)
+      print "-----------------------------------------------------"
+      sys.stdout.flush()
 
     if len(self.reports) > 0:
       logging.error("Found %i error reports" % len(self.reports))
