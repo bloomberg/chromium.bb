@@ -33,9 +33,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/fileicon_source_chromeos.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
@@ -47,6 +47,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_file_job.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -63,36 +64,75 @@ static const char kPropertyTitle[] = "title";
 static const char kPropertyDirectory[] = "isDirectory";
 static const char kActiveDownloadAppName[] = "active-downloads";
 
-ChromeWebUIDataSource* CreateActiveDownloadsUIHTMLSource() {
-  ChromeWebUIDataSource* source =
-      new ChromeWebUIDataSource(chrome::kChromeUIActiveDownloadsHost);
+class ActiveDownloadsUIHTMLSource : public ChromeURLDataManager::DataSource {
+ public:
+  ActiveDownloadsUIHTMLSource();
 
-  source->AddLocalizedString("dangerousfile", IDS_PROMPT_DANGEROUS_DOWNLOAD);
-  source->AddLocalizedString("dangerousextension",
-                             IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
-  source->AddLocalizedString("dangerousurl", IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
-  source->AddLocalizedString("cancel", IDS_DOWNLOAD_LINK_CANCEL);
-  source->AddLocalizedString("discard", IDS_DISCARD_DOWNLOAD);
-  source->AddLocalizedString("continue", IDS_CONTINUE_EXTENSION_DOWNLOAD);
-  source->AddLocalizedString("pause", IDS_DOWNLOAD_LINK_PAUSE);
-  source->AddLocalizedString("resume", IDS_DOWNLOAD_LINK_RESUME);
-  source->AddLocalizedString("showalldownloads",
-                             IDS_FILEBROWSER_SHOW_ALL_DOWNLOADS);
-  source->AddLocalizedString("error_unknown_file_type",
-                             IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE);
+  // Called when the network layer has requested a resource underneath
+  // the path we registered.
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_incognito,
+                                int request_id);
+  virtual std::string GetMimeType(const std::string&) const {
+    return "text/html";
+  }
 
+ private:
+  ~ActiveDownloadsUIHTMLSource() {}
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveDownloadsUIHTMLSource);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// ActiveDownloadsUIHTMLSource
+//
+////////////////////////////////////////////////////////////////////////////////
+
+ActiveDownloadsUIHTMLSource::ActiveDownloadsUIHTMLSource()
+    : DataSource(chrome::kChromeUIActiveDownloadsHost, MessageLoop::current()) {
+}
+
+void ActiveDownloadsUIHTMLSource::StartDataRequest(const std::string& path,
+                                              bool is_incognito,
+                                              int request_id) {
+  DictionaryValue localized_strings;
+  localized_strings.SetString("dangerousfile",
+      l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD));
+  localized_strings.SetString("dangerousextension",
+      l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION));
+  localized_strings.SetString("dangerousurl",
+      l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL));
+  localized_strings.SetString("cancel",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CANCEL));
+  localized_strings.SetString("discard",
+      l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
+  localized_strings.SetString("continue",
+      l10n_util::GetStringUTF16(IDS_CONTINUE_EXTENSION_DOWNLOAD));
+  localized_strings.SetString("pause",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_PAUSE));
+  localized_strings.SetString("resume",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_RESUME));
+  localized_strings.SetString("showalldownloads",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_SHOW_ALL_DOWNLOADS));
   FilePath default_download_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
                         &default_download_path)) {
     NOTREACHED();
   }
   // TODO(viettrungluu): this is wrong -- FilePath's need not be Unicode.
-  source->AddString("downloadpath", UTF8ToUTF16(default_download_path.value()));
+  localized_strings.SetString("downloadpath", default_download_path.value());
+  localized_strings.SetString("error_unknown_file_type",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE));
+  SetFontAndTextDirection(&localized_strings);
 
-  source->set_json_path("strings.js");
-  source->add_resource_path("active_downloads.js", IDR_ACTIVE_DOWNLOADS_JS);
-  source->set_default_resource(IDR_ACTIVE_DOWNLOADS_HTML);
-  return source;
+  static const base::StringPiece active_downloads_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_ACTIVE_DOWNLOADS_HTML));
+  std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+      active_downloads_html, &localized_strings);
+
+  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
 }
 
 }  // namespace
@@ -345,11 +385,11 @@ ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
       handler_(new ActiveDownloadsHandler()) {
   AddMessageHandler(handler_->Attach(this));
   handler_->Init();
+  ActiveDownloadsUIHTMLSource* html_source = new ActiveDownloadsUIHTMLSource();
 
   // Set up the chrome://active-downloads/ source.
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
-  profile->GetChromeURLDataManager()->AddDataSource(
-      CreateActiveDownloadsUIHTMLSource());
+  profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
 #if defined(TOUCH_UI)
