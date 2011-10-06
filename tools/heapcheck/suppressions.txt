@@ -1666,4 +1666,22 @@
    ...
    fun:ChromeV8ContextSet_*_Test::TestBody
 }
-
+{
+   bug_99304
+   Heapcheck:Leak
+   fun:v8::internal::SkipList::Update
+   fun:v8::internal::PagedSpace::AllocateRaw
+   fun:v8::internal::Deserializer::Allocate
+   fun:v8::internal::Deserializer::ReadObject
+   fun:v8::internal::Deserializer::ReadChunk
+   fun:v8::internal::Deserializer::ReadObject
+   fun:v8::internal::Deserializer::ReadChunk
+   fun:v8::internal::Deserializer::VisitPointers
+   fun:v8::internal::Heap::IterateStrongRoots
+   fun:v8::internal::Deserializer::Deserialize
+   fun:v8::internal::Isolate::Init
+   fun:v8::internal::V8::Initialize
+   fun:v8::internal::Snapshot::Deserialize
+   fun:v8::internal::Snapshot::Initialize
+   fun:v8::InitializeHelper
+}
