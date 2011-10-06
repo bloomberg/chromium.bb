@@ -45,12 +45,14 @@
 
 namespace {
 
-void DeleteProfileDirectories(const std::vector<FilePath>& paths) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  for (std::vector<FilePath>::const_iterator it = paths.begin();
-       it != paths.end(); ++it) {
-    file_util::Delete(*it, true);
-  }
+// Profiles that should be deleted on shutdown.
+std::vector<FilePath>& ProfilesToDelete() {
+  static std::vector<FilePath> profiles_to_delete;
+  return profiles_to_delete;
+}
+
+void QueueProfileDirectoryForDeletion(const FilePath& path) {
+  ProfilesToDelete().push_back(path);
 }
 
 } // namespace
@@ -87,6 +89,17 @@ void ProfileManager::ShutdownSessionServices() {
 }
 
 // static
+void ProfileManager::NukeDeletedProfilesFromDisk() {
+  for (std::vector<FilePath>::iterator it =
+          ProfilesToDelete().begin();
+       it != ProfilesToDelete().end();
+       ++it) {
+    file_util::Delete(*it, true);
+  }
+  ProfilesToDelete().clear();
+}
+
+// static
 Profile* ProfileManager::GetDefaultProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetDefaultProfile(profile_manager->user_data_dir_);
@@ -113,14 +126,6 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
 
 ProfileManager::~ProfileManager() {
   BrowserList::RemoveObserver(this);
-
-  // TODO(sail): fix http://crbug.com/88586
-  if (profiles_to_delete_.size()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(&DeleteProfileDirectories, profiles_to_delete_));
-    profiles_to_delete_.clear();
-  }
 }
 
 FilePath ProfileManager::GetDefaultProfileDir(
@@ -524,7 +529,7 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
   Profile* profile = GetProfileByPath(profile_dir);
   if (profile)
     BrowserList::CloseAllBrowsersWithProfile(profile);
-  profiles_to_delete_.push_back(profile_dir);
+  QueueProfileDirectoryForDeletion(profile_dir);
   ProfileInfoCache& cache = GetProfileInfoCache();
   cache.DeleteProfileFromCache(profile_dir);
 }

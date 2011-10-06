@@ -161,6 +161,11 @@ void Shutdown() {
   // before calling UninstallJankometer().
   delete g_browser_process;
   g_browser_process = NULL;
+
+  // crbug.com/95079 - This needs to happen after the browser process object
+  // goes away.
+  ProfileManager::NukeDeletedProfilesFromDisk();
+
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("BrowserDeleted",
                                                         true);

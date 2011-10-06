@@ -64,6 +64,9 @@ class ProfileManager : public base::NonThreadSafe,
   // Invokes SessionServiceFactory::ShutdownForProfile() for all profiles.
   static void ShutdownSessionServices();
 
+  // Physically remove deleted profile directories from disk.
+  static void NukeDeletedProfilesFromDisk();
+
   // Returns the default profile.  This adds the profile to the
   // ProfileManager if it doesn't already exist.  This method returns NULL if
   // the profile doesn't exist and we can't create it.
@@ -258,9 +261,6 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Object to cache various information about profiles.
   scoped_ptr<ProfileInfoCache> profile_info_cache_;
-
-  // Profiles that should be deleted on shutdown.
-  std::vector<FilePath> profiles_to_delete_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileManager);
 };
