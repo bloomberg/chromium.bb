@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(GPUBrowserTest, MAYBE_BrowserTestCanLaunchWithOSMesa) {
       browser(),
       net::FilePathToFileURL(gpu_test_dir_.AppendASCII("webgl.html")));
 
-  EXPECT_EQ(ASCIIToUTF16("SUCCESS: Mesa OffScreen"),
+  EXPECT_EQ(ASCIIToUTF16("SUCCESS: WebKit WebGL"),
             browser()->GetSelectedTabContents()->GetTitle());
 }
 

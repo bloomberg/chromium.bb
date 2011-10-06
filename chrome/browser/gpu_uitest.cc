@@ -34,5 +34,5 @@ TEST_F(GPUUITest, UITestCanLaunchWithOSMesa) {
   NavigateToURL(
       net::FilePathToFileURL(gpu_test_dir_.AppendASCII("webgl.html")));
 
-  EXPECT_EQ(std::wstring(L"SUCCESS: Mesa OffScreen"), GetActiveTabTitle());
+  EXPECT_EQ(std::wstring(L"SUCCESS: WebKit WebGL"), GetActiveTabTitle());
 }
