@@ -731,7 +731,9 @@ class RenderView : public RenderWidget,
   void UpdateEncoding(WebKit::WebFrame* frame,
                       const std::string& encoding_name);
 
-  void OpenURL(const GURL& url, const GURL& referrer,
+  void OpenURL(WebKit::WebFrame* frame,
+               const GURL& url,
+               const GURL& referrer,
                WebKit::WebNavigationPolicy policy);
 
   bool RunJavaScriptMessage(int type,

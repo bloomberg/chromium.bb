@@ -951,12 +951,14 @@ void RenderViewHost::OnMsgToggleFullscreen(bool enter_fullscreen) {
 
 void RenderViewHost::OnMsgOpenURL(const GURL& url,
                                   const GURL& referrer,
-                                  WindowOpenDisposition disposition) {
+                                  WindowOpenDisposition disposition,
+                                  int64 source_frame_id) {
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicy::GetInstance(),
             process()->id(), &validated_url);
 
-  delegate_->RequestOpenURL(validated_url, referrer, disposition);
+  delegate_->RequestOpenURL(
+      validated_url, referrer, disposition, source_frame_id);
 }
 
 void RenderViewHost::OnMsgDidContentsPreferredSizeChange(

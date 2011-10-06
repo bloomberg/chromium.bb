@@ -655,8 +655,10 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual void DocumentOnLoadCompletedInMainFrame(
       RenderViewHost* render_view_host,
       int32 page_id) OVERRIDE;
-  virtual void RequestOpenURL(const GURL& url, const GURL& referrer,
-                              WindowOpenDisposition disposition) OVERRIDE;
+  virtual void RequestOpenURL(const GURL& url,
+                              const GURL& referrer,
+                              WindowOpenDisposition disposition,
+                              int64 source_frame_id) OVERRIDE;
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,

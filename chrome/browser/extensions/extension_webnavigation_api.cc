@@ -576,6 +576,35 @@ void ExtensionWebNavigationTabObserver::DidFinishLoad(
                       frame_id);
 }
 
+void ExtensionWebNavigationTabObserver::DidOpenRequestedURL(
+    TabContents* new_contents,
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    PageTransition::Type transition,
+    int64 source_frame_id) {
+  if (!navigation_state_.CanSendEvents(source_frame_id))
+    return;
+
+  // We only send the onCreatedNavigationTarget if we end up creating a new
+  // window.
+  if (disposition != SINGLETON_TAB &&
+      disposition != NEW_FOREGROUND_TAB &&
+      disposition != NEW_BACKGROUND_TAB &&
+      disposition != NEW_POPUP &&
+      disposition != NEW_WINDOW &&
+      disposition != OFF_THE_RECORD)
+    return;
+
+  DispatchOnCreatedNavigationTarget(
+      tab_contents(),
+      new_contents->browser_context(),
+      source_frame_id,
+      navigation_state_.IsMainFrame(source_frame_id),
+      new_contents,
+      url);
+}
+
 void ExtensionWebNavigationTabObserver::TabContentsDestroyed(
     TabContents* tab) {
   g_tab_observer.Get().erase(tab);

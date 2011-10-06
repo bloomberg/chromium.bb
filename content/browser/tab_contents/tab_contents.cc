@@ -1675,8 +1675,12 @@ void TabContents::DocumentOnLoadCompletedInMainFrame(
       Details<int>(&page_id));
 }
 
-void TabContents::RequestOpenURL(const GURL& url, const GURL& referrer,
-                                 WindowOpenDisposition disposition) {
+void TabContents::RequestOpenURL(const GURL& url,
+                                 const GURL& referrer,
+                                 WindowOpenDisposition disposition,
+                                 int64 source_frame_id) {
+  TabContents* new_contents = NULL;
+  PageTransition::Type transition_type = PageTransition::LINK;
   if (render_manager_.web_ui()) {
     // When we're a Web UI, it will provide a page transition type for us (this
     // is so the new tab page can specify AUTO_BOOKMARK for automatically
@@ -1686,10 +1690,21 @@ void TabContents::RequestOpenURL(const GURL& url, const GURL& referrer,
     // want web sites to see a referrer of "chrome://blah" (and some
     // chrome: URLs might have search terms or other stuff we don't want to
     // send to the site), so we send no referrer.
-    OpenURL(url, GURL(), disposition,
+    new_contents = OpenURL(url, GURL(), disposition,
             render_manager_.web_ui()->link_transition_type());
+    transition_type = render_manager_.web_ui()->link_transition_type();
   } else {
-    OpenURL(url, referrer, disposition, PageTransition::LINK);
+    new_contents = OpenURL(url, referrer, disposition, PageTransition::LINK);
+  }
+  if (new_contents) {
+    // Notify observers.
+    FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                      DidOpenRequestedURL(new_contents,
+                                          url,
+                                          referrer,
+                                          disposition,
+                                          transition_type,
+                                          source_frame_id));
   }
 }
 

@@ -283,7 +283,8 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // The page wants to open a URL with the specified disposition.
   virtual void RequestOpenURL(const GURL& url,
                               const GURL& referrer,
-                              WindowOpenDisposition disposition) {}
+                              WindowOpenDisposition disposition,
+                              int64 source_frame_id) {}
 
   // A javascript message, confirmation or prompt should be shown.
   virtual void RunJavaScriptMessage(const RenderViewHost* rvh,

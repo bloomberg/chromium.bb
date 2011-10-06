@@ -85,6 +85,14 @@ void TabContentsObserver::DidOpenURL(const GURL& url,
                                      PageTransition::Type transition) {
 }
 
+void TabContentsObserver::DidOpenRequestedURL(TabContents* new_contents,
+                                              const GURL& url,
+                                              const GURL& referrer,
+                                              WindowOpenDisposition disposition,
+                                              PageTransition::Type transition,
+                                              int64 source_frame_id) {
+}
+
 void TabContentsObserver::AppCacheAccessed(const GURL& manifest_url,
                                            bool blocked_by_policy) {
 }

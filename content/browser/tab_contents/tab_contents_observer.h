@@ -64,6 +64,13 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
                           WindowOpenDisposition disposition,
                           PageTransition::Type transition);
 
+  virtual void DidOpenRequestedURL(TabContents* new_contents,
+                                   const GURL& url,
+                                   const GURL& referrer,
+                                   WindowOpenDisposition disposition,
+                                   PageTransition::Type transition,
+                                   int64 source_frame_id);
+
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy);
 #if 0

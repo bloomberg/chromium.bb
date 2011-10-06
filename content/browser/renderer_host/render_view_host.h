@@ -490,8 +490,10 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
   void OnMsgContextMenu(const ContextMenuParams& params);
   void OnMsgToggleFullscreen(bool enter_fullscreen);
-  void OnMsgOpenURL(const GURL& url, const GURL& referrer,
-                    WindowOpenDisposition disposition);
+  void OnMsgOpenURL(const GURL& url,
+                    const GURL& referrer,
+                    WindowOpenDisposition disposition,
+                    int64 source_frame_id);
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnMsgDidChangeScrollbarsForMainFrame(bool has_horizontal_scrollbar,
                                             bool has_vertical_scrollbar);

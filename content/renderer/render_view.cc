@@ -1252,10 +1252,16 @@ void RenderView::UpdateSessionHistory(WebFrame* frame) {
       routing_id_, page_id_, webkit_glue::HistoryItemToString(item)));
 }
 
-void RenderView::OpenURL(
-    const GURL& url, const GURL& referrer, WebNavigationPolicy policy) {
+void RenderView::OpenURL(WebFrame* frame,
+                         const GURL& url,
+                         const GURL& referrer,
+                         WebNavigationPolicy policy) {
   Send(new ViewHostMsg_OpenURL(
-      routing_id_, url, referrer, NavigationPolicyToDisposition(policy)));
+      routing_id_,
+      url,
+      referrer,
+      NavigationPolicyToDisposition(policy),
+      frame->identifier()));
 }
 
 // WebViewDelegate ------------------------------------------------------------
@@ -1972,7 +1978,7 @@ void RenderView::loadURLExternally(
     Send(new ViewHostMsg_DownloadUrl(routing_id_, request.url(), referrer,
                                      suggested_name));
   } else {
-    OpenURL(request.url(), referrer, policy);
+    OpenURL(frame, request.url(), referrer, policy);
   }
 }
 
@@ -2006,7 +2012,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     // navigation.
     page_id_ = -1;
     last_page_id_sent_to_browser_ = -1;
-    OpenURL(url, referrer, default_policy);
+    OpenURL(frame, url, referrer, default_policy);
     return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
@@ -2050,7 +2056,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
 
     if (should_fork) {
       GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
-      OpenURL(url, send_referrer ? referrer : GURL(), default_policy);
+      OpenURL(frame, url, send_referrer ? referrer : GURL(), default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
@@ -2120,7 +2126,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
 
   if (is_fork || is_noreferrer_and_blank_target) {
     // Open the URL via the browser, not via WebKit.
-    OpenURL(url, GURL(), default_policy);
+    OpenURL(frame, url, GURL(), default_policy);
     return WebKit::WebNavigationPolicyIgnore;
   }
 

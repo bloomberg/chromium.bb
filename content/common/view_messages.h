@@ -1556,10 +1556,11 @@ IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
                            string16     /* out - user_input field */)
 
 // Requests that the given URL be opened in the specified manner.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_OpenURL,
+IPC_MESSAGE_ROUTED4(ViewHostMsg_OpenURL,
                     GURL /* url */,
                     GURL /* referrer */,
-                    WindowOpenDisposition /* disposition */)
+                    WindowOpenDisposition /* disposition */,
+                    int64 /* frame id */)
 
 // Notifies that the preferred size of the content changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,

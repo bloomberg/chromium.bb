@@ -148,6 +148,12 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
                                       int error_code) OVERRIDE;
   virtual void DocumentLoadedInFrame(int64 frame_id) OVERRIDE;
   virtual void DidFinishLoad(int64 frame_id) OVERRIDE;
+  virtual void DidOpenRequestedURL(TabContents* new_contents,
+                                   const GURL& url,
+                                   const GURL& referrer,
+                                   WindowOpenDisposition disposition,
+                                   PageTransition::Type transition,
+                                   int64 source_frame_id) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
  private:
