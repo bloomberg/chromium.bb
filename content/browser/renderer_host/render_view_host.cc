@@ -1371,14 +1371,12 @@ void RenderViewHost::OnRequestDesktopNotificationPermission(
 
 void RenderViewHost::OnShowDesktopNotification(
     const DesktopNotificationHostMsg_Show_Params& params) {
-  // Disallow HTML notifications from unwanted schemes.  javascript:
-  // in particular allows unwanted cross-domain access.
+  // Disallow HTML notifications from javascript: and file: schemes as this
+  // allows unwanted cross-domain access.
   GURL url = params.contents_url;
   if (params.is_html &&
-      !url.SchemeIs(chrome::kHttpScheme) &&
-      !url.SchemeIs(chrome::kHttpsScheme) &&
-      !url.SchemeIs(chrome::kExtensionScheme) &&
-      !url.SchemeIs(chrome::kDataScheme)) {
+      (url.SchemeIs(chrome::kJavaScriptScheme) ||
+       url.SchemeIs(chrome::kFileScheme))) {
     return;
   }
 
