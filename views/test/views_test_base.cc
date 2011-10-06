@@ -67,4 +67,13 @@ void ViewsTestBase::TearDown() {
 #endif
 }
 
+void ViewsTestBase::RunPendingMessages() {
+#if defined(USE_AURA)
+  message_loop_.RunAllPendingWithDispatcher(
+      aura::Desktop::GetInstance()->GetDispatcher());
+#else
+  message_loop_.RunAllPending();
+#endif
+}
+
 }  // namespace views

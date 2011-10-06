@@ -27,9 +27,7 @@ class ViewsTestBase : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  void RunPendingMessages() {
-    message_loop_.RunAllPending();
-  }
+  void RunPendingMessages();
 
  protected:
   TestViewsDelegate& views_delegate() const { return *views_delegate_.get(); }

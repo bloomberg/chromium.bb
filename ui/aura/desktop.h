@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "base/task.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/cursor.h"
@@ -92,6 +93,11 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   // Invoked from RootWindow when |window| is being destroyed.
   void WindowDestroying(Window* window);
+
+  // Returns the desktop's dispatcher. The result should only be passed to
+  // MessageLoopForUI::Run() or MessageLoopForUI::RunAllPendingWithDispatcher().
+  // It must never be stored.
+  MessageLoop::Dispatcher* GetDispatcher();
 
   // Dispatch NativeEvent.
   bool DispatchNativeEvent(const base::NativeEvent& event);

@@ -147,6 +147,11 @@ bool Desktop::DispatchNativeEvent(const base::NativeEvent& event) {
 #endif
 }
 
+MessageLoop::Dispatcher* Desktop::GetDispatcher() {
+  return host_.get();
+}
+
+
 Window* Desktop::GetTopmostWindowToActivate(Window* ignore) {
   Window::Windows windows(default_parent_->children());
   for (Window::Windows::const_reverse_iterator i = windows.rbegin();
