@@ -13,12 +13,28 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_settings_leveldb_storage.h"
 #include "chrome/browser/extensions/extension_settings_storage_cache.h"
+#include "chrome/browser/extensions/extension_settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/extension_settings_sync_util.h"
 #include "chrome/browser/extensions/in_memory_extension_settings_storage.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+
+namespace {
+
+// Total quota for all settings per extension, in bytes.  100K should be enough
+// for most uses, but this can be increased as demand increases.
+const size_t kTotalQuotaBytes = 100 * 1024;
+
+// Quota for each setting.  Sync supports 5k per setting, so be a bit more
+// restrictive than that.
+const size_t kQuotaPerSettingBytes = 2048;
+
+// Max number of settings per extension.  Keep low for sync.
+const size_t kMaxSettingKeys = 512;
+
+}  // namespace
 
 ExtensionSettingsBackend::ExtensionSettingsBackend(const FilePath& base_path)
     : base_path_(base_path),
@@ -59,6 +75,11 @@ ExtensionSettingsBackend::GetOrCreateStorageWithSyncData(
     // when the sync changes come through.
     storage = new InMemoryExtensionSettingsStorage();
   }
+
+  // It's fine to create the quota enforcer underneath the sync later, since
+  // sync will only go ahead if each underlying storage operation is successful.
+  storage = new ExtensionSettingsStorageQuotaEnforcer(
+      kTotalQuotaBytes, kQuotaPerSettingBytes, kMaxSettingKeys, storage);
 
   syncable_storage =
       linked_ptr<SyncableExtensionSettingsStorage>(

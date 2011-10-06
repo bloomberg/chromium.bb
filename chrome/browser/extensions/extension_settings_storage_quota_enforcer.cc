@@ -8,11 +8,19 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/task.h"
 
 namespace {
 
 const char* kExceededQuotaErrorMessage = "Quota exceeded";
+
+// Resources there are a quota for.
+enum Resource {
+  TOTAL_BYTES,
+  BYTES_PER_SETTING,
+  KEY_COUNT
+};
 
 // Allocates a setting in a record of total and per-setting usage.
 void Allocate(
@@ -40,6 +48,27 @@ void Free(
     const std::string& key) {
   *used_total -= (*used_per_setting)[key];
   used_per_setting->erase(key);
+}
+
+// Returns an error result and logs the quota exceeded to UMA.
+ExtensionSettingsStorage::Result QuotaExceededFor(Resource resource) {
+  switch (resource) {
+    case TOTAL_BYTES:
+      UMA_HISTOGRAM_COUNTS_100(
+          "Extensions.SettingsQuotaExceeded.TotalBytes", 1);
+      break;
+    case BYTES_PER_SETTING:
+      UMA_HISTOGRAM_COUNTS_100(
+          "Extensions.SettingsQuotaExceeded.BytesPerSetting", 1);
+      break;
+    case KEY_COUNT:
+      UMA_HISTOGRAM_COUNTS_100(
+          "Extensions.SettingsQuotaExceeded.KeyCount", 1);
+      break;
+    default:
+      NOTREACHED();
+  }
+  return ExtensionSettingsStorage::Result(kExceededQuotaErrorMessage);
 }
 
 }  // namespace
@@ -93,10 +122,14 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
   std::map<std::string, size_t> new_used_per_setting = used_per_setting_;
   Allocate(key, value, &new_used_total, &new_used_per_setting);
 
-  if (new_used_total > quota_bytes_ ||
-      new_used_per_setting[key] > quota_bytes_per_setting_ ||
-      new_used_per_setting.size() > max_keys_) {
-    return Result(kExceededQuotaErrorMessage);
+  if (new_used_total > quota_bytes_) {
+    return QuotaExceededFor(TOTAL_BYTES);
+  }
+  if (new_used_per_setting[key] > quota_bytes_per_setting_) {
+    return QuotaExceededFor(BYTES_PER_SETTING);
+  }
+  if (new_used_per_setting.size() > max_keys_) {
+    return QuotaExceededFor(KEY_COUNT);
   }
 
   Result result = delegate_->Set(key, value);
@@ -120,13 +153,15 @@ ExtensionSettingsStorage::Result ExtensionSettingsStorageQuotaEnforcer::Set(
     Allocate(*it, *value, &new_used_total, &new_used_per_setting);
 
     if (new_used_per_setting[*it] > quota_bytes_per_setting_) {
-      return Result(kExceededQuotaErrorMessage);
+      return QuotaExceededFor(BYTES_PER_SETTING);
     }
   }
 
-  if (new_used_total > quota_bytes_ ||
-      new_used_per_setting.size() > max_keys_) {
-    return Result(kExceededQuotaErrorMessage);
+  if (new_used_total > quota_bytes_) {
+    return QuotaExceededFor(TOTAL_BYTES);
+  }
+  if (new_used_per_setting.size() > max_keys_) {
+    return QuotaExceededFor(KEY_COUNT);
   }
 
   Result result = delegate_->Set(values);
