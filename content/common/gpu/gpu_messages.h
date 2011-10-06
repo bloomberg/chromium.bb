@@ -176,15 +176,6 @@ IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
 IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_BuffersSwappedACK)
 #endif
 
-#if defined(OS_MACOSX)
-// Requests the GPU process to destroy the command buffer and remove the
-// associated route. Further messages to this command buffer will result in a
-// channel error.
-IPC_MESSAGE_CONTROL2(GpuMsg_DestroyCommandBuffer,
-                     int /* renderer_id */,
-                     int32 /* render_view_id */)
-#endif
-
 // Tells the GPU process to remove all contexts.
 IPC_MESSAGE_CONTROL0(GpuMsg_Clean)
 

@@ -145,16 +145,6 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   return OnControlMessageReceived(message);
 }
 
-#if defined(OS_MACOSX)
-
-void GpuProcessHostUIShim::DidDestroyAcceleratedSurface(int renderer_id,
-                                                        int render_view_id) {
-  // Destroy the command buffer that owns the accelerated surface.
-  Send(new GpuMsg_DestroyCommandBuffer(renderer_id, render_view_id));
-}
-
-#endif
-
 #if defined(OS_MACOSX) || defined(TOUCH_UI)
 
 void GpuProcessHostUIShim::SendToGpuHost(int host_id, IPC::Message* msg) {

@@ -222,21 +222,6 @@ GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32 route_id) {
   return stubs_.Lookup(route_id);
 }
 
-#if defined(OS_MACOSX)
-void GpuChannel::DestroyCommandBufferByViewId(int32 render_view_id) {
-  // This responds to a message from the browser process to destroy the command
-  // buffer when the window with a GpuScheduler is closed (see
-  // RenderWidgetHostViewMac::DeallocFakePluginWindowHandle).  Find the route id
-  // that matches the given render_view_id and delete the route.
-  for (StubMap::const_iterator iter(&stubs_); !iter.IsAtEnd(); iter.Advance()) {
-    if (iter.GetCurrentValue()->render_view_id() == render_view_id) {
-      OnDestroyCommandBuffer(iter.GetCurrentKey(), NULL);
-      return;
-    }
-  }
-}
-#endif
-
 bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   // Always use IPC_MESSAGE_HANDLER_DELAY_REPLY for synchronous message handlers
   // here. This is so the reply can be delayed if the scheduler is unscheduled.

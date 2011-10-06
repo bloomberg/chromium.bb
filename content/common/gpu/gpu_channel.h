@@ -98,10 +98,6 @@ class GpuChannel : public IPC::Channel::Listener,
 
   GpuCommandBufferStub* LookupCommandBuffer(int32 route_id);
 
-#if defined(OS_MACOSX)
-  void DestroyCommandBufferByViewId(int32 render_view_id);
-#endif
-
   void LoseAllContexts();
 
   // Destroy channel and all contained contexts.

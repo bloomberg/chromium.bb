@@ -64,10 +64,6 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
 #if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuMsg_ResizeViewACK, OnResizeViewACK);
 #endif
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(GpuMsg_DestroyCommandBuffer,
-                        OnDestroyCommandBuffer)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -150,17 +146,6 @@ void GpuChannelManager::OnResizeViewACK(int32 renderer_id,
 
   channel->ViewResized(command_buffer_route_id);
 }
-
-#if defined(OS_MACOSX)
-void GpuChannelManager::OnDestroyCommandBuffer(
-    int renderer_id, int32 renderer_view_id) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-  if (iter == gpu_channels_.end())
-    return;
-  scoped_refptr<GpuChannel> channel = iter->second;
-  channel->DestroyCommandBufferByViewId(renderer_view_id);
-}
-#endif
 
 void GpuChannelManager::LoseAllContexts() {
   MessageLoop::current()->PostTask(

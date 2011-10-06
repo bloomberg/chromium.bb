@@ -78,10 +78,6 @@ class GpuChannelManager : public IPC::Channel::Listener,
       const GPUCreateCommandBufferConfig& init_params);
   void OnResizeViewACK(int32 renderer_id, int32 command_buffer_route_id);
 
-#if defined(OS_MACOSX)
-  void OnDestroyCommandBuffer(int renderer_id, int32 renderer_view_id);
-#endif
-
   void OnLoseAllContexts();
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;

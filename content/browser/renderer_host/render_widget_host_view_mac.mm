@@ -780,25 +780,6 @@ void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
 // This is called by AcceleratedPluginView's -dealloc.
 void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
     gfx::PluginWindowHandle window) {
-  // When a browser window with a GpuScheduler is closed, the render process
-  // will attempt to finish all GL commands. It will busy-wait on the GPU
-  // process until the command queue is empty. If a paint is pending, the GPU
-  // process won't process any GL commands until the browser sends a paint ack,
-  // but since the browser window is already closed, it will never arrive.
-  // To resolve this we ask the GPU process to destroy the command buffer
-  // associated with the given render widget.  Once the command buffer is
-  // destroyed, all GL commands from the renderer will immediately receive
-  // channel error.
-  if (render_widget_host_ &&
-      plugin_container_manager_.IsRootContainer(window)) {
-    GpuProcessHost::SendOnIO(
-        render_widget_host_->process()->id(),
-        content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-        new GpuMsg_DestroyCommandBuffer(
-            render_widget_host_->process()->id(),
-            render_widget_host_->routing_id()));
-  }
-
   plugin_container_manager_.DestroyFakePluginWindowHandle(window);
 }
 
