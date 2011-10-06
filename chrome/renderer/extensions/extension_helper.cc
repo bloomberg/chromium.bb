@@ -12,9 +12,9 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -196,7 +196,7 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
                                           const std::string& response,
                                           const std::string& error) {
   ExtensionProcessBindings::HandleResponse(
-      extension_dispatcher_->bindings_context_set(), request_id, success,
+      extension_dispatcher_->v8_context_set(), request_id, success,
       response, error);
 }
 
@@ -204,14 +204,14 @@ void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
                                                const std::string& function_name,
                                                const ListValue& args,
                                                const GURL& event_url) {
-  extension_dispatcher_->bindings_context_set().DispatchChromeHiddenMethod(
+  extension_dispatcher_->v8_context_set().DispatchChromeHiddenMethod(
       extension_id, function_name, args, render_view(), event_url);
 }
 
 void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
                                                 const std::string& message) {
   RendererExtensionBindings::DeliverMessage(
-      extension_dispatcher_->bindings_context_set().GetAll(),
+      extension_dispatcher_->v8_context_set().GetAll(),
       target_id,
       message,
       render_view());

@@ -27,10 +27,10 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
-#include "chrome/renderer/extensions/extension_bindings_context_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -591,7 +591,7 @@ v8::Extension* ExtensionProcessBindings::Get(
 
 // static
 void ExtensionProcessBindings::HandleResponse(
-    const ExtensionBindingsContextSet& contexts,
+    const ChromeV8ContextSet& contexts,
     int request_id,
     bool success,
     const std::string& response,
@@ -605,9 +605,9 @@ void ExtensionProcessBindings::HandleResponse(
     return;
   }
 
-  ExtensionBindingsContext* bindings_context =
+  ChromeV8Context* v8_context =
       contexts.GetByV8Context(request->second->context);
-  if (!bindings_context)
+  if (!v8_context)
     return;  // The frame went away.
 
   v8::HandleScope handle_scope;
@@ -619,9 +619,9 @@ void ExtensionProcessBindings::HandleResponse(
   argv[4] = v8::String::New(error.c_str());
 
   v8::Handle<v8::Value> retval =
-      bindings_context->CallChromeHiddenMethod("handleResponse",
-                                               arraysize(argv),
-                                               argv);
+      v8_context->CallChromeHiddenMethod("handleResponse",
+                                         arraysize(argv),
+                                         argv);
   // In debug, the js will validate the callback parameters and return a
   // string if a validation error has occured.
 #ifndef NDEBUG

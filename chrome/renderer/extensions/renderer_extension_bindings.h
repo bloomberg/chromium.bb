@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/renderer/extensions/extension_bindings_context_set.h"
+#include "chrome/renderer/extensions/chrome_v8_context_set.h"
 
 class ExtensionDispatcher;
 class RenderView;
@@ -28,7 +28,7 @@ class RendererExtensionBindings {
   // contexts in |bindings_context_set|. If |restrict_to_render_view| is
   // specified, only contexts in that render view will receive the message.
   static void DeliverMessage(
-      const ExtensionBindingsContextSet::ContextSet& context_set,
+      const ChromeV8ContextSet::ContextSet& context_set,
       int target_port_id,
       const std::string& message,
       RenderView* restrict_to_render_view);

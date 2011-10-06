@@ -11,7 +11,7 @@
 #include <string>
 
 class ExtensionDispatcher;
-class ExtensionBindingsContextSet;
+class ChromeV8ContextSet;
 class GURL;
 class URLPattern;
 
@@ -28,7 +28,7 @@ class ExtensionProcessBindings {
   static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);
 
   // Handles a response to an API request.
-  static void HandleResponse(const ExtensionBindingsContextSet& contexts,
+  static void HandleResponse(const ChromeV8ContextSet& contexts,
                              int request_id,
                              bool success,
                              const std::string& response,

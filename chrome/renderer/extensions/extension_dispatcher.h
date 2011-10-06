@@ -14,7 +14,7 @@
 #include "base/timer.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/renderer/extensions/extension_bindings_context_set.h"
+#include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "v8/include/v8.h"
 
 class GURL;
@@ -45,8 +45,8 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   bool is_extension_process() const { return is_extension_process_; }
   const ExtensionSet* extensions() const { return &extensions_; }
-  const ExtensionBindingsContextSet& bindings_context_set() const {
-    return bindings_context_set_;
+  const ChromeV8ContextSet& v8_context_set() const {
+    return v8_context_set_;
   }
   UserScriptSlave* user_script_slave() { return user_script_slave_.get(); }
 
@@ -119,7 +119,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   // All the bindings contexts that are currently loaded for this renderer.
   // There is zero or one for each v8 context.
-  ExtensionBindingsContextSet bindings_context_set_;
+  ChromeV8ContextSet v8_context_set_;
 
   scoped_ptr<UserScriptSlave> user_script_slave_;
 

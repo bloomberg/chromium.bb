@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_bindings_context_set.h"
+#include "chrome/renderer/extensions/chrome_v8_context_set.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/tracked_objects.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/common/url_constants.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/render_thread.h"
@@ -44,29 +44,29 @@ bool HasSufficientPermissions(RenderView* render_view, const GURL& event_url) {
 }
 
 // static
-MessageLoop* ExtensionBindingsContextSet::delete_loop_ = NULL;
+MessageLoop* ChromeV8ContextSet::delete_loop_ = NULL;
 
 // static
-void ExtensionBindingsContextSet::SetDeleteLoop(MessageLoop* delete_loop) {
+void ChromeV8ContextSet::SetDeleteLoop(MessageLoop* delete_loop) {
   delete_loop_ = delete_loop;
 }
 
-ExtensionBindingsContextSet::ExtensionBindingsContextSet() {
+ChromeV8ContextSet::ChromeV8ContextSet() {
 }
-ExtensionBindingsContextSet::~ExtensionBindingsContextSet() {
+ChromeV8ContextSet::~ChromeV8ContextSet() {
 }
 
-int ExtensionBindingsContextSet::size() const {
+int ChromeV8ContextSet::size() const {
   return static_cast<int>(contexts_.size());
 }
 
-void ExtensionBindingsContextSet::Add(ExtensionBindingsContext* context) {
+void ChromeV8ContextSet::Add(ChromeV8Context* context) {
 #ifndef NDEBUG
   // It's OK to insert the same context twice, but we should only ever have one
-  // ExtensionBindingsContext per v8::Context.
+  // ChromeV8Context per v8::Context.
   for (ContextSet::iterator iter = contexts_.begin(); iter != contexts_.end();
        ++iter) {
-    ExtensionBindingsContext* candidate = *iter;
+    ChromeV8Context* candidate = *iter;
     if (candidate != context)
       DCHECK(candidate->v8_context() != context->v8_context());
   }
@@ -74,7 +74,7 @@ void ExtensionBindingsContextSet::Add(ExtensionBindingsContext* context) {
   contexts_.insert(context);
 }
 
-void ExtensionBindingsContextSet::Remove(ExtensionBindingsContext* context) {
+void ChromeV8ContextSet::Remove(ChromeV8Context* context) {
   if (contexts_.erase(context)) {
     context->clear_web_frame();
     MessageLoop* loop = delete_loop_ ?
@@ -84,26 +84,26 @@ void ExtensionBindingsContextSet::Remove(ExtensionBindingsContext* context) {
   }
 }
 
-void ExtensionBindingsContextSet::RemoveByV8Context(
+void ChromeV8ContextSet::RemoveByV8Context(
     v8::Handle<v8::Context> v8_context) {
-  ExtensionBindingsContext* context = GetByV8Context(v8_context);
+  ChromeV8Context* context = GetByV8Context(v8_context);
   if (context)
     Remove(context);
 }
 
-ExtensionBindingsContextSet::ContextSet ExtensionBindingsContextSet::GetAll()
+ChromeV8ContextSet::ContextSet ChromeV8ContextSet::GetAll()
     const {
   return contexts_;
 }
 
-ExtensionBindingsContext* ExtensionBindingsContextSet::GetCurrent() const {
+ChromeV8Context* ChromeV8ContextSet::GetCurrent() const {
   if (!v8::Context::InContext())
     return NULL;
   else
     return GetByV8Context(v8::Context::GetCurrent());
 }
 
-ExtensionBindingsContext* ExtensionBindingsContextSet::GetByV8Context(
+ChromeV8Context* ChromeV8ContextSet::GetByV8Context(
     v8::Handle<v8::Context> v8_context) const {
   for (ContextSet::const_iterator iter = contexts_.begin();
        iter != contexts_.end(); ++iter) {
@@ -114,7 +114,7 @@ ExtensionBindingsContext* ExtensionBindingsContextSet::GetByV8Context(
   return NULL;
 }
 
-void ExtensionBindingsContextSet::DispatchChromeHiddenMethod(
+void ChromeV8ContextSet::DispatchChromeHiddenMethod(
     const std::string& extension_id,
     const std::string& method_name,
     const base::ListValue& arguments,

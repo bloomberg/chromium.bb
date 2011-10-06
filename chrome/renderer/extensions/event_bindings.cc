@@ -12,10 +12,10 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
-#include "chrome/renderer/extensions/extension_bindings_context_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -85,9 +85,9 @@ class ExtensionImpl : public ChromeV8Extension {
 
     if (args[0]->IsString()) {
       ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
-      const ExtensionBindingsContextSet& context_set =
-          v8_extension->extension_dispatcher()->bindings_context_set();
-      ExtensionBindingsContext* context = context_set.GetCurrent();
+      const ChromeV8ContextSet& context_set =
+          v8_extension->extension_dispatcher()->v8_context_set();
+      ChromeV8Context* context = context_set.GetCurrent();
       CHECK(context);
       EventListenerCounts& listener_counts =
           GetListenerCounts(context->extension_id());
@@ -113,9 +113,9 @@ class ExtensionImpl : public ChromeV8Extension {
 
     if (args[0]->IsString()) {
       ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
-      const ExtensionBindingsContextSet& context_set =
-          v8_extension->extension_dispatcher()->bindings_context_set();
-      ExtensionBindingsContext* context = context_set.GetCurrent();
+      const ChromeV8ContextSet& context_set =
+          v8_extension->extension_dispatcher()->v8_context_set();
+      ChromeV8Context* context = context_set.GetCurrent();
       if (!context)
         return v8::Undefined();
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_bindings_context.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 
 #include "base/logging.h"
 #include "base/string_split.h"
@@ -14,9 +14,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 
-void ExtensionBindingsContext::FireOnLoadEvent(
-    bool is_extension_process,
-    bool is_incognito_process) const {
+void ChromeV8Context::FireOnLoadEvent(bool is_extension_process,
+                                      bool is_incognito_process) const {
   v8::HandleScope handle_scope;
   v8::Handle<v8::Value> argv[3];
   argv[0] = v8::String::New(extension_id_.c_str());
@@ -25,10 +24,9 @@ void ExtensionBindingsContext::FireOnLoadEvent(
   CallChromeHiddenMethod("dispatchOnLoad", arraysize(argv), argv);
 }
 
-ExtensionBindingsContext::ExtensionBindingsContext(
-    v8::Handle<v8::Context> v8_context,
-    WebKit::WebFrame* web_frame,
-    const std::string& extension_id)
+ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
+                                 WebKit::WebFrame* web_frame,
+                                 const std::string& extension_id)
     : v8_context_(v8::Persistent<v8::Context>::New(v8_context)),
       web_frame_(web_frame),
       extension_id_(extension_id) {
@@ -37,7 +35,7 @@ ExtensionBindingsContext::ExtensionBindingsContext(
           << "  frame: " << web_frame_;
 }
 
-ExtensionBindingsContext::~ExtensionBindingsContext() {
+ChromeV8Context::~ChromeV8Context() {
   VLOG(1) << "Destroyed context for extension\n"
           << "  id:    " << extension_id_;
   v8::HandleScope handle_scope;
@@ -45,14 +43,14 @@ ExtensionBindingsContext::~ExtensionBindingsContext() {
   v8_context_.Dispose();
 }
 
-RenderView* ExtensionBindingsContext::GetRenderView() const {
+RenderView* ChromeV8Context::GetRenderView() const {
   if (web_frame_ && web_frame_->view())
     return RenderView::FromWebView(web_frame_->view());
   else
     return NULL;
 }
 
-v8::Handle<v8::Value> ExtensionBindingsContext::CallChromeHiddenMethod(
+v8::Handle<v8::Value> ChromeV8Context::CallChromeHiddenMethod(
     const std::string& function_name,
     int argc,
     v8::Handle<v8::Value>* argv) const {

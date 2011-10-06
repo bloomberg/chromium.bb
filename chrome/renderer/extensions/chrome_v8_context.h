@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_BINDINGS_CONTEXT_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_BINDINGS_CONTEXT_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_H_
+#define CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_H_
 #pragma once
 
 #include <string>
@@ -21,17 +21,13 @@ class WebFrame;
 
 class RenderView;
 
-// A v8 context that contains extension bindings.
-//
-// TODO(aa): Remove the extension-specific bits from this, rename
-// BindingsContext, and move to renderer/bindings with DEPS rules to prevent
-// dependencies on extensions.
-class ExtensionBindingsContext {
+// Chrome's wrapper for a v8 context.
+class ChromeV8Context {
  public:
-  ExtensionBindingsContext(v8::Handle<v8::Context> context,
-                           WebKit::WebFrame* frame,
-                           const std::string& extension_id);
-  ~ExtensionBindingsContext();
+  ChromeV8Context(v8::Handle<v8::Context> context,
+                  WebKit::WebFrame* frame,
+                  const std::string& extension_id);
+  ~ChromeV8Context();
 
   v8::Handle<v8::Context> v8_context() const {
     return v8_context_;
@@ -66,8 +62,6 @@ class ExtensionBindingsContext {
       v8::Handle<v8::Value>* argv) const;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBindingsContext);
-
   // The v8 context the bindings are accessible to. We keep a strong reference
   // to it for simplicity. In the case of content scripts, this is necessary
   // because we want all scripts from the same extension for the same frame to
@@ -82,7 +76,10 @@ class ExtensionBindingsContext {
   WebKit::WebFrame* web_frame_;
 
   // The extension ID this context is associated with.
+  // TODO(aa): Could we get away with removing this?
   std::string extension_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeV8Context);
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_BINDINGS_CONTEXT_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_H_

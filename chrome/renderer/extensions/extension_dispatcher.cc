@@ -13,10 +13,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/chrome_app_bindings.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -137,7 +137,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
                                           const std::string& function_name,
                                           const ListValue& args,
                                           const GURL& event_url) {
-  bindings_context_set_.DispatchChromeHiddenMethod(
+  v8_context_set_.DispatchChromeHiddenMethod(
       extension_id, function_name, args, NULL, event_url);
 
   // Reset the idle handler each time there's any activity like event or message
@@ -151,7 +151,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
 void ExtensionDispatcher::OnDeliverMessage(int target_port_id,
                                            const std::string& message) {
   RendererExtensionBindings::DeliverMessage(
-      bindings_context_set_.GetAll(),
+      v8_context_set_.GetAll(),
       target_port_id,
       message,
       NULL);  // All render views.
@@ -227,7 +227,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
   // TODO(aa): Create a BindingsPolicy object that encapsulates all the rules
   // about when to allow each type of bindings. This just becomes looking to see
   // if any bindings are allowed for this v8_context and creating an
-  // ExtensionBindingsContext if so.
+  // ChromeV8Context if so.
   std::string extension_id;
   if (!test_extension_id_.empty()) {
     extension_id = test_extension_id_;
@@ -242,18 +242,18 @@ void ExtensionDispatcher::DidCreateScriptContext(
     }
   }
 
-  ExtensionBindingsContext* context =
-      new ExtensionBindingsContext(v8_context, frame, extension_id);
-  bindings_context_set_.Add(context);
+  ChromeV8Context* context =
+      new ChromeV8Context(v8_context, frame, extension_id);
+  v8_context_set_.Add(context);
   context->FireOnLoadEvent(is_extension_process_,
                            ChromeRenderProcessObserver::is_incognito_process());
-  VLOG(1) << "Num tracked contexts: " << bindings_context_set_.size();
+  VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
 void ExtensionDispatcher::WillReleaseScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
-  bindings_context_set_.RemoveByV8Context(v8_context);
-  VLOG(1) << "Num tracked contexts: " << bindings_context_set_.size();
+  v8_context_set_.RemoveByV8Context(v8_context);
+  VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
 void ExtensionDispatcher::SetTestExtensionId(const std::string& id) {

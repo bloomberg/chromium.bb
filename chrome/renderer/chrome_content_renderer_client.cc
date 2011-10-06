@@ -32,8 +32,8 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
@@ -594,7 +594,7 @@ bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
   // Extensions and apps always allowed to create unrequested popups. The second
   // check is necessary to include content scripts.
   return extension_dispatcher_->extensions()->GetByURL(creator) ||
-      extension_dispatcher_->bindings_context_set().GetCurrent();
+      extension_dispatcher_->v8_context_set().GetCurrent();
 }
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_BINDINGS_CONTEXT_SET_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_BINDINGS_CONTEXT_SET_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_SET_H_
+#define CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_SET_H_
 #pragma once
 
 #include <set>
@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "v8/include/v8.h"
 
-class ExtensionBindingsContext;
+class ChromeV8Context;
 class GURL;
 class MessageLoop;
 class RenderView;
@@ -32,36 +32,36 @@ class Context;
 // TODO(aa): Remove extension-specific bits, rename to BindingsContextSet, and
 // move into renderer/bindings with DEPS to protect against dependencies on
 // extensions.
-class ExtensionBindingsContextSet {
+class ChromeV8ContextSet {
  public:
   // For testing.
   static void SetDeleteLoop(MessageLoop* message_loop);
 
-  ExtensionBindingsContextSet();
-  ~ExtensionBindingsContextSet();
+  ChromeV8ContextSet();
+  ~ChromeV8ContextSet();
 
   int size() const;
 
   // Takes ownership of |context|.
-  void Add(ExtensionBindingsContext* context);
+  void Add(ChromeV8Context* context);
 
   // If the specified context is contained in this set, remove it, then delete
   // it asynchronously. After this call returns the context object will still
   // be valid, but its frame() pointer will be cleared.
-  void Remove(ExtensionBindingsContext* context);
+  void Remove(ChromeV8Context* context);
   void RemoveByV8Context(v8::Handle<v8::Context> context);
 
   // Returns a copy to protect against changes.
-  typedef std::set<ExtensionBindingsContext*> ContextSet;
+  typedef std::set<ChromeV8Context*> ContextSet;
   ContextSet GetAll() const;
 
-  // Gets the ExtensionBindingsContext corresponding to the v8::Context that is
+  // Gets the ChromeV8Context corresponding to the v8::Context that is
   // on the top of the stack, or NULL if no such context exists.
-  ExtensionBindingsContext* GetCurrent() const;
+  ChromeV8Context* GetCurrent() const;
 
-  // Gets the ExtensionBindingsContext corresponding to the specified
+  // Gets the ChromeV8Context corresponding to the specified
   // v8::Context or NULL if no such context exists.
-  ExtensionBindingsContext* GetByV8Context(
+  ChromeV8Context* GetByV8Context(
       v8::Handle<v8::Context> context) const;
 
   // Calls chromeHidden.<methodName> in each context for <extension_id>. If
@@ -75,13 +75,13 @@ class ExtensionBindingsContextSet {
                                   const GURL& event_url) const;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBindingsContextSet);
-
-  // The loop we will delete ExtensionBindingsContext on. If NULL, we use
+  // The loop we will delete ChromeV8Context on. If NULL, we use
   // RenderThread's loop instead.
   static MessageLoop* delete_loop_;
 
   ContextSet contexts_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeV8ContextSet);
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_BINDINGS_CONTEXT_SET_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_SET_H_

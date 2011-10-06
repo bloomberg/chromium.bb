@@ -9,9 +9,9 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
+#include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_bindings_context_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -123,7 +123,7 @@ void RenderViewTest::SetUp() {
       "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL));
 
   EventBindings::SetRenderThread(&render_thread_);
-  ExtensionBindingsContextSet::SetDeleteLoop(&msg_loop_);
+  ChromeV8ContextSet::SetDeleteLoop(&msg_loop_);
 
   mock_process_.reset(new MockRenderProcess);
 
