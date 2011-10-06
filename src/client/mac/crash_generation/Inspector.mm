@@ -31,6 +31,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <servers/bootstrap.h>
 #include <stdio.h>
 #include <string.h>
 #include <string>
@@ -266,7 +267,13 @@ kern_return_t Inspector::ResetBootstrapPort() {
                          &bootstrap_parent_port);
   if (kr != BOOTSTRAP_SUCCESS) {
     NSLog(@"ResetBootstrapPort: bootstrap_look_up failed: %s (%d)",
-          bootstrap_strerror(kr), kr);
+#if defined(MAC_OS_X_VERSION_10_5) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+          bootstrap_strerror(kr),
+#else
+          mach_error_string(kr),
+#endif
+          kr);
     return kr;
   }
 

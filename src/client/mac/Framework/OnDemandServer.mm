@@ -33,8 +33,14 @@
 #if DEBUG
   #define PRINT_MACH_RESULT(result_, message_) \
     printf(message_"%s (%d)\n", mach_error_string(result_), result_ );
+#if defined(MAC_OS_X_VERSION_10_5) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
   #define PRINT_BOOTSTRAP_RESULT(result_, message_) \
     printf(message_"%s (%d)\n", bootstrap_strerror(result_), result_ );
+#else
+  #define PRINT_BOOTSTRAP_RESULT(result_, message_) \
+    PRINT_MACH_RESULT(result_, message_)
+#endif
 #else
   #define PRINT_MACH_RESULT(result_, message_)
   #define PRINT_BOOTSTRAP_RESULT(result_, message_)
