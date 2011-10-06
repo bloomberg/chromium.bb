@@ -1675,7 +1675,7 @@
    Memcheck:Value4
    fun:_ZN7WebCore12base64EncodeEPKcjRN3WTF6VectorIcLj0EEEb
    fun:_ZN7WebCore12base64EncodeERKN3WTF6VectorIcLj0EEERS2_b
-   fun:_ZN7WebCore*14ImageToDataURLI8SkBitmapEEN3WTF6StringERT_RKS3_PKd
+   fun:_ZN7WebCore*14ImageToDataURL*SkBitmapEEN3WTF6StringERT_*
 }
 {
    bug_31800
