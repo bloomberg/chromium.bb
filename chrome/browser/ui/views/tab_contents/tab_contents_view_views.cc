@@ -109,7 +109,8 @@ gfx::NativeView TabContentsViewViews::GetContentNativeView() const {
 }
 
 gfx::NativeWindow TabContentsViewViews::GetTopLevelNativeWindow() const {
-  return GetTopLevelWidget()->GetNativeWindow();
+  const Widget* toplevel = GetTopLevelWidget();
+  return toplevel ? toplevel->GetNativeWindow() : NULL;
 }
 
 void TabContentsViewViews::GetContainerBounds(gfx::Rect* out) const {
