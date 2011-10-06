@@ -49,6 +49,8 @@ InProcessBrowserTest::InProcessBrowserTest()
       show_window_(false),
       dom_automation_enabled_(false),
       tab_closeable_state_watcher_enabled_(false) {
+#if defined(OS_MACOSX)
+  // TODO(phajdan.jr): Make browser_tests self-contained on Mac, remove this.
   // Before we run the browser, we have to hack the path to the exe to match
   // what it would be if Chrome was running, because it is used to fork renderer
   // processes, on Linux at least (failure to do so will cause a browser_test to
@@ -58,6 +60,7 @@ InProcessBrowserTest::InProcessBrowserTest()
   chrome_path = chrome_path.DirName();
   chrome_path = chrome_path.Append(chrome::kBrowserProcessExecutablePath);
   CHECK(PathService::Override(base::FILE_EXE, chrome_path));
+#endif  // defined(OS_MACOSX)
 
   test_server_.reset(new net::TestServer(
       net::TestServer::TYPE_HTTP,

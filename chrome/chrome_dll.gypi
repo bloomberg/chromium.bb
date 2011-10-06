@@ -49,6 +49,8 @@
                 'app/chrome_dll.rc',
                 'app/chrome_dll_resource.h',
                 'app/chrome_main.cc',
+                'app/chrome_main_delegate.cc',
+                'app/chrome_main_delegate.h',
 
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
 
@@ -102,7 +104,7 @@
                   },
                 },
               },
-              'msvs_settings': {                
+              'msvs_settings': {
                 'VCLinkerTool': {
                   'BaseAddress': '0x01c30000',
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
@@ -197,6 +199,8 @@
                 'app/chrome_command_ids.h',
                 'app/chrome_dll_resource.h',
                 'app/chrome_main.cc',
+                'app/chrome_main_delegate.cc',
+                'app/chrome_main_delegate.h',
                 'app/chrome_main_app_mode_mac.mm',
                 'app/chrome_main_mac.mm',
                 'app/chrome_main_mac.h',

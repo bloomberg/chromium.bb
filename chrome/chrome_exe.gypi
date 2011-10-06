@@ -143,12 +143,14 @@
                 '../build/linux/system.gyp:xext',
                 # Needed to use the master_preferences functions
                 'installer_util',
-              ],  
+              ],
             }],
           ],
           'sources': [
             'app/chrome_dll_resource.h',
             'app/chrome_main.cc',
+            'app/chrome_main_delegate.cc',
+            'app/chrome_main_delegate.h',
           ],
         }],
         ['OS=="mac"', {
@@ -491,7 +493,7 @@
               'action': ['cp', '-f', '<@(_inputs)', '<@(_outputs)'],
               'message': 'Copy first run complete sentinel file',
             },
-          ],            
+          ],
         }, {  # 'OS!="win"
           'sources!': [
             'app/client_util.cc',

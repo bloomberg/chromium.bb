@@ -7,9 +7,11 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/chrome_test_suite.h"
+#include "content/app/content_main.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -44,6 +46,7 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
 #if defined(OS_WIN)
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kProcessType)) {
+      // TODO(phajdan.jr): Make this not use chrome.dll.
       // This is a child process, call ChromeMain.
       FilePath chrome_path(command_line->GetProgram().DirName());
       chrome_path = chrome_path.Append(chrome::kBrowserResourcesDll);
@@ -59,6 +62,15 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
           sandbox::SandboxFactory::GetTargetServices();
       *return_code =
           entry_point(GetModuleHandle(NULL), &sandbox_info, GetCommandLineW());
+      return true;
+    }
+#elif defined(OS_LINUX)
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kProcessType)) {
+      ChromeMainDelegate chrome_main_delegate;
+      *return_code = content::ContentMain(argc,
+                                          const_cast<const char**>(argv),
+                                          &chrome_main_delegate);
       return true;
     }
 #endif  // defined(OS_WIN)
