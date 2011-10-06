@@ -40,8 +40,11 @@ bool LogHandler(int severity,
                 int line,
                 size_t message_start,
                 const std::string& str) {
-  if (severity == logging::LOG_ERROR)
+  if (severity == logging::LOG_ERROR &&
+      file &&
+      std::string("CONSOLE") == file) {
     error_messages_.Get().push_back(str);
+  }
 
   return false;
 }
