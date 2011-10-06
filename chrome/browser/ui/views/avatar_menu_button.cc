@@ -47,9 +47,21 @@ void DrawTaskBarDecoration(const Browser* browser, const SkBitmap* bitmap) {
     return;
   HICON icon = NULL;
   if (bitmap) {
-    // Since the target size is so small, we use our best resizer.
+    const SkBitmap* source_bitmap = NULL;
+    SkBitmap squarer_bitmap;
+    if ((bitmap->width() == 38) && (bitmap->height() == 31)) {
+      // Shave a couple of columns so the bitmap is more square. So when
+      // resized to a square aspect ratio it looks pretty.
+      bitmap->extractSubset(&squarer_bitmap, SkIRect::MakeXYWH(2, 0, 34, 31));
+      source_bitmap = &squarer_bitmap;
+    } else {
+      // The bitmaps size has changed. Resize what we have.
+      source_bitmap = bitmap;
+    }
+    // Since the target size is so small, we use our best resizer. Never pass
+    // windows a different size because it will badly hammer it to 16x16.
     SkBitmap sk_icon = skia::ImageOperations::Resize(
-        *bitmap,
+        *source_bitmap,
         skia::ImageOperations::RESIZE_LANCZOS3,
         16, 16);
     icon = IconUtil::CreateHICONFromSkBitmap(sk_icon);
