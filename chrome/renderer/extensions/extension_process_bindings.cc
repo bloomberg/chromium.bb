@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/chrome_view_types.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
@@ -83,7 +84,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
  public:
   ExtensionViewAccumulator(const std::string& extension_id,
                            int browser_window_id,
-                           ViewType::Type view_type)
+                           content::ViewType::Type view_type)
       : extension_id_(extension_id),
         browser_window_id_(browser_window_id),
         view_type_(view_type),
@@ -129,19 +130,20 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
     views_->Set(v8::Integer::New(index_), view_window);
     index_++;
 
-    if (view_type_ == ViewType::EXTENSION_BACKGROUND_PAGE)
+    if (view_type_ == chrome::ViewType::EXTENSION_BACKGROUND_PAGE)
       return false;  // There can be only one...
 
     return true;
   }
 
   // Returns true is |type| "isa" |match|.
-  static bool ViewTypeMatches(ViewType::Type type, ViewType::Type match) {
+  static bool ViewTypeMatches(content::ViewType::Type type,
+                              content::ViewType::Type match) {
     if (type == match)
       return true;
 
     // INVALID means match all.
-    if (match == ViewType::INVALID)
+    if (match == content::ViewType::INVALID)
       return true;
 
     return false;
@@ -149,7 +151,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
 
   std::string extension_id_;
   int browser_window_id_;
-  ViewType::Type view_type_;
+  content::ViewType::Type view_type_;
   v8::Local<v8::Array> views_;
   int index_;
 };
@@ -226,21 +228,22 @@ class ExtensionImpl : public ChromeV8Extension {
 
     std::string view_type_string = *v8::String::Utf8Value(args[1]->ToString());
     StringToUpperASCII(&view_type_string);
-    // |view_type| == ViewType::INVALID means getting any type of views.
-    ViewType::Type view_type = ViewType::INVALID;
-    if (view_type_string == ViewType::kBackgroundPage) {
-      view_type = ViewType::EXTENSION_BACKGROUND_PAGE;
-    } else if (view_type_string == ViewType::kInfobar) {
-      view_type = ViewType::EXTENSION_INFOBAR;
-    } else if (view_type_string == ViewType::kNotification) {
-      view_type = ViewType::NOTIFICATION;
-    } else if (view_type_string == ViewType::kTabContents) {
-      view_type = ViewType::TAB_CONTENTS;
-    } else if (view_type_string == ViewType::kPopup) {
-      view_type = ViewType::EXTENSION_POPUP;
-    } else if (view_type_string == ViewType::kExtensionDialog) {
-      view_type = ViewType::EXTENSION_DIALOG;
-    } else if (view_type_string != ViewType::kAll) {
+    // |view_type| == content::ViewType::INVALID means getting any type of
+    // views.
+    content::ViewType::Type view_type = content::ViewType::INVALID;
+    if (view_type_string == chrome::ViewType::kBackgroundPage) {
+      view_type = chrome::ViewType::EXTENSION_BACKGROUND_PAGE;
+    } else if (view_type_string == chrome::ViewType::kInfobar) {
+      view_type = chrome::ViewType::EXTENSION_INFOBAR;
+    } else if (view_type_string == chrome::ViewType::kNotification) {
+      view_type = chrome::ViewType::NOTIFICATION;
+    } else if (view_type_string == chrome::ViewType::kTabContents) {
+      view_type = content::ViewType::TAB_CONTENTS;
+    } else if (view_type_string == chrome::ViewType::kPopup) {
+      view_type = chrome::ViewType::EXTENSION_POPUP;
+    } else if (view_type_string == chrome::ViewType::kExtensionDialog) {
+      view_type = chrome::ViewType::EXTENSION_DIALOG;
+    } else if (view_type_string != chrome::ViewType::kAll) {
       return v8::Undefined();
     }
 

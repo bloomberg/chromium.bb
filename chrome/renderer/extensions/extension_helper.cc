@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/chrome_view_types.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
@@ -52,7 +53,7 @@ ExtensionHelper::ExtensionHelper(RenderView* render_view,
       content::RenderViewObserverTracker<ExtensionHelper>(render_view),
       extension_dispatcher_(extension_dispatcher),
       pending_app_icon_requests_(0),
-      view_type_(ViewType::INVALID),
+      view_type_(content::ViewType::INVALID),
       browser_window_id_(-1) {
 }
 
@@ -257,7 +258,7 @@ void ExtensionHelper::OnGetApplicationInfo(int page_id) {
       routing_id(), page_id, app_info));
 }
 
-void ExtensionHelper::OnNotifyRendererViewType(ViewType::Type type) {
+void ExtensionHelper::OnNotifyRendererViewType(content::ViewType::Type type) {
   view_type_ = type;
 }
 

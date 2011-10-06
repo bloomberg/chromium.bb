@@ -39,10 +39,10 @@ class ExtensionProcessManager : public NotificationObserver {
   virtual ExtensionHost* CreateViewHost(const Extension* extension,
                                         const GURL& url,
                                         Browser* browser,
-                                        ViewType::Type view_type);
+                                        content::ViewType::Type view_type);
   ExtensionHost* CreateViewHost(const GURL& url,
                                 Browser* browser,
-                                ViewType::Type view_type);
+                                content::ViewType::Type view_type);
   ExtensionHost* CreatePopupHost(const Extension* extension,
                                  const GURL& url,
                                  Browser* browser);

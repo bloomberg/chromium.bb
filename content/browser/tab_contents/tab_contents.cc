@@ -48,6 +48,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
+#include "content/common/view_types.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -1395,8 +1396,8 @@ TabContents* TabContents::GetAsTabContents() {
   return this;
 }
 
-ViewType::Type TabContents::GetRenderViewType() const {
-  return ViewType::TAB_CONTENTS;
+content::ViewType::Type TabContents::GetRenderViewType() const {
+  return content::ViewType::TAB_CONTENTS;
 }
 
 void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {

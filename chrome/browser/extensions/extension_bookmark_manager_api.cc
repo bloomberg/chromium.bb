@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/chrome_view_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -370,7 +371,7 @@ bool StartDragBookmarkManagerFunction::RunImpl() {
       GetNodesFromArguments(model, args_.get(), 0, &nodes));
 
   if (render_view_host_->delegate()->GetRenderViewType() ==
-      ViewType::TAB_CONTENTS) {
+      content::ViewType::TAB_CONTENTS) {
     TabContents* tab_contents =
         dispatcher()->delegate()->GetAssociatedTabContents();
     CHECK(tab_contents);
@@ -412,7 +413,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
     drop_index = drop_parent->child_count();
 
   if (render_view_host_->delegate()->GetRenderViewType() ==
-      ViewType::TAB_CONTENTS) {
+      content::ViewType::TAB_CONTENTS) {
     TabContents* tab_contents =
         dispatcher()->delegate()->GetAssociatedTabContents();
     CHECK(tab_contents);

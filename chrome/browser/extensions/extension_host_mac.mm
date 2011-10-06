@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/common/chrome_view_types.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/common/native_web_keyboard_event.h"
 
@@ -51,7 +52,7 @@ void ExtensionHostMac::ShowCreatedWidgetInternal(
 void ExtensionHostMac::UnhandledKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char ||
-      extension_host_type() != ViewType::EXTENSION_POPUP) {
+      extension_host_type() != chrome::ViewType::EXTENSION_POPUP) {
     return;
   }
 

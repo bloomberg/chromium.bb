@@ -8,9 +8,9 @@
 
 #include <map>
 
-#include "content/common/view_types.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
+#include "content/common/view_types.h"
 #include "content/renderer/render_view.h"
 
 class ExtensionDispatcher;
@@ -47,7 +47,7 @@ class ExtensionHelper
                              GURL requestor_url);
 
   int browser_window_id() const { return browser_window_id_; }
-  ViewType::Type view_type() const { return view_type_; }
+  content::ViewType::Type view_type() const { return view_type_; }
 
  private:
   // RenderViewObserver implementation.
@@ -71,7 +71,7 @@ class ExtensionHelper
                                  const std::string& message);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnGetApplicationInfo(int page_id);
-  void OnNotifyRendererViewType(ViewType::Type view_type);
+  void OnNotifyRendererViewType(content::ViewType::Type view_type);
   void OnUpdateBrowserWindowId(int window_id);
   void OnInlineWebstoreInstallResponse(
       int install_id, bool success, const std::string& error);
@@ -107,7 +107,7 @@ class ExtensionHelper
   int pending_app_icon_requests_;
 
   // Type of view attached with RenderView.
-  ViewType::Type view_type_;
+  content::ViewType::Type view_type_;
 
   // Id number of browser window which RenderView is attached to.
   int browser_window_id_;

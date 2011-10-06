@@ -28,6 +28,7 @@
 #include "content/common/notification_source.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/view_messages.h"
+#include "content/common/view_types.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -529,8 +530,8 @@ void InterstitialPage::FocusThroughTabTraversal(bool reverse) {
   render_view_host_->SetInitialFocus(reverse);
 }
 
-ViewType::Type InterstitialPage::GetRenderViewType() const {
-  return ViewType::INTERSTITIAL_PAGE;
+content::ViewType::Type InterstitialPage::GetRenderViewType() const {
+  return content::ViewType::INTERSTITIAL_PAGE;
 }
 
 void InterstitialPage::Disable() {

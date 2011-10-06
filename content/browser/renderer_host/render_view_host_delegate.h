@@ -208,7 +208,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual BackgroundContents* GetAsBackgroundContents();
 
   // Return type of RenderView which is attached with this object.
-  virtual ViewType::Type GetRenderViewType() const = 0;
+  virtual content::ViewType::Type GetRenderViewType() const = 0;
 
   // The RenderView is being constructed (message sent to the renderer process
   // to construct a RenderView).  Now is a good time to send other setup events

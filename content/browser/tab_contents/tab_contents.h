@@ -626,7 +626,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate() OVERRIDE;
   virtual TabContents* GetAsTabContents() OVERRIDE;
-  virtual ViewType::Type GetRenderViewType() const OVERRIDE;
+  virtual content::ViewType::Type GetRenderViewType() const OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* render_view_host,

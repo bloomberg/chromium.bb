@@ -17,8 +17,6 @@
 
 #define IPC_MESSAGE_START ExtensionMsgStart
 
-IPC_ENUM_TRAITS(ViewType::Type)
-
 // Parameters structure for ExtensionHostMsg_Request.
 IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   // Message name.
@@ -238,7 +236,7 @@ IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
 
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
-                    ViewType::Type /* view_type */)
+                    content::ViewType::Type /* view_type */)
 
 // Messages sent from the renderer to the browser.
 

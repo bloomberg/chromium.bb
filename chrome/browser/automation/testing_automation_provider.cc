@@ -106,13 +106,13 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/chrome_view_types.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/notification_service.h"
-#include "content/common/view_types.h"
 #include "net/base/cookie_store.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/events.h"
@@ -2911,16 +2911,16 @@ void TestingAutomationProvider::GetBrowserInfo(
       item->Set("view", view);
       std::string type;
       switch (ex_host->extension_host_type()) {
-        case ViewType::EXTENSION_BACKGROUND_PAGE:
+        case chrome::ViewType::EXTENSION_BACKGROUND_PAGE:
           type = "EXTENSION_BACKGROUND_PAGE";
           break;
-        case ViewType::EXTENSION_POPUP:
+        case chrome::ViewType::EXTENSION_POPUP:
           type = "EXTENSION_POPUP";
           break;
-        case ViewType::EXTENSION_INFOBAR:
+        case chrome::ViewType::EXTENSION_INFOBAR:
           type = "EXTENSION_INFOBAR";
           break;
-        case ViewType::EXTENSION_DIALOG:
+        case chrome::ViewType::EXTENSION_DIALOG:
           type = "EXTENSION_DIALOG";
           break;
         default:

@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/chrome_view_types.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -733,9 +734,10 @@ void ExtensionSettingsHandler::GetActivePagesForExtensionProcess(
     if (!widget || !widget->IsRenderView())
       continue;
     const RenderViewHost* host = static_cast<const RenderViewHost*>(widget);
+    int host_type = host->delegate()->GetRenderViewType();
     if (host == deleting_rvh_ ||
-        ViewType::EXTENSION_POPUP == host->delegate()->GetRenderViewType() ||
-        ViewType::EXTENSION_DIALOG == host->delegate()->GetRenderViewType())
+        chrome::ViewType::EXTENSION_POPUP == host_type ||
+        chrome::ViewType::EXTENSION_DIALOG == host_type)
       continue;
 
     GURL url = host->delegate()->GetURL();

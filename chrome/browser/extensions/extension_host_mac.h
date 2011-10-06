@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ class RenderWidgetHostView;
 class ExtensionHostMac : public ExtensionHost {
  public:
   ExtensionHostMac(const Extension* extension, SiteInstance* site_instance,
-                   const GURL& url, ViewType::Type host_type) :
+                   const GURL& url, content::ViewType::Type host_type) :
       ExtensionHost(extension, site_instance, url, host_type) {}
   virtual ~ExtensionHostMac();
  protected:

@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/chrome_view_types.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
@@ -101,8 +102,8 @@ void BalloonHost::RenderViewGone(RenderViewHost* render_view_host,
   Close(render_view_host);
 }
 
-ViewType::Type BalloonHost::GetRenderViewType() const {
-  return ViewType::NOTIFICATION;
+content::ViewType::Type BalloonHost::GetRenderViewType() const {
+  return chrome::ViewType::NOTIFICATION;
 }
 
 RenderViewHostDelegate::View* BalloonHost::GetViewDelegate() {

@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/chrome_view_types.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
@@ -73,8 +74,8 @@ const GURL& BackgroundContents::GetURL() const {
   return url_;
 }
 
-ViewType::Type BackgroundContents::GetRenderViewType() const {
-  return ViewType::BACKGROUND_CONTENTS;
+content::ViewType::Type BackgroundContents::GetRenderViewType() const {
+  return chrome::ViewType::BACKGROUND_CONTENTS;
 }
 
 void BackgroundContents::DidNavigate(

@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/chrome_view_types.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
@@ -163,11 +164,11 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         RenderViewHostDelegate* host_delegate = host->delegate();
         DCHECK(host_delegate);
         GURL url = host_delegate->GetURL();
-        ViewType::Type type = host_delegate->GetRenderViewType();
+        content::ViewType::Type type = host_delegate->GetRenderViewType();
         if (host->enabled_bindings() & BindingsPolicy::WEB_UI) {
           // TODO(erikkay) the type for devtools doesn't actually appear to
           // be set.
-          if (type == ViewType::DEV_TOOLS_UI)
+          if (type == content::ViewType::DEV_TOOLS_UI)
             process.renderer_type = ChildProcessInfo::RENDERER_DEVTOOLS;
           else
             process.renderer_type = ChildProcessInfo::RENDERER_CHROME;
@@ -189,14 +190,14 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
                      ChildProcessInfo::RENDERER_UNKNOWN) {
             process.titles.push_back(UTF8ToUTF16(url.spec()));
             switch (type) {
-              case ViewType::BACKGROUND_CONTENTS:
+              case chrome::ViewType::BACKGROUND_CONTENTS:
                 process.renderer_type =
                     ChildProcessInfo::RENDERER_BACKGROUND_APP;
                 break;
-              case ViewType::INTERSTITIAL_PAGE:
+              case content::ViewType::INTERSTITIAL_PAGE:
                 process.renderer_type = ChildProcessInfo::RENDERER_INTERSTITIAL;
                 break;
-              case ViewType::NOTIFICATION:
+              case chrome::ViewType::NOTIFICATION:
                 process.renderer_type = ChildProcessInfo::RENDERER_NOTIFICATION;
                 break;
               default:

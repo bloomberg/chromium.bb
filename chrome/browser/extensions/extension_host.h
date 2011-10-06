@@ -51,7 +51,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   static void EnableDOMAutomation() { enable_dom_automation_ = true; }
 
   ExtensionHost(const Extension* extension, SiteInstance* site_instance,
-                const GURL& url, ViewType::Type host_type);
+                const GURL& url, content::ViewType::Type host_type);
   virtual ~ExtensionHost();
 
 #if defined(TOOLKIT_VIEWS)
@@ -84,7 +84,9 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   Profile* profile() const { return profile_; }
 
-  ViewType::Type extension_host_type() const { return extension_host_type_; }
+  content::ViewType::Type extension_host_type() const {
+    return extension_host_type_;
+  }
 
   // ExtensionFunctionDispatcher::Delegate
   virtual TabContents* GetAssociatedTabContents() const OVERRIDE;
@@ -114,7 +116,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual ViewType::Type GetRenderViewType() const OVERRIDE;
+  virtual content::ViewType::Type GetRenderViewType() const OVERRIDE;
   virtual void RenderViewGone(RenderViewHost* render_view_host,
                               base::TerminationStatus status,
                               int error_code) OVERRIDE;
@@ -275,7 +277,7 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Only EXTENSION_INFOBAR, EXTENSION_POPUP, and EXTENSION_BACKGROUND_PAGE
   // are used here, others are not hosted by ExtensionHost.
-  ViewType::Type extension_host_type_;
+  content::ViewType::Type extension_host_type_;
 
   // The relevant TabContents associated with this ExtensionHost, if any.
   TabContents* associated_tab_contents_;

@@ -9,31 +9,22 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 
+namespace content {
+
 // Indicates different types of views
 class CONTENT_EXPORT ViewType {
  public:
-  enum Type {
+  enum {
     INVALID,
-    BACKGROUND_CONTENTS,
     TAB_CONTENTS,
-    EXTENSION_BACKGROUND_PAGE,
-    EXTENSION_POPUP,
-    EXTENSION_INFOBAR,
-    DEV_TOOLS_UI,
     INTERSTITIAL_PAGE,
-    NOTIFICATION,
-    EXTENSION_DIALOG,
+    DEV_TOOLS_UI,
+
+    VIEW_TYPE_CONTENT_END
   };
 
-  // Constant strings corresponding to the Type enumeration values.  Used
-  // when converting JS arguments.
-  static const char* const kTabContents;
-  static const char* const kBackgroundPage;
-  static const char* const kPopup;
-  static const char* const kInfobar;
-  static const char* const kNotification;
-  static const char* const kExtensionDialog;
-  static const char* const kAll;
+  // Use this type to clarify that a ViewType type should be used.
+  typedef int Type;
 
  private:
   // This class is for scoping only, so you shouldn't create an instance of it.
@@ -41,5 +32,7 @@ class CONTENT_EXPORT ViewType {
 
   DISALLOW_COPY_AND_ASSIGN(ViewType);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_VIEW_TYPES_H_

@@ -36,6 +36,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/chrome_view_types.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -1083,7 +1084,7 @@ const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
 
 bool TaskManagerExtensionProcessResource::IsBackground() const {
   return extension_host_->GetRenderViewType() ==
-      ViewType::EXTENSION_BACKGROUND_PAGE;
+      chrome::ViewType::EXTENSION_BACKGROUND_PAGE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

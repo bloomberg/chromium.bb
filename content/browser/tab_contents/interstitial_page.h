@@ -102,7 +102,7 @@ class CONTENT_EXPORT InterstitialPage : public NotificationObserver,
   // Called when tab traversing.
   void FocusThroughTabTraversal(bool reverse);
 
-  virtual ViewType::Type GetRenderViewType() const;
+  virtual content::ViewType::Type GetRenderViewType() const;
 
   // See description above field.
   void set_reload_on_dont_proceed(bool value) {
