@@ -226,14 +226,6 @@
     'chromedriver': {
       'filepath': 'chrome/test/webdriver|third_party/webdriver'
     },
-    'dom_login': {
-      'filepath': 'chrome/browser/chromeos/frame/.*dom.*' \
-                  '|chrome/browser/chromeos/login/.*dom.*'  \
-                  '|chrome/browser/chromeos/login/.*login_display.*' \
-                  '|chrome/browser/chromeos/login/existing_user_controller.*' \
-                  '|chrome/browser/resources/login.html' \
-                  '|chrome/browser/ui/webui/chromeos/login/.*'
-    },
     'task_manager': {
       'filepath': 'task_manager'
     },
@@ -360,7 +352,6 @@
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
                   'dominich+watch@chromium.org', 'mmenke@chromium.org'],
     'chromedriver': ['kkania@chromium.org'],
-    'dom_login': ['rharrison@chromium.org'],
     'task_manager': ['yoshiki+watch@chromium.org'],
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
     'active_downloads': ['achuith+watch@chromium.org'],
