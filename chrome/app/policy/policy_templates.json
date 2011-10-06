@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 106
+#   For your editing convenience: highest ID currently used: 108
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1815,7 +1815,29 @@
 
       This policy is limited to 100 entries; subsequent entries will be ignored.''',
     },
-
+    {
+      'name': 'UserNetworkConfiguration',
+      'type': 'string',
+      'supported_on': ['chrome_os:0.16-'],
+      'features': {'dynamic_refresh': 1},
+      'future': False,
+      'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
+      'id': 107,
+      'caption': '''User-level network configuration''',
+      'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration''',
+    },
+    {
+      'name': 'DeviceNetworkConfiguration',
+      'type': 'string',
+      'supported_on': ['chrome_os:0.16-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': 1},
+      'future': True,
+      'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
+      'id': 108,
+      'caption': '''Device-level network configuration''',
+      'desc': '''Allows pushing network configuration to be applied for all useers of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.

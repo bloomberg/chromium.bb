@@ -344,13 +344,20 @@ void DevicePolicyCache::DecodeDevicePolicy(
 
   if (policy.has_release_channel() &&
       policy.release_channel().has_release_channel()) {
-    std::string channel = policy.release_channel().release_channel();
-    mandatory->Set(
-        kPolicyChromeOsReleaseChannel, Value::CreateStringValue(channel));
+    std::string channel(policy.release_channel().release_channel());
+    mandatory->Set(kPolicyChromeOsReleaseChannel,
+                   Value::CreateStringValue(channel));
     // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
     // have to pass the channel in here, only ping the update engine to tell
     // it to fetch the channel from the policy.
     chromeos::CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
+  }
+
+  if (policy.has_network_configuration() &&
+      policy.network_configuration().has_network_configuration()) {
+    std::string config(policy.network_configuration().network_configuration());
+    mandatory->Set(kPolicyDeviceNetworkConfiguration,
+                   Value::CreateStringValue(config));
   }
 }
 

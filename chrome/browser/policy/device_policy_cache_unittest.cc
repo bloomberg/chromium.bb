@@ -20,18 +20,15 @@ namespace {
 const char kTestUser[] = "test@example.com";
 
 using ::chromeos::SignedSettings;
-using ::testing::_;
 using ::testing::InSequence;
+using ::testing::_;
 
-void CreateRefreshRatePolicy(em::PolicyFetchResponse* policy,
-                             const std::string& user,
-                             int refresh_rate) {
+void CreatePolicy(em::PolicyFetchResponse* policy,
+                  const std::string& user,
+                  em::ChromeDeviceSettingsProto& settings) {
   // This method omits a few fields which currently aren't needed by tests:
   // timestamp, machine_name, policy_type, public key info.
   em::PolicyData signed_response;
-  em::ChromeDeviceSettingsProto settings;
-  settings.mutable_device_policy_refresh_rate()->
-      set_device_policy_refresh_rate(refresh_rate);
   signed_response.set_username(user);
   signed_response.set_request_token("dmtoken");
   signed_response.set_device_id("deviceid");
@@ -42,13 +39,21 @@ void CreateRefreshRatePolicy(em::PolicyFetchResponse* policy,
   policy->set_policy_data(serialized_signed_response);
 }
 
+void CreateRefreshRatePolicy(em::PolicyFetchResponse* policy,
+                             const std::string& user,
+                             int refresh_rate) {
+  em::ChromeDeviceSettingsProto settings;
+  settings.mutable_device_policy_refresh_rate()->
+      set_device_policy_refresh_rate(refresh_rate);
+  CreatePolicy(policy, user, settings);
+}
+
 void CreateProxyPolicy(em::PolicyFetchResponse* policy,
                        const std::string& user,
                        const std::string& proxy_mode,
                        const std::string& proxy_server,
                        const std::string& proxy_pac_url,
                        const std::string& proxy_bypass_list) {
-  em::PolicyData signed_response;
   em::ChromeDeviceSettingsProto settings;
   em::DeviceProxySettingsProto* proxy_settings =
       settings.mutable_device_proxy_settings();
@@ -56,14 +61,7 @@ void CreateProxyPolicy(em::PolicyFetchResponse* policy,
   proxy_settings->set_proxy_server(proxy_server);
   proxy_settings->set_proxy_pac_url(proxy_pac_url);
   proxy_settings->set_proxy_bypass_list(proxy_bypass_list);
-  signed_response.set_username(user);
-  signed_response.set_request_token("dmtoken");
-  signed_response.set_device_id("deviceid");
-  EXPECT_TRUE(
-      settings.SerializeToString(signed_response.mutable_policy_value()));
-  std::string serialized_signed_response;
-  EXPECT_TRUE(signed_response.SerializeToString(&serialized_signed_response));
-  policy->set_policy_data(serialized_signed_response);
+  CreatePolicy(policy, user, settings);
 }
 
 }  // namespace
@@ -211,8 +209,6 @@ TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
 }
 
 TEST_F(DevicePolicyCacheTest, SetProxyPolicy) {
-  InSequence s;
-
   MakeEnterpriseDevice(kTestUser);
 
   // Startup.
@@ -236,6 +232,27 @@ TEST_F(DevicePolicyCacheTest, SetProxyPolicy) {
                             GetRecommendedPolicy(kPolicyProxyPacUrl)));
   EXPECT_TRUE(Value::Equals(&expected_proxy_bypass_list,
                             GetRecommendedPolicy(kPolicyProxyBypassList)));
+}
+
+TEST_F(DevicePolicyCacheTest, SetDeviceNetworkConfigurationPolicy) {
+  MakeEnterpriseDevice(kTestUser);
+
+  // Startup.
+  std::string fake_config("{ 'NetworkConfigurations': [] }");
+  em::PolicyFetchResponse policy;
+  em::ChromeDeviceSettingsProto settings;
+  settings.mutable_network_configuration()->set_network_configuration(
+      fake_config);
+  CreatePolicy(&policy, kTestUser, settings);
+  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
+      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
+                                             policy));
+  cache_->Load();
+  testing::Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  StringValue expected_config(fake_config);
+  EXPECT_TRUE(
+      Value::Equals(&expected_config,
+                    GetMandatoryPolicy(kPolicyDeviceNetworkConfiguration)));
 }
 
 }  // namespace policy
