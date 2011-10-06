@@ -31,25 +31,26 @@ static const int kMaxSessionsToShow = 10;
 static const int kInvalidId = -1;
 
 ForeignSessionHandler::ForeignSessionHandler() {
-  Init();
 }
 
 void ForeignSessionHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("getForeignSessions",
+  Init();
+  web_ui()->RegisterMessageCallback("getForeignSessions",
       base::Bind(&ForeignSessionHandler::HandleGetForeignSessions,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("openForeignSession",
+  web_ui()->RegisterMessageCallback("openForeignSession",
       base::Bind(&ForeignSessionHandler::HandleOpenForeignSession,
                  base::Unretained(this)));
 }
 
 void ForeignSessionHandler::Init() {
+  Profile* profile = Profile::FromWebUI(web_ui());
   registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile));
 }
 
 void ForeignSessionHandler::Observe(int type,
@@ -64,7 +65,7 @@ void ForeignSessionHandler::Observe(int type,
     case chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED:
       // Calling foreignSessions with empty list will automatically hide
       // foreign session section.
-      web_ui_->CallJavascriptFunction("foreignSessions", list_value);
+      web_ui()->CallJavascriptFunction("foreignSessions", list_value);
       break;
     default:
       NOTREACHED();
@@ -73,7 +74,7 @@ void ForeignSessionHandler::Observe(int type,
 
 SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
   ProfileSyncService* service =
-      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
+      Profile::FromWebUI(web_ui())->GetProfileSyncService();
   if (service == NULL)
     return NULL;
 
@@ -127,7 +128,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
     // Give ownership to |session_list|.
     session_list.Append(window_list.release());
   }
-  web_ui_->CallJavascriptFunction("foreignSessions", session_list);
+  web_ui()->CallJavascriptFunction("foreignSessions", session_list);
 }
 
 void ForeignSessionHandler::HandleOpenForeignSession(
@@ -166,7 +167,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
 
   SessionModelAssociator* associator = GetModelAssociator();
 
-  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* profile = Profile::FromWebUI(web_ui());
   if (tab_id != kInvalidId) {
     // We don't actually care about |window_num|, this is just a sanity check.
     DCHECK_LT(kInvalidId, window_num);

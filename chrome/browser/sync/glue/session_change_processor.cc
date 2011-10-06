@@ -252,7 +252,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
   // Notify foreign session handlers that there are new sessions.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-      NotificationService::AllSources(),
+      Source<Profile>(profile_),
       NotificationService::NoDetails());
 
   StartObserving();

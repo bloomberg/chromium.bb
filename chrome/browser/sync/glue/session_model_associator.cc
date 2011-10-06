@@ -505,7 +505,7 @@ bool SessionModelAssociator::DisassociateModels(SyncError* error) {
   // foreign session handlers.
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
-      NotificationService::AllSources(),
+      Source<Profile>(sync_service_->profile()),
       NotificationService::NoDetails());
   return true;
 }
