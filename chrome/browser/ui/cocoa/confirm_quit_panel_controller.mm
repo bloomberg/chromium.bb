@@ -34,7 +34,7 @@ const NSTimeInterval kDoubleTapTimeDelta = 0.32;
 namespace confirm_quit {
 
 void RecordHistogram(ConfirmQuitMetric sample) {
-  HISTOGRAM_ENUMERATION("ConfirmToQuit", sample, kSampleCount);
+  UMA_HISTOGRAM_ENUMERATION("OSX.ConfirmToQuit", sample, kSampleCount);
 }
 
 }  // namespace confirm_quit
