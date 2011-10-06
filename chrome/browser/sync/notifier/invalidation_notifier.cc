@@ -102,13 +102,9 @@ void InvalidationNotifier::OnConnect(
     invalidation_client_.ChangeBaseTask(base_task);
   } else {
     VLOG(1) << "First time connecting: starting invalidation client";
-    // TODO(akalin): Make cache_guid() part of the client ID.  If we
-    // do so and we somehow propagate it up to the server somehow, we
-    // can make it so that we won't receive any notifications that
-    // were generated from our own changes.
-    const std::string kClientId = "invalidation_notifier";
     invalidation_client_.Start(
-        kClientId, client_info_, invalidation_state_, this, this, base_task);
+        invalidation_client_id_, client_info_, invalidation_state_,
+        this, this, base_task);
     invalidation_state_.clear();
     state_ = STARTED;
   }
