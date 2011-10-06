@@ -464,8 +464,12 @@ bool RenderWidgetFullscreenPepper::InitContext() {
 bool RenderWidgetFullscreenPepper::CheckCompositing() {
   bool compositing =
       webwidget_ && webwidget_->isAcceleratedCompositingActive();
-  if (compositing != is_accelerated_compositing_active_)
-    didActivateAcceleratedCompositing(compositing);
+  if (compositing != is_accelerated_compositing_active_) {
+    if (compositing)
+      didActivateCompositor(-1);
+    else
+      didDeactivateCompositor();
+  }
   return compositing;
 }
 
