@@ -37,7 +37,10 @@ class Bridge : public AvatarMenuModelObserver {
 
   // AvatarMenuModelObserver:
   void OnAvatarMenuModelChanged(AvatarMenuModel* model) {
-    [controller_ performLayout];
+    // Do nothing. Rebuilding while the bubble is open will cause it to be
+    // positioned incorrectly. Since the bubble will be dismissed on losing key
+    // status, it's impossible for the user to edit the information in a
+    // meaningful way such that it would need to be redrawn.
   }
 
  private:
