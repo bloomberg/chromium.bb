@@ -7,11 +7,15 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"
+#include "ui/gfx/gl/gl_implementation.h"
 
 CompositorTestSuite::CompositorTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
 
 void CompositorTestSuite::Initialize() {
+#if defined(OS_LINUX)
+  gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
+#endif
   base::TestSuite::Initialize();
 
   gfx::RegisterPathProvider();

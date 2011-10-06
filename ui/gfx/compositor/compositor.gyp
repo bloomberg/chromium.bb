@@ -109,6 +109,12 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],
       'conditions': [
+        # osmesa GL implementation is used on linux.
+        ['OS=="linux"', {
+          'dependencies': [
+            '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
+          ],
+        }],
         ['OS!="mac"', {
           'dependencies': [
             '<(DEPTH)/chrome/chrome.gyp:packed_resources',
