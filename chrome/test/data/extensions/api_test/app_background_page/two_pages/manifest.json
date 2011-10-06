@@ -1,0 +1,14 @@
+{
+  "name": "app_background_page/two_pages",
+  "version": "0.1",
+  "description": "Tests that opening a second background page results in the first one being closed.",
+  "background_page": "test.html",
+  "permissions": ["tabs", "http://a.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["http://a.com/*"],
+      "js": ["content_script.js"],
+      "run_at": "document_end"
+    }
+  ]
+}

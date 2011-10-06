@@ -108,11 +108,10 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
   if (extension->background_url().is_valid())
     return NULL;
 
-  // Only allow a single background contents per app.
+  // No BackgroundContents allowed if BackgroundContentsService doesn't exist.
   BackgroundContentsService* service =
       BackgroundContentsServiceFactory::GetForProfile(profile);
-  if (!service || service->GetAppBackgroundContents(
-          ASCIIToUTF16(extension->id())))
+  if (!service)
     return NULL;
 
   // Ensure that we're trying to open this from the extension's process.
@@ -121,6 +120,15 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
   if (!site->GetProcess() || !process_manager ||
       site->GetProcess() != process_manager->GetExtensionProcess(opener_url))
     return NULL;
+
+  // Only allow a single background contents per app. If one already exists,
+  // close it.
+  BackgroundContents* existing =
+      service->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
+  if (existing) {
+    DLOG(INFO) << "Closing existing BackgroundContents for " << opener_url;
+    delete existing;
+  }
 
   // Passed all the checks, so this should be created as a BackgroundContents.
   return service->CreateBackgroundContents(site, route_id, profile, frame_name,
