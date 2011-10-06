@@ -308,7 +308,7 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'use_sandboxed_translator', default=False,
     desc='use pnacl sandboxed translator for linking (not available for arm)')
 
-  BitFromArgument(env, 'pnacl_use_clang', default=False,
+  BitFromArgument(env, 'pnacl_use_clang', default=True,
     desc='use pnacl-clang/clang++ instead of pnacl-gcc/g++')
 
   # This only controls whether the sandboxed translator is itself dynamically
@@ -905,6 +905,9 @@ def MakeArchSpecificEnv():
     env.SetBits('target_arm')
 
   env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
+
+  if env.Bit('pnacl_use_clang') and not env.Bit('bitcode'):
+    env.ClearBits('pnacl_use_clang')
 
   if env.Bit('target_arm') and not env.Bit('bitcode'):
     # This has always been a silent default on ARM.
