@@ -35,7 +35,7 @@ struct PdfRenderSettings : public PdfRenderSettingsBase {
 namespace IPC {
 template <>
 struct SimilarTypeTraits<printing::PdfRenderSettings> {
-  typedefprinting::PdfRenderSettingsBase Type;
+  typedef printing::PdfRenderSettingsBase Type;
 };
 
 }  // namespace IPC
