@@ -188,15 +188,6 @@ void Shell::PlatformResizeSubViews() {
   // Not needed; subviews are bound.
 }
 
-void Shell::InitializeTabContentsView() {
-  NSView* tcv = GetContentView();
-  NSRect frame = [[window_ contentView] bounds];
-  frame.size.height -= kURLBarHeight;
-  [tcv setFrame:frame];
-  [tcv setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
-  [[window_ contentView] addSubview:tcv];
-}
-
 void Shell::ActionPerformed(int control) {
   switch (control) {
     case IDC_NAV_BACK:
