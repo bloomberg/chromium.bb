@@ -1084,7 +1084,7 @@ void AutofillManager::FillFormField(const AutofillProfile& profile,
   DCHECK_NE(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field);
 
-  if (AutofillType(type).subgroup() == AutofillType::PHONE_NUMBER) {
+  if (type == PHONE_HOME_NUMBER) {
     FillPhoneNumberField(profile, cached_field, variant, field);
   } else {
     if (field->form_control_type == ASCIIToUTF16("select-one")) {
