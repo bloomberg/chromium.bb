@@ -515,6 +515,11 @@ void Panel::UpdatePreferredSize(TabContents* tab_contents,
       native_panel_->WindowSizeFromContentSize(pref_size));
 }
 
+void Panel::ShowAvatarBubble(TabContents* tab_contents, const gfx::Rect& rect) {
+  // Panels will never show a new tab page so this should never be called.
+  NOTREACHED();
+}
+
 void Panel::Observe(int type,
                     const NotificationSource& source,
                     const NotificationDetails& details) {

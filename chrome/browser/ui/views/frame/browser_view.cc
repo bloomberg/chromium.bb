@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/default_search_view.h"
@@ -2565,3 +2566,17 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   return view;
 }
 #endif
+
+void BrowserView::ShowAvatarBubble(TabContents* tab_contents,
+                                   const gfx::Rect& rect) {
+  gfx::Point origin(rect.right(), rect.bottom());
+  views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);
+  gfx::Rect bounds;
+  bounds.set_origin(origin);
+
+  AvatarMenuBubbleView* bubble_view = new AvatarMenuBubbleView(browser_.get());
+  // Bubble::Show() takes ownership of the view.
+  Bubble::Show(this->GetWidget(), bounds,
+               views::BubbleBorder::TOP_RIGHT,
+               bubble_view, bubble_view);
+}

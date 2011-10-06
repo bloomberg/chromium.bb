@@ -150,7 +150,9 @@ cr.define('ntp4', function() {
 
     chrome.send('initializeSyncLogin');
     $('login-container').addEventListener('click', function() {
-      chrome.send('showSyncLoginUI');
+      var rect = $('login-container').getBoundingClientRect();
+      chrome.send('showSyncLoginUI',
+                  [rect.left, rect.top, rect.width, rect.height]);
     });
 
     // Prevent touch events from triggering any sort of native scrolling

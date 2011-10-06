@@ -15,6 +15,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -64,6 +68,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
+
   if (username.empty()) {
     // The user isn't signed in, show the sync promo.
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
@@ -71,9 +76,25 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
                                          GURL(), CURRENT_TAB,
                                          PageTransition::LINK);
     }
-  } else {
+  } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.
-    // TODO(sail): Need to implement this.
+    Browser* browser = GetBrowser();
+    if (!browser)
+      return;
+    double x = 0;
+    double y = 0;
+    double width = 0;
+    double height = 0;
+    bool success = args->GetDouble(0, &x);
+    DCHECK(success);
+    success = args->GetDouble(1, &y);
+    DCHECK(success);
+    success = args->GetDouble(2, &width);
+    DCHECK(success);
+    success = args->GetDouble(3, &height);
+    DCHECK(success);
+    gfx::Rect rect(x, y, width, height);
+    browser->window()->ShowAvatarBubble(web_ui_->tab_contents(), rect);
   }
 }
 
@@ -113,4 +134,13 @@ bool NTPLoginHandler::ShouldShow(Profile* profile) {
 
   return profile->GetOriginalProfile()->IsSyncAccessible();
 #endif
+}
+
+Browser* NTPLoginHandler::GetBrowser() {
+  for (TabContentsIterator it; !it.done(); ++it) {
+    TabContents* tab = it->tab_contents();
+    if (tab == web_ui_->tab_contents())
+      return it.browser();
+  }
+  return NULL;
 }

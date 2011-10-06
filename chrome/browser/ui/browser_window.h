@@ -348,6 +348,12 @@ class BrowserWindow {
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 
+  // Shows the avatar bubble inside |tab_contents|. The bubble is positioned
+  // relative to |rect|. |rect| should be in the |tab_contents| coordinate
+  // system.
+  virtual void ShowAvatarBubble(TabContents* tab_contents,
+                                const gfx::Rect& rect) = 0;
+
  protected:
   friend class BrowserList;
   friend class BrowserView;

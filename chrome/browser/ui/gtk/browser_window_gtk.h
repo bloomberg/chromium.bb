@@ -148,6 +148,8 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds);
   virtual FindBar* CreateFindBar() OVERRIDE;
+  virtual void ShowAvatarBubble(TabContents* tab_contents,
+                                const gfx::Rect& rect) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(int type,

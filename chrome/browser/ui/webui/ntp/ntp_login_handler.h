@@ -11,6 +11,7 @@
 #include "content/common/notification_observer.h"
 
 class Profile;
+class Browser;
 
 // The NTP login handler currently simply displays the current logged in
 // username at the top of the NTP (and update itself when that changes).
@@ -47,6 +48,9 @@ class NTPLoginHandler : public WebUIMessageHandler,
 
   // Internal helper method
   void UpdateLogin();
+
+  // Gets the browser window that's currently hosting the new tab page.
+  Browser* GetBrowser();
 
   StringPrefMember username_pref_;
 };

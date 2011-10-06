@@ -112,6 +112,8 @@ class TestBrowserWindow : public BrowserWindow {
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
   virtual FindBar* CreateFindBar() OVERRIDE;
+  virtual void ShowAvatarBubble(TabContents* tab_contents,
+                                const gfx::Rect& rect) OVERRIDE {}
 
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE {}

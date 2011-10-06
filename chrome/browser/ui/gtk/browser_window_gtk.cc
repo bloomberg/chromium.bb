@@ -1192,6 +1192,11 @@ FindBar* BrowserWindowGtk::CreateFindBar() {
   return new FindBarGtk(this);
 }
 
+void BrowserWindowGtk::ShowAvatarBubble(TabContents* tab_contents,
+                                        const gfx::Rect& rect) {
+  // TODO(sail): Implement this once we have a avatar bubble on GTK.
+}
+
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }

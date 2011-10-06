@@ -160,6 +160,8 @@ class Panel : public BrowserWindow, public NotificationObserver {
 #endif
   virtual void UpdatePreferredSize(TabContents* tab_contents,
                                    const gfx::Size& pref_size) OVERRIDE;
+  virtual void ShowAvatarBubble(TabContents* tab_contents,
+                                const gfx::Rect& rect) OVERRIDE;
 
   // NotificationObserver overrides.
   virtual void Observe(int type,

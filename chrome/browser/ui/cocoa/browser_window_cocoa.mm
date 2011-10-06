@@ -18,6 +18,7 @@
 #include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -588,4 +589,18 @@ void BrowserWindowCocoa::UpdateSidebarForContents(TabContents* tab_contents) {
   if (tab_contents == browser_->GetSelectedTabContents()) {
     [controller_ updateSidebarForContents:tab_contents];
   }
+}
+
+void BrowserWindowCocoa::ShowAvatarBubble(TabContents* tab_contents,
+                                          const gfx::Rect& rect) {
+  NSView* view = tab_contents->GetNativeView();
+  NSPoint point = NSMakePoint(rect.right(), rect.bottom());
+  point = [view convertPoint:point toView:nil];
+  point = [[view window] convertBaseToScreen:point];
+
+  // |menu| will automatically release itself on close.
+  AvatarMenuBubbleController* menu =
+      [[AvatarMenuBubbleController alloc] initWithBrowser:browser_
+                                               anchoredAt:point];
+  [menu showWindow:nil];
 }

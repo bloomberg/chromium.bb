@@ -327,6 +327,8 @@ class BrowserView : public BrowserBubbleHost,
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE;
 #endif
+  virtual void ShowAvatarBubble(TabContents* tab_contents,
+                                const gfx::Rect& rect) OVERRIDE;
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const OVERRIDE;
