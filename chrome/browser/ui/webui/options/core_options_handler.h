@@ -39,6 +39,10 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
     handlers_host_ = handlers_host;
   }
 
+  // Adds localized strings to |localized_strings|.
+  static void GetStaticLocalizedValues(
+      base::DictionaryValue* localized_strings);
+
  protected:
   // Fetches a pref value of given |pref_name|.
   // Note that caller owns the returned Value.

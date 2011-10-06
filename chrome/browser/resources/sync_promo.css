@@ -25,6 +25,7 @@ body {
 }
 
 #sync-setup-configure {
+  background-color: transparent;
   margin-left: auto;
   margin-right: auto;
   width: 600px;

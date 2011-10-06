@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/sync_promo_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -51,6 +52,7 @@ class SyncPromoUIHTMLSource : public ChromeWebUIDataSource {
 SyncPromoUIHTMLSource::SyncPromoUIHTMLSource()
     : ChromeWebUIDataSource(chrome::kChromeUISyncPromoHost) {
   DictionaryValue localized_strings;
+  CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
   SyncSetupHandler::GetStaticLocalizedValues(&localized_strings);
   AddLocalizedStrings(localized_strings);
 }

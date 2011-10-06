@@ -71,6 +71,11 @@ void CoreOptionsHandler::Initialize() {
 
 void CoreOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
+  GetStaticLocalizedValues(localized_strings);
+}
+
+void CoreOptionsHandler::GetStaticLocalizedValues(
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Main
   localized_strings->SetString("title",

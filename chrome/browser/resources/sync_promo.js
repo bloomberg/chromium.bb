@@ -30,6 +30,8 @@ cr.define('sync_promo', function() {
 
     // Initializes the page.
     initializePage: function() {
+      localStrings = new LocalStrings();
+
       options.SyncSetupOverlay.prototype.initializePage.call(this);
 
       // Hide parts of the login UI and show the promo UI.
