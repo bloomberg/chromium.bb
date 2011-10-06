@@ -502,7 +502,12 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   EXPECT_EQ(0U, model.GetCursorPosition());
 }
 
-TEST_F(TextfieldViewsModelTest, Clipboard) {
+#if defined(USE_AURA) && defined(OS_LINUX)
+#define MAYBE_Clipboard DISABLED_Clipboard  // http://crbug.com/97845
+#else
+#define MAYBE_Clipboard Clipboard
+#endif
+TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
   ui::Clipboard* clipboard
       = views::ViewsDelegate::views_delegate->GetClipboard();
   string16 initial_clipboard_text;
@@ -1055,7 +1060,14 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_SetText) {
   EXPECT_FALSE(model.Redo());
 }
 
-TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
+#if defined(USE_AURA) && defined(OS_LINUX)
+// This can be re-enabled when aura on linux has clipboard support.
+// http://crbug.com/97845
+#define MAYBE_UndoRedo_CutCopyPasteTest DISABLED_UndoRedo_CutCopyPasteTest
+#else
+#define MAYBE_UndoRedo_CutCopyPasteTest UndoRedo_CutCopyPasteTest
+#endif
+TEST_F(TextfieldViewsModelTest, MAYBE_UndoRedo_CutCopyPasteTest) {
   TextfieldViewsModel model(NULL);
   model.SetText(ASCIIToUTF16("ABCDE"));
   EXPECT_FALSE(model.Redo());  // nothing to redo

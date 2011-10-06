@@ -167,7 +167,7 @@ bool MessagePumpX::HasXInput2() {
 void MessagePumpX::InitXSource() {
   DCHECK(!x_source_);
   GPollFD* x_poll = new GPollFD();
-  x_poll->fd = ConnectionNumber(g_xdisplay);
+  x_poll->fd = ConnectionNumber(GetDefaultXDisplay());
   x_poll->events = G_IO_IN;
 
   x_source_ = g_source_new(&XSourceFuncs, sizeof(GSource));

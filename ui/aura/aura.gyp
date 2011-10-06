@@ -83,6 +83,7 @@
         '<(DEPTH)/ui/ui.gyp:gfx_resources',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
+        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         'aura',
       ],
       'include_dirs': [

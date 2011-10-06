@@ -384,4 +384,25 @@ gfx::Rect NativeScrollBarViews::GetTrackBounds() const {
   return bounds;
 }
 
+#if !defined(TOOLKIT_USES_GTK)
+////////////////////////////////////////////////////////////////////////////////
+// NativewScrollBarWrapper, public:
+
+// static
+NativeScrollBarWrapper* NativeScrollBarWrapper::CreateWrapper(
+    NativeScrollBar* scroll_bar) {
+  return new NativeScrollBarViews(scroll_bar);
+}
+
+// static
+int NativeScrollBarWrapper::GetHorizontalScrollBarHeight() {
+  return 20;
+}
+
+// static
+int NativeScrollBarWrapper::GetVerticalScrollBarWidth() {
+  return 20;
+}
+#endif
+
 }  // namespace views
