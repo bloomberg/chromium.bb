@@ -34,7 +34,6 @@ var pageState;
 var deleteQueue = [];
 var selectionAnchor = -1;
 var activePage = null;
-var idToCheckbox = [];
 
 const MenuButton = cr.ui.MenuButton;
 const Command = cr.ui.Command;
@@ -104,13 +103,22 @@ function Page(result, continued, model, id) {
 Page.prototype.getResultDOM = function(searchResultFlag) {
   var node = createElementWithClassName('li', 'entry');
   var time = createElementWithClassName('div', 'time');
-  var entryBox = createElementWithClassName('div', 'entry-box');
+  var entryBox = createElementWithClassName('label', 'entry-box');
   var domain = createElementWithClassName('div', 'domain');
+
   var dropDown = createElementWithClassName('button', 'drop-down');
   dropDown.value = 'Open action menu';
   dropDown.title = localStrings.getString('actionMenuDescription');
   dropDown.setAttribute('menu', '#action-menu');
   cr.ui.decorate(dropDown, MenuButton);
+
+  // Checkbox is always created, but only visible on hover & when checked.
+  var checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.id = 'checkbox-' + this.id_;
+  checkbox.time = this.time.getTime();
+  checkbox.addEventListener('click', checkboxClicked);
+  time.appendChild(checkbox);
 
   // Keep track of the drop down that triggered the menu, so we know
   // which element to apply the command to.
@@ -125,11 +133,28 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
   domain.style.backgroundImage =
     'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
   domain.textContent = this.domain_;
-  // Use a wrapper div so that the entry contents will be shinkwrapped.
+
+  // Clicking anywhere in the entryBox will check/uncheck the checkbox.
+  entryBox.setAttribute('for', checkbox.id);
+  entryBox.addEventListener('mousedown', entryBoxMousedown, false);
+
+  // Prevent clicks on the drop down from affecting the checkbox.
+  dropDown.addEventListener('click', function(e) { e.preventDefault(); });
+
+  // We use a wrapper div so that the entry contents will be shinkwrapped.
   entryBox.appendChild(time);
   entryBox.appendChild(domain);
   entryBox.appendChild(this.getTitleDOM_());
   entryBox.appendChild(dropDown);
+
+  // Let the entryBox be styled appropriately when it contains keyboard focus.
+  entryBox.addEventListener('focus', function() {
+    this.classList.add('contains-focus');
+  }, true);
+  entryBox.addEventListener('blur', function() {
+    this.classList.remove('contains-focus');
+  }, true);
+
   node.appendChild(entryBox);
 
   if (searchResultFlag) {
@@ -140,15 +165,6 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
                              this.model_.getSearchText());
     node.appendChild(snippet);
   } else {
-    if (this.model_.getEditMode()) {
-      var checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.name = this.id_;
-      checkbox.time = this.time.toString();
-      checkbox.addEventListener("click", checkboxClicked);
-      idToCheckbox[this.id_] = checkbox;
-      time.appendChild(checkbox);
-    }
     time.appendChild(document.createTextNode(this.dateTimeOfDay));
   }
 
@@ -234,7 +250,7 @@ Page.prototype.showMoreFromSite_ = function() {
 };
 
 /**
- * Remove the page from the history.
+ * Remove a single entry from the history.
  */
 Page.prototype.removeFromHistory_ = function() {
   var self = this;
@@ -271,8 +287,6 @@ Page.pregQuote_ = function(str) {
  */
 function HistoryModel() {
   this.clearModel_();
-  this.setEditMode(false);
-  this.view_;
 }
 
 // HistoryModel, Public: ------------------------------------------------------
@@ -400,21 +414,6 @@ HistoryModel.prototype.getNumberedRange = function(start, end) {
   return this.pages_.slice(start, end);
 };
 
-/**
- * @return {boolean} Whether we are in edit mode where history items can be
- *    deleted
- */
-HistoryModel.prototype.getEditMode = function() {
-  return this.editMode_;
-};
-
-/**
- * @param {boolean} edit_mode Control whether we are in edit mode.
- */
-HistoryModel.prototype.setEditMode = function(edit_mode) {
-  this.editMode_ = edit_mode;
-};
-
 // HistoryModel, Private: -----------------------------------------------------
 HistoryModel.prototype.clearModel_ = function() {
   this.inFlight_ = false; // Whether a query is inflight.
@@ -423,7 +422,6 @@ HistoryModel.prototype.clearModel_ = function() {
   this.pages_ = []; // Date-sorted list of pages.
   this.last_id_ = 0;
   selectionAnchor = -1;
-  idToCheckbox = [];
 
   // The page that the view wants to see - we only fetch slightly past this
   // point. If the view requests a page that we don't have data for, we try
@@ -533,11 +531,9 @@ function HistoryView(model) {
   window.onresize = function() {
     self.updateEntryAnchorWidth_();
   };
-  self.updateEditControls_();
 
-  this.boundUpdateRemoveButton_ = function(e) {
-    return self.updateRemoveButton_(e);
-  };
+  $('clear-browsing-data').addEventListener('click', openClearBrowsingData);
+  $('remove-selected').addEventListener('click', removeItems);
 }
 
 // HistoryView, public: -------------------------------------------------------
@@ -551,38 +547,7 @@ HistoryView.prototype.setSearch = function(term, opt_page) {
   this.pageIndex_ = parseInt(opt_page || 0, 10);
   window.scrollTo(0, 0);
   this.model_.setSearchText(term, this.pageIndex_);
-  if (term) {
-    this.setEditMode(false);
-  }
-  this.updateEditControls_();
-  pageState.setUIState(this.model_.getEditMode(), term, this.pageIndex_);
-};
-
-/**
- * Controls edit mode where history can be deleted.
- * @param {boolean} edit_mode Whether to enable edit mode.
- */
-HistoryView.prototype.setEditMode = function(edit_mode) {
-  this.model_.setEditMode(edit_mode);
-  pageState.setUIState(this.model_.getEditMode(), this.model_.getSearchText(),
-                       this.pageIndex_);
-};
-
-/**
- * Toggles the edit mode and triggers UI update.
- */
-HistoryView.prototype.toggleEditMode = function() {
-  var editMode = !this.model_.getEditMode();
-  this.setEditMode(editMode);
-  this.updateEditControls_();
-};
-
-/**
- * @return {boolean} Whether we are in edit mode where history items can be
- *    deleted
- */
-HistoryView.prototype.getEditMode = function() {
-  return this.model_.getEditMode();
+  pageState.setUIState(term, this.pageIndex_);
 };
 
 /**
@@ -590,6 +555,7 @@ HistoryView.prototype.getEditMode = function() {
  */
 HistoryView.prototype.reload = function() {
   this.model_.reload();
+  this.updateRemoveButton();
 };
 
 /**
@@ -601,8 +567,7 @@ HistoryView.prototype.setPage = function(page) {
   this.pageIndex_ = parseInt(page, 10);
   window.scrollTo(0, 0);
   this.model_.requestPage(page);
-  pageState.setUIState(this.model_.getEditMode(), this.model_.getSearchText(),
-      this.pageIndex_);
+  pageState.setUIState(this.model_.getSearchText(), this.pageIndex_);
 };
 
 /**
@@ -619,6 +584,14 @@ HistoryView.prototype.getPage = function() {
 HistoryView.prototype.onModelReady = function() {
   this.displayResults_();
 };
+
+/**
+ * Enables or disables the 'Remove selected items' button as appropriate.
+ */
+HistoryView.prototype.updateRemoveButton = function() {
+  var anyChecked = document.querySelector('.entry input:checked') != null;
+  $('remove-selected').disabled = !anyChecked;
+}
 
 // HistoryView, private: ------------------------------------------------------
 /**
@@ -721,64 +694,6 @@ HistoryView.prototype.displaySummaryBar_ = function() {
 };
 
 /**
- * Update the widgets related to edit mode.
- */
-HistoryView.prototype.updateEditControls_ = function() {
-  // Display a button (looking like a link) to enable/disable edit mode.
-  var oldButton = this.editButtonTd_.firstChild;
-  if (this.model_.getSearchText()) {
-    this.editButtonTd_.replaceChild(document.createElement('p'), oldButton);
-    this.editingControlsDiv_.textContent = '';
-    return;
-  }
-
-  var editMode = this.model_.getEditMode();
-  var button = createElementWithClassName('button', 'edit-button');
-  button.onclick = toggleEditMode;
-  button.textContent = localStrings.getString(editMode ?
-                                              'doneediting' : 'edithistory');
-  this.editButtonTd_.replaceChild(button, oldButton);
-
-  this.editingControlsDiv_.textContent = '';
-
-  if (editMode) {
-    // Button to delete the selected items.
-    button = document.createElement('button');
-    button.onclick = removeItems;
-    button.textContent = localStrings.getString('removeselected');
-    button.disabled = true;
-    this.editingControlsDiv_.appendChild(button);
-    this.removeButton_ = button;
-
-    // Button that opens up the clear browsing data dialog.
-    button = document.createElement('button');
-    button.onclick = openClearBrowsingData;
-    button.textContent = localStrings.getString('clearallhistory');
-    this.editingControlsDiv_.appendChild(button);
-
-    // Listen for clicks in the page to sync the disabled state.
-    document.addEventListener('click', this.boundUpdateRemoveButton_);
-  } else {
-    this.removeButton_ = null;
-    document.removeEventListener('click', this.boundUpdateRemoveButton_);
-  }
-};
-
-/**
- * Updates the disabled state of the remove button when in editing mode.
- * @param {!Event} e The click event object.
- * @private
- */
-HistoryView.prototype.updateRemoveButton_ = function(e) {
-  if (e.target.tagName != 'INPUT')
-    return;
-
-  var anyChecked = document.querySelector('.entry input:checked') != null;
-  if (this.removeButton_)
-    this.removeButton_.disabled = !anyChecked;
-};
-
-/**
  * Update the pagination tools.
  */
 HistoryView.prototype.displayNavBar_ = function() {
@@ -811,8 +726,7 @@ HistoryView.prototype.createPageNav_ = function(page, name) {
   anchor = document.createElement('a');
   anchor.className = 'page-navigation';
   anchor.textContent = name;
-  var hashString = PageState.getHashString(this.model_.getEditMode(),
-                                           this.model_.getSearchText(), page);
+  var hashString = PageState.getHashString(this.model_.getSearchText(), page);
   var link = 'chrome://history2/' + (hashString ? '#' + hashString : '');
   anchor.href = link;
   anchor.onclick = function() {
@@ -921,13 +835,12 @@ PageState.prototype.getHashData = function() {
  * @param {string} term The current search string.
  * @param {string} page The page currently being viewed.
  */
-PageState.prototype.setUIState = function(editMode, term, page) {
+PageState.prototype.setUIState = function(term, page) {
   // Make sure the form looks pretty.
   document.forms[0].term.value = term;
   var currentHash = this.getHashData();
-  if (Boolean(currentHash.e) != editMode || currentHash.q != term ||
-      currentHash.p != page) {
-    window.location.hash = PageState.getHashString(editMode, term, page);
+  if (currentHash.q != term || currentHash.p != page) {
+    window.location.hash = PageState.getHashString(term, page);
   }
 };
 
@@ -937,11 +850,8 @@ PageState.prototype.setUIState = function(editMode, term, page) {
  * @param {string} page The page currently being viewed.
  * @return {string} The string to be used in a hash.
  */
-PageState.getHashString = function(editMode, term, page) {
+PageState.getHashString = function(term, page) {
   var newHash = [];
-  if (editMode) {
-    newHash.push('e=1');
-  }
   if (term) {
     newHash.push('q=' + encodeURIComponent(term));
   }
@@ -967,9 +877,6 @@ function load() {
 
   // Create default view.
   var hashData = pageState.getHashData();
-  if (Boolean(hashData.e)) {
-    historyView.toggleEditMode();
-  }
   historyView.setSearch(hashData.q, hashData.p);
 
   // Setup click handlers.
@@ -1015,17 +922,6 @@ function setPage(page) {
 }
 
 /**
- * TODO(glen): Get rid of this function.
- * Toggles edit mode.
- */
-function toggleEditMode() {
-  if (historyView) {
-    historyView.toggleEditMode();
-    historyView.reload();
-  }
-}
-
-/**
  * Delete the next item in our deletion queue.
  */
 function deleteNextInQueue() {
@@ -1058,6 +954,10 @@ function queueURLsForDeletion(date, urls, opt_callback) {
   deleteQueue.push({ 'date': date, 'urls': urls, 'callback': opt_callback });
 }
 
+function reloadHistory() {
+  historyView.reload();
+}
+
 /**
  * Collect IDs from checked checkboxes and send to Chrome for deletion.
  */
@@ -1081,7 +981,7 @@ function removeItems() {
       urls = [];
       date = cbDate;
     }
-    var link = $('id-' + checkbox.name);
+    var link = checkbox.parentNode.parentNode.querySelector('a');
     checkbox.disabled = true;
     link.classList.add('to-be-removed');
     disabledItems.push(checkbox);
@@ -1092,15 +992,19 @@ function removeItems() {
   }
   if (checked.length > 0 && confirm(localStrings.getString('deletewarning'))) {
     for (var i = 0; i < queue.length; i++) {
-      queueURLsForDeletion(queue[i][0], queue[i][1]);
+      // Reload the page when the final entry has been deleted.
+      var callback = i == 0 ? reloadHistory : null;
+
+      queueURLsForDeletion(queue[i][0], queue[i][1], callback);
     }
     deleteNextInQueue();
   } else {
     // If the remove is cancelled, return the checkboxes to their
     // enabled, non-line-through state.
     for (var i = 0; i < disabledItems.length; i++) {
-      var link = $('id-' + disabledItems[i].name);
-      disabledItems[i].disabled = false;
+      var checkbox = disabledItems[i];
+      var link = checkbox.parentNode.parentNode.querySelector('a');
+      checkbox.disabled = false;
       link.classList.remove('to-be-removed');
     }
   }
@@ -1111,18 +1015,38 @@ function removeItems() {
  * Toggle state of checkbox and handle Shift modifier.
  */
 function checkboxClicked(event) {
+  var id = Number(this.id.slice("checkbox-".length));
   if (event.shiftKey && (selectionAnchor != -1)) {
     var checked = this.checked;
     // Set all checkboxes from the anchor up to the clicked checkbox to the
     // state of the clicked one.
-    var begin = Math.min(this.name, selectionAnchor);
-    var end = Math.max(this.name, selectionAnchor);
+    var begin = Math.min(id, selectionAnchor);
+    var end = Math.max(id, selectionAnchor);
     for (var i = begin; i <= end; i++) {
-      idToCheckbox[i].checked = checked;
+      var checkbox = document.querySelector('#checkbox-' + i);
+      if (checkbox)
+        checkbox.checked = checked;
     }
   }
-  selectionAnchor = this.name;
-  this.focus();
+  selectionAnchor = id;
+
+  historyView.updateRemoveButton();
+}
+
+function entryBoxMousedown(event) {
+  // Prevent text selection when shift-clicking to select multiple entries.
+  if (event.shiftKey) {
+    event.preventDefault();
+  }
+}
+
+function removeNode(node) {
+  node.classList.add('fade-out'); // Trigger CSS fade out animation.
+
+  // Delete the node when the animation is complete.
+  node.addEventListener('webkitTransitionEnd', function() {
+    node.parentNode.removeChild(node);
+  });
 }
 
 /**
@@ -1132,22 +1056,23 @@ function checkboxClicked(event) {
 function removeEntryFromView(entry) {
   var nextEntry = entry.nextSibling;
   var previousEntry = entry.previousSibling;
-  entry.parentNode.removeChild(entry);
+
+  removeNode(entry);
 
   // if there is no previous entry, and the next entry is a gap, remove it
   if (!previousEntry && nextEntry && nextEntry.className == 'gap') {
-    nextEntry.parentNode.removeChild(nextEntry);
+    removeNode(nextEntry);
   }
 
   // if there is no next entry, and the previous entry is a gap, remove it
   if (!nextEntry && previousEntry && previousEntry.className == 'gap') {
-    previousEntry.parentNode.removeChild(previousEntry);
+    removeNode(previousEntry);
   }
 
   // if both the next and previous entries are gaps, remove one
   if (nextEntry && nextEntry.className == 'gap' &&
       previousEntry && previousEntry.className == 'gap') {
-    nextEntry.parentNode.removeChild(nextEntry);
+    removeNode(nextEntry);
   }
 }
 
@@ -1167,7 +1092,7 @@ function deleteComplete() {
   if (deleteQueue.length > 0) {
     // Remove the successfully deleted entry from the queue.
     if (deleteQueue[0].callback)
-      deleteQueue[0].callback();
+      deleteQueue[0].callback.apply();
     deleteQueue.splice(0, 1);
     deleteNextInQueue();
   } else {
@@ -1193,9 +1118,9 @@ function deleteFailed() {
 function historyDeleted() {
   window.console.log('History deleted');
   var anyChecked = document.querySelector('.entry input:checked') != null;
-  // Reload the page, unless the user is actively editing.
+  // Reload the page, unless the user has any items checked.
   // TODO(dubroy): We should just reload the page & restore the checked items.
-  if (!(historyView.getEditMode() && anyChecked))
+  if (!anyChecked)
     historyView.reload();
 }
 

@@ -32,30 +32,27 @@
   padding:3px;
   margin-bottom:-8px;
 }
+
 #results-separator table {
   width: 100%;
 }
+
 #results-summary {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   width: 50%;
 }
-#edit-button {
-  text-align: right;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  width: 50%;
-}
+
 #editing-controls button {
-  margin-top: 18px;
-  margin-bottom: -8px;
+  margin: 18px 0 -8px 0;
 }
+
 #results-display {
   max-width: 740px;
-  margin: 16px 4px 0 4px;
+  margin: 16px 0 0 0;
 }
+
 .day {
   color: #6a6a6a;
   font-weight: bold;
@@ -63,6 +60,7 @@
   text-transform: uppercase;
   font-size: 13px;
 }
+
 .edit-button {
   display: inline;
   -webkit-appearance: none;
@@ -75,6 +73,7 @@
   display:inline-block;
   font:inherit;
 }
+
 .gap,
 .entry,
 .no-entries {
@@ -83,14 +82,17 @@
   list-style: none;
 }
 .gap {
-  width: 15px;
+  width: 35px;
   -webkit-border-end: 1px solid #ddd;
   height: 14px;
 }
+
 .entry {
   overflow: auto; /* Make sure it's at least as large as its children. */
 }
+
 .entry-box {
+  cursor: default;
   line-height: 1.6em;
 
   display: -webkit-box;
@@ -99,13 +101,16 @@
   float: left;     /* ..but make the box shrink to fit its content. */
   overflow: hidden;
 }
+
 html[dir=rtl] .entry-box {
   float: right; /* To make the box shrink to fit its content. */
 }
+
 .search-results, .day-results {
   margin: 0 0 24px 0;
   padding: 0;
 }
+
 .snippet {
   font-size: 12px;
   line-height: 1.6em;
@@ -113,6 +118,7 @@ html[dir=rtl] .entry-box {
   -webkit-margin-start: 90px; /* Align it with .domain. */
   clear: both;
 }
+
 .entry .domain {
   color: #282;
   -webkit-padding-start: 20px;
@@ -120,6 +126,7 @@ html[dir=rtl] .entry-box {
   background-repeat: no-repeat;
   background-position-y: center;
 }
+
 .drop-down {
   background: #fff -webkit-canvas(drop-down-arrow) no-repeat center center;
   border: 1px solid hsl(214, 91%, 85%);
@@ -127,24 +134,60 @@ html[dir=rtl] .entry-box {
   width: 13px;
   height: 13px;
   -webkit-margin-start: 8px;
+  -webkit-margin-end: 4px;
   position: relative;
   top: 2px;
 }
+
 .drop-down:hover {
   border-color: #6A86DE;
   background-image: -webkit-canvas(drop-down-arrow-hover);
 }
+
 .drop-down[menu-shown], .drop-down:focus {
   border-color: #6A86DE;
   background-color: #6A86DE;
   background-image: -webkit-canvas(drop-down-arrow-active);
 }
+
 html[dir='rtl'] .entry .domain {
   background-position-x: right;
 }
+
 .entry .time {
   color:#9a9a9a;
   width: 90px;
+}
+
+.entry input[type=checkbox] {
+  position: relative;
+  top: 1px;
+}
+
+/* Checkboxes are shown when checked or focused, or when the entry is hovered.
+   Fade in on focus, but not on hover, because it makes the UI feel laggy. */
+.entry input[type=checkbox]:not(:checked) {
+  opacity: 0;
+  -webkit-transition: opacity 150ms;
+}
+
+.entry-box:hover input[type=checkbox],
+.entry-box input[type=checkbox]:focus {
+  opacity: 1;
+}
+
+.entry-box input[type=checkbox]:focus {
+  -webkit-transition: opacity 150ms;
+}
+
+.entry-box {
+  background-color: none;
+  -webkit-transition: background-color 150ms;
+}
+
+.entry-box:hover, .entry-box.contains-focus {
+  background-color: #e4ecf7;
+  border-radius: 2px;
 }
 .entry .title {
   -webkit-box-flex: 1;
@@ -152,6 +195,7 @@ html[dir='rtl'] .entry .domain {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
 .entry .title > .starred {
   background:url('shared/images/star_small.png');
   background-repeat:no-repeat;
@@ -160,19 +204,28 @@ html[dir='rtl'] .entry .domain {
   width:11px;
   height:11px;
 }
+
 .entry .title > a {
   color: #11c;
   text-decoration: none;
 }
+
 .entry .title > a.to-be-removed {
   text-decoration: line-through;
 }
+
 .entry .title > a:hover {
   text-decoration: underline;
 }
+
 /* Since all history links are visited, we can make them blue. */
 .entry .title > a:visted {
   color: #11c;
+}
+
+.fade-out {
+  opacity: 0;
+  -webkit-transition: opacity 200ms;
 }
 </style>
 </head>
@@ -192,7 +245,12 @@ html[dir='rtl'] .entry .domain {
       <tr><td id="results-summary"></td><td id="edit-button"><p></p></td></tr>
     </table>
   </div>
-  <div id="editing-controls"></div>
+  <div id="editing-controls">
+    <button id="clear-browsing-data" i18n-content="clearallhistory"></button>
+    <button id="remove-selected"
+            disabled="disabled"
+            i18n-content="removeselected"></button>
+  </div>
   <div id="results-display"></div>
   <div id="results-pagination"></div>
 </div>
