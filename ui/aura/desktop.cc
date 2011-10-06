@@ -50,6 +50,7 @@ Desktop::~Desktop() {
 
 void Desktop::Init() {
   window_->Init();
+  window_->SetBounds(gfx::Rect(gfx::Point(), host_->GetSize()));
   window_->Show();
   compositor()->SetRootLayer(window_->layer());
 }

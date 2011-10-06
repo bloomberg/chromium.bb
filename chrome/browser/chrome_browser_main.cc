@@ -201,6 +201,7 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/aura/aura_init.h"
+#include "ui/aura/desktop.h"
 #endif
 
 namespace net {
@@ -1933,7 +1934,9 @@ void ChromeBrowserMainParts::MainMessageLoopRun() {
   // across versions.
   RecordBrowserStartupTime();
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(USE_AURA)
+  aura::Desktop::GetInstance()->Run();
+#elif defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
 #elif defined(USE_X11)

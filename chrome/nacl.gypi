@@ -198,6 +198,11 @@
                     '../build/linux/system.gyp:gtk',
                   ],
                 }],
+                ['use_glib == 1', {
+                  'dependencies': [
+                    '../build/linux/system.gyp:glib',
+                  ],
+                }],
                 ['os_posix == 1 and OS != "mac"', {
                   'conditions': [
                     ['linux_use_tcmalloc==1', {
