@@ -346,7 +346,8 @@ TEST_P(FullTabUITest, TabCrashReload) {
 }
 
 // Tests if Chrome gets restarted after a crash by just refreshing the document.
-TEST_P(FullTabUITest, TabCrashRefresh) {
+// Flaky as per bug http://crbug.com/99317.
+TEST_P(FullTabUITest, FLAKY_TabCrashRefresh) {
   using testing::DoAll;
 
   if (!GetParam().invokes_cf()) {
