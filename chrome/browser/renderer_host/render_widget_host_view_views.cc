@@ -799,12 +799,15 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
   DCHECK(!host_->is_accelerated_compositing_active() ||
          get_use_acceleration_when_possible());
 
-  // Paint a "hole" in the canvas so that the render of the web page is on
+  // If we aren't using the views compositor, then
+  // paint a "hole" in the canvas so that the render of the web page is on
   // top of whatever else has already been painted in the views hierarchy.
   // Later views might still get to paint on top.
-  canvas->FillRectInt(SK_ColorBLACK, 0, 0,
-                      bounds().width(), bounds().height(),
-                      SkXfermode::kClear_Mode);
+  if (!get_use_acceleration_when_possible()) {
+    canvas->FillRectInt(SK_ColorBLACK, 0, 0,
+                        bounds().width(), bounds().height(),
+                        SkXfermode::kClear_Mode);
+  }
 
   DCHECK(!about_to_validate_and_paint_);
 
@@ -1027,9 +1030,15 @@ void RenderWidgetHostViewViews::DestroyPluginContainer(
 
 void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
     bool activated) {
-  // TODO(anicolao): figure out if we need something here
+#if defined(TOUCH_UI)
+  // If we don't use a views compositor, we currently have no way of
+  // supporting rendering via the GPU process.
+  if (!get_use_acceleration_when_possible() && activated)
+    NOTREACHED();
+#else
   if (activated)
     NOTIMPLEMENTED();
+#endif
 }
 #endif  // TOOLKIT_USES_GTK
 
