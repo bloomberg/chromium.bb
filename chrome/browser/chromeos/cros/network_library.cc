@@ -4815,6 +4815,11 @@ void NetworkLibraryImplStub::Init() {
 
   wifi_scanning_ = false;
   offline_mode_ = false;
+
+  // Ensure our active network is connected and vice versa, otherwise our
+  // autotest browser_tests sometimes conclude the device is offline.
+  CHECK(active_network()->connected());
+  CHECK(connected_network()->is_active());
 }
 
 ////////////////////////////////////////////////////////////////////////////
