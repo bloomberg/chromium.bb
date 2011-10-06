@@ -117,8 +117,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Incognito) {
 
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
-// Hangs flakily on mac, linux, win: http://crbug.com/53991
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoSplitMode) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
@@ -130,6 +129,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
   catcher_incognito.RestrictToProfile(
       browser()->profile()->GetOffTheRecordProfile());
 
+  ExtensionTestMessageListener listener("waiting", true);
+  ExtensionTestMessageListener listener_incognito("waiting_incognito", true);
+
   // Open incognito window and navigate to test page.
   ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(),
@@ -139,9 +141,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
       .AppendASCII("incognito").AppendASCII("split")));
 
   // Wait for both extensions to be ready before telling them to proceed.
-  ExtensionTestMessageListener listener("waiting", true);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
-  ExtensionTestMessageListener listener_incognito("waiting", true);
   EXPECT_TRUE(listener_incognito.WaitUntilSatisfied());
   listener.Reply("go");
   listener_incognito.Reply("go");

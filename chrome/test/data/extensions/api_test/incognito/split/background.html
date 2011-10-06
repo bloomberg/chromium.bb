@@ -130,7 +130,9 @@ chrome.test.getConfig(function(config) {
             done();
           }
         });
-      chrome.test.sendMessage("waiting", pass(function() {
+      var message =
+          inIncognitoContext ? "waiting_incognito" : "waiting";
+      chrome.test.sendMessage(message, pass(function() {
         chrome.bookmarks.create(node, pass(function(results) {
           node.id = results.id;  // since we couldn't know this going in
           node.index = results.index;
