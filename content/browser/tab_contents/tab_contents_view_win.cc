@@ -69,7 +69,7 @@ void TabContentsViewWin::GetContainerBounds(gfx::Rect *out) const {
   *out = gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
 }
 
-void TabContentsViewWin::SetPageTitle(const std::wstring& title) {
+void TabContentsViewWin::SetPageTitle(const string16& title) {
 }
 
 void TabContentsViewWin::OnTabCrashed(base::TerminationStatus status,

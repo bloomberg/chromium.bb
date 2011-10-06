@@ -4,7 +4,7 @@
 
 #import <Carbon/Carbon.h>
 
-#include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
+#include "content/browser/tab_contents/popup_menu_helper_mac.h"
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"

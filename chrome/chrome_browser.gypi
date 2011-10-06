@@ -2224,8 +2224,6 @@
         'browser/tab_contents/link_infobar_delegate.h',
         'browser/tab_contents/simple_alert_infobar_delegate.cc',
         'browser/tab_contents/simple_alert_infobar_delegate.h',
-        'browser/tab_contents/popup_menu_helper_mac.h',
-        'browser/tab_contents/popup_menu_helper_mac.mm',
         'browser/tab_contents/render_view_context_menu.cc',
         'browser/tab_contents/render_view_context_menu.h',
         'browser/tab_contents/render_view_context_menu_gtk.cc',
