@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/notification_service.h"
@@ -96,6 +97,8 @@ AlternateNavURLFetcher::AlternateNavURLFetcher(
       navigated_to_entry_(false) {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
+                 NotificationService::AllSources());
 }
 
 AlternateNavURLFetcher::~AlternateNavURLFetcher() {
@@ -105,34 +108,36 @@ void AlternateNavURLFetcher::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_NAV_ENTRY_PENDING:
+    case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       // If we've already received a notification for the same controller, we
       // should delete ourselves as that indicates that the page is being
       // re-loaded so this instance is now stale.
-      // http://crbug.com/43378
-      if (controller_ == Source<NavigationController>(source).ptr()) {
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      if (controller_ == controller) {
         delete this;
       } else if (!controller_) {
-        controller_ = Source<NavigationController>(source).ptr();
-        DCHECK(controller_->pending_entry());
-
-        // Start listening for the commit notification. We also need to listen
-        // for the tab close command since that means the load will never
-        // commit!
+        // Start listening for the commit notification.
+        DCHECK(controller->pending_entry());
         registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                       Source<NavigationController>(controller_));
-        registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
-                       Source<NavigationController>(controller_));
-
-        DCHECK_EQ(NOT_STARTED, state_);
-        state_ = IN_PROGRESS;
-        fetcher_.reset(new URLFetcher(GURL(alternate_nav_url_),
-                                      URLFetcher::HEAD, this));
-        fetcher_->set_request_context(
-            controller_->browser_context()->GetRequestContext());
-        fetcher_->Start();
+                       Source<NavigationController>(controller));
+        StartFetch(controller);
       }
       break;
+    }
+
+    case chrome::NOTIFICATION_INSTANT_COMMITTED: {
+      // See above.
+      NavigationController* controller =
+          &Source<TabContentsWrapper>(source)->controller();
+      if (controller_ == controller) {
+        delete this;
+      } else if (!controller_) {
+        navigated_to_entry_ = true;
+        StartFetch(controller);
+      }
+      break;
+    }
 
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
       // The page was navigated, we can show the infobar now if necessary.
@@ -168,6 +173,20 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
   // WARNING: |this| may be deleted!
 }
 
+void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
+  controller_ = controller;
+  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
+                 Source<NavigationController>(controller_));
+
+  DCHECK_EQ(NOT_STARTED, state_);
+  state_ = IN_PROGRESS;
+  fetcher_.reset(new URLFetcher(GURL(alternate_nav_url_), URLFetcher::HEAD,
+                                this));
+  fetcher_->set_request_context(
+      controller_->browser_context()->GetRequestContext());
+  fetcher_->Start();
+}
+
 void AlternateNavURLFetcher::SetStatusFromURLFetch(
     const GURL& url,
     const net::URLRequestStatus& status,
@@ -200,10 +219,9 @@ void AlternateNavURLFetcher::ShowInfobarIfPossible() {
     return;
   }
 
-  TabContentsWrapper* wrapper =
+  InfoBarTabHelper* infobar_helper =
       TabContentsWrapper::GetCurrentWrapperForContents(
-          controller_->tab_contents());
-  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+          controller_->tab_contents())->infobar_tab_helper();
   infobar_helper->AddInfoBar(
       new AlternateNavInfoBarDelegate(infobar_helper, alternate_nav_url_));
   delete this;

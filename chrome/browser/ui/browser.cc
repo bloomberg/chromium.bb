@@ -5111,7 +5111,11 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
   }
 
   if (disposition == CURRENT_TAB) {
-    instant()->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
+    NotificationService::current()->Notify(
+        chrome::NOTIFICATION_INSTANT_COMMITTED,
+        Source<TabContentsWrapper>(instant()->CommitCurrentPreview(
+            INSTANT_COMMIT_PRESSED_ENTER)),
+        NotificationService::NoDetails());
     return true;
   }
   if (disposition == NEW_FOREGROUND_TAB) {
@@ -5127,6 +5131,10 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
         instant()->last_transition_type(),
         TabStripModel::ADD_ACTIVE);
     instant()->CompleteRelease(preview_contents);
+    NotificationService::current()->Notify(
+        chrome::NOTIFICATION_INSTANT_COMMITTED,
+        Source<TabContentsWrapper>(preview_contents),
+        NotificationService::NoDetails());
     return true;
   }
   // The omnibox currently doesn't use other dispositions, so we don't attempt

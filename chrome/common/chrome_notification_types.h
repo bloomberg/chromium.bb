@@ -836,6 +836,10 @@ enum NotificationType {
   // Sent each time the InstantController shows the InstantLoader.
   NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
 
+  // Sent when an Instant preview is committed.  The Source is the
+  // TabContentsWrapper containing the committed preview.  There are no details.
+  NOTIFICATION_INSTANT_COMMITTED,
+
   // Sent when the instant loader determines whether the page supports the
   // instant API or not. The details is a boolean indicating if the page
   // supports instant. The source is not used.

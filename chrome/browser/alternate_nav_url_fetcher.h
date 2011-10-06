@@ -61,6 +61,10 @@ class AlternateNavURLFetcher : public NotificationObserver,
                                   const net::ResponseCookies& cookies,
                                   const std::string& data) OVERRIDE;
 
+  // Sets |controller_| to the supplied pointer and begins fetching
+  // |alternate_nav_url_|.
+  void StartFetch(NavigationController* controller);
+
   // Sets |state_| to either SUCCEEDED or FAILED depending on the result of the
   // fetch.
   void SetStatusFromURLFetch(const GURL& url,

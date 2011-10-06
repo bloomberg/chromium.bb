@@ -277,7 +277,8 @@ bool InstantController::IsCurrent() {
       !update_timer_.IsRunning();
 }
 
-void InstantController::CommitCurrentPreview(InstantCommitType type) {
+TabContentsWrapper* InstantController::CommitCurrentPreview(
+    InstantCommitType type) {
   if (type == INSTANT_COMMIT_PRESSED_ENTER && show_timer_.IsRunning()) {
     // The user pressed enter and the show timer is running. This means the
     // pending_loader returned an error code and we're not showing it. Force it
@@ -291,6 +292,7 @@ void InstantController::CommitCurrentPreview(InstantCommitType type) {
   tab->controller().CopyStateFromAndPrune(&tab_contents_->controller());
   delegate_->CommitInstant(tab);
   CompleteRelease(tab);
+  return tab;
 }
 
 void InstantController::SetCommitOnMouseUp() {
