@@ -893,7 +893,7 @@
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "4d6a2fc67a692883e75a427b416bf782eda57cee",
+      "source_hash": "b607f6ca8f1ccf4343766b480ae21bb220dd949c",
       "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {
@@ -1252,7 +1252,7 @@
         "info.html",
         "manifest.json"
       ],
-      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991",
+      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {
@@ -1635,38 +1635,6 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.permissions.contains",
-        "chrome.experimental.permissions.onAdded",
-        "chrome.experimental.permissions.onRemoved",
-        "chrome.experimental.permissions.remove",
-        "chrome.experimental.permissions.request",
-        "chrome.tabs.create"
-      ],
-      "crx_path": "examples\/api\/permissions\/request-permissions.crx",
-      "description": "Sample demonstration the optional permissions API.",
-      "features": [
-        "browser_action",
-        "experimental",
-        "options_page"
-      ],
-      "icon": "images\/icon.png",
-      "id": "7421f001a53fde8c1c2523a132be23f764aa35f9",
-      "name": "Optional permissions sample",
-      "path": "examples\/api\/permissions\/request-permissions\/",
-      "protocols": [],
-      "search_string": "OPTIONAL PERMISSIONS SAMPLE SAMPLE DEMONSTRATION THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.EXPERIMENTAL.PERMISSIONS.CONTAINS CHROME.EXPERIMENTAL.PERMISSIONS.ONADDED CHROME.EXPERIMENTAL.PERMISSIONS.ONREMOVED CHROME.EXPERIMENTAL.PERMISSIONS.REMOVE CHROME.EXPERIMENTAL.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
-      "source_files": [
-        "manifest.json",
-        "options.html",
-        "options.js",
-        "popup.html",
-        "popup.js"
-      ],
-      "source_hash": "8f4d6fade4e6c5033b369444e2704b332f6b6070",
-      "zip_path": "examples\/api\/permissions\/request-permissions.zip"
-    },
-    {
-      "api_calls": [
         "chrome.extension.onRequest",
         "chrome.extension.sendRequest",
         "chrome.pageAction.show"
@@ -1983,6 +1951,7 @@
         "chrome.windows.get",
         "chrome.windows.getAll"
       ],
+      "crx_path": null,
       "description": "Speaks the current selection out loud.",
       "features": [
         "<all_urls>",
@@ -2008,7 +1977,7 @@
         "options.js",
         "tabs.js"
       ],
-      "source_hash": "e2d40eb04e5ffe6fee5f6513ed19e44b0feae395",
+      "source_hash": "cb605c7bc53d81fe9504c871f475b09e9987df4a",
       "zip_path": "examples\/extensions\/speak_selection.zip"
     },
     {
@@ -2071,6 +2040,7 @@
         "chrome.tts.speak",
         "chrome.tts.stop"
       ],
+      "crx_path": null,
       "description": "A clock with two configurable alarms that will play a sound and speak a phrase of your choice.",
       "features": [
         "background",
@@ -2093,7 +2063,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "fabc898cb578912a082bf6e16ef6540320b88b73",
+      "source_hash": "c6b0eeeedd4de32aa5909ad59944ec27dbc797e8",
       "zip_path": "examples\/extensions\/talking_alarm_clock.zip"
     },
     {
@@ -2138,6 +2108,7 @@
         "chrome.experimental.permissions.request",
         "chrome.tabs.create"
       ],
+      "crx_path": "examples\/api\/permissions\/extension-questions.crx",
       "description": "Sample demonstration of the optional permissions API.",
       "features": [
         "browser_action",
@@ -2157,7 +2128,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "81cd65a0db063bc70f4c1228093d74d7b5542321",
+      "source_hash": "ea002a57e21073801c7ac2906e6c513337584d0a",
       "zip_path": "examples\/api\/permissions\/extension-questions.zip"
     },
     {
