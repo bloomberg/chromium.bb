@@ -306,7 +306,7 @@ void AutofillProfile::SetMultiInfo(AutofillFieldType type,
     case AutofillType::EMAIL:
       CopyValuesToItems(type, values, &email_, EmailInfo());
       break;
-    case AutofillType::PHONE:
+    case AutofillType::PHONE_HOME:
       CopyValuesToItems(type,
                         values,
                         &home_number_,
@@ -345,7 +345,7 @@ void AutofillProfile::GetMultiInfoImpl(AutofillFieldType type,
     case AutofillType::EMAIL:
       CopyItemsToValues(type, email_, canonicalize, values);
       break;
-    case AutofillType::PHONE:
+    case AutofillType::PHONE_HOME:
       CopyItemsToValues(type, home_number_, canonicalize, values);
       break;
     default:
@@ -359,7 +359,7 @@ bool AutofillProfile::SupportsMultiValue(AutofillFieldType type) {
   AutofillType::FieldTypeGroup group = AutofillType(type).group();
   return group == AutofillType::NAME ||
          group == AutofillType::EMAIL ||
-         group == AutofillType::PHONE;
+         group == AutofillType::PHONE_HOME;
 }
 
 const string16 AutofillProfile::Label() const {
@@ -535,7 +535,7 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
       // name saved, but |profile| lacks one, |profile| could still be a subset
       // of |this|.
       continue;
-    } else if (AutofillType(*iter).group() == AutofillType::PHONE) {
+    } else if (AutofillType(*iter).group() == AutofillType::PHONE_HOME) {
       // Phone numbers should be canonicalized prior to being compared.
       if (*iter != PHONE_HOME_WHOLE_NUMBER) {
         continue;
@@ -578,7 +578,7 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
       for (std::vector<string16>::iterator value_iter = new_values.begin();
            value_iter != new_values.end(); ++value_iter) {
         // Don't add duplicates.
-        if (group == AutofillType::PHONE) {
+        if (group == AutofillType::PHONE_HOME) {
           AddPhoneIfUnique(*value_iter, &existing_values);
         } else {
           std::vector<string16>::const_iterator existing_iter = std::find_if(
@@ -739,7 +739,7 @@ FormGroup* AutofillProfile::MutableFormGroupForType(AutofillFieldType type) {
     case AutofillType::COMPANY:
       form_group = &company_;
       break;
-    case AutofillType::PHONE:
+    case AutofillType::PHONE_HOME:
       form_group = &home_number_[0];
       break;
     case AutofillType::ADDRESS_HOME:

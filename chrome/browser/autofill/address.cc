@@ -17,6 +17,17 @@ namespace {
 
 const char16 kAddressSplitChars[] = {'-', ',', '#', '.', ' ', 0};
 
+const AutofillType::FieldTypeSubGroup kAutofillAddressTypes[] = {
+  AutofillType::ADDRESS_LINE1,
+  AutofillType::ADDRESS_LINE2,
+  AutofillType::ADDRESS_CITY,
+  AutofillType::ADDRESS_STATE,
+  AutofillType::ADDRESS_ZIP,
+  AutofillType::ADDRESS_COUNTRY,
+};
+
+const int kAutofillAddressLength = arraysize(kAutofillAddressTypes);
+
 // Returns the country code corresponding to |country|, which should be a
 // localized country name.
 std::string ToCountryCode(const string16& country) {
@@ -79,18 +90,18 @@ string16 Address::GetInfo(AutofillFieldType type) const {
 }
 
 void Address::SetInfo(AutofillFieldType type, const string16& value) {
-  type = AutofillType::GetEquivalentFieldType(type);
-  if (type == ADDRESS_HOME_LINE1)
+  FieldTypeSubGroup subgroup = AutofillType(type).subgroup();
+  if (subgroup == AutofillType::ADDRESS_LINE1)
     line1_ = value;
-  else if (type == ADDRESS_HOME_LINE2)
+  else if (subgroup == AutofillType::ADDRESS_LINE2)
     line2_ = value;
-  else if (type == ADDRESS_HOME_CITY)
+  else if (subgroup == AutofillType::ADDRESS_CITY)
     city_ = value;
-  else if (type == ADDRESS_HOME_STATE)
+  else if (subgroup == AutofillType::ADDRESS_STATE)
     state_ = value;
-  else if (type == ADDRESS_HOME_COUNTRY)
+  else if (subgroup == AutofillType::ADDRESS_COUNTRY)
     country_code_ = ToCountryCode(value);
-  else if (type == ADDRESS_HOME_ZIP)
+  else if (subgroup == AutofillType::ADDRESS_ZIP)
     zip_code_ = value;
   else
     NOTREACHED();

@@ -932,7 +932,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       // Forms often ask for multiple phone numbers -- e.g. both a daytime and
       // evening phone number.  Our phone number detection is also generally a
       // little off.  Hence, ignore this field type as a signal here.
-      if (AutofillType(current_type).group() == AutofillType::PHONE)
+      if (AutofillType(current_type).group() == AutofillType::PHONE_HOME)
         already_saw_current_type = false;
 
       // Some forms have adjacent fields of the same type.  Two common examples:

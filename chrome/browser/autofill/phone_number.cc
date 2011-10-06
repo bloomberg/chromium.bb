@@ -23,6 +23,16 @@ const size_t kPhoneNumberLength = 7;
 // The number of digits in an area code.
 const size_t kPhoneCityCodeLength = 3;
 
+const AutofillType::FieldTypeSubGroup kAutofillPhoneTypes[] = {
+  AutofillType::PHONE_NUMBER,
+  AutofillType::PHONE_CITY_CODE,
+  AutofillType::PHONE_COUNTRY_CODE,
+  AutofillType::PHONE_CITY_AND_NUMBER,
+  AutofillType::PHONE_WHOLE_NUMBER,
+};
+
+const int kAutofillPhoneLength = arraysize(kAutofillPhoneTypes);
+
 void StripPunctuation(string16* number) {
   RemoveChars(*number, kPhoneNumberSeparators, number);
 }
@@ -86,8 +96,9 @@ string16 PhoneNumber::GetInfo(AutofillFieldType type) const {
 }
 
 void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
-  if (type != PHONE_HOME_CITY_AND_NUMBER &&
-      type != PHONE_HOME_WHOLE_NUMBER) {
+  FieldTypeSubGroup subgroup = AutofillType(type).subgroup();
+  if (subgroup != AutofillType::PHONE_CITY_AND_NUMBER &&
+      subgroup != AutofillType::PHONE_WHOLE_NUMBER) {
     // Only full phone numbers should be set directly.  The remaining field
     // field types are read-only.
     return;
