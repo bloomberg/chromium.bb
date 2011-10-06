@@ -89,6 +89,8 @@ def main(argv):
     print 'Already packaged, exiting.'
     return 0
 
+  subprocess.check_call(["make", "dependencies"], cwd=v8_directory)
+
   archive = MyTarFile.open(output_fullname, 'w:bz2')
   try:
     archive.add(v8_directory, arcname=output_basename)
