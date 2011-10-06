@@ -19,23 +19,31 @@
 #else
 
 extern "C" {
-#define bool bool_
-#define class class_
-#define new new_
-#define private private_
-#include <xorg/xf86.h>
-#undef bool
-#undef class
-#undef new
-#undef private
-}
 
-#define Log(format, ...) \
-  xf86MsgVerb(X_INFO, 7, "%s:%d:" format "\n", \
-              __FILE__, __LINE__, ## __VA_ARGS__)
-#define Err(format, ...) \
-  xf86MsgVerb(X_ERROR, 0, "%s:%d:" format "\n", \
-              __FILE__, __LINE__, ## __VA_ARGS__)
+typedef enum {
+  X_PROBED,
+  X_CONFIG,
+  X_DEFAULT,
+  X_CMDLINE,
+  X_NOTICE,
+  X_ERROR,
+  X_WARNING,
+  X_INFO,
+  X_NONE,
+  X_NOT_IMPLEMENTED,
+  X_UNKNOWN = -1
+} MessageType;
+
+extern void xf86MsgVerb(MessageType type, int verb, const char *format, ...);
+
+}  // extern "C"
+
+#define Log(format, ...)                                \
+    xf86MsgVerb(X_INFO, 7, "%s:%d:" format "\n",        \
+                __FILE__, __LINE__, ## __VA_ARGS__)
+#define Err(format, ...)                                \
+    xf86MsgVerb(X_ERROR, 0, "%s:%d:" format "\n",       \
+                __FILE__, __LINE__, ## __VA_ARGS__)
 #endif
 
 #endif  // GESTURES_LOGGING_H__
