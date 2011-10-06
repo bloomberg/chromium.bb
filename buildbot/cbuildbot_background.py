@@ -98,9 +98,11 @@ class BackgroundSteps(multiprocessing.Process):
       except bs.NonBacktraceBuildException:
         error = traceback.format_exc()
       except Exception:
-        traceback.print_exc(file=output)
+        traceback.print_exc(file=sys.stderr)
         error = traceback.format_exc()
 
+      sys.stdout.flush()
+      sys.stderr.flush()
       output.close()
       results = results_lib.Results.Get()
       self._queue.put((error, results))
