@@ -864,7 +864,7 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint() {
       string16(print_preview_ui->initiator_tab_title()),
       string16(),
       std::string("application/pdf"),
-      false);
+      true);
 
   // Once the cloud print dialog comes up we're no longer in a background
   // printing situation.  Close the print preview.

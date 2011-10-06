@@ -114,11 +114,7 @@ CloudPrintSigninDelegate::CloudPrintSigninDelegate(TabContents* parent_tab)
 }
 
 bool CloudPrintSigninDelegate::IsDialogModal() const {
-  // TODO(abodenha@chromium.org) We want this to be modal, but calling
-  // ClosePage from the flow handler on a modal dialog results in the
-  // browser window never responding to input again.  Figure out why.
-  // http://code.google.com/p/chromium/issues/detail?id=93992
-  return false;
+  return true;
 }
 
 string16 CloudPrintSigninDelegate::GetDialogTitle() const {
