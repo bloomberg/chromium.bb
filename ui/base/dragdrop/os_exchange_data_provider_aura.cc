@@ -68,4 +68,10 @@ OSExchangeData::Provider* OSExchangeData::CreateProvider() {
   return new OSExchangeDataProviderAura();
 }
 
+// static
+void* OSExchangeData::RegisterCustomFormat(const std::string& type) {
+  // TODO(davemoore) Implement this for aura.
+  return NULL;
+}
+
 }  // namespace ui

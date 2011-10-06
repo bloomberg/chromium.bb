@@ -6,5 +6,5 @@
 
 // static
 void FontSettingsUtilities::ValidateSavedFonts(PrefService* prefs) {
-  // Nothing to do for GTK.
+  // Nothing to do for X11.
 }
