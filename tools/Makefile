@@ -52,7 +52,6 @@ TOOLCHAINNAME ?= nacl-sdk
 SDKNAME ?= $(TOOLCHAINNAME)
 SDKROOT ?= $(SDKLOC)/$(SDKNAME)
 DESTDIR ?=
-BUILDNCCDIR = $(SDKROOT)/$(CROSSARCH)
 
 # By default all toolchain executables are x86-32 executables, use
 # HOST_TOOLCHAIN_BITS=64 to make them x86-64 executables.
@@ -113,14 +112,14 @@ SRCDIR = ../../../third_party
 ifeq ($(PLATFORM), win)
   # Ugh, Cygwin and spaces in paths don't work well.
   # I'm explicitly coding the path.
-  BUILDPATH = $(DESTDIR)$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin
+  BUILDPATH = $(DESTDIR)$(PREFIX)/bin:/usr/local/bin:/usr/bin:/bin
   SCONS ?= scons.bat
-  SDKLOC_NATIVE = $(shell cygpath -m $(SDKLOC)/$(SDKNAME))
+  PREFIX_NATIVE = $(shell cygpath -m $(PREFIX))
   CREATE_REDIRECTORS = ./create_redirectors_cygwin.sh
 else
-  BUILDPATH = $(DESTDIR)$(SDKROOT)/bin:$(PATH)
+  BUILDPATH = $(DESTDIR)$(PREFIX)/bin:$(PATH)
   SCONS ?= scons
-  SDKLOC_NATIVE = $(DESTDIR)$(SDKLOC)/$(SDKNAME)
+  PREFIX_NATIVE = $(DESTDIR)$(PREFIX)
   CREATE_REDIRECTORS = ./create_redirectors.sh
 endif
 
@@ -304,16 +303,16 @@ BUILD:
 # to use. To prevent installers from creating a real directory instead of what
 # should be a symlink we create everything in advance.
 sdkdirs:
-	echo "Creating the SDK tree at $(DESTDIR)$(SDKROOT)"
+	echo "Creating the SDK tree at $(DESTDIR)$(PREFIX)"
 	# Create installation directory for 64-bit libraries
 	# See http://code.google.com/p/nativeclient/issues/detail?id=1975
-	install -m 755 -d "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib"
+	install -m 755 -d "$(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib"
 	# Create alias for libgcc_s.so
 	# TODO: fix MULTILIB_OSDIRNAMES in gcc/config/i386/t-nacl64
 	#       and get rid of this!
-	ln -sfn lib $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib64
+	ln -sfn lib $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib64
 	# Create installation directory for 32-bit libraries
-	install -m 755 -d "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib32"
+	install -m 755 -d "$(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib32"
 	# Create alias for newlib
 	# Newlib uses "gcc -print-multi-lib" to determine multilib subdirectory
 	# names and installs under $prefix accordingly. This seems confusing,
@@ -325,7 +324,7 @@ sdkdirs:
 	# We fix this by making "/lib/32" an alias for "/lib32".
 	# TODO: sounds odd - probably my understanding is wrong?
 	#       Go ask someone smart...
-	ln -sfn ../lib32 $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/32
+	ln -sfn ../lib32 $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib/32
 
 ##################################################################
 # binutils:
@@ -342,9 +341,9 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	  CFLAGS="$(CFLAGS)" \
 	  LDFLAGS="-s $(LDFLAGS)" \
 	  ../../SRC/binutils/configure \
-	    --prefix=$(SDKROOT) \
+	    --prefix=$(PREFIX) \
 	    --target=$(CROSSARCH) \
-	    --with-sysroot=$(SDKROOT)/$(CROSSARCH) \
+	    --with-sysroot=$(PREFIX)/$(CROSSARCH) \
 	    --disable-werror
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
@@ -454,7 +453,7 @@ endif
 	    LDFLAGS="$(GCC_LDFLAGS)" \
 	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
 	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
-	    --prefix=$(SDKROOT) \
+	    --prefix=$(PREFIX) \
 	    $(GCC_CONFIGURE_FLAGS) \
 	    $(GCC_CONFIGURE_FLAGS-nolibc)
 	PATH=$(BUILDPATH) $(MAKE) \
@@ -464,10 +463,10 @@ endif
 	    -C BUILD/build-pregcc-$(CROSSARCH) \
 	    DESTDIR=$(DESTDIR) \
 	    install-gcc install-target-libgcc
-	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
-		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc_eh.a
-	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/32/libgcc.a \
-		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/32/libgcc_eh.a |\
+	cp $(DESTDIR)$(PREFIX)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
+		$(DESTDIR)$(PREFIX)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc_eh.a
+	cp $(DESTDIR)$(PREFIX)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/32/libgcc.a \
+		$(DESTDIR)$(PREFIX)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/32/libgcc_eh.a |\
 	true
 	touch $@
 
@@ -512,6 +511,7 @@ endif
 	rm -rf $(PREGCC_BUILD_DIR)
 	mkdir $(PREGCC_BUILD_DIR)
 	cd $(PREGCC_BUILD_DIR) && \
+	PATH=$(BUILDPATH) \
 	$(GCC_SRC_DIR)/configure \
 	    CC="$(GCC_CC)" \
 	    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
@@ -521,14 +521,16 @@ endif
 	    --prefix=$(PREGCC_PREFIX) \
 	    $(GCC_CONFIGURE_FLAGS) \
 	    $(GCC_CONFIGURE_FLAGS-nolibc)
-	$(MAKE) \
+	PATH=$(BUILDPATH) $(MAKE) \
 	    -C $(PREGCC_BUILD_DIR) \
 	    all-gcc \
-	    all-target-libgcc
-	$(MAKE) \
+	    all-target-libgcc \
+	    DESTDIR=
+	PATH=$(BUILDPATH) $(MAKE) \
 	    -C $(PREGCC_BUILD_DIR) \
 	    install-gcc \
-	    install-target-libgcc
+	    install-target-libgcc \
+	    DESTDIR=
 	touch $@
 
 
@@ -555,7 +557,7 @@ BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 		      --enable-newlib-io-c99-formats \
 		      --enable-newlib-mb \
 		      libc_cv_initfinit_array=yes \
-	    --prefix=$(SDKROOT) \
+	    --prefix=$(PREFIX) \
 	    CFLAGS="-O2 $(CFLAGS)" \
 	    CFLAGS_FOR_TARGET='$(NEWLIB_CFLAGS)' \
 	    CXXFLAGS_FOR_TARGET='$(NEWLIB_CFLAGS)' \
@@ -563,13 +565,13 @@ BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 	  $(MAKE) && \
 	  $(MAKE) DESTDIR=$(DESTDIR) install
 ifeq ($(CANNED_REVISION), no)
-	rm $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pthread.h
+	rm $(DESTDIR)$(PREFIX)/$(CROSSARCH)/include/pthread.h
 endif
 	for bits in 32 64; do \
-	  mv $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib$$bits/libc.a \
-	     $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib$$bits/libcrt_common.a; \
+	  mv $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib$$bits/libc.a \
+	     $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib$$bits/libcrt_common.a; \
 	  sed "s/@OBJFORMAT@/elf$${bits}-nacl/" newlib-libc-script \
-	    > $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib$$bits/libc.a; \
+	    > $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib$$bits/libc.a; \
 	done
 	touch $@
 
@@ -590,15 +592,15 @@ GLIBC_CC = $(PREGCC_PREFIX)/bin/$(CROSSARCH)-gcc
 # CFLAGS for building glibc.
 GLIBC_CFLAGS = -O2 -g $(CFLAGS)
 
-ARCH_DEST = $(DESTDIR)$(SDKROOT)/$(CROSSARCH)
-ARCH_DEST_INC_NATIVE = $(SDKLOC_NATIVE)/$(CROSSARCH)/include
+ARCH_DEST = $(DESTDIR)$(PREFIX)/$(CROSSARCH)
+ARCH_DEST_INC_NATIVE = $(PREFIX_NATIVE)/$(CROSSARCH)/include
 
 # LIB_BITS is used with different values to execute targets in this Makefile for
 # different architectures (32, 64) when building libraries (glibc and nacl).
 # CROSSARCH and BITSPLATFORM could be used for this, but we better avoid
 # redefining variables with recursive $(MAKE) calls.
 LIB_BITS ?= 64
-ARCH_DEST_LIB_NATIVE = $(SDKLOC_NATIVE)/$(CROSSARCH)/$(if $(filter 32,$(LIB_BITS)),lib32,lib)
+ARCH_DEST_LIB_NATIVE = $(PREFIX_NATIVE)/$(CROSSARCH)/$(if $(filter 32,$(LIB_BITS)),lib32,lib)
 
 BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone | SRC/glibc
 	if [[ ! -d $(LINUX_HEADERS) ]] ; then \
@@ -652,7 +654,7 @@ install-glibc: BUILD/stamp-glibc32 BUILD/stamp-glibc64
 	rm -rf "$(INST_GLIBC_PREFIX)"/glibc
 	mkdir "$(INST_GLIBC_PREFIX)"/glibc
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs \
-	  DESTDIR="" SDKROOT="$(INST_GLIBC_PREFIX)/glibc"
+	  DESTDIR="" PREFIX="$(INST_GLIBC_PREFIX)/glibc"
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc32 \
 	  install_root="$(INST_GLIBC_PREFIX)/glibc/$(CROSSARCH)" install
 	$(MAKE) -f $(THISMAKEFILE) -C BUILD/build-glibc64 \
@@ -703,7 +705,7 @@ endif
 	for libdir in lib32 lib; do \
 	  for lib in nacl crt_platform nosys; do \
 	    echo '/* Intentionally empty */' > \
-		$(SDKLOC_NATIVE)/$(CROSSARCH)/$${libdir}/lib$${lib}.a; \
+		$(PREFIX_NATIVE)/$(CROSSARCH)/$${libdir}/lib$${lib}.a; \
 	  done; \
 	done
 
@@ -711,18 +713,19 @@ endif
 # gcc:
 #   Builds GCC with glibc as a C library.
 ##################################################################
-SYSINCLUDE_HACK_TARGET = $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
+SYSINCLUDE_HACK_TARGET = $(DESTDIR)$(PREFIX)/$(CROSSARCH)/sys-include
 
 BUILD/stamp-$(CROSSARCH)-full-gcc: glibc-adhoc-files
 ifneq ($(SRCDIR),)
 	$(MAKE) -f $(THISMAKEFILE) gcc-extras
 endif
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
-	mkdir BUILD/build-full-gcc-$(CROSSARCH)
+	mkdir BUILD/build-full-gcc-$(CROSSARCH){,/lib}
+	ln -s $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib \
+	  BUILD/build-full-gcc-$(CROSSARCH)/lib/gcc
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
 	rm -rf $(SYSINCLUDE_HACK_TARGET)
-	mkdir -p $(SYSINCLUDE_HACK_TARGET)
-	ln -s ../include/limits.h $(SYSINCLUDE_HACK_TARGET)/limits.h
+	ln -s include $(SYSINCLUDE_HACK_TARGET)
 	cd BUILD/build-full-gcc-$(CROSSARCH) && \
 	PATH=$(BUILDPATH) \
 	$(GCC_SRC_DIR)/configure \
@@ -731,7 +734,7 @@ endif
 	    LDFLAGS="$(GCC_LDFLAGS)" \
 	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-glibc)" \
 	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-glibc)" \
-	    --prefix=$(SDKROOT) \
+	    --prefix=$(PREFIX) \
 	    $(GCC_CONFIGURE_FLAGS) \
 	    $(GCC_CONFIGURE_FLAGS-glibc)
 ifeq ($(PLATFORM), linux)
@@ -773,6 +776,10 @@ ifneq ($(SRCDIR),)
 endif
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
+	mkdir -p $(SYSINCLUDE_HACK_TARGET)
+	# See http://code.google.com/p/nativeclient/issues/detail?id=854
+	rm -rf $(SYSINCLUDE_HACK_TARGET)
+	ln -s include $(SYSINCLUDE_HACK_TARGET)
 	cd BUILD/build-gcc-$(CROSSARCH) && \
 	PATH=$(BUILDPATH) \
 	$(GCC_SRC_DIR)/configure \
@@ -781,7 +788,7 @@ endif
 	    LDFLAGS="$(GCC_LDFLAGS)" \
 	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-newlib)" \
 	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-newlib)" \
-	    --prefix=$(SDKROOT) \
+	    --prefix=$(PREFIX) \
 	    $(GCC_CONFIGURE_FLAGS) \
 	    $(GCC_CONFIGURE_FLAGS-newlib)
 	PATH=$(BUILDPATH) $(MAKE) \
@@ -791,6 +798,8 @@ endif
 	    -C BUILD/build-gcc-$(CROSSARCH) \
 	    DESTDIR=$(DESTDIR) \
 	    install
+	# See http://code.google.com/p/nativeclient/issues/detail?id=854
+	rm -rf $(SYSINCLUDE_HACK_TARGET)
 	touch $@
 
 .PHONY: gcc
@@ -818,7 +827,7 @@ BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 	  CC="$${CC}" \
 	  LDFLAGS="-s" \
 	  ../../SRC/gdb/configure \
-	    --prefix=$(SDKROOT) \
+	    --prefix=$(PREFIX) \
 	    $${BUILD} \
 	    --target=nacl
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
@@ -831,7 +840,7 @@ gdb: BUILD/stamp-$(CROSSARCH)-gdb
 .PHONY: gdb_minimal_test
 gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 	cd .. && \
-	  ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
+	  ./$(SCONS) naclsdk_mode=custom:$(PREFIX_NATIVE) \
 	    --mode=nacl,dbg-linux platform=x86-32 gdb_minimal_test
 
 
@@ -841,7 +850,7 @@ gdb_minimal_test: BUILD/stamp-$(CROSSARCH)-gdb
 .PHONY: headers_for_build
 headers_for_build:
 	cd .. && \
-	  ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE) \
+	  ./$(SCONS) naclsdk_mode=custom:$(PREFIX_NATIVE) \
 		     --verbose platform=x86-$(BITSPLATFORM) \
 		     install_headers includedir=$(HEADERS_FOR_BUILD_NATIVE)
 
@@ -864,19 +873,19 @@ INST_GLIBC_PROGRAM ?= none
 .PHONY: build-with-glibc
 build-with-glibc: SRC/gcc
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
-	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
+	cp -f SRC/gcc/COPYING* $(DESTDIR)$(PREFIX)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
 ifeq ($(INST_GLIBC_PROGRAM), none)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc-standalone
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc32
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc64
 else
-	$(INST_GLIBC_PROGRAM) "$(DESTDIR)$(SDKROOT)"
+	$(INST_GLIBC_PROGRAM) "$(DESTDIR)$(PREFIX)"
 endif
 	$(MAKE) -f $(THISMAKEFILE) export-headers
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
-	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(PREFIX)"
 	for dir in lib32 lib64 ; do ( \
 	  cd $(DESTDIR)$(PREFIX)/$(CROSSARCH)/$$dir ; \
 	  for lib in BrokenLocale anl c cidn crypt dl m nsl \
@@ -903,18 +912,18 @@ endif
 	    ln -sfn libstdc++.so.6 libstdc++.so ; \
 	  done ; \
 	) ; done
-	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,$(CROSSARCH)/lib{,32}/*.la}
-	rm -rf "$(DESTDIR)$(SDKROOT)"/{lib/{*/*/*/*{,/*}.la,*.so*},lib{32,64}}
+	rm -rf "$(DESTDIR)$(PREFIX)"/{include,lib/*.a*,$(CROSSARCH)/lib{,32}/*.la}
+	rm -rf "$(DESTDIR)$(PREFIX)"/{lib/{*/*/*/*{,/*}.la,*.so*},lib{32,64}}
 
 .PHONY: build-with-newlib
 build-with-newlib: SRC/gcc
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
-	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
+	cp -f SRC/gcc/COPYING* $(DESTDIR)$(PREFIX)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc
 	$(MAKE) -f $(THISMAKEFILE) export-headers
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-newlib
-	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(PREFIX)"
 ifeq ($(CANNED_REVISION), no)
 	$(MAKE) -f $(THISMAKEFILE) headers_for_build
 endif
@@ -924,8 +933,8 @@ ifeq ($(CANNED_REVISION), no)
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb ;; \
 	esac
 endif
-	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
-	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
+	$(CREATE_REDIRECTORS) "$(DESTDIR)$(PREFIX)"
+	rm -rf "$(DESTDIR)$(PREFIX)"/{include,lib/*.a*,lib/*.so*,lib32,lib64}
 
 ifeq ($(CANNED_REVISION), no)
 # Newlib toolchain for buildbot.
@@ -1007,14 +1016,14 @@ DEJAGNU_TIMESTAMP := $(shell date +%y%m%d%H%M%S)
 .PHONY: $(SEL_LDR)
 $(SEL_LDR):
 	(cd .. && \
-	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
+	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(PREFIX) \
 	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
 	    sdl=none --verbose sel_ldr)
 
 .PHONY: check
 check: $(SEL_LDR)
 	(cd .. && \
-	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
+	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(PREFIX) \
 	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
 	    sdl=none --verbose run_hello_world_test)
 	mkdir BUILD/build-gcc-$(CROSSARCH)/results.$(DEJAGNU_TIMESTAMP)
@@ -1036,9 +1045,9 @@ check: $(SEL_LDR)
 .PHONY: glibc-check
 glibc-check: $(SEL_LDR)
 	GLIBC_TST_COLLECT2="$(PREGCC_PREFIX)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION)/collect2" \
-	GLIBC_TST_STATIC_LDSCRIPT="$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib/ldscripts/elf64_nacl.x.static \
+	GLIBC_TST_STATIC_LDSCRIPT="$(DESTDIR)$(PREFIX)/$(CROSSARCH)"/lib/ldscripts/elf64_nacl.x.static \
 	GLIBC_TST_NACL_LOADER="$(SEL_LDR)" \
-	GLIBC_TST_NACL_LIBDIR="$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib \
+	GLIBC_TST_NACL_LIBDIR="$(DESTDIR)$(PREFIX)/$(CROSSARCH)"/lib \
 	  glibc-tests/run_tests.sh
 
 
