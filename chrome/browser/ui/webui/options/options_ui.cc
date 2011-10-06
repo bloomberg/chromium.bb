@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/advanced_options_handler.h"
 #include "chrome/browser/ui/webui/options/autofill_options_handler.h"
@@ -228,7 +229,8 @@ OptionsUI::OptionsUI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ImportDataHandler());
   AddOptionsPageUIHandler(localized_strings, new StopSyncingHandler());
-  AddOptionsPageUIHandler(localized_strings, new OptionsSyncSetupHandler());
+  AddOptionsPageUIHandler(localized_strings, new OptionsSyncSetupHandler(
+      g_browser_process->profile_manager()));
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::AboutPageHandler());

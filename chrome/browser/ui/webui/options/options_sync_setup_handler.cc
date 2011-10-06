@@ -7,6 +7,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 
+OptionsSyncSetupHandler::OptionsSyncSetupHandler(
+    ProfileManager* profile_manager) : SyncSetupHandler(profile_manager) {
+}
+
+OptionsSyncSetupHandler::~OptionsSyncSetupHandler() {
+}
+
 void OptionsSyncSetupHandler::ShowSetupUI() {
   ProfileSyncService* service =
       Profile::FromWebUI(web_ui_)->GetProfileSyncService();

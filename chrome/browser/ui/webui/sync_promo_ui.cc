@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -59,7 +60,8 @@ SyncPromoUIHTMLSource::SyncPromoUIHTMLSource()
 SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   should_hide_url_ = true;
 
-  SyncPromoHandler* handler = new SyncPromoHandler();
+  SyncPromoHandler* handler = new SyncPromoHandler(
+      g_browser_process->profile_manager());
   AddMessageHandler(handler);
   handler->Attach(this);
 

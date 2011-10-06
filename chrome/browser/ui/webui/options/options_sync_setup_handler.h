@@ -10,6 +10,10 @@
 // The handler for Javascript messages related to sync setup UI in the options
 // page.
 class OptionsSyncSetupHandler : public SyncSetupHandler {
+ public:
+  explicit OptionsSyncSetupHandler(ProfileManager* profile_manager);
+  virtual ~OptionsSyncSetupHandler();
+
  protected:
   virtual void ShowSetupUI();
 };

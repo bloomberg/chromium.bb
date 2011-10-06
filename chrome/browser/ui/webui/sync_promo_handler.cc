@@ -11,7 +11,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
-SyncPromoHandler::SyncPromoHandler() {
+SyncPromoHandler::SyncPromoHandler(ProfileManager* profile_manager)
+    : SyncSetupHandler(profile_manager) {
 }
 
 SyncPromoHandler::~SyncPromoHandler() {

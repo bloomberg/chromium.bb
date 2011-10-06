@@ -32,7 +32,7 @@ typedef GoogleServiceAuthError AuthError;
 
 class MockSyncSetupHandler : public OptionsSyncSetupHandler {
  public:
-  MockSyncSetupHandler() {}
+  MockSyncSetupHandler() : OptionsSyncSetupHandler(NULL) {}
 
   // SyncSetupFlowHandler implementation.
   virtual void ShowGaiaLogin(const DictionaryValue& args) {}

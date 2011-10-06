@@ -12,6 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
@@ -175,7 +177,9 @@ bool GetPassphrase(const std::string& json, std::string* passphrase) {
 
 }  // namespace
 
-SyncSetupHandler::SyncSetupHandler() : flow_(NULL) {
+SyncSetupHandler::SyncSetupHandler(ProfileManager* profile_manager)
+    : flow_(NULL),
+      profile_manager_(profile_manager) {
 }
 
 SyncSetupHandler::~SyncSetupHandler() {
@@ -440,6 +444,12 @@ void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
     return;
   }
 
+  string16 error_message;
+  if (!IsLoginAuthDataValid(username, &error_message)) {
+    ShowLoginErrorMessage(error_message);
+    return;
+  }
+
   if (flow_)
     flow_->OnUserSubmittedAuth(username, password, captcha, access_code);
 }
@@ -552,4 +562,40 @@ void SyncSetupHandler::OpenSyncSetup() {
     web_ui_->CallJavascriptFunction("OptionsPage.closeOverlay");
     service->get_wizard().Focus();
   }
+}
+
+bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
+                                            string16* error_message) {
+  // Happens during unit tests.
+  if (!web_ui_ || !profile_manager_)
+    return true;
+
+  if (username.empty())
+    return true;
+
+  // Check if the username is already in use by another profile.
+  const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
+  size_t current_profile_index = cache.GetIndexOfProfileWithPath(
+      Profile::FromWebUI(web_ui_)->GetPath());
+  string16 username_utf16 = UTF8ToUTF16(username);
+
+  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+    if (i != current_profile_index &&
+        cache.GetUserNameOfProfileAtIndex(i) == username_utf16) {
+        *error_message = l10n_util::GetStringUTF16(
+            IDS_SYNC_USER_NAME_IN_USE_ERROR);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void SyncSetupHandler::ShowLoginErrorMessage(const string16& error_message) {
+  DictionaryValue args;
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  ProfileSyncService* service = profile->GetProfileSyncService();
+  SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
+  args.SetString("error_message", error_message);
+  ShowGaiaLogin(args);
 }

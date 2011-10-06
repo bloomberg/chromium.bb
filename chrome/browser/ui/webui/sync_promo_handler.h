@@ -11,7 +11,7 @@
 // The handler for Javascript messages related to the "sync promo" page.
 class SyncPromoHandler : public SyncSetupHandler {
  public:
-  SyncPromoHandler();
+  explicit SyncPromoHandler(ProfileManager* profile_manager);
   virtual ~SyncPromoHandler();
 
   // WebUIMessageHandler implementation.

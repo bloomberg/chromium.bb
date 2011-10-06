@@ -12,12 +12,14 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 class SyncSetupFlow;
+class ProfileManager;
 
 class SyncSetupHandler : public GaiaOAuthConsumer,
                          public OptionsPageUIHandler,
                          public SyncSetupFlowHandler {
  public:
-  SyncSetupHandler();
+  // Constructs a new SyncSetupHandler. |profile_manager| may be NULL.
+  explicit SyncSetupHandler(ProfileManager* profile_manager);
   virtual ~SyncSetupHandler();
 
   // OptionsPageUIHandler implementation.
@@ -83,9 +85,20 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
   virtual void ShowSetupUI() = 0;
 
  private:
+  // Returns true if the given login data is valid, false otherwise. If the
+  // login data is not valid then on return |error_message| will be set to  a
+  // localized error message. Note, |error_message| must not be NULL.
+  bool IsLoginAuthDataValid(const std::string& username,
+                            string16* error_message);
+
+  // Displays the given error message in the login UI.
+  void ShowLoginErrorMessage(const string16& error_message);
+
   // Weak reference.
   SyncSetupFlow* flow_;
   scoped_ptr<GaiaOAuthFetcher> oauth_login_;
+  // Weak reference to the profile manager.
+  ProfileManager* const profile_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };
