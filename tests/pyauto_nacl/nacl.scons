@@ -200,6 +200,10 @@ uma_test_files = [
     env.File('${STAGING_DIR}/srpc_hw_%s${PROGSUFFIX}' % platform),
     # Crash
     env.File('${STAGING_DIR}/ppapi_crash.html'),
+    env.File('${STAGING_DIR}/ppapi_crash_ppapi_off_main_thread.nmf'),
+    env.File('${STAGING_DIR}/ppapi_crash_ppapi_off_main_thread_%s${PROGSUFFIX}' % platform),
+    env.File('${STAGING_DIR}/ppapi_crash_off_main_thread.nmf'),
+    env.File('${STAGING_DIR}/ppapi_crash_off_main_thread_%s${PROGSUFFIX}' % platform),
     env.File('${STAGING_DIR}/ppapi_crash_via_check_failure_%s${PROGSUFFIX}' % platform),
     env.File('${STAGING_DIR}/ppapi_crash_via_check_failure.nmf'),
     env.File('${STAGING_DIR}/ppapi_crash_via_exit_call_%s${PROGSUFFIX}' % platform),
