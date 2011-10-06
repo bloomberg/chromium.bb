@@ -10,6 +10,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_about_handler.h"
+// TODO(alicet): clean up dependencies on defaults.h and max tab count.
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -39,6 +41,9 @@ namespace {
 // multiple tabs, such as app frames and popups. This function returns false for
 // those types of Browser.
 bool WindowCanOpenTabs(Browser* browser) {
+  if (browser->tab_count() >= browser_defaults::kMaxTabCount)
+    return false;
+
   return browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP) ||
       browser->tabstrip_model()->empty();
 }
@@ -373,7 +378,8 @@ void Navigate(NavigateParams* params) {
   }
 
   params->browser = GetBrowserForDisposition(params);
-  if (!params->browser)
+  if (!params->browser ||
+      params->browser->tab_count() >= browser_defaults::kMaxTabCount)
     return;
   // Navigate() must not return early after this point.
 

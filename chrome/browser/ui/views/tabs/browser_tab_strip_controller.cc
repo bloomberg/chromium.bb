@@ -6,6 +6,8 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+// TODO(alicet): clean up dependencies on defaults.h and max tab count.
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -310,7 +312,6 @@ bool BrowserTabStripController::IsCompatibleWith(BaseTabStrip* other) const {
 
 void BrowserTabStripController::CreateNewTab() {
   UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"));
-
   model_->delegate()->AddBlankTab(true);
 }
 

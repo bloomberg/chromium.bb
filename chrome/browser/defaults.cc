@@ -77,9 +77,12 @@ const bool kBrowserAliveWithNoWindows = false;
 #ifdef TOUCH_UI
 const int kBookmarkBarHeight = 50;
 const int kNewtabBookmarkBarHeight = 72;
+// TouchUI issue with opening too many tabs.
+const int kMaxTabCount = 8;
 #else
 const int kBookmarkBarHeight = 28;
 const int kNewtabBookmarkBarHeight = 57;
+const int kMaxTabCount = INT_MAX;
 #endif
 
 #ifdef TOUCH_UI
