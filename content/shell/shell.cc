@@ -24,8 +24,8 @@ namespace content {
 std::vector<Shell*> Shell::windows_;
 
 Shell::Shell()
-    : main_window_(NULL),
-      edit_window_(NULL)
+    : window_(NULL),
+      url_edit_view_(NULL)
 #if defined(OS_WIN)
       , default_edit_wnd_proc_(0)
 #endif
@@ -62,10 +62,10 @@ Shell* Shell::CreateNewWindow(content::BrowserContext* browser_context,
       NULL));
   shell->tab_contents_->set_delegate(shell);
 
-#if defined (OS_WIN)
+#if defined(OS_WIN)
   TabContentsViewWin* view =
       static_cast<TabContentsViewWin*>(shell->tab_contents_->view());
-  view->SetParent(shell->main_window_);
+  view->SetParent(shell->window_);
 #endif
 
   shell->PlatformResizeSubViews();

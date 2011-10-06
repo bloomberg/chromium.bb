@@ -65,8 +65,8 @@ void Shell::PlatformExit() {
 void Shell::PlatformCleanUp() {
   // When the window is destroyed, tell the Edit field to forget about us,
   // otherwise we will crash.
-  ui::SetWindowProc(edit_window_, default_edit_wnd_proc_);
-  ui::SetWindowUserData(edit_window_, NULL);
+  ui::SetWindowProc(url_edit_view_, default_edit_wnd_proc_);
+  ui::SetWindowUserData(url_edit_view_, NULL);
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
@@ -85,21 +85,21 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
       NOTREACHED() << "Unknown UI control";
       return;
   }
-  EnableWindow(GetDlgItem(main_window_, id), is_enabled);
+  EnableWindow(GetDlgItem(window_, id), is_enabled);
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
   std::wstring url_string = UTF8ToWide(url.spec());
-  SendMessage(edit_window_, WM_SETTEXT, 0,
+  SendMessage(url_edit_view_, WM_SETTEXT, 0,
               reinterpret_cast<LPARAM>(url_string.c_str()));
 }
 
 void Shell::PlatformCreateWindow() {
-  main_window_ = CreateWindow(kWindowClass, kWindowTitle,
-                              WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
-                              CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
-                              NULL, NULL, instance_handle_, NULL);
-  ui::SetWindowUserData(main_window_, this);
+  window_ = CreateWindow(kWindowClass, kWindowTitle,
+                         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+                         CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
+                         NULL, NULL, instance_handle_, NULL);
+  ui::SetWindowUserData(window_, this);
 
   HWND hwnd;
   int x = 0;
@@ -107,45 +107,44 @@ void Shell::PlatformCreateWindow() {
   hwnd = CreateWindow(L"BUTTON", L"Back",
                       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON ,
                       x, 0, kButtonWidth, kURLBarHeight,
-                      main_window_, (HMENU) IDC_NAV_BACK, instance_handle_, 0);
+                      window_, (HMENU) IDC_NAV_BACK, instance_handle_, 0);
   x += kButtonWidth;
 
   hwnd = CreateWindow(L"BUTTON", L"Forward",
                       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON ,
                       x, 0, kButtonWidth, kURLBarHeight,
-                      main_window_, (HMENU) IDC_NAV_FORWARD, instance_handle_,
-                      0);
+                      window_, (HMENU) IDC_NAV_FORWARD, instance_handle_, 0);
   x += kButtonWidth;
 
   hwnd = CreateWindow(L"BUTTON", L"Reload",
                       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON ,
                       x, 0, kButtonWidth, kURLBarHeight,
-                      main_window_, (HMENU) IDC_NAV_RELOAD, instance_handle_,
-                      0);
+                      window_, (HMENU) IDC_NAV_RELOAD, instance_handle_, 0);
   x += kButtonWidth;
 
   hwnd = CreateWindow(L"BUTTON", L"Stop",
                       WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON ,
                       x, 0, kButtonWidth, kURLBarHeight,
-                      main_window_, (HMENU) IDC_NAV_STOP, instance_handle_, 0);
+                      window_, (HMENU) IDC_NAV_STOP, instance_handle_, 0);
   x += kButtonWidth;
 
   // This control is positioned by PlatformResizeSubViews.
-  edit_window_ = CreateWindow(L"EDIT", 0,
-                              WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT |
-                              ES_AUTOVSCROLL | ES_AUTOHSCROLL,
-                              x, 0, 0, 0, main_window_, 0, instance_handle_, 0);
+  url_edit_view_ = CreateWindow(L"EDIT", 0,
+                                WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT |
+                                ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+                                x, 0, 0, 0, window_, 0, instance_handle_, 0);
 
-  default_edit_wnd_proc_ = ui::SetWindowProc(edit_window_, Shell::EditWndProc);
-  ui::SetWindowUserData(edit_window_, this);
+  default_edit_wnd_proc_ = ui::SetWindowProc(url_edit_view_,
+                                             Shell::EditWndProc);
+  ui::SetWindowUserData(url_edit_view_, this);
 
-  ShowWindow(main_window_, SW_SHOW);
+  ShowWindow(window_, SW_SHOW);
 }
 
 void Shell::PlatformSizeTo(int width, int height) {
   RECT rc, rw;
-  GetClientRect(main_window_, &rc);
-  GetWindowRect(main_window_, &rw);
+  GetClientRect(window_, &rc);
+  GetWindowRect(window_, &rw);
 
   int client_width = rc.right - rc.left;
   int window_width = rw.right - rw.left;
@@ -158,16 +157,16 @@ void Shell::PlatformSizeTo(int width, int height) {
   // Add space for the url bar.
   window_height += kURLBarHeight;
 
-  SetWindowPos(main_window_, NULL, 0, 0, window_width, window_height,
+  SetWindowPos(window_, NULL, 0, 0, window_width, window_height,
                SWP_NOMOVE | SWP_NOZORDER);
 }
 
 void Shell::PlatformResizeSubViews() {
   RECT rc;
-  GetClientRect(main_window_, &rc);
+  GetClientRect(window_, &rc);
 
   int x = kButtonWidth * 4;
-  MoveWindow(edit_window_, x, 0, rc.right - x, kURLBarHeight, TRUE);
+  MoveWindow(url_edit_view_, x, 0, rc.right - x, kURLBarHeight, TRUE);
 
   MoveWindow(GetContentView(), 0, kURLBarHeight, rc.right,
              rc.bottom - kURLBarHeight, TRUE);

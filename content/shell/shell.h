@@ -95,8 +95,8 @@ class Shell : public TabContentsDelegate {
 
   scoped_ptr<TabContents> tab_contents_;
 
-  gfx::NativeWindow main_window_;
-  gfx::NativeEditView edit_window_;
+  gfx::NativeWindow window_;
+  gfx::NativeEditView url_edit_view_;
 
 #if defined(OS_WIN)
   WNDPROC default_edit_wnd_proc_;
