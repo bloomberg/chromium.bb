@@ -7,6 +7,8 @@
 body {
   margin: 10px;
   min-width: 47em;
+  /* Should match needs-restart.(height + padding-top + padding-bottom + 5) */
+  padding-bottom: 65px;
 }
 
 a {
@@ -141,8 +143,19 @@ div.content {
 }
 
 div.needs-restart {
-  padding-top: 10px;
-  -webkit-padding-start: 5px;
+  background: #FFF;
+  border-top: 1px solid #b5c7de;
+  bottom: 0;
+  /* If you change this, update body.padding-bottom */
+  height: 30px;
+  left: 0;
+  /* If you change this, update body.padding-bottom */
+  padding-bottom: 25px;
+  padding-left: 15px;
+  /* If you change this, update body.padding-bottom */
+  padding-top: 15px;
+  position: fixed;
+  width: 100%;
 }
 
 button {
