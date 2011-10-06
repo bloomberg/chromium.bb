@@ -1511,8 +1511,10 @@ def PPAPIBrowserTester(env,
                          size='huge',
                          capture_output=capture_output,
                          **extra)
-  for action in post_actions:
-    env.AddPostAction(node, action)
+  # We can't check output if the test is not run.
+  if not env.Bit('do_not_run_tests'):
+    for action in post_actions:
+      env.AddPostAction(node, action)
   return node
 
 pre_base_env.AddMethod(PPAPIBrowserTester)
