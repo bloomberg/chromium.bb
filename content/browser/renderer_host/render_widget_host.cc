@@ -1030,7 +1030,8 @@ void RenderWidgetHost::OnMsgUpdateRect(
   UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
 }
 
-void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
+void RenderWidgetHost::OnMsgInputEventAck(WebInputEvent::Type event_type,
+                                          bool processed) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::OnMsgInputEventAck");
 
   // Log the time delta for processing an input event.
@@ -1040,9 +1041,8 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
   // Cancel pending hung renderer checks since the renderer is responsive.
   StopHangMonitorTimeout();
 
-  void* iter = NULL;
-  int type = 0;
-  if (!message.ReadInt(&iter, &type) || (type < WebInputEvent::Undefined)) {
+  int type = static_cast<int>(event_type);
+  if (type < WebInputEvent::Undefined) {
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
     process()->ReceivedBadMessage();
   } else if (type == WebInputEvent::MouseMove) {
@@ -1054,20 +1054,8 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
       ForwardMouseEvent(*next_mouse_move_);
     }
   } else if (WebInputEvent::isKeyboardEventType(type)) {
-    bool processed = false;
-    if (!message.ReadBool(&iter, &processed)) {
-      UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH3"));
-      process()->ReceivedBadMessage();
-    }
-
     ProcessKeyboardEventAck(type, processed);
   } else if (type == WebInputEvent::MouseWheel) {
-    bool processed = false;
-    if (!message.ReadBool(&iter, &processed)) {
-      UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
-      process()->ReceivedBadMessage();
-    }
-
     ProcessWheelAck(processed);
   } else if (type == WebInputEvent::TouchMove) {
     touch_move_pending_ = false;

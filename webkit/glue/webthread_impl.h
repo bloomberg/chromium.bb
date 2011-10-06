@@ -22,6 +22,8 @@ class WebThreadImpl : public WebKit::WebThread {
   virtual void postDelayedTask(Task* task, int64 delay_ms);
 #endif
 
+  MessageLoop* message_loop() const { return thread_->message_loop(); }
+
  protected:
   scoped_ptr<base::Thread> thread_;
 };

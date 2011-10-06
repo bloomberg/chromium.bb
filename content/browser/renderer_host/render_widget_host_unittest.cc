@@ -268,9 +268,7 @@ class RenderWidgetHostTest : public testing::Test {
 
   void SendInputEventACK(WebInputEvent::Type type, bool processed) {
     scoped_ptr<IPC::Message> response(
-        new ViewHostMsg_HandleInputEvent_ACK(0));
-    response->WriteInt(type);
-    response->WriteBool(processed);
+        new ViewHostMsg_HandleInputEvent_ACK(0, type, processed));
     host_->OnMessageReceived(*response);
   }
 

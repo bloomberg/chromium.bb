@@ -37,6 +37,7 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/devtools_agent_filter.h"
+#include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/indexed_db_dispatcher.h"
 #include "content/renderer/media/audio_input_message_filter.h"
@@ -239,6 +240,11 @@ RenderThread::~RenderThread() {
   if (file_thread_.get())
     file_thread_->Stop();
 
+  if (compositor_thread_.get()) {
+    RemoveFilter(compositor_thread_->GetMessageFilter());
+    compositor_thread_.reset();
+  }
+
   if (webkit_platform_support_.get())
     WebKit::shutdown();
 
@@ -438,6 +444,9 @@ void RenderThread::EnsureWebKitInitialized() {
 
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
+
+  compositor_thread_.reset(new CompositorThread(this));
+  AddFilter(compositor_thread_->GetMessageFilter());
 
   WebScriptController::enableV8SingleThreadMode();
 

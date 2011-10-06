@@ -509,7 +509,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
                            WebKit::WebTextDirection text_direction_hint);
   void OnMsgPaintAtSizeAck(int tag, const gfx::Size& size);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
-  void OnMsgInputEventAck(const IPC::Message& message);
+  void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,
+                          bool processed);
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();
 

@@ -466,9 +466,9 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   if (!processed && is_keyboard_shortcut)
     suppress_next_char_events_ = true;
 
-  IPC::Message* response = new ViewHostMsg_HandleInputEvent_ACK(routing_id_);
-  response->WriteInt(input_event->type);
-  response->WriteBool(processed);
+  IPC::Message* response =
+      new ViewHostMsg_HandleInputEvent_ACK(routing_id_, input_event->type,
+                                           processed);
 
   if ((input_event->type == WebInputEvent::MouseMove ||
        input_event->type == WebInputEvent::MouseWheel ||

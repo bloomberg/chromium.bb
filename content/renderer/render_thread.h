@@ -25,6 +25,7 @@
 class AppCacheDispatcher;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
+class CompositorThread;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class FilePath;
@@ -146,6 +147,10 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
   // the behavior.
   void DoNotSuspendWebKitSharedTimer();
   void DoNotNotifyWebKitOfModalLoop();
+
+  CompositorThread* compositor_thread() const {
+    return compositor_thread_.get();
+  }
 
   AppCacheDispatcher* appcache_dispatcher() const {
     return appcache_dispatcher_.get();
@@ -278,6 +283,8 @@ class CONTENT_EXPORT RenderThread : public RenderThreadBase,
 
   // Map of registered v8 extensions. The key is the extension name.
   std::set<std::string> v8_extensions_;
+
+  scoped_ptr<CompositorThread> compositor_thread_;
 
   ObserverList<content::RenderProcessObserver> observers_;
 

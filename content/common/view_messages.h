@@ -25,6 +25,7 @@
 #include "net/base/host_port_pair.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -1394,10 +1395,9 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidActivateAcceleratedCompositing,
                     bool /* true if the accelerated compositor is actve */)
 
 // Acknowledges receipt of a ViewMsg_HandleInputEvent message.
-// Payload is a WebInputEvent::Type which is the type of the event, followed
-// by an optional WebInputEvent which is provided only if the event was not
-// processed.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_HandleInputEvent_ACK)
+IPC_MESSAGE_ROUTED2(ViewHostMsg_HandleInputEvent_ACK,
+                    WebKit::WebInputEvent::Type,
+                    bool /* processed */)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)
