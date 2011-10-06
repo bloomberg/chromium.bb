@@ -81,7 +81,7 @@ def GetArchStageTarball(tarballArch, version):
   try:
     return DEFAULT_URL + D[tarballArch] + version + '.tbz2'
   except KeyError:
-    sys.exit('Unsupported arch: ' + arch)
+    sys.exit('Unsupported arch: %s' % (tarballArch,))
 
 
 def FetchRemoteTarball(url):
