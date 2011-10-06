@@ -462,7 +462,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       // display the error appropriately (http://crbug.com/92722).
       DictionaryValue args;
       SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
-      args.SetInteger("error", GoogleServiceAuthError::CONNECTION_FAILED);
+      args.SetBoolean("fatalError", true);
       flow_handler_->ShowGaiaLogin(args);
       break;
     }

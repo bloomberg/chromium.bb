@@ -430,6 +430,10 @@
         https://www.google.com/accounts/IssuedAuthSubTokens?hl=[GRITLANGCODE]
       </message>
 
+      <message name="IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL" translateable="false">
+        https://www.google.com/support/chrome/bin/answer.py?answer=1181420
+      </message>
+
       <!-- The width of the cloud print setup wizard / login dialog in -->
       <!-- characters. -->
       <message name="IDS_CLOUD_PRINT_SETUP_WIZARD_WIDTH_CHARS" 

@@ -681,6 +681,12 @@ cr.define('options', function() {
         this.setBlurbError_(args.error_message);
       }
 
+      if (args.fatalError) {
+        $('errormsg-fatal').hidden = false;
+        $('sign-in').disabled = true;
+        return;
+      }
+
       $('sign-in').disabled = false;
       $('sign-in').value = templateData['signin'];
       this.loginSetFocus_();

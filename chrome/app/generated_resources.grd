@@ -9713,6 +9713,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_ERROR_SIGNING_IN" desc="An error was encountered while signing the user in.">
         Error signing in.
       </message>
+      <message name="IDS_SYNC_UNRECOVERABLE_ERROR" desc="Message shown when sync
+        setup failed due to an unrecoverable error and can't continue.">
+        Oops, Sync has stopped working.
+      </message>
       <message name="IDS_SYNC_CONFIGURE_ENCRYPTION" desc="Link to configure sync encryption for passwords">
         Please update your sync passphrase.
       </message>
