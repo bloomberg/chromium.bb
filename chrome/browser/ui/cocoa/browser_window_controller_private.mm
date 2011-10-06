@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
-#import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_button.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
@@ -355,20 +355,19 @@ willPositionSheet:(NSWindow*)sheet
   [tabStripController_ layoutTabsWithoutAnimation];
 
   // Now lay out incognito badge together with the tab strip.
-  if ([self shouldShowAvatar]) {
-    NSView* avatarButton = [avatarButtonController_ view];
-    [avatarButton setFrameSize:NSMakeSize(tabStripHeight,
-                                          tabStripHeight - 5.0)];
+  if (avatarButton_.get()) {
+    [avatarButton_ setFrameSize:NSMakeSize(tabStripHeight,
+                                           tabStripHeight - 5.0)];
 
     // Actually place the badge *above* |maxY|, by +2 to miss the divider.  On
     // Lion or later, shift the badge left to move it away from the fullscreen
     // button.
     CGFloat badgeOffset = kAvatarRightOffset + possibleExtraShiftForLion;
     NSPoint origin =
-        NSMakePoint(width - NSWidth([avatarButton frame]) - badgeOffset,
+        NSMakePoint(width - NSWidth([avatarButton_ frame]) - badgeOffset,
                     maxY + 2);
-    [avatarButton setFrameOrigin:origin];
-    [avatarButton setHidden:NO];  // Make sure it's shown.
+    [avatarButton_ setFrameOrigin:origin];
+    [avatarButton_ setHidden:NO];  // Make sure it's shown.
   }
 
   return maxY;
@@ -626,11 +625,10 @@ willPositionSheet:(NSWindow*)sheet
   [destWindow setContentView:contentView];
 
   // Move the incognito badge if present.
-  if ([self shouldShowAvatar]) {
-    [[avatarButtonController_ view] removeFromSuperview];
-    [[avatarButtonController_ view] setHidden:YES];  // Will be shown in layout.
-    [[[destWindow contentView] superview] addSubview:
-        [avatarButtonController_ view]];
+  if (avatarButton_.get()) {
+    [avatarButton_ removeFromSuperview];
+    [avatarButton_ setHidden:YES];  // Will be shown in layout.
+    [[[destWindow contentView] superview] addSubview:avatarButton_];
   }
 
   // Add the tab strip after setting the content view and moving the incognito
