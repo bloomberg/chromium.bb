@@ -21,6 +21,9 @@ import parallel_emerge
 import portage.package.ebuild.config as portcfg
 import portage.tests.resolver.ResolverPlayground as respgnd
 
+# Regex to find the character sequence to turn text red (used for errors).
+ERROR_PREFIX = re.compile('^\033\[1;31m')
+
 # Configuration for generating a temporary valid ebuild hierarchy.
 # TODO(mtennant): Wrap this mechanism to create multiple overlays.
 EBUILDS = {
@@ -174,9 +177,11 @@ GOLDEN_DEP_LISTS = {
                              ],
   }
 
+
 def _GetGoldenDepsList(pkg):
   """Retrieve the golden dependency list for |pkg| from GOLDEN_DEP_LISTS."""
   return GOLDEN_DEP_LISTS.get(pkg, None)
+
 
 def _VerifyDepsGraph(deps_graph, pkg):
   """Verfication function for Mox to validate deps graph for |pkg|."""
@@ -229,9 +234,16 @@ def _VerifyDepsGraph(deps_graph, pkg):
 
   return validated
 
+
 def _GenDepsGraphVerifier(pkg):
   """Generate a graph verification function for the given package."""
   return lambda deps_graph: _VerifyDepsGraph(deps_graph, pkg)
+
+
+def _IsErrorLine(line):
+  """Return True if |line| has prefix associated with error output."""
+  return ERROR_PREFIX.search(line)
+
 
 ####################
 ### UpgraderTest ###
@@ -243,8 +255,8 @@ class UpgraderTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
 
-  TODO(mtennant): Upgrader does not have a sense of _board anymore,
-  only for each call to runBoard.  Test setup must change.
+  # TODO(mtennant): Upgrader does not have a sense of _board anymore,
+  # only for each call to runBoard.  Test setup must change.
   def _MockUpgrader(self, board='test_board', package='test_package',
                     verbose=False, rdeps=None, srcroot=None,
                     stable_repo=None, upstream_repo=None, csv_file=None):
@@ -520,6 +532,32 @@ class MainTest(mox.MoxTestBase):
     sys.argv = [ re.sub("_unittest", "", sys.argv[0]) ]
     sys.argv.extend(args)
 
+  def _AssertOutputEndsInError(self, stdout):
+    """Return True if |stdout| ends with an error message."""
+    lastline = [ln for ln in stdout.split('\n') if ln][-1]
+    self.assertTrue(_IsErrorLine(lastline),
+                    msg="expected output to end in error line, but "
+                    "_IsErrorLine says this line is not an error:\n%s" %
+                    lastline)
+
+  def _AssertCPUMain(self, cpu, expect_zero):
+    """Run cpu.main() and assert exit value is expected.
+
+    If |expect_zero| is True, assert exit value = 0.  If False,
+    assert exit value != 0.
+    """
+    try:
+      cpu.main()
+    except exceptions.SystemExit, e:
+      if expect_zero:
+        self.assertEquals(e.args[0], 0,
+                          msg="expected call to main() to exit cleanly, "
+                          "but it exited with code %d" % e.args[0])
+      else:
+        self.assertNotEquals(e.args[0], 0,
+                             msg="expected call to main() to exit with "
+                             "failure code, but exited with code 0 instead.")
+
   def testHelp(self):
     """Test that --help is functioning"""
     self._PrepareArgv("--help")
@@ -551,12 +589,11 @@ class MainTest(mox.MoxTestBase):
     except exceptions.SystemExit, e:
       self.assertNotEquals(e.args[0], 0)
 
-    # Verify that a message containing "ERROR: " was printed
     (stdout, stderr) = self._RetrieveCapturedOutput()
     self._StopCapturingOutput()
-    self.assertTrue("ERROR:" in stderr)
+    self._AssertOutputEndsInError(stdout)
 
-  def testMissingPackage(self):
+  def testBoardWithoutPackage(self):
     """Test that running without a package argument exits with an error."""
     self._PrepareArgv("--board=any-board")
 
@@ -564,29 +601,188 @@ class MainTest(mox.MoxTestBase):
     self._StartCapturingOutput()
 
     # Running without a package should exit with code!=0
-    try:
-      cpu.main()
-    except exceptions.SystemExit, e:
-      self.assertNotEquals(e.args[0], 0)
+    self._AssertCPUMain(cpu, expect_zero=False)
 
-    # Verify that a message containing "ERROR: " was printed
+    # Verify that an error message was printed.
     (stdout, stderr) = self._RetrieveCapturedOutput()
     self._StopCapturingOutput()
-    self.assertTrue("ERROR:" in stderr)
+    self._AssertOutputEndsInError(stdout)
 
-  def testUpgraderRun(self):
-    """Verify that running main method launches Upgrader.RunBoard"""
+  def testHostWithoutPackage(self):
+    """Test that running without a package argument exits with an error."""
+    self._PrepareArgv("--host")
+
+    # Capture stdout/stderr so it can be verified later
+    self._StartCapturingOutput()
+
+    # Running without a package should exit with code!=0
+    self._AssertCPUMain(cpu, expect_zero=False)
+
+    # Verify that an error message was printed.
+    (stdout, stderr) = self._RetrieveCapturedOutput()
+    self._StopCapturingOutput()
+    self._AssertOutputEndsInError(stdout)
+
+  def testFlowStatusReportOneBoard(self):
+    """Test main flow for basic one-board status report."""
+    self._StartCapturingOutput()
+
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PreRunChecks')
     self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
-    self.mox.StubOutWithMock(cpu.Upgrader, '_FindBoardArch')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PrepareToRun')
     self.mox.StubOutWithMock(cpu.Upgrader, 'RunBoard')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunCompleted')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'WriteTableFiles')
+
+    cpu.Upgrader.PreRunChecks()
     cpu._BoardIsSetUp('any-board').AndReturn(True)
-    cpu.Upgrader._FindBoardArch(mox.IgnoreArg()).AndReturn('x86')
-    cpu.Upgrader.RunBoard()
+    cpu.Upgrader.PrepareToRun()
+    cpu.Upgrader.RunBoard('any-board')
+    cpu.Upgrader.RunCompleted()
+    cpu.Upgrader.WriteTableFiles(csv='/dev/null')
+
     self.mox.ReplayAll()
 
-    self._PrepareArgv("--board=any-board", "any-package")
-    cpu.main()
+    self._PrepareArgv("--board=any-board", "--to-csv=/dev/null", "any-package")
+    self._AssertCPUMain(cpu, expect_zero=True)
     self.mox.VerifyAll()
+
+    self._StopCapturingOutput()
+
+  def testFlowStatusReportOneBoardNotSetUp(self):
+    """Test main flow for basic one-board status report."""
+    self._StartCapturingOutput()
+
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PreRunChecks')
+    self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
+
+    cpu.Upgrader.PreRunChecks()
+    cpu._BoardIsSetUp('any-board').AndReturn(False)
+
+    self.mox.ReplayAll()
+
+    # Running with a package not set up should exit with code!=0
+    self._PrepareArgv("--board=any-board", "--to-csv=/dev/null", "any-package")
+    self._AssertCPUMain(cpu, expect_zero=False)
+    self.mox.VerifyAll()
+
+    # Verify that an error message was printed.
+    (stdout, stderr) = self._RetrieveCapturedOutput()
+    self._StopCapturingOutput()
+    self._AssertOutputEndsInError(stdout)
+
+  def testFlowStatusReportTwoBoards(self):
+    """Test main flow for two-board status report."""
+    self._StartCapturingOutput()
+
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PreRunChecks')
+    self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PrepareToRun')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunBoard')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunCompleted')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'WriteTableFiles')
+
+    cpu.Upgrader.PreRunChecks()
+    cpu._BoardIsSetUp('board1').AndReturn(True)
+    cpu._BoardIsSetUp('board2').AndReturn(True)
+    cpu.Upgrader.PrepareToRun()
+    cpu.Upgrader.RunBoard('board1')
+    cpu.Upgrader.RunBoard('board2')
+    cpu.Upgrader.RunCompleted()
+    cpu.Upgrader.WriteTableFiles(csv=None)
+
+    self.mox.ReplayAll()
+
+    self._PrepareArgv("--board=board1:board2", "any-package")
+    self._AssertCPUMain(cpu, expect_zero=True)
+    self.mox.VerifyAll()
+
+    self._StopCapturingOutput()
+
+  def testFlowUpgradeOneBoard(self):
+    """Test main flow for basic one-board upgrade."""
+    self._StartCapturingOutput()
+
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PreRunChecks')
+    self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PrepareToRun')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunBoard')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunCompleted')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'WriteTableFiles')
+
+    cpu.Upgrader.PreRunChecks()
+    cpu._BoardIsSetUp('any-board').AndReturn(True)
+    cpu.Upgrader.PrepareToRun()
+    cpu.Upgrader.RunBoard('any-board')
+    cpu.Upgrader.RunCompleted()
+    cpu.Upgrader.WriteTableFiles(csv=None)
+
+    self.mox.ReplayAll()
+
+    self._PrepareArgv("--upgrade", "--board=any-board", "any-package")
+    self._AssertCPUMain(cpu, expect_zero=True)
+    self.mox.VerifyAll()
+
+    self._StopCapturingOutput()
+
+  def testFlowUpgradeTwoBoards(self):
+    """Test main flow for two-board upgrade."""
+    self._StartCapturingOutput()
+
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PreRunChecks')
+    self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PrepareToRun')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunBoard')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunCompleted')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'WriteTableFiles')
+
+    cpu.Upgrader.PreRunChecks()
+    cpu._BoardIsSetUp('board1').AndReturn(True)
+    cpu._BoardIsSetUp('board2').AndReturn(True)
+    cpu.Upgrader.PrepareToRun()
+    cpu.Upgrader.RunBoard('board1')
+    cpu.Upgrader.RunBoard('board2')
+    cpu.Upgrader.RunCompleted()
+    cpu.Upgrader.WriteTableFiles(csv='/dev/null')
+
+    self.mox.ReplayAll()
+
+    self._PrepareArgv("--upgrade", "--board=board1:board2",
+                      "--to-csv=/dev/null", "any-package")
+    self._AssertCPUMain(cpu, expect_zero=True)
+    self.mox.VerifyAll()
+
+    self._StopCapturingOutput()
+
+  def testFlowUpgradeTwoBoardsAndHost(self):
+    """Test main flow for two-board and host upgrade."""
+    self._StartCapturingOutput()
+
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PreRunChecks')
+    self.mox.StubOutWithMock(cpu, '_BoardIsSetUp')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'PrepareToRun')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunBoard')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'RunCompleted')
+    self.mox.StubOutWithMock(cpu.Upgrader, 'WriteTableFiles')
+
+    cpu.Upgrader.PreRunChecks()
+    cpu._BoardIsSetUp('board1').AndReturn(True)
+    cpu._BoardIsSetUp('board2').AndReturn(True)
+    cpu.Upgrader.PrepareToRun()
+    cpu.Upgrader.RunBoard(cpu.Upgrader.HOST_BOARD)
+    cpu.Upgrader.RunBoard('board1')
+    cpu.Upgrader.RunBoard('board2')
+    cpu.Upgrader.RunCompleted()
+    cpu.Upgrader.WriteTableFiles(csv='/dev/null')
+
+    self.mox.ReplayAll()
+
+    self._PrepareArgv("--upgrade", "--host", "--board=board1:host:board2",
+                      "--to-csv=/dev/null", "any-package")
+    self._AssertCPUMain(cpu, expect_zero=True)
+    self.mox.VerifyAll()
+
+    self._StopCapturingOutput()
 
 if __name__ == '__main__':
   unittest.main()
