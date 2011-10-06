@@ -704,7 +704,9 @@
         'browser/ui/views/find_bar_host_uitest.cc',
         'browser/ui/webui/bookmarks_ui_uitest.cc',
         'browser/ui/webui/ntp/new_tab_ui_uitest.cc',
+        'browser/ui/webui/options/chromeos/guest_mode_options_ui_uitest.cc',
         'browser/ui/webui/options/options_ui_uitest.cc',
+        'browser/ui/webui/options/options_ui_uitest.h',
         'browser/ui/webui/print_preview_ui_uitest.cc',
         'common/chrome_switches_uitest.cc',
         'common/logging_chrome_uitest.cc',
@@ -811,6 +813,10 @@
           'sources!': [
               # TODO(thestig): Enable when print preview is ready for CrOS.
              'browser/ui/webui/print_preview_ui_uitest.cc',
+          ],
+        }, { # else: chromeos == 0
+          'sources/': [
+            ['exclude', '^browser/ui/webui/options/chromeos/'],
           ],
         }],
       ],
