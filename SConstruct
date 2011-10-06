@@ -906,7 +906,7 @@ def MakeArchSpecificEnv():
 
   env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 
-  if env.Bit('pnacl_use_clang') and not env.Bit('bitcode'):
+  if env.Bit('nacl_glibc') or not env.Bit('bitcode'):
     env.ClearBits('pnacl_use_clang')
 
   if env.Bit('target_arm') and not env.Bit('bitcode'):
