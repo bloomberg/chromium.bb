@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
 
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,6 +36,10 @@ HungRendererDialogUI::HungRendererDialogUI(TabContents* contents)
 
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(source);
+
+  // Set up the chrome://theme/ source.
+  ThemeSource* theme = new ThemeSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(theme);
 }
 
 HungRendererDialogUI::~HungRendererDialogUI() {
