@@ -6,7 +6,9 @@
 
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/ui/views/notifications/balloon_view.h"
+#include "ui/base/events.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
@@ -39,6 +41,7 @@ base::EventStatus BalloonCollectionImpl::WillProcessEvent(
 }
 
 void BalloonCollectionImpl::DidProcessEvent(const base::NativeEvent& event) {
+#if defined(OS_WIN)
   switch (event.message) {
     case WM_MOUSEMOVE:
     case WM_MOUSELEAVE:
@@ -46,11 +49,20 @@ void BalloonCollectionImpl::DidProcessEvent(const base::NativeEvent& event) {
       HandleMouseMoveEvent();
       break;
   }
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 bool BalloonCollectionImpl::IsCursorInBalloonCollection() const {
+#if defined(OS_WIN)
   DWORD pos = GetMessagePos();
   gfx::Point cursor(pos);
+#else
+  // TODO(saintlou): Not sure if this is correct because on Windows at least
+  // the following call is GetCursorPos() not GetMessagePos().
+  gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
+#endif
   return GetBalloonsBoundingBox().Contains(cursor);
 }
 

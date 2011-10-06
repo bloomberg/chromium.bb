@@ -1603,7 +1603,7 @@
         'browser/notifications/balloon_collection_impl.h',
         'browser/notifications/balloon_collection_gtk.cc',
         'browser/notifications/balloon_collection_mac.mm',
-        'browser/notifications/balloon_collection_win.cc',
+        'browser/notifications/balloon_collection_views.cc',
         'browser/notifications/balloon_host.cc',
         'browser/notifications/balloon_host.h',
         'browser/notifications/desktop_notification_service.cc',
@@ -4802,6 +4802,12 @@
                 ['exclude', '^browser/extensions/key_identifier_conversion_views.h'],
               ],
             }],
+            # This Views file has a GTK equivalent, so we cannot use both.
+            ['toolkit_uses_gtk==1', {
+              'sources/': [
+                ['exclude', '^browser/notifications/balloon_collection_views.cc'],
+              ],
+            }],
             # These GTK files haven't been ported to views, while ChromeOS has
             # its own separate implementation below.  So re-include them only on
             # non-ChromeOS views Linux builds.
@@ -4902,7 +4908,8 @@
                 ['exclude', '^browser/extensions/extension_tts_api_linux.cc'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.cc'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.h'],
-                ['exclude', '^browser/notifications/balloon_collection_linux.cc'],
+                ['exclude', '^browser/notifications/balloon_collection_gtk.cc'],
+                ['exclude', '^browser/notifications/balloon_collection_views.cc'],
                 ['exclude', '^browser/ui/login/login_prompt_gtk.cc'],
                 ['exclude', '^browser/ui/views/download/download_item_view.cc'],
                 ['exclude', '^browser/ui/views/download/download_item_view.h'],
