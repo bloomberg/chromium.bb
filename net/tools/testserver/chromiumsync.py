@@ -19,6 +19,7 @@ import threading
 import urlparse
 
 import app_specifics_pb2
+import app_notification_specifics_pb2
 import autofill_specifics_pb2
 import bookmark_specifics_pb2
 import extension_setting_specifics_pb2
@@ -39,6 +40,7 @@ import typed_url_specifics_pb2
 ALL_TYPES = (
     TOP_LEVEL,  # The type of the 'Google Chrome' folder.
     APPS,
+    APP_NOTIFICATION,
     AUTOFILL,
     AUTOFILL_PROFILE,
     BOOKMARK,
@@ -50,7 +52,7 @@ ALL_TYPES = (
     SESSION,
     THEME,
     TYPED_URL,
-    EXTENSION_SETTINGS) = range(14)
+    EXTENSION_SETTINGS) = range(15)
 
 # Well-known server tag of the top level 'Google Chrome' folder.
 TOP_LEVEL_FOLDER_TAG = 'google_chrome'
@@ -59,6 +61,7 @@ TOP_LEVEL_FOLDER_TAG = 'google_chrome'
 # to that datatype.  Note that TOP_LEVEL has no such token.
 SYNC_TYPE_TO_EXTENSION = {
     APPS: app_specifics_pb2.app,
+    APP_NOTIFICATION: app_notification_specifics_pb2.app_notification,
     AUTOFILL: autofill_specifics_pb2.autofill,
     AUTOFILL_PROFILE: autofill_specifics_pb2.autofill_profile,
     BOOKMARK: bookmark_specifics_pb2.bookmark,
@@ -410,6 +413,8 @@ class SyncDataModel(object):
                     parent_tag='google_chrome', sync_type=NIGORI),
       PermanentItem('google_chrome_apps', name='Apps',
                     parent_tag='google_chrome', sync_type=APPS),
+      PermanentItem('google_chrome_app_notifications', name='App Notifications',
+                    parent_tag='google_chrome', sync_type=APP_NOTIFICATION),
       ]
 
   def __init__(self):
