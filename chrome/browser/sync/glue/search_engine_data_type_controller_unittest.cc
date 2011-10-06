@@ -146,7 +146,7 @@ TEST_F(SearchEngineDataTypeControllerTest, StartAssociationFailed) {
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
   search_engine_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
+  EXPECT_EQ(DataTypeController::DISABLED, search_engine_dtc_->state());
 }
 
 TEST_F(SearchEngineDataTypeControllerTest,

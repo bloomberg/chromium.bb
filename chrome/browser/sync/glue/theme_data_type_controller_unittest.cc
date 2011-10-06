@@ -118,7 +118,7 @@ TEST_F(ThemeDataTypeControllerTest, StartAssociationFailed) {
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
   theme_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, theme_dtc_->state());
+  EXPECT_EQ(DataTypeController::DISABLED, theme_dtc_->state());
 }
 
 TEST_F(ThemeDataTypeControllerTest,

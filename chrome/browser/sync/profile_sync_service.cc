@@ -109,7 +109,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       expect_sync_configuration_aborted_(false),
       clear_server_data_state_(CLEAR_NOT_STARTED),
       encryption_pending_(false),
-      auto_start_enabled_(false) {
+      auto_start_enabled_(false),
+      failed_datatypes_handler_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds
@@ -434,6 +435,13 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
       syncable::ModelTypeBitSetFromSet(encrypted_types);
   DCHECK(encrypted_types.count(syncable::PASSWORDS));
   return (preferred_types_bitset & encrypted_types_bitset).any();
+}
+
+void ProfileSyncService::OnSyncConfigureDone(
+    DataTypeManager::ConfigureResult result) {
+  if (failed_datatypes_handler_.UpdateFailedDatatypes(result)) {
+    ReconfigureDatatypeManager();
+  }
 }
 
 void ProfileSyncService::StartUp() {
@@ -1178,6 +1186,7 @@ void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
   profile_->GetPrefs()->SetBoolean(prefs::kKeepEverythingSynced,
       sync_everything);
 
+  failed_datatypes_handler_.OnUserChoseDatatypes();
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
@@ -1212,6 +1221,7 @@ void ProfileSyncService::ChangePreferredDataTypes(
     const syncable::ModelTypeSet& preferred_types) {
 
   VLOG(1) << "ChangePreferredDataTypes invoked";
+  // First update our list of enabled types.
   // Filter out any datatypes which aren't registered, or for which
   // the preference can't be set.
   syncable::ModelTypeSet registered_types;
@@ -1231,28 +1241,8 @@ void ProfileSyncService::ChangePreferredDataTypes(
     }
   }
 
-  // If we haven't initialized yet, don't configure the DTM as it could cause
-  // association to start before a Directory has even been created.
-  if (backend_initialized_) {
-    DCHECK(backend_.get());
-    ConfigureDataTypeManager();
-  } else if (unrecoverable_error_detected()) {
-    // TODO(tim): crbug.com/87575 . We should have per data type unrecoverable
-    // errors.
-
-    // Close the wizard.
-    if (WizardIsVisible()) {
-       wizard_.Step(SyncSetupWizard::DONE);
-    }
-    // There is nothing more to configure. So inform the listeners,
-    NotifyObservers();
-
-    VLOG(1) << "ConfigureDataTypeManager not invoked because of an "
-            << "Unrecoverable error.";
-  } else {
-    VLOG(0) << "ConfigureDataTypeManager not invoked because backend is not "
-            << "initialized";
-  }
+  // Now reconfigure the DTM.
+  ReconfigureDatatypeManager();
 }
 
 void ProfileSyncService::GetPreferredDataTypes(
@@ -1287,6 +1277,14 @@ void ProfileSyncService::GetPreferredDataTypes(
       }
     }
   }
+
+  syncable::ModelTypeSet failed_types =
+      failed_datatypes_handler_.GetFailedTypes();
+  syncable::ModelTypeSet difference;
+  std::set_difference(preferred_types->begin(), preferred_types->end(),
+                      failed_types.begin(), failed_types.end(),
+                      std::inserter(difference, difference.end()));
+  *preferred_types = difference;
 }
 
 void ProfileSyncService::GetRegisteredDataTypes(
@@ -1495,19 +1493,28 @@ void ProfileSyncService::Observe(int type,
         expect_sync_configuration_aborted_ = false;
         return;
       }
-      if (status != DataTypeManager::OK) {
-        DCHECK(result->error.IsSet());
+      if (status != DataTypeManager::OK &&
+          status != DataTypeManager::PARTIAL_SUCCESS) {
+        // Something catastrophic had happened. We should only have one
+        // error representing it.
+        DCHECK(result->errors.size() == 1);
+        SyncError error = result->errors.front();
+        DCHECK(error.IsSet());
         std::string message =
           "Sync configuration failed with status " +
           DataTypeManager::ConfigureStatusToString(status) +
-          " during " + syncable::ModelTypeToString(result->error.type()) +
-          ": " + result->error.message();
+          " during " + syncable::ModelTypeToString(error.type()) +
+          ": " + error.message();
         LOG(ERROR) << "ProfileSyncService error: "
                    << message;
         // TODO: Don't
-        OnUnrecoverableError(result->error.location(), message);
+        OnUnrecoverableError(error.location(), message);
         return;
       }
+
+      MessageLoop::current()->PostTask(FROM_HERE,
+            scoped_runnable_method_factory_.NewRunnableMethod(
+            &ProfileSyncService::OnSyncConfigureDone, *result));
 
       // We should never get in a state where we have no encrypted datatypes
       // enabled, and yet we still think we require a passphrase for decryption.
@@ -1636,6 +1643,32 @@ void ProfileSyncService::AcknowledgeSyncedTypes() {
   scoped_ptr<ListValue> value(syncable::ModelTypeBitSetToValue(acknowledged));
   profile_->GetPrefs()->Set(prefs::kAcknowledgedSyncTypes, *value);
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
+}
+
+void ProfileSyncService::ReconfigureDatatypeManager() {
+  // If we haven't initialized yet, don't configure the DTM as it could cause
+  // association to start before a Directory has even been created.
+  if (backend_initialized_) {
+    DCHECK(backend_.get());
+    ConfigureDataTypeManager();
+  } else if (unrecoverable_error_detected()) {
+    // Close the wizard.
+    if (WizardIsVisible()) {
+       wizard_.Step(SyncSetupWizard::DONE);
+    }
+    // There is nothing more to configure. So inform the listeners,
+    NotifyObservers();
+
+    VLOG(1) << "ConfigureDataTypeManager not invoked because of an "
+            << "Unrecoverable error.";
+  } else {
+    VLOG(0) << "ConfigureDataTypeManager not invoked because backend is not "
+            << "initialized";
+  }
+}
+
+const FailedDatatypesHandler& ProfileSyncService::failed_datatypes_handler() {
+  return failed_datatypes_handler_;
 }
 
 // TODO(sync): When we add the next new data type, add code to the NTP to

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -102,6 +103,10 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
       found_any = true;
       if (needs_start)
         needs_start->push_back(dtc->second.get());
+      if (dtc->second->state() == DataTypeController::DISABLED) {
+        VLOG(1) << "Found " << syncable::ModelTypeToString(dtc->second->type())
+                << " in disabled state.";
+      }
     }
   }
   return found_any;
@@ -157,7 +162,7 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
             SortComparator(&start_order_));
 
   // Add any data type controllers into that needs_stop_ list that are
-  // currently MODEL_STARTING, ASSOCIATING, or RUNNING.
+  // currently MODEL_STARTING, ASSOCIATING, RUNNING or DISABLED.
   needs_stop_.clear();
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
        it != controllers_->end(); ++it) {
@@ -165,7 +170,8 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
     if (desired_types.count(dtc->type()) == 0 && (
             dtc->state() == DataTypeController::MODEL_STARTING ||
             dtc->state() == DataTypeController::ASSOCIATING ||
-            dtc->state() == DataTypeController::RUNNING)) {
+            dtc->state() == DataTypeController::RUNNING ||
+            dtc->state() == DataTypeController::DISABLED)) {
       needs_stop_.push_back(dtc);
       VLOG(1) << "Will stop " << dtc->name();
     }
@@ -305,8 +311,15 @@ void DataTypeManagerImpl::StartNextType() {
 
   // If no more data types need starting, we're done.
   state_ = CONFIGURED;
-  ConfigureResult result(OK, last_requested_types_);
+  ConfigureStatus status = OK;
+  if (!failed_datatypes_info_.empty()) {
+    status = PARTIAL_SUCCESS;
+  }
+  ConfigureResult result(status,
+                         last_requested_types_,
+                         failed_datatypes_info_);
   NotifyDone(result);
+  failed_datatypes_info_.clear();
 }
 
 void DataTypeManagerImpl::TypeStartCallback(
@@ -336,12 +349,23 @@ void DataTypeManagerImpl::TypeStartCallback(
   DCHECK_EQ(needs_start_[0], started_dtc);
   needs_start_.erase(needs_start_.begin());
 
+  if (result == DataTypeController::ASSOCIATION_FAILED) {
+    failed_datatypes_info_.push_back(error);
+    LOG(ERROR) << "Failed to associate models for "
+            << syncable::ModelTypeToString(error.type());
+    UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
+                              error.type(),
+                              syncable::MODEL_TYPE_COUNT);
+  }
+
   // If the type started normally, continue to the next type.
   // If the type is waiting for the cryptographer, continue to the next type.
   // Once the cryptographer is ready, we'll attempt to restart this type.
+  // If this type encountered a type specific error continue to the next type.
   if (result == DataTypeController::NEEDS_CRYPTO ||
       result == DataTypeController::OK ||
-      result == DataTypeController::OK_FIRST_RUN) {
+      result == DataTypeController::OK_FIRST_RUN ||
+      result == DataTypeController::ASSOCIATION_FAILED) {
     StartNextType();
     return;
   }
@@ -354,9 +378,6 @@ void DataTypeManagerImpl::TypeStartCallback(
   switch (result) {
     case DataTypeController::ABORTED:
       configure_status = DataTypeManager::ABORTED;
-      break;
-    case DataTypeController::ASSOCIATION_FAILED:
-      configure_status = DataTypeManager::ASSOCIATION_FAILED;
       break;
     case DataTypeController::UNRECOVERABLE_ERROR:
       configure_status = DataTypeManager::UNRECOVERABLE_ERROR;
@@ -417,6 +438,8 @@ void DataTypeManagerImpl::FinishStop() {
       VLOG(1) << "Stopped " << dtc->name();
     }
   }
+
+  failed_datatypes_info_.clear();
   state_ = STOPPED;
 }
 
@@ -424,9 +447,12 @@ void DataTypeManagerImpl::Abort(ConfigureStatus status,
                                 const SyncError& error) {
   DCHECK_NE(OK, status);
   FinishStop();
+  std::list<SyncError> error_list;
+  if (error.IsSet())
+    error_list.push_back(error);
   ConfigureResult result(status,
                          last_requested_types_,
-                         error);
+                         error_list);
   NotifyDone(result);
 }
 
@@ -448,11 +474,6 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
       UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.OK",
                           configure_time_delta_);
       break;
-    case DataTypeManager::ASSOCIATION_FAILED:
-      VLOG(1) << "NotifyDone called with result: ASSOCIATION_FAILED";
-      UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.ASSOCIATION_FAILED",
-                          configure_time_delta_);
-      break;
     case DataTypeManager::ABORTED:
       VLOG(1) << "NotifyDone called with result: ABORTED";
       UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.ABORTED",
@@ -461,6 +482,11 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
     case DataTypeManager::UNRECOVERABLE_ERROR:
       VLOG(1) << "NotifyDone called with result: UNRECOVERABLE_ERROR";
       UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.UNRECOVERABLE_ERROR",
+                          configure_time_delta_);
+      break;
+    case DataTypeManager::PARTIAL_SUCCESS:
+      VLOG(1) << "NotifyDone called with result: PARTIAL_SUCCESS";
+      UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.PARTIAL_SUCCESS",
                           configure_time_delta_);
       break;
     default:

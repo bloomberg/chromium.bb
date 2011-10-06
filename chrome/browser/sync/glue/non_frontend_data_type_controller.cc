@@ -70,7 +70,7 @@ void NonFrontendDataTypeController::Start(StartCallback* start_callback) {
   state_ = ASSOCIATING;
   if (!StartAssociationAsync()) {
     SyncError error(FROM_HERE, "Failed to post StartAssociation", type());
-    StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
+    StartDoneImpl(ASSOCIATION_FAILED, DISABLED, error);
   }
 }
 
@@ -125,8 +125,9 @@ void NonFrontendDataTypeController::StartFailed(StartResult result,
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   model_associator_.reset();
   change_processor_.reset();
-  // TODO(zea): Send the full SyncError on failure and handle it higher up.
-  StartDone(result, NOT_RUNNING, error);
+  StartDone(result,
+            result == ASSOCIATION_FAILED ? DISABLED : NOT_RUNNING,
+            error);
 }
 
 void NonFrontendDataTypeController::StartDone(
@@ -215,7 +216,8 @@ void NonFrontendDataTypeController::Stop() {
 
 void NonFrontendDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(state_ == STOPPING || state_ == NOT_RUNNING);
+  DCHECK(state_ == STOPPING || state_ == NOT_RUNNING || state_ == DISABLED);
+  VLOG(1) << "NonFrontendDataTypeController::StopModels(): State = " << state_;
   // Do nothing by default.
 }
 

@@ -623,6 +623,13 @@ void ConstructAboutInformation(ProfileSyncService* service,
     sync_ui_util::AddStringSyncDetails(actionable_error, "Error Description",
         full_status.sync_protocol_error.error_description);
 
+    const FailedDatatypesHandler& failed_datatypes_handler =
+        service->failed_datatypes_handler();
+    if (failed_datatypes_handler.AnyFailedDatatype()) {
+      strings->SetString("failed_data_types",
+          failed_datatypes_handler.GetErrorString());
+    }
+
     if (service->unrecoverable_error_detected()) {
       strings->Set("unrecoverable_error_detected",
                    new base::FundamentalValue(true));

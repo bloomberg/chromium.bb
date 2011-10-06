@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_
 #pragma once
 
+#include <list>
 #include <string>
 
 #include "base/basictypes.h"
@@ -21,6 +22,7 @@
 #include "base/timer.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/failed_datatypes_handler.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
@@ -484,6 +486,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   SyncGlobalError* sync_global_error() { return sync_global_error_.get(); }
 
+  virtual const FailedDatatypesHandler& failed_datatypes_handler();
+
  protected:
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();
@@ -564,6 +568,20 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Create and register a new datatype controller.
   void RegisterNewDataType(syncable::ModelType data_type);
+
+  // Helper method to process SyncConfigureDone after unwinding the stack that
+  // originally posted this SyncConfigureDone.
+  void OnSyncConfigureDone(
+      browser_sync::DataTypeManager::ConfigureResult result);
+
+  // Reconfigures the data type manager with the latest enabled types.
+  // Note: Does not initialize the backend if it is not already initialized.
+  // This function needs to be called only after sync has been initialized
+  // (i.e.,only for reconfigurations). The reason we don't initialize the
+  // backend is because if we had encountered an unrecoverable error we dont
+  // want to startup once more.
+  virtual void ReconfigureDatatypeManager();
+
 
   // Time at which we begin an attempt a GAIA authorization.
   base::TimeTicks auth_start_time_;
@@ -674,6 +692,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // This is used to show sync errors in the wrench menu.
   scoped_ptr<SyncGlobalError> sync_global_error_;
+
+  // keeps track of data types that failed to load.
+  FailedDatatypesHandler failed_datatypes_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

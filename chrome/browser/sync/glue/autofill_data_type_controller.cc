@@ -113,7 +113,8 @@ void AutofillDataTypeController::CreateSyncComponents() {
 
 void AutofillDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(state() == STOPPING || state() == NOT_RUNNING);
+  DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
+  VLOG(1) << "AutofillDataTypeController::StopModels() : State = " << state();
   notification_registrar_.RemoveAll();
   personal_data_->RemoveObserver(this);
 }

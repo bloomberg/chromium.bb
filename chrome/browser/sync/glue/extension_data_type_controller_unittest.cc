@@ -119,7 +119,7 @@ TEST_F(ExtensionDataTypeControllerTest, StartAssociationFailed) {
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
   extension_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, extension_dtc_->state());
+  EXPECT_EQ(DataTypeController::DISABLED, extension_dtc_->state());
 }
 
 TEST_F(ExtensionDataTypeControllerTest,

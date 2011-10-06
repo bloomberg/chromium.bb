@@ -8,6 +8,7 @@
 
 #include "chrome/browser/sync/glue/data_type_manager.h"
 
+#include <list>
 #include <map>
 #include <vector>
 
@@ -106,6 +107,11 @@ class DataTypeManagerImpl : public DataTypeManager {
   // The accumulated time spent between calls to Restart() and going
   // to the DONE/BLOCKED state.
   base::TimeDelta configure_time_delta_;
+
+  // Collects the list of errors resulting from failing to start a type. This
+  // would eventually be sent to the listeners after all the types have
+  // been given a chance to start.
+  std::list<SyncError> failed_datatypes_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };

@@ -19,11 +19,13 @@ DataTypeManager::ConfigureResult::ConfigureResult(ConfigureStatus status,
 DataTypeManager::ConfigureResult::ConfigureResult(
     ConfigureStatus status,
     TypeSet requested_types,
-    const SyncError& error)
+    const std::list<SyncError>& error)
     : status(status),
       requested_types(requested_types),
-      error(error) {
-  DCHECK_NE(OK, status);
+      errors(error) {
+  if (!error.empty()) {
+    DCHECK_NE(OK, status);
+  }
 }
 
 DataTypeManager::ConfigureResult::~ConfigureResult() {
@@ -34,12 +36,12 @@ std::string DataTypeManager::ConfigureStatusToString(ConfigureStatus status) {
   switch (status) {
     case OK:
       return "Ok";
-    case ASSOCIATION_FAILED:
-      return "Association Failed";
     case ABORTED:
       return "Aborted";
     case UNRECOVERABLE_ERROR:
       return "Unrecoverable Error";
+    case PARTIAL_SUCCESS:
+      return "Partial Success";
     default:
       NOTREACHED();
       return std::string();

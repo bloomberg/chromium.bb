@@ -64,7 +64,7 @@ void FrontendDataTypeController::Start(StartCallback* start_callback) {
   state_ = ASSOCIATING;
   if (!Associate()) {
     // We failed to associate and are aborting.
-    DCHECK_EQ(state_, NOT_RUNNING);
+    DCHECK(state_ == DISABLED || state_ == NOT_RUNNING);
     return;
   }
   DCHECK_EQ(state_, RUNNING);
@@ -122,14 +122,17 @@ void FrontendDataTypeController::StartFailed(StartResult result,
   CleanUpState();
   set_model_associator(NULL);
   change_processor_.reset();
-  state_ = NOT_RUNNING;
+  if (result == ASSOCIATION_FAILED) {
+    state_ = DISABLED;
+  } else {
+    state_ = NOT_RUNNING;
+  }
   RecordStartFailure(result);
 
   // We have to release the callback before we call it, since it's possible
   // invoking the callback will trigger a call to STOP(), which will get
   // confused by the non-NULL start_callback_.
   scoped_ptr<StartCallback> callback(start_callback_.release());
-  // TODO(zea): Send the full SyncError on failure and handle it higher up.
   callback->Run(result, error);
 }
 

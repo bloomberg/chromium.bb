@@ -121,7 +121,7 @@ TEST_F(PreferenceDataTypeControllerTest, StartAssociationFailed) {
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::ASSOCIATION_FAILED, _));
   preference_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
+  EXPECT_EQ(DataTypeController::DISABLED, preference_dtc_->state());
 }
 
 TEST_F(PreferenceDataTypeControllerTest,

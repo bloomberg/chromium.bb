@@ -255,7 +255,7 @@ TEST_F(NonFrontendDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
   non_frontend_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
   WaitForDTC();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
+  EXPECT_EQ(DataTypeController::DISABLED, non_frontend_dtc_->state());
 }
 
 TEST_F(NonFrontendDataTypeControllerTest,

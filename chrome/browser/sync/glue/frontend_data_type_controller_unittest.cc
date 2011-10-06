@@ -189,7 +189,7 @@ TEST_F(FrontendDataTypeControllerTest, StartAssociationFailed) {
   // Set up association to fail with an association failed error.
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   frontend_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
+  EXPECT_EQ(DataTypeController::DISABLED, frontend_dtc_->state());
 }
 
 TEST_F(FrontendDataTypeControllerTest,

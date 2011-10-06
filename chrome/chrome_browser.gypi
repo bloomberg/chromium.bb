@@ -2183,6 +2183,8 @@
         'browser/sync/glue/ui_model_worker.h',
         'browser/sync/backend_migrator.cc',
         'browser/sync/backend_migrator.h',
+        'browser/sync/failed_datatypes_handler.cc',
+        'browser/sync/failed_datatypes_handler.h',
         'browser/sync/profile_sync_factory.h',
         'browser/sync/profile_sync_factory_impl.cc',
         'browser/sync/profile_sync_factory_impl.h',

@@ -718,5 +718,9 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
   EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
       WillRepeatedly(Return(false));
   StartSyncService(&task);
-  ASSERT_TRUE(service_->unrecoverable_error_detected());
+  ASSERT_TRUE(
+      service_->failed_datatypes_handler().GetFailedTypes().count(
+          syncable::TYPED_URLS) != 0);
+  ASSERT_TRUE(
+      service_->failed_datatypes_handler().GetFailedTypes().size() == 1);
 }

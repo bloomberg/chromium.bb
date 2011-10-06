@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_H__
 #pragma once
 
+#include <list>
 #include <set>
 #include <string>
 
@@ -41,27 +42,26 @@ class DataTypeManager {
   enum ConfigureStatus {
     UNKNOWN = -1,
     OK,                  // Configuration finished without error.
-    ASSOCIATION_FAILED,  // An error occurred during model association.
+    PARTIAL_SUCCESS,     // Some data types had an error while starting up.
     ABORTED,             // Start was aborted by calling Stop() before
                          // all types were started.
-    UNRECOVERABLE_ERROR  // A data type experienced an unrecoverable error
-                         // during startup.
+    UNRECOVERABLE_ERROR  // We got an unrecoverable error during startup.
   };
 
   typedef std::set<syncable::ModelType> TypeSet;
 
-  // Note: location and failed_types are only filled when status is not OK.
+  // Note: |errors| is only filled when status is not OK.
   struct ConfigureResult {
     ConfigureResult();
     ConfigureResult(ConfigureStatus status,
                     TypeSet requested_types);
     ConfigureResult(ConfigureStatus status,
                     TypeSet requested_types,
-                    const SyncError& error);
+                    const std::list<SyncError>& errors);
     ~ConfigureResult();
     ConfigureStatus status;
     TypeSet requested_types;
-    SyncError error;
+    std::list<SyncError> errors;
   };
 
   virtual ~DataTypeManager() {}

@@ -82,14 +82,15 @@ class BackendMigratorTest : public testing::Test {
           Source<DataTypeManager>(&manager_),
           Details<const DataTypeManager::ConfigureResult>(&result));
     } else {
-        DataTypeManager::ConfigureResult result(
-            status,
-            requested_types,
-            SyncError());
-        NotificationService::current()->Notify(
-            chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-            Source<DataTypeManager>(&manager_),
-            Details<const DataTypeManager::ConfigureResult>(&result));
+      std::list<SyncError> errors;
+      DataTypeManager::ConfigureResult result(
+          status,
+          requested_types,
+          errors);
+      NotificationService::current()->Notify(
+          chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
+          Source<DataTypeManager>(&manager_),
+          Details<const DataTypeManager::ConfigureResult>(&result));
     }
     message_loop_.RunAllPending();
   }

@@ -36,8 +36,10 @@ class DataTypeController
     ASSOCIATING,    // Model association is in progress.
     RUNNING,        // The controller is running and the data type is
                     // in sync with the cloud.
-    STOPPING        // The controller is in the process of stopping
+    STOPPING,       // The controller is in the process of stopping
                     // and is waiting for dependent services to stop.
+    DISABLED        // The controller was started but encountered an error
+                    // so it is disabled waiting for it to be stopped.
   };
 
   enum StartResult {
