@@ -8,6 +8,7 @@
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/font.h"
@@ -181,7 +182,7 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
 void NativeWidgetAura::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* maximized) const {
-  NOTIMPLEMENTED();
+  *maximized = window_->show_state();
 }
 
 void NativeWidgetAura::SetWindowTitle(const string16& title) {
@@ -278,12 +279,23 @@ void NativeWidgetAura::Hide() {
 
 void NativeWidgetAura::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  NOTIMPLEMENTED();
+  window_->SetBounds(restored_bounds);
+  window_->Maximize();
+  window_->Show();
 }
 
 void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
+  switch(state) {
+    case ui::SHOW_STATE_MAXIMIZED:
+      window_->Maximize();
+      break;
+    case ui::SHOW_STATE_FULLSCREEN:
+      window_->Fullscreen();
+      break;
+    default:
+      break;
+  }
   window_->Show();
-  NOTIMPLEMENTED();
 }
 
 bool NativeWidgetAura::IsVisible() const {
@@ -308,7 +320,7 @@ void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
 }
 
 void NativeWidgetAura::Maximize() {
-  NOTIMPLEMENTED();
+  window_->Maximize();
 }
 
 void NativeWidgetAura::Minimize() {
@@ -316,26 +328,23 @@ void NativeWidgetAura::Minimize() {
 }
 
 bool NativeWidgetAura::IsMaximized() const {
-  //NOTIMPLEMENTED();
-  return false;
+  return window_->show_state() == ui::SHOW_STATE_MAXIMIZED;
 }
 
 bool NativeWidgetAura::IsMinimized() const {
-  //NOTIMPLEMENTED();
-  return false;
+  return window_->show_state() == ui::SHOW_STATE_MINIMIZED;
 }
 
 void NativeWidgetAura::Restore() {
-  NOTIMPLEMENTED();
+  window_->Restore();
 }
 
 void NativeWidgetAura::SetFullscreen(bool fullscreen) {
-  NOTIMPLEMENTED();
+  fullscreen ? window_->Fullscreen() : window_->Restore();
 }
 
 bool NativeWidgetAura::IsFullscreen() const {
-  //NOTIMPLEMENTED();
-  return false;
+  return window_->show_state() == ui::SHOW_STATE_FULLSCREEN;
 }
 
 void NativeWidgetAura::SetOpacity(unsigned char opacity) {

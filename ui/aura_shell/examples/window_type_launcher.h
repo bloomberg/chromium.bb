@@ -39,6 +39,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   enum MenuCommands {
     COMMAND_NEW_WINDOW = 1,
     COMMAND_TILE_WINDOWS = 2,
+    COMMAND_TOGGLE_FULLSCREEN = 3,
   };
 
   void TileWindows();

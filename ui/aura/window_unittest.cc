@@ -214,11 +214,6 @@ class WindowTest : public testing::Test {
     return window;
   }
 
-  void RunPendingMessages() {
-    MessageLoop message_loop(MessageLoop::TYPE_UI);
-    MessageLoopForUI::current()->Run(NULL);
-  }
-
  private:
   MessageLoop main_message_loop;
 
@@ -672,6 +667,76 @@ TEST_F(WindowTest, StopsEventPropagation) {
   EXPECT_FALSE(w111->CanFocus());
   w111->Focus();
   EXPECT_EQ(w121.get(), w1->GetFocusManager()->GetFocusedWindow());
+}
+
+TEST_F(WindowTest, Fullscreen) {
+  gfx::Rect original_bounds = gfx::Rect(100, 100, 100, 100);
+  gfx::Rect desktop_bounds(Desktop::GetInstance()->GetSize());
+  scoped_ptr<Window> w(CreateTestWindowWithDelegate(
+      NULL, 1, original_bounds, NULL));
+  EXPECT_EQ(original_bounds, w->bounds());
+
+  // Restoreing the restored window.
+  w->Restore();
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
+  EXPECT_EQ(original_bounds, w->bounds());
+
+  // Fullscreen
+  w->Fullscreen();
+  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, w->show_state());
+  EXPECT_EQ(desktop_bounds, w->bounds());
+  w->Restore();
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
+  EXPECT_EQ(original_bounds, w->bounds());
+
+  // Fullscreen twice
+  w->Fullscreen();
+  w->Fullscreen();
+  EXPECT_EQ(desktop_bounds, w->bounds());
+  w->Restore();
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
+  EXPECT_EQ(original_bounds, w->bounds());
+}
+
+TEST_F(WindowTest, Maximized) {
+  gfx::Rect original_bounds = gfx::Rect(100, 100, 100, 100);
+  gfx::Rect desktop_bounds(Desktop::GetInstance()->GetSize());
+  scoped_ptr<Window> w(CreateTestWindowWithDelegate(
+      NULL, 1, original_bounds, NULL));
+  EXPECT_EQ(original_bounds, w->bounds());
+
+  // Maximized
+  w->Maximize();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, w->show_state());
+  gfx::Rect max_bounds(desktop_bounds);
+  max_bounds.Inset(10, 10, 10, 10);
+  EXPECT_EQ(max_bounds, w->bounds());
+  w->Restore();
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
+  EXPECT_EQ(original_bounds, w->bounds());
+
+  // Maximize twice
+  w->Maximize();
+  w->Maximize();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, w->show_state());
+  EXPECT_EQ(max_bounds, w->bounds());
+  w->Restore();
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
+  EXPECT_EQ(original_bounds, w->bounds());
+
+  // Maximized -> Fullscreen -> Maximized -> Normal
+  w->Maximize();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, w->show_state());
+  EXPECT_EQ(max_bounds, w->bounds());
+  w->Fullscreen();
+  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, w->show_state());
+  EXPECT_EQ(desktop_bounds, w->bounds());
+  w->Maximize();
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, w->show_state());
+  EXPECT_EQ(max_bounds, w->bounds());
+  w->Restore();
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, w->show_state());
+  EXPECT_EQ(original_bounds, w->bounds());
 }
 
 }  // namespace internal

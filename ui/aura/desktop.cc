@@ -71,6 +71,10 @@ void Desktop::SetSize(const gfx::Size& size) {
   host_->SetSize(size);
 }
 
+gfx::Size Desktop::GetSize() const {
+  return host_->GetSize();
+}
+
 void Desktop::SetCursor(gfx::NativeCursor cursor) {
   host_->SetCursor(cursor);
 }

@@ -41,7 +41,7 @@ void DesktopHostWin::Show() {
   ShowWindow(hwnd(), SW_SHOWNORMAL);
 }
 
-gfx::Size DesktopHostWin::GetSize() {
+gfx::Size DesktopHostWin::GetSize() const {
   RECT r;
   GetClientRect(hwnd(), &r);
   return gfx::Rect(r).size();

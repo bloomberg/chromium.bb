@@ -50,6 +50,12 @@ bool ToplevelWindowEventFilter::OnMouseEvent(Window* target,
       }
       break;
     case ui::ET_MOUSE_RELEASED:
+      if (window_component_ == HTMAXBUTTON) {
+        if (target->show_state() == ui::SHOW_STATE_MAXIMIZED)
+          target->Restore();
+        else
+          target->Maximize();
+      }
       window_component_ = HTNOWHERE;
       break;
     default:

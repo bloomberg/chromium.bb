@@ -13,6 +13,16 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace {
+
+gfx::Rect GetMonitorAreaOrWorkAreaNearestPoint(const gfx::Point& point,
+                                               bool work_area) {
+  // TODO(oshima): Take point/work_area into account. Support multiple monitors.
+  return gfx::Rect(aura::Desktop::GetInstance()->GetSize());
+}
+
+}  // namespace
+
 namespace gfx {
 
 // static
@@ -28,22 +38,16 @@ gfx::Point Screen::GetCursorScreenPoint() {
 
 // static
 gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
-  // TODO(oshima): Take window into account. Support multiple monitors.
-  aura::Window* desktop_window = aura::Desktop::GetInstance()->window();
-  return desktop_window->bounds();
+  gfx::Rect bounds = GetMonitorAreaNearestWindow(window);
+  // Emulate that a work area can be smaller than its monitor.
+  bounds.Inset(10, 10, 10, 10);
+  return bounds;
 }
 
 // static
 gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeWindow window) {
-  // TODO(oshima): Fix this for aura desktop.
-  return GetMonitorWorkAreaNearestWindow(window);
-}
-
-static gfx::Rect GetMonitorAreaOrWorkAreaNearestPoint(const gfx::Point& point,
-                                                      bool work_area) {
   // TODO(oshima): Take point/work_area into account. Support multiple monitors.
-  aura::Window* desktop_window = aura::Desktop::GetInstance()->window();
-  return desktop_window->bounds();
+  return gfx::Rect(aura::Desktop::GetInstance()->GetSize());
 }
 
 // static

@@ -234,6 +234,9 @@ void WindowTypeLauncher::ExecuteCommand(int id) {
     case COMMAND_TILE_WINDOWS:
       TileWindows();
       break;
+    case COMMAND_TOGGLE_FULLSCREEN:
+      GetWidget()->SetFullscreen(!GetWidget()->IsFullscreen());
+      break;
     default:
       break;
   }
@@ -245,6 +248,8 @@ void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
   MenuItemView* root = new MenuItemView(this);
   root->AppendMenuItem(COMMAND_NEW_WINDOW, L"New Window", MenuItemView::NORMAL);
   root->AppendMenuItem(COMMAND_TILE_WINDOWS, L"Tile Windows",
+                       MenuItemView::NORMAL);
+  root->AppendMenuItem(COMMAND_TOGGLE_FULLSCREEN, L"Toggle FullScreen",
                        MenuItemView::NORMAL);
   // MenuRunner takes ownership of root.
   menu_runner_.reset(new MenuRunner(root));

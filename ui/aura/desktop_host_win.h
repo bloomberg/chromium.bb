@@ -24,7 +24,7 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   virtual void SetDesktop(Desktop* desktop) OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
 

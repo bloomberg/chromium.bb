@@ -16,6 +16,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/screen.h"
 
 namespace aura {
 
@@ -23,6 +24,7 @@ using internal::RootWindow;
 
 Window::Window(WindowDelegate* delegate)
     : delegate_(delegate),
+      show_state_(ui::SHOW_STATE_NORMAL),
       parent_(NULL),
       id_(-1),
       user_data_(NULL),
@@ -97,10 +99,12 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
     layout_manager_->OnWindowResized();
   if (delegate_)
     delegate_->OnBoundsChanged(old_bounds, new_bounds);
-  if (was_move)
-    SchedulePaintInRect(gfx::Rect());
-  else
-    SchedulePaint();
+  if (IsVisible()) {
+    if (was_move)
+      layer()->ScheduleDraw();
+    else
+      layer()->SchedulePaint(gfx::Rect());
+  }
 }
 
 const gfx::Rect& Window::bounds() const {
@@ -124,6 +128,24 @@ void Window::SetParent(Window* parent) {
     parent->AddChild(this);
   else
     Desktop::GetInstance()->default_parent()->AddChild(this);
+}
+
+void Window::Restore() {
+  if (show_state_ != ui::SHOW_STATE_NORMAL) {
+    show_state_ = ui::SHOW_STATE_NORMAL;
+    SetBounds(restore_bounds_);
+    restore_bounds_.SetRect(0, 0, 0, 0);
+  }
+}
+
+void Window::Maximize() {
+  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_MAXIMIZED))
+    SetBounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(this));
+}
+
+void Window::Fullscreen() {
+  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_FULLSCREEN))
+    SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(this));
 }
 
 bool Window::IsToplevelWindowContainer() const {
@@ -315,6 +337,16 @@ bool Window::StopsEventPropagation() const {
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
   delegate_->OnPaint(canvas);
+}
+
+bool Window::UpdateShowStateAndRestoreBounds(
+    ui::WindowShowState new_show_state) {
+  if (show_state_ == new_show_state)
+    return false;
+  show_state_ = new_show_state;
+  if (restore_bounds_.IsEmpty())
+    restore_bounds_ = bounds();
+  return true;
 }
 
 }  // namespace aura

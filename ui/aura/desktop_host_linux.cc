@@ -28,7 +28,7 @@ class DesktopHostLinux : public DesktopHost {
   virtual void SetDesktop(Desktop* desktop) OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
 
@@ -116,7 +116,7 @@ gfx::AcceleratedWidget DesktopHostLinux::GetAcceleratedWidget() {
 void DesktopHostLinux::Show() {
 }
 
-gfx::Size DesktopHostLinux::GetSize() {
+gfx::Size DesktopHostLinux::GetSize() const {
   return bounds_.size();
 }
 

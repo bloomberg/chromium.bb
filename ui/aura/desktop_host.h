@@ -39,7 +39,7 @@ class DesktopHost : public MessageLoop::Dispatcher {
   virtual void Show() = 0;
 
   // Gets/Sets the size of the DesktopHost.
-  virtual gfx::Size GetSize() = 0;
+  virtual gfx::Size GetSize() const = 0;
   virtual void SetSize(const gfx::Size& size) = 0;
 
   // Sets the currently displayed cursor.

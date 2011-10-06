@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/native_widget_types.h"
@@ -64,6 +65,18 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void Hide();
   // Returns true if this window and all its ancestors are visible.
   bool IsVisible() const;
+
+  // Maximize the window.
+  void Maximize();
+
+  // Go into fullscreen mode.
+  void Fullscreen();
+
+  // Restore the wnidow to its original bounds.
+  void Restore();
+
+  // Returns the window's show state.
+  ui::WindowShowState show_state() const { return show_state_; }
 
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.
@@ -189,7 +202,16 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
 
+  // Update the show state and restore bounds. Returns false
+  // if |new_show_state| is same as current show state.
+  bool UpdateShowStateAndRestoreBounds(ui::WindowShowState new_show_state);
+
   WindowDelegate* delegate_;
+
+  ui::WindowShowState show_state_;
+
+  // The original bounds of a maximized/fullscreen window.
+  gfx::Rect restore_bounds_;
 
   scoped_ptr<ui::Layer> layer_;
 

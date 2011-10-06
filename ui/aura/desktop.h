@@ -42,6 +42,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
 
   // Sets the size of the desktop.
   void SetSize(const gfx::Size& size);
+  gfx::Size GetSize() const;
 
   // Shows the specified cursor.
   void SetCursor(gfx::NativeCursor cursor);
