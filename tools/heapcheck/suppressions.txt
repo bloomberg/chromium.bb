@@ -1660,3 +1660,10 @@
    ...
    fun:AppNotificationManager::Init
 }
+{
+   bug_99301
+   Heapcheck:Leak
+   ...
+   fun:ChromeV8ContextSet_*_Test::TestBody
+}
+

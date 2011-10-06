@@ -1711,13 +1711,6 @@
    fun:-[BookmarkBarController initWithBrowser:initialWidth:delegate:resizeDelegate:]
 }
 {
-   bug_93038
-   Memcheck:Cond
-   fun:-[AvatarMenuBubbleController performLayout]
-   ...
-   fun:*AvatarMenuBubbleControllerTest*
-}
-{
    bug_93711_a
    Memcheck:Leak
    fun:malloc
