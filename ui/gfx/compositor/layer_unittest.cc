@@ -506,36 +506,6 @@ TEST_F(LayerWithNullDelegateTest, LayerTextureNonEmptySchedulePaint) {
   EXPECT_TRUE(layer->texture() != NULL);
 }
 
-// Verifies that a hole in a layer does not intersect non completely-opaque
-// layers.
-TEST_F(LayerWithNullDelegateTest, HoleDoesNotIntersectNonOpaque) {
-  scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
-  scoped_ptr<Layer> child1(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
-  parent->Add(child1.get());
-
-  scoped_ptr<Layer> child2(CreateLayer(Layer::LAYER_HAS_NO_TEXTURE));
-  child2->SetFillsBoundsOpaquely(false);
-  parent->Add(child2.get());
-  Draw();
-
-  // Ensure largest non intersecting hole picked.
-  // largest fragment on bottom.
-  child2->SetBounds(gfx::Rect(20, 20, 60, 80));
-  EXPECT_EQ(gfx::Rect(50, 100, 100, 50), parent->hole_rect());
-
-  // largest fragment on right.
-  child2->SetBounds(gfx::Rect(20, 20, 60, 200));
-  EXPECT_EQ(gfx::Rect(80, 50, 70, 100), parent->hole_rect());
-
-  // largest fragment on top.
-  child2->SetBounds(gfx::Rect(130, 110, 50, 50));
-  EXPECT_EQ(gfx::Rect(50, 50, 100, 60), parent->hole_rect());
-
-  // largest fragment on left.
-  child2->SetBounds(gfx::Rect(130, 20, 50, 200));
-  EXPECT_EQ(gfx::Rect(50, 50, 80, 100), parent->hole_rect());
-}
-
 // Verifies that when there are many potential holes, the largest one is picked.
 TEST_F(LayerWithNullDelegateTest, LargestHole) {
   scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
@@ -559,10 +529,34 @@ TEST_F(LayerWithNullDelegateTest, NoHoleWithTransform) {
   EXPECT_TRUE(!parent->hole_rect().IsEmpty());
 
   ui::Transform t;
-  t.SetRotate(90.0f);
+  t.SetTranslate(-75, -75);
+  t.ConcatRotate(45.0f);
+  t.ConcatTranslate(75, 75);
   child->SetTransform(t);
 
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), parent->hole_rect());
+}
+
+// Verifies that if the child layer is rotated by a multiple of ninety degrees
+// we punch a hole
+TEST_F(LayerWithNullDelegateTest, HoleWithNinetyDegreeTransforms) {
+  scoped_ptr<Layer> parent(CreateTextureLayer(gfx::Rect(0, 0, 400, 400)));
+  scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 50, 50)));
+  parent->Add(child.get());
+
+  EXPECT_TRUE(!parent->hole_rect().IsEmpty());
+
+  for (int i = -4; i <= 4; ++i) {
+    ui::Transform t;
+    t.SetTranslate(-75, -75);
+    t.ConcatRotate(90.0f * i);
+    t.ConcatTranslate(75, 75);
+    child->SetTransform(t);
+
+    gfx::Rect target_rect = child->bounds();
+    child->transform().TransformRect(&target_rect);
+    EXPECT_EQ(target_rect, parent->hole_rect());
+  }
 }
 
 // Create this hierarchy:
