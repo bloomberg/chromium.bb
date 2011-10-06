@@ -2131,6 +2131,37 @@
     },
     {
       "api_calls": [
+        "chrome.experimental.permissions.contains",
+        "chrome.experimental.permissions.onAdded",
+        "chrome.experimental.permissions.onRemoved",
+        "chrome.experimental.permissions.remove",
+        "chrome.experimental.permissions.request",
+        "chrome.tabs.create"
+      ],
+      "description": "Sample demonstration of the optional permissions API.",
+      "features": [
+        "browser_action",
+        "experimental",
+        "options_page"
+      ],
+      "icon": "images\/icon.png",
+      "id": "e8ac89b4015052cf11436985399129c927f972aa",
+      "name": "Top Chrome Extension Questions",
+      "path": "examples\/api\/permissions\/extension-questions\/",
+      "protocols": [],
+      "search_string": "TOP CHROME EXTENSION QUESTIONS SAMPLE DEMONSTRATION OF THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.EXPERIMENTAL.PERMISSIONS.CONTAINS CHROME.EXPERIMENTAL.PERMISSIONS.ONADDED CHROME.EXPERIMENTAL.PERMISSIONS.ONREMOVED CHROME.EXPERIMENTAL.PERMISSIONS.REMOVE CHROME.EXPERIMENTAL.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
+      "source_files": [
+        "manifest.json",
+        "options.html",
+        "options.js",
+        "popup.html",
+        "popup.js"
+      ],
+      "source_hash": "81cd65a0db063bc70f4c1228093d74d7b5542321",
+      "zip_path": "examples\/api\/permissions\/extension-questions.zip"
+    },
+    {
+      "api_calls": [
         "chrome.history.getVisits",
         "chrome.history.search",
         "chrome.tabs.create"
