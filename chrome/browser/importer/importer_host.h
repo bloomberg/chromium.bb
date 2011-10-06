@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,7 +21,6 @@
 class FirefoxProfileLock;
 class Importer;
 class Profile;
-class Task;
 
 namespace importer {
 class ImporterProgressObserver;
@@ -101,15 +101,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // Profile we're importing from.
   Profile* profile_;
 
-  // TODO(mirandac): |task_| and |importer_| should be private. Can't just put
-  // them there without changing the order of construct/destruct, so do this
-  // after main CL has been committed.
-  // The task is the process of importing settings from other browsers.
-  Task* task_;
-
-  // The importer used in the task.
-  Importer* importer_;
-
   // True if we're waiting for the model to finish loading.
   bool waiting_for_bookmarkbar_model_;
 
@@ -147,6 +138,12 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
+
+  // The task is the process of importing settings from other browsers.
+  base::Closure task_;
+
+  // The importer used in the task.
+  Importer* importer_;
 
   // True if UI is not to be shown.
   bool headless_;

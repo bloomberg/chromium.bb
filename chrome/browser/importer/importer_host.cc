@@ -35,11 +35,10 @@
 
 ImporterHost::ImporterHost()
     : profile_(NULL),
-      task_(NULL),
-      importer_(NULL),
       waiting_for_bookmarkbar_model_(false),
       installed_bookmark_observer_(false),
       is_source_readable_(true),
+      importer_(NULL),
       headless_(false),
       parent_window_(NULL),
       observer_(NULL) {
@@ -65,10 +64,9 @@ void ImporterHost::OnImportLockDialogEnd(bool is_continue) {
       ShowWarningDialog();
     }
   } else {
-    // User chose to skip the import process. We should delete
-    // the task and notify the ImporterHost to finish.
-    delete task_;
-    task_ = NULL;
+    // User chose to skip the import process. We should reset the |task_| and
+    // notify the ImporterHost to finish.
+    task_ = base::Closure();
     importer_ = NULL;
     NotifyImportEnded();
   }
@@ -138,8 +136,8 @@ void ImporterHost::StartImportSettings(
 
   scoped_refptr<InProcessImporterBridge> bridge(
       new InProcessImporterBridge(writer_.get(), this));
-  task_ = NewRunnableMethod(
-      importer_, &Importer::StartImport, source_profile, items, bridge);
+  task_ = base::Bind(
+      &Importer::StartImport, importer_, source_profile, items, bridge);
 
   CheckForFirefoxLock(source_profile, items, first_run);
 
