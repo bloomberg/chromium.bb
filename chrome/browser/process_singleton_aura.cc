@@ -7,7 +7,7 @@
 // Look for a Chrome instance that uses the same profile directory.
 ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     :
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     window_(NULL),
 #endif
     locked_(false), foreground_window_(NULL) {

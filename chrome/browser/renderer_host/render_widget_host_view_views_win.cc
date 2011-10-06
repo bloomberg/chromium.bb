@@ -10,17 +10,15 @@
 #endif
 #include "views/widget/widget.h"
 
+#if !defined(USE_AURA)
 // static
 RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
     RenderWidgetHost* widget) {
-#if !defined(USE_AURA)
   if (views::Widget::IsPureViews())
-#endif
     return new RenderWidgetHostViewViews(widget);
-#if !defined(USE_AURA)
   return new RenderWidgetHostViewWin(widget);
-#endif
 }
+#endif
 
 void RenderWidgetHostViewViews::UpdateCursor(const WebCursor& cursor) {
 }

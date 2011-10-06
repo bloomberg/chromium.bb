@@ -78,7 +78,7 @@ class ProcessSingleton : public base::NonThreadSafe {
       int timeout_seconds);
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Used in specific cases to let us know that there is an existing instance
   // of Chrome running with this profile. In general, you should not use this
   // function. Instead consider using NotifyOtherProcessOrCreate().

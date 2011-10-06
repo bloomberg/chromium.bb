@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/render_message_filter.h"
 
+#include "ui/gfx/rect.h"
+
 // TODO(shess): Provide a mapping from reply_msg->routing_id() to HWND
 // so that we can eliminate the NativeViewId parameter.
 #if defined(OS_WIN)

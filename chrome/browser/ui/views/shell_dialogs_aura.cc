@@ -10,5 +10,9 @@
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(OS_WIN)
+  return NULL;
+#else
   return new FileManagerDialog(listener);
+#endif
 }

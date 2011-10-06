@@ -748,7 +748,7 @@ void WebPluginProxy::URLRedirectResponse(bool allow, int resource_id) {
   Send(new PluginHostMsg_URLRedirectResponse(route_id_, allow, resource_id));
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 void WebPluginProxy::UpdateIMEStatus() {
   // Retrieve the IME status from a plug-in and send it to a renderer process
   // when the plug-in has updated it.

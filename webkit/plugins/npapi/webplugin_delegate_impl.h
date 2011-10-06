@@ -55,7 +55,7 @@ class QuickDrawDrawingManager;
 #endif  // NP_NO_QUICKDRAW
 #endif  // OS_MACOSX
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 class WebPluginIMEWin;
 #endif  // OS_WIN
 
@@ -147,7 +147,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Informs the plugin that the view it is in has gained or lost focus.
   void SetContentAreaHasFocus(bool has_focus);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Informs the plug-in that an IME has changed its status.
   void ImeCompositionUpdated(const string16& text,
                              const std::vector<int>& clauses,
@@ -331,7 +331,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   WebPlugin* plugin_;
   scoped_refptr<PluginInstance> instance_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Original wndproc before we subclassed.
   WNDPROC plugin_wnd_proc_;
 
@@ -371,7 +371,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   gfx::Rect clip_rect_;
   int quirks_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Windowless plugins don't have keyboard focus causing issues with the
   // plugin not receiving keyboard events if the plugin enters a modal
   // loop like TrackPopupMenuEx or MessageBox, etc.

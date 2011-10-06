@@ -168,7 +168,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   virtual void URLRedirectResponse(bool allow, int resource_id);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Retrieves the IME status from a windowless plug-in and sends it to a
   // renderer process. A renderer process will convert the coordinates from
   // local to the window coordinates and send the converted coordinates to a

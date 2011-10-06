@@ -8,11 +8,13 @@
 
 namespace printing {
 
-void PrintedDocument::RenderPrintedPage(
-    const PrintedPage& page, PrintingContext* context) const {
+#if defined(OS_POSIX)
+void PrintedDocument::RenderPrintedPage(const PrintedPage& page,
+                                        PrintingContext* context) const {
   // TODO(saintlou): This a stub to allow us to build under Aura.
   // See issue: http://crbug.com/99282
   NOTIMPLEMENTED();
 }
+#endif
 
 }  // namespace printing

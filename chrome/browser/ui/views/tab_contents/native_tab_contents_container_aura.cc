@@ -96,13 +96,3 @@ gfx::NativeViewAccessible
   NOTIMPLEMENTED();
   return View::GetNativeViewAccessible();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeTabContentsContainer, public:
-
-// static
-NativeTabContentsContainer* NativeTabContentsContainer::CreateNativeContainer(
-    TabContentsContainer* container) {
-  return new NativeTabContentsContainerViews(container);
-  // TODO(beng): return new NativeTabContentsContainerAura(container);
-}

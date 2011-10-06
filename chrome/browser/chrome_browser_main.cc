@@ -200,7 +200,8 @@
 #endif
 
 #if defined(USE_AURA)
-#include "chrome/browser/ui/views/aura/aura_init.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura_shell/shell_factory.h"
 #include "ui/aura/desktop.h"
 #endif
 
@@ -1367,7 +1368,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
 #if defined(USE_AURA)
-  browser::InitAuraDesktop();
+  aura_shell::InitDesktopWindow();
 #elif defined(TOOLKIT_VIEWS)
   views::Widget::SetPureViews(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));

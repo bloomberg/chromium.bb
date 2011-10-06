@@ -500,14 +500,14 @@
         }],
         ['touchui==0', {
           'sources!': [
-            'controls/menu/native_menu_views.cc',
-            'controls/menu/native_menu_views.h',
             'touchui/touch_selection_controller_impl.cc',
             'touchui/touch_selection_controller_impl.h',
           ],
         }],
         ['touchui==0 and use_aura==0', {
           'sources!': [
+            'controls/menu/native_menu_views.cc',
+            'controls/menu/native_menu_views.h',
             'widget/tooltip_manager_views.cc',
           ],
         }],

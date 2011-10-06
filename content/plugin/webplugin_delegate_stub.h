@@ -81,7 +81,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   void OnGetFormValue(string16* value, bool* success);
 
   void OnSetContentAreaFocus(bool has_focus);
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   void OnImeCompositionUpdated(const string16& text,
                                const std::vector<int>& clauses,
                                const std::vector<int>& target,
