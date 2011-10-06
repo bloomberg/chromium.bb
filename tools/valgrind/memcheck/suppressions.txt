@@ -4687,6 +4687,25 @@
    fun:_ZN9OptionsUI18InitializeHandlersEv
    fun:_ZN18CoreOptionsHandler16HandleInitializeEPKN4base9ListValueE
 }
+{
+   bug_99308
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZL9toCStringRK9_NPString
+   fun:_ZL15testPostURLFileP12PluginObjectPK10_NPVariantjPS1_
+   fun:_ZL12pluginInvokeP8NPObjectPvPK10_NPVariantjPS2_
+   fun:_ZN7WebCoreL18npObjectInvokeImplERKN2v89ArgumentsENS_18InvokeFunctionTypeE
+}
+{
+   bug_99321
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6WebKit12CCThreadImpl6createEPNS_9WebThreadE
+   fun:_ZN6WebKit13WebCompositor9setThreadEPNS_9WebThreadE
+   fun:_ZN11WebViewHostC1EP9TestShell
+   fun:_ZN9TestShell15createNewWindowERKN6WebKit6WebURLEP16DRTDevToolsAgent
+}
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 {
