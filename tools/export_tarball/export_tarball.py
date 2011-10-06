@@ -29,7 +29,6 @@ NONESSENTIAL_DIRS = (
     'courgette/testdata',
     'data',
     'native_client/src/trusted/service_runtime/testdata',
-    'native_client/tests',
     'src/chrome/test/data',
     'o3d/documentation',
     'o3d/samples',
