@@ -48,9 +48,11 @@ class ChromeV8Context {
   // context is in the process of being destroyed.
   RenderView* GetRenderView() const;
 
-  // Fires the onload event on the chromeHidden object.
-  void FireOnLoadEvent(bool is_extension_process,
-                       bool is_incognito_process) const;
+  // Fires the onload and onunload events on the chromeHidden object.
+  // TODO(aa): Does these make more sense with EventBindings?
+  void DispatchOnLoadEvent(bool is_extension_process,
+                           bool is_incognito_process) const;
+  void DispatchOnUnloadEvent() const;
 
   // Call the named method of the chromeHidden object in this context.
   // The function can be a sub-property like "Port.dispatchOnMessage". Returns

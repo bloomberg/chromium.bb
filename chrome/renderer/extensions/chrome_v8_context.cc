@@ -14,16 +14,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 
-void ChromeV8Context::FireOnLoadEvent(bool is_extension_process,
-                                      bool is_incognito_process) const {
-  v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> argv[3];
-  argv[0] = v8::String::New(extension_id_.c_str());
-  argv[1] = v8::Boolean::New(is_extension_process);
-  argv[2] = v8::Boolean::New(is_incognito_process);
-  CallChromeHiddenMethod("dispatchOnLoad", arraysize(argv), argv);
-}
-
 ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                  WebKit::WebFrame* web_frame,
                                  const std::string& extension_id)
@@ -38,8 +28,6 @@ ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
 ChromeV8Context::~ChromeV8Context() {
   VLOG(1) << "Destroyed context for extension\n"
           << "  id:    " << extension_id_;
-  v8::HandleScope handle_scope;
-  CallChromeHiddenMethod("dispatchOnUnload", 0, NULL);
   v8_context_.Dispose();
 }
 
@@ -71,4 +59,19 @@ v8::Handle<v8::Value> ChromeV8Context::CallChromeHiddenMethod(
   CHECK(!value.IsEmpty() && value->IsFunction());
   return v8::Local<v8::Function>::Cast(value)->Call(
       v8::Object::New(), argc, argv);
+}
+
+void ChromeV8Context::DispatchOnLoadEvent(bool is_extension_process,
+                                          bool is_incognito_process) const {
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Value> argv[3];
+  argv[0] = v8::String::New(extension_id_.c_str());
+  argv[1] = v8::Boolean::New(is_extension_process);
+  argv[2] = v8::Boolean::New(is_incognito_process);
+  CallChromeHiddenMethod("dispatchOnLoad", arraysize(argv), argv);
+}
+
+void ChromeV8Context::DispatchOnUnloadEvent() const {
+  v8::HandleScope handle_scope;
+  CallChromeHiddenMethod("dispatchOnUnload", 0, NULL);
 }

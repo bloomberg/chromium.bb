@@ -43,24 +43,7 @@ TEST(ChromeV8ContextSet, Lifecycle) {
 
   // After removal, the context should be marked for destruction.
   EXPECT_FALSE(context->web_frame());
-}
 
-TEST(ChromeV8ContextSet, RemoveByV8Context) {
-  MessageLoop loop;
-
-  ChromeV8ContextSet context_set;
-
-  v8::HandleScope handle_scope;
-  v8::Handle<v8::Context> v8_context(v8::Context::New());
-
-  WebKit::WebFrame* frame = reinterpret_cast<WebKit::WebFrame*>(1);
-  std::string extension_id = "00000000000000000000000000000000";
-  ChromeV8Context* context =
-      new ChromeV8Context(v8_context, frame, extension_id);
-
-  context_set.Add(context);
-  EXPECT_EQ(1, context_set.size());
-  context_set.RemoveByV8Context(context->v8_context());
-  EXPECT_EQ(0, context_set.size());
-  EXPECT_FALSE(context->web_frame());
+  // Run loop to do the actual deletion.
+  loop.RunAllPending();
 }

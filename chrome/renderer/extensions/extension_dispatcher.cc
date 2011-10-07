@@ -246,14 +246,20 @@ void ExtensionDispatcher::DidCreateScriptContext(
   ChromeV8Context* context =
       new ChromeV8Context(v8_context, frame, extension_id);
   v8_context_set_.Add(context);
-  context->FireOnLoadEvent(is_extension_process_,
-                           ChromeRenderProcessObserver::is_incognito_process());
+  context->DispatchOnLoadEvent(
+      is_extension_process_,
+      ChromeRenderProcessObserver::is_incognito_process());
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
 void ExtensionDispatcher::WillReleaseScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
-  v8_context_set_.RemoveByV8Context(v8_context);
+  ChromeV8Context* context = v8_context_set_.GetByV8Context(v8_context);
+  if (!context)
+    return;
+
+  context->DispatchOnUnloadEvent();
+  v8_context_set_.Remove(context);
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 

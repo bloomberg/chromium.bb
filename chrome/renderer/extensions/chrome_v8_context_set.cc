@@ -75,13 +75,6 @@ void ChromeV8ContextSet::Remove(ChromeV8Context* context) {
   }
 }
 
-void ChromeV8ContextSet::RemoveByV8Context(
-    v8::Handle<v8::Context> v8_context) {
-  ChromeV8Context* context = GetByV8Context(v8_context);
-  if (context)
-    Remove(context);
-}
-
 ChromeV8ContextSet::ContextSet ChromeV8ContextSet::GetAll()
     const {
   return contexts_;

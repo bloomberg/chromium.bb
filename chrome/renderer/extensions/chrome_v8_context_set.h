@@ -45,7 +45,6 @@ class ChromeV8ContextSet {
   // it asynchronously. After this call returns the context object will still
   // be valid, but its frame() pointer will be cleared.
   void Remove(ChromeV8Context* context);
-  void RemoveByV8Context(v8::Handle<v8::Context> context);
 
   // Returns a copy to protect against changes.
   typedef std::set<ChromeV8Context*> ContextSet;

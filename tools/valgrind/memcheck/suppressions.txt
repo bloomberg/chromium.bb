@@ -4654,18 +4654,6 @@
    fun:_ZN22AppNotificationStorage6CreateERK8FilePath
 }
 {
-   bug_99301_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN*ChromeV8ContextSet_*_Test8TestBodyEv
-}
-{
-   bug_99301_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN*ExtensionBindingsContextSet_*_Test8TestBodyEv
-}
-{
    bug_99307
    Memcheck:Value4
    fun:modp_b64_encode
