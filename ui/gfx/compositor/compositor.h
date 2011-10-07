@@ -25,12 +25,7 @@ class CompositorObserver;
 class Layer;
 
 struct TextureDrawParams {
-  TextureDrawParams()
-      : blend(false),
-        has_valid_alpha_channel(false),
-        opacity(1.0f),
-        vertically_flipped(false) {
-  }
+  TextureDrawParams();
 
   // The transform to be applied to the texture.
   ui::Transform transform;

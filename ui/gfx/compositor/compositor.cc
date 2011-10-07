@@ -9,6 +9,13 @@
 
 namespace ui {
 
+TextureDrawParams::TextureDrawParams()
+    : blend(false),
+      has_valid_alpha_channel(false),
+      opacity(1.0f),
+      vertically_flipped(false) {
+}
+
 Compositor::Compositor(CompositorDelegate* delegate, const gfx::Size& size)
     : delegate_(delegate),
       size_(size),
