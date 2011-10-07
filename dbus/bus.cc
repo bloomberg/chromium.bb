@@ -390,7 +390,6 @@ bool Bus::SetUpAsyncOperations() {
                                                      NULL);
   CHECK(success) << "Unable to allocate memory";
 
-  // TODO(satorux): Timeout is not yet implemented.
   success = dbus_connection_set_timeout_functions(connection_,
                                                   &Bus::OnAddTimeoutThunk,
                                                   &Bus::OnRemoveTimeoutThunk,

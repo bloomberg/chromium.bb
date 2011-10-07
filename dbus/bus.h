@@ -383,6 +383,9 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // AssertOnOriginThread().
   virtual void AssertOnDBusThread();
 
+  // Returns true if the bus is connected to D-Bus.
+  bool is_connected() { return connection_ != NULL; }
+
  protected:
   // This is protected, so we can define sub classes.
   virtual ~Bus();

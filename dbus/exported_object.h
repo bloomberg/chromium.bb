@@ -123,7 +123,14 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
 
   // Runs the method. Helper function for HandleMessage().
   void RunMethod(MethodCallCallback method_call_callback,
-                 MethodCall* method_call);
+                 MethodCall* method_call,
+                 base::TimeTicks start_time);
+
+  // Called on completion of the method run from RunMethod().
+  // Takes ownership of |method_call| and |response|.
+  void OnMethodCompleted(MethodCall* method_call,
+                         Response* response,
+                         base::TimeTicks start_time);
 
   // Called when the object is unregistered.
   void OnUnregistered(DBusConnection* connection);
@@ -141,8 +148,6 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
   std::string service_name_;
   std::string object_path_;
   bool object_is_registered_;
-  dbus::Response* response_from_method_;
-  base::WaitableEvent on_method_is_called_;
 
   // The method table where keys are absolute method names (i.e. interface
   // name + method name), and values are the corresponding callbacks.

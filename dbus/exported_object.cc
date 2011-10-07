@@ -39,10 +39,7 @@ ExportedObject::ExportedObject(Bus* bus,
     : bus_(bus),
       service_name_(service_name),
       object_path_(object_path),
-      object_is_registered_(false),
-      response_from_method_(NULL),
-      on_method_is_called_(false /* manual_reset */,
-                           false /* initially_signaled */) {
+      object_is_registered_(false) {
 }
 
 ExportedObject::~ExportedObject() {
@@ -218,67 +215,76 @@ DBusHandlerResult ExportedObject::HandleMessage(
   }
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  Response* response = NULL;
   if (bus_->HasDBusThread()) {
-    response_from_method_ = NULL;
     // Post a task to run the method in the origin thread.
     bus_->PostTaskToOriginThread(FROM_HERE,
                                  base::Bind(&ExportedObject::RunMethod,
                                             this,
                                             iter->second,
-                                            method_call.get()));
-    // Wait until the method call is done. Blocking is not desirable but we
-    // should return the response to the dbus-daemon in the function, so we
-    // don't have a choice. We wait in the D-Bus thread, so it should be ok.
-    {
-      // We need a timeout here in case the method gets stuck.
-      const int kTimeoutSecs = 10;
-      const base::TimeDelta timeout(
-          base::TimeDelta::FromSeconds(kTimeoutSecs));
-
-      const bool signaled = on_method_is_called_.TimedWait(timeout);
-      // Method not called is a fatal error. The method is likely stuck
-      // infinitely in the origin thread. No way to stop it from here.
-      CHECK(signaled) << "Method " << absolute_method_name << " not called";
-    }
-    response = response_from_method_;
+                                            method_call.release(),
+                                            start_time));
   } else {
     // If the D-Bus thread is not used, just call the method directly. We
     // don't need the complicated logic to wait for the method call to be
     // complete.
-    response = iter->second.Run(method_call.get());
+    // |response| will be deleted in OnMethodCompleted().
+    Response* response = iter->second.Run(method_call.get());
+    OnMethodCompleted(method_call.release(), response, start_time);
   }
+
+  // It's valid to say HANDLED here, and send a method response at a later
+  // time from OnMethodCompleted() asynchronously.
+  return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+void ExportedObject::RunMethod(MethodCallCallback method_call_callback,
+                               MethodCall* method_call,
+                               base::TimeTicks start_time) {
+  bus_->AssertOnOriginThread();
+
+  Response* response = method_call_callback.Run(method_call);
+  bus_->PostTaskToDBusThread(FROM_HERE,
+                             base::Bind(&ExportedObject::OnMethodCompleted,
+                                        this,
+                                        method_call,
+                                        response,
+                                        start_time));
+}
+
+void ExportedObject::OnMethodCompleted(MethodCall* method_call,
+                                       Response* response,
+                                       base::TimeTicks start_time) {
+  bus_->AssertOnDBusThread();
+  scoped_ptr<MethodCall> method_call_deleter(method_call);
+  scoped_ptr<Response> response_deleter(response);
+
   // Record if the method call is successful, or not. 1 if successful.
   UMA_HISTOGRAM_ENUMERATION("DBus.ExportedMethodHandleSuccess",
                             response ? 1 : 0,
                             kSuccessRatioHistogramMaxValue);
 
+  // Check if the bus is still connected. If the method takes long to
+  // complete, the bus may be shut down meanwhile.
+  if (!bus_->is_connected())
+    return;
+
   if (!response) {
     // Something bad happened in the method call.
     scoped_ptr<dbus::ErrorResponse> error_response(
-        ErrorResponse::FromMethodCall(method_call.get(),
-                                      DBUS_ERROR_FAILED,
-                                      "error occurred in " + member));
-    dbus_connection_send(connection, error_response->raw_message(), NULL);
-    return DBUS_HANDLER_RESULT_HANDLED;
+        ErrorResponse::FromMethodCall(
+            method_call,
+            DBUS_ERROR_FAILED,
+            "error occurred in " + method_call->GetMember()));
+    bus_->Send(error_response->raw_message(), NULL);
+    return;
   }
 
   // The method call was successful.
-  dbus_connection_send(connection, response->raw_message(), NULL);
-  delete response;
+  bus_->Send(response->raw_message(), NULL);
+
   // Record time spent to handle the the method call. Don't include failures.
   UMA_HISTOGRAM_TIMES("DBus.ExportedMethodHandleTime",
                       base::TimeTicks::Now() - start_time);
-
-  return DBUS_HANDLER_RESULT_HANDLED;
-}
-
-void ExportedObject::RunMethod(MethodCallCallback method_call_callback,
-                               MethodCall* method_call) {
-  bus_->AssertOnOriginThread();
-
-  response_from_method_ = method_call_callback.Run(method_call);
-  on_method_is_called_.Signal();
 }
 
 void ExportedObject::OnUnregistered(DBusConnection* connection) {
