@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/browser/avatar_button.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
@@ -22,17 +23,19 @@
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-@interface AvatarButton (Private)
+@interface AvatarButtonController (Private)
+- (void)setOpenMenuOnClick:(BOOL)flag;
 - (IBAction)buttonClicked:(id)sender;
 - (NSImage*)compositeImageWithShadow:(NSImage*)image;
 - (void)updateAvatar;
+- (void)addOrRemoveButtonIfNecessary;
 @end
 
-namespace AvatarButtonInternal {
+namespace AvatarButtonControllerInternal {
 
 class Observer : public NotificationObserver {
  public:
-  Observer(AvatarButton* button) : button_(button) {
+  Observer(AvatarButtonController* button) : button_(button) {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                    NotificationService::AllSources());
   }
@@ -44,6 +47,7 @@ class Observer : public NotificationObserver {
     switch (type) {
       case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
         [button_ updateAvatar];
+        [button_ addOrRemoveButtonIfNecessary];
         break;
       default:
         NOTREACHED();
@@ -54,20 +58,20 @@ class Observer : public NotificationObserver {
  private:
   NotificationRegistrar registrar_;
 
-  AvatarButton* button_;  // Weak; owns this.
+  AvatarButtonController* button_;  // Weak; owns this.
 };
 
-}  // namespace AvatarButtonInternal
+}  // namespace AvatarButtonControllerInternal
 
 namespace {
 
-const CGFloat kMenuYOffsetAdjust = 5.0;
+const CGFloat kMenuYOffsetAdjust = 1.0;
 
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@implementation AvatarButton
+@implementation AvatarButtonController
 
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
@@ -76,50 +80,56 @@ const CGFloat kMenuYOffsetAdjust = 5.0;
     // This view's single child view is a button with the same size and width as
     // the parent. Set it to automatically resize to the size of this view and
     // to scale the image.
-    button_.reset([[NSButton alloc] initWithFrame:[self bounds]]);
-    [button_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    [button_ setButtonType:NSMomentaryLightButton];
-    [button_ setImagePosition:NSImageOnly];
-    [[button_ cell] setImageScaling:NSImageScaleProportionallyDown];
-    [[button_ cell] setImagePosition:NSImageBelow];
+    scoped_nsobject<NSButton> button(
+        [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 20, 20)]);
+    [button setButtonType:NSMomentaryLightButton];
+    [button setImagePosition:NSImageOnly];
+    [[button cell] setImageScaling:NSImageScaleProportionallyDown];
+    [[button cell] setImagePosition:NSImageBelow];
     // AppKit sets a title for some reason when using |-setImagePosition:|.
-    [button_ setTitle:nil];
-    [[button_ cell] setImageDimsWhenDisabled:NO];
-    [[button_ cell] setHighlightsBy:NSContentsCellMask];
-    [[button_ cell] setShowsStateBy:NSContentsCellMask];
-    [button_ setBordered:NO];
-    [button_ setTarget:self];
-    [button_ setAction:@selector(buttonClicked:)];
-    [self addSubview:button_];
-    [self setOpenMenuOnClick:YES];
+    [button setTitle:nil];
+    [[button cell] setImageDimsWhenDisabled:NO];
+    [[button cell] setHighlightsBy:NSContentsCellMask];
+    [[button cell] setShowsStateBy:NSContentsCellMask];
+    [button setBordered:NO];
+    [button setTarget:self];
+    [button setAction:@selector(buttonClicked:)];
+    [self setView:button];
 
     if (browser_->profile()->IsOffTheRecord()) {
       [self setImage:gfx::GetCachedImageWithName(@"otr_icon.pdf")];
+      [self setOpenMenuOnClick:NO];
     } else {
-      observer_.reset(new AvatarButtonInternal::Observer(self));
+      observer_.reset(new AvatarButtonControllerInternal::Observer(self));
+      [self setOpenMenuOnClick:YES];
       [self updateAvatar];
     }
   }
   return self;
 }
 
-- (void)setOpenMenuOnClick:(BOOL)flag {
-  [button_ setEnabled:flag];
+- (NSButton*)buttonView {
+  return static_cast<NSButton*>(self.view);
 }
 
 - (void)setImage:(NSImage*)image {
-  [button_ setImage:[self compositeImageWithShadow:image]];
+  [self.buttonView setImage:[self compositeImageWithShadow:image]];
 }
 
 // Private /////////////////////////////////////////////////////////////////////
 
-- (IBAction)buttonClicked:(id)sender {
-  DCHECK_EQ(button_.get(), sender);
+- (void)setOpenMenuOnClick:(BOOL)flag {
+  [self.buttonView setEnabled:flag];
+}
 
-  NSPoint point = NSMakePoint(NSMidX([self bounds]),
-                              NSMinY([self bounds]) + kMenuYOffsetAdjust);
-  point = [self convertPoint:point toView:nil];
-  point = [[self window] convertBaseToScreen:point];
+- (IBAction)buttonClicked:(id)sender {
+  DCHECK_EQ(self.buttonView, sender);
+
+  NSView* view = self.view;
+  NSPoint point = NSMakePoint(NSMidX([view bounds]),
+                              NSMaxY([view bounds]) - kMenuYOffsetAdjust);
+  point = [view convertPoint:point toView:nil];
+  point = [[view window] convertBaseToScreen:point];
 
   // |menu| will automatically release itself on close.
   AvatarMenuBubbleController* menu =
@@ -167,8 +177,25 @@ const CGFloat kMenuYOffsetAdjust = 5.0;
   if (index != std::string::npos) {
     [self setImage:cache.GetAvatarIconOfProfileAtIndex(index).ToNSImage()];
     const string16& name = cache.GetNameOfProfileAtIndex(index);
-    [button_ setToolTip:base::SysUTF16ToNSString(name)];
+    [self.view setToolTip:base::SysUTF16ToNSString(name)];
   }
+}
+
+// If the second-to-last profile was removed or a second profile was added,
+// show or hide the avatar button from the window frame.
+- (void)addOrRemoveButtonIfNecessary {
+  if (browser_->profile()->IsOffTheRecord())
+    return;
+
+  NSWindowController* wc =
+      [browser_->window()->GetNativeHandle() windowController];
+  if (![wc isKindOfClass:[BrowserWindowController class]])
+    return;
+
+  size_t count = g_browser_process->profile_manager()->GetNumberOfProfiles();
+  [self.view setHidden:count < 2];
+
+  [static_cast<BrowserWindowController*>(wc) layoutSubviews];
 }
 
 @end
