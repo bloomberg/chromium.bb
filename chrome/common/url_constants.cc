@@ -6,6 +6,13 @@
 
 #include "googleurl/src/url_util.h"
 
+namespace {
+const char* kSavableSchemes[] = {
+  chrome::kExtensionScheme,
+  NULL
+};
+}  // namespace
+
 namespace chrome {
 
 #if defined(OS_CHROMEOS)
@@ -320,23 +327,16 @@ const char* const kChromeDebugURLs[] = {
 };
 int kNumberOfChromeDebugURLs = static_cast<int>(arraysize(kChromeDebugURLs));
 
+const char kExtensionScheme[] = "chrome-extension";
+
 void RegisterChromeSchemes() {
-  // Don't need "chrome-internal" which was used in old versions of Chrome for
-  // the new tab page.
-  url_util::AddStandardScheme(kChromeDevToolsScheme);
-  url_util::AddStandardScheme(kChromeUIScheme);
   url_util::AddStandardScheme(kExtensionScheme);
-  url_util::AddStandardScheme(kMetadataScheme);
 #if defined(OS_CHROMEOS)
   url_util::AddStandardScheme(kCrosScheme);
 #endif
 
-  // Prevent future modification of the standard schemes list. This is to
-  // prevent accidental creation of data races in the program. AddStandardScheme
-  // isn't threadsafe so must be called when GURL isn't used on any other
-  // thread. This is really easy to mess up, so we say that all calls to
-  // AddStandardScheme in Chrome must be inside this function.
-  url_util::LockStandardSchemes();
+  // This call will also lock the list of standard schemes.
+  RegisterContentSchemes(kSavableSchemes);
 }
 
 }  // namespace chrome

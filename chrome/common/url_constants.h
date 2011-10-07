@@ -285,6 +285,9 @@ extern const char kSyncLearnMoreURL[];
 extern const char* const kChromeDebugURLs[];
 extern int kNumberOfChromeDebugURLs;
 
+// Canonical schemes you can use as input to GURL.SchemeIs().
+extern const char kExtensionScheme[];
+
 // Call near the beginning of startup to register Chrome's internal URLs that
 // should be parsed as "standard" with the googleurl library.
 void RegisterChromeSchemes();

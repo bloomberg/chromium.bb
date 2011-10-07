@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -20,7 +21,6 @@
 #include "content/browser/site_instance.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/notification_service.h"
-#include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(

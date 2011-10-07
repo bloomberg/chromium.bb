@@ -1238,8 +1238,8 @@ void SavePackage::OnPathPicked(const FilePath& final_name,
 
 // Static
 bool SavePackage::IsSavableURL(const GURL& url) {
-  for (int i = 0; chrome::kSavableSchemes[i] != NULL; ++i) {
-    if (url.SchemeIs(chrome::kSavableSchemes[i])) {
+  for (int i = 0; chrome::GetSavableSchemes()[i] != NULL; ++i) {
+    if (url.SchemeIs(chrome::GetSavableSchemes()[i])) {
       return true;
     }
   }
