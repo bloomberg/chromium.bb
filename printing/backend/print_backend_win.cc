@@ -142,7 +142,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
           NULL, NULL, 0);
       if (devmode_size <= 0)
         return false;
-      scoped_ptr<BYTE> devmode_out_buffer(new BYTE[devmode_size]);
+      scoped_array<BYTE> devmode_out_buffer(new BYTE[devmode_size]);
       DEVMODE* devmode_out =
           reinterpret_cast<DEVMODE*>(devmode_out_buffer.get());
       DocumentProperties(

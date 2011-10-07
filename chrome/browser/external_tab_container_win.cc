@@ -9,6 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -1098,7 +1099,7 @@ void ExternalTabContainer::LoadAccelerators() {
     return;
   }
 
-  scoped_ptr<ACCEL> scoped_accelerators(new ACCEL[count]);
+  scoped_array<ACCEL> scoped_accelerators(new ACCEL[count]);
   ACCEL* accelerators = scoped_accelerators.get();
   DCHECK(accelerators != NULL);
 
