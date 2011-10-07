@@ -1566,14 +1566,16 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
     # On Windows or Linux, remove 'chrome' or 'chrome.exe' from the path.
     pyautolib_dir = env.ChromeBinary().dir
 
-  pyauto_python = ''
   if not env.Bit('host_mac'):
     # On Linux, we use the system default version of python (2.6).
     # On Windows, we use a hermetically sealed version of python (also 2.6).
-    pyauto_python = '${PYTHON}'
+    pyauto_python = ['${PYTHON}']
   else:
-    # On Mac, we match the version of python used to build pyautolib (2.5).
-    pyauto_python = 'python2.5'
+    # On Mac, we match the version of python used to build pyautolib (2.6).
+    # We also need to force 32-bit Python, because Macs typically have a
+    # "fat" 32/64 bit version of Python, and PyAuto is explicitly built for
+    # 32-bit Python.
+    pyauto_python = ['arch', '-i386', '${PYTHON}']
 
   # Construct chrome flags as a list and pass them on to pyauto as one string.
   chrome_flags = []
@@ -1627,8 +1629,8 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
   staging_dir = env.subst('${STAGING_DIR}')
   http_data_dir = 'native_client' + staging_dir.replace(main_dir, '')
 
-  command = (GetHeadlessPrefix(env) +
-             [pyauto_python, '-u', test, pyautolib_dir,
+  command = (GetHeadlessPrefix(env) + pyauto_python +
+             ['-u', test, pyautolib_dir,
               '--http-data-dir=%s' % http_data_dir,
               '--chrome-flags="%s"' %' '.join(chrome_flags)])
   command.extend(args)
@@ -1645,22 +1647,16 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
 pre_base_env.AddMethod(PyAutoTester)
 
 
-# Disabled for ARM (because Chrome binaries for ARM are not available), on the
-# Chrome bots (because PyAuto is not expected to be available on them) and when
-# 32-bit test binaries are run on a 64-bit machine (because 32-bit python is not
-# available on 64-bit machines).
-# However, our Mac bots will have 32-bit versions of Python 2.5, even if they
-# are 64-bit machines.  Mac OS X 10.5 bots have 32-bit Python 2.5 installed as
-# part of the OS.  Mac OS X 10.6 bots have had 32-bit Python 2.5 manually
-# installed.
-# TODO(ncbray): check the architecture of the Python that we plan to run,
-# rather than the architecture of Python currently running.
+# Disabled for ARM (because Chrome binaries for ARM are not available.)
+# Disabled if Python 2.6 is not being used (it is assumed that the version of
+# Python used by SCons will be the version of Python used by PyAuto.)  PyAuto
+# is compiled against a specific version of Python, and cannot be imported in
+# any other version.
 def PyAutoTesterIsBroken(env):
   return (PPAPIBrowserTesterIsBroken(env)
           or env.Bit('nacl_glibc')
-          or (not env.Bit('host_mac')
-              and env.Bit('build_x86_32')
-              and platform.architecture()[0] == '64bit'))
+          or sys.version_info[0] != 2
+          or sys.version_info[1] != 6)
 
 pre_base_env.AddMethod(PyAutoTesterIsBroken)
 
