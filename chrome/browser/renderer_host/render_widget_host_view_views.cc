@@ -1078,7 +1078,7 @@ gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
 }
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(TOUCH_UI)
 // static
 RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
     RenderWidgetHost* widget) {

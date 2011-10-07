@@ -80,12 +80,6 @@ void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id) {
 
 }  // namespace
 
-// static
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return new RenderWidgetHostViewViews(widget);
-}
-
 ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
     const views::TouchEvent& event) {
   if (!host_)

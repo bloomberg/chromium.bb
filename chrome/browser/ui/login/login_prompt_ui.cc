@@ -23,7 +23,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS) && !defined(TOUCH_UI)
 // TODO(saintlou): This is another big fat hack like in the FileSelector.
 namespace chrome {
 const char kChromeUIHttpAuthHost[] = "http-auth";
