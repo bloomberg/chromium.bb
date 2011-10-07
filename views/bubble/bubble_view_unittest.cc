@@ -9,11 +9,15 @@
 #include "views/bubble/bubble_border.h"
 #include "views/bubble/bubble_delegate.h"
 #include "views/bubble/bubble_view.h"
+#include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
 
 namespace views {
 
 namespace {
+
+typedef ViewsTestBase BubbleViewBasicTest;
+typedef ViewsTestBase BubbleViewTest;
 
 class TestBubbleDelegate : public BubbleDelegateView {
  public:
@@ -42,8 +46,7 @@ class TestAnimationDelegate : public ui::AnimationDelegate {
 };
 
 
-TEST(BubbleViewBasicTest, CreateArrowBubble) {
-  MessageLoopForUI message_loop;
+TEST_F(BubbleViewBasicTest, CreateArrowBubble) {
   scoped_ptr<Widget> bubble_widget(new Widget());
   Widget::InitParams params(Widget::InitParams::TYPE_BUBBLE);
   TestBubbleDelegate delegate(bubble_widget.get());
@@ -57,14 +60,12 @@ TEST(BubbleViewBasicTest, CreateArrowBubble) {
   EXPECT_EQ(delegate.GetFrameArrowLocation(), border->arrow_location());
   bubble_widget->CloseNow();
   bubble_widget.reset(NULL);
-  MessageLoop::current()->RunAllPending();
+  RunPendingMessages();
 }
 
 }  // namespace
 
-TEST(BubbleViewTest, FadeAnimation) {
-  MessageLoopForUI message_loop;
-
+TEST_F(BubbleViewTest, FadeAnimation) {
   scoped_ptr<Widget> bubble_widget(new Widget());
   Widget::InitParams params(Widget::InitParams::TYPE_BUBBLE);
   TestBubbleDelegate delegate(bubble_widget.get());
@@ -84,7 +85,7 @@ TEST(BubbleViewTest, FadeAnimation) {
   EXPECT_EQ(1, test_animation_delegate.animation_ended_);
   bubble_widget->CloseNow();
   bubble_widget.reset(NULL);
-  MessageLoop::current()->RunAllPending();
+  RunPendingMessages();
 }
 
 }  // namespace views

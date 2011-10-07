@@ -30,6 +30,7 @@
         'desktop_host_win.h',
         'desktop.cc',
         'desktop.h',
+        'desktop_delegate.h',
         'event.cc',
         'event.h',
         'event_filter.cc',
@@ -46,6 +47,7 @@
         'window.cc',
         'window.h',
         'window_delegate.h',
+        'window_type.h',
       ],
     },
     {
@@ -91,6 +93,8 @@
       'sources': [
         'window_unittest.cc',
         'run_all_unittests.cc',
+        'test_desktop_delegate.cc',
+        'test_desktop_delegate.h',
         'test_suite.cc',
         'test_suite.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',

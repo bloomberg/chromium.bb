@@ -3,18 +3,20 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/animation/slide_animation.h"
 #include "views/bubble/bubble_border.h"
 #include "views/bubble/bubble_delegate.h"
 #include "views/bubble/bubble_view.h"
+#include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
 
 namespace views {
 
 namespace {
+
+typedef ViewsTestBase BubbleDelegateTest;
 
 class TestBubbleDelegate : public BubbleDelegateView {
  public:
@@ -29,8 +31,7 @@ class TestBubbleDelegate : public BubbleDelegateView {
   View view_;
 };
 
-TEST(BubbleDelegateTest, CreateDelegate) {
-  MessageLoopForUI message_loop;
+TEST_F(BubbleDelegateTest, CreateDelegate) {
   scoped_ptr<Widget> bubble_widget(new Widget());
   Widget::InitParams params(Widget::InitParams::TYPE_BUBBLE);
   TestBubbleDelegate delegate(bubble_widget.get());
@@ -41,7 +42,7 @@ TEST(BubbleDelegateTest, CreateDelegate) {
   EXPECT_EQ(bubble_widget, delegate.GetWidget());
   bubble_widget->CloseNow();
   bubble_widget.reset(NULL);
-  MessageLoop::current()->RunAllPending();
+  RunPendingMessages();
 }
 
 }  // namespace

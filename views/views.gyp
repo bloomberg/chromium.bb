@@ -602,6 +602,8 @@
         '../ui/gfx/compositor/test_compositor.h',
         '../ui/gfx/compositor/test_texture.cc',
         '../ui/gfx/compositor/test_texture.h',
+        '../ui/aura/test_desktop_delegate.cc',
+        '../ui/aura/test_desktop_delegate.h',
 
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
@@ -656,6 +658,11 @@
             ['exclude', 'controls/table/table_view_unittest.cc'],
             ['exclude', 'controls/tabbed_pane/tabbed_pane_unittest.cc'],
           ],
+        }, {
+          'sources/': [
+            ['exclude', '../ui/aura/test_desktop_delegate.cc'],
+            ['exclude', '../ui/aura/test_desktop_delegate.h'],
+          ],        
         }],
         ['OS!="mac"', {
           'dependencies': [

@@ -10,6 +10,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test_desktop_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
@@ -174,11 +175,11 @@ class TestWindowDelegate : public WindowDelegateImpl {
 
 class WindowTest : public testing::Test {
  public:
-  WindowTest() : main_message_loop(MessageLoop::TYPE_UI) {
+  WindowTest()
+      : main_message_loop(MessageLoop::TYPE_UI),
+        desktop_delegate_(new TestDesktopDelegate) {
     Desktop::GetInstance()->Show();
     Desktop::GetInstance()->SetSize(gfx::Size(500, 500));
-    if (!Desktop::GetInstance()->default_parent())
-      Desktop::GetInstance()->CreateDefaultParentForTesting();
   }
   virtual ~WindowTest() {}
 
@@ -214,8 +215,14 @@ class WindowTest : public testing::Test {
     return window;
   }
 
+ protected:
+  Window* toplevel_container() {
+    return desktop_delegate_->default_container();
+  }
+
  private:
   MessageLoop main_message_loop;
+  TestDesktopDelegate* desktop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTest);
 };
@@ -266,7 +273,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   Window* desktop = Desktop::GetInstance()->window();
-  Desktop::GetInstance()->default_parent()->SetBounds(gfx::Rect(500, 500));
+  toplevel_container()->SetBounds(gfx::Rect(500, 500));
   EXPECT_EQ(NULL, desktop->GetEventHandlerForPoint(gfx::Point(5, 5)));
   EXPECT_EQ(w1.get(), desktop->GetEventHandlerForPoint(gfx::Point(11, 11)));
   EXPECT_EQ(w11.get(), desktop->GetEventHandlerForPoint(gfx::Point(16, 16)));
@@ -741,9 +748,14 @@ TEST_F(WindowTest, Maximized) {
 
 // Various assertions for activating/deactivating.
 TEST_F(WindowTest, Deactivate) {
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
-  scoped_ptr<Window> w2(CreateTestWindowWithId(2, NULL));
+  WindowDelegateImpl d1;
+  WindowDelegateImpl d2;
+  scoped_ptr<Window> w1(
+      CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(), NULL));
+  scoped_ptr<Window> w2(
+      CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(), NULL));
   Window* parent = w1->parent();
+  parent->Show();
   ASSERT_TRUE(parent);
   ASSERT_EQ(2u, parent->children().size());
   // Activate w2 and make sure it's active and frontmost.
@@ -758,7 +770,7 @@ TEST_F(WindowTest, Deactivate) {
   EXPECT_FALSE(w2->IsActive());
   EXPECT_EQ(w1.get(), parent->children()[1]);
 
-  // Dectivate w1 and make sure w2 becomes active and frontmost.
+  // Deactivate w1 and make sure w2 becomes active and frontmost.
   w1->Deactivate();
   EXPECT_FALSE(w1->IsActive());
   EXPECT_TRUE(w2->IsActive());

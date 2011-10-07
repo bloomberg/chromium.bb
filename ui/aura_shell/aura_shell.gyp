@@ -39,6 +39,8 @@
         'launcher/launcher_view.h',
         'launcher/launcher_button.cc',
         'launcher/launcher_button.h',
+        'shell.cc',
+        'shell.h',
         'shell_factory.h',
         'shell_window_ids.h',
         'status_area_view.cc',

@@ -8,6 +8,7 @@
 #include "grit/ui_resources.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/aura_shell_export.h"
+#include "ui/aura_shell/shell_window_ids.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/widget/widget.h"
@@ -33,10 +34,11 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   canvas->TileImageInt(wallpaper_, 0, 0, width(), height());
 }
 
-AURA_SHELL_EXPORT views::Widget* CreateDesktopBackground() {
+views::Widget* CreateDesktopBackground() {
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-  params.bounds = gfx::Rect(0, 0, 1024, 768);
+  params.parent = aura::Desktop::GetInstance()->window()->GetChildById(
+      aura_shell::internal::kShellWindowId_DesktopBackgroundContainer);
   DesktopBackgroundView* view = new DesktopBackgroundView;
   params.delegate = view;
   desktop_widget->Init(params);

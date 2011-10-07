@@ -32,6 +32,7 @@ class EventFilter;
 class KeyEvent;
 class LayoutManager;
 class MouseEvent;
+class ToplevelWindowContainer;
 class WindowDelegate;
 
 namespace internal {
@@ -50,6 +51,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   ~Window();
 
   void Init();
+
+  // A type is used to identify a class of Windows and customize behavior such
+  // as event handling and parenting. The value can be any of those in
+  // window_types.h or a user defined value.
+  int type() const { return type_; }
+  void SetType(int type);
 
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
@@ -75,6 +82,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Restore the wnidow to its original bounds.
   void Restore();
 
+  // Returns the window's show state.
+  ui::WindowShowState show_state() const { return show_state_; }
+
   // Activates this window. Only top level windows can be activated. Requests
   // to activate a non-top level window are ignored.
   void Activate();
@@ -86,8 +96,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns true if this window is active.
   bool IsActive() const;
 
-  // Returns the window's show state.
-  ui::WindowShowState show_state() const { return show_state_; }
+  // RTTI to a container for top-level windows. Returns NULL if this window is
+  // not a top level window container.
+  virtual ToplevelWindowContainer* AsToplevelWindowContainer();
+  virtual const ToplevelWindowContainer* AsToplevelWindowContainer() const;
 
   // Assigns a LayoutManager to size and place child windows.
   // The Window takes ownership of the LayoutManager.
@@ -108,12 +120,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void SetParent(Window* parent);
   Window* parent() { return parent_; }
 
-  // Returns true if this Window is the container for toplevel windows.
-  virtual bool IsToplevelWindowContainer() const;
-
   // Move the specified child of this Window to the front of the z-order.
   // TODO(beng): this is (obviously) feeble.
   void MoveChildToFront(Window* child);
+
+  // Returns true if this window can be activated.
+  bool CanActivate() const;
 
   // Tree operations.
   // TODO(beng): Child windows are currently not owned by the hierarchy. We
@@ -126,6 +138,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Retrieves the first-level child with the specified id, or NULL if no first-
   // level child is found matching |id|.
   Window* GetChildById(int id);
+  const Window* GetChildById(int id) const;
 
   static void ConvertPointToWindow(Window* source,
                                    Window* target,
@@ -214,12 +227,14 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // it in the z-order.
   bool StopsEventPropagation() const;
 
-  // Overridden from ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
-
   // Update the show state and restore bounds. Returns false
   // if |new_show_state| is same as current show state.
   bool UpdateShowStateAndRestoreBounds(ui::WindowShowState new_show_state);
+
+  // Overridden from ui::LayerDelegate:
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+
+  int type_;
 
   WindowDelegate* delegate_;
 

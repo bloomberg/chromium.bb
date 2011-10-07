@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "ui/aura/desktop_delegate.h"
 #include "ui/aura/desktop_host.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -24,13 +25,11 @@ Desktop* Desktop::instance_ = NULL;
 ui::Compositor*(*Desktop::compositor_factory_)() = NULL;
 
 Desktop::Desktop()
-    : default_parent_(NULL),
+    : delegate_(NULL),
       host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1280, 1024))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_(this)),
       active_window_(NULL),
       in_destructor_(false) {
-  DCHECK(MessageLoopForUI::current())
-      << "The UI message loop must be initialized first.";
   if (compositor_factory_) {
     compositor_ = (*Desktop::compositor_factory())();
   } else {
@@ -48,20 +47,15 @@ Desktop::~Desktop() {
     instance_ = NULL;
 }
 
+void Desktop::SetDelegate(DesktopDelegate* delegate) {
+  delegate_.reset(delegate);
+}
+
 void Desktop::Init() {
   window_->Init();
   window_->SetBounds(gfx::Rect(gfx::Point(), host_->GetSize()));
   window_->Show();
   compositor()->SetRootLayer(window_->layer());
-}
-
-void Desktop::CreateDefaultParentForTesting() {
-  Window* default_parent = new internal::ToplevelWindowContainer;
-  default_parent->Init();
-  default_parent->SetBounds(window_->bounds());
-  default_parent->Show();
-  window_->AddChild(default_parent);
-  set_default_parent(default_parent);
 }
 
 void Desktop::Show() {
@@ -132,7 +126,7 @@ void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
 }
 
 void Desktop::ActivateTopmostWindow() {
-  SetActiveWindow(GetTopmostWindowToActivate(NULL), NULL);
+  SetActiveWindow(delegate_->GetTopmostWindowToActivate(NULL), NULL);
 }
 
 void Desktop::Deactivate(Window* window) {
@@ -146,7 +140,8 @@ void Desktop::Deactivate(Window* window) {
   if (active_window() != toplevel_ancestor)
     return;  // Top level ancestor is already not active.
 
-  Window* to_activate = GetTopmostWindowToActivate(toplevel_ancestor);
+  Window* to_activate =
+      delegate_->GetTopmostWindowToActivate(toplevel_ancestor);
   if (to_activate)
     SetActiveWindow(to_activate, NULL);
 }
@@ -158,23 +153,11 @@ void Desktop::WindowDestroying(Window* window) {
   // Reset active_window_ before invoking SetActiveWindow so that we don't
   // attempt to notify it while running its destructor.
   active_window_ = NULL;
-  SetActiveWindow(GetTopmostWindowToActivate(window), NULL);
+  SetActiveWindow(delegate_->GetTopmostWindowToActivate(window), NULL);
 }
 
 MessageLoop::Dispatcher* Desktop::GetDispatcher() {
   return host_.get();
-}
-
-
-Window* Desktop::GetTopmostWindowToActivate(Window* ignore) {
-  Window::Windows windows(default_parent_->children());
-  for (Window::Windows::const_reverse_iterator i = windows.rbegin();
-       i != windows.rend(); ++i) {
-    if (*i != ignore && (*i)->IsVisible() &&
-        (!(*i)->delegate() || (*i)->delegate()->ShouldActivate(NULL)))
-      return *i;
-  }
-  return NULL;
 }
 
 // static

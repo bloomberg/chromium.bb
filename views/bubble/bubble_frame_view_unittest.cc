@@ -9,20 +9,23 @@
 #include "views/bubble/bubble_border.h"
 #include "views/bubble/bubble_frame_view.h"
 #include "views/bubble/bubble_delegate.h"
+#include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
 #if !defined(OS_WIN)
 #include "views/window/hit_test.h"
 #endif
+
 namespace views {
 
 namespace {
+
+typedef ViewsTestBase BubbleFrameViewBasicTest;
 
 gfx::Rect kBound = gfx::Rect(10, 10, 200, 200);
 SkColor kBackgroundColor = SK_ColorRED;
 BubbleBorder::ArrowLocation kArrow =  BubbleBorder::LEFT_BOTTOM;
 
-TEST(BubbleFrameViewBasicTest, GetBoundsForClientView) {
-  MessageLoopForUI message_loop;
+TEST_F(BubbleFrameViewBasicTest, GetBoundsForClientView) {
   scoped_ptr<Widget> widget(new views::Widget());
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_BUBBLE);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -40,7 +43,7 @@ TEST(BubbleFrameViewBasicTest, GetBoundsForClientView) {
   EXPECT_EQ(expected_insets.top(), frame.GetBoundsForClientView().y());
   widget->CloseNow();
   widget.reset(NULL);
-  MessageLoop::current()->RunAllPending();
+  RunPendingMessages();
 }
 
 class TestBubbleDelegate : public BubbleDelegateView {
@@ -54,8 +57,7 @@ class TestBubbleDelegate : public BubbleDelegateView {
   View view_;
 };
 
-TEST(BubbleFrameViewBasicTest, NonClientHitTest) {
-  MessageLoopForUI message_loop;
+TEST_F(BubbleFrameViewBasicTest, NonClientHitTest) {
   scoped_ptr<Widget> widget(new Widget());
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_BUBBLE);
   TestBubbleDelegate delegate(widget.get());
@@ -69,7 +71,7 @@ TEST(BubbleFrameViewBasicTest, NonClientHitTest) {
             widget->non_client_view()->NonClientHitTest(kPtOutsideBound));
   widget->CloseNow();
   widget.reset(NULL);
-  MessageLoop::current()->RunAllPending();
+  RunPendingMessages();
 }
 
 }  // namespace

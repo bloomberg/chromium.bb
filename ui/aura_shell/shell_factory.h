@@ -6,8 +6,6 @@
 #define UI_AURA_SHELL_SHELL_FACTORY_H_
 #pragma once
 
-#include "ui/aura_shell/aura_shell_export.h"
-
 namespace views {
 class Widget;
 }
@@ -15,8 +13,6 @@ class Widget;
 // Declarations of shell component factory functions.
 
 namespace aura_shell {
-
-AURA_SHELL_EXPORT void InitDesktopWindow();
 
 namespace examples {
 void InitWindowTypeLauncher();

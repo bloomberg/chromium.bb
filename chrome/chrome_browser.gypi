@@ -3179,8 +3179,6 @@
         'browser/ui/views/app_menu_button_win.h',
         'browser/ui/views/appcache_info_view.cc',
         'browser/ui/views/appcache_info_view.h',
-        'browser/ui/views/aura/aura_init.cc',
-        'browser/ui/views/aura/aura_init.h',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.cc',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.h',
         'browser/ui/views/autocomplete/autocomplete_result_view.cc',

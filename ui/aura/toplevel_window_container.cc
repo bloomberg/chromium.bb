@@ -8,7 +8,6 @@
 #include "ui/aura/toplevel_window_event_filter.h"
 
 namespace aura {
-namespace internal {
 
 ToplevelWindowContainer::ToplevelWindowContainer()
     : Window(NULL) {
@@ -19,9 +18,23 @@ ToplevelWindowContainer::ToplevelWindowContainer()
 ToplevelWindowContainer::~ToplevelWindowContainer() {
 }
 
-bool ToplevelWindowContainer::IsToplevelWindowContainer() const {
-  return true;
+Window* ToplevelWindowContainer::GetTopmostWindowToActivate(
+    Window* ignore) const {
+  for (Window::Windows::const_reverse_iterator i = children().rbegin();
+       i != children().rend(); ++i) {
+         Window* w = *i;
+    if (*i != ignore && (*i)->CanActivate())
+      return *i;
+  }
+  return NULL;
 }
 
-}  // namespace internal
+ToplevelWindowContainer* ToplevelWindowContainer::AsToplevelWindowContainer() {
+  return this;
+}
+
+const ToplevelWindowContainer*
+    ToplevelWindowContainer::AsToplevelWindowContainer() const {
+  return this;
+}
 }  // namespace aura

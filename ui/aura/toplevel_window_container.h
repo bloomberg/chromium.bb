@@ -10,9 +10,6 @@
 #include "ui/aura/aura_export.h"
 
 namespace aura {
-namespace internal {
-
-class FocusManager;
 
 // A Window subclass that groups top-level windows.
 class AURA_EXPORT ToplevelWindowContainer : public Window {
@@ -20,14 +17,18 @@ class AURA_EXPORT ToplevelWindowContainer : public Window {
   ToplevelWindowContainer();
   virtual ~ToplevelWindowContainer();
 
+  // Returns the topmost window to activate, ignoring |ignore|.
+  Window* GetTopmostWindowToActivate(Window* ignore) const;
+
   // Overridden from Window:
-  virtual bool IsToplevelWindowContainer() const OVERRIDE;
+  virtual ToplevelWindowContainer* AsToplevelWindowContainer() OVERRIDE;
+  virtual const ToplevelWindowContainer*
+      AsToplevelWindowContainer() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowContainer);
 };
 
-}  // namespace internal
 }  // namespace aura
 
 #endif  // UI_AURA_TOPLEVEL_WINDOW_CONTAINER_H_

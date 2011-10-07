@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/desktop.h"
+#include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -25,7 +26,8 @@ int main(int argc, char** argv) {
   // Create the message-loop here before creating the desktop.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
 
-  aura_shell::InitDesktopWindow();
+  aura_shell::Shell shell;
+  shell.Init();
 
   aura_shell::examples::InitWindowTypeLauncher();
 

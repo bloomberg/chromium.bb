@@ -8,6 +8,7 @@
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
@@ -28,6 +29,30 @@
 #endif
 
 namespace views {
+
+namespace {
+
+int GetAuraWindowTypeForWidgetType(Widget::InitParams::Type type) {
+  switch (type) {
+    case Widget::InitParams::TYPE_WINDOW:
+    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
+    case Widget::InitParams::TYPE_POPUP:
+    case Widget::InitParams::TYPE_BUBBLE:
+      return aura::kWindowType_Toplevel;
+    case Widget::InitParams::TYPE_CONTROL:
+      return aura::kWindowType_Control;
+    case Widget::InitParams::TYPE_MENU:
+      return aura::kWindowType_Menu;
+    case Widget::InitParams::TYPE_TOOLTIP:
+      return aura::kWindowType_Tooltip;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return aura::kWindowType_Toplevel;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, public:
@@ -67,12 +92,14 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   window_->set_user_data(this);
+  window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->Init();
   // TODO(beng): respect |params| authoritah wrt transparency.
   window_->layer()->SetFillsBoundsOpaquely(false);
   delegate_->OnNativeWidgetCreated();
   window_->SetBounds(params.bounds);
-  window_->SetParent(params.parent);
+  window_->SetParent(
+      params.type == Widget::InitParams::TYPE_MENU ? NULL : params.parent);
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
   can_activate_ = params.can_activate;
@@ -550,7 +577,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
   aura::Window* toplevel = native_view;
   aura::Window* parent = native_view->parent();
   while (parent) {
-    if (parent->IsToplevelWindowContainer())
+    if (parent->AsToplevelWindowContainer())
       return GetNativeWidgetForNativeView(toplevel);
     toplevel = parent;
     parent = parent->parent();

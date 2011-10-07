@@ -30,6 +30,9 @@ const int kShellWindowId_LockScreenContainer = 4;
 // The container for the status area.
 const int kShellWindowId_StatusContainer = 5;
 
+// The container for menus and tooltips.
+const int kShellWindowId_MenusAndTooltipsContainer = 6;
+
 }  // namespace internal
 
 }  // namespace aura_shell

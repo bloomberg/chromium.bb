@@ -202,8 +202,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"
-#include "ui/aura_shell/shell_factory.h"
-#include "ui/aura/desktop.h"
+#include "ui/aura_shell/shell.h"
 #endif
 
 namespace net {
@@ -1368,7 +1367,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
 #if defined(USE_AURA)
-  aura_shell::InitDesktopWindow();
+  aura_shell::Shell* shell = new aura_shell::Shell;
+  shell->Init();
 #elif defined(TOOLKIT_VIEWS)
   views::Widget::SetPureViews(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));

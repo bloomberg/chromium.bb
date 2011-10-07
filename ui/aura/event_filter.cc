@@ -42,7 +42,7 @@ void EventFilter::ActivateIfNecessary(
   Window* toplevel_window = window;
   while (toplevel_window && toplevel_window != active_window &&
          toplevel_window->parent() &&
-         !toplevel_window->parent()->IsToplevelWindowContainer()) {
+         !toplevel_window->parent()->AsToplevelWindowContainer()) {
     toplevel_window = toplevel_window->parent();
   }
   if (toplevel_window == active_window) {

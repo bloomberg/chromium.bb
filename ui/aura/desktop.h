@@ -23,6 +23,7 @@ class Size;
 
 namespace aura {
 
+class DesktopDelegate;
 class DesktopHost;
 class MouseEvent;
 
@@ -32,11 +33,11 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   Desktop();
   ~Desktop();
 
+  DesktopDelegate* delegate() { return delegate_.get(); }
+  void SetDelegate(DesktopDelegate* delegate);
+
   // Initializes the desktop.
   void Init();
-
-  // Initializes |default_parent()| for testing.
-  void CreateDefaultParentForTesting();
 
   // Shows the desktop host.
   void Show();
@@ -67,13 +68,6 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   ui::Compositor* compositor() { return compositor_.get(); }
 
   Window* window() { return window_.get(); }
-
-  // The window where windows created without an explicitly specified parent are
-  // parented.
-  Window* default_parent() { return default_parent_; }
-  void set_default_parent(Window* default_parent) {
-    default_parent_ = default_parent;
-  }
 
   static void set_compositor_factory_for_testing(ui::Compositor*(*factory)()) {
     compositor_factory_ = factory;
@@ -108,17 +102,14 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   static Desktop* GetInstance();
 
  private:
-  // Returns the topmost window to activate. This ignores |ignore|.
-  Window* GetTopmostWindowToActivate(Window* ignore);
-
   // Overridden from ui::CompositorDelegate
   virtual void ScheduleDraw();
+
+  scoped_ptr<DesktopDelegate> delegate_;
 
   scoped_refptr<ui::Compositor> compositor_;
 
   scoped_ptr<internal::RootWindow> window_;
-
-  Window* default_parent_;
 
   scoped_ptr<DesktopHost> host_;
 

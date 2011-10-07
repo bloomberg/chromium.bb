@@ -8,10 +8,12 @@
 
 #include "base/logging.h"
 #include "ui/aura/desktop.h"
+#include "ui/aura/desktop_delegate.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_types.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -23,7 +25,8 @@ namespace aura {
 using internal::RootWindow;
 
 Window::Window(WindowDelegate* delegate)
-    : delegate_(delegate),
+    : type_(kWindowType_Toplevel),
+      delegate_(delegate),
       show_state_(ui::SHOW_STATE_NORMAL),
       parent_(NULL),
       id_(-1),
@@ -68,6 +71,12 @@ void Window::Init() {
   layer_->set_delegate(this);
 }
 
+void Window::SetType(int type) {
+  // Cannot change type after the window is initialized.
+  DCHECK(!layer());
+  type_ = type;
+}
+
 void Window::Show() {
   SetVisible(true);
 }
@@ -83,6 +92,45 @@ void Window::Hide() {
 
 bool Window::IsVisible() const {
   return layer_->IsDrawn();
+}
+
+void Window::Maximize() {
+  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_MAXIMIZED))
+    SetBounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(this));
+}
+
+void Window::Fullscreen() {
+  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_FULLSCREEN))
+    SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(this));
+}
+
+void Window::Restore() {
+  if (show_state_ != ui::SHOW_STATE_NORMAL) {
+    show_state_ = ui::SHOW_STATE_NORMAL;
+    SetBounds(restore_bounds_);
+    restore_bounds_.SetRect(0, 0, 0, 0);
+  }
+}
+
+void Window::Activate() {
+  // If we support minimization need to ensure this restores the window first.
+  aura::Desktop::GetInstance()->SetActiveWindow(this, this);
+}
+
+void Window::Deactivate() {
+  aura::Desktop::GetInstance()->Deactivate(this);
+}
+
+bool Window::IsActive() const {
+  return aura::Desktop::GetInstance()->active_window() == this;
+}
+
+ToplevelWindowContainer* Window::AsToplevelWindowContainer() {
+  return NULL;
+}
+
+const ToplevelWindowContainer* Window::AsToplevelWindowContainer() const {
+  return NULL;
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
@@ -126,43 +174,10 @@ void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
 void Window::SetParent(Window* parent) {
   if (parent)
     parent->AddChild(this);
+  else if (Desktop::GetInstance()->delegate())
+    Desktop::GetInstance()->delegate()->AddChildToDefaultParent(this);
   else
-    Desktop::GetInstance()->default_parent()->AddChild(this);
-}
-
-void Window::Maximize() {
-  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_MAXIMIZED))
-    SetBounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(this));
-}
-
-void Window::Fullscreen() {
-  if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_FULLSCREEN))
-    SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(this));
-}
-
-void Window::Restore() {
-  if (show_state_ != ui::SHOW_STATE_NORMAL) {
-    show_state_ = ui::SHOW_STATE_NORMAL;
-    SetBounds(restore_bounds_);
-    restore_bounds_.SetRect(0, 0, 0, 0);
-  }
-}
-
-void Window::Activate() {
-  // If we support minimization need to ensure this restores the window first.
-  aura::Desktop::GetInstance()->SetActiveWindow(this, this);
-}
-
-void Window::Deactivate() {
-  aura::Desktop::GetInstance()->Deactivate(this);
-}
-
-bool Window::IsActive() const {
-  return aura::Desktop::GetInstance()->active_window() == this;
-}
-
-bool Window::IsToplevelWindowContainer() const {
-  return false;
+    NOTREACHED();
 }
 
 void Window::MoveChildToFront(Window* child) {
@@ -177,6 +192,10 @@ void Window::MoveChildToFront(Window* child) {
   SchedulePaintInRect(gfx::Rect());
 
   child->layer()->parent()->MoveToFront(child->layer());
+}
+
+bool Window::CanActivate() const {
+  return IsVisible() && delegate_ && delegate_->ShouldActivate(NULL);
 }
 
 void Window::AddChild(Window* child) {
@@ -198,11 +217,15 @@ void Window::RemoveChild(Window* child) {
 }
 
 Window* Window::GetChildById(int id) {
+  return const_cast<Window*>(const_cast<const Window*>(this)->GetChildById(id));
+}
+
+const Window* Window::GetChildById(int id) const {
   Windows::const_iterator i;
   for (i = children_.begin(); i != children_.end(); ++i) {
     if ((*i)->id() == id)
       return *i;
-    Window* result = (*i)->GetChildById(id);
+    const Window* result = (*i)->GetChildById(id);
     if (result)
       return result;
   }
@@ -231,25 +254,6 @@ bool Window::OnMouseEvent(MouseEvent* event) {
     parent_->SetEventFilter(new EventFilter(parent_));
   return parent_->event_filter_->OnMouseEvent(this, event) ||
       delegate_->OnMouseEvent(event);
-}
-
-// For a given window, we determine its focusability by inspecting each sibling
-// after it (i.e. drawn in front of it in the z-order) to see if it stops
-// propagation of events that would otherwise be targeted at windows behind it.
-// We then perform this same check on every window up to the root.
-bool Window::CanFocus() const {
-  // TODO(beng): Figure out how to consult the delegate wrt. focusability also.
-  if (!IsVisible() || !parent_)
-    return false;
-
-  Windows::const_iterator i = std::find(parent_->children().begin(),
-                                        parent_->children().end(),
-                                        this);
-  for (++i; i != parent_->children().end(); ++i) {
-    if ((*i)->StopsEventPropagation())
-      return false;
-  }
-  return parent_->CanFocus();
 }
 
 bool Window::OnKeyEvent(KeyEvent* event) {
@@ -291,6 +295,25 @@ void Window::Blur() {
   GetFocusManager()->SetFocusedWindow(NULL);
 }
 
+// For a given window, we determine its focusability by inspecting each sibling
+// after it (i.e. drawn in front of it in the z-order) to see if it stops
+// propagation of events that would otherwise be targeted at windows behind it.
+// We then perform this same check on every window up to the root.
+bool Window::CanFocus() const {
+  // TODO(beng): Figure out how to consult the delegate wrt. focusability also.
+  if (!IsVisible() || !parent_)
+    return false;
+
+  Windows::const_iterator i = std::find(parent_->children().begin(),
+                                        parent_->children().end(),
+                                        this);
+  for (++i; i != parent_->children().end(); ++i) {
+    if ((*i)->StopsEventPropagation())
+      return false;
+  }
+  return parent_->CanFocus();
+}
+
 internal::FocusManager* Window::GetFocusManager() {
   return parent_ ? parent_->GetFocusManager() : NULL;
 }
@@ -322,7 +345,7 @@ bool Window::HasCapture() {
 Window* Window::GetToplevelWindow() {
   Window* window = this;
   while (window && window->parent() &&
-         !window->parent()->IsToplevelWindowContainer())
+         !window->parent()->AsToplevelWindowContainer())
     window = window->parent();
   return window && window->parent() ? window : NULL;
 }
@@ -356,10 +379,6 @@ bool Window::StopsEventPropagation() const {
   return stops_event_propagation_ && !children_.empty();
 }
 
-void Window::OnPaintLayer(gfx::Canvas* canvas) {
-  delegate_->OnPaint(canvas);
-}
-
 bool Window::UpdateShowStateAndRestoreBounds(
     ui::WindowShowState new_show_state) {
   if (show_state_ == new_show_state)
@@ -368,6 +387,10 @@ bool Window::UpdateShowStateAndRestoreBounds(
   if (restore_bounds_.IsEmpty())
     restore_bounds_ = bounds();
   return true;
+}
+
+void Window::OnPaintLayer(gfx::Canvas* canvas) {
+  delegate_->OnPaint(canvas);
 }
 
 }  // namespace aura

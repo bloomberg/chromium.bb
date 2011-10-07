@@ -13,6 +13,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"
+#include "ui/aura/test_desktop_delegate.h"
 #endif
 
 namespace views {
@@ -26,6 +27,9 @@ ViewsTestBase::ViewsTestBase()
       teardown_called_(false) {
 #if defined(OS_WIN)
   OleInitialize(NULL);
+#endif
+#if defined(USE_AURA)
+  new aura::TestDesktopDelegate;
 #endif
 }
 
@@ -44,8 +48,6 @@ void ViewsTestBase::SetUp() {
   setup_called_ = true;
 #if defined(USE_AURA)
   aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
-  if (!aura::Desktop::GetInstance()->default_parent())
-    aura::Desktop::GetInstance()->CreateDefaultParentForTesting();
 #else
   Widget::set_compositor_factory_for_testing(&TestCreateCompositor);
 #endif
