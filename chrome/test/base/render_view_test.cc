@@ -31,7 +31,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(USE_AURA)
 #include "ui/base/gtk/event_synthesis_gtk.h"
 #endif
 
@@ -211,7 +211,7 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
   SendNativeKeyEvent(keyup_event);
 
   return length;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) && !defined(USE_AURA)
   // We ignore |layout|, which means we are only testing the layout of the
   // current locale. TODO(estade): fix this to respect |layout|.
   std::vector<GdkEvent*> events;

@@ -35,6 +35,7 @@
         'emf_win.cc',
         'emf_win.h',
         'image.cc',
+        'image_aura.cc',
         'image_cairo.cc',
         'image_mac.cc',
         'image_win.cc',
