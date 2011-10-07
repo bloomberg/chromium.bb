@@ -4,6 +4,7 @@
 
 #include "content/renderer/gpu/renderer_gl_context.h"
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
@@ -192,8 +193,8 @@ void RendererGLContext::DeleteParentTexture(uint32 texture) {
 }
 
 void RendererGLContext::SetContextLostCallback(
-    Callback1<ContextLostReason>::Type* callback) {
-  context_lost_callback_.reset(callback);
+    const base::Callback<void (ContextLostReason)>& callback) {
+  context_lost_callback_ = callback;
 }
 
 bool RendererGLContext::MakeCurrent(RendererGLContext* context) {
@@ -229,7 +230,7 @@ bool RendererGLContext::SwapBuffers() {
   return true;
 }
 
-bool RendererGLContext::Echo(Task* task) {
+bool RendererGLContext::Echo(const base::Closure& task) {
   return command_buffer_->Echo(task);
 }
 
@@ -371,7 +372,7 @@ bool RendererGLContext::Initialize(bool onscreen,
   }
 
   command_buffer_->SetChannelErrorCallback(
-      NewCallback(this, &RendererGLContext::OnContextLost));
+      base::Bind(&RendererGLContext::OnContextLost, base::Unretained(this)));
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_ = new gpu::gles2::GLES2CmdHelper(command_buffer_);
@@ -446,12 +447,12 @@ void RendererGLContext::Destroy() {
 }
 
 void RendererGLContext::OnContextLost() {
-  if (context_lost_callback_.get()) {
+  if (!context_lost_callback_.is_null()) {
     RendererGLContext::ContextLostReason reason = kUnknown;
     if (command_buffer_) {
       reason = ConvertReason(
           command_buffer_->GetLastState().context_lost_reason);
     }
-    context_lost_callback_->Run(reason);
+    context_lost_callback_.Run(reason);
   }
 }

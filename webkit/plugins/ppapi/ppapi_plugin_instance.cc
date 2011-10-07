@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -977,7 +978,7 @@ bool PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
     ReportGeometry();
   } else {
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &PluginInstance::ReportGeometry));
+        FROM_HERE, base::Bind(&PluginInstance::ReportGeometry, this));
   }
   return true;
 }
@@ -1007,7 +1008,7 @@ void PluginInstance::FlashSetFullscreen(bool fullscreen, bool delay_report) {
       ReportGeometry();
     } else {
       MessageLoop::current()->PostTask(
-          FROM_HERE, NewRunnableMethod(this, &PluginInstance::ReportGeometry));
+          FROM_HERE, base::Bind(&PluginInstance::ReportGeometry, this));
     }
   }
 }

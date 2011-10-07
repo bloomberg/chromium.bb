@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -163,7 +164,7 @@ void CallOnMainThread(int delay_in_msec,
   if (callback.func) {
     GetMainThreadMessageLoop()->PostDelayedTask(
         FROM_HERE,
-        NewRunnableFunction(callback.func, callback.user_data, result),
+        base::Bind(callback.func, callback.user_data, result),
         delay_in_msec);
   }
 }

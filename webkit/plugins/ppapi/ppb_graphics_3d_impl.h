@@ -5,7 +5,7 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_GRAPHICS_3D_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_GRAPHICS_3D_IMPL_H_
 
-#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "ppapi/shared_impl/graphics_3d_impl.h"
 #include "ppapi/shared_impl/resource.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -86,8 +86,7 @@ class PPB_Graphics3D_Impl : public ::ppapi::Resource,
   bool commit_pending_;
   // PluginDelegate's 3D Context. Responsible for providing the command buffer.
   scoped_ptr<PluginDelegate::PlatformContext3D> platform_context_;
-  base::ScopedCallbackFactory<PPB_Graphics3D_Impl> callback_factory_;
-  ScopedRunnableMethodFactory<PPB_Graphics3D_Impl> method_factory_;
+  base::WeakPtrFactory<PPB_Graphics3D_Impl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics3D_Impl);
 };

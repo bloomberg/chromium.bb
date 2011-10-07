@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_time.h"
@@ -142,6 +143,8 @@ class PPB_FileIO_Impl : public ::ppapi::Resource,
   // Pointer to a QuotaFileIO instance, which is valid only while a file
   // of type PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY} is opened.
   scoped_ptr<QuotaFileIO> quota_file_io_;
+
+  base::WeakPtrFactory<PPB_FileIO_Impl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileIO_Impl);
 };

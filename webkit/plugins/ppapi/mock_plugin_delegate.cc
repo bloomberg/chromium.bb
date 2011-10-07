@@ -85,12 +85,12 @@ bool MockPluginDelegate::RunFileChooser(
 
 bool MockPluginDelegate::AsyncOpenFile(const FilePath& path,
                                        int flags,
-                                       AsyncOpenFileCallback* callback) {
+                                       const AsyncOpenFileCallback& callback) {
   return false;
 }
 
 bool MockPluginDelegate::AsyncOpenFileSystemURL(
-    const GURL& path, int flags, AsyncOpenFileCallback* callback) {
+    const GURL& path, int flags, const AsyncOpenFileCallback& callback) {
   return false;
 }
 
@@ -144,7 +144,7 @@ bool MockPluginDelegate::ReadDirectory(
 
 void MockPluginDelegate::QueryAvailableSpace(
     const GURL& origin, quota::StorageType type,
-    AvailableSpaceCallback* callback) {
+    const AvailableSpaceCallback& callback) {
 }
 
 void MockPluginDelegate::WillUpdateFile(const GURL& file_path) {

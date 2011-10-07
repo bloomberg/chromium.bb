@@ -40,10 +40,10 @@ class MockPluginDelegate : public PluginDelegate {
       WebKit::WebFileChooserCompletion* chooser_completion);
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
-                             AsyncOpenFileCallback* callback);
+                             const AsyncOpenFileCallback& callback);
   virtual bool AsyncOpenFileSystemURL(const GURL& path,
                                       int flags,
-                                      AsyncOpenFileCallback* callback);
+                                      const AsyncOpenFileCallback& callback);
   virtual bool OpenFileSystem(
       const GURL& url,
       fileapi::FileSystemType type,
@@ -69,7 +69,7 @@ class MockPluginDelegate : public PluginDelegate {
       fileapi::FileSystemCallbackDispatcher* dispatcher);
   virtual void QueryAvailableSpace(const GURL& origin,
                                    quota::StorageType type,
-                                   AvailableSpaceCallback* callback);
+                                   const AvailableSpaceCallback& callback);
   virtual void WillUpdateFile(const GURL& file_path);
   virtual void DidUpdateFile(const GURL& file_path, int64_t delta);
   virtual base::PlatformFileError OpenFile(const PepperFilePath& path,

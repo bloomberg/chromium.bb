@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/task.h"
@@ -223,7 +224,8 @@ QuotaFileIO::QuotaFileIO(
       outstanding_errors_(0),
       max_written_offset_(0),
       inflight_operations_(0),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK_NE(base::kInvalidPlatformFileValue, file_);
   DCHECK_NE(quota::kStorageTypeUnknown, storage_type_);
 }
@@ -303,7 +305,8 @@ bool QuotaFileIO::RegisterOperationForQuotaChecks(
     ++outstanding_quota_queries_;
     plugin_delegate->QueryAvailableSpace(
         GURL(file_url_.path()).GetOrigin(), storage_type_,
-        callback_factory_.NewCallback(&QuotaFileIO::DidQueryAvailableSpace));
+        base::Bind(&QuotaFileIO::DidQueryAvailableSpace,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
   pending_operations_.push_back(op.release());
   return true;

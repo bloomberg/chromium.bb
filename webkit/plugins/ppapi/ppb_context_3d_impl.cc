@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/shared_memory.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -72,7 +73,7 @@ PPB_Context3D_Impl::PPB_Context3D_Impl(PP_Instance instance)
       transfer_buffer_id_(0),
       draw_surface_(NULL),
       read_surface_(NULL),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Context3D_Impl::~PPB_Context3D_Impl() {
@@ -304,7 +305,8 @@ bool PPB_Context3D_Impl::InitRaw(PP_Config3D_Dev config,
   }
 
   platform_context_->SetContextLostCallback(
-      callback_factory_.NewCallback(&PPB_Context3D_Impl::OnContextLost));
+      base::Bind(&PPB_Context3D_Impl::OnContextLost,
+                 weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 

@@ -5,7 +5,6 @@
 #define CONTENT_RENDERER_PEPPER_PLATFORM_CONTEXT_3D_IMPL_H_
 
 #include "base/callback.h"
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -21,7 +20,6 @@ class CommandBuffer;
 class CommandBufferProxy;
 class GpuChannelHost;
 class RendererGLContext;
-class Task;
 
 class PlatformContext3DImpl
     : public webkit::ppapi::PluginDelegate::PlatformContext3D {
@@ -33,8 +31,8 @@ class PlatformContext3DImpl
   virtual unsigned GetBackingTextureId();
   virtual gpu::CommandBuffer* GetCommandBuffer();
   virtual int GetCommandBufferRouteId();
-  virtual void SetContextLostCallback(Callback0::Type* callback);
-  virtual bool Echo(Task* task);
+  virtual void SetContextLostCallback(const base::Closure& callback);
+  virtual bool Echo(const base::Closure& task);
 
  private:
   bool InitRaw();
@@ -44,8 +42,8 @@ class PlatformContext3DImpl
   scoped_refptr<GpuChannelHost> channel_;
   unsigned int parent_texture_id_;
   CommandBufferProxy* command_buffer_;
-  scoped_ptr<Callback0::Type> context_lost_callback_;
-  base::ScopedCallbackFactory<PlatformContext3DImpl> callback_factory_;
+  base::Closure context_lost_callback_;
+  base::WeakPtrFactory<PlatformContext3DImpl> weak_ptr_factory_;
 };
 
 #endif  // ENABLE_GPU

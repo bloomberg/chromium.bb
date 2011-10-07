@@ -6,6 +6,7 @@
 
 #include <iterator>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -155,7 +156,8 @@ PPB_Graphics2D_Impl::PPB_Graphics2D_Impl(PP_Instance instance)
     : Resource(instance),
       bound_instance_(NULL),
       offscreen_flush_pending_(false),
-      is_always_opaque_(false) {
+      is_always_opaque_(false),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Graphics2D_Impl::~PPB_Graphics2D_Impl() {
@@ -622,9 +624,9 @@ void PPB_Graphics2D_Impl::ScheduleOffscreenCallback(
   offscreen_flush_pending_ = true;
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &PPB_Graphics2D_Impl::ExecuteOffscreenCallback,
-                        callback));
+      base::Bind(&PPB_Graphics2D_Impl::ExecuteOffscreenCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void PPB_Graphics2D_Impl::ExecuteOffscreenCallback(FlushCallbackData data) {

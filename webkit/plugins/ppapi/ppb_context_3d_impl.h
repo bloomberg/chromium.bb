@@ -5,8 +5,8 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_CONTEXT_3D_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_CONTEXT_3D_IMPL_H_
 
-#include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_context_3d_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -110,7 +110,7 @@ class PPB_Context3D_Impl : public ::ppapi::Resource,
   PPB_Surface3D_Impl* draw_surface_;
   PPB_Surface3D_Impl* read_surface_;
 
-  base::ScopedCallbackFactory<PPB_Context3D_Impl> callback_factory_;
+  base::WeakPtrFactory<PPB_Context3D_Impl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Context3D_Impl);
 };

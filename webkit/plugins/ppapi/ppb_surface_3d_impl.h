@@ -76,7 +76,7 @@ class PPB_Surface3D_Impl : public ::ppapi::Resource,
   // The context this surface is currently bound to.
   PPB_Context3D_Impl* context_;
 
-  ScopedRunnableMethodFactory<PPB_Surface3D_Impl> method_factory_;
+  base::WeakPtrFactory<PPB_Surface3D_Impl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Surface3D_Impl);
 };

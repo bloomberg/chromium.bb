@@ -96,8 +96,9 @@ class MessageChannel {
   // channel's instance.  This is used by PostMessageToNative.
   void PostMessageToNativeImpl(PP_Var message_data);
 
-  // Ensure pending tasks will not fire after this object is destroyed.
-  ScopedRunnableMethodFactory<MessageChannel> method_factory_;
+  // This is used to ensure pending tasks will not fire after this object is
+  // destroyed.
+  base::WeakPtrFactory<MessageChannel> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageChannel);
 };

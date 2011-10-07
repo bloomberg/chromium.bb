@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"
@@ -44,7 +45,7 @@ PP_Resource PPB_Scrollbar_Impl::Create(PP_Instance instance,
 
 PPB_Scrollbar_Impl::PPB_Scrollbar_Impl(PP_Instance instance)
     : PPB_Widget_Impl(instance),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {
@@ -210,13 +211,13 @@ void PPB_Scrollbar_Impl::invalidateScrollbarRect(
   // Can't call into the client to tell them about the invalidate right away,
   // since the PPB_Scrollbar_Impl code is still in the middle of updating its
   // internal state.
-  // Note: we use a method factory here instead of NewRunnableMethod because the
-  // latter would modify the lifetime of this object. That might make
-  // WebKit::WebScrollbar outlive WebKit::WebPluginContainer, which is against
-  // its contract.
+  // Note: we use a WeakPtrFactory here so that a lingering callback can not
+  // modify the lifetime of this object. Otherwise, WebKit::WebScrollbar could
+  // outlive WebKit::WebPluginContainer, which is against its contract.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(&PPB_Scrollbar_Impl::NotifyInvalidate));
+      base::Bind(&PPB_Scrollbar_Impl::NotifyInvalidate,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PPB_Scrollbar_Impl::getTickmarks(

@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
@@ -54,7 +55,8 @@ PPB_FileIO_Impl::PPB_FileIO_Impl(PP_Instance instance)
       file_(base::kInvalidPlatformFileValue),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       pending_op_(OPERATION_NONE),
-      info_(NULL) {
+      info_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 PPB_FileIO_Impl::~PPB_FileIO_Impl() {
@@ -95,16 +97,16 @@ int32_t PPB_FileIO_Impl::Open(PP_Resource pp_file_ref,
     file_system_url_ = file_ref->GetFileSystemURL();
     if (!plugin_delegate->AsyncOpenFileSystemURL(
             file_system_url_, flags,
-            callback_factory_.NewCallback(
-                &PPB_FileIO_Impl::AsyncOpenFileCallback)))
+            base::Bind(&PPB_FileIO_Impl::AsyncOpenFileCallback,
+                       weak_ptr_factory_.GetWeakPtr())))
       return PP_ERROR_FAILED;
   } else {
     if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
       return PP_ERROR_FAILED;
     if (!plugin_delegate->AsyncOpenFile(
             file_ref->GetSystemPath(), flags,
-            callback_factory_.NewCallback(
-                &PPB_FileIO_Impl::AsyncOpenFileCallback)))
+            base::Bind(&PPB_FileIO_Impl::AsyncOpenFileCallback,
+                       weak_ptr_factory_.GetWeakPtr())))
       return PP_ERROR_FAILED;
   }
 

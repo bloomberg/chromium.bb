@@ -11,7 +11,7 @@
 #include <map>
 #include <queue>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -31,7 +31,6 @@ class Size;
 
 class GpuChannelHost;
 class PluginChannelHost;
-class Task;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
@@ -69,7 +68,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   // Invoke the task when the channel has been flushed. Takes care of deleting
   // the task whether the echo succeeds or not.
-  bool Echo(Task* task);
+  bool Echo(const base::Closure& callback);
 
   // Reparent a command buffer. TODO(apatrick): going forward, the notion of
   // the parent / child relationship between command buffers is going away in
@@ -78,11 +77,11 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual bool SetParent(CommandBufferProxy* parent_command_buffer,
                          uint32 parent_texture_id);
 
-  void SetChannelErrorCallback(Callback0::Type* callback);
+  void SetChannelErrorCallback(const base::Closure& callback);
 
   // Set a task that will be invoked the next time the window becomes invalid
   // and needs to be repainted. Takes ownership of task.
-  void SetNotifyRepaintTask(Task* task);
+  void SetNotifyRepaintTask(const base::Closure& callback);
 
   // Sends an IPC message to create a GpuVideoDecodeAccelerator. Creates and
   // returns a pointer to a GpuVideoDecodeAcceleratorHost.
@@ -130,11 +129,11 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   unsigned int flush_count_;
 
   // Tasks to be invoked in echo responses.
-  std::queue<linked_ptr<Task> > echo_tasks_;
+  std::queue<base::Closure> echo_tasks_;
 
-  scoped_ptr<Task> notify_repaint_task_;
+  base::Closure notify_repaint_task_;
 
-  scoped_ptr<Callback0::Type> channel_error_callback_;
+  base::Closure channel_error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxy);
 };

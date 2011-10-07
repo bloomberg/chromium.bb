@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/string_tokenizer.h"
 #include "base/command_line.h"
@@ -52,7 +53,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0),
-      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 WebGraphicsContext3DCommandBufferImpl::
@@ -174,8 +175,8 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
 
   context_->SetContextLostCallback(
-      NewCallback(this,
-                  &WebGraphicsContext3DCommandBufferImpl::OnContextLost));
+      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // TODO(gman): Remove this.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -245,8 +246,9 @@ void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   if (renderview)
     renderview->OnViewContextSwapBuffersPosted();
   context_->SwapBuffers();
-  context_->Echo(method_factory_.NewRunnableMethod(
-      &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete));
+  context_->Echo(base::Bind(
+      &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
+      weak_ptr_factory_.GetWeakPtr()));
 #if defined(OS_MACOSX)
   // It appears that making the compositor's on-screen context current on
   // other platforms implies this flush. TODO(kbr): this means that the

@@ -280,7 +280,7 @@ void PlatformAudioImpl::ShutDown() {
   client_ = NULL;
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &PlatformAudioImpl::ShutDownOnIOThread));
+      base::Bind(&PlatformAudioImpl::ShutDownOnIOThread, this));
 }
 
 void PlatformAudioImpl::InitializeOnIOThread(const AudioParameters& params) {
@@ -396,18 +396,18 @@ class HostDispatcherWrapper
 class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
  public:
   typedef webkit::ppapi::PluginDelegate::AvailableSpaceCallback PluginCallback;
-  explicit QuotaCallbackTranslator(PluginCallback* cb) : callback_(cb) {}
+  explicit QuotaCallbackTranslator(const PluginCallback& cb) : callback_(cb) {}
   virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) OVERRIDE {
-    callback_->Run(std::max(static_cast<int64>(0), quota - usage));
+    callback_.Run(std::max(static_cast<int64>(0), quota - usage));
   }
   virtual void DidGrantStorageQuota(int64 granted_quota) OVERRIDE {
     NOTREACHED();
   }
   virtual void DidFail(quota::QuotaStatusCode error) OVERRIDE {
-    callback_->Run(0);
+    callback_.Run(0);
   }
  private:
-  scoped_ptr<PluginCallback> callback_;
+  PluginCallback callback_;
 };
 
 class PlatformVideoCaptureImpl
@@ -665,7 +665,6 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
     : render_view_(render_view),
       has_saved_context_menu_action_(false),
       saved_context_menu_action_(0),
-      id_generator_(0),
       is_pepper_plugin_focused_(false),
       mouse_lock_owner_(NULL),
       mouse_locked_(false),
@@ -1017,12 +1016,12 @@ bool PepperPluginDelegateImpl::RunFileChooser(
   return render_view_->runFileChooser(params, chooser_completion);
 }
 
-bool PepperPluginDelegateImpl::AsyncOpenFile(const FilePath& path,
-                                             int flags,
-                                             AsyncOpenFileCallback* callback) {
-  int message_id = id_generator_++;
-  DCHECK(!messages_waiting_replies_.Lookup(message_id));
-  messages_waiting_replies_.AddWithID(callback, message_id);
+bool PepperPluginDelegateImpl::AsyncOpenFile(
+    const FilePath& path,
+    int flags,
+    const AsyncOpenFileCallback& callback) {
+  int message_id = pending_async_open_files_.Add(
+      new AsyncOpenFileCallback(callback));
   IPC::Message* msg = new ViewHostMsg_AsyncOpenFile(
       render_view_->routing_id(), path, flags, message_id);
   return render_view_->Send(msg);
@@ -1033,9 +1032,9 @@ void PepperPluginDelegateImpl::OnAsyncFileOpened(
     base::PlatformFile file,
     int message_id) {
   AsyncOpenFileCallback* callback =
-      messages_waiting_replies_.Lookup(message_id);
+      pending_async_open_files_.Lookup(message_id);
   DCHECK(callback);
-  messages_waiting_replies_.Remove(message_id);
+  pending_async_open_files_.Remove(message_id);
   callback->Run(error_code, base::PassPlatformFile(&file));
   // Make sure we won't leak file handle if the requester has died.
   if (file != base::kInvalidPlatformFileValue)
@@ -1187,7 +1186,7 @@ void PepperPluginDelegateImpl::PublishPolicy(const std::string& policy_json) {
 
 void PepperPluginDelegateImpl::QueryAvailableSpace(
     const GURL& origin, quota::StorageType type,
-    AvailableSpaceCallback* callback) {
+    const AvailableSpaceCallback& callback) {
   ChildThread::current()->quota_dispatcher()->QueryStorageUsageAndQuota(
       origin, type, new QuotaCallbackTranslator(callback));
 }
@@ -1204,7 +1203,7 @@ class AsyncOpenFileSystemURLCallbackTranslator
     : public fileapi::FileSystemCallbackDispatcher {
  public:
   AsyncOpenFileSystemURLCallbackTranslator(
-      webkit::ppapi::PluginDelegate::AsyncOpenFileCallback* callback)
+      const webkit::ppapi::PluginDelegate::AsyncOpenFileCallback& callback)
     : callback_(callback) {
   }
 
@@ -1230,7 +1229,7 @@ class AsyncOpenFileSystemURLCallbackTranslator
 
   virtual void DidFail(base::PlatformFileError error_code) {
     base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
-    callback_->Run(error_code, base::PassPlatformFile(&invalid_file));
+    callback_.Run(error_code, base::PassPlatformFile(&invalid_file));
   }
 
   virtual void DidWrite(int64 bytes, bool complete) {
@@ -1240,7 +1239,7 @@ class AsyncOpenFileSystemURLCallbackTranslator
   virtual void DidOpenFile(
       base::PlatformFile file,
       base::ProcessHandle unused) {
-    callback_->Run(base::PLATFORM_FILE_OK, base::PassPlatformFile(&file));
+    callback_.Run(base::PLATFORM_FILE_OK, base::PassPlatformFile(&file));
     // Make sure we won't leak file handle if the requester has died.
     if (file != base::kInvalidPlatformFileValue) {
       base::FileUtilProxy::Close(RenderThreadImpl::current()->
@@ -1249,11 +1248,11 @@ class AsyncOpenFileSystemURLCallbackTranslator
   }
 
 private:  // TODO(ericu): Delete this?
-  webkit::ppapi::PluginDelegate::AsyncOpenFileCallback* callback_;
+  webkit::ppapi::PluginDelegate::AsyncOpenFileCallback callback_;
 };
 
 bool PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
-    const GURL& path, int flags, AsyncOpenFileCallback* callback) {
+    const GURL& path, int flags, const AsyncOpenFileCallback& callback) {
 
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();

@@ -73,22 +73,23 @@ void CommandBufferProxy::OnDestroyed(gpu::error::ContextLostReason reason) {
   last_state_.error = gpu::error::kLostContext;
   last_state_.context_lost_reason = reason;
 
-  if (channel_error_callback_.get()) {
-    channel_error_callback_->Run();
+  if (!channel_error_callback_.is_null()) {
+    channel_error_callback_.Run();
     // Avoid calling the error callback more than once.
-    channel_error_callback_.reset();
+    channel_error_callback_.Reset();
   }
 }
 
 void CommandBufferProxy::OnEchoAck() {
   DCHECK(!echo_tasks_.empty());
-  Task* task = echo_tasks_.front().release();
+  base::Closure callback = echo_tasks_.front();
   echo_tasks_.pop();
-  task->Run();
+  callback.Run();
 }
 
-void CommandBufferProxy::SetChannelErrorCallback(Callback0::Type* callback) {
-  channel_error_callback_.reset(callback);
+void CommandBufferProxy::SetChannelErrorCallback(
+    const base::Closure& callback) {
+  channel_error_callback_ = callback;
 }
 
 bool CommandBufferProxy::Initialize(int32 size) {
@@ -335,9 +336,10 @@ void CommandBufferProxy::SetToken(int32 token) {
 }
 
 void CommandBufferProxy::OnNotifyRepaint() {
-  if (notify_repaint_task_.get())
+  if (!notify_repaint_task_.is_null())
     MessageLoop::current()->PostNonNestableTask(
-        FROM_HERE, notify_repaint_task_.release());
+        FROM_HERE, notify_repaint_task_);
+  notify_repaint_task_.Reset();
 }
 
 void CommandBufferProxy::SetParseError(
@@ -352,18 +354,16 @@ void CommandBufferProxy::SetContextLostReason(
   NOTREACHED();
 }
 
-bool CommandBufferProxy::Echo(Task* task) {
+bool CommandBufferProxy::Echo(const base::Closure& callback) {
   if (last_state_.error != gpu::error::kNoError) {
-    delete task;
     return false;
   }
 
   if (!Send(new GpuChannelMsg_Echo(GpuCommandBufferMsg_EchoAck(route_id_)))) {
-    delete task;
     return false;
   }
 
-  echo_tasks_.push(linked_ptr<Task>(task));
+  echo_tasks_.push(callback);
 
   return true;
 }
@@ -395,8 +395,8 @@ bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
   return result;
 }
 
-void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {
-  notify_repaint_task_.reset(task);
+void CommandBufferProxy::SetNotifyRepaintTask(const base::Closure& task) {
+  notify_repaint_task_ = task;
 }
 
 scoped_refptr<GpuVideoDecodeAcceleratorHost>

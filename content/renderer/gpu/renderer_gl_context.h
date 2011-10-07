@@ -10,7 +10,7 @@
 #define CONTENT_RENDERER_GPU_RENDERER_GL_CONTEXT_H_
 #pragma once
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -22,7 +22,6 @@
 class GpuChannelHost;
 class CommandBufferProxy;
 class GURL;
-class Task;
 class TransportTextureHost;
 
 namespace gpu {
@@ -142,7 +141,8 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
   // Deletes a texture in the parent's RendererGLContext.
   void DeleteParentTexture(uint32 texture);
 
-  void SetContextLostCallback(Callback1<ContextLostReason>::Type* callback);
+  void SetContextLostCallback(
+      const base::Callback<void(ContextLostReason)>& callback);
 
   // Set the current RendererGLContext for the calling thread.
   static bool MakeCurrent(RendererGLContext* context);
@@ -155,7 +155,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
 
   // Run the task once the channel has been flushed. Takes care of deleting the
   // task whether the echo succeeds or not.
-  bool Echo(Task* task);
+  bool Echo(const base::Closure& task);
 
   // Create a TransportTextureHost object associated with the context.
   scoped_refptr<TransportTextureHost> CreateTransportTextureHost();
@@ -192,7 +192,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
 
   scoped_refptr<GpuChannelHost> channel_;
   base::WeakPtr<RendererGLContext> parent_;
-  scoped_ptr<Callback1<ContextLostReason>::Type> context_lost_callback_;
+  base::Callback<void(ContextLostReason)> context_lost_callback_;
   uint32 parent_texture_id_;
   CommandBufferProxy* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;

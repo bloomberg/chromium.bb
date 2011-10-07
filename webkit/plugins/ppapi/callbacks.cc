@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -95,10 +96,11 @@ void TrackedCallback::PostAbort() {
   if (!completed()) {
     aborted_ = true;
     // Post a task for the abort (only if necessary).
-    if (abort_impl_factory_.empty()) {
+    if (!abort_impl_factory_.HasWeakPtrs()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          abort_impl_factory_.NewRunnableMethod(&TrackedCallback::AbortImpl));
+          base::Bind(&TrackedCallback::AbortImpl,
+                     abort_impl_factory_.GetWeakPtr()));
     }
   }
 }
@@ -132,7 +134,7 @@ TrackedCompletionCallback::TrackedCompletionCallback(
 void TrackedCompletionCallback::Run(int32_t result) {
   if (!completed()) {
     // Cancel any pending calls.
-    abort_impl_factory_.RevokeAll();
+    abort_impl_factory_.InvalidateWeakPtrs();
 
     // Copy |callback_| and look at |aborted()| now, since |MarkAsCompleted()|
     // may delete us.

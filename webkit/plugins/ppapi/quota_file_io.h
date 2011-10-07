@@ -9,6 +9,7 @@
 
 #include "base/file_util_proxy.h"
 #include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_file_info.h"
@@ -104,6 +105,7 @@ class QuotaFileIO {
   int inflight_operations_;
 
   base::ScopedCallbackFactory<QuotaFileIO> callback_factory_;
+  base::WeakPtrFactory<QuotaFileIO> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(QuotaFileIO);
 };
 

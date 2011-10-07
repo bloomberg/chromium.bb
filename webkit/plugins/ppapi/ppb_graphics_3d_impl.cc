@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -54,8 +55,7 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
     : Resource(instance),
       bound_to_instance_(false),
       commit_pending_(false),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
@@ -165,8 +165,8 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
   if (gles2_impl())
     gles2_impl()->SwapBuffers();
 
-  platform_context_->Echo(method_factory_.NewRunnableMethod(
-      &PPB_Graphics3D_Impl::OnSwapBuffers));
+  platform_context_->Echo(base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
+                                     weak_ptr_factory_.GetWeakPtr()));
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -202,7 +202,8 @@ bool PPB_Graphics3D_Impl::InitRaw(PP_Resource share_context,
     return false;
 
   platform_context_->SetContextLostCallback(
-      callback_factory_.NewCallback(&PPB_Graphics3D_Impl::OnContextLost));
+      base::Bind(&PPB_Graphics3D_Impl::OnContextLost,
+                 weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 
@@ -233,8 +234,8 @@ void PPB_Graphics3D_Impl::OnContextLost() {
 
   // Send context lost to plugin. This may have been caused by a PPAPI call, so
   // avoid re-entering.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &PPB_Graphics3D_Impl::SendContextLost));
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &PPB_Graphics3D_Impl::SendContextLost, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PPB_Graphics3D_Impl::SendContextLost() {

@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -25,7 +26,7 @@ PPB_Surface3D_Impl::PPB_Surface3D_Impl(PP_Instance instance)
       bound_to_instance_(false),
       swap_initiated_(false),
       context_(NULL),
-      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Surface3D_Impl::~PPB_Surface3D_Impl() {
@@ -82,8 +83,9 @@ int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   gpu::gles2::GLES2Implementation* impl = context_->gles2_impl();
   if (impl)
     context_->gles2_impl()->SwapBuffers();
-  context_->platform_context()->Echo(method_factory_.NewRunnableMethod(
-      &PPB_Surface3D_Impl::OnSwapBuffers));
+  context_->platform_context()->Echo(
+      base::Bind(&PPB_Surface3D_Impl::OnSwapBuffers,
+                 weak_ptr_factory_.GetWeakPtr()));
   // |SwapBuffers()| should not call us back synchronously, but double-check.
   DCHECK(!swap_callback_->completed());
   return PP_OK_COMPLETIONPENDING;

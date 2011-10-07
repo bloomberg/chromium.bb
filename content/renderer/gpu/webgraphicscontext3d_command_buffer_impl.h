@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
@@ -487,8 +487,7 @@ class WebGraphicsContext3DCommandBufferImpl
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;
 
-  ScopedRunnableMethodFactory<WebGraphicsContext3DCommandBufferImpl>
-      method_factory_;
+  base::WeakPtrFactory<WebGraphicsContext3DCommandBufferImpl> weak_ptr_factory_;
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   scoped_array<uint8> scanline_;

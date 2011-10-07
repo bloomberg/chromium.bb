@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/message_loop_proxy.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
@@ -181,11 +181,11 @@ class PluginDelegate {
 
     // Set an optional callback that will be invoked when the context is lost
     // (e.g. gpu process crash). Takes ownership of the callback.
-    virtual void SetContextLostCallback(Callback0::Type* callback) = 0;
+    virtual void SetContextLostCallback(
+        const base::Callback<void()>& callback) = 0;
 
-    // Run the task once the channel has been flushed. Takes care of deleting
-    // the task whether the echo succeeds or not.
-    virtual bool Echo(Task* task) = 0;
+    // Run the callback once the channel has been flushed.
+    virtual bool Echo(const base::Callback<void()>& callback) = 0;
   };
 
   class PlatformAudio {
@@ -306,14 +306,15 @@ class PluginDelegate {
       WebKit::WebFileChooserCompletion* chooser_completion) = 0;
 
   // Sends an async IPC to open a file.
-  typedef Callback2<base::PlatformFileError, base::PassPlatformFile
-                    >::Type AsyncOpenFileCallback;
+  typedef base::Callback<void (base::PlatformFileError, base::PassPlatformFile)>
+      AsyncOpenFileCallback;
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
-                             AsyncOpenFileCallback* callback) = 0;
-  virtual bool AsyncOpenFileSystemURL(const GURL& path,
-                                      int flags,
-                                      AsyncOpenFileCallback* callback) = 0;
+                             const AsyncOpenFileCallback& callback) = 0;
+  virtual bool AsyncOpenFileSystemURL(
+      const GURL& path,
+      int flags,
+      const AsyncOpenFileCallback& callback) = 0;
 
   virtual bool OpenFileSystem(
       const GURL& url,
@@ -346,10 +347,10 @@ class PluginDelegate {
   virtual void PublishPolicy(const std::string& policy_json) = 0;
 
   // For quota handlings for FileIO API.
-  typedef Callback1<int64>::Type AvailableSpaceCallback;
+  typedef base::Callback<void (int64)> AvailableSpaceCallback;
   virtual void QueryAvailableSpace(const GURL& origin,
                                    quota::StorageType type,
-                                   AvailableSpaceCallback* callback) = 0;
+                                   const AvailableSpaceCallback& callback) = 0;
   virtual void WillUpdateFile(const GURL& file_path) = 0;
   virtual void DidUpdateFile(const GURL& file_path, int64_t delta) = 0;
 

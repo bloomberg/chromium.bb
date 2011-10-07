@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/shared_impl/resource.h"
@@ -173,6 +174,8 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
   // Set to true if the plugin declares that this device will always be opaque.
   // This allows us to do more optimized painting in some cases.
   bool is_always_opaque_;
+
+  base::WeakPtrFactory<PPB_Graphics2D_Impl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics2D_Impl);
 };

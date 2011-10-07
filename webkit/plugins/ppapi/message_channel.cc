@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
@@ -284,7 +285,7 @@ MessageChannel::MessageChannel(PluginInstance* instance)
     : instance_(instance),
       passthrough_object_(NULL),
       np_object_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   VOID_TO_NPVARIANT(onmessage_invoker_);
 
   // Now create an NPObject for receiving calls to postMessage. This sets the
@@ -347,9 +348,9 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &MessageChannel::PostMessageToJavaScriptImpl,
-          var_copy));
+      base::Bind(&MessageChannel::PostMessageToJavaScriptImpl,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 var_copy));
 }
 
 void MessageChannel::PostMessageToJavaScriptImpl(PP_Var message_data) {
@@ -396,9 +397,9 @@ void MessageChannel::PostMessageToNative(PP_Var message_data) {
   PP_Var var_copy(CopyPPVar(message_data));
 
   MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &MessageChannel::PostMessageToNativeImpl,
-          var_copy));
+      base::Bind(&MessageChannel::PostMessageToNativeImpl,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 var_copy));
 }
 
 void MessageChannel::PostMessageToNativeImpl(PP_Var message_data) {

@@ -208,11 +208,11 @@ class PepperPluginDelegateImpl
       WebKit::WebFileChooserCompletion* chooser_completion);
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
-                             AsyncOpenFileCallback* callback);
+                             const AsyncOpenFileCallback& callback);
   virtual bool AsyncOpenFileSystemURL(
       const GURL& path,
       int flags,
-      AsyncOpenFileCallback* callback) OVERRIDE;
+      const AsyncOpenFileCallback& callback) OVERRIDE;
   virtual bool OpenFileSystem(
       const GURL& url,
       fileapi::FileSystemType type,
@@ -241,9 +241,10 @@ class PepperPluginDelegateImpl
       const GURL& directory_path,
       fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
   virtual void PublishPolicy(const std::string& policy_json) OVERRIDE;
-  virtual void QueryAvailableSpace(const GURL& origin,
-                                   quota::StorageType type,
-                                   AvailableSpaceCallback* callback) OVERRIDE;
+  virtual void QueryAvailableSpace(
+      const GURL& origin,
+      quota::StorageType type,
+      const AvailableSpaceCallback& callback) OVERRIDE;
   virtual void WillUpdateFile(const GURL& file_path) OVERRIDE;
   virtual void DidUpdateFile(const GURL& file_path, int64_t delta) OVERRIDE;
   virtual base::PlatformFileError OpenFile(
@@ -341,10 +342,7 @@ class PepperPluginDelegateImpl
   bool has_saved_context_menu_action_;
   unsigned saved_context_menu_action_;
 
-  // TODO(viettrungluu): Get rid of |id_generator_| -- just use |IDMap::Add()|.
-  // Rename |messages_waiting_replies_| (to specify async open file).
-  int id_generator_;
-  IDMap<AsyncOpenFileCallback> messages_waiting_replies_;
+  IDMap<AsyncOpenFileCallback> pending_async_open_files_;
 
   IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>,
         IDMapOwnPointer> pending_connect_tcps_;

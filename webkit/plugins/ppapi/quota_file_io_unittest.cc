@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -33,7 +35,7 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
       : available_space_(0),
         will_update_count_(0),
         file_thread_(MessageLoopProxy::current()),
-        runnable_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
   virtual ~QuotaMockPluginDelegate() {}
 
@@ -44,11 +46,13 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
   virtual void QueryAvailableSpace(
       const GURL& origin,
       quota::StorageType type,
-      Callback* callback) OVERRIDE {
-    DCHECK(callback);
+      const Callback& callback) OVERRIDE {
+    DCHECK(!callback.is_null());
     MessageLoopProxy::current()->PostTask(
-        FROM_HERE, runnable_factory_.NewRunnableMethod(
-            &QuotaMockPluginDelegate::RunAvailableSpaceCallback, callback));
+        FROM_HERE, base::Bind(
+            &QuotaMockPluginDelegate::RunAvailableSpaceCallback,
+            weak_ptr_factory_.GetWeakPtr(),
+            callback));
   }
 
   virtual void WillUpdateFile(const GURL& file_path) OVERRIDE {
@@ -67,16 +71,15 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
   int64_t available_space() const { return available_space_; }
 
  private:
-  void RunAvailableSpaceCallback(Callback* callback) {
-    callback->Run(available_space_);
-    delete callback;
+  void RunAvailableSpaceCallback(const Callback& callback) {
+    callback.Run(available_space_);
   }
 
   int64_t available_space_;
   int will_update_count_;
   GURL file_path_;
   scoped_refptr<MessageLoopProxy> file_thread_;
-  ScopedRunnableMethodFactory<QuotaMockPluginDelegate> runnable_factory_;
+  base::WeakPtrFactory<QuotaMockPluginDelegate> weak_ptr_factory_;
 };
 }  // namespace
 

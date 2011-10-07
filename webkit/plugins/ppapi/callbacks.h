@@ -163,7 +163,7 @@ class TrackedCallback : public base::RefCountedThreadSafe<TrackedCallback> {
   // Factory used by |PostAbort()|. Note that it's safe to cancel any pending
   // posted aborts on destruction -- before it's destroyed, the "owning"
   // |CallbackTracker| must have gone through and done (synchronous) |Abort()|s.
-  ScopedRunnableMethodFactory<TrackedCallback> abort_impl_factory_;
+  base::WeakPtrFactory<TrackedCallback> abort_impl_factory_;
 
  private:
   scoped_refptr<CallbackTracker> tracker_;

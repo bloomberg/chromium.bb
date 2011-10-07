@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 
+#include "base/bind.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
@@ -18,7 +19,7 @@ PlatformContext3DImpl::PlatformContext3DImpl(RendererGLContext* parent_context)
       : parent_context_(parent_context->AsWeakPtr()),
         parent_texture_id_(0),
         command_buffer_(NULL),
-        callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PlatformContext3DImpl::~PlatformContext3DImpl() {
@@ -105,8 +106,9 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   if (!command_buffer_->SetParent(parent_command_buffer, parent_texture_id_))
     return false;
 
-  command_buffer_->SetChannelErrorCallback(callback_factory_.NewCallback(
-      &PlatformContext3DImpl::OnContextLost));
+  command_buffer_->SetChannelErrorCallback(
+      base::Bind(&PlatformContext3DImpl::OnContextLost,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }
@@ -125,19 +127,19 @@ int PlatformContext3DImpl::GetCommandBufferRouteId() {
   return command_buffer_->route_id();
 }
 
-void PlatformContext3DImpl::SetContextLostCallback(Callback0::Type* callback) {
-  context_lost_callback_.reset(callback);
+void PlatformContext3DImpl::SetContextLostCallback(const base::Closure& task) {
+  context_lost_callback_ = task;
 }
 
-bool PlatformContext3DImpl::Echo(Task* task) {
+bool PlatformContext3DImpl::Echo(const base::Closure& task) {
   return command_buffer_->Echo(task);
 }
 
 void PlatformContext3DImpl::OnContextLost() {
   DCHECK(command_buffer_);
 
-  if (context_lost_callback_.get())
-    context_lost_callback_->Run();
+  if (!context_lost_callback_.is_null())
+    context_lost_callback_.Run();
 }
 
 #endif  // ENABLE_GPU

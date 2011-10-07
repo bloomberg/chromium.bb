@@ -4,6 +4,7 @@
 
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
@@ -221,7 +222,7 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
       context_(NULL),
       buffer_(0),
       program_(0),
-      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
@@ -361,7 +362,7 @@ void RenderWidgetFullscreenPepper::CreateContext() {
     return;
   }
   context_->SetContextLostCallback(
-      NewCallback(this, &RenderWidgetFullscreenPepper::OnLostContext));
+      base::Bind(&RenderWidgetFullscreenPepper::OnLostContext, this));
 }
 
 namespace {
@@ -474,8 +475,9 @@ void RenderWidgetFullscreenPepper::SwapBuffers() {
   DCHECK(context_);
   OnSwapBuffersPosted();
   context_->SwapBuffers();
-  context_->Echo(method_factory_.NewRunnableMethod(
-      &RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByRendererGLContext));
+  context_->Echo(base::Bind(
+      &RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByRendererGLContext,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetFullscreenPepper::OnLostContext(
@@ -487,7 +489,7 @@ void RenderWidgetFullscreenPepper::OnLostContext(
   // created when the plugin recreates its own.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(DestroyContext, context_, program_, buffer_));
+      base::Bind(DestroyContext, context_, program_, buffer_));
   context_ = NULL;
   program_ = 0;
   buffer_ = 0;
