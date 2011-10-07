@@ -1276,6 +1276,7 @@
         'browser/extensions/extension_creator_filter_unittest.cc',
         'browser/extensions/extension_event_router_forwarder_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
+        'browser/extensions/extension_idle_api_unittest.cc',
         'browser/extensions/extension_info_map_unittest.cc',
         'browser/extensions/extension_menu_manager_unittest.cc',
         'browser/extensions/extension_omnibox_unittest.cc',
