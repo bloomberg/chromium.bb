@@ -41,3 +41,7 @@
   margin: 0 1ex;
   padding: 0;
 }
+
+#enable-auto-login-checkbox {
+  margin-top: 10px;
+}

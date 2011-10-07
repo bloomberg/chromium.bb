@@ -7777,7 +7777,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_OPTIONS_PASSWORDS_AUTOLOGIN" desc="The label of the 'autologinEnabled' checkbox">
-        Enable automatic sign in for Google sites
+        Offer to sign into Google sites automatically with this account
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form Autofill group">
@@ -8301,7 +8301,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Auto-login infobar -->
       <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password.">
-        Sign in to this site using: <ph name="EMAIL_ADDRESS">$1</ph>
+        Sign in to this site as: <ph name="EMAIL_ADDRESS">$1</ph>
       </message>
       <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login.">
         Sign in
