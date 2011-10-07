@@ -196,8 +196,10 @@ void DevToolsManager::AttachClientHost(int client_host_cookie,
 
   DevToolsClientHost* client_host = (*it).second.first;
   DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(to_rvh);
+  const std::string& state = (*it).second.second;
   BindClientHost(agent_host, client_host);
-  agent_host->Reattach((*it).second.second);
+  agent_host->Reattach(state);
+  agent_runtime_states_[agent_host] = state;
 
   orphan_client_hosts_.erase(it);
 }
