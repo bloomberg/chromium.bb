@@ -589,26 +589,29 @@ void BookmarkBarGtk::SetOverflowButtonAppearance() {
   SetChevronState();
 }
 
-int BookmarkBarGtk::GetFirstHiddenBookmark(
-    int extra_space, std::vector<GtkWidget*>* showing_folders) {
+int BookmarkBarGtk::GetFirstHiddenBookmark(int extra_space,
+    std::vector<GtkWidget*>* showing_folders) {
   int rv = 0;
+  // We're going to keep track of how much width we've used as we move along
+  // the bookmark bar. If we ever surpass the width of the bookmark bar, we'll
+  // know that's the first hidden bookmark.
+  int width_used = 0;
+  // GTK appears to require one pixel of padding to the side of the first and
+  // last buttons on the bar.
+  // TODO(gideonwald): figure out the precise source of these extra two pixels
+  // and make this calculation more reliable.
+  int total_width = bookmark_toolbar_.get()->allocation.width - 2;
   bool overflow = false;
+  GtkRequisition requested_size_;
   GList* toolbar_items =
       gtk_container_get_children(GTK_CONTAINER(bookmark_toolbar_.get()));
   for (GList* iter = toolbar_items; iter; iter = g_list_next(iter)) {
     GtkWidget* tool_item = reinterpret_cast<GtkWidget*>(iter->data);
-    if (gtk_widget_get_direction(tool_item) == GTK_TEXT_DIR_RTL) {
-      overflow = (tool_item->allocation.x + tool_item->style->xthickness <
-                  bookmark_toolbar_.get()->allocation.x - extra_space);
-    } else {
-      overflow =
-        (tool_item->allocation.x + tool_item->allocation.width +
-         tool_item->style->xthickness >
-         bookmark_toolbar_.get()->allocation.width +
-         bookmark_toolbar_.get()->allocation.x + extra_space);
-    }
-    overflow = overflow || tool_item->allocation.x == -1;
-
+    gtk_widget_size_request(tool_item, &requested_size_);
+    width_used += requested_size_.width;
+    // |extra_space| is available if we can remove the chevron, which happens
+    // only if there are no more potential overflow bookmarks after this one.
+    overflow = width_used > total_width + (g_list_next(iter) ? 0 : extra_space);
     if (overflow)
       break;
 
