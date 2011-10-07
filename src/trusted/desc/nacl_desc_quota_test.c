@@ -187,6 +187,7 @@ int main(int ac, char **av) {
   struct NaClDescQuota  *object_under_test = NULL;
   struct NaClSecureRng  rng;
   static uint8_t        file_id0[NACL_DESC_QUOTA_FILE_ID_LEN];
+  static const char file_id0_cstr[NACL_DESC_QUOTA_FILE_ID_LEN] = "File ID 0";
 
   NaClLogModuleInit();
   NaClTimeInit();
@@ -200,7 +201,7 @@ int main(int ac, char **av) {
   }
 
   memset(file_id0, 0, sizeof file_id0);
-  memcpy(file_id0, "File ID 0", sizeof file_id0);
+  memcpy(file_id0, file_id0_cstr, sizeof file_id0_cstr);
 
   while (EOF != (opt = getopt(ac, av, "f:m:n:"))) {
     switch (opt) {
