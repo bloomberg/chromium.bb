@@ -69,6 +69,11 @@ class PanelManager : public PanelMouseWatcher::Observer,
   int GetBottomPositionForExpansionState(
       Panel::ExpansionState expansion_state) const;
 
+  // Returns the next browser window which could be either panel window or
+  // tabbed window, to switch to if the given panel is going to be deactivated.
+  // Returns NULL if such window cannot be found.
+  BrowserWindow* GetNextBrowserWindowToActivate(Panel* panel) const;
+
   int num_panels() const { return panels_.size(); }
   bool is_dragging_panel() const;
 

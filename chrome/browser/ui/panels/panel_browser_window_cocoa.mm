@@ -282,6 +282,7 @@ class NativePanelTestingCocoa : public NativePanelTesting {
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
+  virtual bool VerifyActiveState(bool is_active) OVERRIDE;
 
  private:
   PanelTitlebarViewCocoa* titlebar() const;
@@ -327,3 +328,7 @@ bool NativePanelTestingCocoa::VerifyDrawingAttention() const {
   return [titlebar() isDrawingAttention];
 }
 
+bool NativePanelTestingCocoa::VerifyActiveState(bool is_active) {
+  // TODO(jianli): to be implemented.
+  return false;
+}

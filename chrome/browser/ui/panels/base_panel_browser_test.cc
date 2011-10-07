@@ -26,8 +26,6 @@ namespace {
 const int kTestingWorkAreaWidth = 800;
 const int kTestingWorkAreaHeight = 600;
 const int kDefaultAutoHidingDesktopBarThickness = 40;
-const int kDefaultPanelWidth = 150;
-const int kDefaultPanelHeight = 120;
 
 struct MockDesktopBar {
   bool auto_hiding_enabled;

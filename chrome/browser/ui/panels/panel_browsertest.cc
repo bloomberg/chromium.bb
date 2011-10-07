@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -175,6 +176,35 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     for (size_t i = 0; i < panels.size(); i++)
       expansion_states.push_back(panels[i]->expansion_state());
     return expansion_states;
+  }
+
+  std::vector<bool> GetAllPanelActiveStates() {
+    std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
+    std::vector<bool> active_states;
+    for (size_t i = 0; i < panels.size(); i++)
+      active_states.push_back(panels[i]->IsActive());
+    return active_states;
+  }
+
+  std::vector<bool> ProduceExpectedActiveStates(
+      int expected_active_panel_index) {
+    std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
+    std::vector<bool> active_states;
+    for (int i = 0; i < static_cast<int>(panels.size()); i++)
+      active_states.push_back(i == expected_active_panel_index);
+    return active_states;
+  }
+
+  void WaitForPanelActiveStates(const std::vector<bool>& old_states,
+                                const std::vector<bool>& new_states) {
+    DCHECK(old_states.size() == new_states.size());
+    std::vector<Panel*> panels = PanelManager::GetInstance()->panels();
+    for (size_t i = 0; i < old_states.size(); i++) {
+      if (old_states[i] != new_states[i]){
+        WaitForPanelActiveState(
+            panels[i], new_states[i] ? SHOW_AS_ACTIVE : SHOW_AS_INACTIVE);
+      }
+    }
   }
 
   void TestDragging(int delta_x,
@@ -1014,6 +1044,97 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnActivate) {
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
+}
+
+// TODO(jianli): To be enabled for other platforms.
+#if defined(OS_WIN)
+#define MAYBE_ActivateDeactivateBasic ActivateDeactivateBasic
+#else
+#define MAYBE_ActivateDeactivateBasic DISABLED_ActivateDeactivateBasic
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
+  // Create an active panel.
+  Panel* panel = CreatePanel("PanelTest");
+  scoped_ptr<NativePanelTesting> native_panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+  EXPECT_TRUE(panel->IsActive());
+  EXPECT_TRUE(native_panel_testing->VerifyActiveState(true));
+
+  // Deactivate the panel.
+  panel->Deactivate();
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+  EXPECT_FALSE(panel->IsActive());
+  EXPECT_TRUE(native_panel_testing->VerifyActiveState(false));
+
+  // Reactivate the panel.
+  panel->Activate();
+  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
+  EXPECT_TRUE(panel->IsActive());
+  EXPECT_TRUE(native_panel_testing->VerifyActiveState(true));
+}
+
+// TODO(jianli): To be enabled for other platforms.
+#if defined(OS_WIN)
+#define MAYBE_ActivateDeactivateMultiple ActivateDeactivateMultiple
+#else
+#define MAYBE_ActivateDeactivateMultiple DISABLED_ActivateDeactivateMultiple
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
+  BrowserWindow* tabbed_window = BrowserList::GetLastActive()->window();
+
+  // Create 4 panels in the following screen layout:
+  //    P3  P2  P1  P0
+  const int kNumPanels = 4;
+  std::string panel_name_base("PanelTest");
+  for (int i = 0; i < kNumPanels; ++i) {
+    CreatePanelWithBounds(panel_name_base + base::IntToString(i),
+                          gfx::Rect(0, 0, 100, 100));
+  }
+  const std::vector<Panel*>& panels = PanelManager::GetInstance()->panels();
+
+  std::vector<bool> expected_active_states;
+  std::vector<bool> last_active_states;
+
+  // The last created panel, P3, should be active.
+  expected_active_states = ProduceExpectedActiveStates(3);
+  EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
+  EXPECT_FALSE(tabbed_window->IsActive());
+
+  // Activating P1 should cause P3 to lose focus.
+  panels[1]->Activate();
+  last_active_states = expected_active_states;
+  expected_active_states = ProduceExpectedActiveStates(1);
+  WaitForPanelActiveStates(last_active_states, expected_active_states);
+  EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
+
+  // Minimizing inactive panel P2 should not affect other panels' active states.
+  panels[2]->SetExpansionState(Panel::MINIMIZED);
+  EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
+  EXPECT_FALSE(tabbed_window->IsActive());
+
+  // Minimizing active panel P1 should activate last active panel P3.
+  panels[1]->SetExpansionState(Panel::MINIMIZED);
+  last_active_states = expected_active_states;
+  expected_active_states = ProduceExpectedActiveStates(3);
+  WaitForPanelActiveStates(last_active_states, expected_active_states);
+  EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
+  EXPECT_FALSE(tabbed_window->IsActive());
+
+  // Minimizing active panel P3 should activate last active panel P0.
+  panels[3]->SetExpansionState(Panel::MINIMIZED);
+  last_active_states = expected_active_states;
+  expected_active_states = ProduceExpectedActiveStates(0);
+  WaitForPanelActiveStates(last_active_states, expected_active_states);
+  EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
+  EXPECT_FALSE(tabbed_window->IsActive());
+
+  // Minimizing active panel P0 should activate last active tabbed window.
+  panels[0]->SetExpansionState(Panel::MINIMIZED);
+  last_active_states = expected_active_states;
+  expected_active_states = ProduceExpectedActiveStates(-1);  // -1 means none.
+  WaitForPanelActiveStates(last_active_states, expected_active_states);
+  EXPECT_EQ(expected_active_states, GetAllPanelActiveStates());
+  EXPECT_TRUE(tabbed_window->IsActive());
 }
 
 class PanelDownloadTest : public PanelBrowserTest {

@@ -75,6 +75,28 @@ void PanelBrowserView::Close() {
   ::BrowserView::Close();
 }
 
+void PanelBrowserView::Deactivate() {
+  if (!IsActive())
+    return;
+
+#if defined(OS_WIN)
+  gfx::NativeWindow native_window = NULL;
+  BrowserWindow* browser_window =
+      panel_->manager()->GetNextBrowserWindowToActivate(panel_.get());
+  if (browser_window)
+    native_window = browser_window->GetNativeHandle();
+  else
+    native_window = ::GetDesktopWindow();
+  if (native_window)
+    ::SetForegroundWindow(native_window);
+  else
+    ::SetFocus(NULL);
+#else
+  // TODO(jianli): to be implemented for other platform.
+  BrowserView::Deactivate();
+#endif
+}
+
 bool PanelBrowserView::CanResize() const {
   return false;
 }
@@ -449,7 +471,7 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
-
+  virtual bool VerifyActiveState(bool is_active) OVERRIDE;
 
   PanelBrowserView* panel_browser_view_;
 };
@@ -496,4 +518,17 @@ bool NativePanelTestingWin::VerifyDrawingAttention() const {
   SkColor attention_color = frame_view->GetTitleColor(
       PanelBrowserFrameView::PAINT_FOR_ATTENTION);
   return attention_color == frame_view->title_label_->GetColor();
+}
+
+bool NativePanelTestingWin::VerifyActiveState(bool is_active) {
+  PanelBrowserFrameView* frame_view = panel_browser_view_->GetFrameView();
+
+  PanelBrowserFrameView::PaintState expected_paint_state =
+      is_active ? PanelBrowserFrameView::PAINT_AS_ACTIVE
+                : PanelBrowserFrameView::PAINT_AS_INACTIVE;
+  if (frame_view->paint_state_ != expected_paint_state)
+    return false;
+
+  SkColor expected_color = frame_view->GetTitleColor(expected_paint_state);
+  return expected_color == frame_view->title_label_->GetColor();
 }

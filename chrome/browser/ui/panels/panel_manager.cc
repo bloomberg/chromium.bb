@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/window_sizer.h"
 
 namespace {
@@ -521,6 +522,20 @@ int PanelManager::GetBottomPositionForExpansionState(
   }
 
   return bottom;
+}
+
+BrowserWindow* PanelManager::GetNextBrowserWindowToActivate(
+    Panel* panel) const {
+  // Find the last active browser window that is not minimized.
+  BrowserList::const_reverse_iterator iter = BrowserList::begin_last_active();
+  BrowserList::const_reverse_iterator end = BrowserList::end_last_active();
+  for (; (iter != end); ++iter) {
+    Browser* browser = *iter;
+    if (panel->browser() != browser && !browser->window()->IsMinimized())
+      return browser->window();
+  }
+
+  return NULL;
 }
 
 void PanelManager::OnMouseMove(const gfx::Point& mouse_position) {

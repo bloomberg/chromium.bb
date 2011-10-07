@@ -243,8 +243,7 @@ bool Panel::IsMaximized() const {
 }
 
 bool Panel::IsMinimized() const {
-  NOTIMPLEMENTED();
-  return false;
+  return expansion_state_ != EXPANDED;
 }
 
 void Panel::SetFullscreen(bool fullscreen) {

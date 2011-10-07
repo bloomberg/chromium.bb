@@ -500,23 +500,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, PanelLayout) {
   EXPECT_LT(settings_button->x() + settings_button->width(), close_button->x());
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, Deactivate) {
-  // When a panel is created, it should be active at first.
-  Panel* panel = CreatePanel("PanelTest");
-  EXPECT_TRUE(panel->IsActive());
-
-  // When the panel is deactivated, the appearance of controls should be
-  // updated.
-  views::Label* title_text = GetTitleText(panel);
-  SkColor title_text_color_before = title_text->GetColor();
-
-  panel->Deactivate();
-  EXPECT_FALSE(panel->IsActive());
-
-  SkColor title_text_color_after = title_text->GetColor();
-  EXPECT_NE(title_text_color_before, title_text_color_after);
-}
-
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideSettingsButton) {
   Panel* panel = CreatePanel("PanelTest");
   views::View* settings_button = GetSettingsButton(panel);

@@ -87,6 +87,9 @@ class NativePanelTesting {
   // Verifies, on a deepest possible level, if the Panel is showing the "Draw
   // Attention" effects to the user. May include checking colors etc.
   virtual bool VerifyDrawingAttention() const = 0;
+  // Verifies, on a deepest possible level, if the native panel is really
+  // active, i.e. the titlebar is painted per its active state.
+  virtual bool VerifyActiveState(bool is_active) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_

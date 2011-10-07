@@ -541,6 +541,7 @@ class NativePanelTestingGtk : public NativePanelTesting {
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
+  virtual bool VerifyActiveState(bool is_active) OVERRIDE;
 
   PanelBrowserWindowGtk* panel_browser_window_gtk_;
 };
@@ -616,3 +617,7 @@ bool NativePanelTestingGtk::VerifyDrawingAttention() const {
          decoration == BrowserWindowGtk::PANGO_MARKUP;
 }
 
+bool NativePanelTestingGtk::VerifyActiveState(bool is_active) {
+  // TODO(jianli): to be implemented.
+  return false;
+}
