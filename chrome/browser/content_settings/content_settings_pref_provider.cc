@@ -190,19 +190,27 @@ void PrefDefaultProvider::UpdateDefaultSetting(
   std::string dictionary_path(kTypeNames[content_type]);
   {
     AutoReset<bool> auto_reset(&updating_preferences_, true);
-    base::AutoLock lock(lock_);
     DictionaryPrefUpdate update(prefs_, prefs::kDefaultContentSettings);
     DictionaryValue* default_settings_dictionary = update.Get();
-    if ((setting == CONTENT_SETTING_DEFAULT) ||
-        (setting == kDefaultSettings[content_type])) {
-      default_content_settings_.settings[content_type] =
-          kDefaultSettings[content_type];
-      default_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path,
-                                                              NULL);
-    } else {
-      default_content_settings_.settings[content_type] = setting;
-      default_settings_dictionary->SetWithoutPathExpansion(
-          dictionary_path, Value::CreateIntegerValue(setting));
+
+    // PrefDefaultProvider should not send any notifications when holding
+    // |lock_|. |DictionaryPrefUpdate| destructor and
+    // |PrefService::SetInteger()| send out notifications. As a response, the
+    // upper layers may call |ProvideDefaultContentSetting| which acquires
+    // |lock_| again.
+    {
+      base::AutoLock lock(lock_);
+      if ((setting == CONTENT_SETTING_DEFAULT) ||
+          (setting == kDefaultSettings[content_type])) {
+        default_content_settings_.settings[content_type] =
+            kDefaultSettings[content_type];
+        default_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path,
+                                                                NULL);
+      } else {
+        default_content_settings_.settings[content_type] = setting;
+        default_settings_dictionary->SetWithoutPathExpansion(
+            dictionary_path, Value::CreateIntegerValue(setting));
+      }
     }
 
     // Keep the obsolete pref in sync as long as backwards compatibility is
