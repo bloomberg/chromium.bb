@@ -116,14 +116,13 @@ bool UninstallView::Cancel() {
   return true;
 }
 
-std::wstring UninstallView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+string16 UninstallView::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
   // We only want to give custom name to OK button - 'Uninstall'. Cancel
   // button remains same.
-  std::wstring label = L"";
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK)
-    label = UTF16ToWide(l10n_util::GetStringUTF16(IDS_UNINSTALL_BUTTON_TEXT));
-  return label;
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    return l10n_util::GetStringUTF16(IDS_UNINSTALL_BUTTON_TEXT);
+  return string16();
 }
 
 void UninstallView::ButtonPressed(

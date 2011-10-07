@@ -31,8 +31,8 @@ class RepostFormWarningView : public views::DialogDelegate {
 
   // views::DialogDelegate Methods:
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
 
   virtual bool Cancel() OVERRIDE;

@@ -64,14 +64,14 @@ void ImportLockDialogView::Layout() {
       height() - 2 * views::kPanelVertMargin);
 }
 
-std::wstring ImportLockDialogView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+string16 ImportLockDialogView::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK));
+    return l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK);
   } else if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL) {
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_CANCEL));
+    return l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_CANCEL);
   }
-  return std::wstring();
+  return string16();
 }
 
 bool ImportLockDialogView::IsModal() const {

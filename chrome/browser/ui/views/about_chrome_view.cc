@@ -500,21 +500,21 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
 ////////////////////////////////////////////////////////////////////////////////
 // AboutChromeView, views::DialogDelegate implementation:
 
-std::wstring AboutChromeView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE));
-  } else if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL) {
+string16 AboutChromeView::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
+    return l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE);
+  } else if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL) {
     if (restart_button_visible_)
-      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_NOT_NOW));
+      return l10n_util::GetStringUTF16(IDS_NOT_NOW);
     // The OK button (which is the default button) has been re-purposed to be
     // 'Restart Now' so we want the Cancel button should have the label
     // OK but act like a Cancel button in all other ways.
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK));
+    return l10n_util::GetStringUTF16(IDS_OK);
   }
 
   NOTREACHED();
-  return L"";
+  return string16();
 }
 
 string16 AboutChromeView::GetWindowTitle() const {

@@ -114,11 +114,10 @@ int ImportProgressDialogView::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
-std::wstring ImportProgressDialogView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+string16 ImportProgressDialogView::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
   DCHECK(button == MessageBoxFlags::DIALOGBUTTON_CANCEL);
-  return UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_CANCEL));
+  return l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_CANCEL);
 }
 
 bool ImportProgressDialogView::IsModal() const {

@@ -49,8 +49,8 @@ class NetworkConfigView : public views::DialogDelegateView,
   gfx::NativeWindow GetNativeWindow() const;
 
   // views::DialogDelegate methods.
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(
       MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;

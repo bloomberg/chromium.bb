@@ -126,15 +126,15 @@ const views::Widget* JSModalDialogViews::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 
-std::wstring JSModalDialogViews::GetDialogButtonLabel(
+string16 JSModalDialogViews::GetDialogButtonLabel(
     ui::MessageBoxFlags::DialogButton button) const {
   if (parent_->is_before_unload_dialog()) {
     if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK) {
-      return UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL));
+      return l10n_util::GetStringUTF16(
+          IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
     } else if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL) {
-      return UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL));
+      return l10n_util::GetStringUTF16(
+          IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
     }
   }
   return DialogDelegate::GetDialogButtonLabel(button);

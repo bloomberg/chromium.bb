@@ -43,9 +43,9 @@ class LoginHandlerWin : public LoginHandler,
   }
 
   // views::DialogDelegate methods:
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const OVERRIDE {
-    if (button == MessageBoxFlags::DIALOGBUTTON_OK)
+  virtual string16 GetDialogButtonLabel(
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE {
+    if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
       return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
     return DialogDelegate::GetDialogButtonLabel(button);
   }

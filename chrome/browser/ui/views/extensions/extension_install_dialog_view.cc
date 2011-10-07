@@ -71,8 +71,8 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 
  private:
   // views::DialogDelegateView:
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
@@ -256,18 +256,18 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 ExtensionInstallDialogView::~ExtensionInstallDialogView() {
 }
 
-std::wstring ExtensionInstallDialogView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+string16 ExtensionInstallDialogView::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
   switch (button) {
-    case MessageBoxFlags::DIALOGBUTTON_OK:
-      return UTF16ToWide(prompt_.GetAcceptButtonLabel());
+    case ui::MessageBoxFlags::DIALOGBUTTON_OK:
+      return prompt_.GetAcceptButtonLabel();
     case MessageBoxFlags::DIALOGBUTTON_CANCEL:
       return prompt_.HasAbortButtonLabel() ?
-          UTF16ToWide(prompt_.GetAbortButtonLabel()) :
-          UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
+          prompt_.GetAbortButtonLabel() :
+          l10n_util::GetStringUTF16(IDS_CANCEL);
     default:
       NOTREACHED();
-      return std::wstring();
+      return string16();
   }
 }
 

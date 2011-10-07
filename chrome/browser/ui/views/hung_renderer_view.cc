@@ -238,8 +238,8 @@ class HungRendererDialogView : public views::DialogDelegateView,
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
   virtual views::View* GetExtraView() OVERRIDE;
   virtual bool Accept(bool window_closing)  OVERRIDE;
   virtual views::View* GetContentsView()  OVERRIDE;
@@ -386,12 +386,11 @@ int HungRendererDialogView::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_OK;
 }
 
-std::wstring HungRendererDialogView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+string16 HungRendererDialogView::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK)
-    return UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT));
-  return std::wstring();
+    return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
+  return string16();
 }
 
 views::View* HungRendererDialogView::GetExtraView() {

@@ -66,8 +66,8 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 
  private:
   // views::DialogDelegate:
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(
+      ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
 
   virtual int GetDefaultDialogButton() const OVERRIDE {
     return MessageBoxFlags::DIALOGBUTTON_CANCEL;
@@ -159,17 +159,16 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
 ExtensionUninstallDialogDelegateView::~ExtensionUninstallDialogDelegateView() {
 }
 
-std::wstring ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
   switch (button) {
-    case MessageBoxFlags::DIALOGBUTTON_OK:
-      return UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
-    case MessageBoxFlags::DIALOGBUTTON_CANCEL:
-      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
+    case ui::MessageBoxFlags::DIALOGBUTTON_OK:
+      return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON);
+    case ui::MessageBoxFlags::DIALOGBUTTON_CANCEL:
+      return l10n_util::GetStringUTF16(IDS_CANCEL);
     default:
       NOTREACHED();
-      return L"";
+      return string16();
   }
 }
 

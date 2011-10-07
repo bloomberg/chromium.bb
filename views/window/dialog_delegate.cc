@@ -25,12 +25,12 @@ bool DialogDelegate::AreAcceleratorsEnabled(
   return true;
 }
 
-std::wstring DialogDelegate::GetDialogButtonLabel(
+string16 DialogDelegate::GetDialogButtonLabel(
     ui::MessageBoxFlags::DialogButton button) const {
-  // empty string results in defaults for
-  // ui::MessageBoxFlags::DIALOGBUTTON_OK,
+  // Empty string results in defaults for
+  // ui::MessageBoxFlags::DIALOGBUTTON_OK
   // ui::MessageBoxFlags::DIALOGBUTTON_CANCEL.
-  return L"";
+  return string16();
 }
 
 View* DialogDelegate::GetExtraView() {

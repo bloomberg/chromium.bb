@@ -37,10 +37,10 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
     explanation_text = UTF16ToWide(l10n_util::GetStringFUTF16(
         IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION,
         product_name_));
-    ok_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
-        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL));
-    cancel_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
-        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+    ok_button_text_ = l10n_util::GetStringUTF16(
+        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
+    cancel_button_text_ = l10n_util::GetStringUTF16(
+        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
   } else {
     warning_text = UTF16ToWide(l10n_util::GetStringFUTF16(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
@@ -49,10 +49,10 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
     explanation_text = UTF16ToWide(l10n_util::GetStringFUTF16(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION,
         product_name_));
-    ok_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
-        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL));
-    cancel_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
-        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+    ok_button_text_ = l10n_util::GetStringUTF16(
+        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL);
+    cancel_button_text_ = l10n_util::GetStringUTF16(
+        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
   }
 
   // There are two lines of text: the bold warning label and the text
@@ -97,8 +97,8 @@ gfx::Size DownloadInProgressDialogView::GetPreferredSize() {
   return dialog_dimensions_;
 }
 
-std::wstring DownloadInProgressDialogView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
+string16 DownloadInProgressDialogView::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK)
     return ok_button_text_;
 

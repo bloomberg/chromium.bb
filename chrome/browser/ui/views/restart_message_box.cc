@@ -25,10 +25,10 @@ int RestartMessageBox::GetDialogButtons() const {
   return ui::MessageBoxFlags::DIALOGBUTTON_OK;
 }
 
-std::wstring RestartMessageBox::GetDialogButtonLabel(
+string16 RestartMessageBox::GetDialogButtonLabel(
     ui::MessageBoxFlags::DialogButton button) const {
   DCHECK(button == ui::MessageBoxFlags::DIALOGBUTTON_OK);
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK));
+  return l10n_util::GetStringUTF16(IDS_OK);
 }
 
 string16 RestartMessageBox::GetWindowTitle() const {

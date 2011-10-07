@@ -323,13 +323,11 @@ gfx::Size CreateApplicationShortcutView::GetPreferredSize() {
   return gfx::Size(kDialogWidth, height);
 }
 
-std::wstring CreateApplicationShortcutView::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT));
-  }
-
-  return std::wstring();
+string16 CreateApplicationShortcutView::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
+  if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
+    return l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT);
+  return string16();
 }
 
 bool CreateApplicationShortcutView::IsDialogButtonEnabled(

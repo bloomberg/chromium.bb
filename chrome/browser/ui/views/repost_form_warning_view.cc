@@ -54,13 +54,13 @@ string16 RepostFormWarningView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_TITLE);
 }
 
-std::wstring RepostFormWarningView::GetDialogButtonLabel(
+string16 RepostFormWarningView::GetDialogButtonLabel(
     ui::MessageBoxFlags::DialogButton button) const {
   if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_RESEND));
+    return l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING_RESEND);
   if (button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL)
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
-  return std::wstring();
+    return l10n_util::GetStringUTF16(IDS_CANCEL);
+  return string16();
 }
 
 views::View* RepostFormWarningView::GetContentsView() {

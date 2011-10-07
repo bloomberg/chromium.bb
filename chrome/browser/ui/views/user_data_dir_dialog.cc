@@ -40,21 +40,19 @@ UserDataDirDialog::~UserDataDirDialog() {
   select_file_dialog_->ListenerDestroyed();
 }
 
-std::wstring UserDataDirDialog::GetDialogButtonLabel(
+string16 UserDataDirDialog::GetDialogButtonLabel(
     ui::MessageBoxFlags::DialogButton button) const {
-
   switch (button) {
     case ui::MessageBoxFlags::DIALOGBUTTON_OK:
-      return UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON));
+      return l10n_util::GetStringUTF16(
+          IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON);
     case ui::MessageBoxFlags::DIALOGBUTTON_CANCEL:
-      return UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_CANT_WRITE_USER_DIRECTORY_EXIT_BUTTON));
+      return l10n_util::GetStringUTF16(
+          IDS_CANT_WRITE_USER_DIRECTORY_EXIT_BUTTON);
     default:
       NOTREACHED();
   }
-
-  return std::wstring();
+  return string16();
 }
 
 string16 UserDataDirDialog::GetWindowTitle() const {

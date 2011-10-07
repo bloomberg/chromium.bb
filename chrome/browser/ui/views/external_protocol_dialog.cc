@@ -59,14 +59,12 @@ int ExternalProtocolDialog::GetDefaultDialogButton() const {
   return ui::MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
-std::wstring ExternalProtocolDialog::GetDialogButtonLabel(
+string16 ExternalProtocolDialog::GetDialogButtonLabel(
     ui::MessageBoxFlags::DialogButton button) const {
   if (button == ui::MessageBoxFlags::DIALOGBUTTON_OK)
-    return UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT));
+    return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT);
   else
-    return UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT));
+    return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT);
 }
 
 string16 ExternalProtocolDialog::GetWindowTitle() const {

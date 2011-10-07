@@ -91,11 +91,11 @@ int SimpleMessageBoxViews::GetDialogButtons() const {
           ? ui::MessageBoxFlags::DIALOGBUTTON_CANCEL : 0);
 }
 
-std::wstring SimpleMessageBoxViews::GetDialogButtonLabel(
+string16 SimpleMessageBoxViews::GetDialogButtonLabel(
     ui::MessageBoxFlags::DialogButton button) const {
   return button == ui::MessageBoxFlags::DIALOGBUTTON_OK ?
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)) :
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLOSE));
+      l10n_util::GetStringUTF16(IDS_OK) :
+      l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
 bool SimpleMessageBoxViews::ShouldShowWindowTitle() const {

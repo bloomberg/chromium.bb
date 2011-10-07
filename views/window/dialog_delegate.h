@@ -6,6 +6,7 @@
 #define VIEWS_WINDOW_DIALOG_DELEGATE_H_
 #pragma once
 
+#include "base/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/message_box_flags.h"
 #include "views/widget/widget_delegate.h"
@@ -47,7 +48,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
       ui::MessageBoxFlags::DialogButton button);
 
   // Returns the label of the specified DialogButton.
-  virtual std::wstring GetDialogButtonLabel(
+  virtual string16 GetDialogButtonLabel(
       ui::MessageBoxFlags::DialogButton button) const;
 
   // Override this function if with a view which will be shown in the same

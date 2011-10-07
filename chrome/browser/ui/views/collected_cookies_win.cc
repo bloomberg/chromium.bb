@@ -362,9 +362,9 @@ int CollectedCookiesWin::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
-std::wstring CollectedCookiesWin::GetDialogButtonLabel(
-    MessageBoxFlags::DialogButton button) const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLOSE));
+string16 CollectedCookiesWin::GetDialogButtonLabel(
+    ui::MessageBoxFlags::DialogButton button) const {
+  return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
 void CollectedCookiesWin::DeleteDelegate() {

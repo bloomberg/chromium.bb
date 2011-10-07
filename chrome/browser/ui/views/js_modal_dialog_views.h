@@ -40,7 +40,7 @@ class JSModalDialogViews : public NativeAppModalDialog,
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual std::wstring GetDialogButtonLabel(
+  virtual string16 GetDialogButtonLabel(
       ui::MessageBoxFlags::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
