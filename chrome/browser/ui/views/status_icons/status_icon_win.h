@@ -60,8 +60,10 @@ class StatusIconWin : public StatusIcon {
   // The currently-displayed icon for the window.
   base::win::ScopedHICON icon_;
 
+#if !defined(USE_AURA)
   // Context menu associated with this icon (if any).
   scoped_ptr<views::Menu2> context_menu_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconWin);
 };

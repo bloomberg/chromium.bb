@@ -8,7 +8,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/point.h"
+#if !defined(USE_AURA)
 #include "views/controls/menu/menu_2.h"
+#endif
 
 StatusIconWin::StatusIconWin(UINT id, HWND window, UINT message)
     : icon_id_(id),
@@ -94,14 +96,18 @@ void StatusIconWin::DisplayBalloon(const string16& title,
 }
 
 void StatusIconWin::UpdatePlatformContextMenu(ui::MenuModel* menu) {
+#if defined(USE_AURA)
+  // crbug.com/99489.
+  NOTIMPLEMENTED();
+#else
   // If no items are passed, blow away our context menu.
   if (!menu) {
     context_menu_.reset();
     return;
   }
-
   // Create context menu with the new contents.
   context_menu_.reset(new views::Menu2(menu));
+#endif
 }
 
 void StatusIconWin::HandleClickEvent(int x, int y, bool left_mouse_click) {
@@ -110,7 +116,10 @@ void StatusIconWin::HandleClickEvent(int x, int y, bool left_mouse_click) {
     DispatchClickEvent();
     return;
   }
-
+#if defined(USE_AURA)
+  // crbug.com/99489.
+  NOTIMPLEMENTED();
+#else
   // Event not sent to the observer, so display the context menu if one exists.
   if (context_menu_.get()) {
     // Set our window as the foreground window, so the context menu closes when
@@ -118,6 +127,7 @@ void StatusIconWin::HandleClickEvent(int x, int y, bool left_mouse_click) {
     SetForegroundWindow(window_);
     context_menu_->RunContextMenuAt(gfx::Point(x, y));
   }
+#endif
 }
 
 void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
