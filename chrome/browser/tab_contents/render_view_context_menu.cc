@@ -1600,8 +1600,15 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
                 source_tab_contents_);
         if (!tab_contents_wrapper)
           break;
+#if defined(OS_CHROMEOS)
+        // Disable print preview in CHROMEOS in incognito mode until bug 99271
+        // is fixed.
+        if (switches::IsPrintPreviewEnabled() && !profile_->IsOffTheRecord())
+#else
         if (switches::IsPrintPreviewEnabled())
+#endif
           tab_contents_wrapper->print_view_manager()->PrintPreviewNow();
+
         else
           tab_contents_wrapper->print_view_manager()->PrintNow();
       } else {

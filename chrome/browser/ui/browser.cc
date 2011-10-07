@@ -1772,7 +1772,13 @@ void Browser::EmailPageLocation() {
 }
 
 void Browser::Print() {
+#if defined(OS_CHROMEOS)
+  // Disable print preview in CHROMEOS in incognito mode until bug 99271
+  // is fixed.
+  if (switches::IsPrintPreviewEnabled() && !profile_->IsOffTheRecord())
+#else
   if (switches::IsPrintPreviewEnabled())
+#endif
     GetSelectedTabContentsWrapper()->print_view_manager()->PrintPreviewNow();
   else
     GetSelectedTabContentsWrapper()->print_view_manager()->PrintNow();
