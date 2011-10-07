@@ -281,6 +281,8 @@ class DynamicImages {
     return CPU_TYPE_POWERPC;
 #elif defined(__ppc64__)
     return CPU_TYPE_POWERPC64;
+#elif defined(__arm__)
+    return CPU_TYPE_ARM;
 #else
 #error "GetNativeCPUType not implemented for this architecture"
 #endif
