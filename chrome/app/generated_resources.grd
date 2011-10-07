@@ -13568,6 +13568,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
         Start a Guest session
       </message>
+      <message name="IDS_LOGIN_PROXY_ERROR_MESSAGE" desc="An offline message shown when a proxy error has appeared.">
+        The sign-in page failed to load using the current proxy settings. Please <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>try to sign in again<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> or use different proxy settings.
+      </message>
       <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE" desc="An offline message title shown when we suggest that user may be behind the captive portal.">
        Tips for accessing this network
       </message>

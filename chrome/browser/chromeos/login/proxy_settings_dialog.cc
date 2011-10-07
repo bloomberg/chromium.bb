@@ -6,6 +6,8 @@
 
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/common/notification_service.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -42,6 +44,14 @@ ProxySettingsDialog::ProxySettingsDialog(LoginHtmlDialog::Delegate* delegate,
                 CalculateSize(screen_bounds.height(),
                                kProxySettingsDialogReasonableHeight,
                                kProxySettingsDialogReasonableHeightRatio));
+}
+
+void ProxySettingsDialog::OnDialogClosed(const std::string& json_retval) {
+  LoginHtmlDialog::OnDialogClosed(json_retval);
+  NotificationService::current()->Notify(
+    chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
+    NotificationService::AllSources(),
+    NotificationService::NoDetails());
 }
 
 }  // namespace chromeos

@@ -32,7 +32,8 @@ cr.define('login', function() {
           this.handleShutdownClick_);
       $('add-user-button').addEventListener('click', function(e) {
         chrome.send('loginRequestNetworkState',
-                    ['login.HeaderBar.handleAddUser']);
+                    ['login.HeaderBar.handleAddUser',
+                     'check']);
       });
       $('cancel-add-user-button').addEventListener('click', function(e) {
         this.hidden = true;
@@ -56,13 +57,14 @@ cr.define('login', function() {
    * been recieved.
    * @param {Integer} state Current state of the network (see NET_STATE).
    * @param {string} network Name of the network.
+   * @param {string} reason Reason the callback was called.
    */
-  HeaderBar.handleAddUser = function(state, network) {
+  HeaderBar.handleAddUser = function(state, network, reason) {
     if (state != NET_STATE.OFFLINE) {
       Oobe.showSigninUI();
     } else {
       $('bubble').showTextForElement($('add-user-button'),
-          localStrings.getString('addUserOfflineMessage'));
+          localStrings.getString('addUserErrorMessage'));
       chrome.send('loginAddNetworkStateObserver',
                   ['login.HeaderBar.bubbleWatchdog']);
     }
@@ -72,8 +74,9 @@ cr.define('login', function() {
    * Observes network state, and close the bubble when network becomes online.
    * @param {Integer} state Current state of the network (see NET_STATE).
    * @param {string} network Name of the network.
+   * @param {string} reason Reason the callback was called.
    */
-  HeaderBar.bubbleWatchdog = function(state, network) {
+  HeaderBar.bubbleWatchdog = function(state, network, reason) {
     if (state != NET_STATE.OFFLINE) {
       $('bubble').hideForElement($('add-user-button'));
       chrome.send('loginRemoveNetworkStateObserver',

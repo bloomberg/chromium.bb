@@ -13,20 +13,22 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/io_thread.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/dnsrr_resolver.h"
@@ -55,6 +57,9 @@ const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
 
 // Max number of users to show.
 const int kMaxUsers = 5;
+
+const char kReasonNetworkChanged[] = "network changed";
+const char kReasonProxyChanged[] = "proxy changed";
 
 // Sanitize emails. Currently, it only ensures all emails have a domain.
 std::string SanitizeEmail(const std::string& email) {
@@ -85,7 +90,8 @@ namespace chromeos {
 // State is considered changed if connection or the active network has been
 // changed. Also, it answers to the requests about current network state.
 class NetworkStateInformer
-    : public chromeos::NetworkLibrary::NetworkManagerObserver {
+    : public chromeos::NetworkLibrary::NetworkManagerObserver,
+      public NotificationObserver {
  public:
   explicit NetworkStateInformer(WebUI* web_ui);
   virtual ~NetworkStateInformer();
@@ -96,17 +102,24 @@ class NetworkStateInformer
   // Removes observer's callback.
   void RemoveObserver(const std::string& callback);
 
-  // Sends current network state and network name using the callback.
-  void SendState(const std::string& callback);
+  // Sends current network state, network name and reason using the callback.
+  void SendState(const std::string& callback, const std::string& reason);
 
   // NetworkLibrary::NetworkManagerObserver implementation:
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros) OVERRIDE;
 
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
  private:
   enum State {OFFLINE, ONLINE, CAPTIVE_PORTAL};
 
   bool UpdateState(chromeos::NetworkLibrary* cros);
 
+  void SendStateToObservers(const std::string& reason);
+
+  NotificationRegistrar registrar_;
   base::hash_set<std::string> observers_;
   std::string active_network_;
   std::string network_name_;
@@ -120,6 +133,9 @@ NetworkStateInformer::NetworkStateInformer(WebUI* web_ui) : web_ui_(web_ui) {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   UpdateState(cros);
   cros->AddNetworkManagerObserver(this);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
+                 NotificationService::AllSources());
 }
 
 NetworkStateInformer::~NetworkStateInformer() {
@@ -135,19 +151,26 @@ void NetworkStateInformer::RemoveObserver(const std::string& callback) {
   observers_.erase(callback);
 }
 
-void NetworkStateInformer::SendState(const std::string& callback) {
+void NetworkStateInformer::SendState(const std::string& callback,
+                                     const std::string& reason) {
   base::FundamentalValue state_value(state_);
   base::StringValue network_value(network_name_);
-  web_ui_->CallJavascriptFunction(callback, state_value, network_value);
+  base::StringValue reason_value(reason);
+  web_ui_->CallJavascriptFunction(callback, state_value,
+                                  network_value, reason_value);
 }
 
 void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
   if (UpdateState(cros)) {
-    for (base::hash_set<std::string>::iterator it = observers_.begin();
-         it != observers_.end(); ++it) {
-      SendState(*it);
-    }
+    SendStateToObservers(kReasonNetworkChanged);
   }
+}
+
+void NetworkStateInformer::Observe(int type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED);
+  SendStateToObservers(kReasonProxyChanged);
 }
 
 bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
@@ -171,6 +194,13 @@ bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
   state_ = new_state;
   active_network_ = new_active_network;
   return updated;
+}
+
+void NetworkStateInformer::SendStateToObservers(const std::string& reason) {
+  for (base::hash_set<std::string>::iterator it = observers_.begin();
+       it != observers_.end(); ++it) {
+    SendState(*it, reason);
+  }
 }
 
 // SigninScreenHandler implementation ------------------------------------------
@@ -217,7 +247,7 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON));
   localized_strings->SetString("cancel",
       l10n_util::GetStringUTF16(IDS_CANCEL));
-  localized_strings->SetString("addUserOfflineMessage",
+  localized_strings->SetString("addUserErrorMessage",
       l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_ADD_USER_OFFLINE));
   localized_strings->SetString("offlineMessageTitle",
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_TITLE));
@@ -229,6 +259,8 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL));
   localized_strings->SetString("captivePortalNetworkSelect",
       l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT));
+  localized_strings->SetString("proxyMessageText",
+      l10n_util::GetStringUTF16(IDS_LOGIN_PROXY_ERROR_MESSAGE));
   localized_strings->SetString("createAccount",
       l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_HTML));
   localized_strings->SetString("guestSignin",
@@ -588,11 +620,12 @@ void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
 void SigninScreenHandler::HandleLoginRequestNetworkState(
     const base::ListValue* args) {
   std::string callback;
-  if (!args->GetString(0, &callback)) {
+  std::string reason;
+  if (!args->GetString(0, &callback) || !args->GetString(1, &reason)) {
     NOTREACHED();
     return;
   }
-  network_state_informer_->SendState(callback);
+  network_state_informer_->SendState(callback, reason);
 }
 
 void SigninScreenHandler::HandleLoginAddNetworkStateObserver(

@@ -179,7 +179,7 @@ cr.define('cr.ui.login', function() {
       var index = this.getScreenIndex_(screenId);
       if (index >= 0)
         this.toggleStep_(index, data);
-      $('offline-message').update();
+      $('error-message').update();
     },
 
     /**

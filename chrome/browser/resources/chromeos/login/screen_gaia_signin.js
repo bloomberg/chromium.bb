@@ -158,7 +158,7 @@ cr.define('login', function() {
         // Now that we're in logged in state header should be hidden.
         Oobe.getInstance().headerHidden = true;
       } else if (msg.method == 'loginUILoaded' && this.isAuthExtMessage_(e)) {
-        $('offline-message').update();
+        $('error-message').update();
         this.loading = false;
         this.clearRetry_();
         chrome.send('loginWebuiReady');
@@ -189,9 +189,8 @@ cr.define('login', function() {
 
     /**
      * Reloads extension frame.
-     * @private
      */
-    doReload_: function() {
+    doReload: function() {
       console.log('Reload auth extension frame.');
       $('signin-frame').src = this.extension_url_;
       this.retryTimer_ = undefined;
@@ -200,7 +199,7 @@ cr.define('login', function() {
     /**
      * Schedules extension frame reload.
      */
-    schdeduleRetry: function() {
+    scheduleRetry: function() {
       if (this.retryCount_ >= 3 || this.retryTimer_)
         return;
 
@@ -211,8 +210,8 @@ cr.define('login', function() {
       delay = Math.max(MIN_DELAY, Math.min(MAX_DELAY, delay)) * 1000;
 
       ++this.retryCount_;
-      this.retryTimer_ = window.setTimeout(this.doReload_.bind(this), delay);
-      console.log('GaiaSigninScreen schdeduleRetry in ' + delay + 'ms.');
+      this.retryTimer_ = window.setTimeout(this.doReload.bind(this), delay);
+      console.log('GaiaSigninScreen scheduleRetry in ' + delay + 'ms.');
     }
   };
 

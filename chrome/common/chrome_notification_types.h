@@ -771,6 +771,9 @@ enum NotificationType {
   // Sent when webui login screen is ready and gaia iframe has loaded.
   NOTIFICATION_LOGIN_WEBUI_READY,
 
+  // Sent when proxy dialog is closed.
+  NOTIFICATION_LOGIN_PROXY_CHANGED,
+
   // Sent when a panel state changed.
   NOTIFICATION_PANEL_STATE_CHANGED,
 

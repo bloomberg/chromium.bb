@@ -17,37 +17,46 @@ cr.define('login', function() {
     PORTAL: 2
   };
 
+  // Error reasons which are passed to updateState_() method.
+  const ERROR_REASONS = {
+    PROXY_AUTH_CANCELLED: 'frame error:111',
+    PROXY_CONNECTION_FAILED: 'frame error:130'
+  };
+
   // Link which starts guest session for captive portal fixing.
   const FIX_CAPTIVE_PORTAL_ID = 'captive-portal-fix-link';
 
   // Id of the element which holds current network name.
   const CURRENT_NETWORK_NAME_ID = 'captive-portal-network-name';
 
+  // Link which triggers frame reload.
+  const RELOAD_PAGE_ID = 'proxy-error-retry-link';
+
   /**
    * Creates a new offline message screen div.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  var OfflineMessageScreen = cr.ui.define('div');
+  var ErrorMessageScreen = cr.ui.define('div');
 
   /**
    * Registers with Oobe.
    */
-  OfflineMessageScreen.register = function() {
-    var screen = $('offline-message');
-    OfflineMessageScreen.decorate(screen);
+  ErrorMessageScreen.register = function() {
+    var screen = $('error-message');
+    ErrorMessageScreen.decorate(screen);
 
-    // Note that OfflineMessageScreen is not registered with Oobe because
+    // Note that ErrorMessageScreen is not registered with Oobe because
     // it is shown on top of sign-in screen instead of as an independent screen.
   };
 
-  OfflineMessageScreen.prototype = {
+  ErrorMessageScreen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
     /** @inheritDoc */
     decorate: function() {
       chrome.send('loginAddNetworkStateObserver',
-                  ['login.OfflineMessageScreen.updateState']);
+                  ['login.ErrorMessageScreen.updateState']);
 
       cr.ui.DropDown.decorate($('offline-networks-list'));
 
@@ -58,6 +67,16 @@ cr.define('login', function() {
           '</a>');
       $(FIX_CAPTIVE_PORTAL_ID).onclick = function() {
         chrome.send('fixCaptivePortal');
+      };
+
+      $('proxy-message-text').innerHTML = localStrings.getStringF(
+          'proxyMessageText',
+          '<a id="' + RELOAD_PAGE_ID + '" class="signin-link" href="#">',
+          '</a>');
+      $(RELOAD_PAGE_ID).onclick = function() {
+        var currentScreen = Oobe.getInstance().currentScreen;
+        // Schedules a immediate retry.
+        currentScreen.doReload();
       };
     },
 
@@ -71,18 +90,29 @@ cr.define('login', function() {
 
     update: function() {
       chrome.send('loginRequestNetworkState',
-                  ['login.OfflineMessageScreen.updateState']);
+                  ['login.ErrorMessageScreen.updateState',
+                   'update']);
     },
 
     /**
      * Shows or hides offline message based on network on/offline state.
      */
-    updateState: function(state, network) {
+    updateState_: function(state, network, reason) {
       var currentScreen = Oobe.getInstance().currentScreen;
       var offlineMessage = this;
       var isOnline = (state == NET_STATE.ONLINE);
       var isUnderCaptivePortal = (state == NET_STATE.PORTAL);
+      var isProxyError = reason == ERROR_REASONS.PROXY_AUTH_CANCELLED ||
+          reason == ERROR_REASONS.PROXY_CONNECTION_FAILED;
       var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1;
+
+      if (reason == 'proxy changed' && shouldOverlay &&
+          !offlineMessage.classList.contains('hidden') &&
+          offlineMessage.classList.contains('show-captive-portal')) {
+        // Schedules a immediate retry.
+        currentScreen.doReload();
+        console.log('Retry page load since proxy settings has been changed');
+      }
 
       if (!isOnline && shouldOverlay) {
         console.log('Show offline message, state=' + state +
@@ -91,11 +121,19 @@ cr.define('login', function() {
         offlineMessage.onBeforeShow();
 
         if (isUnderCaptivePortal) {
-          $(CURRENT_NETWORK_NAME_ID).innerText = network;
-          offlineMessage.classList.remove('show-offline-message');
-          offlineMessage.classList.add('show-captive-portal');
+          if (isProxyError) {
+            offlineMessage.classList.remove('show-offline-message');
+            offlineMessage.classList.remove('show-captive-portal');
+            offlineMessage.classList.add('show-proxy-error');
+          } else {
+            $(CURRENT_NETWORK_NAME_ID).textContent = network;
+            offlineMessage.classList.remove('show-offline-message');
+            offlineMessage.classList.remove('show-proxy-error');
+            offlineMessage.classList.add('show-captive-portal');
+          }
         } else {
           offlineMessage.classList.remove('show-captive-portal');
+          offlineMessage.classList.remove('show-proxy-error');
           offlineMessage.classList.add('show-offline-message');
         }
 
@@ -133,12 +171,12 @@ cr.define('login', function() {
 
   /**
    * Network state changed callback.
-   * @param {Integer} state Current state of the network: 0 - offline;
-   * 1 - online; 2 - under the captive portal.
+   * @param {Integer} state Current state of the network (see NET_STATE).
    * @param {string} network Name of the current network.
+   * @param {string} reason Reason the callback was called.
    */
-  OfflineMessageScreen.updateState = function(state, network) {
-    $('offline-message').updateState(state, network);
+  ErrorMessageScreen.updateState = function(state, network, reason) {
+    $('error-message').updateState_(state, network, reason);
   };
 
   /**
@@ -146,7 +184,7 @@ cr.define('login', function() {
    * For more info see C++ class 'SnifferObserver' which calls this method.
    * @param {number} error Error code.
    */
-  OfflineMessageScreen.onFrameError = function(error) {
+  ErrorMessageScreen.onFrameError = function(error) {
     console.log('Gaia frame error = ' + error);
     // Offline and simple captive portal cases are handled by the
     // NetworkStateInformer, so only the case when browser is online is
@@ -156,7 +194,8 @@ cr.define('login', function() {
       var currentScreen = Oobe.getInstance().currentScreen;
       if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
         chrome.send('loginRequestNetworkState',
-                    ['login.OfflineMessageScreen.maybeRetry']);
+                    ['login.ErrorMessageScreen.maybeRetry',
+                     'frame error:' + error]);
       }
     }
   };
@@ -164,8 +203,8 @@ cr.define('login', function() {
   /**
    * Network state callback where we decide whether to schdule a retry.
    */
-  OfflineMessageScreen.maybeRetry = function(state, network) {
-    console.log('OfflineMessageScreen.maybeRetry, state=' + state +
+  ErrorMessageScreen.maybeRetry = function(state, network, reason) {
+    console.log('ErrorMessageScreen.maybeRetry, state=' + state +
                 ', network=' + network);
 
     // No retry if we are not online.
@@ -174,13 +213,13 @@ cr.define('login', function() {
 
     var currentScreen = Oobe.getInstance().currentScreen;
     if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
-      this.updateState(NET_STATE.PORTAL, network);
+      this.updateState(NET_STATE.PORTAL, network, reason);
       // Schedules a retry.
-      currentScreen.schdeduleRetry();
+      currentScreen.scheduleRetry();
     }
   };
 
   return {
-    OfflineMessageScreen: OfflineMessageScreen
+    ErrorMessageScreen: ErrorMessageScreen
   };
 });
