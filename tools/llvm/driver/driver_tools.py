@@ -49,6 +49,7 @@ INITIAL_ENV = {
   'BASE_BINUTILS'   : '${BASE_PKG}/binutils',
   'BASE_LIBSTDCPP'  : '${BASE_PKG}/libstdcpp',
   'BASE_SYSROOT'    : '${BASE}/sysroot',
+  'BASE_GCC'        : '${BASE_PKG}/gcc',
 
   'BASE_INCLUDE'    : '${BASE_SYSROOT}/include',
   'BASE_LLVM_BIN'   : '${BASE_LLVM}/bin',
@@ -110,7 +111,8 @@ INITIAL_ENV = {
   'SCONS_OS_windows'    : 'win',
 
   # Tool Pathnames
-  'GOLD_PLUGIN_SO': '${BASE_LLVM}/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT}',
+  'GOLD_PLUGIN_SO'  : '${BASE_LLVM}/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT}',
+  'DRAGONEGG_PLUGIN': '${BASE_GCC}/lib/dragonegg${SO_EXT}',
 
   'SCONS_STAGING'       : '${SCONS_STAGING_%ARCH%}',
   'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',
@@ -169,6 +171,9 @@ INITIAL_ENV = {
 
   'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',
   'CLANGXX'       : '${BASE_LLVM_BIN}/clang++${EXEC_EXT}',
+
+  'DRAGONEGG_GCC' : '${BASE_GCC}/bin/i686-unknown-linux-gnu-gcc',
+  'DRAGONEGG_GXX' : '${BASE_GCC}/bin/i686-unknown-linux-gnu-g++',
 
   'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt${EXEC_EXT}',
   'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc${EXEC_EXT}',

@@ -1374,7 +1374,8 @@ gmp-configure() {
       CC="${CC}" \
       CXX="${CXX}" \
       "${TC_SRC_GMP}"/${GMP_VER}/configure \
-         --prefix="${GMP_INSTALL_DIR}"
+         --prefix="${GMP_INSTALL_DIR}" \
+         --disable-shared --enable-static
   spopd
 }
 
@@ -1432,7 +1433,8 @@ mpfr-configure() {
       CXX="${CXX}" \
       "${TC_SRC_MPFR}"/${MPFR_VER}/configure \
         --prefix="${MPFR_INSTALL_DIR}" \
-        --with-gmp="${GMP_INSTALL_DIR}"
+        --with-gmp="${GMP_INSTALL_DIR}" \
+        --disable-shared --enable-static
   spopd
 }
 
@@ -1489,7 +1491,8 @@ mpc-configure() {
       "${TC_SRC_MPC}"/${MPC_VER}/configure \
         --prefix="${MPC_INSTALL_DIR}" \
         --with-gmp="${GMP_INSTALL_DIR}" \
-        --with-mpfr="${MPFR_INSTALL_DIR}"
+        --with-mpfr="${MPFR_INSTALL_DIR}" \
+        --disable-shared --enable-static
   spopd
 }
 
@@ -1603,18 +1606,21 @@ gccfe-install() {
 #+-------------------------------------------------------------------------
 #+ dragonegg-plugin      - build and install dragon-egg plugin
 dragonegg-plugin() {
+  StepBanner "DRAGONEGG" "Building and installing plugin"
   rm -rf "${TC_BUILD_DRAGONEGG}"
   cp -a "${TC_SRC_DRAGONEGG}" "${TC_BUILD_DRAGONEGG}"
   spushd "${TC_BUILD_DRAGONEGG}"
-  env -i
-    PATH="/usr/bin:/bin" \
-    CC="${CC}" \
-    CXX="${CXX}" \
-    CFLAGS="-I${GMP_INSTALL_DIR}/include -L${GMP_INSTALL_DIR}/lib" \
-    CXXFLAGS="-I${GMP_INSTALL_DIR}/include -L${GMP_INSTALL_DIR}/lib" \
-    GCC="${GCC_INSTALL_DIR}/bin/i686-unknown-linux-gnu-gcc" \
-    LLVM_CONFIG="${LLVM_INSTALL_DIR}"/bin/llvm-config \
-    make ${MAKE_OPTS}
+  RunWithLog dragonegg.make \
+    env -i \
+      PATH="/usr/bin:/bin" \
+      PWD="$(pwd)" \
+      CC="${CC}" \
+      CXX="${CXX}" \
+      CFLAGS="-I${GMP_INSTALL_DIR}/include -L${GMP_INSTALL_DIR}/lib" \
+      CXXFLAGS="-I${GMP_INSTALL_DIR}/include -L${GMP_INSTALL_DIR}/lib" \
+      GCC="${GCC_INSTALL_DIR}/bin/i686-unknown-linux-gnu-gcc" \
+      LLVM_CONFIG="${LLVM_INSTALL_DIR}"/bin/llvm-config \
+      make ${MAKE_OPTS}
   cp dragonegg.so "${GCC_INSTALL_DIR}/lib"
   spopd
 }

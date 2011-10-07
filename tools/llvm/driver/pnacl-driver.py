@@ -29,7 +29,7 @@ EXTRA_ENV = {
   'MC_DIRECT'   : '1',    # Use MC direct object emission instead of
                           # producing an intermediate .s file
   'LANGUAGE'    : 'C',    # C or CXX
-  'FRONTEND'    : 'GNU',  # GNU or CLANG
+  'FRONTEND'    : '',     # CLANG, LLVMGCC, or DRAGONEGG
 
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
@@ -55,7 +55,7 @@ EXTRA_ENV = {
                   '-U__ARM_FP16__ -U__MAVERICK__ -U__XSCALE__ -U__IWMMXT__ ' +
                   '-U__ARM_EABI__ -U__ARM_ARCH_7A__',
 
-  'BIAS_NONE'   : '${FRONTEND==GNU ? ${REMOVE_BIAS}}',
+  'BIAS_NONE'   : '${FRONTEND==LLVMGCC ? ${REMOVE_BIAS}}',
   'BIAS_ARM'    : '-D__arm__ -D__ARM_ARCH_7A__ -D__ARMEL__',
   'BIAS_X8632'  : '${REMOVE_BIAS} ' +
                   '-D__i386__ -D__i386 -D__i686 -D__i686__ -D__pentium4__',
@@ -66,9 +66,11 @@ EXTRA_ENV = {
   'CC_FLAGS'    : '-O${OPT_LEVEL} ' +
                   '-nostdinc -DNACL_LINUX=1 ${BIAS_%BIAS%} ' +
                   '${CC_FLAGS_%FRONTEND%}',
-  'CC_FLAGS_GNU'  : '-D__native_client__=1 -D__pnacl__=1 ' +
-                    '-fuse-llvm-va-arg -Werror-portable-llvm',
+  'CC_FLAGS_LLVMGCC': '-D__native_client__=1 -D__pnacl__=1 ' +
+                      '-fuse-llvm-va-arg -Werror-portable-llvm',
   'CC_FLAGS_CLANG': '-ccc-host-triple le32-unknown-nacl',
+  'CC_FLAGS_DRAGONEGG': '-D__native_client__=1 -D__pnacl__=1 ' +
+                        '-flto -fplugin=${DRAGONEGG_PLUGIN}',
 
   'ISYSTEM'        : '${ISYSTEM_USER} ${ISYSTEM_BUILTIN}',
   'ISYSTEM_BUILTIN': '${STDINC ? ${ISYSTEM_%LIBMODE%}}',
@@ -81,7 +83,12 @@ EXTRA_ENV = {
       # Fall back to gcc include, for unwind.h
       '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
 
-  'ISYSTEM_GNU'  :
+  'ISYSTEM_LLVMGCC':
+      '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
+      '${BASE_LLVM_GCC}/' +
+        'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
+
+  'ISYSTEM_DRAGONEGG':
       '${BASE_LLVM_GCC}/lib/gcc/arm-none-linux-gnueabi/4.2.1/include ' +
       '${BASE_LLVM_GCC}/' +
         'lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
@@ -150,11 +157,13 @@ EXTRA_ENV = {
 
   'LIBSTDCPP'   : '${LANGUAGE==CXX ? -lstdc++ -lm }',
 
-  'CC'          : '${CC_%FRONTEND%_%LANGUAGE%}',
-  'CC_GNU_C'    : '${LLVM_GCC}',
-  'CC_GNU_CXX'  : '${LLVM_GXX}',
-  'CC_CLANG_C'  : '${CLANG}',
-  'CC_CLANG_CXX': '${CLANGXX}',
+  'CC'              : '${CC_%FRONTEND%_%LANGUAGE%}',
+  'CC_LLVMGCC_C'    : '${LLVM_GCC}',
+  'CC_LLVMGCC_CXX'  : '${LLVM_GXX}',
+  'CC_CLANG_C'      : '${CLANG}',
+  'CC_CLANG_CXX'    : '${CLANGXX}',
+  'CC_DRAGONEGG_C'  : '${DRAGONEGG_GCC}',
+  'CC_DRAGONEGG_CXX': '${DRAGONEGG_GXX}',
 
   'RUN_CC': '${CC} -emit-llvm ${mode} ${CC_FLAGS} ' +
             '${@AddPrefix:-isystem :ISYSTEM} ' +
@@ -188,13 +197,19 @@ CustomPatterns = [
   ( '--pnacl-skip-ll',           "env.set('EMIT_LL', '0')"),
 
   ( '--pnacl-gcc',               "env.set('LANGUAGE', 'C')\n"
-                                 "env.set('FRONTEND', 'GNU')"),
+                                 "env.set('FRONTEND', 'LLVMGCC')"),
   ( '--pnacl-gxx',               "env.set('LANGUAGE', 'CXX')\n"
-                                 "env.set('FRONTEND', 'GNU')"),
+                                 "env.set('FRONTEND', 'LLVMGCC')"),
+
   ( '--pnacl-clang',             "env.set('LANGUAGE', 'C')\n"
                                  "env.set('FRONTEND', 'CLANG')"),
   ( '--pnacl-clangxx',           "env.set('LANGUAGE', 'CXX')\n"
                                  "env.set('FRONTEND', 'CLANG')"),
+
+  ( '--pnacl-dgcc',              "env.set('LANGUAGE', 'C')\n"
+                                 "env.set('FRONTEND', 'DRAGONEGG')"),
+  ( '--pnacl-dgxx',              "env.set('LANGUAGE', 'CXX')\n"
+                                 "env.set('FRONTEND', 'DRAGONEGG')"),
 
   ( '--pnacl-allow-native',      "env.set('ALLOW_NATIVE', '1')"),
   ( '--pnacl-allow-translate',   "env.set('ALLOW_TRANSLATE', '1')"),
