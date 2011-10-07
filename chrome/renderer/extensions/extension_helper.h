@@ -46,6 +46,12 @@ class ExtensionHelper
                              std::string webstore_item_id,
                              GURL requestor_url);
 
+  // Starts fetching a channel id for server pushed notifications. The result
+  // comes back via OnGetAppNotifyChannelResponse.
+  void GetAppNotifyChannel(int request_id,
+                           const GURL& requestor_url,
+                           const std::string& client_id);
+
   int browser_window_id() const { return browser_window_id_; }
   content::ViewType::Type view_type() const { return view_type_; }
 
@@ -75,6 +81,8 @@ class ExtensionHelper
   void OnUpdateBrowserWindowId(int window_id);
   void OnInlineWebstoreInstallResponse(
       int install_id, bool success, const std::string& error);
+  void OnGetAppNotifyChannelResponse(
+      int request_id, const std::string& channel_id, const std::string& error);
 
   // Callback triggered when we finish downloading the application definition
   // file.
