@@ -30,6 +30,10 @@ bool IsGoogleDomain(const GURL& url);
 // Indicates whether the URL provided could be a Google search result page.
 bool IsGoogleSearchResultURL(const GURL& url);
 
+// Returns true iff the URL provided is Web URL, using the scheme http
+// or https.
+bool IsWebURL(const GURL& url);
+
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_

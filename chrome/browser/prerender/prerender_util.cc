@@ -75,4 +75,8 @@ bool IsGoogleSearchResultURL(const GURL& url) {
           StartsWithASCII(url.path(), std::string("/webhp"), true));
 }
 
+bool IsWebURL(const GURL& url) {
+  return url.SchemeIs("http") || url.SchemeIs("https");
+}
+
 }  // namespace prerender

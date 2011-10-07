@@ -142,6 +142,8 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 void PrerenderHistograms::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time, bool was_prerender,
     const GURL& url) {
+  if (!IsWebURL(url))
+    return;
   bool within_window = WithinWindow();
   bool is_google_url = IsGoogleDomain(url);
   RECORD_PLT("PerceivedPLT", perceived_page_load_time);
