@@ -111,4 +111,5 @@ node = env.CommandTest(
     command=python_prefix + ['${PYTHON}', env.File('test_python_imc.py')],
     osenv=env_vars)
 env.Depends(node, module)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_python_imc_test')
+is_broken = env.Bit('asan')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_python_imc_test', is_broken=is_broken)
