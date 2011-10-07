@@ -998,11 +998,11 @@ bool RenderWidgetHostViewViews::IsReadyToPaint() {
     top = views::ViewsDelegate::views_delegate->GetDefaultParentView()->
         GetWidget();
   } else {
-    top = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
-    // The conversion of the Widget to NativeView and back again
-    // ensures that the result is backed by a NativeWidgetGtk (and not
-    // a NativeWidgetViews, for example) so the subsequent cast is
-    // valid.
+    // Use GetTopLevelWidget()'s native view to get platform
+    // native widget. This is a workaround to get window's NativeWidgetGtk
+    // under both views desktop (where toplevel is NativeWidgetViews,
+    // whose GetNativeView returns gtk widget of the native window)
+    // and non views desktop (where toplevel is NativeWidgetGtk).
     top = GetWidget() ?
         views::Widget::GetWidgetForNativeView(
             GetWidget()->GetTopLevelWidget()->GetNativeView()) :
