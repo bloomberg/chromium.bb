@@ -5,6 +5,7 @@
 #include "ui/base/clipboard/clipboard.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace ui {
@@ -12,7 +13,34 @@ namespace ui {
 namespace {
 const char kMimeTypeBitmap[] = "image/bmp";
 const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
+
+// A mimimum clipboard implementation for simple text cut&paste.
+class ClipboardData {
+ public:
+  ClipboardData() {}
+  virtual ~ClipboardData() {}
+
+  const std::string& text() const { return utf8_text_; }
+
+  void set_text(const std::string& text) {
+    utf8_text_ = text;
+  }
+
+ private:
+  std::string utf8_text_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClipboardData);
+};
+
+ClipboardData* data = NULL;
+
+ClipboardData* GetClipboardData() {
+  if (!data)
+    data = new ClipboardData();
+  return data;
 }
+
+}  // namespace
 
 Clipboard::Clipboard() {
   NOTIMPLEMENTED();
@@ -22,7 +50,10 @@ Clipboard::~Clipboard() {
 }
 
 void Clipboard::WriteObjects(const ObjectMap& objects) {
-  NOTIMPLEMENTED();
+  for (ObjectMap::const_iterator iter = objects.begin();
+       iter != objects.end(); ++iter) {
+    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+  }
 }
 
 
@@ -53,11 +84,11 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
 }
 
 void Clipboard::ReadText(Buffer buffer, string16* result) const {
-  NOTIMPLEMENTED();
+  *result = UTF8ToUTF16(GetClipboardData()->text());
 }
 
 void Clipboard::ReadAsciiText(Buffer buffer, std::string* result) const {
-  NOTIMPLEMENTED();
+  *result = GetClipboardData()->text();
 }
 
 void Clipboard::ReadHTML(Buffer buffer, string16* markup, std::string* src_url,
@@ -92,7 +123,7 @@ uint64 Clipboard::GetSequenceNumber() {
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
-  NOTIMPLEMENTED();
+  GetClipboardData()->set_text(std::string(text_data, text_len));
 }
 
 void Clipboard::WriteHTML(const char* markup_data,
