@@ -25,12 +25,10 @@ TESTS = ['small_structs_by_value.c',
          'vaarg.c',
          ]
 
-if env.Bit('pnacl_use_clang'):
+frontend = env['PNACL_FRONTEND']
+if frontend == 'clang':
   # Enable when Clang's bitcode output is correct and stable
-  #frontend = 'clang'
   Return()
-else:
-  frontend = 'llvmgcc'
 
 for src in TESTS:
    name = src.split('.')[0]

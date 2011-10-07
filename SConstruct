@@ -42,6 +42,8 @@ gc.disable()
 # ----------------------------------------------------------
 # REPORT
 # ----------------------------------------------------------
+CMD_COUNTER = {}
+ENV_COUNTER = {}
 def PrintFinalReport():
   """This function is run just before scons exits and dumps various reports.
   """
@@ -159,6 +161,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'libdir',
     # Where to install trusted-code binaries for public (SDK) consumption.
     'bindir',
+    # PNaCl Frontend Compiler
+    'pnacl_frontend',
   ])
 
 
@@ -307,9 +311,6 @@ def SetUpArgumentBits(env):
 
   BitFromArgument(env, 'use_sandboxed_translator', default=False,
     desc='use pnacl sandboxed translator for linking (not available for arm)')
-
-  BitFromArgument(env, 'pnacl_use_clang', default=True,
-    desc='use pnacl-clang/clang++ instead of pnacl-gcc/g++')
 
   # This only controls whether the sandboxed translator is itself dynamically
   # linked, not whether it generates dynamic nexes (or links against glibc)
@@ -907,12 +908,24 @@ def MakeArchSpecificEnv():
 
   env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 
-  if env.Bit('nacl_glibc') or not env.Bit('bitcode'):
-    env.ClearBits('pnacl_use_clang')
-
   if env.Bit('target_arm') and not env.Bit('bitcode'):
     # This has always been a silent default on ARM.
     env.SetBits('bitcode')
+
+  pnacl_frontend = ARGUMENTS.get('pnacl_frontend', '')
+  if pnacl_frontend not in ('','clang','dragonegg','llvmgcc'):
+    print "\n ERROR: pnacl_frontend must be clang, dragonegg, or llvmgcc"
+    sys.exit(-1)
+  if pnacl_frontend and not env.Bit('bitcode'):
+    print "\n ERROR: pnacl_frontend does not make sense without bitcode=1\n"
+    sys.exit(-1)
+  if env.Bit('bitcode') and not pnacl_frontend:
+    # Set default frontend for PNaCl
+    if env.Bit('nacl_glibc'):
+      pnacl_frontend = 'llvmgcc'
+    else:
+      pnacl_frontend = 'clang'
+  env['PNACL_FRONTEND'] = pnacl_frontend
 
   if env.Bit('target_arm'):
     bundle_bits = 4
@@ -2188,10 +2201,6 @@ def GetPrintableEnvironmentName(env):
   return env.subst('${TARGET_ROOT}').split('/')[-1]
 
 
-CMD_COUNTER = {}
-ENV_COUNTER = {}
-
-
 def CustomCommandPrinter(cmd, targets, source, env):
   # Abuse the print hook to count the commands that are executed
   if env.Bit('target_stats'):
@@ -2932,15 +2941,12 @@ target_variant_map = [
     ('nacl_pic', 'pic'),
     ('use_sandboxed_translator', 'sbtc'),
     ('nacl_glibc', 'glibc'),
-    ('pnacl_use_clang', 'clang'),
     ]
 for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):
     nacl_env['TARGET_VARIANT'] += '-' + variant_suffix
-
-if nacl_env.Bit('pnacl_use_clang') and not nacl_env.Bit('bitcode'):
-  print "\n ERROR: pnacl_use_clang=1 does not make sense without bitcode=1\n"
-  sys.exit(-1)
+if nacl_env.Bit('bitcode'):
+  nacl_env['TARGET_VARIANT'] += '-' + nacl_env['PNACL_FRONTEND']
 
 if nacl_env.Bit('irt'):
   # Since the default linking layout is compatible with IRT loading now,

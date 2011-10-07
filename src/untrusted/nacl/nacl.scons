@@ -8,7 +8,7 @@ Import('env')
 
 # NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
 env.FilterOut(CCFLAGS=['-pedantic'])
-if env.Bit('pnacl_use_clang'):
+if env['PNACL_FRONTEND'] == 'clang':
   # silence a warning when compiling malloc.c
   env.Append(CCFLAGS=['-Wno-self-assign'])
 # Sources are split into essentially one function per file to be in

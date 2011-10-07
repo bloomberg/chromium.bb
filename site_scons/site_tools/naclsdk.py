@@ -227,12 +227,20 @@ def _SetEnvForPnacl(env, root):
   pnacl_nm = binprefix + 'nm' + binext
   pnacl_ranlib = binprefix + 'ranlib' + binext
 
-  if env.Bit('pnacl_use_clang'):
+  frontend = env['PNACL_FRONTEND']
+  if frontend == 'clang':
     pnacl_cc = binprefix + 'clang' + binext
     pnacl_cxx = binprefix + 'clang++' + binext
-  else:
+  elif frontend == 'llvmgcc':
     pnacl_cc = binprefix + 'gcc' + binext
     pnacl_cxx = binprefix + 'g++' + binext
+  elif frontend == 'dragonegg':
+    pnacl_cc = binprefix + 'dgcc' + binext
+    pnacl_cxx = binprefix + 'dg++' + binext
+  else:
+    print "Unknown frontend"
+    sys.exit(-1)
+
   pnacl_ld = binprefix + 'ld' + binext
   pnacl_disass = binprefix + 'dis' + binext
   pnacl_strip = binprefix + 'strip' + binext
