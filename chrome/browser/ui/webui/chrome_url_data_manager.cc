@@ -90,10 +90,9 @@ void ChromeURLDataManager::DeleteDataSource(const DataSource* data_source) {
   }
   if (schedule_delete) {
     // Schedule a task to delete the DataSource back on the UI thread.
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            NewRunnableFunction(
-                                &ChromeURLDataManager::DeleteDataSources));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&ChromeURLDataManager::DeleteDataSources));
   }
 }
 

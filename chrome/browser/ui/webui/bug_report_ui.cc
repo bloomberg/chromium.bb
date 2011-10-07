@@ -87,8 +87,8 @@ void GetSavedScreenshots(std::vector<std::string>* saved_screenshots,
 void GetScreenshotUrls(std::vector<std::string>* saved_screenshots) {
   base::WaitableEvent done(true, false);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          NewRunnableFunction(&GetSavedScreenshots,
-                                              saved_screenshots, &done));
+                          base::Bind(&GetSavedScreenshots,
+                                     saved_screenshots, &done));
   done.Wait();
 }
 

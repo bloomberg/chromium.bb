@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "chrome/browser/ui/webui/quota_internals_handler.h"
 #include "chrome/browser/ui/webui/quota_internals_types.h"
 #include "net/base/net_util.h"
@@ -27,8 +28,7 @@ QuotaInternalsProxy::~QuotaInternalsProxy() {}
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {     \
       BrowserThread::PostTask(                                \
           BrowserThread::UI, FROM_HERE,                       \
-          NewRunnableMethod(this, &QuotaInternalsProxy::func, \
-                            arg));                            \
+          base::Bind(&QuotaInternalsProxy::func, this, arg)); \
       return;                                                 \
     }                                                         \
                                                               \
@@ -49,8 +49,7 @@ void QuotaInternalsProxy::RequestInfo(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &QuotaInternalsProxy::RequestInfo,
-                          quota_manager));
+        base::Bind(&QuotaInternalsProxy::RequestInfo, this, quota_manager));
     return;
   }
 

@@ -312,10 +312,8 @@ class PrintSystemTaskProxy
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &PrintSystemTaskProxy::SendDefaultPrinter,
-                          default_printer,
-                          cloud_print_data));
+        base::Bind(&PrintSystemTaskProxy::SendDefaultPrinter, this,
+                   default_printer, cloud_print_data));
   }
 
   void SendDefaultPrinter(const StringValue* default_printer,
@@ -358,9 +356,7 @@ class PrintSystemTaskProxy
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &PrintSystemTaskProxy::SetupPrinterList,
-                          printers));
+        base::Bind(&PrintSystemTaskProxy::SetupPrinterList, this, printers));
   }
 
   void SetupPrinterList(ListValue* printers) {
@@ -477,9 +473,8 @@ class PrintSystemTaskProxy
                              default_duplex_setting_value);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &PrintSystemTaskProxy::SendPrinterCapabilities,
-                          settings_info.DeepCopy()));
+        base::Bind(&PrintSystemTaskProxy::SendPrinterCapabilities, this,
+                   settings_info.DeepCopy()));
   }
 
   void SendPrinterCapabilities(DictionaryValue* settings_info) {
@@ -613,8 +608,7 @@ void PrintPreviewHandler::HandleGetDefaultPrinter(const ListValue* /*args*/) {
                                has_logged_printers_count_);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(task.get(),
-                        &PrintSystemTaskProxy::GetDefaultPrinter));
+      base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
@@ -626,8 +620,7 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(task.get(),
-                        &PrintSystemTaskProxy::EnumeratePrinters));
+      base::Bind(&PrintSystemTaskProxy::EnumeratePrinters, task.get()));
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
@@ -839,9 +832,8 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(task.get(),
-                        &PrintSystemTaskProxy::GetPrinterCapabilities,
-                        printer_name));
+      base::Bind(&PrintSystemTaskProxy::GetPrinterCapabilities, task.get(),
+                 printer_name));
 }
 
 void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {

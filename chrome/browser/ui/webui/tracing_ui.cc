@@ -276,9 +276,8 @@ class ReadTraceFileTask : public Task {
     }
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(proxy_.get(),
-                          &TaskProxy::LoadTraceFileCompleteProxy,
-                          file_contents));
+        base::Bind(&TaskProxy::LoadTraceFileCompleteProxy, proxy_.get(),
+                   file_contents));
   }
 
  private:
@@ -305,8 +304,7 @@ class WriteTraceFileTask : public Task {
       return;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(proxy_.get(),
-                          &TaskProxy::SaveTraceFileCompleteProxy));
+        base::Bind(&TaskProxy::SaveTraceFileCompleteProxy, proxy_.get()));
   }
 
  private:

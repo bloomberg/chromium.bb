@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/task_manager_dialog.h"
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
@@ -141,12 +142,12 @@ void TaskManagerDialogImpl::OpenHtmlDialog() {
 void TaskManagerDialog::Show() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&TaskManagerDialogImpl::Show, false));
+      base::Bind(&TaskManagerDialogImpl::Show, false));
 }
 
 // static
 void TaskManagerDialog::ShowBackgroundPages() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&TaskManagerDialogImpl::Show, true));
+      base::Bind(&TaskManagerDialogImpl::Show, true));
 }

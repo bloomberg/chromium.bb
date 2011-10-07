@@ -353,7 +353,7 @@ void DownloadsDOMHandler::HandleOpenDownloadsFolder(const ListValue* args) {
 #else
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&platform_util::OpenItem, path));
+      base::Bind(&platform_util::OpenItem, path));
 #endif
 }
 

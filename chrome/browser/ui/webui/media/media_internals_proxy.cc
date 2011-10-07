@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/media/media_internals_proxy.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_internals.h"
@@ -40,25 +41,27 @@ void MediaInternalsProxy::Observe(int type, const NotificationSource& source,
 void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   handler_ = handler;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-          &MediaInternalsProxy::ObserveMediaInternalsOnIOThread));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&MediaInternalsProxy::ObserveMediaInternalsOnIOThread, this));
 }
 
 void MediaInternalsProxy::Detach() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   handler_ = NULL;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-          &MediaInternalsProxy::StopObservingMediaInternalsOnIOThread));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &MediaInternalsProxy::StopObservingMediaInternalsOnIOThread, this));
 }
 
 void MediaInternalsProxy::GetEverything() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ask MediaInternals for all its data.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &MediaInternalsProxy::GetEverythingOnIOThread));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&MediaInternalsProxy::GetEverythingOnIOThread, this));
 
   // Send the page names for constants.
   CallJavaScriptFunctionOnUIThread("media.onReceiveConstants", GetConstants());
@@ -66,9 +69,9 @@ void MediaInternalsProxy::GetEverything() {
 
 void MediaInternalsProxy::OnUpdate(const string16& update) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-          &MediaInternalsProxy::UpdateUIOnUIThread, update));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&MediaInternalsProxy::UpdateUIOnUIThread, this, update));
 }
 
 void MediaInternalsProxy::OnAddEntry(net::NetLog::EventType type,
@@ -87,9 +90,9 @@ void MediaInternalsProxy::OnAddEntry(net::NetLog::EventType type,
   if (!is_event_interesting)
     return;
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &MediaInternalsProxy::AddNetEventOnUIThread,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&MediaInternalsProxy::AddNetEventOnUIThread, this,
           net::NetLog::EntryToDictionaryValue(type, time, source, phase,
                                               params, false)));
 }
@@ -156,9 +159,10 @@ void MediaInternalsProxy::AddNetEventOnUIThread(Value* entry) {
   // if an update is not already pending.
   if (!pending_net_updates_.get()) {
     pending_net_updates_.reset(new ListValue());
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        NewRunnableMethod(
-            this, &MediaInternalsProxy::SendNetEventsOnUIThread),
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(
+            &MediaInternalsProxy::SendNetEventsOnUIThread, this),
         kMediaInternalsProxyEventDelayMilliseconds);
   }
   pending_net_updates_->Append(entry);
