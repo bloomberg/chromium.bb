@@ -42,9 +42,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : initialize_failed_(false),
       context_(NULL),
       gl_(NULL),
-#ifndef WTF_USE_THREADED_COMPOSITING
       web_view_(NULL),
-#endif
 #if defined(OS_MACOSX)
       plugin_handle_(NULL),
 #endif  // defined(OS_MACOSX)
@@ -102,9 +100,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     if (!render_view)
       return false;
     render_view_routing_id_ = render_view->routing_id();
-#ifndef WTF_USE_THREADED_COMPOSITING
     web_view_ = web_view;
-#endif
   }
   return true;
 }
@@ -244,12 +240,10 @@ WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   // Copies the contents of the off-screen render target into the texture
   // used by the compositor.
-#ifndef WTF_USE_THREADED_COMPOSITING
   RenderView* renderview =
       web_view_ ? RenderView::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersPosted();
-#endif
   context_->SwapBuffers();
   context_->Echo(method_factory_.NewRunnableMethod(
       &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete));
@@ -1027,13 +1021,12 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
-#ifndef WTF_USE_THREADED_COMPOSITING
   // This may be called after tear-down of the RenderView.
   RenderView* renderview =
       web_view_ ? RenderView::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersComplete();
-#endif
+
   if (swapbuffers_complete_callback_)
     swapbuffers_complete_callback_->onSwapBuffersComplete();
 }
@@ -1088,12 +1081,10 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }
-#ifndef WTF_USE_THREADED_COMPOSITING
   RenderView* renderview =
       web_view_ ? RenderView::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersAborted();
-#endif
 }
 
 #endif  // defined(ENABLE_GPU)

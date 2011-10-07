@@ -323,11 +323,7 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
   if (!is_accelerated_compositing_active_) {
     didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
   } else {
-#ifdef WTF_USE_THREADED_COMPOSITING
-    webwidget_->composite(false);
-#else
     scheduleComposite();
-#endif
   }
 }
 
@@ -926,9 +922,9 @@ void RenderWidget::didActivateCompositor(int compositorIdentifier) {
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
       routing_id_, is_accelerated_compositing_active_));
 
-#ifndef WTF_USE_THREADED_COMPOSITING
+  // Note: asynchronous swapbuffer support currently only matters if
+  // compositing scheduling happens on the RenderWidget.
   using_asynchronous_swapbuffers_ = SupportsAsynchronousSwapBuffers();
-#endif
 }
 
 void RenderWidget::didDeactivateCompositor() {
@@ -938,24 +934,22 @@ void RenderWidget::didDeactivateCompositor() {
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
       routing_id_, is_accelerated_compositing_active_));
 
-#ifndef WTF_USE_THREADED_COMPOSITING
   if (using_asynchronous_swapbuffers_)
     using_asynchronous_swapbuffers_ = false;
-#endif
 }
 
 void RenderWidget::scheduleComposite() {
-#if WTF_USE_THREADED_COMPOSITING
-  NOTREACHED();
-#else
-  // TODO(nduca): replace with something a little less hacky.  The reason this
-  // hack is still used is because the Invalidate-DoDeferredUpdate loop
-  // contains a lot of host-renderer synchronization logic that is still
-  // important for the accelerated compositing case. The option of simply
-  // duplicating all that code is less desirable than "faking out" the
-  // invalidation path using a magical damage rect.
-  didInvalidateRect(WebRect(0, 0, 1, 1));
-#endif
+  if (WebWidgetHandlesCompositorScheduling())
+    webwidget_->composite(false);
+  else {
+    // TODO(nduca): replace with something a little less hacky.  The reason this
+    // hack is still used is because the Invalidate-DoDeferredUpdate loop
+    // contains a lot of host-renderer synchronization logic that is still
+    // important for the accelerated compositing case. The option of simply
+    // duplicating all that code is less desirable than "faking out" the
+    // invalidation path using a magical damage rect.
+    didInvalidateRect(WebRect(0, 0, 1, 1));
+  }
 }
 
 void RenderWidget::scheduleAnimation() {
@@ -1224,13 +1218,7 @@ void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
 
   set_next_paint_is_repaint_ack();
   if (is_accelerated_compositing_active_) {
-#ifndef WTF_USE_THREADED_COMPOSITING
     scheduleComposite();
-#else
-#ifdef WEBWIDGET_HAS_THREADED_COMPOSITING_CHANGES
-    webwidget_->composite(false);
-#endif
-#endif
   } else {
     gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());
     didInvalidateRect(repaint_rect);
@@ -1409,5 +1397,9 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
 }
 
 bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+  return false;
+}
+
+bool RenderWidget::WebWidgetHandlesCompositorScheduling() const {
   return false;
 }

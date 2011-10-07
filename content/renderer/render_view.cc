@@ -4462,3 +4462,7 @@ void RenderView::OnLockMouseACK(bool succeeded) {
 void RenderView::OnMouseLockLost() {
   pepper_delegate_.OnMouseLockLost();
 }
+
+bool RenderView::WebWidgetHandlesCompositorScheduling() const {
+  return webview()->settings()->useThreadedCompositor();
+}

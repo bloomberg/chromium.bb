@@ -661,6 +661,7 @@ class RenderView : public RenderWidget,
   virtual void OnImeConfirmComposition(const string16& text) OVERRIDE;
   virtual ui::TextInputType GetTextInputType() OVERRIDE;
   virtual bool CanComposeInline() OVERRIDE;
+  virtual bool WebWidgetHandlesCompositorScheduling() const OVERRIDE;
 
  private:
   // For unit tests.
