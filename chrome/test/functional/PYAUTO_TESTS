@@ -173,8 +173,6 @@
       '-sync.SyncTest.testRestartBrowser',
       # crbug.com/87642
       '-sync.SyncTest.testDisableAndEnableDatatypes',
-      # Crashes browser. crbug.com/89000
-      '-prefs.PrefsTest.testGeolocationPref',
       # crbug.com/95621
       '-youtube.YoutubeTest.testPlayerStatus',
     ],
