@@ -60,8 +60,8 @@ void Clipboard::ReadAsciiText(Buffer buffer, std::string* result) const {
   NOTIMPLEMENTED();
 }
 
-void Clipboard::ReadHTML(Buffer buffer, string16* markup,
-    std::string* src_url) const {
+void Clipboard::ReadHTML(Buffer buffer, string16* markup, std::string* src_url,
+                         uint32* fragment_start, uint32* fragment_end) const {
   NOTIMPLEMENTED();
 }
 
