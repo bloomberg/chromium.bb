@@ -2427,7 +2427,7 @@ def SetupClang(env):
     env['ASAN'] = '${SOURCE_ROOT}/third_party/asan'
     env['ASAN_BLACKLIST'] = '-mllvm -asan-blacklist=${ASAN}/asan_blacklist.txt'
     env['CLANG_DIR'] = os.path.join('${ASAN}', asan_dir, 'bin')
-    env['CLANG_OPTS'] = '-fasan -w ${ASAN_BLACKLIST}'
+    env['CLANG_OPTS'] = '-fasan ${ASAN_BLACKLIST}'
   else:
     env['CLANG_DIR'] = '${SOURCE_ROOT}/third_party/llvm-build/Release+Asserts/bin'
     env['CLANG_OPTS'] = ''
