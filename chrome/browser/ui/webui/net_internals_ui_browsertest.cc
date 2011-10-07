@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
@@ -48,8 +50,10 @@ NetInternalsTestMessageHandler::NetInternalsTestMessageHandler()
 }
 
 void NetInternalsTestMessageHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("openNewTab", NewCallback(
-      this, &NetInternalsTestMessageHandler::OpenNewTab));
+  web_ui_->RegisterMessageCallback(
+      "openNewTab",
+      base::Bind(&NetInternalsTestMessageHandler::OpenNewTab,
+                 base::Unretained(this)));
 }
 
 void NetInternalsTestMessageHandler::OpenNewTab(const ListValue* list_value) {
