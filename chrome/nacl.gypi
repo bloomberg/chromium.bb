@@ -272,6 +272,19 @@
                 '-fno-pic', '-fno-PIC',
                 '-fno-pie', '-fno-PIE',
               ],
+              'cflags!': [
+                '-fasan',
+                '-w',
+              ],
+              'conditions': [
+                ['clang==1', {
+                  'cflags': [
+                    # Prevent llvm-opt from replacing my_bzero with a call
+                    # to memset
+                    '-ffreestanding',
+                  ],
+                }],
+              ],
             },
             {
               'target_name': 'nacl_helper_bootstrap_raw',

@@ -56,9 +56,13 @@
         'cflags': [
           '-Wno-long-long',
         ],
-        'ldflags': [
-          # Catch unresolved symbols.
-          '-Wl,-z,defs',
+        'conditions': [
+          ['asan!=1', {
+            'ldflags': [
+              # Catch unresolved symbols.
+              '-Wl,-z,defs',
+            ],
+          }],
         ],
         'libraries': [
           '-ldl',

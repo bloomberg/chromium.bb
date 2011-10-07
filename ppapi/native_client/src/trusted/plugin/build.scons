@@ -17,9 +17,12 @@ if env.Bit('linux'):
     plugin_env.Append(
         CCFLAGS=['-fPIC', '-Wno-long-long',],
         CPPDEFINES = ['XP_UNIX', 'MOZ_X11'],
-        # Catch unresolved symbols in libraries.
-        LINKFLAGS=['-Wl,-z,defs'],
         )
+    if not env.Bit('asan'):
+      plugin_env.Append(
+          # Catch unresolved symbols in libraries.
+          LINKFLAGS=['-Wl,-z,defs'],
+          )
 
     # We usually try to build things statically, but the plugin is a .so
     plugin_env.FilterOut(LINKFLAGS=['-static'])
