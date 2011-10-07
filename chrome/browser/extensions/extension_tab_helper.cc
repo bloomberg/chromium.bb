@@ -18,7 +18,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -128,8 +127,6 @@ bool ExtensionTabHelper::OnMessageReceived(const IPC::Message& message) {
                         OnInstallApplication)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_InlineWebstoreInstall,
                         OnInlineWebstoreInstall)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppNotifyChannel,
-                        OnGetAppNotifyChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -156,48 +153,6 @@ void ExtensionTabHelper::OnInlineWebstoreInstall(
   scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
       tab_contents(), install_id, webstore_item_id, requestor_url, this));
   installer->BeginInstall();
-}
-
-void ExtensionTabHelper::OnGetAppNotifyChannel(
-    int request_id,
-    const GURL& requestor_url,
-    const std::string& client_id) {
-
-  // Check for permission first.
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
-  ExtensionService* extension_service = profile->GetExtensionService();
-  ExtensionProcessManager* process_manager =
-      profile->GetExtensionProcessManager();
-  RenderProcessHost* process =
-      tab_contents_wrapper()->render_view_host()->process();
-  const Extension* extension =
-      extension_service->GetInstalledApp(requestor_url);
-  bool allowed =
-      extension &&
-      extension->is_app() &&
-      extension->HasAPIPermission(
-          ExtensionAPIPermission::kExperimental) &&
-      (extension->is_hosted_app() ||
-       process_manager->GetExtensionProcess(requestor_url) == process);
-  if (!allowed) {
-    AppNotifyChannelSetupComplete(request_id, "", "permission_error");
-    return;
-  }
-
-  scoped_refptr<AppNotifyChannelSetup> channel_setup(
-      new AppNotifyChannelSetup(request_id,
-                                client_id,
-                                requestor_url,
-                                this->AsWeakPtr()));
-  channel_setup->Start();
-  // We'll get called back in AppNotifyChannelSetupComplete.
-}
-
-void ExtensionTabHelper::AppNotifyChannelSetupComplete(
-    int request_id, const std::string& client_id, const std::string& error) {
-  Send(new ExtensionMsg_GetAppNotifyChannelResponse(
-      routing_id(), request_id, client_id, error));
 }
 
 void ExtensionTabHelper::OnRequest(
