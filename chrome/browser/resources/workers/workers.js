@@ -22,6 +22,11 @@ function openDevTools(workerProcessHostId, workerRouteId) {
               [String(workerProcessHostId), String(workerRouteId)]);
 }
 
+function reloadWorker(workerProcessHostId, workerRouteId) {
+  chrome.send("terminateWorker",
+              [String(workerProcessHostId), String(workerRouteId)]);
+}
+
 function populateWorkerList() {
   var data = requestData();
 
@@ -41,6 +46,18 @@ function populateWorkerList() {
     link.addEventListener(
         "click",
         openDevTools.bind(this,
+                          workerData.workerProcessHostId,
+                          workerData.workerRouteId),
+        true);
+    column.appendChild(link);
+    row.appendChild(column);
+
+    var link = document.createElement("a");
+    link.setAttribute("href", "#");
+    link.textContent = "terminate";
+    link.addEventListener(
+        "click",
+        reloadWorker.bind(this,
                           workerData.workerProcessHostId,
                           workerData.workerRouteId),
         true);
