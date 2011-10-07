@@ -47,7 +47,8 @@
         <div class="radio">
           <label>
             <input id="homepageUseNTPButton" type="radio" name="homepage"
-                value="true" metric="Options_Homepage_IsNewTabPage">
+                value="true" metric="Options_Homepage_IsNewTabPage"
+                pref="homepage_is_newtabpage">
             <span i18n-content="homepageUseNewTab"></span>
           </label>
         </div>
@@ -55,12 +56,14 @@
           <div class="radio">
             <label>
               <input id="homepageUseURLButton" type="radio" name="homepage"
-                  value="false" metric="Options_Homepage_IsNewTabPage">
+                  value="false" metric="Options_Homepage_IsNewTabPage"
+                  pref="homepage_is_newtabpage">
               <span i18n-content="homepageUseURL"></span>
             </label>
           </div>
           <div>
-            <input id="homepageURL" class="weakrtl favicon-cell" type="url">
+            <input id="homepageURL" class="weakrtl favicon-cell" type="url"
+                dataType="url" pref="homepage">
           </div>
         </div>
       </div>

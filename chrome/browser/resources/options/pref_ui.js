@@ -605,6 +605,9 @@ cr.define('options', function() {
               case 'double':
                 Preferences.setDoublePref(self.pref, self.value, self.metric);
                 break;
+              case 'url':
+                Preferences.setURLPref(self.pref, self.value, self.metric);
+                break;
               default:
                 Preferences.setStringPref(self.pref, self.value, self.metric);
                 break;

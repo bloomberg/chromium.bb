@@ -95,9 +95,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
 }
 
 void BrowserOptionsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("setHomePage",
-      base::Bind(&BrowserOptionsHandler::SetHomePage,
-                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("becomeDefaultBrowser",
       base::Bind(&BrowserOptionsHandler::BecomeDefaultBrowser,
                  base::Unretained(this)));
@@ -160,22 +157,6 @@ void BrowserOptionsHandler::Initialize() {
   UpdateSearchEngines();
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
-}
-
-void BrowserOptionsHandler::SetHomePage(const ListValue* args) {
-  std::string url_string;
-  std::string do_fixup_string;
-  int do_fixup;
-  CHECK_EQ(args->GetSize(), 2U);
-  CHECK(args->GetString(0, &url_string));
-  CHECK(args->GetString(1, &do_fixup_string));
-  CHECK(base::StringToInt(do_fixup_string, &do_fixup));
-
-  if (do_fixup) {
-    GURL fixed_url = URLFixerUpper::FixupURL(url_string, std::string());
-    url_string = fixed_url.spec();
-  }
-  homepage_.SetValueIfNotManaged(url_string);
 }
 
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {

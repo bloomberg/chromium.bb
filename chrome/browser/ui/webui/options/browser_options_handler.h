@@ -56,9 +56,6 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Sets the home page to the given string. Called from WebUI.
-  void SetHomePage(const ListValue* args);
-
   // Makes this the default browser. Called from WebUI.
   void BecomeDefaultBrowser(const ListValue* args);
 

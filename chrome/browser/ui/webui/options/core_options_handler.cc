@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -162,6 +163,9 @@ void CoreOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setStringPref",
       base::Bind(&CoreOptionsHandler::HandleSetStringPref,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("setURLPref",
+      base::Bind(&CoreOptionsHandler::HandleSetURLPref,
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("setListPref",
       base::Bind(&CoreOptionsHandler::HandleSetListPref,
@@ -312,27 +316,30 @@ void CoreOptionsHandler::HandleObservePrefs(const ListValue* args) {
 }
 
 void CoreOptionsHandler::HandleSetBooleanPref(const ListValue* args) {
-  HandleSetPref(args, Value::TYPE_BOOLEAN);
+  HandleSetPref(args, TYPE_BOOLEAN);
 }
 
 void CoreOptionsHandler::HandleSetIntegerPref(const ListValue* args) {
-  HandleSetPref(args, Value::TYPE_INTEGER);
+  HandleSetPref(args, TYPE_INTEGER);
 }
 
 void CoreOptionsHandler::HandleSetDoublePref(const ListValue* args) {
-  HandleSetPref(args, Value::TYPE_DOUBLE);
+  HandleSetPref(args, TYPE_DOUBLE);
 }
 
 void CoreOptionsHandler::HandleSetStringPref(const ListValue* args) {
-  HandleSetPref(args, Value::TYPE_STRING);
+  HandleSetPref(args, TYPE_STRING);
+}
+
+void CoreOptionsHandler::HandleSetURLPref(const ListValue* args) {
+  HandleSetPref(args, TYPE_URL);
 }
 
 void CoreOptionsHandler::HandleSetListPref(const ListValue* args) {
-  HandleSetPref(args, Value::TYPE_LIST);
+  HandleSetPref(args, TYPE_LIST);
 }
 
-void CoreOptionsHandler::HandleSetPref(const ListValue* args,
-                                       base::Value::Type type) {
+void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
   DCHECK_GT(static_cast<int>(args->GetSize()), 1);
 
   std::string pref_name;
@@ -345,25 +352,48 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args,
 
   scoped_ptr<Value> temp_value;
 
-  // In JS all numbers are doubles.
-  if (type == Value::TYPE_INTEGER) {
-    double double_value;
-    CHECK(value->GetAsDouble(&double_value));
-    temp_value.reset(Value::CreateIntegerValue(static_cast<int>(double_value)));
-    value = temp_value.get();
-
-  // In case we have a List pref we got a JSON string.
-  } else if (type == Value::TYPE_LIST) {
-    std::string json_string;
-    CHECK(value->GetAsString(&json_string));
-    temp_value.reset(
-        base::JSONReader().JsonToValue(json_string,
-                                       false,  // no check_root
-                                       false));  // no trailing comma
-    value = temp_value.get();
+  switch (type) {
+    case TYPE_BOOLEAN:
+      CHECK_EQ(base::Value::TYPE_BOOLEAN, value->GetType());
+      break;
+    case TYPE_INTEGER: {
+      // In JS all numbers are doubles.
+      double double_value;
+      CHECK(value->GetAsDouble(&double_value));
+      int int_value = static_cast<int>(double_value);
+      temp_value.reset(Value::CreateIntegerValue(int_value));
+      value = temp_value.get();
+      break;
+    }
+    case TYPE_DOUBLE:
+      CHECK_EQ(base::Value::TYPE_DOUBLE, value->GetType());
+      break;
+    case TYPE_STRING:
+      CHECK_EQ(base::Value::TYPE_STRING, value->GetType());
+      break;
+    case TYPE_URL: {
+      std::string original;
+      CHECK(value->GetAsString(&original));
+      GURL fixed = URLFixerUpper::FixupURL(original, std::string());
+      temp_value.reset(Value::CreateStringValue(fixed.spec()));
+      value = temp_value.get();
+      break;
+    }
+    case TYPE_LIST: {
+      // In case we have a List pref we got a JSON string.
+      std::string json_string;
+      CHECK(value->GetAsString(&json_string));
+      temp_value.reset(
+          base::JSONReader().JsonToValue(json_string,
+                                         false,  // no check_root
+                                         false));  // no trailing comma
+      value = temp_value.get();
+      CHECK_EQ(base::Value::TYPE_LIST, value->GetType());
+      break;
+    }
+    default:
+      NOTREACHED();
   }
-
-  CHECK_EQ(type, value->GetType());
 
   std::string metric;
   if (args->GetSize() > 2 && !args->GetString(2, &metric))

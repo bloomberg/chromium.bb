@@ -69,6 +69,19 @@ cr.define('options', function() {
   };
 
   /**
+   * Sets value of a string preference that represents a URL
+   * and signals its changed value. The value will be fixed to be a valid URL.
+   * @param {string} name Preference name.
+   * @param {string} value New preference value.
+   * @param {string} metric User metrics identifier.
+   */
+  Preferences.setURLPref = function(name, value, metric) {
+    var argumentList = [name, String(value)];
+    if (metric != undefined) argumentList.push(metric);
+    chrome.send('setURLPref', argumentList);
+  };
+
+  /**
    * Sets value of a JSON list preference.
    * and signals its changed value.
    * @param {string} name Preference name.

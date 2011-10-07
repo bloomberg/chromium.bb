@@ -69,6 +69,17 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   typedef std::multimap<std::string, std::wstring> PreferenceCallbackMap;
   PreferenceCallbackMap pref_callback_map_;
  private:
+  // Type of preference value received from the page. This doesn't map 1:1 to
+  // Value::Type, since a TYPE_STRING can require custom processing.
+  enum PrefType {
+    TYPE_BOOLEAN = 0,
+    TYPE_INTEGER,
+    TYPE_DOUBLE,
+    TYPE_STRING,
+    TYPE_URL,
+    TYPE_LIST,
+  };
+
   // Callback for the "coreOptionsInitialize" message.  This message will
   // trigger the Initialize() method of all other handlers so that final
   // setup can be performed before the page is shown.
@@ -93,9 +104,10 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void HandleSetIntegerPref(const ListValue* args);
   void HandleSetDoublePref(const ListValue* args);
   void HandleSetStringPref(const ListValue* args);
+  void HandleSetURLPref(const ListValue* args);
   void HandleSetListPref(const ListValue* args);
 
-  void HandleSetPref(const ListValue* args, base::Value::Type type);
+  void HandleSetPref(const ListValue* args, PrefType type);
 
   // Callback for the "clearPref" message.  This message clears a preference
   // value. |args| is an array of parameters as follows:
