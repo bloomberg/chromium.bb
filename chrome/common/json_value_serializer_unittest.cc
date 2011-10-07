@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
@@ -13,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(JSONValueSerializerTest, Roundtrip) {

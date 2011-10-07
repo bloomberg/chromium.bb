@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 
 #include "chrome/common/jstemplate_builder.h"
 
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "content/common/json_value_serializer.h"
 #include "grit/common_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

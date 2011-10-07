@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
@@ -19,7 +20,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/user_script.h"
-#include "content/common/json_value_serializer.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 

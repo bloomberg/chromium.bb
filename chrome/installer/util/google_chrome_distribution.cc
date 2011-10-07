@@ -14,6 +14,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -37,7 +38,6 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
-#include "content/common/json_value_serializer.h"
 
 #include "installer_util_strings.h"  // NOLINT
 

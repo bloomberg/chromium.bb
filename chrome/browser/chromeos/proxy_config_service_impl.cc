@@ -6,6 +6,7 @@
 
 #include <ostream>
 
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/json_value_serializer.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
+#include "base/json/json_value_serializer.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
@@ -15,7 +16,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/json_value_serializer.h"
 #include "content/common/notification_source.h"
 
 using base::TimeTicks;

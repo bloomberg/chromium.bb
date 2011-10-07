@@ -4,6 +4,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_test_utils.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

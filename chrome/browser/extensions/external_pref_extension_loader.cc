@@ -6,12 +6,12 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/json_value_serializer.h"
 
 namespace {
 

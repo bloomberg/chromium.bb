@@ -4,12 +4,12 @@
 
 #include "chrome/test/ui/javascript_test_util.h"
 
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 bool JsonDictionaryToMap(const std::string& json,

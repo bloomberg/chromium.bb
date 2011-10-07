@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
+#include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
@@ -26,7 +27,6 @@
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -9,9 +9,9 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
-#include "content/common/json_value_serializer.h"
 
 namespace policy {
 

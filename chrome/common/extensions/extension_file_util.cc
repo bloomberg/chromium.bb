@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -24,7 +25,6 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
-#include "content/common/json_value_serializer.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"

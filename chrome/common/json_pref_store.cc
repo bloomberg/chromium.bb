@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/values.h"
-#include "content/common/json_value_serializer.h"
 
 namespace {
 

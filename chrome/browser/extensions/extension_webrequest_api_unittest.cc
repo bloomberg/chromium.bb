@@ -5,6 +5,7 @@
 #include <queue>
 
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/path_service.h"
 
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
@@ -17,7 +18,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/json_value_serializer.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

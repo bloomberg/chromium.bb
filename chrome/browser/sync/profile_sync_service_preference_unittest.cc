@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/json/json_reader.h"
+#include "base/json/json_value_serializer.h"
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/string_piece.h"
@@ -31,7 +32,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/common/json_value_serializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"
 
 using syncable::PREFERENCES;

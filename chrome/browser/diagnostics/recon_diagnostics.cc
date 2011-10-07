@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_value_serializer.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -18,7 +19,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
-#include "content/common/json_value_serializer.h"
 #include "ui/base/text/bytes_formatting.h"
 
 #if defined(OS_WIN)

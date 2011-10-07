@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_split.h"
@@ -16,7 +17,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "content/common/json_value_serializer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 

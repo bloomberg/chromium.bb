@@ -1,12 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/renderer/automation/dom_automation_controller.h"
 
-#include "chrome/common/render_messages.h"
-#include "content/common/json_value_serializer.h"
+#include "base/json/json_value_serializer.h"
 #include "base/string_util.h"
+#include "chrome/common/render_messages.h"
 
 DomAutomationController::DomAutomationController()
     : sender_(NULL),

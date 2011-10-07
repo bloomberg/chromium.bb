@@ -5,6 +5,7 @@
 #include "chrome/renderer/extensions/extension_helper.h"
 
 #include "base/command_line.h"
+#include "base/json/json_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -22,7 +23,6 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_idle_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
-#include "content/common/json_value_serializer.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

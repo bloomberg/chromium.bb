@@ -4,12 +4,12 @@
 
 #include "chrome/common/extensions/extension_permission_set.h"
 
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

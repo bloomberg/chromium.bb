@@ -19,13 +19,13 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/files/file_path_watcher.h"
+#include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "content/common/json_value_serializer.h"
 
 namespace remoting {
 namespace policy_hack {

@@ -15,6 +15,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -30,7 +31,6 @@
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
-#include "content/common/json_value_serializer.h"
 
 using base::win::RegKey;
 using installer::ProductState;

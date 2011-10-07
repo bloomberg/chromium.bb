@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/common/json_value_serializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

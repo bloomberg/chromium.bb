@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/json/json_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;

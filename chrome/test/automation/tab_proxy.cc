@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/threading/platform_thread.h"
@@ -14,7 +15,6 @@
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
-#include "content/common/json_value_serializer.h"
 #include "googleurl/src/gurl.h"
 
 TabProxy::TabProxy(AutomationMessageSender* sender,

@@ -4,11 +4,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/v8_unit_test.h"
-#include "content/common/json_value_serializer.h"
 #include "grit/common_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"

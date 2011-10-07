@@ -202,11 +202,6 @@
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
-        # Hack for NPAPI policy support. REMOVE ASAP.
-        # Bug: http://crbug.com/92576
-        '../content/common/json_value_serializer.cc',
-        '../content/common/json_value_serializer.h',
-
         'host/plugin/host_log_handler.cc',
         'host/plugin/host_log_handler.h',
         'host/plugin/host_plugin.cc',

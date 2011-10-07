@@ -6,13 +6,13 @@
 
 #include "base/environment.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
-#include "content/common/json_value_serializer.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

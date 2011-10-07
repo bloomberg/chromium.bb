@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
@@ -20,7 +21,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/zip.h"
 #include "content/common/common_param_traits.h"
-#include "content/common/json_value_serializer.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"

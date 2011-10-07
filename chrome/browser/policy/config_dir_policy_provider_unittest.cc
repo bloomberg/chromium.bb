@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/json_value_serializer.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

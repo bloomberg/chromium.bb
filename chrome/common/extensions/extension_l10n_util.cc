@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/stringprintf.h"
@@ -19,7 +20,6 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/json_value_serializer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/uloc.h"
 

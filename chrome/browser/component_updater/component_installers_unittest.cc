@@ -6,13 +6,13 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/json_value_serializer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
@@ -16,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
-#include "content/common/json_value_serializer.h"
 
 namespace {
 
