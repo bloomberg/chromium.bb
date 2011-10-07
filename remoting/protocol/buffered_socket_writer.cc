@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/buffered_socket_writer.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
@@ -14,13 +15,14 @@ namespace protocol {
 
 class BufferedSocketWriterBase::PendingPacket {
  public:
-  PendingPacket(scoped_refptr<net::IOBufferWithSize> data, Task* done_task)
+  PendingPacket(scoped_refptr<net::IOBufferWithSize> data,
+                const base::Closure& done_task)
       : data_(data),
         done_task_(done_task) {
   }
   ~PendingPacket() {
-    if (done_task_.get())
-      done_task_->Run();
+    if (!done_task_.is_null())
+      done_task_.Run();
   }
 
   net::IOBufferWithSize* data() {
@@ -29,7 +31,7 @@ class BufferedSocketWriterBase::PendingPacket {
 
  private:
   scoped_refptr<net::IOBufferWithSize> data_;
-  scoped_ptr<Task> done_task_;
+  base::Closure done_task_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingPacket);
 };
@@ -48,22 +50,22 @@ BufferedSocketWriterBase::BufferedSocketWriterBase(
 BufferedSocketWriterBase::~BufferedSocketWriterBase() { }
 
 void BufferedSocketWriterBase::Init(net::Socket* socket,
-                                    WriteFailedCallback* callback) {
-  // TODO(garykac) Save copy of WriteFailedCallback.
-  base::AutoLock auto_lock(lock_);
+                                    const WriteFailedCallback& callback) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(socket);
   socket_ = socket;
-  DCHECK(socket_);
+  write_failed_callback_ = callback;
 }
 
 bool BufferedSocketWriterBase::Write(
-    scoped_refptr<net::IOBufferWithSize> data, Task* done_task) {
+    scoped_refptr<net::IOBufferWithSize> data, const base::Closure& done_task) {
   {
     base::AutoLock auto_lock(lock_);
     queue_.push_back(new PendingPacket(data, done_task));
     buffer_size_ += data->size();
   }
   message_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &BufferedSocketWriterBase::DoWrite));
+      FROM_HERE, base::Bind(&BufferedSocketWriterBase::DoWrite, this));
   return true;
 }
 
@@ -101,8 +103,8 @@ void BufferedSocketWriterBase::DoWrite() {
         write_pending_ = true;
       } else {
         HandleError(result);
-        if (write_failed_callback_.get())
-          write_failed_callback_->Run(result);
+        if (!write_failed_callback_.is_null())
+          write_failed_callback_.Run(result);
       }
       return;
     }
@@ -115,8 +117,8 @@ void BufferedSocketWriterBase::OnWritten(int result) {
 
   if (result < 0) {
     HandleError(result);
-    if (write_failed_callback_.get())
-      write_failed_callback_->Run(result);
+    if (!write_failed_callback_.is_null())
+      write_failed_callback_.Run(result);
     return;
   }
 

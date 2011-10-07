@@ -19,14 +19,14 @@ namespace protocol {
 HostControlSender::HostControlSender(base::MessageLoopProxy* message_loop,
                                      net::Socket* socket)
     : buffered_writer_(new BufferedSocketWriter(message_loop)) {
-  buffered_writer_->Init(socket, NULL);
+  buffered_writer_->Init(socket, BufferedSocketWriter::WriteFailedCallback());
 }
 
 HostControlSender::~HostControlSender() {
 }
 
 void HostControlSender::BeginSessionRequest(const LocalLoginCredentials* msg,
-                                            Task* done) {
+                                            const base::Closure& done) {
   protocol::ControlMessage message;
   message.mutable_begin_session_request()->mutable_credentials()->CopyFrom(
       *msg);

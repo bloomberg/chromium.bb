@@ -11,8 +11,7 @@
 #define REMOTING_PROTOCOL_CLIENT_STUB_H_
 
 #include "base/basictypes.h"
-
-class Task;
+#include "base/callback.h"
 
 namespace remoting {
 namespace protocol {
@@ -26,7 +25,7 @@ class ClientStub {
   virtual ~ClientStub() {}
 
   virtual void BeginSessionResponse(const LocalLoginStatus* msg,
-                                    Task* done) = 0;
+                                    const base::Closure& done) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientStub);

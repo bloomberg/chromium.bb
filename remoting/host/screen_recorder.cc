@@ -268,17 +268,16 @@ void ScreenRecorder::DoSendVideoPacket(VideoPacket* packet) {
 
   for (ConnectionToClientList::const_iterator i = connections_.begin();
        i < connections_.end(); ++i) {
-    Task* done_task = NULL;
+    base::Closure done_task;
 
     // Call FrameSentCallback() only for the last packet in the first
     // connection.
     if (last && i == connections_.begin()) {
-      done_task = NewRunnableMethod(this, &ScreenRecorder::FrameSentCallback,
-                                    packet);
+      done_task = base::Bind(&ScreenRecorder::FrameSentCallback, this, packet);
     } else {
       // TODO(hclam): Fix this code since it causes multiple deletion if there's
       // more than one connection.
-      done_task = new DeleteTask<VideoPacket>(packet);
+      done_task = base::Bind(&DeletePointer<VideoPacket>, packet);
     }
 
     (*i)->video_stub()->ProcessVideoPacket(packet, done_task);

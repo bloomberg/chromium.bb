@@ -40,7 +40,7 @@ void ProtobufVideoWriter::OnChannelReady(net::StreamSocket* socket) {
   DCHECK(!channel_.get());
   channel_.reset(socket);
   // TODO(sergeyu): Provide WriteFailedCallback for the buffered writer.
-  buffered_writer_->Init(socket, NULL);
+  buffered_writer_->Init(socket, BufferedSocketWriter::WriteFailedCallback());
 
   initialized_callback_.Run(true);
 }
@@ -51,7 +51,7 @@ void ProtobufVideoWriter::Close() {
 }
 
 void ProtobufVideoWriter::ProcessVideoPacket(const VideoPacket* packet,
-                                             Task* done) {
+                                             const base::Closure& done) {
   buffered_writer_->Write(SerializeAndFrameMessage(*packet), done);
 }
 

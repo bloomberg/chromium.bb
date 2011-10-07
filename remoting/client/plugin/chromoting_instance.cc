@@ -318,7 +318,7 @@ void ChromotingInstance::SubmitLoginInfo(const std::string& username,
 
   host_connection_->host_stub()->BeginSessionRequest(
       credentials,
-      new DeleteTask<protocol::LocalLoginCredentials>(credentials));
+      base::Bind(&DeletePointer<protocol::LocalLoginCredentials>, credentials));
 }
 
 void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {

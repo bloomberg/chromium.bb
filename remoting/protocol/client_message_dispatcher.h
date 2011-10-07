@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
 #include "remoting/protocol/message_reader.h"
 
 namespace remoting {
@@ -40,7 +39,8 @@ class ClientMessageDispatcher {
   void Initialize(protocol::Session* session, ClientStub* client_stub);
 
  private:
-  void OnControlMessageReceived(ControlMessage* message, Task* done_task);
+  void OnControlMessageReceived(ControlMessage* message,
+                                const base::Closure& done_task);
 
   // MessageReader that runs on the control channel. It runs a loop
   // that parses data on the channel and then calls the corresponding handler

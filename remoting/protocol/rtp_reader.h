@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_RTP_READER_H_
 #define REMOTING_PROTOCOL_RTP_READER_H_
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/rtp_utils.h"
@@ -52,13 +53,13 @@ class RtpReader : public SocketReaderBase {
 
   // The OnMessageCallback is called whenever a new message is received.
   // Ownership of the message is passed the callback.
-  typedef Callback1<const RtpPacket*>::Type OnMessageCallback;
+  typedef base::Callback<void(const RtpPacket*)> OnMessageCallback;
 
   // Initialize the reader and start reading. Must be called on the thread
   // |socket| belongs to. The callback will be called when a new message is
   // received. RtpReader owns |on_message_callback|, doesn't own
   // |socket|.
-  void Init(net::Socket* socket, OnMessageCallback* on_message_callback);
+  void Init(net::Socket* socket, const OnMessageCallback& on_message_callback);
 
   void GetReceiverReport(RtcpReceiverReport* report);
 
@@ -68,7 +69,7 @@ class RtpReader : public SocketReaderBase {
   virtual void OnDataReceived(net::IOBuffer* buffer, int data_size);
 
  private:
-  scoped_ptr<OnMessageCallback> on_message_callback_;
+  OnMessageCallback on_message_callback_;
 
   uint16 max_sequence_number_;
   uint16 wrap_around_count_;

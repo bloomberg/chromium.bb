@@ -19,17 +19,17 @@ namespace protocol {
 ClientControlSender::ClientControlSender(base::MessageLoopProxy* message_loop,
                                          net::Socket* socket)
     : buffered_writer_(new BufferedSocketWriter(message_loop)) {
-  buffered_writer_->Init(socket, NULL);
+  buffered_writer_->Init(socket, BufferedSocketWriter::WriteFailedCallback());
 }
 
 ClientControlSender::~ClientControlSender() {
 }
 
 void ClientControlSender::BeginSessionResponse(const LocalLoginStatus* msg,
-                                               Task* done) {
+                                               const base::Closure& done) {
   protocol::ControlMessage message;
-  message.mutable_begin_session_response()->mutable_login_status()->CopyFrom(
-      *msg);
+  message.mutable_begin_session_response()->mutable_login_status()->
+      CopyFrom(*msg);
   buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }
 

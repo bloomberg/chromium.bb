@@ -5,7 +5,7 @@
 #ifndef REMOTING_PROTOCOL_VIDEO_STUB_H_
 #define REMOTING_PROTOCOL_VIDEO_STUB_H_
 
-class Task;
+#include "base/callback.h"
 
 namespace remoting {
 
@@ -21,7 +21,7 @@ class VideoStub {
   // video packets in protobuf stream. It should not be used here. Add another
   // struct and use it to represent video packets internally.
   virtual void ProcessVideoPacket(const VideoPacket* video_packet,
-                                  Task* done) = 0;
+                                  const base::Closure& done) = 0;
 
   // Returns number of packets currently pending in the buffer.
   virtual int GetPendingPackets() = 0;

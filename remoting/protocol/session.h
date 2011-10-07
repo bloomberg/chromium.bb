@@ -58,7 +58,7 @@ class Session : public base::NonThreadSafe {
     CHANNEL_CONNECTION_ERROR,
   };
 
-  typedef Callback1<State>::Type StateChangeCallback;
+  typedef base::Callback<void(State)> StateChangeCallback;
 
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
@@ -70,7 +70,7 @@ class Session : public base::NonThreadSafe {
 
   // Set callback that is called when state of the connection is changed.
   // Must be called on the jingle thread only.
-  virtual void SetStateChangeCallback(StateChangeCallback* callback) = 0;
+  virtual void SetStateChangeCallback(const StateChangeCallback& callback) = 0;
 
   // Returns error code for a failed session.
   virtual Error error() = 0;

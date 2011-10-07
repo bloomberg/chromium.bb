@@ -27,7 +27,8 @@ void RtcpWriter::Close() {
 // Initializes the writer. Must be called on the thread the sockets
 // belong to.
 void RtcpWriter::Init(net::Socket* socket) {
-  buffered_rtcp_writer_->Init(socket, NULL);
+  buffered_rtcp_writer_->Init(
+      socket, BufferedSocketWriter::WriteFailedCallback());
 }
 
 void RtcpWriter::SendReport(const RtcpReceiverReport& report) {
@@ -37,7 +38,7 @@ void RtcpWriter::SendReport(const RtcpReceiverReport& report) {
   PackRtcpReceiverReport(report, reinterpret_cast<uint8*>(buffer->data()),
                          size);
 
-  buffered_rtcp_writer_->Write(buffer, NULL);
+  buffered_rtcp_writer_->Write(buffer, base::Closure());
 }
 
 }  // namespace protocol

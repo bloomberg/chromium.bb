@@ -26,7 +26,8 @@ RtpWriter::~RtpWriter() { }
 // Initializes the writer. Must be called on the thread the sockets belong
 // to.
 void RtpWriter::Init(net::Socket* rtp_socket) {
-  buffered_rtp_writer_->Init(rtp_socket, NULL);
+  buffered_rtp_writer_->Init(
+      rtp_socket, BufferedSocketWriter::WriteFailedCallback());
 }
 
 void RtpWriter::Close() {
@@ -73,7 +74,7 @@ void RtpWriter::SendPacket(uint32 timestamp, bool marker,
                  payload_size);
 
   // And write the packet.
-  buffered_rtp_writer_->Write(buffer, NULL);
+  buffered_rtp_writer_->Write(buffer, base::Closure());
 }
 
 int RtpWriter::GetPendingPackets() {

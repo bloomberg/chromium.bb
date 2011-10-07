@@ -62,7 +62,8 @@ void RtpVideoReader::OnChannelReady(bool rtp, net::Socket* socket) {
   if (rtp) {
     DCHECK(!rtp_channel_.get());
     rtp_channel_.reset(socket);
-    rtp_reader_.Init(socket, NewCallback(this, &RtpVideoReader::OnRtpPacket));
+    rtp_reader_.Init(socket, base::Bind(&RtpVideoReader::OnRtpPacket,
+                                        base::Unretained(this)));
   } else {
     DCHECK(!rtcp_channel_.get());
     rtcp_channel_.reset(socket);
@@ -204,7 +205,8 @@ void RtpVideoReader::RebuildVideoPacket(const PacketsQueue::iterator& first,
   // Set format.
   packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
 
-  video_stub_->ProcessVideoPacket(packet, new DeleteTask<VideoPacket>(packet));
+  video_stub_->ProcessVideoPacket(
+      packet, base::Bind(&DeletePointer<VideoPacket>, packet));
 
   SendReceiverReportIf();
 }

@@ -66,20 +66,19 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   // ClientStub implementation.
   virtual void BeginSessionResponse(const protocol::LocalLoginStatus* msg,
-                                    Task* done) OVERRIDE;
+                                    const base::Closure& done) OVERRIDE;
 
   // VideoStub implementation.
   virtual void ProcessVideoPacket(const VideoPacket* packet,
-                                  Task* done) OVERRIDE;
+                                  const base::Closure& done) OVERRIDE;
   virtual int GetPendingPackets() OVERRIDE;
 
  private:
   struct QueuedVideoPacket {
-    QueuedVideoPacket(const VideoPacket* packet, Task* done)
-        : packet(packet), done(done) {
-    }
+    QueuedVideoPacket(const VideoPacket* packet, const base::Closure& done);
+    ~QueuedVideoPacket();
     const VideoPacket* packet;
-    Task* done;
+    base::Closure done;
   };
 
   base::MessageLoopProxy* message_loop();

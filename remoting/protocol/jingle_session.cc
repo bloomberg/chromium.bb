@@ -66,7 +66,7 @@ JingleSession::JingleSession(
 
 JingleSession::~JingleSession() {
   // Reset the callback so that it's not called from Close().
-  state_change_callback_.reset();
+  state_change_callback_.Reset();
   Close();
   jingle_session_manager_->SessionDestroyed(this);
 }
@@ -127,10 +127,11 @@ cricket::Session* JingleSession::ReleaseSession() {
   return session;
 }
 
-void JingleSession::SetStateChangeCallback(StateChangeCallback* callback) {
+void JingleSession::SetStateChangeCallback(
+    const StateChangeCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(callback);
-  state_change_callback_.reset(callback);
+  DCHECK(!callback.is_null());
+  state_change_callback_ = callback;
 }
 
 Session::Error JingleSession::error() {
@@ -466,8 +467,8 @@ void JingleSession::SetState(State new_state) {
     DCHECK_NE(state_, FAILED);
 
     state_ = new_state;
-    if (state_change_callback_.get())
-      state_change_callback_->Run(new_state);
+    if (!state_change_callback_.is_null())
+      state_change_callback_.Run(new_state);
   }
 }
 

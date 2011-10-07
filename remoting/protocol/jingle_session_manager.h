@@ -51,7 +51,7 @@ class JingleSessionManager
       const std::string& host_public_key,
       const std::string& client_token,
       CandidateSessionConfig* config,
-      Session::StateChangeCallback* state_change_callback) OVERRIDE;
+      const Session::StateChangeCallback& state_change_callback) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   void set_allow_local_ips(bool allow_local_ips);

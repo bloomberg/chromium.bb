@@ -465,7 +465,7 @@ void ChromotingHost::AddAuthenticatedClient(
   protocol::LocalLoginStatus* status = new protocol::LocalLoginStatus();
   status->set_success(true);
   connection->client_stub()->BeginSessionResponse(
-      status, new DeleteTask<protocol::LocalLoginStatus>(status));
+      status, base::Bind(&DeletePointer<protocol::LocalLoginStatus>, status));
 
   // Disconnect all other clients.
   // Iterate over a copy of the list of clients, to avoid mutating the list
@@ -526,7 +526,7 @@ void ChromotingHost::LocalLoginFailed(
   protocol::LocalLoginStatus* status = new protocol::LocalLoginStatus();
   status->set_success(false);
   connection->client_stub()->BeginSessionResponse(
-      status, new DeleteTask<protocol::LocalLoginStatus>(status));
+      status, base::Bind(&DeletePointer<protocol::LocalLoginStatus>, status));
 }
 
 void ChromotingHost::ProcessPreAuthentication(

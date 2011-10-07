@@ -124,7 +124,7 @@ class FakeSession : public Session {
   FakeSession();
   virtual ~FakeSession();
 
-  StateChangeCallback* state_change_callback() { return callback_.get(); }
+  const StateChangeCallback& state_change_callback() { return callback_; }
 
   void set_message_loop(MessageLoop* message_loop) {
     message_loop_ = message_loop;
@@ -138,7 +138,7 @@ class FakeSession : public Session {
   FakeUdpSocket* GetDatagramChannel(const std::string& name);
 
   // Session interface.
-  virtual void SetStateChangeCallback(StateChangeCallback* callback);
+  virtual void SetStateChangeCallback(const StateChangeCallback& callback);
 
   virtual Session::Error error();
 
@@ -167,7 +167,7 @@ class FakeSession : public Session {
   virtual void Close();
 
  public:
-  scoped_ptr<StateChangeCallback> callback_;
+  StateChangeCallback callback_;
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
   SessionConfig config_;
   MessageLoop* message_loop_;

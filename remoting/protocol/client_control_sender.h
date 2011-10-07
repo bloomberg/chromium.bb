@@ -42,7 +42,7 @@ class ClientControlSender : public ClientStub {
   virtual ~ClientControlSender();
 
   virtual void BeginSessionResponse(const LocalLoginStatus* msg,
-                                    Task* done) OVERRIDE;
+                                    const base::Closure& done) OVERRIDE;
 
   // Stop writing. Must be called on the network thread when the
   // underlying socket is being destroyed.

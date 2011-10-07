@@ -5,11 +5,11 @@
 #ifndef REMOTING_PROTOCOL_MESSAGE_READER_H_
 #define REMOTING_PROTOCOL_MESSAGE_READER_H_
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "base/task.h"
 #include "net/base/completion_callback.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/message_decoder.h"
@@ -41,14 +41,15 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
   // (|done_task|).  The buffer (first argument) is owned by
   // MessageReader and is freed when the task specified by the second
   // argument is called.
-  typedef Callback2<CompoundBuffer*, Task*>::Type MessageReceivedCallback;
+  typedef base::Callback<void(CompoundBuffer*, const base::Closure&)>
+      MessageReceivedCallback;
 
   MessageReader();
   virtual ~MessageReader();
 
   // Initialize the MessageReader with a socket. If a message is received
   // |callback| is called.
-  void Init(net::Socket* socket, MessageReceivedCallback* callback);
+  void Init(net::Socket* socket, const MessageReceivedCallback& callback);
 
  private:
   void DoRead();
@@ -77,7 +78,7 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
   MessageDecoder message_decoder_;
 
   // Callback is called when a message is received.
-  scoped_ptr<MessageReceivedCallback> message_received_callback_;
+  MessageReceivedCallback message_received_callback_;
 };
 
 // Version of MessageReader for protocol buffer messages, that parses
@@ -85,20 +86,23 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
 template <class T>
 class ProtobufMessageReader {
  public:
-  typedef typename Callback2<T*, Task*>::Type MessageReceivedCallback;
+  typedef typename base::Callback<void(T*, const base::Closure&)>
+      MessageReceivedCallback;
 
   ProtobufMessageReader() { };
   ~ProtobufMessageReader() { };
 
-  void Init(net::Socket* socket, MessageReceivedCallback* callback) {
-    message_received_callback_.reset(callback);
+  void Init(net::Socket* socket, const MessageReceivedCallback& callback) {
+    DCHECK(!callback.is_null());
+    message_received_callback_ = callback;
     message_reader_ = new MessageReader();
     message_reader_->Init(
-        socket, NewCallback(this, &ProtobufMessageReader<T>::OnNewData));
+        socket, base::Bind(&ProtobufMessageReader<T>::OnNewData,
+                           base::Unretained(this)));
   }
 
  private:
-  void OnNewData(CompoundBuffer* buffer, Task* done_task) {
+  void OnNewData(CompoundBuffer* buffer, const base::Closure& done_task) {
     T* message = new T();
     CompoundBufferInputStream stream(buffer);
     bool ret = message->ParseFromZeroCopyStream(&stream);
@@ -107,20 +111,18 @@ class ProtobufMessageReader {
       delete message;
     } else {
       DCHECK_EQ(stream.position(), buffer->total_bytes());
-      message_received_callback_->Run(
-          message, NewRunnableFunction(
-              &ProtobufMessageReader<T>::OnDone, message, done_task));
+      message_received_callback_.Run(message, base::Bind(
+          &ProtobufMessageReader<T>::OnDone, message, done_task));
     }
   }
 
-  static void OnDone(T* message, Task* done_task) {
+  static void OnDone(T* message, const base::Closure& done_task) {
     delete message;
-    done_task->Run();
-    delete done_task;
+    done_task.Run();
   }
 
   scoped_refptr<MessageReader> message_reader_;
-  scoped_ptr<MessageReceivedCallback> message_received_callback_;
+  MessageReceivedCallback message_received_callback_;
 };
 
 }  // namespace protocol

@@ -14,6 +14,14 @@
 
 namespace remoting {
 
+ChromotingClient::QueuedVideoPacket::QueuedVideoPacket(
+    const VideoPacket* packet, const base::Closure& done)
+    : packet(packet), done(done) {
+}
+
+ChromotingClient::QueuedVideoPacket::~QueuedVideoPacket() {
+}
+
 ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    ClientContext* context,
                                    protocol::ConnectionToHost* connection,
@@ -82,14 +90,13 @@ void ChromotingClient::Repaint() {
 }
 
 void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
-                                          Task* done) {
+                                          const base::Closure& done) {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
   // If the video packet is empty then drop it. Empty packets are used to
   // maintain activity on the network.
   if (!packet->has_data() || packet->data().size() == 0) {
-    done->Run();
-    delete done;
+    done.Run();
     return;
   }
 
@@ -172,8 +179,7 @@ void ChromotingClient::OnPacketDone(bool last_packet,
         (base::Time::Now() - decode_start).InMilliseconds());
   }
 
-  received_packets_.front().done->Run();
-  delete received_packets_.front().done;
+  received_packets_.front().done.Run();
   received_packets_.pop_front();
 
   packet_being_processed_ = false;
@@ -199,7 +205,7 @@ void ChromotingClient::Initialize() {
 ////////////////////////////////////////////////////////////////////////////
 // ClientStub control channel interface.
 void ChromotingClient::BeginSessionResponse(
-    const protocol::LocalLoginStatus* msg, Task* done) {
+    const protocol::LocalLoginStatus* msg, const base::Closure& done) {
   if (!message_loop()->BelongsToCurrentThread()) {
     thread_proxy_.PostTask(FROM_HERE, base::Bind(
         &ChromotingClient::BeginSessionResponse, base::Unretained(this),
@@ -216,8 +222,7 @@ void ChromotingClient::BeginSessionResponse(
   }
 
   view_->UpdateLoginStatus(msg->success(), msg->error_info());
-  done->Run();
-  delete done;
+  done.Run();
 }
 
 }  // namespace remoting

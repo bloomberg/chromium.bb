@@ -121,8 +121,8 @@ class JingleSessionTest : public testing::Test {
     DCHECK(session);
     host_session_.reset(session);
     host_session_->SetStateChangeCallback(
-        NewCallback(&host_connection_callback_,
-                    &MockSessionCallback::OnStateChange));
+        base::Bind(&MockSessionCallback::OnStateChange,
+                   base::Unretained(&host_connection_callback_)));
 
     session->set_config(SessionConfig::GetDefault());
     session->set_shared_secret(kTestSharedSecret);
@@ -278,8 +278,8 @@ class JingleSessionTest : public testing::Test {
     client_session_.reset(client_server_->Connect(
         kHostJid, kTestHostPublicKey, kTestToken,
         CandidateSessionConfig::CreateDefault(),
-        NewCallback(&client_connection_callback_,
-                    &MockSessionCallback::OnStateChange)));
+        base::Bind(&MockSessionCallback::OnStateChange,
+                   base::Unretained(&client_connection_callback_))));
 
     client_session_->set_shared_secret(shared_secret);
 
@@ -698,8 +698,8 @@ TEST_F(JingleSessionTest, RejectConnection) {
   client_session_.reset(client_server_->Connect(
       kHostJid, kTestHostPublicKey, kTestToken,
       CandidateSessionConfig::CreateDefault(),
-      NewCallback(&client_connection_callback_,
-                  &MockSessionCallback::OnStateChange)));
+      base::Bind(&MockSessionCallback::OnStateChange,
+                 base::Unretained(&client_connection_callback_))));
 
   ASSERT_TRUE(RunMessageLoopWithTimeout(TestTimeouts::action_max_timeout_ms()));
 }

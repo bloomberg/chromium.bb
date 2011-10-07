@@ -46,7 +46,8 @@ void ConnectionToClient::Init(protocol::Session* session) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   session_.reset(session);
   session_->SetStateChangeCallback(
-      NewCallback(this, &ConnectionToClient::OnSessionStateChange));
+      base::Bind(&ConnectionToClient::OnSessionStateChange,
+                 base::Unretained(this)));
 }
 
 protocol::Session* ConnectionToClient::session() {

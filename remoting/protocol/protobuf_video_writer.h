@@ -38,7 +38,7 @@ class ProtobufVideoWriter : public VideoWriter {
 
   // VideoStub interface.
   virtual void ProcessVideoPacket(const VideoPacket* packet,
-                                  Task* done) OVERRIDE;
+                                  const base::Closure& done) OVERRIDE;
   virtual int GetPendingPackets() OVERRIDE;
 
  private:

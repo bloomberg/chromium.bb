@@ -132,7 +132,7 @@ Session* JingleSessionManager::Connect(
     const std::string& host_public_key,
     const std::string& receiver_token,
     CandidateSessionConfig* candidate_config,
-    Session::StateChangeCallback* state_change_callback) {
+    const Session::StateChangeCallback& state_change_callback) {
   DCHECK(CalledOnValidThread());
 
   // Can be called from any thread.

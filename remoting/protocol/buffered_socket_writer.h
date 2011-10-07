@@ -7,6 +7,7 @@
 
 #include <list>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "net/base/io_buffer.h"
@@ -37,7 +38,7 @@ namespace protocol {
 class BufferedSocketWriterBase
     : public base::RefCountedThreadSafe<BufferedSocketWriterBase> {
  public:
-  typedef Callback1<int>::Type WriteFailedCallback;
+  typedef base::Callback<void(int)> WriteFailedCallback;
 
   explicit BufferedSocketWriterBase(base::MessageLoopProxy* message_loop);
   virtual ~BufferedSocketWriterBase();
@@ -46,11 +47,12 @@ class BufferedSocketWriterBase
   // to access the socket in the future. |callback| will be called after each
   // failed write. Caller retains ownership of |socket|.
   // TODO(sergeyu): Change it so that it take ownership of |socket|.
-  void Init(net::Socket* socket, WriteFailedCallback* callback);
+  void Init(net::Socket* socket, const WriteFailedCallback& callback);
 
   // Puts a new data chunk in the buffer. Returns false and doesn't enqueue
   // the data if called before Init(). Can be called on any thread.
-  bool Write(scoped_refptr<net::IOBufferWithSize> buffer, Task* done_task);
+  bool Write(scoped_refptr<net::IOBufferWithSize> buffer,
+             const base::Closure& done_task);
 
   // Returns current size of the buffer. Can be called on any thread.
   int GetBufferSize();
@@ -95,7 +97,7 @@ class BufferedSocketWriterBase
 
   net::Socket* socket_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-  scoped_ptr<WriteFailedCallback> write_failed_callback_;
+  WriteFailedCallback write_failed_callback_;
 
   bool write_pending_;
 

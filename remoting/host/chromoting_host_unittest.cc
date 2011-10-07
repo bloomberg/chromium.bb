@@ -50,8 +50,7 @@ void PostQuitTask(MessageLoop* message_loop) {
 // Run the task and delete it afterwards. This action is used to deal with
 // done callbacks.
 ACTION(RunDoneTask) {
-  arg1->Run();
-  delete arg1;
+  arg1.Run();
 }
 
 ACTION_P(QuitMainMessageLoop, message_loop) {
@@ -118,11 +117,9 @@ class ChromotingHostTest : public testing::Test {
     session_config2_ = SessionConfig::GetDefault();
 
     ON_CALL(video_stub_, ProcessVideoPacket(_, _))
-        .WillByDefault(
-            DoAll(DeleteArg<0>(), DeleteArg<1>()));
+        .WillByDefault(DeleteArg<0>());
     ON_CALL(video_stub2_, ProcessVideoPacket(_, _))
-        .WillByDefault(
-            DoAll(DeleteArg<0>(), DeleteArg<1>()));
+        .WillByDefault(DeleteArg<0>());
     ON_CALL(*connection_.get(), video_stub())
         .WillByDefault(Return(&video_stub_));
     ON_CALL(*connection_.get(), client_stub())
@@ -191,7 +188,7 @@ class ChromotingHostTest : public testing::Test {
         NewRunnableMethod(client.get(),
                           &ClientSession::BeginSessionRequest,
                           &credentials_,
-                          NewRunnableFunction(&DummyDoneTask)));
+                          base::Bind(&DummyDoneTask)));
   }
 
   // Helper method to remove a client connection from ChromotingHost.
@@ -501,4 +498,5 @@ TEST_F(ChromotingHostTest, CurtainModeIT2Me) {
   host_->set_it2me(false);
   EXPECT_THAT(curtain_activated, false);
 }
+
 }  // namespace remoting

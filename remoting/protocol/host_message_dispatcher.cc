@@ -44,14 +44,16 @@ void HostMessageDispatcher::Initialize(
   // Initialize the readers on the sockets provided by channels.
   event_message_reader_->Init(
       connection->session()->event_channel(),
-      NewCallback(this, &HostMessageDispatcher::OnEventMessageReceived));
+      base::Bind(&HostMessageDispatcher::OnEventMessageReceived,
+                 base::Unretained(this)));
   control_message_reader_->Init(
       connection->session()->control_channel(),
-      NewCallback(this, &HostMessageDispatcher::OnControlMessageReceived));
+      base::Bind(&HostMessageDispatcher::OnControlMessageReceived,
+                 base::Unretained(this)));
 }
 
 void HostMessageDispatcher::OnControlMessageReceived(
-    ControlMessage* message, Task* done_task) {
+    ControlMessage* message, const base::Closure& done_task) {
   if (message->has_begin_session_request()) {
     const BeginSessionRequest& request = message->begin_session_request();
     if (request.has_credentials() && request.credentials().has_type()) {
@@ -61,13 +63,12 @@ void HostMessageDispatcher::OnControlMessageReceived(
   }
 
   LOG(WARNING) << "Invalid control message received.";
-  done_task->Run();
-  delete done_task;
+  done_task.Run();
 }
 
 void HostMessageDispatcher::OnEventMessageReceived(
-    EventMessage* message, Task* done_task) {
-  base::ScopedTaskRunner done_runner(done_task);
+    EventMessage* message, const base::Closure& done_task) {
+  base::ScopedClosureRunner done_runner(done_task);
 
   connection_->UpdateSequenceNumber(message->sequence_number());
 

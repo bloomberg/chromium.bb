@@ -31,7 +31,7 @@ class ProtobufVideoReader : public VideoReader {
 
  private:
   void OnChannelReady(net::StreamSocket* socket);
-  void OnNewData(VideoPacket* packet, Task* done_task);
+  void OnNewData(VideoPacket* packet, const base::Closure& done_task);
 
   InitializedCallback initialized_callback_;
 

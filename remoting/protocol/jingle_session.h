@@ -27,7 +27,8 @@ class JingleSession : public protocol::Session,
                       public sigslot::has_slots<> {
  public:
   // Session interface.
-  virtual void SetStateChangeCallback(StateChangeCallback* callback) OVERRIDE;
+  virtual void SetStateChangeCallback(
+      const StateChangeCallback& callback) OVERRIDE;
   virtual Error error() OVERRIDE;
   virtual void CreateStreamChannel(
       const std::string& name,
@@ -149,7 +150,7 @@ class JingleSession : public protocol::Session,
   std::string shared_secret_;
 
   State state_;
-  scoped_ptr<StateChangeCallback> state_change_callback_;
+  StateChangeCallback state_change_callback_;
 
   Error error_;
 

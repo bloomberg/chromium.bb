@@ -36,8 +36,9 @@ RtpReader::~RtpReader() {
 }
 
 void RtpReader::Init(net::Socket* socket,
-                     OnMessageCallback* on_message_callback) {
-  on_message_callback_.reset(on_message_callback);
+                     const OnMessageCallback& on_message_callback) {
+  DCHECK(!on_message_callback.is_null());
+  on_message_callback_ = on_message_callback;
   SocketReaderBase::Init(socket);
 }
 
@@ -90,7 +91,7 @@ void RtpReader::OnDataReceived(net::IOBuffer* buffer, int data_size) {
 
   ++total_packets_received_;
 
-  on_message_callback_->Run(packet);
+  on_message_callback_.Run(packet);
 }
 
 void RtpReader::GetReceiverReport(RtcpReceiverReport* report) {

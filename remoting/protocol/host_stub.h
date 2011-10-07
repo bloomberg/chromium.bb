@@ -24,7 +24,7 @@ class HostStub {
   virtual ~HostStub() {};
 
   virtual void BeginSessionRequest(
-      const LocalLoginCredentials* credentials, Task* done) = 0;
+      const LocalLoginCredentials* credentials, const base::Closure& done) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostStub);

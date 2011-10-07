@@ -135,7 +135,7 @@ class SessionManager : public base::NonThreadSafe {
       const std::string& host_public_key,
       const std::string& client_token,
       CandidateSessionConfig* config,
-      Session::StateChangeCallback* state_change_callback) = 0;
+      const Session::StateChangeCallback& state_change_callback) = 0;
 
   // Close session manager. Can be called only after all corresponding
   // sessions are destroyed. No callbacks are called after this method

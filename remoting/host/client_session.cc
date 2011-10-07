@@ -48,10 +48,11 @@ ClientSession::~ClientSession() {
 }
 
 void ClientSession::BeginSessionRequest(
-    const protocol::LocalLoginCredentials* credentials, Task* done) {
+    const protocol::LocalLoginCredentials* credentials,
+    const base::Closure& done) {
   DCHECK(event_handler_);
 
-  base::ScopedTaskRunner done_runner(done);
+  base::ScopedClosureRunner done_runner(done);
 
   bool success = false;
   switch (credentials->type()) {

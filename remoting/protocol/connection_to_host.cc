@@ -140,7 +140,8 @@ void ConnectionToHost::OnSessionManagerInitialized() {
       protocol::GenerateSupportAuthToken(local_jid_, access_code_);
   session_.reset(session_manager_->Connect(
       host_jid_, host_public_key_, client_token, candidate_config,
-      NewCallback(this, &ConnectionToHost::OnSessionStateChange)));
+      base::Bind(&ConnectionToHost::OnSessionStateChange,
+                 base::Unretained(this))));
 
   // Set the shared-secret for securing SSL channels.
   session_->set_shared_secret(access_code_);

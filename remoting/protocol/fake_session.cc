@@ -220,8 +220,8 @@ FakeUdpSocket* FakeSession::GetDatagramChannel(const std::string& name) {
   return datagram_channels_[name];
 }
 
-void FakeSession::SetStateChangeCallback(StateChangeCallback* callback) {
-  callback_.reset(callback);
+void FakeSession::SetStateChangeCallback(const StateChangeCallback& callback) {
+  callback_ = callback;
 }
 
 Session::Error FakeSession::error() {

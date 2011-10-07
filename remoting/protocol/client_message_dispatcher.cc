@@ -33,12 +33,13 @@ void ClientMessageDispatcher::Initialize(
 
   control_message_reader_->Init(
       session->control_channel(),
-      NewCallback(this, &ClientMessageDispatcher::OnControlMessageReceived));
+      base::Bind(&ClientMessageDispatcher::OnControlMessageReceived,
+                 base::Unretained(this)));
   return;
 }
 
 void ClientMessageDispatcher::OnControlMessageReceived(
-    ControlMessage* message, Task* done_task) {
+    ControlMessage* message, const base::Closure& done_task) {
   if (message->has_begin_session_response()) {
     const BeginSessionResponse& response = message->begin_session_response();
     if (response.has_login_status() &&
@@ -51,8 +52,7 @@ void ClientMessageDispatcher::OnControlMessageReceived(
 
   LOG(WARNING) << "Invalid control message received.";
 
-  done_task->Run();
-  delete done_task;
+  done_task.Run();
 }
 
 }  // namespace protocol

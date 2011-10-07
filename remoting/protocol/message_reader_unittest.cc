@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -29,14 +30,13 @@ const char kTestMessage1[] = "Message1";
 const char kTestMessage2[] = "Message2";
 
 ACTION(CallDoneTask) {
-  arg1->Run();
-  delete arg1;
+  arg1.Run();
 }
 }
 
 class MockMessageReceivedCallback {
  public:
-  MOCK_METHOD2(OnMessage, void(CompoundBuffer*, Task*));
+  MOCK_METHOD2(OnMessage, void(CompoundBuffer*, const base::Closure&));
 };
 
 class MessageReaderTest : public testing::Test {
@@ -46,12 +46,12 @@ class MessageReaderTest : public testing::Test {
         run_task_finished_(false, false) {
   }
 
-  void RunDoneTaskOnOtherThread(CompoundBuffer* buffer, Task* done_task) {
+  void RunDoneTaskOnOtherThread(CompoundBuffer* buffer,
+                                const base::Closure& done_task) {
     other_thread_.message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&MessageReaderTest::RunAndDeleteTask,
-                   base::Unretained(this),
-                   done_task));
+                   base::Unretained(this), done_task));
   }
 
  protected:
@@ -60,8 +60,8 @@ class MessageReaderTest : public testing::Test {
   }
 
   void InitReader() {
-    reader_->Init(&socket_, NewCallback(
-        &callback_, &MockMessageReceivedCallback::OnMessage));
+    reader_->Init(&socket_, base::Bind(
+        &MockMessageReceivedCallback::OnMessage, base::Unretained(&callback_)));
   }
 
   void AddMessage(const std::string& message) {
@@ -77,9 +77,8 @@ class MessageReaderTest : public testing::Test {
     return result == expected;
   }
 
-  void RunAndDeleteTask(Task* task) {
-    task->Run();
-    delete task;
+  void RunAndDeleteTask(const base::Closure& task) {
+    task.Run();
     run_task_finished_.Signal();
   }
 
@@ -94,7 +93,7 @@ class MessageReaderTest : public testing::Test {
 // Receive one message and process it with delay
 TEST_F(MessageReaderTest, OneMessage_Delay) {
   CompoundBuffer* buffer;
-  Task* done_task;
+  base::Closure done_task;
 
   AddMessage(kTestMessage1);
 
@@ -135,9 +134,9 @@ TEST_F(MessageReaderTest, OneMessage_Instant) {
 // Receive two messages in one packet.
 TEST_F(MessageReaderTest, TwoMessages_Together) {
   CompoundBuffer* buffer1;
-  Task* done_task1;
+  base::Closure done_task1;
   CompoundBuffer* buffer2;
-  Task* done_task2;
+  base::Closure done_task2;
 
   AddMessage(kTestMessage1);
   AddMessage(kTestMessage2);
@@ -174,7 +173,7 @@ TEST_F(MessageReaderTest, TwoMessages_Together) {
 // instantly.
 TEST_F(MessageReaderTest, TwoMessages_Instant) {
   CompoundBuffer* buffer2;
-  Task* done_task2;
+  base::Closure done_task2;
 
   AddMessage(kTestMessage1);
   AddMessage(kTestMessage2);
@@ -220,7 +219,7 @@ TEST_F(MessageReaderTest, TwoMessages_Instant2) {
 // Receive two messages in separate packets.
 TEST_F(MessageReaderTest, TwoMessages_Separately) {
   CompoundBuffer* buffer;
-  Task* done_task;
+  base::Closure done_task;
 
   AddMessage(kTestMessage1);
 
@@ -280,7 +279,7 @@ TEST_F(MessageReaderTest, UseSocketOnCorrectThread) {
 
   // Write another message and verify that we receive it.
   CompoundBuffer* buffer;
-  Task* done_task;
+  base::Closure done_task;
   EXPECT_CALL(callback_, OnMessage(_, _))
       .Times(1)
       .WillOnce(DoAll(SaveArg<0>(&buffer),

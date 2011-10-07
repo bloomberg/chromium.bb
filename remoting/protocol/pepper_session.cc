@@ -44,9 +44,10 @@ PepperSession::~PepperSession() {
   session_manager_->SessionDestroyed(this);
 }
 
-void PepperSession::SetStateChangeCallback(StateChangeCallback* callback) {
+void PepperSession::SetStateChangeCallback(
+    const StateChangeCallback& callback) {
   DCHECK(CalledOnValidThread());
-  state_change_callback_.reset(callback);
+  state_change_callback_ = callback;
 }
 
 Session::Error PepperSession::error() {
@@ -59,14 +60,14 @@ void PepperSession::StartConnection(
     const std::string& peer_public_key,
     const std::string& client_token,
     CandidateSessionConfig* config,
-    Session::StateChangeCallback* state_change_callback) {
+    const StateChangeCallback& state_change_callback) {
   DCHECK(CalledOnValidThread());
 
   peer_jid_ = peer_jid;
   peer_public_key_ = peer_public_key;
   initiator_token_ = client_token;
   candidate_config_.reset(config);
-  state_change_callback_.reset(state_change_callback);
+  state_change_callback_ = state_change_callback;
 
   // Generate random session ID. There are usually not more than 1
   // concurrent session per host, so a random 64-bit integer provides
@@ -382,8 +383,8 @@ void PepperSession::SetState(State new_state) {
     DCHECK_NE(state_, FAILED);
 
     state_ = new_state;
-    if (state_change_callback_.get())
-      state_change_callback_->Run(new_state);
+    if (!state_change_callback_.is_null())
+      state_change_callback_.Run(new_state);
   }
 }
 

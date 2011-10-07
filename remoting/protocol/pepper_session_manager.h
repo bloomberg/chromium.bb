@@ -58,7 +58,7 @@ class PepperSessionManager : public SessionManager,
       const std::string& host_public_key,
       const std::string& client_token,
       CandidateSessionConfig* config,
-      Session::StateChangeCallback* state_change_callback) OVERRIDE;
+      const Session::StateChangeCallback& state_change_callback) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   // SignalStrategy::Listener interface.

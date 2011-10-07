@@ -296,7 +296,7 @@ void ProtocolTestClient::OnSessionManagerInitialized() {
     connection->Init(session_manager_->Connect(
         host_jid_, "", kDummyAuthToken,
         CandidateSessionConfig::CreateDefault(),
-        NewCallback(connection, &ProtocolTestConnection::OnStateChange)));
+        base::Bind(&ProtocolTestConnection::OnStateChange, connection)));
     connections_.push_back(make_scoped_refptr(connection));
   }
 }
@@ -311,7 +311,7 @@ void ProtocolTestClient::OnIncomingSession(
 
   ProtocolTestConnection* test_connection = new ProtocolTestConnection(this);
   session->SetStateChangeCallback(
-      NewCallback(test_connection, &ProtocolTestConnection::OnStateChange));
+      base::Bind(&ProtocolTestConnection::OnStateChange, test_connection));
   test_connection->Init(session);
   base::AutoLock auto_lock(connections_lock_);
   connections_.push_back(make_scoped_refptr(test_connection));

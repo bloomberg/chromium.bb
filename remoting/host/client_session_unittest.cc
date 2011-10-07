@@ -9,16 +9,6 @@
 
 namespace remoting {
 
-namespace {
-
-// A task that does nothing.
-class DummyTask : public Task {
- public:
-  void Run() {}
-};
-
-}  // namespace
-
 using protocol::MockConnectionToClient;
 using protocol::MockConnectionToClientEventHandler;
 using protocol::MockHostStub;
@@ -131,7 +121,7 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   // because the client isn't authenticated yet.
   client_session_->InjectKeyEvent(key_event1);
   client_session_->InjectMouseEvent(mouse_event1);
-  client_session_->BeginSessionRequest(&credentials, new DummyTask());
+  client_session_->BeginSessionRequest(&credentials, base::Closure());
   // These events should get through to the input stub.
   client_session_->InjectKeyEvent(key_event2_down);
   client_session_->InjectKeyEvent(key_event2_up);
@@ -166,7 +156,7 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
   EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
 
-  client_session_->BeginSessionRequest(&credentials, new DummyTask());
+  client_session_->BeginSessionRequest(&credentials, base::Closure());
   // This event should get through to the input stub.
   client_session_->InjectMouseEvent(mouse_event1);
   // This one should too because the local event echoes the remote one.
@@ -219,7 +209,7 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   EXPECT_CALL(*user_authenticator_, Authenticate(_, _))
       .WillOnce(Return(true));
   EXPECT_CALL(session_event_handler_, LocalLoginSucceeded(_));
-  client_session_->BeginSessionRequest(&credentials, new DummyTask());
+  client_session_->BeginSessionRequest(&credentials, base::Closure());
 
   int input_x[3] = { -999, 100, 999 };
   int expected_x[3] = { 0, 100, 199 };

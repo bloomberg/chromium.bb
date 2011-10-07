@@ -46,7 +46,8 @@ class PepperSession : public Session {
   virtual ~PepperSession();
 
   // Session interface.
-  virtual void SetStateChangeCallback(StateChangeCallback* callback) OVERRIDE;
+  virtual void SetStateChangeCallback(
+      const StateChangeCallback& callback) OVERRIDE;
   virtual Error error() OVERRIDE;
   virtual void CreateStreamChannel(
       const std::string& name,
@@ -81,7 +82,7 @@ class PepperSession : public Session {
                        const std::string& peer_public_key,
                        const std::string& client_token,
                        CandidateSessionConfig* config,
-                       Session::StateChangeCallback* state_change_callback);
+                       const StateChangeCallback& state_change_callback);
 
   // Handler for session-initiate response.
   void OnSessionInitiateResponse(const buzz::XmlElement* response);
@@ -124,7 +125,7 @@ class PepperSession : public Session {
   std::string peer_jid_;
   std::string peer_public_key_;
   scoped_ptr<CandidateSessionConfig> candidate_config_;
-  scoped_ptr<StateChangeCallback> state_change_callback_;
+  StateChangeCallback state_change_callback_;
 
   std::string session_id_;
   State state_;

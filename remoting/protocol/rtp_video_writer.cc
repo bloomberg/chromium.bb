@@ -74,7 +74,8 @@ void RtpVideoWriter::Close() {
   rtcp_channel_.reset();
 }
 
-void RtpVideoWriter::ProcessVideoPacket(const VideoPacket* packet, Task* done) {
+void RtpVideoWriter::ProcessVideoPacket(const VideoPacket* packet,
+                                        const base::Closure& done) {
   CHECK(packet->format().encoding() == VideoPacketFormat::ENCODING_VP8)
       << "Only VP8 is supported in RTP.";
 
@@ -128,8 +129,7 @@ void RtpVideoWriter::ProcessVideoPacket(const VideoPacket* packet, Task* done) {
   }
   DCHECK_EQ(position, payload.total_bytes());
 
-  done->Run();
-  delete done;
+  done.Run();
 }
 
 int RtpVideoWriter::GetPendingPackets() {

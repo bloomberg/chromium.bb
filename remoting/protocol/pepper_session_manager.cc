@@ -78,7 +78,7 @@ Session* PepperSessionManager::Connect(
     const std::string& host_public_key,
     const std::string& client_token,
     CandidateSessionConfig* config,
-    Session::StateChangeCallback* state_change_callback) {
+    const Session::StateChangeCallback& state_change_callback) {
   PepperSession* session = new PepperSession(this);
   session->StartConnection(host_jid, host_public_key, client_token,
                            config, state_change_callback);

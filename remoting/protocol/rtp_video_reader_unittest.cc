@@ -26,11 +26,10 @@ class RtpVideoReaderTest : public testing::Test,
  public:
   // VideoStub interface.
   virtual void ProcessVideoPacket(const VideoPacket* video_packet,
-                                  Task* done) {
+                                  const base::Closure& done) {
     received_packets_.push_back(VideoPacket());
     received_packets_.back() = *video_packet;
-    done->Run();
-    delete done;
+    done.Run();
   }
 
   virtual int GetPendingPackets() {

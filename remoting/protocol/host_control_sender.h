@@ -13,10 +13,9 @@
 #define REMOTING_PROTOCOL_HOST_STUB_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/host_stub.h"
-
-class Task;
 
 namespace base {
 class MessageLoopProxy;
@@ -41,7 +40,7 @@ class HostControlSender : public HostStub {
   virtual ~HostControlSender();
 
   virtual void BeginSessionRequest(
-      const LocalLoginCredentials* credentials, Task* done);
+      const LocalLoginCredentials* credentials, const base::Closure& done);
 
   // Stop writing. Must be called on the network thread when the
   // underlying socket is being destroyed.

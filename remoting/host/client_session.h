@@ -50,7 +50,8 @@ class ClientSession : public protocol::HostStub,
 
   // protocol::HostStub interface.
   virtual void BeginSessionRequest(
-      const protocol::LocalLoginCredentials* credentials, Task* done);
+      const protocol::LocalLoginCredentials* credentials,
+      const base::Closure& done);
 
   // protocol::InputStub interface.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event);

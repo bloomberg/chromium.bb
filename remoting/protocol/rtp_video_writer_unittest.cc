@@ -131,7 +131,8 @@ class RtpVideoWriterTest : public testing::Test {
 
 TEST_F(RtpVideoWriterTest, NotFragmented_FirstPacket) {
   InitPacket(1024, true, false);
-  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
+  writer_.ProcessVideoPacket(
+      packet_, base::Bind(&DeletePointer<VideoPacket>, packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {
@@ -142,7 +143,8 @@ TEST_F(RtpVideoWriterTest, NotFragmented_FirstPacket) {
 
 TEST_F(RtpVideoWriterTest, NotFragmented_LastPackes) {
   InitPacket(1024, false, true);
-  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
+  writer_.ProcessVideoPacket(
+      packet_, base::Bind(&DeletePointer<VideoPacket>, packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {
@@ -153,7 +155,8 @@ TEST_F(RtpVideoWriterTest, NotFragmented_LastPackes) {
 
 TEST_F(RtpVideoWriterTest, TwoFragments_FirstPacket) {
   InitPacket(2000, true, false);
-  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
+  writer_.ProcessVideoPacket(
+      packet_, base::Bind(&DeletePointer<VideoPacket>, packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {
@@ -165,7 +168,8 @@ TEST_F(RtpVideoWriterTest, TwoFragments_FirstPacket) {
 
 TEST_F(RtpVideoWriterTest, TwoFragments_LastPacket) {
   InitPacket(2000, false, true);
-  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
+  writer_.ProcessVideoPacket(
+      packet_, base::Bind(&DeletePointer<VideoPacket>, packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {
@@ -177,7 +181,8 @@ TEST_F(RtpVideoWriterTest, TwoFragments_LastPacket) {
 
 TEST_F(RtpVideoWriterTest, ThreeFragments) {
   InitPacket(3000, true, true);
-  writer_.ProcessVideoPacket(packet_, new DeleteTask<VideoPacket>(packet_));
+  writer_.ProcessVideoPacket(
+      packet_, base::Bind(&DeletePointer<VideoPacket>, packet_));
   message_loop_.RunAllPending();
 
   ExpectedPacket expected[] = {

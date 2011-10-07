@@ -40,11 +40,13 @@ void ProtobufVideoReader::OnChannelReady(net::StreamSocket* socket) {
 
   DCHECK(!channel_.get());
   channel_.reset(socket);
-  reader_.Init(socket, NewCallback(this, &ProtobufVideoReader::OnNewData));
+  reader_.Init(socket, base::Bind(&ProtobufVideoReader::OnNewData,
+                                  base::Unretained(this)));
   initialized_callback_.Run(true);
 }
 
-void ProtobufVideoReader::OnNewData(VideoPacket* packet, Task* done_task) {
+void ProtobufVideoReader::OnNewData(VideoPacket* packet,
+                                    const base::Closure& done_task) {
   video_stub_->ProcessVideoPacket(packet, done_task);
 }
 
