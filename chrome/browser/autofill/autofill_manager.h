@@ -277,25 +277,6 @@ class AutofillManager : public TabContentsObserver,
 
   friend class AutofillManagerTest;
   friend class FormStructureBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillCreditCardForm);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           FillCreditCardFormNoYearNoMonth);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillCreditCardFormYearNoMonth);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillCreditCardFormNoYearMonth);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillCreditCardFormYearMonth);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAddressForm);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAddressAndCreditCardForm);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillFormWithMultipleSections);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           FillFormWithAuthorSpecifiedSections);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillFormWithMultipleEmails);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillAutofilledForm);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillPhoneNumber);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesRemoveField);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormChangesAddField);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmitted);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmittedServerTypes);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FormSubmittedWithDefaultValues);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DeterminePossibleFieldTypesForUpload);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,

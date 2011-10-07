@@ -512,6 +512,9 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     return;
   }
 
+  // Cache the field type for the field from which the user initiated autofill.
+  FieldTypeGroup initiating_group_type =
+      AutofillType(autofill_field->type()).group();
   DCHECK_EQ(form_structure->field_count(), form.fields.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     if (form_structure->field(i)->section() != autofill_field->section())
@@ -525,10 +528,13 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     if (field_group_type != AutofillType::NO_GROUP) {
       if (profile) {
         DCHECK_NE(AutofillType::CREDIT_CARD, field_group_type);
-        // If the field being filled is the field that the user initiated the
-        // fill from, then take the multi-profile "variant" into account.
+        // If the field being filled is either
+        //   (a) the field that the user initiated the fill from, or
+        //   (b) part of the same logical unit, e.g. name or phone number,
+        // then take the multi-profile "variant" into account.
         // Otherwise fill with the default (zeroth) variant.
-        if (result.fields[i] == field) {
+        if (result.fields[i] == field ||
+            field_group_type == initiating_group_type) {
           FillFormField(*profile, *cached_field, variant, &result.fields[i]);
         } else {
           FillFormField(*profile, *cached_field, 0, &result.fields[i]);
@@ -1163,16 +1169,15 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 }
 
 int AutofillManager::GUIDToID(const GUIDPair& guid) const {
-  static int last_id = 1;
-
   if (!guid::IsValidGUID(guid.first))
     return 0;
 
   std::map<GUIDPair, int>::const_iterator iter = guid_id_map_.find(guid);
   if (iter == guid_id_map_.end()) {
-    guid_id_map_[guid] = last_id;
-    id_guid_map_[last_id] = guid;
-    return last_id++;
+    int id = guid_id_map_.size() + 1;
+    guid_id_map_[guid] = id;
+    id_guid_map_[id] = guid;
+    return id;
   } else {
     return iter->second;
   }
