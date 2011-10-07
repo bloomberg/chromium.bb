@@ -159,6 +159,7 @@ const char kSuspendReady[] = "SuspendReady";
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
 const char kPowerStateChangedSignal[] = "PowerStateChanged";
+const char kPowerSupplyPollSignal[] = "PowerSupplyPoll";
 // DEPRECATED
 const char kRequestLockScreenSignal[] = "RequestLockScreen";
 const char kRequestRestartSignal[] = "RequestRestart";
