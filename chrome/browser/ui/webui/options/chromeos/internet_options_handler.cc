@@ -1324,7 +1324,9 @@ void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
   dictionary->Set("vpnList", GetVPNList());
   dictionary->Set("rememberedList", GetRememberedList());
   dictionary->SetBoolean("wifiAvailable", cros_->wifi_available());
+  dictionary->SetBoolean("wifiBusy", cros_->wifi_busy());
   dictionary->SetBoolean("wifiEnabled", cros_->wifi_enabled());
   dictionary->SetBoolean("cellularAvailable", cros_->cellular_available());
+  dictionary->SetBoolean("cellularBusy", cros_->cellular_busy());
   dictionary->SetBoolean("cellularEnabled", cros_->cellular_enabled());
 }

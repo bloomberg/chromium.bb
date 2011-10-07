@@ -88,6 +88,9 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, wifi_enabled())
         .Times(AnyNumber())
         .WillRepeatedly((Return(true)));
+    EXPECT_CALL(*mock_network_library_, wifi_busy())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(false)));
     EXPECT_CALL(*mock_network_library_, wifi_connecting())
         .Times(AnyNumber())
         .WillRepeatedly((Return(false)));
@@ -100,6 +103,9 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, cellular_enabled())
         .Times(AnyNumber())
         .WillRepeatedly((Return(true)));
+    EXPECT_CALL(*mock_network_library_, cellular_busy())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(false)));
     EXPECT_CALL(*mock_network_library_, cellular_connecting())
         .Times(AnyNumber())
         .WillRepeatedly((Return(false)));

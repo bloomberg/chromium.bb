@@ -1574,6 +1574,15 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   virtual bool cellular_enabled() const OVERRIDE {
     return enabled_devices_ & (1 << TYPE_CELLULAR);
   }
+  virtual bool ethernet_busy() const OVERRIDE {
+    return busy_devices_ & (1 << TYPE_ETHERNET);
+  }
+  virtual bool wifi_busy() const OVERRIDE {
+    return busy_devices_ & (1 << TYPE_WIFI);
+  }
+  virtual bool cellular_busy() const OVERRIDE {
+    return busy_devices_ & (1 << TYPE_CELLULAR);
+  }
   virtual bool wifi_scanning() const OVERRIDE {
     return wifi_scanning_;
   }
@@ -1855,6 +1864,10 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // The current enabled network devices. Bitwise flag of ConnectionTypes.
   int enabled_devices_;
 
+  // The current busy network devices. Bitwise flag of ConnectionTypes.
+  // Busy means device is switching from enable/disable state.
+  int busy_devices_;
+
   // The current connected network devices. Bitwise flag of ConnectionTypes.
   int connected_devices_;
 
@@ -1897,6 +1910,7 @@ NetworkLibraryImplBase::NetworkLibraryImplBase()
       active_virtual_(NULL),
       available_devices_(0),
       enabled_devices_(0),
+      busy_devices_(0),
       connected_devices_(0),
       wifi_scanning_(false),
       offline_mode_(false),
@@ -3871,6 +3885,7 @@ void NetworkLibraryImplCros::DisconnectFromNetwork(const Network* network) {
 
 void NetworkLibraryImplCros::CallEnableNetworkDeviceType(
     ConnectionType device, bool enable) {
+  busy_devices_ |= 1 << device;
   chromeos::RequestNetworkDeviceEnable(
       ConnectionTypeToString(device), enable);
 }
@@ -4201,7 +4216,9 @@ void NetworkLibraryImplCros::UpdateAvailableTechnologies(
 
 void NetworkLibraryImplCros::UpdateEnabledTechnologies(
     const ListValue* technologies) {
+  int old_enabled_devices = enabled_devices_;
   UpdateTechnologies(technologies, &enabled_devices_);
+  busy_devices_ &= ~(old_enabled_devices ^ enabled_devices_);
   if (!ethernet_enabled())
     ethernet_ = NULL;
   if (!wifi_enabled()) {

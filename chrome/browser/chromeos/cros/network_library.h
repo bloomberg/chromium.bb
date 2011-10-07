@@ -1491,6 +1491,10 @@ class NetworkLibrary {
   virtual bool wifi_enabled() const = 0;
   virtual bool cellular_enabled() const = 0;
 
+  virtual bool ethernet_busy() const = 0;
+  virtual bool wifi_busy() const = 0;
+  virtual bool cellular_busy() const = 0;
+
   virtual bool wifi_scanning() const = 0;
 
   virtual bool offline_mode() const = 0;

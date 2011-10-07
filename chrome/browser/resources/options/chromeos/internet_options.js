@@ -321,21 +321,21 @@ cr.define('options', function() {
   InternetOptions.setupAttributes = function(data) {
     var buttons = $('wireless-buttons');
     if (data.wifiEnabled) {
-      $('disable-wifi').disabled = false;
+      $('disable-wifi').disabled = data.wifiBusy;
       $('disable-wifi').hidden = false;
       $('enable-wifi').hidden = true;
     } else {
-      $('enable-wifi').disabled = false;
+      $('enable-wifi').disabled = data.wifiBusy;
       $('enable-wifi').hidden = false;
       $('disable-wifi').hidden = true;
     }
     if (data.cellularAvailable) {
       if (data.cellularEnabled) {
-        $('disable-cellular').disabled = false;
+        $('disable-cellular').disabled = data.cellularBusy;
         $('disable-cellular').hidden = false;
         $('enable-cellular').hidden = true;
       } else {
-        $('enable-cellular').disabled = false;
+        $('enable-cellular').disabled = data.cellularBusy;
         $('enable-cellular').hidden = false;
         $('disable-cellular').hidden = true;
       }

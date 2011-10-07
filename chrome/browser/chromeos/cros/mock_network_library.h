@@ -134,6 +134,10 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(wifi_enabled, bool(void));
   MOCK_CONST_METHOD0(cellular_enabled, bool(void));
 
+  MOCK_CONST_METHOD0(ethernet_busy, bool(void));
+  MOCK_CONST_METHOD0(wifi_busy, bool(void));
+  MOCK_CONST_METHOD0(cellular_busy, bool(void));
+
   MOCK_CONST_METHOD0(wifi_scanning, bool(void));
 
   MOCK_CONST_METHOD0(active_network, const Network*(void));

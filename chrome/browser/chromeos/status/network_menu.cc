@@ -764,8 +764,11 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
                               IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
       label = l10n_util::GetStringFUTF16(id,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
+      int flag = FLAG_TOGGLE_WIFI;
+      if (cros->wifi_busy())
+        flag |= FLAG_DISABLED;
       menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), std::string(), FLAG_TOGGLE_WIFI));
+          SkBitmap(), std::string(), flag));
     }
 
     if (cellular_available) {
@@ -789,8 +792,11 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
       if (is_locked) {
         icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE);
       }
+      int flag = FLAG_TOGGLE_CELLULAR;
+      if (cros->cellular_busy())
+        flag |= FLAG_DISABLED;
       menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
-          icon, std::string(), FLAG_TOGGLE_CELLULAR));
+          icon, std::string(), flag));
     }
   }
 
