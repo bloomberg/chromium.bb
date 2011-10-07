@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/render_media_log.h"
 
+#include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
@@ -21,7 +22,7 @@ void RenderMediaLog::AddEvent(media::MediaLogEvent* event) {
     RenderThreadImpl::current()->Send(new ViewHostMsg_MediaLogEvent(*e));
   } else {
     render_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &RenderMediaLog::AddEvent, e.release()));
+        base::Bind(&RenderMediaLog::AddEvent, this, e.release()));
   }
 }
 

@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/audio_device.h"
 
+#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/time.h"
@@ -51,7 +52,7 @@ void AudioDevice::Start() {
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioDevice::InitializeOnIOThread, params));
+      base::Bind(&AudioDevice::InitializeOnIOThread, this, params));
 }
 
 bool AudioDevice::Stop() {
@@ -64,7 +65,7 @@ bool AudioDevice::Stop() {
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioDevice::ShutDownOnIOThread, &completion));
+      base::Bind(&AudioDevice::ShutDownOnIOThread, this, &completion));
 
   // We wait here for the IO task to be completed to remove race conflicts
   // with OnLowLatencyCreated() and to ensure that Stop() acts as a synchronous
@@ -89,7 +90,7 @@ bool AudioDevice::SetVolume(double volume) {
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioDevice::SetVolumeOnIOThread, volume));
+      base::Bind(&AudioDevice::SetVolumeOnIOThread, this, volume));
 
   volume_ = volume;
 
@@ -190,7 +191,7 @@ void AudioDevice::OnLowLatencyCreated(
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioDevice::StartOnIOThread));
+      base::Bind(&AudioDevice::StartOnIOThread, this));
 }
 
 void AudioDevice::OnVolume(double volume) {

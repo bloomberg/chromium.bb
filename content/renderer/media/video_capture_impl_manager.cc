@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/video_capture_impl_manager.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_message_filter.h"
@@ -55,8 +56,8 @@ void VideoCaptureImplManager::RemoveDevice(
   if (size == it->second->clients.size() || size > 1)
     return;
 
-  devices_[id]->vc->DeInit(NewRunnableMethod(this,
-      &VideoCaptureImplManager::FreeDevice, devices_[id]->vc));
+  devices_[id]->vc->DeInit(base::Bind(&VideoCaptureImplManager::FreeDevice,
+                                      this, devices_[id]->vc));
   delete devices_[id];
   devices_.erase(id);
 }

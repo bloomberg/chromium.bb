@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/video_capture_impl.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/common/child_process.h"
 #include "content/common/media/video_capture_messages.h"
@@ -61,14 +62,15 @@ void VideoCaptureImpl::Init() {
 
   if (!io_message_loop_proxy->BelongsToCurrentThread()) {
     io_message_loop_proxy->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &VideoCaptureImpl::AddDelegateOnIOThread));
+        base::Bind(&VideoCaptureImpl::AddDelegateOnIOThread,
+                   base::Unretained(this)));
     return;
   }
 
   AddDelegateOnIOThread();
 }
 
-void VideoCaptureImpl::DeInit(Task* task) {
+void VideoCaptureImpl::DeInit(base::Closure task) {
   if (state_ == kStarted)
     Send(new VideoCaptureHostMsg_Stop(device_id_));
 
@@ -77,8 +79,8 @@ void VideoCaptureImpl::DeInit(Task* task) {
 
   if (!io_message_loop_proxy->BelongsToCurrentThread()) {
     io_message_loop_proxy->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &VideoCaptureImpl::RemoveDelegateOnIOThread,
-                          task));
+        base::Bind(&VideoCaptureImpl::RemoveDelegateOnIOThread,
+                   base::Unretained(this), task));
     return;
   }
 
@@ -91,49 +93,53 @@ void VideoCaptureImpl::StartCapture(
   DCHECK_EQ(capability.raw_type, media::VideoFrame::I420);
 
   ml_proxy_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureImpl::DoStartCapture, handler,
-                        capability));
+      base::Bind(&VideoCaptureImpl::DoStartCapture,
+                 base::Unretained(this), handler, capability));
 }
 
 void VideoCaptureImpl::StopCapture(media::VideoCapture::EventHandler* handler) {
   ml_proxy_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureImpl::DoStopCapture, handler));
+      base::Bind(&VideoCaptureImpl::DoStopCapture,
+                 base::Unretained(this), handler));
 }
 
 void VideoCaptureImpl::FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) {
   ml_proxy_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureImpl::DoFeedBuffer, buffer));
+      base::Bind(&VideoCaptureImpl::DoFeedBuffer,
+                 base::Unretained(this), buffer));
 }
 
 void VideoCaptureImpl::OnBufferCreated(
     base::SharedMemoryHandle handle,
     int length, int buffer_id) {
   ml_proxy_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureImpl::DoBufferCreated,
-                        handle, length, buffer_id));
+      base::Bind(&VideoCaptureImpl::DoBufferCreated,
+                 base::Unretained(this), handle, length, buffer_id));
 }
 
 void VideoCaptureImpl::OnBufferReceived(int buffer_id, base::Time timestamp) {
   ml_proxy_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureImpl::DoBufferReceived,
-                        buffer_id, timestamp));
+      base::Bind(&VideoCaptureImpl::DoBufferReceived,
+                 base::Unretained(this), buffer_id, timestamp));
 }
 
 void VideoCaptureImpl::OnStateChanged(const media::VideoCapture::State& state) {
   ml_proxy_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureImpl::DoStateChanged, state));
+      base::Bind(&VideoCaptureImpl::DoStateChanged,
+                 base::Unretained(this), state));
 }
 
 void VideoCaptureImpl::OnDeviceInfoReceived(
     const media::VideoCaptureParams& device_info) {
   ml_proxy_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureImpl::DoDeviceInfoReceived,
-                        device_info));
+      base::Bind(&VideoCaptureImpl::DoDeviceInfoReceived,
+                 base::Unretained(this), device_info));
 }
 
 void VideoCaptureImpl::OnDelegateAdded(int32 device_id) {
   ml_proxy_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureImpl::DoDelegateAdded, device_id));
+      base::Bind(&VideoCaptureImpl::DoDelegateAdded,
+                 base::Unretained(this), device_id));
 }
 
 void VideoCaptureImpl::DoStartCapture(
@@ -453,8 +459,8 @@ void VideoCaptureImpl::AddDelegateOnIOThread() {
   message_filter_->AddDelegate(this);
 }
 
-void VideoCaptureImpl::RemoveDelegateOnIOThread(Task* task) {
-  base::ScopedTaskRunner task_runner(task);
+void VideoCaptureImpl::RemoveDelegateOnIOThread(base::Closure task) {
+  base::ScopedClosureRunner task_runner(task);
   message_filter_->RemoveDelegate(this);
 }
 
@@ -463,8 +469,8 @@ void VideoCaptureImpl::Send(IPC::Message* message) {
       ChildProcess::current()->io_message_loop_proxy();
 
   io_message_loop_proxy->PostTask(FROM_HERE,
-      NewRunnableMethod(message_filter_.get(),
-                        &VideoCaptureMessageFilter::Send, message));
+      base::IgnoreReturn<bool>(base::Bind(&VideoCaptureMessageFilter::Send,
+                                          message_filter_.get(), message)));
 }
 
 bool VideoCaptureImpl::CapabilityMatchesParameters(

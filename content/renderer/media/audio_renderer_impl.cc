@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "content/common/child_process.h"
 #include "content/common/content_switches.h"
@@ -93,7 +94,7 @@ bool AudioRendererImpl::OnInitialize(int bits_per_channel,
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::CreateStreamTask, params));
+      base::Bind(&AudioRendererImpl::CreateStreamTask, this, params));
   return true;
 }
 
@@ -105,7 +106,7 @@ void AudioRendererImpl::OnStop() {
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::DestroyTask));
+      base::Bind(&AudioRendererImpl::DestroyTask, this));
 
   if (audio_thread_.get()) {
     socket_->Close();
@@ -118,7 +119,7 @@ void AudioRendererImpl::NotifyDataAvailableIfNecessary() {
     // Post a task to render thread to notify a packet reception.
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &AudioRendererImpl::NotifyPacketReadyTask));
+        base::Bind(&AudioRendererImpl::NotifyPacketReadyTask, this));
   }
 }
 
@@ -152,12 +153,12 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
   if (GetPlaybackRate() == 0.0f && rate != 0.0f) {
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
+        base::Bind(&AudioRendererImpl::PlayTask, this));
   } else if (GetPlaybackRate() != 0.0f && rate == 0.0f) {
     // Pause is easy, we can always pause.
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
+        base::Bind(&AudioRendererImpl::PauseTask, this));
   }
   AudioRendererBase::SetPlaybackRate(rate);
 
@@ -176,7 +177,7 @@ void AudioRendererImpl::Pause(const base::Closure& callback) {
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
+      base::Bind(&AudioRendererImpl::PauseTask, this));
 }
 
 void AudioRendererImpl::Seek(base::TimeDelta time,
@@ -188,7 +189,7 @@ void AudioRendererImpl::Seek(base::TimeDelta time,
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::SeekTask));
+      base::Bind(&AudioRendererImpl::SeekTask, this));
 }
 
 
@@ -201,11 +202,11 @@ void AudioRendererImpl::Play(const base::Closure& callback) {
   if (GetPlaybackRate() != 0.0f) {
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
+        base::Bind(&AudioRendererImpl::PlayTask, this));
   } else {
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
+        base::Bind(&AudioRendererImpl::PauseTask, this));
   }
 }
 
@@ -215,7 +216,7 @@ void AudioRendererImpl::SetVolume(float volume) {
     return;
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::SetVolumeTask, volume));
+      base::Bind(&AudioRendererImpl::SetVolumeTask, this, volume));
 }
 
 void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,

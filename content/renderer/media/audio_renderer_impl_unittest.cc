@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -183,8 +184,8 @@ class AudioRendererImplTest
     // as all AudioMessageFilter::Delegate methods.
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(delegate_caller_.get(),
-            &DelegateCaller::OnCreated, duplicated_handle, kSize));
+        base::Bind(&DelegateCaller::OnCreated, delegate_caller_.get(),
+                   duplicated_handle, kSize));
     WaitForIOThreadCompletion();
   }
 
@@ -254,29 +255,29 @@ TEST_F(AudioRendererImplTest, Stop) {
   if (renderer_->latency_type() == AudioRendererImpl::kHighLatency) {
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(delegate_caller_.get(),
-        &DelegateCaller::OnRequestPacket, AudioBuffersState(kSize, 0)));
+        base::Bind(&DelegateCaller::OnRequestPacket,
+                   delegate_caller_.get(), AudioBuffersState(kSize, 0)));
   }
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(delegate_caller_.get(),
-      &DelegateCaller::OnStateChanged, kAudioStreamError));
+      base::Bind(&DelegateCaller::OnStateChanged,
+                 delegate_caller_.get(), kAudioStreamError));
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(delegate_caller_.get(),
-      &DelegateCaller::OnStateChanged, kAudioStreamPlaying));
+      base::Bind(&DelegateCaller::OnStateChanged,
+                 delegate_caller_.get(), kAudioStreamPlaying));
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(delegate_caller_.get(),
-      &DelegateCaller::OnStateChanged, kAudioStreamPaused));
+      base::Bind(&DelegateCaller::OnStateChanged,
+                 delegate_caller_.get(), kAudioStreamPaused));
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(delegate_caller_.get(),
-      &DelegateCaller::OnCreated, shared_mem_.handle(), kSize));
+      base::Bind(&DelegateCaller::OnCreated,
+                 delegate_caller_.get(), shared_mem_.handle(), kSize));
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(delegate_caller_.get(),
-      &DelegateCaller::OnVolume, 0.5));
+      base::Bind(&DelegateCaller::OnVolume,
+                 delegate_caller_.get(), 0.5));
 
   WaitForIOThreadCompletion();
 
@@ -290,8 +291,8 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetPlaybackRate) {
   // still works.
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(delegate_caller_.get(),
-      &DelegateCaller::DestroyCurrentMessageLoop));
+      base::Bind(&DelegateCaller::DestroyCurrentMessageLoop,
+                 delegate_caller_.get()));
   WaitForIOThreadCompletion();
 
   // No tasks will be posted on the IO thread here since we are in
@@ -307,8 +308,8 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetVolume) {
   // still works.
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(delegate_caller_.get(),
-      &DelegateCaller::DestroyCurrentMessageLoop));
+      base::Bind(&DelegateCaller::DestroyCurrentMessageLoop,
+                 delegate_caller_.get()));
   WaitForIOThreadCompletion();
 
   // No tasks will be posted on the IO thread here since we are in
@@ -322,8 +323,8 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_ConsumeAudioSamples) {
   // still works.
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(delegate_caller_.get(),
-      &DelegateCaller::DestroyCurrentMessageLoop));
+      base::Bind(&DelegateCaller::DestroyCurrentMessageLoop,
+                 delegate_caller_.get()));
   WaitForIOThreadCompletion();
 
   // No tasks will be posted on the IO thread here since we are in

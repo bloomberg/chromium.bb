@@ -5,6 +5,7 @@
 #include "content/renderer/media/video_capture_module_impl.h"
 
 #include "base/atomicops.h"
+#include "base/bind.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 
 VideoCaptureModuleImpl::VideoCaptureModuleImpl(
@@ -57,17 +58,15 @@ WebRtc_Word32 VideoCaptureModuleImpl::StartCapture(
     const webrtc::VideoCaptureCapability& capability) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &VideoCaptureModuleImpl::StartCaptureOnCaptureThread,
-                        capability));
+      base::Bind(&VideoCaptureModuleImpl::StartCaptureOnCaptureThread,
+                 this, capability));
   return 0;
 }
 
 WebRtc_Word32 VideoCaptureModuleImpl::StopCapture() {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &VideoCaptureModuleImpl::StopCaptureOnCaptureThread));
+      base::Bind(&VideoCaptureModuleImpl::StopCaptureOnCaptureThread, this));
   return 0;
 }
 
@@ -92,8 +91,8 @@ void VideoCaptureModuleImpl::OnStarted(media::VideoCapture* capture) {
 void VideoCaptureModuleImpl::OnStopped(media::VideoCapture* capture) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureModuleImpl::OnStoppedOnCaptureThread,
-                        capture));
+      base::Bind(&VideoCaptureModuleImpl::OnStoppedOnCaptureThread, this,
+                 capture));
 }
 
 void VideoCaptureModuleImpl::OnPaused(media::VideoCapture* capture) {
@@ -114,9 +113,8 @@ void VideoCaptureModuleImpl::OnBufferReady(
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &VideoCaptureModuleImpl::OnBufferReadyOnCaptureThread,
-                        capture, buf));
+      base::Bind(&VideoCaptureModuleImpl::OnBufferReadyOnCaptureThread,
+                 this, capture, buf));
 }
 
 void VideoCaptureModuleImpl::OnDeviceInfoReceived(

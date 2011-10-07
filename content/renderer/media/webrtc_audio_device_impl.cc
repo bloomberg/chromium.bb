@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 
+#include "base/bind.h"
 #include "base/string_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
@@ -258,9 +259,8 @@ int32_t WebRtcAudioDeviceImpl::Init() {
     // the audio clients can only be created on this thread.
     render_loop_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &WebRtcAudioDeviceImpl::InitOnRenderThread,
-                          &error, &event));
+        base::Bind(&WebRtcAudioDeviceImpl::InitOnRenderThread,
+                   this, &error, &event));
     event.Wait();
     return error;
   }

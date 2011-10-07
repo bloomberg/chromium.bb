@@ -79,12 +79,12 @@ class CONTENT_EXPORT VideoCaptureImpl
   void DoDelegateAdded(int32 device_id);
 
   void Init();
-  void DeInit(Task* task);
+  void DeInit(base::Closure task);
   void StopDevice();
   void RestartCapture();
   void StartCaptureInternal();
   void AddDelegateOnIOThread();
-  void RemoveDelegateOnIOThread(Task* task);
+  void RemoveDelegateOnIOThread(base::Closure task);
   virtual void Send(IPC::Message* message);
 
   // Helpers.

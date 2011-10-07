@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/audio_input_device.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "content/common/child_process.h"
@@ -54,15 +55,15 @@ void AudioInputDevice::Start() {
   VLOG(1) << "Start()";
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread));
+      base::Bind(&AudioInputDevice::InitializeOnIOThread, this));
 }
 
 void AudioInputDevice::SetDevice(int session_id) {
   VLOG(1) << "SetDevice (session_id=" << session_id << ")";
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioInputDevice::SetSessionIdOnIOThread,
-                        session_id));
+      base::Bind(&AudioInputDevice::SetSessionIdOnIOThread, this,
+                 session_id));
 }
 
 bool AudioInputDevice::Stop() {
@@ -76,8 +77,8 @@ bool AudioInputDevice::Stop() {
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioInputDevice::ShutDownOnIOThread,
-                        &completion));
+      base::Bind(&AudioInputDevice::ShutDownOnIOThread, this,
+                 &completion));
 
   // We wait here for the IO task to be completed to remove race conflicts
   // with OnLowLatencyCreated() and to ensure that Stop() acts as a synchronous
@@ -198,7 +199,7 @@ void AudioInputDevice::OnLowLatencyCreated(
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioInputDevice::StartOnIOThread));
+      base::Bind(&AudioInputDevice::StartOnIOThread, this));
 }
 
 void AudioInputDevice::OnVolume(double volume) {

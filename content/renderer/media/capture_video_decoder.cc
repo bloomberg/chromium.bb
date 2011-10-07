@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/capture_video_decoder.h"
 
+#include "base/bind.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/base/filter_host.h"
 #include "media/base/limits.h"
@@ -35,19 +36,17 @@ void CaptureVideoDecoder::Initialize(
     const media::StatisticsCallback& stat_callback) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &CaptureVideoDecoder::InitializeOnDecoderThread,
-                        make_scoped_refptr(demuxer_stream),
-                        filter_callback, stat_callback));
+      base::Bind(&CaptureVideoDecoder::InitializeOnDecoderThread,
+                 this, make_scoped_refptr(demuxer_stream),
+                 filter_callback, stat_callback));
 }
 
 void CaptureVideoDecoder::ProduceVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &CaptureVideoDecoder::ProduceVideoFrameOnDecoderThread, video_frame));
+      base::Bind(&CaptureVideoDecoder::ProduceVideoFrameOnDecoderThread,
+                 this, video_frame));
 }
 
 gfx::Size CaptureVideoDecoder::natural_size() {
@@ -57,35 +56,30 @@ gfx::Size CaptureVideoDecoder::natural_size() {
 void CaptureVideoDecoder::Play(const base::Closure& callback) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &CaptureVideoDecoder::PlayOnDecoderThread,
-                        callback));
+      base::Bind(&CaptureVideoDecoder::PlayOnDecoderThread,
+                 this, callback));
 }
 
 void CaptureVideoDecoder::Pause(const base::Closure& callback) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &CaptureVideoDecoder::PauseOnDecoderThread,
-                        callback));
+      base::Bind(&CaptureVideoDecoder::PauseOnDecoderThread,
+                 this, callback));
 }
 
 void CaptureVideoDecoder::Stop(const base::Closure& callback) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &CaptureVideoDecoder::StopOnDecoderThread,
-                        callback));
+      base::Bind(&CaptureVideoDecoder::StopOnDecoderThread,
+                 this, callback));
 }
 
 void CaptureVideoDecoder::Seek(base::TimeDelta time,
                                const media::FilterStatusCB& cb) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &CaptureVideoDecoder::SeekOnDecoderThread,
-                        time,
-                        cb));
+      base::Bind(&CaptureVideoDecoder::SeekOnDecoderThread,
+                 this, time, cb));
 }
 
 void CaptureVideoDecoder::OnStarted(media::VideoCapture* capture) {
@@ -95,9 +89,8 @@ void CaptureVideoDecoder::OnStarted(media::VideoCapture* capture) {
 void CaptureVideoDecoder::OnStopped(media::VideoCapture* capture) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &CaptureVideoDecoder::OnStoppedOnDecoderThread,
-                        capture));
+      base::Bind(&CaptureVideoDecoder::OnStoppedOnDecoderThread,
+                 this, capture));
 }
 
 void CaptureVideoDecoder::OnPaused(media::VideoCapture* capture) {
@@ -119,10 +112,8 @@ void CaptureVideoDecoder::OnBufferReady(
   DCHECK(buf);
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &CaptureVideoDecoder::OnBufferReadyOnDecoderThread,
-                        capture,
-                        buf));
+      base::Bind(&CaptureVideoDecoder::OnBufferReadyOnDecoderThread,
+                 this, capture, buf));
 }
 
 void CaptureVideoDecoder::OnDeviceInfoReceived(

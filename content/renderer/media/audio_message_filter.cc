@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/audio_message_filter.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "content/common/child_process.h"
@@ -30,7 +31,8 @@ bool AudioMessageFilter::Send(IPC::Message* message) {
     // safe.
     ChildProcess::current()->io_message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &AudioMessageFilter::Send, message));
+        base::IgnoreReturn<bool>(base::Bind(&AudioMessageFilter::Send,
+                                            this, message)));
     return true;
   }
 

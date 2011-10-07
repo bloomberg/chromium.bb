@@ -68,9 +68,8 @@ void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
 void RTCVideoDecoder::Play(const base::Closure& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
-                             NewRunnableMethod(this,
-                                               &RTCVideoDecoder::Play,
-                                               callback));
+                            base::Bind(&RTCVideoDecoder::Play,
+                                       this, callback));
     return;
   }
 
@@ -82,9 +81,8 @@ void RTCVideoDecoder::Play(const base::Closure& callback) {
 void RTCVideoDecoder::Pause(const base::Closure& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
-                            NewRunnableMethod(this,
-                                              &RTCVideoDecoder::Pause,
-                                              callback));
+                            base::Bind(&RTCVideoDecoder::Pause,
+                                       this, callback));
     return;
   }
 
@@ -98,9 +96,8 @@ void RTCVideoDecoder::Pause(const base::Closure& callback) {
 void RTCVideoDecoder::Stop(const base::Closure& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
-                            NewRunnableMethod(this,
-                                              &RTCVideoDecoder::Stop,
-                                              callback));
+                            base::Bind(&RTCVideoDecoder::Stop,
+                                       this, callback));
     return;
   }
 
@@ -114,8 +111,8 @@ void RTCVideoDecoder::Stop(const base::Closure& callback) {
 void RTCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   if (MessageLoop::current() != message_loop_) {
      message_loop_->PostTask(FROM_HERE,
-                             NewRunnableMethod(this, &RTCVideoDecoder::Seek,
-                                               time, cb));
+                             base::Bind(&RTCVideoDecoder::Seek, this,
+                                        time, cb));
      return;
   }
 
@@ -139,8 +136,7 @@ void RTCVideoDecoder::ProduceVideoFrame(
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &RTCVideoDecoder::ProduceVideoFrame, video_frame));
+        base::Bind(&RTCVideoDecoder::ProduceVideoFrame, this, video_frame));
     return;
   }
   DCHECK_EQ(MessageLoop::current(), message_loop_);
@@ -208,9 +204,7 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &RTCVideoDecoder::VideoFrameReady,
-                          video_frame));
+        base::Bind(&RTCVideoDecoder::VideoFrameReady, this, video_frame));
   } else {
     VideoFrameReady(video_frame);
   }
