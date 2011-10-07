@@ -170,7 +170,7 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
       }
     }
     default:
-      NOTREACHED();
+      NOTREACHED() << "Unknown Event Type:" << native_event->type;
       break;
   }
   return ET_UNKNOWN;

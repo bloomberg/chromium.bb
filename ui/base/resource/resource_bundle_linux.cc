@@ -75,12 +75,12 @@ FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
   return FilePath();
 }
 
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
+gfx::Image& ResourceBundle::
+GetNativeImageNamed(int resource_id) {
 #if defined(TOOLKIT_USES_GTK)
   return *GetPixbufImpl(resource_id, false);
 #else
-  static gfx::Image image(NULL);
-  return image;
+  return GetImageNamed(resource_id);
 #endif
 }
 
