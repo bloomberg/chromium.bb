@@ -52,20 +52,19 @@
 namespace {
 // These are used as placeholder text around the links in the text in the about
 // dialog.
-const wchar_t* kBeginLink = L"BEGIN_LINK";
-const wchar_t* kEndLink = L"END_LINK";
-const wchar_t* kBeginLinkChr = L"BEGIN_LINK_CHR";
-const wchar_t* kBeginLinkOss = L"BEGIN_LINK_OSS";
-const wchar_t* kEndLinkChr = L"END_LINK_CHR";
-const wchar_t* kEndLinkOss = L"END_LINK_OSS";
+const string16 kBeginLink(ASCIIToUTF16("BEGIN_LINK"));
+const string16 kEndLink(ASCIIToUTF16("END_LINK"));
+const string16 kBeginLinkChr(ASCIIToUTF16("BEGIN_LINK_CHR"));
+const string16 kBeginLinkOss(ASCIIToUTF16("BEGIN_LINK_OSS"));
+const string16 kEndLinkChr(ASCIIToUTF16("END_LINK_CHR"));
+const string16 kEndLinkOss(ASCIIToUTF16("END_LINK_OSS"));
 
 // The background bitmap used to draw the background color for the About box
 // and the separator line (this is the image we will draw the logo on top of).
 static const SkBitmap* kBackgroundBmp = NULL;
 
 // Returns a substring from |text| between start and end.
-std::wstring StringSubRange(const std::wstring& text, size_t start,
-                            size_t end) {
+string16 StringSubRange(const string16& text, size_t start, size_t end) {
   DCHECK(end > start);
   return text.substr(start, end - start);
 }
@@ -164,7 +163,7 @@ void AboutChromeView::Init() {
 
   // Add the dialog labels.
   about_title_label_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   about_title_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(18));
   about_title_label_->SetColor(SK_ColorBLACK);
@@ -184,15 +183,14 @@ void AboutChromeView::Init() {
 
   // The copyright URL portion of the main label.
   copyright_label_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT)));
+      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT));
   copyright_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(copyright_label_);
 
-  main_text_label_ = new views::Label(L"");
+  main_text_label_ = new views::Label(string16());
 
   // Figure out what to write in the main label of the About box.
-  std::wstring text =
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_LICENSE));
+  string16 text = l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_LICENSE);
 
   chromium_url_appears_first_ =
       text.find(kBeginLinkChr) < text.find(kBeginLinkOss);
@@ -207,20 +205,20 @@ void AboutChromeView::Init() {
   DCHECK(link1_end != std::wstring::npos);
 
   main_label_chunk1_ = text.substr(0, link1);
-  main_label_chunk2_ = StringSubRange(text, link1_end + wcslen(kEndLinkOss),
+  main_label_chunk2_ = StringSubRange(text, link1_end + kEndLinkOss.size(),
                                       link2);
-  main_label_chunk3_ = text.substr(link2_end + wcslen(kEndLinkOss));
+  main_label_chunk3_ = text.substr(link2_end + kEndLinkOss.size());
 
   // The Chromium link within the main text of the dialog.
   chromium_url_ = new views::Link(
-      StringSubRange(text, text.find(kBeginLinkChr) + wcslen(kBeginLinkChr),
+      StringSubRange(text, text.find(kBeginLinkChr) + kBeginLinkChr.size(),
                      text.find(kEndLinkChr)));
   AddChildView(chromium_url_);
   chromium_url_->set_listener(this);
 
   // The Open Source link within the main text of the dialog.
   open_source_url_ = new views::Link(
-      StringSubRange(text, text.find(kBeginLinkOss) + wcslen(kBeginLinkOss),
+      StringSubRange(text, text.find(kBeginLinkOss) + kBeginLinkOss.size(),
                      text.find(kEndLinkOss)));
   AddChildView(open_source_url_);
   open_source_url_->set_listener(this);
@@ -228,9 +226,9 @@ void AboutChromeView::Init() {
   // Add together all the strings in the dialog for the purpose of calculating
   // the height of the dialog. The space for the Terms of Service string is not
   // included (it is added later, if needed).
-  std::wstring full_text = main_label_chunk1_ + chromium_url_->GetText() +
-                           main_label_chunk2_ + open_source_url_->GetText() +
-                           main_label_chunk3_;
+  string16 full_text = main_label_chunk1_ + chromium_url_->GetText() +
+                       main_label_chunk2_ + open_source_url_->GetText() +
+                       main_label_chunk3_;
 
   dialog_dimensions_ = views::Widget::GetLocalizedContentsSize(
       IDS_ABOUT_DIALOG_WIDTH_CHARS,
@@ -254,17 +252,17 @@ void AboutChromeView::Init() {
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::vector<size_t> url_offsets;
-  text = UTF16ToWide(l10n_util::GetStringFUTF16(IDS_ABOUT_TERMS_OF_SERVICE,
-                                                string16(),
-                                                string16(),
-                                                &url_offsets));
+  text = l10n_util::GetStringFUTF16(IDS_ABOUT_TERMS_OF_SERVICE,
+                                    string16(),
+                                    string16(),
+                                    &url_offsets);
 
   main_label_chunk4_ = text.substr(0, url_offsets[0]);
   main_label_chunk5_ = text.substr(url_offsets[0]);
 
   // The Terms of Service URL at the bottom.
   terms_of_service_url_ = new views::Link(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TERMS_OF_SERVICE)));
+      l10n_util::GetStringUTF16(IDS_TERMS_OF_SERVICE));
   AddChildView(terms_of_service_url_);
   terms_of_service_url_->set_listener(this);
 
@@ -406,16 +404,16 @@ void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
   gfx::Size position;
   // Draw the first text chunk and position the Chromium url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      main_label_chunk1_, link1, rect1, &position, text_direction_is_rtl_,
-      label_bounds, font);
+      UTF16ToWideHack(main_label_chunk1_), link1, rect1, &position,
+      text_direction_is_rtl_, label_bounds, font);
   // Draw the second text chunk and position the Open Source url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      main_label_chunk2_, link2, rect2, &position, text_direction_is_rtl_,
-      label_bounds, font);
+      UTF16ToWideHack(main_label_chunk2_), link2, rect2, &position,
+      text_direction_is_rtl_, label_bounds, font);
   // Draw the third text chunk (which has no URL associated with it).
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      main_label_chunk3_, NULL, NULL, &position, text_direction_is_rtl_,
-      label_bounds, font);
+      UTF16ToWideHack(main_label_chunk3_), NULL, NULL, &position,
+      text_direction_is_rtl_, label_bounds, font);
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Insert a line break and some whitespace.
@@ -424,12 +422,13 @@ void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
 
   // And now the Terms of Service and position the TOS url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-      main_label_chunk4_, terms_of_service_url_, &terms_of_service_url_rect_,
-      &position, text_direction_is_rtl_, label_bounds, font);
+      UTF16ToWideHack(main_label_chunk4_), terms_of_service_url_,
+      &terms_of_service_url_rect_, &position, text_direction_is_rtl_,
+      label_bounds, font);
   // The last text chunk doesn't have a URL associated with it.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
-       main_label_chunk5_, NULL, NULL, &position, text_direction_is_rtl_,
-       label_bounds, font);
+       UTF16ToWideHack(main_label_chunk5_), NULL, NULL, &position,
+       text_direction_is_rtl_, label_bounds, font);
 
   // Position the TOS URL within the main label.
   terms_of_service_url_->SetBounds(terms_of_service_url_rect_.x(),
@@ -699,11 +698,11 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Error"));
       restart_button_visible_ = false;
       if (error_code != GOOGLE_UPDATE_DISABLED_BY_POLICY) {
-        update_label_.SetText(UTF16ToWide(
-            l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code)));
+        update_label_.SetText(
+            l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code));
       } else {
-        update_label_.SetText(UTF16ToWide(
-            l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY)));
+        update_label_.SetText(
+            l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY));
       }
       show_timeout_indicator = true;
       break;

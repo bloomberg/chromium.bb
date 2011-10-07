@@ -113,7 +113,7 @@ void ExamplesMain::Init() {
 }
 
 void ExamplesMain::SetStatus(const std::string& status) {
-  status_label_->SetText(UTF8ToWide(status));
+  status_label_->SetText(UTF8ToUTF16(status));
 }
 
 void ExamplesMain::AddExample(ExampleBase* example) {

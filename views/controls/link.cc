@@ -11,6 +11,7 @@
 #endif
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_utils.h"
@@ -65,14 +66,14 @@ namespace views {
 
 const char Link::kViewClassName[] = "views/Link";
 
-Link::Link() : Label(L""),
+Link::Link() : Label(string16()),
                listener_(NULL),
                highlighted_(false) {
   Init();
   set_focusable(true);
 }
 
-Link::Link(const std::wstring& title) : Label(title),
+Link::Link(const string16& title) : Label(title),
                                         listener_(NULL),
                                         highlighted_(false) {
   Init();

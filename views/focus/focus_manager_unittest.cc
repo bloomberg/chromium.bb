@@ -497,7 +497,7 @@ void FocusTraversalTest::InitContentView() {
   int y = 10;
   int gap_between_labels = 10;
 
-  Label* label = new Label(L"Apple:");
+  Label* label = new Label(ASCIIToUTF16("Apple:"));
   label->set_id(kAppleLabelID);
   left_container_->AddChildView(label);
   label->SetBounds(label_x, y, label_width, label_height);
@@ -510,7 +510,7 @@ void FocusTraversalTest::InitContentView() {
 
   y += label_height + gap_between_labels;
 
-  label = new Label(L"Orange:");
+  label = new Label(ASCIIToUTF16("Orange:"));
   label->set_id(kOrangeLabelID);
   left_container_->AddChildView(label);
   label->SetBounds(label_x, y, label_width, label_height);
@@ -523,7 +523,7 @@ void FocusTraversalTest::InitContentView() {
 
   y += label_height + gap_between_labels;
 
-  label = new Label(L"Banana:");
+  label = new Label(ASCIIToUTF16("Banana:"));
   label->set_id(kBananaLabelID);
   left_container_->AddChildView(label);
   label->SetBounds(label_x, y, label_width, label_height);
@@ -536,7 +536,7 @@ void FocusTraversalTest::InitContentView() {
 
   y += label_height + gap_between_labels;
 
-  label = new Label(L"Kiwi:");
+  label = new Label(ASCIIToUTF16("Kiwi:"));
   label->set_id(kKiwiLabelID);
   left_container_->AddChildView(label);
   label->SetBounds(label_x, y, label_width, label_height);
@@ -616,11 +616,11 @@ void FocusTraversalTest::InitContentView() {
       Background::CreateSolidBackground(200, 200, 200));
   scroll_view->SetContents(scroll_content);
 
-  static const wchar_t* const kTitles[] = {
-      L"Rosetta", L"Stupeur et tremblement", L"The diner game",
-      L"Ridicule", L"Le placard", L"Les Visiteurs", L"Amelie",
-      L"Joyeux Noel", L"Camping", L"Brice de Nice",
-      L"Taxi", L"Asterix"
+  static const char* const kTitles[] = {
+      "Rosetta", "Stupeur et tremblement", "The diner game",
+      "Ridicule", "Le placard", "Les Visiteurs", "Amelie",
+      "Joyeux Noel", "Camping", "Brice de Nice",
+      "Taxi", "Asterix"
   };
 
   static const int kIDs[] = {
@@ -634,7 +634,7 @@ void FocusTraversalTest::InitContentView() {
 
   y = 5;
   for (size_t i = 0; i < arraysize(kTitles); ++i) {
-    Link* link = new Link(kTitles[i]);
+    Link* link = new Link(ASCIIToUTF16(kTitles[i]));
     link->SetHorizontalAlignment(Label::ALIGN_LEFT);
     link->set_id(kIDs[i]);
     scroll_content->AddChildView(link);
@@ -681,7 +681,7 @@ void FocusTraversalTest::InitContentView() {
   cb->SetBounds(130, 10, 70, 20);
   cb->set_id(kUnderlinedCheckBoxID);
 
-  Link* link = new Link(L"Help");
+  Link* link = new Link(ASCIIToUTF16("Help"));
   contents->AddChildView(link);
   link->SetBounds(10, 35, 70, 10);
   link->set_id(kStyleHelpLinkID);
@@ -711,7 +711,7 @@ void FocusTraversalTest::InitContentView() {
   button->SetBounds(112, 5, 60, 30);
   button->set_id(kSearchButtonID);
 
-  link = new Link(L"Help");
+  link = new Link(ASCIIToUTF16("Help"));
   link->SetHorizontalAlignment(Label::ALIGN_LEFT);
   link->set_id(kHelpLinkID);
   contents->AddChildView(link);
@@ -1283,7 +1283,6 @@ TEST_F(FocusTraversalTest, PaneTraversal) {
         EXPECT_EQ(kRightTraversalIDs[j], focused_view->id());
     }
   }
-
 }
 
 // Counts accelerator calls.
@@ -1451,7 +1450,7 @@ TEST_F(FocusManagerTest, CallsSelfDeletingAcceleratorTarget) {
 class MessageTrackingView : public View {
  public:
   MessageTrackingView() : accelerator_pressed_(false) {
- }
+  }
 
   virtual bool OnKeyPressed(const KeyEvent& e) {
     keys_pressed_.push_back(e.key_code());
@@ -1664,7 +1663,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
 
   class TestFocusManagerFactory : public FocusManagerFactory {
    public:
-    TestFocusManagerFactory(DtorTrackVector* dtor_tracker)
+    explicit TestFocusManagerFactory(DtorTrackVector* dtor_tracker)
         : dtor_tracker_(dtor_tracker) {
     }
 
@@ -1693,7 +1692,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
 
   class WindowDtorTracked : public Widget {
    public:
-    WindowDtorTracked(DtorTrackVector* dtor_tracker)
+    explicit WindowDtorTracked(DtorTrackVector* dtor_tracker)
         : dtor_tracker_(dtor_tracker) {
     }
 

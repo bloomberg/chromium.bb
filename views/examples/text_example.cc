@@ -136,7 +136,7 @@ views::Combobox* TextExample::AddCombobox(views::GridLayout* layout,
                                           const char** strings,
                                           int count) {
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(ASCIIToWide(name)));
+  layout->AddView(new views::Label(ASCIIToUTF16(name)));
   views::Combobox* combo_box =
       new views::Combobox(new ExampleComboboxModel(strings, count));
   combo_box->SetSelectedItem(0);

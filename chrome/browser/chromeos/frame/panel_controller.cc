@@ -211,7 +211,7 @@ void PanelController::Init(bool initial_focus,
 
   client_event_handler_id_ = g_signal_connect(
       panel_, "client-event", G_CALLBACK(OnPanelClientEvent), this);
-#endif // !USE_AURA
+#endif  // !USE_AURA
 
   title_content_ = new TitleContentView(this);
   title_window_->SetContentsView(title_content_);
@@ -222,8 +222,7 @@ void PanelController::Init(bool initial_focus,
 void PanelController::UpdateTitleBar() {
   if (!delegate_ || !title_window_)
     return;
-  title_content_->title_label()->SetText(
-      UTF16ToWideHack(delegate_->GetPanelTitle()));
+  title_content_->title_label()->SetText(delegate_->GetPanelTitle());
   title_content_->title_icon()->SetImage(delegate_->GetPanelIcon());
 }
 
@@ -440,7 +439,7 @@ PanelController::TitleContentView::TitleContentView(
 
   title_icon_ = new views::ImageView();
   AddChildView(title_icon_);
-  title_label_ = new views::Label(std::wstring());
+  title_label_ = new views::Label(string16());
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(title_label_);
 

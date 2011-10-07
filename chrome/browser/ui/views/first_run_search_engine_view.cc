@@ -325,8 +325,8 @@ void FirstRunSearchEngineView::SetupControls() {
   int label_width = GetPreferredSize().width() - 2 * views::kPanelHorizMargin;
 
   // Add title and text asking the user to choose a search engine:
-  title_label_ = new Label(UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_FR_SEARCH_MAIN_LABEL)));
+  title_label_ = new Label(l10n_util::GetStringUTF16(
+      IDS_FR_SEARCH_MAIN_LABEL));
   title_label_->SetColor(SK_ColorBLACK);
   title_label_->SetFont(title_label_->font().DeriveFont(3, gfx::Font::BOLD));
   title_label_->SetMultiLine(true);
@@ -334,9 +334,9 @@ void FirstRunSearchEngineView::SetupControls() {
   title_label_->SizeToFit(label_width);
   AddChildView(title_label_);
 
-  text_label_ = new Label(UTF16ToWide(l10n_util::GetStringFUTF16(
+  text_label_ = new Label(l10n_util::GetStringFUTF16(
       IDS_FR_SEARCH_TEXT,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   text_label_->SetColor(SK_ColorBLACK);
   text_label_->SetFont(text_label_->font().DeriveFont(1, gfx::Font::NORMAL));
   text_label_->SetMultiLine(true);

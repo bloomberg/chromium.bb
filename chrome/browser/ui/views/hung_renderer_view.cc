@@ -453,7 +453,7 @@ void HungRendererDialogView::Init() {
   frozen_icon_view_->SetImage(frozen_icon_);
 
   info_label_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER)));
+      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER));
   info_label_->SetMultiLine(true);
   info_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 

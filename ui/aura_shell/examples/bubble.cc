@@ -33,7 +33,7 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
   virtual gfx::Rect GetBounds() OVERRIDE { return config_.bound; }
   virtual views::BubbleBorder::ArrowLocation GetFrameArrowLocation() OVERRIDE {
     return config_.arrow;
- }
+  }
 
  private:
   const BubbleConfig config_;
@@ -51,7 +51,7 @@ void CreateBubble(const BubbleConfig& config,
   params.parent = parent;
   bubble_widget->Init(params);
   bubble_widget->client_view()->AsBubbleView()->AddChildView(
-      new views::Label(L"I am a " + UTF16ToWideHack(config.label)));
+      new views::Label(ASCIIToUTF16("I am a ") + config.label));
   bubble_widget->Show();
 }
 

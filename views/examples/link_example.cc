@@ -4,6 +4,7 @@
 
 #include "views/examples/link_example.h"
 
+#include "base/utf_string_conversions.h"
 #include "views/controls/link.h"
 #include "views/layout/fill_layout.h"
 #include "views/view.h"
@@ -18,7 +19,7 @@ LinkExample::~LinkExample() {
 }
 
 void LinkExample::CreateExampleView(views::View* container) {
-  link_ = new views::Link(L"Click me!");
+  link_ = new views::Link(ASCIIToUTF16("Click me!"));
   link_->set_listener(this);
 
   container->SetLayoutManager(new views::FillLayout);

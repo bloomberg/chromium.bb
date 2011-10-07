@@ -4,6 +4,7 @@
 
 #include "views/examples/bubble_example.h"
 
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/bubble/bubble_border.h"
 #include "views/bubble/bubble_delegate.h"
@@ -18,7 +19,7 @@
 namespace examples {
 
 struct BubbleConfig {
-  std::wstring label;
+  string16 label;
   SkColor color;
   gfx::Rect bound;
   views::BubbleBorder::ArrowLocation arrow;
@@ -28,19 +29,19 @@ struct BubbleConfig {
 // Create three types of bubbles, one without arrow, one with
 // arrow, and the third has a fade animation.
 BubbleConfig kRoundBubbleConfig = {
-  L"RoundBubble", 0xFFC1B1E1, gfx::Rect(50, 350, 100, 50),
+  ASCIIToUTF16("RoundBubble"), 0xFFC1B1E1, gfx::Rect(50, 350, 100, 50),
     views::BubbleBorder::NONE, false };
 BubbleConfig kPointyBubbleConfig = {
-  L"PointyBubble", SK_ColorLTGRAY, gfx::Rect(250, 350, 180, 180),
+  ASCIIToUTF16("PointyBubble"), SK_ColorLTGRAY, gfx::Rect(250, 350, 180, 180),
     views::BubbleBorder::TOP_LEFT, false };
 BubbleConfig kFadeBubbleConfig = {
-  L"FadeBubble", SK_ColorYELLOW, gfx::Rect(500, 350, 200, 100),
+  ASCIIToUTF16("FadeBubble"), SK_ColorYELLOW, gfx::Rect(500, 350, 200, 100),
     views::BubbleBorder::BOTTOM_RIGHT, true };
 
 class ExampleBubbleDelegateView : public views::BubbleDelegateView {
  public:
   ExampleBubbleDelegateView(const BubbleConfig& config, views::Widget* widget)
-      : BubbleDelegateView(widget),config_(config) {}
+      : BubbleDelegateView(widget), config_(config) {}
 
   virtual views::View* GetContentsView() { return this; }
 
@@ -53,7 +54,7 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
 
   views::BubbleBorder::ArrowLocation GetFrameArrowLocation() {
     return config_.arrow;
- }
+  }
 
  private:
   const BubbleConfig& config_;
@@ -69,9 +70,12 @@ BubbleExample::~BubbleExample() {
 void BubbleExample::CreateExampleView(views::View* container) {
   layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 1);
   container->SetLayoutManager(layout_);
-  round_ = new views::TextButton(this, kRoundBubbleConfig.label);
-  pointy_ = new views::TextButton(this, kPointyBubbleConfig.label);
-  fade_ = new views::TextButton(this, kFadeBubbleConfig.label);
+  round_ = new views::TextButton(this,
+                                 UTF16ToWideHack(kRoundBubbleConfig.label));
+  pointy_ = new views::TextButton(this,
+                                  UTF16ToWideHack(kPointyBubbleConfig.label));
+  fade_ = new views::TextButton(this,
+                                UTF16ToWideHack(kFadeBubbleConfig.label));
   container->AddChildView(round_);
   container->AddChildView(pointy_);
   container->AddChildView(fade_);
@@ -97,7 +101,8 @@ void BubbleExample::ButtonPressed(views::Button* sender,
 
 views::Widget* BubbleExample::AddBubbleButton(const BubbleConfig& config) {
   // Create a Label.
-  views::Label* bubble_message = new views::Label(L"I am a " + config.label);
+  views::Label* bubble_message = new views::Label(
+      ASCIIToUTF16("I am a ") + config.label);
   bubble_message->SetMultiLine(true);
   bubble_message->SetAllowCharacterBreak(true);
   bubble_message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

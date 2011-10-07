@@ -459,16 +459,16 @@ void UserController::CreateBorderWindow(int index,
 }
 
 Widget* UserController::CreateLabelWidget(int index, WmIpcWindowType type) {
-  std::wstring text;
+  string16 text;
   if (is_guest_) {
-    text = std::wstring();
+    text = string16();
   } else if (is_new_user_) {
     // Add user should have label only in activated state.
     // When new user is the only, label is not needed.
     if (type == WM_IPC_WINDOW_LOGIN_LABEL && index != 0)
-      text = UTF16ToWide(l10n_util::GetStringUTF16(IDS_ADD_USER));
+      text = l10n_util::GetStringUTF16(IDS_ADD_USER);
   } else {
-    text = UTF8ToWide(user_.GetDisplayName());
+    text = UTF8ToUTF16(user_.GetDisplayName());
   }
 
   views::Label* label = NULL;
@@ -476,11 +476,12 @@ Widget* UserController::CreateLabelWidget(int index, WmIpcWindowType type) {
   if (is_new_user_) {
     label = new views::Label(text);
   } else if (type == WM_IPC_WINDOW_LOGIN_LABEL) {
-    label = UsernameView::CreateShapedUsernameView(text, false);
+    label = UsernameView::CreateShapedUsernameView(UTF16ToWide(text), false);
   } else {
     DCHECK(type == WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
     // TODO(altimofeev): switch to the rounded username view.
-    label = UsernameView::CreateShapedUsernameView(text, true);
+    label = UsernameView::CreateShapedUsernameView(
+        UTF16ToWideHack(text), true);
   }
 
   const gfx::Font& font = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?

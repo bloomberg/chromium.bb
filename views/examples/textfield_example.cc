@@ -42,10 +42,10 @@ void TextfieldExample::CreateExampleView(views::View* container) {
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         0.8f, views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(L"Name:"));
+  layout->AddView(new views::Label(ASCIIToUTF16("Name:")));
   layout->AddView(name_);
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(L"Password:"));
+  layout->AddView(new views::Label(ASCIIToUTF16("Password:")));
   layout->AddView(password_);
   layout->StartRow(0, 0);
   layout->AddView(show_password_);

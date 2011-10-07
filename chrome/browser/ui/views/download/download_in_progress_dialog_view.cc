@@ -28,27 +28,27 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
   int download_count = browser->profile()->GetDownloadManager()->
       in_progress_count();
 
-  std::wstring warning_text;
-  std::wstring explanation_text;
+  string16 warning_text;
+  string16 explanation_text;
   if (download_count == 1) {
-    warning_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+    warning_text = l10n_util::GetStringFUTF16(
         IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING,
-        product_name_));
-    explanation_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+        product_name_);
+    explanation_text = l10n_util::GetStringFUTF16(
         IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION,
-        product_name_));
+        product_name_);
     ok_button_text_ = l10n_util::GetStringUTF16(
         IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
     cancel_button_text_ = l10n_util::GetStringUTF16(
         IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
   } else {
-    warning_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+    warning_text = l10n_util::GetStringFUTF16(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
         product_name_,
-        UTF8ToUTF16(base::IntToString(download_count))));
-    explanation_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+        UTF8ToUTF16(base::IntToString(download_count)));
+    explanation_text = l10n_util::GetStringFUTF16(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION,
-        product_name_));
+        product_name_);
     ok_button_text_ = l10n_util::GetStringUTF16(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL);
     cancel_button_text_ = l10n_util::GetStringUTF16(

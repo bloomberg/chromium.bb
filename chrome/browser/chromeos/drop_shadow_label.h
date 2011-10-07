@@ -36,12 +36,12 @@ class DropShadowLabel : public views::Label  {
 
   // Overridden to paint the text differently from the base class.
   virtual void PaintText(gfx::Canvas* canvas,
-                         const std::wstring& text,
+                         const string16& text,
                          const gfx::Rect& text_bounds,
-                         int flags);
+                         int flags) OVERRIDE;
 
  protected:
-  virtual gfx::Size GetTextSize() const;
+  virtual gfx::Size GetTextSize() const OVERRIDE;
 
  private:
   void Init();

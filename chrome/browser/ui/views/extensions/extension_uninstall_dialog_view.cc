@@ -149,9 +149,9 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
   icon_->SetImage(*icon);
   AddChildView(icon_);
 
-  heading_ = new views::Label(UTF16ToWide(
+  heading_ = new views::Label(
       l10n_util::GetStringFUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
-                                 UTF8ToUTF16(extension->name()))));
+                                 UTF8ToUTF16(extension->name())));
   heading_->SetMultiLine(true);
   AddChildView(heading_);
 }

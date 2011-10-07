@@ -8,6 +8,9 @@
 #include <gtk/gtk.h>
 #endif
 
+#include <algorithm>
+#include <map>
+
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -432,7 +435,7 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
       suggested_text_view_->SetColor(
           GetColor(ToolbarModel::NONE,
                    LocationBarView::DEEMPHASIZED_TEXT));
-      suggested_text_view_->SetText(UTF16ToWide(text));
+      suggested_text_view_->SetText(text);
       if (views::Widget::IsPureViews())
         NOTIMPLEMENTED();
 #if !defined(USE_AURA)
@@ -440,8 +443,8 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
         suggested_text_view_->SetFont(GetOmniboxViewWin()->GetFont());
 #endif
       AddChildView(suggested_text_view_);
-    } else if (suggested_text_view_->GetText() != UTF16ToWide(text)) {
-      suggested_text_view_->SetText(UTF16ToWide(text));
+    } else if (suggested_text_view_->GetText() != text) {
+      suggested_text_view_->SetText(text);
     }
     if (animate_to_complete && !location_entry_->IsImeComposing())
       suggested_text_view_->StartAnimation();
@@ -510,7 +513,7 @@ void LocationBarView::Layout() {
     entry_width -= (kEdgeThickness + kEdgeEditPadding);
   } else if (model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     ev_bubble_view_->SetVisible(true);
-    ev_bubble_view_->SetLabel(UTF16ToWideHack(model_->GetEVCertName()));
+    ev_bubble_view_->SetLabel(model_->GetEVCertName());
     ev_bubble_width = ev_bubble_view_->GetPreferredSize().width();
     // We'll adjust this width and take it out of |entry_width| below.
   } else {

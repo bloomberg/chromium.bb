@@ -66,12 +66,11 @@ void SelectedKeywordView::SetKeyword(const string16& keyword) {
                                                          &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
-  full_label_.SetText(UTF16ToWide(
-      l10n_util::GetStringFUTF16(message_id, short_name)));
+  full_label_.SetText(
+      l10n_util::GetStringFUTF16(message_id, short_name));
   const std::wstring min_string(
       location_bar_util::CalculateMinString(UTF16ToWide(short_name)));
   partial_label_.SetText(min_string.empty() ?
       full_label_.GetText() :
-      UTF16ToWide(l10n_util::GetStringFUTF16(message_id,
-                                             WideToUTF16(min_string))));
+      l10n_util::GetStringFUTF16(message_id, WideToUTF16(min_string)));
 }

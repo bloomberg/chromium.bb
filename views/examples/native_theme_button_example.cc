@@ -4,6 +4,8 @@
 
 #include "views/examples/native_theme_button_example.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -58,7 +60,7 @@ ExampleNativeThemeButton::~ExampleNativeThemeButton() {
 
 std::string ExampleNativeThemeButton::MessWithState() {
   const char* message = NULL;
-  switch(GetThemePart()) {
+  switch (GetThemePart()) {
   case gfx::NativeTheme::kPushButton:
     message = "Pressed! count:%d";
     break;
@@ -95,7 +97,7 @@ void ExampleNativeThemeButton::ItemChanged(views::Combobox* combo_box,
 
 gfx::NativeTheme::Part ExampleNativeThemeButton::GetThemePart() const {
   int selected = cb_part_->selected_item();
-  switch(selected) {
+  switch (selected) {
     case 0:
       return gfx::NativeTheme::kPushButton;
     case 1:
@@ -125,7 +127,7 @@ gfx::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
 
   int selected = cb_state_->selected_item();
   if (selected > 3) {
-    switch(state()) {
+    switch (state()) {
       case BS_DISABLED:
         return gfx::NativeTheme::kDisabled;
       case BS_NORMAL:
@@ -139,7 +141,7 @@ gfx::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
     }
   }
 
-  switch(selected) {
+  switch (selected) {
     case 0:
       return gfx::NativeTheme::kDisabled;
     case 1:
@@ -217,14 +219,14 @@ void NativeThemeButtonExample::CreateExampleView(views::View* container) {
   column_set->AddPaddingColumn(0, 8);
 
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(L"Part:"));
+  layout->AddView(new views::Label(ASCIIToUTF16("Part:")));
   views::Combobox* cb_part = new views::Combobox(
       new ExampleComboboxModel(kParts, arraysize(kParts)));
   cb_part->SetSelectedItem(0);
   layout->AddView(cb_part);
 
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(L"State:"));
+  layout->AddView(new views::Label(ASCIIToUTF16("State:")));
   views::Combobox* cb_state = new views::Combobox(
       new ExampleComboboxModel(kStates, arraysize(kStates)));
   cb_state->SetSelectedItem(0);

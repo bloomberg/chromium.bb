@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -62,7 +63,7 @@ MessageBubble::MessageBubble(views::Widget::InitParams::Type type,
   icon_->SetImage(*image);
   layout->AddView(icon_);
 
-  text_ = new views::Label(text);
+  text_ = new views::Label(WideToUTF16Hack(text));
   text_->SetMultiLine(true);
   text_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   text_->SizeToFit(kMaxLabelWidth);
@@ -79,7 +80,7 @@ MessageBubble::MessageBubble(views::Widget::InitParams::Type type,
 
   for (size_t i = 0; i < links.size(); ++i) {
     layout->StartRowWithPadding(0, 1, 0, kBorderSize);
-    views::Link* help_link_ = new views::Link(links[i]);
+    views::Link* help_link_ = new views::Link(WideToUTF16Hack(links[i]));
     help_links_.push_back(help_link_);
     help_link_->set_listener(this);
     help_link_->SetNormalColor(login::kLinkColor);

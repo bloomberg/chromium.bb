@@ -162,8 +162,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   layout->StartRow(0, column_set_id);
 
-  views::Label* heading = new views::Label(UTF16ToWide(
-      prompt.GetHeading(extension->name())));
+  views::Label* heading = new views::Label(
+      prompt.GetHeading(extension->name()));
   heading->SetFont(heading->font().DeriveFont(kHeadingFontSizeDelta,
                                               gfx::Font::BOLD));
   heading->SetMultiLine(true);
@@ -199,8 +199,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     layout->AddView(rating);
     prompt.AppendRatingStars(AddResourceIcon, rating);
 
-    views::Label* rating_count = new views::Label(
-        UTF16ToWide(prompt.GetRatingCount()));
+    views::Label* rating_count = new views::Label(prompt.GetRatingCount());
     rating_count->SetFont(
         rating_count->font().DeriveFont(kRatingFontSizeDelta));
     // Add some space between the stars and the rating count.
@@ -208,15 +207,14 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     rating->AddChildView(rating_count);
 
     layout->StartRow(0, column_set_id);
-    views::Label* user_count = new views::Label(
-        UTF16ToWide(prompt.GetUserCount()));
+    views::Label* user_count = new views::Label(prompt.GetUserCount());
     user_count->SetColor(SK_ColorGRAY);
     user_count->SetFont(user_count->font().DeriveFont(kRatingFontSizeDelta));
     layout->AddView(user_count);
 
     layout->StartRow(0, column_set_id);
-    views::Link* store_link = new views::Link(UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK)));
+    views::Link* store_link = new views::Link(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
     store_link->SetFont(store_link->font().DeriveFont(kRatingFontSizeDelta));
     store_link->set_listener(this);
     layout->AddView(store_link);
@@ -233,8 +231,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     }
 
     layout->StartRow(0, column_set_id);
-    views::Label* permissions_header = new views::Label(UTF16ToWide(
-        prompt.GetPermissionsHeader()));
+    views::Label* permissions_header = new views::Label(
+        prompt.GetPermissionsHeader());
     permissions_header->SetMultiLine(true);
     permissions_header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     permissions_header->SizeToFit(left_column_width);
@@ -244,7 +242,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, column_set_id);
       views::Label* permission_label = new views::Label(
-          UTF16ToWide(prompt.GetPermission(i)));
+          prompt.GetPermission(i));
       permission_label->SetMultiLine(true);
       permission_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
       permission_label->SizeToFit(left_column_width);

@@ -240,8 +240,8 @@ views::View* CollectedCookiesWin::CreateAllowedPane() {
   TabSpecificContentSettings* content_settings = wrapper_->content_settings();
 
   // Create the controls that go into the pane.
-  allowed_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL)));
+  allowed_label_ = new views::Label(l10n_util::GetStringUTF16(
+      IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL));
   allowed_cookies_tree_model_.reset(
       content_settings->GetAllowedCookiesTreeModel());
   allowed_cookies_tree_ = new views::TreeView();
@@ -292,10 +292,10 @@ views::View* CollectedCookiesWin::CreateBlockedPane() {
 
   // Create the controls that go into the pane.
   blocked_label_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(
+      l10n_util::GetStringUTF16(
           host_content_settings_map->BlockThirdPartyCookies() ?
               IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED :
-              IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL)));
+              IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL));
   blocked_label_->SetMultiLine(true);
   blocked_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   blocked_cookies_tree_model_.reset(

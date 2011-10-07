@@ -467,8 +467,8 @@ void TaskManagerView::Init() {
                                                   false, false, false));
   kill_button_->SetAccessibleKeyboardShortcut(L"E");
   kill_button_->set_prefix_type(views::TextButtonBase::PREFIX_SHOW);
-  about_memory_link_ = new views::Link(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK)));
+  about_memory_link_ = new views::Link(
+      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK));
   about_memory_link_->set_listener(this);
 
   // Makes sure our state is consistent.

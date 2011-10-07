@@ -81,19 +81,17 @@ void DatabaseInfoView::Init() {
   set_border(border);
 
   views::Label* name_label = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NAME_LABEL)));
+      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NAME_LABEL));
   name_value_field_ = new views::Textfield;
   views::Label* description_label = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL)));
+      l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL));
   description_value_field_ = new views::Textfield;
   views::Label* size_label = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL)));
+      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL));
   size_value_field_ = new views::Textfield;
   views::Label* last_modified_label = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL)));
+      l10n_util::GetStringUTF16(
+          IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL));
   last_modified_value_field_ = new views::Textfield;
 
   using views::GridLayout;

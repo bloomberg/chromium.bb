@@ -316,12 +316,12 @@ void BackgroundView::OnLocaleChanged() {
 
 void BackgroundView::OnOSVersionLabelTextUpdated(
     const std::string& os_version_label_text) {
-  os_version_label_->SetText(UTF8ToWide(os_version_label_text));
+  os_version_label_->SetText(UTF8ToUTF16(os_version_label_text));
 }
 
 void BackgroundView::OnBootTimesLabelTextUpdated(
     const std::string& boot_times_label_text) {
-  boot_times_label_->SetText(UTF8ToWide(boot_times_label_text));
+  boot_times_label_->SetText(UTF8ToUTF16(boot_times_label_text));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

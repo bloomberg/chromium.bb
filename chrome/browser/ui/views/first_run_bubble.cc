@@ -109,25 +109,23 @@ FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
   const gfx::Font& font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
 
-  label1_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_TITLE)));
+  label1_ = new views::Label(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_TITLE));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
   label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label1_);
 
   gfx::Size ps = GetPreferredSize();
 
-  label2_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT)));
+  label2_ = new views::Label(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT));
   label2_->SetMultiLine(true);
   label2_->SetFont(font);
   label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label2_->SizeToFit(ps.width() - kBubblePadding * 2);
   AddChildView(label2_);
 
-  std::wstring question_str = UTF16ToWide(l10n_util::GetStringFUTF16(
+  string16 question_str = l10n_util::GetStringFUTF16(
       IDS_FR_BUBBLE_QUESTION,
-      GetDefaultSearchEngineName(profile)));
+      GetDefaultSearchEngineName(profile));
   label3_ = new views::Label(question_str);
   label3_->SetMultiLine(true);
   label3_->SetFont(font);
@@ -275,14 +273,14 @@ FirstRunOEMBubbleView::FirstRunOEMBubbleView(FirstRunBubble* bubble_window,
   const gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
 
   label1_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FR_OEM_BUBBLE_TITLE_1)));
+      l10n_util::GetStringUTF16(IDS_FR_OEM_BUBBLE_TITLE_1));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
   label1_->SetColor(SK_ColorRED);
   label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label1_);
 
   label2_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FR_OEM_BUBBLE_TITLE_2)));
+      l10n_util::GetStringUTF16(IDS_FR_OEM_BUBBLE_TITLE_2));
   label2_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
   label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label2_);
@@ -290,7 +288,7 @@ FirstRunOEMBubbleView::FirstRunOEMBubbleView(FirstRunBubble* bubble_window,
   gfx::Size ps = GetPreferredSize();
 
   label3_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FR_OEM_BUBBLE_SUBTEXT)));
+      l10n_util::GetStringUTF16(IDS_FR_OEM_BUBBLE_SUBTEXT));
   label3_->SetMultiLine(true);
   label3_->SetFont(font);
   label3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -421,9 +419,9 @@ FirstRunMinimalBubbleView::FirstRunMinimalBubbleView(
   const gfx::Font& font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
 
-  label1_ = new views::Label(UTF16ToWide(l10n_util::GetStringFUTF16(
+  label1_ = new views::Label(l10n_util::GetStringFUTF16(
       IDS_FR_SE_BUBBLE_TITLE,
-      GetDefaultSearchEngineName(profile_))));
+      GetDefaultSearchEngineName(profile_)));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
   label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label1_);
@@ -431,7 +429,7 @@ FirstRunMinimalBubbleView::FirstRunMinimalBubbleView(
   gfx::Size ps = GetPreferredSize();
 
   label2_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT)));
+      l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT));
   label2_->SetMultiLine(true);
   label2_->SetFont(font);
   label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

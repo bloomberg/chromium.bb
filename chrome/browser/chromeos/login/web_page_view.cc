@@ -117,11 +117,11 @@ void WebPageView::Init() {
 
   connecting_label_ = new views::Label();
   connecting_label_->SetText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOAD_STATE_CONNECTING)));
+      l10n_util::GetStringUTF16(IDS_LOAD_STATE_CONNECTING));
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   connecting_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
   connecting_label_->SetVisible(false);
-  AddChildView(connecting_label_ );
+  AddChildView(connecting_label_);
 
   start_timer_.Start(FROM_HERE,
                      TimeDelta::FromMilliseconds(kStartDelayMs),

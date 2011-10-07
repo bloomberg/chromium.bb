@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 
+#include <algorithm>
+
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
@@ -58,6 +60,7 @@ gfx::Rect GetCenteredAndScaledRect(int src_width, int src_height,
 // Delegate to callback when the highlight state of a control changes.
 class HighlightDelegate {
  public:
+  virtual ~HighlightDelegate() {}
   virtual void OnHighlightStateChanged() = 0;
 };
 
@@ -68,7 +71,7 @@ class EditProfileLink : public views::Link {
  public:
   explicit EditProfileLink(const string16& title,
                            HighlightDelegate* delegate)
-      : views::Link(UTF16ToWideHack(title)),
+      : views::Link(title),
         delegate_(delegate),
         state_(views::CustomButton::BS_NORMAL) {
   }
@@ -121,7 +124,7 @@ class ProfileItemView : public views::CustomButton,
     AddChildView(image_view_);
 
     // Add a label to show the profile name.
-    name_label_ = new views::Label(UTF16ToWideHack(item_.name));
+    name_label_ = new views::Label(item_.name);
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     gfx::Font base_font = rb.GetFont(ResourceBundle::BaseFont);
     int style = item_.active ? gfx::Font::BOLD : 0;
@@ -131,7 +134,7 @@ class ProfileItemView : public views::CustomButton,
     AddChildView(name_label_);
 
     // Add a label to show the sync state.
-    sync_state_label_ = new views::Label(UTF16ToWideHack(item_.sync_state));
+    sync_state_label_ = new views::Label(item_.sync_state);
     const int kStateFontDelta = -1;
     sync_state_label_->SetFont(base_font.DeriveFont(kStateFontDelta));
     sync_state_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -247,7 +250,7 @@ class ProfileItemView : public views::CustomButton,
   views::Label* sync_state_label_;
 };
 
-} // namespace
+}  // namespace
 
 AvatarMenuBubbleView::AvatarMenuBubbleView(Browser* browser)
     : add_profile_link_(NULL),
@@ -365,8 +368,8 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
   separator_ = new views::Separator();
   AddChildView(separator_);
 
-  add_profile_link_ = new views::Link(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK)));
+  add_profile_link_ = new views::Link(
+      l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
   add_profile_link_->set_listener(this);
   add_profile_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   add_profile_link_->SetNormalColor(SkColorSetRGB(0, 0x79, 0xda));

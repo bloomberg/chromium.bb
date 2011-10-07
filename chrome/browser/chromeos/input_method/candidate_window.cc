@@ -244,7 +244,7 @@ int ComputeShortcutColumnWidth(
   // We'll create temporary shortcut labels, and choose the largest width.
   for (int i = 0; i < lookup_table.page_size; ++i) {
     shortcut_label->SetText(
-        CreateShortcutText(i, lookup_table.orientation));
+        WideToUTF16Hack(CreateShortcutText(i, lookup_table.orientation)));
     shortcut_column_width =
         std::max(shortcut_column_width,
                  wrapped_shortcut_label->GetPreferredSize().width());
@@ -281,7 +281,7 @@ int ComputeCandidateColumnWidth(
     const size_t index = start_from + i;
 
     candidate_label->SetText(
-        UTF8ToWide(lookup_table.candidates[index]));
+        UTF8ToUTF16(lookup_table.candidates[index]));
     candidate_column_width =
         std::max(candidate_column_width,
                  candidate_label->GetPreferredSize().width());
@@ -308,7 +308,7 @@ int ComputeAnnotationColumnWidth(const InputMethodLookupTable& lookup_table) {
     const size_t index = start_from + i;
 
     annotation_label->SetText(
-        UTF8ToWide(lookup_table.annotations[index]));
+        UTF8ToUTF16(lookup_table.annotations[index]));
     annotation_column_width =
         std::max(annotation_column_width,
                  annotation_label->GetPreferredSize().width());
@@ -396,7 +396,7 @@ class InformationTextArea : public HidableArea {
 
   // Set the displayed text.
   void SetText(const std::string& utf8_text) {
-    label_->SetText(UTF8ToWide(utf8_text));
+    label_->SetText(UTF8ToUTF16(utf8_text));
   }
 
  protected:
@@ -655,7 +655,6 @@ class InfolistView;
 // InfolistWindowView is the main container of the infolist window UI.
 class InfolistWindowView : public views::View {
  public:
-
   InfolistWindowView(
       views::Widget* parent_frame, views::Widget* candidate_window_frame);
   virtual ~InfolistWindowView();
@@ -865,15 +864,15 @@ void CandidateView::Init(int shortcut_column_width,
 }
 
 void CandidateView::SetCandidateText(const std::wstring& text) {
-  candidate_label_->SetText(text);
+  candidate_label_->SetText(WideToUTF16Hack(text));
 }
 
 void CandidateView::SetShortcutText(const std::wstring& text) {
-  shortcut_label_->SetText(text);
+  shortcut_label_->SetText(WideToUTF16Hack(text));
 }
 
 void CandidateView::SetAnnotationText(const std::wstring& text) {
-  annotation_label_->SetText(text);
+  annotation_label_->SetText(WideToUTF16Hack(text));
 }
 
 void CandidateView::SetInfolistIcon(bool enable) {
@@ -1417,11 +1416,11 @@ void InfolistView::Init() {
 
 
 void InfolistView::SetTitleText(const std::wstring& text) {
-  title_label_->SetText(text);
+  title_label_->SetText(WideToUTF16Hack(text));
 }
 
 void InfolistView::SetDescriptionText(const std::wstring& text) {
-  description_label_->SetText(text);
+  description_label_->SetText(WideToUTF16Hack(text));
 }
 
 void InfolistView::Select() {
@@ -1480,8 +1479,7 @@ void InfolistWindowView::Init() {
   caption_label->SetFont(caption_label->font().DeriveFont(kFontSizeDelta - 2));
   caption_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   caption_label->SetText(
-      UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE)));
+      l10n_util::GetStringUTF16(IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE));
   views::View* wrapped_caption_label =
       WrapWithPadding(caption_label, gfx::Insets(2, 2, 2, 2));
   wrapped_caption_label->set_background(

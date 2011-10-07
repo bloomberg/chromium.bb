@@ -138,16 +138,16 @@ void TpmInfoView::Init() {
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
-  views::Label* label = new views::Label(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION)));
+  views::Label* label = new views::Label(
+      l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(label);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, 0);
-  label = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION_KEY)));
+  label = new views::Label(l10n_util::GetStringUTF16(
+      IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION_KEY));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(label);
@@ -161,7 +161,7 @@ void TpmInfoView::Init() {
   gfx::Font password_font =
       rb.GetFont(ResourceBundle::MediumFont).DeriveFont(0, gfx::Font::BOLD);
   // Password will be set later.
-  password_label_ = new views::Label(L"", password_font);
+  password_label_ = new views::Label(string16(), password_font);
   password_label_->SetVisible(false);
   layout->AddView(password_label_);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -185,13 +185,13 @@ void TpmInfoView::Init() {
   throbber_->Start();
   layout->AddView(throbber_);
   busy_label_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_TPM_BUSY)));
+      l10n_util::GetStringUTF16(IDS_EULA_TPM_BUSY));
   layout->AddView(busy_label_);
   layout->AddPaddingRow(0, views::kRelatedControlHorizontalSpacing);
 }
 
 void TpmInfoView::ShowTpmPassword(const std::string& tpm_password) {
-  password_label_->SetText(ASCIIToWide(tpm_password));
+  password_label_->SetText(ASCIIToUTF16(tpm_password));
   password_label_->SetVisible(true);
   busy_label_->SetVisible(false);
   throbber_->Stop();
@@ -291,7 +291,7 @@ void EulaView::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font label_font =
       rb.GetFont(ResourceBundle::MediumFont).DeriveFont(0, gfx::Font::NORMAL);
-  google_eula_label_ = new views::Label(std::wstring(), label_font);
+  google_eula_label_ = new views::Label(string16(), label_font);
   layout->AddView(google_eula_label_, 1, 1,
                   views::GridLayout::LEADING, views::GridLayout::FILL);
 
@@ -320,7 +320,7 @@ void EulaView::Init() {
 
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, SINGLE_CONTROL_ROW);
-  oem_eula_label_ = new views::Label(std::wstring(), label_font);
+  oem_eula_label_ = new views::Label(string16(), label_font);
   layout->AddView(oem_eula_label_, 1, 1,
                   views::GridLayout::LEADING, views::GridLayout::FILL);
 
@@ -383,10 +383,9 @@ void EulaView::UpdateLocalizedStrings() {
   // Load other labels from resources.
   usage_statistics_checkbox_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_CHECKBOX_ENABLE_LOGGING)));
-  learn_more_link_->SetText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
+  learn_more_link_->SetText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   system_security_settings_link_->SetText(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING)));
+      l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING));
   continue_button_->SetText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON)));
   back_button_->SetText(
@@ -461,7 +460,7 @@ static bool PublishTitleIfReady(const TabContents* contents,
   TabContents* tab_contents = eula_view->dom_contents()->tab_contents();
   if (contents != tab_contents)
     return false;
-  eula_label->SetText(UTF16ToWide(tab_contents->GetTitle()));
+  eula_label->SetText(tab_contents->GetTitle());
   return true;
 }
 

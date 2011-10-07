@@ -83,13 +83,13 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
   const gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
 
   heading_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING)));
+      l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING));
   heading_->set_border(views::Border::CreateEmptyBorder(
       kBubbleHeadingVertMargin, 0, kBubbleHeadingVertMargin, 0));
   heading_->SetFont(font);
   heading_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
-  heading_->SetText(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING)));
+  heading_->SetText(
+      l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING));
   AddChildView(heading_);
 
   message_ = new views::Label();
@@ -113,7 +113,7 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
   AddChildView(try_again_);
 
   mic_settings_ = new views::Link(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_MIC_SETTINGS)));
+      l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_MIC_SETTINGS));
   mic_settings_->set_listener(this);
   AddChildView(mic_settings_);
 }
@@ -131,7 +131,7 @@ void ContentView::UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
   heading_->SetVisible(mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING);
 
   if (is_message) {
-    message_->SetText(UTF16ToWideHack(message_text));
+    message_->SetText(message_text);
   } else {
     SetImage(image);
   }
