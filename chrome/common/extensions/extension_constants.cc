@@ -80,6 +80,7 @@ const char* kPlugins = "plugins";
 const char* kPluginsPath = "path";
 const char* kPluginsPublic = "public";
 const char* kPublicKey = "key";
+const char* kRequirements = "requirements";
 const char* kRunAt = "run_at";
 const char* kShiftKey = "shiftKey";
 const char* kShortcutKey = "shortcutKey";
@@ -338,6 +339,10 @@ const char* kInvalidPluginsPath =
     "Invalid value for 'plugins[*].path'.";
 const char* kInvalidPluginsPublic =
     "Invalid value for 'plugins[*].public'.";
+const char* kInvalidRequirement =
+    "Invalid value for requirement \"*\"";
+const char* kInvalidRequirements =
+    "Invalid value for 'requirements'";
 const char* kInvalidRunAt =
     "Invalid value for 'content_scripts[*].run_at'.";
 const char* kInvalidSidebar =

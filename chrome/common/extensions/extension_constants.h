@@ -81,6 +81,7 @@ namespace extension_manifest_keys {
   extern const char* kPluginsPath;
   extern const char* kPluginsPublic;
   extern const char* kPublicKey;
+  extern const char* kRequirements;
   extern const char* kRunAt;
   extern const char* kShiftKey;
   extern const char* kShortcutKey;
@@ -234,6 +235,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidPlugins;
   extern const char* kInvalidPluginsPath;
   extern const char* kInvalidPluginsPublic;
+  extern const char* kInvalidRequirement;
+  extern const char* kInvalidRequirements;
   extern const char* kInvalidRunAt;
   extern const char* kInvalidSidebar;
   extern const char* kInvalidSidebarDefaultIconPath;
