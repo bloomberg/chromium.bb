@@ -53,6 +53,7 @@ class CONTENT_EXPORT LibGps {
   // libgps API versions (v2.38 => libgps.so.17, v2.94 => libgps.so.19).
   // See LibGps::New() for the public API to this.
   // Takes ownership of |dl_wrapper|.
+  static LibGps* NewV238(LibGpsLibraryWrapper* dl_wrapper);
   static LibGps* NewV294(LibGpsLibraryWrapper* dl_wrapper);
 
   scoped_ptr<LibGpsLibraryWrapper> library_;
@@ -70,6 +71,8 @@ class CONTENT_EXPORT LibGpsLibraryWrapper {
   typedef gps_data_t* (*gps_open_fn)(const char*, const char*);
   typedef int (*gps_close_fn)(gps_data_t*);
   typedef int (*gps_poll_fn)(gps_data_t*);
+  // v2.34 only
+  typedef int (*gps_query_fn)(gps_data_t*, const char*, ...);
   // v2.90+
   typedef int (*gps_stream_fn)(gps_data_t*, unsigned int, void*);
   typedef bool (*gps_waiting_fn)(gps_data_t*);
@@ -78,6 +81,7 @@ class CONTENT_EXPORT LibGpsLibraryWrapper {
                        gps_open_fn gps_open,
                        gps_close_fn gps_close,
                        gps_poll_fn gps_poll,
+                       gps_query_fn gps_query,
                        gps_stream_fn gps_stream,
                        gps_waiting_fn gps_waiting);
   ~LibGpsLibraryWrapper();
@@ -86,6 +90,7 @@ class CONTENT_EXPORT LibGpsLibraryWrapper {
   bool open(const char* host, const char* port);
   void close();
   int poll();
+  int query(const char* fmt);
   int stream(int flags);
   bool waiting();
   const gps_data_t& data() const;
@@ -96,6 +101,7 @@ class CONTENT_EXPORT LibGpsLibraryWrapper {
   gps_open_fn gps_open_;
   gps_close_fn gps_close_;
   gps_poll_fn gps_poll_;
+  gps_query_fn gps_query_;
   gps_stream_fn gps_stream_;
   gps_waiting_fn gps_waiting_;
 
