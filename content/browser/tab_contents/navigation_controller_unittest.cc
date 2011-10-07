@@ -2114,6 +2114,30 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForTransient) {
   EXPECT_EQ(controller().GetTransientEntry()->url(), transient_url);
 }
 
+// Test to ensure that when we do a history navigation back to the current
+// committed page (e.g., going forward to a slow-loading page, then pressing
+// the back button), we just stop the navigation to prevent the throbber from
+// running continuously. Otherwise, the RenderViewHost forces the throbber to
+// start, but WebKit essentially ignores the navigation and never sends a
+// message to stop the throbber.
+TEST_F(NavigationControllerTest, StopOnHistoryNavigationToCurrentPage) {
+  const GURL url0("http://foo/0");
+  const GURL url1("http://foo/1");
+
+  NavigateAndCommit(url0);
+  NavigateAndCommit(url1);
+
+  // Go back to the original page, then forward to the slow page, then back
+  controller().GoBack();
+  contents()->CommitPendingNavigation();
+
+  controller().GoForward();
+  EXPECT_EQ(1, controller().pending_entry_index());
+
+  controller().GoBack();
+  EXPECT_EQ(-1, controller().pending_entry_index());
+}
+
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
    (but not Vista) cleaning up the directory after they run.
    This should be fixed.

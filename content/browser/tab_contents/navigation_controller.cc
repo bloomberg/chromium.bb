@@ -1052,6 +1052,23 @@ void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
 void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
   needs_reload_ = false;
 
+  // If we were navigating to a slow-to-commit page, and the user performs
+  // a session history navigation to the last committed page, RenderViewHost
+  // will force the throbber to start, but WebKit will essentially ignore the
+  // navigation, and won't send a message to stop the throbber. To prevent this
+  // from happening, we drop the navigation here and stop the slow-to-commit
+  // page from loading (which would normally happen during the navigation).
+  if (pending_entry_index_ != -1 &&
+      pending_entry_index_ == last_committed_entry_index_ &&
+      (entries_[pending_entry_index_]->restore_type() ==
+          NavigationEntry::RESTORE_NONE) &&
+      (entries_[pending_entry_index_]->transition_type() &
+          PageTransition::FORWARD_BACK)) {
+    tab_contents_->Stop();
+    DiscardNonCommittedEntries();
+    return;
+  }
+
   // For session history navigations only the pending_entry_index_ is set.
   if (!pending_entry_) {
     DCHECK_NE(pending_entry_index_, -1);

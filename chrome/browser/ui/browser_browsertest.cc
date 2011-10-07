@@ -1066,6 +1066,35 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMinimized) {
   }
 }
 
+// Makes sure the forward button is disabled immediately when navigating
+// forward to a slow-to-commit page.
+IN_PROC_BROWSER_TEST_F(BrowserTest, ForwardDisabledOnForward) {
+  GURL blank_url(chrome::kAboutBlankURL);
+  ui_test_utils::NavigateToURL(browser(), blank_url);
+
+  ui_test_utils::NavigateToURL(browser(),
+      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                FilePath(kTitle1File)));
+
+  ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &browser()->GetSelectedTabContents()->controller()));
+  browser()->GoBack(CURRENT_TAB);
+  back_nav_load_observer.Wait();
+  EXPECT_TRUE(browser()->command_updater()->IsCommandEnabled(IDC_FORWARD));
+
+  ui_test_utils::WindowedNotificationObserver forward_nav_load_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &browser()->GetSelectedTabContents()->controller()));
+  browser()->GoForward(CURRENT_TAB);
+  // This check will happen before the navigation completes, since the browser
+  // won't process the renderer's response until the Wait() call below.
+  EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_FORWARD));
+  forward_nav_load_observer.Wait();
+}
+
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.
 // It originally lived in browser_unittest.cc, but has been moved here to make
 // room for real browser unit tests.

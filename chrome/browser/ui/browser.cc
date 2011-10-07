@@ -3326,9 +3326,12 @@ void Browser::NavigationStateChanged(const TabContents* source,
   if (changed_flags)
     ScheduleUIUpdate(source, changed_flags);
 
-  // We don't schedule updates to commands since they will only change once per
-  // navigation, so we don't have to worry about flickering.
-  if (changed_flags & TabContents::INVALIDATE_URL)
+  // We can synchronously update commands since they will only change once per
+  // navigation, so we don't have to worry about flickering. We do, however,
+  // need to update the command state early on load to always present usable
+  // actions in the face of slow-to-commit pages.
+  if (changed_flags & (TabContents::INVALIDATE_URL |
+                       TabContents::INVALIDATE_LOAD))
     UpdateCommandsForTabState();
 }
 
