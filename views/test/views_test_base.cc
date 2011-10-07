@@ -29,7 +29,10 @@ ViewsTestBase::ViewsTestBase()
   OleInitialize(NULL);
 #endif
 #if defined(USE_AURA)
+  aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
   new aura::TestDesktopDelegate;
+#else
+  Widget::set_compositor_factory_for_testing(&TestCreateCompositor);
 #endif
 }
 
@@ -46,11 +49,6 @@ ViewsTestBase::~ViewsTestBase() {
 void ViewsTestBase::SetUp() {
   testing::Test::SetUp();
   setup_called_ = true;
-#if defined(USE_AURA)
-  aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
-#else
-  Widget::set_compositor_factory_for_testing(&TestCreateCompositor);
-#endif
   if (!views_delegate_.get())
     views_delegate_.reset(new TestViewsDelegate());
 }
