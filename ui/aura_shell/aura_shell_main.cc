@@ -26,8 +26,7 @@ int main(int argc, char** argv) {
   // Create the message-loop here before creating the desktop.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
 
-  aura_shell::Shell shell;
-  shell.Init();
+  aura_shell::Shell::GetInstance();
 
   aura_shell::examples::InitWindowTypeLauncher();
 

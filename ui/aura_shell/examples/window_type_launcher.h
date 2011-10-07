@@ -6,10 +6,6 @@
 #define UI_AURA_SHELL_EXAMPLES_WINDOW_TYPE_LAUNCHER_H_
 #pragma once
 
-#include <utility>
-#include <vector>
-
-#include "base/task.h"
 #include "views/context_menu_controller.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/menu_delegate.h"
@@ -38,12 +34,8 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
 
   enum MenuCommands {
     COMMAND_NEW_WINDOW = 1,
-    COMMAND_TILE_WINDOWS = 2,
     COMMAND_TOGGLE_FULLSCREEN = 3,
   };
-
-  void TileWindows();
-  void RestoreTiledWindows();
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -61,7 +53,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // Overriden from views::MenuDelegate:
+  // Overridden from views::MenuDelegate:
   virtual void ExecuteCommand(int id) OVERRIDE;
 
   // Override from views::ContextMenuController:
@@ -74,10 +66,6 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::NativeTextButton* bubble_button_;
   views::NativeTextButton* lock_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
-
-  std::vector<WindowAndBoundsPair> to_restore_;
-
-  ScopedRunnableMethodFactory<WindowTypeLauncher> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };

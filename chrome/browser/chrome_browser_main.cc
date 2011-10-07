@@ -1367,8 +1367,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
 #if defined(USE_AURA)
-  aura_shell::Shell* shell = new aura_shell::Shell;
-  shell->Init();
+  aura_shell::Shell::GetInstance();
 #elif defined(TOOLKIT_VIEWS)
   views::Widget::SetPureViews(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePureViews));

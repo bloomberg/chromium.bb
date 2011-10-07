@@ -6,12 +6,19 @@
 #define UI_AURA_SHELL_SHELL_H_
 #pragma once
 
+#include <utility>
+#include <vector>
+
+#include "base/task.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/desktop_delegate.h"
 
 namespace aura {
 class Window;
+}
+namespace gfx{
+class Rect;
 }
 
 namespace aura_shell {
@@ -25,16 +32,29 @@ class Shell : public aura::DesktopDelegate {
   Shell();
   virtual ~Shell();
 
+  static Shell* GetInstance();
+
   void Init();
 
- private:
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
+
+  void TileWindows();
+  void RestoreTiledWindows();
+
+ private:
+  typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
   // Overridden from aura::DesktopDelegate:
   virtual void AddChildToDefaultParent(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetTopmostWindowToActivate(
       aura::Window* ignore) const OVERRIDE;
+
+  static Shell* instance_;
+
+  std::vector<WindowAndBoundsPair> to_restore_;
+
+  ScopedRunnableMethodFactory<Shell> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };
