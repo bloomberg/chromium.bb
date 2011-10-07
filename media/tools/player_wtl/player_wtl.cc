@@ -9,7 +9,6 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "media/base/pipeline_impl.h"
-#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"

@@ -20,12 +20,12 @@
 #include "media/base/media_switches.h"
 #include "media/base/message_loop_factory_impl.h"
 #include "media/base/pipeline_impl.h"
-#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source_factory.h"
 #include "media/filters/null_audio_renderer.h"
+#include "media/filters/reference_audio_renderer.h"
 #include "media/tools/player_x11/gl_video_renderer.h"
 #include "media/tools/player_x11/x11_video_renderer.h"
 
@@ -104,7 +104,7 @@ bool InitPipeline(MessageLoop* message_loop,
   }
 
   if (enable_audio)
-    collection->AddAudioRenderer(new media::AudioRendererImpl());
+    collection->AddAudioRenderer(new media::ReferenceAudioRenderer());
   else
     collection->AddAudioRenderer(new media::NullAudioRenderer());
 

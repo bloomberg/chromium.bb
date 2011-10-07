@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/audio_renderer_impl.h"
+#include "media/filters/reference_audio_renderer.h"
 
 #include <math.h>
 
@@ -12,17 +12,17 @@
 
 namespace media {
 
-// We'll try to fill 4096 samples per buffer, which is roughly ~92ms of audio
-// data for a 44.1kHz audio source.
-static const size_t kSamplesPerBuffer = 8*1024;
+// This is an arbitrary number, ~184ms in a 44.1kHz stream, assuming a playback
+// rate of 1.0.
+static const size_t kSamplesPerBuffer = 8 * 1024;
 
-AudioRendererImpl::AudioRendererImpl()
+ReferenceAudioRenderer::ReferenceAudioRenderer()
     : AudioRendererBase(),
       stream_(NULL),
       bytes_per_second_(0) {
 }
 
-AudioRendererImpl::~AudioRendererImpl() {
+ReferenceAudioRenderer::~ReferenceAudioRenderer() {
   // Close down the audio device.
   if (stream_) {
     stream_->Stop();
@@ -30,7 +30,7 @@ AudioRendererImpl::~AudioRendererImpl() {
   }
 }
 
-void AudioRendererImpl::SetPlaybackRate(float rate) {
+void ReferenceAudioRenderer::SetPlaybackRate(float rate) {
   // TODO(fbarchard): limit rate to reasonable values
   AudioRendererBase::SetPlaybackRate(rate);
 
@@ -39,12 +39,12 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
     stream_->Start(this);
 }
 
-void AudioRendererImpl::SetVolume(float volume) {
+void ReferenceAudioRenderer::SetVolume(float volume) {
   if (stream_)
     stream_->SetVolume(volume);
 }
 
-uint32 AudioRendererImpl::OnMoreData(
+uint32 ReferenceAudioRenderer::OnMoreData(
     AudioOutputStream* stream, uint8* dest, uint32 len,
     AudioBuffersState buffers_state) {
   // TODO(scherkus): handle end of stream.
@@ -62,19 +62,19 @@ uint32 AudioRendererImpl::OnMoreData(
   return FillBuffer(dest, len, delay, buffers_empty);
 }
 
-void AudioRendererImpl::OnClose(AudioOutputStream* stream) {
+void ReferenceAudioRenderer::OnClose(AudioOutputStream* stream) {
   // TODO(scherkus): implement OnClose.
   NOTIMPLEMENTED();
 }
 
-void AudioRendererImpl::OnError(AudioOutputStream* stream, int code) {
+void ReferenceAudioRenderer::OnError(AudioOutputStream* stream, int code) {
   // TODO(scherkus): implement OnError.
   NOTIMPLEMENTED();
 }
 
-bool AudioRendererImpl::OnInitialize(int bits_per_channel,
-                                     ChannelLayout channel_layout,
-                                     int sample_rate) {
+bool ReferenceAudioRenderer::OnInitialize(int bits_per_channel,
+                                              ChannelLayout channel_layout,
+                                              int sample_rate) {
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, channel_layout,
                          sample_rate, bits_per_channel, kSamplesPerBuffer);
 
@@ -92,7 +92,7 @@ bool AudioRendererImpl::OnInitialize(int bits_per_channel,
   return true;
 }
 
-void AudioRendererImpl::OnStop() {
+void ReferenceAudioRenderer::OnStop() {
   if (stream_)
     stream_->Stop();
 }

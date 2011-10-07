@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_AUDIO_RENDERER_IMPL_H_
-#define MEDIA_FILTERS_AUDIO_RENDERER_IMPL_H_
+#ifndef MEDIA_FILTERS_REFERENCE_AUDIO_RENDERER_H_
+#define MEDIA_FILTERS_REFERENCE_AUDIO_RENDERER_H_
 
-// This is the default implementation of AudioRenderer, which uses the audio
-// interfaces to open an audio device.  Although it cannot be used in the
-// sandbox, it serves as a reference implementation and can be used in other
-// applications such as the test player.
+// This is the reference implementation of AudioRenderer, which uses the audio
+// interfaces to open an audio device.  It cannot be used in the sandbox, but is
+// used in other applications such as the test player.
 //
 // Note: THIS IS NOT THE AUDIO RENDERER USED IN CHROME.
 //
@@ -24,12 +23,12 @@
 
 namespace media {
 
-class MEDIA_EXPORT AudioRendererImpl
+class MEDIA_EXPORT ReferenceAudioRenderer
     : public AudioRendererBase,
       public AudioOutputStream::AudioSourceCallback {
  public:
-  AudioRendererImpl();
-  virtual ~AudioRendererImpl();
+  ReferenceAudioRenderer();
+  virtual ~ReferenceAudioRenderer();
 
   // Filter implementation.
   virtual void SetPlaybackRate(float playback_rate);
@@ -55,9 +54,9 @@ class MEDIA_EXPORT AudioRendererImpl
   AudioOutputStream* stream_;
   int bytes_per_second_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
+  DISALLOW_COPY_AND_ASSIGN(ReferenceAudioRenderer);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_AUDIO_RENDERER_IMPL_H_
+#endif  // MEDIA_FILTERS_REFERENCE_AUDIO_RENDERER_H_

@@ -11,21 +11,21 @@
 #include "media/base/media_log.h"
 #include "media/base/message_loop_factory_impl.h"
 #include "media/base/pipeline_impl.h"
-#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source_factory.h"
 #include "media/filters/null_audio_renderer.h"
+#include "media/filters/reference_audio_renderer.h"
 #include "media/tools/player_wtl/wtl_renderer.h"
 
-using media::AudioRendererImpl;
 using media::FFmpegAudioDecoder;
 using media::FFmpegDemuxerFactory;
 using media::FFmpegVideoDecoder;
 using media::FileDataSourceFactory;
 using media::FilterCollection;
 using media::PipelineImpl;
+using media::ReferenceAudioRenderer;
 
 namespace media {
 
@@ -78,7 +78,7 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
       message_loop_factory_->GetMessageLoop("VideoDecoderThread"), NULL));
 
   if (enable_audio_) {
-    collection->AddAudioRenderer(new AudioRendererImpl());
+    collection->AddAudioRenderer(new ReferenceAudioRenderer());
   } else {
     collection->AddAudioRenderer(new media::NullAudioRenderer());
   }
