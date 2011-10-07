@@ -17,8 +17,6 @@ namespace WebKit {
 class WebWorker;
 }
 
-class WorkerDevToolsAgent;
-
 // This class creates a WebWorker, and translates incoming IPCs to the
 // appropriate WebWorker APIs.
 class WebWorkerStub : public WebWorkerStubBase {
@@ -42,7 +40,6 @@ class WebWorkerStub : public WebWorkerStubBase {
 
   WebKit::WebWorker* impl_;
   GURL url_;
-  scoped_ptr<WorkerDevToolsAgent> worker_devtools_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(WebWorkerStub);
 };

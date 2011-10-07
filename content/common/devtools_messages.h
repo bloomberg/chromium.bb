@@ -82,11 +82,6 @@ IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_FrontendLoaded)
 IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchOnInspectorBackend,
                     std::string /* message */)
 
-// WebKit-level transport for messages from WorkerInspectorController to
-// InspectorController.
-IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchMessageFromWorker,
-                    std::string /* message */)
-
 // Send debugger command to the debugger agent. Debugger commands should
 // be handled on IO thread(while all other devtools messages are handled in
 // the render thread) to allow executing the commands when v8 is on a

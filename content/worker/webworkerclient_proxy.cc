@@ -15,8 +15,8 @@
 // renderer worker code moves to content. This code isn't used now since we
 // don't support nested workers anyways.
 //#include "content/renderer/webworker_proxy.h"
+#include "content/worker/shared_worker_devtools_agent.h"
 #include "content/worker/webworker_stub_base.h"
-#include "content/worker/worker_devtools_agent.h"
 #include "content/worker/worker_thread.h"
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_logging.h"

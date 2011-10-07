@@ -9,6 +9,8 @@
     '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
   ],
   'sources': [
+    'worker/shared_worker_devtools_agent.cc',
+    'worker/shared_worker_devtools_agent.h',
     'worker/websharedworker_stub.cc',
     'worker/websharedworker_stub.h',
     'worker/webworker_stub_base.cc',
@@ -17,8 +19,6 @@
     'worker/webworker_stub.h',
     'worker/webworkerclient_proxy.cc',
     'worker/webworkerclient_proxy.h',
-    'worker/worker_devtools_agent.cc',
-    'worker/worker_devtools_agent.h',
     'worker/worker_main.cc',
     'worker/worker_thread.cc',
     'worker/worker_thread.h',

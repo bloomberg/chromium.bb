@@ -9,7 +9,6 @@
 #include "content/common/view_messages.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
-#include "content/renderer/worker_devtools_agent_proxy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerClient.h"
 
@@ -30,8 +29,7 @@ WebWorkerProxy::WebWorkerProxy(
           0,
           MSG_ROUTING_NONE,
           render_view_route_id,
-          parent_appcache_host_id,
-          new WorkerDevToolsAgentProxy(this, MSG_ROUTING_NONE, client)),
+          parent_appcache_host_id),
       client_(client) {
   // TODO(atwilson): Change to pass in a real document_id when we support nested
   // workers.
@@ -91,24 +89,9 @@ void WebWorkerProxy::workerObjectDestroyed() {
 void WebWorkerProxy::clientDestroyed() {
 }
 
-void WebWorkerProxy::attachDevTools() {
-  devtools_proxy_->AttachDevTools();
-}
-
-void WebWorkerProxy::detachDevTools() {
-  devtools_proxy_->DetachDevTools();
-}
-
-void WebWorkerProxy::dispatchDevToolsMessage(const WebString& message) {
-  devtools_proxy_->SendDevToolsMessage(message.utf8());
-}
-
 bool WebWorkerProxy::OnMessageReceived(const IPC::Message& message) {
   if (!client_)
     return false;
-
-  if (devtools_proxy_->OnMessageReceived(message))
-    return true;
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebWorkerProxy, message)

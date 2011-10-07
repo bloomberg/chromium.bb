@@ -8,7 +8,7 @@
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
-#include "content/worker/worker_devtools_agent.h"
+#include "content/worker/shared_worker_devtools_agent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
@@ -22,8 +22,7 @@ WebSharedWorkerStub::WebSharedWorkerStub(
       worker_devtools_agent_(NULL) {
   // TODO(atwilson): Add support for NaCl when they support MessagePorts.
   impl_ = WebKit::WebSharedWorker::create(client());
-  worker_devtools_agent_.reset(WorkerDevToolsAgent::CreateForSharedWorker(
-      route_id, impl_));
+  worker_devtools_agent_.reset(new SharedWorkerDevToolsAgent(route_id, impl_));
   client()->set_devtools_agent(worker_devtools_agent_.get());
 }
 

@@ -19,8 +19,8 @@ class WebFrame;
 class WebWorker;
 }
 
+class SharedWorkerDevToolsAgent;
 class WebWorkerStubBase;
-class WorkerDevToolsAgent;
 
 // This class receives IPCs from the renderer and calls the WebCore::Worker
 // implementation (after the data types have been converted by glue code).  It
@@ -83,7 +83,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
 
   void EnsureWorkerContextTerminates();
 
-  void set_devtools_agent(WorkerDevToolsAgent* devtools_agent) {
+  void set_devtools_agent(SharedWorkerDevToolsAgent* devtools_agent) {
     devtools_agent_ = devtools_agent;
   }
 
@@ -94,7 +94,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
   int appcache_host_id_;
   WebWorkerStubBase* stub_;
   ScopedRunnableMethodFactory<WebWorkerClientProxy> kill_process_factory_;
-  WorkerDevToolsAgent* devtools_agent_;
+  SharedWorkerDevToolsAgent* devtools_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(WebWorkerClientProxy);
 };

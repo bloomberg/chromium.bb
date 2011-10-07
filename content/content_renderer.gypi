@@ -178,8 +178,6 @@
     'renderer/webworker_proxy.h',
     'renderer/web_ui_bindings.cc',
     'renderer/web_ui_bindings.h',
-    'renderer/worker_devtools_agent_proxy.cc',
-    'renderer/worker_devtools_agent_proxy.h',
   ],
   'conditions': [
     ['p2p_apis==1', {
