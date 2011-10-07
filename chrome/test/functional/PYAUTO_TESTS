@@ -520,6 +520,7 @@
     ],
 
     'chromeos': [
+      'netflix',
       # ===========================
       # Permanently-disabled tests.
       # ===========================
@@ -559,13 +560,6 @@
   'CHROMEOS_LOGIN': {
     'chromeos': [
       'chromeos_login',
-    ],
-  },
-
-  # ChromeOS Netflix tests.
-  'CHROMEOS_NETFLIX': {
-    'chromeos': [
-      'netflix',
     ],
   },
 
