@@ -723,7 +723,14 @@ cr.define('ntp4', function() {
       }
 
       var leftMargin = this.layoutValues_.leftMargin;
-      var fadeDistance = Math.min(leftMargin, 20);
+      // The fade distance is the space between tiles.
+      var fadeDistance = (this.gridValues_.tileSpacingFraction *
+          this.layoutValues_.tileWidth);
+      fadeDistance = Math.min(leftMargin, fadeDistance);
+      // On Skia we don't use any fade because it works very poorly. See
+      // http://crbug.com/99373
+      if (!cr.isMac)
+        fadeDistance = 1;
       var gradient =
           '-webkit-linear-gradient(left,' +
               'transparent, ' +
