@@ -167,7 +167,7 @@ bool IsOmniboxEnabled(Profile* profile) {
   if (!PrerenderManager::IsPrerenderingPossible())
     return false;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPrerenderFromOmnibox))
     return true;
 
