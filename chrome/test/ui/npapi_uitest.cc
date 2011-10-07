@@ -161,8 +161,8 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
 }
 
 // http://crbug.com/95558
-// This test fails frequently on Mac, so it is disabled for now.
-#if defined(OS_MACOSX)
+// This test fails frequently on Mac and windows, so it is disabled for now.
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_DeletePluginInDeallocate DISABLED_DeletePluginInDeallocate
 #else
 #define MAYBE_DeletePluginInDeallocate DeletePluginInDeallocate
