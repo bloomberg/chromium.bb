@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -93,7 +95,8 @@ class ConflictsDOMHandler : public WebUIMessageHandler,
 
 void ConflictsDOMHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("requestModuleList",
-      NewCallback(this, &ConflictsDOMHandler::HandleRequestModuleList));
+      base::Bind(&ConflictsDOMHandler::HandleRequestModuleList,
+                 base::Unretained(this)));
 }
 
 void ConflictsDOMHandler::HandleRequestModuleList(const ListValue* args) {

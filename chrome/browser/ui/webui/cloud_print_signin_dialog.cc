@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/cloud_print_signin_dialog.h"
+
+#include "base/bind.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -179,8 +181,7 @@ void CreateCloudPrintSigninDialog(TabContents* parent_tab) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(CreateCloudPrintSigninDialogImpl,
-                          parent_tab));
+      base::Bind(&CreateCloudPrintSigninDialogImpl, parent_tab));
 }
 }  // namespace cloud_print_signin_dialog
 
