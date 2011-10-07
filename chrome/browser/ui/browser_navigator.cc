@@ -378,9 +378,17 @@ void Navigate(NavigateParams* params) {
   }
 
   params->browser = GetBrowserForDisposition(params);
-  if (!params->browser ||
-      params->browser->tab_count() >= browser_defaults::kMaxTabCount)
+
+  if (!params->browser)
     return;
+
+  if (params->browser->tab_count() >= browser_defaults::kMaxTabCount &&
+      (params->disposition == NEW_POPUP ||
+       params->disposition == NEW_FOREGROUND_TAB ||
+       params->disposition == NEW_BACKGROUND_TAB)) {
+      return;
+  }
+
   // Navigate() must not return early after this point.
 
   if (GetSourceProfile(params, source_browser) != params->browser->profile()) {
