@@ -186,7 +186,7 @@ void JsonPrefStore::SetValue(const std::string& key, Value* value) {
   prefs_->Get(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
     prefs_->Set(key, new_value.release());
-    FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
+    ReportValueChanged(key);
   }
 }
 
@@ -195,14 +195,16 @@ void JsonPrefStore::SetValueSilently(const std::string& key, Value* value) {
   scoped_ptr<Value> new_value(value);
   Value* old_value = NULL;
   prefs_->Get(key, &old_value);
-  if (!old_value || !value->Equals(old_value))
+  if (!old_value || !value->Equals(old_value)) {
     prefs_->Set(key, new_value.release());
+    if (!read_only_)
+      writer_.ScheduleWrite(this);
+  }
 }
 
 void JsonPrefStore::RemoveValue(const std::string& key) {
-  if (prefs_->Remove(key, NULL)) {
-    FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
-  }
+  if (prefs_->Remove(key, NULL))
+    ReportValueChanged(key);
 }
 
 bool JsonPrefStore::ReadOnly() const {
@@ -286,19 +288,19 @@ bool JsonPrefStore::WritePrefs() {
   if (!SerializeData(&data))
     return false;
 
-  // Lie about our ability to save.
-  if (read_only_)
-    return true;
+  // Don't actually write prefs if we're read-only or don't have any pending
+  // writes.
+  // TODO(bauerb): Make callers of this method call CommitPendingWrite directly.
+  if (writer_.HasPendingWrite() && !read_only_)
+    writer_.WriteNow(data);
 
-  writer_.WriteNow(data);
   return true;
 }
 
 void JsonPrefStore::ScheduleWritePrefs() {
-  if (read_only_)
-    return;
-
-  writer_.ScheduleWrite(this);
+  // Writing prefs should be scheduled automatically, so this is a no-op
+  // for now.
+  // TODO(bauerb): Remove calls to this method.
 }
 
 void JsonPrefStore::CommitPendingWrite() {
@@ -308,6 +310,8 @@ void JsonPrefStore::CommitPendingWrite() {
 
 void JsonPrefStore::ReportValueChanged(const std::string& key) {
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
+  if (!read_only_)
+    writer_.ScheduleWrite(this);
 }
 
 bool JsonPrefStore::SerializeData(std::string* output) {
