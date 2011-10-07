@@ -517,6 +517,13 @@ void RenderThreadImpl::RecordUserMetrics(const std::string& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(action));
 }
 
+base::SharedMemoryHandle RenderThreadImpl::HostAllocateSharedMemoryBuffer(
+  uint32 buffer_size) {
+  base::SharedMemoryHandle mem_handle;
+  Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buffer_size, &mem_handle));
+  return mem_handle;
+}
+
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
   WebScriptController::registerExtension(extension);
   v8_extensions_.insert(extension->name());

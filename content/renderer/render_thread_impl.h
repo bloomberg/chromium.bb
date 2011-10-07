@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "base/shared_memory.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
@@ -110,6 +109,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual void WidgetRestored() OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
   virtual void RecordUserMetrics(const std::string& action) OVERRIDE;
+  virtual base::SharedMemoryHandle HostAllocateSharedMemoryBuffer(
+      uint32 buffer_size) OVERRIDE;
   virtual void RegisterExtension(v8::Extension* extension) OVERRIDE;
   virtual bool IsRegisteredExtension(
       const std::string& v8_extension_name) const OVERRIDE;

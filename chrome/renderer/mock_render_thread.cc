@@ -116,6 +116,18 @@ void MockRenderThread::EnsureWebKitInitialized() {
 void MockRenderThread::RecordUserMetrics(const std::string& action) {
 }
 
+base::SharedMemoryHandle MockRenderThread::HostAllocateSharedMemoryBuffer(
+    uint32 buffer_size) {
+  base::SharedMemory shared_buf;
+  if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {
+    NOTREACHED() << "Cannot map shared memory buffer";
+    return base::SharedMemory::NULLHandle();
+  }
+  base::SharedMemoryHandle handle;
+  shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), &handle);
+  return handle;
+}
+
 void MockRenderThread::RegisterExtension(v8::Extension* extension) {
 }
 
@@ -177,8 +189,6 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
-                        OnAllocateSharedMemoryBuffer)
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(PrintHostMsg_AllocateTempFileForPrinting,
                         OnAllocateTempFileForPrinting)
@@ -214,17 +224,6 @@ void MockRenderThread::OnDuplicateSection(
   *browser_handle = renderer_handle;
 }
 #endif  // defined(OS_WIN)
-
-void MockRenderThread::OnAllocateSharedMemoryBuffer(
-    uint32 buffer_size, base::SharedMemoryHandle* handle) {
-  base::SharedMemory shared_buf;
-  if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {
-    *handle = base::SharedMemory::NULLHandle();
-    NOTREACHED() << "Cannot map shared memory buffer";
-    return;
-  }
-  shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), handle);
-}
 
 #if defined(OS_CHROMEOS)
 void MockRenderThread::OnAllocateTempFileForPrinting(

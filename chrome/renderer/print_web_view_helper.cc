@@ -16,6 +16,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile_impl.h"
@@ -1250,7 +1251,7 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
     base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   base::SharedMemoryHandle mem_handle =
-      render_view()->HostAllocateSharedMemoryBuffer(buf_size);
+      content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(buf_size);
   if (base::SharedMemory::IsHandleValid(mem_handle)) {
     base::SharedMemory shared_buf(mem_handle, false);
     if (shared_buf.Map(buf_size)) {

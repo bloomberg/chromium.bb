@@ -62,6 +62,8 @@ class MockRenderThread : public content::RenderThread {
   virtual void WidgetRestored() OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
   virtual void RecordUserMetrics(const std::string& action) OVERRIDE;
+  virtual base::SharedMemoryHandle HostAllocateSharedMemoryBuffer(
+      uint32 buffer_size) OVERRIDE;
   virtual void RegisterExtension(v8::Extension* extension) OVERRIDE;
   virtual bool IsRegisteredExtension(
       const std::string& v8_extension_name) const OVERRIDE;
@@ -127,9 +129,6 @@ class MockRenderThread : public content::RenderThread {
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
                           base::SharedMemoryHandle* browser_handle);
 #endif
-
-  void OnAllocateSharedMemoryBuffer(uint32 buffer_size,
-                                    base::SharedMemoryHandle* handle);
 
 #if defined(OS_CHROMEOS)
   void OnAllocateTempFileForPrinting(base::FileDescriptor* renderer_fd,

@@ -350,11 +350,6 @@ class RenderView : public RenderWidget,
                                     webkit::WebPluginInfo* plugin_info,
                                     std::string* actual_mime_type);
 
-  // Asks the host to create a block of shared memory for the renderer.
-  // The shared memory handle allocated by the host is returned back.
-  CONTENT_EXPORT base::SharedMemoryHandle HostAllocateSharedMemoryBuffer(
-      uint32 buffer_size);
-
   // IPC::Channel::Listener implementation -------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg);

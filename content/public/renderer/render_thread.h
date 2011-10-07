@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_RENDERER_RENDER_THREAD_H_
 
 #include "base/basictypes.h"
+#include "base/shared_memory.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 
@@ -67,6 +68,11 @@ class CONTENT_EXPORT RenderThread : public IPC::Message::Sender {
 
   // Helper function to send over a string to be recorded by user metrics
   virtual void RecordUserMetrics(const std::string& action) = 0;
+
+  // Asks the host to create a block of shared memory for the renderer.
+  // The shared memory handle allocated by the host is returned back.
+  virtual base::SharedMemoryHandle HostAllocateSharedMemoryBuffer(
+      uint32 buffer_size) = 0;
 
   // Registers the given V8 extension with WebKit.
   virtual void RegisterExtension(v8::Extension* extension) = 0;

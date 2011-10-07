@@ -567,13 +567,6 @@ bool RenderView::GetPluginInfo(const GURL& url,
   return found;
 }
 
-base::SharedMemoryHandle RenderView::HostAllocateSharedMemoryBuffer(
-    uint32 buffer_size) {
-  base::SharedMemoryHandle mem_handle;
-  Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buffer_size, &mem_handle));
-  return mem_handle;
-}
-
 bool RenderView::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (main_frame)
