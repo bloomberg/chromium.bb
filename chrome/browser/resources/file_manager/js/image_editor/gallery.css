@@ -181,6 +181,9 @@ body {
 }
 
 .gallery .toolbar .ribbon {
+  position: absolute;
+  top: 0px;
+  left: 0px;
   overflow: hidden;
   height: 100%;
   display: -webkit-box;
@@ -189,6 +192,11 @@ body {
 
   max-width: 100%;
   -webkit-transition: max-width 0.5s ease-in-out;
+  z-index: 0;
+}
+
+.gallery .toolbar .ribbon[inactive] {
+  z-index: -1;
 }
 
 .gallery[editing] .toolbar .ribbon {
@@ -208,11 +216,12 @@ body {
   border: 2px solid rgba(255,255,255,0); /* transparent white */
 
   margin-left: 2px;
-  -webkit-transition: margin-left 0.3s ease-in-out;
+  -webkit-transition: opacity 0.2s linear;
 }
 
-.gallery .ribbon-image[shifted] {
-  margin-left: -53px;
+.gallery .ribbon-image[inactive] {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .gallery .ribbon-image[selected] {
@@ -235,10 +244,15 @@ body {
   width: 55px;
   pointer-events: none;
   opacity: 0;
+  -webkit-transition: opacity 0.2s linear;
 }
 
 .gallery .toolbar .fade[active] {
   opacity: 1;
+}
+
+.gallery[editing] .toolbar .fade[active] {
+  opacity: 0;
 }
 
 .gallery .toolbar .fade.left {

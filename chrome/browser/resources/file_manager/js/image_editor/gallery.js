@@ -358,9 +358,16 @@ function Ribbon(container, onSelect, arrowLeft, arrowRight) {
   this.fadeLeft_.className = 'fade left';
   this.container_.appendChild(this.fadeLeft_);
 
-  this.bar_ = this.document_.createElement('div');
-  this.bar_.className = 'ribbon';
-  this.container_.appendChild(this.bar_);
+  this.bars_ = [];
+  for (var i = 0; i < 2; i++) {
+    var bar = this.document_.createElement('div');
+    bar.className = 'ribbon';
+    this.container_.appendChild(bar);
+    this.bars_.push(bar);
+  }
+  this.activeBarIndex_ = 0;
+  ImageUtil.setAttribute(this.bars_[0], 'inactive', false);
+  ImageUtil.setAttribute(this.bars_[1], 'inactive', true);
 
   this.fadeRight_ = this.document_.createElement('div');
   this.fadeRight_.className = 'fade right';
@@ -373,8 +380,15 @@ function Ribbon(container, onSelect, arrowLeft, arrowRight) {
   this.lastVisibleIndex_ = 0;
 }
 
+Ribbon.PAGING_SINGLE_ITEM_DELAY = 20;
+Ribbon.PAGING_ANIMATION_DURATION = 200;
+
 Ribbon.prototype.clear = function() {
-  this.bar_.textContent = '';
+  this.bars_[0].textContent = '';
+  this.bars_[1].textContent = '';
+  this.activeBarIndex_ = 0;
+  ImageUtil.setAttribute(this.bars_[0], 'inactive', false);
+  ImageUtil.setAttribute(this.bars_[1], 'inactive', true);
   this.items_ = [];
   this.selectedIndex_ = -1;
   this.firstVisibleIndex_ = 0;
@@ -418,21 +432,7 @@ Ribbon.prototype.select = function(index) {
   }
 
   this.selectedIndex_ = index;
-
-  if (this.selectedIndex_ < this.firstVisibleIndex_) {
-    if (this.selectedIndex_ == this.firstVisibleIndex_ - 1) {
-      this.scrollLeft();
-    } else {
-      this.redraw();
-    }
-  }
-  if (this.selectedIndex_ > this.lastVisibleIndex_) {
-    if (this.selectedIndex_ == this.lastVisibleIndex_ + 1) {
-      this.scrollRight();
-    } else {
-      this.redraw();
-    }
-  }
+  this.redraw();
 
   if (this.selectedIndex_ != -1) {
     var selectedItem = this.items_[this.selectedIndex_];
@@ -452,71 +452,74 @@ Ribbon.prototype.select = function(index) {
 };
 
 Ribbon.prototype.redraw = function() {
-  this.bar_.textContent = '';
-
   // The thumbnails are square.
-  var itemWidth = this.bar_.parentNode.clientHeight;
-  var width = this.bar_.parentNode.clientWidth;
+  var itemWidth = this.bars_[0].parentNode.clientHeight;
+  var width = this.bars_[0].parentNode.clientWidth;
 
   var fullItems = Math.floor(width / itemWidth);
 
-  this.bar_.style.width = fullItems * itemWidth + 'px';
+  this.bars_[0].style.width = fullItems * itemWidth + 'px';
+  this.bars_[1].style.width = fullItems * itemWidth + 'px';
 
-  this.firstVisibleIndex_ =
-      Math.min(this.firstVisibleIndex_, this.selectedIndex_);
+  fullItems = Math.min(fullItems, this.items_.length);
+  var firstIndex = this.firstVisibleIndex_;
+  var lastIndex = firstIndex + fullItems - 1;
 
-  this.lastVisibleIndex_ =
-      Math.min(this.items_.length, this.firstVisibleIndex_ + fullItems) - 1;
-
-  this.lastVisibleIndex_ =
-      Math.max(this.lastVisibleIndex_, this.selectedIndex_);
-
-  this.firstVisibleIndex_ =
-      Math.max(0, this.lastVisibleIndex_ - fullItems + 1);
-
-  fullItems = this.lastVisibleIndex_ - this.firstVisibleIndex_ + 1;
-
-  for (var index = this.firstVisibleIndex_;
-       index <= this.lastVisibleIndex_;
-       ++index) {
-    this.bar_.appendChild(this.items_[index].getBox());
+  if (this.selectedIndex_ <= firstIndex && firstIndex > 0) {
+    firstIndex = Math.max(0, this.selectedIndex_ - fullItems + 2);
+    lastIndex = firstIndex + fullItems - 1;
   }
-};
 
-// TODO(kaznacheev) The animation logic below does not really work for fast
-// repetitive scrolling.
+  if (this.selectedIndex_ >= lastIndex && lastIndex < this.items_.length - 1) {
+    lastIndex = Math.min(this.items_.length - 1,
+                         this.selectedIndex_ + fullItems - 2);
+    firstIndex = lastIndex - fullItems + 1;
+  }
 
-Ribbon.prototype.scrollLeft = function() {
-  console.log('scrollLeft');
-  this.firstVisibleIndex_--;
-  var fadeIn = this.items_[this.firstVisibleIndex_].getBox();
-  ImageUtil.setAttribute(fadeIn, 'shifted', true);
-  this.bar_.insertBefore(fadeIn, this.bar_.firstElementChild);
+  if (this.firstVisibleIndex_ == firstIndex &&
+      this.lastVisibleIndex_ == lastIndex) {
+    return;
+  }
+
+  var activeBar = this.bars_[this.activeBarIndex_];
+  var children = activeBar.childNodes;
+  var totalDuration = children.length * Ribbon.PAGING_SINGLE_ITEM_DELAY +
+      Ribbon.PAGING_ANIMATION_DURATION;
+
+  var direction = 1;
+  var delay = 0;
+  if (firstIndex < this.firstVisibleIndex_) {
+    direction = -1;
+    delay = (children.length - 1) * Ribbon.PAGING_SINGLE_ITEM_DELAY;
+  }
+  for (var index = 0; index < children.length; ++index) {
+    setTimeout(
+        ImageUtil.setAttribute.bind(null, children[index], 'inactive', true),
+        delay);
+    delay += direction * Ribbon.PAGING_SINGLE_ITEM_DELAY;
+  }
+
+  // Place inactive bar below active after animation is finished.
   setTimeout(
-      function() { ImageUtil.setAttribute(fadeIn, 'shifted', false) },
-      0);
+      ImageUtil.setAttribute.bind(null, activeBar, 'inactive', true),
+      totalDuration);
 
-  var pushOut = this.bar_.lastElementChild;
-  pushOut.parentNode.removeChild(pushOut);
+  this.firstVisibleIndex_ = firstIndex;
+  this.lastVisibleIndex_ = lastIndex;
 
-  this.lastVisibleIndex_--;
-};
+  this.activeBarIndex_ = 1 - this.activeBarIndex_;
+  activeBar = this.bars_[this.activeBarIndex_];
+  activeBar.textContent = '';
+  for (var index = firstIndex; index <= lastIndex; ++index) {
+    var box = this.items_[index].getBox(this.activeBarIndex_);
+    ImageUtil.setAttribute(box, 'inactive', false);
+    activeBar.appendChild(box);
+  }
 
-Ribbon.prototype.scrollRight = function() {
-  console.log('scrollRight');
-
-  var fadeOut = this.items_[this.firstVisibleIndex_].getBox();
-  ImageUtil.setAttribute(fadeOut, 'shifted', true);
-  setTimeout(function() {
-    fadeOut.parentNode.removeChild(fadeOut);
-    ImageUtil.setAttribute(fadeOut, 'shifted', false);
-  }, 500);
-
-  this.firstVisibleIndex_++;
-  this.lastVisibleIndex_++;
-
-  var pushIn = this.items_[this.lastVisibleIndex_].getBox();
-  this.bar_.appendChild(pushIn);
+  // Place active bar above inactive after animation is finished.
+  setTimeout(
+      ImageUtil.setAttribute.bind(null, activeBar, 'inactive', false),
+      totalDuration);
 };
 
 Ribbon.prototype.selectPrevious = function() {
@@ -542,34 +545,46 @@ Ribbon.Item = function(index, url, document, selectClosure) {
   this.index_ = index;
   this.url_ = url;
 
-  this.box_ = document.createElement('div');
-  this.box_.className = 'ribbon-image';
-  this.box_.addEventListener('click', selectClosure);
+  this.boxes_ = [];
+  this.wrappers_ = [];
+  this.imgs_ = [];
 
-  this.wrapper_ = document.createElement('div');
-  this.wrapper_.className = 'image-wrapper';
-  this.box_.appendChild(this.wrapper_);
+  for (var i = 0; i < 2; i++) {
+    var box = document.createElement('div');
+    box.className = 'ribbon-image';
+    box.addEventListener('click', selectClosure);
 
-  this.img_ = document.createElement('img');
-  this.wrapper_.appendChild(this.img_);
+    var wrapper = document.createElement('div');
+    wrapper.className = 'image-wrapper';
+    box.appendChild(wrapper);
+
+    var img = document.createElement('img');
+    wrapper.appendChild(img);
+
+    this.boxes_.push(box);
+    this.wrappers_.push(wrapper);
+    this.imgs_.push(img);
+  }
 
   this.original_ = true;
 };
 
 Ribbon.Item.prototype.getIndex = function () { return this.index_ };
 
-Ribbon.Item.prototype.getBox = function () { return this.box_ };
+Ribbon.Item.prototype.getBox = function (index) { return this.boxes_[index] };
 
 Ribbon.Item.prototype.isOriginal = function () { return this.original_ };
 
 Ribbon.Item.prototype.getUrl = function () { return this.url_ };
 
 Ribbon.Item.prototype.isSelected = function() {
-  return this.box_.hasAttribute('selected');
+  return this.boxes_[0].hasAttribute('selected');
 };
 
 Ribbon.Item.prototype.select = function(on) {
-  ImageUtil.setAttribute(this.box_, 'selected', on);
+  for (var i = 0; i < 2; i++) {
+    ImageUtil.setAttribute(this.boxes_[i], 'selected', on);
+  }
 };
 
 Ribbon.Item.prototype.save = function(
@@ -712,12 +727,6 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
       metadata.thumbnailTransform :
       metadata.imageTransform;
 
-  this.wrapper_.style.webkitTransform = transform ?
-      ('scaleX(' + transform.scaleX + ') ' +
-      'scaleY(' + transform.scaleY + ') ' +
-      'rotate(' + transform.rotate90 * 90 + 'deg)') :
-      '';
-
   function percent(ratio) { return Math.round(ratio * 100) + '%' }
 
   function resizeToFill(img, aspect) {
@@ -733,26 +742,39 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
     }
   }
 
-  if (metadata.width && metadata.height) {
-    var aspect = metadata.width / metadata.height;
-    if (transform && transform.rotate90) {
-      aspect = 1 / aspect;
-    }
-    resizeToFill(this.img_, aspect);
-  } else {
-    // No metadata available, loading the thumbnail first, then adjust the size.
-    this.img_.maxWidth = '100%';
-    this.img_.maxHeight = '100%';
+  var webkitTransform = transform ?
+      ('scaleX(' + transform.scaleX + ') ' +
+      'scaleY(' + transform.scaleY + ') ' +
+      'rotate(' + transform.rotate90 * 90 + 'deg)') :
+      '';
 
-    var img = this.img_;
-    this.img_.onload = function() {
-      img.maxWidth = 'none';
-      img.maxHeight = 'none';
-      resizeToFill(img, img.width / img.height);
+  for (var i = 0; i < 2; i++) {
+    this.wrappers_[i].style.webkitTransform = webkitTransform;
+
+    var img = this.imgs_[i];
+
+    if (metadata.width && metadata.height) {
+      var aspect = metadata.width / metadata.height;
+      if (transform && transform.rotate90) {
+        aspect = 1 / aspect;
+      }
+      resizeToFill(img, aspect);
+    } else {
+      // No metadata available, loading the thumbnail first,
+      // then adjust the size.
+      img.style.maxWidth = '100%';
+      img.style.maxHeight = '100%';
+
+      function onLoad(image) {
+        image.maxWidth = 'none';
+        image.maxHeight = 'none';
+        resizeToFill(image, image.width / image.height);
+      }
+      img.onload = onLoad.bind(null, img);
     }
+
+    img.setAttribute('src', metadata.thumbnailURL || this.url_);
   }
-
-  this.img_.setAttribute('src', metadata.thumbnailURL || this.url_);
 };
 
 function ShareMode(container, toolbar, shareActions,
