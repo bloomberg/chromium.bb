@@ -29,7 +29,7 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
    public:
     virtual void SetRecognitionResult(
         int caller_id,
-        const SpeechInputResultArray& result) = 0;
+        const SpeechInputResult& result) = 0;
     virtual void DidCompleteRecording(int caller_id) = 0;
     virtual void DidCompleteRecognition(int caller_id) = 0;
 
@@ -67,17 +67,20 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
   virtual void CancelAllRequestsWithDelegate(Delegate* delegate);
   virtual void StopRecording(int caller_id);
 
-  // SpeechRecognizer::Delegate methods.
-  virtual void DidStartReceivingAudio(int caller_id);
+  // SpeechRecognizerDelegate methods.
+  virtual void DidStartReceivingAudio(int caller_id) OVERRIDE;
   virtual void SetRecognitionResult(int caller_id,
-                                    bool error,
-                                    const SpeechInputResultArray& result);
-  virtual void DidCompleteRecording(int caller_id);
-  virtual void DidCompleteRecognition(int caller_id);
+                                    const SpeechInputResult& result) OVERRIDE;
+  virtual void DidCompleteRecording(int caller_id) OVERRIDE;
+  virtual void DidCompleteRecognition(int caller_id) OVERRIDE;
+  virtual void DidStartReceivingSpeech(int caller_id) OVERRIDE;
+  virtual void DidStopReceivingSpeech(int caller_id) OVERRIDE;
+
   virtual void OnRecognizerError(int caller_id,
-                                 SpeechRecognizer::ErrorCode error);
-  virtual void DidCompleteEnvironmentEstimation(int caller_id);
-  virtual void SetInputVolume(int caller_id, float volume, float noise_volume);
+                                 SpeechInputError error) OVERRIDE;
+  virtual void DidCompleteEnvironmentEstimation(int caller_id) OVERRIDE;
+  virtual void SetInputVolume(int caller_id, float volume,
+                              float noise_volume) OVERRIDE;
 
  protected:
   // The pure virtual methods are used for displaying the current state of
@@ -113,7 +116,7 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
 
   // Called when there has been a error with the recognition.
   virtual void ShowRecognizerError(int caller_id,
-                                   SpeechRecognizer::ErrorCode error) = 0;
+                                   SpeechInputError error) = 0;
 
   // Called when recognition has ended or has been canceled.
   virtual void DoClose(int caller_id) = 0;

@@ -21,27 +21,28 @@ class ChromeSpeechInputManager : public SpeechInputManager,
 
   // SpeechInputBubbleController::Delegate methods.
   virtual void InfoBubbleButtonClicked(int caller_id,
-                                       SpeechInputBubble::Button button);
-  virtual void InfoBubbleFocusChanged(int caller_id);
+                                       SpeechInputBubble::Button button)
+                                       OVERRIDE;
+  virtual void InfoBubbleFocusChanged(int caller_id) OVERRIDE;
 
  protected:
   // SpeechInputManager methods.
   virtual void GetRequestInfo(bool* can_report_metrics,
-                              std::string* request_info);
+                              std::string* request_info) OVERRIDE;
   virtual void ShowRecognitionRequested(int caller_id,
                                         int render_process_id,
                                         int render_view_id,
-                                        const gfx::Rect& element_rect);
-  virtual void ShowWarmUp(int caller_id);
-  virtual void ShowRecognizing(int caller_id);
-  virtual void ShowRecording(int caller_id);
+                                        const gfx::Rect& element_rect) OVERRIDE;
+  virtual void ShowWarmUp(int caller_id) OVERRIDE;
+  virtual void ShowRecognizing(int caller_id) OVERRIDE;
+  virtual void ShowRecording(int caller_id) OVERRIDE;
   virtual void ShowInputVolume(int caller_id,
                                float volume,
-                               float noise_volume);
-  virtual void ShowNoMicError(int caller_id);
+                               float noise_volume) OVERRIDE;
+  virtual void ShowNoMicError(int caller_id) OVERRIDE;
   virtual void ShowRecognizerError(int caller_id,
-                                   SpeechRecognizer::ErrorCode error);
-  virtual void DoClose(int caller_id);
+                                   SpeechInputError error) OVERRIDE;
+  virtual void DoClose(int caller_id) OVERRIDE;
 
  private:
   class OptionalRequestInfo;

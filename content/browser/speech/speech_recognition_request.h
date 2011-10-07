@@ -34,8 +34,7 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   // Interface for receiving callbacks from this object.
   class CONTENT_EXPORT Delegate {
    public:
-    virtual void SetRecognitionResult(
-        bool error, const SpeechInputResultArray& result) = 0;
+    virtual void SetRecognitionResult(const SpeechInputResult& result) = 0;
 
    protected:
     virtual ~Delegate() {}

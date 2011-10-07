@@ -240,6 +240,7 @@
     'common/socket_stream_dispatcher.h',
     'common/socket_stream_messages.h',
     'common/speech_input_messages.h',
+    'common/speech_input_result.cc',
     'common/speech_input_result.h',
     'common/swapped_out_messages.cc',
     'common/swapped_out_messages.h',

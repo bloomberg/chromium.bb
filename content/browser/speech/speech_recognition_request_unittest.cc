@@ -14,24 +14,21 @@ namespace speech_input {
 class SpeechRecognitionRequestTest : public SpeechRecognitionRequestDelegate,
                                      public testing::Test {
  public:
-  SpeechRecognitionRequestTest() : error_(false) { }
+  SpeechRecognitionRequestTest() { }
 
   // Creates a speech recognition request and invokes it's URL fetcher delegate
   // with the given test data.
   void CreateAndTestRequest(bool success, const std::string& http_response);
 
   // SpeechRecognitionRequestDelegate methods.
-  virtual void SetRecognitionResult(bool error,
-                                    const SpeechInputResultArray& result) {
-    error_ = error;
+  virtual void SetRecognitionResult(const SpeechInputResult& result) OVERRIDE {
     result_ = result;
   }
 
  protected:
   MessageLoop message_loop_;
   TestURLFetcherFactory url_fetcher_factory_;
-  bool error_;
-  SpeechInputResultArray result_;
+  SpeechInputResult result_;
 };
 
 void SpeechRecognitionRequestTest::CreateAndTestRequest(
@@ -58,37 +55,50 @@ void SpeechRecognitionRequestTest::CreateAndTestRequest(
 TEST_F(SpeechRecognitionRequestTest, BasicTest) {
   // Normal success case with one result.
   CreateAndTestRequest(true,
-      "{\"hypotheses\":[{\"utterance\":\"123456\",\"confidence\":0.9}]}");
-  EXPECT_FALSE(error_);
-  EXPECT_EQ(1U, result_.size());
-  EXPECT_EQ(ASCIIToUTF16("123456"), result_[0].utterance);
-  EXPECT_EQ(0.9, result_[0].confidence);
+      "{\"status\":0,\"hypotheses\":"
+      "[{\"utterance\":\"123456\",\"confidence\":0.9}]}");
+  EXPECT_EQ(result_.error, kErrorNone);
+  EXPECT_EQ(1U, result_.hypotheses.size());
+  EXPECT_EQ(ASCIIToUTF16("123456"), result_.hypotheses[0].utterance);
+  EXPECT_EQ(0.9, result_.hypotheses[0].confidence);
 
   // Normal success case with multiple results.
   CreateAndTestRequest(true,
-      "{\"hypotheses\":[{\"utterance\":\"hello\",\"confidence\":0.9},"
+      "{\"status\":0,\"hypotheses\":["
+      "{\"utterance\":\"hello\",\"confidence\":0.9},"
       "{\"utterance\":\"123456\",\"confidence\":0.5}]}");
-  EXPECT_FALSE(error_);
-  EXPECT_EQ(2u, result_.size());
-  EXPECT_EQ(ASCIIToUTF16("hello"), result_[0].utterance);
-  EXPECT_EQ(0.9, result_[0].confidence);
-  EXPECT_EQ(ASCIIToUTF16("123456"), result_[1].utterance);
-  EXPECT_EQ(0.5, result_[1].confidence);
+  EXPECT_EQ(result_.error, kErrorNone);
+  EXPECT_EQ(2u, result_.hypotheses.size());
+  EXPECT_EQ(ASCIIToUTF16("hello"), result_.hypotheses[0].utterance);
+  EXPECT_EQ(0.9, result_.hypotheses[0].confidence);
+  EXPECT_EQ(ASCIIToUTF16("123456"), result_.hypotheses[1].utterance);
+  EXPECT_EQ(0.5, result_.hypotheses[1].confidence);
 
   // Zero results.
-  CreateAndTestRequest(true, "{\"hypotheses\":[]}");
-  EXPECT_FALSE(error_);
-  EXPECT_EQ(0U, result_.size());
+  CreateAndTestRequest(true, "{\"status\":0,\"hypotheses\":[]}");
+  EXPECT_EQ(result_.error, kErrorNone);
+  EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Http failure case.
   CreateAndTestRequest(false, "");
-  EXPECT_TRUE(error_);
-  EXPECT_EQ(0U, result_.size());
+  EXPECT_EQ(result_.error, kErrorNetwork);
+  EXPECT_EQ(0U, result_.hypotheses.size());
+
+  // Invalid status case.
+  CreateAndTestRequest(true, "{\"status\":\"invalid\",\"hypotheses\":[]}");
+  EXPECT_EQ(result_.error, kErrorNetwork);
+  EXPECT_EQ(0U, result_.hypotheses.size());
+
+  // Server-side error case.
+  CreateAndTestRequest(true, "{\"status\":1,\"hypotheses\":[]}");
+  EXPECT_EQ(result_.error, kErrorNetwork);
+  EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Malformed JSON case.
-  CreateAndTestRequest(true, "{\"hypotheses\":[{\"unknownkey\":\"hello\"}]}");
-  EXPECT_TRUE(error_);
-  EXPECT_EQ(0U, result_.size());
+  CreateAndTestRequest(true, "{\"status\":0,\"hypotheses\":"
+      "[{\"unknownkey\":\"hello\"}]}");
+  EXPECT_EQ(result_.error, kErrorNetwork);
+  EXPECT_EQ(0U, result_.hypotheses.size());
 }
 
 }  // namespace speech_input

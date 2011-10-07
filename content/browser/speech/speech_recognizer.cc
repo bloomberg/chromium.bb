@@ -145,6 +145,7 @@ void SpeechRecognizer::StopRecording() {
   audio_controller_->Close();
   audio_controller_ = NULL;  // Releases the ref ptr.
 
+  delegate_->DidStopReceivingSpeech(caller_id_);
   delegate_->DidCompleteRecording(caller_id_);
 
   // UploadAudioChunk requires a non-empty final buffer. So we encode a packet
@@ -186,7 +187,7 @@ void SpeechRecognizer::HandleOnError(int error_code) {
   if (!audio_controller_.get())
     return;
 
-  InformErrorAndCancelRecognition(RECOGNIZER_ERROR_CAPTURE);
+  InformErrorAndCancelRecognition(kErrorAudio);
 }
 
 void SpeechRecognizer::OnData(AudioInputController* controller,
@@ -209,6 +210,8 @@ void SpeechRecognizer::HandleOnData(string* data) {
     delete data;
     return;
   }
+
+  bool speech_was_heard_before_packet = endpointer_.DidStartReceivingSpeech();
 
   const short* samples = reinterpret_cast<const short*>(data->data());
   DCHECK((data->length() % sizeof(short)) == 0);
@@ -246,11 +249,15 @@ void SpeechRecognizer::HandleOnData(string* data) {
   }
 
   // Check if we have waited too long without hearing any speech.
-  if (!endpointer_.DidStartReceivingSpeech() &&
+  bool speech_was_heard_after_packet = endpointer_.DidStartReceivingSpeech();
+  if (!speech_was_heard_after_packet &&
       num_samples_recorded_ >= kNoSpeechTimeoutSec * kAudioSampleRate) {
-    InformErrorAndCancelRecognition(RECOGNIZER_ERROR_NO_SPEECH);
+    InformErrorAndCancelRecognition(kErrorNoSpeech);
     return;
   }
+
+  if (!speech_was_heard_before_packet && speech_was_heard_after_packet)
+    delegate_->DidStartReceivingSpeech(caller_id_);
 
   // Calculate the input volume to display in the UI, smoothing towards the
   // new level.
@@ -271,30 +278,26 @@ void SpeechRecognizer::HandleOnData(string* data) {
   delegate_->SetInputVolume(caller_id_, did_clip ? 1.0f : audio_level_,
                             noise_level);
 
-  if (endpointer_.speech_input_complete()) {
+  if (endpointer_.speech_input_complete())
     StopRecording();
-  }
-
-  // TODO(satish): Once we have streaming POST, start sending the data received
-  // here as POST chunks.
 }
 
 void SpeechRecognizer::SetRecognitionResult(
-    bool error, const SpeechInputResultArray& result) {
-  if (error || result.empty()) {
-    InformErrorAndCancelRecognition(error ? RECOGNIZER_ERROR_NETWORK :
-                                            RECOGNIZER_ERROR_NO_RESULTS);
+    const SpeechInputResult& result) {
+  if (result.error != kErrorNone) {
+    InformErrorAndCancelRecognition(result.error);
     return;
   }
 
-  delegate_->SetRecognitionResult(caller_id_, error, result);
-
   // Guard against the delegate freeing us until we finish our job.
   scoped_refptr<SpeechRecognizer> me(this);
+  delegate_->SetRecognitionResult(caller_id_, result);
   delegate_->DidCompleteRecognition(caller_id_);
 }
 
-void SpeechRecognizer::InformErrorAndCancelRecognition(ErrorCode error) {
+void SpeechRecognizer::InformErrorAndCancelRecognition(
+    SpeechInputError error) {
+  DCHECK_NE(error, kErrorNone);
   CancelRecognition();
 
   // Guard against the delegate freeing us until we finish our job.

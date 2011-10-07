@@ -20,6 +20,7 @@ namespace {
 
 const char* const kDefaultSpeechRecognitionUrl =
     "https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&";
+const char* const kStatusString = "status";
 const char* const kHypothesesString = "hypotheses";
 const char* const kUtteranceString = "utterance";
 const char* const kConfidenceString = "confidence";
@@ -29,7 +30,7 @@ const char* const kConfidenceString = "confidence";
 const int kMaxResults = 6;
 
 bool ParseServerResponse(const std::string& response_body,
-                         speech_input::SpeechInputResultArray* result) {
+                         speech_input::SpeechInputResult* result) {
   if (response_body.empty()) {
     LOG(WARNING) << "ParseServerResponse: Response was empty.";
     return false;
@@ -53,18 +54,43 @@ bool ParseServerResponse(const std::string& response_body,
   const DictionaryValue* response_object =
       static_cast<DictionaryValue*>(response_value.get());
 
-  // Get the hypotheses
+  // Get the status.
+  int status;
+  if (!response_object->GetInteger(kStatusString, &status)) {
+    VLOG(1) << "ParseServerResponse: " << kStatusString
+            << " is not a valid integer value.";
+    return false;
+  }
+
+  // Process the status.
+  switch (status) {
+  case speech_input::kErrorNone:
+  case speech_input::kErrorNoSpeech:
+  case speech_input::kErrorNoMatch:
+    break;
+
+  default:
+    // Other status codes should not be returned by the server.
+    VLOG(1) << "ParseServerResponse: unexpected status code " << status;
+    return false;
+  }
+
+  result->error = static_cast<speech_input::SpeechInputError>(status);
+
+  // Get the hypotheses.
   Value* hypotheses_value = NULL;
   if (!response_object->Get(kHypothesesString, &hypotheses_value)) {
     VLOG(1) << "ParseServerResponse: Missing hypotheses attribute.";
     return false;
   }
+
   DCHECK(hypotheses_value);
   if (!hypotheses_value->IsType(Value::TYPE_LIST)) {
     VLOG(1) << "ParseServerResponse: Unexpected hypotheses type "
             << hypotheses_value->GetType();
     return false;
   }
+
   const ListValue* hypotheses_list = static_cast<ListValue*>(hypotheses_value);
 
   size_t index = 0;
@@ -93,12 +119,12 @@ bool ParseServerResponse(const std::string& response_body,
     double confidence = 0.0;
     hypothesis_value->GetDouble(kConfidenceString, &confidence);
 
-    result->push_back(speech_input::SpeechInputResultItem(utterance,
-                                                          confidence));
+    result->hypotheses.push_back(speech_input::SpeechInputHypothesis(
+        utterance, confidence));
   }
 
   if (index < hypotheses_list->GetSize()) {
-    result->clear();
+    result->hypotheses.clear();
     return false;
   }
 
@@ -182,16 +208,15 @@ void SpeechRecognitionRequest::UploadAudioChunk(const std::string& audio_data,
 void SpeechRecognitionRequest::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
-  bool error =
-      !source->status().is_success() || source->response_code() != 200;
-
-  SpeechInputResultArray result;
-  if (!error)
-    error = !ParseServerResponse(source->GetResponseStringRef(), &result);
-  url_fetcher_.reset();
+  SpeechInputResult result;
+  if (!source->status().is_success() || source->response_code() != 200 ||
+      !ParseServerResponse(source->GetResponseStringRef(), &result)) {
+    result.error = kErrorNetwork;
+  }
 
   DVLOG(1) << "SpeechRecognitionRequest: Invoking delegate with result.";
-  delegate_->SetRecognitionResult(error, result);
+  url_fetcher_.reset();
+  delegate_->SetRecognitionResult(result);
 }
 
 }  // namespace speech_input

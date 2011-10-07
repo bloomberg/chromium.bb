@@ -148,20 +148,20 @@ void ChromeSpeechInputManager::ShowNoMicError(int caller_id) {
 }
 
 void ChromeSpeechInputManager::ShowRecognizerError(
-    int caller_id, SpeechRecognizer::ErrorCode error) {
+    int caller_id, SpeechInputError error) {
   struct ErrorMessageMapEntry {
-    SpeechRecognizer::ErrorCode error;
+    SpeechInputError error;
     int message_id;
   };
   ErrorMessageMapEntry error_message_map[] = {
     {
-      SpeechRecognizer::RECOGNIZER_ERROR_CAPTURE, IDS_SPEECH_INPUT_MIC_ERROR
+      kErrorAudio, IDS_SPEECH_INPUT_MIC_ERROR
     }, {
-      SpeechRecognizer::RECOGNIZER_ERROR_NO_SPEECH, IDS_SPEECH_INPUT_NO_SPEECH
+      kErrorNoSpeech, IDS_SPEECH_INPUT_NO_SPEECH
     }, {
-      SpeechRecognizer::RECOGNIZER_ERROR_NO_RESULTS, IDS_SPEECH_INPUT_NO_RESULTS
+      kErrorNoMatch, IDS_SPEECH_INPUT_NO_RESULTS
     }, {
-      SpeechRecognizer::RECOGNIZER_ERROR_NETWORK, IDS_SPEECH_INPUT_NET_ERROR
+      kErrorNetwork, IDS_SPEECH_INPUT_NET_ERROR
     }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(error_message_map); ++i) {

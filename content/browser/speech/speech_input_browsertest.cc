@@ -109,7 +109,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
                                float noise_volume) {}
   virtual void ShowNoMicError(int caller_id) {}
   virtual void ShowRecognizerError(int caller_id,
-                                   SpeechRecognizer::ErrorCode error) {}
+                                   SpeechInputError error) {}
   virtual void DoClose(int caller_id) {}
 
  private:
@@ -117,8 +117,9 @@ class FakeSpeechInputManager : public SpeechInputManager {
     if (caller_id_) {  // Do a check in case we were cancelled..
       VLOG(1) << "Setting fake recognition result.";
       delegate_->DidCompleteRecording(caller_id_);
-      SpeechInputResultArray results;
-      results.push_back(SpeechInputResultItem(ASCIIToUTF16(kTestResult), 1.0));
+      SpeechInputResult results;
+      results.hypotheses.push_back(SpeechInputHypothesis(
+          ASCIIToUTF16(kTestResult), 1.0));
       delegate_->SetRecognitionResult(caller_id_, results);
       delegate_->DidCompleteRecognition(caller_id_);
       caller_id_ = 0;

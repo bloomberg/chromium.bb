@@ -30,7 +30,7 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
 
   // SpeechInputManager::Delegate methods.
   virtual void SetRecognitionResult(int caller_id,
-                                    const SpeechInputResultArray& result);
+                                    const SpeechInputResult& result);
   virtual void DidCompleteRecording(int caller_id);
   virtual void DidCompleteRecognition(int caller_id);
 
