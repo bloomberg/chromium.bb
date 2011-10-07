@@ -173,6 +173,11 @@ void CompositeFilter::Stop(const base::Closure& stop_callback) {
       return;
   }
 
+  if (!status_cb_.is_null()) {
+    DCHECK_EQ(state_, kStopWhileSeekPending);
+    status_cb_.Reset();
+  }
+
   callback_ = stop_callback;
   if (state_ == kStopPending) {
     StartSerialCallSequence();
@@ -268,7 +273,6 @@ void CompositeFilter::CallFilter(scoped_refptr<Filter>& filter,
                    base::Bind(&CompositeFilter::OnStatusCB, this, callback));
       break;
     default:
-
       ChangeState(kError);
       DispatchPendingCallback(PIPELINE_ERROR_INVALID_STATE);
   }
@@ -429,7 +433,6 @@ void CompositeFilter::OnStatusCB(const base::Closure& callback,
     SetError(status);
 
   callback.Run();
-
 }
 
 void CompositeFilter::SetError(PipelineStatus error) {
