@@ -21,6 +21,8 @@ import merge_package_status as mps
 
 REAL_SS_KEY='tJuuSuHmrEMqdL5b8dkgBIA'
 TEST_SS_KEY='t3RE08XLO2f1vTiV4N-w2ng'
+PKGS_WS_NAME='Packages'
+DEPS_WS_NAME='Dependencies'
 
 oper = operation.Operation('upload_package_status')
 oper.verbose = True # Without verbose Info messages don't show up.
@@ -63,6 +65,7 @@ class Uploader(object):
                '_table',      # table.Table
                '_verbose',    # boolean
                '_ws_key',     # Worksheet key (string)
+               '_ws_name',    # Worksheet name (string)
                ]
 
   ID_COL = utable.UpgradeTable.COL_PACKAGE
@@ -77,17 +80,23 @@ class Uploader(object):
     self._ss_key = None
     self._verbose = verbose
     self._ws_key = None
+    self._ws_name = None
 
   def _Verbose(self, msg):
     """Print |msg| if _verbose is true."""
     if self._verbose:
       print msg
 
-  def _GetWorksheetKey(self, ss_key, ws_index):
-    """Get the worksheet key at index |ws_index| in spreadsheet |ss_key|."""
+  def _GetWorksheetKey(self, ss_key, ws_name):
+    """Get the worksheet key with name |ws_name| in spreadsheet |ss_key|."""
     feed = self._gd_client.GetWorksheetsFeed(ss_key)
     # The worksheet key is the last component in the URL (after last '/')
-    return feed.entry[ws_index].id.text.split('/')[-1]
+    for entry in feed.entry:
+      if ws_name == entry.title.text:
+        return entry.id.text.split('/')[-1]
+
+    oper.Die("Unable to find worksheet '%s' in spreadsheet '%s'" %
+             (ws_name, ss_key))
 
   def LoginDocsWithEmailPassword(self):
     """Set up and connect the Google Doc client using email/password."""
@@ -174,24 +183,19 @@ class Uploader(object):
     if len(feed.entry) == 0:
       return None
 
-  def Upload(self, ss_key, ws_index=0, ws_key=None):
+  def Upload(self, ss_key, ws_name):
     """Upload |_table| to the given Google Spreadsheet.
 
     The spreadsheet is identified the spreadsheet key |ss_key|.
-    The worksheet within that spreadsheet is identified by either a worksheet
-    key |ws_key| if given, or a worksheet index |ws_index|.  An index of 0,
-    for example, means the first worksheet in that spreadsheet.
+    The worksheet within that spreadsheet is identified by the
+    worksheet name |ws_name|.
     """
     self._ss_key = ss_key
-
-    if ws_key is None:
-      ws_key = self._GetWorksheetKey(ss_key, ws_index)
-    self._ws_key = ws_key
+    self._ws_name = ws_name
+    self._ws_key = self._GetWorksheetKey(ss_key, ws_name)
 
     self._Verbose("Details by package: S=Same, C=Changed, A=Added, D=Deleted")
-
     rows_unchanged, rows_updated, rows_inserted = self._UploadChangedRows()
-
     rows_deleted, rows_with_owner_deleted = self._DeleteOldRows()
 
     print("Final row stats: %d changed, %d added, %d deleted, %d same." %
@@ -204,7 +208,8 @@ class Uploader(object):
 
   def _UploadChangedRows(self):
     """Upload all rows in table that need to be changed in spreadsheet."""
-    print "Uploading to spreadsheet '%s' now." % self._ss_key
+    print("Uploading to worksheet '%s' of spreadsheet '%s' now." %
+          (self._ws_name, self._ss_key))
 
     rows_unchanged, rows_updated, rows_inserted = (0, 0, 0)
 
@@ -390,12 +395,15 @@ def main():
     uploader.LoginDocsWithToken()
 
   ss_key = options.ss_key
+  ws_names = [PKGS_WS_NAME, DEPS_WS_NAME]
   if not ss_key:
     if options.test_ss:
       ss_key = TEST_SS_KEY # For testing with backup spreadsheet
     else:
       ss_key = REAL_SS_KEY
-  uploader.Upload(ss_key)
+
+  for ws_name in ws_names:
+    uploader.Upload(ss_key, ws_name=ws_name)
 
 if __name__ == '__main__':
   main()
