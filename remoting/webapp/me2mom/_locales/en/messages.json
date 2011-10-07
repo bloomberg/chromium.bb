@@ -38,7 +38,7 @@
     "description": "Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use."
   },
   "DESCRIPTION_CONNECT": {
-    "message": "Ask the user whose computer you wish to access to click \u2018Share This Computer\u2019 and then provide you with the access code.",
+    "message": "Ask the user whose computer you wish to access to click \u2018Share This Computer\u2019 and give you the access code.",
     "description": "Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share This Computer' quote should be copied verbatim from the corresponding translation."
   },
   "DESCRIPTION_SHARE": {
@@ -66,7 +66,7 @@
     "description": "Error that is shown on the client side when we don't get a response from the host."
   },
   "ERROR_INCOMPATIBLE_PROTOCOL": {
-    "message": "Incompatible version of Chromoting detected. Please make sure that you have the latest version of Chromium and Chromoting on both computers and try again.",
+    "message": "An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chromium and Chromoting on both computers and try again.",
     "description": "Error that is shown on the client side when incompatible Chromoting versions are installed on host and client."
   },
   "ERROR_GENERIC": {
@@ -78,11 +78,11 @@
     "description": "Error displayed if an invalid access code is entered."
   },
   "ERROR_MISSING_PLUGIN": {
-    "message": "Plugin missing or out-of-date. Please make sure you're running the latest version of Chromium and try again.",
+    "message": "Some components required for Chromoting are missing or out-of-date. Please make sure you're running the latest version of Chromium and try again.",
     "description": "Error displayed if the client plugin fails to load. The most common reason for this is that the web-app is being used in a version of Chromium that doesn't support it."
   },
   "ERROR_NO_RESPONSE": {
-    "message": "Failed to get a response from the server.",
+    "message": "The server failed to respond to the network request.",
     "description": "Error displayed by the client if the server does not respond to a network request."
   },
   "ERROR_AUTHENTICATION_FAILED": {
@@ -108,7 +108,7 @@
     }
   },
   "FOOTER_CHROME_OS": {
-    "message": "Sharing is not currently supported on Chromebooks.",
+    "message": "Sharing your Chromebook will be supported in a future update\u2026 stay tuned.",
     "description": "Footer text displayed on ChromeOS in lieu of the mode switch hyperlink."
   },
   "FOOTER_HOST": {
@@ -134,7 +134,7 @@
     "description": "Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ."
   },
   "INSTRUCTIONS_SHARE_ABOVE": {
-    "message": "To begin sharing your desktop, provide the access code below to the person who will be assisting you.",
+    "message": "To begin sharing your desktop, give the access code below to the person who will be assisting you.",
     "description": "Instructions shown above the access code when it is ready to be conveyed to the client."
   },
   "INSTRUCTIONS_SHARE_BELOW": {
@@ -184,7 +184,7 @@
     "description": "Label for general-purpose OK buttons."
   },
   "PRODUCT_DESCRIPTION": {
-    "message": "Remote support in Chromium.",
+    "message": "Allow another user to access your computer securely over the Internet. Ideal for remote technical support.",
     "description": "Web-app description. Displayed in Chromium's extensions page."
   },
   "PRODUCT_NAME": {
