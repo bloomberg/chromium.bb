@@ -13,6 +13,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/gfx/point.h"
 
 class SkBitmap;
@@ -159,6 +160,9 @@ class MenuGtk {
   // Sets the activating widget back to a normal appearance.
   CHROMEGTK_CALLBACK_0(MenuGtk, void, OnMenuHidden);
 
+  // Focus out event handler for the menu.
+  CHROMEGTK_CALLBACK_1(MenuGtk, gboolean, OnMenuFocusOut, GdkEventFocus*);
+
   // Sets the enable/disabled state and dynamic labels on our menu items.
   static void SetButtonItemInfo(GtkWidget* button, gpointer userdata);
 
@@ -189,6 +193,8 @@ class MenuGtk {
 
   // We must free these at shutdown.
   std::vector<MenuGtk*> submenus_we_own_;
+
+  ui::GtkSignalRegistrar signal_;
 
   base::WeakPtrFactory<MenuGtk> weak_factory_;
 };

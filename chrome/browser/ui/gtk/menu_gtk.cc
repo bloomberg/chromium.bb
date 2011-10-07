@@ -304,6 +304,9 @@ void MenuGtk::ConnectSignalHandlers() {
   // take a long time or even start a nested message loop.
   g_signal_connect(menu_, "show", G_CALLBACK(OnMenuShowThunk), this);
   g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHiddenThunk), this);
+  GtkWidget *toplevel_window = gtk_widget_get_toplevel(menu_);
+  signal_.Connect(toplevel_window, "focus-out-event",
+                  G_CALLBACK(OnMenuFocusOutThunk), this);
 }
 
 GtkWidget* MenuGtk::AppendMenuItemWithLabel(int command_id,
@@ -729,6 +732,11 @@ void MenuGtk::OnMenuHidden(GtkWidget* widget) {
   if (delegate_)
     delegate_->StoppedShowing();
   model_->MenuClosed();
+}
+
+gboolean MenuGtk::OnMenuFocusOut(GtkWidget* widget, GdkEventFocus* event) {
+  gtk_widget_hide(menu_);
+  return TRUE;
 }
 
 // static
