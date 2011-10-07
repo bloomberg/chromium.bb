@@ -46,6 +46,8 @@ cr.define('oobe', function() {
                                  this.handleSelection_.bind(this));
       imageGrid.addEventListener('activate',
                                  this.handleImageActivated_.bind(this));
+      imageGrid.addEventListener('dblclick',
+                                 this.handleImageDblClick_.bind(this));
 
       imageGrid.addItem(ButtonImages.TAKE_PHOTO,
                         undefined,
@@ -73,9 +75,7 @@ cr.define('oobe', function() {
       var okButton = this.ownerDocument.createElement('button');
       okButton.id = 'ok-button';
       okButton.textContent = localStrings.getString('okButtonText');
-      okButton.addEventListener('click', function(e) {
-        chrome.send('onUserImageAccepted');
-      });
+      okButton.addEventListener('click', this.acceptImage_.bind(this));
       return [ okButton ];
     },
 
@@ -93,9 +93,12 @@ cr.define('oobe', function() {
      */
     handleImageActivated_: function() {
       switch ($('user-image-grid').selectedItemUrl) {
-      case ButtonImages.TAKE_PHOTO:
-        this.handleTakePhoto_();
-        break;
+        case ButtonImages.TAKE_PHOTO:
+          this.handleTakePhoto_();
+          break;
+        default:
+          this.acceptImage_();
+          break;
       }
     },
 
@@ -117,12 +120,32 @@ cr.define('oobe', function() {
     },
 
     /**
+     * Handles double click on the image grid.
+     * @param {Event} e Double click Event.
+     */
+    handleImageDblClick_: function(e) {
+      // If an image is double-clicked and not the grid itself, handle this
+      // as 'OK' button button press.
+      if (e.target.id != 'user-image-grid')
+        this.acceptImage_();
+    },
+
+    /**
      * Event handler that is invoked just before the screen is shown.
      * @param {object} data Screen init payload.
      */
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
       $('user-image-grid').updateAndFocus();
+    },
+
+    /**
+     * Accepts currently selected image, if possible.
+     * @private
+     */
+    acceptImage_: function() {
+      if (!$('ok-button').disabled)
+        chrome.send('onUserImageAccepted');
     },
 
     /**

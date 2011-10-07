@@ -45,6 +45,8 @@ cr.define('options', function() {
       });
       imageGrid.addEventListener('activate',
                                  this.handleImageActivated_.bind(this));
+      imageGrid.addEventListener('dblclick',
+                                 this.handleImageDblClick_.bind(this));
 
       // Add "Take photo" and "Choose a file" buttons in a uniform way with
       // other buttons.
@@ -80,12 +82,20 @@ cr.define('options', function() {
     },
 
     /**
+     * Closes current page, returning back to Personal Stuff page.
+     * @private
+     */
+    closePage_: function() {
+      OptionsPage.navigateToPage('personal');
+    },
+
+    /**
      * Handles "Take photo" button activation.
      * @private
      */
     handleTakePhoto_: function() {
       chrome.send('takePhoto');
-      OptionsPage.navigateToPage('personal');
+      this.closePage_();
     },
 
     /**
@@ -94,7 +104,7 @@ cr.define('options', function() {
      */
     handleChooseFile_: function() {
       chrome.send('chooseFile');
-      OptionsPage.navigateToPage('personal');
+      this.closePage_();
     },
 
     /**
@@ -109,7 +119,20 @@ cr.define('options', function() {
         case ButtonImages.CHOOSE_FILE:
           this.handleChooseFile_();
           break;
+        default:
+          this.closePage_();
+          break;
       }
+    },
+
+    /**
+     * Handles double click on the image grid.
+     * @param {Event} e Double click Event.
+     */
+    handleImageDblClick_: function(e) {
+      // If an image is double-clicked and not the grid itself, close the page.
+      if (e.target.id != 'images-grid')
+        this.closePage_();
     },
 
     /**
