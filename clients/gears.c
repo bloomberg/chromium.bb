@@ -207,9 +207,12 @@ draw_gears(struct gears *gears)
 	window_get_child_allocation(gears->window, &allocation);
 	window_get_allocation(gears->window, &window_allocation);
 
-	display_acquire_window_surface(gears->d,
-				       gears->window,
-				       gears->context);
+	if (display_acquire_window_surface(gears->d,
+					    gears->window,
+					    gears->context) < 0) {
+		die("Unable to acquire window surface, "
+		    "compiled without cairo-egl?\n");
+	}
 	
 	glViewport(allocation.x,
 		   window_allocation.height - allocation.height - allocation.x,

@@ -67,7 +67,7 @@ display_get_rgb_egl_config(struct display *d);
 EGLConfig
 display_get_argb_egl_config(struct display *d);
 
-void
+int
 display_acquire_window_surface(struct display *display,
 			       struct window *window,
 			       EGLContext ctx);

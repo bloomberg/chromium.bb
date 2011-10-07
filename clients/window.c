@@ -2211,7 +2211,7 @@ display_get_shell(struct display *display)
 	return display->shell;
 }
 
-void
+int
 display_acquire_window_surface(struct display *display,
 			       struct window *window,
 			       EGLContext ctx)
@@ -2221,10 +2221,10 @@ display_acquire_window_surface(struct display *display,
 	cairo_device_t *device;
 
 	if (!window->cairo_surface)
-		return;
+		return -1;
 	device = cairo_surface_get_device(window->cairo_surface);
 	if (!device)
-		return;
+		return -1;
 
 	if (!ctx) {
 		if (device == display->rgb_device)
@@ -2241,6 +2241,10 @@ display_acquire_window_surface(struct display *display,
 	cairo_device_acquire(device);
 	if (!eglMakeCurrent(display->dpy, data->surf, data->surf, ctx))
 		fprintf(stderr, "failed to make surface current\n");
+
+	return 0;
+#else
+	return -1;
 #endif
 }
 
