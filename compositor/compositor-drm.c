@@ -826,8 +826,6 @@ drm_compositor_create(struct wl_display *display,
 		udev_device_unref(device);
 	}
 
-	udev_enumerate_unref(e);
-
 	if (drm_device == NULL) {
 		fprintf(stderr, "no drm device found\n");
 		return NULL;
@@ -857,6 +855,9 @@ drm_compositor_create(struct wl_display *display,
 		fprintf(stderr, "failed to create output for %s\n", path);
 		return NULL;
 	}
+
+	udev_enumerate_unref(e);
+	path = NULL;
 
 	evdev_input_add_devices(&ec->base, ec->udev, seat);
 
