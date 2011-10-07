@@ -122,16 +122,12 @@ void RenderViewTest::SetUp() {
   WebScriptController::registerExtension(new ChromeV8Extension(
       "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL));
 
-  EventBindings::SetRenderThread(&render_thread_);
-  ChromeV8ContextSet::SetDeleteLoop(&msg_loop_);
-
   mock_process_.reset(new MockRenderProcess);
 
   render_thread_.set_routing_id(kRouteId);
 
   // This needs to pass the mock render thread to the view.
-  view_ = RenderView::Create(&render_thread_,
-                             0,
+  view_ = RenderView::Create(0,
                              kOpenerId,
                              RendererPreferences(),
                              WebPreferences(),
@@ -159,8 +155,6 @@ void RenderViewTest::TearDown() {
 
   // Run the loop so the release task from the renderwidget executes.
   ProcessPendingMessages();
-
-  EventBindings::SetRenderThread(NULL);
 
   view_ = NULL;
 

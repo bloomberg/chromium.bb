@@ -203,21 +203,19 @@ void DestroyContext(RendererGLContext* context, GLuint program, GLuint buffer) {
 
 // static
 RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
-    int32 opener_id, content::RenderThread* render_thread,
-    webkit::ppapi::PluginInstance* plugin,
+    int32 opener_id, webkit::ppapi::PluginInstance* plugin,
     const GURL& active_url) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
-      new RenderWidgetFullscreenPepper(render_thread, plugin, active_url));
+      new RenderWidgetFullscreenPepper(plugin, active_url));
   widget->Init(opener_id);
   return widget.release();
 }
 
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
-    content::RenderThread* render_thread,
     webkit::ppapi::PluginInstance* plugin,
     const GURL& active_url)
-    : RenderWidgetFullscreen(render_thread),
+    : RenderWidgetFullscreen(),
       active_url_(active_url),
       plugin_(plugin),
       context_(NULL),

@@ -45,14 +45,6 @@ bool HasSufficientPermissions(RenderView* render_view, const GURL& event_url) {
 
 }
 
-// static
-MessageLoop* ChromeV8ContextSet::delete_loop_ = NULL;
-
-// static
-void ChromeV8ContextSet::SetDeleteLoop(MessageLoop* delete_loop) {
-  delete_loop_ = delete_loop;
-}
-
 ChromeV8ContextSet::ChromeV8ContextSet() {
 }
 ChromeV8ContextSet::~ChromeV8ContextSet() {
@@ -79,10 +71,7 @@ void ChromeV8ContextSet::Add(ChromeV8Context* context) {
 void ChromeV8ContextSet::Remove(ChromeV8Context* context) {
   if (contexts_.erase(context)) {
     context->clear_web_frame();
-    MessageLoop* loop = delete_loop_ ?
-        delete_loop_ :
-        RenderThread::Get()->GetMessageLoop();
-    loop->DeleteSoon(FROM_HERE, context);
+    MessageLoop::current()->DeleteSoon(FROM_HERE, context);
   }
 }
 

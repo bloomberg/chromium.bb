@@ -20,11 +20,6 @@ class Extension;
 class EventBindings {
  public:
   static v8::Extension* Get(ExtensionDispatcher* dispatcher);
-
-  // Allow RenderThread to be mocked out. It would be better if
-  // RenderView::current() worked inside tests. See crbug.com/98375.
-  static void SetRenderThread(content::RenderThread* thread);
-  static content::RenderThread* GetRenderThread();
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_

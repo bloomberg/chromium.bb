@@ -61,13 +61,12 @@ using WebKit::WebTextDirection;
 using WebKit::WebTouchEvent;
 using WebKit::WebVector;
 using WebKit::WebWidget;
+using content::RenderThread;
 
-RenderWidget::RenderWidget(content::RenderThread* render_thread,
-                           WebKit::WebPopupType popup_type)
+RenderWidget::RenderWidget(WebKit::WebPopupType popup_type)
     : routing_id_(MSG_ROUTING_NONE),
       webwidget_(NULL),
       opener_id_(MSG_ROUTING_NONE),
-      render_thread_(render_thread),
       host_window_(0),
       current_paint_buf_(NULL),
       next_paint_flags_(0),
@@ -93,7 +92,7 @@ RenderWidget::RenderWidget(content::RenderThread* render_thread,
       animation_task_posted_(false),
       invalidation_task_posted_(false) {
   RenderProcess::current()->AddRefProcess();
-  DCHECK(render_thread_);
+  DCHECK(RenderThread::Get());
   has_disable_gpu_vsync_switch_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuVsync);
 }
@@ -111,11 +110,9 @@ RenderWidget::~RenderWidget() {
 
 // static
 RenderWidget* RenderWidget::Create(int32 opener_id,
-                                   content::RenderThread* render_thread,
                                    WebKit::WebPopupType popup_type) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
-  scoped_refptr<RenderWidget> widget(new RenderWidget(render_thread,
-                                                        popup_type));
+  scoped_refptr<RenderWidget> widget(new RenderWidget(popup_type));
   widget->Init(opener_id);  // adds reference
   return widget;
 }
@@ -150,9 +147,9 @@ void RenderWidget::DoInit(int32 opener_id,
 
   webwidget_ = web_widget;
 
-  bool result = render_thread_->Send(create_widget_message);
+  bool result = RenderThread::Get()->Send(create_widget_message);
   if (result) {
-    render_thread_->AddRoute(routing_id_, this);
+    RenderThread::Get()->AddRoute(routing_id_, this);
     // Take a reference on behalf of the RenderThread.  This will be balanced
     // when we receive ViewMsg_Close.
     AddRef();
@@ -225,7 +222,7 @@ bool RenderWidget::Send(IPC::Message* message) {
   if (message->routing_id() == MSG_ROUTING_NONE)
     message->set_routing_id(routing_id_);
 
-  return render_thread_->Send(message);
+  return RenderThread::Get()->Send(message);
 }
 
 // Got a response from the browser after the renderer decided to create a new
@@ -244,7 +241,7 @@ void RenderWidget::OnClose() {
 
   // Browser correspondence is no longer needed at this point.
   if (routing_id_ != MSG_ROUTING_NONE) {
-    render_thread_->RemoveRoute(routing_id_);
+    RenderThread::Get()->RemoveRoute(routing_id_);
     SetHidden(false);
   }
 
@@ -1267,9 +1264,9 @@ void RenderWidget::SetHidden(bool hidden) {
   // The status has changed.  Tell the RenderThread about it.
   is_hidden_ = hidden;
   if (is_hidden_)
-    render_thread_->WidgetHidden();
+    RenderThread::Get()->WidgetHidden();
   else
-    render_thread_->WidgetRestored();
+    RenderThread::Get()->WidgetRestored();
 }
 
 void RenderWidget::SetBackground(const SkBitmap& background) {

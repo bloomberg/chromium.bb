@@ -11,7 +11,6 @@
 
 TEST(ChromeV8ContextSet, Lifecycle) {
   MessageLoop loop;
-  ChromeV8ContextSet::SetDeleteLoop(&loop);
 
   ChromeV8ContextSet context_set;
 
@@ -48,7 +47,6 @@ TEST(ChromeV8ContextSet, Lifecycle) {
 
 TEST(ChromeV8ContextSet, RemoveByV8Context) {
   MessageLoop loop;
-  ChromeV8ContextSet::SetDeleteLoop(&loop);
 
   ChromeV8ContextSet context_set;
 

@@ -38,9 +38,6 @@ using content::RenderThread;
 
 namespace {
 
-// Keep a local cache of RenderThread so that we can mock it out for unit tests.
-static RenderThread* render_thread = NULL;
-
 // A map of event names to the number of listeners for that event. We notify
 // the browser about event listeners when we transition between 0 and 1.
 typedef std::map<std::string, int> EventListenerCounts;
@@ -98,7 +95,7 @@ class ExtensionImpl : public ChromeV8Extension {
         return v8::Undefined();
 
       if (++listener_counts[event_name] == 1) {
-        EventBindings::GetRenderThread()->Send(
+        content::RenderThread::Get()->Send(
             new ExtensionHostMsg_AddListener(context->extension_id(),
                                              event_name));
       }
@@ -124,7 +121,7 @@ class ExtensionImpl : public ChromeV8Extension {
           GetListenerCounts(context->extension_id());
       std::string event_name(*v8::String::AsciiValue(args[0]));
       if (--listener_counts[event_name] == 0) {
-        EventBindings::GetRenderThread()->Send(
+        content::RenderThread::Get()->Send(
             new ExtensionHostMsg_RemoveListener(context->extension_id(),
                                                 event_name));
       }
@@ -171,14 +168,4 @@ class ExtensionImpl : public ChromeV8Extension {
 v8::Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
   static v8::Extension* extension = new ExtensionImpl(dispatcher);
   return extension;
-}
-
-// static
-void EventBindings::SetRenderThread(RenderThread* thread) {
-  render_thread = thread;
-}
-
-// static
-RenderThread* EventBindings::GetRenderThread() {
-  return render_thread ? render_thread : RenderThread::Get();
 }

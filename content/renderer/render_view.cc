@@ -238,6 +238,7 @@ using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
 using content::NavigationState;
+using content::RenderThread;
 using content::RenderViewObserver;
 using content::RenderViewVisitor;
 using content::V8ValueConverter;
@@ -300,8 +301,7 @@ struct RenderView::PendingFileChooser {
   WebFileChooserCompletion* completion;  // MAY BE NULL to skip callback.
 };
 
-RenderView::RenderView(content::RenderThread* render_thread,
-                       gfx::NativeViewId parent_hwnd,
+RenderView::RenderView(gfx::NativeViewId parent_hwnd,
                        int32 opener_id,
                        const RendererPreferences& renderer_prefs,
                        const WebPreferences& webkit_prefs,
@@ -309,7 +309,7 @@ RenderView::RenderView(content::RenderThread* render_thread,
                        int32 routing_id,
                        int64 session_storage_namespace_id,
                        const string16& frame_name)
-    : RenderWidget(render_thread, WebKit::WebPopupTypeNone),
+    : RenderWidget(WebKit::WebPopupTypeNone),
       webkit_preferences_(webkit_prefs),
       send_content_state_immediately_(false),
       enabled_bindings_(0),
@@ -358,7 +358,7 @@ RenderView::RenderView(content::RenderThread* render_thread,
   intents_dispatcher_ = new IntentsDispatcher(this);
   notification_provider_ = new NotificationProvider(this);
 
-  render_thread_->AddRoute(routing_id_, this);
+  RenderThread::Get()->AddRoute(routing_id_, this);
   // Take a reference on behalf of the RenderThread.  This will be balanced
   // when we receive ViewMsg_ClosePage.
   AddRef();
@@ -459,7 +459,6 @@ RenderView* RenderView::FromWebView(WebView* webview) {
 
 /*static*/
 RenderView* RenderView::Create(
-    content::RenderThread* render_thread,
     gfx::NativeViewId parent_hwnd,
     int32 opener_id,
     const RendererPreferences& renderer_prefs,
@@ -470,7 +469,6 @@ RenderView* RenderView::Create(
     const string16& frame_name) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   return new RenderView(
-      render_thread,
       parent_hwnd,
       opener_id,
       renderer_prefs,
@@ -949,7 +947,7 @@ void RenderView::OnCopyToFindPboard() {
   WebFrame* frame = webview()->focusedFrame();
   if (frame->hasSelection()) {
     string16 selection = frame->selectionAsText();
-    render_thread_->Send(
+    RenderThread::Get()->Send(
         new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
   }
 }
@@ -1335,15 +1333,14 @@ WebView* RenderView::createView(
   int64 cloned_session_storage_namespace_id;
   bool opener_suppressed = creator->willSuppressOpenerInNewFrame();
 
-  render_thread_->Send(
+  RenderThread::Get()->Send(
       new ViewHostMsg_CreateWindow(params,
                                    &routing_id,
                                    &cloned_session_storage_namespace_id));
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
 
-  RenderView* view = RenderView::Create(render_thread_,
-                                        0,
+  RenderView* view = RenderView::Create(0,
                                         routing_id_,
                                         renderer_preferences_,
                                         webkit_preferences_,
@@ -1370,9 +1367,7 @@ WebView* RenderView::createView(
 }
 
 WebWidget* RenderView::createPopupMenu(WebKit::WebPopupType popup_type) {
-  RenderWidget* widget = RenderWidget::Create(routing_id_,
-                                              render_thread_,
-                                              popup_type);
+  RenderWidget* widget = RenderWidget::Create(routing_id_, popup_type);
   return widget->webwidget();
 }
 
@@ -1399,7 +1394,7 @@ RenderWidgetFullscreenPepper* RenderView::CreatePepperFullscreenContainer(
   if (webview() && webview()->mainFrame())
     active_url = GURL(webview()->mainFrame()->document().url());
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
-      routing_id_, render_thread_, plugin, active_url);
+      routing_id_, plugin, active_url);
   widget->show(WebKit::WebNavigationPolicyIgnore);
   return widget;
 }
@@ -2973,15 +2968,13 @@ webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
 
 void RenderView::CreatedPluginWindow(gfx::PluginWindowHandle window) {
 #if defined(USE_X11)
-  render_thread_->Send(new ViewHostMsg_CreatePluginContainer(
-      routing_id(), window));
+  Send(new ViewHostMsg_CreatePluginContainer(routing_id(), window));
 #endif
 }
 
 void RenderView::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
 #if defined(USE_X11)
-  render_thread_->Send(new ViewHostMsg_DestroyPluginContainer(
-      routing_id(), window));
+  Send(new ViewHostMsg_DestroyPluginContainer(routing_id(), window));
 #endif
   CleanupWindowInPluginMoves(window);
 }

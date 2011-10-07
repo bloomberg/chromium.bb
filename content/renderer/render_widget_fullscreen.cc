@@ -10,11 +10,10 @@
 using WebKit::WebWidget;
 
 // static
-RenderWidgetFullscreen* RenderWidgetFullscreen::Create(
-    int32 opener_id, content::RenderThread* render_thread) {
+RenderWidgetFullscreen* RenderWidgetFullscreen::Create(int32 opener_id) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
   scoped_refptr<RenderWidgetFullscreen> widget(
-      new RenderWidgetFullscreen(render_thread));
+      new RenderWidgetFullscreen());
   widget->Init(opener_id);
   return widget.release();
 }
@@ -45,7 +44,6 @@ void RenderWidgetFullscreen::show(WebKit::WebNavigationPolicy) {
   }
 }
 
-RenderWidgetFullscreen::RenderWidgetFullscreen(
-    content::RenderThread* render_thread)
-    : RenderWidget(render_thread, WebKit::WebPopupTypeNone) {
+RenderWidgetFullscreen::RenderWidgetFullscreen()
+    : RenderWidget(WebKit::WebPopupTypeNone) {
 }

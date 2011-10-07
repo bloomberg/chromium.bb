@@ -14,7 +14,6 @@
 
 class ChromeV8Context;
 class GURL;
-class MessageLoop;
 class RenderView;
 
 namespace base {
@@ -34,9 +33,6 @@ class Context;
 // extensions.
 class ChromeV8ContextSet {
  public:
-  // For testing.
-  static void SetDeleteLoop(MessageLoop* message_loop);
-
   ChromeV8ContextSet();
   ~ChromeV8ContextSet();
 
@@ -75,10 +71,6 @@ class ChromeV8ContextSet {
                                   const GURL& event_url) const;
 
  private:
-  // The loop we will delete ChromeV8Context on. If NULL, we use
-  // RenderThread's loop instead.
-  static MessageLoop* delete_loop_;
-
   ContextSet contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeV8ContextSet);

@@ -144,7 +144,7 @@ class ExtensionImpl : public ChromeV8Extension {
       // Send via the RenderThread because the RenderView might be closing.
       bool notify_browser = args[1]->BooleanValue();
       if (notify_browser)
-        EventBindings::GetRenderThread()->Send(
+        content::RenderThread::Get()->Send(
             new ExtensionHostMsg_CloseChannel(port_id));
       ClearPortData(port_id);
     }
@@ -169,7 +169,7 @@ class ExtensionImpl : public ChromeV8Extension {
       int port_id = args[0]->Int32Value();
       if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
         // Send via the RenderThread because the RenderView might be closing.
-        EventBindings::GetRenderThread()->Send(
+        content::RenderThread::Get()->Send(
             new ExtensionHostMsg_CloseChannel(port_id));
         ClearPortData(port_id);
       }

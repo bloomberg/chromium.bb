@@ -41,10 +41,6 @@ class WebWidget;
 struct WebPopupMenuInfo;
 }
 
-namespace content {
-class RenderThread;
-}
-
 namespace gfx {
 class Point;
 }
@@ -72,11 +68,8 @@ class CONTENT_EXPORT RenderWidget
       public base::RefCounted<RenderWidget> {
  public:
   // Creates a new RenderWidget.  The opener_id is the routing ID of the
-  // RenderView that this widget lives inside. The render_thread is any
-  // content::RenderThread implementation, mostly commonly
-  // RenderThread::current().
+  // RenderView that this widget lives inside.
   static RenderWidget* Create(int32 opener_id,
-                              content::RenderThread* render_thread,
                               WebKit::WebPopupType popup_type);
 
   // Creates a WebWidget based on the popup type.
@@ -148,8 +141,7 @@ class CONTENT_EXPORT RenderWidget
   // For unit tests.
   friend class RenderWidgetTest;
 
-  RenderWidget(content::RenderThread* render_thread,
-               WebKit::WebPopupType popup_type);
+  explicit RenderWidget(WebKit::WebPopupType popup_type);
   virtual ~RenderWidget();
 
   // Initializes this view with the given opener.  CompleteInit must be called
@@ -338,9 +330,6 @@ class CONTENT_EXPORT RenderWidget
   // This ID may refer to an invalid view if that view is closed before this
   // view is.
   int32 opener_id_;
-
-  // The thread that does our IPC.
-  content::RenderThread* render_thread_;
 
   // The position where this view should be initially shown.
   gfx::Rect initial_pos_;
