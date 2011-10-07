@@ -52,6 +52,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
@@ -191,7 +192,17 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
   }
 
   virtual bool OffTheRecord() OVERRIDE {
-    return filter()->OffTheRecord();
+    if (filter()->OffTheRecord())
+      return true;
+    if (content::GetContentClient()->browser()->AllowSaveLocalState(context_))
+      return false;
+
+    // For now, only disallow storing data for Flash <http://crbug.com/97319>.
+    for (size_t i = 0; i < info_.mime_types.size(); ++i) {
+      if (info_.mime_types[i].mime_type == kFlashPluginSwfMimeType)
+        return true;
+    }
+    return false;
   }
 
   virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
@@ -374,9 +385,7 @@ void RenderMessageFilter::OnDestruct() const {
 }
 
 bool RenderMessageFilter::OffTheRecord() const {
-  return incognito_ ||
-         !content::GetContentClient()->browser()->AllowSaveLocalState(
-             resource_context_);
+  return incognito_;
 }
 
 void RenderMessageFilter::OnMsgCreateWindow(
