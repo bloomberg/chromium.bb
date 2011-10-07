@@ -56,10 +56,6 @@ namespace policy {
 class URLBlacklistManager;
 }  // namespace policy
 
-namespace prerender {
-class PrerenderManager;
-};  // namespace prerender
-
 namespace quota {
 class QuotaManager;
 };  // namespace quota
@@ -160,7 +156,6 @@ class ProfileIOData {
     scoped_refptr<quota::QuotaManager> quota_manager;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
     DesktopNotificationService* notification_service;
-    base::Callback<prerender::PrerenderManager*(void)> prerender_manager_getter;
     scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
     // We need to initialize the ProxyConfigService from the UI thread
     // because on linux it relies on initializing things through gconf,
@@ -299,8 +294,6 @@ class ProfileIOData {
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   mutable DesktopNotificationService* notification_service_;
-  mutable base::Callback<prerender::PrerenderManager*(void)>
-      prerender_manager_getter_;
 
   mutable ResourceContext resource_context_;
 

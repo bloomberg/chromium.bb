@@ -81,7 +81,6 @@ class PrerenderTracker {
   // get.
   bool PotentiallyDelayRequestOnIOThread(
       const GURL& gurl,
-      const base::Callback<PrerenderManager*(void)>& prerender_manager_getter,
       int child_id,
       int route_id,
       int request_id);

@@ -14,6 +14,7 @@
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
@@ -58,13 +59,11 @@ class InstantResourceDispatcherHostLoginDelegate
 };
 
 void AddPrerenderOnUI(
-    const base::Callback<prerender::PrerenderManager*(void)>&
-        prerender_manager_getter,
     int render_process_id, int render_view_id,
     const GURL& url, const GURL& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prerender::PrerenderManager* prerender_manager =
-      prerender_manager_getter.Run();
+      prerender::FindPrerenderManagerUsingRenderProcessId(render_process_id);
   if (!prerender_manager || !prerender_manager->is_enabled())
     return;
 
@@ -124,7 +123,6 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
     if (prerender::PrerenderManager::IsPrerenderingPossible()) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           NewRunnableFunction(AddPrerenderOnUI,
-                              resource_context.prerender_manager_getter(),
                               child_id,
                               route_id,
                               request_data.url,
@@ -224,8 +222,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldDeferStart(
   ResourceDispatcherHostRequestInfo* info =
       resource_dispatcher_host_->InfoForRequest(request);
   return prerender_tracker_->PotentiallyDelayRequestOnIOThread(
-      request->url(), resource_context.prerender_manager_getter(),
-      info->child_id(), info->route_id(), info->request_id());
+      request->url(), info->child_id(), info->route_id(), info->request_id());
 }
 
 bool ChromeResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(

@@ -997,4 +997,21 @@ void PrerenderManager::RecordFinalStatus(Origin origin,
   histograms_->RecordFinalStatus(origin, experiment_id, final_status);
 }
 
+PrerenderManager* FindPrerenderManagerUsingRenderProcessId(
+    int render_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(render_process_id);
+  // Each render process is guaranteed to only hold RenderViews owned by the
+  // same BrowserContext. This is enforced by
+  // RenderProcessHost::GetExistingProcessHost.
+  if (!render_process_host || !render_process_host->browser_context())
+    return NULL;
+  Profile* profile = Profile::FromBrowserContext(
+      render_process_host->browser_context());
+  if (!profile)
+    return NULL;
+  return PrerenderManagerFactory::GetInstance()->GetForProfile(profile);
+}
+
 }  // namespace prerender

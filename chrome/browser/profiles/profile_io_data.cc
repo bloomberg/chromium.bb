@@ -30,8 +30,6 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/transport_security_persister.h"
@@ -181,15 +179,6 @@ Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
   return NULL;
 }
 
-prerender::PrerenderManager* GetPrerenderManagerOnUI(
-    const base::Callback<Profile*(void)>& profile_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Profile* profile = profile_getter.Run();
-  if (profile)
-    return prerender::PrerenderManagerFactory::GetForProfile(profile);
-  return NULL;
-}
-
 }  // namespace
 
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
@@ -245,8 +234,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->extension_info_map = profile->GetExtensionInfoMap();
   params->notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
-  params->prerender_manager_getter =
-      base::Bind(&GetPrerenderManagerOnUI, profile_getter);
   params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
   params->proxy_config_service.reset(
@@ -497,7 +484,6 @@ void ProfileIOData::LazyInitialize() const {
   host_content_settings_map_ = profile_params_->host_content_settings_map;
   notification_service_ = profile_params_->notification_service;
   extension_info_map_ = profile_params_->extension_info_map;
-  prerender_manager_getter_ = profile_params_->prerender_manager_getter;
 
   resource_context_.set_host_resolver(io_thread_globals->host_resolver.get());
   resource_context_.set_request_context(main_request_context_);
@@ -507,7 +493,6 @@ void ProfileIOData::LazyInitialize() const {
   resource_context_.set_file_system_context(file_system_context_);
   resource_context_.set_quota_manager(quota_manager_);
   resource_context_.set_host_zoom_map(host_zoom_map_);
-  resource_context_.set_prerender_manager_getter(prerender_manager_getter_);
   resource_context_.SetUserData(NULL, const_cast<ProfileIOData*>(this));
   resource_context_.set_media_observer(
       io_thread_globals->media.media_internals.get());

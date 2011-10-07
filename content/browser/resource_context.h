@@ -28,9 +28,6 @@ namespace net {
 class HostResolver;
 class URLRequestContext;
 }  // namespace net
-namespace prerender {
-class PrerenderManager;
-}  // namespace prerender
 namespace quota {
 class QuotaManager;
 };  // namespace quota
@@ -89,16 +86,6 @@ class CONTENT_EXPORT ResourceContext {
   void set_media_stream_manager(
       media_stream::MediaStreamManager* media_stream_manager);
 
-  // =======================================================================
-  // TODO(willchan): These don't belong in content/. Remove them eventually.
-
-  // TODO(cbentzel): Kill this one.
-  const base::Callback<prerender::PrerenderManager*(void)>&
-      prerender_manager_getter() const;
-  void set_prerender_manager_getter(
-      const base::Callback<prerender::PrerenderManager*(void)>&
-          prerender_manager_getter);
-
  protected:
   ResourceContext();
 
@@ -120,12 +107,6 @@ class CONTENT_EXPORT ResourceContext {
   // Externally-defined data accessible by key.
   typedef std::map<const void*, void*> UserDataMap;
   UserDataMap user_data_;
-
-
-  // =======================================================================
-  // TODO(willchan): These don't belong in content/. Remove them eventually.
-
-  base::Callback<prerender::PrerenderManager*(void)> prerender_manager_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceContext);
 };

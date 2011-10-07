@@ -33,7 +33,6 @@ void StartDeferredRequestOnIOThread(
 }
 
 bool ShouldCancelRequest(
-    const base::Callback<PrerenderManager*(void)>& prerender_manager_getter,
     int child_id,
     int route_id) {
   // Check if the RenderViewHost associated with (child_id, route_id) no
@@ -47,13 +46,13 @@ bool ShouldCancelRequest(
       RenderViewHost::FromID(child_id, route_id);
   if (!render_view_host)
     return true;
-  PrerenderManager* prerender_manager = prerender_manager_getter.Run();
+  PrerenderManager* prerender_manager =
+      FindPrerenderManagerUsingRenderProcessId(child_id);
   return (prerender_manager &&
           prerender_manager->IsOldRenderViewHost(render_view_host));
 }
 
 void HandleDelayedRequestOnUIThread(
-    const base::Callback<PrerenderManager*(void)>& prerender_manager_getter,
     int child_id,
     int route_id,
     int request_id) {
@@ -61,7 +60,7 @@ void HandleDelayedRequestOnUIThread(
   ResourceDispatcherHost* resource_dispatcher_host =
       g_browser_process->resource_dispatcher_host();
   CHECK(resource_dispatcher_host);
-  if (ShouldCancelRequest(prerender_manager_getter, child_id, route_id)) {
+  if (ShouldCancelRequest(child_id, route_id)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(&CancelDeferredRequestOnIOThread,
@@ -195,7 +194,6 @@ bool PrerenderTracker::TryCancelOnIOThread(
 
 bool PrerenderTracker::PotentiallyDelayRequestOnIOThread(
     const GURL& gurl,
-    const base::Callback<PrerenderManager*(void)>& prerender_manager_getter,
     int process_id,
     int route_id,
     int request_id) {
@@ -206,7 +204,6 @@ bool PrerenderTracker::PotentiallyDelayRequestOnIOThread(
       BrowserThread::UI,
       FROM_HERE,
       NewRunnableFunction(&HandleDelayedRequestOnUIThread,
-                          prerender_manager_getter,
                           process_id,
                           route_id,
                           request_id));

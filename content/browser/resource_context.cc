@@ -178,18 +178,4 @@ void ResourceContext::set_media_stream_manager(
   media_stream_manager_ = media_stream_manager;
 }
 
-const base::Callback<prerender::PrerenderManager*(void)>&
-ResourceContext::prerender_manager_getter() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return prerender_manager_getter_;
-}
-
-void ResourceContext::set_prerender_manager_getter(
-      const base::Callback<prerender::PrerenderManager*(void)>&
-          prerender_manager_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  prerender_manager_getter_ = prerender_manager_getter;
-}
-
 }  // namespace content
