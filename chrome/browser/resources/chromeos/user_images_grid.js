@@ -200,7 +200,7 @@ cr.define('options', function() {
   UserImagesGrid.ButtonImages = {
     TAKE_PHOTO: 'chrome://theme/IDR_BUTTON_USER_IMAGE_TAKE_PHOTO',
     CHOOSE_FILE: 'chrome://theme/IDR_BUTTON_USER_IMAGE_CHOOSE_FILE',
-    PROFILE_PICTURE: 'chrome://theme/IDR_INCOGNITO_GUY'
+    PROFILE_PICTURE: 'chrome://theme/IDR_PROFILE_PICTURE_LOADING'
   };
 
   return {
