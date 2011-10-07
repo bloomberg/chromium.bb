@@ -24,7 +24,6 @@ class PolicyUIHandler : public WebUIMessageHandler,
   virtual ~PolicyUIHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // policy::PolicyStatus::Observer implementation.

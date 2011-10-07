@@ -9,7 +9,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
@@ -22,6 +21,11 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
 
 ChromeWebUIDataSource* CreatePolicyUIHTMLSource() {
   ChromeWebUIDataSource* source =
@@ -91,10 +95,6 @@ PolicyUIHandler::~PolicyUIHandler() {
   policy_status_->RemoveObserver(this);
 }
 
-WebUIMessageHandler* PolicyUIHandler::Attach(WebUI* web_ui) {
-  return WebUIMessageHandler::Attach(web_ui);
-}
-
 void PolicyUIHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "requestData",
@@ -144,61 +144,61 @@ DictionaryValue* PolicyUIHandler::GetStatusData() {
   policy::CloudPolicySubsystem* user_subsystem =
       connector->user_cloud_policy_subsystem();
 
-  // If no CloudPolicySubsystem is available, the status section is not
-  // displayed and we can return here.
-  if (!device_subsystem || !user_subsystem) {
-    results->SetBoolean("displayStatusSection", false);
-    return results;
-  } else {
-    results->SetBoolean("displayStatusSection", true);
+  bool device_status_available = false;
+  bool user_status_available = false;
+
+  if (device_subsystem && connector->IsEnterpriseManaged()) {
+    device_status_available = true;
+
+    results->SetString("deviceStatusMessage",
+        CreateStatusMessageString(device_subsystem->error_details()));
+    results->SetString("deviceLastFetchTime",
+        GetLastFetchTime(device_subsystem));
+    results->SetString("devicePolicyDomain",
+        ASCIIToUTF16(connector->GetEnterpriseDomain()));
+    results->SetString("deviceId",
+        GetDeviceId(connector->GetDeviceCloudPolicyDataStore()));
+    results->SetString("deviceFetchInterval",
+        GetPolicyFetchInterval(prefs::kDevicePolicyRefreshRate));
   }
 
-  // Get the server status message and the time at which policy was last fetched
-  // for both user and device policy from the appropriate CloudPolicySubsystem.
-  results->SetString("deviceStatusMessage",
-      CreateStatusMessageString(device_subsystem->error_details()));
-  results->SetString("deviceLastFetchTime", GetLastFetchTime(device_subsystem));
-  results->SetString("userStatusMessage",
-      CreateStatusMessageString(user_subsystem->error_details()));
-  results->SetString("userLastFetchTime", GetLastFetchTime(user_subsystem));
+  if (user_subsystem &&
+      user_subsystem->state() != policy::CloudPolicySubsystem::UNMANAGED) {
+    user_status_available = true;
 
-  // Get enterprise domain and username (only on ChromeOS).
-#if defined (OS_CHROMEOS)
-  chromeos::UserManager::User user =
-     chromeos::UserManager::Get()->logged_in_user();
-  results->SetString("devicePolicyDomain",
-      ASCIIToUTF16(connector->GetEnterpriseDomain()));
-  results->SetString("user", ASCIIToUTF16(user.email()));
+    results->SetString("userStatusMessage",
+        CreateStatusMessageString(user_subsystem->error_details()));
+    results->SetString("userLastFetchTime", GetLastFetchTime(user_subsystem));
+
+#if defined(OS_CHROMEOS)
+    chromeos::UserManager::User user =
+       chromeos::UserManager::Get()->logged_in_user();
+    results->SetString("user", ASCIIToUTF16(user.email()));
 #else
-  results->SetString("devicePolicyDomain", string16());
-  results->SetString("user", string16());
+    results->SetString("user", string16());
 #endif
 
-  // Get the device ids for both user and device policy from the appropriate
-  // CloudPolicyDataStore.
-  results->SetString("deviceId",
-      GetDeviceId(connector->GetDeviceCloudPolicyDataStore()));
-  results->SetString("userId",
-      GetDeviceId(connector->GetUserCloudPolicyDataStore()));
+    results->SetString("userId",
+        GetDeviceId(connector->GetUserCloudPolicyDataStore()));
+    results->SetString("userFetchInterval",
+        GetPolicyFetchInterval(prefs::kUserPolicyRefreshRate));
+  }
 
-  // Get the policy refresh rate for both user and device policy from the
-  // appropriate preference.
-  results->SetString("deviceFetchInterval",
-      GetPolicyFetchInterval(prefs::kDevicePolicyRefreshRate));
-  results->SetString("userFetchInterval",
-      GetPolicyFetchInterval(prefs::kUserPolicyRefreshRate));
-
+  results->SetBoolean("displayDeviceStatus", device_status_available);
+  results->SetBoolean("displayUserStatus", user_status_available);
+  results->SetBoolean("displayStatusSection",
+                      user_status_available || device_status_available);
   return results;
 }
 
 string16 PolicyUIHandler::GetLastFetchTime(
     policy::CloudPolicySubsystem* subsystem) {
-  policy::CloudPolicyCacheBase* cache_base =
-      subsystem->GetCloudPolicyCacheBase();
-  base::TimeDelta time_delta =
-      base::Time::NowFromSystemTime() - cache_base->last_policy_refresh_time();
-
-  return TimeFormat::TimeElapsed(time_delta);
+  base::Time last_refresh_time =
+      subsystem->GetCloudPolicyCacheBase()->last_policy_refresh_time();
+  if (last_refresh_time.is_null())
+    return l10n_util::GetStringUTF16(IDS_POLICY_NEVER_FETCHED);
+  base::Time now = base::Time::NowFromSystemTime();
+  return TimeFormat::TimeElapsed(now - last_refresh_time);
 }
 
 string16 PolicyUIHandler::GetDeviceId(
@@ -215,14 +215,17 @@ string16 PolicyUIHandler::GetPolicyFetchInterval(const char* refresh_pref) {
 // static
 string16 PolicyUIHandler::CreateStatusMessageString(
     policy::CloudPolicySubsystem::ErrorDetails error_details) {
-  static string16 error_to_string[] = { ASCIIToUTF16("OK."),
-                                        ASCIIToUTF16("Network error."),
-                                        ASCIIToUTF16("Network error."),
-                                        ASCIIToUTF16("Bad DMToken."),
-                                        ASCIIToUTF16("Local error."),
-                                        ASCIIToUTF16("Signature mismatch.") };
-  DCHECK(static_cast<size_t>(error_details) < arraysize(error_to_string));
-  return error_to_string[error_details];
+  static int error_to_string_id[] = {
+    IDS_POLICY_STATUS_OK,
+    IDS_POLICY_STATUS_NETWORK_ERROR,
+    IDS_POLICY_STATUS_NETWORK_ERROR,  // this is also a network error.
+    IDS_POLICY_STATUS_DMTOKEN_ERROR,
+    IDS_POLICY_STATUS_LOCAL_ERROR,
+    IDS_POLICY_STATUS_SIGNATURE_ERROR,
+    IDS_POLICY_STATUS_SERIAL_ERROR,
+  };
+  DCHECK(static_cast<size_t>(error_details) < arraysize(error_to_string_id));
+  return l10n_util::GetStringUTF16(error_to_string_id[error_details]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

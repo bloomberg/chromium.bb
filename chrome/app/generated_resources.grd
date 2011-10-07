@@ -4213,6 +4213,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_HIDE" desc="The text for the link that hides overflowing text in a policy value or policy status table cell.">
         [Hide]
       </message>
+      <message name="IDS_POLICY_NEVER_FETCHED" desc="Indicates that a policy fetch was never performed before.">
+        Never
+      </message>
+      <message name="IDS_POLICY_STATUS_OK" desc="Indicates that a policy fetch was successfully completed.">
+        OK
+      </message>
+      <message name="IDS_POLICY_STATUS_NETWORK_ERROR" desc="Indicates that a policy fetch failed due to a network error.">
+        Network error
+      </message>
+      <message name="IDS_POLICY_STATUS_DMTOKEN_ERROR" desc="Indicates that a policy fetch failed because the DMToken was rejected.">
+        Bad DMToken
+      </message>
+      <message name="IDS_POLICY_STATUS_LOCAL_ERROR" desc="Indicates that a policy fetch failed due to a local error.">
+        Local error
+      </message>
+      <message name="IDS_POLICY_STATUS_SIGNATURE_ERROR" desc="Indicates that a policy fetch failed because a signature verification failed.">
+        Signature mismatch
+      </message>
+      <message name="IDS_POLICY_STATUS_SERIAL_ERROR" desc="Indicates that a policy fetch failed because the serial number was invalid.">
+        Invalid serial number
+      </message>
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">
         Careful, these experiments may bite
