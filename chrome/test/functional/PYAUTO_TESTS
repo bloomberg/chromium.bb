@@ -151,8 +151,6 @@
       # -imports.ImportsTest.testFirefoxImportFromPrefs
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
-      # crbug.com/95003
-      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # crbug.com/85598
@@ -269,8 +267,6 @@
       # ==================================================
       # crbug.com/91225
       '-find_in_page.FindMatchTests.testSearchInPDF',
-      # crbug.com/91226
-      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # crbug.com/85310
       '-instant',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
