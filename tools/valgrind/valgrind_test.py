@@ -636,8 +636,13 @@ class ThreadSanitizerBase(object):
     ret += ["--show-pid=no"]
 
     # Don't show googletest frames in stacks.
+    # TODO(timurrrr): we should have an array of functions (since used by
+    # different tools in different formats and .join it
     ret += ["--cut_stack_below=testing*Test*Run*"]
-    ret += ["--cut_stack_below=testing*HandleSehExceptionsInMethodIfSupported"]
+    ret += ["--cut_stack_below=testing*Handle*ExceptionsInMethodIfSupported"]
+    ret += ["--cut_stack_below=MessageLoop*Run"]
+    ret += ["--cut_stack_below=RunnableMethod*"]
+    ret += ["--cut_stack_below=RunnableFunction*"]
 
     return ret
 
@@ -817,8 +822,9 @@ class DrMemory(BaseTool):
     proc += ["-callstack_srcfile_prefix",
              "build\\src,chromium\\src,crt_build\\self_x86"]
     proc += ["-callstack_truncate_below",
-             "main,BaseThreadInitThunk,testing*Test*Run*,"+
-             "testing::internal*,MessageLoop::Run,RunnableMethod*"]
+             "main,BaseThreadInitThunk,"+
+             "testing*Test*Run*,testing::internal::Handle*Exceptions*,"+
+             "MessageLoop::Run,RunnableMethod*,RunnableFunction*"]
     proc += ["-callstack_modname_hide",
              "*.exe,chrome.dll"]
 

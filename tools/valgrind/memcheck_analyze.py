@@ -41,6 +41,7 @@ _BORING_CALLERS = [
   # Depends on scheduling:
   "_ZN11MessageLoop3RunEv",
   "_ZN14RunnableMethod.*",
+  "_ZN16RunnableFunction.*",
 
   # Also don't show the internals of libc/pthread.
   "start_thread"
