@@ -248,7 +248,7 @@ void Window::SetEventFilter(EventFilter* event_filter) {
 }
 
 bool Window::OnMouseEvent(MouseEvent* event) {
-  if (!parent_)
+  if (!parent_ || !IsVisible())
     return false;
   if (!parent_->event_filter_.get())
     parent_->SetEventFilter(new EventFilter(parent_));
@@ -257,7 +257,7 @@ bool Window::OnMouseEvent(MouseEvent* event) {
 }
 
 bool Window::OnKeyEvent(KeyEvent* event) {
-  return delegate_->OnKeyEvent(event);
+  return IsVisible() && delegate_->OnKeyEvent(event);
 }
 
 bool Window::HitTest(const gfx::Point& point) {

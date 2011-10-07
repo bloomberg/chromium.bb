@@ -473,6 +473,7 @@ void NativeWidgetAura::OnBlur() {
 }
 
 bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
+  DCHECK(window_->IsVisible());
   InputMethod* input_method = GetWidget()->GetInputMethod();
   DCHECK(input_method);
   // TODO(oshima): DispatchKeyEvent should return bool?
@@ -489,6 +490,7 @@ int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
 }
 
 bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
+  DCHECK(window_->IsVisible());
   return delegate_->OnMouseEvent(MouseEvent(event));
 }
 
