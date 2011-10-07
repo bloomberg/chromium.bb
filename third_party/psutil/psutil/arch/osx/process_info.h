@@ -1,5 +1,9 @@
 /*
- * $Id: process_info.h 760 2010-10-30 17:41:07Z g.rodola $
+ * $Id: process_info.h 1142 2011-10-05 18:45:49Z g.rodola $
+ *
+ * Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  *
  * Helper functions related to fetching process information. Used by _psutil_osx
  * module methods.
@@ -11,6 +15,7 @@
 typedef struct kinfo_proc kinfo_proc;
 
 int get_proc_list(kinfo_proc **procList, size_t *procCount);
-int getcmdargs(long pid, PyObject **exec_path, PyObject **envlist, PyObject **arglist);
-PyObject* get_arg_list(long pid);
 int get_kinfo_proc(pid_t pid, struct kinfo_proc *kp);
+int get_argmax(void);
+int pid_exists(long pid);
+PyObject* get_arg_list(long pid);

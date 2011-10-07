@@ -1,5 +1,9 @@
 /*
- * $Id: process_info.c 778 2010-11-08 19:59:08Z g.rodola $
+ * $Id: process_info.c 1142 2011-10-05 18:45:49Z g.rodola $
+ *
+ * Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  *
  * Helper functions related to fetching process information. Used by
  * _psutil_mswindows module methods.
@@ -12,7 +16,7 @@
 
 #include "security.h"
 #include "process_info.h"
-
+#include "ntextapi.h"
 
 /*
  * NtQueryInformationProcess code taken from
@@ -29,13 +33,6 @@ typedef NTSTATUS (NTAPI *_NtQueryInformationProcess)(
     PDWORD ReturnLength
     );
 
-typedef struct _UNICODE_STRING
-{
-    USHORT Length;
-    USHORT MaximumLength;
-    PWSTR Buffer;
-} UNICODE_STRING, *PUNICODE_STRING;
-
 typedef struct _PROCESS_BASIC_INFORMATION
 {
     PVOID Reserved1;
@@ -44,33 +41,6 @@ typedef struct _PROCESS_BASIC_INFORMATION
     ULONG_PTR UniqueProcessId;
     PVOID Reserved3;
 } PROCESS_BASIC_INFORMATION, *PPROCESS_BASIC_INFORMATION;
-
-
-/*
- * Set OSError(errno=ESRCH, strerror="No such process") Python exception.
- */
-PyObject *
-NoSuchProcess(void) {
-    PyObject *exc;
-    char *msg = strerror(ESRCH);
-    exc = PyObject_CallFunction(PyExc_OSError, "(is)", ESRCH, msg);
-    PyErr_SetObject(PyExc_OSError, exc);
-    Py_XDECREF(exc);
-    return NULL;
-}
-
-/*
- * Set OSError(errno=EACCES, strerror="No such process") Python exception.
- */
-PyObject *
-AccessDenied(void) {
-    PyObject *exc;
-    char *msg = strerror(EACCES);
-    exc = PyObject_CallFunction(PyExc_OSError, "(is)", EACCES, msg);
-    PyErr_SetObject(PyExc_OSError, exc);
-    Py_XDECREF(exc);
-    return NULL;
-}
 
 
 /*
@@ -177,39 +147,6 @@ get_pids(DWORD *numberOfReturnedPIDs) {
 
 
 int
-is_system_proc(DWORD pid) {
-    HANDLE hProcess;
-
-    // Special case for PID 0 System Idle Process
-    // and PID 4 (SYSTEM)
-    if ((pid == 0) || (pid == 4)) {
-        return 1;
-    }
-    if (pid < 0) {
-        return 0;
-    }
-
-    hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-    if (NULL == hProcess) {
-        // invalid parameter is no such process
-        if (GetLastError() == ERROR_INVALID_PARAMETER) {
-            return 0;
-        }
-
-        // access denied obviously means there's a process to deny access to...
-        if (GetLastError() == ERROR_ACCESS_DENIED) {
-            return 1;
-        }
-
-        PyErr_SetFromWindowsErr(0);
-        return -1;
-    }
-
-    return HasSystemPrivilege(hProcess);
-}
-
-
-int
 pid_is_running(DWORD pid)
 {
     HANDLE hProcess;
@@ -270,7 +207,7 @@ pid_in_proclist(DWORD pid)
 
     proclist = get_pids(&numberOfReturnedPIDs);
     if (NULL == proclist) {
-        return NULL;
+        return -1;
     }
 
     for (i = 0; i < numberOfReturnedPIDs; i++) {
@@ -340,7 +277,7 @@ get_ppid(long pid)
     if( Process32First(h, &pe)) {
         do {
             if (pe.th32ProcessID == pid) {
-                //printf("PID: %i; PPID: %i\n", pid, pe.th32ParentProcessID);
+                ////printf("PID: %i; PPID: %i\n", pid, pe.th32ParentProcessID);
                 CloseHandle(h);
                 return Py_BuildValue("I", pe.th32ParentProcessID);
             }
@@ -376,7 +313,6 @@ get_arg_list(long pid)
     PyObject *arg_from_wchar = NULL;
     PyObject *argList = NULL;
 
-
     hProcess = handle_from_pid(pid);
     if(hProcess == NULL) {
         return NULL;
@@ -393,7 +329,7 @@ get_arg_list(long pid)
         &rtlUserProcParamsAddress, sizeof(PVOID), NULL))
 #endif
     {
-        //printf("Could not read the address of ProcessParameters!\n");
+        ////printf("Could not read the address of ProcessParameters!\n");
         PyErr_SetFromWindowsErr(0);
         CloseHandle(hProcess);
         return NULL;
@@ -408,9 +344,9 @@ get_arg_list(long pid)
         &commandLine, sizeof(commandLine), NULL))
 #endif
     {
-        //printf("Could not read CommandLine!\n");
-        PyErr_SetFromWindowsErr(0);
+        ////printf("Could not read CommandLine!\n");
         CloseHandle(hProcess);
+        PyErr_SetFromWindowsErr(0);
         return NULL;
     }
 
@@ -422,15 +358,15 @@ get_arg_list(long pid)
     if (!ReadProcessMemory(hProcess, commandLine.Buffer,
         commandLineContents, commandLine.Length, NULL))
     {
-        //printf("Could not read the command line string!\n");
-        PyErr_SetFromWindowsErr(0);
+        ////printf("Could not read the command line string!\n");
         CloseHandle(hProcess);
+        PyErr_SetFromWindowsErr(0);
         free(commandLineContents);
         return NULL;
     }
 
     /* print the commandline */
-    //printf("%.*S\n", commandLine.Length / 2, commandLineContents);
+    ////printf("%.*S\n", commandLine.Length / 2, commandLineContents);
 
     // null-terminate the string to prevent wcslen from returning incorrect length
     // the length specifier is in characters, but commandLine.Length is in bytes
@@ -455,7 +391,7 @@ get_arg_list(long pid)
         // string object and add to arg list
         argList = Py_BuildValue("[]");
         for(i=0; i<nArgs; i++) {
-            //printf("%d: %.*S (%d characters)\n", i, wcslen(szArglist[i]),
+            ////printf("%d: %.*S (%d characters)\n", i, wcslen(szArglist[i]),
             //                  szArglist[i], wcslen(szArglist[i]));
             arg_from_wchar = PyUnicode_FromWideChar(szArglist[i],
                                                     wcslen(szArglist[i])
@@ -476,4 +412,79 @@ get_arg_list(long pid)
     CloseHandle(hProcess);
     return argList;
 }
+
+
+#define PH_FIRST_PROCESS(Processes) ((PSYSTEM_PROCESS_INFORMATION)(Processes))
+
+#define PH_NEXT_PROCESS(Process) ( \
+    ((PSYSTEM_PROCESS_INFORMATION)(Process))->NextEntryOffset ? \
+    (PSYSTEM_PROCESS_INFORMATION)((PCHAR)(Process) + \
+    ((PSYSTEM_PROCESS_INFORMATION)(Process))->NextEntryOffset) : \
+    NULL \
+    )
+
+const STATUS_INFO_LENGTH_MISMATCH = 0xC0000004;
+const STATUS_BUFFER_TOO_SMALL = 0xC0000023L;
+
+/*
+ * Given a process PID and a PSYSTEM_PROCESS_INFORMATION structure
+ * fills the structure with process information.
+ * On success return 1, else 0 with Python exception already set.
+ */
+int
+get_process_info(DWORD pid, PSYSTEM_PROCESS_INFORMATION *retProcess, PVOID *retBuffer)
+{
+    static ULONG initialBufferSize = 0x4000;
+    NTSTATUS status;
+    PVOID buffer;
+    ULONG bufferSize;
+    PSYSTEM_PROCESS_INFORMATION process;
+
+    // get NtQuerySystemInformation
+    typedef DWORD (_stdcall *NTQSI_PROC) (int, PVOID, ULONG, PULONG);
+    NTQSI_PROC NtQuerySystemInformation;
+    HINSTANCE hNtDll;
+    hNtDll = LoadLibrary(TEXT("ntdll.dll"));
+    NtQuerySystemInformation = (NTQSI_PROC)GetProcAddress(
+                                hNtDll, "NtQuerySystemInformation");
+
+    bufferSize = initialBufferSize;
+    buffer = malloc(bufferSize);
+
+    while (TRUE) {
+        status = NtQuerySystemInformation(SystemProcessInformation, buffer,
+                                          bufferSize, &bufferSize);
+
+        if (status == STATUS_BUFFER_TOO_SMALL || status == STATUS_INFO_LENGTH_MISMATCH)
+        {
+            free(buffer);
+            buffer = malloc(bufferSize);
+        }
+        else {
+            break;
+        }
+    }
+
+    if (status != 0) {
+        PyErr_Format(PyExc_RuntimeError, "NtQuerySystemInformation() failed");
+        return 0;
+    }
+
+    if (bufferSize <= 0x20000) {
+        initialBufferSize = bufferSize;
+    }
+
+    process = PH_FIRST_PROCESS(buffer);
+    do {
+        if (process->UniqueProcessId == (HANDLE)pid) {
+            *retProcess = process;
+            *retBuffer = buffer;
+            return 1;
+        }
+    } while ( (process = PH_NEXT_PROCESS(process)) );
+
+    NoSuchProcess();
+    return 0;
+}
+
 

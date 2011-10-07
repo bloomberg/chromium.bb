@@ -324,10 +324,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/protobuf': [  # http://crbug.com/98455
         'UNKNOWN',
     ],
-    'third_party/psutil': [  # http://crbug.com/98456
-        'UNKNOWN',
-    ],
-
     # http://code.google.com/p/pyftpdlib/issues/detail?id=185
     'third_party/pyftpdlib/src': [
         'UNKNOWN',

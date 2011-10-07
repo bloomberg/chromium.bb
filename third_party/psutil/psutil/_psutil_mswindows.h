@@ -1,8 +1,11 @@
 /*
- * $Id: _psutil_mswindows.h 778 2010-11-08 19:59:08Z g.rodola $
+ * $Id: _psutil_mswindows.h 1142 2011-10-05 18:45:49Z g.rodola $
+ *
+ * Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  *
  * Windows platform-specific module methods for _psutil_mswindows
- *
  */
 
 #include <Python.h>
@@ -24,20 +27,29 @@ static PyObject* get_process_open_files(PyObject* self, PyObject* args);
 static PyObject* get_process_username(PyObject* self, PyObject* args);
 static PyObject* get_process_connections(PyObject* self, PyObject* args);
 static PyObject* get_process_num_threads(PyObject* self, PyObject* args);
+static PyObject* get_process_threads(PyObject* self, PyObject* args);
+static PyObject* process_wait(PyObject* self, PyObject* args);
+static PyObject* get_process_priority(PyObject* self, PyObject* args);
+static PyObject* set_process_priority(PyObject* self, PyObject* args);
+static PyObject* get_process_io_counters(PyObject* self, PyObject* args);
+static PyObject* is_process_suspended(PyObject* self, PyObject* args);
 
 // --- system-related functions
 
 static PyObject* get_pid_list(PyObject* self, PyObject* args);
 static PyObject* get_num_cpus(PyObject* self, PyObject* args);
 static PyObject* get_system_uptime(PyObject* self, PyObject* args);
-static PyObject* get_total_phymem(PyObject* self, PyObject* args);
-static PyObject* get_total_virtmem(PyObject* self, PyObject* args);
-static PyObject* get_avail_phymem(PyObject* self, PyObject* args);
-static PyObject* get_avail_virtmem(PyObject* self, PyObject* args);
+static PyObject* get_system_phymem(PyObject* self, PyObject* args);
 static PyObject* get_system_cpu_times(PyObject* self, PyObject* args);
-static PyObject* _QueryDosDevice(PyObject* self, PyObject* args);
 static PyObject* pid_exists(PyObject* self, PyObject* args);
+static PyObject* get_disk_usage(PyObject* self, PyObject* args);
+static PyObject* get_disk_partitions(PyObject* self, PyObject* args);
 
-// --- others
+// --- windows API bindings
 
+static PyObject* win32_QueryDosDevice(PyObject* self, PyObject* args);
+static PyObject* win32_GetLogicalDriveStrings(PyObject* self, PyObject* args);
+static PyObject* win32_GetDriveType(PyObject* self, PyObject* args);
+
+// --- internal
 int suspend_resume_process(DWORD pid, int suspend);

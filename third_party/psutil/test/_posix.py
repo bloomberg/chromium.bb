@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 #
-# $Id: _posix.py 744 2010-10-27 22:42:42Z jloden $
+# $Id: _posix.py 1142 2011-10-05 18:45:49Z g.rodola $
 #
+# Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""POSIX specific tests.  These are implicitly run by test_psutil.py."""
 
 import unittest
 import subprocess
@@ -11,7 +16,8 @@ import os
 
 import psutil
 
-from test_psutil import kill, get_test_subprocess, PYTHON, LINUX, OSX
+from test_psutil import (get_test_subprocess, reap_children, PYTHON, LINUX, OSX,
+                         ignore_access_denied, sh)
 
 
 def ps(cmd):
@@ -41,7 +47,7 @@ class PosixSpecificTestCase(unittest.TestCase):
         self.pid = get_test_subprocess([PYTHON, "-E", "-O"]).pid
 
     def tearDown(self):
-        kill(self.pid)
+        reap_children()
 
     def test_process_parent_pid(self):
         ppid_ps = ps("ps --no-headers -o ppid -p %s" %self.pid)
@@ -50,12 +56,12 @@ class PosixSpecificTestCase(unittest.TestCase):
 
     def test_process_uid(self):
         uid_ps = ps("ps --no-headers -o uid -p %s" %self.pid)
-        uid_psutil = psutil.Process(self.pid).uid
+        uid_psutil = psutil.Process(self.pid).uids.real
         self.assertEqual(uid_ps, uid_psutil)
 
     def test_process_gid(self):
         gid_ps = ps("ps --no-headers -o rgid -p %s" %self.pid)
-        gid_psutil = psutil.Process(self.pid).gid
+        gid_psutil = psutil.Process(self.pid).gids.real
         self.assertEqual(gid_ps, gid_psutil)
 
     def test_process_username(self):
@@ -63,6 +69,7 @@ class PosixSpecificTestCase(unittest.TestCase):
         username_psutil = psutil.Process(self.pid).username
         self.assertEqual(username_ps, username_psutil)
 
+    @ignore_access_denied
     def test_process_rss_memory(self):
         # give python interpreter some time to properly initialize
         # so that the results are the same
@@ -71,6 +78,7 @@ class PosixSpecificTestCase(unittest.TestCase):
         rss_psutil = psutil.Process(self.pid).get_memory_info()[0] / 1024
         self.assertEqual(rss_ps, rss_psutil)
 
+    @ignore_access_denied
     def test_process_vsz_memory(self):
         # give python interpreter some time to properly initialize
         # so that the results are the same
@@ -83,18 +91,24 @@ class PosixSpecificTestCase(unittest.TestCase):
         # use command + arg since "comm" keyword not supported on all platforms
         name_ps = ps("ps --no-headers -o command -p %s" %self.pid).split(' ')[0]
         # remove path if there is any, from the command
-        name_ps = os.path.basename(name_ps)
-        name_psutil = psutil.Process(self.pid).name
-        if OSX:
-            self.assertEqual(name_psutil, "Python")
-        else:
-            self.assertEqual(name_ps, name_psutil)
-
+        name_ps = os.path.basename(name_ps).lower()
+        name_psutil = psutil.Process(self.pid).name.lower()
+        self.assertEqual(name_ps, name_psutil)
 
     def test_process_exe(self):
         ps_pathname = ps("ps --no-headers -o command -p %s" %self.pid).split(' ')[0]
         psutil_pathname = psutil.Process(self.pid).exe
-        self.assertEqual(ps_pathname, psutil_pathname)
+        try:
+            self.assertEqual(ps_pathname, psutil_pathname)
+        except AssertionError:
+            # certain platforms such as BSD are more accurate returning:
+            # "/usr/local/bin/python2.7"
+            # ...instead of:
+            # "/usr/local/bin/python"
+            # We do not want to consider this difference in accuracy
+            # an error.
+            adjusted_ps_pathname = ps_pathname[:len(ps_pathname)]
+            self.assertEqual(ps_pathname, adjusted_ps_pathname)
 
     def test_process_cmdline(self):
         ps_cmdline = ps("ps --no-headers -o command -p %s" %self.pid)
@@ -116,18 +130,13 @@ class PosixSpecificTestCase(unittest.TestCase):
                 pids_ps.append(int(pid.strip()))
         # remove ps subprocess pid which is supposed to be dead in meantime
         pids_ps.remove(p.pid)
-        # not all systems include pid 0 in their list but psutil does so
-        # we force it
-        if 0 not in pids_ps:
-            pids_ps.append(0)
-
         pids_psutil = psutil.get_pid_list()
         pids_ps.sort()
         pids_psutil.sort()
 
         if pids_ps != pids_psutil:
-            difference = filter(lambda x:x not in pids_ps, pids_psutil) + \
-                         filter(lambda x:x not in pids_psutil, pids_ps)
+            difference = [x for x in pids_psutil if x not in pids_ps] + \
+                         [x for x in pids_ps if x not in pids_psutil]
             self.fail("difference: " + str(difference))
 
 

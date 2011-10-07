@@ -1,5 +1,100 @@
 Bug tracker at http://code.google.com/p/psutil/issues
 
+0.3.1 - XXXX-XX-XX
+------------------
+
+NEW FEATURES
+
+ * Issue 150: network I/O counters. (OSX patch by Jeremy Whitlock)
+ * Issue 198: Process.wait(timeout=0) can now be used to make wait() return
+   immediately.
+ * Issue 206: disk I/O counters. (OSX patch by Jeremy Whitlock)
+
+BUGFIXES
+
+ * Issue 135: (OS X) psutil cannot create Process object
+ * Issue 144: (Linux) no longer support 0 special PID.
+ * Issue 188: (Linux) psutil import error on Linux ARM architectures.
+ * Issue 197: (Linux) Process.get_connections() is broken on platforms not
+   supporting IPv6.
+ * Issue 200: (Linux) psutil.NUM_CPUS not working on armel and sparc
+   architectures and causing crash on module import.
+ * Issue 201: (Linux) Process.get_connections() is broken on big-endian
+   architectures.
+ * Issue 211: Process instance can unexpectedly raise NoSuchProcess if tested
+   for equality with another object.
+
+
+0.3.0 - 2011-07-08
+------------------
+
+NEW FEATURES
+
+ * Issue 125: system per-cpu percentage utilization and times.
+ * Issue 163: per-process associated terminal (TTY).
+ * Issue 171: added get_phymem() and get_virtmem() functions returning system
+   memory information (total, used, free) and memory percent usage.
+   total_* avail_* and used_* memory functions are deprecated.
+ * Issue 172: disk usage statistics.
+ * Issue 174: mounted disk partitions.
+ * Issue 179: setuptools is now used in setup.py
+
+BUGFIXES
+
+ * Issue 159: SetSeDebug() does not close handles or unset impersonation on
+   return.
+ * Issue 164: wait function raises a TimeoutException when a process returns
+   -1 (Windows).
+ * Issue 165: process.status raises an unhandled exception.
+ * Issue 166: get_memory_info() leaks handles hogging system resources.
+ * Issue 168: psutil.cpu_percent() returns erroneous results when used in
+   non-blocking mode.  (patch by Philip Roberts)
+ * Issue 178: OSX - Process.get_threads() leaks memory
+ * Issue 180: Windows - Process's get_num_threads() and get_threads() methods
+   can raise NoSuchProcess exception while process still exists.
+
+
+0.2.1 - 2011-03-20
+------------------
+
+NEW FEATURES
+
+ * Issue 64: per-process I/O counters.
+ * Issue 116: per-process wait() (wait for process to terminate and return its
+   exit code).
+ * Issue 134: per-process get_threads() returning information (id, user and
+   kernel times) about threads opened by process.
+ * Issue 136: process executable path on FreeBSD is now determined by asking
+   the kernel instead of guessing it from cmdline[0].
+ * Issue 137: per-process real, effective and saved user and group ids.
+ * Issue 140: system boot time.
+ * Issue 142: per-process get and set niceness (priority).
+ * Issue 143: per-process status.
+ * Issue 147: per-process I/O nice (priority) - Linux only.
+ * Issue 148: psutil.Popen class which tidies up subprocess.Popen and
+   psutil.Process in a unique interface.
+ * Issue 152: (OSX) get_process_open_files() implementation has been rewritten
+   in C and no longer relies on lsof resulting in a 3x speedup.
+ * Issue 153: (OSX) get_process_connection() implementation has been rewritten
+   in C and no longer relies on lsof resulting in a 3x speedup.
+
+BUGFIXES
+
+ * Issue 83: process cmdline is empty on OSX 64-bit.
+ * Issue 130: a race condition can cause IOError exception be raised on
+   Linux if process disappears between open() and subsequent read() calls.
+ * Issue 145: WindowsError was raised instead of psutil.AccessDenied when using
+   process resume() or suspend() on Windows.
+ * Issue 146: 'exe' property on Linux can raise TypeError if path contains NULL
+   bytes.
+ * Issue 151: exe and getcwd() for PID 0 on Linux return inconsistent data.
+
+API CHANGES
+
+ * Process "uid" and "gid" properties are deprecated in favor of "uids" and
+   "gids" properties.
+
+
 0.2.0 - 2010-11-13
 ------------------
 

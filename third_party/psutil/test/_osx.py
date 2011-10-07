@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 #
-# $Id: _osx.py 664 2010-10-09 16:14:34Z g.rodola $
+# $Id: _osx.py 1142 2011-10-05 18:45:49Z g.rodola $
 #
+# Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""OSX specific tests.  These are implicitly run by test_psutil.py."""
 
 import unittest
 import subprocess
 import time
-import re
 import sys
 
 import psutil
 
-from test_psutil import reap_children, get_test_subprocess
+from test_psutil import reap_children, get_test_subprocess, sh
 #from _posix import ps
 
 
@@ -38,7 +42,7 @@ class OSXSpecificTestCase(unittest.TestCase):
         reap_children()
 
     def test_TOTAL_PHYMEM(self):
-        sysctl_hwphymem = sysctl('sysctl hw.physmem')
+        sysctl_hwphymem = sysctl('sysctl hw.memsize')
         self.assertEqual(sysctl_hwphymem, psutil.TOTAL_PHYMEM)
 
     def test_process_create_time(self):
@@ -53,12 +57,35 @@ class OSXSpecificTestCase(unittest.TestCase):
                                      time.localtime(start_psutil))
         self.assertEqual(start_ps, start_psutil)
 
+    def test_disks(self):
+        # test psutil.disk_usage() and psutil.disk_partitions()
+        # against "df -a"
+        def df(path):
+            out = sh('df -k "%s"' % path).strip()
+            lines = out.split('\n')
+            lines.pop(0)
+            line = lines.pop(0)
+            dev, total, used, free = line.split()[:4]
+            if dev == 'none':
+                dev = ''
+            total = int(total) * 1024
+            used = int(used) * 1024
+            free = int(free) * 1024
+            return dev, total, used, free
+
+        for part in psutil.disk_partitions(all=False):
+            usage = psutil.disk_usage(part.mountpoint)
+            dev, total, used, free = df(part.mountpoint)
+            self.assertEqual(part.device, dev)
+            self.assertEqual(usage.total, total)
+            # 10 MB tollerance
+            if abs(usage.free - free) > 10 * 1024 * 1024:
+                self.fail("psutil=%s, df=%s" % usage.free, free)
+            if abs(usage.used - used) > 10 * 1024 * 1024:
+                self.fail("psutil=%s, df=%s" % usage.used, used)
+
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.makeSuite(OSXSpecificTestCase))
     unittest.TextTestRunner(verbosity=2).run(test_suite)
-
-
-
-

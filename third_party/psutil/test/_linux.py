@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 #
-# $Id: _linux.py 707 2010-10-19 18:16:08Z g.rodola $
+# $Id: _linux.py 1142 2011-10-05 18:45:49Z g.rodola $
 #
+# Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Linux specific tests.  These are implicitly run by test_psutil.py."""
 
 import unittest
 import subprocess
 import sys
 
+from test_psutil import sh
 import psutil
 
 
@@ -34,12 +40,33 @@ class LinuxSpecificTestCase(unittest.TestCase):
         psutil_cmem = psutil.phymem_buffers() / 1024
         self.assertEqual(free_cmem, psutil_cmem)
 
+    def test_disks(self):
+        # test psutil.disk_usage() and psutil.disk_partitions()
+        # against "df -a"
+        def df(path):
+            out = sh('df -P -B 1 "%s"' % path).strip()
+            lines = out.split('\n')
+            lines.pop(0)
+            line = lines.pop(0)
+            dev, total, used, free = line.split()[:4]
+            if dev == 'none':
+                dev = ''
+            total, used, free = int(total), int(used), int(free)
+            return dev, total, used, free
+
+        for part in psutil.disk_partitions(all=False):
+            usage = psutil.disk_usage(part.mountpoint)
+            dev, total, used, free = df(part.mountpoint)
+            self.assertEqual(part.device, dev)
+            self.assertEqual(usage.total, total)
+            # 10 MB tollerance
+            if abs(usage.free - free) > 10 * 1024 * 1024:
+                self.fail("psutil=%s, df=%s" % usage.free, free)
+            if abs(usage.used - used) > 10 * 1024 * 1024:
+                self.fail("psutil=%s, df=%s" % usage.used, used)
+
 
 if __name__ == '__main__':
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.makeSuite(LinuxSpecificTestCase))
     unittest.TextTestRunner(verbosity=2).run(test_suite)
-
-
-
-

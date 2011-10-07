@@ -1,62 +1,84 @@
 #!/usr/bin/env python
 #
-# $Id: _psbsd.py 806 2010-11-12 23:09:35Z g.rodola $
+# $Id: _psbsd.py 1142 2011-10-05 18:45:49Z g.rodola $
 #
+# Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""FreeBSD platform implementation."""
 
 import errno
 import os
 
-try:
-    from collections import namedtuple
-except ImportError:
-    from psutil.compat import namedtuple  # python < 2.6
-
 import _psutil_bsd
+import _psutil_posix
 import _psposix
-from psutil.error import AccessDenied, NoSuchProcess
+from psutil.error import AccessDenied, NoSuchProcess, TimeoutExpired
+from psutil._compat import namedtuple
+from psutil._common import *
 
+__extra__all__ = []
 
 # --- constants
 
 NUM_CPUS = _psutil_bsd.get_num_cpus()
-TOTAL_PHYMEM = _psutil_bsd.get_total_phymem()
+BOOT_TIME = _psutil_bsd.get_system_boot_time()
+_TERMINAL_MAP = _psposix._get_terminal_map()
+_cputimes_ntuple = namedtuple('cputimes', 'user nice system idle irq')
 
 # --- public functions
 
-def avail_phymem():
-    "Return the amount of physical memory available on the system, in bytes."
-    return _psutil_bsd.get_avail_phymem()
+def phymem_usage():
+    """Physical system memory as a (total, used, free) tuple."""
+    total = _psutil_bsd.get_total_phymem()
+    free =  _psutil_bsd.get_avail_phymem()
+    used = total - free
+    # XXX check out whether we have to do the same math we do on Linux
+    percent = usage_percent(used, total, _round=1)
+    return ntuple_sysmeminfo(total, used, free, percent)
 
-def used_phymem():
-    "Return the amount of physical memory currently in use on the system, in bytes."
-    return TOTAL_PHYMEM - _psutil_bsd.get_avail_phymem()
-
-def total_virtmem():
-    "Return the amount of total virtual memory available on the system, in bytes."
-    return _psutil_bsd.get_total_virtmem()
-
-def avail_virtmem():
-    "Return the amount of virtual memory currently in use on the system, in bytes."
-    return _psutil_bsd.get_avail_virtmem()
-
-def used_virtmem():
-    """Return the amount of used memory currently in use on the system, in bytes."""
-    return _psutil_bsd.get_total_virtmem() - _psutil_bsd.get_avail_virtmem()
+def virtmem_usage():
+    """Virtual system memory as a (total, used, free) tuple."""
+    total = _psutil_bsd.get_total_virtmem()
+    free =  _psutil_bsd.get_avail_virtmem()
+    used = total - free
+    percent = usage_percent(used, total, _round=1)
+    return ntuple_sysmeminfo(total, used, free, percent)
 
 def get_system_cpu_times():
-    """Return a dict representing the following CPU times:
-    user, nice, system, idle, interrupt."""
-    values = _psutil_bsd.get_system_cpu_times()
-    return dict(user=values[0], nice=values[1], system=values[2],
-        idle=values[3], irq=values[4])
+    """Return system per-CPU times as a named tuple"""
+    user, nice, system, idle, irq = _psutil_bsd.get_system_cpu_times()
+    return _cputimes_ntuple(user, nice, system, idle, irq)
 
-def get_pid_list():
-    """Returns a list of PIDs currently running on the system."""
-    return _psutil_bsd.get_pid_list()
+def get_system_per_cpu_times():
+    """Return system CPU times as a named tuple"""
+    ret = []
+    for cpu_t in _psutil_bsd.get_system_per_cpu_times():
+        user, nice, system, idle, irq = cpu_t
+        item = _cputimes_ntuple(user, nice, system, idle, irq)
+        ret.append(item)
+    return ret
 
-def pid_exists(pid):
-    """Check For the existence of a unix pid."""
-    return _psposix.pid_exists(pid)
+def disk_partitions(all=False):
+    retlist = []
+    partitions = _psutil_bsd.get_disk_partitions()
+    for partition in partitions:
+        device, mountpoint, fstype = partition
+        if device == 'none':
+            device = ''
+        if not all:
+            if not os.path.isabs(device) \
+            or not os.path.exists(device):
+                continue
+        ntuple = ntuple_partition(device, mountpoint, fstype)
+        retlist.append(ntuple)
+    return retlist
+
+get_pid_list = _psutil_bsd.get_pid_list
+pid_exists = _psposix.pid_exists
+get_disk_usage = _psposix.get_disk_usage
+network_io_counters = _psutil_osx.get_network_io_counters
 
 
 def wrap_exceptions(method):
@@ -75,12 +97,20 @@ def wrap_exceptions(method):
             raise
     return wrapper
 
+_status_map = {
+    _psutil_bsd.SSTOP : STATUS_STOPPED,
+    _psutil_bsd.SSLEEP : STATUS_SLEEPING,
+    _psutil_bsd.SRUN : STATUS_RUNNING,
+    _psutil_bsd.SIDL : STATUS_IDLE,
+    _psutil_bsd.SWAIT : STATUS_WAITING,
+    _psutil_bsd.SLOCK : STATUS_LOCKED,
+    _psutil_bsd.SZOMB : STATUS_ZOMBIE,
+}
 
-class BSDProcess(object):
+
+class Process(object):
     """Wrapper class around underlying C implementation."""
 
-    _meminfo_ntuple = namedtuple('meminfo', 'rss vms')
-    _cputimes_ntuple = namedtuple('cputimes', 'user system')
     __slots__ = ["pid", "_process_name"]
 
     def __init__(self, pid):
@@ -92,10 +122,10 @@ class BSDProcess(object):
         """Return process name as a string of limited len (15)."""
         return _psutil_bsd.get_process_name(self.pid)
 
+    @wrap_exceptions
     def get_process_exe(self):
-        # no such thing as "exe" on BSD; it will maybe be determined
-        # later from cmdline[0]
-        return ""
+        """Return process executable pathname."""
+        return _psutil_bsd.get_process_exe(self.pid)
 
     @wrap_exceptions
     def get_process_cmdline(self):
@@ -103,31 +133,41 @@ class BSDProcess(object):
         return _psutil_bsd.get_process_cmdline(self.pid)
 
     @wrap_exceptions
+    def get_process_terminal(self):
+        tty_nr = _psutil_bsd.get_process_tty_nr(self.pid)
+        try:
+            return _TERMINAL_MAP[tty_nr]
+        except KeyError:
+            return None
+
+    @wrap_exceptions
     def get_process_ppid(self):
         """Return process parent pid."""
         return _psutil_bsd.get_process_ppid(self.pid)
 
     @wrap_exceptions
-    def get_process_uid(self):
-        """Return process real user id."""
-        return _psutil_bsd.get_process_uid(self.pid)
+    def get_process_uids(self):
+        """Return real, effective and saved user ids."""
+        real, effective, saved = _psutil_bsd.get_process_uids(self.pid)
+        return ntuple_uids(real, effective, saved)
 
     @wrap_exceptions
-    def get_process_gid(self):
-        """Return process real group id."""
-        return _psutil_bsd.get_process_gid(self.pid)
+    def get_process_gids(self):
+        """Return real, effective and saved group ids."""
+        real, effective, saved = _psutil_bsd.get_process_gids(self.pid)
+        return ntuple_gids(real, effective, saved)
 
     @wrap_exceptions
     def get_cpu_times(self):
         """return a tuple containing process user/kernel time."""
         user, system = _psutil_bsd.get_cpu_times(self.pid)
-        return self._cputimes_ntuple(user, system)
+        return ntuple_cputimes(user, system)
 
     @wrap_exceptions
     def get_memory_info(self):
         """Return a tuple with the process' RSS and VMS size."""
         rss, vms = _psutil_bsd.get_memory_info(self.pid)
-        return self._meminfo_ntuple(rss, vms)
+        return ntuple_meminfo(rss, vms)
 
     @wrap_exceptions
     def get_process_create_time(self):
@@ -139,6 +179,16 @@ class BSDProcess(object):
     def get_process_num_threads(self):
         """Return the number of threads belonging to the process."""
         return _psutil_bsd.get_process_num_threads(self.pid)
+
+    @wrap_exceptions
+    def get_process_threads(self):
+        """Return the number of threads belonging to the process."""
+        rawlist = _psutil_bsd.get_process_threads(self.pid)
+        retlist = []
+        for thread_id, utime, stime in rawlist:
+            ntuple = ntuple_thread(thread_id, utime, stime)
+            retlist.append(ntuple)
+        return retlist
 
     def get_open_files(self):
         """Return files opened by process by parsing lsof output."""
@@ -152,6 +202,29 @@ class BSDProcess(object):
         lsof = _psposix.LsofParser(self.pid, self._process_name)
         return lsof.get_process_connections()
 
+    @wrap_exceptions
+    def process_wait(self, timeout=None):
+        try:
+            return _psposix.wait_pid(self.pid, timeout)
+        except TimeoutExpired:
+            raise TimeoutExpired(self.pid, self._process_name)
 
-PlatformProcess = BSDProcess
+    @wrap_exceptions
+    def get_process_nice(self):
+        return _psutil_posix.getpriority(self.pid)
 
+    @wrap_exceptions
+    def set_process_nice(self, value):
+        return _psutil_posix.setpriority(self.pid, value)
+
+    @wrap_exceptions
+    def get_process_status(self):
+        code = _psutil_bsd.get_process_status(self.pid)
+        if code in _status_map:
+            return _status_map[code]
+        return constant(-1, "?")
+
+    @wrap_exceptions
+    def get_process_io_counters(self):
+        rc, wc, rb, wb = _psutil_bsd.get_process_io_counters(self.pid)
+        return ntuple_io(rc, wc, rb, wb)

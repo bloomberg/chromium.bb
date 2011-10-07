@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 #
-# $Id: _psposix.py 800 2010-11-12 21:51:25Z g.rodola $
+# $Id: _psposix.py 1142 2011-10-05 18:45:49Z g.rodola $
 #
+# Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Routines common to all posix systems."""
 
@@ -13,13 +16,12 @@ import socket
 import re
 import sys
 import warnings
+import time
+import glob
 
-try:
-    from collections import namedtuple
-except ImportError:
-    from psutil.compat import namedtuple  # python < 2.6
-
-from psutil.error import AccessDenied, NoSuchProcess
+from psutil.error import AccessDenied, NoSuchProcess, TimeoutExpired
+from psutil._compat import namedtuple
+from psutil._common import ntuple_diskinfo, usage_percent
 
 
 def pid_exists(pid):
@@ -32,6 +34,82 @@ def pid_exists(pid):
         return e.errno == errno.EPERM
     else:
         return True
+
+def wait_pid(pid, timeout=None):
+    """Wait for process with pid 'pid' to terminate and return its
+    exit status code as an integer.
+
+    If pid is not a children of os.getpid() (current process) just
+    waits until the process disappears and return None.
+
+    If pid does not exist at all return None immediately.
+
+    Raise TimeoutExpired on timeout expired.
+    """
+    def check_timeout():
+        if timeout is not None:
+            if time.time() >= stop_at:
+                raise TimeoutExpired
+            time.sleep(0.001)
+
+    if timeout is not None:
+        waitcall = lambda: os.waitpid(pid, os.WNOHANG)
+        stop_at = time.time() + timeout
+    else:
+        waitcall = lambda: os.waitpid(pid, 0)
+
+    while 1:
+        try:
+            retpid, status = waitcall()
+        except OSError, err:
+            if err.errno == errno.EINTR:
+                check_timeout()
+                continue
+            elif err.errno == errno.ECHILD:
+                # not a child of os.getpid(): poll until pid has
+                # disappeared and return None instead
+                while 1:
+                    if pid_exists(pid):
+                        check_timeout()
+                    else:
+                        return
+            else:
+                raise
+        else:
+            if retpid == 0:
+                check_timeout()
+                continue
+            # process exited due to a signal; return the integer of
+            # that signal
+            if os.WIFSIGNALED(status):
+                return os.WTERMSIG(status)
+            # process exited using exit(2) system call; return the
+            # integer exit(2) system call has been called with
+            elif os.WIFEXITED(status):
+                return os.WEXITSTATUS(status)
+            else:
+                # should never happen
+                raise RuntimeError("unknown process exit status")
+
+def get_disk_usage(path):
+    """Return disk usage associated with path."""
+    st = os.statvfs(path)
+    free = (st.f_bavail * st.f_frsize)
+    total = (st.f_blocks * st.f_frsize)
+    used = (st.f_blocks - st.f_bfree) * st.f_frsize
+    percent = usage_percent(used, total, _round=1)
+    # NB: the percentage is -5% than what shown by df due to
+    # reserved blocks that we are currently not considering:
+    # http://goo.gl/sWGbH
+    return ntuple_diskinfo(total, used, free, percent)
+
+def _get_terminal_map():
+    ret = {}
+    ls = glob.glob('/dev/tty*') + glob.glob('/dev/pts/*')
+    for name in ls:
+        assert name not in ret
+        ret[os.stat(name).st_rdev] = name
+    return ret
 
 
 class LsofParser:

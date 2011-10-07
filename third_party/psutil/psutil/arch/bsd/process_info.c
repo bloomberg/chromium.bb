@@ -1,5 +1,9 @@
 /*
- * $Id: process_info.c 772 2010-11-03 13:51:11Z g.rodola $
+ * $Id: process_info.c 1142 2011-10-05 18:45:49Z g.rodola $
+ *
+ * Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  *
  * Helper functions related to fetching process information. Used by _psutil_bsd
  * module methods.
@@ -240,5 +244,27 @@ get_arg_list(long pid)
 
     free(argstr);
     return retlist;
+}
+
+
+/*
+ * Return 1 if PID exists in the current process list, else 0.
+ */
+int
+pid_exists(long pid)
+{
+    int kill_ret;
+    if (pid < 0) {
+        return 0;
+    }
+
+    // if kill returns success of permission denied we know it's a valid PID
+    kill_ret = kill(pid , 0);
+    if ((0 == kill_ret) || (EPERM == errno)) {
+        return 1;
+    }
+
+    // otherwise return 0 for PID not found
+    return 0;
 }
 

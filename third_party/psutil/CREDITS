@@ -28,6 +28,10 @@ W: http://www.jayloden.com
 Contributors
 ============
 
+N: Jeremy Whitlock
+E: jcscoobyrs@gmail.com
+I: 125, 150, 174, 206
+
 N: wj32
 E: wj32.64@gmail.com
 D: process username() and get_connections() on Windows
@@ -46,3 +50,23 @@ N: cjgohlke
 E: cjgohlke@gmail.com
 D: Windows 64 bit support
 I: 107
+
+N: Jeffery Kline
+E: jeffery.kline@gmail.com
+I: 130
+
+N: Grabriel Monnerat
+E: gabrielmonnerat@gmail.com
+I: 146
+
+N: Philip Roberts
+E: philip.roberts@gmail.com
+I: 168
+
+N: jcscoobyrs
+E: jcscoobyrs@gmail.com
+I: 125
+
+N: Sandro Tosi
+E: sandro.tosi@gmail.com
+I: 200, 201

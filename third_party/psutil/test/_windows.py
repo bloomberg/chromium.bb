@@ -1,23 +1,29 @@
 #!/usr/bin/env python
 #
-# $Id: _windows.py 798 2010-11-12 20:52:57Z g.rodola $
+# $Id: _windows.py 1142 2011-10-05 18:45:49Z g.rodola $
 #
+# Copyright (c) 2009, Jay Loden, Giampaolo Rodola'. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
+"""Windows specific tests.  These are implicitly run by test_psutil.py."""
 
 import os
 import unittest
 import platform
-import subprocess
 import signal
 import time
 import warnings
 import atexit
+import sys
 
 import psutil
+import _psutil_mswindows
 from test_psutil import reap_children, get_test_subprocess, wait_for_pid
 try:
     import wmi
-except ImportError, err:
+except ImportError:
+    err = sys.exc_info()[1]
     atexit.register(warnings.warn, "Couldn't run wmi tests: %s" % str(err),
                     RuntimeWarning)
     wmi = None
@@ -74,7 +80,7 @@ class WindowsSpecificTestCase(unittest.TestCase):
             p = psutil.Process(self.pid)
             self.assertEqual(p.name, w.Caption)
 
-        def test_process_path(self):
+        def test_process_exe(self):
             w = wmi.WMI().Win32_Process(ProcessId=self.pid)[0]
             p = psutil.Process(self.pid)
             self.assertEqual(p.exe, w.ExecutablePath)
@@ -140,6 +146,7 @@ class WindowsSpecificTestCase(unittest.TestCase):
             wmic_create = str(w.CreationDate.split('.')[0])
             psutil_create = time.strftime("%Y%m%d%H%M%S",
                                           time.localtime(p.create_time))
+            # XXX - ? no actual test here
 
         def test_get_pids(self):
             # Note: this test might fail if the OS is starting/killing
@@ -153,6 +160,26 @@ class WindowsSpecificTestCase(unittest.TestCase):
                 difference = filter(lambda x:x not in wmi_pids, psutil_pids) + \
                              filter(lambda x:x not in psutil_pids, wmi_pids)
                 self.fail("difference: " + str(difference))
+
+        def test_disks(self):
+            ps_parts = psutil.disk_partitions(all=True)
+            wmi_parts = wmi.WMI().Win32_LogicalDisk()
+            for ps_part in ps_parts:
+                for wmi_part in wmi_parts:
+                    if ps_part.device.replace('\\', '') == wmi_part.DeviceID:
+                        if not ps_part.mountpoint:
+                            # this is usually a CD-ROM with no disk inserted
+                            break
+                        usage = psutil.disk_usage(ps_part.mountpoint)
+                        self.assertEqual(usage.total, int(wmi_part.Size))
+                        wmi_free = int(wmi_part.FreeSpace)
+                        self.assertEqual(usage.free, wmi_free)
+                        # 10 MB tollerance
+                        if abs(usage.free - wmi_free) > 10 * 1024 * 1024:
+                            self.fail("psutil=%s, wmi=%s" % usage.free, wmi_free)
+                        break
+                else:
+                    self.fail("can't find partition %r", ps_part)
 
 
 if __name__ == '__main__':
