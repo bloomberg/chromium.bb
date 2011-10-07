@@ -281,9 +281,6 @@ class TemplateURLService : public WebDataServiceConsumer,
     return search_engine_dialog_chosen_slot_;
   }
 
-  // Registers the preferences used to save a TemplateURL to prefs.
-  static void RegisterUserPrefs(PrefService* prefs);
-
   // Returns a SyncData with a sync representation of the search engine data
   // from |turl|.
   static SyncData CreateSyncDataFromTemplateURL(const TemplateURL& turl);

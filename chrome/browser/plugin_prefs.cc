@@ -85,6 +85,7 @@ class PluginPrefs::Factory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory methods:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
+  virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() OVERRIDE { return true; }
   virtual bool ServiceIsNULLWhileTesting() OVERRIDE { return true; }
   virtual bool ServiceIsCreatedWithProfile() OVERRIDE { return true; }
@@ -531,6 +532,28 @@ ProfileKeyedService* PluginPrefs::Factory::BuildServiceInstanceFor(
   return new PluginPrefsWrapper(plugin_prefs);
 }
 
+void PluginPrefs::Factory::RegisterUserPrefs(PrefService* prefs) {
+  FilePath internal_dir;
+  PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
+  prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
+                              internal_dir,
+                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kPluginsEnabledNaCl,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kPluginsPluginsList,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kPluginsDisabledPlugins,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kPluginsEnabledPlugins,
+                          PrefService::UNSYNCABLE_PREF);
+}
+
 PluginPrefs::PluginPrefs() : plugin_state_(g_default_plugin_state.Get()),
                              prefs_(NULL),
                              plugin_list_(NULL) {
@@ -617,27 +640,4 @@ void PluginPrefs::NotifyPluginStatusChanged() {
       chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
       Source<PluginPrefs>(this),
       NotificationService::NoDetails());
-}
-
-/*static*/
-void PluginPrefs::RegisterPrefs(PrefService* prefs) {
-  FilePath internal_dir;
-  PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
-  prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
-                              internal_dir,
-                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPluginsEnabledNaCl,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPluginsPluginsList,
-                          PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPluginsDisabledPlugins,
-                          PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions,
-                          PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPluginsEnabledPlugins,
-                          PrefService::UNSYNCABLE_PREF);
 }

@@ -13,8 +13,21 @@
 
 void ProfileKeyedServiceFactory::SetTestingFactory(Profile* profile,
                                                    FactoryFunction factory) {
+  // Destroying the profile may cause us to lose data about whether |profile|
+  // has our preferences registered on it (since the profile object itself
+  // isn't dead). See if we need to readd it once we've gone through normal
+  // destruction.
+  bool add_profile = registered_preferences_.find(profile) !=
+                     registered_preferences_.end();
+
+  // We have to go through the shutdown and destroy mechanisms because there
+  // are unit tests that create a service on a profile and then change the
+  // testing service mid-test.
   ProfileShutdown(profile);
   ProfileDestroyed(profile);
+
+  if (add_profile)
+    registered_preferences_.insert(profile);
 
   factories_[profile] = factory;
 }
@@ -25,6 +38,39 @@ ProfileKeyedService* ProfileKeyedServiceFactory::SetTestingFactoryAndUse(
   DCHECK(factory);
   SetTestingFactory(profile, factory);
   return GetServiceForProfile(profile, true);
+}
+
+void ProfileKeyedServiceFactory::RegisterUserPrefsOnProfile(Profile* profile) {
+  // Safe timing for pref registration is hard. Previously, we made Profile
+  // responsible for all pref registration on every service that used
+  // Profile. Now we don't and there are timing issues.
+  //
+  // With normal profiles, prefs can simply be registered at
+  // ProfileDependencyManager::CreateProfileServices time. With incognito
+  // profiles, we just never register since incognito profiles share the same
+  // pref services with their parent profiles.
+  //
+  // Testing profiles throw two wrenches into the mix. One: PrefService isn't
+  // created at profile creation time so we have to move pref registration to
+  // service creation time when using a testing factory. We can't change
+  // PrefService because Two: some tests switch out the PrefService after the
+  // TestingProfile has been created but before it's ever used. So we key our
+  // check on Profile since there's already error checking code to prevent
+  // a secondary PrefService from existing.
+  //
+  // Even worse is Three: Now that services are responsible for declaring their
+  // preferences, we have to enforce a uniquenes check here because some tests
+  // create one profile and multiple services of the same type attached to that
+  // profile (serially, not parallel). This wasn't a problem when it was the
+  // Profile that was responsible for registering the preferences, but now is
+  // because of the timing issues introduced by One.
+  DCHECK(!profile->IsOffTheRecord());
+
+  std::set<Profile*>::iterator it = registered_preferences_.find(profile);
+  if (it == registered_preferences_.end()) {
+    RegisterUserPrefs(profile->GetPrefs());
+    registered_preferences_.insert(profile);
+  }
 }
 
 ProfileKeyedServiceFactory::ProfileKeyedServiceFactory(
@@ -73,6 +119,7 @@ ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
     std::map<Profile*, FactoryFunction>::iterator jt = factories_.find(profile);
     if (jt != factories_.end()) {
       if (jt->second) {
+        RegisterUserPrefsOnProfile(profile);
         service = jt->second(profile);
       } else {
         service = NULL;
@@ -135,4 +182,5 @@ void ProfileKeyedServiceFactory::ProfileDestroyed(Profile* profile) {
   // object that lives at the same address (see other comments about unit tests
   // in this file).
   factories_.erase(profile);
+  registered_preferences_.erase(profile);
 }
