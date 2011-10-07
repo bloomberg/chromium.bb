@@ -6,9 +6,7 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_KEYED_SERVICE_FACTORY_H_
 
 #include <map>
-#include <set>
 
-class PrefService;
 class Profile;
 class ProfileDependencyManager;
 class ProfileKeyedService;
@@ -40,12 +38,6 @@ class ProfileKeyedServiceFactory {
   ProfileKeyedService* SetTestingFactoryAndUse(Profile* profile,
                                                FactoryFunction factory);
 
-  // Registers preferences used in this service on the pref service of
-  // |profile|. This is the public interface and is safe to be called multiple
-  // times because testing code can have multiple services of the same type
-  // attached to a single |profile|.
-  void RegisterUserPrefsOnProfile(Profile* profile);
-
  protected:
   // ProfileKeyedServiceFactories must communicate with a
   // ProfileDependencyManager. For all non-test code, write your subclass
@@ -75,11 +67,6 @@ class ProfileKeyedServiceFactory {
   // storage.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const = 0;
-
-  // Register any user preferences on this service. This is called during
-  // CreateProfileService() since preferences are registered on a per Profile
-  // basis.
-  virtual void RegisterUserPrefs(PrefService* user_prefs) {}
 
   // By default, if we are asked for a service with an Incognito profile, we
   // pass back NULL. To redirect to the Incognito's original profile or to
@@ -123,9 +110,6 @@ class ProfileKeyedServiceFactory {
 
   // The mapping between a Profile and its overridden FactoryFunction.
   std::map<Profile*, FactoryFunction> factories_;
-
-  // Profiles that have this service's preferences registered on them.
-  std::set<Profile*> registered_preferences_;
 
   // Which ProfileDependencyManager we should communicate with. In real code,
   // this will always be ProfileDependencyManager::GetInstance(), but unit

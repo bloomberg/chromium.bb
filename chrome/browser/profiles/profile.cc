@@ -100,10 +100,6 @@ Profile* Profile::FromWebUI(WebUI* web_ui) {
   return FromBrowserContext(web_ui->tab_contents()->browser_context());
 }
 
-TestingProfile* Profile::AsTestingProfile() {
-  return NULL;
-}
-
 // static
 const char* const Profile::kProfileKey = "__PROFILE__";
 

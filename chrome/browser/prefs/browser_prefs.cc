@@ -6,6 +6,7 @@
 
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -43,6 +45,7 @@
 #include "chrome/browser/remoting/firewall_traversal_observer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
@@ -152,6 +155,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
   IncognitoModePrefs::RegisterUserPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
+  PluginPrefs::RegisterPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);
   ProfileImpl::RegisterUserPrefs(user_prefs);
   PromoResourceService::RegisterUserPrefs(user_prefs);
@@ -169,7 +173,9 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #if defined(OS_CHROMEOS)
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
 #endif
+  BackgroundContentsService::RegisterUserPrefs(user_prefs);
   SigninManager::RegisterUserPrefs(user_prefs);
+  TemplateURLService::RegisterUserPrefs(user_prefs);
   InstantController::RegisterUserPrefs(user_prefs);
   NetPrefObserver::RegisterPrefs(user_prefs);
   ProtocolHandlerRegistry::RegisterPrefs(user_prefs);

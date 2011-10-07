@@ -6,10 +6,8 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/background/background_contents_service.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
-#include "chrome/common/pref_names.h"
 
 // static
 BackgroundContentsService* BackgroundContentsServiceFactory::GetForProfile(
@@ -35,12 +33,6 @@ ProfileKeyedService* BackgroundContentsServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   return new BackgroundContentsService(profile,
                                        CommandLine::ForCurrentProcess());
-}
-
-void BackgroundContentsServiceFactory::RegisterUserPrefs(
-    PrefService* user_prefs) {
-  user_prefs->RegisterDictionaryPref(prefs::kRegisteredBackgroundContents,
-                                     PrefService::UNSYNCABLE_PREF);
 }
 
 bool BackgroundContentsServiceFactory::ServiceHasOwnInstanceInIncognito() {

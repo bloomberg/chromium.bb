@@ -828,6 +828,40 @@ void TemplateURLService::ProcessTemplateURLChange(
 }
 
 // static
+void TemplateURLService::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kDefaultSearchProviderEnabled,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultSearchProviderName,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultSearchProviderID,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultSearchProviderPrepopulateID,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultSearchProviderSuggestURL,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultSearchProviderSearchURL,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultSearchProviderInstantURL,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultSearchProviderKeyword,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultSearchProviderIconURL,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kDefaultSearchProviderEncodings,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+}
+
+// static
 SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
     const TemplateURL& turl) {
   sync_pb::EntitySpecifics specifics;

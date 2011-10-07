@@ -58,6 +58,8 @@ class BackgroundContentsService : private NotificationObserver,
   // Returns all currently opened BackgroundContents (used by the task manager).
   std::vector<BackgroundContents*> GetBackgroundContents() const;
 
+  static void RegisterUserPrefs(PrefService* prefs);
+
   // BackgroundContents::Delegate implementation.
   virtual void AddTabContents(TabContents* new_contents,
                               WindowOpenDisposition disposition,
