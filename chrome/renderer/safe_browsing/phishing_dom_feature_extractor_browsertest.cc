@@ -17,7 +17,7 @@
 #include "base/time.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
-#include "chrome/renderer/safe_browsing/render_view_fake_resources_test.h"
+#include "content/test/render_view_fake_resources_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"

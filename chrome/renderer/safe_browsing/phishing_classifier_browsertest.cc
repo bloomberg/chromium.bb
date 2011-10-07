@@ -19,8 +19,8 @@
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
-#include "chrome/renderer/safe_browsing/render_view_fake_resources_test.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
+#include "content/test/render_view_fake_resources_test.h"
 #include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

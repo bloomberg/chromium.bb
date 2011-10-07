@@ -60,6 +60,8 @@
         'test/browser_test_base.h',
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
+        'test/render_view_fake_resources_test.cc',
+        'test/render_view_fake_resources_test.h',
         'test/test_browser_context.cc',
         'test/test_browser_context.h',
         'test/test_content_client.cc',

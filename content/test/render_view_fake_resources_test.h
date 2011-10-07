@@ -39,16 +39,16 @@
 //   ...
 // }
 
-#ifndef CHROME_RENDERER_SAFE_BROWSING_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
-#define CHROME_RENDERER_SAFE_BROWSING_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
+#ifndef CONTENT_TEST_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
+#define CONTENT_TEST_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
 
 #include <map>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/renderer/mock_content_renderer_client.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,8 +62,6 @@ namespace WebKit {
 class WebFrame;
 class WebHistoryItem;
 }
-
-namespace safe_browsing {
 
 class RenderViewFakeResourcesTest : public ::testing::Test,
                                     public IPC::Channel::Listener,
@@ -124,7 +122,7 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   static const int32 kViewId;  // arbitrary id for our testing view
 
   MessageLoopForIO message_loop_;
-  chrome::ChromeContentRendererClient chrome_content_renderer_client_;
+  content::MockContentRendererClient content_renderer_client_;
   // channel that the renderer uses to talk to the browser.
   // For this test, we will handle the browser end of the channel.
   scoped_ptr<IPC::Channel> channel_;
@@ -143,6 +141,4 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   DISALLOW_COPY_AND_ASSIGN(RenderViewFakeResourcesTest);
 };
 
-}  // namespace safe_browsing
-
-#endif  // CHROME_RENDERER_SAFE_BROWSING_RENDER_VIEW_FAKE_RESOURCES_TEST_H_
+#endif  // CONTENT_TEST_RENDER_VIEW_FAKE_RESOURCES_TEST_H_

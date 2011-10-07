@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/safe_browsing/render_view_fake_resources_test.h"
+#include "content/test/render_view_fake_resources_test.h"
 
 #include <string.h>
 
@@ -32,8 +32,6 @@
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #endif
 
-namespace safe_browsing {
-
 const int32 RenderViewFakeResourcesTest::kViewId = 5;
 
 RenderViewFakeResourcesTest::RenderViewFakeResourcesTest() {}
@@ -61,7 +59,7 @@ void RenderViewFakeResourcesTest::SetUp() {
   // but we use a real RenderThread so that we can use the ResourceDispatcher
   // to fetch network resources.  These are then served canned content
   // in OnRequestResource().
-  content::GetContentClient()->set_renderer(&chrome_content_renderer_client_);
+  content::GetContentClient()->set_renderer(&content_renderer_client_);
   static const char kThreadName[] = "RenderViewFakeResourcesTest";
   channel_.reset(new IPC::Channel(kThreadName,
                                   IPC::Channel::MODE_SERVER, this));
@@ -202,5 +200,3 @@ void RenderViewFakeResourcesTest::GoToOffset(
   channel_->Send(new ViewMsg_Navigate(view_->routing_id(), params));
   message_loop_.Run();
 }
-
-}  // namespace safe_browsing
