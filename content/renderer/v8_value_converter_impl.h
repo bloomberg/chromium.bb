@@ -6,9 +6,10 @@
 #define CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "content/common/content_export.h"
 #include "content/public/renderer/v8_value_converter.h"
 
-class V8ValueConverterImpl : public content::V8ValueConverter {
+class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
  public:
   V8ValueConverterImpl();
 

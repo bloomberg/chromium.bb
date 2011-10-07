@@ -211,7 +211,7 @@ class CancelableRequestConsumerBase {
 // The type T should be small and easily copyable (like a pointer
 // or an integer).
 template<class T>
-class CONTENT_EXPORT CancelableRequestConsumerTSimple
+class CancelableRequestConsumerTSimple
     : public CancelableRequestConsumerBase {
  public:
   CancelableRequestConsumerTSimple();
@@ -453,7 +453,7 @@ void CancelableRequestConsumerTSimple<T>::DidExecute(
 // See CancelableRequestConsumerTSimple. The default value for T
 // is given in |initial_t|.
 template<class T, T initial_t>
-class CONTENT_EXPORT CancelableRequestConsumerT
+class CancelableRequestConsumerT
     : public CancelableRequestConsumerTSimple<T> {
  public:
   CancelableRequestConsumerT();
@@ -485,11 +485,11 @@ typedef CancelableRequestConsumerT<int, 0> CancelableRequestConsumer;
 #if !defined(COMPILER_MSVC)
 // The vast majority of CancelableRequestConsumers are instantiated on <int>,
 // so prevent that template from being expanded in normal code.
-extern template class CancelableRequestConsumerTSimple<int>;
+extern template class CONTENT_EXPORT CancelableRequestConsumerTSimple<int>;
 
 // We'll also want to extern-template the most common, typedef-ed
 // CancelableRequestConsumerT.
-extern template class CancelableRequestConsumerT<int, 0>;
+extern template class CONTENT_EXPORT CancelableRequestConsumerT<int, 0>;
 #endif
 
 // CancelableRequest ----------------------------------------------------------

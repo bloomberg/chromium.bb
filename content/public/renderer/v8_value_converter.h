@@ -22,9 +22,9 @@ namespace content {
 //
 // Only the JSON types (null, boolean, string, number, array, and object) are
 // supported.
-class V8ValueConverter {
+class CONTENT_EXPORT V8ValueConverter {
  public:
-  CONTENT_EXPORT static V8ValueConverter* create();
+  static V8ValueConverter* create();
 
   virtual ~V8ValueConverter() {}
 
