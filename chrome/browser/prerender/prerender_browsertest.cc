@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
@@ -38,6 +39,7 @@
 #include "content/common/notification_service.h"
 #include "content/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -488,35 +490,38 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   void OpenDestURLViaClick() const {
-    OpenDestURLWithJSImpl("Click()", true);
+    OpenDestURLWithJSImpl("Click()");
   }
 
   void OpenDestURLViaClickTarget() const {
-    OpenDestURLWithJSImpl("ClickTarget()", false);
+    OpenDestURLWithJSImpl("ClickTarget()");
   }
 
   void OpenDestURLViaClickNewWindow() const {
-    OpenDestURLWithJSImpl("ShiftClick()", true);
+    OpenDestURLWithJSImpl("ShiftClick()");
   }
 
   void OpenDestURLViaClickNewForegroundTab() const {
 #if defined(OS_MACOSX)
-    OpenDestURLWithJSImpl("MetaShiftClick()", true);
+    OpenDestURLWithJSImpl("MetaShiftClick()");
 #else
-    OpenDestURLWithJSImpl("CtrlShiftClick()", true);
+    OpenDestURLWithJSImpl("CtrlShiftClick()");
 #endif
   }
 
   void OpenDestURLViaClickNewBackgroundTab() const {
+    TestPrerenderContents* prerender_contents = GetPrerenderContents();
+    ASSERT_TRUE(prerender_contents != NULL);
+    prerender_contents->set_should_be_shown(false);
 #if defined(OS_MACOSX)
-    OpenDestURLWithJSImpl("MetaClick()", false);
+    OpenDestURLWithJSImpl("MetaClick()");
 #else
-    OpenDestURLWithJSImpl("CtrlClick()", false);
+    OpenDestURLWithJSImpl("CtrlClick()");
 #endif
   }
 
   void OpenDestURLViaWindowOpen() const {
-    OpenDestURLWithJSImpl("WindowOpen()", false);
+    OpenDestURLWithJSImpl("WindowOpen()");
   }
 
   void ClickToNextPageAfterPrerender(Browser* browser) {
@@ -617,6 +622,17 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   void set_loader_path(const std::string& path) {
     loader_path_ = path;
+  }
+
+  GURL GetCrossDomainTestUrl(const std::string& path) {
+    static const std::string secondary_domain = "www.foo.com";
+    host_resolver()->AddRule(secondary_domain, "127.0.0.1");
+    std::string url_str(base::StringPrintf(
+        "http://%s:%d/%s",
+        secondary_domain.c_str(),
+        test_server()->host_port_pair().port(),
+        path.c_str()));
+    return GURL(url_str);
   }
 
  private:
@@ -739,13 +755,11 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   // Opens the prerendered page using javascript functions in the
   // loader page. |javascript_function_name| should be a 0 argument function
-  // which is invoked. |contents_should_be_shown| indicates whether the
-  // prerendered page expects to become visible or stay hidden.
-  void OpenDestURLWithJSImpl(const std::string& javascript_function_name,
-                             bool contents_should_be_shown) const {
+  // which is invoked.
+  void OpenDestURLWithJSImpl(const std::string& javascript_function_name)
+      const {
     TestPrerenderContents* prerender_contents = GetPrerenderContents();
     ASSERT_TRUE(prerender_contents != NULL);
-    prerender_contents->set_should_be_shown(contents_should_be_shown);
 
     RenderViewHost* render_view_host =
         browser()->GetSelectedTabContents()->render_view_host();
@@ -1497,9 +1511,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPrint) {
                    1);
 }
 
-// Checks that if a page is opened in a new window by javascript the
-// prerendered page is not used.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowOpenerWindowOpen) {
+// Checks that if a page is opened in a new window by javascript and both the
+// pages are in the same domain, the prerendered page is not used.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderSameDomainWindowOpenerWindowOpen) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_WINDOW_OPENER,
                    1);
@@ -1507,11 +1522,34 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowOpenerWindowOpen) {
 }
 
 // Checks that if a page is opened due to click on a href with target="_blank"
-// the prerendered page is not used.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowOpenerClickTarget) {
+// and both pages are in the same domain the prerendered page is not used.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderSameDomainWindowOpenerClickTarget) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_WINDOW_OPENER,
                    1);
+  OpenDestURLViaClickTarget();
+}
+
+// Checks that if a page is opened in a new window by javascript and both the
+// pages are in different domains, the prerendered page is used.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCrossDomainWindowOpenerWindowOpen) {
+  PrerenderTestURL(
+      GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
+      FINAL_STATUS_USED,
+      1);
+  OpenDestURLViaWindowOpen();
+}
+
+// Checks that if a page is opened due to click on a href with target="_blank"
+// and both pages are in different domains, the prerendered page is used.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCrossDomainWindowOpenerClickTarget) {
+  PrerenderTestURL(
+      GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
+      FINAL_STATUS_USED,
+      1);
   OpenDestURLViaClickTarget();
 }
 

@@ -114,28 +114,17 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // For a given TabContents that wants to navigate to the URL supplied,
   // determines whether a prerendered version of the URL can be used,
-  // and substitutes the prerendered RVH into the TabContents.  Returns
-  // whether or not a prerendered RVH could be used or not.
+  // and substitutes the prerendered RVH into the TabContents. |opener_url| is
+  // set to the window.opener url that the TabContents should have set and
+  // will be empty if there is no opener set. Returns whether or not a
+  // prerendered RVH could be used or not.
   bool MaybeUsePrerenderedPage(TabContents* tab_contents,
                                const GURL& url,
-                               bool has_opener_set);
+                               const GURL& opener_url);
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.
   void MoveEntryToPendingDelete(PrerenderContents* entry);
-
-  // Retrieves the PrerenderContents object for the specified URL, if it
-  // has been prerendered.  The caller will then have ownership of the
-  // PrerenderContents object and is responsible for freeing it.
-  // Returns NULL if the specified URL has not been prerendered.
-  PrerenderContents* GetEntry(const GURL& url);
-
-  // Identical to GetEntry, with one exception:
-  // The TabContents specified indicates the TC in which to swap the
-  // prerendering into.  If the TabContents specified is the one
-  // to doing the prerendered itself, will return NULL.
-  PrerenderContents* GetEntryButNotSpecifiedTC(const GURL& url,
-                                               TabContents* tc);
 
   // Records the perceived page load time for a page - effectively the time from
   // when the user navigates to a page to when it finishes loading. The actual
@@ -217,10 +206,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool IsPendingEntry(const GURL& url) const;
 
  protected:
-  // Test that needs needs access to internal functions.
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExpireTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExtractURLInQueryStringTest);
-
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
 
@@ -235,6 +220,21 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Test that needs needs access to internal functions.
   friend class PrerenderBrowserTest;
+  FRIEND_TEST(PrerenderManagerTest, AliasURLTest);
+  FRIEND_TEST(PrerenderManagerTest, ClearTest);
+  FRIEND_TEST(PrerenderManagerTest, ControlGroup);
+  FRIEND_TEST(PrerenderManagerTest, DropOldestRequestTest);
+  FRIEND_TEST(PrerenderManagerTest, DropSecondRequestTest);
+  FRIEND_TEST(PrerenderManagerTest, ExpireTest);
+  FRIEND_TEST(PrerenderManagerTest, FoundTest);
+  FRIEND_TEST(PrerenderManagerTest, FragmentMatchesFragmentTest);
+  FRIEND_TEST(PrerenderManagerTest, FragmentMatchesPageTest);
+  FRIEND_TEST(PrerenderManagerTest, PageMatchesFragmentTest);
+  FRIEND_TEST(PrerenderManagerTest, PendingPrerenderTest);
+  FRIEND_TEST(PrerenderManagerTest, RateLimitInWindowTest);
+  FRIEND_TEST(PrerenderManagerTest, RateLimitOutsideWindowTest);
+  FRIEND_TEST(PrerenderManagerTest, SourceRenderViewClosed);
+  FRIEND_TEST(PrerenderManagerTest, TwoElementPrerenderTest);
 
   struct PrerenderContentsData;
   struct NavigationRecord;
@@ -259,6 +259,19 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                            const std::pair<int, int>& child_route_id_pair,
                            const GURL& url,
                            const GURL& referrer);
+
+  // Retrieves the PrerenderContents object for the specified URL, if it
+  // has been prerendered.  The caller will then have ownership of the
+  // PrerenderContents object and is responsible for freeing it.
+  // Returns NULL if the specified URL has not been prerendered.
+  PrerenderContents* GetEntry(const GURL& url);
+
+  // Identical to GetEntry, with one exception:
+  // The TabContents specified indicates the TC in which to swap the
+  // prerendering into.  If the TabContents specified is the one
+  // to doing the prerendered itself, will return NULL.
+  PrerenderContents* GetEntryButNotSpecifiedTC(const GURL& url,
+                                               TabContents* tc);
 
   // Starts scheduling periodic cleanups.
   void StartSchedulingPeriodicCleanups();

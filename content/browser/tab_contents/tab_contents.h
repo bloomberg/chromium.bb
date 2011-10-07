@@ -505,10 +505,10 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // Message handlers.
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                          bool main_frame,
-                                         bool has_opener_set,
+                                         const GURL& opener_url,
                                          const GURL& url);
   void OnDidRedirectProvisionalLoad(int32 page_id,
-                                    bool has_opener_set,
+                                    const GURL& opener_url,
                                     const GURL& source_url,
                                     const GURL& target_url);
   void OnDidFailProvisionalLoadWithError(int64 frame_id,

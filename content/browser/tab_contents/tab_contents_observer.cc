@@ -36,7 +36,7 @@ void TabContentsObserver::DidStartProvisionalLoadForFrame(
 
 void TabContentsObserver::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
-    bool has_opener_set) {
+    const GURL& opener_url) {
 }
 
 void TabContentsObserver::DidCommitProvisionalLoadForFrame(

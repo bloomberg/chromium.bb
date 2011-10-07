@@ -1364,7 +1364,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
 IPC_MESSAGE_ROUTED4(ViewHostMsg_DidStartProvisionalLoadForFrame,
                     int64 /* frame_id */,
                     bool /* true if it is the main frame */,
-                    bool /* true if the frame has an opener set */,
+                    GURL /* opener url if present, else empty */,
                     GURL /* url */)
 
 // Sent when the renderer fails a provisional load with an error.
@@ -1720,7 +1720,7 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_RevealFolderInOS,
 // Sent when a provisional load on the main frame redirects.
 IPC_MESSAGE_ROUTED4(ViewHostMsg_DidRedirectProvisionalLoad,
                     int /* page_id */,
-                    bool /* true if the frame has an opener set */,
+                    GURL /* opener url if present, else empty */,
                     GURL /* last url */,
                     GURL /* url redirected to */)
 

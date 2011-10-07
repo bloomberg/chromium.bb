@@ -469,7 +469,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
   rvh()->TestOnMessageReceived(
       ViewHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
                                              -1,  // pending page_id
-                                             false,  // opener
+                                             GURL(),  // opener
                                              kNewURL,  // old url
                                              kRedirectURL));  // new url
 

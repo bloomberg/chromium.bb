@@ -2311,9 +2311,8 @@ void RenderView::didStartProvisionalLoad(WebFrame* frame) {
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidStartProvisionalLoad(frame));
 
-  bool has_opener_set = opener_id_ != MSG_ROUTING_NONE;
   Send(new ViewHostMsg_DidStartProvisionalLoadForFrame(
-       routing_id_, frame->identifier(), is_top_most, has_opener_set,
+       routing_id_, frame->identifier(), is_top_most, GetOpenerUrl(),
        ds->request().url()));
 }
 
@@ -2330,9 +2329,8 @@ void RenderView::didReceiveServerRedirectForProvisionalLoad(WebFrame* frame) {
   std::vector<GURL> redirects;
   GetRedirectChain(data_source, &redirects);
   if (redirects.size() >= 2) {
-    bool has_opener_set = opener_id_ != MSG_ROUTING_NONE;
     Send(new ViewHostMsg_DidRedirectProvisionalLoad(routing_id_, page_id_,
-        has_opener_set, redirects[redirects.size() - 2], redirects.back()));
+        GetOpenerUrl(), redirects[redirects.size() - 2], redirects.back()));
   }
 }
 
@@ -3091,6 +3089,13 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
   link_doctor_params.SetQueryStr(params);
   GURL url = alternate_error_page_url_.ReplaceComponents(link_doctor_params);
   return url;
+}
+
+GURL RenderView::GetOpenerUrl() const {
+  if (opener_id_ == MSG_ROUTING_NONE || opener_suppressed_)
+    return GURL();
+  else
+    return creator_url_;
 }
 
 WebUIBindings* RenderView::GetWebUIBindings() {

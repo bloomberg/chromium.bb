@@ -904,6 +904,9 @@ class RenderView : public RenderWidget,
   // Locates a sub frame with given xpath
   WebKit::WebFrame* GetChildFrame(const string16& frame_xpath) const;
 
+  // Returns the opener url if present, else an empty url.
+  GURL GetOpenerUrl() const;
+
   WebUIBindings* GetWebUIBindings();
 
   // Should only be called if this object wraps a PluginDocument.

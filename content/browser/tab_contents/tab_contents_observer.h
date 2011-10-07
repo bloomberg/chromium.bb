@@ -38,7 +38,7 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
       bool is_error_page,
       RenderViewHost* render_view_host);
   virtual void ProvisionalChangeToMainFrameUrl(const GURL& url,
-                                               bool has_opener_set);
+                                               const GURL& opener_url);
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,

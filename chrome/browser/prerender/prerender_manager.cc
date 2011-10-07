@@ -477,7 +477,7 @@ PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
 
 bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
                                                const GURL& url,
-                                               bool has_opener_set) {
+                                               const GURL& opener_url) {
   DCHECK(CalledOnValidThread());
   RecordNavigation(url);
 
@@ -486,9 +486,11 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   if (prerender_contents.get() == NULL)
     return false;
 
-  // Do not use the prerendered version if the opener window.property was
-  // supposed to be set.
-  if (has_opener_set) {
+  // Do not use the prerendered version if the opener url corresponding to the
+  // window.opener property has the same origin as the url.
+  // NOTE: This is broken in the cases where the document domain is modified
+  // using the javascript property for "document.domain".
+  if (opener_url.GetOrigin() == url.GetOrigin()) {
     prerender_contents.release()->Destroy(FINAL_STATUS_WINDOW_OPENER);
     return false;
   }

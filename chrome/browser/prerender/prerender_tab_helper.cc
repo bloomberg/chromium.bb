@@ -177,8 +177,9 @@ PrerenderTabHelper::PrerenderTabHelper(TabContentsWrapper* tab)
 PrerenderTabHelper::~PrerenderTabHelper() {
 }
 
-void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(const GURL& url,
-                                                         bool has_opener_set) {
+void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
+    const GURL& url,
+    const GURL& opener_url) {
   RecordPageviewEvent(PAGEVIEW_EVENT_NEW_URL);
   if (IsTopSite(url))
     RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_NEW_URL);
@@ -191,7 +192,7 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(const GURL& url,
     return;
   prerender_manager->MarkTabContentsAsNotPrerendered(tab_contents());
   url_ = url;
-  MaybeUsePrerenderedPage(url, has_opener_set);
+  MaybeUsePrerenderedPage(url, opener_url);
 }
 
 void PrerenderTabHelper::UpdateTargetURL(int32 page_id, const GURL& url) {
@@ -247,14 +248,14 @@ PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
 }
 
 bool PrerenderTabHelper::MaybeUsePrerenderedPage(const GURL& url,
-                                                 bool has_opener_set) {
+                                                 const GURL& opener_url) {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return false;
   DCHECK(!prerender_manager->IsTabContentsPrerendering(tab_contents()));
   return prerender_manager->MaybeUsePrerenderedPage(tab_contents(),
                                                     url,
-                                                    has_opener_set);
+                                                    opener_url);
 }
 
 bool PrerenderTabHelper::IsPrerendering() {

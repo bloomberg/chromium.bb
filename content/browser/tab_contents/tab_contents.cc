@@ -860,7 +860,7 @@ void TabContents::SetContentRestrictions(int restrictions) {
 
 void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                     bool is_main_frame,
-                                                    bool has_opener_set,
+                                                    const GURL& opener_url,
                                                     const GURL& url) {
   bool is_error_page = (url.spec() == chrome::kUnreachableWebDataURL);
   GURL validated_url(url);
@@ -878,12 +878,12 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
   if (is_main_frame) {
     // Notify observers about the provisional change in the main frame URL.
     FOR_EACH_OBSERVER(TabContentsObserver, observers_,
-                      ProvisionalChangeToMainFrameUrl(url, has_opener_set));
+                      ProvisionalChangeToMainFrameUrl(url, opener_url));
   }
 }
 
 void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
-                                               bool has_opener_set,
+                                               const GURL& opener_url,
                                                const GURL& source_url,
                                                const GURL& target_url) {
   // TODO(creis): Remove this method and have the pre-rendering code listen to
@@ -900,7 +900,7 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
   // Notify observers about the provisional change in the main frame URL.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                     ProvisionalChangeToMainFrameUrl(target_url,
-                                                    has_opener_set));
+                                                    opener_url));
 }
 
 void TabContents::OnDidFailProvisionalLoadWithError(
