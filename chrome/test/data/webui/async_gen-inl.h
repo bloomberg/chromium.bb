@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,10 +30,12 @@ class WebUIBrowserAsyncGenTest : public WebUIBrowserTest {
     }
 
     virtual void RegisterMessages() OVERRIDE {
-      web_ui_->RegisterMessageCallback("callJS", NewCallback(
-          this, &AsyncWebUIMessageHandler::HandleCallJS));
-      web_ui_->RegisterMessageCallback("tornDown", NewCallback(
-          this, &AsyncWebUIMessageHandler::HandleTornDown));
+      web_ui_->RegisterMessageCallback(
+          "callJS", base::Bind(&AsyncWebUIMessageHandler::HandleCallJS,
+                               base::Unretained(this)));
+      web_ui_->RegisterMessageCallback(
+          "tornDown", base::Bind(&AsyncWebUIMessageHandler::HandleTornDown,
+                                 base::Unretained(this)));
     }
   };
 
