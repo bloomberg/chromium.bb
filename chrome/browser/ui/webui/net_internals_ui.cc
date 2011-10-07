@@ -765,7 +765,7 @@ void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
 
   if (!BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(method, io_thread.get(), list_copy))) {
+          base::Bind(method, io_thread, list_copy))) {
     // Failed posting the task, avoid leaking |list_copy|.
     delete list_copy;
   }
