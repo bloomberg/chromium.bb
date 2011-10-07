@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/stats_counters.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -1234,6 +1235,7 @@ void RenderWidgetHost::EnableRendererAccessibility() {
     return;
   }
 
+  SIMPLE_STATS_COUNTER("Accessibility.SessionCount");
   renderer_accessible_ = true;
 
   if (process_->HasConnection()) {
@@ -1374,4 +1376,3 @@ void RenderWidgetHost::SelectAll() {
   Send(new ViewMsg_SelectAll(routing_id()));
   UserMetrics::RecordAction(UserMetricsAction("SelectAll"));
 }
-
