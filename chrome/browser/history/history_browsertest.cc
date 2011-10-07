@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -55,7 +54,7 @@ class HistoryEnumerator : public HistoryService::URLEnumerator {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&HistoryService::IterateURLs, history, this));
+        NewRunnableMethod(history, &HistoryService::IterateURLs, this));
     ui_test_utils::RunMessageLoop();
   }
 
@@ -109,8 +108,10 @@ class HistoryBrowserTest : public InProcessBrowserTest {
     HistoryService* history = GetHistoryService();
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
-                            base::Bind(&HistoryService::ScheduleDBTask,
-                                       history, task, &request_consumer));
+                            NewRunnableMethod(history,
+                                              &HistoryService::ScheduleDBTask,
+                                              task,
+                                              &request_consumer));
     ui_test_utils::RunMessageLoop();
   }
 

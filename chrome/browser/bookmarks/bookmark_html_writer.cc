@@ -5,8 +5,6 @@
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 
 #include "base/base64.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -450,8 +448,7 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
           profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
       favicon_service->GetFaviconForURL(GURL(url), history::FAVICON,
           &favicon_consumer_,
-          base::Bind(&BookmarkFaviconFetcher::OnFaviconDataAvailable,
-                     base::Unretained(this)));
+          NewCallback(this, &BookmarkFaviconFetcher::OnFaviconDataAvailable));
       return true;
     } else {
       bookmark_urls_.pop_front();

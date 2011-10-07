@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -387,8 +386,7 @@ void HistoryMenuBridge::CreateMenu() {
       &cancelable_request_consumer_,
       base::Time::Now() - base::TimeDelta::FromDays(kMostVisitedScope),
       kMostVisitedCount,
-      base::Bind(&HistoryMenuBridge::OnVisitedHistoryResults,
-                 base::Unretained(this)));
+      NewCallback(this, &HistoryMenuBridge::OnVisitedHistoryResults));
 }
 
 void HistoryMenuBridge::OnVisitedHistoryResults(
@@ -446,9 +444,9 @@ HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForTab(
 void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
   FaviconService* service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
-  FaviconService::Handle handle = service->GetFaviconForURL(
-      item->url, history::FAVICON, &favicon_consumer_,
-      base::Bind(&HistoryMenuBridge::GotFaviconData, base::Unretained(this)));
+  FaviconService::Handle handle = service->GetFaviconForURL(item->url,
+      history::FAVICON, &favicon_consumer_,
+      NewCallback(this, &HistoryMenuBridge::GotFaviconData));
   favicon_consumer_.SetClientData(service, handle, item);
   item->icon_handle = handle;
   item->icon_requested = true;

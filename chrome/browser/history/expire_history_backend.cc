@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -169,7 +168,7 @@ ExpireHistoryBackend::ExpireHistoryBackend(
       archived_db_(NULL),
       thumb_db_(NULL),
       text_db_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)),
       bookmark_service_(bookmark_service) {
 }
 
@@ -574,11 +573,8 @@ void ExpireHistoryBackend::ScheduleArchive() {
     delay = TimeDelta::FromSeconds(kExpirationDelaySec);
   }
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ExpireHistoryBackend::DoArchiveIteration,
-                 weak_factory_.GetWeakPtr()),
-      delay.InMilliseconds());
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, factory_.NewRunnableMethod(
+          &ExpireHistoryBackend::DoArchiveIteration), delay.InMilliseconds());
 }
 
 void ExpireHistoryBackend::DoArchiveIteration() {
@@ -670,9 +666,8 @@ void ExpireHistoryBackend::ScheduleExpireHistoryIndexFiles() {
 
   TimeDelta delay = TimeDelta::FromMinutes(kIndexExpirationDelayMin);
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ExpireHistoryBackend::DoExpireHistoryIndexFiles,
-                 weak_factory_.GetWeakPtr()),
+      FROM_HERE, factory_.NewRunnableMethod(
+          &ExpireHistoryBackend::DoExpireHistoryIndexFiles),
       delay.InMilliseconds());
 }
 

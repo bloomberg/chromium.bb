@@ -4,10 +4,8 @@
 
 #include "chrome/browser/history/top_sites_backend.h"
 
-#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/history/top_sites_database.h"
 #include "content/browser/browser_thread.h"
 
@@ -20,60 +18,62 @@ TopSitesBackend::TopSitesBackend()
 void TopSitesBackend::Init(const FilePath& path) {
   db_path_ = path;
   BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&TopSitesBackend::InitDBOnDBThread, this, path));
+      BrowserThread::DB, FROM_HERE, NewRunnableMethod(
+          this, &TopSitesBackend::InitDBOnDBThread, path));
 }
 
 void TopSitesBackend::Shutdown() {
   BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&TopSitesBackend::ShutdownDBOnDBThread, this));
+      BrowserThread::DB, FROM_HERE, NewRunnableMethod(
+          this, &TopSitesBackend::ShutdownDBOnDBThread));
 }
 
 TopSitesBackend::Handle TopSitesBackend::GetMostVisitedThumbnails(
     CancelableRequestConsumerBase* consumer,
-    const GetMostVisitedThumbnailsCallback& callback) {
+    GetMostVisitedThumbnailsCallback* callback) {
   GetMostVisitedThumbnailsRequest* request =
       new GetMostVisitedThumbnailsRequest(callback);
   request->value = new MostVisitedThumbnails;
   AddRequest(request, consumer);
   BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&TopSitesBackend::GetMostVisitedThumbnailsOnDBThread, this,
-                 make_scoped_refptr(request)));
+      BrowserThread::DB, FROM_HERE, NewRunnableMethod(
+          this,
+          &TopSitesBackend::GetMostVisitedThumbnailsOnDBThread,
+          scoped_refptr<GetMostVisitedThumbnailsRequest>(request)));
   return request->handle();
 }
 
 void TopSitesBackend::UpdateTopSites(const TopSitesDelta& delta) {
   BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&TopSitesBackend::UpdateTopSitesOnDBThread, this, delta));
+      BrowserThread::DB, FROM_HERE, NewRunnableMethod(
+          this, &TopSitesBackend::UpdateTopSitesOnDBThread, delta));
 }
 
 void TopSitesBackend::SetPageThumbnail(const MostVisitedURL& url,
                                        int url_rank,
                                        const Images& thumbnail) {
   BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&TopSitesBackend::SetPageThumbnailOnDBThread, this, url,
-                 url_rank, thumbnail));
+      BrowserThread::DB, FROM_HERE, NewRunnableMethod(
+          this, &TopSitesBackend::SetPageThumbnailOnDBThread, url,
+          url_rank, thumbnail));
 }
 
 void TopSitesBackend::ResetDatabase() {
   BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&TopSitesBackend::ResetDatabaseOnDBThread, this, db_path_));
+      BrowserThread::DB, FROM_HERE, NewRunnableMethod(
+          this, &TopSitesBackend::ResetDatabaseOnDBThread, db_path_));
 }
 
 TopSitesBackend::Handle TopSitesBackend::DoEmptyRequest(
     CancelableRequestConsumerBase* consumer,
-    const EmptyRequestCallback& callback) {
+    EmptyRequestCallback* callback) {
   EmptyRequestRequest* request = new EmptyRequestRequest(callback);
   AddRequest(request, consumer);
   BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&TopSitesBackend::DoEmptyRequestOnDBThread, this,
-                 make_scoped_refptr(request)));
+      BrowserThread::DB, FROM_HERE, NewRunnableMethod(
+          this,
+          &TopSitesBackend::DoEmptyRequestOnDBThread,
+          scoped_refptr<EmptyRequestRequest>(request)));
   return request->handle();
 }
 
@@ -108,8 +108,10 @@ void TopSitesBackend::GetMostVisitedThumbnailsOnDBThread(
                            &(request->value->url_to_images_map));
     may_need_history_migration = db_->may_need_history_migration();
   }
-  request->ForwardResult(request->handle(), request->value,
-                         may_need_history_migration);
+  request->ForwardResult(GetMostVisitedThumbnailsRequest::TupleType(
+                             request->handle(),
+                             request->value,
+                             may_need_history_migration));
 }
 
 void TopSitesBackend::UpdateTopSitesOnDBThread(const TopSitesDelta& delta) {
@@ -145,7 +147,7 @@ void TopSitesBackend::ResetDatabaseOnDBThread(const FilePath& file_path) {
 
 void TopSitesBackend::DoEmptyRequestOnDBThread(
     scoped_refptr<EmptyRequestRequest> request) {
-  request->ForwardResult(request->handle());
+  request->ForwardResult(EmptyRequestRequest::TupleType(request->handle()));
 }
 
 }  // namespace history

@@ -22,7 +22,6 @@
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "content/browser/cancelable_request.h"
 #include "sql/init_status.h"
 
 class BookmarkService;
@@ -310,11 +309,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   virtual void DeleteURL(const GURL& url);
 
   // Calls ExpireHistoryBackend::ExpireHistoryBetween and commits the change.
-  void ExpireHistoryBetween(
-      scoped_refptr<CancelableRequest<base::Closure> > request,
-      const std::set<GURL>& restrict_urls,
-      base::Time begin_time,
-      base::Time end_time);
+  void ExpireHistoryBetween(scoped_refptr<ExpireHistoryRequest> request,
+                            const std::set<GURL>& restrict_urls,
+                            base::Time begin_time,
+                            base::Time end_time);
 
   // Bookmarks -----------------------------------------------------------------
 

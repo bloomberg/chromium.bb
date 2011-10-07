@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/webui/favicon_source.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "grit/ui_resources.h"
@@ -42,8 +41,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
           GURL(path.substr(8)),
           history::FAVICON,
           &cancelable_consumer_,
-          base::Bind(&FaviconSource::OnFaviconDataAvailable,
-                     base::Unretained(this)));
+          NewCallback(this, &FaviconSource::OnFaviconDataAvailable));
     } else {
       GURL url;
 
@@ -65,8 +63,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
           url,
           icon_types_,
           &cancelable_consumer_,
-          base::Bind(&FaviconSource::OnFaviconDataAvailable,
-                     base::Unretained(this)));
+          NewCallback(this, &FaviconSource::OnFaviconDataAvailable));
     }
     // Attach the ChromeURLDataManager request ID to the history request.
     cancelable_consumer_.SetClientData(favicon_service, handle, request_id);

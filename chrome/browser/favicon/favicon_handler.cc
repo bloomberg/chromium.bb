@@ -8,8 +8,6 @@
 
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -103,8 +101,7 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   // available.
   if (GetFaviconService()) {
     GetFaviconForURL(url_, icon_types_, &cancelable_consumer_,
-        base::Bind(&FaviconHandler::OnFaviconDataForInitialURL,
-                   base::Unretained(this)));
+        NewCallback(this, &FaviconHandler::OnFaviconDataForInitialURL));
   }
 }
 
@@ -270,7 +267,7 @@ void FaviconHandler::UpdateFaviconMappingAndFetch(
     const GURL& icon_url,
     history::IconType icon_type,
     CancelableRequestConsumerBase* consumer,
-    const FaviconService::FaviconDataCallback& callback) {
+    FaviconService::FaviconDataCallback* callback) {
   GetFaviconService()->UpdateFaviconMappingAndFetch(page_url, icon_url,
       icon_type, consumer, callback);
 }
@@ -279,7 +276,7 @@ void FaviconHandler::GetFavicon(
     const GURL& icon_url,
     history::IconType icon_type,
     CancelableRequestConsumerBase* consumer,
-    const FaviconService::FaviconDataCallback& callback) {
+    FaviconService::FaviconDataCallback* callback) {
   GetFaviconService()->GetFavicon(icon_url, icon_type, consumer, callback);
 }
 
@@ -287,7 +284,7 @@ void FaviconHandler::GetFaviconForURL(
     const GURL& page_url,
     int icon_types,
     CancelableRequestConsumerBase* consumer,
-    const FaviconService::FaviconDataCallback& callback) {
+    FaviconService::FaviconDataCallback* callback) {
   GetFaviconService()->GetFaviconForURL(page_url, icon_types, consumer,
                                         callback);
 }
@@ -371,7 +368,7 @@ void FaviconHandler::DownloadFaviconOrAskHistory(
     // favicon given the favicon URL.
     if (profile_->IsOffTheRecord()) {
       GetFavicon(icon_url, icon_type, &cancelable_consumer_,
-          base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)));
+          NewCallback(this, &FaviconHandler::OnFaviconData));
     } else {
       // Ask the history service for the icon. This does two things:
       // 1. Attempts to fetch the favicon data from the database.
@@ -381,7 +378,7 @@ void FaviconHandler::DownloadFaviconOrAskHistory(
       // Issue the request and associate the current page ID with it.
       UpdateFaviconMappingAndFetch(page_url, icon_url, icon_type,
           &cancelable_consumer_,
-          base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)));
+          NewCallback(this, &FaviconHandler::OnFaviconData));
     }
   }
 }

@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
@@ -286,8 +284,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
     history->GetVisibleVisitCountToHost(
         url,
         &request_consumer_,
-        base::Bind(&PageInfoModel::OnGotVisitCountToHost,
-                   base::Unretained(this)));
+        NewCallback(this, &PageInfoModel::OnGotVisitCountToHost));
   }
 }
 

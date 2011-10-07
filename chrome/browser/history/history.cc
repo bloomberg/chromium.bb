@@ -263,7 +263,7 @@ HistoryService::Handle HistoryService::GetMostRecentKeywordSearchTerms(
     const string16& prefix,
     int max_count,
     CancelableRequestConsumerBase* consumer,
-    const GetMostRecentKeywordSearchTermsCallback& callback) {
+    GetMostRecentKeywordSearchTermsCallback* callback) {
   return Schedule(PRIORITY_UI, &HistoryBackend::GetMostRecentKeywordSearchTerms,
                   consumer,
                   new history::GetMostRecentKeywordSearchTermsRequest(callback),
@@ -275,19 +275,21 @@ void HistoryService::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
                     urls);
 }
 
-void HistoryService::ScheduleDBTask(HistoryDBTask* task,
-                                    CancelableRequestConsumerBase* consumer) {
+HistoryService::Handle HistoryService::ScheduleDBTask(
+    HistoryDBTask* task,
+    CancelableRequestConsumerBase* consumer) {
   history::HistoryDBTaskRequest* request = new history::HistoryDBTaskRequest(
-      base::Bind(&HistoryDBTask::DoneRunOnMainThread, task));
+      NewCallback(task, &HistoryDBTask::DoneRunOnMainThread));
   request->value = task;  // The value is the task to execute.
-  Schedule(PRIORITY_UI, &HistoryBackend::ProcessDBTask, consumer, request);
+  return Schedule(PRIORITY_UI, &HistoryBackend::ProcessDBTask, consumer,
+                  request);
 }
 
 HistoryService::Handle HistoryService::QuerySegmentUsageSince(
     CancelableRequestConsumerBase* consumer,
     const Time from_time,
     int max_result_count,
-    const SegmentQueryCallback& callback) {
+    SegmentQueryCallback* callback) {
   return Schedule(PRIORITY_UI, &HistoryBackend::QuerySegmentUsage,
                   consumer, new history::QuerySegmentUsageRequest(callback),
                   from_time, max_result_count);
@@ -434,7 +436,7 @@ void HistoryService::SetPageContents(const GURL& url,
 HistoryService::Handle HistoryService::GetPageThumbnail(
     const GURL& page_url,
     CancelableRequestConsumerBase* consumer,
-    const ThumbnailDataCallback& callback) {
+    ThumbnailDataCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::GetPageThumbnail, consumer,
                   new history::GetPageThumbnailRequest(callback), page_url);
 }
@@ -508,7 +510,7 @@ HistoryService::Handle HistoryService::CreateDownload(
     int32 id,
     const DownloadPersistentStoreInfo& create_info,
     CancelableRequestConsumerBase* consumer,
-    const HistoryService::DownloadCreateCallback& callback) {
+    HistoryService::DownloadCreateCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::CreateDownload, consumer,
                   new history::DownloadCreateRequest(callback), id,
                   create_info);
@@ -516,7 +518,7 @@ HistoryService::Handle HistoryService::CreateDownload(
 
 HistoryService::Handle HistoryService::GetNextDownloadId(
     CancelableRequestConsumerBase* consumer,
-    const DownloadNextIdCallback& callback) {
+    DownloadNextIdCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::GetNextDownloadId, consumer,
                   new history::DownloadNextIdRequest(callback));
 }
@@ -525,7 +527,7 @@ HistoryService::Handle HistoryService::GetNextDownloadId(
 // 'downloads' table.
 HistoryService::Handle HistoryService::QueryDownloads(
     CancelableRequestConsumerBase* consumer,
-    const DownloadQueryCallback& callback) {
+    DownloadQueryCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::QueryDownloads, consumer,
                   new history::DownloadQueryRequest(callback));
 }
@@ -569,7 +571,7 @@ HistoryService::Handle HistoryService::QueryHistory(
     const string16& text_query,
     const history::QueryOptions& options,
     CancelableRequestConsumerBase* consumer,
-    const QueryHistoryCallback& callback) {
+    QueryHistoryCallback* callback) {
   return Schedule(PRIORITY_UI, &HistoryBackend::QueryHistory, consumer,
                   new history::QueryHistoryRequest(callback),
                   text_query, options);
@@ -578,7 +580,7 @@ HistoryService::Handle HistoryService::QueryHistory(
 HistoryService::Handle HistoryService::QueryRedirectsFrom(
     const GURL& from_url,
     CancelableRequestConsumerBase* consumer,
-    const QueryRedirectsCallback& callback) {
+    QueryRedirectsCallback* callback) {
   return Schedule(PRIORITY_UI, &HistoryBackend::QueryRedirectsFrom, consumer,
       new history::QueryRedirectsRequest(callback), from_url);
 }
@@ -586,7 +588,7 @@ HistoryService::Handle HistoryService::QueryRedirectsFrom(
 HistoryService::Handle HistoryService::QueryRedirectsTo(
     const GURL& to_url,
     CancelableRequestConsumerBase* consumer,
-    const QueryRedirectsCallback& callback) {
+    QueryRedirectsCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::QueryRedirectsTo, consumer,
       new history::QueryRedirectsRequest(callback), to_url);
 }
@@ -594,7 +596,7 @@ HistoryService::Handle HistoryService::QueryRedirectsTo(
 HistoryService::Handle HistoryService::GetVisibleVisitCountToHost(
     const GURL& url,
     CancelableRequestConsumerBase* consumer,
-    const GetVisibleVisitCountToHostCallback& callback) {
+    GetVisibleVisitCountToHostCallback* callback) {
   return Schedule(PRIORITY_UI, &HistoryBackend::GetVisibleVisitCountToHost,
       consumer, new history::GetVisibleVisitCountToHostRequest(callback), url);
 }
@@ -602,7 +604,7 @@ HistoryService::Handle HistoryService::GetVisibleVisitCountToHost(
 HistoryService::Handle HistoryService::QueryTopURLsAndRedirects(
     int result_count,
     CancelableRequestConsumerBase* consumer,
-    const QueryTopURLsAndRedirectsCallback& callback) {
+    QueryTopURLsAndRedirectsCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::QueryTopURLsAndRedirects,
       consumer, new history::QueryTopURLsAndRedirectsRequest(callback),
       result_count);
@@ -612,7 +614,7 @@ HistoryService::Handle HistoryService::QueryMostVisitedURLs(
     int result_count,
     int days_back,
     CancelableRequestConsumerBase* consumer,
-    const QueryMostVisitedURLsCallback& callback) {
+    QueryMostVisitedURLsCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::QueryMostVisitedURLs,
                   consumer,
                   new history::QueryMostVisitedURLsRequest(callback),
@@ -745,11 +747,11 @@ void HistoryService::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls,
     Time begin_time, Time end_time,
     CancelableRequestConsumerBase* consumer,
-    const base::Closure& callback) {
+    ExpireHistoryCallback* callback) {
 
   // We will update the visited links when we observe the delete notifications.
   Schedule(PRIORITY_UI, &HistoryBackend::ExpireHistoryBetween, consumer,
-           new CancelableRequest<base::Closure>(callback),
+           new history::ExpireHistoryRequest(callback),
            restrict_urls, begin_time, end_time);
 }
 

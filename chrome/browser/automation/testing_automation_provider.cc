@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
@@ -739,8 +738,8 @@ void TestingAutomationProvider::GetRedirectsFrom(int tab_handle,
       // that it's done: OnRedirectQueryComplete.
       redirect_query_ = history_service->QueryRedirectsFrom(
           source_url, &consumer_,
-          base::Bind(&TestingAutomationProvider::OnRedirectQueryComplete,
-                     base::Unretained(this)));
+          NewCallback(this,
+                      &TestingAutomationProvider::OnRedirectQueryComplete));
       return;  // Response will be sent when query completes.
     }
   }
@@ -3022,8 +3021,8 @@ void TestingAutomationProvider::GetHistoryInfo(Browser* browser,
       search_text,
       options,
       &consumer_,
-      base::Bind(&AutomationProviderHistoryObserver::HistoryQueryComplete,
-                 base::Unretained(history_observer)));
+      NewCallback(history_observer,
+                  &AutomationProviderHistoryObserver::HistoryQueryComplete));
 }
 
 // Sample json input: { "command": "AddHistoryItem",

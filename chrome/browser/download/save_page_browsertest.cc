@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -134,8 +133,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
       static_cast<ChromeDownloadManagerDelegate*>(
           GetDownloadManager()->delegate());
     delegate->download_history()->Load(
-        base::Bind(&SavePageBrowserTest::OnQueryDownloadEntriesComplete,
-                   base::Unretained(this)));
+        NewCallback(this,
+                    &SavePageBrowserTest::OnQueryDownloadEntriesComplete));
 
     // Run message loop until a quit message is sent from
     // OnQueryDownloadEntriesComplete().

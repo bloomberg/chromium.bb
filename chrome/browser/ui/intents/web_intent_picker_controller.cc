@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
@@ -261,9 +259,8 @@ void WebIntentPickerController::FaviconFetcher::Fetch(
         urls[index],
         history::FAVICON,
         &load_consumer_,
-        base::Bind(
-            &WebIntentPickerController::FaviconFetcher::OnFaviconDataAvailable,
-            base::Unretained(this)));
+        NewCallback(this, &WebIntentPickerController::FaviconFetcher::
+            OnFaviconDataAvailable));
     load_consumer_.SetClientData(favicon_service_, handle, index);
   }
 }

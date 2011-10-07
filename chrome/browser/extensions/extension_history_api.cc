@@ -272,8 +272,7 @@ bool SearchHistoryFunction::RunAsyncImpl() {
 
   HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text, options, &cancelable_consumer_,
-                   base::Bind(&SearchHistoryFunction::SearchComplete,
-                              base::Unretained(this)));
+                   NewCallback(this, &SearchHistoryFunction::SearchComplete));
 
   return true;
 }
@@ -350,8 +349,7 @@ bool DeleteRangeHistoryFunction::RunAsyncImpl() {
       begin_time,
       end_time,
       &cancelable_consumer_,
-      base::Bind(&DeleteRangeHistoryFunction::DeleteComplete,
-                 base::Unretained(this)));
+      NewCallback(this, &DeleteRangeHistoryFunction::DeleteComplete));
 
   return true;
 }
@@ -368,8 +366,7 @@ bool DeleteAllHistoryFunction::RunAsyncImpl() {
       base::Time::UnixEpoch(),     // From the beginning of the epoch.
       base::Time::Now(),           // To the current time.
       &cancelable_consumer_,
-      base::Bind(&DeleteAllHistoryFunction::DeleteComplete,
-                 base::Unretained(this)));
+      NewCallback(this, &DeleteAllHistoryFunction::DeleteComplete));
 
   return true;
 }

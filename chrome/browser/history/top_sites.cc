@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <set>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/string_util.h"
@@ -177,8 +175,7 @@ void TopSites::Init(const FilePath& db_name) {
   backend_->Init(db_name);
   backend_->GetMostVisitedThumbnails(
       &top_sites_consumer_,
-      base::Bind(&TopSites::OnGotMostVisitedThumbnails,
-                 base::Unretained(this)));
+      NewCallback(this, &TopSites::OnGotMostVisitedThumbnails));
 
   // History may have already finished loading by the time we're created.
   HistoryService* history = profile_->GetHistoryServiceWithoutCreating();
@@ -332,8 +329,7 @@ void TopSites::FinishHistoryMigration(const ThumbnailMigration& data) {
   // we can tell history to finish its part of migration.
   backend_->DoEmptyRequest(
       &top_sites_consumer_,
-      base::Bind(&TopSites::OnHistoryMigrationWrittenToDisk,
-                 base::Unretained(this)));
+      NewCallback(this, &TopSites::OnHistoryMigrationWrittenToDisk));
 }
 
 void TopSites::HistoryLoaded() {
@@ -535,8 +531,7 @@ CancelableRequestProvider::Handle TopSites::StartQueryForMostVisited() {
         num_results_to_request_from_history(),
         kDaysOfHistory,
         &history_consumer_,
-        base::Bind(&TopSites::OnTopSitesAvailableFromHistory,
-                   base::Unretained(this)));
+        NewCallback(this, &TopSites::OnTopSitesAvailableFromHistory));
   }
   return 0;
 }

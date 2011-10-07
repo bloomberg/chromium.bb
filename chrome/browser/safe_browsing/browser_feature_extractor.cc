@@ -324,8 +324,7 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
       history->GetVisibleVisitCountToHost(
           GURL(request->url()),
           &request_consumer_,
-          base::Bind(&BrowserFeatureExtractor::QueryHttpHostVisitsDone,
-                     base::Unretained(this)));
+          NewCallback(this, &BrowserFeatureExtractor::QueryHttpHostVisitsDone));
   StorePendingQuery(next_handle, request, callback);
 }
 
@@ -362,8 +361,8 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
       history->GetVisibleVisitCountToHost(
           GURL(https_url.replace(0, 5, "https:")),
           &request_consumer_,
-          base::Bind(&BrowserFeatureExtractor::QueryHttpsHostVisitsDone,
-                     base::Unretained(this)));
+          NewCallback(this,
+                      &BrowserFeatureExtractor::QueryHttpsHostVisitsDone));
   StorePendingQuery(next_handle, request, callback);
 }
 

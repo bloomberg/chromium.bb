@@ -4,8 +4,6 @@
 
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -61,11 +59,9 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   download_manager_ = dm;
   download_history_.reset(new DownloadHistory(profile_));
   download_history_->Load(
-      base::Bind(&DownloadManager::OnPersistentStoreQueryComplete,
-                 base::Unretained(dm)));
+      NewCallback(dm, &DownloadManager::OnPersistentStoreQueryComplete));
   download_history_->GetNextId(
-      base::Bind(&DownloadManager::OnPersistentStoreGetNextId,
-                 base::Unretained(dm)));
+      NewCallback(dm, &DownloadManager::OnPersistentStoreGetNextId));
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {
@@ -210,8 +206,8 @@ void ChromeDownloadManagerDelegate::OnResponseCompleted(
 void ChromeDownloadManagerDelegate::AddItemToPersistentStore(
     DownloadItem* item) {
   download_history_->AddEntry(item,
-      base::Bind(&ChromeDownloadManagerDelegate::OnItemAddedToPersistentStore,
-                 base::Unretained(this)));
+      NewCallback(this,
+          &ChromeDownloadManagerDelegate::OnItemAddedToPersistentStore));
 }
 
 void ChromeDownloadManagerDelegate::UpdateItemInPersistentStore(
@@ -297,10 +293,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
   if (is_dangerous_url)
     download->MarkUrlDangerous();
 
-  download_history_->CheckVisitedReferrerBefore(
-      download_id, download->referrer_url(),
-      NewCallback(
-          this,
+  download_history_->CheckVisitedReferrerBefore(download_id,
+      download->referrer_url(), NewCallback(this,
           &ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone));
 }
 
@@ -386,9 +380,12 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   // now and pass the value to the FILE thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists,
-                 this, download->id(), state,
-                 download_prefs_->download_path()));
+      NewRunnableMethod(
+          this,
+          &ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists,
+          download->id(),
+          state,
+          download_prefs_->download_path()));
 }
 
 void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
@@ -475,8 +472,11 @@ void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ChromeDownloadManagerDelegate::OnPathExistenceAvailable,
-                 this, download_id, state));
+      NewRunnableMethod(
+          this,
+          &ChromeDownloadManagerDelegate::OnPathExistenceAvailable,
+          download_id,
+          state));
 }
 
 void ChromeDownloadManagerDelegate::OnPathExistenceAvailable(

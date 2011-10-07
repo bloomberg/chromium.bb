@@ -7,8 +7,7 @@
 #include <algorithm>
 #include <functional>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
@@ -750,8 +749,7 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
       node->url(), history::FAVICON, &load_consumer_,
-      base::Bind(&BookmarkModel::OnFaviconDataAvailable,
-                 base::Unretained(this)));
+      NewCallback(this, &BookmarkModel::OnFaviconDataAvailable));
   load_consumer_.SetClientData(favicon_service, handle, node);
   node->set_favicon_load_handle(handle);
 }

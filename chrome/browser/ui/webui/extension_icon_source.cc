@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -242,8 +241,7 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
       favicon_url,
       history::FAVICON,
       &cancelable_consumer_,
-      base::Bind(&ExtensionIconSource::OnFaviconDataAvailable,
-                 base::Unretained(this)));
+      NewCallback(this, &ExtensionIconSource::OnFaviconDataAvailable));
   cancelable_consumer_.SetClientData(favicon_service, handle, request_id);
 }
 

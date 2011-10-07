@@ -194,8 +194,7 @@ class TopSitesTest : public HistoryUnitTestBase {
   void WaitForTopSites() {
     top_sites()->backend_->DoEmptyRequest(
         &consumer_,
-        base::Bind(&TopSitesTest::QuitCallback,
-                   base::Unretained(this)));
+        NewCallback(this, &TopSitesTest::QuitCallback));
     MessageLoop::current()->Run();
   }
 
@@ -896,8 +895,8 @@ TEST_F(TopSitesTest, PinnedURLsDeleted) {
 
   history_service()->ExpireHistoryBetween(
       std::set<GURL>(), base::Time(), base::Time(),
-      consumer(), base::Bind(&TopSitesTest::EmptyCallback,
-                             base::Unretained(this))),
+      consumer(), NewCallback(static_cast<TopSitesTest*>(this),
+                              &TopSitesTest::EmptyCallback)),
   WaitForHistory();
 
   {

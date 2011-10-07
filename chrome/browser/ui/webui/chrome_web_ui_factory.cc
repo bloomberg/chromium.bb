@@ -340,7 +340,9 @@ void ChromeWebUIFactory::GetFaviconForURL(
     favicon.known_icon = favicon.image_data.get() != NULL &&
                              favicon.image_data->size() > 0;
     favicon.icon_type = history::FAVICON;
-    request->ForwardResultAsync(request->handle(), favicon);
+    request->ForwardResultAsync(
+        FaviconService::FaviconDataCallback::TupleType(request->handle(),
+                                                       favicon));
   }
 }
 

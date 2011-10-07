@@ -32,7 +32,7 @@ class TopSites;
 class ThumbnailGenerator : public NotificationObserver,
                            public TabContentsObserver {
  public:
-  typedef base::Callback<void(const SkBitmap&)> ThumbnailReadyCallback;
+  typedef Callback1<const SkBitmap&>::Type ThumbnailReadyCallback;
   // The result of clipping. This can be used to determine if the
   // generated thumbnail is good or not.
   enum ClipResult {
@@ -80,7 +80,7 @@ class ThumbnailGenerator : public NotificationObserver,
   // dimensions, but might not be the exact size requested.
   void AskForSnapshot(RenderWidgetHost* renderer,
                       bool prefer_backing_store,
-                      const ThumbnailReadyCallback& callback,
+                      ThumbnailReadyCallback* callback,
                       gfx::Size page_size,
                       gfx::Size desired_size);
 

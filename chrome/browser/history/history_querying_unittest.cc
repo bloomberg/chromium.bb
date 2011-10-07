@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -77,10 +76,8 @@ class HistoryQueryTest : public testing::Test {
   void QueryHistory(const std::string& text_query,
                     const QueryOptions& options,
                     QueryResults* results) {
-    history_->QueryHistory(
-        UTF8ToUTF16(text_query), options, &consumer_,
-        base::Bind(&HistoryQueryTest::QueryHistoryComplete,
-                   base::Unretained(this)));
+    history_->QueryHistory(UTF8ToUTF16(text_query), options, &consumer_,
+        NewCallback(this, &HistoryQueryTest::QueryHistoryComplete));
     MessageLoop::current()->Run();  // Will go until ...Complete calls Quit.
     results->Swap(&last_query_results_);
   }

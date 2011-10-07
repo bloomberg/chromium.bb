@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -522,8 +521,8 @@ class DownloadsHistoryDataCollector {
     DCHECK(hs);
     hs->QueryDownloads(
         &callback_consumer_,
-        base::Bind(&DownloadsHistoryDataCollector::OnQueryDownloadsComplete,
-                   base::Unretained(this)));
+        NewCallback(this,
+                    &DownloadsHistoryDataCollector::OnQueryDownloadsComplete));
 
     // TODO(rdsmith): Move message loop out of constructor.
     // Cannot complete immediately because the history backend runs on a

@@ -792,7 +792,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
 
   FaviconService::Handle h = favicon_service->GetFaviconForURL(
       launch_url, history::FAVICON, &favicon_consumer_,
-      base::Bind(&AppLauncherHandler::OnFaviconForApp, base::Unretained(this)));
+      NewCallback(this, &AppLauncherHandler::OnFaviconForApp));
   favicon_consumer_.SetClientData(favicon_service, h, install_info.release());
 }
 
