@@ -78,6 +78,12 @@ BOT_ASSIGNMENT = {
     'mac10.6-newlib-dbg-clang':
       python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
 
+    # ASan.
+    'lucid_64-newlib-dbg-asan':
+      python + ' buildbot/buildbot_standard.py dbg 64 newlib --asan',
+    'mac10.6-newlib-dbg-asan':
+      python + ' buildbot/buildbot_standard.py dbg 32 newlib --asan',
+
     # PNaCl.
     'lucid_64-newlib-arm_qemu-pnacl-dbg':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',

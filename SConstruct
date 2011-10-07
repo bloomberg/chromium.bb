@@ -451,7 +451,8 @@ pre_base_env = Environment(
 DeclareBit('clang', 'Use clang to build trusted code')
 pre_base_env.SetBitFromOption('clang', False)
 
-DeclareBit('asan', 'Use AddressSanitizer to build trusted code (implies --clang)')
+DeclareBit('asan',
+           'Use AddressSanitizer to build trusted code (implies --clang)')
 pre_base_env.SetBitFromOption('asan', False)
 if pre_base_env.Bit('asan'):
   pre_base_env.SetBits('clang')

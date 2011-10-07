@@ -44,6 +44,8 @@ def ParseStandardCommandLine(context):
                     action='store_true', help='Inside toolchain build.')
   parser.add_option('--clang', dest='clang', default=False,
                     action='store_true', help='Build trusted code with Clang.')
+  parser.add_option('--asan', dest='asan', default=False,
+                    action='store_true', help='Build trusted code with ASan.')
 
   options, args = parser.parse_args()
 
@@ -68,6 +70,7 @@ def ParseStandardCommandLine(context):
   context['mode'] = mode
   context['bits'] = bits
   context['clang'] = options.clang
+  context['asan'] = options.asan
   # TODO(ncbray) turn derived values into methods.
   context['gyp_mode'] = {'opt': 'Release', 'dbg': 'Debug'}[mode]
   context['gyp_arch'] = {'32': 'ia32', '64': 'x64'}[bits]
@@ -256,6 +259,7 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
       'platform='+platform,
       ])
   if context['clang']: cmd.append('--clang')
+  if context['asan']: cmd.append('--asan')
   if context['use_glibc']: cmd.append('--nacl_glibc')
   # Append used-specified arguments.
   cmd.extend(args)
