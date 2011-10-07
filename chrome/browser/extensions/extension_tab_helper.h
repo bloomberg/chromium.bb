@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_HELPER_H_
 #pragma once
 
-#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/common/web_apps.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Extension;
@@ -22,10 +24,13 @@ struct LoadCommittedDetails;
 }
 
 // Per-tab extension helper. Also handles non-extension apps.
-class ExtensionTabHelper : public TabContentsObserver,
-                           public ExtensionFunctionDispatcher::Delegate,
-                           public ImageLoadingTracker::Observer,
-                           public WebstoreInlineInstaller::Delegate {
+class ExtensionTabHelper
+    : public TabContentsObserver,
+      public ExtensionFunctionDispatcher::Delegate,
+      public ImageLoadingTracker::Observer,
+      public WebstoreInlineInstaller::Delegate,
+      public AppNotifyChannelSetup::Delegate,
+      public base::SupportsWeakPtr<ExtensionTabHelper> {
  public:
   explicit ExtensionTabHelper(TabContentsWrapper* wrapper);
   virtual ~ExtensionTabHelper();
@@ -100,6 +105,9 @@ class ExtensionTabHelper : public TabContentsObserver,
   void OnInlineWebstoreInstall(int install_id,
                                const std::string& webstore_item_id,
                                const GURL& requestor_url);
+  void OnGetAppNotifyChannel(int request_id,
+                             const GURL& requestor_url,
+                             const std::string& client_id);
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // App extensions related methods:
@@ -116,6 +124,11 @@ class ExtensionTabHelper : public TabContentsObserver,
   virtual void OnInlineInstallSuccess(int install_id) OVERRIDE;
   virtual void OnInlineInstallFailure(int install_id,
                                       const std::string& error) OVERRIDE;
+
+  // AppNotifyChannelSetup::Delegate.
+  virtual void AppNotifyChannelSetupComplete(int request_id,
+                                             const std::string& channel_id,
+                                             const std::string& error);
 
   // Data for app extensions ---------------------------------------------------
 
