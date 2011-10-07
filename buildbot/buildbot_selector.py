@@ -80,9 +80,9 @@ BOT_ASSIGNMENT = {
 
     # ASan.
     'lucid_64-newlib-dbg-asan':
-      python + ' buildbot/buildbot_standard.py dbg 64 newlib --asan',
+      'echo Bot disabled',
     'mac10.6-newlib-dbg-asan':
-      python + ' buildbot/buildbot_standard.py dbg 32 newlib --asan',
+      'echo Bot disabled',
 
     # PNaCl.
     'lucid_64-newlib-arm_qemu-pnacl-dbg':
