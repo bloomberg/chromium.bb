@@ -38,6 +38,10 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #endif
 
+#if defined(OS_LINUX)
+#include <glib-object.h>
+#endif
+
 #if defined(OS_CHROMEOS)
 #include <dbus/dbus-glib.h>
 #endif
@@ -104,7 +108,7 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
 }
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(OS_LINUX)
 static void GLibLogHandler(const gchar* log_domain,
                            GLogLevelFlags log_level,
                            const gchar* message,
@@ -276,7 +280,7 @@ void BrowserMainParts::InitializeToolkit() {
   // of intersecting ifdefs we have.  To keep it easy to follow, there
   // are no #else branches on any #ifs.
 
-#if defined(TOOLKIT_USES_GTK)
+#if defined(OS_LINUX)
   // We want to call g_thread_init(), but in some codepaths (tests) it
   // is possible it has already been called.  In older versions of
   // GTK, it is an error to call g_thread_init twice; unfortunately,
@@ -297,10 +301,7 @@ void BrowserMainParts::InitializeToolkit() {
   // TODO(satorux, stevenjb): remove this once it is no longer needed.
   dbus_g_thread_init();
 #endif
-#if defined(USE_AURA)
-  // TODO(oshima|saintlou): Remove this once we remove gtk from build
-  base::MessagePumpX::DisableGtkMessagePump();
-#else
+#if !defined(USE_AURA)
   gfx::GtkInitFromCommandLine(parameters().command_line_);
 #endif
   SetUpGLibLogHandler();
