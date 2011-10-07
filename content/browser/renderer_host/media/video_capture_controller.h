@@ -52,9 +52,10 @@ class VideoCaptureController
   // Stop video capture.
   // When the capture is stopped and all TransportDIBS have been returned
   // VideoCaptureControllerEventHandler::OnReadyToDelete will be called.
-  // stopped_task may be null but it can be used to get a notification when the
-  // device is stopped.
-  void StopCapture(Task* stopped_task);
+  // |stopped_cb| may be NULL. But a non-NULL Closure can be used to get
+  // a notification when the device is stopped, regardless of
+  // VideoCaptureController's state.
+  void StopCapture(base::Closure stopped_cb);
 
   // Return a buffer previously given in
   // VideoCaptureControllerEventHandler::OnBufferReady.
@@ -69,7 +70,7 @@ class VideoCaptureController
 
  private:
   // Called by VideoCaptureManager when a device have been stopped.
-  void OnDeviceStopped(Task* stopped_task);
+  void OnDeviceStopped(base::Closure stopped_cb);
 
   // Lock to protect free_dibs_ and owned_dibs_.
   base::Lock lock_;

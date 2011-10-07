@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -41,14 +42,11 @@ void VideoCaptureController::StartCapture(
   video_capture_manager_->Start(params, this);
 }
 
-void VideoCaptureController::StopCapture(Task* stopped_task) {
+void VideoCaptureController::StopCapture(base::Closure stopped_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  video_capture_manager_->Stop(
-      params_.session_id,
-      NewRunnableMethod(this,
-                        &VideoCaptureController::OnDeviceStopped,
-                        stopped_task));
+  video_capture_manager_->Stop(params_.session_id,
+      base::Bind(&VideoCaptureController::OnDeviceStopped, this, stopped_cb));
 }
 
 void VideoCaptureController::ReturnBuffer(int buffer_id) {
@@ -194,7 +192,7 @@ void VideoCaptureController::OnFrameInfo(
 // Called by VideoCaptureManager when a device have been stopped.
 // This will report to the event handler that this object is ready to be deleted
 // if all DIBS have been returned.
-void VideoCaptureController::OnDeviceStopped(Task* stopped_task) {
+void VideoCaptureController::OnDeviceStopped(base::Closure stopped_cb) {
   bool ready_to_delete_now;
 
   {
@@ -207,8 +205,7 @@ void VideoCaptureController::OnDeviceStopped(Task* stopped_task) {
   if (ready_to_delete_now) {
     event_handler_->OnReadyToDelete(id_);
   }
-  if (stopped_task) {
-    stopped_task->Run();
-    delete stopped_task;
-  }
+
+  if (!stopped_cb.is_null())
+    stopped_cb.Run();
 }

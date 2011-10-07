@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -248,8 +249,8 @@ class VideoCaptureHostTest : public testing::Test {
       MessageLoop* message_loop, content::ResourceContext* resource_context) {
     resource_context->media_stream_manager()->video_capture_manager()->
         GetMessageLoop()->PostTask(FROM_HERE,
-                                   NewRunnableFunction(
-                                       &PostQuitMessageLoop, message_loop));
+                                   base::Bind(&PostQuitMessageLoop,
+                                              message_loop));
   }
 
   // SyncWithVideoCaptureManagerThread() waits until all pending tasks on the
@@ -260,9 +261,9 @@ class VideoCaptureHostTest : public testing::Test {
   void SyncWithVideoCaptureManagerThread() {
     message_loop_->PostTask(
         FROM_HERE,
-        NewRunnableFunction(&PostQuitOnVideoCaptureManagerThread,
-                            message_loop_.get(),
-                            content::MockResourceContext::GetInstance()));
+        base::Bind(&PostQuitOnVideoCaptureManagerThread,
+                   message_loop_.get(),
+                   content::MockResourceContext::GetInstance()));
     message_loop_->Run();
   }
 

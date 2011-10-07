@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
@@ -48,9 +49,9 @@ void AudioInputRendererHost::OnCreated(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &AudioInputRendererHost::DoCompleteCreation,
+          this,
           make_scoped_refptr(controller)));
 }
 
@@ -59,9 +60,9 @@ void AudioInputRendererHost::OnRecording(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &AudioInputRendererHost::DoSendRecordingMessage,
+          this,
           make_scoped_refptr(controller)));
 }
 
@@ -71,9 +72,8 @@ void AudioInputRendererHost::OnError(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &AudioInputRendererHost::DoHandleError,
-                        make_scoped_refptr(controller),
+      base::Bind(&AudioInputRendererHost::DoHandleError, this,
+                 make_scoped_refptr(controller),
                         error_code));
 }
 
@@ -389,7 +389,7 @@ void AudioInputRendererHost::OnStreamClosed(AudioEntry* entry) {
   // Delete the entry after we've closed the stream.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &AudioInputRendererHost::DeleteEntry, entry));
+      base::Bind(&AudioInputRendererHost::DeleteEntry, this, entry));
 }
 
 void AudioInputRendererHost::DeleteEntry(AudioEntry* entry) {

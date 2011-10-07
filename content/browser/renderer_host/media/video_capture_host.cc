@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/video_capture_host.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -26,7 +27,7 @@ void VideoCaptureHost::OnChannelClosing() {
     // Since the channel is closing we need a task to make sure VideoCaptureHost
     // is not deleted before VideoCaptureController.
     controller->StopCapture(
-        NewRunnableMethod(this, &VideoCaptureHost::OnReadyToDelete, it->first));
+        base::Bind(&VideoCaptureHost::OnReadyToDelete, this, it->first));
   }
 }
 
@@ -40,7 +41,7 @@ void VideoCaptureHost::OnDestruct() const {
 void VideoCaptureHost::OnError(const VideoCaptureControllerID& id) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureHost::DoHandleError, id.device_id));
+      base::Bind(&VideoCaptureHost::DoHandleError, this, id.device_id));
 }
 
 void VideoCaptureHost::OnBufferCreated(
@@ -50,8 +51,8 @@ void VideoCaptureHost::OnBufferCreated(
     int buffer_id) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureHost::DoSendNewBuffer,
-                        id.device_id, handle, length, buffer_id));
+      base::Bind(&VideoCaptureHost::DoSendNewBuffer,
+                 this, id.device_id, handle, length, buffer_id));
 }
 
 void VideoCaptureHost::OnBufferReady(
@@ -60,8 +61,8 @@ void VideoCaptureHost::OnBufferReady(
     base::Time timestamp) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureHost::DoSendFilledBuffer,
-                        id.device_id, buffer_id, timestamp));
+      base::Bind(&VideoCaptureHost::DoSendFilledBuffer,
+                 this, id.device_id, buffer_id, timestamp));
 }
 
 void VideoCaptureHost::OnFrameInfo(const VideoCaptureControllerID& id,
@@ -70,15 +71,14 @@ void VideoCaptureHost::OnFrameInfo(const VideoCaptureControllerID& id,
                                    int frame_per_second) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureHost::DoSendFrameInfo,
-                        id.device_id, width, height, frame_per_second));
+      base::Bind(&VideoCaptureHost::DoSendFrameInfo,
+                 this, id.device_id, width, height, frame_per_second));
 }
 
 void VideoCaptureHost::OnReadyToDelete(const VideoCaptureControllerID& id) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &VideoCaptureHost::DoDeleteVideoCaptureController,
-                        id));
+      base::Bind(&VideoCaptureHost::DoDeleteVideoCaptureController, this, id));
 }
 
 void VideoCaptureHost::DoSendNewBuffer(
@@ -108,7 +108,7 @@ void VideoCaptureHost::DoHandleError(int device_id) {
   EntryMap::iterator it = entries_.find(id);
   if (it != entries_.end()) {
     VideoCaptureController* controller = it->second;
-    controller->StopCapture(NULL);
+    controller->StopCapture(base::Closure());
   }
 }
 
@@ -166,7 +166,7 @@ void VideoCaptureHost::OnStopCapture(int device_id) {
   EntryMap::iterator it = entries_.find(controller_id);
   if (it != entries_.end()) {
     scoped_refptr<VideoCaptureController> controller = it->second;
-    controller->StopCapture(NULL);
+    controller->StopCapture(base::Closure());
   } else {
     // It does not exist so it must have been stopped already.
     Send(new VideoCaptureMsg_StateChanged(device_id,

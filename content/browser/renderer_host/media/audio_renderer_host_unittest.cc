@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -334,7 +335,7 @@ class AudioRendererHostTest : public testing::Test {
   // Called on the main thread.
   static void PostQuitOnAudioThread(MessageLoop* message_loop) {
     AudioManager::GetAudioManager()->GetMessageLoop()->PostTask(
-        FROM_HERE, NewRunnableFunction(&PostQuitMessageLoop, message_loop));
+        FROM_HERE, base::Bind(&PostQuitMessageLoop, message_loop));
   }
 
   // SyncWithAudioThread() waits until all pending tasks on the audio thread
@@ -343,8 +344,7 @@ class AudioRendererHostTest : public testing::Test {
   // closing an audio stream.
   void SyncWithAudioThread() {
     message_loop_->PostTask(
-        FROM_HERE, NewRunnableFunction(&PostQuitOnAudioThread,
-                                       message_loop_.get()));
+        FROM_HERE, base::Bind(&PostQuitOnAudioThread, message_loop_.get()));
     message_loop_->Run();
   }
 

@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
@@ -70,8 +71,8 @@ void AudioInputDeviceManager::EnumerateDevices() {
 
   audio_input_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &AudioInputDeviceManager::EnumerateOnDeviceThread));
+      base::Bind(&AudioInputDeviceManager::EnumerateOnDeviceThread,
+                 base::Unretained(this)));
 }
 
 int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {
@@ -82,10 +83,8 @@ int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {
 
   audio_input_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &AudioInputDeviceManager::OpenOnDeviceThread,
-                        audio_input_session_id,
-                        device));
+      base::Bind(&AudioInputDeviceManager::OpenOnDeviceThread,
+                 base::Unretained(this), audio_input_session_id, device));
 
   return audio_input_session_id;
 }
@@ -96,9 +95,8 @@ void AudioInputDeviceManager::Close(int session_id) {
 
   audio_input_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &AudioInputDeviceManager::CloseOnDeviceThread,
-                        session_id));
+      base::Bind(&AudioInputDeviceManager::CloseOnDeviceThread,
+                 base::Unretained(this), session_id));
 }
 
 void AudioInputDeviceManager::Start(
@@ -127,9 +125,8 @@ void AudioInputDeviceManager::Start(
 
   audio_input_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &AudioInputDeviceManager::StartOnDeviceThread,
-                        session_id));
+      base::Bind(&AudioInputDeviceManager::StartOnDeviceThread,
+                 base::Unretained(this), session_id));
 }
 
 void AudioInputDeviceManager::Stop(int session_id) {
@@ -137,9 +134,8 @@ void AudioInputDeviceManager::Stop(int session_id) {
 
   audio_input_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &AudioInputDeviceManager::StopOnDeviceThread,
-                        session_id));
+      base::Bind(&AudioInputDeviceManager::StopOnDeviceThread,
+                 base::Unretained(this), session_id));
 }
 
 void AudioInputDeviceManager::EnumerateOnDeviceThread() {
@@ -160,9 +156,8 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &AudioInputDeviceManager::DevicesEnumeratedOnIOThread,
-                        devices));
+      base::Bind(&AudioInputDeviceManager::DevicesEnumeratedOnIOThread,
+                 base::Unretained(this), devices));
 }
 
 void AudioInputDeviceManager::OpenOnDeviceThread(
@@ -184,9 +179,9 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
   devices_[session_id] = audio_input_device_name;
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          NewRunnableMethod(
-                              this,
+                          base::Bind(
                               &AudioInputDeviceManager::OpenedOnIOThread,
+                              base::Unretained(this),
                               session_id));
 }
 
@@ -197,9 +192,9 @@ void AudioInputDeviceManager::CloseOnDeviceThread(int session_id) {
   devices_.erase(session_id);
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          NewRunnableMethod(
-                              this,
+                          base::Bind(
                               &AudioInputDeviceManager::ClosedOnIOThread,
+                              base::Unretained(this),
                               session_id));
 }
 
@@ -230,9 +225,9 @@ void AudioInputDeviceManager::StartOnDeviceThread(const int session_id) {
   // Posts the index to AudioInputRenderHost through the event handler.
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          NewRunnableMethod(
-                              this,
+                          base::Bind(
                               &AudioInputDeviceManager::StartedOnIOThread,
+                              base::Unretained(this),
                               session_id,
                               device_index));
 }
@@ -241,9 +236,9 @@ void AudioInputDeviceManager::StopOnDeviceThread(int session_id) {
   DCHECK(IsOnCaptureDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          NewRunnableMethod(
-                              this,
+                          base::Bind(
                               &AudioInputDeviceManager::StoppedOnIOThread,
+                              base::Unretained(this),
                               session_id));
 }
 
@@ -300,9 +295,9 @@ void AudioInputDeviceManager::SignalError(int session_id,
                                           MediaStreamProviderError error) {
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          NewRunnableMethod(
-                              this,
+                          base::Bind(
                               &AudioInputDeviceManager::ErrorOnIOThread,
+                              base::Unretained(this),
                               session_id,
                               error));
 }

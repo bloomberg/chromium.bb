@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread.h"
 #include "media/video/capture/fake_video_capture_device.h"
@@ -57,8 +58,8 @@ void VideoCaptureManager::EnumerateDevices() {
 
   vc_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &VideoCaptureManager::OnEnumerateDevices));
+      base::Bind(&VideoCaptureManager::OnEnumerateDevices,
+                 base::Unretained(this)));
 }
 
 int VideoCaptureManager::Open(const StreamDeviceInfo& device) {
@@ -70,10 +71,8 @@ int VideoCaptureManager::Open(const StreamDeviceInfo& device) {
 
   vc_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &VideoCaptureManager::OnOpen,
-                        video_capture_session_id,
-                        device));
+      base::Bind(&VideoCaptureManager::OnOpen, base::Unretained(this),
+                 video_capture_session_id, device));
 
   return video_capture_session_id;
 }
@@ -84,9 +83,8 @@ void VideoCaptureManager::Close(int capture_session_id) {
 
   vc_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &VideoCaptureManager::OnClose,
-                        capture_session_id));
+      base::Bind(&VideoCaptureManager::OnClose, base::Unretained(this),
+                 capture_session_id));
 }
 
 void VideoCaptureManager::Start(
@@ -96,23 +94,19 @@ void VideoCaptureManager::Start(
 
   vc_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &VideoCaptureManager::OnStart,
-                        capture_params,
-                        video_capture_receiver));
+      base::Bind(&VideoCaptureManager::OnStart, base::Unretained(this),
+                 capture_params, video_capture_receiver));
 }
 
 void VideoCaptureManager::Stop(
     const media::VideoCaptureSessionId& capture_session_id,
-    Task* stopped_task) {
+    base::Closure stopped_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   vc_device_thread_.message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &VideoCaptureManager::OnStop,
-                        capture_session_id,
-                        stopped_task));
+      base::Bind(&VideoCaptureManager::OnStop, base::Unretained(this),
+                 capture_session_id, stopped_cb));
 }
 
 void VideoCaptureManager::Error(
@@ -236,7 +230,7 @@ void VideoCaptureManager::OnStart(
 
 void VideoCaptureManager::OnStop(
     const media::VideoCaptureSessionId capture_session_id,
-    Task* stopped_task) {
+    base::Closure stopped_cb) {
   DCHECK(IsOnCaptureDeviceThread());
 
   VideoCaptureDevices::iterator it = devices_.find(capture_session_id);
@@ -248,10 +242,8 @@ void VideoCaptureManager::OnStop(
     video_capture_device->DeAllocate();
   }
 
-  if (stopped_task) {
-    stopped_task->Run();
-    delete stopped_task;
-  }
+  if (!stopped_cb.is_null())
+    stopped_cb.Run();
 
   if (capture_session_id == kStartOpenSessionId) {
     // This device was opened from Start(), not Open(). Close it!
@@ -301,18 +293,18 @@ void VideoCaptureManager::PostOnOpened(int capture_session_id) {
   DCHECK(IsOnCaptureDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          NewRunnableMethod(this,
-                                            &VideoCaptureManager::OnOpened,
-                                            capture_session_id));
+                          base::Bind(&VideoCaptureManager::OnOpened,
+                                     base::Unretained(this),
+                                     capture_session_id));
 }
 
 void VideoCaptureManager::PostOnClosed(int capture_session_id) {
   DCHECK(IsOnCaptureDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
                             FROM_HERE,
-                            NewRunnableMethod(this,
-                                              &VideoCaptureManager::OnClosed,
-                                              capture_session_id));
+                            base::Bind(&VideoCaptureManager::OnClosed,
+                                       base::Unretained(this),
+                                       capture_session_id));
 }
 
 void VideoCaptureManager::PostOnDevicesEnumerated(
@@ -320,10 +312,8 @@ void VideoCaptureManager::PostOnDevicesEnumerated(
   DCHECK(IsOnCaptureDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          NewRunnableMethod(
-                              this,
-                              &VideoCaptureManager::OnDevicesEnumerated,
-                              devices));
+                          base::Bind(&VideoCaptureManager::OnDevicesEnumerated,
+                                     base::Unretained(this), devices));
 }
 
 void VideoCaptureManager::PostOnError(int capture_session_id,
@@ -332,10 +322,9 @@ void VideoCaptureManager::PostOnError(int capture_session_id,
   // thread.
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          NewRunnableMethod(this,
-                                            &VideoCaptureManager::OnError,
-                                            capture_session_id,
-                                            error));
+                          base::Bind(&VideoCaptureManager::OnError,
+                                     base::Unretained(this), capture_session_id,
+                                     error));
 }
 
 bool VideoCaptureManager::IsOnCaptureDeviceThread() const {

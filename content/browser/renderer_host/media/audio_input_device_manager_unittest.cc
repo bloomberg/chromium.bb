@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "content/browser/browser_thread.h"
@@ -111,7 +112,7 @@ class AudioInputDeviceManagerTest: public testing::Test {
   static void PostQuitOnAudioInputDeviceManagerThread(
       MessageLoop* message_loop, AudioInputDeviceManager* manager) {
     manager->message_loop()->PostTask(
-        FROM_HERE, NewRunnableFunction(&PostQuitMessageLoop, message_loop));
+        FROM_HERE, base::Bind(&PostQuitMessageLoop, message_loop));
   }
 
   // SyncWithAudioInputDeviceManagerThread() waits until all pending tasks on
@@ -120,9 +121,9 @@ class AudioInputDeviceManagerTest: public testing::Test {
   void SyncWithAudioInputDeviceManagerThread() {
     message_loop_->PostTask(
         FROM_HERE,
-        NewRunnableFunction(&PostQuitOnAudioInputDeviceManagerThread,
-                            message_loop_.get(),
-                            manager_.get()));
+        base::Bind(&PostQuitOnAudioInputDeviceManagerThread,
+                   message_loop_.get(),
+                   manager_.get()));
     message_loop_->Run();
   }
   scoped_ptr<MessageLoop> message_loop_;

@@ -54,9 +54,9 @@ void AudioRendererHost::OnCreated(media::AudioOutputController* controller) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &AudioRendererHost::DoCompleteCreation,
+          this,
           make_scoped_refptr(controller)));
 }
 
@@ -64,9 +64,9 @@ void AudioRendererHost::OnPlaying(media::AudioOutputController* controller) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &AudioRendererHost::DoSendPlayingMessage,
+          this,
           make_scoped_refptr(controller)));
 }
 
@@ -74,9 +74,9 @@ void AudioRendererHost::OnPaused(media::AudioOutputController* controller) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &AudioRendererHost::DoSendPausedMessage,
+          this,
           make_scoped_refptr(controller)));
 }
 
@@ -85,10 +85,8 @@ void AudioRendererHost::OnError(media::AudioOutputController* controller,
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &AudioRendererHost::DoHandleError,
-                        make_scoped_refptr(controller),
-                        error_code));
+      base::Bind(&AudioRendererHost::DoHandleError,
+                 this, make_scoped_refptr(controller), error_code));
 }
 
 void AudioRendererHost::OnMoreData(media::AudioOutputController* controller,
@@ -96,10 +94,9 @@ void AudioRendererHost::OnMoreData(media::AudioOutputController* controller,
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &AudioRendererHost::DoRequestMoreData,
-                        make_scoped_refptr(controller),
-                        buffers_state));
+      base::Bind(&AudioRendererHost::DoRequestMoreData,
+                 this, make_scoped_refptr(controller),
+                 buffers_state));
 }
 
 void AudioRendererHost::DoCompleteCreation(
@@ -412,7 +409,7 @@ void AudioRendererHost::OnStreamClosed(AudioEntry* entry) {
   // Delete the entry after we've closed the stream.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererHost::DeleteEntry, entry));
+      base::Bind(&AudioRendererHost::DeleteEntry, this, entry));
 }
 
 void AudioRendererHost::DeleteEntry(AudioEntry* entry) {

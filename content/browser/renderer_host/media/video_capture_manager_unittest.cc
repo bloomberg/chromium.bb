@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
@@ -101,7 +102,7 @@ class VideoCaptureManagerTest : public testing::Test {
   static void PostQuitOnVideoCaptureManagerThread(
       MessageLoop* message_loop, media_stream::VideoCaptureManager* vcm) {
     vcm->GetMessageLoop()->PostTask(
-        FROM_HERE, NewRunnableFunction(&PostQuitMessageLoop, message_loop));
+        FROM_HERE, base::Bind(&PostQuitMessageLoop, message_loop));
   }
 
   // SyncWithVideoCaptureManagerThread() waits until all pending tasks on the
@@ -111,9 +112,9 @@ class VideoCaptureManagerTest : public testing::Test {
   // video capture device.
   void SyncWithVideoCaptureManagerThread() {
     message_loop_->PostTask(
-        FROM_HERE, NewRunnableFunction(&PostQuitOnVideoCaptureManagerThread,
-                                       message_loop_.get(),
-                                       vcm_.get()));
+        FROM_HERE, base::Bind(&PostQuitOnVideoCaptureManagerThread,
+                              message_loop_.get(),
+                              vcm_.get()));
     message_loop_->Run();
   }
   scoped_ptr<media_stream::VideoCaptureManager> vcm_;
@@ -152,7 +153,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   capture_params.frame_per_second = 30;
   vcm_->Start(capture_params, frame_observer_.get());
 
-  vcm_->Stop(video_session_id, NULL);
+  vcm_->Stop(video_session_id, base::Closure());
   vcm_->Close(video_session_id);
 
   // Wait to check callbacks before removing the listener
@@ -266,7 +267,8 @@ TEST_F(VideoCaptureManagerTest, StartUsingId) {
   vcm_->Start(capture_params, frame_observer_.get());
 
   // Stop shall trigger the Close callback
-  vcm_->Stop(media_stream::VideoCaptureManager::kStartOpenSessionId, NULL);
+  vcm_->Stop(media_stream::VideoCaptureManager::kStartOpenSessionId,
+             base::Closure());
 
   // Wait to check callbacks before removing the listener
   SyncWithVideoCaptureManagerThread();

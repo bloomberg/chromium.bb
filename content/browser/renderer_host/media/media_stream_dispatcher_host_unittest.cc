@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/browser/mock_resource_context.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
@@ -174,7 +175,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       media_stream::MediaStreamManager* media_stream_manager) {
     media_stream_manager->video_capture_manager()->GetMessageLoop()->
         PostTask(FROM_HERE,
-                 NewRunnableFunction(&PostQuitMessageLoop, message_loop));
+                 base::Bind(&PostQuitMessageLoop, message_loop));
   }
 
   // SyncWithVideoCaptureManagerThread() waits until all pending tasks on the
@@ -185,9 +186,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   void SyncWithVideoCaptureManagerThread() {
     message_loop_->PostTask(
         FROM_HERE,
-        NewRunnableFunction(&PostQuitOnVideoCaptureManagerThread,
-                            message_loop_.get(),
-                            media_stream_manager_.get()));
+        base::Bind(&PostQuitOnVideoCaptureManagerThread,
+                   message_loop_.get(), media_stream_manager_.get()));
     message_loop_->Run();
   }
 
