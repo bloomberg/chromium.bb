@@ -84,7 +84,8 @@ NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
 }
 
 void NativeWidgetAura::UpdateFrameAfterFrameChange() {
-  NOTIMPLEMENTED();
+  // We don't support changing the frame type.
+  NOTREACHED();
 }
 
 bool NativeWidgetAura::ShouldUseNativeFrame() const {
@@ -93,7 +94,10 @@ bool NativeWidgetAura::ShouldUseNativeFrame() const {
 }
 
 void NativeWidgetAura::FrameTypeChanged() {
-  NOTIMPLEMENTED();
+  // This is called when the Theme has changed; forward the event to the root
+  // widget.
+  GetWidget()->ThemeChanged();
+  GetWidget()->GetRootView()->SchedulePaint();
 }
 
 Widget* NativeWidgetAura::GetWidget() {
@@ -314,16 +318,15 @@ bool NativeWidgetAura::IsVisible() const {
 }
 
 void NativeWidgetAura::Activate() {
-  NOTIMPLEMENTED();
+  window_->Activate();
 }
 
 void NativeWidgetAura::Deactivate() {
-  NOTIMPLEMENTED();
+  window_->Deactivate();
 }
 
 bool NativeWidgetAura::IsActive() const {
-  //NOTIMPLEMENTED();
-  return false;
+  return aura::Desktop::GetInstance()->active_window() == window_;
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {

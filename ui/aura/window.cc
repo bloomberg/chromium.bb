@@ -130,14 +130,6 @@ void Window::SetParent(Window* parent) {
     Desktop::GetInstance()->default_parent()->AddChild(this);
 }
 
-void Window::Restore() {
-  if (show_state_ != ui::SHOW_STATE_NORMAL) {
-    show_state_ = ui::SHOW_STATE_NORMAL;
-    SetBounds(restore_bounds_);
-    restore_bounds_.SetRect(0, 0, 0, 0);
-  }
-}
-
 void Window::Maximize() {
   if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_MAXIMIZED))
     SetBounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(this));
@@ -146,6 +138,27 @@ void Window::Maximize() {
 void Window::Fullscreen() {
   if (UpdateShowStateAndRestoreBounds(ui::SHOW_STATE_FULLSCREEN))
     SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(this));
+}
+
+void Window::Restore() {
+  if (show_state_ != ui::SHOW_STATE_NORMAL) {
+    show_state_ = ui::SHOW_STATE_NORMAL;
+    SetBounds(restore_bounds_);
+    restore_bounds_.SetRect(0, 0, 0, 0);
+  }
+}
+
+void Window::Activate() {
+  // If we support minimization need to ensure this restores the window first.
+  aura::Desktop::GetInstance()->SetActiveWindow(this, this);
+}
+
+void Window::Deactivate() {
+  aura::Desktop::GetInstance()->Deactivate(this);
+}
+
+bool Window::IsActive() const {
+  return aura::Desktop::GetInstance()->active_window() == this;
 }
 
 bool Window::IsToplevelWindowContainer() const {
@@ -304,6 +317,14 @@ void Window::ReleaseCapture() {
 bool Window::HasCapture() {
   RootWindow* root = GetRoot();
   return root && root->capture_window() == this;
+}
+
+Window* Window::GetToplevelWindow() {
+  Window* window = this;
+  while (window && window->parent() &&
+         !window->parent()->IsToplevelWindowContainer())
+    window = window->parent();
+  return window && window->parent() ? window : NULL;
 }
 
 // static

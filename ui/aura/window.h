@@ -75,6 +75,17 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Restore the wnidow to its original bounds.
   void Restore();
 
+  // Activates this window. Only top level windows can be activated. Requests
+  // to activate a non-top level window are ignored.
+  void Activate();
+
+  // Deactivates this window. Only top level windows can be
+  // deactivated. Requests to deactivate a non-top level window are ignored.
+  void Deactivate();
+
+  // Returns true if this window is active.
+  bool IsActive() const;
+
   // Returns the window's show state.
   ui::WindowShowState show_state() const { return show_state_; }
 
@@ -178,6 +189,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Returns true if this window has a mouse capture.
   bool HasCapture();
+
+  // Returns the first ancestor whose parent window returns true from
+  // IsToplevelWindowContainer.
+  Window* GetToplevelWindow();
 
   // Returns an animation configured with the default duration. All animations
   // should use this. Caller owns returned value.

@@ -107,10 +107,10 @@ void RootWindow::SetFocusedWindow(Window* focused_window) {
       (focused_window && !focused_window->CanFocus())) {
     return;
   }
-  if (focused_window_)
+  if (focused_window_ && focused_window_->delegate())
     focused_window_->delegate()->OnBlur();
   focused_window_ = focused_window;
-  if (focused_window_)
+  if (focused_window_ && focused_window_->delegate())
     focused_window_->delegate()->OnFocus();
 }
 

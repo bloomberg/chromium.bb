@@ -739,5 +739,31 @@ TEST_F(WindowTest, Maximized) {
   EXPECT_EQ(original_bounds, w->bounds());
 }
 
+// Various assertions for activating/deactivating.
+TEST_F(WindowTest, Deactivate) {
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w2(CreateTestWindowWithId(2, NULL));
+  Window* parent = w1->parent();
+  ASSERT_TRUE(parent);
+  ASSERT_EQ(2u, parent->children().size());
+  // Activate w2 and make sure it's active and frontmost.
+  w2->Activate();
+  EXPECT_TRUE(w2->IsActive());
+  EXPECT_FALSE(w1->IsActive());
+  EXPECT_EQ(w2.get(), parent->children()[1]);
+
+  // Activate w1 and make sure it's active and frontmost.
+  w1->Activate();
+  EXPECT_TRUE(w1->IsActive());
+  EXPECT_FALSE(w2->IsActive());
+  EXPECT_EQ(w1.get(), parent->children()[1]);
+
+  // Dectivate w1 and make sure w2 becomes active and frontmost.
+  w1->Deactivate();
+  EXPECT_FALSE(w1->IsActive());
+  EXPECT_TRUE(w2->IsActive());
+  EXPECT_EQ(w2.get(), parent->children()[1]);
+}
+
 }  // namespace internal
 }  // namespace aura

@@ -111,14 +111,21 @@ void Desktop::ScheduleDraw() {
 }
 
 void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
+  // We only allow top level windows to be active.
+  if (window && window != window->GetToplevelWindow()) {
+    // Ignore requests to activate windows that aren't in a top level window.
+    return;
+  }
+
   if (active_window_ == window)
     return;
-  if (active_window_)
+  if (active_window_ && active_window_->delegate())
     active_window_->delegate()->OnLostActive();
   active_window_ = window;
   if (active_window_) {
     active_window_->parent()->MoveChildToFront(active_window_);
-    active_window_->delegate()->OnActivated();
+    if (active_window_->delegate())
+      active_window_->delegate()->OnActivated();
     active_window_->GetFocusManager()->SetFocusedWindow(
         to_focus ? to_focus : active_window_);
   }
@@ -126,6 +133,22 @@ void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
 
 void Desktop::ActivateTopmostWindow() {
   SetActiveWindow(GetTopmostWindowToActivate(NULL), NULL);
+}
+
+void Desktop::Deactivate(Window* window) {
+  if (!window)
+    return;
+
+  Window* toplevel_ancestor = window->GetToplevelWindow();
+  if (!toplevel_ancestor || toplevel_ancestor != window)
+    return;  // Not a top level window.
+
+  if (active_window() != toplevel_ancestor)
+    return;  // Top level ancestor is already not active.
+
+  Window* to_activate = GetTopmostWindowToActivate(toplevel_ancestor);
+  if (to_activate)
+    SetActiveWindow(to_activate, NULL);
 }
 
 void Desktop::WindowDestroying(Window* window) {
@@ -148,7 +171,7 @@ Window* Desktop::GetTopmostWindowToActivate(Window* ignore) {
   for (Window::Windows::const_reverse_iterator i = windows.rbegin();
        i != windows.rend(); ++i) {
     if (*i != ignore && (*i)->IsVisible() &&
-        (*i)->delegate()->ShouldActivate(NULL))
+        (!(*i)->delegate() || (*i)->delegate()->ShouldActivate(NULL)))
       return *i;
   }
   return NULL;

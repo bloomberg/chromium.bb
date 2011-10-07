@@ -91,6 +91,11 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   // active.
   void ActivateTopmostWindow();
 
+  // Deactivates |window| and activates the topmost window. Does nothing if
+  // |window| is not a topmost window, or there are no other suitable windows to
+  // activate.
+  void Deactivate(Window* window);
+
   // Invoked from RootWindow when |window| is being destroyed.
   void WindowDestroying(Window* window);
 
