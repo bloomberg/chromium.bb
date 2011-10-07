@@ -318,6 +318,13 @@ void ContentSettingsHandler::Observe(int type,
     }
 
     case chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED: {
+      // Filter out notifications from other profiles.
+      HostContentSettingsMap* map =
+          Source<HostContentSettingsMap>(source).ptr();
+      if (map != GetContentSettingsMap() &&
+          map != GetOTRContentSettingsMap())
+        break;
+
       const ContentSettingsDetails* settings_details =
           Details<const ContentSettingsDetails>(details).ptr();
 
