@@ -682,6 +682,11 @@ void WebPluginDelegateImpl::OnThrottleMessage() {
     }
   }
 
+  // Due to re-entrancy, we must save our queue state now.  Otherwise, we may
+  // self-post below, and *also* start up another delayed task when the first
+  // entry is pushed onto the queue in ThrottleMessage().
+  bool throttle_queue_was_empty = throttle_queue->empty();
+
   for (it = notify_queue.begin(); it != notify_queue.end(); ++it) {
     const MSG& msg = *it;
     WNDPROC proc = reinterpret_cast<WNDPROC>(msg.time);
@@ -692,7 +697,7 @@ void WebPluginDelegateImpl::OnThrottleMessage() {
       CallWindowProc(proc, msg.hwnd, msg.message, msg.wParam, msg.lParam);
   }
 
-  if (!throttle_queue->empty()) {
+  if (!throttle_queue_was_empty) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         NewRunnableFunction(&WebPluginDelegateImpl::OnThrottleMessage),
         kFlashWMUSERMessageThrottleDelayMs);
