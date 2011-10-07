@@ -1685,3 +1685,9 @@
    fun:v8::internal::Snapshot::Initialize
    fun:v8::InitializeHelper
 }
+{
+   bug_99436
+   Heapcheck:Leak
+   ...
+   fun:chromeos::OncNetworkParserTest_TestCreateNetworkWifi*_Test::TestBody
+}

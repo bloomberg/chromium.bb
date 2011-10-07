@@ -4700,6 +4700,21 @@
    fun:_ZN11WebViewHostC1EP9TestShell
    fun:_ZN9TestShell15createNewWindowERKN6WebKit6WebURLEP16DRTDevToolsAgent
 }
+{
+   bug_99435
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_99436
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN8chromeos*OncNetworkParserTest_TestCreateNetworkWifi*_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
