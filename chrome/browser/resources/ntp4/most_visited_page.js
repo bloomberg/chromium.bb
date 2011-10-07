@@ -141,7 +141,8 @@ cr.define('ntp4', function() {
                     [encodeURIComponent(this.href),
                      ntp4.APP_LAUNCH.NTP_MOST_VISITED]);
         // Records the index of this tile.
-        chrome.send('recordInHistogram', ['NTP_MostVisited', this.index, 8]);
+        chrome.send('metricsHandler:recordInHistogram',
+                    ['NTP_MostVisited', this.index, 8]);
       }
     },
 

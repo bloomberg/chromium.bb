@@ -103,7 +103,7 @@ var MostVisited = (function() {
       this.data[destinationIndex] = sourceData;
       this.data[sourceIndex] = destinationData;
 
-      chrome.send('recordAction', ['MostVisitedReordered']);
+      chrome.send('metricsHandler:recordAction', ['MostVisitedReordered']);
     },
 
     updateSettingsLink: function(hasBlacklistedUrls) {
@@ -540,7 +540,7 @@ var MostVisited = (function() {
       var hoverDuration = (new Date()).getTime() - this.hoverStartTime_;
       if (hoverDuration > 500)
         hoverDuration = 500;
-      chrome.send('recordInHistogram',
+      chrome.send('metricsHandler:recordInHistogram',
                   [clicked ? 'NewTabPage.HoverTimeClicked'
                            : 'NewTabPage.HoverTimeNotClicked',
                    hoverDuration,
@@ -692,7 +692,7 @@ var MostVisited = (function() {
                                                    item);
           this.RecordHoverTime_(true);
           if (index != -1)
-            chrome.send('recordInHistogram',
+            chrome.send('metricsHandler:recordInHistogram',
                         ['NewTabPage.MostVisited', index, 8]);
         }
       }

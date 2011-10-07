@@ -3658,6 +3658,8 @@
         'browser/ui/webui/ntp/favicon_webui_handler.h',
         'browser/ui/webui/ntp/foreign_session_handler.cc',
         'browser/ui/webui/ntp/foreign_session_handler.h',
+        'browser/ui/webui/ntp/metrics_handler.cc',
+        'browser/ui/webui/ntp/metrics_handler.h',
         'browser/ui/webui/ntp/most_visited_handler.cc',
         'browser/ui/webui/ntp/most_visited_handler.h',
         'browser/ui/webui/ntp/new_tab_page_handler.cc',

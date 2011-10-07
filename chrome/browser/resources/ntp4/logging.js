@@ -19,7 +19,7 @@ var eventLog = [];
  */
 function logEvent(name, shouldLogTime) {
   if (shouldLogTime)
-    chrome.send('logEventTime', [name]);
+    chrome.send('metricsHandler:logEventTime', [name]);
   eventLog.push([name, Date.now()]);
 }
 
