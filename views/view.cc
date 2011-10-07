@@ -181,6 +181,9 @@ void View::AddChildViewAt(View* view, int index) {
 
   if (layout_manager_.get())
     layout_manager_->ViewAdded(this, view);
+
+  if (use_acceleration_when_possible)
+    ReorderLayers();
 }
 
 void View::ReorderChildView(View* view, int index) {
@@ -207,6 +210,9 @@ void View::ReorderChildView(View* view, int index) {
   // Add it in the specified index now.
   InitFocusSiblings(view, index);
   children_.insert(children_.begin() + index, view);
+
+  if (use_acceleration_when_possible)
+    ReorderLayers();
 }
 
 void View::RemoveChildView(View* view) {
@@ -1717,6 +1723,12 @@ void View::CreateLayer() {
   layer_->SetVisible(IsVisible());
 
   UpdateParentLayers();
+
+  // The new layer needs to be ordered in the layer tree according
+  // to the view tree. Children of this layer were added in order
+  // in UpdateParentLayers().
+  if (parent())
+    parent()->ReorderLayers();
 }
 
 void View::UpdateParentLayers() {
@@ -1783,11 +1795,37 @@ void View::DestroyLayer() {
 
   layer_.reset();
 
+  if (new_parent)
+    ReorderLayers();
+
   gfx::Point offset;
   CalculateOffsetToAncestorWithLayer(&offset, NULL);
   UpdateChildLayerBounds(offset);
 
   SchedulePaint();
+}
+
+void View::ReorderLayers() {
+  View* v = this;
+  while (v && !v->layer())
+    v = v->parent();
+
+  if (v) {
+    for (Views::const_iterator i(v->children_.begin());
+         i != v->children_.end();
+         ++i)
+      (*i)->ReorderChildLayers(v->layer());
+  }
+}
+
+void View::ReorderChildLayers(ui::Layer* parent_layer) {
+  if (layer()) {
+    DCHECK_EQ(parent_layer, layer()->parent());
+    parent_layer->MoveToFront(layer());
+  } else {
+    for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i)
+      (*i)->ReorderChildLayers(parent_layer);
+  }
 }
 
 // Input -----------------------------------------------------------------------

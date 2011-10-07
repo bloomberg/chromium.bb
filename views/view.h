@@ -1246,6 +1246,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // to the destroyed layer's parent.
   void DestroyLayer();
 
+  // Finds the layer that this view paints to (it may belong to an ancestor
+  // view), then reorders the immediate children of that layer to match the
+  // order of the view tree.
+  void ReorderLayers();
+
+  // This reorders the immediate children of |*parent_layer| to match the
+  // order of the view tree.
+  void ReorderChildLayers(ui::Layer* parent_layer);
+
   // Input ---------------------------------------------------------------------
 
   // RootView invokes these. These in turn invoke the appropriate OnMouseXXX
