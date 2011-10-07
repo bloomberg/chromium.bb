@@ -808,6 +808,7 @@ drm_compositor_create(struct wl_display *display,
 
 	e = udev_enumerate_new(ec->udev);
 	udev_enumerate_add_match_subsystem(e, "drm");
+	udev_enumerate_add_match_sysname(e, "card[0-9]*");
 
 	udev_enumerate_scan_devices(e);
 	drm_device = NULL;
