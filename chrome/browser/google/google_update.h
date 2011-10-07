@@ -123,7 +123,7 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // to the message loop that we want the response to come from.
   // |window| should point to a foreground window. This is needed to ensure that
   // Vista/Windows 7 UAC prompts show up in the foreground. It may also be null.
-  bool InitiateGoogleUpdateCheck(bool install_if_newer, views::Widget* window,
+  void InitiateGoogleUpdateCheck(bool install_if_newer, views::Widget* window,
                                  MessageLoop* main_loop);
 
   // This function reports the results of the GoogleUpdate operation to the

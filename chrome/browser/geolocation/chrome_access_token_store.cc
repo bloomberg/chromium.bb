@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 
+#include "base/bind.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -56,15 +57,16 @@ void ChromeAccessTokenStore::LoadDictionaryStoreInUIThread(
       token_dictionary->RemoveWithoutPathExpansion(
           kOldDefaultNetworkProviderUrl, NULL);
   }
-  request->ForwardResultAsync(MakeTuple(
-      access_token_set, g_browser_process->system_request_context()));
+  request->ForwardResultAsync(access_token_set,
+                              g_browser_process->system_request_context());
 }
 
 void ChromeAccessTokenStore::DoLoadAccessTokens(
     scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-      this, &ChromeAccessTokenStore::LoadDictionaryStoreInUIThread,
-      request));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ChromeAccessTokenStore::LoadDictionaryStoreInUIThread, this,
+                 request));
 }
 
 void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
@@ -78,6 +80,7 @@ void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
 
 void ChromeAccessTokenStore::SaveAccessToken(const GURL& server_url,
                                              const string16& access_token) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableFunction(
-      &SetAccessTokenOnUIThread, server_url, access_token));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&SetAccessTokenOnUIThread, server_url, access_token));
 }

@@ -7,6 +7,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -231,22 +232,20 @@ void GoogleUpdate::CheckForUpdate(bool install_if_newer,
   // it run in the file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &GoogleUpdate::InitiateGoogleUpdateCheck, install_if_newer,
-          window, MessageLoop::current()));
+      base::Bind(&GoogleUpdate::InitiateGoogleUpdateCheck, this,
+                 install_if_newer, window, MessageLoop::current()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // GoogleUpdate, private:
 
-bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
+void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
                                              views::Widget* window,
                                              MessageLoop* main_loop) {
   FilePath chrome_exe_path;
-  if (!PathService::Get(base::DIR_EXE, &chrome_exe_path)) {
+  if (!PathService::Get(base::DIR_EXE, &chrome_exe_path))
     NOTREACHED();
-    return false;
-  }
+
   std::wstring chrome_exe = chrome_exe_path.value();
 
   std::transform(chrome_exe.begin(), chrome_exe.end(),
@@ -254,17 +253,19 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
 
   GoogleUpdateErrorCode error_code = CanUpdateCurrentChrome(chrome_exe);
   if (error_code != GOOGLE_UPDATE_NO_ERROR) {
-    main_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &GoogleUpdate::ReportResults, UPGRADE_ERROR, error_code));
-    return false;
+    main_loop->PostTask(
+        FROM_HERE,
+        base::Bind(&GoogleUpdate::ReportResults, this,
+                   UPGRADE_ERROR, error_code));
+    return;
   }
 
   CComObject<GoogleUpdateJobObserver>* job_observer;
   HRESULT hr =
       CComObject<GoogleUpdateJobObserver>::CreateInstance(&job_observer);
   if (hr != S_OK) {
-    return ReportFailure(hr, GOOGLE_UPDATE_JOB_SERVER_CREATION_FAILED,
-                         main_loop);
+    ReportFailure(hr, GOOGLE_UPDATE_JOB_SERVER_CREATION_FAILED, main_loop);
+    return;
   }
 
   base::win::ScopedComPtr<IJobObserver> job_holder(job_observer);
@@ -294,8 +295,10 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
     system_level = true;
   }
 
-  if (hr != S_OK)
-    return ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND, main_loop);
+  if (hr != S_OK) {
+    ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND, main_loop);
+    return;
+  }
 
   std::wstring app_guid = installer::GetAppGuidForUpdates(system_level);
   DCHECK(!app_guid.empty());
@@ -305,9 +308,10 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
   else
     hr = on_demand->Update(app_guid.c_str(), job_observer);
 
-  if (hr != S_OK)
-    return ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR,
-                         main_loop);
+  if (hr != S_OK) {
+    ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR, main_loop);
+    return;
+  }
 
   // We need to spin the message loop while Google Update is running so that it
   // can report back to us through GoogleUpdateJobObserver. This message loop
@@ -317,21 +321,28 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
 
   GoogleUpdateUpgradeResult results;
   hr = job_observer->GetResult(&results);
-  if (hr != S_OK)
-    return ReportFailure(hr, GOOGLE_UPDATE_GET_RESULT_CALL_FAILED, main_loop);
+  if (hr != S_OK) {
+    ReportFailure(hr, GOOGLE_UPDATE_GET_RESULT_CALL_FAILED, main_loop);
+    return;
+  }
 
-  if (results == UPGRADE_ERROR)
-    return ReportFailure(hr, GOOGLE_UPDATE_ERROR_UPDATING, main_loop);
+  if (results == UPGRADE_ERROR) {
+    ReportFailure(hr, GOOGLE_UPDATE_ERROR_UPDATING, main_loop);
+    return;
+  }
 
   hr = job_observer->GetVersionInfo(&version_available_);
-  if (hr != S_OK)
-    return ReportFailure(hr, GOOGLE_UPDATE_GET_VERSION_INFO_FAILED, main_loop);
+  if (hr != S_OK) {
+    ReportFailure(hr, GOOGLE_UPDATE_GET_VERSION_INFO_FAILED, main_loop);
+    return;
+  }
 
-  main_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &GoogleUpdate::ReportResults, results, GOOGLE_UPDATE_NO_ERROR));
+  main_loop->PostTask(
+      FROM_HERE,
+      base::Bind(&GoogleUpdate::ReportResults, this,
+                 results, GOOGLE_UPDATE_NO_ERROR));
   job_holder = NULL;
   on_demand = NULL;
-  return true;
 }
 
 void GoogleUpdate::ReportResults(GoogleUpdateUpgradeResult results,
@@ -347,7 +358,9 @@ bool GoogleUpdate::ReportFailure(HRESULT hr, GoogleUpdateErrorCode error_code,
                                  MessageLoop* main_loop) {
   NOTREACHED() << "Communication with Google Update failed: " << hr
                << " error: " << error_code;
-  main_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &GoogleUpdate::ReportResults, UPGRADE_ERROR, error_code));
+  main_loop->PostTask(
+      FROM_HERE,
+      base::Bind(&GoogleUpdate::ReportResults, this,
+                 UPGRADE_ERROR, error_code));
   return false;
 }

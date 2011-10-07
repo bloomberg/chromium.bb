@@ -19,7 +19,7 @@ FakeAccessTokenStore::FakeAccessTokenStore() {
 void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
   CHECK(request_ != NULL);
   net::URLRequestContextGetter* context_getter = NULL;
-  request_->ForwardResult(MakeTuple(access_token_set_, context_getter));
+  request_->ForwardResult(access_token_set_, context_getter);
   request_ = NULL;
 }
 

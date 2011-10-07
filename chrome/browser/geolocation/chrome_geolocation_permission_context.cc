@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -511,9 +512,12 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-        this, &ChromeGeolocationPermissionContext::RequestGeolocationPermission,
-        render_process_id, render_view_id, bridge_id, requesting_frame));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &ChromeGeolocationPermissionContext::RequestGeolocationPermission,
+            this, render_process_id, render_view_id, bridge_id,
+            requesting_frame));
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -609,10 +613,11 @@ void ChromeGeolocationPermissionContext::NotifyPermissionSet(
                                    allowed);
 
   if (allowed) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
-        this,
-        &ChromeGeolocationPermissionContext::NotifyArbitratorPermissionGranted,
-        requesting_frame));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &ChromeGeolocationPermissionContext::
+                NotifyArbitratorPermissionGranted, this, requesting_frame));
   }
 }
 
@@ -627,9 +632,11 @@ void ChromeGeolocationPermissionContext::CancelPendingInfoBarRequest(
     int render_view_id,
     int bridge_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-        this, &ChromeGeolocationPermissionContext::CancelPendingInfoBarRequest,
-        render_process_id, render_view_id, bridge_id));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &ChromeGeolocationPermissionContext::CancelPendingInfoBarRequest,
+            this, render_process_id, render_view_id, bridge_id));
      return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/geolocation/wifi_data_provider_chromeos.h"
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -140,8 +141,8 @@ void WifiDataProviderChromeOs::DoStartTaskOnUIThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   wlan_api_.reset(NewWlanApi());
   if (wlan_api_ == NULL) {
-    client_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &WifiDataProviderChromeOs::DidStartFailed));
+    client_loop()->PostTask(
+        FROM_HERE, base::Bind(&WifiDataProviderChromeOs::DidStartFailed, this));
     return;
   }
   DoWifiScanTaskOnUIThread();
@@ -168,12 +169,13 @@ void WifiDataProviderChromeOs::DoWifiScanTaskOnUIThread() {
   WifiData new_data;
 
   if (!wlan_api_->GetAccessPointData(&new_data.access_point_data)) {
-    client_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &WifiDataProviderChromeOs::DidWifiScanTaskNoResults));
+    client_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&WifiDataProviderChromeOs::DidWifiScanTaskNoResults, this));
   } else {
-    client_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &WifiDataProviderChromeOs::DidWifiScanTask,
-        new_data));
+    client_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&WifiDataProviderChromeOs::DidWifiScanTask, this, new_data));
   }
 }
 
@@ -212,8 +214,7 @@ void WifiDataProviderChromeOs::ScheduleNextScan(int interval) {
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &WifiDataProviderChromeOs::DoWifiScanTaskOnUIThread),
+      base::Bind(&WifiDataProviderChromeOs::DoWifiScanTaskOnUIThread, this),
       interval);
 }
 
@@ -224,8 +225,7 @@ void WifiDataProviderChromeOs::ScheduleStop() {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &WifiDataProviderChromeOs::DoStopTaskOnUIThread));
+      base::Bind(&WifiDataProviderChromeOs::DoStopTaskOnUIThread, this));
 }
 
 void WifiDataProviderChromeOs::ScheduleStart() {
@@ -237,6 +237,5 @@ void WifiDataProviderChromeOs::ScheduleStart() {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &WifiDataProviderChromeOs::DoStartTaskOnUIThread));
+      base::Bind(&WifiDataProviderChromeOs::DoStartTaskOnUIThread, this));
 }

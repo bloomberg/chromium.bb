@@ -12,7 +12,7 @@ AccessTokenStore::~AccessTokenStore() {
 
 AccessTokenStore::Handle AccessTokenStore::LoadAccessTokens(
     CancelableRequestConsumerBase* consumer,
-    LoadAccessTokensCallbackType* callback) {
+    const LoadAccessTokensCallbackType& callback) {
   scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request(
       new CancelableRequest<LoadAccessTokensCallbackType>(callback));
   AddRequest(request, consumer);

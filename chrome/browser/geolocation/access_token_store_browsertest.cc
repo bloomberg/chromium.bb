@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
@@ -43,7 +45,7 @@ class GeolocationAccessTokenStoreTest
 void StartTestStepFromClientThread(
     scoped_refptr<AccessTokenStore>* store,
     CancelableRequestConsumerBase* consumer,
-    AccessTokenStore::LoadAccessTokensCallbackType* callback) {
+    const AccessTokenStore::LoadAccessTokensCallbackType& callback) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId));
   if (*store == NULL)
     (*store) = new ChromeAccessTokenStore();
@@ -65,8 +67,10 @@ void RunCancelTestInClientTread() {
 
   // Single request, canceled explicitly
   CancelableRequestProvider::Handle first_handle =
-      store->LoadAccessTokens(&consumer, NewCallback(
-          &load_client, &TokenLoadClientForTest::NotReachedCallback));
+      store->LoadAccessTokens(
+          &consumer,
+          base::Bind(&TokenLoadClientForTest::NotReachedCallback,
+                     base::Unretained(&load_client)));
   EXPECT_TRUE(consumer.HasPendingRequests());
   // Test this handle is valid.
   consumer.GetClientData(store.get(), first_handle);
@@ -74,10 +78,14 @@ void RunCancelTestInClientTread() {
   EXPECT_FALSE(consumer.HasPendingRequests());
 
   // 2 requests, canceled globally.
-  store->LoadAccessTokens(&consumer, NewCallback(
-      &load_client, &TokenLoadClientForTest::NotReachedCallback));
-  store->LoadAccessTokens(&consumer, NewCallback(
-      &load_client, &TokenLoadClientForTest::NotReachedCallback));
+  store->LoadAccessTokens(
+      &consumer,
+      base::Bind(&TokenLoadClientForTest::NotReachedCallback,
+                 base::Unretained(&load_client)));
+  store->LoadAccessTokens(
+      &consumer,
+      base::Bind(&TokenLoadClientForTest::NotReachedCallback,
+                 base::Unretained(&load_client)));
   EXPECT_TRUE(consumer.HasPendingRequests());
   EXPECT_EQ(2u, consumer.PendingRequestCount());
   consumer.CancelAllRequests();
@@ -96,10 +104,11 @@ void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
   token_to_set_ = token_to_set;
 
   BrowserThread::PostTask(
-      kExpectedClientThreadId, FROM_HERE, NewRunnableFunction(
-          &StartTestStepFromClientThread, &token_store_, &request_consumer_,
-          NewCallback(this,
-              &GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded)));
+      kExpectedClientThreadId, FROM_HERE,
+      base::Bind(&StartTestStepFromClientThread, &token_store_,
+                 &request_consumer_,
+                 base::Bind(&GeolocationAccessTokenStoreTest::
+                     OnAccessTokenStoresLoaded, base::Unretained(this))));
   ui_test_utils::RunMessageLoop();
 }
 
@@ -159,9 +168,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, OldUrlRemoval) {
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, CancelRequest) {
-  BrowserThread::PostTask(
-      kExpectedClientThreadId, FROM_HERE, NewRunnableFunction(
-          RunCancelTestInClientTread));
+  BrowserThread::PostTask(kExpectedClientThreadId, FROM_HERE,
+                          base::Bind(&RunCancelTestInClientTread));
   ui_test_utils::RunMessageLoop();
 }
 
