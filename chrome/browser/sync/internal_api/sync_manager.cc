@@ -1149,8 +1149,11 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
     ReadNode type_root(trans);
     tag = syncable::ModelTypeToRootTag(*iter);
     if (!type_root.InitByTagLookup(tag)) {
-      NOTREACHED();
-      return;
+      // This can happen when we enable a datatype for the first time on restart
+      // (for example when we upgrade) and therefore haven't done the initial
+      // download for that type at the time we RefreshEncryption. There's
+      // nothing we can do for now, so just move on to the next type.
+      continue;
     }
 
     // Iterate through all children of this datatype.
