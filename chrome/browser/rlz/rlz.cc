@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -35,11 +36,6 @@
 #include "content/common/notification_service.h"
 
 namespace {
-
-// Organic brands all start with GG, such as GGCM.
-static bool is_organic(const std::wstring& brand) {
-  return (brand.size() < 2) ? false : (brand.substr(0, 2) == L"GG");
-}
 
 void RecordProductEvents(bool first_run, bool google_default_search,
                          bool google_default_homepage, bool already_ran,
@@ -99,14 +95,12 @@ void RecordProductEvents(bool first_run, bool google_default_search,
   }
 }
 
-bool SendFinancialPing(const std::wstring& brand,
-                       const std::wstring& lang,
-                       const std::wstring& referral,
-                       bool exclude_id) {
+bool SendFinancialPing(const std::string& brand,
+                       const string16& lang,
+                       const string16& referral) {
   rlz_lib::AccessPoint points[] = {rlz_lib::CHROME_OMNIBOX,
                                    rlz_lib::CHROME_HOME_PAGE,
                                    rlz_lib::NO_ACCESS_POINT};
-  std::string brand_ascii(WideToASCII(brand));
   std::string lang_ascii(WideToASCII(lang));
   std::string referral_ascii(WideToASCII(referral));
 
@@ -114,19 +108,19 @@ bool SendFinancialPing(const std::wstring& brand,
   // We ignore the return value of SendFinancialPing() since we'll try again
   // later anyway. Callers of this function are only interested in whether
   // the ping for the main brand succeeded or not.
-  std::wstring reactivation_brand;
-  if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand)) {
-    std::string reactivation_brand_ascii(WideToASCII(reactivation_brand));
-    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+  std::string reactivation_brand;
+  if (google_util::GetReactivationBrand(&reactivation_brand)) {
+    string16 reactivation_brand16 = UTF8ToUTF16(reactivation_brand);
+    rlz_lib::SupplementaryBranding branding(reactivation_brand16.c_str());
     rlz_lib::SendFinancialPing(rlz_lib::CHROME, points, "chrome",
-                               reactivation_brand_ascii.c_str(),
+                               reactivation_brand.c_str(),
                                referral_ascii.c_str(), lang_ascii.c_str(),
-                               exclude_id, NULL, true);
+                               false, NULL, true);
   }
 
   return rlz_lib::SendFinancialPing(rlz_lib::CHROME, points, "chrome",
-                                    brand_ascii.c_str(), referral_ascii.c_str(),
-                                    lang_ascii.c_str(), exclude_id, NULL, true);
+                                    brand.c_str(), referral_ascii.c_str(),
+                                    lang_ascii.c_str(), false, NULL, true);
 }
 
 }  // namespace
@@ -212,9 +206,9 @@ void RLZTracker::ScheduleDelayedInit(int delay) {
 void RLZTracker::DelayedInit() {
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.
-  std::wstring brand;
-  if (!GoogleUpdateSettings::GetBrand(&brand) || brand.empty() ||
-      GoogleUpdateSettings::IsOrganic(brand))
+  std::string brand;
+  if (!google_util::GetBrand(&brand) || brand.empty() ||
+      google_util::IsOrganic(brand))
     return;
 
   RecordProductEvents(first_run_, google_default_search_,
@@ -223,9 +217,10 @@ void RLZTracker::DelayedInit() {
 
   // If chrome has been reactivated, record the events for this brand
   // as well.
-  std::wstring reactivation_brand;
-  if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand)) {
-    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+  std::string reactivation_brand;
+  if (google_util::GetReactivationBrand(&reactivation_brand)) {
+    string16 reactivation_brand16 = UTF8ToUTF16(reactivation_brand);
+    rlz_lib::SupplementaryBranding branding(reactivation_brand16.c_str());
     RecordProductEvents(first_run_, google_default_search_,
                         google_default_homepage_, already_ran_,
                         omnibox_used_, homepage_used_);
@@ -250,15 +245,15 @@ void RLZTracker::PingNowImpl() {
   // This is the entry point of a background thread, so I/O is allowed.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  std::wstring lang;
+  string16 lang;
   GoogleUpdateSettings::GetLanguage(&lang);
   if (lang.empty())
     lang = L"en";
-  std::wstring brand;
-  GoogleUpdateSettings::GetBrand(&brand);
-  std::wstring referral;
+  std::string brand;
+  google_util::GetBrand(&brand);
+  string16 referral;
   GoogleUpdateSettings::GetReferral(&referral);
-  if (SendFinancialPing(brand, lang, referral, is_organic(brand))) {
+  if (SendFinancialPing(brand, lang, referral)) {
     GoogleUpdateSettings::ClearReferral();
 
     {
@@ -272,11 +267,10 @@ void RLZTracker::PingNowImpl() {
   }
 }
 
-bool RLZTracker::SendFinancialPing(const std::wstring& brand,
-                                   const std::wstring& lang,
-                                   const std::wstring& referral,
-                                   bool exclude_id) {
-  return ::SendFinancialPing(brand, lang, referral, exclude_id);
+bool RLZTracker::SendFinancialPing(const std::string& brand,
+                                   const string16& lang,
+                                   const string16& referral) {
+  return ::SendFinancialPing(brand, lang, referral);
 }
 
 void RLZTracker::Observe(int type,
@@ -336,9 +330,10 @@ bool RLZTracker::RecordProductEvent(rlz_lib::Product product,
   bool ret = rlz_lib::RecordProductEvent(product, point, event_id);
 
   // If chrome has been reactivated, record the event for this brand as well.
-  std::wstring reactivation_brand;
-  if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand)) {
-    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
+  std::string reactivation_brand;
+  if (google_util::GetReactivationBrand(&reactivation_brand)) {
+    string16 reactivation_brand16 = UTF8ToUTF16(reactivation_brand);
+    rlz_lib::SupplementaryBranding branding(reactivation_brand16.c_str());
     ret &= rlz_lib::RecordProductEvent(product, point, event_id);
   }
 
@@ -348,14 +343,14 @@ bool RLZTracker::RecordProductEvent(rlz_lib::Product product,
 // GetAccessPointRlz() caches RLZ strings for all access points. If we had
 // a successful ping, then we update the cached value.
 bool RLZTracker::GetAccessPointRlz(rlz_lib::AccessPoint point,
-                                   std::wstring* rlz) {
+                                   string16* rlz) {
   return GetInstance()->GetAccessPointRlzImpl(point, rlz);
 }
 
 // GetAccessPointRlz() caches RLZ strings for all access points. If we had
 // a successful ping, then we update the cached value.
 bool RLZTracker::GetAccessPointRlzImpl(rlz_lib::AccessPoint point,
-                                       std::wstring* rlz) {
+                                       string16* rlz) {
   // If the RLZ string for the specified access point is already cached,
   // simply return its value.
   {
@@ -376,7 +371,7 @@ bool RLZTracker::GetAccessPointRlzImpl(rlz_lib::AccessPoint point,
   if (!rlz_lib::GetAccessPointRlz(point, str_rlz, rlz_lib::kMaxRlzLength, NULL))
     return false;
 
-  std::wstring rlz_local(ASCIIToWide(std::string(str_rlz)));
+  string16 rlz_local(ASCIIToWide(std::string(str_rlz)));
   if (rlz)
     *rlz = rlz_local;
 
@@ -389,7 +384,7 @@ bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return false;
 
-  std::wstring* not_used = NULL;
+  string16* not_used = NULL;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&RLZTracker::GetAccessPointRlz, point, not_used));

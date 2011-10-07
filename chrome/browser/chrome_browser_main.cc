@@ -41,6 +41,7 @@
 #include "chrome/browser/first_run/first_run_browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/language_usage_metrics.h"
@@ -1072,14 +1073,8 @@ void ChromeBrowserMainParts::PredictorFieldTrial() {
 }
 
 void ChromeBrowserMainParts::DefaultAppsFieldTrial() {
-#if defined(OS_WIN)
-  string16 brand;
-  GoogleUpdateSettings::GetBrand(&brand);
-#elif defined(OS_MACOSX)
-  std::string brand = keystone_glue::BrandCode();
-#else
   std::string brand;
-#endif
+  google_util::GetBrand(&brand);
 
   // Create a 100% field trial based on the brand code.
   if (LowerCaseEqualsASCII(brand, "ecdb")) {

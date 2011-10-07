@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/first_run/first_run_import_observer.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
@@ -661,6 +662,21 @@ void FirstRun::AutoImport(
   process_singleton->Unlock();
   FirstRun::CreateSentinel();
 }
+
+#if defined(OS_LINUX)
+// static
+bool FirstRun::IsOrganicFirstRun() {
+  // We treat all installs as organic.
+  return true;
+}
+#else
+// static
+bool FirstRun::IsOrganicFirstRun() {
+  std::string brand;
+  google_util::GetBrand(&brand);
+  return google_util::IsOrganicFirstRun(brand);
+}
+#endif  // OS_LINUX
 
 #if defined(OS_POSIX)
 namespace {

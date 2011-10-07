@@ -115,10 +115,9 @@ class TestRLZTracker : public RLZTracker {
     return !assume_not_ui_thread_;
   }
 
-  virtual bool SendFinancialPing(const std::wstring& brand,
-                                 const std::wstring& lang,
-                                 const std::wstring& referral,
-                                 bool exclude_id) OVERRIDE {
+  virtual bool SendFinancialPing(const std::string& brand,
+                                 const string16& lang,
+                                 const string16& referral) OVERRIDE {
     // Don't ping the server during tests.
     pingnow_called_ = true;
 
@@ -159,7 +158,7 @@ void RlzLibTest::SetUp() {
   // so that the rlz_lib calls work. This needs to be done before we do the
   // override.
 
-  std::wstring temp_hklm_path = base::StringPrintf(
+  string16 temp_hklm_path = base::StringPrintf(
       L"%ls\\%ls",
       RegistryOverrideManager::kTempTestKeyPath,
       kRlzTempHklm);
@@ -169,7 +168,7 @@ void RlzLibTest::SetUp() {
                                        temp_hklm_path.c_str(),
                                        KEY_READ));
 
-  std::wstring temp_hkcu_path = base::StringPrintf(
+  string16 temp_hkcu_path = base::StringPrintf(
       L"%ls\\%ls",
       RegistryOverrideManager::kTempTestKeyPath,
       kRlzTempHkcu);
@@ -189,7 +188,7 @@ void RlzLibTest::SetUp() {
   // Make sure a non-organic brand code is set in the registry or the RLZTracker
   // is pretty much a no-op.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::wstring reg_path = dist->GetStateKey();
+  string16 reg_path = dist->GetStateKey();
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_SET_VALUE);
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(google_update::kRegRLZBrandField,
                                           L"TEST"));
@@ -467,7 +466,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzOnIoThread) {
   // Set dummy RLZ string.
   rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kOmniboxRlzString);
 
-  std::wstring rlz;
+  string16 rlz;
 
   tracker_.set_assume_not_ui_thread(true);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
@@ -478,7 +477,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzNotOnIoThread) {
   // Set dummy RLZ string.
   rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kOmniboxRlzString);
 
-  std::wstring rlz;
+  string16 rlz;
 
   tracker_.set_assume_not_ui_thread(false);
   EXPECT_FALSE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
@@ -488,7 +487,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzIsCached) {
   // Set dummy RLZ string.
   rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kOmniboxRlzString);
 
-  std::wstring rlz;
+  string16 rlz;
 
   tracker_.set_assume_not_ui_thread(false);
   EXPECT_FALSE(RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz));
@@ -507,7 +506,7 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, kOmniboxRlzString);
   rlz_lib::SetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, kHomepageRlzString);
 
-  std::wstring rlz;
+  string16 rlz;
 
   // Prime the cache.
   tracker_.set_assume_not_ui_thread(true);

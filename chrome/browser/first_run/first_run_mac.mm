@@ -6,20 +6,11 @@
 
 #include "base/file_path.h"
 #include "base/string_util.h"
-#include "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/master_prefs.h"
 
 bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
   // http://crbug.com/48880
   return false;
-}
-
-// static
-bool FirstRun::IsOrganicFirstRun() {
-  std::string brand = keystone_glue::BrandCode();
-  return brand.empty() ||
-         StartsWithASCII(brand, "GG", true) ||
-         StartsWithASCII(brand, "EU", true);
 }
 
 // static

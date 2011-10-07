@@ -32,8 +32,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/worker_thread_ticker.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/shell_util.h"
@@ -299,13 +297,6 @@ void FirstRun::PlatformSetup() {
   // Windows 7 has deprecated the quick launch bar.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     CreateChromeQuickLaunchShortcut();
-}
-
-// static
-bool FirstRun::IsOrganicFirstRun() {
-  std::wstring brand;
-  GoogleUpdateSettings::GetBrand(&brand);
-  return GoogleUpdateSettings::IsOrganicFirstRun(brand);
 }
 
 // static

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/google/google_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -32,21 +33,17 @@ TEST_F(GoogleUpdateTest, LastRunTime) {
   EXPECT_EQ(0, GoogleUpdateSettings::GetLastRunTime());
 }
 
+#endif  // defined(OS_WIN)
+
 TEST_F(GoogleUpdateTest, ShouldShowSearchEngineDialog) {
   // Test some brand codes to ensure that future changes to this method won't
   // go unnoticed.
-  const wchar_t* false_brand1 = L"CHFO";
-  EXPECT_FALSE(GoogleUpdateSettings::IsOrganicFirstRun(
-      false_brand1));
-  const wchar_t* false_brand2 = L"CHMA";
-  EXPECT_FALSE(GoogleUpdateSettings::IsOrganicFirstRun(
-      false_brand2));
-  const wchar_t* good_brand1 = L"EUBA";
-  EXPECT_TRUE(GoogleUpdateSettings::IsOrganicFirstRun(
-      good_brand1));
-  const wchar_t* good_brand2 = L"GGRA";
-  EXPECT_TRUE(GoogleUpdateSettings::IsOrganicFirstRun(
-      good_brand2));
+  const char* false_brand1 = "CHFO";
+  EXPECT_FALSE(google_util::IsOrganicFirstRun(false_brand1));
+  const char* false_brand2 = "CHMA";
+  EXPECT_FALSE(google_util::IsOrganicFirstRun(false_brand2));
+  const char* good_brand1 = "EUBA";
+  EXPECT_TRUE(google_util::IsOrganicFirstRun(good_brand1));
+  const char* good_brand2 = "GGRA";
+  EXPECT_TRUE(google_util::IsOrganicFirstRun(good_brand2));
 }
-
-#endif  // defined(OS_WIN)

@@ -83,13 +83,6 @@ void FirstRun::PlatformSetup() {
 }
 
 // static
-bool FirstRun::IsOrganicFirstRun() {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return true;
-}
-
-// static
 FilePath FirstRun::MasterPrefsPath() {
   // TODO(beng):
   NOTIMPLEMENTED();

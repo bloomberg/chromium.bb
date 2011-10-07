@@ -486,35 +486,6 @@ bool GoogleUpdateSettings::WriteGoogleUpdateSystemClientKey(
   return status == ERROR_SUCCESS;
 }
 
-bool GoogleUpdateSettings::IsOrganic(const std::wstring& brand) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kOrganicInstall))
-    return true;
-
-  static const wchar_t* kBrands[] = {
-      L"CHFO", L"CHFT", L"CHHS", L"CHHM", L"CHMA", L"CHMB", L"CHME", L"CHMF",
-      L"CHMG", L"CHMH", L"CHMI", L"CHMQ", L"CHMV", L"CHNB", L"CHNC", L"CHNG",
-      L"CHNH", L"CHNI", L"CHOA", L"CHOB", L"CHOC", L"CHON", L"CHOO", L"CHOP",
-      L"CHOQ", L"CHOR", L"CHOS", L"CHOT", L"CHOU", L"CHOX", L"CHOY", L"CHOZ",
-      L"CHPD", L"CHPE", L"CHPF", L"CHPG", L"EUBB", L"EUBC", L"GGLA", L"GGLS"
-  };
-  const wchar_t** end = &kBrands[arraysize(kBrands)];
-  const wchar_t** found = std::find(&kBrands[0], end, brand);
-  if (found != end)
-    return true;
-  return (StartsWith(brand, L"EUB", true) || StartsWith(brand, L"EUC", true) ||
-          StartsWith(brand, L"GGR", true));
-}
-
-bool GoogleUpdateSettings::IsOrganicFirstRun(const std::wstring& brand) {
-  // Used for testing, to force search engine selector to appear.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kOrganicInstall))
-    return true;
-
-  return (StartsWith(brand, L"GG", true) || StartsWith(brand, L"EU", true));
-}
-
 GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
     const std::wstring& app_guid,
     bool* is_overridden) {

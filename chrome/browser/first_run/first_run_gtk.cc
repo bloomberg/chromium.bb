@@ -48,12 +48,6 @@ bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
 }
 
 // static
-bool FirstRun::IsOrganicFirstRun() {
-  // We treat all installs as organic.
-  return true;
-}
-
-// static
 void FirstRun::PlatformSetup() {
   // Things that Windows does here (creating a desktop icon, for example) are
   // handled at install time on Linux.

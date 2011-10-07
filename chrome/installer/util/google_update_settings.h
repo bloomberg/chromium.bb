@@ -78,11 +78,18 @@ class GoogleUpdateSettings {
 
   // Returns in |brand| the RLZ brand code or distribution tag that has been
   // assigned to a partner. Returns false if the information is not available.
+  //
+  // NOTE: This function is Windows only.  If the code you are writing is not
+  // specifically for Windows, prefer calling google_util::GetBrand().
   static bool GetBrand(std::wstring* brand);
 
   // Returns in |brand| the RLZ reactivation brand code or distribution tag
   // that has been assigned to a partner for reactivating a dormant chrome
   // install. Returns false if the information is not available.
+  //
+  // NOTE: This function is Windows only.  If the code you are writing is not
+  // specifically for Windows, prefer calling
+  // google_util::GetReactivationBrand().
   static bool GetReactivationBrand(std::wstring* brand);
 
   // Returns in |client| the google_update client field, which is currently
@@ -166,14 +173,6 @@ class GoogleUpdateSettings {
   static bool WriteGoogleUpdateSystemClientKey(int handle,
                                                const std::wstring& key,
                                                const std::wstring& value);
-
-  // True if a build is strictly organic, according to its brand code.
-  static bool IsOrganic(const std::wstring& brand);
-
-  // True if a build should run as organic in the first run process. This uses
-  // a slightly different set of brand codes from the standard IsOrganic
-  // method.
-  static bool IsOrganicFirstRun(const std::wstring& brand);
 
   // Returns the effective update policy for |app_guid| as dictated by
   // Group Policy settings.  |is_overridden|, if non-NULL, is populated with
