@@ -889,7 +889,7 @@ base::MessagePumpDispatcher::DispatchStatus
 base::MessagePumpDispatcher::DispatchStatus
     MenuController::Dispatch(XEvent* xev) {
   if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
-    aura::Desktop::GetInstance()->DispatchNativeEvent(xev);
+    aura::Desktop::GetInstance()->GetDispatcher()->Dispatch(xev);
     return base::MessagePumpDispatcher::EVENT_QUIT;
   }
   switch (ui::EventTypeFromNative(xev)) {
@@ -907,7 +907,10 @@ base::MessagePumpDispatcher::DispatchStatus
       break;
   }
 
-  if (!aura::Desktop::GetInstance()->DispatchNativeEvent(xev))
+  // TODO(oshima): Update Windows' Dispatcher to return DispatchStatus
+  // instead of bool.
+  if (aura::Desktop::GetInstance()->GetDispatcher()->Dispatch(xev) ==
+      base::MessagePumpDispatcher::EVENT_IGNORED)
     return EVENT_IGNORED;
   return exit_type_ != EXIT_NONE ?
       base::MessagePumpDispatcher::EVENT_QUIT :

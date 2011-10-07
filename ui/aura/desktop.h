@@ -95,12 +95,10 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   void WindowDestroying(Window* window);
 
   // Returns the desktop's dispatcher. The result should only be passed to
-  // MessageLoopForUI::Run() or MessageLoopForUI::RunAllPendingWithDispatcher().
+  // MessageLoopForUI::Run() or MessageLoopForUI::RunAllPendingWithDispatcher(),
+  // or used to dispatch an event by |Dispatch(const NativeEvent&)| on it.
   // It must never be stored.
   MessageLoop::Dispatcher* GetDispatcher();
-
-  // Dispatch NativeEvent.
-  bool DispatchNativeEvent(const base::NativeEvent& event);
 
   static Desktop* GetInstance();
 
