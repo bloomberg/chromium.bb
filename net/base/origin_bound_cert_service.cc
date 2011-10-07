@@ -36,7 +36,7 @@ const int kValidityPeriodInDays = 365;
 // Represents the output and result callback of a request.
 class OriginBoundCertServiceRequest {
  public:
-  OriginBoundCertServiceRequest(OldCompletionCallback* callback,
+  OriginBoundCertServiceRequest(const CompletionCallback& callback,
                                 std::string* private_key,
                                 std::string* cert)
       : callback_(callback),
@@ -46,7 +46,7 @@ class OriginBoundCertServiceRequest {
 
   // Ensures that the result callback will never be made.
   void Cancel() {
-    callback_ = NULL;
+    callback_.Reset();
     private_key_ = NULL;
     cert_ = NULL;
   }
@@ -56,18 +56,18 @@ class OriginBoundCertServiceRequest {
   void Post(int error,
             const std::string& private_key,
             const std::string& cert) {
-    if (callback_) {
+    if (!callback_.is_null()) {
       *private_key_ = private_key;
       *cert_ = cert;
-      callback_->Run(error);
+      callback_.Run(error);
     }
     delete this;
   }
 
-  bool canceled() const { return !callback_; }
+  bool canceled() const { return callback_.is_null(); }
 
  private:
-  OldCompletionCallback* callback_;
+  CompletionCallback callback_;
   std::string* private_key_;
   std::string* cert_;
 };
@@ -256,14 +256,15 @@ OriginBoundCertService::~OriginBoundCertService() {
   STLDeleteValues(&inflight_);
 }
 
-int OriginBoundCertService::GetOriginBoundCert(const std::string& origin,
-                                               std::string* private_key,
-                                               std::string* cert,
-                                               OldCompletionCallback* callback,
-                                               RequestHandle* out_req) {
+int OriginBoundCertService::GetOriginBoundCert(
+    const std::string& origin,
+    std::string* private_key,
+    std::string* cert,
+    const CompletionCallback& callback,
+    RequestHandle* out_req) {
   DCHECK(CalledOnValidThread());
 
-  if (!callback || !private_key || !cert || origin.empty()) {
+  if (callback.is_null() || !private_key || !cert || origin.empty()) {
     *out_req = NULL;
     return ERR_INVALID_ARGUMENT;
   }

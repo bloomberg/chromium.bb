@@ -55,7 +55,7 @@ class NET_EXPORT OriginBoundCertService
   int GetOriginBoundCert(const std::string& origin,
                          std::string* private_key,
                          std::string* cert,
-                         OldCompletionCallback* callback,
+                         const CompletionCallback& callback,
                          RequestHandle* out_req);
 
   // Cancels the specified request. |req| is the handle returned by

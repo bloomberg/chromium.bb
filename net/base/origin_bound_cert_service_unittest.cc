@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/default_origin_bound_cert_store.h"
@@ -17,33 +18,30 @@
 
 namespace net {
 
-class OriginBoundCertServiceTest : public testing::Test {
-};
+namespace {
 
-class ExplodingCallback : public CallbackRunner<Tuple1<int> > {
- public:
-  virtual void RunWithParams(const Tuple1<int>& params) {
-    FAIL();
-  }
-};
+void FailTest(int /* result */) {
+  FAIL();
+}
 
 // See http://crbug.com/91512 - implement OpenSSL version of CreateSelfSigned.
 #if !defined(USE_OPENSSL)
 
-TEST_F(OriginBoundCertServiceTest, CacheHit) {
+TEST(OriginBoundCertServiceTest, CacheHit) {
   scoped_ptr<OriginBoundCertService> service(
       new OriginBoundCertService(new DefaultOriginBoundCertStore(NULL)));
   std::string origin("https://encrypted.google.com:443");
 
   int error;
-  TestOldCompletionCallback callback;
+  TestCompletionCallback callback;
   OriginBoundCertService::RequestHandle request_handle;
 
   // Asynchronous completion.
   std::string private_key_info1, der_cert1;
   EXPECT_EQ(0, service->cert_count());
   error = service->GetOriginBoundCert(
-      origin, &private_key_info1, &der_cert1, &callback, &request_handle);
+      origin, &private_key_info1, &der_cert1, callback.callback(),
+      &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle != NULL);
   error = callback.WaitForResult();
@@ -55,7 +53,8 @@ TEST_F(OriginBoundCertServiceTest, CacheHit) {
   // Synchronous completion.
   std::string private_key_info2, der_cert2;
   error = service->GetOriginBoundCert(
-      origin, &private_key_info2, &der_cert2, &callback, &request_handle);
+      origin, &private_key_info2, &der_cert2, callback.callback(),
+      &request_handle);
   EXPECT_TRUE(request_handle == NULL);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service->cert_count());
@@ -68,18 +67,19 @@ TEST_F(OriginBoundCertServiceTest, CacheHit) {
   EXPECT_EQ(0u, service->inflight_joins());
 }
 
-TEST_F(OriginBoundCertServiceTest, StoreCerts) {
+TEST(OriginBoundCertServiceTest, StoreCerts) {
   scoped_ptr<OriginBoundCertService> service(
       new OriginBoundCertService(new DefaultOriginBoundCertStore(NULL)));
   int error;
-  TestOldCompletionCallback callback;
+  TestCompletionCallback callback;
   OriginBoundCertService::RequestHandle request_handle;
 
   std::string origin1("https://encrypted.google.com:443");
   std::string private_key_info1, der_cert1;
   EXPECT_EQ(0, service->cert_count());
   error = service->GetOriginBoundCert(
-      origin1, &private_key_info1, &der_cert1, &callback, &request_handle);
+      origin1, &private_key_info1, &der_cert1, callback.callback(),
+      &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle != NULL);
   error = callback.WaitForResult();
@@ -89,7 +89,8 @@ TEST_F(OriginBoundCertServiceTest, StoreCerts) {
   std::string origin2("https://www.verisign.com:443");
   std::string private_key_info2, der_cert2;
   error = service->GetOriginBoundCert(
-      origin2, &private_key_info2, &der_cert2, &callback, &request_handle);
+      origin2, &private_key_info2, &der_cert2, callback.callback(),
+      &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle != NULL);
   error = callback.WaitForResult();
@@ -99,7 +100,8 @@ TEST_F(OriginBoundCertServiceTest, StoreCerts) {
   std::string origin3("https://www.twitter.com:443");
   std::string private_key_info3, der_cert3;
   error = service->GetOriginBoundCert(
-      origin3, &private_key_info3, &der_cert3, &callback, &request_handle);
+      origin3, &private_key_info3, &der_cert3, callback.callback(),
+      &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle != NULL);
   error = callback.WaitForResult();
@@ -115,26 +117,28 @@ TEST_F(OriginBoundCertServiceTest, StoreCerts) {
 }
 
 // Tests an inflight join.
-TEST_F(OriginBoundCertServiceTest, InflightJoin) {
+TEST(OriginBoundCertServiceTest, InflightJoin) {
   scoped_ptr<OriginBoundCertService> service(
       new OriginBoundCertService(new DefaultOriginBoundCertStore(NULL)));
   std::string origin("https://encrypted.google.com:443");
   int error;
 
   std::string private_key_info1, der_cert1;
-  TestOldCompletionCallback callback1;
+  TestCompletionCallback callback1;
   OriginBoundCertService::RequestHandle request_handle1;
 
   std::string private_key_info2, der_cert2;
-  TestOldCompletionCallback callback2;
+  TestCompletionCallback callback2;
   OriginBoundCertService::RequestHandle request_handle2;
 
   error = service->GetOriginBoundCert(
-      origin, &private_key_info1, &der_cert1, &callback1, &request_handle1);
+      origin, &private_key_info1, &der_cert1, callback1.callback(),
+      &request_handle1);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle1 != NULL);
   error = service->GetOriginBoundCert(
-      origin, &private_key_info2, &der_cert2, &callback2, &request_handle2);
+      origin, &private_key_info2, &der_cert2, callback2.callback(),
+      &request_handle2);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle2 != NULL);
 
@@ -148,17 +152,18 @@ TEST_F(OriginBoundCertServiceTest, InflightJoin) {
   EXPECT_EQ(1u, service->inflight_joins());
 }
 
-TEST_F(OriginBoundCertServiceTest, ExtractValuesFromBytes) {
+TEST(OriginBoundCertServiceTest, ExtractValuesFromBytes) {
   scoped_ptr<OriginBoundCertService> service(
       new OriginBoundCertService(new DefaultOriginBoundCertStore(NULL)));
   std::string origin("https://encrypted.google.com:443");
   std::string private_key_info, der_cert;
   int error;
-  TestOldCompletionCallback callback;
+  TestCompletionCallback callback;
   OriginBoundCertService::RequestHandle request_handle;
 
   error = service->GetOriginBoundCert(
-      origin, &private_key_info, &der_cert, &callback, &request_handle);
+      origin, &private_key_info, &der_cert, callback.callback(),
+      &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle != NULL);
   error = callback.WaitForResult();
@@ -177,19 +182,18 @@ TEST_F(OriginBoundCertServiceTest, ExtractValuesFromBytes) {
 }
 
 // Tests that the callback of a canceled request is never made.
-TEST_F(OriginBoundCertServiceTest, CancelRequest) {
+TEST(OriginBoundCertServiceTest, CancelRequest) {
   scoped_ptr<OriginBoundCertService> service(
       new OriginBoundCertService(new DefaultOriginBoundCertStore(NULL)));
   std::string origin("https://encrypted.google.com:443");
   std::string private_key_info, der_cert;
   int error;
-  ExplodingCallback exploding_callback;
   OriginBoundCertService::RequestHandle request_handle;
 
   error = service->GetOriginBoundCert(origin,
                                       &private_key_info,
                                       &der_cert,
-                                      &exploding_callback,
+                                      base::Bind(&FailTest),
                                       &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle != NULL);
@@ -198,13 +202,13 @@ TEST_F(OriginBoundCertServiceTest, CancelRequest) {
   // Issue a few more requests to the worker pool and wait for their
   // completion, so that the task of the canceled request (which runs on a
   // worker thread) is likely to complete by the end of this test.
-  TestOldCompletionCallback callback;
+  TestCompletionCallback callback;
   for (int i = 0; i < 5; ++i) {
     error = service->GetOriginBoundCert(
         "https://encrypted.google.com:" + std::string(1, (char) ('1' + i)),
         &private_key_info,
         &der_cert,
-        &callback,
+        callback.callback(),
         &request_handle);
     EXPECT_EQ(ERR_IO_PENDING, error);
     EXPECT_TRUE(request_handle != NULL);
@@ -213,5 +217,7 @@ TEST_F(OriginBoundCertServiceTest, CancelRequest) {
 }
 
 #endif  // !defined(USE_OPENSSL)
+
+}  // namespace
 
 }  // namespace net

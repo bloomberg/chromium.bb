@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cert_verify_result.h"
@@ -128,7 +129,7 @@ class NET_EXPORT_PRIVATE SSLHostInfo {
   CertVerifyResult cert_verify_result_;
   SingleRequestCertVerifier verifier_;
   scoped_refptr<X509Certificate> cert_;
-  scoped_refptr<CancelableOldCompletionCallback<SSLHostInfo> > callback_;
+  base::WeakPtrFactory<SSLHostInfo> weak_factory_;
 
   DnsRRResolver* dnsrr_resolver_;
   OldCompletionCallback* dns_callback_;
