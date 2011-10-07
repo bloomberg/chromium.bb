@@ -23,7 +23,7 @@ LocatedEvent::LocatedEvent(const NativeEvent& native_event)
 KeyEvent::KeyEvent(const NativeEvent& native_event)
     : Event(native_event, native_event->type(), native_event->flags()),
       key_code_(static_cast<aura::KeyEvent*>(native_event)->key_code()),
-      character_(0),
+      character_(GetCharacterFromKeyCode(key_code_, flags())),
       unmodified_character_(0) {
 }
 

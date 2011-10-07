@@ -21,6 +21,12 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #endif
 
+#if defined(HAVE_IBUS)
+#include "views/ime/input_method_ibus.h"
+#else
+#include "views/ime/mock_input_method.h"
+#endif
+
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -171,8 +177,13 @@ bool NativeWidgetAura::HasMouseCapture() const {
 }
 
 InputMethod* NativeWidgetAura::CreateInputMethod() {
-  NOTIMPLEMENTED();
-  return NULL;
+#if defined(HAVE_IBUS)
+  InputMethod* input_method = new InputMethodIBus(this);
+#else
+  InputMethod* input_method = new MockInputMethod(this);
+#endif
+  input_method->Init(GetWidget());
+  return input_method;
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
@@ -411,15 +422,32 @@ void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void NativeWidgetAura::OnFocus() {
+  Widget* widget = GetWidget();
+  if (widget->is_top_level()) {
+    InputMethod* input_method = widget->GetInputMethod();
+    input_method->OnFocus();
+    // See description of got_initial_focus_in_ for details on this.
+    widget->GetFocusManager()->RestoreFocusedView();
+  }
   delegate_->OnNativeFocus(window_);
 }
 
 void NativeWidgetAura::OnBlur() {
+  Widget* widget = GetWidget();
+  if (widget->is_top_level()) {
+    InputMethod* input_method = widget->GetInputMethod();
+    input_method->OnBlur();
+    widget->GetFocusManager()->StoreFocusedView();
+  }
   delegate_->OnNativeBlur(NULL);
 }
 
 bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
-  return delegate_->OnKeyEvent(KeyEvent(event));
+  InputMethod* input_method = GetWidget()->GetInputMethod();
+  DCHECK(input_method);
+  // TODO(oshima): DispatchKeyEvent should return bool?
+  input_method->DispatchKeyEvent(KeyEvent(event));
+  return true;
 }
 
 gfx::NativeCursor NativeWidgetAura::GetCursor(const gfx::Point& point) {
