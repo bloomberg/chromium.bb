@@ -36,11 +36,6 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
   // Make this method public for testing.
   using URLBlacklistManager::ScheduleUpdate;
 
-  // Post tasks without a delay during tests.
-  virtual void PostUpdateTask(const base::Closure& task) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE, task);
-  }
-
   // Makes a direct call to UpdateOnIO during tests.
   void UpdateOnIO() {
     StringVector* block = new StringVector;

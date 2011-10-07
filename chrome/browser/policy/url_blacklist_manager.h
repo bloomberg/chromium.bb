@@ -131,11 +131,12 @@ class URLBlacklistManager : public NotificationObserver {
  protected:
   typedef std::vector<std::string> StringVector;
 
-  // These are used to delay updating the blacklist while the preferences are
+  // Used to delay updating the blacklist while the preferences are
   // changing, and execute only one update per simultaneous prefs changes.
   void ScheduleUpdate();
-  // The following methods are virtual for testing.
-  virtual void PostUpdateTask(const base::Closure& task);
+
+  // Updates the blacklist using the current preference values.
+  // Virtual for testing.
   virtual void Update();
 
   // Starts the blacklist update on the IO thread, using the filters in

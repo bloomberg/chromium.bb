@@ -21,10 +21,6 @@ namespace policy {
 
 namespace {
 
-// Time to wait before starting an update of the blacklist. Scheduling another
-// update during this period will reset the timer.
-const int64 kUpdateDelayMs = 1000;
-
 // Maximum filters per policy. Filters over this index are ignored.
 const size_t kMaxFiltersPerPolicy = 100;
 
@@ -336,16 +332,14 @@ void URLBlacklistManager::Observe(int type,
 
 void URLBlacklistManager::ScheduleUpdate() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Cancel pending updates, if any.
+  // Cancel pending updates, if any. This can happen if two preferences that
+  // change the blacklist are updated in one message loop cycle. In those cases,
+  // only rebuild the blacklist after all the preference updates are processed.
   ui_weak_ptr_factory_.InvalidateWeakPtrs();
-  PostUpdateTask(base::Bind(&URLBlacklistManager::Update,
-                            ui_weak_ptr_factory_.GetWeakPtr()));
-}
-
-void URLBlacklistManager::PostUpdateTask(const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // This is overridden in tests to post the task without the delay.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, task, kUpdateDelayMs);
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&URLBlacklistManager::Update,
+                 ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void URLBlacklistManager::Update() {
