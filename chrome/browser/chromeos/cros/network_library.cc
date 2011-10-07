@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/cros/network_library.h"
 
-#include <algorithm>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-gtype-specialized.h>
 #include <glib-object.h>
+
+#include <algorithm>
+#include <list>
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/i18n/icu_encoding_detection.h"
@@ -27,6 +30,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
+#include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -58,9 +62,11 @@
 //  CellularNetwork
 //   active_cellular_: Cellular version of wifi_.
 //   cellular_networks_: Cellular version of wifi_.
-// network_unique_id_map_: map<unique_id, Network*> for visible networks.
+// network_unique_id_map_: map<unique_id, Network*> for all visible networks.
 // remembered_network_map_: a canonical map<path, Network*> for all networks
 //     remembered in the active Profile ("favorites").
+// remembered_network_unique_id_map_: map<unique_id, Network*> for all
+//     remembered networks.
 // remembered_wifi_networks_: ordered vector of WifiNetwork* entries in
 //     remembered_network_map_, in descending order of preference.
 // remembered_virtual_networks_: ordered vector of VirtualNetwork* entries in
@@ -335,13 +341,17 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
 
 NetworkDevice::~NetworkDevice() {}
 
+void NetworkDevice::SetNetworkDeviceParser(NetworkDeviceParser* parser) {
+  device_parser_.reset(parser);
+}
+
 void NetworkDevice::ParseInfo(const DictionaryValue& info) {
   if (device_parser_.get())
     device_parser_->UpdateDeviceFromInfo(info, this);
 }
 
 bool NetworkDevice::UpdateStatus(const std::string& key,
-                                 const Value& value,
+                                 const base::Value& value,
                                  PropertyIndex* index) {
   if (device_parser_.get())
     return device_parser_->UpdateStatus(key, value, this, index);
@@ -352,8 +362,7 @@ bool NetworkDevice::UpdateStatus(const std::string& key,
 // Network
 
 Network::Network(const std::string& service_path,
-                 ConnectionType type,
-                 NativeNetworkParser* parser)
+                 ConnectionType type)
     : state_(STATE_UNKNOWN),
       error_(ERROR_NO_ERROR),
       connectable_(true),
@@ -367,11 +376,14 @@ Network::Network(const std::string& service_path,
       notify_failure_(false),
       profile_type_(PROFILE_NONE),
       service_path_(service_path),
-      type_(type),
-      network_parser_(parser) {
+      type_(type) {
 }
 
 Network::~Network() {}
+
+void Network::SetNetworkParser(NetworkParser* parser) {
+  network_parser_.reset(parser);
+}
 
 void Network::SetState(ConnectionState new_state) {
   if (new_state == state_)
@@ -617,14 +629,14 @@ bool Network::UpdateStatus(const std::string& key,
 // EthernetNetwork
 
 EthernetNetwork::EthernetNetwork(const std::string& service_path)
-    : Network(service_path, TYPE_ETHERNET, new NativeEthernetNetworkParser) {
+    : Network(service_path, TYPE_ETHERNET) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // VirtualNetwork
 
 VirtualNetwork::VirtualNetwork(const std::string& service_path)
-    : Network(service_path, TYPE_VPN, new NativeVirtualNetworkParser),
+    : Network(service_path, TYPE_VPN),
       provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK) {
 }
 
@@ -1017,8 +1029,7 @@ void CellularApn::Set(const DictionaryValue& dict) {
 // CellularNetwork
 
 CellularNetwork::CellularNetwork(const std::string& service_path)
-    : WirelessNetwork(service_path, TYPE_CELLULAR,
-                      new NativeCellularNetworkParser),
+    : WirelessNetwork(service_path, TYPE_CELLULAR),
       activation_state_(ACTIVATION_STATE_UNKNOWN),
       network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
       roaming_state_(ROAMING_STATE_UNKNOWN),
@@ -1156,7 +1167,7 @@ std::string CellularNetwork::GetRoamingStateString() const {
 // WifiNetwork
 
 WifiNetwork::WifiNetwork(const std::string& service_path)
-    : WirelessNetwork(service_path, TYPE_WIFI, new NativeWifiNetworkParser),
+    : WirelessNetwork(service_path, TYPE_WIFI),
       encryption_(SECURITY_NONE),
       passphrase_required_(false),
       eap_method_(EAP_METHOD_UNKNOWN),
@@ -1576,6 +1587,8 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   virtual const NetworkDevice* FindEthernetDevice() const OVERRIDE;
   virtual const NetworkDevice* FindWifiDevice() const OVERRIDE;
   virtual Network* FindNetworkByPath(const std::string& path) const OVERRIDE;
+  virtual Network* FindNetworkByUniqueId(
+      const std::string& unique_id) const OVERRIDE;
   WirelessNetwork* FindWirelessNetworkByPath(const std::string& path) const;
   virtual WifiNetwork* FindWifiNetworkByPath(
       const std::string& path) const OVERRIDE;
@@ -1583,11 +1596,11 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
       const std::string& path) const OVERRIDE;
   virtual VirtualNetwork* FindVirtualNetworkByPath(
       const std::string& path) const OVERRIDE;
-  virtual Network* FindNetworkFromRemembered(
-      const Network* remembered) const OVERRIDE;
   Network* FindRememberedFromNetwork(const Network* network) const;
   virtual Network* FindRememberedNetworkByPath(
       const std::string& path) const OVERRIDE;
+  virtual Network* FindRememberedNetworkByUniqueId(
+      const std::string& unique_id) const OVERRIDE;
 
   virtual const CellularDataPlanVector* GetDataPlans(
       const std::string& path) const OVERRIDE;
@@ -1644,6 +1657,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // virtual GetIPConfigs implemented in derived classes.
   // virtual SetIPConfig implemented in derived classes.
   virtual void SwitchToPreferredNetwork() OVERRIDE;
+  virtual bool LoadOncNetworks(const std::string& onc_blob) OVERRIDE;
   virtual bool SetActiveNetwork(ConnectionType type,
                                 const std::string& service_path) OVERRIDE;
 
@@ -1784,14 +1798,17 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // List of profiles.
   NetworkProfileList profile_list_;
 
-  // A service path based map of all Networks.
+  // A service path based map of all visible Networks.
   NetworkMap network_map_;
 
-  // A unique_id_ based map of Networks.
+  // A unique_id based map of all visible Networks.
   NetworkMap network_unique_id_map_;
 
   // A service path based map of all remembered Networks.
   NetworkMap remembered_network_map_;
+
+  // A unique_id based map of all remembered Networks.
+  NetworkMap remembered_network_unique_id_map_;
 
   // A list of services that we are awaiting updates for.
   PriorityMap network_update_requests_;
@@ -2176,6 +2193,14 @@ Network* NetworkLibraryImplBase::FindNetworkByPath(
   return NULL;
 }
 
+Network* NetworkLibraryImplBase::FindNetworkByUniqueId(
+    const std::string& unique_id) const {
+  NetworkMap::const_iterator found = network_unique_id_map_.find(unique_id);
+  if (found != network_unique_id_map_.end())
+    return found->second;
+  return NULL;
+}
+
 WirelessNetwork* NetworkLibraryImplBase::FindWirelessNetworkByPath(
     const std::string& path) const {
   Network* network = FindNetworkByPath(path);
@@ -2209,15 +2234,6 @@ VirtualNetwork* NetworkLibraryImplBase::FindVirtualNetworkByPath(
   return NULL;
 }
 
-Network* NetworkLibraryImplBase::FindNetworkFromRemembered(
-    const Network* remembered) const {
-  NetworkMap::const_iterator found =
-      network_unique_id_map_.find(remembered->unique_id());
-  if (found != network_unique_id_map_.end())
-    return found->second;
-  return NULL;
-}
-
 Network* NetworkLibraryImplBase::FindRememberedFromNetwork(
     const Network* network) const {
   for (NetworkMap::const_iterator iter = remembered_network_map_.begin();
@@ -2233,6 +2249,15 @@ Network* NetworkLibraryImplBase::FindRememberedNetworkByPath(
   NetworkMap::const_iterator iter = remembered_network_map_.find(path);
   if (iter != remembered_network_map_.end())
     return iter->second;
+  return NULL;
+}
+
+Network* NetworkLibraryImplBase::FindRememberedNetworkByUniqueId(
+    const std::string& unique_id) const {
+  NetworkMap::const_iterator found =
+      remembered_network_unique_id_map_.find(unique_id);
+  if (found != remembered_network_unique_id_map_.end())
+    return found->second;
   return NULL;
 }
 
@@ -2715,6 +2740,22 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
   }
 }
 
+bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob) {
+  OncNetworkParser parser(onc_blob);
+
+  for (int i = 0; i < parser.GetNetworkConfigsSize(); i++) {
+    // Parse Open Network Configuration blob into a temporary Network object.
+    Network* network = parser.ParseNetwork(i);
+    if (!network) {
+      DLOG(WARNING) << "Cannot parse networks in ONC file";
+      return false;
+    }
+
+    // TODO(chocobo): Pass parsed network values to flimflam update network.
+  }
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // Testing functions.
 
@@ -2890,7 +2931,7 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
 
   // Update any associated network service before removing from profile
   // so that flimflam doesn't recreate the service (e.g. when we disconenct it).
-  Network* network = FindNetworkFromRemembered(remembered_network);
+  Network* network = FindNetworkByUniqueId(remembered_network->unique_id());
   if (network) {
     // Clear the stored credentials for any forgotten networks.
     network->EraseCredentials();
@@ -2957,6 +2998,7 @@ void NetworkLibraryImplBase::ClearNetworks() {
 
 void NetworkLibraryImplBase::ClearRememberedNetworks() {
   remembered_network_map_.clear();
+  remembered_network_unique_id_map_.clear();
   remembered_wifi_networks_.clear();
   remembered_virtual_networks_.clear();
 }
@@ -4291,7 +4333,8 @@ Network* NetworkLibraryImplCros::ParseNetwork(
     // Erase entry from network_unique_id_map_ in case unique id changes.
     if (!network->unique_id().empty())
       network_unique_id_map_.erase(network->unique_id());
-    network->network_parser()->UpdateNetworkFromInfo(info, network);
+    if (network->network_parser())
+      network->network_parser()->UpdateNetworkFromInfo(info, network);
   }
 
   if (!network->unique_id().empty())
@@ -4455,7 +4498,11 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
   NetworkMap::iterator found = remembered_network_map_.find(service_path);
   if (found != remembered_network_map_.end()) {
     remembered = found->second;
-    remembered->network_parser()->UpdateNetworkFromInfo(info, remembered);
+    // Erase entry from network_unique_id_map_ in case unique id changes.
+    if (!remembered->unique_id().empty())
+      remembered_network_unique_id_map_.erase(remembered->unique_id());
+    if (remembered->network_parser())
+      remembered->network_parser()->UpdateNetworkFromInfo(info, remembered);
   } else {
     NativeNetworkParser parser;
     remembered = parser.CreateNetworkFromInfo(service_path, info);
@@ -4469,6 +4516,9 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
     }
   }
 
+  if (!remembered->unique_id().empty())
+    remembered_network_unique_id_map_[remembered->unique_id()] = remembered;
+
   SetProfileTypeFromPath(remembered);
 
   VLOG(1) << "ParseRememberedNetwork: " << remembered->name()
@@ -4479,7 +4529,7 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
   if (remembered->type() == TYPE_VPN) {
     // VPNs are only stored in profiles. If we don't have a network for it,
     // request one.
-    if (!FindNetworkFromRemembered(remembered)) {
+    if (!FindNetworkByUniqueId(remembered->unique_id())) {
       VirtualNetwork* vpn = static_cast<VirtualNetwork*>(remembered);
       std::string provider_type = ProviderTypeToString(vpn->provider_type());
       VLOG(1) << "Requesting VPN: " << vpn->name()

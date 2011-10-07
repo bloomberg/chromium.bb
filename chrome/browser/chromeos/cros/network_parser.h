@@ -78,6 +78,8 @@ class EnumMapper {
 // policy or setup file import depending on the EnumMapper supplied.
 class NetworkDeviceParser {
  public:
+  virtual ~NetworkDeviceParser();
+
   virtual NetworkDevice* CreateDeviceFromInfo(
       const std::string& device_path,
       const base::DictionaryValue& info);
@@ -87,10 +89,15 @@ class NetworkDeviceParser {
                             const base::Value& value,
                             NetworkDevice* device,
                             PropertyIndex* index);
+
  protected:
   // The NetworkDeviceParser does not take ownership of the |mapper|.
   explicit NetworkDeviceParser(const EnumMapper<PropertyIndex>* mapper);
-  virtual ~NetworkDeviceParser();
+
+  // Creates new NetworkDevice based on device_path.
+  // Subclasses should override this method and set the correct parser for this
+  // network device if appropriate.
+  virtual NetworkDevice* CreateNewNetworkDevice(const std::string& device_path);
 
   virtual bool ParseValue(PropertyIndex index,
                           const base::Value& value,
@@ -112,6 +119,8 @@ class NetworkDeviceParser {
 // customize its methods to parse other forms of input dictionaries.
 class NetworkParser {
  public:
+  virtual ~NetworkParser();
+
   // Called when a new network is encountered.  Returns NULL upon failure.
   virtual Network* CreateNetworkFromInfo(const std::string& service_path,
                                          const base::DictionaryValue& info);
@@ -129,20 +138,25 @@ class NetworkParser {
                             const base::Value& value,
                             Network* network,
                             PropertyIndex* index);
+
  protected:
   // The NetworkParser does not take ownership of the |mapper|.
   explicit NetworkParser(const EnumMapper<PropertyIndex>* mapper);
-  virtual ~NetworkParser();
 
+  // Creates new Network based on type and service_path.
+  // Subclasses should override this method and set the correct parser for this
+  // network if appropriate.
+  virtual Network* CreateNewNetwork(ConnectionType type,
+                                    const std::string& service_path);
+
+  // Parses the value and sets the appropriate field on Network.
   virtual bool ParseValue(PropertyIndex index,
                           const base::Value& value,
-                          Network* network) = 0;
+                          Network* network);
+
   virtual ConnectionType ParseType(const std::string& type) = 0;
   virtual ConnectionType ParseTypeFromDictionary(
       const base::DictionaryValue& info) = 0;
-  virtual ConnectionMode ParseMode(const std::string& mode) = 0;
-  virtual ConnectionState ParseState(const std::string& state) = 0;
-  virtual ConnectionError ParseError(const std::string& error) = 0;
 
   const EnumMapper<PropertyIndex>& mapper() const {
     return *mapper_;

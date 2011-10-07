@@ -1267,7 +1267,7 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
        rit != cros_->remembered_wifi_networks().end(); ++rit) {
     chromeos::WifiNetwork* remembered = *rit;
     chromeos::WifiNetwork* wifi = static_cast<chromeos::WifiNetwork*>(
-        cros_->FindNetworkFromRemembered(remembered));
+        cros_->FindNetworkByUniqueId(remembered->unique_id()));
 
     // Set in_active_profile.
     bool shared =
@@ -1293,7 +1293,7 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
        rit != cros_->remembered_virtual_networks().end(); ++rit) {
     chromeos::VirtualNetwork* remembered = *rit;
     chromeos::VirtualNetwork* vpn = static_cast<chromeos::VirtualNetwork*>(
-        cros_->FindNetworkFromRemembered(remembered));
+        cros_->FindNetworkByUniqueId(remembered->unique_id()));
 
     // Set in_active_profile.
     bool shared =

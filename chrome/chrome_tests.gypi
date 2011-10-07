@@ -1182,6 +1182,7 @@
         'browser/chromeos/cros/network_library.cc',
         'browser/chromeos/cros/network_library.h',
         'browser/chromeos/cros/network_library_unittest.cc',
+        'browser/chromeos/cros/onc_network_parser_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
         'browser/chromeos/dbus/cros_dbus_service_unittest.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',

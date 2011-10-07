@@ -25,8 +25,8 @@ class Value;
 
 namespace chromeos {
 
-class NativeNetworkParser;
-class NativeNetworkDeviceParser;
+class NetworkParser;
+class NetworkDeviceParser;
 
 // This is the list of all implementation classes that are allowed
 // access to the internals of the network library classes.
@@ -55,6 +55,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_DEFAULT_TECHNOLOGY,
   PROPERTY_INDEX_DEVICE,
   PROPERTY_INDEX_DEVICES,
+  PROPERTY_INDEX_EAP,
   PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY,
   PROPERTY_INDEX_EAP_CA_CERT,
   PROPERTY_INDEX_EAP_CA_CERT_ID,
@@ -62,6 +63,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_EAP_CERT_ID,
   PROPERTY_INDEX_EAP_CLIENT_CERT,
   PROPERTY_INDEX_EAP_CLIENT_CERT_NSS,
+  PROPERTY_INDEX_EAP_CLIENT_CERT_PATTERN,
   PROPERTY_INDEX_EAP_IDENTITY,
   PROPERTY_INDEX_EAP_KEY_ID,
   PROPERTY_INDEX_EAP_KEY_MGMT,
@@ -80,6 +82,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_FOUND_NETWORKS,
   PROPERTY_INDEX_GUID,
   PROPERTY_INDEX_HARDWARE_REVISION,
+  PROPERTY_INDEX_HIDDEN_SSID,
   PROPERTY_INDEX_HOME_PROVIDER,
   PROPERTY_INDEX_HOST,
   PROPERTY_INDEX_IDENTITY,
@@ -117,6 +120,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_PROFILES,
   PROPERTY_INDEX_PROVIDER,
   PROPERTY_INDEX_PROXY_CONFIG,
+  PROPERTY_INDEX_REMOVE,
   PROPERTY_INDEX_ROAMING_STATE,
   PROPERTY_INDEX_SAVE_CREDENTIALS,
   PROPERTY_INDEX_SCANNING,
@@ -367,6 +371,9 @@ class NetworkDevice {
   explicit NetworkDevice(const std::string& device_path);
   ~NetworkDevice();
 
+  NetworkDeviceParser* device_parser() { return device_parser_.get(); }
+  void SetNetworkDeviceParser(NetworkDeviceParser* parser);
+
   // Device info.
   const std::string& device_path() const { return device_path_; }
   const std::string& name() const { return name_; }
@@ -416,9 +423,7 @@ class NetworkDevice {
   // if not needed.
   bool UpdateStatus(const std::string& key,
                     const base::Value& value,
-                    PropertyIndex *index);
-
-  NativeNetworkDeviceParser* device_parser() { return device_parser_.get(); }
+                    PropertyIndex* index);
 
  protected:
   void set_unique_id(const std::string& unique_id) { unique_id_ = unique_id; }
@@ -542,7 +547,7 @@ class NetworkDevice {
 
   // This is the parser we use to parse messages from the native
   // network layer.
-  scoped_ptr<NativeNetworkDeviceParser> device_parser_;
+  scoped_ptr<NetworkDeviceParser> device_parser_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDevice);
 };
@@ -657,8 +662,10 @@ class Network {
 
  protected:
   Network(const std::string& service_path,
-          ConnectionType type,
-          NativeNetworkParser* parser);
+          ConnectionType type);
+
+  NetworkParser* network_parser() { return network_parser_.get(); }
+  void SetNetworkParser(NetworkParser* parser);
 
   // Set the state and update flags if necessary.
   void SetState(ConnectionState state);
@@ -685,8 +692,6 @@ class Network {
                                         const std::string& str,
                                         std::string* dest);
 
-  NativeNetworkParser* network_parser() { return network_parser_.get(); }
-
   void set_unique_id(const std::string& unique_id) { unique_id_ = unique_id; }
 
  private:
@@ -698,6 +703,8 @@ class Network {
   friend class NetworkParser;
   friend class NativeNetworkParser;
   friend class NativeVirtualNetworkParser;
+  friend class OncNetworkParser;
+  friend class OncVirtualNetworkParser;
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
@@ -775,7 +782,7 @@ class Network {
 
   // This is the parser we use to parse messages from the native
   // network layer.
-  scoped_ptr<NativeNetworkParser> network_parser_;
+  scoped_ptr<NetworkParser> network_parser_;
 
   DISALLOW_COPY_AND_ASSIGN(Network);
 };
@@ -834,13 +841,15 @@ class VirtualNetwork : public Network {
                              const std::string& otp);
 
  private:
-  // This allows NativeNetworkParser and its subclasses access to
+  // This allows NetworkParser and its subclasses access to
   // device privates so that they can be reconstituted during parsing.
   // The parsers only access things through the private set_ functions
   // so that this class can evolve without having to change all the
   // parsers.
   friend class NativeNetworkParser;
   friend class NativeVirtualNetworkParser;
+  friend class OncNetworkParser;
+  friend class OncVirtualNetworkParser;
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
@@ -910,15 +919,16 @@ class WirelessNetwork : public Network {
 
  protected:
   WirelessNetwork(const std::string& service_path,
-                  ConnectionType type,
-                  NativeNetworkParser* parser)
-      : Network(service_path, type, parser), strength_(0) {}
+                  ConnectionType type)
+      : Network(service_path, type), strength_(0) {}
+
  private:
   // This allows NativeWirelessNetworkParser access to device privates
   // so that they can be reconstituted during parsing.  The parsers
   // only access things through the private set_ functions so that
   // this class can evolve without having to change all the parsers.
   friend class NativeWirelessNetworkParser;
+  friend class OncWirelessNetworkParser;
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
@@ -1017,6 +1027,7 @@ class CellularNetwork : public WirelessNetwork {
   // only access things through the private set_ functions so that
   // this class can evolve without having to change all the parsers.
   friend class NativeCellularNetworkParser;
+  friend class OncCellularNetworkParser;
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
@@ -1143,6 +1154,7 @@ class WifiNetwork : public WirelessNetwork {
   // access things through the private set_ functions so that this
   // class can evolve without having to change all the parsers.
   friend class NativeWifiNetworkParser;
+  friend class OncWifiNetworkParser;
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
@@ -1508,20 +1520,19 @@ class NetworkLibrary {
   // As long as this is done in sequence on the UI thread it will be safe;
   // the network list only gets updated on the UI thread.
   virtual Network* FindNetworkByPath(const std::string& path) const = 0;
+  virtual Network* FindNetworkByUniqueId(
+      const std::string& unique_id) const = 0;
   virtual WifiNetwork* FindWifiNetworkByPath(const std::string& path) const = 0;
   virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) const = 0;
   virtual VirtualNetwork* FindVirtualNetworkByPath(
       const std::string& path) const = 0;
 
-  // Returns the visible network corresponding to the remembered network,
-  // or NULL if the remembered network is not visible.
-  virtual Network* FindNetworkFromRemembered(
-      const Network* remembered) const = 0;
-
   // Return a pointer to the remembered network, if it exists, or NULL.
   virtual Network* FindRememberedNetworkByPath(
       const std::string& path) const = 0;
+  virtual Network* FindRememberedNetworkByUniqueId(
+      const std::string& unique_id) const = 0;
 
   // Retrieves the data plans associated with |path|, NULL if there are no
   // associated plans.
@@ -1691,6 +1702,9 @@ class NetworkLibrary {
   // network is not preferred. This should be called when the active profile
   // changes.
   virtual void SwitchToPreferredNetwork() = 0;
+
+  // Load networks from an Open Network Configuration blob.
+  virtual bool LoadOncNetworks(const std::string& onc_blob) = 0;
 
   // This sets the active network for the network type. Note: priority order
   // is unchanged (i.e. if a wifi network is set to active, but an ethernet

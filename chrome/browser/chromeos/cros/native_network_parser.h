@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_NATIVE_NETWORK_PARSER_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/chromeos/cros/network_parser.h"
 #include "base/compiler_specific.h"  // for OVERRIDE
 
@@ -24,10 +26,13 @@ class NativeNetworkDeviceParser : public NetworkDeviceParser {
  public:
   NativeNetworkDeviceParser();
   virtual ~NativeNetworkDeviceParser();
+
+ protected:
+  virtual NetworkDevice* CreateNewNetworkDevice(
+      const std::string& device_path) OVERRIDE;
   virtual bool ParseValue(PropertyIndex index,
                           const base::Value& value,
                           NetworkDevice* device) OVERRIDE;
- protected:
   virtual ConnectionType ParseType(const std::string& type) OVERRIDE;
 
   // Parsing helper routines specific to native network devices.
@@ -58,15 +63,19 @@ class NativeNetworkParser : public NetworkParser {
   static const EnumMapper<PropertyIndex>* property_mapper();
   static const ConnectionType ParseConnectionType(const std::string& type);
  protected:
+  virtual Network* CreateNewNetwork(ConnectionType type,
+                                    const std::string& service_path) OVERRIDE;
   virtual bool ParseValue(PropertyIndex index,
                           const base::Value& value,
                           Network* network) OVERRIDE;
   virtual ConnectionType ParseType(const std::string& type) OVERRIDE;
   virtual ConnectionType ParseTypeFromDictionary(
       const base::DictionaryValue& info) OVERRIDE;
-  virtual ConnectionMode ParseMode(const std::string& mode) OVERRIDE;
-  virtual ConnectionState ParseState(const std::string& state) OVERRIDE;
-  virtual ConnectionError ParseError(const std::string& error) OVERRIDE;
+
+  ConnectionMode ParseMode(const std::string& mode);
+  ConnectionState ParseState(const std::string& state);
+  ConnectionError ParseError(const std::string& error);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeNetworkParser);
 };
@@ -137,8 +146,8 @@ class NativeVirtualNetworkParser : public NativeNetworkParser {
                                      Network* network) OVERRIDE;
  protected:
   bool ParseProviderValue(PropertyIndex index,
-                                  const base::Value& value,
-                                  VirtualNetwork* network);
+                          const base::Value& value,
+                          VirtualNetwork* network);
   ProviderType ParseProviderType(const std::string& type);
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeVirtualNetworkParser);

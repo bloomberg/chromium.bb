@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 
+#include <string>
+
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
@@ -162,8 +164,16 @@ NativeNetworkDeviceParser::NativeNetworkDeviceParser()
 NativeNetworkDeviceParser::~NativeNetworkDeviceParser() {
 }
 
+NetworkDevice* NativeNetworkDeviceParser::CreateNewNetworkDevice(
+    const std::string& device_path) {
+  NetworkDevice* device =
+      NetworkDeviceParser::CreateNewNetworkDevice(device_path);
+  device->SetNetworkDeviceParser(new NativeNetworkDeviceParser());
+  return device;
+}
+
 bool NativeNetworkDeviceParser::ParseValue(
-    PropertyIndex index, const Value& value, NetworkDevice* device) {
+    PropertyIndex index, const base::Value& value, NetworkDevice* device) {
   switch (index) {
     case PROPERTY_INDEX_TYPE: {
       std::string type_string;
@@ -209,7 +219,7 @@ bool NativeNetworkDeviceParser::ParseValue(
       return true;
     }
     case PROPERTY_INDEX_CELLULAR_APN_LIST:
-      if (value.IsType(Value::TYPE_LIST)) {
+      if (value.IsType(base::Value::TYPE_LIST)) {
         CellularApnList provider_apn_list;
         if (!ParseApnList(static_cast<const ListValue&>(value),
                           &provider_apn_list))
@@ -219,13 +229,13 @@ bool NativeNetworkDeviceParser::ParseValue(
       }
       break;
     case PROPERTY_INDEX_NETWORKS:
-      if (value.IsType(Value::TYPE_LIST)) {
+      if (value.IsType(base::Value::TYPE_LIST)) {
         // Ignored.
         return true;
       }
       break;
     case PROPERTY_INDEX_FOUND_NETWORKS:
-      if (value.IsType(Value::TYPE_LIST)) {
+      if (value.IsType(base::Value::TYPE_LIST)) {
         CellularNetworkList found_cellular_networks;
         if (!ParseFoundNetworksFromList(
                 static_cast<const ListValue&>(value),
@@ -236,7 +246,7 @@ bool NativeNetworkDeviceParser::ParseValue(
       }
       break;
     case PROPERTY_INDEX_HOME_PROVIDER: {
-      if (value.IsType(Value::TYPE_DICTIONARY)) {
+      if (value.IsType(base::Value::TYPE_DICTIONARY)) {
         const DictionaryValue& dict =
             static_cast<const DictionaryValue&>(value);
         std::string home_provider_code;
@@ -320,7 +330,7 @@ bool NativeNetworkDeviceParser::ParseValue(
       return true;
     }
     case PROPERTY_INDEX_SIM_LOCK:
-      if (value.IsType(Value::TYPE_DICTIONARY)) {
+      if (value.IsType(base::Value::TYPE_DICTIONARY)) {
         SimLockState sim_lock_state;
         int sim_retries_left;
         bool sim_lock_enabled;
@@ -380,7 +390,7 @@ bool NativeNetworkDeviceParser::ParseApnList(const ListValue& list,
   apn_list->clear();
   apn_list->reserve(list.GetSize());
   for (ListValue::const_iterator it = list.begin(); it != list.end(); ++it) {
-    if ((*it)->IsType(Value::TYPE_DICTIONARY)) {
+    if ((*it)->IsType(base::Value::TYPE_DICTIONARY)) {
       apn_list->resize(apn_list->size() + 1);
       const DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
       dict->GetStringWithoutPathExpansion(
@@ -411,7 +421,7 @@ bool NativeNetworkDeviceParser::ParseFoundNetworksFromList(
   found_networks->clear();
   found_networks->reserve(list.GetSize());
   for (ListValue::const_iterator it = list.begin(); it != list.end(); ++it) {
-    if ((*it)->IsType(Value::TYPE_DICTIONARY)) {
+    if ((*it)->IsType(base::Value::TYPE_DICTIONARY)) {
       found_networks->resize(found_networks->size() + 1);
       const DictionaryValue* dict = static_cast<const DictionaryValue*>(*it);
       dict->GetStringWithoutPathExpansion(
@@ -484,7 +494,6 @@ NativeNetworkParser::~NativeNetworkParser() {
 // static
 const EnumMapper<PropertyIndex>* NativeNetworkParser::property_mapper() {
   return get_native_mapper();
-
 }
 
 const ConnectionType NativeNetworkParser::ParseConnectionType(
@@ -492,8 +501,24 @@ const ConnectionType NativeNetworkParser::ParseConnectionType(
   return ParseNetworkType(connection_type);
 }
 
+Network* NativeNetworkParser::CreateNewNetwork(
+    ConnectionType type, const std::string& service_path) {
+  Network* network = NetworkParser::CreateNewNetwork(type, service_path);
+  if (network) {
+    if (type == TYPE_ETHERNET)
+      network->SetNetworkParser(new NativeEthernetNetworkParser());
+    else if (type == TYPE_WIFI)
+      network->SetNetworkParser(new NativeWifiNetworkParser());
+    else if (type == TYPE_CELLULAR)
+      network->SetNetworkParser(new NativeCellularNetworkParser());
+    else if (type == TYPE_VPN)
+      network->SetNetworkParser(new NativeVirtualNetworkParser());
+  }
+  return network;
+}
+
 bool NativeNetworkParser::ParseValue(PropertyIndex index,
-                                     const Value& value,
+                                     const base::Value& value,
                                      Network* network) {
   switch (index) {
     case PROPERTY_INDEX_TYPE: {
@@ -512,20 +537,6 @@ bool NativeNetworkParser::ParseValue(PropertyIndex index,
       if (!value.GetAsString(&device_path))
         return false;
       network->set_device_path(device_path);
-      return true;
-    }
-    case PROPERTY_INDEX_NAME: {
-      std::string name;
-      if (!value.GetAsString(&name))
-        return false;
-      network->SetName(name);
-      return true;
-    }
-    case PROPERTY_INDEX_GUID: {
-      std::string unique_id;
-      if (!value.GetAsString(&unique_id))
-        return false;
-      network->set_unique_id(unique_id);
       return true;
     }
     case PROPERTY_INDEX_PROFILE: {
@@ -577,13 +588,6 @@ bool NativeNetworkParser::ParseValue(PropertyIndex index,
     case PROPERTY_INDEX_FAVORITE:
       // This property is ignored.
       return true;
-    case PROPERTY_INDEX_AUTO_CONNECT: {
-      bool auto_connect;
-      if (!value.GetAsBoolean(&auto_connect))
-        return false;
-      network->set_auto_connect(auto_connect);
-      return true;
-    }
     case PROPERTY_INDEX_SAVE_CREDENTIALS: {
       bool save_credentials;
       if (!value.GetAsBoolean(&save_credentials))
@@ -591,14 +595,8 @@ bool NativeNetworkParser::ParseValue(PropertyIndex index,
       network->set_save_credentials(save_credentials);
       return true;
     }
-    case PROPERTY_INDEX_PROXY_CONFIG: {
-      std::string proxy_config;
-      if (!value.GetAsString(&proxy_config))
-        return false;
-      network->set_proxy_config(proxy_config);
-      return true;
-    }
     default:
+      return NetworkParser::ParseValue(index, value, network);
       break;
   }
   return false;
@@ -679,7 +677,7 @@ NativeWirelessNetworkParser::NativeWirelessNetworkParser() {}
 NativeWirelessNetworkParser::~NativeWirelessNetworkParser() {}
 
 bool NativeWirelessNetworkParser::ParseValue(PropertyIndex index,
-                                             const Value& value,
+                                             const base::Value& value,
                                              Network* network) {
   DCHECK_NE(TYPE_ETHERNET, network->type());
   DCHECK_NE(TYPE_VPN, network->type());
@@ -705,7 +703,7 @@ NativeCellularNetworkParser::NativeCellularNetworkParser() {}
 NativeCellularNetworkParser::~NativeCellularNetworkParser() {}
 
 bool NativeCellularNetworkParser::ParseValue(PropertyIndex index,
-                                             const Value& value,
+                                             const base::Value& value,
                                              Network* network) {
   DCHECK_EQ(TYPE_CELLULAR, network->type());
   CellularNetwork* cellular_network = static_cast<CellularNetwork*>(network);
@@ -723,14 +721,14 @@ bool NativeCellularNetworkParser::ParseValue(PropertyIndex index,
       break;
     }
     case PROPERTY_INDEX_CELLULAR_APN: {
-      if (value.IsType(Value::TYPE_DICTIONARY)) {
+      if (value.IsType(base::Value::TYPE_DICTIONARY)) {
         cellular_network->set_apn(static_cast<const DictionaryValue&>(value));
         return true;
       }
       break;
     }
     case PROPERTY_INDEX_CELLULAR_LAST_GOOD_APN: {
-      if (value.IsType(Value::TYPE_DICTIONARY)) {
+      if (value.IsType(base::Value::TYPE_DICTIONARY)) {
         cellular_network->set_last_good_apn(
             static_cast<const DictionaryValue&>(value));
         return true;
@@ -770,7 +768,7 @@ bool NativeCellularNetworkParser::ParseValue(PropertyIndex index,
       return true;
     }
     case PROPERTY_INDEX_SERVING_OPERATOR: {
-      if (value.IsType(Value::TYPE_DICTIONARY)) {
+      if (value.IsType(base::Value::TYPE_DICTIONARY)) {
         const DictionaryValue& dict =
             static_cast<const DictionaryValue&>(value);
         std::string value_str;
@@ -872,7 +870,7 @@ NativeWifiNetworkParser::NativeWifiNetworkParser() {}
 NativeWifiNetworkParser::~NativeWifiNetworkParser() {}
 
 bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
-                                         const Value& value,
+                                         const base::Value& value,
                                          Network* network) {
   DCHECK_EQ(TYPE_WIFI, network->type());
   WifiNetwork* wifi_network = static_cast<WifiNetwork*>(network);
@@ -1079,7 +1077,7 @@ bool NativeVirtualNetworkParser::UpdateNetworkFromInfo(
 }
 
 bool NativeVirtualNetworkParser::ParseValue(PropertyIndex index,
-                                            const Value& value,
+                                            const base::Value& value,
                                             Network* network) {
   DCHECK_EQ(TYPE_VPN, network->type());
   VirtualNetwork* virtual_network = static_cast<VirtualNetwork*>(network);
@@ -1090,7 +1088,7 @@ bool NativeVirtualNetworkParser::ParseValue(PropertyIndex index,
       for (DictionaryValue::key_iterator iter = dict.begin_keys();
            iter != dict.end_keys(); ++iter) {
         const std::string& key = *iter;
-        Value* provider_value;
+        base::Value* provider_value;
         bool res = dict.GetWithoutPathExpansion(key, &provider_value);
         DCHECK(res);
         if (res) {
@@ -1110,7 +1108,7 @@ bool NativeVirtualNetworkParser::ParseValue(PropertyIndex index,
 }
 
 bool NativeVirtualNetworkParser::ParseProviderValue(PropertyIndex index,
-                                                    const Value& value,
+                                                    const base::Value& value,
                                                     VirtualNetwork* network) {
   switch (index) {
     case PROPERTY_INDEX_HOST: {

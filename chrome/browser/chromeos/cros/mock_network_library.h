@@ -73,13 +73,15 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(FindWifiDevice, const NetworkDevice*(void));
   MOCK_CONST_METHOD0(FindEthernetDevice, const NetworkDevice*(void));
   MOCK_CONST_METHOD1(FindNetworkByPath, Network*(const std::string&));
+  MOCK_CONST_METHOD1(FindNetworkByUniqueId, Network*(const std::string&));
   MOCK_CONST_METHOD1(FindWifiNetworkByPath, WifiNetwork*(const std::string&));
   MOCK_CONST_METHOD1(FindCellularNetworkByPath,
                      CellularNetwork*(const std::string&));
   MOCK_CONST_METHOD1(FindVirtualNetworkByPath,
                      VirtualNetwork*(const std::string&));
-  MOCK_CONST_METHOD1(FindNetworkFromRemembered,Network*(const Network*));
   MOCK_CONST_METHOD1(FindRememberedNetworkByPath, Network*(const std::string&));
+  MOCK_CONST_METHOD1(FindRememberedNetworkByUniqueId,
+                     Network*(const std::string&));
   MOCK_CONST_METHOD1(GetDataPlans,
                      CellularDataPlanVector*(const std::string&));
   MOCK_CONST_METHOD1(GetSignificantDataPlan,
@@ -149,6 +151,7 @@ class MockNetworkLibrary : public NetworkLibrary {
                                                    HardwareAddressFormat));
   MOCK_METHOD1(SetIPConfig, void(const NetworkIPConfig&));
   MOCK_METHOD0(SwitchToPreferredNetwork, void(void));
+  MOCK_METHOD1(LoadOncNetworks, bool(const std::string&));
   MOCK_METHOD2(SetActiveNetwork, bool(ConnectionType, const std::string&));
 };
 
