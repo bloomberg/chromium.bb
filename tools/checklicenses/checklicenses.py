@@ -226,9 +226,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/gles2_conform/GTF_ES': [  # http://crbug.com/98131
         'UNKNOWN',
     ],
-    'third_party/gpsd/release-2.38/gps.h': [  # http://crbug.com/98132
-        'UNKNOWN',
-    ],
     'third_party/harfbuzz': [  # http://crbug.com/98133
         'UNKNOWN',
     ],
