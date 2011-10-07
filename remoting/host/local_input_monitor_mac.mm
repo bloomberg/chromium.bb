@@ -38,7 +38,7 @@ static const NSUInteger kEscKeyCode = 53;
     GTMCarbonEventDispatcherHandler* handler =
         [GTMCarbonEventDispatcherHandler sharedEventDispatcherHandler];
     hot_key_ = [handler registerHotKey:kEscKeyCode
-                             modifiers:NSShiftKeyMask
+                             modifiers:(NSAlternateKeyMask | NSControlKeyMask)
                                 target:self
                                 action:@selector(hotKeyHit:)
                               userInfo:nil
