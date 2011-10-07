@@ -33,7 +33,8 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
   scoped_nsobject<AvatarButtonController> controller_;
 };
 
-TEST_F(AvatarButtonControllerTest, AddRemoveProfiles) {
+// Only fails on 10.5 for some reason <http://crbug.com/99469>.
+TEST_F(AvatarButtonControllerTest, FLAKY_AddRemoveProfiles) {
   EXPECT_TRUE([button() isHidden]);
 
   testing_profile_manager()->CreateTestingProfile("one");
