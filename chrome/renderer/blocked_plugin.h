@@ -54,17 +54,21 @@ class BlockedPlugin : public content::RenderViewObserver,
   void OnLoadBlockedPlugins();
   void OnSetIsPrerendering(bool is_prerendering);
 
-  // Load the blocked plugin.
-  void LoadPlugin();
-
   // Javascript callbacks:
   // Load the blocked plugin by calling LoadPlugin().
   // Takes no arguments, and returns nothing.
-  void Load(const CppArgumentList& args, CppVariant* result);
+  void LoadCallback(const CppArgumentList& args, CppVariant* result);
 
   // Hide the blocked plugin by calling HidePlugin().
   // Takes no arguments, and returns nothing.
-  void Hide(const CppArgumentList& args, CppVariant* result);
+  void HideCallback(const CppArgumentList& args, CppVariant* result);
+
+  // Opens a URL in a new tab.
+  // Takes one argument, a string specifying the URL to open. Returns nothing.
+  void OpenUrlCallback(const CppArgumentList& args, CppVariant* result);
+
+  // Load the blocked plugin.
+  void LoadPlugin();
 
   // Hide the blocked plugin.
   void HidePlugin();

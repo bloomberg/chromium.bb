@@ -4709,7 +4709,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         http://www.google.com/support/chrome/bin/answer.py?answer=1093113&amp;topic=21605&amp;hl=[GRITLANGCODE]&amp;n=<ph name="NAME">$1<ex>Hash</ex></ph>&amp;l=<ph name="LOCATION">$2<ex>Hash</ex></ph>&amp;d=<ph name="DESC">$3<ex>Hash</ex></ph>&amp;s=<ph name="SIGNER">$4<ex>Hash</ex></ph>
       </message>
 
-      <!-- Click to play -->
+      <!-- Plug-in placeholders -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click to play UI.">
         Click to run the <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in.
       </message>
@@ -4719,10 +4719,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plug-in.">
         Update plug-in...
       </message>
-      <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked disabled plug-in.">
+      <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
         The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in is not allowed.
       </message>
-      <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated disabled plug-in.">
+      <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated plug-in.">
         The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in is out of date.
       </message>
       <message name="IDS_PLUGIN_NOT_AUTHORIZED" desc="The placeholder text for a plug-in that requires user permission to run.">
@@ -4730,6 +4730,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for a plug-in that is not installed.">
         No plug-in available to display this content.
+      </message>
+      <message name="IDS_PLUGIN_DISABLED" desc="The placeholder text for a disabled plug-in.">
+        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in has been disabled. To re-enable it, please go to <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph>.
       </message>
 
       <!-- Session Crashed Info Bar-->

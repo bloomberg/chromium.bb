@@ -296,11 +296,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     return CreatePluginPlaceholder(
         render_view, frame, original_params, NULL, IDR_BLOCKED_PLUGIN_HTML,
         IDS_PLUGIN_NOT_FOUND, false, false);
-  } else if (status.value ==
-             ChromeViewHostMsg_GetPluginInfo_Status::kDisabled) {
-    return NULL;  // TODO(bauerb): Show a placeholder for a disabled plug-in.
   }
-
   if (plugin.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
         orig_mime_type, url);
@@ -333,6 +329,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
   scoped_ptr<webkit::npapi::PluginGroup> group(
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(plugin));
+
+  if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kDisabled) {
+    return CreatePluginPlaceholder(
+        render_view, frame, original_params, group.get(),
+        IDR_DISABLED_PLUGIN_HTML, IDS_PLUGIN_DISABLED, false, false);
+  }
 
   ContentSettingsType content_type = CONTENT_SETTINGS_TYPE_PLUGINS;
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;

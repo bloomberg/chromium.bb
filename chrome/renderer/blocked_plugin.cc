@@ -16,6 +16,7 @@
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -43,6 +44,7 @@ using WebKit::WebPluginParams;
 using WebKit::WebPoint;
 using WebKit::WebRegularExpression;
 using WebKit::WebString;
+using WebKit::WebURLRequest;
 using WebKit::WebVector;
 using content::RenderThread;
 
@@ -83,8 +85,8 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
   values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
 
   // "t" is the id of the templates root node.
-  std::string html_data = jstemplate_builder::GetTemplatesHtml(
-      template_html, &values, "t");
+  std::string html_data = jstemplate_builder::GetI18nTemplateHtml(
+      template_html, &values);
 
   plugin_ = webkit::npapi::WebViewPlugin::Create(this,
                                                  preferences,
@@ -97,8 +99,9 @@ BlockedPlugin::~BlockedPlugin() {
 
 void BlockedPlugin::BindWebFrame(WebFrame* frame) {
   BindToJavascript(frame, "plugin");
-  BindMethod("load", &BlockedPlugin::Load);
-  BindMethod("hide", &BlockedPlugin::Hide);
+  BindMethod("load", &BlockedPlugin::LoadCallback);
+  BindMethod("hide", &BlockedPlugin::HideCallback);
+  BindMethod("openURL", &BlockedPlugin::OpenUrlCallback);
 }
 
 void BlockedPlugin::WillDestroyPlugin() {
@@ -212,14 +215,35 @@ void BlockedPlugin::LoadPlugin() {
   }
 }
 
-void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {
+void BlockedPlugin::LoadCallback(const CppArgumentList& args,
+                                 CppVariant* result) {
   RenderThread::Get()->RecordUserMetrics("Plugin_Load_Click");
   LoadPlugin();
 }
 
-void BlockedPlugin::Hide(const CppArgumentList& args, CppVariant* result) {
+void BlockedPlugin::HideCallback(const CppArgumentList& args,
+                                 CppVariant* result) {
   RenderThread::Get()->RecordUserMetrics("Plugin_Hide_Click");
   HidePlugin();
+}
+
+void BlockedPlugin::OpenUrlCallback(const CppArgumentList& args,
+                                    CppVariant* result) {
+  if (args.size() < 1) {
+    NOTREACHED();
+    return;
+  }
+  if (!args[0].isString()) {
+    NOTREACHED();
+    return;
+  }
+
+  GURL url(args[0].ToString());
+  WebURLRequest request;
+  request.initialize();
+  request.setURL(url);
+  render_view()->loadURLExternally(
+      frame_, request, WebKit::WebNavigationPolicyNewForegroundTab);
 }
 
 void BlockedPlugin::HidePlugin() {

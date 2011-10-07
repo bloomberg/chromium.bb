@@ -13,6 +13,7 @@ without changes to the corresponding grd file. fb9 -->
     <includes>
       <include name="IDR_BLOCKED_PLUGIN_HTML" file="resources\blocked_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CLICK_TO_PLAY_PLUGIN_HTML" file="resources\click_to_play_plugin.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_DISABLED_PLUGIN_HTML" file="resources\disabled_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DOM_AUTOMATION_JS" file="resources\dom_automation.js" type="BINDATA" />
       <include name="IDR_EXTENSION_APITEST_JS" file="resources\extensions\apitest.js" type="BINDATA" />
       <include name="IDR_EVENT_BINDINGS_JS" file="resources\extensions\event.js" type="BINDATA" />
