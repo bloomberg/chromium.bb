@@ -571,13 +571,13 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     file_list = []
     scm.diff(options, self.args, file_list)
     self.assertEquals(file_list, [])
-    self.checkstdout(
-        ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
+    expectation = ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
          'Fast-forward\n a |    1 +\n b |    1 +\n'
          ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
          '________ running \'git reset --hard origin/master\' in \'%s\'\n'
-         'HEAD is now at a7142dc Personalized\n') %
-            join(self.root_dir, '.'))
+         'HEAD is now at a7142dc Personalized\n') % join(self.root_dir, '.')
+    self.assertTrue(sys.stdout.getvalue().startswith(expectation))
+    sys.stdout.close()
 
   def testRevertNone(self):
     if not self.enabled:
@@ -618,13 +618,13 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
-    self.checkstdout(
-      ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
+    expectation = ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
        'Fast-forward\n a |    1 +\n b |    1 +\n'
        ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
        '________ running \'git reset --hard origin/master\' in \'%s\'\n'
-       'HEAD is now at a7142dc Personalized\n') %
-            join(self.root_dir, '.'))
+       'HEAD is now at a7142dc Personalized\n') % join(self.root_dir, '.')
+    self.assertTrue(sys.stdout.getvalue().startswith(expectation))
+    sys.stdout.close()
 
   def testRevertNew(self):
     if not self.enabled:
@@ -648,13 +648,13 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(file_list, [])
     self.assertEquals(scm.revinfo(options, self.args, None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
-    self.checkstdout(
-      ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
+    expectation = ('\n_____ . at refs/heads/master\nUpdating 069c602..a7142dc\n'
        'Fast-forward\n a |    1 +\n b |    1 +\n'
        ' 2 files changed, 2 insertions(+), 0 deletions(-)\n\n\n'
        '________ running \'git reset --hard origin/master\' in \'%s\'\n'
-       'HEAD is now at a7142dc Personalized\n') %
-            join(self.root_dir, '.'))
+       'HEAD is now at a7142dc Personalized\n') % join(self.root_dir, '.')
+    self.assertTrue(sys.stdout.getvalue().startswith(expectation))
+    sys.stdout.close()
 
   def testStatusNew(self):
     if not self.enabled:
@@ -713,7 +713,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
       rmtree(root_dir)
     msg1 = (
         "\n_____ foo at refs/heads/master\n\n"
-        "________ running 'git clone -b master --verbose %s %s' in '%s'\n"
+        "________ running 'git clone --progress -b master --verbose %s %s' "
+        "in '%s'\n"
         "Initialized empty Git repository in %s\n") % (
           join(self.root_dir, '.', '.git'),
           join(root_dir, 'foo'),
@@ -721,7 +722,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
           join(gclient_scm.os.path.realpath(root_dir), 'foo', '.git') + '/')
     msg2 = (
         "\n_____ foo at refs/heads/master\n\n"
-        "________ running 'git clone -b master --verbose %s %s' in '%s'\n"
+        "________ running 'git clone --progress -b master --verbose %s %s'"
+        " in '%s'\n"
         "Cloning into %s...\ndone.\n") % (
           join(self.root_dir, '.', '.git'),
           join(root_dir, 'foo'),
@@ -848,7 +850,8 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
       rmtree(root_dir)
     msg1 = (
         "\n_____ foo at refs/heads/master\n\n"
-        "________ running 'git clone -b master --verbose %s %s' in '%s'\n"
+        "________ running 'git clone --progress -b master --verbose %s %s'"
+        " in '%s'\n"
         "Initialized empty Git repository in %s\n") % (
           join(self.root_dir, '.', '.git'),
           join(root_dir, 'foo'),
@@ -856,7 +859,8 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
           join(gclient_scm.os.path.realpath(root_dir), 'foo', '.git') + '/')
     msg2 = (
         "\n_____ foo at refs/heads/master\n\n"
-        "________ running 'git clone -b master --verbose %s %s' in '%s'\n"
+        "________ running 'git clone --progress -b master --verbose %s %s'"
+        " in '%s'\n"
         "Cloning into %s...\ndone.\n") % (
           join(self.root_dir, '.', '.git'),
           join(root_dir, 'foo'),

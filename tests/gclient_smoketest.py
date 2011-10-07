@@ -808,10 +808,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     os.remove(join(self.root_dir, 'src', 'git_hooked1'))
 
     # Test incremental versioned sync: sync backward.
+    diffdir = os.path.join(self.root_dir, 'src', 'repo2', 'repo_renamed')
     self.parseGclient(['sync', '--jobs', '1', '--revision',
                        'src@' + self.githash('repo_1', 1),
                        '--deps', 'mac', '--delete_unversioned_trees'],
-                       ['running', 'running', 'deleting'])
+                       ['running', 'running', ('running', diffdir), 'deleting'])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -819,8 +820,10 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
+    expect3 = ('running', os.path.join(self.root_dir, 'src', 'repo2', 'repo3'))
+    expect4 = ('running', os.path.join(self.root_dir, 'src', 'repo4'))
     self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1'],
-        ['running', 'running', 'running'])
+        ['running', 'running', 'running', expect3, expect4])
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -885,10 +888,12 @@ class GClientSmokeGIT(GClientSmokeBase):
     os.remove(join(self.root_dir, 'src', 'git_hooked1'))
 
     # Test incremental versioned sync: sync backward.
+    expect3 = ('running',
+               os.path.join(self.root_dir, 'src', 'repo2', 'repo_renamed'))
     self.parseGclient(
         ['sync', '--revision', 'src@' + self.githash('repo_1', 1),
           '--deps', 'mac', '--delete_unversioned_trees', '--jobs', '8'],
-        ['running', 'running', 'deleting'],
+        ['running', 'running', expect3, 'deleting'],
         untangle=True)
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
@@ -897,8 +902,13 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
+    expect4 = os.path.join(self.root_dir, 'src', 'repo2', 'repo3')
+    expect5 = os.path.join(self.root_dir, 'src', 'repo4')
     self.parseGclient(['sync', '--deps', 'mac', '--jobs', '8'],
-        ['running', 'running', 'running'], untangle=True)
+                      ['running', 'running', 'running',
+                       ('running', expect4),
+                       ('running', expect5)],
+                      untangle=True)
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -917,10 +927,14 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac'])
     write(join(self.root_dir, 'src', 'repo2', 'hi'), 'Hey!')
 
-    out = self.parseGclient(['status', '--deps', 'mac'], [])
+    expected1 = ('running', os.path.join(self.root_dir, 'src'))
+    expected2 = ('running', os.path.join(expected1[1], 'repo2'))
+    expected3 = ('running', os.path.join(expected2[1], 'repo_renamed'))
+    out = self.parseGclient(['status', '--deps', 'mac'],
+                            [expected1, expected2, expected3])
     # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
     # files.
-    self.assertEquals(0, len(out))
+    self.assertEquals(3, len(out))
 
     # Revert implies --force implies running hooks without looking at pattern
     # matching.
@@ -943,7 +957,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     out = results[0].splitlines(False)
     # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
     # files.
-    self.assertEquals(0, len(out))
+    self.assertEquals(6, len(out))
 
   def testRunHooks(self):
     if not self.enabled:
