@@ -9,11 +9,10 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_view_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/extensions/chrome_app_bindings.h"
+#include "chrome/common/chrome_view_types.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
@@ -24,14 +23,13 @@
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/common/json_value_serializer.h"
 #include "content/renderer/render_view.h"
+#include "webkit/glue/image_resource_fetcher.h"
+#include "webkit/glue/resource_fetcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/image_resource_fetcher.h"
-#include "webkit/glue/resource_fetcher.h"
 
-using extensions_v8::ChromeAppExtension;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
@@ -121,19 +119,6 @@ void ExtensionHelper::OnInlineWebstoreInstallResponse(
   ChromeWebstoreExtension::HandleInstallResponse(install_id, success, error);
 }
 
-void ExtensionHelper::GetAppNotifyChannel(int request_id,
-                                          const GURL& requestor_url,
-                                          const std::string& client_id) {
-  Send(new ExtensionHostMsg_GetAppNotifyChannel(
-      routing_id(), request_id, requestor_url, client_id));
-}
-
-void ExtensionHelper::OnGetAppNotifyChannelResponse(
-    int request_id, const std::string& channel_id, const std::string& error) {
-  ChromeAppExtension::HandleGetAppNotifyChannelResponse(
-      request_id, channel_id, error);
-}
-
 bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
@@ -148,8 +133,6 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
                         OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ExtensionMsg_InlineWebstoreInstallResponse,
                         OnInlineWebstoreInstallResponse)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_GetAppNotifyChannelResponse,
-                        OnGetAppNotifyChannelResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

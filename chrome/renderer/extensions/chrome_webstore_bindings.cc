@@ -8,7 +8,6 @@
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/renderer/extensions/extension_helper.h"
-#include "chrome/renderer/weak_v8_function_map.h"
 #include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -50,10 +49,48 @@ const char kInvalidWebstoreItemUrlError[] =
 // (successful or not) via HandleInstallResponse.
 int g_next_install_id = 0;
 
-base::LazyInstance<WeakV8FunctionMap> g_success_callbacks(
-    base::LINKER_INITIALIZED);
-base::LazyInstance<WeakV8FunctionMap> g_failure_callbacks(
-    base::LINKER_INITIALIZED);
+// Callbacks are kept track of in maps keyed by install ID. Values are weak
+// references to functions. Entries are automatically removed when functions
+// get garbage collected.
+typedef std::map<int, v8::Persistent<v8::Function> > CallbackMap;
+
+base::LazyInstance<CallbackMap> g_success_callbacks(base::LINKER_INITIALIZED);
+base::LazyInstance<CallbackMap> g_failure_callbacks(base::LINKER_INITIALIZED);
+
+// Extra data to be passed to MakeWeak/RemoveFromCallbackMap to know which entry
+// to remove from which map.
+struct CallbackMapData {
+  CallbackMap* callback_map;
+  int install_id;
+};
+
+// Disposes of a callback function and its corresponding entry in the callback
+// map.
+static void RemoveFromCallbackMap(v8::Persistent<v8::Value> context,
+                                  void* data) {
+  CallbackMapData* callback_map_data = static_cast<CallbackMapData*>(data);
+  callback_map_data->callback_map->erase(callback_map_data->install_id);
+  delete callback_map_data;
+  context.Dispose();
+}
+
+// Adds |callback_param| (assumed to be a function) to |callback_map| under the
+// |install_id| key. Will be removed from the map when the value is about to be
+// GCed.
+static void AddToCallbackMap(int install_id,
+                             v8::Local<v8::Value> callback_param,
+                             CallbackMap* callback_map) {
+  CHECK(callback_param->IsFunction());
+  CallbackMapData* callback_map_data = new CallbackMapData();
+  callback_map_data->install_id = install_id;
+  callback_map_data->callback_map = callback_map;
+
+  v8::Local<v8::Function> function = v8::Function::Cast(*callback_param);
+  v8::Persistent<v8::Function> wrapper =
+      v8::Persistent<v8::Function>::New(function);
+  (*callback_map)[install_id] = wrapper;
+  wrapper.MakeWeak(callback_map_data, RemoveFromCallbackMap);
+}
 
 } // anonymous namespace
 
@@ -110,7 +147,7 @@ class ExtensionImpl : public v8::Extension {
     int install_id = g_next_install_id++;
     if (args.Length() >= 2 && !args[1]->IsUndefined()) {
       if (args[1]->IsFunction()) {
-        g_success_callbacks.Get().Add(install_id, v8::Function::Cast(*args[1]));
+        AddToCallbackMap(install_id, args[1], g_success_callbacks.Pointer());
       } else {
         v8::ThrowException(v8::String::New(kSuccessCallbackNotAFunctionError));
         return v8::Undefined();
@@ -118,7 +155,7 @@ class ExtensionImpl : public v8::Extension {
     }
     if (args.Length() >= 3 && !args[2]->IsUndefined()) {
       if (args[2]->IsFunction()) {
-        g_failure_callbacks.Get().Add(install_id, v8::Function::Cast(*args[2]));
+        AddToCallbackMap(install_id, args[2], g_failure_callbacks.Pointer());
       } else {
         v8::ThrowException(v8::String::New(kFailureCallbackNotAFunctionError));
         return v8::Undefined();
@@ -233,16 +270,18 @@ v8::Extension* ChromeWebstoreExtension::Get() {
 void ChromeWebstoreExtension::HandleInstallResponse(int install_id,
                                                     bool success,
                                                     const std::string& error) {
-  WeakV8FunctionMap& callback_map =
-      success ? g_success_callbacks.Get() : g_failure_callbacks.Get();
+  CallbackMap* callback_map =
+      success ? g_success_callbacks.Pointer() : g_failure_callbacks.Pointer();
+  CallbackMap::iterator iter = callback_map->find(install_id);
 
-  v8::Persistent<v8::Function> function = callback_map.Remove(install_id);
-  if (function.IsEmpty())
-    return;
+  if (iter == callback_map->end() || iter->second.IsEmpty()) return;
+  const v8::Persistent<v8::Function>& function = (*iter).second;
 
   v8::HandleScope handle_scope;
   v8::Context::Scope context_scope(function->CreationContext());
   v8::Handle<v8::Value> argv[1];
   argv[0] = v8::String::New(error.c_str());
   function->Call(v8::Object::New(), arraysize(argv), argv);
+
+  callback_map->erase(iter);
 }
