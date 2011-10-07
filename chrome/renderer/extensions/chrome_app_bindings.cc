@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
+#include "chrome/renderer/weak_v8_function_map.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -52,6 +53,14 @@ bool CheckAccessToAppDetails() {
   return true;
 }
 
+int g_next_request_id = 0;
+base::LazyInstance<WeakV8FunctionMap> g_callbacks(base::LINKER_INITIALIZED);
+
+const char* kMissingClientIdError = "Missing clientId parameter";
+const char* kInvalidClientIdError = "Invalid clientId";
+const char* kCallbackNotAFunctionError =
+    "The callback that was passed is not a function";
+
 }  // namespace
 
 const char kAppExtensionName[] = "v8/ChromeApp";
@@ -72,10 +81,14 @@ class ChromeAppExtensionWrapper : public v8::Extension {
             "    native function Install();"
             "    native function GetDetails();"
             "    native function GetDetailsForFrame();"
+            "    native function GetAppNotifyChannel();"
             "    this.__defineGetter__('isInstalled', GetIsInstalled);"
             "    this.install = Install;"
             "    this.getDetails = GetDetails;"
             "    this.getDetailsForFrame = GetDetailsForFrame;"
+            "    this.experimental = {};"
+            "    this.experimental.getNotificationChannel ="
+            "        GetAppNotifyChannel;"
             "  };"
             "}") {
     extension_dispatcher_ = extension_dispatcher;
@@ -95,6 +108,8 @@ class ChromeAppExtensionWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(GetDetails);
     } else if (name->Equals(v8::String::New("GetDetailsForFrame"))) {
       return v8::FunctionTemplate::New(GetDetailsForFrame);
+    } else if (name->Equals(v8::String::New("GetAppNotifyChannel"))) {
+      return v8::FunctionTemplate::New(GetAppNotifyChannel);
     } else {
       return v8::Handle<v8::FunctionTemplate>();
     }
@@ -180,6 +195,53 @@ class ChromeAppExtensionWrapper : public v8::Extension {
                                frame->mainWorldScriptContext());
   }
 
+  static v8::Handle<v8::Value> GetAppNotifyChannel(const v8::Arguments& args) {
+    WebFrame* frame = WebFrame::frameForCurrentContext();
+    if (!frame || !frame->view())
+      return v8::Undefined();
+
+    RenderView* render_view = RenderView::FromWebView(frame->view());
+    if (!render_view)
+      return v8::Undefined();
+
+    if (g_next_request_id < 0)
+      return v8::Undefined();
+    int request_id = g_next_request_id++;
+
+    // Read the required 'clientId' value out of the object at args[0].
+    std::string client_id;
+    if (args.Length() < 1 || !args[0]->IsObject()) {
+      v8::ThrowException(v8::String::New(kMissingClientIdError));
+      return v8::Undefined();
+    }
+    v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(args[0]);
+    v8::Local<v8::String> client_id_key = v8::String::New("clientId");
+    if (obj->Has(client_id_key)) {
+      v8::String::Utf8Value id_value(obj->Get(client_id_key));
+      if (id_value.length() > 0)
+        client_id = std::string(*id_value);
+    }
+    if (client_id.empty()) {
+      v8::ThrowException(v8::String::New(kInvalidClientIdError));
+      return v8::Undefined();
+    }
+
+    // Hang on to the callback if there was one.
+    if (args.Length() >= 2) {
+      if (args[1]->IsFunction()) {
+        g_callbacks.Get().Add(request_id, v8::Function::Cast(*args[1]));
+      } else {
+        v8::ThrowException(v8::String::New(kCallbackNotAFunctionError));
+        return v8::Undefined();
+      }
+    }
+
+    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+    helper->GetAppNotifyChannel(
+        request_id, frame->document().url(), client_id);
+    return v8::Undefined();
+  }
+
   static ExtensionDispatcher* extension_dispatcher_;
 };
 
@@ -188,6 +250,19 @@ ExtensionDispatcher* ChromeAppExtensionWrapper::extension_dispatcher_;
 v8::Extension* ChromeAppExtension::Get(
     ExtensionDispatcher* extension_dispatcher) {
   return new ChromeAppExtensionWrapper(extension_dispatcher);
+}
+
+void ChromeAppExtension::HandleGetAppNotifyChannelResponse(
+    int request_id, const std::string& channel_id, const std::string& error) {
+  v8::Persistent<v8::Function> function = g_callbacks.Get().Remove(request_id);
+  if (function.IsEmpty())
+    return;
+  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(function->CreationContext());
+  v8::Handle<v8::Value> argv[2];
+  argv[0] = v8::String::New(channel_id.c_str());
+  argv[1] = v8::String::New(error.c_str());
+  function->Call(v8::Object::New(), arraysize(argv), argv);
 }
 
 }  // namespace extensions_v8

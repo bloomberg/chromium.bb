@@ -180,6 +180,8 @@
         'renderer/translate_helper.h',
         'renderer/visitedlink_slave.cc',
         'renderer/visitedlink_slave.h',
+        'renderer/weak_v8_function_map.cc',
+        'renderer/weak_v8_function_map.h',
       ],
       'conditions': [      
         ['disable_nacl!=1', {
