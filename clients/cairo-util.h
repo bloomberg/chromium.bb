@@ -24,6 +24,9 @@
 #define _CAIRO_UTIL_H
 
 void
+surface_flush_device(cairo_surface_t *surface);
+
+void
 blur_surface(cairo_surface_t *surface, int margin);
 
 void

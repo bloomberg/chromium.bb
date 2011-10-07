@@ -35,6 +35,7 @@
 #include "wayland-client.h"
 
 #include "window.h"
+#include "cairo-util.h"
 
 struct dnd {
 	struct window *window;
@@ -544,7 +545,7 @@ create_drag_cursor(struct dnd_drag *dnd_drag,
 	cairo_surface_destroy(pointer);
 	cairo_paint(cr);
 	/* FIXME: more cairo-gl brokeness */
-	display_flush_cairo_device(dnd->display);
+	surface_flush_device(surface);
 	cairo_destroy(cr);
 
 	dnd_drag->hotspot_x = pointer_width + x - item->x;

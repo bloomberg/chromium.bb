@@ -101,9 +101,6 @@ display_add_drag_listener(struct display *display,
 			  void *data);
 
 void
-display_flush_cairo_device(struct display *display);
-
-void
 display_defer(struct display *display, struct task *task);
 
 void

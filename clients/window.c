@@ -1037,12 +1037,6 @@ item_get_user_data(struct item *item)
 }
 
 void
-display_flush_cairo_device(struct display *display)
-{
-	cairo_device_flush (display->device);
-}
-
-void
 window_draw(struct window *window)
 {
 	if (window->parent)
