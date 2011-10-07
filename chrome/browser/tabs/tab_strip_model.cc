@@ -193,12 +193,38 @@ TabContentsWrapper* TabStripModel::ReplaceTabContentsAt(
 void TabStripModel::ReplaceNavigationControllerAt(
     int index, TabContentsWrapper* contents) {
   // This appears to be OK with no flicker since no redraw event
-  // occurs between the call to add an aditional tab and one to close
+  // occurs between the call to add an additional tab and one to close
   // the previous tab.
   InsertTabContentsAt(index + 1, contents, ADD_ACTIVE | ADD_INHERIT_GROUP);
   std::vector<int> closing_tabs;
   closing_tabs.push_back(index);
   InternalCloseTabs(closing_tabs, CLOSE_NONE);
+}
+
+TabContentsWrapper* TabStripModel::DiscardTabContentsAt(int index) {
+  DCHECK(ContainsIndex(index));
+  TabContentsWrapper* null_contents =
+      new TabContentsWrapper(
+          new TabContents(profile(),
+                          NULL /* site_instance */,
+                          MSG_ROUTING_NONE,
+                          NULL /* base_tab_contents */,
+                          NULL /* session_storage_namespace */));
+  TabContentsWrapper* old_contents = GetContentsAt(index);
+  NavigationEntry* old_nav_entry = old_contents->controller().GetActiveEntry();
+  if (old_nav_entry) {
+    // Set the new tab contents to reload this URL when clicked.
+    // This also allows the tab to keep drawing the favicon and page title.
+    NavigationEntry* new_nav_entry = new NavigationEntry(*old_nav_entry);
+    std::vector<NavigationEntry*> entries;
+    entries.push_back(new_nav_entry);
+    null_contents->controller().Restore(0, false, &entries);
+  }
+  ReplaceTabContentsAt(index, null_contents);
+  // Mark the tab so it will reload when we click.
+  contents_data_[index]->discarded = true;
+  delete old_contents;
+  return null_contents;
 }
 
 TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
@@ -562,6 +588,10 @@ bool TabStripModel::IsAppTab(int index) const {
 
 bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked;
+}
+
+bool TabStripModel::IsTabDiscarded(int index) const {
+  return contents_data_[index]->discarded;
 }
 
 int TabStripModel::IndexOfFirstNonMiniTab() const {
@@ -1196,6 +1226,8 @@ void TabStripModel::NotifyIfActiveTabChanged(
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                       ActiveTabChanged(old_contents, new_contents,
                                        active_index(), user_gesture));
+    // Activating a discarded tab reloads it, so it is no longer discarded.
+    contents_data_[active_index()]->discarded = false;
   }
 }
 

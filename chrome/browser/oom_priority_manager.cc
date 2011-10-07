@@ -45,6 +45,27 @@ int64 IdFromTabContents(TabContents* tab_contents) {
   return reinterpret_cast<int64>(tab_contents);
 }
 
+// Discards a tab with the given unique ID.  Returns true if discard occurred.
+bool DiscardTabById(int64 target_tab_contents_id) {
+  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
+       browser_iterator != BrowserList::end(); ++browser_iterator) {
+    Browser* browser = *browser_iterator;
+    TabStripModel* model = browser->tabstrip_model();
+    for (int idx = 0; idx < model->count(); idx++) {
+      // Can't discard tabs that are already discarded.
+      if (model->IsTabDiscarded(idx))
+        continue;
+      TabContents* tab_contents = model->GetTabContentsAt(idx)->tab_contents();
+      int64 tab_contents_id = IdFromTabContents(tab_contents);
+      if (tab_contents_id == target_tab_contents_id) {
+        model->DiscardTabContentsAt(idx);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace browser {
@@ -114,26 +135,22 @@ std::vector<string16> OomPriorityManager::GetTabTitles() {
   return titles;
 }
 
-void OomPriorityManager::DiscardTab() {
+// TODO(jamescook): This should consider tabs with references to other tabs,
+// such as tabs created with JavaScript window.open().  We might want to
+// discard the entire set together, or use that in the priority computation.
+bool OomPriorityManager::DiscardTab() {
   TabStatsList stats = GetTabStatsOnUIThread();
   if (stats.empty())
-    return;
-  std::sort(stats.begin(), stats.end(), CompareTabStats);
-  TabStatsList::const_reverse_iterator rit = stats.rbegin();
-  int64 least_important_tab_id = rit->tab_contents_id;
-  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-       browser_iterator != BrowserList::end(); ++browser_iterator) {
-    Browser* browser = *browser_iterator;
-    TabStripModel* model = browser->tabstrip_model();
-    for (int idx = 0; idx < model->count(); idx++) {
-      TabContents* tab_contents = model->GetTabContentsAt(idx)->tab_contents();
-      int64 tab_contents_id = IdFromTabContents(tab_contents);
-      if (tab_contents_id == least_important_tab_id) {
-        model->CloseTabContentsAt(idx,
-                                  TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
-      }
-    }
+    return false;
+  // Loop until we find a non-discarded tab to kill.
+  for (TabStatsList::const_reverse_iterator stats_rit = stats.rbegin();
+       stats_rit != stats.rend();
+       ++stats_rit) {
+    int64 least_important_tab_id = stats_rit->tab_contents_id;
+    if (DiscardTabById(least_important_tab_id))
+      return true;
   }
+  return false;
 }
 
 // Returns true if |first| is considered less desirable to be killed

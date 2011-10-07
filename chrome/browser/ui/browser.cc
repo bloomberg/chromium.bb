@@ -1080,6 +1080,10 @@ bool Browser::IsTabPinned(int index) const {
   return tabstrip_model()->IsTabPinned(index);
 }
 
+bool Browser::IsTabDiscarded(int index) const {
+  return tab_handler_->GetTabStripModel()->IsTabDiscarded(index);
+}
+
 void Browser::CloseAllTabs() {
   tab_handler_->GetTabStripModel()->CloseAllTabs();
 }
@@ -3175,6 +3179,12 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
       Reload(CURRENT_TAB);
       return;
     }
+  }
+
+  // Discarded tabs always get reloaded.
+  if (IsTabDiscarded(index)) {
+    Reload(CURRENT_TAB);
+    return;
   }
 
   // If we have any update pending, do it now.

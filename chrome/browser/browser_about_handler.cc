@@ -675,13 +675,22 @@ std::string AboutCryptohome(const std::string& query) {
   return GetCryptohomeHtmlInfo(refresh);
 }
 
+std::string AboutDiscardsRun() {
+  std::string output;
+  AppendHeader(&output, 0, "About discards");
+  output.append(StringPrintf("<meta http-equiv=\"refresh\" content=\"2;%s\">",
+                             chrome::kChromeUIDiscardsURL));
+  output.append(WrapWithTag("p", "Discarding a tab..."));
+  g_browser_process->oom_priority_manager()->DiscardTab();
+  AppendFooter(&output);
+  return output;
+}
+
 std::string AboutDiscards(const std::string& path) {
   std::string output;
-  const std::string kRunCommand("run");
-  if (path == kRunCommand) {
-    output.append(WrapWithTag("p", "Discarding a tab..."));
-    g_browser_process->oom_priority_manager()->DiscardTab();
-  }
+  const char kRunCommand[] = "run";
+  if (path == kRunCommand)
+    return AboutDiscardsRun();
   AppendHeader(&output, 0, "About discards");
   AppendBody(&output);
   output.append("<h3>About discards</h3>");
@@ -702,8 +711,9 @@ std::string AboutDiscards(const std::string& path) {
   } else {
     output.append("<p>None found.  Wait 10 seconds, then refresh.</p>");
   }
-  output.append(
-      "<a href='chrome://discards/" + kRunCommand + "'>Discard tab now</a>");
+  output.append(StringPrintf("<a href='%s%s'>Discard tab now</a>",
+                             chrome::kChromeUIDiscardsURL,
+                             kRunCommand));
 
   base::SystemMemoryInfoKB meminfo;
   base::GetSystemMemoryInfo(&meminfo);

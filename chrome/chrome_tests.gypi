@@ -2417,6 +2417,7 @@
         'browser/net/ftp_browsertest.cc',
         'browser/notifications/desktop_notifications_unittest.cc',
         'browser/notifications/desktop_notifications_unittest.h',
+        'browser/oom_priority_manager_browsertest.cc',
         'browser/plugin_data_remover_browsertest.cc',
         'browser/policy/device_management_backend_mock.cc',
         'browser/policy/device_management_backend_mock.h',
@@ -2556,6 +2557,7 @@
             'browser/chromeos/media/media_player_browsertest.cc',
             'browser/extensions/extension_file_browser_private_apitest.cc',
             'browser/extensions/extension_input_method_apitest.cc',
+            'browser/oom_priority_manager_browsertest.cc',
             'browser/policy/enterprise_metrics_enrollment_browsertest.cc',
           ],
         }, { #else: OS == "chromeos"

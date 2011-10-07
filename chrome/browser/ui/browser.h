@@ -375,6 +375,7 @@ class Browser : public TabHandlerDelegate,
   TabContents* GetTabContentsAt(int index) const;
   void ActivateTabAt(int index, bool user_gesture);
   bool IsTabPinned(int index) const;
+  bool IsTabDiscarded(int index) const;
   void CloseAllTabs();
 
   // Tab adding/showing functions /////////////////////////////////////////////
@@ -990,7 +991,7 @@ class Browser : public TabHandlerDelegate,
 
   // Note that the caller is responsible for deleting |old_tab_contents|.
   virtual void SwapTabContents(TabContentsWrapper* old_tab_contents,
-                               TabContentsWrapper* new_tab_contents);
+                               TabContentsWrapper* new_tab_contents) OVERRIDE;
 
   // Overridden from SearchEngineTabHelperDelegate:
   virtual void ConfirmSetDefaultSearchProvider(

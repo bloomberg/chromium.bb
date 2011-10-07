@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/tabs/tab_strip_model.h"
+
 #include <map>
 #include <string>
 
@@ -17,7 +19,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -273,7 +274,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
       : empty_(true),
         log_tab_selection_changed_(false),
         model_(model) {}
-  ~MockTabStripModelObserver() {
+  virtual ~MockTabStripModelObserver() {
     STLDeleteContainerPointers(states_.begin(), states_.end());
   }
 
@@ -2110,6 +2111,66 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   EXPECT_TRUE(tabstrip_observer.StateEquals(0, state));
 
   strip.CloseAllTabs();
+}
+
+// Ensures discarding tabs leaves TabStripModel in a good state.
+TEST_F(TabStripModelTest, DiscardTabContentsAt) {
+  typedef MockTabStripModelObserver::State State;
+
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel tabstrip(&delegate, profile());
+
+  // Fill it with some tabs.
+  TabContentsWrapper* contents1 = CreateTabContents();
+  tabstrip.AppendTabContents(contents1, true);
+  TabContentsWrapper* contents2 = CreateTabContents();
+  tabstrip.AppendTabContents(contents2, true);
+
+  // Start watching for events after the appends to avoid observing state
+  // transitions that aren't relevant to this test.
+  MockTabStripModelObserver tabstrip_observer;
+  tabstrip.AddObserver(&tabstrip_observer);
+
+  // Discard one of the tabs.
+  TabContentsWrapper* null_contents1 = tabstrip.DiscardTabContentsAt(0);
+  ASSERT_EQ(2, tabstrip.count());
+  EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
+  EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
+  ASSERT_EQ(null_contents1, tabstrip.GetTabContentsAt(0));
+  ASSERT_EQ(contents2, tabstrip.GetTabContentsAt(1));
+  ASSERT_EQ(1, tabstrip_observer.GetStateCount());
+  State state1(null_contents1, 0, MockTabStripModelObserver::REPLACED);
+  state1.src_contents = contents1;
+  EXPECT_TRUE(tabstrip_observer.StateEquals(0, state1));
+  tabstrip_observer.ClearStates();
+
+  // Discard the same tab again.
+  TabContentsWrapper* null_contents2 = tabstrip.DiscardTabContentsAt(0);
+  ASSERT_EQ(2, tabstrip.count());
+  EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
+  EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
+  ASSERT_EQ(null_contents2, tabstrip.GetTabContentsAt(0));
+  ASSERT_EQ(contents2, tabstrip.GetTabContentsAt(1));
+  ASSERT_EQ(1, tabstrip_observer.GetStateCount());
+  State state2(null_contents2, 0, MockTabStripModelObserver::REPLACED);
+  state2.src_contents = null_contents1;
+  EXPECT_TRUE(tabstrip_observer.StateEquals(0, state2));
+  tabstrip_observer.ClearStates();
+
+  // Activating the tab should clear its discard state.
+  tabstrip.ActivateTabAt(0, true /* user_gesture */);
+  ASSERT_EQ(2, tabstrip.count());
+  EXPECT_FALSE(tabstrip.IsTabDiscarded(0));
+  EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
+
+  // Discarding the active tab should not crash.
+  TabContentsWrapper* null_contents3 = tabstrip.DiscardTabContentsAt(0);
+  ASSERT_EQ(2, tabstrip.count());
+  EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
+  EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
+  ASSERT_EQ(null_contents3, tabstrip.GetTabContentsAt(0));
+
+  tabstrip.CloseAllTabs();
 }
 
 // Makes sure TabStripModel handles the case of deleting a tab while removing

@@ -46,7 +46,8 @@ class OomPriorityManager : public NotificationObserver {
 
   // Discards a tab to free the memory occupied by its renderer.
   // Tab still exists in the tab-strip; clicking on it will reload it.
-  void DiscardTab();
+  // Returns true if it successfully found a tab and discarded it.
+  bool DiscardTab();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, Comparator);
