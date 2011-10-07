@@ -22,11 +22,13 @@
  * @addtogroup Enums
  * @{
  */
-/* typedef enum { A = 1, B = 2, C = 3 } et1; */
+/* typedef enum { A = 1, B = 2, C = 3, D = A + B, E = ~D } et1; */
 typedef enum {
   A = 1,
   B = 2,
-  C = 3
+  C = 3,
+  D = A + B,
+  E = ~D
 } et1;
 /**
  * @}

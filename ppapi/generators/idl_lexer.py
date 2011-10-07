@@ -64,7 +64,8 @@ class IDLLexer(object):
       'STRING',
 
     # Operators
-      'LSHIFT'
+      'LSHIFT',
+      'RSHIFT'
   ]
 
   # 'keywords' is a map of string to token type.  All SYMBOL tokens are
@@ -82,7 +83,7 @@ class IDLLexer(object):
 
   # 'literals' is a value expected by lex which specifies a list of valid
   # literal tokens, meaning the token type and token value are identical.
-  literals = '"*.(){}[],;:=+-'
+  literals = '"*.(){}[],;:=+-/~|&^'
 
   # Token definitions
   #
@@ -100,6 +101,7 @@ class IDLLexer(object):
   t_OCT = r'-?0[0-7]+'
   t_HEX = r'-?0[Xx][0-9A-Fa-f]+'
   t_LSHIFT = r'<<'
+  t_RSHIFT = r'>>'
 
   # A line ending '\n', we use this to increment the line number
   def t_LINE_END(self, t):

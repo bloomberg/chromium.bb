@@ -413,19 +413,52 @@ class IDLParser(IDLLexer):
     p[0] = p[1]
     if self.parse_debug: DumpReduction('integer', p)
 
-# Numbers are integers or floats.
-  def p_number(self, p):
-    """number : FLOAT
-              | HEX
-              | INT
-              | OCT"""
-    p[0] = p[1]
-    if self.parse_debug: DumpReduction('number', p)
+#
+# Expression
+#
+# A simple arithmetic expression.
+#
+  precedence = (
+    ('left','|','&','^'),
+    ('left','LSHIFT','RSHIFT'),
+    ('left','+','-'),
+    ('left','*','/'),
+    ('right','UMINUS','~'),
+    )
 
-  def p_number_lshift(self, p):
-    """number : integer LSHIFT INT"""
-    p[0] = "%s << %s" % (p[1], p[3])
-    if self.parse_debug: DumpReduction('number_lshift', p)
+  def p_expression_binop(self, p):
+    """expression : expression LSHIFT expression
+                  | expression RSHIFT expression
+                  | expression '|' expression
+                  | expression '&' expression
+                  | expression '^' expression
+                  | expression '+' expression
+                  | expression '-' expression
+                  | expression '*' expression
+                  | expression '/' expression"""
+    p[0] = "%s %s %s" % (str(p[1]), str(p[2]), str(p[3]))
+    if self.parse_debug: DumpReduction('expression_binop', p)
+
+  def p_expression_unop(self, p):
+    """expression : '-' expression %prec UMINUS
+                  | '~' expression %prec '~'"""
+    p[0] = "%s%s" % (str(p[1]), str(p[2]))
+    if self.parse_debug: DumpReduction('expression_unop', p)
+
+  def p_expression_term(self, p):
+    "expression : '(' expression ')'"
+    p[0] = "%s%s%s" % (str(p[1]), str(p[2]), str(p[3]))
+    if self.parse_debug: DumpReduction('expression_term', p)
+
+  def p_expression_symbol(self, p):
+    "expression : SYMBOL"
+    p[0] = p[1]
+    if self.parse_debug: DumpReduction('expression_symbol', p)
+
+  def p_expression_integer(self, p):
+    "expression : integer"
+    p[0] = p[1]
+    if self.parse_debug: DumpReduction('expression_integer', p)
 
 #
 # Array List
@@ -523,7 +556,7 @@ class IDLParser(IDLLexer):
     if self.parse_debug: DumpReduction('enum_block', p)
 
   def p_enum_list(self, p):
-    """enum_list : modifiers SYMBOL '=' number enum_cont
+    """enum_list : modifiers SYMBOL '=' expression enum_cont
                  | modifiers SYMBOL enum_cont"""
     if len(p) > 4:
       val  = self.BuildAttribute('VALUE', p[4])

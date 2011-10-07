@@ -62,3 +62,47 @@ enum Es8 {
   /* OK EnumItem(E15) */
   E15 = 0x400
 };
+
+/* OK Enum(Es9) */
+enum Es9 {
+  /* OK EnumItem(Es9_1) */
+  Es9_1 = 0,
+  /* OK EnumItem(Es9_2) */
+  Es9_2 = Es9_1,
+  /* OK EnumItem(Es9_3) */
+  Es9_3 = Es9_1 << Es9_2,
+  /* OK EnumItem(Es9_3a) */
+  /* FAIL Unexpected symbol Es9_2 after symbol Es9_1. */
+  Es9_3a = Es9_1 Es9_2,
+  /* OK EnumItem(Es9_4) */
+  Es9_4 = Es9_1 >> Es9_2,
+  /* OK EnumItem(Es9_5) */
+  Es9_5 = Es9_1 | Es9_2,
+  /* OK EnumItem(Es9_6) */
+  Es9_6 = Es9_1 & Es9_2,
+  /* OK EnumItem(Es9_7) */
+  Es9_7 = Es9_1 ^ Es9_2,
+  /* OK EnumItem(Es9_8) */
+  Es9_8 = Es9_1 + Es9_2,
+  /* OK EnumItem(Es9_9) */
+  Es9_9 = Es9_1 - Es9_2,
+  /* OK EnumItem(Es9_10) */
+  Es9_10 = Es9_1 * Es9_2,
+  /* OK EnumItem(Es9_11) */
+  Es9_11 = Es9_1 / Es9_2,
+  /* OK EnumItem(Es9_12) */
+  Es9_12 = -Es9_1,
+  /* OK EnumItem(Es9_13) */
+  Es9_13 = ~Es9_1,
+  /* OK EnumItem(Es9_14) */
+  Es9_14 = (Es9_1),
+  /* OK EnumItem(Es9_14a) */
+  /* FAIL Unexpected ,. */
+  Es9_14a = (Es9_1,
+  /* OK EnumItem(Es9_15) */
+  Es9_15 = (Es9_1 + Es9_2) << Es9_3 + 1,
+  /* OK EnumItem(Es9_16) */
+  Es9_16 = Es9_1 + -Es9_2
+};
+
+
