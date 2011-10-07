@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/autofill_profile_syncable_service.h"
+#include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 
 #include "base/location.h"
 #include "base/logging.h"
