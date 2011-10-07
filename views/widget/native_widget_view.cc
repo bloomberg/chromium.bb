@@ -153,10 +153,12 @@ void NativeWidgetView::MoveLayerToParent(ui::Layer* parent_layer,
 }
 
 void NativeWidgetView::UpdateChildLayerBounds(const gfx::Point& offset) {
-  gfx::Point new_offset(offset.x() + x(), offset.y() + y());
-  View::UpdateChildLayerBounds(new_offset);
-  if (!layer())
+  View::UpdateChildLayerBounds(offset);
+  if (!layer()) {
+    const gfx::Rect& bounds = GetAssociatedWidget()->GetRootView()->bounds();
+    gfx::Point new_offset(offset.x() + bounds.x(), offset.y() + bounds.y());
     GetAssociatedWidget()->GetRootView()->UpdateChildLayerBounds(new_offset);
+  }
 }
 
 }  // namespace internal
