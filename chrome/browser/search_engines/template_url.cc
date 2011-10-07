@@ -12,12 +12,12 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/user_metrics.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -570,10 +570,10 @@ void TemplateURLRef::CollectRLZMetrics() const {
   for (size_t i = 0; i < replacements_.size(); ++i) {
     // We are interesed in searches that were supposed to send the RLZ token.
     if (replacements_[i].type == GOOGLE_RLZ) {
-      string16 brand;
+      std::string brand;
       // We only have RLZ tocken on a branded browser version.
-      if (GoogleUpdateSettings::GetBrand(&brand) && !brand.empty() &&
-           !GoogleUpdateSettings::IsOrganic(brand)) {
+      if (google_util::GetBrand(&brand) && !brand.empty() &&
+           !google_util::IsOrganic(brand)) {
         // Now we know we should have had RLZ token check if there was one.
         if (url().find("rlz=") != std::string::npos)
           UserMetrics::RecordAction(UserMetricsAction("SearchWithRLZ"));

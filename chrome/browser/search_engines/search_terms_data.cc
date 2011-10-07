@@ -13,8 +13,8 @@
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/installer/util/google_update_settings.h"
 #endif
 
 SearchTermsData::SearchTermsData() {
@@ -74,9 +74,9 @@ string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
   string16 rlz_string;
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.
-  string16 brand;
-  if (GoogleUpdateSettings::GetBrand(&brand) && !brand.empty() &&
-      !GoogleUpdateSettings::IsOrganic(brand)) {
+  std::string brand;
+  if (google_util::GetBrand(&brand) && !brand.empty() &&
+      !google_util::IsOrganic(brand)) {
     // This call will return false the first time(s) it is called until the
     // value has been cached. This normally would mean that at most one omnibox
     // search might not send the RLZ data but this is not really a problem.
