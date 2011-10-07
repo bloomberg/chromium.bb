@@ -248,9 +248,15 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<ConstrainedHtmlUI>;
 
 #if !defined(OS_CHROMEOS)
-  if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-    if (url.host() == chrome::kChromeUISyncPromoHost)
+  if (url.host() == chrome::kChromeUISyncPromoHost) {
+    // If the sync promo page is enabled then use the sync promo WebUI otherwise
+    // use the NTP WebUI. We don't want to return NULL if the sync promo page
+    // is disabled because the page can be disabled mid-flight (for example,
+    // if sync login finishes).
+    if (SyncPromoUI::ShouldShowSyncPromo(profile))
       return &NewWebUI<SyncPromoUI>;
+    else
+      return &NewWebUI<NewTabUI>;
   }
 #endif
 
