@@ -22,7 +22,6 @@ Window* ToplevelWindowContainer::GetTopmostWindowToActivate(
     Window* ignore) const {
   for (Window::Windows::const_reverse_iterator i = children().rbegin();
        i != children().rend(); ++i) {
-         Window* w = *i;
     if (*i != ignore && (*i)->CanActivate())
       return *i;
   }
