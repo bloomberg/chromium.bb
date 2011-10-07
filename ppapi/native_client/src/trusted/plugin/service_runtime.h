@@ -92,6 +92,7 @@ class PluginReverseInterface: public nacl::ReverseInterface {
  public:
   PluginReverseInterface(nacl::WeakRefAnchor* anchor,
                          Plugin* plugin,
+                         ServiceRuntime* service_runtime,
                          pp::CompletionCallback init_done_cb,
                          pp::CompletionCallback crash_cb);
 
@@ -110,6 +111,8 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   virtual bool CloseManifestEntry(int32_t desc);
 
   virtual void ReportCrash();
+
+  virtual void ReportExitStatus(int exit_status);
 
  protected:
   virtual void Log_MainThreadContinuation(LogToJavaScriptConsoleResource* p,
@@ -131,6 +134,7 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   nacl::WeakRefAnchor* anchor_;  // holds a ref
   Plugin* plugin_;  // value may be copied, but should be used only in
                     // main thread in WeakRef-protected callbacks.
+  ServiceRuntime* service_runtime_;
   NaClMutex mu_;
   NaClCondVar cv_;
   bool shutting_down_;
@@ -164,6 +168,13 @@ class ServiceRuntime {
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 
+  // exit_status is -1 when invalid; when we set it, we will ensure
+  // that it is non-negative (the portion of the exit status from the
+  // nexe that is transferred is the low 8 bits of the argument to the
+  // exit syscall).
+  int exit_status();  // const, but grabs mutex etc.
+  void set_exit_status(int exit_status);
+
   nacl::DescWrapper* async_receive_desc() { return async_receive_desc_.get(); }
   nacl::DescWrapper* async_send_desc() { return async_send_desc_.get(); }
 
@@ -187,6 +198,9 @@ class ServiceRuntime {
   nacl::WeakRefAnchor* anchor_;
 
   PluginReverseInterface* rev_interface_;
+
+  NaClMutex mu_;
+  int exit_status_;
 };
 
 }  // namespace plugin

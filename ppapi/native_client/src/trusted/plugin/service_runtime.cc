@@ -56,10 +56,12 @@ namespace plugin {
 PluginReverseInterface::PluginReverseInterface(
     nacl::WeakRefAnchor* anchor,
     Plugin* plugin,
+    ServiceRuntime* service_runtime,
     pp::CompletionCallback init_done_cb,
     pp::CompletionCallback crash_cb)
       : anchor_(anchor),
         plugin_(plugin),
+        service_runtime_(service_runtime),
         shutting_down_(false),
         init_done_cb_(init_done_cb),
         crash_cb_(crash_cb) {
@@ -337,6 +339,10 @@ void PluginReverseInterface::ReportCrash() {
   }
 }
 
+void PluginReverseInterface::ReportExitStatus(int exit_status) {
+  service_runtime_->set_exit_status(exit_status);
+}
+
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                pp::CompletionCallback init_done_cb,
                                pp::CompletionCallback crash_cb)
@@ -348,8 +354,11 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       async_send_desc_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin,
-                                                init_done_cb, crash_cb)) {
+                                                this,
+                                                init_done_cb, crash_cb)),
+      exit_status_(-1) {
   NaClSrpcChannelInitialize(&command_channel_);
+  NaClXMutexCtor(&mu_);
 }
 
 bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
@@ -562,6 +571,17 @@ ServiceRuntime::~ServiceRuntime() {
   rev_interface_->Unref();
 
   anchor_->Unref();
+  NaClMutexDtor(&mu_);
+}
+
+int ServiceRuntime::exit_status() {
+  nacl::MutexLocker take(&mu_);
+  return exit_status_;
+}
+
+void ServiceRuntime::set_exit_status(int exit_status) {
+  nacl::MutexLocker take(&mu_);
+  exit_status_ = exit_status & 0xff;
 }
 
 }  // namespace plugin

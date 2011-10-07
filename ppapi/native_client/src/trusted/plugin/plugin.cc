@@ -119,6 +119,15 @@ bool GetLastError(void* obj, SrpcParams* params) {
   return true;
 }
 
+bool GetExitStatus(void* obj, SrpcParams* params) {
+  NaClSrpcArg** outs = params->outs();
+  PLUGIN_PRINTF(("GetExitStatus (obj=%p)\n", obj));
+
+  Plugin* plugin = static_cast<Plugin*>(obj);
+  outs[0]->u.ival = plugin->exit_status();
+  return true;
+}
+
 // Up to 20 seconds
 const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
@@ -926,6 +935,8 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
   // Export a property to allow us to get the last error description.
   AddPropertyGet(GetLastError, "lastError", "s");
+  // Export a property to allow us to get the nexe exit status.
+  AddPropertyGet(GetExitStatus, "exitStatus", "i");
 
   PLUGIN_PRINTF(("Plugin::Init (status=%d)\n", status));
   return status;
@@ -985,10 +996,37 @@ Plugin::~Plugin() {
   ShutdownProxy();
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
   ScriptableHandle::Unref(&scriptable_handle_);
-  NaClSrpcModuleFini();
 
-  // TODO(sehr,polina): We should not need to call ShutDownSubprocesses() here.
+  // ShutDownSubprocesses shuts down the subprocesses, which shuts
+  // down the main ServiceRuntime object, which kills the subprocess.
+  // As a side effect of the subprocess being killed, the reverse
+  // services thread(s) will get EOF on the reverse channel(s), and
+  // the thread(s) will exit.  In ServiceRuntime::Shutdown, we invoke
+  // ReverseService::WaitForServiceThreadsToExit(), so that there will
+  // not be an extent thread(s) hanging around.  This means that the
+  // ~Plugin will block until this happens.  This is a requirement,
+  // since the renderer should be free to unload the plugin code, and
+  // we cannot have threads running code that gets unloaded before
+  // they exit.
+  //
+  // By waiting for the threads here, we also ensure that the Plugin
+  // object and the subprocess and ServiceRuntime objects is not
+  // (fully) destroyed while the threads are running, so resources
+  // that are destroyed after ShutDownSubprocesses (below) are
+  // guaranteed to be live and valid for access from the service
+  // threads.
+  //
+  // The main_subprocess object, which wraps the main service_runtime
+  // object, is dtor'd implicitly after the explicit code below runs,
+  // so the main service runtime object will not have been dtor'd,
+  // though the Shutdown method may have been called, during the
+  // lifetime of the service threads.
   ShutDownSubprocesses();
+
+  // Shutdown Srpc module only after the service threads are done.
+  // NB: NaClSrpcModuleInit and Fini should be invoked at dll
+  // load/unload and not in the Plugin ctor/dtor.
+  NaClSrpcModuleFini();
 
   delete wrapper_factory_;
   delete browser_interface_;

@@ -316,6 +316,14 @@ class Plugin : public pp::InstancePrivate {
 
   Manifest const* manifest() const { return manifest_.get(); }
 
+  // Extracts the exit status from the (main) service runtime.
+  int exit_status() const {
+    if (NULL == main_service_runtime()) {
+      return -1;
+    }
+    return main_service_runtime()->exit_status();
+  }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
 #ifndef HACK_FOR_MACOS_HANG_REMOVED
@@ -486,8 +494,8 @@ class Plugin : public pp::InstancePrivate {
   // URL processing interface for use in looking up resources in manifests.
   const pp::URLUtil_Dev* url_util_;
 
-  // A string containing the text description of the last error produced by
-  // this plugin.
+  // A string containing the text description of the last error
+  // produced by this plugin.
   nacl::string last_error_string_;
 
   // A pointer to the browser end of a proxy pattern connecting the
