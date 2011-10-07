@@ -37,25 +37,14 @@ class CrosDBusService {
  public:
   // CrosDBusService consists of service providers that implement this
   // interface.
-  //
-  // ServiceProviderInterface is a ref counted object, to ensure that
-  // |this| of the object is alive when callbacks referencing |this| are
-  // called.
-  class ServiceProviderInterface
-      : public base::RefCountedThreadSafe<ServiceProviderInterface> {
+  class ServiceProviderInterface {
    public:
-
     // Starts the service provider. |exported_object| is used to export
     // D-Bus methods.
     virtual void Start(
         scoped_refptr<dbus::ExportedObject> exported_object) = 0;
 
-   protected:
-    // This is protected, so we can define sub classes.
     virtual ~ServiceProviderInterface();
-
-   private:
-    friend class base::RefCountedThreadSafe<ServiceProviderInterface>;
   };
 
   virtual ~CrosDBusService();

@@ -38,12 +38,12 @@ DBusThreadManager::DBusThreadManager() {
   // Start monitoring sensors if needed.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableSensors)) {
-    sensors_source_ = new SensorsSource;
+    sensors_source_.reset(new SensorsSource);
     sensors_source_->Init(system_bus_.get());
   }
 
   // Create the power manager client.
-  power_manager_client_ = PowerManagerClient::Create(system_bus_.get());
+  power_manager_client_.reset(PowerManagerClient::Create(system_bus_.get()));
 }
 
 DBusThreadManager::~DBusThreadManager() {

@@ -25,6 +25,7 @@ class CrosDBusServiceImpl : public CrosDBusService {
   }
 
   virtual ~CrosDBusServiceImpl() {
+    STLDeleteElements(&service_providers_);
   }
 
   // CrosDBusService override.
@@ -67,7 +68,7 @@ class CrosDBusServiceImpl : public CrosDBusService {
   scoped_refptr<dbus::ExportedObject> exported_object_;
 
   // Service providers that form CrosDBusService.
-  std::vector<scoped_refptr<ServiceProviderInterface> > service_providers_;
+  std::vector<ServiceProviderInterface*> service_providers_;
 };
 
 // The stub CrosDBusService implementation used on Linux desktop,

@@ -68,8 +68,8 @@ class DBusThreadManager {
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   CrosDBusService* cros_dbus_service_;
-  scoped_refptr<SensorsSource> sensors_source_;
-  scoped_refptr<PowerManagerClient> power_manager_client_;
+  scoped_ptr<SensorsSource> sensors_source_;
+  scoped_ptr<PowerManagerClient> power_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
 };

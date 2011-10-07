@@ -18,7 +18,8 @@ namespace chromeos {
 class PowerManagerClientImpl : public PowerManagerClient {
  public:
   explicit PowerManagerClientImpl(dbus::Bus* bus)
-      : power_manager_proxy_(NULL) {
+      : power_manager_proxy_(NULL),
+        weak_ptr_factory_(this) {
     power_manager_proxy_ = bus->GetObjectProxy(
         power_manager::kPowerManagerServiceName,
         power_manager::kPowerManagerServicePath);
@@ -29,8 +30,13 @@ class PowerManagerClientImpl : public PowerManagerClient {
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
         power_manager::kBrightnessChangedSignal,
-        base::Bind(&PowerManagerClientImpl::BrightnessChangedReceived, this),
-        base::Bind(&PowerManagerClientImpl::BrightnessChangedConnected, this));
+        base::Bind(&PowerManagerClientImpl::BrightnessChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::BrightnessChangedConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  virtual ~PowerManagerClientImpl() {
   }
 
   // PowerManagerClient override.
@@ -55,7 +61,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&PowerManagerClientImpl::OnDecreaseScreenBrightness,
-                   this));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   // PowerManagerClient override.
@@ -67,12 +73,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&PowerManagerClientImpl::OnIncreaseScreenBrightness,
-                   this));
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<PowerManagerClientImpl>;
-  virtual ~PowerManagerClientImpl() {
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Called when a brightness change signal is received.
@@ -120,6 +121,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   dbus::ObjectProxy* power_manager_proxy_;
   ObserverList<Observer> observers_;
+  base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientImpl);
 };

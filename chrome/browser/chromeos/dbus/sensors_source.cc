@@ -22,7 +22,9 @@ const char kSensorsServiceInterface[] = "org.chromium.Sensors";
 // Sensors signal names.
 const char kScreenOrientationChanged[] = "ScreenOrientationChanged";
 
-SensorsSource::SensorsSource() : sensors_proxy_(NULL) {
+SensorsSource::SensorsSource()
+  : sensors_proxy_(NULL),
+    weak_ptr_factory_(this) {
 }
 
 void SensorsSource::Init(dbus::Bus* bus) {
@@ -32,8 +34,10 @@ void SensorsSource::Init(dbus::Bus* bus) {
                                        chromeos::kSensorsServicePath);
   sensors_proxy_->ConnectToSignal(chromeos::kSensorsServiceInterface,
                                   chromeos::kScreenOrientationChanged,
-      base::Bind(&SensorsSource::OrientationChangedReceived, this),
-      base::Bind(&SensorsSource::OrientationChangedConnected, this));
+      base::Bind(&SensorsSource::OrientationChangedReceived,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&SensorsSource::OrientationChangedConnected,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 SensorsSource::~SensorsSource() {

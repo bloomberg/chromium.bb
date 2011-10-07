@@ -28,8 +28,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     explicit Request(const std::string& source_url)
         : ALLOW_THIS_IN_INITIALIZER_LIST(
             completion_callback_(this, &Request::OnCompletion)),
-          source_url_(source_url),
-          result_(net::ERR_FAILED) {
+          source_url_(source_url) {
     }
 
     virtual ~Request() {}
@@ -38,18 +37,16 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     // completes, synchronously or asynchronously.
     void OnCompletion(int result) {
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-      result_ = result;
       // Generate the error message if the error message is not yet set,
       // and there was an error.
-      if (error_.empty() && result_ != net::OK)
-        error_ = net::ErrorToString(result_);
+      if (error_.empty() && result != net::OK)
+        error_ = net::ErrorToString(result);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, notify_task_);
     }
 
     net::OldCompletionCallbackImpl<Request> completion_callback_;
 
     std::string source_url_;  // URL being resolved.
-    int result_;  // Result of proxy resolution.
     net::ProxyInfo proxy_info_;  // ProxyInfo resolved for source_url_.
     std::string error_;  // Error from proxy resolution.
     base::Closure notify_task_;  // Task to notify of resolution result.
@@ -59,16 +56,18 @@ class ProxyResolverImpl : public ProxyResolverInterface {
   };
 
   ProxyResolverImpl()
-      : origin_thread_id_(base::PlatformThread::CurrentId()) {
+      : origin_thread_id_(base::PlatformThread::CurrentId()),
+        weak_ptr_factory_(this) {
   }
 
   virtual ~ProxyResolverImpl() {
-    base::AutoLock lock(data_lock_);
-    while (!all_requests_.empty()) {
-      LOG(WARNING) << "Pending request for "
-                   << all_requests_.back()->source_url_;
-      delete all_requests_.back();
-      all_requests_.pop_back();
+    DCHECK(OnOriginThread());
+
+    for (std::set<Request*>::iterator iter = all_requests_.begin();
+         iter != all_requests_.end(); ++iter) {
+      Request* request = *iter;
+      LOG(WARNING) << "Pending request for " << request->source_url_;
+      delete request;
     }
   }
 
@@ -80,6 +79,17 @@ class ProxyResolverImpl : public ProxyResolverInterface {
       scoped_refptr<dbus::ExportedObject> exported_object) {
     DCHECK(OnOriginThread());
 
+    // Create a request slot for this proxy resolution request.
+    Request* request = new Request(source_url);
+    request->notify_task_ = base::Bind(
+        &ProxyResolverImpl::NotifyProxyResolved,
+        weak_ptr_factory_.GetWeakPtr(),
+        signal_interface,
+        signal_name,
+        exported_object,
+        request);
+    all_requests_.insert(request);
+
     // GetDefaultProfile() and GetRequestContext() must be called on UI
     // thread.
     Profile* profile = ProfileManager::GetDefaultProfile();
@@ -89,39 +99,19 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ProxyResolverImpl::ResolveProxyInternal,
-                   this,
+                   request,
                    getter,
-                   source_url,
-                   signal_interface,
-                   signal_name,
                    exported_object));
   }
 
  private:
   // Helper function for ResolveProxy().
-  void ResolveProxyInternal(
+  static void ResolveProxyInternal(
+      Request* request,
       scoped_refptr<net::URLRequestContextGetter> getter,
-      const std::string& source_url,
-      const std::string& signal_interface,
-      const std::string& signal_name,
       scoped_refptr<dbus::ExportedObject> exported_object) {
     // Make sure we're running on IO thread.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-    // Create a request slot for this proxy resolution request.
-    Request* request = new Request(source_url);
-    request->notify_task_ = base::Bind(
-        &ProxyResolverImpl::NotifyProxyResolved,
-        this,
-        signal_interface,
-        signal_name,
-        exported_object,
-        request);
-    // Queue request slot.
-    {
-      base::AutoLock lock(data_lock_);
-      all_requests_.push_back(request);
-    }
 
     // Check if we have the URLRequestContextGetter.
     if (!getter) {
@@ -141,12 +131,12 @@ class ProxyResolverImpl : public ProxyResolverInterface {
 
     VLOG(1) << "Starting network proxy resolution for "
             << request->source_url_;
-    request->result_ = proxy_service->ResolveProxy(
+    const int result = proxy_service->ResolveProxy(
         GURL(request->source_url_), &request->proxy_info_,
         &request->completion_callback_, NULL, net::BoundNetLog());
-    if (request->result_ != net::ERR_IO_PENDING) {
+    if (result != net::ERR_IO_PENDING) {
       VLOG(1) << "Network proxy resolution completed synchronously.";
-      request->OnCompletion(request->result_);
+      request->OnCompletion(result);
     }
   }
 
@@ -168,9 +158,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     exported_object->SendSignal(&signal);
     VLOG(1) << "Sending signal: " << signal.ToString();
 
-    base::AutoLock lock(data_lock_);
-    std::vector<Request*>::iterator iter =
-        std::find(all_requests_.begin(), all_requests_.end(), request);
+    std::set<Request*>::iterator iter = all_requests_.find(request);
     if (iter == all_requests_.end()) {
       LOG(ERROR) << "can't find request slot(" << request->source_url_
                  << ") in proxy-resolution queue";
@@ -186,9 +174,8 @@ class ProxyResolverImpl : public ProxyResolverInterface {
   }
 
   base::PlatformThreadId origin_thread_id_;
-  // Lock for data members to synchronize access on multiple threads.
-  base::Lock data_lock_;
-  std::vector<Request*> all_requests_;
+  std::set<Request*> all_requests_;
+  base::WeakPtrFactory<ProxyResolverImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverImpl);
 };
@@ -196,7 +183,8 @@ class ProxyResolverImpl : public ProxyResolverInterface {
 ProxyResolutionServiceProvider::ProxyResolutionServiceProvider(
     ProxyResolverInterface* resolver)
     : resolver_(resolver),
-      origin_thread_id_(base::PlatformThread::CurrentId()) {
+      origin_thread_id_(base::PlatformThread::CurrentId()),
+      weak_ptr_factory_(this) {
 }
 
 ProxyResolutionServiceProvider::~ProxyResolutionServiceProvider() {
@@ -210,10 +198,13 @@ void ProxyResolutionServiceProvider::Start(
   exported_object_->ExportMethod(
       kLibCrosServiceInterface,
       kResolveNetworkProxy,
-      base::Bind(&ProxyResolutionServiceProvider::ResolveProxyHandler,
-                 this),
+      // Weak pointers can only bind to methods without return values,
+      // hence we cannot bind ResolveProxyInternal here. Instead we use a
+      // static function to solve this problem.
+      base::Bind(&ProxyResolutionServiceProvider::CallResolveProxyHandler,
+                 weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyResolutionServiceProvider::OnExported,
-                 this));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ProxyResolutionServiceProvider::OnExported(
@@ -256,6 +247,17 @@ dbus::Response* ProxyResolutionServiceProvider::ResolveProxyHandler(
   // network proxy resolution is completed.
   dbus::Response* response = dbus::Response::FromMethodCall(method_call);
   return response;
+}
+
+// static
+dbus::Response* ProxyResolutionServiceProvider::CallResolveProxyHandler(
+    base::WeakPtr<ProxyResolutionServiceProvider> provider_weak_ptr,
+    dbus::MethodCall* method_call) {
+  if (!provider_weak_ptr) {
+    LOG(WARNING) << "Called after the object is deleted";
+    return NULL;
+  }
+  return provider_weak_ptr->ResolveProxyHandler(method_call);
 }
 
 ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::Create() {

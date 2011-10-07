@@ -20,8 +20,7 @@ class Signal;
 namespace chromeos {
 
 // PowerManagerClient is used to communicate with the power manager.
-class PowerManagerClient
-    : public base::RefCountedThreadSafe<PowerManagerClient> {
+class PowerManagerClient {
  public:
   // Interface for observing changes from the power manager.
   class Observer {
@@ -46,13 +45,9 @@ class PowerManagerClient
   // Creates the instance.
   static PowerManagerClient* Create(dbus::Bus* bus);
 
- protected:
-  // These are protected, so we can define sub classes.
   PowerManagerClient();
   virtual ~PowerManagerClient();
 
- private:
-  friend class base::RefCountedThreadSafe<PowerManagerClient>;
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClient);
 };
 

@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
@@ -103,23 +104,26 @@ class ProxyResolutionServiceProvider
   // Called on UI thread from dbus request.
   dbus::Response* ResolveProxyHandler(dbus::MethodCall* method_call);
 
+  // Calls ResolveProxyHandler() if weak_ptr is not NULL. Used to ensure a
+  // safe shutdown.
+  static dbus::Response* CallResolveProxyHandler(
+      base::WeakPtr<ProxyResolutionServiceProvider> weak_ptr,
+      dbus::MethodCall* method_call);
+
   // Returns true if the current thread is on the origin thread.
   bool OnOriginThread();
 
   scoped_refptr<dbus::ExportedObject> exported_object_;
-  scoped_refptr<ProxyResolverInterface> resolver_;
+  scoped_ptr<ProxyResolverInterface> resolver_;
   base::PlatformThreadId origin_thread_id_;
+  base::WeakPtrFactory<ProxyResolutionServiceProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProvider);
 };
 
 // The interface is defined so we can mock out the proxy resolver
 // implementation.
-//
-// ProxyResolverInterface is a ref counted object, to ensure that |this|
-// of the object is alive when callbacks referencing |this| are called.
-class ProxyResolverInterface
-    : public base::RefCountedThreadSafe<ProxyResolverInterface> {
+class ProxyResolverInterface {
  public:
   // Resolves the proxy for the given URL. Returns the result as a
   // signal sent to |signal_interface| and
@@ -135,12 +139,7 @@ class ProxyResolverInterface
       const std::string& signal_name,
       scoped_refptr<dbus::ExportedObject> exported_object) = 0;
 
- protected:
-  // This is protected, so we can define sub classes.
   virtual ~ProxyResolverInterface();
-
- private:
-  friend class base::RefCountedThreadSafe<ProxyResolverInterface>;
 };
 
 }  // namespace chromeos

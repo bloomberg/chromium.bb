@@ -132,8 +132,8 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
 
     // Create the proxy resolution service with the mock bus and the mock
     // resolver injected.
-    proxy_resolution_service_ =
-        ProxyResolutionServiceProvider::CreateForTesting(mock_resolver_);
+    proxy_resolution_service_.reset(
+        ProxyResolutionServiceProvider::CreateForTesting(mock_resolver_));
 
     // Finally, start the service.
     proxy_resolution_service_->Start(mock_exported_object_);
@@ -182,7 +182,7 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockExportedObject> mock_exported_object_;
   scoped_refptr<dbus::MockObjectProxy> mock_object_proxy_;
-  scoped_refptr<ProxyResolutionServiceProvider> proxy_resolution_service_;
+  scoped_ptr<ProxyResolutionServiceProvider> proxy_resolution_service_;
   dbus::ExportedObject::MethodCallCallback resolve_network_proxy_;
   dbus::ObjectProxy::SignalCallback on_signal_callback_;
 

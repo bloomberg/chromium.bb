@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DBUS_SENSORS_SOURCE_H_
 #define CHROME_BROWSER_CHROMEOS_DBUS_SENSORS_SOURCE_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/browser_thread.h"
 
 #include <string>
@@ -20,20 +20,17 @@ namespace chromeos {
 
 // Creates and manages a dbus signal receiver for device orientation changes,
 // and eventually receives data for other motion-related sensors.
-class SensorsSource
-    : public base::RefCountedThreadSafe<SensorsSource> {
+class SensorsSource {
  public:
   // Creates an inactive sensors source.
   SensorsSource();
+  virtual ~SensorsSource();
 
   // Initializes this sensor source and begins listening for signals.
   // Returns true on success.
   void Init(dbus::Bus* bus);
 
  private:
-  friend class base::RefCountedThreadSafe<SensorsSource>;
-  virtual ~SensorsSource();
-
   // Called by dbus:: in when an orientation change signal is received.
   void OrientationChangedReceived(dbus::Signal* signal);
 
@@ -43,6 +40,7 @@ class SensorsSource
                                    bool success);
 
   dbus::ObjectProxy* sensors_proxy_;
+  base::WeakPtrFactory<SensorsSource> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorsSource);
 };
