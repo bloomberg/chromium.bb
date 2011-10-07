@@ -109,8 +109,10 @@ found in the LICENSE file.
         <div data-ui-mode="host.unshared">
           <div class="description" i18n-content="DESCRIPTION_SHARE"></div>
           <div class="centered-button">
-            <button id="share-button" class="big-button"
-                    type="button" onclick="remoting.tryShare();"
+            <button class="big-button"
+                    type="button"
+                    onclick="remoting.tryShare();"
+                    autofocus="autofocus"
                     i18n-content="SHARE_BUTTON"></button>
           </div>
         </div> <!-- host.unshared -->
@@ -151,7 +153,9 @@ found in the LICENSE file.
 
         <div class="centered-button"
              data-ui-mode="host.share-failed host.share-finished">
-          <button type="button" class="big-button"
+          <button type="button"
+                  class="big-button"
+                  autofocus="autofocus"
                   onclick="remoting.setMode('host.unshared');"
                   i18n-content="OK">
           </button>
@@ -167,7 +171,7 @@ found in the LICENSE file.
           <div id="access-code-entry-row">
             <form action="" onsubmit="remoting.tryConnect(); return false;">
               <label for="access-code-entry" i18n-content="ACCESS_CODE"></label>
-              <input id="access-code-entry" type="text"/>
+              <input id="access-code-entry" type="text" autofocus="autofocus"/>
               <button id="connect-button" class="big-button"
                       type="submit" i18n-content="CONNECT_BUTTON"></button>
             </form>
@@ -194,7 +198,10 @@ found in the LICENSE file.
 
         <div data-ui-mode="client.connect-failed client.session-finished"
              class="centered-button">
-          <button type="button" class="big-button" i18n-content="OK"
+          <button type="button"
+                  class="big-button"
+                  i18n-content="OK"
+                  autofocus="autofocus"
                   onclick="remoting.setMode(
                                remoting.AppMode.CLIENT_UNCONNECTED);">
           </button>
