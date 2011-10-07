@@ -135,7 +135,8 @@ class SyncManager::SyncInternal
         change_delegate_(NULL),
         initialized_(false),
         setup_for_test_mode_(false),
-        observing_ip_address_changes_(false) {
+        observing_ip_address_changes_(false),
+        created_on_loop_(MessageLoop::current()) {
     // Pre-fill |notification_info_map_|.
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
          i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -289,10 +290,9 @@ class SyncManager::SyncInternal
       const tracked_objects::Location& nudge_location,
       const ModelType& type);
 
-  void RequestEarlyExit();
-
-  // See SyncManager::Shutdown for information.
-  void Shutdown();
+  // See SyncManager::Shutdown* for information.
+  void StopSyncingForShutdown(const base::Closure& callback);
+  void ShutdownOnSyncThread();
 
   // If this is a deletion for a password, sets the legacy
   // ExtraPasswordChangeRecordData field of |buffer|. Otherwise sets
@@ -550,6 +550,8 @@ class SyncManager::SyncInternal
   WeakHandle<JsEventHandler> js_event_handler_;
   JsSyncManagerObserver js_sync_manager_observer_;
   JsMutationEventObserver js_mutation_event_observer_;
+
+  MessageLoop* const created_on_loop_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -769,10 +771,6 @@ bool SyncManager::SyncInternal::Init(
 
   connection_manager()->AddListener(this);
 
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&SyncInternal::CheckServerReachable,
-                            weak_ptr_factory_.GetWeakPtr()));
-
   // Test mode does not use a syncer context or syncer thread.
   if (!setup_for_test_mode_) {
     // Build a SyncSessionContext and store the worker in it.
@@ -946,7 +944,7 @@ void SyncManager::SyncInternal::UpdateCredentials(
   if (connection_manager()->set_auth_token(credentials.sync_token)) {
     sync_notifier_->UpdateCredentials(
         credentials.email, credentials.sync_token);
-    if (!setup_for_test_mode_) {
+    if (!setup_for_test_mode_ && initialized_) {
       // Post a task so we don't block UpdateCredentials.
       MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&SyncInternal::CheckServerReachable,
@@ -1232,33 +1230,34 @@ void SyncManager::RemoveObserver(Observer* observer) {
   data_->RemoveObserver(observer);
 }
 
-void SyncManager::RequestEarlyExit() {
-  data_->RequestEarlyExit();
+void SyncManager::StopSyncingForShutdown(const base::Closure& callback) {
+  data_->StopSyncingForShutdown(callback);
 }
 
-void SyncManager::SyncInternal::RequestEarlyExit() {
-  if (scheduler()) {
-    scheduler()->RequestEarlyExit();
-  }
+void SyncManager::SyncInternal::StopSyncingForShutdown(
+    const base::Closure& callback) {
+  VLOG(2) << "StopSyncingForShutdown";
+  if (scheduler())  // May be null in tests.
+    scheduler()->RequestStop(callback);
+  else
+    created_on_loop_->PostTask(FROM_HERE, callback);
 
-  if (connection_manager_.get()) {
+  if (connection_manager_.get())
     connection_manager_->TerminateAllIO();
-  }
 }
 
-void SyncManager::Shutdown() {
+void SyncManager::ShutdownOnSyncThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  data_->Shutdown();
+  data_->ShutdownOnSyncThread();
 }
 
-void SyncManager::SyncInternal::Shutdown() {
+void SyncManager::SyncInternal::ShutdownOnSyncThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Prevent any in-flight method calls from running.  Also
   // invalidates |weak_handle_this_|.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  // Automatically stops the scheduler.
   scheduler_.reset();
 
   SetJsEventHandler(WeakHandle<JsEventHandler>());

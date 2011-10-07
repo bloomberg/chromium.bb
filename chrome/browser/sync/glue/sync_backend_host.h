@@ -155,9 +155,15 @@ class SyncBackendHost {
   // *not* override an explicit passphrase set previously.
   void SetPassphrase(const std::string& passphrase, bool is_explicit);
 
+  // Called on |frontend_loop_| to kick off shutdown procedure. After this,
+  // no further sync activity will occur with the sync server and no further
+  // change applications will occur from changes already downloaded.
+  virtual void StopSyncingForShutdown();
+
   // Called on |frontend_loop_| to kick off shutdown.
   // |sync_disabled| indicates if syncing is being disabled or not.
   // See the implementation and Core::DoShutdown for details.
+  // Must be called *after* StopSyncingForShutdown.
   void Shutdown(bool sync_disabled);
 
   // Changes the set of data types that are currently being synced.
@@ -240,7 +246,12 @@ class SyncBackendHost {
  protected:
   // An enum representing the steps to initializing the SyncBackendHost.
   enum InitializationState {
-    NOT_INITIALIZED,        // Initialization hasn't completed.
+    NOT_ATTEMPTED,
+    CREATING_SYNC_MANAGER,  // We're waiting for the first callback from the
+                            // sync thread to inform us that the sync manager
+                            // has been created.
+    NOT_INITIALIZED,        // Initialization hasn't completed, but we've
+                            // constructed a SyncManager.
     DOWNLOADING_NIGORI,     // The SyncManager is initialized, but
                             // we're fetching encryption information.
     REFRESHING_ENCRYPTION,  // The SyncManager is initialized, and we
@@ -355,6 +366,7 @@ class SyncBackendHost {
     // 3) Destroy this Core. That will delete syncapi components in a
     //    safe order because the thread that was using them has exited
     //    (in step 2).
+    void DoStopSyncManagerForShutdown(const base::Closure& closure);
     void DoShutdown(bool stopping_sync);
 
     virtual void DoRequestConfig(
@@ -520,6 +532,10 @@ class SyncBackendHost {
   // Must be called on |frontend_loop_|.  |done_callback| is called on
   // |frontend_loop_|.
   void RefreshEncryption(const base::Closure& done_callback);
+
+  // Handles stopping the core's SyncManager, accounting for whether
+  // initialization is done yet.
+  void StopSyncManagerForShutdown(const base::Closure& closure);
 
   // A thread where all the sync operations happen.
   base::Thread sync_thread_;

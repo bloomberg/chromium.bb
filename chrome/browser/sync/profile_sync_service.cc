@@ -472,7 +472,18 @@ void ProfileSyncService::StartUp() {
 }
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {
-  // Stop all data type controllers, if needed.
+  // First, we spin down the backend and wait for it to stop syncing completely
+  // before we Stop the data type manager.  This is to avoid a late sync cycle
+  // applying changes to the sync db that wouldn't get applied via
+  // ChangeProcessors, leading to back-from-the-dead bugs.
+  if (backend_.get())
+    backend_->StopSyncingForShutdown();
+
+  // Stop all data type controllers, if needed.  Note that until Stop
+  // completes, it is possible in theory to have a ChangeProcessor apply a
+  // change from a native model.  In that case, it will get applied to the sync
+  // database (which doesn't get destroyed until we destroy the backend below)
+  // as an unsynced change.  That will be persisted, and committed on restart.
   if (data_type_manager_.get()) {
     if (data_type_manager_->state() != DataTypeManager::STOPPED) {
       // When aborting as part of shutdown, we should expect an aborted sync

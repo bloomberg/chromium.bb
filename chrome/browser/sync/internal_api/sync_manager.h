@@ -502,12 +502,19 @@ class SyncManager {
   // to the syncapi model.
   void SaveChanges();
 
-  // Requests the syncer to stop as soon as possible.  May be called
-  // from any thread.
-  void RequestEarlyExit();
+  // Initiates shutdown of various components in the sync engine.  Must be
+  // called from the main thread to allow preempting ongoing tasks on the sync
+  // loop (that may be blocked on I/O).  The semantics of |callback| are the
+  // same as with StartConfigurationMode. If provided and a scheduler / sync
+  // loop exists, it will be invoked from the sync loop by the scheduler to
+  // notify that all work has been flushed + cancelled, and it is idle.
+  // If no scheduler exists, the callback is run immediately (from the loop
+  // this was created on, which is the sync loop), as sync is effectively
+  // stopped.
+  void StopSyncingForShutdown(const base::Closure& callback);
 
-  // Issue a final SaveChanges, close sqlite handles, and stop running threads.
-  void Shutdown();
+  // Issue a final SaveChanges, and close sqlite handles.
+  void ShutdownOnSyncThread();
 
   // May be called from any thread.
   UserShare* GetUserShare() const;

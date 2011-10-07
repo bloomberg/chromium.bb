@@ -176,6 +176,9 @@ SyncScheduler::SyncScheduler(const std::string& name,
                              sessions::SyncSessionContext* context,
                              Syncer* syncer)
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_for_weak_handle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_handle_this_(MakeWeakHandle(
+          weak_ptr_factory_for_weak_handle_.GetWeakPtr())),
       name_(name),
       sync_loop_(MessageLoop::current()),
       started_(false),
@@ -195,7 +198,7 @@ SyncScheduler::SyncScheduler(const std::string& name,
 
 SyncScheduler::~SyncScheduler() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  Stop();
+  StopImpl(base::Closure());
 }
 
 void SyncScheduler::CheckServerConnectionManagerStatus(
@@ -238,12 +241,12 @@ void SyncScheduler::Start(Mode mode, const base::Closure& callback) {
   SVLOG(2) << "Start called from thread "
            << thread_name << " with mode " << GetModeString(mode);
   if (!started_) {
+    started_ = true;
     WatchConnectionManager();
     PostTask(FROM_HERE, "SendInitialSnapshot",
              base::Bind(&SyncScheduler::SendInitialSnapshot,
                         weak_ptr_factory_.GetWeakPtr()));
   }
-  started_ = true;
   PostTask(FROM_HERE, "StartImpl",
            base::Bind(&SyncScheduler::StartImpl,
                       weak_ptr_factory_.GetWeakPtr(), mode, callback));
@@ -387,6 +390,8 @@ void SyncScheduler::InitOrCoalescePendingJob(const SyncSessionJob& job) {
 
 bool SyncScheduler::ShouldRunJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK(started_);
+
   JobProcessDecision decision = DecideOnJob(job);
   SVLOG(2) << "Should run "
            << SyncSessionJob::GetPurposeString(job.purpose)
@@ -658,6 +663,11 @@ void SyncScheduler::PostTask(
     const tracked_objects::Location& from_here,
     const char* name, const base::Closure& task) {
   SVLOG_LOC(from_here, 3) << "Posting " << name << " task";
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  if (!started_) {
+    SVLOG(1) << "Not posting task as scheduler is stopped.";
+    return;
+  }
   sync_loop_->PostTask(from_here, task);
 }
 
@@ -666,6 +676,11 @@ void SyncScheduler::PostDelayedTask(
     const char* name, const base::Closure& task, int64 delay_ms) {
   SVLOG_LOC(from_here, 3) << "Posting " << name << " task with "
                           << delay_ms << " ms delay";
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  if (!started_) {
+    SVLOG(1) << "Not posting task as scheduler is stopped.";
+    return;
+  }
   sync_loop_->PostDelayedTask(from_here, task, delay_ms);
 }
 
@@ -981,13 +996,20 @@ TimeDelta SyncScheduler::GetRecommendedDelay(const TimeDelta& last_delay) {
   return TimeDelta::FromSeconds(backoff_s);
 }
 
-void SyncScheduler::RequestEarlyExit() {
+void SyncScheduler::RequestStop(const base::Closure& callback) {
   syncer_->RequestEarlyExit();  // Safe to call from any thread.
+  DCHECK(weak_handle_this_.IsInitialized());
+  SVLOG(3) << "Posting StopImpl";
+  weak_handle_this_.Call(FROM_HERE,
+                         &SyncScheduler::StopImpl,
+                         callback);
 }
 
-void SyncScheduler::Stop() {
+void SyncScheduler::StopImpl(const base::Closure& callback) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG(2) << "Stop called";
+  SVLOG(2) << "StopImpl called";
+
+  // Kill any in-flight method calls.
   weak_ptr_factory_.InvalidateWeakPtrs();
   wait_interval_.reset();
   poll_timer_.Stop();
@@ -995,6 +1017,8 @@ void SyncScheduler::Stop() {
     session_context_->connection_manager()->RemoveListener(this);
     started_ = false;
   }
+  if (!callback.is_null())
+    callback.Run();
 }
 
 void SyncScheduler::DoCanaryJob() {

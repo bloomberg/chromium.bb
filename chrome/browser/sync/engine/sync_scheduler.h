@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 
 class MessageLoop;
 
@@ -68,16 +69,13 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // |mode|.  Takes ownership of |callback|.
   void Start(Mode mode, const base::Closure& callback);
 
-  // Request that any running syncer task stop as soon as possible.
-  // This function can be called from any thread.  Stop must still be
-  // called to stop future schedule tasks.
-  //
-  // TODO(akalin): This function is awkward.  Find a better way to let
-  // the UI thread stop the syncer thread.
-  void RequestEarlyExit();
-
-  // Cancel all scheduled tasks.  Can be called even if already stopped.
-  void Stop();
+  // Request that any running syncer task stop as soon as possible and
+  // cancel all scheduled tasks. This function can be called from any thread,
+  // and should in fact be called from a thread that isn't the sync loop to
+  // allow preempting ongoing sync cycles.
+  // Invokes |callback| from the sync loop once syncer is idle and all tasks
+  // are cancelled.
+  void RequestStop(const base::Closure& callback);
 
   // The meat and potatoes.
   void ScheduleNudge(const base::TimeDelta& delay, NudgeSource source,
@@ -246,8 +244,8 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
 
   static const char* GetDecisionString(JobProcessDecision decision);
 
-  // Helpers that log before posting to |sync_loop_|.
-
+  // Helpers that log before posting to |sync_loop_|.  These will only post
+  // the task in between calls to Start/Stop.
   void PostTask(const tracked_objects::Location& from_here,
                 const char* name,
                 const base::Closure& task);
@@ -307,6 +305,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // 'Impl' here refers to real implementation of public functions, running on
   // |thread_|.
   void StartImpl(Mode mode, const base::Closure& callback);
+  void StopImpl(const base::Closure& callback);
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
@@ -360,6 +359,13 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   virtual void OnActionableError(const sessions::SyncSessionSnapshot& snapshot);
 
   base::WeakPtrFactory<SyncScheduler> weak_ptr_factory_;
+
+  // A second factory specially for weak_handle_this_, to allow the handle
+  // to be const and alleviate threading concerns.
+  base::WeakPtrFactory<SyncScheduler> weak_ptr_factory_for_weak_handle_;
+
+  // For certain methods that need to worry about X-thread posting.
+  const WeakHandle<SyncScheduler> weak_handle_this_;
 
   // Used for logging.
   const std::string name_;

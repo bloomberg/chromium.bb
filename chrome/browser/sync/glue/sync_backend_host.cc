@@ -59,7 +59,7 @@ using sync_api::SyncCredentials;
 
 SyncBackendHost::SyncBackendHost(const std::string& name, Profile* profile)
     : core_(new Core(name, ALLOW_THIS_IN_INITIALIZER_LIST(this))),
-      initialization_state_(NOT_INITIALIZED),
+      initialization_state_(NOT_ATTEMPTED),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
@@ -74,7 +74,7 @@ SyncBackendHost::SyncBackendHost(const std::string& name, Profile* profile)
 }
 
 SyncBackendHost::SyncBackendHost()
-    : initialization_state_(NOT_INITIALIZED),
+    : initialization_state_(NOT_ATTEMPTED),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(NULL),
@@ -112,7 +112,7 @@ void SyncBackendHost::Initialize(
                                             name_,
                                             profile_,
                                             sync_thread_.message_loop()));
-
+  initialization_state_ = CREATING_SYNC_MANAGER;
   InitCore(Core::DoInitializeOptions(
       sync_thread_.message_loop(),
       registrar_.get(),
@@ -160,26 +160,63 @@ void SyncBackendHost::SetPassphrase(const std::string& passphrase,
                         passphrase, is_explicit));
 }
 
-void SyncBackendHost::Shutdown(bool sync_disabled) {
+void SyncBackendHost::StopSyncManagerForShutdown(
+    const base::Closure& closure) {
+  DCHECK_GT(initialization_state_, NOT_ATTEMPTED);
+  if (initialization_state_ == CREATING_SYNC_MANAGER) {
+    // We post here to implicitly wait for the SyncManager to be created,
+    // if needed.  We have to wait, since we need to shutdown immediately,
+    // and we need to tell the SyncManager so it can abort any activity
+    // (net I/O, data application).
+    DCHECK(sync_thread_.IsRunning());
+    sync_thread_.message_loop()->PostTask(FROM_HERE,
+        base::Bind(
+            &SyncBackendHost::Core::DoStopSyncManagerForShutdown,
+            core_.get(),
+            closure));
+  } else {
+    core_->DoStopSyncManagerForShutdown(closure);
+  }
+}
+
+void SyncBackendHost::StopSyncingForShutdown() {
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   // Thread shutdown should occur in the following order:
   // - Sync Thread
   // - UI Thread (stops some time after we return from this call).
-  if (sync_thread_.IsRunning()) {  // Not running in tests.
-    if (core_->sync_manager()) {
-      core_->sync_manager()->RequestEarlyExit();
-    }
+  //
+  // In order to acheive this, we first shutdown components from the UI thread
+  // and send signals to abort components that may be busy on the sync thread.
+  // The callback (OnSyncerShutdownComplete) will happen on the sync thread,
+  // after which we'll shutdown components on the sync thread, and then be
+  // able to stop the sync loop.
+  if (sync_thread_.IsRunning()) {
+    StopSyncManagerForShutdown(
+        base::Bind(&SyncBackendRegistrar::OnSyncerShutdownComplete,
+                   base::Unretained(registrar_.get())));
+
+    // Before joining the sync_thread_, we wait for the UIModelWorker to
+    // give us the green light that it is not depending on the frontend_loop_
+    // to process any more tasks. Stop() blocks until this termination
+    // condition is true.
+    if (registrar_.get())
+      registrar_->StopOnUIThread();
+  } else {
+    // If the sync thread isn't running, then the syncer is effectively
+    // stopped.  Moreover, it implies that we never attempted initialization,
+    // so the registrar won't need stopping either.
+    DCHECK_EQ(NOT_ATTEMPTED, initialization_state_);
+    DCHECK(!registrar_.get());
+  }
+}
+
+void SyncBackendHost::Shutdown(bool sync_disabled) {
+  // TODO(tim): DCHECK(registrar_->StoppedOnUIThread()) would be nice.
+  if (sync_thread_.IsRunning()) {
     sync_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),
                           &SyncBackendHost::Core::DoShutdown,
                           sync_disabled));
-  }
-
-  // Before joining the sync_thread_, we wait for the UIModelWorker to
-  // give us the green light that it is not depending on the frontend_loop_ to
-  // process any more tasks. Stop() blocks until this termination condition
-  // is true.
-  if (registrar_.get()) {
-    registrar_->StopOnUIThread();
   }
 
   // Stop will return once the thread exits, which will be after DoShutdown
@@ -261,7 +298,7 @@ void SyncBackendHost::EnableEncryptEverything() {
 }
 
 bool SyncBackendHost::EncryptEverythingEnabled() const {
-  if (initialization_state_ == NOT_INITIALIZED) {
+  if (initialization_state_ <= NOT_INITIALIZED) {
     NOTREACHED() << "Cannot check encryption status without first "
                  << "initializing backend.";
     return false;
@@ -378,9 +415,6 @@ void SyncBackendHost::Core::OnSyncCycleCompleted(
 void SyncBackendHost::Core::OnInitializationComplete(
     const WeakHandle<JsBackend>& js_backend,
     bool success) {
-  if (!sync_loop_)
-    return;  // We may have been told to Shutdown before initialization
-             // completed.
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
   host_->frontend_loop_->PostTask(FROM_HERE,
@@ -614,14 +648,21 @@ void SyncBackendHost::Core::DoRefreshEncryption(
   done_callback.Run();
 }
 
+void SyncBackendHost::Core::DoStopSyncManagerForShutdown(
+    const base::Closure& closure) {
+  DCHECK(sync_manager_.get());
+  sync_manager_->StopSyncingForShutdown(closure);
+}
+
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  if (!sync_manager_.get())
+    return;
 
   save_changes_timer_.Stop();
-  sync_manager_->Shutdown();  // Stops the SyncerThread.
+  sync_manager_->ShutdownOnSyncThread();
   sync_manager_->RemoveObserver(this);
   sync_manager_.reset();
-  registrar_->OnSyncerShutdownComplete();
   registrar_ = NULL;
 
   if (sync_disabled)
@@ -815,8 +856,15 @@ void SyncBackendHost::Core::FinishConfigureDataTypesOnFrontendLoop() {
 
 void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     const WeakHandle<JsBackend>& js_backend, bool success) {
+  DCHECK_NE(NOT_ATTEMPTED, initialization_state_);
   if (!frontend_)
     return;
+
+  // We've at least created the sync manager at this point, but if that is all
+  // we've done we're just beginning the initialization process.
+  if (initialization_state_ == CREATING_SYNC_MANAGER)
+    initialization_state_ = NOT_INITIALIZED;
+
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   if (!success) {
     initialization_state_ = NOT_INITIALIZED;

@@ -143,6 +143,13 @@ class SyncSchedulerTest : public testing::Test {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  // This stops the scheduler synchronously.
+  void StopSyncScheduler() {
+    scheduler()->RequestStop(base::Bind(&SyncSchedulerTest::DoQuitLoopNow,
+                             weak_ptr_factory_.GetWeakPtr()));
+    RunLoop();
+  }
+
   bool GetBackoffAndResetTest() {
     syncable::ModelTypeBitSet nudge_types;
     StartSyncScheduler(SyncScheduler::NORMAL_MODE);
@@ -153,7 +160,8 @@ class SyncSchedulerTest : public testing::Test {
     RunLoop();
 
     bool backing_off = scheduler()->IsBackingOff();
-    scheduler()->Stop();
+    StopSyncScheduler();
+
     syncdb_.TearDown();
 
     Mock::VerifyAndClearExpectations(syncer());
@@ -577,7 +585,7 @@ TEST_F(SyncSchedulerTest, Polling) {
   // Run again to wait for polling.
   RunLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll_interval);
 }
 
@@ -599,7 +607,7 @@ TEST_F(SyncSchedulerTest, PollNotificationsDisabled) {
   // Run again to wait for polling.
   RunLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll_interval);
 }
 
@@ -624,7 +632,7 @@ TEST_F(SyncSchedulerTest, PollIntervalUpdate) {
   // Run again to wait for polling.
   RunLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll2);
 }
 
@@ -656,7 +664,7 @@ TEST_F(SyncSchedulerTest, SessionsCommitDelay) {
   RunLoop();
 
   EXPECT_EQ(delay2, scheduler()->sessions_commit_delay());
-  scheduler()->Stop();
+  StopSyncScheduler();
 }
 
 // Test that a sync session is run through to completion.
@@ -723,7 +731,7 @@ TEST_F(SyncSchedulerTest, ThrottlingExpires) {
   // Run again to wait for polling.
   RunLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
   AnalyzePollRun(records, kMinNumSamples, optimal_start, poll);
 }
 
@@ -927,7 +935,7 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
   // Run again to wait for polling.
   RunLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
 
   // Check for healthy polling after backoff is relieved.
   // Can't use AnalyzePollRun because first sync is a continuation. Bleh.
@@ -972,7 +980,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   // Pump again to run job.
   PumpLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
   Mock::VerifyAndClearExpectations(syncer());
 
   // ClearUserData.
@@ -985,7 +993,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   PumpLoop();
   PumpLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
   Mock::VerifyAndClearExpectations(syncer());
 
   // Configuration.
@@ -998,7 +1006,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   PumpLoop();
   PumpLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
   Mock::VerifyAndClearExpectations(syncer());
 
   // Cleanup disabled types.
@@ -1012,7 +1020,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   // schedules the job directly.
   PumpLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
   Mock::VerifyAndClearExpectations(syncer());
 
   // Poll.
@@ -1028,7 +1036,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   // Run again to wait for polling.
   RunLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
   Mock::VerifyAndClearExpectations(syncer());
 }
 
@@ -1071,7 +1079,7 @@ TEST_F(SyncSchedulerTest, SetsPreviousRoutingInfo) {
   // Pump again to run job.
   PumpLoop();
 
-  scheduler()->Stop();
+  StopSyncScheduler();
 
   EXPECT_TRUE(expected == context()->previous_session_routing_info());
 }
