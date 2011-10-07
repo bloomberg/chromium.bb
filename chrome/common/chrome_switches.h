@@ -246,7 +246,6 @@ extern const char kPurgeMemoryButton[];
 extern const char kReloadKilledTabs[];
 extern const char kRemoteDebuggingPort[];
 extern const char kRestoreLastSession[];
-extern const char kRestrictInstantToSearch[];
 extern const char kSbInfoURLPrefix[];
 extern const char kSbMacKeyURLPrefix[];
 extern const char kSbDisableAutoUpdate[];

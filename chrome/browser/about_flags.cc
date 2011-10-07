@@ -274,13 +274,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kMultiProfiles)
   },
   {
-    "restrict-instant-to-search",
-    IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_NAME,
-    IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kRestrictInstantToSearch)
-  },
-  {
     "preload-instant-search",
     IDS_FLAGS_PRELOAD_INSTANT_SEARCH_NAME,
     IDS_FLAGS_PRELOAD_INSTANT_SEARCH_DESCRIPTION,

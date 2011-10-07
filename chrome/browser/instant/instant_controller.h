@@ -14,7 +14,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/task.h"
-#include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -27,7 +26,6 @@
 struct AutocompleteMatch;
 class InstantDelegate;
 class InstantLoader;
-class InstantLoaderManager;
 class InstantTest;
 class PrefService;
 class Profile;
@@ -149,33 +147,12 @@ class InstantController : public InstantLoaderDelegate {
 
   // Returns true if the preview TabContents is ready to be displayed. In some
   // situations this may return false yet GetPreviewContents() returns non-NULL.
-  bool is_displayable() const { return displayable_loader_ != NULL; }
+  bool is_displayable() const { return is_displayable_; }
 
   // Returns the transition type of the last AutocompleteMatch passed to Update.
   PageTransition::Type last_transition_type() const {
     return last_transition_type_;
   }
-
-  // Returns true if we're showing results from a provider that supports the
-  // instant API. See description of |MightSupportInstant| for how this
-  // differs from actual loading state.
-  bool IsShowingInstant();
-
-  // Returns true if we're attempting to use the instant API with the last URL
-  // passed to |Update|. The value of this may change if it turns the provider
-  // doesn't really support the instant API.
-  // The value of |IsShowingInstant| indicates whether what is currently
-  // displayed supports instant, whereas this returns the loading state.  The
-  // state of |IsShowingInstant| differs when transitioning from a non-search
-  // provider to a search provider that supports instant (or the other way
-  // around). For example, if |Update| is passed www.foo.com, followed by a
-  // search string then this returns true, but |IsShowingInstant| returns false
-  // (until the search provider loads, then both return true).
-  bool MightSupportInstant();
-
-  // Returns the URL currently being loaded or shown if everything has finished
-  // loading.
-  GURL GetCurrentURL();
 
   // InstantLoaderDelegate
   virtual void InstantStatusChanged(InstantLoader* loader) OVERRIDE;
@@ -194,41 +171,10 @@ class InstantController : public InstantLoaderDelegate {
  private:
   friend class InstantTest;
 
-  enum PreviewCondition {
-    PREVIEW_CONDITION_SUCCESS,
-    PREVIEW_CONDITION_INVALID_TEMPLATE_URL,
-    PREVIEW_CONDITION_JAVASCRIPT_SCHEME,
-    PREVIEW_CONDITION_EXTENSION_KEYWORD,
-    PREVIEW_CONDITION_BLACKLISTED_HOST,
-    PREVIEW_CONDITION_BLACKLISTED_URL,
-    PREVIEW_CONDITION_INSTANT_SEARCH_ONLY,
-  };
-
   typedef std::set<std::string> HostBlacklist;
 
-  // Updates |displayable_loader_| and if necessary notifies the delegate.
-  void UpdateDisplayableLoader();
-
-  // Returns the TabContents of the pending loader (or NULL). This is only used
-  // for testing.
-  TabContentsWrapper* GetPendingPreviewContents();
-
-  // Returns true if we should update immediately.
-  bool ShouldUpdateNow(TemplateURLID instant_id, const GURL& url);
-
-  // Schedules a delayed update to load the specified url.
-  void ScheduleUpdate(const GURL& url);
-
-  // Invoked from the timer to process the last scheduled url.
-  void ProcessScheduledUpdate();
-
-  // Does the work of processing a change in the status (ready or
-  // http_status_ok) of a loader.
-  void ProcessInstantStatusChanged(InstantLoader* loader);
-
-  // Callback when the |show_timer_| fires. Invokes
-  // |ProcessInstantStatusChanged| with the appropriate arguments.
-  void ShowTimerFired();
+  // Updates |is_displayable_| and if necessary notifies the delegate.
+  void UpdateIsDisplayable();
 
   // Updates InstantLoaderManager and its current InstantLoader. This is invoked
   // internally from Update.
@@ -239,14 +185,15 @@ class InstantController : public InstantLoaderDelegate {
                     bool verbatim,
                     string16* suggested_text);
 
-  // Returns a PreviewCondition indicating why we might decide not to show a
-  // preview for |match|. If |match| has a TemplateURL that supports the instant
-  // API it is set in |template_url|.
-  PreviewCondition GetPreviewConditionFor(const AutocompleteMatch& match,
-                                          const TemplateURL** template_url);
+  // Returns true if instant should be used for the specified match. Instant is
+  // only used if |match| corresponds to the default search provider.
+  bool ShouldUseInstant(const AutocompleteMatch& match);
 
-  // Marks the specified search engine id as not supporting instant.
-  void BlacklistFromInstant(TemplateURLID id);
+  // Returns true if |template_url| is a valid TemplateURL for use by instant.
+  bool IsValidInstantTemplateURL(const TemplateURL* template_url);
+
+  // Marks the loader as not supporting instant.
+  void BlacklistFromInstant();
 
   // Returns true if the specified id has been blacklisted from supporting
   // instant.
@@ -273,8 +220,10 @@ class InstantController : public InstantLoaderDelegate {
   // See description above getter for details.
   bool is_active_;
 
-  // The loader that is ready to be displayed.
-  InstantLoader* displayable_loader_;
+  scoped_ptr<InstantLoader> loader_;
+
+  // True if |loader_| is ready to be displayed.
+  bool is_displayable_;
 
   // See description above setter.
   gfx::Rect omnibox_bounds_;
@@ -285,32 +234,17 @@ class InstantController : public InstantLoaderDelegate {
   // See description above getter.
   PageTransition::Type last_transition_type_;
 
-  scoped_ptr<InstantLoaderManager> loader_manager_;
-
   // The IDs of any search engines that don't support instant. We assume all
   // search engines support instant, but if we determine an engine doesn't
   // support instant it is added to this list. The list is cleared out on every
   // reset/commit.
   std::set<TemplateURLID> blacklisted_ids_;
 
-  // Timer used to delay calls to |UpdateLoader|.
-  base::OneShotTimer<InstantController> update_timer_;
-
-  // Timer used to delay showing loaders whose status isn't ok.
-  base::OneShotTimer<InstantController> show_timer_;
-
   // Used by ScheduleForDestroy; see it for details.
   ScopedRunnableMethodFactory<InstantController> destroy_factory_;
 
-  // URL last pased to ScheduleUpdate.
-  GURL scheduled_url_;
-
   // List of InstantLoaders to destroy. See ScheduleForDestroy for details.
   ScopedVector<InstantLoader> loaders_to_destroy_;
-
-  // The set of hosts that we don't use instant with. This is shared across all
-  // instances and only maintained for the current session.
-  static HostBlacklist* host_blacklist_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };

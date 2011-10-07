@@ -903,12 +903,6 @@ const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 // 'load completed' is sent to the ui_test.
 const char kRestoreLastSession[]            = "restore-last-session";
 
-// Restrict the automatic loading of web pages when typing in the omnibox to
-// only search pages, and disable it for all other types (URLs, history pages,
-// extensions, etc). Only has an effect if Instant is turned on (via "Enable
-// Instant for faster searching and browsing" in Preferences -> Basics).
-const char kRestrictInstantToSearch[]       = "restrict-instant-to-search";
-
 // URL prefix used by safebrowsing to fetch hash, download data and
 // report malware.
 const char kSbInfoURLPrefix[] = "safebrowsing-info-url-prefix";

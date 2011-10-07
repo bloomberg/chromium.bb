@@ -1446,8 +1446,6 @@
         'browser/instant/instant_loader.cc',
         'browser/instant/instant_loader.h',
         'browser/instant/instant_loader_delegate.h',
-        'browser/instant/instant_loader_manager.cc',
-        'browser/instant/instant_loader_manager.h',
         'browser/instant/instant_unload_handler.cc',
         'browser/instant/instant_unload_handler.h',
         'browser/instant/promo_counter.cc',

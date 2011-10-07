@@ -92,7 +92,9 @@ class InstantLoader : public NotificationObserver {
     return preview_contents_.get();
   }
 
-  // Returns true if the preview TabContents is ready to be shown.
+  // Returns true if the preview TabContents is ready to be shown. A non-instant
+  // loader is ready once the renderer paints, otherwise it isn't ready until we
+  // get a response back from the page.
   bool ready() const { return ready_; }
 
   // Returns true if the current load returned a 200.

@@ -9,7 +9,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_loader.h"
-#include "chrome/browser/instant/instant_loader_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -31,6 +30,65 @@
 
 #define EXPECT_STR_EQ(ascii, utf16) \
   EXPECT_EQ(ASCIIToWide(ascii), UTF16ToWide(utf16))
+
+#if defined(OS_LINUX)
+// These tests are disabled on linux because of http://crbug.com/80118 .
+#define MAYBE_OnChangeEvent DISABLED_OnChangeEvent
+#define MAYBE_SetSuggestionsArrayOfStrings DISABLED_SetSuggestionsArrayOfStrings
+#define MAYBE_SetSuggestionsEmptyArray DISABLED_SetSuggestionsEmptyArray
+#define MAYBE_SetSuggestionsValidJson DISABLED_SetSuggestionsValidJson
+#define MAYBE_SetSuggestionsInvalidSuggestions \
+    DISABLED_SetSuggestionsInvalidSuggestions
+#define MAYBE_SetSuggestionsEmptyJson DISABLED_SetSuggestionsEmptyJson
+#define MAYBE_SetSuggestionsEmptySuggestions \
+    DISABLED_SetSuggestionsEmptySuggestions
+#define MAYBE_SetSuggestionsEmptySuggestion \
+    DISABLED_SetSuggestionsEmptySuggestion
+#define MAYBE_ShowPreviewNonSearch DISABLED_ShowPreviewNonSearch
+#define MAYBE_NonSearchToSearch DISABLED_NonSearchToSearch
+#define MAYBE_ValidHeight DISABLED_ValidHeight
+#define MAYBE_OnSubmitEvent DISABLED_OnSubmitEvent
+#define MAYBE_OnCancelEvent DISABLED_OnCancelEvent
+#define MAYBE_InstantCompleteNever DISABLED_InstantCompleteNever
+#define MAYBE_InstantCompleteDelayed DISABLED_InstantCompleteDelayed
+#define MAYBE_DontCrashOnBlockedJS DISABLED_DontCrashOnBlockedJS
+#define MAYBE_DontPersistSearchbox DISABLED_DontPersistSearchbox
+#define MAYBE_PreloadsInstant DISABLED_PreloadsInstant
+#else
+#define MAYBE_OnChangeEvent OnChangeEvent
+#define MAYBE_SetSuggestionsArrayOfStrings SetSuggestionsArrayOfStrings
+#define MAYBE_SetSuggestionsEmptyArray SetSuggestionsEmptyArray
+#define MAYBE_SetSuggestionsValidJson SetSuggestionsValidJson
+#define MAYBE_SetSuggestionsInvalidSuggestions SetSuggestionsInvalidSuggestions
+#define MAYBE_SetSuggestionsEmptyJson SetSuggestionsEmptyJson
+#define MAYBE_SetSuggestionsEmptySuggestions SetSuggestionsEmptySuggestions
+#define MAYBE_SetSuggestionsEmptySuggestion SetSuggestionsEmptySuggestion
+#define MAYBE_ShowPreviewNonSearch ShowPreviewNonSearch
+#define MAYBE_NonSearchToSearch NonSearchToSearch
+#define MAYBE_ValidHeight ValidHeight
+#define MAYBE_OnSubmitEvent OnSubmitEvent
+#define MAYBE_OnCancelEvent OnCancelEvent
+#define MAYBE_InstantCompleteNever InstantCompleteNever
+#define MAYBE_InstantCompleteDelayed InstantCompleteDelayed
+#define MAYBE_DontCrashOnBlockedJS DontCrashOnBlockedJS
+#define MAYBE_DontPersistSearchbox DontPersistSearchbox
+#define MAYBE_PreloadsInstant PreloadsInstant
+#endif
+
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+// Showing as flaky on Mac and Linux.
+// http://crbug.com/70860
+#define MAYBE_SearchServerDoesntSupportInstant \
+    DISABLED_SearchServerDoesntSupportInstant
+#define MAYBE_NonSearchToSearchDoesntSupportInstant \
+    DISABLED_NonSearchToSearchDoesntSupportInstant
+#else
+#define MAYBE_SearchServerDoesntSupportInstant \
+    SearchServerDoesntSupportInstant
+#define MAYBE_NonSearchToSearchDoesntSupportInstant \
+    NonSearchToSearchDoesntSupportInstant
+#endif
+
 
 class InstantTest : public InProcessBrowserTest {
  public:
@@ -85,10 +143,6 @@ class InstantTest : public InProcessBrowserTest {
     ASSERT_TRUE(location_bar_);
   }
 
-  TabContentsWrapper* GetPendingPreviewContents() {
-    return browser()->instant()->GetPendingPreviewContents();
-  }
-
   // Type a character to get instant to trigger.
   void SetupLocationBar() {
     FindLocationBar();
@@ -98,11 +152,10 @@ class InstantTest : public InProcessBrowserTest {
   }
 
   // Waits for preview to be shown.
-  void WaitForPreviewToNavigate(bool use_current) {
+  void WaitForPreviewToNavigate() {
     InstantController* instant = browser()->instant();
     ASSERT_TRUE(instant);
-    TabContentsWrapper* tab = use_current ?
-        instant->GetPreviewContents() : GetPendingPreviewContents();
+    TabContentsWrapper* tab = instant->GetPreviewContents();
     ASSERT_TRUE(tab);
     preview_ = tab->tab_contents();
     ASSERT_TRUE(preview_);
@@ -112,9 +165,8 @@ class InstantTest : public InProcessBrowserTest {
   // Wait for instant to load and ensure it is in the state we expect.
   void SetupPreview() {
     // Wait for the preview to navigate.
-    WaitForPreviewToNavigate(true);
+    WaitForPreviewToNavigate();
 
-    ASSERT_TRUE(browser()->instant()->IsShowingInstant());
     ASSERT_FALSE(browser()->instant()->is_displayable());
     ASSERT_TRUE(browser()->instant()->is_active());
 
@@ -134,8 +186,12 @@ class InstantTest : public InProcessBrowserTest {
   }
 
   const string16& GetSuggestion() const {
-    return browser()->instant()->loader_manager_->
-        current_loader()->complete_suggested_text_;
+    return browser()->instant()->loader_->complete_suggested_text_;
+  }
+
+  GURL GetCurrentURL() {
+    return browser()->instant()->loader_.get() ?
+        browser()->instant()->loader_.get()->url() : GURL();
   }
 
   void SendKey(ui::KeyboardCode key) {
@@ -308,10 +364,6 @@ class InstantTest : public InProcessBrowserTest {
         CheckBoolValueFromJavascript(true, "true", tab->tab_contents()));
   }
 
-  InstantLoaderManager* manager() const {
-    return browser()->instant()->loader_manager_.get();
-  }
-
  protected:
   LocationBar* location_bar_;
   TabContents* preview_;
@@ -326,12 +378,7 @@ class InstantTest : public InProcessBrowserTest {
 // - Test resize events.
 
 // Verify that the onchange event is dispatched upon typing in the box.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnChangeEvent) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
-#endif  // !OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -351,19 +398,14 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_TRUE(default_turl->url());
   EXPECT_EQ(default_turl->url()->ReplaceSearchTerms(
                 *default_turl, ASCIIToUTF16("defghi"), 0, string16()),
-            browser()->instant()->GetCurrentURL().spec());
+            GetCurrentURL().spec());
 
   // Check that the value is reflected and onchange is called.
   EXPECT_EQ("true 0 0 1 true d false def false 3 3",
             GetSearchStateAsString(preview_, true));
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsArrayOfStrings) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SetSuggestionsArrayOfStrings) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -375,12 +417,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
   EXPECT_STR_EQ("defgh", GetSuggestion());
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsEmptyArray) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SetSuggestionsEmptyArray) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -392,12 +429,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsValidJson) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsValidJson) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SetSuggestionsValidJson) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -411,12 +443,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsValidJson) {
   EXPECT_STR_EQ("defghij", GetSuggestion());
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsInvalidSuggestions) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SetSuggestionsInvalidSuggestions) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -430,12 +457,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsEmptyJson) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyJson) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SetSuggestionsEmptyJson) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -447,12 +469,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyJson) {
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsEmptySuggestions) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestions) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SetSuggestionsEmptySuggestions) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -464,12 +481,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestions) {
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_SetSuggestionsEmptySuggestion) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestion) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SetSuggestionsEmptySuggestion) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -481,117 +493,77 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestion) {
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
-// Verify instant preview is shown correctly for a non-search query.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_ShowPreviewNonSearch) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, ShowPreviewNonSearch) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_ShowPreviewNonSearch) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   GURL url(test_server()->GetURL("files/instant/empty.html"));
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(url.spec()));
-  // The preview should be active and showing.
-  ASSERT_TRUE(browser()->instant()->is_active());
-  ASSERT_TRUE(browser()->instant()->is_displayable());
-  ASSERT_TRUE(browser()->instant()->IsCurrent());
-  ASSERT_TRUE(browser()->instant()->GetPreviewContents());
-  RenderWidgetHostView* rwhv =
-      browser()->instant()->GetPreviewContents()->tab_contents()->
-      GetRenderWidgetHostView();
-  ASSERT_TRUE(rwhv);
-  ASSERT_TRUE(rwhv->IsShowing());
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
+
+  // The preview should not be active or showing.
+  ASSERT_FALSE(browser()->instant()->is_active());
+  ASSERT_FALSE(browser()->instant()->is_displayable());
+  ASSERT_FALSE(browser()->instant()->IsCurrent());
+  ASSERT_EQ(NULL, browser()->instant()->GetPreviewContents());
 }
 
 // Transition from non-search to search and make sure everything is shown
 // correctly.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_NonSearchToSearch) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NonSearchToSearch) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   GURL url(test_server()->GetURL("files/instant/empty.html"));
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(url.spec()));
-  // The preview should be active and showing.
-  ASSERT_TRUE(browser()->instant()->is_active());
-  ASSERT_TRUE(browser()->instant()->is_displayable());
-  TabContentsWrapper* initial_tab = browser()->instant()->GetPreviewContents();
-  ASSERT_TRUE(initial_tab);
-  RenderWidgetHostView* rwhv =
-      initial_tab->tab_contents()->GetRenderWidgetHostView();
-  ASSERT_TRUE(rwhv);
-  ASSERT_TRUE(rwhv->IsShowing());
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
+  // The preview not should be active and not showing.
+  ASSERT_FALSE(browser()->instant()->is_active());
+  ASSERT_FALSE(browser()->instant()->is_displayable());
+  ASSERT_EQ(NULL, browser()->instant()->GetPreviewContents());
 
   // Now type in some search text.
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("def"));
 
   // Wait for the preview to navigate.
-  ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate(false));
+  ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate());
 
   // The controller is still determining if the provider really supports
-  // instant. As a result the tabcontents should not have changed.
+  // instant.
   TabContentsWrapper* current_tab = browser()->instant()->GetPreviewContents();
-  ASSERT_EQ(current_tab, initial_tab);
-  // The preview should still be showing.
-  rwhv = current_tab->tab_contents()->GetRenderWidgetHostView();
-  ASSERT_TRUE(rwhv);
-  ASSERT_TRUE(rwhv->IsShowing());
+  ASSERT_TRUE(current_tab);
 
-  // Use MightSupportInstant as the controller is still determining if the
-  // page supports instant and hasn't actually commited yet.
-  EXPECT_TRUE(browser()->instant()->MightSupportInstant());
-
-  // Instant should still be active.
+  // Instant should be active.
   EXPECT_TRUE(browser()->instant()->is_active());
-  EXPECT_TRUE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
 
   // Because we're waiting on the page, instant isn't current.
   ASSERT_FALSE(browser()->instant()->IsCurrent());
 
   // Bounce a message to the renderer so that we know the instant has gotten a
   // response back from the renderer as to whether the page supports instant.
-  ASSERT_NO_FATAL_FAILURE(
-      WaitForMessageToBeProcessedByRenderer(GetPendingPreviewContents()));
+  ASSERT_NO_FATAL_FAILURE(WaitForMessageToBeProcessedByRenderer(current_tab));
 
   // Reset the user text so that the page is told the text changed. We should be
   // able to nuke this once 66104 is fixed.
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("defg"));
 
   // Wait for the renderer to process it.
-  ASSERT_NO_FATAL_FAILURE(
-      WaitForMessageToBeProcessedByRenderer(GetPendingPreviewContents()));
+  ASSERT_NO_FATAL_FAILURE(WaitForMessageToBeProcessedByRenderer(current_tab));
 
   // We should have gotten a response back from the renderer that resulted in
   // committing.
-  ASSERT_FALSE(GetPendingPreviewContents());
   ASSERT_TRUE(browser()->instant()->is_active());
   ASSERT_TRUE(browser()->instant()->is_displayable());
   TabContentsWrapper* new_tab = browser()->instant()->GetPreviewContents();
   ASSERT_TRUE(new_tab);
-  ASSERT_NE(new_tab, initial_tab);
   RenderWidgetHostView* new_rwhv =
       new_tab->tab_contents()->GetRenderWidgetHostView();
   ASSERT_TRUE(new_rwhv);
-  ASSERT_NE(new_rwhv, rwhv);
   ASSERT_TRUE(new_rwhv->IsShowing());
 }
 
 // Makes sure that if the server doesn't support the instant API we don't show
 // anything.
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-// Showing as flaky on Mac and Linux.
-// http://crbug.com/70860
-#define MAYBE_SearchServerDoesntSupportInstant \
-    DISABLED_SearchServerDoesntSupportInstant
-#else
-#define MAYBE_SearchServerDoesntSupportInstant \
-    SearchServerDoesntSupportInstant
-#endif
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
@@ -604,9 +576,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
 
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
   ASSERT_TRUE(browser()->instant());
-  // Because we typed in a search string we should think we're showing instant
-  // results.
-  EXPECT_TRUE(browser()->instant()->IsShowingInstant());
   // But because we're waiting to determine if the page really supports instant
   // we shouldn't be showing the preview.
   EXPECT_FALSE(browser()->instant()->is_displayable());
@@ -616,7 +585,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
   // When the response comes back that the page doesn't support instant the tab
   // should be closed.
   tab_closed_observer.Wait();
-  EXPECT_FALSE(browser()->instant()->IsShowingInstant());
   EXPECT_FALSE(browser()->instant()->is_displayable());
   EXPECT_TRUE(browser()->instant()->is_active());
   EXPECT_FALSE(browser()->instant()->IsCurrent());
@@ -630,37 +598,23 @@ IN_PROC_BROWSER_TEST_F(InstantTest, CrashUrlCancelsInstant) {
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("chrome://crash"));
   ASSERT_TRUE(browser()->instant());
-  EXPECT_FALSE(browser()->instant()->IsShowingInstant());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
 }
 
 // Verifies transitioning from loading a non-search string to a search string
 // with the provider not supporting instant works (meaning we don't display
 // anything).
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-// Showing as flaky on Mac and Linux/ChromeOS
-// http://crbug.com/70810
-#define MAYBE_NonSearchToSearchDoesntSupportInstant \
-    DISABLED_NonSearchToSearchDoesntSupportInstant
-#else
-#define MAYBE_NonSearchToSearchDoesntSupportInstant \
-    NonSearchToSearchDoesntSupportInstant
-#endif
 IN_PROC_BROWSER_TEST_F(InstantTest,
                        MAYBE_NonSearchToSearchDoesntSupportInstant) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   GURL url(test_server()->GetURL("files/instant/empty.html"));
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(url.spec()));
-  // The preview should be active and showing.
-  ASSERT_TRUE(browser()->instant()->is_displayable());
-  ASSERT_TRUE(browser()->instant()->is_active());
-  TabContentsWrapper* initial_tab = browser()->instant()->GetPreviewContents();
-  ASSERT_TRUE(initial_tab);
-  RenderWidgetHostView* rwhv =
-      initial_tab->tab_contents()->GetRenderWidgetHostView();
-  ASSERT_TRUE(rwhv);
-  ASSERT_TRUE(rwhv->IsShowing());
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
+  // The preview should not be showing or active.
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(browser()->instant()->is_active());
 
   ui_test_utils::WindowedNotificationObserver tab_closed_observer(
       content::NOTIFICATION_TAB_CLOSED,
@@ -669,31 +623,24 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   // Now type in some search text.
   location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
 
-  // Instant should still be live.
-  ASSERT_TRUE(browser()->instant()->is_displayable());
+  // Instant should be active.
   ASSERT_TRUE(browser()->instant()->is_active());
-  // Because we typed in a search string we should think we're showing instant
-  // results.
-  EXPECT_TRUE(browser()->instant()->MightSupportInstant());
   // Instant should not be current (it's still loading).
   EXPECT_FALSE(browser()->instant()->IsCurrent());
 
   // When the response comes back that the page doesn't support instant the tab
   // should be closed.
   tab_closed_observer.Wait();
-  EXPECT_FALSE(browser()->instant()->IsShowingInstant());
   EXPECT_FALSE(browser()->instant()->is_displayable());
   // But because the omnibox is still open, instant should be active.
-  ASSERT_TRUE(browser()->instant()->is_active());
+  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(browser()->instant()->IsCurrent());
+  EXPECT_EQ(NULL, browser()->instant()->GetPreviewContents());
 }
 
 // Verifies the page was told a non-zero height.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_ValidHeight) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_ValidHeight) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -717,51 +664,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
   EXPECT_GT(height, 0);
 }
 
-// Verifies that if the server returns a 403 we don't show the preview and
-// query the host again.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_HideOn403) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
-#endif  // OS_LINUX
-  ASSERT_TRUE(test_server()->Start());
-  EnableInstant();
-  GURL url(test_server()->GetURL("files/instant/403.html"));
-  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
-
-  ui_test_utils::WindowedNotificationObserver tab_closed_observer(
-      content::NOTIFICATION_TAB_CLOSED,
-      NotificationService::AllSources());
-
-  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
-  // The preview shouldn't be showing, but it should be loading.
-  ASSERT_TRUE(browser()->instant()->GetPreviewContents());
-  ASSERT_TRUE(browser()->instant()->is_active());
-  ASSERT_FALSE(browser()->instant()->is_displayable());
-
-  // When instant sees the 403, it should close the tab.
-  tab_closed_observer.Wait();
-  ASSERT_FALSE(browser()->instant()->GetPreviewContents());
-  ASSERT_TRUE(browser()->instant()->is_active());
-  ASSERT_FALSE(browser()->instant()->is_displayable());
-
-  // Try loading another url on the server. Instant shouldn't create a new tab
-  // as the server returned 403.
-  GURL url2(test_server()->GetURL("files/instant/empty.html"));
-  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url2.spec()));
-  ASSERT_FALSE(browser()->instant()->GetPreviewContents());
-  ASSERT_TRUE(browser()->instant()->is_active());
-  ASSERT_FALSE(browser()->instant()->is_displayable());
-}
-
 // Verify that the onsubmit event is dispatched upon pressing enter.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnSubmitEvent) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
-#endif  // !OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnSubmitEvent) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -793,12 +697,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 }
 
 // Verify that the oncancel event is dispatched upon losing focus.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnCancelEvent) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
-#endif  // !OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnCancelEvent) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -811,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
                                                      VIEW_ID_TAB_CONTAINER));
 
-  // Check that the preview contents have been committed.
+  // Check that the preview contents has been committed.
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());
   ASSERT_FALSE(browser()->instant()->is_active());
   TabContents* contents = browser()->GetSelectedTabContents();
@@ -826,12 +725,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
             GetSearchStateAsString(preview_, false));
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_InstantCompleteNever) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteNever) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_InstantCompleteNever) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -849,11 +743,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteNever) {
 }
 
 // DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_InstantCompleteDelayed) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteDelayed) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_InstantCompleteDelayed) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -871,12 +761,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantCompleteDelayed) {
 }
 
 // Make sure the renderer doesn't crash if javascript is blocked.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_DontCrashOnBlockedJS) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DontCrashOnBlockedJS) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
   ASSERT_TRUE(test_server()->Start());
@@ -893,60 +778,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontCrashOnBlockedJS) {
   // As long as we get the notification we're good (the renderer didn't crash).
 }
 
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_DownloadOnEnter) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, DownloadOnEnter) {
-#endif  // OS_LINUX
-  ASSERT_TRUE(test_server()->Start());
-  EnableInstant();
-  // Make sure the browser window is the front most window.
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
-  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
-  GURL url(test_server()->GetURL("files/instant/empty.html"));
-  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
-  printf("0\n");
-  ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate(true));
-  url = test_server()->GetURL("files/instant/download.zip");
-
-  ui_test_utils::WindowedNotificationObserver load_fail_observer(
-      content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-      NotificationService::AllSources());
-  location_bar_->location_entry()->SetUserText(UTF8ToUTF16(url.spec()));
-  // Wait for the load to fail (because instant disables downloads).
-  printf("1\n");
-  load_fail_observer.Wait();
-
-  printf("2\n");
-  ui_test_utils::WindowedNotificationObserver download_observer(
-      chrome::NOTIFICATION_DOWNLOAD_INITIATED,
-      NotificationService::AllSources());
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
-  printf("3\n");
-  download_observer.Wait();
-  printf("4\n");
-
-  // And we should end up at about:blank.
-  TabContents* contents = browser()->GetSelectedTabContents();
-  ASSERT_TRUE(contents);
-  EXPECT_EQ("about:blank",
-            contents->controller().GetLastCommittedEntry()->url().spec());
-  if (contents->controller().pending_entry()) {
-    // If there is a pending entry, the url should correspond to the download.
-    EXPECT_EQ(url.spec(),
-              contents->controller().pending_entry()->url().spec());
-  }
-}
-
 // Makes sure window.chrome.searchbox doesn't persist when a new page is loaded.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_DontPersistSearchbox) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, DontPersistSearchbox) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DontPersistSearchbox) {
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -977,72 +810,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontPersistSearchbox) {
   EXPECT_TRUE(result);
 }
 
-// Verify that when the TabContents has a pending RenderViewHost, we won't use
-// the Instant TabContents.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_PendingRenderViewHost) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, PendingRenderViewHost) {
-#endif  // OS_LINUX
-  ASSERT_TRUE(test_server()->Start());
-  EnableInstant();
-
-  // Open and load URL.
-  GURL url(test_server()->GetURL("files/instant/empty.html"));
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(url.spec()));
-
-  // Check that we have a preview TabContents.
-  ASSERT_TRUE(browser()->instant());
-  TabContentsWrapper* preview_contents_wrapper =
-      browser()->instant()->GetPreviewContents();
-  ASSERT_TRUE(preview_contents_wrapper);
-  ASSERT_TRUE(preview_contents_wrapper->tab_contents());
-
-  // Enter "chrome://about" in the location bar, as it will trigger a cross-site
-  // navigation in Instant's TabContents.
-  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
-  location_bar_->location_entry()->SetUserText(
-      ASCIIToUTF16(chrome::kChromeUIAboutURL));
-
-  // Check that we reused the same Instant TabContentsWrapper.
-  ASSERT_TRUE(browser()->instant());
-  ASSERT_EQ(preview_contents_wrapper,
-            browser()->instant()->GetPreviewContents());
-
-  // Check that a new site instance is pending, indicating a cross-site
-  // navigation that has yet to complete.
-  ASSERT_NE(preview_contents_wrapper->tab_contents()->GetSiteInstance(),
-            preview_contents_wrapper->tab_contents()->GetPendingSiteInstance());
-
-  // We want to be able to wait until the old TabContents has navigated to
-  // the about page.  Since we navigate while the preview still has a pending
-  // RenderView, the navigation will occur in the original TabContents instead.
-  TabContents* contents = browser()->GetSelectedTabContents();
-  ui_test_utils::WindowedNotificationObserver notification_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(&contents->controller()));
-
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
-
-  // Check that we did not swap in the Instant TabContents, but destroyed it
-  // instead.
-  ASSERT_EQ(browser()->GetSelectedTabContents(), contents);
-  ASSERT_FALSE(browser()->instant()->GetPreviewContents());
-  ASSERT_FALSE(browser()->instant()->is_active());
-
-  // Make sure we navigated to the correct URL.
-  notification_observer.Wait();
-  EXPECT_EQ(contents->GetURL().spec(), std::string(chrome::kChromeUIAboutURL));
-}
-
 // Tests that instant search is preloaded whenever the omnibox gets focus.
-// DISABLED http://crbug.com/80118
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_PreloadsInstant) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, PreloadsInstant) {
-#endif  // OS_LINUX
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_PreloadsInstant) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kPreloadInstantSearch);
 
@@ -1056,8 +825,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PreloadsInstant) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
 
-  // Verify that there are no instant loaders initially.
-  EXPECT_TRUE(!manager() || !manager()->num_instant_loaders());
+  // Verify that there is no previews contents.
+  EXPECT_EQ(NULL, browser()->instant()->GetPreviewContents());
 
   ui_test_utils::WindowedNotificationObserver instant_support_observer(
       chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
@@ -1066,37 +835,27 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PreloadsInstant) {
   // Focusing the omnibox should cause instant to be preloaded.
   FindLocationBar();
   location_bar_->FocusLocation(false);
-  ASSERT_TRUE(manager());
-  EXPECT_EQ(1u, manager()->num_instant_loaders());
-
-  // Stash a pointer to the instant loader for use below.
-  InstantLoader* loader = manager()->GetInstantLoader(template_url_id_);
-  ASSERT_TRUE(loader);
+  TabContentsWrapper* tab_contents = browser()->instant()->GetPreviewContents();
+  EXPECT_TRUE(tab_contents);
+  EXPECT_FALSE(browser()->instant()->is_active());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
 
   instant_support_observer.Wait();
 
   // However, instant should still not be active.
   EXPECT_FALSE(browser()->instant()->is_active());
   EXPECT_FALSE(browser()->instant()->is_displayable());
-  EXPECT_FALSE(browser()->instant()->IsShowingInstant());
-  EXPECT_FALSE(browser()->instant()->MightSupportInstant());
 
-  // Adding a new tab shouldn't delete (or recreate) the loader, since the
-  // omnibox doesn't lose focus. Comparing pointers is not the best way to
-  // assert this, but short of hooking the loader constructor or destructor,
-  // there seems to be no cleaner way.
+  // Adding a new tab shouldn't delete (or recreate) the TabContentsWrapper.
   AddBlankTabAndShow(browser());
-  EXPECT_EQ(loader, manager()->GetInstantLoader(template_url_id_));
+  EXPECT_EQ(tab_contents, browser()->instant()->GetPreviewContents());
 
   // Doing a search should still use the same loader for the preview.
   SetLocationBarText("def");
-  EXPECT_EQ(loader, manager()->GetInstantLoader(template_url_id_));
-  EXPECT_EQ(loader, manager()->current_loader());
+  EXPECT_EQ(tab_contents, browser()->instant()->GetPreviewContents());
 
   // Verify that the preview is in fact showing instant search.
   EXPECT_TRUE(browser()->instant()->is_active());
   EXPECT_TRUE(browser()->instant()->is_displayable());
-  EXPECT_TRUE(browser()->instant()->IsShowingInstant());
-  EXPECT_TRUE(browser()->instant()->MightSupportInstant());
   EXPECT_TRUE(browser()->instant()->IsCurrent());
 }

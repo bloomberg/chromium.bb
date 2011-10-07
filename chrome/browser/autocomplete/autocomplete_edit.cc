@@ -221,8 +221,9 @@ void AutocompleteEditModel::OnChanged() {
                             prerender::GetOmniboxHistogramSuffix(),
                             recommended_action,
                             NetworkActionPredictor::LAST_PREDICT_ACTION);
-  bool might_support_instant = false;
-  if (!DoInstant(current_match, &suggested_text, &might_support_instant)) {
+  if (DoInstant(current_match, &suggested_text)) {
+    SetSuggestedText(suggested_text, instant_complete_behavior_);
+  } else {
     // Ignore the recommended action if Omnibox prerendering is not enabled.
     if (!prerender::IsOmniboxEnabled(profile_))
       recommended_action = NetworkActionPredictor::ACTION_NONE;
@@ -240,16 +241,12 @@ void AutocompleteEditModel::OnChanged() {
         NOTREACHED() << "Unexpected recommended action: " << recommended_action;
         break;
     }
-  }
 
-  if (!might_support_instant) {
     // Hide any suggestions we might be showing.
     view_->SetInstantSuggestion(string16(), false);
 
     // No need to wait any longer for instant.
     FinalizeInstantQuery(string16(), string16(), false);
-  } else {
-    SetSuggestedText(suggested_text, instant_complete_behavior_);
   }
 
   controller_->OnChanged();
@@ -981,12 +978,8 @@ bool AutocompleteEditModel::ShouldAllowExactKeywordMatch(
 }
 
 bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
-                                      string16* suggested_text,
-                                      bool* might_support_instant) {
+                                      string16* suggested_text) {
   DCHECK(suggested_text);
-  DCHECK(might_support_instant);
-
-  *might_support_instant = false;
 
   if (in_revert_)
     return false;
@@ -1001,19 +994,8 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
   if (!tab)
     return false;
 
-  // The destination is typically the current URL when the user presses the
-  // down arrow in the omnibox, in which case we shouldn't load a preview.
-  bool instant_is_active = false;
-  if (user_input_in_progress() && popup_->IsOpen() &&
-      match.destination_url != PermanentURL()) {
-    instant_is_active = instant->Update(tab, match, view_->GetText(),
-                                        UseVerbatimInstant(), suggested_text);
-  } else {
-    instant->DestroyPreviewContentsAndLeaveActive();
-  }
-
-  *might_support_instant = instant->MightSupportInstant();
-  return instant_is_active;
+  return instant->Update(tab, match, view_->GetText(), UseVerbatimInstant(),
+                         suggested_text);
 }
 
 void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {

@@ -1350,7 +1350,6 @@
         'browser/importer/importer_unittest.cc',
         'browser/importer/safari_importer_unittest.mm',
         'browser/importer/toolbar_importer_unittest.cc',
-        'browser/instant/instant_loader_manager_unittest.cc',
         'browser/instant/promo_counter_unittest.cc',
         'browser/intents/register_intent_handler_infobar_delegate_unittest.cc',
         'browser/intents/web_intents_registry_unittest.cc',

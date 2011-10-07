@@ -4515,12 +4515,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MULTI_PROFILES_DESCRIPTION" desc="Description for the flag to enable multiprofile support">
         Associates every browser window with a profile, and adds a profile switcher in the upper right corner. Every profile has its own bookmarks, extensions, apps, etc.
       </message>
-      <message name="IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_NAME" desc="Title for the flag to restrict Instant to search">
-        Restrict Instant To Search
-      </message>
-      <message name="IDS_FLAGS_RESTRICT_INSTANT_TO_SEARCH_DESCRIPTION" desc="Description for the flag to restrict Instant to search">
-        Restrict Instant to loading only search pages.
-      </message>
       <message name="IDS_FLAGS_PRELOAD_INSTANT_SEARCH_NAME" desc="Title for the flag to preload Instant search">
         Preload Instant Search
       </message>
@@ -4659,13 +4653,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         No thanks
       </message>
       <message name="IDS_INSTANT_OPT_IN_LABEL" desc="Label shown in the omnibox dropdown for enabling instant">
-        Enable Instant for faster searching and browsing?
+        Enable Instant for faster searching?
       </message>
       <message name="IDS_INSTANT_OPT_IN_MESSAGE" desc="Message shown in the instant opt-in dialog">
-        With Instant enabled, most webpages begin loading as soon as you type a URL in the omnibox, before you hit Enter. In addition, if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.\n\nBecause search results are requested even while you're typing your query, your default search engine may be logging these as search queries.\n
+        With Instant enabled and if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.\n\nBecause search results are requested even while you're typing your query, your default search engine may be logging these as search queries.\n
       </message>
       <message name="IDS_INSTANT_PREF" desc="Preference for enabling instant">
-        Enable Instant for faster searching and browsing
+        Enable Instant for faster searching
       </message>
       <message name="IDS_INSTANT_PREF_WARNING" desc="Warning displayed beneath instant pref">
         Omnibox input may be logged

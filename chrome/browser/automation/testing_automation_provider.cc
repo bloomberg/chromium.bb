@@ -3518,7 +3518,7 @@ void TestingAutomationProvider::GetInstantInfo(Browser* browser,
   if (browser->instant()) {
     InstantController* instant = browser->instant();
     info->SetBoolean("enabled", true);
-    info->SetBoolean("showing", instant->IsShowingInstant());
+    info->SetBoolean("showing", instant->is_displayable());
     info->SetBoolean("active", instant->is_active());
     info->SetBoolean("current", instant->IsCurrent());
     if (instant->GetPreviewContents() &&
