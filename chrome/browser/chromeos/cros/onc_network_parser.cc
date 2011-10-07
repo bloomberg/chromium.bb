@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "content/common/json_value_serializer.h"
+#include "base/json/json_value_serializer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
