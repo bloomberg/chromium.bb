@@ -52,6 +52,12 @@ echo @@@BUILD_STEP compile_toolchain@@@
       ( cd SRC/gcc/gcc ; git add $(basename $file) )
     done
     make patches
+    for patchname in SRC/*.patch ; do
+      xz -k -9 "$patchname"
+      bzip2 -k -9 "$patchname"
+      gzip -9 "$patchname"
+      zcat "$patchname".gz > "$patchname"
+    done
     mkdir linux
     cp -aiv {SRC/linux-headers-for-nacl/include/,}linux/getcpu.h
     cp -aiv {../src/untrusted/include/machine/,}_default_types.h
@@ -130,7 +136,7 @@ else
   done
   for patch in \
       tools/nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
-      tools/SRC/*.patch ; do
+      tools/SRC/*.patch* ; do
     filename="${patch#tools/}"
     filename="${filename#SRC/}"
     $GSUTIL -h Cache-Control:no-cache cp -a public-read \

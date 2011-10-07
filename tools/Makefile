@@ -964,8 +964,8 @@ $(patch-list): SRC/%.patch:
 	basename=$${package/-*-r*} && \
 	cd SRC/$${basename} && \
 	  git diff --patience --patch-with-stat --no-renames \
-	    --src-prefix=$${package/-r*}/ \
-	    --dst-prefix=nacl$$package/ \
+	    --src-prefix=$$basename/ \
+	    --dst-prefix=$$basename/ \
 	    $(NACL_$(shell n=$@ ; n=$${n#SRC/nacl} ; echo $${n/-*-r*/} | \
 	             tr '[:lower:]-' '[:upper:]_')_GIT_BASE) \
 	    > ../../$@
