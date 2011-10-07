@@ -26,12 +26,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/background_printing_manager.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
-#include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
+#include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -128,8 +128,7 @@ void mark_lpoptions(const std::string& printer_name, ppd_file_t** ppd) {
 
   std::vector<FilePath> file_locations;
   file_locations.push_back(FilePath(kSystemLpOptionPath));
-  file_locations.push_back(FilePath(
-      file_util::GetHomeDir().Append(kUserLpOptionPath)));
+  file_locations.push_back(file_util::GetHomeDir().Append(kUserLpOptionPath));
 
   for (std::vector<FilePath>::const_iterator it = file_locations.begin();
        it != file_locations.end(); ++it) {
@@ -1064,9 +1063,7 @@ void PrintPreviewHandler::ClosePrintPreviewTab() {
 }
 
 void PrintPreviewHandler::OnPrintDialogShown() {
-  static_cast<RenderViewHostDelegate*>(
-      GetInitiatorTab()->tab_contents())->Activate();
-  ClosePrintPreviewTab();
+  ActivateInitiatorTabAndClosePreviewTab();
 }
 
 void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {

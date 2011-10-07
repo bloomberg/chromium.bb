@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_MESSAGE_HANDLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 class PrintPreviewUI;
@@ -27,8 +28,8 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
   virtual ~PrintPreviewMessageHandler();
 
   // TabContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void DidStartLoading();
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidStartLoading() OVERRIDE;
 
  private:
   // Gets the print preview tab associated with the TabContents being observed.

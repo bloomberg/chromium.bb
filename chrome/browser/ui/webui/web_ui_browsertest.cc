@@ -49,7 +49,7 @@ bool LogHandler(int severity,
   return false;
 }
 
-} // namespace
+}  // namespace
 
 WebUIBrowserTest::~WebUIBrowserTest() {}
 
@@ -272,8 +272,7 @@ GURL WebUIBrowserTest::WebUITestDataPathToURL(
     const FilePath::StringType& path) {
   FilePath dir_test_data;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data));
-  FilePath test_path(dir_test_data.AppendASCII("webui"));
-  test_path = test_path.Append(path);
+  FilePath test_path(dir_test_data.Append(kWebUITestFolder).Append(path));
   EXPECT_TRUE(file_util::PathExists(test_path));
   return net::FilePathToFileURL(test_path);
 }
@@ -320,7 +319,7 @@ string16 WebUIBrowserTest::BuildRunTestJSCall(
   for (arguments_iterator = test_func_args.begin();
        arguments_iterator != test_func_args.end();
        ++arguments_iterator) {
-    baked_argument_list.Append((Value *)*arguments_iterator);
+    baked_argument_list.Append(const_cast<Value*>(*arguments_iterator));
   }
   arguments.push_back(&baked_argument_list);
   return WebUI::GetJavascriptCall(std::string("runTest"), arguments);

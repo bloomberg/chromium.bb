@@ -101,6 +101,16 @@ class PrintWebViewHelperTestBase : public RenderViewTest {
 #endif  // defined(OS_CHROMEOS)
   }
 
+  void OnPrintPreview(const DictionaryValue& dict) {
+    PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
+    print_web_view_helper->OnInitiatePrintPreview();
+    print_web_view_helper->OnPrintPreview(dict);
+  }
+
+  void OnPrintForPrintPreview(const DictionaryValue& dict) {
+    PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(dict);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTestBase);
 };
 
@@ -383,11 +393,10 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
 TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
   LoadHTML(kHelloWorldHTML);
 
-  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
+  OnPrintPreview(dict);
 
   EXPECT_EQ(0, render_thread_.print_preview_pages_remaining());
   VerifyPrintPreviewCancelled(false);
@@ -401,7 +410,6 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
 TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
   LoadHTML(kHelloWorldHTML);
 
-  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
@@ -419,7 +427,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
   dict.Set(printing::kSettingPageRange, page_range_array);
   dict.SetBoolean(printing::kSettingGenerateDraftData, false);
 
-  PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
+  OnPrintPreview(dict);
 
   // Verify that we did not create the draft metafile for the first page.
   VerifyDidPreviewPage(false, 0);
@@ -435,10 +443,9 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
 TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
   LoadHTML(kHelloWorldHTML);
 
-  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
   // An empty dictionary should fail.
   DictionaryValue empty_dict;
-  PrintWebViewHelper::Get(view_)->OnPrintPreview(empty_dict);
+  OnPrintPreview(empty_dict);
 
   EXPECT_EQ(0, render_thread_.print_preview_pages_remaining());
   VerifyPrintPreviewCancelled(false);
@@ -453,11 +460,10 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
 
   const int kCancelPage = 3;
   render_thread_.set_print_preview_cancel_page_number(kCancelPage);
-  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
+  OnPrintPreview(dict);
 
   EXPECT_EQ(kCancelPage, render_thread_.print_preview_pages_remaining());
   VerifyPrintPreviewCancelled(true);
@@ -474,7 +480,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(dict);
+  OnPrintForPrintPreview(dict);
 
   VerifyPrintFailed(false);
   VerifyPagesPrinted(true);
@@ -487,7 +493,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
 
   // An empty dictionary should fail.
   DictionaryValue empty_dict;
-  PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(empty_dict);
+  OnPrintForPrintPreview(empty_dict);
 
   VerifyPagesPrinted(false);
 }
@@ -498,15 +504,13 @@ TEST_F(PrintWebViewHelperPreviewTest,
        OnPrintPreviewUsingInvalidPrinterSettings) {
   LoadHTML(kPrintPreviewHTML);
 
-  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
-
   // Set mock printer to provide invalid settings.
   render_thread_.printer()->UseInvalidSettings();
 
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
+  OnPrintPreview(dict);
 
   // We should have received invalid printer settings from |printer_|.
   VerifyPrintPreviewInvalidPrinterSettings(true);
@@ -527,7 +531,7 @@ TEST_F(PrintWebViewHelperPreviewTest,
   // Fill in some dummy values.
   DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(dict);
+  OnPrintForPrintPreview(dict);
 
   VerifyPrintFailed(true);
   VerifyPagesPrinted(false);

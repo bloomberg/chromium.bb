@@ -98,23 +98,12 @@ class PrintWebViewHelper
  protected:
   // WebKit::WebViewClient override:
   virtual void didStopLoading();
+
  private:
+  friend class PrintWebViewHelperTestBase;
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
                            BlockScriptInitiatedPrinting);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreview);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest, OnPrintPreviewFail);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
-                           OnPrintForPrintPreview);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
-                           OnPrintForPrintPreviewFail);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
-                           OnPrintPreviewForSelectedPages);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
-                           OnPrintPreviewUsingInvalidPrinterSettings);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
-                           OnPrintForPrintPreviewUsingInvalidPrinterSettings);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintLayoutTest);
@@ -138,6 +127,7 @@ class PrintWebViewHelper
 
   // Start the process of generating a print preview using |settings|.
   void OnPrintPreview(const base::DictionaryValue& settings);
+
   // Initialize the print preview document.
   bool CreatePreviewDocument();
 

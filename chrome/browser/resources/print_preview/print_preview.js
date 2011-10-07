@@ -980,8 +980,6 @@ function checkCompatiblePluginExists() {
             dummyPlugin.resetPrintPreviewUrl);
 }
 
-window.addEventListener('DOMContentLoaded', onLoad);
-
 /**
  * Sets the default values and sends a request to regenerate preview data.
  * Resets the margin options only if |resetMargins| is true.
@@ -1023,6 +1021,8 @@ function setInitiatorTabTitle(initiatorTabTitle) {
   document.title = localStrings.getStringF(
       'printPreviewTitleFormat', initiatorTabTitle);
 }
+
+window.addEventListener('DOMContentLoaded', onLoad);
 
 /// Pull in all other scripts in a single shot.
 <include src="print_preview_animations.js"/>
