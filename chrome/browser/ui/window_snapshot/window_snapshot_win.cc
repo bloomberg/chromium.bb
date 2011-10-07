@@ -6,6 +6,7 @@
 
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
+#include "base/win/scoped_select_object.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
@@ -17,7 +18,7 @@ gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window_handle,
                              std::vector<unsigned char>* png_representation) {
   // Create a memory DC that's compatible with the window.
   HDC window_hdc = GetWindowDC(window_handle);
-  base::win::ScopedHDC mem_hdc(CreateCompatibleDC(window_hdc));
+  base::win::ScopedCreateDC mem_hdc(CreateCompatibleDC(window_hdc));
 
   // Create a DIB that's the same size as the window.
   RECT content_rect = {0, 0, 0, 0};
@@ -35,7 +36,7 @@ gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window_handle,
                        reinterpret_cast<void **>(&bit_ptr),
                        NULL, 0));
 
-  SelectObject(mem_hdc, bitmap);
+  base::win::ScopedSelectObject select_bitmap(mem_hdc, bitmap);
   // Clear the bitmap to white (so that rounded corners on windows
   // show up on a white background, and strangely-shaped windows
   // look reasonable). Not capturing an alpha mask saves a

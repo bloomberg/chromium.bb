@@ -8,6 +8,8 @@
 #include <wingdi.h>
 #include <winspool.h>
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -124,7 +126,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
 
 // Disabled if no "UnitTest printer" exists.
 TEST_F(EmfPrintingTest, PageBreak) {
-  base::win::ScopedHDC dc(
+  base::win::ScopedCreateDC dc(
       CreateDC(L"WINSPOOL", L"UnitTest Printer", NULL, NULL));
   if (!dc.Get())
     return;

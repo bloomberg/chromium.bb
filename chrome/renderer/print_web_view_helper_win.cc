@@ -258,7 +258,7 @@ Metafile* PrintWebViewHelper::RenderPage(
       // Page used alpha blend, but printer doesn't support it.  Rewrite the
       // metafile and flatten out the transparency.
       base::win::ScopedGetDC screen_dc(NULL);
-      base::win::ScopedHDC bitmap_dc(CreateCompatibleDC(screen_dc));
+      base::win::ScopedCreateDC bitmap_dc(CreateCompatibleDC(screen_dc));
       if (!bitmap_dc)
         NOTREACHED() << "Bitmap DC creation failed";
       SetGraphicsMode(bitmap_dc, GM_ADVANCED);

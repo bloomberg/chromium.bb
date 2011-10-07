@@ -224,7 +224,7 @@ class SendThumbnailTask : public Task {
     // Create a DIB, copy the resized image, and send the DIB to Windows.
     // We can delete this DIB after sending it to Windows since Windows creates
     // a copy of the DIB and use it.
-    base::win::ScopedHDC hdc(CreateCompatibleDC(NULL));
+    base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
     if (!hdc.Get()) {
       LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
       return;
@@ -339,7 +339,7 @@ class SendLivePreviewTask : public Task {
     // tab image into the DIB, and send it to Windows.
     // We don't need to paste this tab image onto the frame image since Windows
     // automatically pastes it for us.
-    base::win::ScopedHDC hdc(CreateCompatibleDC(NULL));
+    base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
     if (!hdc.Get()) {
       LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
       return;

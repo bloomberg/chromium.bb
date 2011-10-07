@@ -132,6 +132,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
   class Delegate {
    public:
+    virtual ~Delegate() {}
     virtual void OnPrinterAdded() = 0;
     virtual void OnPrinterDeleted() = 0;
     virtual void OnPrinterChanged() = 0;
@@ -364,6 +365,7 @@ class PrintSystemWin : public PrintSystem {
                           print_data_mime_type, printer_name, job_title,
                           delegate);
     }
+
    private:
     // We use a Core class because we want a separate RefCountedThreadSafe
     // implementation for ServiceUtilityProcessHost::Client.
@@ -633,7 +635,7 @@ class PrintSystemWin : public PrintSystem {
       PlatformJobId job_id_;
       PrintSystem::JobSpooler::Delegate* delegate_;
       int saved_dc_;
-      base::win::ScopedHDC printer_dc_;
+      base::win::ScopedCreateDC printer_dc_;
       FilePath print_data_file_path_;
       base::win::ScopedHandle job_progress_event_;
       base::win::ObjectWatcher job_progress_watcher_;
@@ -681,6 +683,7 @@ class PrintSystemWin : public PrintSystem {
       callback_.reset();
       Release();
     }
+
    private:
       // Called on the service process IO thread.
     void GetPrinterCapsAndDefaultsImpl(
