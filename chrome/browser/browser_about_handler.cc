@@ -139,13 +139,14 @@ const char* const kChromePaths[] = {
   chrome::kChromeUISettingsHost,
   chrome::kChromeUIStatsHost,
   chrome::kChromeUISyncInternalsHost,
+  chrome::kChromeUITaskManagerHost,
   chrome::kChromeUITCMallocHost,
   chrome::kChromeUITermsHost,
   chrome::kChromeUITracingHost,
   chrome::kChromeUIVersionHost,
   chrome::kChromeUIWorkersHost,
-#ifdef TRACK_ALL_TASK_OBJECTS
-  chrome::kChromeUITaskManagerHost,
+#if defined(TRACK_ALL_TASK_OBJECTS)
+  chrome::kChromeUITrackingHost,
 #endif
 #if defined(OS_WIN)
   chrome::kChromeUIConflictsHost,
@@ -179,10 +180,11 @@ const char* const kAboutSourceNames[] = {
   chrome::kChromeUIMemoryHost,
   chrome::kChromeUIMemoryRedirectHost,
   chrome::kChromeUIStatsHost,
+  chrome::kChromeUITaskManagerHost,
   chrome::kChromeUITermsHost,
   chrome::kChromeUIVersionHost,
-#ifdef TRACK_ALL_TASK_OBJECTS
-  chrome::kChromeUITaskManagerHost,
+#if defined(TRACK_ALL_TASK_OBJECTS)
+  chrome::kChromeUITrackingHost,
 #endif
 #if defined(USE_TCMALLOC)
   chrome::kChromeUITCMallocHost,
@@ -881,9 +883,9 @@ void AboutMemory(const std::string& path, AboutSource* source, int request_id) {
   }
 }
 
-#ifdef TRACK_ALL_TASK_OBJECTS
-static std::string AboutObjects(const std::string& query) {
-  std::string unescaped_title("About Histograms");
+#if defined(TRACK_ALL_TASK_OBJECTS)
+static std::string AboutTracking(const std::string& query) {
+  std::string unescaped_title("About Tracking");
   if (!query.empty()) {
     unescaped_title += " - ";
     unescaped_title += net::UnescapeURLComponent(query, UnescapeRule::NORMAL);
@@ -1451,9 +1453,9 @@ void AboutSource::StartDataRequest(const std::string& path,
 #endif
   } else if (host == chrome::kChromeUIStatsHost) {
     response = AboutStats(path);
-#ifdef TRACK_ALL_TASK_OBJECTS
-  } else if (host == chrome::kChromeUITaskManagerHost) {
-    response = AboutObjects(path);
+#if defined(TRACK_ALL_TASK_OBJECTS)
+  } else if (host == chrome::kChromeUITrackingHost) {
+    response = AboutTracking(path);
 #endif
 #if defined(USE_TCMALLOC)
   } else if (host == chrome::kChromeUITCMallocHost) {
