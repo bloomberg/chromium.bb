@@ -25,7 +25,7 @@ class VideoDecoderClient_Dev {
   // Callback to provide buffers for the decoded output pictures.
   virtual void ProvidePictureBuffers(PP_Resource decoder,
                                      uint32_t req_num_of_bufs,
-                                     struct PP_Size dimensions) = 0;
+                                     const PP_Size& dimensions) = 0;
 
   // Callback for decoder to deliver unneeded picture buffers back to the
   // plugin.

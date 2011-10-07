@@ -63,7 +63,7 @@ class GLES2DemoInstance : public pp::Instance,
   // pp::VideoDecoderClient_Dev implementation.
   virtual void ProvidePictureBuffers(PP_Resource decoder,
                                      uint32_t req_num_of_bufs,
-                                     PP_Size dimensions);
+                                     const PP_Size& dimensions);
   virtual void DismissPictureBuffer(PP_Resource decoder,
                                     int32_t picture_buffer_id);
   virtual void PictureReady(PP_Resource decoder, const PP_Picture_Dev& picture);
@@ -324,7 +324,7 @@ void GLES2DemoInstance::DecoderClient::DecodeNextNALU() {
 }
 
 void GLES2DemoInstance::ProvidePictureBuffers(
-    PP_Resource decoder, uint32_t req_num_of_bufs, PP_Size dimensions) {
+    PP_Resource decoder, uint32_t req_num_of_bufs, const PP_Size& dimensions) {
   DecoderClient* client = video_decoders_[decoder];
   assert(client);
   client->ProvidePictureBuffers(req_num_of_bufs, dimensions);

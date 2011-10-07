@@ -16,6 +16,7 @@
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
+#include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/proxy/interface_id.h"
 

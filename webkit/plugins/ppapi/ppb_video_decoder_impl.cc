@@ -216,7 +216,7 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
 
   PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
   ppp_videodecoder_->ProvidePictureBuffers(pp_instance(), pp_resource(),
-                                           requested_num_of_buffers, out_dim);
+                                           requested_num_of_buffers, &out_dim);
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
@@ -226,7 +226,7 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   PP_Picture_Dev output;
   output.picture_buffer_id = picture.picture_buffer_id();
   output.bitstream_buffer_id = picture.bitstream_buffer_id();
-  ppp_videodecoder_->PictureReady(pp_instance(), pp_resource(), output);
+  ppp_videodecoder_->PictureReady(pp_instance(), pp_resource(), &output);
 }
 
 void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {

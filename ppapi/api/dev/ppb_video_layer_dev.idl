@@ -3,69 +3,44 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_layer_dev.idl modified Wed Oct  5 09:15:37 2011. */
-
-#ifndef PPAPI_C_DEV_PPB_VIDEO_LAYER_DEV_H_
-#define PPAPI_C_DEV_PPB_VIDEO_LAYER_DEV_H_
-
-#include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_point.h"
-#include "ppapi/c/pp_rect.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_size.h"
-#include "ppapi/c/pp_stdint.h"
-
-#define PPB_VIDEOLAYER_DEV_INTERFACE_0_1 "PPB_VideoLayer(Dev);0.1"
-#define PPB_VIDEOLAYER_DEV_INTERFACE PPB_VIDEOLAYER_DEV_INTERFACE_0_1
-
 /**
- * @file
  * This file defines the <code>PPB_VideoDecoder_Dev</code> interface.
  */
+label Chrome {
+  M14 = 0.1
+};
 
-
-/**
- * @addtogroup Enums
- * @{
- */
 /**
  * Enumeration for pixel format of the video layer.
  */
-typedef enum {
+[assert_size(4)]
+enum PP_VideoLayerPixelFormat_Dev {
   PP_VIDEOLAYERPIXELFORMAT_RGBA = 0,
   PP_VIDEOLAYERPIXELFORMAT_YV12 = 1
-} PP_VideoLayerPixelFormat_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoLayerPixelFormat_Dev, 4);
+};
 
 /** TODO(hclam): Add options to customize color conversion. */
+
 /**
  * Enumeration for operation mode of the video layer.
  * PPB_VideoLayer_Dev needs to be created with one of these enums in order to
  * determine the operation mode.
  */
-typedef enum {
+[assert_size(4)]
+enum PP_VideoLayerMode_Dev {
   /**
    * In this mode user needs to update content of the video layer manually by
    * calling UpdateContent().
    */
   PP_VIDEOLAYERMODE_SOFTWARE = 0,
+
   /**
    * In this mode content of the video layer is updated by a hardware video
    * decoder, calling UpdateContent() will always return PP_FALSE.
    */
   PP_VIDEOLAYERMODE_HARDWARE = 1
-} PP_VideoLayerMode_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoLayerMode_Dev, 4);
-/**
- * @}
- */
+};
 
-/**
- * @addtogroup Interfaces
- * @{
- */
 /**
  * PPB_VideoLayer is a mechanism to enhance rendering performance of video
  * content. Rendering is generally done by using PPB_Context3D or
@@ -83,15 +58,20 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoLayerMode_Dev, 4);
  * In this mode the content of the video layer is updated by a hardware video
  * decoder.
  */
-struct PPB_VideoLayer_Dev {
+interface PPB_VideoLayer_Dev {
   /**
    * Creates a video layer.
    */
-  PP_Resource (*Create)(PP_Instance instance, PP_VideoLayerMode_Dev mode);
+  PP_Resource Create(
+      [in] PP_Instance instance,
+      [in] PP_VideoLayerMode_Dev mode);
+
   /**
    * Returns true if the input parameter is a video layer.
    */
-  PP_Bool (*IsVideoLayer)(PP_Resource layer);
+  PP_Bool IsVideoLayer(
+      [in] PP_Resource layer);
+
   /**
    * Set the pixel format of this video layer. By default it is RGBA.
    *
@@ -99,28 +79,38 @@ struct PPB_VideoLayer_Dev {
    *
    * The updated size will be effective after SwapBuffers() is called.
    */
-  void (*SetPixelFormat)(PP_Resource layer,
-                         PP_VideoLayerPixelFormat_Dev pixel_format);
+  void SetPixelFormat(
+      [in] PP_Resource layer,
+      [in] PP_VideoLayerPixelFormat_Dev pixel_format);
+
   /**
    * Set the native size of the video layer. This method must be called before
    * the video layer can be displayed.
    *
    * The updated size will be effective after SwapBuffers() is called.
    */
-  void (*SetNativeSize)(PP_Resource layer, const struct PP_Size* size);
+  void SetNativeSize(
+      [in] PP_Resource layer,
+      [in] PP_Size size);
+
   /**
    * Set the clipping rectangle for this video layer relative to the native
    * size. Only content within this rect is displayed.
    *
    * The clip rectangle will be effective after SwapBuffers() is called.
    */
-  void (*SetClipRect)(PP_Resource layer, const struct PP_Rect* clip_rect);
+  void SetClipRect(
+      [in] PP_Resource layer,
+      [in] PP_Rect clip_rect);
+
   /**
    * Return PP_TRUE if this video layer can be displayed. If this returns
    * PP_FALSE it can mean that the size is unknown or the video layer doesn't
    * have video memory allocated or not initialized.
    */
-  PP_Bool (*IsReady)(PP_Resource layer);
+  PP_Bool IsReady(
+      [in] PP_Resource layer);
+
   /**
    * Update the content of a video layer from system memory. SetNativeSize()
    * must be called before making this method call.
@@ -149,13 +139,8 @@ struct PPB_VideoLayer_Dev {
    *
    * Return true if successful.
    */
-  PP_Bool (*UpdateContent)(PP_Resource layer,
-                           uint32_t no_of_planes,
-                           const void* planes[]);
+  PP_Bool UpdateContent(
+      [in] PP_Resource layer,
+      [in] uint32_t no_of_planes,
+      [in, size_as=no_of_planes] mem_t[] planes);
 };
-/**
- * @}
- */
-
-#endif  /* PPAPI_C_DEV_PPB_VIDEO_LAYER_DEV_H_ */
-

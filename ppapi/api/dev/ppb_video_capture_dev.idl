@@ -3,31 +3,13 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_capture_dev.idl modified Wed Oct  5 09:11:07 2011. */
-
-#ifndef PPAPI_C_DEV_PPB_VIDEO_CAPTURE_DEV_H_
-#define PPAPI_C_DEV_PPB_VIDEO_CAPTURE_DEV_H_
-
-#include "ppapi/c/dev/pp_video_capture_dev.h"
-#include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_stdint.h"
-
-#define PPB_VIDEOCAPTURE_DEV_INTERFACE_0_1 "PPB_VideoCapture(Dev);0.1"
-#define PPB_VIDEOCAPTURE_DEV_INTERFACE PPB_VIDEOCAPTURE_DEV_INTERFACE_0_1
-
 /**
- * @file
  * This file defines the <code>PPB_VideoCapture_Dev</code> interface.
  */
+label Chrome {
+  M14 = 0.1
+};
 
-
-/**
- * @addtogroup Interfaces
- * @{
- */
 /**
  * Video capture interface. It goes hand-in-hand with PPP_VideoCapture_Dev.
  *
@@ -53,15 +35,19 @@
  * 4:2:0, one byte per pixel, tightly packed (width x height Y values, then
  * width/2 x height/2 U values, then width/2 x height/2 V values).
  */
-struct PPB_VideoCapture_Dev {
+interface PPB_VideoCapture_Dev {
   /**
    * Creates a new VideoCapture.
    */
-  PP_Resource (*Create)(PP_Instance instance);
+  PP_Resource Create(
+      [in] PP_Instance instance);
+
   /**
    * Returns PP_TRUE if the given resource is a VideoCapture.
    */
-  PP_Bool (*IsVideoCapture)(PP_Resource video_capture);
+  PP_Bool IsVideoCapture(
+      [in] PP_Resource video_capture);
+
   /**
    * Starts the capture. |requested_info| is a pointer to a structure containing
    * the requested resolution and frame rate. |buffer_count| is the number of
@@ -75,10 +61,11 @@ struct PPB_VideoCapture_Dev {
    * Returns PP_ERROR_FAILED if called when the capture was already started, or
    * PP_OK on success.
    */
-  int32_t (*StartCapture)(
-      PP_Resource video_capture,
-      const struct PP_VideoCaptureDeviceInfo_Dev* requested_info,
-      uint32_t buffer_count);
+  int32_t StartCapture(
+      [in] PP_Resource video_capture,
+      [in] PP_VideoCaptureDeviceInfo_Dev requested_info,
+      [in] uint32_t buffer_count);
+
   /**
    * Allows the browser to reuse a buffer that was previously sent by
    * PPP_VideoCapture_Dev.OnBufferReady. |buffer| is the index of the buffer in
@@ -88,18 +75,16 @@ struct PPB_VideoCapture_Dev {
    * number of buffers returned by PPP_VideoCapture_Dev.OnDeviceInfo), or if it
    * is not currently owned by the plugin. Returns PP_OK otherwise.
    */
-  int32_t (*ReuseBuffer)(PP_Resource video_capture, uint32_t buffer);
+  int32_t ReuseBuffer(
+      [in] PP_Resource video_capture,
+      [in] uint32_t buffer);
+
   /**
    * Stops the capture.
    *
    * Returns PP_ERROR_FAILED if the capture wasn't already started, or PP_OK on
    * success.
    */
-  int32_t (*StopCapture)(PP_Resource video_capture);
+  int32_t StopCapture(
+      [in] PP_Resource video_capture);
 };
-/**
- * @}
- */
-
-#endif  /* PPAPI_C_DEV_PPB_VIDEO_CAPTURE_DEV_H_ */
-

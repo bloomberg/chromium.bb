@@ -15,7 +15,7 @@ namespace pp {
 namespace {
 
 template <> const char* interface_name<PPB_VideoCapture_Dev>() {
-  return PPB_VIDEO_CAPTURE_DEV_INTERFACE;
+  return PPB_VIDEOCAPTURE_DEV_INTERFACE;
 }
 
 }  // namespace
