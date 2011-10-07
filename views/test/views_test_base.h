@@ -6,10 +6,9 @@
 #define VIEWS_TEST_VIEWS_TEST_BASE_H_
 #pragma once
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "views/test/test_views_delegate.h"
 
 namespace views {

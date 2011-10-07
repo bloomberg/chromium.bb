@@ -4,8 +4,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/aura_test_base.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
@@ -173,22 +173,10 @@ class TestWindowDelegate : public WindowDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
 
-class WindowTest : public testing::Test {
+class WindowTest : public AuraTestBase {
  public:
-  WindowTest()
-      : main_message_loop(MessageLoop::TYPE_UI),
-        desktop_delegate_(new TestDesktopDelegate) {
-    Desktop::GetInstance()->Show();
-    Desktop::GetInstance()->SetSize(gfx::Size(500, 500));
-  }
+  WindowTest() {}
   virtual ~WindowTest() {}
-
-  // Overridden from testing::Test:
-  virtual void SetUp() OVERRIDE {
-  }
-
-  virtual void TearDown() OVERRIDE {
-  }
 
   Window* CreateTestWindowWithId(int id, Window* parent) {
     return CreateTestWindowWithDelegate(NULL, id, gfx::Rect(), parent);
@@ -215,15 +203,7 @@ class WindowTest : public testing::Test {
     return window;
   }
 
- protected:
-  Window* toplevel_container() {
-    return desktop_delegate_->default_container();
-  }
-
  private:
-  MessageLoop main_message_loop;
-  TestDesktopDelegate* desktop_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(WindowTest);
 };
 
@@ -273,7 +253,6 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   Window* desktop = Desktop::GetInstance()->window();
-  toplevel_container()->SetBounds(gfx::Rect(500, 500));
   EXPECT_EQ(NULL, desktop->GetEventHandlerForPoint(gfx::Point(5, 5)));
   EXPECT_EQ(w1.get(), desktop->GetEventHandlerForPoint(gfx::Point(11, 11)));
   EXPECT_EQ(w11.get(), desktop->GetEventHandlerForPoint(gfx::Point(16, 16)));

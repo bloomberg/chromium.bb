@@ -167,7 +167,17 @@ class NullLayerDelegate : public LayerDelegate {
 
 }
 
-TEST_F(LayerWithRealCompositorTest, Draw) {
+#if defined(OS_WIN)
+// These are disabled on windows as they don't run correctly on the buildbot.
+// Reenable once we move to the real compositor.
+#define MAYBE_Draw DISABLED_Draw
+#define MAYBE_Hierarchy DISABLED_Hierarchy
+#else
+#define MAYBE_Draw Draw
+#define MAYBE_Hierarchy Hierarchy
+#endif
+
+TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
   scoped_ptr<Layer> layer(CreateColorLayer(SK_ColorRED,
                                            gfx::Rect(20, 20, 50, 50)));
   DrawTree(layer.get());
@@ -179,7 +189,7 @@ TEST_F(LayerWithRealCompositorTest, Draw) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_F(LayerWithRealCompositorTest, Hierarchy) {
+TEST_F(LayerWithRealCompositorTest, MAYBE_Hierarchy) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
