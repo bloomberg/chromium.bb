@@ -20,6 +20,9 @@ DownloadShelfContextMenuView::DownloadShelfContextMenuView(
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}
 
 void DownloadShelfContextMenuView::Run(const gfx::Point& point) {
+#if defined(USE_AURA)
+  NOTIMPLEMENTED();
+#else
   menu_.reset(new views::Menu2(GetMenuModel()));
 
   // The menu's alignment is determined based on the UI layout.
@@ -29,6 +32,7 @@ void DownloadShelfContextMenuView::Run(const gfx::Point& point) {
   else
     alignment = views::Menu2::ALIGN_TOPLEFT;
   menu_->RunMenuAt(point, alignment);
+#endif
 }
 
 void DownloadShelfContextMenuView::Stop() {

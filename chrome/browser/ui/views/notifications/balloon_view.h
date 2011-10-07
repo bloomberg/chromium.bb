@@ -159,7 +159,9 @@ class BalloonViewImpl : public BalloonView,
 
   // The options menu.
   scoped_ptr<NotificationOptionsMenuModel> options_menu_model_;
+#if !defined(USE_AURA)
   scoped_ptr<views::Menu2> options_menu_menu_;
+#endif
   views::MenuButton* options_menu_button_;
 
   NotificationRegistrar notification_registrar_;

@@ -98,7 +98,9 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       close_button_(NULL),
       animation_(NULL),
       options_menu_model_(NULL),
+#if !defined(USE_AURA)
       options_menu_menu_(NULL),
+#endif
       options_menu_button_(NULL) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
@@ -366,15 +368,22 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
 void BalloonViewImpl::RunOptionsMenu(const gfx::Point& pt) {
   CreateOptionsMenu();
+#if defined(USE_AURA)
+  NOTIMPLEMENTED();
+#else
   options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+#endif
 }
 
 void BalloonViewImpl::CreateOptionsMenu() {
   if (options_menu_model_.get())
     return;
-
+#if defined(USE_AURA)
+  NOTIMPLEMENTED();
+#else
   options_menu_model_.reset(new NotificationOptionsMenuModel(balloon_));
   options_menu_menu_.reset(new views::Menu2(options_menu_model_.get()));
+#endif
 }
 
 void BalloonViewImpl::GetContentsMask(const gfx::Rect& rect,

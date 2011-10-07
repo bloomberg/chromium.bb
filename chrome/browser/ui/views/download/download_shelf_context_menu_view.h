@@ -32,8 +32,9 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
   void Stop();
 
  private:
+#if !defined(USE_AURA)
   scoped_ptr<views::Menu2> menu_;
-
+#endif
   DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenuView);
 };
 

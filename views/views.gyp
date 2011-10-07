@@ -431,6 +431,7 @@
           'sources/': [
             ['exclude', '_(gtk|x)\\.cc$'],
             ['exclude', '/(gtk|x)_[^/]*\\.cc$'],
+            ['exclude', 'controls/menu/menu_2.*'],
           ],
           'sources!': [
             'controls/native_control.cc',
