@@ -18,6 +18,13 @@ class NativeConstrainedWindowViews : public NativeConstrainedWindow,
   virtual ~NativeConstrainedWindowViews() {
   }
 
+  virtual void Activate() OVERRIDE {
+    // Views version of ConstrainedWindow is not TYPE_CONTROL and not
+    // visible by default. Show when it's activated.
+    Show();
+    views::NativeWidgetViews::Activate();
+  }
+
  private:
   // Overridden from NativeConstrainedWindow:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE {
