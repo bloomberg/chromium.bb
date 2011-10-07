@@ -143,6 +143,7 @@ class Bridge : public NotificationObserver {
 }
 
 - (void)parentWindowWillClose:(NSNotification*)notification {
+  parentWindow_ = nil;
   [self close];
 }
 
