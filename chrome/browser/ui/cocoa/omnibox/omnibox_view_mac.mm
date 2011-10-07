@@ -706,6 +706,12 @@ gfx::NativeView OmniboxViewMac::GetNativeView() const {
   return field_;
 }
 
+gfx::NativeView OmniboxViewMac::GetRelativeWindowForPopup() const {
+  // Not used on mac.
+  NOTREACHED();
+  return NULL;
+}
+
 CommandUpdater* OmniboxViewMac::GetCommandUpdater() {
   return command_updater_;
 }

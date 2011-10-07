@@ -83,6 +83,7 @@ class OmniboxViewMac : public OmniboxView,
   virtual void OnBeforePossibleChange() OVERRIDE;
   virtual bool OnAfterPossibleChange() OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeView GetRelativeWindowForPopup() const OVERRIDE;
   virtual CommandUpdater* GetCommandUpdater() OVERRIDE;
   virtual void SetInstantSuggestion(const string16& input,
                                     bool animate_to_complete) OVERRIDE;

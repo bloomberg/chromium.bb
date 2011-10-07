@@ -37,6 +37,10 @@
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
+#endif
+
 namespace {
 
 // Textfield for autocomplete that intercepts events that are necessary
@@ -560,6 +564,14 @@ bool OmniboxViewViews::OnAfterPossibleChange() {
 
 gfx::NativeView OmniboxViewViews::GetNativeView() const {
   return GetWidget()->GetNativeView();
+}
+
+gfx::NativeView OmniboxViewViews::GetRelativeWindowForPopup() const {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  return OmniboxViewWin::GetRelativeWindowForNativeView(GetNativeView());
+#else
+  return GetWidget()->GetTopLevelWidget()->GetNativeView();
+#endif
 }
 
 CommandUpdater* OmniboxViewViews::GetCommandUpdater() {

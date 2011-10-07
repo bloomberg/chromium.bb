@@ -45,10 +45,6 @@
 #endif
 #endif
 
-#if defined(TOOLKIT_USES_GTK)
-#include "ui/gfx/skia_utils_gtk.h"
-#endif
-
 namespace {
 
 const SkAlpha kGlassPopupAlpha = 240;
@@ -119,27 +115,6 @@ class OptInButtonBorder : public views::Border {
 
   DISALLOW_COPY_AND_ASSIGN(OptInButtonBorder);
 };
-
-gfx::NativeView GetRelativeWindowForPopup(gfx::NativeView edit_native_view) {
-#if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return NULL;
-#elif defined(OS_WIN)
-  // When an IME is attached to the rich-edit control, retrieve its window
-  // handle and show this popup window under the IME windows.
-  // Otherwise, show this popup window under top-most windows.
-  // TODO(hbono): http://b/1111369 if we exclude this popup window from the
-  // display area of IME windows, this workaround becomes unnecessary.
-  HWND ime_window = ImmGetDefaultIMEWnd(edit_native_view);
-  return ime_window ? ime_window : HWND_NOTOPMOST;
-#elif defined(TOOLKIT_USES_GTK)
-  GtkWidget* toplevel = gtk_widget_get_toplevel(edit_native_view);
-  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
-  return toplevel;
-#endif
-}
-
 }  // namespace
 
 class AutocompletePopupContentsView::AutocompletePopupWidget
@@ -370,8 +345,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     params.bounds = GetPopupBounds();
     popup_->Init(params);
     popup_->SetContentsView(this);
-    popup_->MoveAbove(
-        GetRelativeWindowForPopup(omnibox_view_->GetNativeView()));
+    popup_->MoveAbove(omnibox_view_->GetRelativeWindowForPopup());
     if (!popup_.get()) {
       // For some IMEs GetRelativeWindowForPopup triggers the omnibox to lose
       // focus, thereby closing (and destroying) the popup.

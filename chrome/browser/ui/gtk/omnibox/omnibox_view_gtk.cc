@@ -754,6 +754,12 @@ gfx::NativeView OmniboxViewGtk::GetNativeView() const {
   return alignment_.get();
 }
 
+gfx::NativeView OmniboxViewGtk::GetRelativeWindowForPopup() const {
+  GtkWidget* toplevel = gtk_widget_get_toplevel(GetNativeView());
+  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
+  return toplevel;
+}
+
 CommandUpdater* OmniboxViewGtk::GetCommandUpdater() {
   return command_updater_;
 }

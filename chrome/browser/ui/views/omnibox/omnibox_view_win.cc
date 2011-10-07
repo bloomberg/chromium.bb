@@ -907,6 +907,23 @@ gfx::NativeView OmniboxViewWin::GetNativeView() const {
   return m_hWnd;
 }
 
+// static
+gfx::NativeView OmniboxViewWin::GetRelativeWindowForNativeView(
+    gfx::NativeView edit_native_view) {
+  // When an IME is attached to the rich-edit control, retrieve its window
+  // handle, and the popup window of AutocompletePopupView will be shown
+  // under the IME windows.
+  // Otherwise, the popup window will be shown under top-most windows.
+  // TODO(hbono): http://b/1111369 if we exclude this popup window from the
+  // display area of IME windows, this workaround becomes unnecessary.
+  HWND ime_window = ImmGetDefaultIMEWnd(edit_native_view);
+  return ime_window ? ime_window : HWND_NOTOPMOST;
+}
+
+gfx::NativeView OmniboxViewWin::GetRelativeWindowForPopup() const {
+  return GetRelativeWindowForNativeView(GetNativeView());
+}
+
 CommandUpdater* OmniboxViewWin::GetCommandUpdater() {
   return command_updater_;
 }
