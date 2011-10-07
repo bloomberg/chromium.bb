@@ -40,9 +40,7 @@ quick_unit -- If unittests is true, only run the unit tests for packages which
 
 build_tests -- Builds autotest tests.  Must be True if vm_tests is set.
 
-vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
-            using KVM.
-quick_vm -- If vm_tests is true, run a minimal au test harness suite.
+vm_tests -- Run vm test type defined in constants.
 
 remote_ip -- IP of the remote Chromium OS machine used for testing.
 hw_tests -- A list of autotests and arguments to run on remote hardware.
@@ -190,8 +188,7 @@ default = {
   'quick_unit' : True,
 
   'build_tests' : True,
-  'vm_tests' : True,
-  'quick_vm' : True,
+  'vm_tests' : constants.SIMPLE_AU_TEST_TYPE,
 
   'hw_tests' : None,
   'hw_tests_reimage' : True,
@@ -231,7 +228,7 @@ arm = {
   # VM/tests are broken on arm.
   'build_tests' : False,
   'unittests' : False,
-  'vm_tests' : False,
+  'vm_tests' : None,
 
   # The factory install image should be a netboot image on ARM.
   'factory_install_netboot' : True,
@@ -281,20 +278,16 @@ chrome_pfq = {
 chrome_pfq_info = {
   'build_type': constants.CHROME_PFQ_TYPE,
   'chrome_rev': constants.CHROME_REV_TOT,
-  'important': False,   # for the moment
-  'uprev' : False,
   'overlays': 'public',
-  'manifest_version': True,
-  'master' : False,
   'chrome_tests' : True,
-  'build_tests' : True,
   'use_lkgm' : True,
+  'vm_tests': constants.SMOKE_SUITE_TEST_TYPE,
 }
 
 internal = {
   'overlays' : 'both',
   'git_url' : constants.MANIFEST_INT_URL,
-  'quick_vm' : False,
+  'vm_tests' : constants.FULL_AU_TEST_TYPE,
 }
 
 #
@@ -316,7 +309,8 @@ release = {
   'prebuilts' : True,
   'binhost_bucket' : 'gs://chromeos-dev-installer',
   'binhost_key' : 'RELEASE_BINHOST',
-  'binhost_base_url' : 'https://commondatastorage.googleapis.com/chromeos-dev-installer',
+  'binhost_base_url' :
+    'https://commondatastorage.googleapis.com/chromeos-dev-installer',
   'use_binhost_package_file' : True,
   'git_sync' : False,
   # --official
@@ -398,20 +392,6 @@ add_config('arm-generic-commit-queue', [{
   'overlays': 'public',
   'prebuilts': False,
   'manifest_version': True,
-}])
-
-add_config('x86-generic-tot-chrome-pre-flight-queue', [chrome_pfq, {
-  'board' : 'x86-generic',
-  'master' : True,
-  'push_overlays': 'public',
-  'hw_tests' : [('desktopui_PyAutoFunctionalTests', 'suite=CONTINUOUS_PUBLIC')],
-  'chrome_rev': constants.CHROME_REV_TOT,
-  'remote_ip' : '172.22.75.211',
-}])
-
-add_config('arm-generic-tot-chrome-pre-flight-queue', [chrome_pfq, {
-  'board' : 'arm-generic',
-  'chrome_rev': constants.CHROME_REV_TOT,
 }])
 
 add_config('x86-generic-chrome-pre-flight-queue', [chrome_pfq, {
@@ -549,7 +529,7 @@ add_config('x86-mario-pre-flight-queue', [internal, {
   'important': True,
 
   'uprev' : True,
-  'quick_vm' : True,
+  'vm_tests': constants.SIMPLE_AU_TEST_TYPE,
   'overlays': 'private',
   'push_overlays': 'private',
   'gs_path': 'gs://chromeos-x86-mario/pre-flight-master',

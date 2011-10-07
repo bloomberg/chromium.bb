@@ -164,7 +164,7 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None):
 def RunChrootUpgradeHooks(buildroot, chrome_root=None):
   """Run the chroot upgrade hooks in the chroot."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  chroot_args=[]
+  chroot_args = []
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
@@ -236,7 +236,7 @@ def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
   if nowithdebug:
     cmd.append('--nowithdebug')
 
-  chroot_args=[]
+  chroot_args = []
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
@@ -307,7 +307,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
                          ], cwd=cwd, error_ok=True, enter_chroot=False)
 
 
-def RunTestSuite(buildroot, board, image_dir, results_dir, full=True):
+def RunTestSuite(buildroot, board, image_dir, results_dir, test_type):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -325,8 +325,10 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, full=True):
          '--test_results_root=%s' % results_dir_in_chroot
         ]
 
-  if not full:
+  if test_type != constants.FULL_AU_TEST_TYPE:
     cmd.append('--quick')
+    if test_type == constants.SMOKE_SUITE_TEST_TYPE:
+      cmd.append('--only_verify')
 
   code = cros_lib.OldRunCommand(cmd, cwd=cwd, error_ok=True, exit_code=True)
   if code:
@@ -495,16 +497,16 @@ def MarkChromeAsStable(buildroot,
                        chrome_version=None):
   """Returns the portage atom for the revved chrome ebuild - see man emerge."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  extra_env=None
-  chroot_args=None
+  extra_env = None
+  chroot_args = None
   if chrome_root:
-    chroot_args=['--chrome_root=%s' % chrome_root]
+    chroot_args = ['--chrome_root=%s' % chrome_root]
     assert chrome_rev == constants.CHROME_REV_LOCAL, (
         'Cannot rev non-local with a chrome_root')
 
   command = ['../../chromite/buildbot/cros_mark_chrome_as_stable',
              '--tracking_branch=%s' % tracking_branch,
-             '--board=%s' % board,]
+             '--board=%s' % board, ]
   if chrome_version:
     command.append('--force_revision=%s' % chrome_version)
     assert chrome_rev == constants.CHROME_REV_SPEC, (

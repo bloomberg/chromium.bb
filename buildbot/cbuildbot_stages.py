@@ -549,7 +549,7 @@ class VMTestStage(bs.BuilderStage):
                               self.GetImageDirSymlink(),
                               os.path.join(test_results_dir,
                                            'test_harness'),
-                              full=(not self._build_config['quick_vm']))
+                              test_type=self._build_config['vm_tests'])
 
         if self._build_config['chrome_tests']:
           commands.RunChromeSuite(self._build_root,

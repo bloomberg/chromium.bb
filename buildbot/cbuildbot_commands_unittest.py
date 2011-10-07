@@ -35,6 +35,7 @@ class CBuildBotTest(mox.MoxTestBase):
     self._test_cros_workon_packages = (
         'chromeos-base/kernel\nchromeos-base/chromeos-login\n')
     self._test_board = 'test-board'
+    self._board = 'x86-generic'
     self._buildroot = '.'
     self._test_dict = {'kernel': ['chromos-base/kernel', 'dev-util/perf'],
                        'cros': ['chromos-base/libcros']
@@ -50,6 +51,53 @@ class CBuildBotTest(mox.MoxTestBase):
         cros_lib.ReinterpretPathForChroot(p) for p in self._overlays
     ]
     self._CWD = os.path.dirname(os.path.realpath(__file__))
+    self._work_dir = tempfile.mkdtemp()
+    os.makedirs(self._work_dir + '/chroot/tmp/taco')
+
+  def tearDown(self):
+    shutil.rmtree(self._work_dir)
+
+  def testRunTestSuite(self):
+    """Tests if we can parse the test_types so that sane commands are called."""
+    def ItemsInList(items, list):
+      """Helper function that returns whether items are in a list."""
+      return set(items).issubset(set(list))
+
+    def ItemsNotInList(items, list):
+      """Helper function that returns whether items are not in a list."""
+      return set(items).isdisjoint(set(list))
+
+    cwd = self._work_dir + '/src/scripts'
+
+    cros_lib.OldRunCommand(
+        mox.Func(lambda x: ItemsNotInList(['--quick', '--only_verify'], x)),
+        cwd=cwd, error_ok=True, exit_code=True)
+
+    self.mox.ReplayAll()
+    commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
+                           '/tmp/taco', test_type=constants.FULL_AU_TEST_TYPE)
+    self.mox.VerifyAll()
+    self.mox.ResetAll()
+
+    cros_lib.OldRunCommand(
+        mox.Func(lambda x: ItemsInList(['--quick'], x)),
+        cwd=cwd, error_ok=True, exit_code=True)
+
+    self.mox.ReplayAll()
+    commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
+                          '/tmp/taco', test_type=constants.SIMPLE_AU_TEST_TYPE)
+    self.mox.VerifyAll()
+    self.mox.ResetAll()
+
+    cros_lib.OldRunCommand(
+        mox.Func(lambda x: ItemsInList(['--quick', '--only_verify'], x)),
+        cwd=cwd, error_ok=True, exit_code=True)
+
+    self.mox.ReplayAll()
+    commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
+                          '/tmp/taco',
+                          test_type=constants.SMOKE_SUITE_TEST_TYPE)
+    self.mox.VerifyAll()
 
   def testArchiveTestResults(self):
     """Test if we can archive the latest results dir to Google Storage."""

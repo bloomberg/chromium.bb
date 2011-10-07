@@ -479,7 +479,7 @@ class VMTestStageTest(AbstractStageTest):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
-    self.build_config['quick_vm'] = False
+    self.build_config['vm_tests'] = constants.FULL_AU_TEST_TYPE
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
 
@@ -494,7 +494,7 @@ class VMTestStageTest(AbstractStageTest):
                           mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
-                          full=True)
+                          test_type=constants.FULL_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
@@ -505,7 +505,7 @@ class VMTestStageTest(AbstractStageTest):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
-    self.build_config['quick_vm'] = True
+    self.build_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
 
     self.mox.StubOutWithMock(commands, 'RunTestSuite')
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
@@ -518,7 +518,7 @@ class VMTestStageTest(AbstractStageTest):
                           mox.IgnoreArg(),
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
-                          full=False)
+                          test_type=constants.SIMPLE_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
@@ -834,7 +834,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
     # Disable most paths by default and selectively enable in tests
 
-    self.build_config['vm_tests'] = False
+    self.build_config['vm_tests'] = None
     self.build_config['build_type'] = constants.PFQ_TYPE
     self.build_config['usepkg_chroot'] = False
     self.build_config['fast'] = False
@@ -855,7 +855,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
   def testAllConditionalPaths(self):
     """Enable all paths to get line coverage."""
-    self.build_config['vm_tests'] = True
+    self.build_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
     self.options.tests = True
     self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
     self.build_config['usepkg_chroot'] = True
@@ -911,7 +911,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
   def testFalseTestArg(self):
     """Make sure our logic for build test arg can toggle to false."""
-    self.build_config['vm_tests'] = False
+    self.build_config['vm_tests'] = None
     self.options.tests = True
     self.options.hw_tests = True
     self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE

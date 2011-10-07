@@ -99,5 +99,13 @@ VALID_BUILD_TYPES = [PFQ_TYPE, COMMIT_QUEUE_TYPE, CHROME_PFQ_TYPE,
                      BUILD_FROM_SOURCE_TYPE, CHROOT_BUILDER_TYPE,
                      REFRESH_PACKAGES_TYPE]
 
+# Defines VM Test types.
+SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
+SIMPLE_AU_TEST_TYPE = 'pfq_suite'
+FULL_AU_TEST_TYPE = 'full_suite'
+
+VALID_AU_TEST_TYPES = [SMOKE_SUITE_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
+                       FULL_AU_TEST_TYPE]
+
 VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
                             'chromeos/config/chromeos_version.sh')
