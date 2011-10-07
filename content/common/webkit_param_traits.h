@@ -122,7 +122,7 @@ struct ParamTraits<webkit::WebPluginMimeType> {
 };
 
 template <>
-struct ParamTraits<webkit::WebPluginInfo> {
+struct CONTENT_EXPORT ParamTraits<webkit::WebPluginInfo> {
   typedef webkit::WebPluginInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);

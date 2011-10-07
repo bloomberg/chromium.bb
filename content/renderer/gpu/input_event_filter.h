@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -20,7 +21,8 @@
 // The user of this class provides an instance of InputEventFilter::Handler,
 // which will be passed WebInputEvents on the target thread.
 //
-class InputEventFilter : public IPC::ChannelProxy::MessageFilter {
+class CONTENT_EXPORT InputEventFilter
+    : public IPC::ChannelProxy::MessageFilter {
  public:
   typedef base::Callback<void(int /*routing_id*/,
                               const WebKit::WebInputEvent*)> Handler;

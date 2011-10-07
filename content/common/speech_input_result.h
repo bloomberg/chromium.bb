@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 
 namespace speech_input {
 
@@ -38,7 +39,7 @@ enum SpeechInputError {
   kErrorBadGrammar, // There was an error in the speech recognition grammar.
 };
 
-struct SpeechInputResult {
+struct CONTENT_EXPORT SpeechInputResult {
   SpeechInputError error;
   SpeechInputHypothesisArray hypotheses;
 
