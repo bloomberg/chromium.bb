@@ -152,6 +152,13 @@ Rect.prototype.inside = function(x, y) {
          this.top <= y && y < this.top + this.height;
 };
 
+Rect.prototype.intersects = function(rect) {
+  return (this.left + this.width) > rect.left &&
+         (rect.left + rect.width) > this.left &&
+         (this.top + this.height) > rect.top &&
+         (rect.top + rect.height) > this.top;
+};
+
 /**
  * Clamp the rectangle to the bounds by moving it.
  * Decrease the size only if necessary.

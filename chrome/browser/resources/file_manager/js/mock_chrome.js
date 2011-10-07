@@ -70,28 +70,30 @@ chrome.fileBrowserPrivate = {
     if (urlList.length == 0)
       return callback([]);
 
+    // This is how File Manager gets the extension id.
+    var extensionId = chrome.extension.getURL('').split('/')[2];
+
     if (!callback)
       throw new Error('Missing callback');
 
     var tasks =
-    [ { taskId: 'upload-picasr',
+    [ { taskId: extensionId + '|upload-picasr',
         title: 'Upload to Picasr',
         regexp: /\.(jpe?g|gif|png|cr2?|tiff)$/i,
         iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcJA0AW6BUAAACdSURBVCjPzZExC4MwEIW/1L2U/gwHf1/3WrqIkz/PWVAoXdolRNLBJNhwiS6FPjguuZf3csnBL2HBLikNtSFmS3yIROUMWhKrHR2XNZiLa9tGkaqtDa4TjBX0yIf8+osLnT3BnKDIvddm/uCRE+fgDc7r4iBPJWAWDADQLh8Tt3neSAYKdAu8gc69L4rAN8v+Fk/3DrxcluD5mr/CB34jRiE3x1kcAAAAAElFTkSuQmCC'
       },
-      { taskId: 'upload-orcbook',
+      { taskId: extensionId + '|upload-orcbook',
         title: 'Upload to OrcBook',
         regexp: /\.(jpe?g|png|cr2?|tiff)$/i,
         iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcOAw9XftIAAADFSURBVCjPrZKxCsIwEIa/FHFwsvYxROjSQXAoqLiIL+xgBtvZ91A6uOnQc2hT0zRqkR4c3P25+/PfJTCwLU6wEpgBWkDXuInDPSwF5r7mJIeNQFTnIiCeONpVdYlLoK9wEUhNg8+B9FDVaZcgCKAovjTXfvPJFwGZtKW60pt8bOGBzfLouemnFY/MAs8wDeEI4NzaybewBu4AysKVgrK0gfe5iB9vjdAUqQ/S1Y/R3IX9Zc1zxc7zxe2/0Iskt7AsG0hhx14W8XV43FgV4gAAAABJRU5ErkJggg=='
       },
-      { taskId: 'mount-archive',
+      { taskId: extensionId + '|mount-archive',
         title: 'Mount',
         regexp: /\.(zip)$/i,
         iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcOAw9XftIAAADFSURBVCjPrZKxCsIwEIa/FHFwsvYxROjSQXAoqLiIL+xgBtvZ91A6uOnQc2hT0zRqkR4c3P25+/PfJTCwLU6wEpgBWkDXuInDPSwF5r7mJIeNQFTnIiCeONpVdYlLoK9wEUhNg8+B9FDVaZcgCKAovjTXfvPJFwGZtKW60pt8bOGBzfLouemnFY/MAs8wDeEI4NzaybewBu4AysKVgrK0gfe5iB9vjdAUqQ/S1Y/R3IX9Zc1zxc7zxe2/0Iskt7AsG0hhx14W8XV43FgV4gAAAABJRU5ErkJggg=='
       },
       {
-        internal: true,
-        taskId: 'mock|gallery',
+        taskId: extensionId + '|gallery',
         title: 'View and edit',
         regexp: /\.(jpe?g|gif|png|cr2?|tiff)$/i,
         iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcOAw9XftIAAADFSURBVCjPrZKxCsIwEIa/FHFwsvYxROjSQXAoqLiIL+xgBtvZ91A6uOnQc2hT0zRqkR4c3P25+/PfJTCwLU6wEpgBWkDXuInDPSwF5r7mJIeNQFTnIiCeONpVdYlLoK9wEUhNg8+B9FDVaZcgCKAovjTXfvPJFwGZtKW60pt8bOGBzfLouemnFY/MAs8wDeEI4NzaybewBu4AysKVgrK0gfe5iB9vjdAUqQ/S1Y/R3IX9Zc1zxc7zxe2/0Iskt7AsG0hhx14W8XV43FgV4gAAAABJRU5ErkJggg=='
@@ -234,6 +236,19 @@ chrome.fileBrowserPrivate = {
       FORMAT_DEVICE: 'Format device',
 
       GALLERY: 'View and edit',
+      GALLERY_EDIT: 'Edit',
+      GALLERY_SHARE: 'Share',
+      GALLERY_AUTOFIX: 'Auto-fix',
+      GALLERY_FIXED: 'Fixed',
+      GALLERY_CROP: 'Crop',
+      GALLERY_EXPOSURE: 'Brightness',
+      GALLERY_BRIGHTNESS: 'Brightness',
+      GALLERY_CONTRAST: 'Contrast',
+      GALLERY_ROTATE_LEFT: 'Left',
+      GALLERY_ROTATE_RIGHT: 'Right',
+      GALLERY_ENTER_WHEN_DONE: 'Press Enter when done',
+      GALLERY_UNDO: 'Undo',
+      GALLERY_REDO: 'Redo',
 
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
       FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',
@@ -344,8 +359,8 @@ chrome.fileBrowserHandler = {
 };
 
 chrome.extension = {
-  getURL: function() {
-    return document.location.href;
+  getURL: function(path) {
+    return path || document.location.href;
   }
 };
 

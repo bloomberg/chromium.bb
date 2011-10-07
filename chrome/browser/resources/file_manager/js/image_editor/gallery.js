@@ -10,52 +10,39 @@
  * @param {MetadataProvider} metadataProvider
  * @param {Array.<Object>} shareActions
  */
-function Gallery(container, closeCallback, metadataProvider, shareActions) {
+function Gallery(container, closeCallback, metadataProvider, shareActions,
+    displayStringFunction) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
-  this.editing_ = false;
-  this.sharing_ = false;
   this.closeCallback_ = closeCallback;
   this.metadataProvider_ = metadataProvider;
+
+  this.displayStringFunction_ = function(id) {
+    return displayStringFunction('GALLERY_' + id.toUpperCase());
+  }
+
   this.onFadeTimeoutBound_ = this.onFadeTimeout_.bind(this);
   this.fadeTimeoutId_ = null;
+  this.fadingEnabled_ = true;
 
   this.initDom_(shareActions);
 }
 
 Gallery.open = function(parentDirEntry, items, selectedItem,
-                        closeCallback, metadataProvider, shareActions) {
+   closeCallback, metadataProvider, shareActions, displayStringFunction) {
   var container = document.querySelector('.gallery');
   container.innerHTML = '';
-  var gallery = new Gallery(
-      container, closeCallback, metadataProvider, shareActions);
+  var gallery = new Gallery(container, closeCallback, metadataProvider,
+      shareActions, displayStringFunction);
   gallery.load(parentDirEntry, items, selectedItem);
 };
-
-// TODO(kaznacheev): localization.
-Gallery.displayStrings = {
-  edit: 'Edit',
-  share: 'Share',
-  autofix: 'Auto-fix',
-  crop: 'Crop',
-  exposure: 'Brightness',
-  brightness: 'Brightness',
-  contrast: 'Contrast',
-  'rotate-left': 'Left',
-  'rotate-right': 'Right',
-  'enter-when-done': 'Press Enter when done',
-  fixed: 'Fixed',
-  undo: 'Undo',
-  redo: 'Redo'
-};
-
 
 Gallery.editorModes = [
   new ImageEditor.Mode.InstantAutofix(),
   new ImageEditor.Mode.Crop(),
   new ImageEditor.Mode.Exposure(),
-  new ImageEditor.Mode.OneClick('rotate-left', new Command.Rotate(-1)),
-  new ImageEditor.Mode.OneClick('rotate-right', new Command.Rotate(1))
+  new ImageEditor.Mode.OneClick('rotate_left', new Command.Rotate(-1)),
+  new ImageEditor.Mode.OneClick('rotate_right', new Command.Rotate(1))
 ];
 
 Gallery.FADE_TIMEOUT = 3000;
@@ -71,7 +58,7 @@ Gallery.prototype.initDom_ = function(shareActions) {
     doc.body.removeEventListener('keydown', window.galleryKeyDown);
   }
   if (window.galleryMouseMove) {
-    doc.body.removeEventListener('keydown', window.galleryMouseMove);
+    doc.body.removeEventListener('mousemove', window.galleryMouseMove);
   }
 
   window.galleryKeyDown = this.onKeyDown_.bind(this);
@@ -119,17 +106,9 @@ Gallery.prototype.initDom_ = function(shareActions) {
 
   this.editButton_ = doc.createElement('div');
   this.editButton_.className = 'button edit';
-  this.editButton_.textContent = Gallery.displayStrings['edit'];
+  this.editButton_.textContent = this.displayStringFunction_('edit');
   this.editButton_.addEventListener('click', this.onEdit_.bind(this));
   this.toolbar_.appendChild(this.editButton_);
-
-  this.shareButton_ = doc.createElement('div');
-  this.shareButton_.className = 'button share';
-  this.shareButton_.textContent = Gallery.displayStrings['share'];
-  this.shareButton_.addEventListener('click', this.onShare_.bind(this));
-  if (shareActions.length > 0) {
-    this.toolbar_.appendChild(this.shareButton_);
-  }
 
   this.editBarMain_  = doc.createElement('div');
   this.editBarMain_.className = 'edit-main';
@@ -144,47 +123,31 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.editBarModeWrapper_.className = 'edit-modal-wrapper';
   this.editBarMode_.appendChild(this.editBarModeWrapper_);
 
-  this.shareMenu_ = doc.createElement('div');
-  this.shareMenu_.className = 'share-menu';
-  this.shareMenu_.setAttribute('hidden', 'hidden');
-  for (var index = 0; index < shareActions.length; index++) {
-    var action = shareActions[index];
-    var row = doc.createElement('div');
-    var img = doc.createElement('img');
-    img.src = action.iconUrl;
-    row.appendChild(img);
-    row.appendChild(doc.createTextNode(action.title));
-    row.addEventListener('click', this.onActionExecute_.bind(this, action));
-    this.shareMenu_.appendChild(row);
-  }
-  if (shareActions.length > 0) {
-    this.container_.appendChild(this.shareMenu_);
-  }
-
   this.editor_ = new ImageEditor(
+      this.container_,
       this.imageContainer_,
       this.editBarMain_,
       this.editBarModeWrapper_,
       Gallery.editorModes,
-      Gallery.displayStrings);
+      this.displayStringFunction_);
 
   this.imageView_ = this.editor_.getImageView();
 
   this.editor_.trackWindow(doc.defaultView);
+
+  if (shareActions.length > 0) {
+    this.shareMode_ = new ShareMode(
+        this.container_, this.toolbar_, shareActions,
+        this.onShare_.bind(this), this.onActionExecute_.bind(this),
+        this.displayStringFunction_);
+
+  } else {
+    this.shareMode_ = null;
+  }
 };
 
 Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
   this.parentDirEntry_ = parentDirEntry;
-
-  this.editButton_.removeAttribute('pressed');
-  this.shareButton_.removeAttribute('pressed');
-
-  this.shareMenu_.setAttribute('hidden', 'hidden');
-  this.editing_ = false;
-  this.sharing_ = false;
-
-  this.cancelFading_();
-  this.initiateFading_();
 
   var urls = [];
   var selectedURL;
@@ -221,6 +184,7 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
     self.currentItem_ =
         self.ribbon_.load(urls, selectedURL, self.metadataProvider_);
     // Flash the ribbon briefly to let the user know it is there.
+    self.cancelFading_();
     self.initiateFading_(Gallery.FIRST_FADE_TIMEOUT);
   }
 
@@ -230,23 +194,24 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
   });
 };
 
+Gallery.prototype.saveItem_ = function(item, callback, canvas, modified) {
+  if (modified) {
+    item.save(
+        this.parentDirEntry_, this.metadataProvider_, canvas, callback);
+  } else {
+    if (callback) callback();
+  }
+};
+
 Gallery.prototype.saveChanges_ = function(opt_callback) {
-  var item = this.currentItem_;
-  var self = this;
-  this.editor_.closeSession(function(canvas, modified) {
-    if (modified) {
-      item.save(
-          self.parentDirEntry_, self.metadataProvider_, canvas, opt_callback);
-    } else {
-      if (opt_callback) opt_callback();
-    }
-  });
+  this.editor_.requestImage(
+      this.saveItem_.bind(this, this.currentItem_, opt_callback));
 };
 
 Gallery.prototype.onActionExecute_ = function(action) {
   var item = this.currentItem_;
   if (item) {
-    this.onShare_();
+    // saveChanges_ makes the editor leave the mode and close the sharing menu.
     this.saveChanges_(function() {
       action.execute([item.getUrl()]);
     });
@@ -262,7 +227,9 @@ Gallery.prototype.onSelect_ = function(item) {
   if (this.currentItem_ == item)
     return;
 
-  this.saveChanges_();
+  this.editor_.closeSession(
+      this.saveItem_.bind(this, this.currentItem_, null));
+
   var slide = item.getIndex() - this.currentItem_.getIndex();
 
   this.currentItem_ = item;
@@ -271,47 +238,55 @@ Gallery.prototype.onSelect_ = function(item) {
       this.currentItem_.getContent(), this.currentItem_.getMetadata(), slide);
 };
 
+Gallery.prototype.isEditing_ = function() {
+  return this.container_.hasAttribute('editing');
+};
+
 Gallery.prototype.onEdit_ = function() {
-  if (this.editing_) {
+  ImageUtil.setAttribute(this.container_, 'editing', !this.isEditing_());
+
+  // isEditing_ has just been flipped to a new value.
+  if (this.isEditing_()) {
+    this.cancelFading_();
+  } else if (!this.isSharing_()) {
     this.editor_.leaveModeGently();
     this.initiateFading_();
-  } else {
-    this.cancelFading_();
   }
-  this.editing_ = !this.editing_;
-  ImageUtil.setAttribute(this.container_, 'editing', this.editing_);
-  ImageUtil.setAttribute(this.editButton_, 'pressed', this.editing_);
+
+  ImageUtil.setAttribute(this.editButton_, 'pressed', this.isEditing_());
+};
+
+Gallery.prototype.isSharing_ = function(event) {
+  return this.shareMode_ && this.shareMode_ == this.editor_.getMode();
 };
 
 Gallery.prototype.onShare_ = function(event) {
-  ImageUtil.setAttribute(this.container_, 'tools', true);
-
-  if (this.sharing_) {
-    this.shareMenu_.setAttribute('hidden', 'hidden');
+  this.editor_.enterMode(this.shareMode_, event);
+  if (this.isSharing_()) {
+    this.cancelFading_();
   } else {
-    this.shareMenu_.removeAttribute('hidden');
+    this.initiateFading_();
   }
-  this.sharing_ = !this.sharing_;
 };
 
 Gallery.prototype.onKeyDown_ = function(event) {
-  if (this.sharing_)
-    return;
-
-  if (this.editing_ && this.editor_.onKeyDown(event))
+  if (this.isEditing_() && this.editor_.onKeyDown(event))
     return;
 
   switch (event.keyIdentifier) {
     case 'U+001B':  // Escape
-      if (this.editing_) {
+      if (this.isEditing_()) {
         this.onEdit_();
+      } else if (this.isSharing_()) {
+        this.editor_.leaveMode();
+        this.initiateFading_();
       } else {
         this.onClose_();
       }
       break;
 
     case 'U+0045':  // 'e'
-      if (!this.editing_)
+      if (!this.isEditing_())
         this.onEdit_();
       break;
 
@@ -337,7 +312,7 @@ Gallery.prototype.onMouseMove_ = function(e) {
 
 Gallery.prototype.onFadeTimeout_ = function() {
   this.fadeTimeoutId_ = null;
-  if (this.editing_ || this.sharing_) return;
+  if (this.isEditing_() || this.isSharing_()) return;
   this.container_.removeAttribute('tools');
 };
 
@@ -353,7 +328,7 @@ Gallery.prototype.initiateFading_ = function(opt_timeout) {
   if (!this.fadingEnabled_)
       return;
 
-  if (this.editing_ || this.sharing_ || this.fadeTimeoutId_) {
+  if (this.isEditing_() || this.isSharing_() || this.fadeTimeoutId_) {
     return;
   }
   this.fadeTimeoutId_ = window.setTimeout(
@@ -778,4 +753,46 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
   }
 
   this.img_.setAttribute('src', metadata.thumbnailURL || this.url_);
+};
+
+function ShareMode(container, toolbar, shareActions,
+                   onClick, actionCallback, displayStringFunction) {
+  ImageEditor.Mode.call(this, 'share');
+
+  this.message_ = null;
+
+  var doc = container.ownerDocument;
+  this.button_ = doc.createElement('div');
+  this.button_.className = 'button share';
+  this.button_.textContent = displayStringFunction('share');
+  this.button_.addEventListener('click', onClick);
+  toolbar.appendChild(this.button_);
+
+  this.menu_ = doc.createElement('div');
+  this.menu_.className = 'share-menu';
+  this.menu_.setAttribute('hidden', 'hidden');
+  for (var index = 0; index < shareActions.length; index++) {
+    var action = shareActions[index];
+    var row = doc.createElement('div');
+    var img = doc.createElement('img');
+    img.src = action.iconUrl;
+    row.appendChild(img);
+    row.appendChild(doc.createTextNode(action.title));
+    row.addEventListener('click', actionCallback.bind(null, action));
+    this.menu_.appendChild(row);
+  }
+  container.appendChild(this.menu_);
+}
+
+ShareMode.prototype = { __proto__: ImageEditor.Mode.prototype };
+
+ShareMode.prototype.setUp = function() {
+  ImageEditor.Mode.prototype.setUp.apply(this, arguments);
+  ImageUtil.setAttribute(this.menu_, 'hidden', false);
+  ImageUtil.setAttribute(this.button_, 'pressed', false);
+};
+
+ShareMode.prototype.cleanUpUI = function() {
+  ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
+  ImageUtil.setAttribute(this.menu_, 'hidden', true);
 };

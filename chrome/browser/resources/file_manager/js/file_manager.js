@@ -2007,9 +2007,10 @@ FileManager.prototype = {
       // Pass every image in the directory so that it shows up in the ribbon.
       urls = [];
       for (var i = 0; i != this.dataModel_.length; i++) {
-        var url = this.dataModel_.item(i).toURL();
-        if (url.match(iconTypes.image))
-          urls.push(url);
+        var entry = this.dataModel_.item(i);
+        if (this.getIconType(entry) == 'image') {
+          urls.push(entry.toURL());
+        }
       }
     } else {
       // Multiple selection. Pass just those items, select the first entry.
@@ -2028,7 +2029,8 @@ FileManager.prototype = {
             self.refocus();
           },
           self.metadataProvider_,
-          shareActions);
+          shareActions,
+          str);
     };
 
     galleryFrame.src = 'js/image_editor/gallery.html';

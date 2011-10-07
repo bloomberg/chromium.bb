@@ -16,6 +16,23 @@ var mockActions = [
     execute: function() { alert('Sending is not supported') }
   }];
 
+
+var mockDisplayStrings = {
+  GALLERY_EDIT: 'Edit',
+  GALLERY_SHARE: 'Share',
+  GALLERY_ENTER_WHEN_DONE: 'Press Enter when done',
+  GALLERY_AUTOFIX: 'Auto-fix',
+  GALLERY_FIXED: 'Fixed',
+  GALLERY_CROP: 'Crop',
+  GALLERY_EXPOSURE: 'Brightness',
+  GALLERY_BRIGHTNESS: 'Brightness',
+  GALLERY_CONTRAST: 'Contrast',
+  GALLERY_ROTATE_LEFT: 'Left',
+  GALLERY_ROTATE_RIGHT: 'Right',
+  GALLERY_UNDO: 'Undo',
+  GALLERY_REDO: 'Redo'
+};
+
 function loadGallery(items) {
   if (!items) items = [createTestGrid()];
 
@@ -31,7 +48,8 @@ function loadGallery(items) {
       items[0],
       function() {},  // Do nothing on Close
       metadataProvider,
-      mockActions);
+      mockActions,
+      function(id) { return mockDisplayStrings[id] || id } );
 
   iframe.focus();
 }

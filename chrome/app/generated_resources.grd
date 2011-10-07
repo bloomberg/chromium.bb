@@ -9281,8 +9281,47 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Format device
       </message>
 
-      <message name="IDS_FILE_BROWSER_GALLERY" desc="Title of the action to open gallery.">
-        Gallery
+      <message name="IDS_FILE_BROWSER_GALLERY" desc="Title of the action to open the Gallery.">
+        View and edit
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_EDIT" desc="In the Gallery, the title on the button shows/hides editing buttons.">
+        Edit
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_SHARE" desc="In the Gallery, the title on the button that lets the user share a photo.">
+        Share
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_ENTER_WHEN_DONE" desc="In the Gallery, the text in a floating panel that prompts the user to press enter when they are done with the changes to a photo.">
+        Press Enter when done
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_AUTOFIX" desc="In the Gallery, the title on the button that applies the Auto-Fix filter to a photo.">
+        Auto-fix
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_FIXED" desc="In the Gallery, the text in a floating panel that notifies that the photo has been automatically fixed.">
+        Fixed
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_CROP" desc="In the Gallery, the title on the button that cuts out a rectangular fragment from a photo">
+        Crop
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_EXPOSURE" desc="In the Gallery, the title on the button that applies the Brightness/Contrast filter to a photo.">
+        Brightness
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_BRIGHTNESS" desc="In the Gallery, the text next to the Brightness slider.">
+        Brightness
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_CONTRAST" desc="In the Gallery, the text next to the Contrast slider.">
+        Contrast
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_ROTATE_LEFT" desc="In the Gallery, the title on the button that rotates the photo 90 degrees to the left (counterclockwise).">
+        Left
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_ROTATE_RIGHT" desc="In the Gallery, the title on the button that rotates the photo 90 degrees to the right (clockwise).">
+        Right
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_UNDO" desc="In the Gallery, the text on the button that reverts the most recent operation.">
+        Undo
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_REDO" desc="In the Gallery, the text on the button that performs again the operation that has been recently reverted.">
+        Redo
       </message>
 
       <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">

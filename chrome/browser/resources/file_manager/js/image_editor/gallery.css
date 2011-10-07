@@ -40,14 +40,14 @@ body {
   background-color: rgba(81,81,81,1);
 }
 
+/* Image container and canvas elements */
+
 .gallery > .image-container {
   position: absolute;
   height: 100%;
   width: 100%;
   background-color: rgba(0,0,0,1);
 }
-
-/* Image container and canvas elements */
 
 .gallery > .image-container > canvas {
   position: absolute;
@@ -99,11 +99,6 @@ body {
   -webkit-transform: translate(0, 0);
 }
 
-.gallery[tools][mousedrag] > .toolbar {
-  pointer-events: none;
-  opacity: 0.2;
-}
-
 .gallery[tools][locked] > .toolbar {
   pointer-events: none;
 }
@@ -151,6 +146,29 @@ body {
 
 .gallery .arrow.right[active] {
   background-image: url(../../images/gallery/arrow_right.png);
+}
+
+/* Special behavior on mouse drag.
+  Redundant .gallery attributes included to make the rules more specific */
+
+/* Everything but the image container should become mouse-transparent */
+.gallery[tools][editing][mousedrag] * {
+  pointer-events: none;
+}
+
+.gallery[tools][editing][mousedrag] .image-container {
+  pointer-events: auto;
+}
+
+/* The editor marks elements with 'dimmed' attribute to get them out of the way
+ of the crop frame */
+.gallery[tools][editing] > *[dimmed],
+.gallery[tools][editing] > *[dimmed] * {
+  pointer-events: none;
+}
+
+.gallery[tools][editing] > *[dimmed] {
+  opacity: 0.2;
 }
 
 /* Thumbnails */
@@ -253,14 +271,14 @@ body {
   width: 100%;
 }
 
-.gallery .toolbar .edit-bar > .edit-main{
+.gallery .edit-main {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   opacity: 0;
   -webkit-transition: opacity 0.25s ease-in-out;
 }
 
-.gallery[editing] .toolbar .edit-bar > .edit-main{
+.gallery[editing] .edit-main {
   pointer-events: auto;
   opacity: 1.0;
 }
@@ -325,19 +343,19 @@ body {
   background-image: url(../../images/gallery/icon_brightness_selected.png);
 }
 
-.gallery > .toolbar .button.rotate-right {
+.gallery > .toolbar .button.rotate_right {
   background-image: url(../../images/gallery/icon_rotate.png);
 }
 
-.gallery > .toolbar .button.rotate-right[pressed] {
+.gallery > .toolbar .button.rotate_right[pressed] {
   background-image: url(../../images/gallery/icon_rotate_selected.png);
 }
 
-.gallery > .toolbar .button.rotate-left {
+.gallery > .toolbar .button.rotate_left {
   background-image: url(../../images/gallery/icon_rotate_left.png);
 }
 
-.gallery > .toolbar .button.rotate-left[pressed] {
+.gallery > .toolbar .button.rotate_left[pressed] {
   background-image: url(../../images/gallery/icon_rotate_left_selected.png);
 }
 
@@ -431,7 +449,7 @@ body {
 }
 
 .gallery .edit-modal .range {
-  margin: 9px 10px 9px 0;
+  margin: 12px 10px 6px 0;
 }
 
 /* Crop frame */
@@ -461,7 +479,7 @@ body {
 
 .gallery .crop-frame div{
   position: absolute;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 1);
   -webkit-box-shadow: 0 0 3px rgba(0, 0, 0, 0.75);
 }
 
@@ -561,7 +579,7 @@ body {
   position: absolute;
   right: 10px;
   bottom: 80px;
-  background-color: rgba(240,240,240,1);;
+  background-color: rgba(240,240,240,1);
   opacity: 1.0;
   -webkit-transition: opacity 0.5s ease-in-out;
   padding: 10px;
@@ -573,6 +591,7 @@ body {
 
 .gallery .share-menu[hidden] {
   opacity: 0.0;
+  bottom: -100%;  /* offscreen so that 'dimmed' attribute does not show it*/
   pointer-events: none;
 }
 

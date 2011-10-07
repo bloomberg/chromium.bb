@@ -15,7 +15,7 @@ function ImageView(container, viewport) {
 }
 
 ImageView.ANIMATION_DURATION = 180;
-ImageView.ANIMATION_WAIT_INTERVAL = ImageView.ANIMATION_DURATION + 100;
+ImageView.ANIMATION_WAIT_INTERVAL = ImageView.ANIMATION_DURATION * 2;
 ImageView.FAST_SCROLL_INTERVAL = 300;
 
 ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
@@ -164,7 +164,7 @@ ImageView.prototype.load = function(
     // Force the main image proportions to avoid flicker.
     var time = Date.now();
 
-    var mainImageLoadDelay = ImageView.ANIMATION_DURATION;
+    var mainImageLoadDelay = ImageView.ANIMATION_WAIT_INTERVAL;
 
     // Do not do slide-in animation when scrolling very fast.
     if (self.lastLoadTime_ &&

@@ -70,6 +70,9 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
 ImageEditor.Mode.Crop.prototype.positionDOM = function() {
   var screenClipped = this.viewport_.getScreenClipped();
 
+  this.editor_.hideOverlappingTools(
+      this.viewport_.imageToScreenRect(this.cropRect_.getRect()));
+
   this.domOverlay_.style.left = screenClipped.left + 'px';
   this.domOverlay_.style.top  = screenClipped.top + 'px';
   this.domOverlay_.style.width = screenClipped.width + 'px';
@@ -94,6 +97,7 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
   this.domOverlay_.parentNode.removeChild(this.domOverlay_);
   this.domOverlay_ = null;
+  this.editor_.hideOverlappingTools(null);
 };
 
 ImageEditor.Mode.Crop.GRAB_RADIUS = 6;
