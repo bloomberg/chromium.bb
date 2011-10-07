@@ -53,10 +53,6 @@ class MyInstance : public pp::Instance, public pp::MouseLock_Dev {
             !mouse_locked_) {
           LockMouse(
               callback_factory_.NewRequiredCallback(&MyInstance::DidLockMouse));
-        } else if (
-            mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE &&
-            mouse_locked_) {
-          UnlockMouse();
         }
         return true;
       }
@@ -72,9 +68,13 @@ class MyInstance : public pp::Instance, public pp::MouseLock_Dev {
       case PP_INPUTEVENT_TYPE_KEYDOWN: {
         pp::KeyboardInputEvent key_event(event);
         // Lock the mouse when the Enter key is pressed.
-        if (!mouse_locked_ && key_event.GetKeyCode() == 13) {
-          LockMouse(
-              callback_factory_.NewRequiredCallback(&MyInstance::DidLockMouse));
+        if (key_event.GetKeyCode() == 13) {
+          if (mouse_locked_) {
+            UnlockMouse();
+          } else {
+            LockMouse(callback_factory_.NewRequiredCallback(
+                &MyInstance::DidLockMouse));
+          }
         }
         return true;
       }
