@@ -31,6 +31,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   //     completed setting itself up and called us back.
   SyncBackendHostForProfileSyncTest(
       Profile* profile,
+      SyncPrefs* sync_prefs,
       bool set_initial_sync_ended_on_init,
       bool synchronous_init,
       bool fail_initial_download);

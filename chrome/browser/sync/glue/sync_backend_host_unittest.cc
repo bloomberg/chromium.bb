@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
+#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
@@ -19,10 +20,6 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// TODO(akalin): Remove this once we fix the TODO below.
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
 
 namespace browser_sync {
 
@@ -87,16 +84,8 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   TestingProfile profile;
   profile.CreateRequestContext();
 
-  SyncBackendHost backend(profile.GetDebugName(), &profile);
-
-  // TODO(akalin): Handle this in SyncBackendHost instead of in
-  // ProfileSyncService, or maybe figure out a way to share the
-  // "register sync prefs" code.
-  PrefService* pref_service = profile.GetPrefs();
-  pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken, "");
-  pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted,
-                                    false,
-                                    PrefService::UNSYNCABLE_PREF);
+  SyncPrefs sync_prefs(profile.GetPrefs());
+  SyncBackendHost backend(profile.GetDebugName(), &profile, &sync_prefs);
 
   MockSyncFrontend mock_frontend;
   sync_api::SyncCredentials credentials;

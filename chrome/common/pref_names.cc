@@ -1348,7 +1348,7 @@ const char kSyncHasSetupCompleted[] = "sync.has_setup_completed";
 // Boolean specifying whether to automatically sync all data types (including
 // future ones, as they're added).  If this is true, the following preferences
 // (kSyncBookmarks, kSyncPasswords, etc.) can all be ignored.
-const char kKeepEverythingSynced[] = "sync.keep_everything_synced";
+const char kSyncKeepEverythingSynced[] = "sync.keep_everything_synced";
 
 // Booleans specifying whether the user has selected to sync the following
 // datatypes.
@@ -1364,6 +1364,7 @@ const char kSyncExtensions[] = "sync.extensions";
 const char kSyncExtensionSettings[] = "sync.extension_settings";
 const char kSyncSearchEngines[] = "sync.search_engines";
 const char kSyncSessions[] = "sync.sessions";
+const char kSyncAppNotifications[] = "sync.app_notifications";
 
 // Boolean used by enterprise configuration management in order to lock down
 // sync.
@@ -1373,17 +1374,14 @@ const char kSyncManaged[] = "sync.managed";
 // used when sync is disabled by the user via the privacy dashboard.
 const char kSyncSuppressStart[] = "sync.suppress_start";
 
-// Boolean to represent whether the legacy autofill profile data has been
-// migrated to the new model.
-const char kAutofillProfileMigrated[] = "sync.autofill_migrated";
-
 // List of the currently acknowledged set of sync types, used to figure out
 // if a new sync type has rolled out so we can notify the user.
-const char kAcknowledgedSyncTypes[] = "sync.acknowledged_types";
+const char kSyncAcknowledgedSyncTypes[] = "sync.acknowledged_types";
 
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.
-const char kEncryptionBootstrapToken[] = "sync.encryption_bootstrap_token";
+const char kSyncEncryptionBootstrapToken[] =
+    "sync.encryption_bootstrap_token";
 
 // Boolean tracking whether the user authenticated with OAuth.
 const char kSyncUsingOAuth[] = "sync.using_oauth";

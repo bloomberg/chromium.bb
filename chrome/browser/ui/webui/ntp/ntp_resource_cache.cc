@@ -176,7 +176,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(prefs::kAcknowledgedSyncTypes, this);
+  pref_change_registrar_.Add(prefs::kSyncAcknowledgedSyncTypes, this);
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kEnableBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kHomePageIsNewTabPage, this);

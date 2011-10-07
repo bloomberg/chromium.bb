@@ -196,8 +196,10 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     if (!service_.get()) {
       service_.reset(new PasswordTestProfileSyncService(
           &factory_, &profile_, "test_user", false, root_task, node_task));
-      service_->RegisterPreferences();
-      profile_.GetPrefs()->SetBoolean(prefs::kSyncPasswords, true);
+      syncable::ModelTypeSet preferred_types;
+      service_->GetPreferredDataTypes(&preferred_types);
+      preferred_types.insert(syncable::PASSWORDS);
+      service_->ChangePreferredDataTypes(preferred_types);
       EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
           Return(service_.get()));
       PasswordDataTypeController* data_type_controller =

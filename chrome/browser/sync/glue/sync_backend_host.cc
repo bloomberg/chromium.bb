@@ -17,7 +17,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
@@ -29,10 +28,10 @@
 #include "chrome/browser/sync/sessions/session_state.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
+#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "webkit/glue/webkit_glue.h"
@@ -57,12 +56,15 @@ using sync_api::SyncCredentials;
 
 #define SVLOG(verbose_level) VLOG(verbose_level) << name_ << ": "
 
-SyncBackendHost::SyncBackendHost(const std::string& name, Profile* profile)
+SyncBackendHost::SyncBackendHost(const std::string& name,
+                                 Profile* profile,
+                                 SyncPrefs* sync_prefs)
     : core_(new Core(name, ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       initialization_state_(NOT_ATTEMPTED),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
+      sync_prefs_(sync_prefs),
       name_(name),
       sync_notifier_factory_(webkit_glue::GetUserAgent(GURL()),
                              profile_->GetRequestContext(),
@@ -71,6 +73,7 @@ SyncBackendHost::SyncBackendHost(const std::string& name, Profile* profile)
       sync_data_folder_path_(
           profile_->GetPath().Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()) {
+  CHECK(sync_prefs_);
 }
 
 SyncBackendHost::SyncBackendHost()
@@ -78,6 +81,7 @@ SyncBackendHost::SyncBackendHost()
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(NULL),
+      sync_prefs_(NULL),
       name_("Unknown"),
       sync_notifier_factory_(webkit_glue::GetUserAgent(GURL()),
                              NULL,
@@ -105,8 +109,9 @@ void SyncBackendHost::Initialize(
   DCHECK(frontend);
 
   syncable::ModelTypeSet initial_types_with_nigori(initial_types);
-  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted))
+  if (sync_prefs_->HasSyncSetupCompleted()) {
     initial_types_with_nigori.insert(syncable::NIGORI);
+  }
 
   registrar_.reset(new SyncBackendRegistrar(initial_types_with_nigori,
                                             name_,
@@ -121,7 +126,7 @@ void SyncBackendHost::Initialize(
       profile_->GetRequestContext(),
       credentials,
       delete_sync_data_folder,
-      RestoreEncryptionBootstrapToken(),
+      sync_prefs_->GetEncryptionBootstrapToken(),
       false));
 }
 
@@ -872,11 +877,10 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     return;
   }
 
-  bool setup_completed =
-      profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted);
   // If setup has completed, start off in DOWNLOADING_NIGORI so that
   // we start off by refreshing encryption.
-  if (setup_completed && initialization_state_ < DOWNLOADING_NIGORI) {
+  if (sync_prefs_->HasSyncSetupCompleted() &&
+      initialization_state_ < DOWNLOADING_NIGORI) {
     initialization_state_ = DOWNLOADING_NIGORI;
   }
 
@@ -978,16 +982,7 @@ sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
 
 void SyncBackendHost::PersistEncryptionBootstrapToken(
     const std::string& token) {
-  PrefService* prefs = profile_->GetPrefs();
-
-  prefs->SetString(prefs::kEncryptionBootstrapToken, token);
-  prefs->ScheduleSavePersistentPrefs();
-}
-
-std::string SyncBackendHost::RestoreEncryptionBootstrapToken() {
-  PrefService* prefs = profile_->GetPrefs();
-  std::string token = prefs->GetString(prefs::kEncryptionBootstrapToken);
-  return token;
+  sync_prefs_->SetEncryptionBootstrapToken(token);
 }
 
 SyncBackendHost::PendingConfigureDataTypesState::

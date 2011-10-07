@@ -41,6 +41,7 @@ class ChangeProcessor;
 class JsBackend;
 class JsEventHandler;
 class SyncBackendRegistrar;
+class SyncPrefs;
 
 // SyncFrontend is the interface used by SyncBackendHost to communicate with
 // the entity that created it and, presumably, is interested in sync-related
@@ -119,10 +120,12 @@ class SyncBackendHost {
   typedef sync_api::SyncManager::Status::Summary StatusSummary;
   typedef sync_api::SyncManager::Status Status;
 
-  // Create a SyncBackendHost with a reference to the |frontend| that it serves
-  // and communicates to via the SyncFrontend interface (on the same thread
-  // it used to call the constructor).
-  SyncBackendHost(const std::string& name, Profile* profile);
+  // Create a SyncBackendHost with a reference to the |frontend| that
+  // it serves and communicates to via the SyncFrontend interface (on
+  // the same thread it used to call the constructor).  Does not take
+  // ownership of |sync_prefs|.
+  SyncBackendHost(const std::string& name,
+                  Profile* profile, SyncPrefs* sync_prefs);
   // For testing.
   // TODO(skrul): Extract an interface so this is not needed.
   SyncBackendHost();
@@ -501,7 +504,6 @@ class SyncBackendHost {
   // passphrase.  |token| must be valid UTF-8 as we use the PrefService for
   // storage.
   void PersistEncryptionBootstrapToken(const std::string& token);
-  std::string RestoreEncryptionBootstrapToken();
 
   // Our core, which communicates directly to the syncapi.
   scoped_refptr<Core> core_;
@@ -545,6 +547,8 @@ class SyncBackendHost {
   MessageLoop* const frontend_loop_;
 
   Profile* const profile_;
+
+  SyncPrefs* const sync_prefs_;
 
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;

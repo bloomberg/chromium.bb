@@ -121,7 +121,8 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
   args->SetBoolean("showSyncEverythingPage", false);
 
   args->SetBoolean("syncAllDataTypes",
-      service->profile()->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced));
+      service->profile()->GetPrefs()->GetBoolean(
+          prefs::kSyncKeepEverythingSynced));
 
   // Bookmarks, Preferences, and Themes are launched for good, there's no
   // going back now.  Check if the other data types are registered though.

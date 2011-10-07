@@ -63,7 +63,6 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
         user_cancelled_dialog_(false),
         is_using_secondary_passphrase_(false),
         encrypt_everything_(false) {
-    RegisterPreferences();
     ResetTestStats();
   }
 

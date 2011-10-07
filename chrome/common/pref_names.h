@@ -483,7 +483,7 @@ extern const char kDevToolsSplitLocation[];
 
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncHasSetupCompleted[];
-extern const char kKeepEverythingSynced[];
+extern const char kSyncKeepEverythingSynced[];
 extern const char kSyncBookmarks[];
 extern const char kSyncPasswords[];
 extern const char kSyncPreferences[];
@@ -497,13 +497,13 @@ extern const char kSyncExtensionSettings[];
 extern const char kSyncManaged[];
 extern const char kSyncSearchEngines[];
 extern const char kSyncSessions[];
+extern const char kSyncAppNotifications[];
 extern const char kSyncSuppressStart[];
 extern const char kGoogleServicesUsername[];
 extern const char kSyncUsingOAuth[];
 extern const char kSyncUsingSecondaryPassphrase[];
-extern const char kEncryptionBootstrapToken[];
-extern const char kAutofillProfileMigrated[];
-extern const char kAcknowledgedSyncTypes[];
+extern const char kSyncEncryptionBootstrapToken[];
+extern const char kSyncAcknowledgedSyncTypes[];
 
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];

@@ -74,17 +74,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
 
 // TCM ID - 3699293.
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
-                       kKeepEverythingSynced) {
+                       kSyncKeepEverythingSynced) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
 
   ASSERT_TRUE(BooleanPrefMatches(
-      prefs::kKeepEverythingSynced));
+      prefs::kSyncKeepEverythingSynced));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncThemes));
 
   GetClient(0)->DisableSyncForDatatype(syncable::THEMES);
   ASSERT_FALSE(BooleanPrefMatches(
-      prefs::kKeepEverythingSynced));
+      prefs::kSyncKeepEverythingSynced));
 }
 
 // TCM ID - 3661290.
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, SignInDialog) {
   ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncExtensions));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kSyncAutofill));
   ASSERT_TRUE(BooleanPrefMatches(
-      prefs::kKeepEverythingSynced));
+      prefs::kSyncKeepEverythingSynced));
 
   GetClient(0)->DisableSyncForDatatype(syncable::PREFERENCES);
   GetClient(1)->EnableSyncForDatatype(syncable::PREFERENCES);
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, SignInDialog) {
   ASSERT_FALSE(BooleanPrefMatches(prefs::kSyncExtensions));
   ASSERT_FALSE(BooleanPrefMatches(prefs::kSyncAutofill));
   ASSERT_FALSE(BooleanPrefMatches(
-      prefs::kKeepEverythingSynced));
+      prefs::kSyncKeepEverythingSynced));
 }
 
 // TCM ID - 3666296.

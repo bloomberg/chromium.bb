@@ -20,7 +20,6 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/failed_datatypes_handler.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/sync_js_controller.h"
+#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -103,6 +103,7 @@ struct UserShare;
 //      are differentiated by the DataTypeController state.
 //
 class ProfileSyncService : public browser_sync::SyncFrontend,
+                           public browser_sync::SyncPrefObserver,
                            public browser_sync::UnrecoverableErrorHandler,
                            public NotificationObserver {
  public:
@@ -357,7 +358,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Returns whether sync is managed, i.e. controlled by configuration
   // management. If so, the user is not allowed to configure sync.
-  bool IsManaged();
+  bool IsManaged() const;
 
   // UnrecoverableErrorHandler implementation.
   virtual void OnUnrecoverableError(
@@ -406,10 +407,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       browser_sync::ChangeProcessor* change_processor);
   virtual void DeactivateDataType(syncable::ModelType type);
 
+  // SyncPrefObserver implementation.
+  virtual void OnSyncManagedPrefChange(bool is_sync_managed) OVERRIDE;
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Changes which data types we're going to be syncing to |preferred_types|.
   // If it is running, the DataTypeManager will be instructed to reconfigure
@@ -478,10 +482,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   SigninManager* signin() { return signin_.get(); }
   const std::string& cros_user() const { return cros_user_; }
 
-  // Returns the set of unacknowledged types (new data types added since the
-  // last call to AcknowledgedSyncTypes())..
-  syncable::ModelTypeBitSet GetUnacknowledgedTypes() const;
-
   // Marks all currently registered types as "acknowledged" so we won't prompt
   // the user about them any more.
   void AcknowledgeSyncedTypes();
@@ -502,10 +502,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Shuts down the backend sync components.
   // |sync_disabled| indicates if syncing is being disabled or not.
   void Shutdown(bool sync_disabled);
-
-  // Methods to register and remove preferences.
-  void RegisterPreferences();
-  void ClearPreferences();
 
   // Return SyncCredentials from the TokenService.
   sync_api::SyncCredentials GetCredentials();
@@ -566,8 +562,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   void ClearStaleErrors();
 
-  static const char* GetPrefNameForDataType(syncable::ModelType data_type);
-
   // About-flags experiment names for datatypes that aren't enabled by default
   // yet.
   static std::string GetExperimentNameForDataType(
@@ -601,6 +595,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // The profile whose data we are synchronizing.
   Profile* profile_;
+
+  // The class that handles getting, setting, and persisting sync
+  // preferences.
+  browser_sync::SyncPrefs sync_prefs_;
 
   // Email for the ChromiumOS user, if we're running under ChromiumOS.
   std::string cros_user_;
@@ -650,10 +648,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   ScopedRunnableMethodFactory<ProfileSyncService>
       scoped_runnable_method_factory_;
-
-  // The preference that controls whether sync is under control by configuration
-  // management.
-  BooleanPrefMember pref_sync_managed_;
 
   // This allows us to gracefully handle an ABORTED return code from the
   // DataTypeManager in the event that the server informed us to cease and
