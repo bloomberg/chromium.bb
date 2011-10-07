@@ -26,6 +26,7 @@ they reference.
 import optparse
 import re
 import subprocess
+import sys
 
 # A map of symbol => informative text about it.
 NOTES = {
@@ -93,26 +94,43 @@ def ExtractSymbolReferences(binary, start, end):
     yield ref
 
 
-parser = optparse.OptionParser(usage='%prog filename')
-opts, args = parser.parse_args()
-if len(args) != 1:
-  parser.error('missing filename argument')
-binary = args[0]
+def main():
+  parser = optparse.OptionParser(usage='%prog filename')
+  parser.add_option('-i', '--instances', dest='calculate_instances',
+                    action='store_true', default=False,
+                    help='Only print out the number of static initializers')
+  opts, args = parser.parse_args()
+  if len(args) != 1:
+    parser.error('missing filename argument')
+    return 1
+  binary = args[0]
 
-demangler = Demangler()
-for addr, size, filename in ParseNm(binary):
-  if size == 2:
-    # gcc generates a two-byte 'repz retq' initializer when there is nothing
-    # to do.  jyasskin tells me this is fixed in gcc 4.6.
-    # Two bytes is too small to do anything, so just ignore it.
-    continue
+  demangler = Demangler()
+  static_initializers_count = 0
+  for addr, size, filename in ParseNm(binary):
+    if size == 2:
+      # gcc generates a two-byte 'repz retq' initializer when there is nothing
+      # to do.  jyasskin tells me this is fixed in gcc 4.6.
+      # Two bytes is too small to do anything, so just ignore it.
+      continue
 
-  print '%s (initializer offset 0x%x size 0x%x)' % (filename, addr, size)
-  for ref in ExtractSymbolReferences(binary, addr, addr+size):
-    ref = demangler.Demangle(ref)
-    if ref in NOTES:
-      print ' ', '%s [%s]' % (ref, NOTES[ref])
-    else:
-      print ' ', ref
-  print
+    if (opts.calculate_instances):
+      static_initializers_count += 1
+      continue
 
+    print '%s (initializer offset 0x%x size 0x%x)' % (filename, addr, size)
+    for ref in ExtractSymbolReferences(binary, addr, addr+size):
+      ref = demangler.Demangle(ref)
+      if ref in NOTES:
+        print ' ', '%s [%s]' % (ref, NOTES[ref])
+      else:
+        print ' ', ref
+    print
+
+  if opts.calculate_instances:
+    print static_initializers_count
+  return 0
+
+
+if '__main__' == __name__:
+  sys.exit(main())
