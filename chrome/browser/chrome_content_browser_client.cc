@@ -101,6 +101,18 @@
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #endif
 
+
+#if defined(USE_AURA) || defined(TOUCH_UI)
+#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
+#elif defined(OS_WIN)
+#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
+#include "content/browser/renderer_host/render_widget_host_view_win.h"
+#elif defined(OS_LINUX)
+#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#endif
+
 namespace {
 
 // Handles rewriting Web UI URLs.
@@ -138,6 +150,23 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   return new ChromeBrowserMainPartsGtk(parameters);
 #else
   return NULL;
+#endif
+}
+
+RenderWidgetHostView* ChromeContentBrowserClient::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+#if defined(USE_AURA) || defined(TOUCH_UI)
+  return new RenderWidgetHostViewViews(widget);
+#elif defined(OS_WIN)
+  if (views::Widget::IsPureViews())
+    return new RenderWidgetHostViewViews(widget);
+  return new RenderWidgetHostViewWin(widget);
+#elif defined(OS_LINUX)
+  return new RenderWidgetHostViewGtk(widget);
+#elif defined(OS_MACOSX)
+  return render_widget_host_view_mac::CreateRenderWidgetHostView(widget);
+#else
+#error Need to create your platform ViewForWidget here.
 #endif
 }
 

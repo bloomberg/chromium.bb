@@ -13,6 +13,7 @@
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_WIN)
+#include "content/browser/renderer_host/render_widget_host_view_win.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view_win.h"
 #include "content/common/view_messages.h"
@@ -30,6 +31,15 @@ ShellContentBrowserClient::~ShellContentBrowserClient() {
 BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
   return new ShellBrowserMainParts(parameters);
+}
+
+RenderWidgetHostView* ShellContentBrowserClient::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+#if defined(OS_WIN)
+  return new RenderWidgetHostViewWin(widget);
+#else
+  return NULL;
+#endif
 }
 
 TabContentsView* ShellContentBrowserClient::CreateTabContentsView(

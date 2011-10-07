@@ -28,6 +28,11 @@ BrowserMainParts* MockContentBrowserClient::CreateBrowserMainParts(
   return NULL;
 }
 
+RenderWidgetHostView* MockContentBrowserClient::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+  return NULL;
+}
+
 TabContentsView* MockContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {
   return new TestTabContentsView;

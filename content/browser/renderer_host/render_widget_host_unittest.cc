@@ -7,6 +7,7 @@
 #include "base/shared_memory.h"
 #include "base/timer.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/notification_details.h"
@@ -420,7 +421,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
   scoped_ptr<RenderWidgetHostView> view(
-      RenderWidgetHostView::CreateViewForWidget(host_.get()));
+      content::GetContentClient()->browser()->CreateViewForWidget(host_.get()));
   host_->SetView(view.get());
 
   // Create a checkerboard background to test with.

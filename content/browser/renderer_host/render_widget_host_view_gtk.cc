@@ -494,12 +494,6 @@ class RenderWidgetHostViewGtkWidget {
   DISALLOW_IMPLICIT_CONSTRUCTORS(RenderWidgetHostViewGtkWidget);
 };
 
-// static
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return new RenderWidgetHostViewGtk(widget);
-}
-
 RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
     : host_(widget_host),
       about_to_validate_and_paint_(false),

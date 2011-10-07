@@ -1077,11 +1077,3 @@ gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
   return gfx::kNullPluginWindow;
 }
 #endif
-
-#if defined(USE_AURA) || defined(TOUCH_UI)
-// static
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return new RenderWidgetHostViewViews(widget);
-}
-#endif

@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -191,7 +192,7 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
   RenderWidgetHost* widget_host =
       new RenderWidgetHost(process, route_id);
   RenderWidgetHostView* widget_view =
-      RenderWidgetHostView::CreateViewForWidget(widget_host);
+      content::GetContentClient()->browser()->CreateViewForWidget(widget_host);
   // Popups should not get activated.
   widget_view->set_popup_type(popup_type);
   // Save the created widget associated with the route so we can show it later.
@@ -205,7 +206,8 @@ RenderViewHostDelegateViewHelper::CreateNewFullscreenWidget(
   RenderWidgetFullscreenHost* fullscreen_widget_host =
       new RenderWidgetFullscreenHost(process, route_id);
   RenderWidgetHostView* widget_view =
-      RenderWidgetHostView::CreateViewForWidget(fullscreen_widget_host);
+      content::GetContentClient()->browser()->CreateViewForWidget(
+          fullscreen_widget_host);
   pending_widget_views_[route_id] = widget_view;
   return widget_view;
 }

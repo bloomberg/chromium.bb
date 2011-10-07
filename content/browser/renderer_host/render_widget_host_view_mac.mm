@@ -207,14 +207,6 @@ NSWindow* ApparentWindowForView(NSView* view) {
 
 }  // namespace
 
-// RenderWidgetHostView --------------------------------------------------------
-
-// static
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return new RenderWidgetHostViewMac(widget);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, public:
 
@@ -243,6 +235,12 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 void RenderWidgetHostViewMac::SetDelegate(
     RenderWidgetHostViewMacDelegate* delegate) {
   [cocoa_view_ setRWHVDelegate:delegate];
+}
+
+namespace render_widget_host_view_mac {
+RenderWidgetHostView *CreateRenderWidgetHostView(RenderWidgetHost *widget) {
+    return new RenderWidgetHostViewMac(widget);
+}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
