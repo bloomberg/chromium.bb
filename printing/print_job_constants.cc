@@ -68,9 +68,9 @@ const int kSettingHeaderFooterFontSize = 8;
 // Number of horizontal regions for headers and footers.
 const float kSettingHeaderFooterHorizontalRegions = 3;
 
-// Interstice or gap between different header footer components.
-// Hardcoded to 0.25cm = 1/10" = 7.2points.
-const float kSettingHeaderFooterInterstice = 7.2f;
+// Interstice or gap between different header footer components. Hardcoded to
+// about 0.5cm, match the value in PrintSettings::SetPrinterPrintableArea.
+const float kSettingHeaderFooterInterstice = 14.2f;
 
 // Key that specifies the date of the page that will be printed in the headers
 // and footers.

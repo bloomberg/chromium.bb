@@ -189,7 +189,7 @@ class PrintWebViewHelper
   // dictionary contains print job details such as printer name, number of
   // copies, page range, etc.
   bool UpdatePrintSettings(const base::DictionaryValue& job_settings,
-                           bool is_preview);
+                           bool generating_preview);
 
   // Get final print settings from the user.
   // Return false if the user cancels or on error.

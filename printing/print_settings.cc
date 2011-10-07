@@ -5,6 +5,7 @@
 #include "printing/print_settings.h"
 
 #include "base/atomic_sequence_num.h"
+#include "printing/print_job_constants.h"
 #include "printing/units.h"
 
 namespace printing {
@@ -54,8 +55,8 @@ void PrintSettings::SetPrinterPrintableArea(
   int margin_printer_units = 0;
   if (use_overlays) {
     // Hard-code text_height = 0.5cm = ~1/5 of inch.
-    header_footer_text_height = ConvertUnit(500, kHundrethsMMPerInch,
-                                            units_per_inch);
+    header_footer_text_height = ConvertUnit(kSettingHeaderFooterInterstice,
+                                            kPointsPerInch, units_per_inch);
     // Default margins 1.0cm = ~2/5 of an inch.
     margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch,
                                        units_per_inch);
