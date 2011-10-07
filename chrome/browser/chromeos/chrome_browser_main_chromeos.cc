@@ -18,7 +18,9 @@
 #include "content/common/main_function_params.h"
 #include "net/base/network_change_notifier.h"
 
+#if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
+#endif
 
 class MessageLoopObserver : public MessageLoopForUI::Observer {
 #if defined(TOUCH_UI) || defined(USE_AURA)

@@ -168,7 +168,9 @@ Bubble::Bubble(views::Widget::InitParams::Type type,
 #else
     : views::NativeWidgetGtk(new views::Widget),
 #endif
+#if defined(TOOLKIT_USES_GTK)
       border_contents_(NULL),
+#endif
       delegate_(NULL),
       show_status_(kOpen),
       fade_away_on_close_(false),

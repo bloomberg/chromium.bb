@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/frame/bubble_window_views.h"
 
+#if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
+#endif
 
 #include "chrome/browser/chromeos/frame/bubble_frame_view.h"
 #include "ui/gfx/skia_utils_gtk.h"
@@ -19,7 +21,7 @@ BubbleWindowViews::BubbleWindowViews(BubbleWindowStyle style)
 }
 
 void BubbleWindowViews::SetBackgroundColor() {
-#if !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
   // TODO(saintlou): Once Views are truly pure the code below needs to be
   // removed and replaced by the corresponding Views code.
   GdkColor background_color =
