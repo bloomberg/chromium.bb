@@ -255,9 +255,11 @@ IRT_ARCHIVE_BUILDERS = [
     'lucid-32-newlib-dbg',
     'lucid-64-newlib-dbg',
 ]
-# Require a correspondence with the list above.
-for builder in IRT_ARCHIVE_BUILDERS:
-  assert builder in BOT_ASSIGNMENT, builder
+def CheckBuilderMap():
+  # Require a correspondence with the list above.
+  for builder in IRT_ARCHIVE_BUILDERS:
+    assert builder in BOT_ASSIGNMENT, builder
+CheckBuilderMap()
 
 
 def Main():
