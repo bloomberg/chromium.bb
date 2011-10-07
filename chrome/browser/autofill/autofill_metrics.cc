@@ -120,7 +120,7 @@ int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
       group = EMAIL;
       break;
 
-    case AutofillType::PHONE_HOME:
+    case AutofillType::PHONE:
       group = PHONE;
       break;
 
