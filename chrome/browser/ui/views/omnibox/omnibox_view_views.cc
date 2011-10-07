@@ -298,6 +298,11 @@ std::string OmniboxViewViews::GetClassName() const {
   return kViewClassName;
 }
 
+void OmniboxViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (popup_view_->IsOpen())
+    popup_view_->UpdatePopupAppearance();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, AutocopmleteEditView implementation:
 

@@ -70,6 +70,7 @@ class OmniboxViewViews : public views::View,
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   // OmniboxView:
   virtual AutocompleteEditModel* model() OVERRIDE;
