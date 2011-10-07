@@ -544,7 +544,10 @@ pre_base_env.AddMethod(NaClTargetArchSuffix)
 # Add list of Flaky or Bad tests to skip per platform.  A
 # platform is defined as build type
 # <BUILD_TYPE>-<SUBARCH>
-bad_build_lists = {}
+bad_build_lists = {
+    # http://code.google.com/p/nativeclient/issues/detail?id=2330
+    'arm': ['run_ppapi_simple_audio_test'],
+}
 
 # This is a list of tests that do not yet pass when using nacl-glibc.
 # TODO(mseaborn): Enable more of these tests!

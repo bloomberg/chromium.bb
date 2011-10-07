@@ -317,6 +317,8 @@ STD_ENV_FOR_LIBSTDCPP=(
   LD_FOR_TARGET="${ILLEGAL_TOOL}"
   OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
+# TODO: the arm bias should be eliminated
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=865
 STD_ENV_FOR_LIBSTDCPP_CLANG=(
   CC_FOR_BUILD="${CC}"
   CC="${PNACL_CLANG}"
@@ -807,17 +809,22 @@ libc() {
 #@ clang-libs            - install native libs and build bitcode libs with clang
 clang-libs() {
   libs-clean
-
-  # NOTE: no support for glibc and clang at this point
-  # sysroot
-  clang-newlib
+  if ${LIBMODE_NEWLIB} ; then
+    # TODO(pdox): Why is this step needed?
+    sysroot
+    clang-newlib
+  elif ${LIBMODE_GLIBC} ; then
+    glibc
+  fi
   clang-build-compiler-rt
   # NOTE: this currently depends on "llvm-gcc arm"
   clang-build-libgcc_eh arm
   clang-build-libgcc_eh x86-32
   clang-build-libgcc_eh x86-64
 
-  clang-libstdcpp
+  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2289
+  #clang-libstdcpp
+  libstdcpp
 }
 
 #@ everything            - Build and install untrusted SDK. no translator
@@ -854,7 +861,7 @@ everything-post-hg() {
   driver
   llvm-gcc arm
 
-  libs
+  clang-libs
 
   # NOTE: we delay the tool building till after the sdk is essentially
   #      complete, so that sdk sanity checks don't fail
@@ -3626,7 +3633,8 @@ VerifyArchive() {
 #
 #   Verifies that a given .o file is bitcode and free of ASMSs
 verify-object-llvm() {
-  if ${LLVM_DIS} "$1" -o - | grep asm ; then
+  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2344
+  if ${LLVM_DIS} "$1" -o - | grep asm | grep -v sideeffect ; then
     echo
     echo "ERROR asm in $1"
     echo
