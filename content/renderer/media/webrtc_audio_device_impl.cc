@@ -348,12 +348,12 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   input_channels = 1;
   output_channels = 1;
   // Based on tests using the current ALSA implementation in Chrome, we have
-  // found that the best combination is 20ms on the input side and 30ms on the
+  // found that the best combination is 20ms on the input side and 10ms on the
   // output side.
-  // TODO(henrika): It might be possible to reduce the input and output buffer
+  // TODO(henrika): It might be possible to reduce the input buffer
   // size and reduce the delay even more.
   input_buffer_size = 2 * 480;
-  output_buffer_size = 3 * 480;
+  output_buffer_size = 480;
 #else
   DLOG(ERROR) << "Unsupported platform";
   return -1;
