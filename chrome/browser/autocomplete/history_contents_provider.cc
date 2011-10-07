@@ -4,7 +4,8 @@
 
 #include "chrome/browser/autocomplete/history_contents_provider.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -137,7 +138,8 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
       options.max_count = kMaxMatches;
       history->QueryHistory(input.text(), options,
           &request_consumer_,
-          NewCallback(this, &HistoryContentsProvider::QueryComplete));
+          base::Bind(&HistoryContentsProvider::QueryComplete,
+                     base::Unretained(this)));
     }
   }
 }

@@ -17,7 +17,7 @@ FaviconService::Handle FaviconService::GetFavicon(
     const GURL& icon_url,
     history::IconType icon_type,
     CancelableRequestConsumerBase* consumer,
-    FaviconDataCallback* callback) {
+    const FaviconDataCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
   AddRequest(request, consumer);
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -33,7 +33,7 @@ FaviconService::Handle FaviconService::UpdateFaviconMappingAndFetch(
     const GURL& icon_url,
     history::IconType icon_type,
     CancelableRequestConsumerBase* consumer,
-    FaviconService::FaviconDataCallback* callback) {
+    const FaviconDataCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
   AddRequest(request, consumer);
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -48,7 +48,7 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
     const GURL& page_url,
     int icon_types,
     CancelableRequestConsumerBase* consumer,
-    FaviconDataCallback* callback) {
+    const FaviconDataCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
   AddRequest(request, consumer);
   FaviconService::Handle handle = request->handle();
@@ -92,6 +92,5 @@ FaviconService::~FaviconService() {
 }
 
 void FaviconService::ForwardEmptyResultAsync(GetFaviconRequest* request) {
-  request->ForwardResultAsync(FaviconDataCallback::TupleType(
-      request->handle(), history::FaviconData()));
+  request->ForwardResultAsync(request->handle(), history::FaviconData());
 }

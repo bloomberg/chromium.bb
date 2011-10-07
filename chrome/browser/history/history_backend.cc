@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/cancelable_request.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -1024,9 +1025,7 @@ void HistoryBackend::QuerySegmentUsage(
           NewRunnableMethod(this, &HistoryBackend::DeleteOldSegmentData));
     }
   }
-  request->ForwardResult(
-      QuerySegmentUsageRequest::TupleType(request->handle(),
-                                          &request->value.get()));
+  request->ForwardResult(request->handle(), &request->value.get());
 }
 
 // Keyword visits --------------------------------------------------------------
@@ -1079,9 +1078,7 @@ void HistoryBackend::GetMostRecentKeywordSearchTerms(
     db_->GetMostRecentKeywordSearchTerms(keyword_id, prefix, max_count,
                                          &(request->value));
   }
-  request->ForwardResult(
-      GetMostRecentKeywordSearchTermsRequest::TupleType(request->handle(),
-                                                        &request->value));
+  request->ForwardResult(request->handle(), &request->value);
 }
 
 // Downloads -------------------------------------------------------------------
@@ -1094,7 +1091,7 @@ void HistoryBackend::GetNextDownloadId(
   } else {
     request->value = 0;
   }
-  request->ForwardResult(DownloadNextIdRequest::TupleType(request->value));
+  request->ForwardResult(request->value);
 }
 
 // Get all the download entries from the database.
@@ -1104,7 +1101,7 @@ void HistoryBackend::QueryDownloads(
     return;
   if (db_.get())
     db_->QueryDownloads(&request->value);
-  request->ForwardResult(DownloadQueryRequest::TupleType(&request->value));
+  request->ForwardResult(&request->value);
 }
 
 // Clean up entries that has been corrupted (because of the crash, for example).
@@ -1140,7 +1137,7 @@ void HistoryBackend::CreateDownload(
   if (!request->canceled()) {
     if (db_.get())
       db_handle = db_->CreateDownload(history_info);
-    request->ForwardResult(DownloadCreateRequest::TupleType(id, db_handle));
+    request->ForwardResult(id, db_handle);
   }
 }
 
@@ -1181,8 +1178,7 @@ void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
     }
   }
 
-  request->ForwardResult(QueryHistoryRequest::TupleType(request->handle(),
-                                                        &request->value));
+  request->ForwardResult(request->handle(), &request->value);
 
   UMA_HISTOGRAM_TIMES("History.QueryHistory",
                       TimeTicks::Now() - beginning_time);
@@ -1300,8 +1296,7 @@ void HistoryBackend::QueryRedirectsFrom(
   if (request->canceled())
     return;
   bool success = GetMostRecentRedirectsFrom(url, &request->value);
-  request->ForwardResult(QueryRedirectsRequest::TupleType(
-      request->handle(), url, success, &request->value));
+  request->ForwardResult(request->handle(), url, success, &request->value);
 }
 
 void HistoryBackend::QueryRedirectsTo(
@@ -1310,8 +1305,7 @@ void HistoryBackend::QueryRedirectsTo(
   if (request->canceled())
     return;
   bool success = GetMostRecentRedirectsTo(url, &request->value);
-  request->ForwardResult(QueryRedirectsRequest::TupleType(
-      request->handle(), url, success, &request->value));
+  request->ForwardResult(request->handle(), url, success, &request->value);
 }
 
 void HistoryBackend::GetVisibleVisitCountToHost(
@@ -1323,8 +1317,7 @@ void HistoryBackend::GetVisibleVisitCountToHost(
   Time first_visit;
   const bool success = db_.get() &&
       db_->GetVisibleVisitCountToHost(url, &count, &first_visit);
-  request->ForwardResult(GetVisibleVisitCountToHostRequest::TupleType(
-      request->handle(), success, count, first_visit));
+  request->ForwardResult(request->handle(), success, count, first_visit);
 }
 
 void HistoryBackend::QueryTopURLsAndRedirects(
@@ -1334,8 +1327,7 @@ void HistoryBackend::QueryTopURLsAndRedirects(
     return;
 
   if (!db_.get()) {
-    request->ForwardResult(QueryTopURLsAndRedirectsRequest::TupleType(
-        request->handle(), false, NULL, NULL));
+    request->ForwardResult(request->handle(), false, NULL, NULL);
     return;
   }
 
@@ -1353,8 +1345,7 @@ void HistoryBackend::QueryTopURLsAndRedirects(
     (*redirects)[top_urls->back()] = list;
   }
 
-  request->ForwardResult(QueryTopURLsAndRedirectsRequest::TupleType(
-      request->handle(), true, top_urls, redirects));
+  request->ForwardResult(request->handle(), true, top_urls, redirects);
 }
 
 // Will replace QueryTopURLsAndRedirectsRequest.
@@ -1367,15 +1358,13 @@ void HistoryBackend::QueryMostVisitedURLs(
 
   if (!db_.get()) {
     // No History Database - return an empty list.
-    request->ForwardResult(QueryMostVisitedURLsRequest::TupleType(
-        request->handle(), MostVisitedURLList()));
+    request->ForwardResult(request->handle(), MostVisitedURLList());
     return;
   }
 
   MostVisitedURLList* result = &request->value;
   QueryMostVisitedURLsImpl(result_count, days_back, result);
-  request->ForwardResult(QueryMostVisitedURLsRequest::TupleType(
-      request->handle(), *result));
+  request->ForwardResult(request->handle(), *result);
 }
 
 void HistoryBackend::QueryMostVisitedURLsImpl(int result_count,
@@ -1510,8 +1499,7 @@ void HistoryBackend::GetPageThumbnail(
   scoped_refptr<RefCountedBytes> data;
   GetPageThumbnailDirectly(page_url, &data);
 
-  request->ForwardResult(GetPageThumbnailRequest::TupleType(
-      request->handle(), data));
+  request->ForwardResult(request->handle(), data);
 }
 
 void HistoryBackend::GetPageThumbnailDirectly(
@@ -1727,8 +1715,7 @@ void HistoryBackend::UpdateFaviconMappingAndFetchImpl(
     // else case, haven't cached entry yet. Caller is responsible for
     // downloading the favicon and invoking SetFavicon.
   }
-  request->ForwardResult(GetFaviconRequest::TupleType(
-                             request->handle(), favicon));
+  request->ForwardResult(request->handle(), favicon);
 }
 
 void HistoryBackend::GetFaviconForURL(
@@ -1743,8 +1730,7 @@ void HistoryBackend::GetFaviconForURL(
   // Get the favicon from DB.
   GetFaviconFromDB(page_url, icon_types, &favicon);
 
-  request->ForwardResult(
-      GetFaviconRequest::TupleType(request->handle(), favicon));
+  request->ForwardResult(request->handle(), favicon);
 }
 
 void HistoryBackend::SetFavicon(
@@ -1927,7 +1913,7 @@ void HistoryBackend::ProcessDBTaskImpl() {
   db_task_requests_.pop_front();
   if (request->value->RunOnDBThread(this, db_.get())) {
     // The task is done. Notify the callback.
-    request->ForwardResult(HistoryDBTaskRequest::TupleType());
+    request->ForwardResult();
     // We AddRef'd the request before adding, need to release it now.
     request->Release();
   } else {
@@ -1975,7 +1961,7 @@ void HistoryBackend::DeleteURL(const GURL& url) {
 }
 
 void HistoryBackend::ExpireHistoryBetween(
-    scoped_refptr<ExpireHistoryRequest> request,
+    scoped_refptr<CancelableRequest<base::Closure> > request,
     const std::set<GURL>& restrict_urls,
     Time begin_time,
     Time end_time) {
@@ -2000,7 +1986,7 @@ void HistoryBackend::ExpireHistoryBetween(
   if (begin_time <= first_recorded_time_)
     db_->GetStartDate(&first_recorded_time_);
 
-  request->ForwardResult(ExpireHistoryRequest::TupleType());
+  request->ForwardResult();
 
   if (history_publisher_.get() && restrict_urls.empty())
     history_publisher_->DeleteUserHistoryBetween(begin_time, end_time);

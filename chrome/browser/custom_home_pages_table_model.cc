@@ -226,7 +226,8 @@ void CustomHomePagesTableModel::LoadTitleAndFavicon(Entry* entry) {
   if (favicon_service) {
     entry->favicon_handle = favicon_service->GetFaviconForURL(entry->url,
         history::FAVICON, &favicon_query_consumer_,
-        NewCallback(this, &CustomHomePagesTableModel::OnGotFavicon));
+        base::Bind(&CustomHomePagesTableModel::OnGotFavicon,
+                   base::Unretained(this)));
   }
 }
 

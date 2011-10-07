@@ -98,8 +98,8 @@ class HistoryBackendMock : public HistoryBackend {
 class HistoryServiceMock : public HistoryService {
  public:
   HistoryServiceMock() {}
-  MOCK_METHOD2(ScheduleDBTask, Handle(HistoryDBTask*,
-                                      CancelableRequestConsumerBase*));
+  MOCK_METHOD2(ScheduleDBTask, void(HistoryDBTask*,
+                                    CancelableRequestConsumerBase*));
 };
 
 class RunOnDBThreadTask : public Task {
@@ -119,7 +119,6 @@ ACTION_P2(RunTaskOnDBThread, thread, backend) {
  thread->message_loop()->PostTask(
     FROM_HERE,
     new RunOnDBThreadTask(backend, arg0));
- return 0;
 }
 
 ACTION_P4(MakeTypedUrlSyncComponents, profile, service, hb, dtc) {

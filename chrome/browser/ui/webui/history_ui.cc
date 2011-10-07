@@ -181,7 +181,8 @@ void BrowsingHistoryHandler::HandleGetHistory(const ListValue* args) {
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
-      NewCallback(this, &BrowsingHistoryHandler::QueryComplete));
+      base::Bind(&BrowsingHistoryHandler::QueryComplete,
+                 base::Unretained(this)));
 }
 
 void BrowsingHistoryHandler::HandleSearchHistory(const ListValue* args) {
@@ -206,7 +207,8 @@ void BrowsingHistoryHandler::HandleSearchHistory(const ListValue* args) {
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
-      NewCallback(this, &BrowsingHistoryHandler::QueryComplete));
+      base::Bind(&BrowsingHistoryHandler::QueryComplete,
+                 base::Unretained(this)));
 }
 
 void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
@@ -242,7 +244,8 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
       Profile::FromWebUI(web_ui_)->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       urls, begin_time, end_time, &cancelable_delete_consumer_,
-      NewCallback(this, &BrowsingHistoryHandler::RemoveComplete));
+      base::Bind(&BrowsingHistoryHandler::RemoveComplete,
+                 base::Unretained(this)));
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {

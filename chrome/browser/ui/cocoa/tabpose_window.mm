@@ -10,7 +10,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -136,7 +136,7 @@ namespace tabpose {
 class ThumbnailLoader : public base::RefCountedThreadSafe<ThumbnailLoader> {
  public:
   ThumbnailLoader(gfx::Size size, RenderWidgetHost* rwh, ThumbnailLayer* layer)
-      : size_(size), rwh_(rwh), layer_(layer), factory_(this) {}
+      : size_(size), rwh_(rwh), layer_(layer), weak_factory_(this) {}
 
   // Starts the fetch.
   void LoadThumbnail();
@@ -160,7 +160,7 @@ class ThumbnailLoader : public base::RefCountedThreadSafe<ThumbnailLoader> {
   gfx::Size size_;
   RenderWidgetHost* rwh_;  // weak
   ThumbnailLayer* layer_;  // weak, owns us
-  base::ScopedCallbackFactory<ThumbnailLoader> factory_;
+  base::WeakPtrFactory<ThumbnailLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailLoader);
 };
@@ -185,7 +185,8 @@ void ThumbnailLoader::LoadThumbnail() {
   generator->AskForSnapshot(
       rwh_,
       /*prefer_backing_store=*/false,
-      factory_.NewCallback(&ThumbnailLoader::DidReceiveBitmap),
+      base::Bind(&ThumbnailLoader::DidReceiveBitmap,
+                 weak_factory_.GetWeakPtr()),
       page_size,
       pixel_size);
 }

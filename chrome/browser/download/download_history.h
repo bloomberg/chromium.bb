@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/callback_old.h"
 #include "chrome/browser/history/history.h"
 #include "content/browser/cancelable_request.h"
 
@@ -30,10 +31,10 @@ class DownloadHistory {
   // Retrieves the next_id counter from the sql meta_table.
   // Should be much faster than Load so that we may delay downloads until after
   // this call with minimal performance penalty.
-  void GetNextId(HistoryService::DownloadNextIdCallback* callback);
+  void GetNextId(const HistoryService::DownloadNextIdCallback& callback);
 
   // Retrieves DownloadCreateInfos saved in the history.
-  void Load(HistoryService::DownloadQueryCallback* callback);
+  void Load(const HistoryService::DownloadQueryCallback& callback);
 
   // Checks whether |referrer_url| has been visited before today.  This takes
   // ownership of |callback|.
@@ -43,7 +44,7 @@ class DownloadHistory {
 
   // Adds a new entry for a download to the history database.
   void AddEntry(DownloadItem* download_item,
-                HistoryService::DownloadCreateCallback* callback);
+                const HistoryService::DownloadCreateCallback& callback);
 
   // Updates the history entry for |download_item|.
   void UpdateEntry(DownloadItem* download_item);

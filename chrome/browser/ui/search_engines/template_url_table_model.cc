@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -92,7 +93,8 @@ class ModelEntry {
     load_state_ = LOADING;
     favicon_service->GetFavicon(favicon_url, history::FAVICON,
         &request_consumer_,
-        NewCallback(this, &ModelEntry::OnFaviconDataAvailable));
+        base::Bind(&ModelEntry::OnFaviconDataAvailable,
+                   base::Unretained(this)));
   }
 
   void OnFaviconDataAvailable(
