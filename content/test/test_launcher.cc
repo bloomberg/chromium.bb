@@ -610,9 +610,11 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   // from disk may be slow on a busy bot, and can easily exceed the default
   // timeout causing flaky test failures. Use an empty test that only starts
   // and closes a browser with a long timeout to avoid those problems.
-  RunTest(launcher_delegate,
-          kEmptyTestName,
-          TestTimeouts::large_test_timeout_ms());
+  int exit_code = RunTest(launcher_delegate,
+                          kEmptyTestName,
+                          TestTimeouts::large_test_timeout_ms());
+  if (exit_code != 0)
+    return exit_code;
 
   int cycles = 1;
   if (command_line->HasSwitch(kGTestRepeatFlag)) {
@@ -620,7 +622,6 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
                       &cycles);
   }
 
-  int exit_code = 0;
   while (cycles != 0) {
     if (!RunTests(launcher_delegate,
                   should_shard,
