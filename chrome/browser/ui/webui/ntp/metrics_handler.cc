@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/ntp/metrics_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
@@ -21,12 +23,16 @@ MetricsHandler::MetricsHandler() {}
 MetricsHandler::~MetricsHandler() {}
 
 void MetricsHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("metricsHandler:recordAction",
-      NewCallback(this, &MetricsHandler::HandleRecordAction));
-  web_ui_->RegisterMessageCallback("metricsHandler:recordInHistogram",
-      NewCallback(this, &MetricsHandler::HandleRecordInHistogram));
-  web_ui_->RegisterMessageCallback("metricsHandler:logEventTime",
-      NewCallback(this, &MetricsHandler::HandleLogEventTime));
+  web_ui_->RegisterMessageCallback(
+      "metricsHandler:recordAction",
+      base::Bind(&MetricsHandler::HandleRecordAction, base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "metricsHandler:recordInHistogram",
+      base::Bind(&MetricsHandler::HandleRecordInHistogram,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "metricsHandler:logEventTime",
+      base::Bind(&MetricsHandler::HandleLogEventTime, base::Unretained(this)));
 }
 
 void MetricsHandler::HandleRecordAction(const ListValue* args) {
