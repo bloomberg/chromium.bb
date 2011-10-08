@@ -2690,8 +2690,17 @@ void RenderView::didFinishResourceLoad(
     }
   }
 
-  content::GetContentClient()->renderer()->ShowErrorPage(
-      this, frame, http_status_code);
+  std::string error_domain;
+  if (content::GetContentClient()->renderer()->HasErrorPage(
+          http_status_code, &error_domain)) {
+    WebURLError error;
+    error.unreachableURL = frame->document().url();
+    error.domain = WebString::fromUTF8(error_domain);
+    error.reason = http_status_code;
+
+    LoadNavigationErrorPage(
+        frame, frame->dataSource()->request(), error, std::string(), true);
+  }
 }
 
 void RenderView::didFailResourceLoad(

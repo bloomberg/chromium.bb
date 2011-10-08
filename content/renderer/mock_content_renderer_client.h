@@ -27,9 +27,8 @@ class MockContentRendererClient : public ContentRendererClient {
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       WebKit::WebPlugin** plugin) OVERRIDE;
-  virtual void ShowErrorPage(RenderView* render_view,
-                             WebKit::WebFrame* frame,
-                             int http_status_code) OVERRIDE;
+  virtual bool HasErrorPage(int http_status_code,
+                            std::string* error_domain) OVERRIDE;
   virtual std::string GetNavigationErrorHtml(
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error) OVERRIDE;

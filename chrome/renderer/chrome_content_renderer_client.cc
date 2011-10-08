@@ -520,20 +520,16 @@ WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(
   return blocked_plugin->plugin();
 }
 
-void ChromeContentRendererClient::ShowErrorPage(RenderView* render_view,
-                                                WebKit::WebFrame* frame,
-                                                int http_status_code) {
+bool ChromeContentRendererClient::HasErrorPage(int http_status_code,
+                                               std::string* error_domain) {
   // Use an internal error page, if we have one for the status code.
-  if (LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain,
-                                 http_status_code)) {
-    WebURLError error;
-    error.unreachableURL = frame->document().url();
-    error.domain = WebString::fromUTF8(LocalizedError::kHttpErrorDomain);
-    error.reason = http_status_code;
-
-    render_view->LoadNavigationErrorPage(
-        frame, frame->dataSource()->request(), error, std::string(), true);
+  if (!LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain,
+                                  http_status_code)) {
+    return false;
   }
+
+  *error_domain = LocalizedError::kHttpErrorDomain;
+  return true;
 }
 
 std::string ChromeContentRendererClient::GetNavigationErrorHtml(

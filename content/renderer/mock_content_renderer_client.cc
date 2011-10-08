@@ -37,9 +37,9 @@ bool MockContentRendererClient::OverrideCreatePlugin(
   return false;
 }
 
-void MockContentRendererClient::ShowErrorPage(RenderView* render_view,
-                                              WebKit::WebFrame* frame,
-                                              int http_status_code) {
+bool MockContentRendererClient::HasErrorPage(int http_status_code,
+                                             std::string* error_domain) {
+  return false;
 }
 
 std::string MockContentRendererClient::GetNavigationErrorHtml(

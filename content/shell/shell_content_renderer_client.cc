@@ -36,9 +36,9 @@ bool ShellContentRendererClient::OverrideCreatePlugin(
   return false;
 }
 
-void ShellContentRendererClient::ShowErrorPage(RenderView* render_view,
-                                               WebKit::WebFrame* frame,
-                                               int http_status_code) {
+bool ShellContentRendererClient::HasErrorPage(int http_status_code,
+                                              std::string* error_domain) {
+  return false;
 }
 
 std::string ShellContentRendererClient::GetNavigationErrorHtml(
