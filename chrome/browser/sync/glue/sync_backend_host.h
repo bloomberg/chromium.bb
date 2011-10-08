@@ -329,6 +329,10 @@ class SyncBackendHost {
     // SyncBackendHost::Initialize.
     void DoInitialize(const DoInitializeOptions& options);
 
+    // Called to check server reachability after initialization is
+    // fully completed.
+    void DoCheckServerReachable();
+
     // Called to perform credential update on behalf of
     // SyncBackendHost::UpdateCredentials
     void DoUpdateCredentials(const sync_api::SyncCredentials& credentials);

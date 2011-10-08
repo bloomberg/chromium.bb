@@ -186,6 +186,14 @@ class SyncManager::SyncInternal
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode);
 
+  void CheckServerReachable() {
+    if (connection_manager()) {
+      connection_manager()->CheckServerReachable();
+    } else {
+      NOTREACHED() << "Should be valid connection manager!";
+    }
+  }
+
   // Sign into sync with given credentials.
   // We do not verify the tokens given. After this call, the tokens are set
   // and the sync DB is open. True if successful, false if something
@@ -428,14 +436,6 @@ class SyncManager::SyncInternal
     return true;
   }
 
-  void CheckServerReachable() {
-    if (connection_manager()) {
-      connection_manager()->CheckServerReachable();
-    } else {
-      NOTREACHED() << "Should be valid connection manager!";
-    }
-  }
-
   void ReEncryptEverything(WriteTransaction* trans);
 
   // Initializes (bootstraps) the Cryptographer if NIGORI has finished
@@ -628,6 +628,11 @@ bool SyncManager::Init(
                      sync_notifier,
                      restored_key_for_bootstrapping,
                      setup_for_test_mode);
+}
+
+void SyncManager::CheckServerReachable() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  data_->CheckServerReachable();
 }
 
 void SyncManager::UpdateCredentials(const SyncCredentials& credentials) {

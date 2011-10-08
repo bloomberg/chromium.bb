@@ -421,6 +421,9 @@ class SyncManager {
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode);
 
+  // Checks if the sync server is reachable.
+  void CheckServerReachable();
+
   // Returns the username last used for a successful authentication.
   // Returns empty if there is no such username.  May be called on any
   // thread.

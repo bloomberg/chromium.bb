@@ -609,6 +609,11 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   DCHECK(success) << "Syncapi initialization failed!";
 }
 
+void SyncBackendHost::Core::DoCheckServerReachable() {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  sync_manager_->CheckServerReachable();
+}
+
 void SyncBackendHost::Core::DoUpdateCredentials(
     const SyncCredentials& credentials) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -909,6 +914,13 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     case REFRESHING_ENCRYPTION:
       initialization_state_ = INITIALIZED;
       frontend_->OnBackendInitialized(js_backend, true);
+      // Now that we're fully initialized, kick off a server
+      // reachability check.
+      sync_thread_.message_loop()->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(
+              core_.get(),
+              &SyncBackendHost::Core::DoCheckServerReachable));
       break;
     default:
       NOTREACHED();
