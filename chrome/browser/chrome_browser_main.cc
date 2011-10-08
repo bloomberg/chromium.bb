@@ -1674,6 +1674,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   // testing against a bunch of special cases that are taken care early on.
   PrepareRestartOnCrashEnviroment(parsed_command_line());
 
+  // Start watching for hangs during startup. We disarm this hang detector when
+  // ThreadWatcher takes over or when browser is shutdown.
+  StartupTimeBomb::Arm(base::TimeDelta::FromSeconds(300));
+
 #if defined(OS_WIN)
   // Registers Chrome with the Windows Restart Manager, which will restore the
   // Chrome session when the computer is restarted after a system update.
@@ -1954,6 +1958,9 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
   shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(90));
+
+  // Disarm the startup hang detector time bomb if it is still Arm'ed.
+  StartupTimeBomb::Disarm();
 
 #if defined(OS_WIN)
   // If it's the first run, log the search engine chosen.  We wait until

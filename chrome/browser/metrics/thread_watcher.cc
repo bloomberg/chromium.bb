@@ -14,6 +14,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/logging_chrome.h"
 #include "content/common/notification_service.h"
 
 #if defined(OS_WIN)
@@ -492,6 +493,11 @@ void ThreadWatcherList::InitializeAndStartWatching(
   StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime, kUnresponsiveTime,
                 unresponsive_threshold, crash_on_hang_thread_names,
                 live_threads_threshold);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableFunction(StartupTimeBomb::Disarm));
 }
 
 // static
@@ -677,9 +683,34 @@ void WatchDogThread::CleanUp() {
 
 namespace {
 
+// StartupWatchDogThread methods and members.
+//
+// Class for detecting hangs during startup.
+class StartupWatchDogThread : public base::Watchdog {
+ public:
+  // Constructor specifies how long the StartupWatchDogThread will wait before
+  // alarming.
+  explicit StartupWatchDogThread(const base::TimeDelta& duration)
+      : base::Watchdog(duration, "Startup watchdog thread", true) {
+  }
+
+  // Alarm is called if the time expires after an Arm() without someone calling
+  // Disarm(). When Alarm goes off, in release mode we get the crash dump
+  // without crashing and in debug mode we break into the debugger.
+  virtual void Alarm() {
+#ifndef NDEBUG
+    DCHECK(false);
+#else
+    logging::DumpWithoutCrashing();
+#endif
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(StartupWatchDogThread);
+};
+
 // ShutdownWatchDogThread methods and members.
 //
-// Class for watching the jank during shutdown.
+// Class for detecting hangs during shutdown.
 class ShutdownWatchDogThread : public base::Watchdog {
  public:
   // Constructor specifies how long the ShutdownWatchDogThread will wait before
@@ -698,9 +729,35 @@ class ShutdownWatchDogThread : public base::Watchdog {
 };
 }  // namespace
 
+// StartupTimeBomb methods and members.
+//
+// static
+base::Watchdog* StartupTimeBomb::startup_watchdog_ = NULL;
+
+// static
+void StartupTimeBomb::Arm(const base::TimeDelta& duration) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!startup_watchdog_);
+  startup_watchdog_ = new StartupWatchDogThread(duration);
+  startup_watchdog_->Arm();
+}
+
+// static
+void StartupTimeBomb::Disarm() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (startup_watchdog_) {
+    startup_watchdog_->Disarm();
+    // Allow the watchdog thread to shutdown on UI. Watchdog thread shutdowns
+    // very fast.
+    base::ThreadRestrictions::SetIOAllowed(true);
+    delete startup_watchdog_;
+    startup_watchdog_ = NULL;
+  }
+}
+
 // ShutdownWatcherHelper methods and members.
 //
-// ShutdownWatcherHelper is a wrapper class for watching the jank during
+// ShutdownWatcherHelper is a wrapper class for detecting hangs during
 // shutdown.
 ShutdownWatcherHelper::ShutdownWatcherHelper() : shutdown_watchdog_(NULL) {
 }

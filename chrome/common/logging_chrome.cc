@@ -449,4 +449,14 @@ size_t GetFatalAssertions(AssertionList* assertions) {
   return assertion_count;
 }
 
+
+void DumpWithoutCrashing() {
+#if defined(OS_WIN)
+  std::string str;
+  DumpProcessAssertHandler(str);
+#else
+  NOTIMPLEMENTED();
+#endif  // OS_WIN
+}
+
 }  // namespace logging

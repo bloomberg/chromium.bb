@@ -64,6 +64,7 @@
 #include "content/common/notification_registrar.h"
 
 class CustomThreadWatcher;
+class StartupTimeBomb;
 class ThreadWatcherList;
 class ThreadWatcherObserver;
 
@@ -358,7 +359,7 @@ class ThreadWatcherList {
 
   // This constructs the |ThreadWatcherList| singleton and starts watching
   // browser threads by calling StartWatching() on each browser thread that is
-  // watched.
+  // watched. It disarms StartupTimeBomb.
   static void InitializeAndStartWatching(
       uint32 unresponsive_threshold,
       const std::set<std::string>& crash_on_hang_thread_names,
@@ -493,7 +494,27 @@ class WatchDogThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
 };
 
-// This is a wrapper class for watching the jank during shutdown.
+// This is a wrapper class for getting the crash dumps of the hangs during
+// startup.
+class StartupTimeBomb {
+ public:
+  // Constructs |startup_watchdog_| which spawns a thread and starts timer.
+  // |duration| specifies how long |startup_watchdog_| will wait before it
+  // calls alarm.
+  static void Arm(const base::TimeDelta& duration);
+
+  // Disarms |startup_watchdog_| thread and then deletes it which stops the
+  // Watchdog thread.
+  static void Disarm();
+
+ private:
+  // Watches for hangs during startup until it is disarm'ed.
+  static base::Watchdog* startup_watchdog_;
+
+  DISALLOW_COPY_AND_ASSIGN(StartupTimeBomb);
+};
+
+// This is a wrapper class for detecting hangs during shutdown.
 class ShutdownWatcherHelper {
  public:
   // Create an empty holder for |shutdown_watchdog_|.
@@ -507,7 +528,7 @@ class ShutdownWatcherHelper {
   void Arm(const base::TimeDelta& duration);
 
  private:
-  // shutdown_watchdog_ watches the jank during shutdown.
+  // shutdown_watchdog_ watches for hangs during shutdown.
   base::Watchdog* shutdown_watchdog_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownWatcherHelper);
