@@ -5251,7 +5251,7 @@ void Browser::ShowSyncSetup() {
   ProfileSyncService* service =
       profile()->GetOriginalProfile()->GetProfileSyncService();
   if (service->HasSyncSetupCompleted())
-    ShowOptionsTab(chrome::kSyncSetupSubPage);
+    ShowOptionsTab(chrome::kPersonalOptionsSubPage);
   else
     service->ShowLoginDialog();
 }
