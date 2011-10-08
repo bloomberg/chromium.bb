@@ -10,7 +10,6 @@
       'mac_bundle': 1,
       'variables': {
         'use_system_xdg_utils%': 0,
-        'disable_pie%': 0,
       },
       'sources': [
         'app/breakpad_win.cc',
@@ -86,11 +85,8 @@
                 ],
               },
             ],
-            # TODO(rkc): Remove disable_pie (and instead always use
-            # -pie) once we have a fix for remote gdb and are able to
-            # correctly get section header offsets for pie
-            # executables. Currently -pie breaks remote debugging.
-            ['profiling==1 or disable_pie==1', {
+            # TODO(rkc): Remove once crosbug.com/15266 is fixed.
+            ['profiling==1', {
               'ldflags': ['-nopie'],
             }, {
               # Building with -pie needs investigating on ARM.
