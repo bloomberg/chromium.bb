@@ -81,6 +81,7 @@
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../gfx/compositor/compositor.gyp:compositor',
         '../gfx/gl/gl.gyp:gl',
         '../ui.gyp:gfx_resources',
         '../ui.gyp:ui',

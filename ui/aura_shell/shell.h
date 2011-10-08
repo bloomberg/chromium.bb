@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/desktop_delegate.h"
+#include "ui/aura_shell/aura_shell_export.h"
 
 namespace aura {
 class Window;
@@ -25,7 +26,7 @@ namespace aura_shell {
 
 // Shell is a singleton object that presents the Shell API and implements the
 // Desktop's delegate interface.
-class Shell : public aura::DesktopDelegate {
+class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate {
  public:
   // Upon creation, the Shell sets itself as the Desktop's delegate, which takes
   // ownership of the Shell.
