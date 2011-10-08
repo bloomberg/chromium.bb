@@ -202,6 +202,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void CalculateOffsetToAncestorWithLayer(
       gfx::Point* offset,
       ui::Layer** layer_parent) OVERRIDE;
+  virtual void ReorderLayers() OVERRIDE;
   virtual void ViewRemoved(View* view) OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) const OVERRIDE;
