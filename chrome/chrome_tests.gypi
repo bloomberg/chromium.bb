@@ -3178,6 +3178,7 @@
         'browser/sync/test/integration/autofill_helper.h',
         'browser/sync/test/integration/bookmarks_helper.cc',
         'browser/sync/test/integration/bookmarks_helper.h',
+        'browser/sync/test/integration/enable_disable_test.cc',
         'browser/sync/test/integration/extensions_helper.cc',
         'browser/sync/test/integration/extensions_helper.h',
         'browser/sync/test/integration/many_client_bookmarks_sync_test.cc',
