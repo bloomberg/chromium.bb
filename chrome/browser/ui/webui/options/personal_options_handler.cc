@@ -266,7 +266,7 @@ void PersonalOptionsHandler::OnStateChanged() {
   } else {
     start_stop_button_label =
         l10n_util::GetStringFUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL,
-                                   l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
     is_start_stop_button_visible = true;
     is_start_stop_button_enabled = !managed;
   }
