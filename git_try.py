@@ -51,11 +51,11 @@ if __name__ == '__main__':
     rietveld_url = GetRietveldServerUrl()
     if rietveld_url:
       args.extend(['--rietveld_url', GetRietveldServerUrl()])
-  # Hack around a limitation in logging.
-  logging.getLogger().handlers = []
   try:
     cl = git_cl.Changelist()
     change = cl.GetChange(cl.GetUpstreamBranch(), None)
+    # Hack around a limitation in logging.
+    logging.getLogger().handlers = []
     sys.exit(trychange.TryChange(
         args, change, swallow_exception=False,
         prog='git try',
