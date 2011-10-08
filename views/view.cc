@@ -1147,6 +1147,33 @@ void View::OnPaintLayer(gfx::Canvas* canvas) {
   PaintCommon(canvas);
 }
 
+void View::ReorderLayers() {
+  View* v = this;
+  while (v && !v->layer())
+    v = v->parent();
+
+  // Forward to widget in case we're in a NativeWidgetView.
+  if (!v) {
+    if (GetWidget())
+      GetWidget()->ReorderLayers();
+  } else {
+    for (Views::const_iterator i(v->children_.begin());
+         i != v->children_.end();
+         ++i)
+      (*i)->ReorderChildLayers(v->layer());
+  }
+}
+
+void View::ReorderChildLayers(ui::Layer* parent_layer) {
+  if (layer()) {
+    DCHECK_EQ(parent_layer, layer()->parent());
+    parent_layer->MoveToFront(layer());
+  } else {
+    for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i)
+      (*i)->ReorderChildLayers(parent_layer);
+  }
+}
+
 // Input -----------------------------------------------------------------------
 
 bool View::HasHitTestMask() const {
@@ -1803,29 +1830,6 @@ void View::DestroyLayer() {
   UpdateChildLayerBounds(offset);
 
   SchedulePaint();
-}
-
-void View::ReorderLayers() {
-  View* v = this;
-  while (v && !v->layer())
-    v = v->parent();
-
-  if (v) {
-    for (Views::const_iterator i(v->children_.begin());
-         i != v->children_.end();
-         ++i)
-      (*i)->ReorderChildLayers(v->layer());
-  }
-}
-
-void View::ReorderChildLayers(ui::Layer* parent_layer) {
-  if (layer()) {
-    DCHECK_EQ(parent_layer, layer()->parent());
-    parent_layer->MoveToFront(layer());
-  } else {
-    for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i)
-      (*i)->ReorderChildLayers(parent_layer);
-  }
 }
 
 // Input -----------------------------------------------------------------------

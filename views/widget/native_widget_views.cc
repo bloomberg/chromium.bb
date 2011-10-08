@@ -214,6 +214,10 @@ void NativeWidgetViews::CalculateOffsetToAncestorWithLayer(
   view_->CalculateOffsetToAncestorWithLayer(offset, layer_parent);
 }
 
+void NativeWidgetViews::ReorderLayers() {
+  view_->ReorderLayers();
+}
+
 void NativeWidgetViews::ViewRemoved(View* view) {
   internal::NativeWidgetPrivate* parent = GetParentNativeWidget();
   if (parent)

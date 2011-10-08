@@ -187,6 +187,9 @@ void NativeWidgetWayland::CalculateOffsetToAncestorWithLayer(
     ui::Layer** layer_parent) {
 }
 
+void NativeWidgetWayland::ReorderLayers() {
+}
+
 void NativeWidgetWayland::ViewRemoved(View* view) {
   NOTIMPLEMENTED();
 }

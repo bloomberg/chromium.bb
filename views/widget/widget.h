@@ -510,6 +510,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
                                           ui::Layer** layer_parent);
 
+  // Invokes method of same name on the NativeWidget.
+  void ReorderLayers();
+
   // Notifies assistive technology that an accessibility event has
   // occurred on |view|, such as when the view is focused or when its
   // value changes. Pass true for |send_native_event| except for rare

@@ -44,6 +44,7 @@ class VIEWS_EXPORT NativeWidgetView : public View {
   virtual void CalculateOffsetToAncestorWithLayer(
       gfx::Point* offset,
       ui::Layer** layer_parent) OVERRIDE;
+  virtual void ReorderLayers() OVERRIDE;
 
 #if !defined(NDEBUG)
   virtual std::string PrintViewGraph(bool first) OVERRIDE;
@@ -75,6 +76,7 @@ class VIEWS_EXPORT NativeWidgetView : public View {
   virtual void MoveLayerToParent(ui::Layer* parent_layer,
                                  const gfx::Point& point) OVERRIDE;
   virtual void UpdateChildLayerBounds(const gfx::Point& offset) OVERRIDE;
+  virtual void ReorderChildLayers(ui::Layer* parent_layer) OVERRIDE;
 
   internal::NativeWidgetDelegate* delegate() {
     return native_widget_->delegate();

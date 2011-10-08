@@ -990,6 +990,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
 
+  // Finds the layer that this view paints to (it may belong to an ancestor
+  // view), then reorders the immediate children of that layer to match the
+  // order of the view tree.
+  virtual void ReorderLayers();
+
+  // This reorders the immediate children of |*parent_layer| to match the
+  // order of the view tree.
+  virtual void ReorderChildLayers(ui::Layer* parent_layer);
+
   // Input ---------------------------------------------------------------------
 
   // Called by HitTest to see if this View has a custom hit test mask. If the
@@ -1245,15 +1254,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Destroys the layer associated with this view, and reparents any descendants
   // to the destroyed layer's parent.
   void DestroyLayer();
-
-  // Finds the layer that this view paints to (it may belong to an ancestor
-  // view), then reorders the immediate children of that layer to match the
-  // order of the view tree.
-  void ReorderLayers();
-
-  // This reorders the immediate children of |*parent_layer| to match the
-  // order of the view tree.
-  void ReorderChildLayers(ui::Layer* parent_layer);
 
   // Input ---------------------------------------------------------------------
 

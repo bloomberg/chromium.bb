@@ -163,6 +163,9 @@ void NativeWidgetAura::CalculateOffsetToAncestorWithLayer(
     *layer_parent = window_->layer();
 }
 
+void NativeWidgetAura::ReorderLayers() {
+}
+
 void NativeWidgetAura::ViewRemoved(View* view) {
   NOTIMPLEMENTED();
 }
