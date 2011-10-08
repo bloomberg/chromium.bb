@@ -37,6 +37,7 @@ class DesktopHostLinux : public DesktopHost {
   // The display and the native X window hosting the desktop.
   Display* xdisplay_;
   ::Window xwindow_;
+  Cursor xcursor_;
 
   // The size of |xwindow_|.
   gfx::Rect bounds_;
@@ -48,6 +49,7 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
     : desktop_(NULL),
       xdisplay_(NULL),
       xwindow_(0),
+      xcursor_(0),
       bounds_(bounds) {
   // This assumes that the message-pump creates and owns the display.
   xdisplay_ = base::MessagePumpX::GetDefaultXDisplay();
@@ -128,7 +130,10 @@ void DesktopHostLinux::SetSize(const gfx::Size& size) {
 }
 
 void DesktopHostLinux::SetCursor(gfx::NativeCursor cursor_type) {
-  NOTIMPLEMENTED();
+  if (xcursor_ == cursor_type)
+    return;
+  xcursor_ = cursor_type;
+  XDefineCursor(xdisplay_, xwindow_, cursor_type);
 }
 
 }  // namespace

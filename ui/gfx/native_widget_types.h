@@ -41,7 +41,12 @@ class SkRegion;
 namespace aura {
 class Window;
 }
+
+#if defined(USE_X11)
+typedef unsigned long Cursor;
 #endif
+#endif  // defined(USE_AURA)
+
 #if defined(OS_WIN)
 #include <windows.h>  // NOLINT
 typedef struct HFONT__* HFONT;
@@ -148,7 +153,7 @@ typedef void* NativeViewAccessible;
 typedef PangoFontDescription* NativeFont;
 typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
-typedef void* NativeCursor;
+typedef Cursor NativeCursor;
 typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(OS_ANDROID)
