@@ -88,11 +88,6 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   return false;
 #endif
 
-  // Temporarily hide this feature behind a command line flag.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kSyncShowPromo))
-    return false;
-
   // Honor the sync policies.
   if (!profile->GetOriginalProfile()->IsSyncAccessible())
     return false;
@@ -114,6 +109,10 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
                                                bool is_new_profile) {
   if (!ShouldShowSyncPromo(profile))
     return false;
+
+  const CommandLine& command_line  = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kNoFirstRun))
+    is_new_profile = false;
 
   RegisterSyncPromoPrefs(profile);
   if (!is_new_profile) {
