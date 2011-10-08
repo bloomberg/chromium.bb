@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "base/memory/mru_cache.h"
@@ -32,7 +33,7 @@ class VisitDatabase;
 // It will also keep a list of partial changes, such as page adds and title and
 // body sets, all of which come in at different times for a given page. When
 // all data is received or enough time has elapsed since adding, the indexed
-// data will be comitted.
+// data will be committed.
 //
 // This allows us to minimize inserts and modifications, which are slow for the
 // full text database, since each page's information is added exactly once.
@@ -126,7 +127,7 @@ class TextDatabaseManager {
 
   // The text database manager keeps a list of changes that are made to the
   // file AddPageURL/Title/Body that may not be committed to the database yet.
-  // This function removes entires from this list happening between the given
+  // This function removes entries from this list happening between the given
   // time range. It is called when the user clears their history for a time
   // range, and we don't want any of our data to "leak." If restrict_urls is
   // not empty, only changes on those URLs are deleted.
@@ -277,7 +278,7 @@ class TextDatabaseManager {
   DBCache db_cache_;
 
   // Tells us about the existence of database files on disk. All existing
-  // databases will be in here, and non-existant ones will not, so we don't
+  // databases will be in here, and non-existent ones will not, so we don't
   // have to check the disk every time.
   //
   // This set is populated LAZILY by InitDBList(), you should call that function
@@ -296,7 +297,7 @@ class TextDatabaseManager {
   QueryParser query_parser_;
 
   // Generates tasks for our periodic checking of expired "recent changes".
-  ScopedRunnableMethodFactory<TextDatabaseManager> factory_;
+  base::WeakPtrFactory<TextDatabaseManager> weak_factory_;
 
   // This object is created and managed by the history backend. We maintain an
   // opaque pointer to the object for our use.

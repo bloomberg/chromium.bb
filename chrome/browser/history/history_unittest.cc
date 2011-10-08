@@ -231,7 +231,8 @@ class HistoryTest : public testing::Test {
   // returning true on success. False means the URL was not found.
   bool QueryRedirectsFrom(HistoryService* history, const GURL& url) {
     history->QueryRedirectsFrom(url, &consumer_,
-        NewCallback(this, &HistoryTest::OnRedirectQueryComplete));
+        base::Bind(&HistoryTest::OnRedirectQueryComplete,
+                   base::Unretained(this)));
     MessageLoop::current()->Run();  // Will be exited in *QueryComplete.
     return redirect_query_success_;
   }
@@ -628,8 +629,8 @@ TEST_F(HistoryTest, Segments) {
   // Make sure a segment was created.
   history->QuerySegmentUsageSince(
       &consumer_, Time::Now() - TimeDelta::FromDays(1), 10,
-      NewCallback(static_cast<HistoryTest*>(this),
-                  &HistoryTest::OnSegmentUsageAvailable));
+      base::Bind(&HistoryTest::OnSegmentUsageAvailable,
+                 base::Unretained(this)));
 
   // Wait for processing.
   MessageLoop::current()->Run();
@@ -647,8 +648,8 @@ TEST_F(HistoryTest, Segments) {
   // Query again
   history->QuerySegmentUsageSince(
       &consumer_, Time::Now() - TimeDelta::FromDays(1), 10,
-      NewCallback(static_cast<HistoryTest*>(this),
-                  &HistoryTest::OnSegmentUsageAvailable));
+      base::Bind(&HistoryTest::OnSegmentUsageAvailable,
+                 base::Unretained(this)));
 
   // Wait for processing.
   MessageLoop::current()->Run();
@@ -665,8 +666,8 @@ TEST_F(HistoryTest, Segments) {
   // Query again
   history->QuerySegmentUsageSince(
       &consumer_, Time::Now() - TimeDelta::FromDays(1), 10,
-      NewCallback(static_cast<HistoryTest*>(this),
-                  &HistoryTest::OnSegmentUsageAvailable));
+      base::Bind(&HistoryTest::OnSegmentUsageAvailable,
+                 base::Unretained(this)));
 
   // Wait for processing.
   MessageLoop::current()->Run();
@@ -700,8 +701,9 @@ TEST_F(HistoryTest, MostVisitedURLs) {
                    PageTransition::TYPED, history::RedirectList(),
                    history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
-                                NewCallback(static_cast<HistoryTest*>(this),
-                                    &HistoryTest::OnMostVisitedURLsAvailable));
+                                base::Bind(
+                                    &HistoryTest::OnMostVisitedURLsAvailable,
+                                    base::Unretained(this)));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(2U, most_visited_urls_.size());
@@ -713,8 +715,9 @@ TEST_F(HistoryTest, MostVisitedURLs) {
                    PageTransition::TYPED, history::RedirectList(),
                    history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
-                                NewCallback(static_cast<HistoryTest*>(this),
-                                    &HistoryTest::OnMostVisitedURLsAvailable));
+                                base::Bind(
+                                    &HistoryTest::OnMostVisitedURLsAvailable,
+                                    base::Unretained(this)));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(3U, most_visited_urls_.size());
@@ -727,8 +730,9 @@ TEST_F(HistoryTest, MostVisitedURLs) {
                    PageTransition::TYPED, history::RedirectList(),
                    history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
-                                NewCallback(static_cast<HistoryTest*>(this),
-                                    &HistoryTest::OnMostVisitedURLsAvailable));
+                                base::Bind(
+                                    &HistoryTest::OnMostVisitedURLsAvailable,
+                                    base::Unretained(this)));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(3U, most_visited_urls_.size());
@@ -741,8 +745,9 @@ TEST_F(HistoryTest, MostVisitedURLs) {
                    PageTransition::TYPED, history::RedirectList(),
                    history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
-                                NewCallback(static_cast<HistoryTest*>(this),
-                                    &HistoryTest::OnMostVisitedURLsAvailable));
+                                base::Bind(
+                                    &HistoryTest::OnMostVisitedURLsAvailable,
+                                    base::Unretained(this)));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(3U, most_visited_urls_.size());
@@ -760,8 +765,9 @@ TEST_F(HistoryTest, MostVisitedURLs) {
                    PageTransition::TYPED, redirects,
                    history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
-                                NewCallback(static_cast<HistoryTest*>(this),
-                                    &HistoryTest::OnMostVisitedURLsAvailable));
+                                base::Bind(
+                                    &HistoryTest::OnMostVisitedURLsAvailable,
+                                    base::Unretained(this)));
   MessageLoop::current()->Run();
 
   EXPECT_EQ(4U, most_visited_urls_.size());

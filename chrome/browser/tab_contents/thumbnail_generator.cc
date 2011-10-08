@@ -130,7 +130,7 @@ SkBitmap GetBitmapForBackingStore(
 }  // namespace
 
 struct ThumbnailGenerator::AsyncRequestInfo {
-  scoped_ptr<ThumbnailReadyCallback> callback;
+  ThumbnailReadyCallback callback;
   scoped_ptr<TransportDIB> thumbnail_dib;
   RenderWidgetHost* renderer;  // Not owned.
 };
@@ -195,11 +195,9 @@ void ThumbnailGenerator::MonitorRenderer(RenderWidgetHost* renderer,
 
 void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
                                         bool prefer_backing_store,
-                                        ThumbnailReadyCallback* callback,
+                                        const ThumbnailReadyCallback& callback,
                                         gfx::Size page_size,
                                         gfx::Size desired_size) {
-  scoped_ptr<ThumbnailReadyCallback> callback_deleter(callback);
-
   if (prefer_backing_store) {
     BackingStore* backing_store = renderer->GetBackingStore(false);
     if (backing_store) {
@@ -210,7 +208,7 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
                                                     desired_size.height(),
                                                     kNoOptions,
                                                     NULL);
-      callback->Run(first_try);
+      callback.Run(first_try);
 
       return;
     }
@@ -249,7 +247,7 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
 #endif
 
   linked_ptr<AsyncRequestInfo> request_info(new AsyncRequestInfo);
-  request_info->callback.reset(callback_deleter.release());
+  request_info->callback = callback;
   request_info->thumbnail_dib.reset(thumbnail_dib.release());
   request_info->renderer = renderer;
   ThumbnailCallbackMap::value_type new_value(sequence_num, request_info);
@@ -318,7 +316,7 @@ void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(
     // TODO: Figure out a way to avoid this copy?
     non_owned_bitmap.copyTo(&result, SkBitmap::kARGB_8888_Config);
 
-    item->second->callback->Run(result);
+    item->second->callback.Run(result);
 
     // We're done with the callback, and with the DIB, so delete both.
     callback_map_.erase(item);

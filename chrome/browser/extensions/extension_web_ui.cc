@@ -108,9 +108,7 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
     favicon.known_icon = icon_data.get() != NULL && icon_data->size() > 0;
     favicon.image_data = icon_data;
     favicon.icon_type = history::FAVICON;
-    request_->ForwardResultAsync(
-        FaviconService::FaviconDataCallback::TupleType(request_->handle(),
-                                                       favicon));
+    request_->ForwardResultAsync(request_->handle(), favicon);
     delete this;
   }
 

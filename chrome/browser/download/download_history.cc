@@ -28,23 +28,20 @@ DownloadHistory::~DownloadHistory() {
 }
 
 void DownloadHistory::GetNextId(
-    HistoryService::DownloadNextIdCallback* callback) {
-  DCHECK(callback);
+    const HistoryService::DownloadNextIdCallback& callback) {
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (!hs) {
-    delete callback;
+  if (!hs)
     return;
-  }
+
   hs->GetNextDownloadId(&history_consumer_, callback);
 }
 
-void DownloadHistory::Load(HistoryService::DownloadQueryCallback* callback) {
-  DCHECK(callback);
+void DownloadHistory::Load(
+    const HistoryService::DownloadQueryCallback& callback) {
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (!hs) {
-    delete callback;
+  if (!hs)
     return;
-  }
+
   hs->QueryDownloads(&history_consumer_, callback);
 
   // This is the initial load, so do a cleanup of corrupt in-progress entries.
@@ -62,7 +59,8 @@ void DownloadHistory::CheckVisitedReferrerBefore(
     if (hs) {
       HistoryService::Handle handle =
           hs->GetVisibleVisitCountToHost(referrer_url, &history_consumer_,
-              NewCallback(this, &DownloadHistory::OnGotVisitCountToHost));
+              base::Bind(&DownloadHistory::OnGotVisitCountToHost,
+                         base::Unretained(this)));
       visited_before_requests_[handle] = std::make_pair(download_id, callback);
       return;
     }
@@ -73,7 +71,7 @@ void DownloadHistory::CheckVisitedReferrerBefore(
 
 void DownloadHistory::AddEntry(
     DownloadItem* download_item,
-    HistoryService::DownloadCreateCallback* callback) {
+    const HistoryService::DownloadCreateCallback& callback) {
   DCHECK(download_item);
   // Do not store the download in the history database for a few special cases:
   // - incognito mode (that is the point of this mode)
@@ -88,10 +86,7 @@ void DownloadHistory::AddEntry(
   if (download_item->is_otr() ||
       ChromeDownloadManagerDelegate::IsExtensionDownload(download_item) ||
       download_item->is_temporary() || !hs) {
-    callback->RunWithParams(
-        history::DownloadCreateRequest::TupleType(download_item->id(),
-                                                  GetNextFakeDbHandle()));
-    delete callback;
+    callback.Run(download_item->id(), GetNextFakeDbHandle());
     return;
   }
 

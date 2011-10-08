@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_HISTORY_TOP_SITES_BACKEND_H_
 #pragma once
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -35,15 +35,17 @@ class TopSitesBackend
 
   // The boolean parameter indicates if the DB existed on disk or needs to be
   // migrated.
-  typedef Callback3<Handle, scoped_refptr<MostVisitedThumbnails>, bool >::Type
-      GetMostVisitedThumbnailsCallback;
+  typedef base::Callback<
+      void(Handle, scoped_refptr<MostVisitedThumbnails>, bool)>
+          GetMostVisitedThumbnailsCallback;
   typedef CancelableRequest1<TopSitesBackend::GetMostVisitedThumbnailsCallback,
                              scoped_refptr<MostVisitedThumbnails> >
       GetMostVisitedThumbnailsRequest;
 
   // Fetches MostVisitedThumbnails.
-  Handle GetMostVisitedThumbnails(CancelableRequestConsumerBase* consumer,
-                                  GetMostVisitedThumbnailsCallback* callback);
+  Handle GetMostVisitedThumbnails(
+      CancelableRequestConsumerBase* consumer,
+      const GetMostVisitedThumbnailsCallback& callback);
 
   // Updates top sites database from the specified delta.
   void UpdateTopSites(const TopSitesDelta& delta);
@@ -56,7 +58,7 @@ class TopSitesBackend
   // Deletes the database and recreates it.
   void ResetDatabase();
 
-  typedef Callback1<Handle>::Type EmptyRequestCallback;
+  typedef base::Callback<void(Handle)> EmptyRequestCallback;
   typedef CancelableRequest<TopSitesBackend::EmptyRequestCallback>
       EmptyRequestRequest;
 
@@ -64,7 +66,7 @@ class TopSitesBackend
   // the callback on the calling thread. This is used to make sure the db has
   // finished processing a request.
   Handle DoEmptyRequest(CancelableRequestConsumerBase* consumer,
-                        EmptyRequestCallback* callback);
+                        const EmptyRequestCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<TopSitesBackend>;

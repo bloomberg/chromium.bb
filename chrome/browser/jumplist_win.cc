@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -713,7 +712,7 @@ bool JumpList::StartLoadingFavicon() {
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   handle_ = favicon_service->GetFaviconForURL(
       url, history::FAVICON, &favicon_consumer_,
-      NewCallback(this, &JumpList::OnFaviconDataAvailable));
+      base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)));
   return true;
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tabs/tab_finder.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/history/history.h"
@@ -216,7 +218,8 @@ void TabFinder::FetchRedirectStart(TabContents* tab) {
         history->QueryRedirectsTo(
             committed_entry->url(),
             &callback_consumer_,
-            NewCallback(this, &TabFinder::QueryRedirectsToComplete));
+            base::Bind(&TabFinder::QueryRedirectsToComplete,
+                       base::Unretained(this)));
     callback_consumer_.SetClientData(history, request_handle, tab);
   }
 }

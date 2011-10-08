@@ -4,6 +4,7 @@
 
 #include "chrome/browser/history/text_database_manager.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
@@ -85,7 +86,7 @@ TextDatabaseManager::TextDatabaseManager(const FilePath& dir,
       transaction_nesting_(0),
       db_cache_(DBCache::NO_AUTO_EVICT),
       present_databases_loaded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       history_publisher_(NULL) {
 }
 
@@ -532,9 +533,11 @@ TextDatabase* TextDatabaseManager::GetDBForTime(Time time,
 }
 
 void TextDatabaseManager::ScheduleFlushOldChanges() {
-  factory_.RevokeAll();
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, factory_.NewRunnableMethod(
-          &TextDatabaseManager::FlushOldChanges),
+  weak_factory_.InvalidateWeakPtrs();
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&TextDatabaseManager::FlushOldChanges,
+                 weak_factory_.GetWeakPtr()),
       kExpirationSec * Time::kMillisecondsPerSecond);
 }
 

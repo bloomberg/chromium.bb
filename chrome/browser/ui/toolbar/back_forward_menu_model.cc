@@ -6,6 +6,8 @@
 
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -231,7 +233,8 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
       entry->url(), history::FAVICON, &load_consumer_,
-      NewCallback(this, &BackForwardMenuModel::OnFavIconDataAvailable));
+      base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,
+                 base::Unretained(this)));
   load_consumer_.SetClientData(favicon_service, handle, entry->unique_id());
 }
 

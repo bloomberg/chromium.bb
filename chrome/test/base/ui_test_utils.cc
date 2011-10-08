@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -929,7 +931,7 @@ class SnapshotTaker {
     generator->AskForSnapshot(
         rwh,
         false,  // don't use backing_store
-        NewCallback(this, &SnapshotTaker::OnSnapshotTaken),
+        base::Bind(&SnapshotTaker::OnSnapshotTaken, base::Unretained(this)),
         page_size,
         desired_size);
     ui_test_utils::RunMessageLoop();

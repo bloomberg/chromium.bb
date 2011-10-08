@@ -86,7 +86,7 @@ class HistoryRequestHandler {
   HistoryRequestHandler(const GURL& page_url,
                         const GURL& icon_url,
                         int icon_type,
-                        FaviconService::FaviconDataCallback* callback)
+                        const FaviconService::FaviconDataCallback& callback)
     : page_url_(page_url),
       icon_url_(icon_url),
       icon_type_(icon_type),
@@ -97,7 +97,7 @@ class HistoryRequestHandler {
                         const GURL& icon_url,
                         int icon_type,
                         const std::vector<unsigned char>& image_data,
-                        FaviconService::FaviconDataCallback* callback)
+                        const FaviconService::FaviconDataCallback& callback)
     : page_url_(page_url),
       icon_url_(icon_url),
       icon_type_(icon_type),
@@ -105,9 +105,7 @@ class HistoryRequestHandler {
       callback_(callback) {
   }
 
-  virtual ~HistoryRequestHandler() {
-    delete callback_;
-  }
+  virtual ~HistoryRequestHandler() {}
   void InvokeCallback();
 
   const GURL page_url_;
@@ -115,7 +113,7 @@ class HistoryRequestHandler {
   const int icon_type_;
   const std::vector<unsigned char> image_data_;
   history::FaviconData favicon_data_;
-  FaviconService::FaviconDataCallback* callback_;
+  FaviconService::FaviconDataCallback callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryRequestHandler);
@@ -219,7 +217,7 @@ class TestFaviconHandler : public FaviconHandler {
       const GURL& icon_url,
       history::IconType icon_type,
       CancelableRequestConsumerBase* consumer,
-      FaviconService::FaviconDataCallback* callback) OVERRIDE {
+      const FaviconService::FaviconDataCallback& callback) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(page_url, icon_url,
                                                      icon_type, callback));
   }
@@ -228,7 +226,7 @@ class TestFaviconHandler : public FaviconHandler {
       const GURL& icon_url,
       history::IconType icon_type,
       CancelableRequestConsumerBase* consumer,
-      FaviconService::FaviconDataCallback* callback) OVERRIDE {
+      const FaviconService::FaviconDataCallback& callback) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(GURL(), icon_url,
                                                      icon_type, callback));
   }
@@ -237,7 +235,7 @@ class TestFaviconHandler : public FaviconHandler {
       const GURL& page_url,
       int icon_types,
       CancelableRequestConsumerBase* consumer,
-      FaviconService::FaviconDataCallback* callback) OVERRIDE {
+      const FaviconService::FaviconDataCallback& callback) OVERRIDE {
     history_handler_.reset(new HistoryRequestHandler(page_url, GURL(),
                                                      icon_types, callback));
   }
@@ -253,8 +251,9 @@ class TestFaviconHandler : public FaviconHandler {
                                  const GURL& icon_url,
                                  const std::vector<unsigned char>& image_data,
                                  history::IconType icon_type) OVERRIDE {
-    history_handler_.reset(new HistoryRequestHandler(page_url, icon_url,
-        icon_type, image_data, NULL));
+    history_handler_.reset(new HistoryRequestHandler(
+        page_url, icon_url,icon_type, image_data,
+        FaviconService::FaviconDataCallback()));
   }
 
   virtual FaviconService* GetFaviconService() OVERRIDE {
@@ -302,7 +301,7 @@ void DownloadHandler::InvokeCallback() {
 }
 
 void HistoryRequestHandler::InvokeCallback() {
-  callback_->Run(0, favicon_data_);
+  callback_.Run(0, favicon_data_);
 }
 
 class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
@@ -786,19 +785,17 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   // Reset the history_handler to verify whether favicon is request from
   // history.
   // Save the callback for late use.
-  FaviconService::FaviconDataCallback* callback = history_handler->callback_;
-  // Prevent the callback from being released.
-  history_handler->callback_ = NULL;
+  FaviconService::FaviconDataCallback callback = history_handler->callback_;
   helper.set_history_handler(NULL);
 
-  // Smulates download succeed.
+  // Simulates download succeed.
   download_handler->InvokeCallback();
-  // The downloaded icon should be thrown away as there is faviocn update.
+  // The downloaded icon should be thrown away as there is favicon update.
   EXPECT_FALSE(helper.history_handler());
 
   helper.set_download_handler(NULL);
 
-  // Smulates getting the icon from history.
+  // Simulates getting the icon from history.
   scoped_ptr<HistoryRequestHandler> handler;
   handler.reset(new HistoryRequestHandler(page_url, latest_icon_url,
                                           history::TOUCH_ICON, callback));

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -136,7 +137,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
       history_service->ExpireHistoryBetween(restrict_urls,
           delete_begin_, delete_end_,
           &request_consumer_,
-          NewCallback(this, &BrowsingDataRemover::OnHistoryDeletionDone));
+          base::Bind(&BrowsingDataRemover::OnHistoryDeletionDone,
+                     base::Unretained(this)));
     }
 
     // Need to clear the host cache and accumulated speculative data, as it also

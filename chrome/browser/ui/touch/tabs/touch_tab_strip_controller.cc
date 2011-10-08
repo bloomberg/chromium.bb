@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/touch/tabs/touch_tab_strip_controller.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -126,7 +128,8 @@ void TouchTabStripController::SetTabRendererDataFromModel(
             page_url,
             history::TOUCH_ICON | history::TOUCH_PRECOMPOSED_ICON,
             &consumer_,
-            NewCallback(this, &TouchTabStripController::OnTouchIconAvailable));
+            base::Bind(&TouchTabStripController::OnTouchIconAvailable,
+                       base::Unretained(this)));
     consumer_.SetClientData(favicon_service, h, touch_tab);
   }
 }

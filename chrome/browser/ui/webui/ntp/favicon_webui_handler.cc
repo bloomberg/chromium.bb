@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 
 #include "base/bind.h"
-#include "base/callback_old.h"
+#include "base/bind_helpers.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -77,7 +77,8 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
       GURL(path),
       history::FAVICON,
       &consumer_,
-      NewCallback(this, &FaviconWebUIHandler::OnFaviconDataAvailable));
+      base::Bind(&FaviconWebUIHandler::OnFaviconDataAvailable,
+                 base::Unretained(this)));
   consumer_.SetClientData(favicon_service, handle, id_++);
 }
 

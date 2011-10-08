@@ -1737,8 +1737,8 @@ void PasswordStoreLoginsChangedObserver::Init() {
   BrowserThread::PostTask(
       BrowserThread::DB,
       FROM_HERE,
-      NewRunnableMethod(
-          this, &PasswordStoreLoginsChangedObserver::RegisterObserversTask));
+      base::Bind(&PasswordStoreLoginsChangedObserver::RegisterObserversTask,
+                 this));
   done_event_.Wait();
 }
 
@@ -1764,8 +1764,8 @@ void PasswordStoreLoginsChangedObserver::Observe(
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        NewRunnableMethod(
-            this, &PasswordStoreLoginsChangedObserver::IndicateError, error));
+        base::Bind(&PasswordStoreLoginsChangedObserver::IndicateError, this,
+                   error));
     return;
   }
 
@@ -1775,8 +1775,7 @@ void PasswordStoreLoginsChangedObserver::Observe(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableMethod(
-          this, &PasswordStoreLoginsChangedObserver::IndicateDone));
+      base::Bind(&PasswordStoreLoginsChangedObserver::IndicateDone, this));
 }
 
 void PasswordStoreLoginsChangedObserver::IndicateDone() {
@@ -1909,8 +1908,8 @@ void PageSnapshotTaker::OnDomOperationCompleted(const std::string& json) {
 
     ThumbnailGenerator* generator =
         g_browser_process->GetThumbnailGenerator();
-    ThumbnailGenerator::ThumbnailReadyCallback* callback =
-        NewCallback(this, &PageSnapshotTaker::OnSnapshotTaken);
+    ThumbnailGenerator::ThumbnailReadyCallback callback =
+        base::Bind(&PageSnapshotTaker::OnSnapshotTaken, base::Unretained(this));
     // Don't actually start the thumbnail generator, this leads to crashes on
     // Mac, crbug.com/62986. Instead, just hook the generator to the
     // RenderViewHost manually.
@@ -2273,7 +2272,7 @@ void AutofillChangedObserver::Init() {
   BrowserThread::PostTask(
       BrowserThread::DB,
       FROM_HERE,
-      NewRunnableMethod(this, &AutofillChangedObserver::RegisterObserversTask));
+      base::Bind(&AutofillChangedObserver::RegisterObserversTask, this));
   done_event_.Wait();
 }
 
@@ -2308,7 +2307,7 @@ void AutofillChangedObserver::Observe(
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        NewRunnableMethod(this, &AutofillChangedObserver::IndicateDone));
+        base::Bind(&AutofillChangedObserver::IndicateDone, this));
   }
 }
 
@@ -2690,10 +2689,10 @@ WaitForProcessLauncherThreadToGoIdleObserver(
   AddRef();
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &WaitForProcessLauncherThreadToGoIdleObserver::
-              RunOnProcessLauncherThread));
+              RunOnProcessLauncherThread,
+          this));
 }
 
 WaitForProcessLauncherThreadToGoIdleObserver::
@@ -2705,10 +2704,10 @@ RunOnProcessLauncherThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER));
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      NewRunnableMethod(
-          this,
+      base::Bind(
           &WaitForProcessLauncherThreadToGoIdleObserver::
-          RunOnProcessLauncherThread2));
+              RunOnProcessLauncherThread2,
+          this));
 }
 
 void WaitForProcessLauncherThreadToGoIdleObserver::
@@ -2716,9 +2715,8 @@ RunOnProcessLauncherThread2() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread));
+      base::Bind(&WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread,
+                 this));
 }
 
 void WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread() {
