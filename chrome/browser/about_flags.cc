@@ -412,6 +412,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableNTPBookmarkFeatures)
   },
+  {
+    "enable-video-track",
+    IDS_FLAGS_ENABLE_VIDEO_TRACK_NAME,
+    IDS_FLAGS_ENABLE_VIDEO_TRACK_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableVideoTrack)
+  },
 };
 
 const Experiment* experiments = kExperiments;

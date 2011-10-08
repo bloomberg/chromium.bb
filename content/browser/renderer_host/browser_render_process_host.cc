@@ -577,6 +577,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableThreadedCompositing,
     switches::kEnableVideoFullscreen,
     switches::kEnableVideoLogging,
+    switches::kEnableVideoTrack,
     switches::kFullMemoryCrashReport,
 #if !defined (GOOGLE_CHROME_BUILD)
     // These are unsupported and not fully tested modes, so don't enable them

@@ -242,6 +242,10 @@ const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
 // the debug log.
 const char kEnableVideoLogging[]            = "enable-video-logging";
 
+// Enables support for video tracks. Current implementation is
+// incomplete and this flag is used for development and testing.
+const char kEnableVideoTrack[]              = "enable-video-track";
+
 // Enable Web Intents.
 const char kEnableWebIntents[]              = "enable-web-intents";
 

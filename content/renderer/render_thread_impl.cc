@@ -475,6 +475,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebKit::WebRuntimeFeatures::enableFullScreenAPI(
       !command_line.HasSwitch(switches::kDisableFullScreen));
 
+  WebKit::WebRuntimeFeatures::enableVideoTrack(
+      command_line.HasSwitch(switches::kEnableVideoTrack));
+
 #if defined(OS_CHROMEOS)
   // TODO(crogers): enable once Web Audio has been tested and optimized.
   WebRuntimeFeatures::enableWebAudio(false);

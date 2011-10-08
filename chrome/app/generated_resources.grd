@@ -4604,6 +4604,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_DESCRIPTION" desc="Description for the flag to enable NTP bookmark features.">
         Enable experimental bookmark features within the NewTabPage.
       </message>
+      <message name="IDS_FLAGS_ENABLE_VIDEO_TRACK_NAME" desc="Title for the flag to enable the &lt;track&gt; element for &lt;video&gt; elements.">
+        Enable &lt;track&gt; element.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_VIDEO_TRACK_DESCRIPTION" desc="Title for the flag to enable the track element for captions on &lt;videos&gt; elements.">
+        Enable the track element (not yet fully functional) for captions, subtitles, chapters, and audio descriptions on video elements.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
