@@ -74,6 +74,7 @@ WebPreferences::WebPreferences()
       show_fps_counter(false),
       asynchronous_spell_checking_enabled(true),
       accelerated_compositing_enabled(false),
+      threaded_compositing_enabled(false),
       force_compositing_mode(false),
       allow_webui_compositing(false),
       composite_to_texture_enabled(false),
@@ -248,6 +249,8 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable gpu-accelerated compositing if requested on the command line.
   settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);
+
+  settings->setUseThreadedCompositor(threaded_compositing_enabled);
 
   // Always enter compositing if requested on the command line.
   settings->setForceCompositingMode(force_compositing_mode);

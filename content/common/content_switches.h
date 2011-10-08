@@ -80,6 +80,7 @@ extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSandboxLogging[];
 extern const char kEnableSeccompSandbox[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];
+CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLogging[];

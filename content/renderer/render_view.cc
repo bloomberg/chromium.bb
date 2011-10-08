@@ -4001,6 +4001,9 @@ void RenderView::OnWasRestored(bool needs_repainting) {
 }
 
 bool RenderView::SupportsAsynchronousSwapBuffers() {
+  if (WebWidgetHandlesCompositorScheduling())
+    return false;
+
   WebKit::WebGraphicsContext3D* context = webview()->graphicsContext3D();
   if (!context)
     return false;

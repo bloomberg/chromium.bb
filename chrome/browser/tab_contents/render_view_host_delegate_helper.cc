@@ -443,6 +443,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.accelerated_compositing_enabled =
         GpuProcessHost::gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
+    web_prefs.threaded_compositing_enabled =
+        command_line.HasSwitch(switches::kEnableThreadedCompositing);
     web_prefs.force_compositing_mode =
         command_line.HasSwitch(switches::kForceCompositingMode);
     web_prefs.allow_webui_compositing =

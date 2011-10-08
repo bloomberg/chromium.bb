@@ -88,6 +88,7 @@ struct WebPreferences {
   bool show_fps_counter;
   bool asynchronous_spell_checking_enabled;
   bool accelerated_compositing_enabled;
+  bool threaded_compositing_enabled;
   bool force_compositing_mode;
   bool allow_webui_compositing;
   bool composite_to_texture_enabled;

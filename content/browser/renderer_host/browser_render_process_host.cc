@@ -574,6 +574,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kEnableSeccompSandbox,
     switches::kEnableStatsTable,
+    switches::kEnableThreadedCompositing,
     switches::kEnableVideoFullscreen,
     switches::kEnableVideoLogging,
     switches::kFullMemoryCrashReport,

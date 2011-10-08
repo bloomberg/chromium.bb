@@ -227,6 +227,9 @@ const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 
+// Enable multithreaded GPU compositing of web content.
+const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
+
 // Enable use of experimental TCP sockets API for sending data in the
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";

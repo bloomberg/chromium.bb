@@ -464,10 +464,9 @@ class WebGraphicsContext3DCommandBufferImpl
   int32 render_view_routing_id_;
 
   bool render_directly_to_web_view_;
-#ifndef WTF_USE_THREADED_COMPOSITING
   // If rendering directly to WebView, weak pointer to it.
   WebKit::WebView* web_view_;
-#endif
+
 #if defined(OS_MACOSX)
   // "Fake" plugin window handle in browser process for the compositor's output.
   gfx::PluginWindowHandle plugin_handle_;
