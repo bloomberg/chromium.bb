@@ -10,6 +10,7 @@
 #include "ui/aura/desktop_host.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/screen_aura.h"
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -36,6 +37,7 @@ Desktop::Desktop()
     compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
                                          host_->GetSize());
   }
+  gfx::Screen::SetInstance(new internal::ScreenAura);
   host_->SetDesktop(this);
   DCHECK(compositor_.get());
   window_.reset(new internal::RootWindow);

@@ -9,21 +9,22 @@
 #endif
 
 #include "base/logging.h"
-#include "ui/aura/desktop.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace {
-
-gfx::Rect GetMonitorAreaOrWorkAreaNearestPoint(const gfx::Point& point,
-                                               bool work_area) {
-  // TODO(oshima): Take point/work_area into account. Support multiple monitors.
-  return gfx::Rect(aura::Desktop::GetInstance()->GetSize());
-}
-
-}  // namespace
-
 namespace gfx {
+
+// gfx can't depend upon aura, otherwise we have circular dependencies. So,
+// gfx::Screen is pluggable for aura and Desktop plugs in the real
+// implementation.
+
+// static
+Screen* Screen::instance_ = NULL;
+
+// static
+void Screen::SetInstance(Screen* screen) {
+  delete instance_;
+  instance_ = screen;
+}
 
 // static
 gfx::Point Screen::GetCursorScreenPoint() {
@@ -38,31 +39,31 @@ gfx::Point Screen::GetCursorScreenPoint() {
 
 // static
 gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
-  gfx::Rect bounds = GetMonitorAreaNearestWindow(window);
-  // Emulate that a work area can be smaller than its monitor.
-  bounds.Inset(10, 10, 10, 10);
-  return bounds;
+  DCHECK(instance_);
+  return instance_->GetMonitorWorkAreaNearestWindowImpl(window);
 }
 
 // static
 gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeWindow window) {
-  // TODO(oshima): Take point/work_area into account. Support multiple monitors.
-  return gfx::Rect(aura::Desktop::GetInstance()->GetSize());
+  DCHECK(instance_);
+  return instance_->GetMonitorAreaNearestWindowImpl(window);
 }
 
 // static
 gfx::Rect Screen::GetMonitorWorkAreaNearestPoint(const gfx::Point& point) {
-  return GetMonitorAreaOrWorkAreaNearestPoint(point, true);
+  DCHECK(instance_);
+  return instance_->GetMonitorWorkAreaNearestPointImpl(point);
 }
 
 // static
 gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
-  return GetMonitorAreaOrWorkAreaNearestPoint(point, false);
+  DCHECK(instance_);
+  return instance_->GetMonitorAreaNearestPointImpl(point);
 }
 
 gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
-  NOTIMPLEMENTED();
-  return NULL;
+  DCHECK(instance_);
+  return instance_->GetWindowAtCursorScreenPointImpl();
 }
 
 }  // namespace gfx

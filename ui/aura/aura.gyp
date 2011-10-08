@@ -40,6 +40,8 @@
         'layout_manager.h',
         'root_window.cc',
         'root_window.h',
+        'screen_aura.cc',
+        'screen_aura.h',
         'toplevel_window_container.cc',
         'toplevel_window_container.h',
         'toplevel_window_event_filter.cc',
@@ -47,7 +49,7 @@
         'window.cc',
         'window.h',
         'window_delegate.h',
-        'window_type.h',
+        'window_types.h',
       ],
     },
     {

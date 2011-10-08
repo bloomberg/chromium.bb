@@ -1,5 +1,4 @@
 include_rules = [
-  "+aura",
   "+base",
   "+grit/gfx_resources.h",
   "+skia",

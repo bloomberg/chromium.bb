@@ -28,6 +28,9 @@
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_resources_standard',
       ],
+      'defines': [
+        'AURA_SHELL_IMPLEMENTATION',
+      ],
       'sources': [
         # All .cc, .h under views, except unittests
         'desktop_background_view.cc',

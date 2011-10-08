@@ -6,11 +6,13 @@
 #define UI_AURA_DESKTOP_DELEGATE_H_
 #pragma once
 
+#include "ui/aura/aura_export.h"
+
 namespace aura {
 
 class Window;
 
-class DesktopDelegate {
+class AURA_EXPORT DesktopDelegate {
  public:
   virtual ~DesktopDelegate() {}
 

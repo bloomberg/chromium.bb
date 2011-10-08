@@ -6,6 +6,7 @@
 #define UI_AURA_WINDOW_DELEGATE_H_
 #pragma once
 
+#include "ui/aura/aura_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -20,7 +21,7 @@ class KeyEvent;
 class MouseEvent;
 
 // Delegate interface for aura::Window.
-class WindowDelegate {
+class AURA_EXPORT WindowDelegate {
  public:
   // Called when the Window's position and/or size changes.
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,

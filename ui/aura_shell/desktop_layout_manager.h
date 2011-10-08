@@ -22,7 +22,7 @@ namespace internal {
 
 // A layout manager for the root window.
 // Resizes all of its immediate children to fill the bounds of the root window.
-class AURA_SHELL_EXPORT DesktopLayoutManager : public aura::LayoutManager {
+class DesktopLayoutManager : public aura::LayoutManager {
  public:
   explicit DesktopLayoutManager(aura::Window* owner);
   virtual ~DesktopLayoutManager();
