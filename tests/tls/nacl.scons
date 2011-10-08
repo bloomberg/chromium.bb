@@ -5,9 +5,6 @@
 
 Import('env')
 
-# Large TLS aligns don't work for newlib.
-if not env.Bit('nacl_glibc'):
-  Return()
 
 defines_map = {
     'tdata1' : ['WITH_PTHREAD'],
@@ -18,6 +15,9 @@ defines_map = {
     'largealign' : ['TDATA_LARGE_ALIGN', 'TBSS_LARGE_ALIGN', 'WITH_PTHREAD'],
     'nopthread' : ['WITH_TBSS', 'TDATA_LARGE_ALIGN', 'TBSS_LARGE_ALIGN']}
 for case_name, defines in sorted(defines_map.iteritems()):
+  # Large TLS aligns don't work for newlib.
+  if not env.Bit('nacl_glibc') and case_name in ['largealign', 'nopthread']:
+    continue
   full_name = 'tls_test_' + case_name
   if 'WITH_PTHREAD' in defines:
     libs = ['${PTHREAD_LIBS}']
