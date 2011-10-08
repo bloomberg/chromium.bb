@@ -192,12 +192,11 @@ void NativeComboboxGtk::FocusedMenuItemChanged() {
   }
 
   if (ViewsDelegate::views_delegate) {
-    ViewsDelegate::views_delegate->NotifyMenuItemFocused(
-        L"",
-        UTF8ToWide(name),
-        index,
-        count,
-        false);
+    ViewsDelegate::views_delegate->NotifyMenuItemFocused(string16(),
+                                                         UTF8ToUTF16(name),
+                                                         index,
+                                                         count,
+                                                         false);
   }
 }
 

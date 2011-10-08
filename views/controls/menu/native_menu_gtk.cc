@@ -600,12 +600,11 @@ void NativeMenuGtk::SendAccessibilityEvent() {
   name = gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item));
 
   if (ViewsDelegate::views_delegate) {
-    ViewsDelegate::views_delegate->NotifyMenuItemFocused(
-        L"",
-        UTF8ToWide(name),
-        index,
-        count,
-        submenu != NULL);
+    ViewsDelegate::views_delegate->NotifyMenuItemFocused(string16(),
+                                                         UTF8ToUTF16(name),
+                                                         index,
+                                                         count,
+                                                         submenu != NULL);
   }
 }
 

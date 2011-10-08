@@ -58,8 +58,8 @@ class TestViewsDelegate : public views::ViewsDelegate {
       views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {
   }
 
-  virtual void NotifyMenuItemFocused(const std::wstring& menu_name,
-                                     const std::wstring& menu_item_name,
+  virtual void NotifyMenuItemFocused(const string16& menu_name,
+                                     const string16& menu_item_name,
                                      int item_index,
                                      int item_count,
                                      bool has_submenu) OVERRIDE {

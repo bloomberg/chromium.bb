@@ -44,12 +44,11 @@ class TestViewsDelegate : public ViewsDelegate {
   virtual void NotifyAccessibilityEvent(
       View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {}
 
-  virtual void NotifyMenuItemFocused(
-      const std::wstring& menu_name,
-      const std::wstring& menu_item_name,
-      int item_index,
-      int item_count,
-      bool has_submenu) OVERRIDE {}
+  virtual void NotifyMenuItemFocused(const string16& menu_name,
+                                     const string16& menu_item_name,
+                                     int item_index,
+                                     int item_count,
+                                     bool has_submenu) OVERRIDE {}
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const OVERRIDE {
     return NULL;

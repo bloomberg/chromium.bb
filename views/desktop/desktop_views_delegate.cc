@@ -46,15 +46,14 @@ bool DesktopViewsDelegate::GetSavedWindowPlacement(
 }
 
 void DesktopViewsDelegate::NotifyAccessibilityEvent(
-      views::View* view, ui::AccessibilityTypes::Event event_type) {
+    views::View* view, ui::AccessibilityTypes::Event event_type) {
 }
 
-void DesktopViewsDelegate::NotifyMenuItemFocused(
-      const std::wstring& menu_name,
-      const std::wstring& menu_item_name,
-      int item_index,
-      int item_count,
-      bool has_submenu) {
+void DesktopViewsDelegate::NotifyMenuItemFocused(const string16& menu_name,
+                                                 const string16& menu_item_name,
+                                                 int item_index,
+                                                 int item_count,
+                                                 bool has_submenu) {
 }
 
 #if defined(OS_WIN)

@@ -11,11 +11,13 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
+#include "base/string16.h"
 #include "base/task.h"
 #include "chrome/browser/accessibility_events.h"
 #include "ui/base/accessibility/accessibility_types.h"
 
 class Profile;
+
 namespace views {
 class View;
 }
@@ -58,12 +60,11 @@ class AccessibilityEventRouterViews {
 
   // Handle a menu item being focused (separate because a menu item is
   // not necessarily its own view).
-  void HandleMenuItemFocused(
-      const std::wstring& menu_name,
-      const std::wstring& menu_item_name,
-      int item_index,
-      int item_count,
-      bool has_submenu);
+  void HandleMenuItemFocused(const string16& menu_name,
+                             const string16& menu_item_name,
+                             int item_index,
+                             int item_count,
+                             bool has_submenu);
 
  private:
   AccessibilityEventRouterViews();
