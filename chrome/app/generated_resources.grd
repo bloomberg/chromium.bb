@@ -8689,7 +8689,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         New user
       </message>
       <message name="IDS_PROFILES_EDIT_PROFILE_LINK" desc="Link in the avatar menu bubble to edit a profile.">
-        edit your profile
+        edit
       </message>
       <message name="IDS_PROFILES_CUSTOMIZE_PROFILE_ACCESSIBLE_NAME" desc="Description of the customize profile button. This is used for accessibility.">
         Customize user: <ph name="PROFILE_NAME">$1<ex>First user</ex></ph>
@@ -8727,7 +8727,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_PROFILES_LOCAL_PROFILE_STATE" desc="This is displayed underneath the profile name for profiles that are not signed into sync.">
-        Local user
+        Not signed in
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CONNECT_BUTTON_LABEL" desc="The label that appears on the profile connect button in the options dialog when the user has not connected a Google Account to their profile.">
