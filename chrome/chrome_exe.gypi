@@ -495,17 +495,6 @@
             'app/client_util.cc',
           ],
         }],
-        ['OS=="win" and component=="shared_library"', {
-          # This is needed because chrome_exe depends on installer_util,
-          # which depends on content_common; in component build, this
-          # translates to chrome_exe depending on content.dll, and we
-          # get multiply defined symbols if we are also including these
-          # files directly.
-          'sources!': [
-            '../content/app/startup_helper_win.cc',
-            '../content/common/content_switches.cc',
-          ],
-        }]
       ],
     },
   ],
@@ -545,7 +534,6 @@
           ],
           'defines': [
             '<@(nacl_win64_defines)',
-            'COMPILE_CONTENT_STATICALLY',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome',
