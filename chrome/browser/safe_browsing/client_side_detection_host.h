@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_DETECTION_HOST_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_callback_factory.h"
@@ -112,6 +115,11 @@ class ClientSideDetectionHost : public TabContentsObserver,
   // every page load we can simply keep this data around as a member
   // variable.  This information will be passed on to the feature extractor.
   scoped_ptr<BrowseInfo> browse_info_;
+  // Redirect chain that leads to the first page of the current host. We keep
+  // track of this for browse_info_.
+  std::vector<GURL> cur_host_redirects_;
+  // Current host, used to help determine cur_host_redirects_.
+  std::string cur_host_;
   // Handles registering notifications with the NotificationService.
   NotificationRegistrar registrar_;
 

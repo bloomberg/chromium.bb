@@ -337,6 +337,14 @@ void ClientSideDetectionHost::DidNavigateMainFramePostCommit(
   }
   browse_info_.reset(new BrowseInfo);
 
+  // Store redirect chain information.
+  if (params.url.host() != cur_host_) {
+    cur_host_ = params.url.host();
+    cur_host_redirects_ = params.redirects;
+  }
+  browse_info_->host_redirects = cur_host_redirects_;
+  browse_info_->url_redirects = params.redirects;
+
   // Notify the renderer if it should classify this URL.
   classification_request_ = new ShouldClassifyUrlRequest(params,
                                                          tab_contents(),

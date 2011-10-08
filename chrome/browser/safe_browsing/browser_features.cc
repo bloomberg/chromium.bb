@@ -19,11 +19,13 @@ const char kFirstHttpsHostVisitMoreThan24hAgo[] =
     "FirstHttpsHostVisitMoreThan24hAgo";
 
 const char kHostPrefix[] = "Host";
-const char kRedirectPrefix[] = "Redirect";
 const char kReferrer[] = "Referrer";
 const char kHasSSLReferrer[] = "HasSSLReferrer";
 const char kPageTransitionType[] = "PageTransitionType";
 const char kIsFirstNavigation[] = "IsFirstNavigation";
+const char kRedirectUrlMismatch[] = "RedirectUrlMismatch";
+const char kRedirect[] = "Redirect";
+const char kSecureRedirectValue[] = "SecureRedirect";
 const char kBadIpFetch[] = "BadIpFetch=";
 const char kSafeBrowsingMaliciousUrl[] = "SafeBrowsingMaliciousUrl=";
 const char kSafeBrowsingOriginalUrl[] = "SafeBrowsingOriginalUrl=";

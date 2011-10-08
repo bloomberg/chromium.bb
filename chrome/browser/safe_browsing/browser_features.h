@@ -50,7 +50,6 @@ extern const char kFirstHttpsHostVisitMoreThan24hAgo[];
 // Note that these features may have the following prefixes appended to them
 // that tell for which page type the feature pertains.
 extern const char kHostPrefix[];
-extern const char kRedirectPrefix[];
 
 // Referrer
 extern const char kReferrer[];
@@ -60,6 +59,14 @@ extern const char kHasSSLReferrer[];
 extern const char kPageTransitionType[];
 // True if this navigation is the first for this tab.
 extern const char kIsFirstNavigation[];
+// Feature that is set if the url from the navigation entry doesn't match the
+// url at the end of the redirect chain.
+extern const char kRedirectUrlMismatch[];
+// The redirect chain that leads to the named page.
+extern const char kRedirect[];
+// If a redirect is SSL, we will use this value instead of the actual redirect
+// so we don't leak any SSL sites.
+extern const char kSecureRedirectValue[];
 
 // Resource was fetched from a known bad IP address.
 extern const char kBadIpFetch[];

@@ -683,17 +683,17 @@ TEST_F(ClientSideDetectionServiceTest, SanitizeRequestForPingback) {
   AddNonModelFeature(StringPrintf("%s=http://referrer.com/",
                                   features::kReferrer),
                      1.0, &request);
-  AddNonModelFeature(StringPrintf("%s%s=http://redirreferrer.com/",
-                                  features::kRedirectPrefix,
-                                  features::kReferrer),
+  AddNonModelFeature(StringPrintf("%s[0]=%s",
+                                  features::kRedirect,
+                                  "http://www.redirect.com/"),
                      1.0, &request);
   AddNonModelFeature(StringPrintf("%s%s=http://hostreferrer.com/",
                                   features::kHostPrefix, features::kReferrer),
                      1.0, &request);
-  AddNonModelFeature(StringPrintf("%s%s%s=http://hostredirreferrer.com/",
+  AddNonModelFeature(StringPrintf("%s%s[1]=%s",
                                   features::kHostPrefix,
-                                  features::kRedirectPrefix,
-                                  features::kReferrer),
+                                  features::kRedirect,
+                                  "http://www.other_redirect.com/"),
                      1.0, &request);
   AddNonModelFeature(std::string(features::kBadIpFetch) + "1.2.3.4",
                      1.0, &request);

@@ -168,6 +168,9 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
         contents_wrapper()->tab_contents()));
     csd_host_->set_client_side_detection_service(csd_service_.get());
     csd_host_->set_safe_browsing_service(sb_service_.get());
+    // We need to create this here since we don't call
+    // DidNavigateMainFramePostCommit in this test.
+    csd_host_->browse_info_.reset(new BrowseInfo);
   }
 
   virtual void TearDown() {
@@ -183,9 +186,6 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   }
 
   void OnPhishingDetectionDone(const std::string& verdict_str) {
-    // Make sure we have a valid BrowseInfo object set before we call this
-    // method.
-    csd_host_->browse_info_.reset(new BrowseInfo);
     csd_host_->OnPhishingDetectionDone(verdict_str);
   }
 
@@ -244,6 +244,10 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
 
   void SetFeatureExtractor(BrowserFeatureExtractor* extractor) {
     csd_host_->feature_extractor_.reset(extractor);
+  }
+
+  void SetRedirectChain(const std::vector<GURL>& redirect_chain) {
+    csd_host_->browse_info_->url_redirects = redirect_chain;
   }
 
   void SetUnsafeResourceToCurrent() {
@@ -478,6 +482,9 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
       .WillOnce(DoAll(DeleteArg<0>(),
                       SaveArg<1>(&cb_other),
                       QuitUIMessageLoop()));
+  std::vector<GURL> redirect_chain;
+  redirect_chain.push_back(other_phishing_url);
+  SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
   MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
@@ -558,6 +565,9 @@ TEST_F(ClientSideDetectionHostTest,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), IsNull()))
       .WillOnce(DoAll(DeleteArg<0>(), QuitUIMessageLoop()));
+  std::vector<GURL> redirect_chain;
+  redirect_chain.push_back(url);
+  SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
   MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));

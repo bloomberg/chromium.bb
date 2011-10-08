@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -67,6 +68,23 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
 
   HistoryService* history_service() {
     return profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  }
+
+  void SetRedirectChain(const std::vector<GURL>& redirect_chain,
+                        bool new_host) {
+    browse_info_->url_redirects = redirect_chain;
+    if (new_host) {
+      browse_info_->host_redirects = redirect_chain;
+    }
+  }
+
+  // Wrapper around NavigateAndCommit that also sets the redirect chain to
+  // a sane value.
+  void SimpleNavigateAndCommit(const GURL& url) {
+    std::vector<GURL> redirect_chain;
+    redirect_chain.push_back(url);
+    SetRedirectChain(redirect_chain, true);
+    NavigateAndCommit(url, GURL(), PageTransition::LINK);
   }
 
   // This is similar to NavigateAndCommit that is in test_tab_contents, but
@@ -135,7 +153,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(BrowserFeatureExtractorTest, UrlNotInHistory) {
   ClientPhishingRequest request;
-  contents()->NavigateAndCommit(GURL("http://www.google.com"));
+  SimpleNavigateAndCommit(GURL("http://www.google.com"));
   request.set_url("http://www.google.com/");
   request.set_client_score(0.5);
   EXPECT_FALSE(ExtractFeatures(&request));
@@ -145,7 +163,7 @@ TEST_F(BrowserFeatureExtractorTest, RequestNotInitialized) {
   ClientPhishingRequest request;
   request.set_url("http://www.google.com/");
   // Request is missing the score value.
-  contents()->NavigateAndCommit(GURL("http://www.google.com"));
+  SimpleNavigateAndCommit(GURL("http://www.google.com"));
   EXPECT_FALSE(ExtractFeatures(&request));
 }
 
@@ -174,7 +192,7 @@ TEST_F(BrowserFeatureExtractorTest, UrlInHistory) {
                              history::RedirectList(), history::SOURCE_BROWSED,
                              false);
 
-  contents()->NavigateAndCommit(GURL("http://www.foo.com/bar.html"));
+  SimpleNavigateAndCommit(GURL("http://www.foo.com/bar.html"));
 
   ClientPhishingRequest request;
   request.set_url("http://www.foo.com/bar.html");
@@ -217,13 +235,13 @@ TEST_F(BrowserFeatureExtractorTest, UrlInHistory) {
 TEST_F(BrowserFeatureExtractorTest, MultipleRequestsAtOnce) {
   history_service()->AddPage(GURL("http://www.foo.com/bar.html"),
                              history::SOURCE_BROWSED);
-  contents()->NavigateAndCommit(GURL("http:/www.foo.com/bar.html"));
+  SimpleNavigateAndCommit(GURL("http:/www.foo.com/bar.html"));
   ClientPhishingRequest request;
   request.set_url("http://www.foo.com/bar.html");
   request.set_client_score(0.5);
   StartExtractFeatures(&request);
 
-  contents()->NavigateAndCommit(GURL("http://www.foo.com/goo.html"));
+  SimpleNavigateAndCommit(GURL("http://www.foo.com/goo.html"));
   ClientPhishingRequest request2;
   request2.set_url("http://www.foo.com/goo.html");
   request2.set_client_score(1.0);
@@ -251,6 +269,10 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   ClientPhishingRequest request;
   request.set_url("http://www.foo.com/");
   request.set_client_score(0.5);
+  std::vector<GURL> redirect_chain;
+  redirect_chain.push_back(GURL("http://somerandomwebsite.com/"));
+  redirect_chain.push_back(GURL("http://www.foo.com/"));
+  SetRedirectChain(redirect_chain, true);
   NavigateAndCommit(GURL("http://www.foo.com/"),
                     GURL("http://google.com/"),
                     PageTransition::AUTO_BOOKMARK |
@@ -264,6 +286,16 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
             features[StringPrintf("%s=%s",
                                   features::kReferrer,
                                   "http://google.com/")]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s[0]=%s",
+                                  features::kRedirect,
+                                  "http://somerandomwebsite.com/")]);
+  // We shouldn't have a feature for the last redirect in the chain, since it
+  // should always be the URL that we navigated to.
+  EXPECT_EQ(0.0,
+            features[StringPrintf("%s[1]=%s",
+                                  features::kRedirect,
+                                  "http://foo.com/")]);
   EXPECT_EQ(0.0, features[features::kHasSSLReferrer]);
   EXPECT_EQ(2.0, features[features::kPageTransitionType]);
   EXPECT_EQ(1.0, features[features::kIsFirstNavigation]);
@@ -271,6 +303,11 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   request.Clear();
   request.set_url("http://www.foo.com/page.html");
   request.set_client_score(0.5);
+  redirect_chain.clear();
+  redirect_chain.push_back(GURL("http://www.foo.com/redirect"));
+  redirect_chain.push_back(GURL("http://www.foo.com/second_redirect"));
+  redirect_chain.push_back(GURL("http://www.foo.com/page.html"));
+  SetRedirectChain(redirect_chain, false);
   NavigateAndCommit(GURL("http://www.foo.com/page.html"),
                     GURL("http://www.foo.com"),
                     PageTransition::TYPED |
@@ -285,6 +322,14 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
             features[StringPrintf("%s=%s",
                                   features::kReferrer,
                                   "http://www.foo.com/")]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s[0]=%s",
+                                  features::kRedirect,
+                                  "http://www.foo.com/redirect")]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s[1]=%s",
+                                  features::kRedirect,
+                                  "http://www.foo.com/second_redirect")]);
   EXPECT_EQ(0.0, features[features::kHasSSLReferrer]);
   EXPECT_EQ(1.0, features[features::kPageTransitionType]);
   EXPECT_EQ(0.0, features[features::kIsFirstNavigation]);
@@ -293,6 +338,11 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
                                   features::kHostPrefix,
                                   features::kReferrer,
                                   "http://google.com/")]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s%s[0]=%s",
+                                  features::kHostPrefix,
+                                  features::kRedirect,
+                                  "http://somerandomwebsite.com/")]);
   EXPECT_EQ(2.0,
             features[StringPrintf("%s%s",
                                   features::kHostPrefix,
@@ -301,20 +351,14 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
             features[StringPrintf("%s%s",
                                   features::kHostPrefix,
                                   features::kIsFirstNavigation)]);
-  // Make sure that we aren't adding redirect features since we are the first
-  // redirect in a chain.
-  EXPECT_EQ(0U,
-            features.count(StringPrintf("%s%s",
-                                        features::kRedirectPrefix,
-                                        features::kPageTransitionType)));
-  EXPECT_EQ(0U,
-            features.count(StringPrintf("%s%s",
-                                        features::kRedirectPrefix,
-                                        features::kIsFirstNavigation)));
 
   request.Clear();
   request.set_url("http://www.bar.com/");
   request.set_client_score(0.5);
+  redirect_chain.clear();
+  redirect_chain.push_back(GURL("http://www.foo.com/page.html"));
+  redirect_chain.push_back(GURL("http://www.bar.com/"));
+  SetRedirectChain(redirect_chain, true);
   NavigateAndCommit(GURL("http://www.bar.com/"),
                     GURL("http://www.foo.com/page.html"),
                     PageTransition::LINK |
@@ -329,22 +373,14 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
             features[StringPrintf("%s=%s",
                                   features::kReferrer,
                                   "http://www.foo.com/page.html")]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s[0]=%s",
+                                  features::kRedirect,
+                                  "http://www.foo.com/page.html")]);
   EXPECT_EQ(0.0, features[features::kHasSSLReferrer]);
   EXPECT_EQ(0.0, features[features::kPageTransitionType]);
   EXPECT_EQ(0.0, features[features::kIsFirstNavigation]);
-  EXPECT_EQ(1.0,
-            features[StringPrintf("%s%s=%s",
-                                  features::kRedirectPrefix,
-                                  features::kReferrer,
-                                  "http://www.foo.com/")]);
-  EXPECT_EQ(1.0,
-            features[StringPrintf("%s%s",
-                                  features::kRedirectPrefix,
-                                  features::kPageTransitionType)]);
-  EXPECT_EQ(0.0,
-            features[StringPrintf("%s%s",
-                                  features::kRedirectPrefix,
-                                  features::kIsFirstNavigation)]);
+
   // Should not have host features.
   EXPECT_EQ(0U,
             features.count(StringPrintf("%s%s",
@@ -358,6 +394,9 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   request.Clear();
   request.set_url("http://www.bar.com/other_page.html");
   request.set_client_score(0.5);
+  redirect_chain.clear();
+  redirect_chain.push_back(GURL("http://www.bar.com/other_page.html"));
+  SetRedirectChain(redirect_chain, false);
   NavigateAndCommit(GURL("http://www.bar.com/other_page.html"),
                     GURL("http://www.bar.com/"),
                     PageTransition::LINK);
@@ -374,25 +413,14 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   EXPECT_EQ(0.0, features[features::kPageTransitionType]);
   EXPECT_EQ(0.0, features[features::kIsFirstNavigation]);
   EXPECT_EQ(1.0,
-            features[StringPrintf("%s%s%s=%s",
-                                  features::kHostPrefix,
-                                  features::kRedirectPrefix,
-                                  features::kReferrer,
-                                  "http://www.foo.com/")]);
-  EXPECT_EQ(1.0,
-            features[StringPrintf("%s%s%s",
-                                  features::kHostPrefix,
-                                  features::kRedirectPrefix,
-                                  features::kPageTransitionType)]);
-  EXPECT_EQ(0.0,
-            features[StringPrintf("%s%s%s",
-                                  features::kHostPrefix,
-                                  features::kRedirectPrefix,
-                                  features::kIsFirstNavigation)]);
-  EXPECT_EQ(1.0,
             features[StringPrintf("%s%s=%s",
                                   features::kHostPrefix,
                                   features::kReferrer,
+                                  "http://www.foo.com/page.html")]);
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s%s[0]=%s",
+                                  features::kHostPrefix,
+                                  features::kRedirect,
                                   "http://www.foo.com/page.html")]);
   EXPECT_EQ(0.0,
             features[StringPrintf("%s%s",
@@ -402,18 +430,13 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
             features[StringPrintf("%s%s",
                                   features::kHostPrefix,
                                   features::kIsFirstNavigation)]);
-  // Should not have redirect features.
-  EXPECT_EQ(0U,
-            features.count(StringPrintf("%s%s",
-                                        features::kRedirectPrefix,
-                                        features::kPageTransitionType)));
-  EXPECT_EQ(0U,
-            features.count(StringPrintf("%s%s",
-                                        features::kRedirectPrefix,
-                                        features::kIsFirstNavigation)));
   request.Clear();
   request.set_url("http://www.baz.com/");
   request.set_client_score(0.5);
+  redirect_chain.clear();
+  redirect_chain.push_back(GURL("https://bankofamerica.com"));
+  redirect_chain.push_back(GURL("http://www.baz.com/"));
+  SetRedirectChain(redirect_chain, true);
   NavigateAndCommit(GURL("http://www.baz.com"),
                     GURL("https://bankofamerica.com"),
                     PageTransition::GENERATED);
@@ -427,17 +450,13 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
   features.clear();
   GetFeatureMap(request, &features);
 
+  EXPECT_EQ(1.0,
+            features[StringPrintf("%s[0]=%s",
+                                  features::kRedirect,
+                                  features::kSecureRedirectValue)]);
   EXPECT_EQ(1.0, features[features::kHasSSLReferrer]);
   EXPECT_EQ(5.0, features[features::kPageTransitionType]);
   // Should not have redirect or host features.
-  EXPECT_EQ(0U,
-            features.count(StringPrintf("%s%s",
-                                        features::kRedirectPrefix,
-                                        features::kPageTransitionType)));
-  EXPECT_EQ(0U,
-            features.count(StringPrintf("%s%s",
-                                        features::kRedirectPrefix,
-                                        features::kIsFirstNavigation)));
   EXPECT_EQ(0U,
             features.count(StringPrintf("%s%s",
                                         features::kHostPrefix,
@@ -453,7 +472,7 @@ TEST_F(BrowserFeatureExtractorTest, BrowseFeatures) {
 }
 
 TEST_F(BrowserFeatureExtractorTest, SafeBrowsingFeatures) {
-  contents()->NavigateAndCommit(GURL("http://www.foo.com/malware.html"));
+  SimpleNavigateAndCommit(GURL("http://www.foo.com/malware.html"));
   ClientPhishingRequest request;
   request.set_url("http://www.foo.com/malware.html");
   request.set_client_score(0.5);
@@ -484,7 +503,7 @@ TEST_F(BrowserFeatureExtractorTest, URLHashes) {
 
   history_service()->AddPage(GURL("http://host.com/"),
                              history::SOURCE_BROWSED);
-  contents()->NavigateAndCommit(GURL("http://host.com/"));
+  SimpleNavigateAndCommit(GURL("http://host.com/"));
 
   EXPECT_TRUE(ExtractFeatures(&request));
   EXPECT_EQ(crypto::SHA256HashString("host.com/").substr(
@@ -494,7 +513,7 @@ TEST_F(BrowserFeatureExtractorTest, URLHashes) {
   request.set_url("http://www.host.com/path/");
   history_service()->AddPage(GURL("http://www.host.com/path/"),
                              history::SOURCE_BROWSED);
-  contents()->NavigateAndCommit(GURL("http://www.host.com/path/"));
+  SimpleNavigateAndCommit(GURL("http://www.host.com/path/"));
 
   EXPECT_TRUE(ExtractFeatures(&request));
   EXPECT_EQ(crypto::SHA256HashString("host.com/path/").substr(
@@ -505,7 +524,7 @@ TEST_F(BrowserFeatureExtractorTest, URLHashes) {
   history_service()->AddPage(
       GURL("http://user@www.host.com:1111/path/123?args"),
       history::SOURCE_BROWSED);
-  contents()->NavigateAndCommit(
+  SimpleNavigateAndCommit(
       GURL("http://user@www.host.com:1111/path/123?args"));
 
   EXPECT_TRUE(ExtractFeatures(&request));
@@ -517,7 +536,7 @@ TEST_F(BrowserFeatureExtractorTest, URLHashes) {
   request.set_url("http://www.host.com/A%21//B");
   history_service()->AddPage(GURL("http://www.host.com/A%21//B"),
                              history::SOURCE_BROWSED);
-  contents()->NavigateAndCommit(GURL("http://www.host.com/A%21//B"));
+  SimpleNavigateAndCommit(GURL("http://www.host.com/A%21//B"));
 
   EXPECT_TRUE(ExtractFeatures(&request));
   EXPECT_EQ(crypto::SHA256HashString("host.com/a!/").substr(

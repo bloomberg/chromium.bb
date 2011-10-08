@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/format_macros.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
@@ -50,6 +51,7 @@ static void AddFeature(const std::string& feature_name,
 static void AddNavigationFeatures(const std::string& feature_prefix,
                                   const NavigationController& controller,
                                   int index,
+                                  const std::vector<GURL>& redirect_chain,
                                   ClientPhishingRequest* request) {
   NavigationEntry* entry = controller.GetEntryAtIndex(index);
   bool is_secure_referrer = entry->referrer().SchemeIsSecure();
@@ -71,28 +73,38 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
   AddFeature(feature_prefix + features::kIsFirstNavigation,
              index == 0 ? 1.0 : 0.0,
              request);
-}
-
-static void PossiblyAddRedirectNavigationFeatures(
-    const std::string& feature_prefix,
-    const NavigationController& controller,
-    int index,
-    ClientPhishingRequest* request) {
-  NavigationEntry* entry = controller.GetEntryAtIndex(index);
-  // Add additional features for the start of the redirect chain, if this entry
-  // is part of one and the chain starts on a different page.
-  if (PageTransition::IsRedirect(entry->transition_type()) &&
-      (entry->transition_type() & PageTransition::CHAIN_START) == 0) {
-    for (index--; index >= 0; index--) {
-      entry = controller.GetEntryAtIndex(index);
-      if (entry->transition_type() & PageTransition::CHAIN_START) {
-        AddNavigationFeatures(feature_prefix + features::kRedirectPrefix,
-                              controller,
-                              index,
-                              request);
-        return;
-      }
+  // Redirect chain should always be at least of size one, as the rendered
+  // url is the last element in the chain.
+  if (redirect_chain.empty()) {
+    NOTREACHED();
+    return;
+  }
+  if (redirect_chain.back() != entry->url()) {
+    // I originally had this as a DCHECK but I saw a failure once that I
+    // can't reproduce. It looks like it might be related to the
+    // navigation controller only keeping a limited number of navigation
+    // events. For now we'll just attach a feature specifying that this is
+    // a mismatch and try and figure out what to do with it on the server.
+    DLOG(WARNING) << "Expected:" << entry->url()
+                 << " Actual:" << redirect_chain.back();
+    AddFeature(feature_prefix + features::kRedirectUrlMismatch,
+               1.0,
+               request);
+    return;
+  }
+  // We skip the last element since it should just be the current url.
+  for (size_t i = 0; i < redirect_chain.size() - 1; i++) {
+    std::string printable_redirect = redirect_chain[i].spec();
+    if (redirect_chain[i].SchemeIsSecure()) {
+      printable_redirect = features::kSecureRedirectValue;
     }
+    AddFeature(StringPrintf("%s%s[%"PRIuS"]=%s",
+                            feature_prefix.c_str(),
+                            features::kRedirect,
+                            i,
+                            printable_redirect.c_str()),
+               1.0,
+               request);
   }
 }
 
@@ -173,24 +185,18 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
 
   // Add features pertaining to how we got to
   //   1) The candidate url
-  //   2) The redirect leading to the candidate url (assuming there was one).
-  //   3) The first url on the same host as the candidate url (assuming that
+  //   2) The first url on the same host as the candidate url (assuming that
   //      it's different from the candidate url).
-  //   4) The redirect leading to the first url on the host (assuming there was
-  //      one).
   if (url_index != -1) {
-    AddNavigationFeatures("", controller, url_index, request);
-    PossiblyAddRedirectNavigationFeatures("", controller, url_index, request);
+    AddNavigationFeatures("", controller, url_index, info->url_redirects,
+                          request);
   }
   if (first_host_index != -1) {
     AddNavigationFeatures(features::kHostPrefix,
                           controller,
                           first_host_index,
+                          info->host_redirects,
                           request);
-    PossiblyAddRedirectNavigationFeatures(features::kHostPrefix,
-                                          controller,
-                                          first_host_index,
-                                          request);
   }
 
   ExtractBrowseInfoFeatures(*info, request);
