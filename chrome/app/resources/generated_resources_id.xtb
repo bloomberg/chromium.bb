@@ -895,7 +895,7 @@
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> adalah versi terbaru (<ph name="VERSION"/>)</translation>
 <translation id="3118046075435288765">Server tiba-tiba memutuskan sambungan.</translation>
 <translation id="8041140688818013446">Sepertinya server yang menginangi laman web tersebut telah kelebihan muatan atau mengalami galat. Untuk mencegah terjadinya
-        kunjungan yang terlalu banyak dan membuat situasi menjadi lebih buruk,
+        lalu lintas yang terlalu banyak dan membuat situasi menjadi lebih buruk,
         <ph name="PRODUCT_NAME"/> telah menghentikan sementara
         permintaan ke server.
         <ph name="LINE_BREAK"/>

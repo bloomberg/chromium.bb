@@ -1786,7 +1786,7 @@
 <translation id="3007574127824276972">Fazendo login a <ph name="PRODUCT_NAME"/> como <ph name="USER_NAME"/></translation>
 <translation id="2541913031883863396">continuar mesmo assim</translation>
 <translation id="4278390842282768270">Permitido</translation>
-<translation id="2074527029802029717">Tirar guia</translation>
+<translation id="2074527029802029717">Liberar guia</translation>
 <translation id="1533897085022183721">Menos de <ph name="MINUTES"/>.</translation>
 <translation id="7503821294401948377">Não foi possível carregar o ícone &quot;<ph name="ICON"/>&quot; para a ação do navegador.</translation>
 <translation id="8403381103556738778">Esta página possui conteúdo suspeito.</translation>
@@ -2844,7 +2844,7 @@
 <translation id="281133045296806353">Foi criada uma nova janela em uma sessão existente do navegador.</translation>
 <translation id="8204484782770036444">• <ph name="PERMISSION"/></translation>
 <translation id="3951872452847539732">As configurações de proxy da sua rede estão sendo gerenciadas por uma extensão.</translation>
-<translation id="6442697326824312960">Tirar guia</translation>
+<translation id="6442697326824312960">Liberar guia</translation>
 <translation id="6382612843547381371">Válido a partir de <ph name="START_DATE_TIME"/> até <ph name="END_DATE_TIME"/></translation>
 <translation id="5653352175373198541">Favor utilizar o menu de rede (acima à direita) para conectar à Internet e concluir a configuração de seu Chromebook.</translation>
 <translation id="6869402422344886127">Caixa de seleção marcada</translation>
@@ -3266,7 +3266,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="421182450098841253">&amp;Exibir barra de favoritos</translation>
 <translation id="8000066093800657092">Sem rede</translation>
-<translation id="4481249487722541506">Carregar extensão em desenvolvimento...</translation>
+<translation id="4481249487722541506">Carregar extensão expandida...</translation>
 <translation id="8180239481735238521">página</translation>
 <translation id="2963783323012015985">Teclado turco</translation>
 <translation id="2149973817440762519">Editar favoritos</translation>

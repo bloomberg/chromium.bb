@@ -1691,7 +1691,7 @@
 <translation id="7983301409776629893">Oversæt altid <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="4890284164788142455">Thai</translation>
 <translation id="4312207540304900419">Aktiver næste fane</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> indtil helt opladet</translation>
+<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> indtil fuldt opladet</translation>
 <translation id="7648048654005891115">Tastaturoversigt</translation>
 <translation id="539295039523818097">Der opstod et problem med din mikrofon.</translation>
 <translation id="4033319557821527966"><ph name="CLOUD_PRINT_NAME"/> giver dig mulighed for at få adgang til computerens printer overalt. Log ind for at aktivere.</translation>
@@ -1741,7 +1741,7 @@
 <translation id="4626106357471783850"><ph name="PRODUCT_NAME"/> skal genstartes, før opdateringen træder i kraft.</translation>
 <translation id="1697068104427956555">Vælg et firkantet område på billedet.</translation>
 <translation id="2840798130349147766">Webdatabaser</translation>
-<translation id="5334959834702166795">Kan du ikke logge ind, selv om du er tilsluttet et netværk? Du kan være på et netværk, der kræver en webbaseret godkendelse. Start en gæstebrowsersession (hvis det er muligt), og se, om der vises en side til login på netværket. Når du er logget ind på netværket og er i stand til at besøge forskellige websider, skal du afslutte gæstesessionen og prøve at logge ind igen.</translation>
+<translation id="5334959834702166795">Kan du ikke logge ind, selv om du er tilsluttet et netværk? Du kan være på et netværk, der kræver en webbaseret godkendelse. Start en browsersession som gæst (hvis det er muligt), og se, om der vises en side til login på netværket. Når du er logget ind på netværket og er i stand til at besøge forskellige websider, skal du afslutte gæstesessionen og prøve at logge ind igen.</translation>
 <translation id="1628736721748648976">Tegnkodning</translation>
 <translation id="1198271701881992799">Lad os komme i gang</translation>
 <translation id="4830142027259858920">Aktiver åbne faner i valgmuligheder for synkronisering. Dette gør det muligt at synkronisere dine åbne faner med andre klienter.</translation>
@@ -2471,7 +2471,7 @@
 <translation id="6503256918647795660">Schweizisk (fransk) tastatur</translation>
 <translation id="543074011856712355">Viser en eksperimentel ny brugergrænseflade i stedet for downloadhylden.</translation>
 <translation id="6175314957787328458">Microsoft-domæne-GUID</translation>
-<translation id="8179976553408161302">Indtast</translation>
+<translation id="8179976553408161302">Start</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="345693547134384690">Åbn &amp;billede i ny fane</translation>
 <translation id="7422192691352527311">Indstillinger...</translation>

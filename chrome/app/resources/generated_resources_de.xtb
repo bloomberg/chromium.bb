@@ -5,7 +5,7 @@
 <translation id="6879617193011158416">Zur Lesezeichenleiste umschalten</translation>
 <translation id="664677590214437297">Die Proxy-Einstellungen wurden von Ihrem Administrator deaktiviert.</translation>
 <translation id="2345460471437425338">Falsches Zertifikat für Host</translation>
-<translation id="3595596368722241419">Akku voll</translation>
+<translation id="3595596368722241419">Akku vollständig geladen</translation>
 <translation id="8130276680150879341">Verbindung zu privatem Netzwerk trennen</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/> von <ph name="COUNT"/></translation>
 <translation id="4480627574828695486">Verbindung zu diesem Konto unterbrechen...</translation>
@@ -762,7 +762,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="210445503571712769">Synchronisierte Einstellungen</translation>
 <translation id="1608306110678187802">Frame d&amp;rucken...</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
-<translation id="3719388386220274270">Weiteres AutoFill-Feedback senden</translation>
+<translation id="3719388386220274270">Weiteres AutoFill-Feedback geben</translation>
 <translation id="6622980291894852883">Bilder weiterhin blockieren</translation>
 <translation id="5937837224523037661">Bei der Erkennung von Plug-ins auf einer Website:</translation>
 <translation id="1710259589646384581">Betriebssystem</translation>
@@ -1719,7 +1719,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="4626106357471783850"><ph name="PRODUCT_NAME"/> muss neu gestartet werden, damit das Update angewendet werden kann.</translation>
 <translation id="1697068104427956555">Quadratischen Abschnitt im Bild auswählen</translation>
 <translation id="2840798130349147766">Web-Datenbanken</translation>
-<translation id="5334959834702166795">Sie sind mit einem Netzwerk verbunden, können sich aber dennoch nicht anmelden? Möglicherweise erfordert Ihr Netzwerk eine webbasierte Authentifizierung. Starten Sie, falls möglich, eine Gastsitzung und überprüfen Sie, ob eine Netzwerkanmeldeseite angezeigt wird. Sobald Sie im Netzwerk angemeldet sind und verschiedene Webseiten aufrufen können, beenden Sie die Gastsitzung und versuchen Sie, sich erneut anzumelden.</translation>
+<translation id="5334959834702166795">Sie sind mit einem Netzwerk verbunden, können sich aber trotzdem nicht anmelden? Möglicherweise erfordert Ihr Netzwerk eine webbasierte Authentifizierung. Starten Sie, falls möglich, eine Gastsitzung und überprüfen Sie, ob eine Netzwerkanmeldeseite angezeigt wird. Sobald Sie im Netzwerk angemeldet sind und verschiedene Webseiten aufrufen können, beenden Sie die Gastsitzung und versuchen Sie, sich erneut anzumelden.</translation>
 <translation id="1628736721748648976">Codierung</translation>
 <translation id="1198271701881992799">Erste Schritte</translation>
 <translation id="4830142027259858920">Geöffnete Tabs unter den Synchronisierungsoptionen aktivieren. Hierdurch können Ihre geöffneten Tabs mit anderen Clients synchronisiert werden.</translation>
@@ -1752,7 +1752,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="8004512796067398576">Erhöhen</translation>
 <translation id="2930644991850369934">Beim Download des Wiederherstellungsabbilds ist ein Problem aufgetreten. Die Netzwerkverbindung wurde unterbrochen.</translation>
 <translation id="5750053751252005701">Keine <ph name="NETWORK"/>-Daten mehr</translation>
-<translation id="8858939932848080433">Lassen Sie uns wissen, wobei Sie Probleme haben, bevor Sie das Feedback senden.</translation>
+<translation id="8858939932848080433">Bitte beschreiben Sie das Problem, bevor Sie das Feedback abschicken.</translation>
 <translation id="1720318856472900922">TLS-WWW-Serverauthentifizierung</translation>
 <translation id="8550022383519221471">Der Synchronisierungsdienst ist nicht für diese Domain verfügbar.</translation>
 <translation id="3355823806454867987">Proxy-Einstellungen ändern...</translation>
@@ -2165,7 +2165,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6780786534712515143">Wenn Sie Instant aktiviert haben, werden die meisten Webseiten geladen, sobald Sie eine URL in die Omnibox eingeben und noch bevor Sie die Eingabetaste gedrückt haben. Wenn diese Funktion von Ihrer Standardsuchmaschine unterstützt wird, werden darüber hinaus Suchergebnisse sofort angezeigt, sobald Sie Ihre Anfrage in die Omnibox eingeben. Inline-Vervollständigungen helfen Ihnen beim Verfeinern Ihrer Suche.\n\nDa Suchergebnisse bereits angefordert werden, während Sie Ihre Anfrage eingeben, protokolliert Ihre Standardsuchmaschine diese möglicherweise als Suchanfragen.\n</translation>
 <translation id="6503077044568424649">Meistbesucht</translation>
 <translation id="4625904365165566833">Sie sind nicht zur Anmeldung berechtigt. Bitte wenden Sie sich an den Eigentümer des Chromebooks.</translation>
-<translation id="7450633916678972976">Hinweis: Wenn Sie auf &quot;Feedback senden&quot; klicken, schließt Google Chrome ein Protokoll Ihrer Google Chrome-Version und Ihrer Betriebssystemversion sowie der URL ein, die mit Ihrem Feedback verknüpft ist. Sie können auch einen für Ihr Feedback relevanten Screenshot beifügen. Diese Informationen werden von uns genutzt, um Probleme zu diagnostizieren und Google Chrome stetig zu verbessern. Alle persönlichen Informationen, die in Ihrem Feedbackbericht enthalten sind (ob ausdrücklich in Ihren Kommentaren oder unbeabsichtigt im Protokoll, der URL oder dem Screenshot), werden gemäß unseren Datenschutzrichtlinien vertraulich behandelt. Deaktivieren Sie das Kästchen &quot;Diese URL einfügen&quot;, um die URL nicht zu übermitteln. Damit kein Screenshot übermittelt wird, deaktivieren Sie das Kästchen &quot;Diesen Screenshot einfügen&quot;. Sie stimmen zu, dass Google jegliches Feedback, das Sie an uns senden, verwenden kann, um die Produkte und Dienste von Google weiter zu verbessern.</translation>
+<translation id="7450633916678972976">Hinweis: Wenn Sie auf &quot;Feedback geben&quot; klicken, schließt Google Chrome ein Protokoll Ihrer Google Chrome-Version und Ihrer Betriebssystemversion sowie der URL ein, die mit Ihrem Feedback verknüpft ist. Sie können auch einen für Ihr Feedback relevanten Screenshot beifügen. Diese Informationen werden von uns genutzt, um Probleme zu diagnostizieren und Google Chrome stetig zu verbessern. Alle persönlichen Informationen, die in Ihrem Feedbackbericht enthalten sind (ob ausdrücklich in Ihren Kommentaren oder unbeabsichtigt im Protokoll, der URL oder dem Screenshot), werden gemäß unseren Datenschutzrichtlinien vertraulich behandelt. Deaktivieren Sie das Kästchen &quot;Diese URL einfügen&quot;, um die URL nicht zu übermitteln. Damit kein Screenshot übermittelt wird, deaktivieren Sie das Kästchen &quot;Diesen Screenshot einfügen&quot;. Sie stimmen zu, dass Google jegliches Feedback, das Sie an uns senden, verwenden kann, um die Produkte und Dienste von Google weiter zu verbessern.</translation>
 <translation id="465365366590259328">Ihre Änderungen werden beim nächsten Neustart von <ph name="PRODUCT_NAME"/> übernommen.</translation>
 <translation id="7168109975831002660">Mindestgröße</translation>
 <translation id="7070804685954057874">Direkte Eingabe</translation>
@@ -2447,7 +2447,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="642282551015776456">Dieser Name darf nicht als Datei- oder Ordnername verwendet werden.</translation>
 <translation id="3577001450437977987">Synchronisierungsfehler: Melden Sie sich erneut an...</translation>
 <translation id="2345435964258511234">Deaktiviert die Synchronisierung mit vertikaler Aktualisierungsrate der Anzeige beim GPU-Rendering. Auf diese Weise können Frame-Raten 60 Hertz überschreiten. Dies ist nützlich für Benchmarking-Zwecke, bewirkt jedoch während schneller Bildschirm-Updates visuelles Tearing.</translation>
-<translation id="7915471803647590281">Erläutern Sie uns, was geschieht, bevor Sie das Feedback senden.</translation>
+<translation id="7915471803647590281">Bitte beschreiben Sie das Problem, bevor Sie das Feedback abschicken.</translation>
 <translation id="5725124651280963564">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um einen Schlüssel für <ph name="HOST_NAME"/> zu generieren.</translation>
 <translation id="8418113698656761985">Rumänische Tastatur</translation>
 <translation id="3206175707080061730">Eine Datei mit dem Namen &quot;$1&quot; existiert bereits. Möchten Sie sie ersetzen?</translation>
@@ -2472,7 +2472,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1352060938076340443">Unterbrochen</translation>
 <translation id="7229570126336867161">EVDO erforderlich</translation>
 <translation id="7582844466922312471">Mobile Daten</translation>
-<translation id="945522503751344254">Feedback senden</translation>
+<translation id="945522503751344254">Feedback geben</translation>
 <translation id="4539401194496451708">Das Chrome-Profil von <ph name="USER_EMAIL_ADDRESS"/> wird verwendet. Letzte Synchronisierung: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="7369847606959702983">Kreditkarte (sonstige)</translation>
 <translation id="6867459744367338172">Sprachen und Eingabe</translation>
@@ -2507,7 +2507,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
         <ph name="LINE_BREAK"/>
         <ph name="BEGIN_LINK"/>Weitere Informationen<ph name="END_LINK"/> zum Gastmodus</translation>
 <translation id="827924395145979961">Seiten werden nicht geladen</translation>
-<translation id="3177048931975664371">Zum Ausblenden des Passworts hier klicken</translation>
+<translation id="3177048931975664371">Hier klicken, um Passwort zu verbergen</translation>
 <translation id="3092544800441494315">Diesen Screenshot einfügen:</translation>
 <translation id="1385372238023117104">Synchronisierungsfehler: Melden Sie sich erneut an...</translation>
 <translation id="7714464543167945231">Zertifikat</translation>
@@ -2748,7 +2748,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="1893137424981664888">Keine Plug-ins installiert</translation>
 <translation id="3718288130002896473">Verhalten</translation>
 <translation id="2168725742002792683">Dateiendungen</translation>
-<translation id="3974195870082915331">Zum Anzeigen des Passworts hier klicken</translation>
+<translation id="3974195870082915331">Hier klicken, um Passwort anzuzeigen</translation>
 <translation id="7861805612256278846">Nicht angemeldet</translation>
 <translation id="1753905327828125965">Meistbesucht</translation>
 <translation id="8116972784401310538">&amp;Lesezeichen-Manager</translation>
@@ -3189,7 +3189,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3268451620468152448">Geöffnete Tabs</translation>
 <translation id="5095208057601539847">Bundesland</translation>
 <translation id="4085298594534903246">JavaScript wurde auf dieser Seite blockiert.</translation>
-<translation id="5630492933376732170">Hinweis: Wenn Sie auf &quot;Feedback senden&quot; klicken, sendet Google Chrome auch ein Protokoll der Systemereignisse auf Ihrem Gerät. Diese Informationen werden von uns genutzt, um Probleme zu diagnostizieren, zu verstehen, wie Sie mit dem Gerät interagieren, und seine Leistung stetig zu verbessern. Alle persönlichen Informationen, die in Ihrem Feedbackbericht enthalten sind (ob ausdrücklich in Ihren Kommentaren oder unbeabsichtigt in den Systemprotokollen oder dem Screenshot), werden gemäß unserer <ph name="BEGIN_LINK"/>Datenschutzrichtlinien<ph name="END_LINK"/> vertraulich behandelt. Um keine Systemprotokolle zu übermitteln, deaktivieren Sie das Kästchen &quot;Systeminformationen senden&quot;.</translation>
+<translation id="5630492933376732170">Hinweis: Wenn Sie auf &quot;Feedback geben&quot; klicken, sendet Google Chrome auch ein Protokoll der Systemereignisse auf Ihrem Gerät. Diese Informationen werden von uns genutzt, um Probleme zu diagnostizieren, zu verstehen, wie Sie mit dem Gerät interagieren, und seine Leistung stetig zu verbessern. Alle persönlichen Informationen, die in Ihrem Feedbackbericht enthalten sind (ob ausdrücklich in Ihren Kommentaren oder unbeabsichtigt in den Systemprotokollen oder dem Screenshot), werden gemäß unserer <ph name="BEGIN_LINK"/>Datenschutzrichtlinien<ph name="END_LINK"/> vertraulich behandelt. Um keine Systemprotokolle zu übermitteln, deaktivieren Sie das Kästchen &quot;Systeminformationen senden&quot;.</translation>
 <translation id="4341977339441987045">Speicherung von Daten für alle Websites blockieren</translation>
 <translation id="806812017500012252">Neu sortieren nach Titel</translation>
 <translation id="3781751432212184938">Tab-Übersicht anzeigen...</translation>
@@ -3252,7 +3252,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2049137146490122801">Der Zugriff auf lokale Dateien auf Ihrem Gerät wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="1146498888431277930">SSL-Verbindungsfehler</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT"/>)</translation>
-<translation id="8041089156583427627">Feedback senden</translation>
+<translation id="8041089156583427627">Feedback geben</translation>
 <translation id="6394627529324717982">Komma</translation>
 <translation id="3325146402434751578">Drucker in <ph name="CLOUD_PRINT_NAME"/> einrichten oder verwalten</translation>
 <translation id="253434972992662860">&amp;Pause</translation>

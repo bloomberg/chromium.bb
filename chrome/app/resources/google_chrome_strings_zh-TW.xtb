@@ -117,5 +117,5 @@
 <translation id="3396977131400919238">安裝過程中發生作業系統錯誤，請再次下載 Google Chrome。</translation>
 <translation id="5495581687705680288">已載入到 Google Chrome 中的模組</translation>
 <translation id="3586272666307004550">版權所有 © 2006-2011 Google Inc。保留所有權利。</translation>
-<translation id="1144950271450340860">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供的憑證由您電腦作業系統不信任的實體簽署。這可能表示伺服器自行產生安全性憑證，因此 Google Chrome 無法憑其辨認身份；或者有攻擊者試圖攔截您的通訊。&lt;strong&gt;尤其&lt;/strong&gt;如果您從未在這個網站看過這種警告，就更不應該繼續瀏覽。</translation>
+<translation id="1144950271450340860">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供的憑證由您電腦作業系統不信任的實體簽署。這可能表示伺服器自行產生安全性憑證，因此 Google Chrome 無法憑其辨認身分；或者有攻擊者試圖攔截您的通訊。&lt;strong&gt;尤其&lt;/strong&gt;如果您從未在這個網站看過這種警告，就更不應該繼續瀏覽。</translation>
 </translationbundle>

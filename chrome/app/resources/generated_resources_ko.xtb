@@ -2316,7 +2316,7 @@
 <translation id="6397592254427394018">모든 북마크를 시크릿 창에서 열기(&amp;I)</translation>
 <translation id="4567836003335927027"><ph name="WEBSITE_1"/>의 데이터</translation>
 <translation id="756445078718366910">브라우저 창 열기</translation>
-<translation id="6132383530370527946">계약 조항</translation>
+<translation id="6132383530370527946">이용약관</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512(RSA 암호화 사용)</translation>
 <translation id="6320045364366127516">충전 중</translation>
 <translation id="6392373519963504642">한국어 키보드</translation>
@@ -3343,7 +3343,7 @@
 <translation id="2339641773402824483">업데이트 상태 확인 중...</translation>
 <translation id="9111742992492686570">중요한 보안 업데이트 다운로드</translation>
 <translation id="8636666366616799973">패키지가 잘못되었습니다. 세부정보: '<ph name="ERROR_MESSAGE"/>'.</translation>
-<translation id="2654226057706132620">또한 로그인을 건너뛰고 <ph name="LINK_START"/>손님으로 로그인<ph name="LINK_END"/>할 수 있습니다.</translation>
+<translation id="2654226057706132620">로그인을 건너뛰고 <ph name="LINK_START"/>손님으로 로그인<ph name="LINK_END"/>할 수 있습니다.</translation>
 <translation id="2045969484888636535">쿠키 계속 차단</translation>
 <translation id="7353601530677266744">명령줄</translation>
 <translation id="2766006623206032690">붙여넣어 바로가기(&amp;S)</translation>

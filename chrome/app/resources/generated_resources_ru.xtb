@@ -610,7 +610,7 @@
 <translation id="7421925624202799674">Просмотр кода страницы</translation>
 <translation id="3940082421246752453">Сервер не поддерживает версию HTTP, указанную в запросе.</translation>
 <translation id="5481220874745676347">Настроить профиль <ph name="PROFILE_NAME"/></translation>
-<translation id="661719348160586794">Здесь будут показаны ваши сохраненные пароли</translation>
+<translation id="661719348160586794">Здесь будут показаны ваши сохраненные пароли.</translation>
 <translation id="6686490380836145850">Закрыть вкладки справа</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ч.</translation>
 <translation id="2624449429763181457">Нажмите Control, Alt или Shift, чтобы увидеть соответствующие быстрые клавиши.</translation>
@@ -2759,7 +2759,7 @@
 <translation id="2653548440458473662">Предложений не найдено</translation>
 <translation id="750509436279396091">Открыть папку загрузок</translation>
 <translation id="91731790394942114">Добавить новое имя</translation>
-<translation id="5963026469094486319">Получить темы</translation>
+<translation id="5963026469094486319">Выбрать тему</translation>
 <translation id="2441719842399509963">Восстановить значения по умолчанию</translation>
 <translation id="1893137424981664888">Подключаемые модули не установлены.</translation>
 <translation id="3718288130002896473">Действия</translation>
@@ -2900,7 +2900,7 @@
 <translation id="2927657246008729253">Изменить...</translation>
 <translation id="7586781939132793422">Отключить голосовые комментарии</translation>
 <translation id="7978412674231730200">Закрытый ключ</translation>
-<translation id="5308380583665731573">Подключиться</translation>
+<translation id="5308380583665731573">Подключение</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="499479078351073108">Включить поисковые системы в настройках синхронизации. Это позволит синхронизировать их с другими клиентами.</translation>
 <translation id="9049981332609050619">Вы попытались открыть <ph name="DOMAIN"/>, однако представленный сервером сертификат недействителен.</translation>
@@ -2945,7 +2945,7 @@
 <translation id="2192664328428693215">Спрашивать, если на сайте будут показываться оповещения (рекомендуется)</translation>
 <translation id="6708242697268981054">Расположение:</translation>
 <translation id="4786993863723020412">Ошибка чтения из кэша</translation>
-<translation id="1530919147443368739">Последняя синхронизация выполнена с аккаунтом <ph name="USER_EMAIL_ADDRESS"/>. Настройки можно задать в <ph name="BEGIN_LINK"/>Личном кабинете Google<ph name="END_LINK"/>.</translation>
+<translation id="1530919147443368739">Последняя синхронизация выполнена с аккаунтом <ph name="USER_EMAIL_ADDRESS"/>. Настройки можно задать в <ph name="BEGIN_LINK"/>Личном кабинете Google<ph name="END_LINK"/></translation>
 <translation id="6630452975878488444">Ярлык выбора</translation>
 <translation id="8709969075297564489">Проверять, не отозван ли сертификат сервера</translation>
 <translation id="8698171900303917290">Проблемы с установкой?</translation>
@@ -3324,7 +3324,7 @@
 <translation id="2339641773402824483">Проверка обновлений...</translation>
 <translation id="9111742992492686570">Загрузить критическое обновление безопасности</translation>
 <translation id="8636666366616799973">Недопустимый пакет. Подробные сведения: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
-<translation id="2654226057706132620">Можно пропустить это действие и использовать <ph name="LINK_START"/>гостевой режим<ph name="LINK_END"/>.</translation>
+<translation id="2654226057706132620">Вы можете пропустить это действие и использовать <ph name="LINK_START"/>гостевой режим<ph name="LINK_END"/>.</translation>
 <translation id="2045969484888636535">Продолжать блокировать файлы cookie</translation>
 <translation id="7353601530677266744">Командная строка</translation>
 <translation id="2766006623206032690">Вс&amp;тавить из буфера и перейти</translation>

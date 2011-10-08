@@ -580,7 +580,7 @@ para proteger a sua privacidade.</translation>
 <translation id="8943805475239098364">Gostaria de pesquisar com o <ph name="NEW_GOOGLE_HOST"/> em vez do <ph name="CURRENT_GOOGLE_HOST"/>?</translation>
 <translation id="3813510441224209252">Formatação pendente</translation>
 <translation id="1464570622807304272">Experimente escrever &quot;orquídeas&quot; e prima Enter.</translation>
-<translation id="8026684114486203427">Tem de iniciar sessão com uma Conta Google para utilizar a Chrome Web Store.</translation>
+<translation id="8026684114486203427">Tem de iniciar sessão com uma Conta Google para utilizar a Web Store do Chrome.</translation>
 <translation id="1486096554574027028">Pesquisar palavras-passe</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="3845608881815490588">Algumas opções foram desativadas pelo administrador e outras estão a ser geridas por uma extensão.</translation>
@@ -1340,7 +1340,7 @@ para proteger a sua privacidade.</translation>
 <translation id="5815645614496570556">Endereço X.400</translation>
 <translation id="3551320343578183772">Fechar Separador</translation>
 <translation id="3345886924813989455">Não encontrado um browser suportado</translation>
-<translation id="74354239584446316">A sua conta da loja Web é <ph name="EMAIL_ADDRESS"/> - iniciar sessão para sincronizar com uma conta diferente resultará em incompatibilidades.</translation>
+<translation id="74354239584446316">A sua conta da Web Store é <ph name="EMAIL_ADDRESS"/> - iniciar sessão para sincronizar com uma conta diferente resultará em incompatibilidades.</translation>
 <translation id="3712897371525859903">Guard&amp;ar página como...</translation>
 <translation id="7926251226597967072">O <ph name="PRODUCT_NAME"/> está neste momento a importar os seguintes itens do <ph name="IMPORT_BROWSER_NAME"/>:</translation>
 <translation id="4442424173763614572">A procura de DNS falhou</translation>

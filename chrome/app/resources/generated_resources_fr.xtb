@@ -458,7 +458,7 @@ cookies</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="6840184929775541289">N'est pas une autorité de certification</translation>
 <translation id="6099520380851856040">Date et heure : <ph name="CRASH_TIME"/></translation>
-<translation id="1369377266651547198">Lorsque cette règle est activée, la connexion d'un profil à un compte Google entraîne l'ajout des informations sur le compte à l'emplacement réservé aux cookies du profil. Il n'est donc plus nécessaire de ressaisir le nom d'utilisateur ni le mot de passe dans le navigateur. L'accès à la page de connexion à un compte Google déclenche également l'affichage d'une barre d'informations permettant de se connecter facilement au compte associé. Lorsque le profil n'est pas associé à un compte Google, la connexion automatique et la pré-connexion sont toujours désactivées, indépendamment de cette règle.</translation>
+<translation id="1369377266651547198">Lorsque cette règle est activée, la connexion d'un profil à un compte Google entraîne l'ajout des identifiants du compte à l'emplacement réservé aux cookies du profil. Il n'est donc plus nécessaire de ressaisir le nom d'utilisateur ni le mot de passe dans le navigateur. L'accès à la page de connexion à un compte Google déclenche également l'affichage d'une barre d'informations permettant de se connecter facilement au compte associé. Lorsque le profil n'est pas associé à un compte Google, la connexion automatique et la pré-connexion sont toujours désactivées, indépendamment de cette règle.</translation>
 <translation id="144518587530125858">Impossible de charger &quot;<ph name="IMAGE_PATH"/>&quot; pour le thème.</translation>
 <translation id="7925285046818567682">En attente de <ph name="HOST_NAME"/>...</translation>
 <translation id="2553440850688409052">Masquer ce plug-in</translation>
@@ -572,7 +572,7 @@ cookies</translation>
 <translation id="5612754943696799373">Autoriser le téléchargement ?</translation>
 <translation id="347699201225182431">Cette extension figure sur la liste noire.</translation>
 <translation id="2565875069387440417">Connectez-vous avec votre compte Google</translation>
-<translation id="3464868340187708956">Ajouter un nouvel utilisateur</translation>
+<translation id="3464868340187708956">Ajouter un utilisateur</translation>
 <translation id="6353618411602605519">Clavier croate</translation>
 <translation id="5515810278159179124">Interdire à tous les sites de suivre ma position géographique</translation>
 <translation id="5999606216064768721">Utiliser la barre de titre du système et les bordures de la fenêtre</translation>
@@ -592,7 +592,7 @@ cookies</translation>
 <translation id="2678063897982469759">Réactiver</translation>
 <translation id="2939276286614236651">Impossible pour <ph name="PRODUCT_NAME"/> de synchroniser vos données, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="1779766957982586368">Fermer la fenêtre</translation>
-<translation id="4850886885716139402">Présentation</translation>
+<translation id="4850886885716139402">Afficher</translation>
 <translation id="89217462949994770">Vous avez saisi un trop grand nombre de codes PIN incorrects. Veuillez contacter <ph name="CARRIER_ID"/> pour obtenir une nouvelle clé de déverrouillage du code PIN à 8 chiffres.</translation>
 <translation id="5920618722884262402">Bloquer le contenu inapproprié</translation>
 <translation id="5120247199412907247">Configuration avancée</translation>
@@ -1110,7 +1110,7 @@ cookies</translation>
 <translation id="2251809247798634662">Nouvelle fenêtre de navigation privée</translation>
 <translation id="358344266898797651">Celtique</translation>
 <translation id="3625870480639975468">Réinitialiser le zoom</translation>
-<translation id="8337399713761067085">Vous êtes actuellement hors connexion</translation>
+<translation id="8337399713761067085">Vous êtes actuellement hors connexion.</translation>
 <translation id="5199729219167945352">Prototypes</translation>
 <translation id="5055518462594137986">Mémoriser mes choix pour tous les liens de ce type</translation>
 <translation id="246059062092993255">Les plug-ins de cette page ont été bloqués.</translation>
@@ -1740,7 +1740,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="5031870354684148875">À propos de Google Traduction</translation>
 <translation id="720658115504386855">Les lettres ne sont pas sensibles à la casse.</translation>
 <translation id="2454247629720664989">Mot clé</translation>
-<translation id="3950820424414687140">Connexion</translation>
+<translation id="3950820424414687140">Ouvrir une session</translation>
 <translation id="4626106357471783850">Redémarrez <ph name="PRODUCT_NAME"/> pour appliquer la mise à jour.</translation>
 <translation id="1697068104427956555">Sélectionner un carré dans l'image</translation>
 <translation id="2840798130349147766">Bases de données Web</translation>
@@ -1761,7 +1761,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="685714579710025096">Disposition du clavier :</translation>
 <translation id="1361655923249334273">Non utilisé</translation>
 <translation id="290555789621781773"><ph name="NUMBER_TWO"/> minutes</translation>
-<translation id="5465754949539394526">Google Chrome manque de mémoire.\n</translation>
+<translation id="5465754949539394526">Google Chrome est arrivé à court de mémoire.\n</translation>
 <translation id="5434065355175441495">Chiffrement RSA PKCS #1</translation>
 <translation id="7073704676847768330">Ce n'est probablement pas le site que vous recherchez !</translation>
 <translation id="8477384620836102176">&amp;Général</translation>
@@ -2134,7 +2134,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7219179957768738017">La connexion utilise <ph name="SSL_VERSION"/>.</translation>
 <translation id="7014174261166285193">Échec de l'installation</translation>
 <translation id="1970746430676306437">Afficher les &amp;infos sur la page</translation>
-<translation id="1252877623172913312">Règles relatives au périphérique</translation>
+<translation id="1252877623172913312">Règles relatives aux périphériques</translation>
 <translation id="8741168824058335685">Stockage persistant :</translation>
 <translation id="3199127022143353223">Serveurs</translation>
 <translation id="2189470649391435617">Redimensionner vers la droite</translation>
@@ -2520,7 +2520,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="5819890516935349394">Navigateur de contenu</translation>
 <translation id="2731392572903530958">&amp;Rouvrir la fenêtre fermée</translation>
 <translation id="7972819274674941125">Contenu des droits d'auteur</translation>
-<translation id="1254593899333212300">Se connecter directement à Internet</translation>
+<translation id="1254593899333212300">Connexion directe à Internet</translation>
 <translation id="6107012941649240045">Émis pour</translation>
 <translation id="6483805311199035658">Ouverture de <ph name="FILE"/> en cours</translation>
 <translation id="895541991026785598">Signaler un problème</translation>
@@ -2647,7 +2647,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2213819743710253654">Action sur la page</translation>
 <translation id="1317130519471511503">Modifier des éléments...</translation>
 <translation id="6391538222494443604">Le répertoire d'extensions est obligatoire.</translation>
-<translation id="4264154755694493263">Lors de l'installation d'une application, toujours afficher une info-bulle pointant vers le bouton de la page &quot;Nouvel onglet&quot; sur la barre des onglets, au lieu d'ouvrir une page &quot;Nouvel onglet&quot;</translation>
+<translation id="4264154755694493263">Lors de l'installation d'une application, toujours afficher une info-bulle pointant vers le bouton &quot;Nouvel onglet&quot; sur la barre des onglets, au lieu d'ouvrir une page &quot;Nouvel onglet&quot;</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES"/> Mo disponibles</translation>
 <translation id="7088615885725309056">Ancien</translation>
 <translation id="461656879692943278"><ph name="HOST_NAME"/> fournit du contenu provenant de <ph name="ELEMENTS_HOST_NAME"/>, un site connu pour distribuer des logiciels malveillants. Votre ordinateur pourrait être infecté par un virus si vous consultez ce site.</translation>
@@ -3359,7 +3359,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2742870351467570537">Supprimer les éléments sélectionnés</translation>
 <translation id="7561196759112975576">Toujours</translation>
 <translation id="2116673936380190819">de moins d'une heure</translation>
-<translation id="5765491088802881382">Aucun réseau n'est disponible.</translation>
+<translation id="5765491088802881382">Aucun réseau disponible</translation>
 <translation id="1971538228422220140">Supprimer les cookies et autres données de site et de plug-in</translation>
 <translation id="883487340845134897">Intervertir les touches Rechercher et Ctrl gauche</translation>
 <translation id="5692957461404855190">Faites glisser trois doigts sur la surface de votre trackpad pour afficher un aperçu de tous vos onglets. Cliquez sur une vignette pour la sélectionner. Idéal en mode plein écran.</translation>

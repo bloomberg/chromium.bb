@@ -101,7 +101,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE"/>を翻訳しない</translation>
 <translation id="3208703785962634733">未確認</translation>
 <translation id="6523841952727744497">ログインする前に、ゲスト セッションを開始して、<ph name="NETWORK_ID"/> ネットワークを有効にしてください。</translation>
-<translation id="5704318649385838512">CAPS LOCK はオンになっています\nShift キーと同時に押すと解除できます</translation>
+<translation id="5704318649385838512">CAPS LOCK はオンになっています\n左右の Shift キーを同時に押すと解除できます</translation>
 <translation id="620329680124578183">読み込まない（推奨）</translation>
 <translation id="2653266418988778031">認証局（CA）の証明書を削除すると、ブラウザはその CA が発行するどの証明書も信頼しなくなります。</translation>
 <translation id="298068999958468740">すべてのデータを常に同期させるか、このパソコンから同期させるデータを選択してください。</translation>
@@ -2300,7 +2300,7 @@
 <translation id="6397592254427394018">すべてのブックマークをシークレット ウィンドウで開く(&amp;I)</translation>
 <translation id="4567836003335927027"><ph name="WEBSITE_1"/> にあるデータ</translation>
 <translation id="756445078718366910">ブラウザ ウィンドウを開く</translation>
-<translation id="6132383530370527946">縮小印刷</translation>
+<translation id="6132383530370527946">利用規約</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 with RSA 暗号化</translation>
 <translation id="6320045364366127516">充電しています</translation>
 <translation id="6392373519963504642">韓国語のキーボード</translation>

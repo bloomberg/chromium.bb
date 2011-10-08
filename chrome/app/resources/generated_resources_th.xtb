@@ -1679,7 +1679,7 @@
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="3714633008798122362">ปฏิทินเว็บ</translation>
 <translation id="6445051938772793705">ประเทศ</translation>
-<translation id="3430309973417890444">หากคุณไม่มีบัญชี Google คุณสามารถ<ph name="LINK_START"/>สร้างบัญชี Google<ph name="LINK_END"/> ได้ในตอนนี้</translation>
+<translation id="3430309973417890444">หากยังไม่มีบัญชี Google คุณสามารถ<ph name="LINK_START"/>สร้างบัญชี Google<ph name="LINK_END"/> ได้เลย</translation>
 <translation id="3251759466064201842">&lt;ไม่ใช่ส่วนหนึ่งของใบรับรอง&gt;</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> วินาทีที่ผ่านมา</translation>
 <translation id="3399068503715460757">ใช้ IP แบบคงที่</translation>
@@ -3295,7 +3295,7 @@
 <translation id="2339641773402824483">กำลังตรวจสอบเพื่ออัปเดต...</translation>
 <translation id="9111742992492686570">ดาวน์โหลดการอัปเดตความปลอดภัยที่สำคัญมาก</translation>
 <translation id="8636666366616799973">แพคเกจไม่ถูกต้อง รายละเอียด: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>
-<translation id="2654226057706132620">คุณยังสามารถข้ามการลงชื่อเข้าใช้และ<ph name="LINK_START"/>เรียกดูแบบผู้เยี่ยมชม<ph name="LINK_END"/>ได้ด้วย</translation>
+<translation id="2654226057706132620">คุณอาจข้ามขั้นตอนการลงชื่อเข้าใช้และ<ph name="LINK_START"/>เรียกดูแบบผู้เยี่ยมชม<ph name="LINK_END"/>ก็ได้</translation>
 <translation id="2045969484888636535">ปิดกั้นคุกกี้ต่อไป</translation>
 <translation id="7353601530677266744">บรรทัดคำสั่ง </translation>
 <translation id="2766006623206032690">&amp;วางแล้วไป</translation>

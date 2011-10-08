@@ -982,7 +982,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="3371861036502301517">Error de instalación de extensión</translation>
 <translation id="644038709730536388">Obtén más información sobre cómo protegerte ante software malicioso online.</translation>
 <translation id="2155931291251286316">Permitir siempre pop-ups de <ph name="HOST"/></translation>
-<translation id="3445830502289589282">Fase 2 autenticación:</translation>
+<translation id="3445830502289589282">Autenticación fase 2:</translation>
 <translation id="5650551054760837876">No se han encontrado resultados de búsqueda.</translation>
 <translation id="5494362494988149300">Abrir al &amp;finalizar</translation>
 <translation id="2956763290572484660"><ph name="COOKIES"/> cookies</translation>
@@ -1276,7 +1276,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="462551743132815358">Cerrar archivo</translation>
 <translation id="6588399906604251380">Habilitar la revisión ortográfica</translation>
 <translation id="7053983685419859001">Bloquear</translation>
-<translation id="2485056306054380289">Certificado CA servidor:</translation>
+<translation id="2485056306054380289">Certific. CA servidor:</translation>
 <translation id="6462109140674788769">Teclado griego</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
 <translation id="8887733174653581061">Siempre delante</translation>
@@ -3403,7 +3403,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="2742870351467570537">Eliminar elementos seleccionados</translation>
 <translation id="7561196759112975576">Siempre</translation>
 <translation id="2116673936380190819">hace una hora</translation>
-<translation id="5765491088802881382">No hay redes disponibles.</translation>
+<translation id="5765491088802881382">No hay redes disponibles</translation>
 <translation id="1971538228422220140">Eliminar cookies y otros datos de sitios y de complementos</translation>
 <translation id="883487340845134897">Alternar entre la tecla de control izquierda y la tecla de búsqueda</translation>
 <translation id="5692957461404855190">Desliza tres dedos hacia abajo en el panel táctil para ver una descripción general de todas las pestañas. Haz clic en una miniatura para seleccionarla. Funciona muy bien en el modo de pantalla completa.</translation>
