@@ -342,7 +342,7 @@ extern int pthread_cond_wait(pthread_cond_t *cond,
 */
 int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
-                               struct timespec *abstime);
+                               const struct timespec *abstime);
 
  /** @nqPosix
 * Waits for condition variable cond to be signaled or broadcast; wait time is
@@ -359,7 +359,7 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
 */
 int pthread_cond_timedwait_rel(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
-                               struct timespec *reltime);
+                               const struct timespec *reltime);
 
 /**
  * Defined for POSIX compatibility; pthread_cond_timedwait() is actually

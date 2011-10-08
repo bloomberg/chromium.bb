@@ -79,7 +79,7 @@ int pthread_cond_wait (pthread_cond_t *cond,
 
 int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
-                               struct timespec *abstime) {
+                               const struct timespec *abstime) {
   pthread_cond_validate(cond);
   int retval = __nc_irt_cond.cond_timed_wait_abs(cond->handle,
                                                  mutex->mutex_handle,
