@@ -79,7 +79,7 @@ void PanelBrowserView::Deactivate() {
   if (!IsActive())
     return;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   gfx::NativeWindow native_window = NULL;
   BrowserWindow* browser_window =
       panel_->manager()->GetNextBrowserWindowToActivate(panel_.get());
