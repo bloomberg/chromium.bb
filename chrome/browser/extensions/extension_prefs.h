@@ -298,6 +298,9 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Sets a specific page index for an extension with |extension_id|.
   void SetPageIndex(const std::string& extension_id, int index);
 
+  // Removes the page index for an extension.
+  void ClearPageIndex(const std::string& extension_id);
+
   // Returns true if the user repositioned the app on the app launcher via drag
   // and drop.
   bool WasAppDraggedByUser(const std::string& extension_id);

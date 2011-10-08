@@ -380,6 +380,9 @@ void AppLauncherHandler::Observe(int type,
 }
 
 void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
+  // CreateAppInfo and ClearPageIndex can change the extension prefs.
+  AutoReset<bool> auto_reset(&ignore_changes_, true);
+
   ListValue* list = new ListValue();
   const ExtensionList* extensions = extension_service_->extensions();
   ExtensionList::const_iterator it;
@@ -387,11 +390,16 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
     if (!IsAppExcludedFromList(*it)) {
       DictionaryValue* app_info = GetAppInfo(*it);
       list->Append(app_info);
+    } else {
+      // This is necessary because in some previous versions of chrome, we set a
+      // page index for non-app extensions. Old profiles can persist this error,
+      // and this fixes it. If we don't fix it, GetNaturalAppPageIndex() doesn't
+      // work. See http://crbug.com/98325
+      ExtensionPrefs* prefs = extension_service_->extension_prefs();
+      if (prefs->GetPageIndex((*it)->id()) != -1)
+        prefs->ClearPageIndex((*it)->id());
     }
   }
-
-  // CreateAppInfo can change the extension prefs.
-  AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   extensions = extension_service_->disabled_extensions();
   for (it = extensions->begin(); it != extensions->end(); ++it) {

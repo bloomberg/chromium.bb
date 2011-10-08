@@ -2299,15 +2299,6 @@ void ExtensionService::AddExtension(const Extension* extension) {
     return;
   }
 
-  // Unfortunately, we used to set app launcher indices for non-apps. If this
-  // extension has an index (page or in-page), set it to -1.
-  if (!extension->is_app()) {
-    if (extension_prefs_->GetAppLaunchIndex(extension->id()) != -1)
-      extension_prefs_->SetAppLaunchIndex(extension->id(), -1);
-    if (extension_prefs_->GetPageIndex(extension->id()) != -1)
-      extension_prefs_->SetPageIndex(extension->id(), -1);
-  }
-
   extensions_.push_back(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);

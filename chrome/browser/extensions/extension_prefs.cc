@@ -1398,6 +1398,10 @@ void ExtensionPrefs::SetPageIndex(const std::string& extension_id, int index) {
                       Value::CreateIntegerValue(index));
 }
 
+void ExtensionPrefs::ClearPageIndex(const std::string& extension_id) {
+  UpdateExtensionPref(extension_id, kPrefPageIndex, NULL);
+}
+
 bool ExtensionPrefs::WasAppDraggedByUser(const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id, kPrefUserDraggedApp);
 }
