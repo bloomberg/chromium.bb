@@ -58,14 +58,14 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
                                    const std::string& language,
                                    const std::string& grammar,
                                    net::URLRequestContextGetter* context_getter,
-                                   bool censor_results,
+                                   bool filter_profanities,
                                    const std::string& hardware_info,
                                    const std::string& origin_url)
     : delegate_(delegate),
       caller_id_(caller_id),
       language_(language),
       grammar_(grammar),
-      censor_results_(censor_results),
+      filter_profanities_(filter_profanities),
       hardware_info_(hardware_info),
       origin_url_(origin_url),
       context_getter_(context_getter),
@@ -228,7 +228,7 @@ void SpeechRecognizer::HandleOnData(string* data) {
     // server to send the data and inform the delegate.
     delegate_->DidStartReceivingAudio(caller_id_);
     request_.reset(new SpeechRecognitionRequest(context_getter_.get(), this));
-    request_->Start(language_, grammar_, censor_results_,
+    request_->Start(language_, grammar_, filter_profanities_,
                     hardware_info_, origin_url_, encoder_->mime_type());
   }
 

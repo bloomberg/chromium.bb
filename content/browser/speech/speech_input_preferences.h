@@ -15,9 +15,9 @@ class CONTENT_EXPORT SpeechInputPreferences
   SpeechInputPreferences();
 
   // Only to be called on the IO thread.
-  virtual bool censor_results() const = 0;
+  virtual bool filter_profanities() const = 0;
 
-  virtual void set_censor_results(bool censor_results) = 0;
+  virtual void set_filter_profanities(bool filter_profanities) = 0;
 
  protected:
   virtual ~SpeechInputPreferences();

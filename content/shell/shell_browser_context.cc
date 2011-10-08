@@ -63,11 +63,11 @@ class ShellSpeechInputPreferences : public SpeechInputPreferences {
   }
 
   // SpeechInputPreferences implementation.
-  virtual bool censor_results() const OVERRIDE {
+  virtual bool filter_profanities() const OVERRIDE {
     return false;
   }
 
-  virtual void set_censor_results(bool censor_results) OVERRIDE {
+  virtual void set_filter_profanities(bool filter_profanities) OVERRIDE {
   }
 
  private:

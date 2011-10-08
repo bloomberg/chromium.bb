@@ -11,25 +11,26 @@
 
 ChromeSpeechInputPreferences::ChromeSpeechInputPreferences(
     PrefService* pref_service)
-    : censor_results_(
-          pref_service->GetBoolean(prefs::kSpeechInputCensorResults)) {
+    : filter_profanities_(
+          pref_service->GetBoolean(prefs::kSpeechInputFilterProfanities)) {
 }
 
 ChromeSpeechInputPreferences::~ChromeSpeechInputPreferences() {
 }
 
-bool ChromeSpeechInputPreferences::censor_results() const {
+bool ChromeSpeechInputPreferences::filter_profanities() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return censor_results_;
+  return filter_profanities_;
 }
 
-void ChromeSpeechInputPreferences::set_censor_results(bool censor_results) {
+void ChromeSpeechInputPreferences::set_filter_profanities(
+    bool filter_profanities) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromeSpeechInputPreferences::set_censor_results,
-                   this, censor_results));
+        base::Bind(&ChromeSpeechInputPreferences::set_filter_profanities,
+                   this, filter_profanities));
     return;
   }
-  censor_results_ = censor_results;
+  filter_profanities_ = filter_profanities;
 }

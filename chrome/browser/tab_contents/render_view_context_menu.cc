@@ -945,9 +945,9 @@ void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
 void RenderViewContextMenu::AppendSpeechInputOptionsSubMenu() {
   if (params_.speech_input_enabled) {
     speech_input_submenu_model_.AddCheckItem(
-        IDC_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS,
+        IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES,
         l10n_util::GetStringUTF16(
-            IDS_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS));
+            IDS_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES));
 
     speech_input_submenu_model_.AddItemWithStringId(
         IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT,
@@ -1311,7 +1311,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLCHECK_MENU:
       return true;
 
-    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS:
+    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES:
     case IDC_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT:
     case IDC_SPEECH_INPUT_MENU:
       return true;
@@ -1377,8 +1377,9 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
   }
 
   // Check box for menu item 'Block offensive words'.
-  if (id == IDC_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS) {
-    return profile_->GetPrefs()->GetBoolean(prefs::kSpeechInputCensorResults);
+  if (id == IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES) {
+    return profile_->GetPrefs()->GetBoolean(
+        prefs::kSpeechInputFilterProfanities);
   }
 
   // Don't bother getting the display language vector if this isn't a spellcheck
@@ -1832,11 +1833,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
     }
 
-    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_CENSOR_RESULTS: {
+    case IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES: {
       PrefService* prefs = profile_->GetPrefs();
-      const bool censor = !prefs->GetBoolean(prefs::kSpeechInputCensorResults);
-      prefs->SetBoolean(prefs::kSpeechInputCensorResults, censor);
-      profile_->GetSpeechInputPreferences()->set_censor_results(censor);
+      const bool filter = !prefs->GetBoolean(
+          prefs::kSpeechInputFilterProfanities);
+      prefs->SetBoolean(prefs::kSpeechInputFilterProfanities, filter);
+      profile_->GetSpeechInputPreferences()->set_filter_profanities(filter);
       break;
     }
 

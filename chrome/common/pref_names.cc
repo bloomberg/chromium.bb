@@ -603,7 +603,8 @@ const char kEnabledLabsExperiments[] = "browser.enabled_labs_experiments";
 const char kEnableAutoSpellCorrect[] = "browser.enable_autospellcorrect";
 
 // Boolean pref to define the default setting for "block offensive words".
-const char kSpeechInputCensorResults[] =
+// The old key value is kept to avoid unnecessary migration code.
+const char kSpeechInputFilterProfanities[] =
     "browser.speechinput_censor_results";
 
 // Boolean controlling whether history saving is disabled.

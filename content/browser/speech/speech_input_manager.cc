@@ -65,7 +65,7 @@ void SpeechInputManager::StartRecognition(
   request->delegate = delegate;
   request->recognizer = new SpeechRecognizer(
       this, caller_id, language, grammar, context_getter,
-      speech_input_prefs->censor_results(),
+      speech_input_prefs->filter_profanities(),
       request_info_, can_report_metrics_ ? origin_url : "");
   request->is_active = false;
 

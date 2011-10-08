@@ -140,7 +140,7 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect,
                              true,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kSpeechInputCensorResults,
+  prefs->RegisterBooleanPref(prefs::kSpeechInputFilterProfanities,
                              true,
                              PrefService::UNSYNCABLE_PREF);
 #if defined(TOOLKIT_USES_GTK)

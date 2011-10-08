@@ -220,7 +220,7 @@ extern const char kDeleteCookies[];
 extern const char kDeletePasswords[];
 extern const char kDeleteFormData[];
 extern const char kEnableSpellCheck[];
-extern const char kSpeechInputCensorResults[];
+extern const char kSpeechInputFilterProfanities[];
 extern const char kEnabledLabsExperiments[];
 extern const char kEnableAutoSpellCorrect[];
 extern const char kSavingBrowserHistoryDisabled[];

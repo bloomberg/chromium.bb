@@ -148,7 +148,7 @@ SpeechRecognitionRequest::~SpeechRecognitionRequest() {}
 
 void SpeechRecognitionRequest::Start(const std::string& language,
                                      const std::string& grammar,
-                                     bool censor_results,
+                                     bool filter_profanities,
                                      const std::string& hardware_info,
                                      const std::string& origin_url,
                                      const std::string& content_type) {
@@ -177,7 +177,7 @@ void SpeechRecognitionRequest::Start(const std::string& language,
   if (!hardware_info.empty())
     parts.push_back("xhw=" + net::EscapeQueryParamValue(hardware_info, true));
   parts.push_back("maxresults=" + base::IntToString(kMaxResults));
-  parts.push_back(censor_results ? "pfilter=2" : "pfilter=0");
+  parts.push_back(filter_profanities ? "pfilter=2" : "pfilter=0");
 
   GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));
 

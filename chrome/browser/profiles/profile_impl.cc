@@ -374,7 +374,7 @@ void ProfileImpl::DoFinalInit() {
   pref_change_registrar_.Add(prefs::kSpellCheckDictionary, this);
   pref_change_registrar_.Add(prefs::kEnableSpellCheck, this);
   pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
-  pref_change_registrar_.Add(prefs::kSpeechInputCensorResults, this);
+  pref_change_registrar_.Add(prefs::kSpeechInputFilterProfanities, this);
   pref_change_registrar_.Add(prefs::kClearSiteDataOnExit, this);
   pref_change_registrar_.Add(prefs::kGoogleServicesUsername, this);
   pref_change_registrar_.Add(prefs::kDefaultZoomLevel, this);
@@ -1500,9 +1500,9 @@ void ProfileImpl::Observe(int type,
           RenderProcessHost* process = i.GetCurrentValue();
           process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
         }
-      } else if (*pref_name_in == prefs::kSpeechInputCensorResults) {
-        GetSpeechInputPreferences()->set_censor_results(prefs->GetBoolean(
-            prefs::kSpeechInputCensorResults));
+      } else if (*pref_name_in == prefs::kSpeechInputFilterProfanities) {
+        GetSpeechInputPreferences()->set_filter_profanities(prefs->GetBoolean(
+            prefs::kSpeechInputFilterProfanities));
       } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
         clear_local_state_on_exit_ =
             prefs->GetBoolean(prefs::kClearSiteDataOnExit);

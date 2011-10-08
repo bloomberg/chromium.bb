@@ -17,14 +17,14 @@ class ChromeSpeechInputPreferences : public SpeechInputPreferences {
   explicit ChromeSpeechInputPreferences(PrefService* pref_service);
 
   // SpeechInputPreferences methods.
-  virtual bool censor_results() const OVERRIDE;
-  virtual void set_censor_results(bool censor_results) OVERRIDE;
+  virtual bool filter_profanities() const OVERRIDE;
+  virtual void set_filter_profanities(bool filter_profanities) OVERRIDE;
 
  private:
   virtual ~ChromeSpeechInputPreferences();
 
   // Only to be accessed and modified on the IO thread.
-  bool censor_results_;
+  bool filter_profanities_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSpeechInputPreferences);
 };

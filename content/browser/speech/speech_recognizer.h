@@ -85,7 +85,7 @@ class CONTENT_EXPORT SpeechRecognizer
                    const std::string& language,
                    const std::string& grammar,
                    net::URLRequestContextGetter* context_getter,
-                   bool censor_results,
+                   bool filter_profanities,
                    const std::string& hardware_info,
                    const std::string& origin_url);
 
@@ -135,7 +135,7 @@ class CONTENT_EXPORT SpeechRecognizer
   int caller_id_;
   std::string language_;
   std::string grammar_;
-  bool censor_results_;
+  bool filter_profanities_;
   std::string hardware_info_;
   std::string origin_url_;
 
