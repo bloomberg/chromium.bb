@@ -10,6 +10,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/plugins/npapi/webview_plugin.h"
+#include "webkit/plugins/webplugininfo.h"
 
 class GURL;
 
@@ -29,6 +30,7 @@ class BlockedPlugin : public content::RenderViewObserver,
  public:
   BlockedPlugin(RenderView* render_view,
                 WebKit::WebFrame* frame,
+                const webkit::WebPluginInfo& info,
                 const WebKit::WebPluginParams& params,
                 const WebPreferences& settings,
                 int template_id,
@@ -74,6 +76,7 @@ class BlockedPlugin : public content::RenderViewObserver,
   void HidePlugin();
 
   WebKit::WebFrame* frame_;
+  webkit::WebPluginInfo plugin_info_;
   WebKit::WebPluginParams plugin_params_;
   webkit::npapi::WebViewPlugin* plugin_;
   // The name of the plugin that was blocked.

@@ -54,7 +54,6 @@ class WebPluginImpl : public WebPlugin,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       const FilePath& file_path,
-      const std::string& mime_type,
       const base::WeakPtr<WebPluginPageDelegate>& page_delegate);
   virtual ~WebPluginImpl();
 

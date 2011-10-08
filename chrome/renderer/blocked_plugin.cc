@@ -59,6 +59,7 @@ static const BlockedPlugin* g_last_active_menu;
 
 BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              WebFrame* frame,
+                             const webkit::WebPluginInfo& info,
                              const WebPluginParams& params,
                              const WebPreferences& preferences,
                              int template_id,
@@ -68,6 +69,7 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              bool allow_loading)
     : content::RenderViewObserver(render_view),
       frame_(frame),
+      plugin_info_(info),
       plugin_params_(params),
       name_(name),
       is_blocked_for_prerendering_(is_blocked_for_prerendering),
@@ -200,7 +202,7 @@ void BlockedPlugin::LoadPlugin() {
     return;
   WebPluginContainer* container = plugin_->container();
   WebPlugin* new_plugin =
-      render_view()->CreatePluginNoCheck(frame_, plugin_params_);
+      render_view()->CreatePluginInternal(frame_, plugin_info_, plugin_params_);
   if (new_plugin && new_plugin->initialize(container)) {
     plugin_->RestoreTitleText();
     container->setPlugin(new_plugin);

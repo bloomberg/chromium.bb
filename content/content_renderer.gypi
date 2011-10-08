@@ -30,6 +30,7 @@
     'public/renderer/render_process_observer.h',
     'public/renderer/render_thread.cc',
     'public/renderer/render_thread.h',
+    'public/renderer/render_view.h',
     'public/renderer/render_view_observer.cc',
     'public/renderer/render_view_observer.h',
     'public/renderer/render_view_observer_tracker.h',

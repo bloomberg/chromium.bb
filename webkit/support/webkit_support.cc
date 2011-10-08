@@ -168,11 +168,9 @@ class WebPluginImplWithPageDelegate
  public:
   WebPluginImplWithPageDelegate(WebFrame* frame,
                                 const WebPluginParams& params,
-                                const FilePath& path,
-                                const std::string& mime_type)
+                                const FilePath& path)
       : webkit_support::TestWebPluginPageDelegate(),
-        webkit::npapi::WebPluginImpl(
-            frame, params, path, mime_type, AsWeakPtr()) {}
+        webkit::npapi::WebPluginImpl(frame, params, path, AsWeakPtr()) {}
   virtual ~WebPluginImplWithPageDelegate() {}
  private:
   DISALLOW_COPY_AND_ASSIGN(WebPluginImplWithPageDelegate);
@@ -306,8 +304,10 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
   if (plugins.empty())
     return NULL;
 
+  WebPluginParams new_params = params;
+  new_params.mimeType = WebString::fromUTF8(mime_types.front());
   return new WebPluginImplWithPageDelegate(
-      frame, params, plugins.front().path, mime_types.front());
+      frame, new_params, plugins.front().path);
 }
 
 WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,

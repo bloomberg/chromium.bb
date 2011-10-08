@@ -25,6 +25,7 @@ class PhishingClassifierFilter;
 }
 
 namespace webkit {
+struct WebPluginInfo;
 namespace npapi {
 class PluginGroup;
 }
@@ -103,6 +104,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   WebKit::WebPlugin* CreatePluginPlaceholder(
       RenderView* render_view,
       WebKit::WebFrame* frame,
+      const webkit::WebPluginInfo& plugin,
       const WebKit::WebPluginParams& params,
       const webkit::npapi::PluginGroup* group,
       int resource_id,

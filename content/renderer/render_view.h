@@ -279,27 +279,14 @@ class RenderView : public RenderWidget,
   // Notification that the given plugin has crashed.
   void PluginCrashed(const FilePath& plugin_path);
 
-  // Create a new NPAPI plugin.
-  CONTENT_EXPORT WebKit::WebPlugin* CreateNPAPIPlugin(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
-      const FilePath& path,
-      const std::string& mime_type);
-
-  // Create a new Pepper plugin.
-  CONTENT_EXPORT WebKit::WebPlugin* CreatePepperPlugin(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
-      const FilePath& path,
-      webkit::ppapi::PluginModule* pepper_module);
-
   // Creates a fullscreen container for a pepper plugin instance.
   RenderWidgetFullscreenPepper* CreatePepperFullscreenContainer(
       webkit::ppapi::PluginInstance* plugin);
 
-  // Create a new plugin without checking the content settings.
-  CONTENT_EXPORT WebKit::WebPlugin* CreatePluginNoCheck(
+  // Create a new plugin.
+  CONTENT_EXPORT WebKit::WebPlugin* CreatePluginInternal(
       WebKit::WebFrame* frame,
+      const webkit::WebPluginInfo& info,
       const WebKit::WebPluginParams& params);
 
   // Informs the render view that a PPAPI plugin has gained or lost focus.
@@ -1016,15 +1003,7 @@ class RenderView : public RenderWidget,
   base::OneShotTimer<RenderView> nav_state_sync_timer_;
 
   // Page IDs ------------------------------------------------------------------
-  //
-  // Page IDs allow the browser to identify pages in each renderer process for
-  // keeping back/forward history in sync.
-
-  // ID of the current page.  Note that this is NOT updated for every main
-  // frame navigation, only for "regular" navigations that go into session
-  // history. In particular, client redirects, like the page cycler uses
-  // (document.location.href="foo") do not count as regular navigations and do
-  // not increment the page id.
+  // See documentation in content::RenderView.
   int32 page_id_;
 
   // Indicates the ID of the last page that we sent a FrameNavigate to the

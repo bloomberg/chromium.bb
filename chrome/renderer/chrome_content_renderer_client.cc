@@ -294,8 +294,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
         orig_mime_type, url);
     return CreatePluginPlaceholder(
-        render_view, frame, original_params, NULL, IDR_BLOCKED_PLUGIN_HTML,
-        IDS_PLUGIN_NOT_FOUND, false, false);
+        render_view, frame, plugin, original_params, NULL,
+        IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_FOUND, false, false);
   }
   if (plugin.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
@@ -332,7 +332,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
   if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kDisabled) {
     return CreatePluginPlaceholder(
-        render_view, frame, original_params, group.get(),
+        render_view, frame, plugin, original_params, group.get(),
         IDR_DISABLED_PLUGIN_HTML, IDS_PLUGIN_DISABLED, false, false);
   }
 
@@ -375,8 +375,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             GURL(group->GetUpdateURL())));
       }
       return CreatePluginPlaceholder(
-          render_view, frame, params, group.get(), IDR_BLOCKED_PLUGIN_HTML,
-          IDS_PLUGIN_OUTDATED, false, outdated_policy == CONTENT_SETTING_ASK);
+          render_view, frame, plugin, params, group.get(),
+          IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED, false,
+          outdated_policy == CONTENT_SETTING_ASK);
     } else {
       DCHECK(outdated_policy == CONTENT_SETTING_ALLOW);
     }
@@ -394,8 +395,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
         render_view->routing_id(), group->GetGroupName(), GURL()));
     return CreatePluginPlaceholder(
-        render_view, frame, params, group.get(), IDR_BLOCKED_PLUGIN_HTML,
-        IDS_PLUGIN_NOT_AUTHORIZED, false, true);
+        render_view, frame, plugin, params, group.get(),
+        IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_AUTHORIZED, false, true);
   }
 
   // Treat Native Client invocations like Javascript.
@@ -413,7 +414,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     // Delay loading plugins if prerendering.
     if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
       return CreatePluginPlaceholder(
-          render_view, frame, params, group.get(),
+          render_view, frame, plugin, params, group.get(),
           IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD, true, true);
     }
 
@@ -462,44 +463,32 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         // TODO(bbudge) Webkit will crash if this is a full-frame plug-in and
         // we return NULL. Prepare a patch to fix that, and return NULL here.
         return CreatePluginPlaceholder(
-            render_view, frame, params, group.get(), IDR_BLOCKED_PLUGIN_HTML,
-            IDS_PLUGIN_BLOCKED, false, false);
+            render_view, frame, plugin, params, group.get(),
+            IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, false);
       }
     }
 
-    bool pepper_plugin_was_registered = false;
-    scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
-        render_view->pepper_delegate()->CreatePepperPluginModule(
-            plugin, &pepper_plugin_was_registered));
-    if (pepper_plugin_was_registered) {
-      if (pepper_module) {
-        return render_view->CreatePepperPlugin(
-            frame, params, plugin.path, pepper_module.get());
-      }
-      return NULL;
-    }
-
-    return render_view->CreateNPAPIPlugin(
-        frame, params, plugin.path, actual_mime_type);
+    return render_view->CreatePluginInternal(frame, plugin, params);
   }
 
   observer->DidBlockContentType(content_type, resource);
   if (plugin_setting == CONTENT_SETTING_ASK) {
     RenderThread::Get()->RecordUserMetrics("Plugin_ClickToPlay");
     return CreatePluginPlaceholder(
-        render_view, frame, params, group.get(), IDR_CLICK_TO_PLAY_PLUGIN_HTML,
-        IDS_PLUGIN_LOAD, false, true);
+        render_view, frame, plugin, params, group.get(),
+        IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD, false, true);
   } else {
     RenderThread::Get()->RecordUserMetrics("Plugin_Blocked");
     return CreatePluginPlaceholder(
-        render_view, frame, params, group.get(), IDR_BLOCKED_PLUGIN_HTML,
-        IDS_PLUGIN_BLOCKED, false, true);
+        render_view, frame, plugin, params, group.get(),
+        IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, true);
   }
 }
 
 WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(
     RenderView* render_view,
     WebFrame* frame,
+    const webkit::WebPluginInfo& plugin,
     const WebPluginParams& params,
     const webkit::npapi::PluginGroup* group,
     int resource_id,
@@ -520,6 +509,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(
   BlockedPlugin* blocked_plugin =
       new BlockedPlugin(render_view,
                         frame,
+                        plugin,
                         params,
                         render_view->webkit_preferences(),
                         resource_id,

@@ -460,7 +460,6 @@ WebPluginImpl::WebPluginImpl(
     WebFrame* webframe,
     const WebPluginParams& params,
     const FilePath& file_path,
-    const std::string& mime_type,
     const base::WeakPtr<WebPluginPageDelegate>& page_delegate)
     : windowless_(false),
       window_(gfx::kNullPluginWindow),
@@ -474,7 +473,7 @@ WebPluginImpl::WebPluginImpl(
       first_geometry_update_(true),
       ignore_response_error_(false),
       file_path_(file_path),
-      mime_type_(mime_type),
+      mime_type_(UTF16ToASCII(params.mimeType)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
   StringToLowerASCII(&mime_type_);

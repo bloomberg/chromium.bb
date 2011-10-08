@@ -514,25 +514,22 @@ void RenderView::PluginCrashed(const FilePath& plugin_path) {
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path));
 }
 
-WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
-                                           const WebPluginParams& params) {
-  webkit::WebPluginInfo info;
-  std::string mime_type;
-  bool found = GetPluginInfo(params.url, frame->top()->document().url(),
-                             params.mimeType.utf8(), &info, &mime_type);
-  if (!found)
-    return NULL;
-
+WebPlugin* RenderView::CreatePluginInternal(WebKit::WebFrame* frame,
+                                            const webkit::WebPluginInfo& info,
+                                            const WebPluginParams& params) {
   bool pepper_plugin_was_registered = false;
   scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
       pepper_delegate_.CreatePepperPluginModule(info,
                                                 &pepper_plugin_was_registered));
   if (pepper_plugin_was_registered) {
-    if (pepper_module)
-      return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
-    return NULL;
+    if (!pepper_module)
+      return NULL;
+    return new webkit::ppapi::WebPluginImpl(
+        pepper_module.get(), params, pepper_delegate_.AsWeakPtr());
   }
-  return CreateNPAPIPlugin(frame, params, info.path, mime_type);
+
+  return new webkit::npapi::WebPluginImpl(
+      frame, params, info.path, AsWeakPtr());
 }
 
 void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
@@ -1854,7 +1851,16 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     return plugin;
   }
 
-  return CreatePluginNoCheck(frame, params);
+  webkit::WebPluginInfo info;
+  std::string mime_type;
+  bool found = GetPluginInfo(params.url, frame->top()->document().url(),
+                             params.mimeType.utf8(), &info, &mime_type);
+  if (!found)
+    return NULL;
+
+  WebPluginParams params_to_use = params;
+  params_to_use.mimeType = WebString::fromUTF8(mime_type);
+  return CreatePluginInternal(frame, info, params_to_use);
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -3271,24 +3277,6 @@ void RenderView::OnFindReplyAck() {
     // Send the search result over to the browser process.
     Send(queued_find_reply_message_.release());
   }
-}
-
-WebPlugin* RenderView::CreatePepperPlugin(
-    WebFrame* frame,
-    const WebPluginParams& params,
-    const FilePath& path,
-    webkit::ppapi::PluginModule* pepper_module) {
-  return new webkit::ppapi::WebPluginImpl(
-      pepper_module, params, pepper_delegate_.AsWeakPtr());
-}
-
-WebPlugin* RenderView::CreateNPAPIPlugin(
-    WebFrame* frame,
-    const WebPluginParams& params,
-    const FilePath& path,
-    const std::string& mime_type) {
-  return new webkit::npapi::WebPluginImpl(
-      frame, params, path, mime_type, AsWeakPtr());
 }
 
 void RenderView::OnZoom(PageZoom::Function function) {
