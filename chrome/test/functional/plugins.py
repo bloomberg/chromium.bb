@@ -134,6 +134,12 @@ class PluginsTest(pyauto.PyUITest):
     This is equivalent to testing the enable/disable functionality in
     chrome://plugins
     """
+    # Flash files loaded too quickly after firing browser end up getting
+    # downloaded, which seems to indicate that the plugin hasn't been
+    # registered yet.
+    # Hack to register Flash plugin on all platforms.  crbug.com/94123
+    self.GetPluginsInfo()
+
     for fname, plugin_name in self._ObtainPluginsList():
       # Verify initial state
       self.assertTrue(self._IsEnabled(plugin_name),

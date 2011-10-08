@@ -116,8 +116,6 @@
       '-cookies.CookiesTest.testBlockCookiesUsingExceptions',
       # crbug.com/86524
       '-plugins.PluginsTest.testAllowPluginException',
-      # crbug.com/87811
-      '-plugins.PluginsTest.testDisableEnableAllPlugins',
       # crbug.com/85307
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
       # crbug.com/88574
