@@ -86,6 +86,14 @@ void CompositorThread::AddCompositor(int routing_id, int compositor_id) {
   if (!compositor)
     return;
 
+  if (compositors_.count(routing_id) != 0) {
+    // It's valid to call AddCompositor() for the same routing id with the same
+    // compositor many times, but it's not valid to change the compositor for
+    // a route.
+    DCHECK_EQ(compositors_[routing_id]->compositor(), compositor);
+    return;
+  }
+
   filter_->AddRoute(routing_id);
   compositors_[routing_id] =
       make_linked_ptr(new CompositorWrapper(this, routing_id, compositor));

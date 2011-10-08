@@ -15,6 +15,7 @@
 #include "content/common/content_switches.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -915,8 +916,11 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
       this, &RenderWidget::InvalidationCallback));
 }
 
-void RenderWidget::didActivateCompositor(int compositorIdentifier) {
+void RenderWidget::didActivateCompositor(int compositor_identifier) {
   TRACE_EVENT0("gpu", "RenderWidget::didActivateCompositor");
+
+  RenderThreadImpl::current()->compositor_thread()->
+      AddCompositor(routing_id_, compositor_identifier);
 
   is_accelerated_compositing_active_ = true;
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
