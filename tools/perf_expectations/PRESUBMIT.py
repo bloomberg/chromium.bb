@@ -41,6 +41,7 @@ def CheckChangeOnCommit(input_api, output_api):
     output.extend(input_api.canned_checks.RunPythonUnitTests(input_api,
                                                              output_api,
                                                              UNIT_TESTS))
-    output.extend(input_api.canned_checks.CheckDoNotSubmit(input_api,
-                                                           output_api))
+
+  output.extend(input_api.canned_checks.CheckDoNotSubmit(input_api,
+                                                         output_api))
   return output
