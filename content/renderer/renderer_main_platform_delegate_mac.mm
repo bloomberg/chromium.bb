@@ -1,15 +1,19 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/renderer/renderer_main_platform_delegate.h"
 
 #import <Cocoa/Cocoa.h>
+#include <objc/runtime.h>
 
 #include "base/command_line.h"
+#include "base/logging.h"
+#include "base/sys_string_conversions.h"
 #import "content/common/chrome_application_mac.h"
 #include "content/common/content_switches.h"
 #include "content/common/sandbox_mac.h"
+#import "chrome/test/security_tests/renderer_sandbox_tests_mac.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
@@ -42,7 +46,32 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
 void RendererMainPlatformDelegate::PlatformUninitialize() {
 }
 
+static void LogTestMessage(std::string message, bool is_error) {
+  if (is_error)
+    LOG(ERROR) << message;
+  else
+    LOG(INFO) << message;
+}
+
 bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
+  const CommandLine& command_line = parameters_.command_line_;
+
+  if (command_line.HasSwitch(switches::kTestSandbox)) {
+    std::string bundle_path =
+    command_line.GetSwitchValueNative(switches::kTestSandbox);
+    if (bundle_path.empty()) {
+      NOTREACHED() << "Bad bundle path";
+      return false;
+    }
+    NSBundle* tests_bundle =
+        [NSBundle bundleWithPath:base::SysUTF8ToNSString(bundle_path)];
+    if (![tests_bundle load]) {
+      NOTREACHED() << "Failed to load bundle";
+      return false;
+    }
+    sandbox_tests_bundle_ = [tests_bundle retain];
+    [objc_getClass("RendererSandboxTestsRunner") setLogFunction:LogTestMessage];
+  }
   return true;
 }
 
@@ -54,5 +83,12 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
 }
 
 void RendererMainPlatformDelegate::RunSandboxTests() {
-  // TODO(port): Run sandbox unit test here.
+  Class tests_runner = objc_getClass("RendererSandboxTestsRunner");
+  if (tests_runner) {
+    if (![tests_runner runTests])
+      LOG(ERROR) << "Running renderer with failing sandbox tests!";
+    [sandbox_tests_bundle_ unload];
+    [sandbox_tests_bundle_ release];
+    sandbox_tests_bundle_ = nil;
+  }
 }

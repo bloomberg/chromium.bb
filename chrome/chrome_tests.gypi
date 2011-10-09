@@ -3591,6 +3591,36 @@
     },
   ],
   'conditions': [
+    ['OS=="mac"', {
+      'targets': [
+        {
+          # This is the mac equivalent of the security_tests target below. It
+          # generates a framework bundle which bundles tests to be run in a
+          # renderer process. The test code is built as a framework so it can be
+          # run in the context of a renderer without shipping the code to end
+          # users.
+          'target_name': 'renderer_sandbox_tests',
+          'type': 'shared_library',
+          'product_name': 'Renderer Sandbox Tests',
+          'mac_bundle': 1,
+          'xcode_settings': {
+            'INFOPLIST_FILE': 'test/security_tests/sandbox_tests_mac-Info.plist',
+          },
+          'sources': [
+            'test/security_tests/renderer_sandbox_tests_mac.h',
+            'test/security_tests/renderer_sandbox_tests_mac.mm',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
+            ],
+          },
+        },
+      ],
+    }],
     ['OS!="mac"', {
       'targets': [
         {

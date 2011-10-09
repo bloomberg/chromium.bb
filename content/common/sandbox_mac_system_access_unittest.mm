@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"
@@ -86,7 +87,9 @@ class MacSandboxedFileAccessTestCase : public sandboxtest::MacSandboxTestCase {
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedFileAccessTestCase);
 
 bool MacSandboxedFileAccessTestCase::SandboxedTest() {
-  return open("/etc/passwd", O_RDONLY) == -1;
+  int fdes = open("/etc/passwd", O_RDONLY);
+  file_util::ScopedFD file_closer(&fdes);
+  return fdes == -1;
 }
 
 TEST_F(MacSandboxTest, FileAccess) {

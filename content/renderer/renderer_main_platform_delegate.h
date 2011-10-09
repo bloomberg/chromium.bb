@@ -9,6 +9,12 @@
 #include "content/common/content_export.h"
 #include "content/common/main_function_params.h"
 
+#ifdef __OBJC__
+@class NSBundle;
+#else
+class NSBundle;
+#endif  // __OBJC__
+
 class CONTENT_EXPORT RendererMainPlatformDelegate {
  public:
   explicit RendererMainPlatformDelegate(const MainFunctionParams& parameters);
@@ -33,6 +39,8 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
   const MainFunctionParams& parameters_;
 #if defined(OS_WIN)
   HMODULE sandbox_test_module_;
+#elif defined(OS_MACOSX)
+  NSBundle* sandbox_tests_bundle_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RendererMainPlatformDelegate);
