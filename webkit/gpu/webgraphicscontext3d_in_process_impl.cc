@@ -220,6 +220,7 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
   glGenFramebuffersEXT(1, &copy_texture_to_parent_texture_fbo_);
 
   initialized_ = true;
+  gl_context_->ReleaseCurrent(gl_surface_.get());
   return true;
 }
 
