@@ -1331,6 +1331,17 @@ void WebGraphicsContext3DInProcessImpl::texImage2D(
     WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border,
     WGC3Denum format, WGC3Denum type, const void* pixels) {
   makeContextCurrent();
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    if (format == GL_BGRA_EXT && internalFormat == GL_BGRA_EXT) {
+      internalFormat = GL_RGBA;
+    } else if (type == GL_FLOAT) {
+      if (format == GL_RGBA) {
+        internalFormat = GL_RGBA32F_ARB;
+      } else if (format == GL_RGB) {
+        internalFormat = GL_RGB32F_ARB;
+      }
+    }
+  }
   glTexImage2D(target, level, internalFormat,
                width, height, border, format, type, pixels);
 }
