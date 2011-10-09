@@ -65,8 +65,10 @@ void UserImageScreen::Show() {
   // The image must have been assigned by UserManager on new user login but
   // under some circumstances (i.e. the data is not written to Local State
   // or the file was corrupt) |kExternalImageIndex| could still be returned.
-  if (selected_image_index == UserManager::User::kInvalidImageIndex)
+  if (selected_image_index == UserManager::User::kInvalidImageIndex) {
+    LOG(WARNING) << "Default user image index invalid!";
     selected_image_index = 0;
+  }
   actor_->SelectImage(selected_image_index);
 
   WizardAccessibilityHelper::GetInstance()->MaybeSpeak(

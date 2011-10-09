@@ -162,7 +162,8 @@ class UserManager : public UserImageLoader::Delegate,
                          int image_index);
 
   // Returns the index of user's default image or |kInvalidImageIndex|
-  // if some error occurs (like Local State corruption).
+  // if user has a non-default image or some error occurs (like Local State
+  // corruption).
   int GetUserDefaultImageIndex(const std::string& username);
 
   // chromeos::UserImageLoader::Delegate implementation.

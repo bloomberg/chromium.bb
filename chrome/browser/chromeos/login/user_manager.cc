@@ -652,13 +652,16 @@ int UserManager::GetUserDefaultImageIndex(const std::string& username) {
   if (!prefs_images)
     return User::kInvalidImageIndex;
 
-  std::string image_path;
-  if (!prefs_images->GetStringWithoutPathExpansion(username, &image_path))
+  base::DictionaryValue* image_properties;
+  if (!prefs_images->GetDictionaryWithoutPathExpansion(
+          username, &image_properties))
     return User::kInvalidImageIndex;
 
-  int image_id = kDefaultImagesCount;
-  if (!IsDefaultImagePath(image_path, &image_id))
+  int image_id = User::kInvalidImageIndex;
+  if (!image_properties->GetInteger(kImageIndexNodeName, &image_id) ||
+      image_id < 0 || image_id >= kDefaultImagesCount)
     return User::kInvalidImageIndex;
+
   return image_id;
 }
 
