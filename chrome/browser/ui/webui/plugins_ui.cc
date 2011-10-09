@@ -137,15 +137,17 @@ class PluginsDOMHandler : public WebUIMessageHandler,
 
 PluginsDOMHandler::PluginsDOMHandler()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-                 NotificationService::AllSources());
 }
 
 WebUIMessageHandler* PluginsDOMHandler::Attach(WebUI* web_ui) {
-  PrefService* prefs = Profile::FromWebUI(web_ui)->GetPrefs();
+  Profile* profile = Profile::FromWebUI(web_ui);
 
+  PrefService* prefs = profile->GetPrefs();
   show_details_.Init(prefs::kPluginsShowDetails, prefs, NULL);
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
+                 Source<PluginPrefs>(PluginPrefs::GetForProfile(profile)));
 
   return WebUIMessageHandler::Attach(web_ui);
 }
