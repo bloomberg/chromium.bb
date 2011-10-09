@@ -367,6 +367,13 @@ TEST_F(StartupTest, PerfRestoreFewTabsReference) {
 #define MAYBE_PerfExtensionContentScript50 PerfExtensionContentScript50
 #endif
 
+// http://crbug.com/99604
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_PerfComplexTheme FLAKY_PerfComplexTheme
+#else
+#define MAYBE_PerfComplexTheme PerfComplexTheme
+#endif
+
 TEST_F(StartupTest, MAYBE_PerfSeveralTabs) {
   RunPerfTestWithManyTabs("several_tabs", "cmdline", 10, 4, false);
 }
@@ -406,7 +413,7 @@ TEST_F(StartupTest, MAYBE_PerfExtensionContentScript50) {
                  UITestBase::DEFAULT_THEME, 1, 0);
 }
 
-TEST_F(StartupTest, PerfComplexTheme) {
+TEST_F(StartupTest, MAYBE_PerfComplexTheme) {
   RunStartupTest("warm", "t-theme", WARM, NOT_IMPORTANT,
                  UITestBase::COMPLEX_THEME, 0, 0);
 }
