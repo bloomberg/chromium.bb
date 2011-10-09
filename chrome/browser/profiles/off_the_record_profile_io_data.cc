@@ -197,6 +197,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
                          main_context->ssl_config_service(),
                          main_context->http_auth_handler_factory(),
                          main_context->network_delegate(),
+                         main_context->http_server_properties(),
                          main_context->net_log(),
                          main_backend);
 

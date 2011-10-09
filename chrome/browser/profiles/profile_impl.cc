@@ -106,6 +106,7 @@
 #include "grit/browser_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
+#include "net/http/http_server_properties.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
@@ -1752,8 +1753,8 @@ chrome_browser_net::Predictor* ProfileImpl::GetNetworkPredictor() {
   return predictor_;
 }
 
-void ProfileImpl::DeleteTransportSecurityStateSince(base::Time time) {
-  io_data_.DeleteTransportSecurityStateSince(time);
+void ProfileImpl::ClearNetworkingHistorySince(base::Time time) {
+  io_data_.ClearNetworkingHistorySince(time);
 }
 
 SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {

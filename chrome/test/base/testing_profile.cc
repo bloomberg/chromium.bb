@@ -788,7 +788,7 @@ chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {
   return NULL;
 }
 
-void TestingProfile::DeleteTransportSecurityStateSince(base::Time time) {
+void TestingProfile::ClearNetworkingHistorySince(base::Time time) {
   NOTIMPLEMENTED();
 }
 

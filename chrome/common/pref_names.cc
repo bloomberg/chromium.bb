@@ -327,6 +327,9 @@ const char kDnsPrefetchingHostReferralList[] =
 // Disables the SPDY protocol.
 const char kDisableSpdy[] = "spdy.disabled";
 
+// Prefs for server names that support SPDY protocol.
+const char kSpdyServers[] = "spdy.servers";
+
 // Disables the listed protocol schemes.
 const char kDisabledSchemes[] = "protocol.disabled_schemes";
 

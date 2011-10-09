@@ -482,10 +482,11 @@ class Profile : public content::BrowserContext {
   // Returns the Predictor object used for dns prefetch.
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() = 0;
 
-  // Deletes transport security state since |time|. The implementation
-  // is free to run this on a background thread, so when this method
-  // returns data is not guaranteed to be deleted.
-  virtual void DeleteTransportSecurityStateSince(base::Time time) = 0;
+  // Deletes all network related data since |time|. It deletes transport
+  // security state since |time| and it also delete HttpServerProperties data.
+  // The implementation is free to run this on a background thread, so when this
+  // method returns data is not guaranteed to be deleted.
+  virtual void ClearNetworkingHistorySince(base::Time time) = 0;
 
   std::string GetDebugName();
 

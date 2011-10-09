@@ -13,6 +13,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/connect_interceptor.h"
+#include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/sqlite_origin_bound_cert_store.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
@@ -31,10 +32,11 @@
 
 namespace {
 
-void DeleteTransportSecurityStateSinceOnIOThread(
+void ClearNetworkingHistorySinceOnIOThread(
     ProfileImplIOData* io_data, base::Time time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   io_data->transport_security_state()->DeleteSince(time);
+  io_data->http_server_properties()->DeleteAll();
 }
 
 }  // namespace
@@ -71,6 +73,8 @@ ProfileImplIOData::Handle::~Handle() {
     iter->second->CleanupOnUIThread();
   }
 
+  if (io_data_->http_server_properties_manager_.get())
+    io_data_->http_server_properties_manager_->ShutdownOnUIThread();
   io_data_->ShutdownOnUIThread();
 }
 
@@ -186,7 +190,7 @@ ProfileImplIOData::Handle::GetIsolatedAppRequestContextGetter(
   return context;
 }
 
-void ProfileImplIOData::Handle::DeleteTransportSecurityStateSince(
+void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
     base::Time time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LazyInitialize();
@@ -194,7 +198,7 @@ void ProfileImplIOData::Handle::DeleteTransportSecurityStateSince(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &DeleteTransportSecurityStateSinceOnIOThread,
+          &ClearNetworkingHistorySinceOnIOThread,
           io_data_,
           time));
 }
@@ -202,14 +206,17 @@ void ProfileImplIOData::Handle::DeleteTransportSecurityStateSince(
 void ProfileImplIOData::Handle::LazyInitialize() const {
   if (!initialized_) {
     io_data_->InitializeOnUIThread(profile_);
+    PrefService* pref_service = profile_->GetPrefs();
+    io_data_->http_server_properties_manager_.reset(
+        new chrome_browser_net::HttpServerPropertiesManager(pref_service));
     ChromeNetworkDelegate::InitializeReferrersEnabled(
-        io_data_->enable_referrers(), profile_->GetPrefs());
+        io_data_->enable_referrers(), pref_service);
     io_data_->clear_local_state_on_exit()->Init(
-        prefs::kClearSiteDataOnExit, profile_->GetPrefs(), NULL);
+        prefs::kClearSiteDataOnExit, pref_service, NULL);
     io_data_->clear_local_state_on_exit()->MoveToThread(BrowserThread::IO);
 #if defined(ENABLE_SAFE_BROWSING)
     io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
-        profile_->GetPrefs(), NULL);
+        pref_service, NULL);
     io_data_->safe_browsing_enabled()->MoveToThread(BrowserThread::IO);
 #endif
     initialized_ = true;
@@ -248,6 +255,9 @@ void ProfileImplIOData::LazyInitializeInternal(
   ApplyProfileParamsToContext(media_request_context_);
   ApplyProfileParamsToContext(extensions_context);
 
+  if (http_server_properties_manager_.get())
+    http_server_properties_manager_->InitializeOnIOThread();
+
   main_context->set_transport_security_state(transport_security_state());
   media_request_context_->set_transport_security_state(
       transport_security_state());
@@ -259,6 +269,9 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   main_context->set_network_delegate(network_delegate());
   media_request_context_->set_network_delegate(network_delegate());
+
+  main_context->set_http_server_properties(http_server_properties());
+  media_request_context_->set_http_server_properties(http_server_properties());
 
   main_context->set_host_resolver(
       io_thread_globals->host_resolver.get());
@@ -353,6 +366,7 @@ void ProfileImplIOData::LazyInitializeInternal(
       main_context->ssl_config_service(),
       main_context->http_auth_handler_factory(),
       main_context->network_delegate(),
+      main_context->http_server_properties(),
       main_context->net_log(),
       main_backend);
 
@@ -389,6 +403,10 @@ void ProfileImplIOData::LazyInitializeInternal(
       new chrome_browser_net::ConnectInterceptor(predictor_.get()));
 
   lazy_params_.reset();
+}
+
+net::HttpServerProperties* ProfileImplIOData::http_server_properties() const {
+  return http_server_properties_manager_.get();
 }
 
 scoped_refptr<ChromeURLRequestContext>

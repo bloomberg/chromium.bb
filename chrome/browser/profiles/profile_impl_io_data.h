@@ -13,10 +13,12 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 
 namespace chrome_browser_net {
+class HttpServerPropertiesManager;
 class Predictor;
 }
 
 namespace net {
+class HttpServerProperties;
 class HttpTransactionFactory;
 }  // namespace net
 
@@ -58,7 +60,7 @@ class ProfileImplIOData : public ProfileIOData {
         GetIsolatedAppRequestContextGetter(
             const std::string& app_id) const;
 
-    void DeleteTransportSecurityStateSince(base::Time time);
+    void ClearNetworkingHistorySince(base::Time time);
 
    private:
     typedef base::hash_map<std::string,
@@ -93,6 +95,8 @@ class ProfileImplIOData : public ProfileIOData {
 
     DISALLOW_COPY_AND_ASSIGN(Handle);
   };
+
+  net::HttpServerProperties* http_server_properties() const;
 
  private:
   friend class base::RefCountedThreadSafe<ProfileImplIOData>;
@@ -137,6 +141,8 @@ class ProfileImplIOData : public ProfileIOData {
   mutable scoped_ptr<net::HttpTransactionFactory> media_http_factory_;
 
   mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
+  mutable scoped_ptr<chrome_browser_net::HttpServerPropertiesManager>
+      http_server_properties_manager_;
 
   // Parameters needed for isolated apps.
   FilePath app_path_;

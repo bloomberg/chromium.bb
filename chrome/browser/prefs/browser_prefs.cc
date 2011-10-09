@@ -25,6 +25,7 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
@@ -186,6 +187,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::URLBlacklistManager::RegisterPrefs(user_prefs);
 #endif
+  chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
 }
 
 void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {

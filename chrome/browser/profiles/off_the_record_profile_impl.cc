@@ -53,6 +53,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "net/base/transport_security_state.h"
+#include "net/http/http_server_properties.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -584,8 +585,7 @@ chrome_browser_net::Predictor* OffTheRecordProfileImpl::GetNetworkPredictor() {
   return NULL;
 }
 
-void OffTheRecordProfileImpl::DeleteTransportSecurityStateSince(
-    base::Time time) {
+void OffTheRecordProfileImpl::ClearNetworkingHistorySince(base::Time time) {
   // No need to do anything here, our transport security state is read-only.
 }
 

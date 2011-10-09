@@ -93,7 +93,8 @@ void TestShellRequestContext::Init(
       new net::HttpCache(host_resolver(), cert_verifier(),
                          origin_bound_cert_service(), NULL, NULL,
                          proxy_service(), ssl_config_service(),
-                         http_auth_handler_factory(), NULL, NULL, backend);
+                         http_auth_handler_factory(), NULL, NULL, NULL,
+                         backend);
 
   cache->set_mode(cache_mode);
   storage_.set_http_transaction_factory(cache);

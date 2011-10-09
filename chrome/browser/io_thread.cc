@@ -260,6 +260,9 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   context->set_origin_bound_cert_service(
       globals->system_origin_bound_cert_service.get());
   context->set_network_delegate(globals->system_network_delegate.get());
+  // TODO(rtenneti): We should probably use HttpServerPropertiesManager for the
+  // system URLRequestContext too. There's no reason this should be tied to a
+  // profile.
   return context;
 }
 
@@ -453,6 +456,9 @@ void IOThread::Init() {
   session_params.http_auth_handler_factory =
       globals_->http_auth_handler_factory.get();
   session_params.network_delegate = globals_->system_network_delegate.get();
+  // TODO(rtenneti): We should probably use HttpServerPropertiesManager for the
+  // system URLRequestContext too. There's no reason this should be tied to a
+  // profile.
   session_params.net_log = net_log_;
   session_params.ssl_config_service = globals_->ssl_config_service;
   scoped_refptr<net::HttpNetworkSession> network_session(

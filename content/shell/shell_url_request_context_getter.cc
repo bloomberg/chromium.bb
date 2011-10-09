@@ -94,7 +94,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         proxy_service_.get(),
         new net::SSLConfigServiceDefaults(),
         http_auth_handler_factory_.get(),
-        NULL, // network_delegate
+        NULL,  // network_delegate
+        NULL,  // http_server_properties
         net_log,
         main_backend);
     main_http_factory_.reset(main_cache);

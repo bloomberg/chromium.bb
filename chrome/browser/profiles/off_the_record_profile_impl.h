@@ -128,7 +128,7 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
-  virtual void DeleteTransportSecurityStateSince(base::Time time) OVERRIDE;
+  virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,

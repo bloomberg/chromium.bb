@@ -130,7 +130,7 @@ class ProfileImpl : public Profile,
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
-  virtual void DeleteTransportSecurityStateSince(base::Time time) OVERRIDE;
+  virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale,

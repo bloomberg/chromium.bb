@@ -1371,6 +1371,7 @@
         'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
         'browser/net/gaia/token_service_unittest.cc',
         'browser/net/gaia/token_service_unittest.h',
+        'browser/net/http_server_properties_manager_unittest.cc',
         'browser/net/load_timing_observer_unittest.cc',
         'browser/net/network_stats_unittest.cc',
         'browser/net/passive_log_collector_unittest.cc',

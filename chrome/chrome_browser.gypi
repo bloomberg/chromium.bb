@@ -1582,6 +1582,8 @@
         'browser/net/sqlite_origin_bound_cert_store.h',
         'browser/net/sqlite_persistent_cookie_store.cc',
         'browser/net/sqlite_persistent_cookie_store.h',
+        'browser/net/http_server_properties_manager.h',
+        'browser/net/http_server_properties_manager.cc',
         'browser/net/ssl_config_service_manager.h',
         'browser/net/ssl_config_service_manager_pref.cc',
         'browser/net/url_fixer_upper.cc',

@@ -296,8 +296,9 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     }
   }
 
-  // Also delete cached TransportSecurityState data.
-  profile_->DeleteTransportSecurityStateSince(delete_begin_);
+  // Also delete cached network related data (like TransportSecurityState,
+  // HttpServerProperties data).
+  profile_->ClearNetworkingHistorySince(delete_begin_);
 
   NotifyAndDeleteIfDone();
 }
