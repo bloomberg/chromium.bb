@@ -119,6 +119,9 @@ class MockPluginDelegate : public PluginDelegate {
   virtual ::ppapi::Preferences GetPreferences();
   virtual void LockMouse(PluginInstance* instance);
   virtual void UnlockMouse(PluginInstance* instance);
+  virtual void DidChangeCursor(PluginInstance* instance,
+                               const WebKit::WebCursorInfo& cursor);
+  virtual void DidReceiveMouseEvent(PluginInstance* instance);
 };
 
 }  // namespace ppapi

@@ -288,5 +288,12 @@ void MockPluginDelegate::LockMouse(PluginInstance* instance) {
 void MockPluginDelegate::UnlockMouse(PluginInstance* instance) {
 }
 
+void MockPluginDelegate::DidChangeCursor(PluginInstance* instance,
+                                         const WebKit::WebCursorInfo& cursor) {
+}
+
+void MockPluginDelegate::DidReceiveMouseEvent(PluginInstance* instance) {
+}
+
 }  // namespace ppapi
 }  // namespace webkit

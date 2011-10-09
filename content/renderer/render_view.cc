@@ -3948,7 +3948,7 @@ void RenderView::DidHandleKeyEvent() {
 }
 
 bool RenderView::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
-  return pepper_delegate_.DispatchLockedMouseEvent(event);
+  return pepper_delegate_.HandleMouseEvent(event);
 }
 
 void RenderView::DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {

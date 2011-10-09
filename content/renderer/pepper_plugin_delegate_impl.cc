@@ -669,7 +669,8 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
       mouse_lock_owner_(NULL),
       mouse_locked_(false),
       pending_lock_request_(false),
-      pending_unlock_request_(false) {
+      pending_unlock_request_(false),
+      last_mouse_event_target_(NULL) {
 }
 
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
@@ -882,6 +883,8 @@ void PepperPluginDelegateImpl::InstanceDeleted(
     UnlockMouse(mouse_lock_owner_);
     mouse_lock_owner_ = NULL;
   }
+  if (last_mouse_event_target_ == instance)
+    last_mouse_event_target_ = NULL;
 }
 
 SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
@@ -1095,8 +1098,17 @@ void PepperPluginDelegateImpl::OnMouseLockLost() {
   }
 }
 
-bool PepperPluginDelegateImpl::DispatchLockedMouseEvent(
+bool PepperPluginDelegateImpl::HandleMouseEvent(
     const WebKit::WebMouseEvent& event) {
+  // This method is called for every mouse event that the render view receives.
+  // And then the mouse event is forwarded to WebKit, which dispatches it to the
+  // event target. Potentially a Pepper plugin will receive the event.
+  // In order to tell whether a plugin gets the last mouse event and which it
+  // is, we set |last_mouse_event_target_| to NULL here. If a plugin gets the
+  // event, it will notify us via DidReceiveMouseEvent() and set itself as
+  // |last_mouse_event_target_|.
+  last_mouse_event_target_ = NULL;
+
   if (mouse_locked_) {
     if (mouse_lock_owner_) {
       // |cursor_info| is ignored since it is hidden when the mouse is locked.
@@ -1611,6 +1623,23 @@ void PepperPluginDelegateImpl::UnlockMouse(
       NOTREACHED();
     }
   }
+}
+
+void PepperPluginDelegateImpl::DidChangeCursor(
+    webkit::ppapi::PluginInstance* instance,
+    const WebKit::WebCursorInfo& cursor) {
+  // Update the cursor appearance immediately if the requesting plugin is the
+  // one which receives the last mouse event. Otherwise, the new cursor won't be
+  // picked up until the plugin gets the next input event. That is bad if, e.g.,
+  // the plugin would like to set an invisible cursor when there isn't any user
+  // input for a while.
+  if (instance == last_mouse_event_target_)
+    render_view_->didChangeCursor(cursor);
+}
+
+void PepperPluginDelegateImpl::DidReceiveMouseEvent(
+    webkit::ppapi::PluginInstance* instance) {
+  last_mouse_event_target_ = instance;
 }
 
 int PepperPluginDelegateImpl::GetRoutingId() const {

@@ -64,6 +64,7 @@ class PlatformCanvas;
 
 namespace WebKit {
 class WebFileChooserCompletion;
+struct WebCursorInfo;
 struct WebFileChooserParams;
 }
 
@@ -403,7 +404,7 @@ class PluginDelegate {
   // Returns a string with the name of the default 8-bit char encoding.
   virtual std::string GetDefaultEncoding() = 0;
 
-  // Sets the mininum and maximium zoom factors.
+  // Sets the minimum and maximum zoom factors.
   virtual void ZoomLimitsChanged(double minimum_factor,
                                  double maximum_factor) = 0;
 
@@ -454,6 +455,15 @@ class PluginDelegate {
   // key to quit the mouse lock mode, which also results in an OnMouseLockLost()
   // call to the current mouse lock owner.
   virtual void UnlockMouse(PluginInstance* instance) = 0;
+
+  // Notifies that |instance| has changed the cursor.
+  // This will update the cursor appearance if it is currently over the plugin
+  // instance.
+  virtual void DidChangeCursor(PluginInstance* instance,
+                               const WebKit::WebCursorInfo& cursor) = 0;
+
+  // Notifies that |instance| has received a mouse event.
+  virtual void DidReceiveMouseEvent(PluginInstance* instance) = 0;
 };
 
 }  // namespace ppapi

@@ -460,6 +460,10 @@ bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
                                       WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PluginInstance::HandleInputEvent");
+
+  if (WebInputEvent::isMouseEventType(event.type))
+    delegate()->DidReceiveMouseEvent(this);
+
   // Don't dispatch input events to crashed plugins.
   if (module()->is_crashed())
     return false;
@@ -1701,8 +1705,11 @@ void PluginInstance::SubscribeToPolicyUpdates(PP_Instance instance) {
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {
   cursor_.reset(cursor);
-  if (fullscreen_container_)
+  if (fullscreen_container_) {
     fullscreen_container_->DidChangeCursor(*cursor);
+  } else {
+    delegate()->DidChangeCursor(this, *cursor);
+  }
 }
 
 bool PluginInstance::CanAccessMainFrame() const {

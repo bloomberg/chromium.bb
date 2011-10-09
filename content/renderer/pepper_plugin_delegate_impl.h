@@ -173,10 +173,11 @@ class PepperPluginDelegateImpl
   void OnLockMouseACK(bool succeeded);
   // Notification that the plugin instance has lost the mouse lock.
   void OnMouseLockLost();
-  // Dispatches mouse events directly to the owner of the mouse lock.
-  // True indicates currently the mouse is locked and the event has been
-  // dispatched to the owner.
-  bool DispatchLockedMouseEvent(const WebKit::WebMouseEvent& event);
+  // Notification that a mouse event has arrived at the render view.
+  // Returns true if no further handling is needed. For example, if the mouse is
+  // currently locked, this method directly dispatches the event to the owner of
+  // the mouse lock and returns true.
+  bool HandleMouseEvent(const WebKit::WebMouseEvent& event);
 
   // PluginDelegate implementation.
   virtual void PluginFocusChanged(bool focused) OVERRIDE;
@@ -317,6 +318,10 @@ class PepperPluginDelegateImpl
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
   virtual void LockMouse(webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void UnlockMouse(webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual void DidChangeCursor(webkit::ppapi::PluginInstance* instance,
+                               const WebKit::WebCursorInfo& cursor) OVERRIDE;
+  virtual void DidReceiveMouseEvent(
+      webkit::ppapi::PluginInstance* instance) OVERRIDE;
 
   CONTENT_EXPORT int GetRoutingId() const;
 
@@ -374,6 +379,12 @@ class PepperPluginDelegateImpl
   // there is a pending unlock request.
   bool pending_lock_request_;
   bool pending_unlock_request_;
+
+  // The plugin instance that received the last mouse event. It is set to NULL
+  // if the last mouse event went to elements other than Pepper plugins.
+  // |last_mouse_event_target_| is not owned by this class. We can know about
+  // when it is destroyed via InstanceDeleted().
+  webkit::ppapi::PluginInstance* last_mouse_event_target_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };
