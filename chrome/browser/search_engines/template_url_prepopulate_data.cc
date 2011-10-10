@@ -78,7 +78,10 @@ struct PrepopulatedEngine {
   //
   // IDs > 1000 are reserved for distribution custom engines.
   //
-  // NOTE: CHANGE THE ABOVE NUMBERS IF YOU ADD A NEW ENGINE; ID conflicts = bad!
+  // NOTES:
+  //   CHANGE THE ABOVE NUMBERS IF YOU ADD A NEW ENGINE; ID conflicts = bad!
+  //   CHANGE kMaxPrepopulatedEngineID below if you add new engine outside
+  //       of the current range or it will not be counted in stats.
   const int id;
 };
 
@@ -3343,6 +3346,10 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
 }  // namespace
 
 namespace TemplateURLPrepopulateData {
+
+// The following id is for UMA stats only. Please update
+// kMaxPrepopulatedEngineID if it changes upwards.
+const int kMaxPrepopulatedEngineID = 101;
 
 void RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kCountryIDAtInstall,

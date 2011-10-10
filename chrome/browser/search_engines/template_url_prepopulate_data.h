@@ -15,6 +15,8 @@ class TemplateURL;
 
 namespace TemplateURLPrepopulateData {
 
+extern const int kMaxPrepopulatedEngineID;
+
 void RegisterUserPrefs(PrefService* prefs);
 
 // Returns the current version of the prepopulate data, so callers can know when

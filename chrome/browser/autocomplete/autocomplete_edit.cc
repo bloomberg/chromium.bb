@@ -28,6 +28,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -530,10 +531,28 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
     if (template_url) {
       UserMetrics::RecordAction(UserMetricsAction("AcceptedKeyword"));
       template_url_service->IncrementUsageCount(template_url);
+
+      if (match.transition == PageTransition::KEYWORD ||
+          match.transition == PageTransition::KEYWORD_GENERATED) {
+        // NOTE: Non-prepopulated engines will all have ID 0, which is fine as
+        // the prepopulate IDs start at 1.  Distribution-specific engines will
+        // all have IDs above the maximum, and will be automatically lumped
+        // together in an "overflow" bucket in the histogram.
+        UMA_HISTOGRAM_ENUMERATION(
+            "Omnibox.SearchEngine", template_url->prepopulate_id(),
+            TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
+      }
     }
 
     // NOTE: We purposefully don't increment the usage count of the default
     // search engine, if applicable; see comments in template_url.h.
+  }
+
+  if (match.transition == PageTransition::GENERATED && match.template_url) {
+    // See comment above.
+    UMA_HISTOGRAM_ENUMERATION(
+        "Omnibox.SearchEngine", match.template_url->prepopulate_id(),
+        TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
   }
 
   if (disposition != NEW_BACKGROUND_TAB) {
