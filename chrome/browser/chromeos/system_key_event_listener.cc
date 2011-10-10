@@ -68,8 +68,6 @@ SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
       caps_lock_is_on_(input_method::XKeyboard::CapsLockIsEnabled()),
       xkb_event_base_(0) {
-  WmMessageListener::GetInstance()->AddObserver(this);
-
   key_brightness_down_ = XKeysymToKeycode(GDK_DISPLAY(),
                                           XF86XK_MonBrightnessDown);
   key_brightness_up_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_MonBrightnessUp);
@@ -131,7 +129,6 @@ SystemKeyEventListener::~SystemKeyEventListener() {
 void SystemKeyEventListener::Stop() {
   if (stopped_)
     return;
-  WmMessageListener::GetInstance()->RemoveObserver(this);
 #if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
   MessageLoopForUI::current()->RemoveObserver(this);
 #else
@@ -154,28 +151,6 @@ void SystemKeyEventListener::AddCapsLockObserver(CapsLockObserver* observer) {
 void SystemKeyEventListener::RemoveCapsLockObserver(
     CapsLockObserver* observer) {
   caps_lock_observers_.RemoveObserver(observer);
-}
-
-void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
-                                              GdkWindow* window) {
-  if (message.type() != WM_IPC_MESSAGE_CHROME_NOTIFY_SYSKEY_PRESSED)
-    return;
-
-  switch (message.param(0)) {
-    case WM_IPC_SYSTEM_KEY_VOLUME_MUTE:
-      OnVolumeMute();
-      break;
-    case WM_IPC_SYSTEM_KEY_VOLUME_DOWN:
-      OnVolumeDown();
-      break;
-    case WM_IPC_SYSTEM_KEY_VOLUME_UP:
-      OnVolumeUp();
-      break;
-    default:
-      DLOG(ERROR) << "SystemKeyEventListener: Unexpected message "
-                  << message.param(0)
-                  << " received";
-  }
 }
 
 #if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)

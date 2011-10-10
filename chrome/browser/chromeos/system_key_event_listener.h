@@ -12,7 +12,6 @@
 
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/wm_message_listener.h"
 
 typedef union _XEvent XEvent;
 
@@ -24,11 +23,7 @@ class AudioHandler;
 // tells the AudioHandler to adjust volume accordingly.  Start by just calling
 // instance() to get it going.
 
-// TODO(davej): Remove WmMessageListener::Observer once volume key handling has
-// been removed from the window manager since those keys take precedence.
-
-class SystemKeyEventListener : public WmMessageListener::Observer,
-                               public MessageLoopForUI::Observer {
+class SystemKeyEventListener : public MessageLoopForUI::Observer {
  public:
   class CapsLockObserver {
    public:
@@ -38,10 +33,6 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
   static void Shutdown();
   // GetInstance returns NULL if not initialized or if already shutdown.
   static SystemKeyEventListener* GetInstance();
-
-  // WmMessageListener::Observer:
-  virtual void ProcessWmMessage(const WmIpc::Message& message,
-                                GdkWindow* window);
 
   void Stop();
 
