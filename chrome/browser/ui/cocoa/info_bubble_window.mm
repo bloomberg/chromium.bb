@@ -15,7 +15,7 @@
 
 namespace {
 const CGFloat kOrderInSlideOffset = 10;
-const NSTimeInterval kOrderInAnimationDuration = 0.2;
+const NSTimeInterval kOrderInAnimationDuration = 0.075;
 const NSTimeInterval kOrderOutAnimationDuration = 0.15;
 // The minimum representable time interval.  This can be used as the value
 // passed to +[NSAnimationContext setDuration:] to stop an in-progress
