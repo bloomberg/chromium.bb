@@ -148,6 +148,11 @@ void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
   gtk_window_move(window_, bounds_.x(), top);
   StartBoundsAnimation(gfx::Rect(bounds_.x(), top, width, height));
   panel_->OnWindowSizeAvailable();
+
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
+      Source<Panel>(panel_.get()),
+      NotificationService::NoDetails());
 }
 
 bool PanelBrowserWindowGtk::UseCustomFrame() {
