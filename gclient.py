@@ -346,6 +346,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       sub_target = url.sub_target_name or self.name
       # Make sure the referenced dependency DEPS file is loaded and file the
       # inner referenced dependency.
+      # TODO(maruel): Shouldn't do that.
       ref.ParseDepsFile()
       found_dep = None
       for d in ref.dependencies:
@@ -390,16 +391,16 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if url is None:
       logging.info('LateOverride(%s, %s) -> %s' % (self.name, url, url))
       return url
-    else:
-      raise gclient_utils.Error('Unknown url type')
+
+    raise gclient_utils.Error('Unknown url type')
 
   def ParseDepsFile(self):
     """Parses the DEPS file for this dependency."""
-    assert self.processed == True
     if self.deps_parsed:
       logging.debug('%s was already parsed' % self.name)
       return
-    # One thing is unintuitive, vars= {} must happen before Var() use.
+    assert not self.dependencies
+    # One thing is unintuitive, vars = {} must happen before Var() use.
     local_scope = {}
     var = self.VarImpl(self.custom_vars, local_scope)
     global_scope = {
@@ -472,45 +473,47 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self.add_dependency(dep)
     self._mark_as_parsed(hooks)
 
+  @staticmethod
+  def maybeGetParentRevision(
+      command, options, parsed_url, parent_name, revision_overrides):
+    """If we are performing an update and --transitive is set, set the
+    revision to the parent's revision. If we have an explicit revision
+    do nothing."""
+    if command == 'update' and options.transitive and not options.revision:
+      _, revision = gclient_utils.SplitUrlRevision(parsed_url)
+      if not revision:
+        options.revision = revision_overrides.get(parent_name)
+        if options.verbose and options.revision:
+          print("Using parent's revision date: %s" % options.revision)
+        # If the parent has a revision override, then it must have been
+        # converted to date format.
+        assert (not options.revision or
+                gclient_utils.IsDateRevision(options.revision))
+
+  @staticmethod
+  def maybeConvertToDateRevision(
+      command, options, name, scm, revision_overrides):
+    """If we are performing an update and --transitive is set, convert the
+    revision to a date-revision (if necessary). Instead of having
+    -r 101 replace the revision with the time stamp of 101 (e.g.
+    "{2011-18-04}").
+    This way dependencies are upgraded to the revision they had at the
+    check-in of revision 101."""
+    if (command == 'update' and
+        options.transitive and
+        options.revision and
+        not gclient_utils.IsDateRevision(options.revision)):
+      revision_date = scm.GetRevisionDate(options.revision)
+      revision = gclient_utils.MakeDateRevision(revision_date)
+      if options.verbose:
+        print("Updating revision override from %s to %s." %
+              (options.revision, revision))
+      revision_overrides[name] = revision
+
   # Arguments number differs from overridden method
   # pylint: disable=W0221
   def run(self, revision_overrides, command, args, work_queue, options):
-    """Runs 'command' before parsing the DEPS in case it's a initial checkout
-    or a revert."""
-
-    def maybeGetParentRevision(options):
-      """If we are performing an update and --transitive is set, set the
-      revision to the parent's revision. If we have an explicit revision
-      do nothing."""
-      if command == 'update' and options.transitive and not options.revision:
-        _, revision = gclient_utils.SplitUrlRevision(self.parsed_url)
-        if not revision:
-          options.revision = revision_overrides.get(self.parent.name)
-          if options.verbose and options.revision:
-            print("Using parent's revision date: %s" % options.revision)
-          # If the parent has a revision override, then it must have been
-          # converted to date format.
-          assert (not options.revision or
-                  gclient_utils.IsDateRevision(options.revision))
-
-    def maybeConvertToDateRevision(options):
-      """If we are performing an update and --transitive is set, convert the
-      revision to a date-revision (if necessary). Instead of having
-      -r 101 replace the revision with the time stamp of 101 (e.g.
-      "{2011-18-04}").
-      This way dependencies are upgraded to the revision they had at the
-      check-in of revision 101."""
-      if (command == 'update' and
-          options.transitive and
-          options.revision and
-          not gclient_utils.IsDateRevision(options.revision)):
-        revision_date = scm.GetRevisionDate(options.revision)
-        revision = gclient_utils.MakeDateRevision(revision_date)
-        if options.verbose:
-          print("Updating revision override from %s to %s." %
-                (options.revision, revision))
-        revision_overrides[self.name] = revision
-
+    """Runs |command| then parse the DEPS file."""
     assert self._file_list == []
     if not self.should_process:
       return
@@ -518,51 +521,63 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # All known hooks are expected to run unconditionally regardless of working
     # copy state, so skip the SCM status check.
     run_scm = command not in ('runhooks', None)
-    self._parsed_url = self.LateOverride(self.url)
-    if run_scm and self.parsed_url:
-      if isinstance(self.parsed_url, self.FileImpl):
+    parsed_url = self.LateOverride(self.url)
+    file_list = []
+    if run_scm and parsed_url:
+      if isinstance(parsed_url, self.FileImpl):
         # Special support for single-file checkout.
         if not command in (None, 'cleanup', 'diff', 'pack', 'status'):
-          options.revision = self.parsed_url.GetRevision()
-          scm = gclient_scm.SVNWrapper(self.parsed_url.GetPath(),
+          # Sadly, pylint doesn't realize that parsed_url is of FileImpl.
+          # pylint: disable=E1103
+          options.revision = parsed_url.GetRevision()
+          scm = gclient_scm.SVNWrapper(parsed_url.GetPath(),
                                        self.root.root_dir,
                                        self.name)
           scm.RunCommand('updatesingle', options,
-                         args + [self.parsed_url.GetFilename()],
-                         self._file_list)
+                         args + [parsed_url.GetFilename()],
+                         file_list)
       else:
         # Create a shallow copy to mutate revision.
         options = copy.copy(options)
         options.revision = revision_overrides.get(self.name)
-        maybeGetParentRevision(options)
-        scm = gclient_scm.CreateSCM(
-            self.parsed_url, self.root.root_dir, self.name)
-        scm.RunCommand(command, options, args, self._file_list)
-        maybeConvertToDateRevision(options)
-        self._file_list = [os.path.join(self.name, f.strip())
-                           for f in self._file_list]
+        self.maybeGetParentRevision(
+            command, options, parsed_url, self.parent.name, revision_overrides)
+        scm = gclient_scm.CreateSCM(parsed_url, self.root.root_dir, self.name)
+        scm.RunCommand(command, options, args, file_list)
+        self.maybeConvertToDateRevision(
+            command, options, self.name, scm, revision_overrides)
+        file_list = [os.path.join(self.name, f.strip()) for f in file_list]
 
       # TODO(phajdan.jr): We should know exactly when the paths are absolute.
       # Convert all absolute paths to relative.
-      for i in range(len(self._file_list)):
+      for i in range(len(file_list)):
         # It depends on the command being executed (like runhooks vs sync).
-        if not os.path.isabs(self._file_list[i]):
+        if not os.path.isabs(file_list[i]):
           continue
         prefix = os.path.commonprefix(
-            [self.root.root_dir.lower(), self._file_list[i].lower()])
-        self._file_list[i] = self._file_list[i][len(prefix):]
+            [self.root.root_dir.lower(), file_list[i].lower()])
+        file_list[i] = file_list[i][len(prefix):]
         # Strip any leading path separators.
-        while (self._file_list[i].startswith('\\') or
-                self._file_list[i].startswith('/')):
-          self._file_list[i] = self._file_list[i][1:]
-    self._processed = True
+        while file_list[i].startswith(('\\', '/')):
+          file_list[i] = file_list[i][1:]
+
     if self.recursion_limit:
       # Then we can parse the DEPS file.
       self.ParseDepsFile()
 
+    self._run_is_done(file_list, parsed_url)
+
+    if self.recursion_limit:
       # Parse the dependencies of this dependency.
       for s in self.dependencies:
         work_queue.enqueue(s)
+
+  @gclient_utils.lockedmethod
+  def _run_is_done(self, file_list, parsed_url):
+    # Both these are kept for hooks that are run as a separate tree traversal.
+    self._file_list = file_list
+    self._parsed_url = parsed_url
+    self._processed = True
 
   def RunHooksRecursively(self, options):
     """Evaluates all hooks, running actions as needed. run()
@@ -588,7 +603,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         # match each hook's pattern.
         for hook_dict in self.deps_hooks:
           pattern = re.compile(hook_dict['pattern'])
-          matching_file_list = [f for f in self.file_list if pattern.search(f)]
+          matching_file_list = [
+              f for f in self.file_list_and_children if pattern.search(f)
+          ]
           if matching_file_list:
             self._RunHookAction(hook_dict, matching_file_list)
     for s in self.dependencies:
@@ -656,30 +673,40 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     return tuple(self._dependencies)
 
   @property
+  @gclient_utils.lockedmethod
   def deps_hooks(self):
     return tuple(self._deps_hooks)
 
   @property
+  @gclient_utils.lockedmethod
   def parsed_url(self):
     return self._parsed_url
 
   @property
+  @gclient_utils.lockedmethod
   def deps_parsed(self):
     return self._deps_parsed
 
   @property
+  @gclient_utils.lockedmethod
   def processed(self):
     return self._processed
 
   @property
+  @gclient_utils.lockedmethod
   def hooks_ran(self):
     return self._hooks_ran
 
   @property
+  @gclient_utils.lockedmethod
   def file_list(self):
-    result = self._file_list[:]
+    return tuple(self._file_list)
+
+  @property
+  def file_list_and_children(self):
+    result = list(self.file_list)
     for d in self.dependencies:
-      result.extend(d.file_list)
+      result.extend(d.file_list_and_children)
     return tuple(result)
 
   def __str__(self):
