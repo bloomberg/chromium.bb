@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,10 +82,6 @@ int gps_close_stub(gps_data_t*) {
 int gps_poll_stub(gps_data_t*) {
   return 0;
 }
-// v2.34 only
-int gps_query_stub(gps_data_t*, const char*, ...) {
-  return 0;
-}
 // v2.90+
 int gps_stream_stub(gps_data_t*, unsigned int, void*) {
   return 0;
@@ -109,7 +105,6 @@ MockLibGps::MockLibGps()
                                      gps_open_stub,
                                      gps_close_stub,
                                      gps_poll_stub,
-                                     gps_query_stub,
                                      gps_stream_stub,
                                      gps_waiting_stub)),
       start_streaming_calls_(0),

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,11 @@ class LibGpsV294 : public LibGps {
     position->latitude = gps_data.fix.latitude;
     position->longitude = gps_data.fix.longitude;
     position->accuracy = std::max(gps_data.fix.epx, gps_data.fix.epy);
+    if (position->accuracy != position->accuracy) {
+      // TODO(joth): Fixme. This is a workaround for http://crbug.com/99326
+      LOG(WARNING) << "libgps reported accuracy NaN, forcing to zero";
+      position->accuracy = 0;
+    }
     position->altitude = gps_data.fix.altitude;
     position->altitude_accuracy = gps_data.fix.epv;
     position->heading = gps_data.fix.track;

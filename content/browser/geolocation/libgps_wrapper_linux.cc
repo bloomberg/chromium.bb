@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,18 +12,14 @@
 #include "content/common/geoposition.h"
 
 namespace {
-// Pass to TryToOpen() to indicate which functions should be wired up.
-// This could be turned into a bit mask if required, but for now the
-// two options are mutually exclusive.
-enum InitMode {
-  INITMODE_QUERY,
-  INITMODE_STREAM,
-};
-
 // Attempts to load dynamic library named |lib| and initialize the required
 // function pointers according to |mode|. Returns ownership a new instance
 // of the library loader class, or NULL on failure.
-LibGpsLibraryWrapper* TryToOpen(const char* lib, InitMode mode) {
+// TODO(joth): This is a hang-over from when we dynamically two different
+// versions of libgps and chose between them. Now we could remove at least one
+// layer of wrapper class and directly #include gps.h in this cc file.
+// See http://crbug.com/98132 and http://crbug.com/99177
+LibGpsLibraryWrapper* TryToOpen(const char* lib) {
   void* dl_handle = dlopen(lib, RTLD_LAZY);
   if (!dl_handle) {
     VLOG(1) << "Could not open " << lib << ": " << dlerror();
@@ -31,28 +27,26 @@ LibGpsLibraryWrapper* TryToOpen(const char* lib, InitMode mode) {
   }
   VLOG(1) << "Loaded " << lib;
 
-  #define DECLARE_FN_POINTER(function, required)                         \
+  #define DECLARE_FN_POINTER(function)                                   \
     LibGpsLibraryWrapper::function##_fn function;                        \
     function = reinterpret_cast<LibGpsLibraryWrapper::function##_fn>(    \
         dlsym(dl_handle, #function));                                    \
-    if ((required) && !function) {                                       \
+    if (!function) {                                                     \
       LOG(WARNING) << "libgps " << #function << " error: " << dlerror(); \
       dlclose(dl_handle);                                                \
       return NULL;                                                       \
     }
-  DECLARE_FN_POINTER(gps_open, true);
-  DECLARE_FN_POINTER(gps_close, true);
-  DECLARE_FN_POINTER(gps_poll, true);
-  DECLARE_FN_POINTER(gps_query, mode == INITMODE_QUERY);
-  DECLARE_FN_POINTER(gps_stream, mode == INITMODE_STREAM);
-  DECLARE_FN_POINTER(gps_waiting, mode == INITMODE_STREAM);
+  DECLARE_FN_POINTER(gps_open);
+  DECLARE_FN_POINTER(gps_close);
+  DECLARE_FN_POINTER(gps_poll);
+  DECLARE_FN_POINTER(gps_stream);
+  DECLARE_FN_POINTER(gps_waiting);
   #undef DECLARE_FN_POINTER
 
   return new LibGpsLibraryWrapper(dl_handle,
                                   gps_open,
                                   gps_close,
                                   gps_poll,
-                                  gps_query,
                                   gps_stream,
                                   gps_waiting);
 }
@@ -68,13 +62,10 @@ LibGps::~LibGps() {
 
 LibGps* LibGps::New() {
   LibGpsLibraryWrapper* wrapper;
-  wrapper = TryToOpen("libgps.so.19", INITMODE_STREAM);
+  wrapper = TryToOpen("libgps.so.19");
   if (wrapper)
     return NewV294(wrapper);
-  wrapper = TryToOpen("libgps.so.17", INITMODE_QUERY);
-  if (wrapper)
-    return NewV238(wrapper);
-  wrapper = TryToOpen("libgps.so", INITMODE_STREAM);
+  wrapper = TryToOpen("libgps.so");
   if (wrapper)
     return NewV294(wrapper);
   return NULL;
@@ -148,14 +139,12 @@ LibGpsLibraryWrapper::LibGpsLibraryWrapper(void* dl_handle,
                                            gps_open_fn gps_open,
                                            gps_close_fn gps_close,
                                            gps_poll_fn gps_poll,
-                                           gps_query_fn gps_query,
                                            gps_stream_fn gps_stream,
                                            gps_waiting_fn gps_waiting)
     : dl_handle_(dl_handle),
       gps_open_(gps_open),
       gps_close_(gps_close),
       gps_poll_(gps_poll),
-      gps_query_(gps_query),
       gps_stream_(gps_stream),
       gps_waiting_(gps_waiting),
       gps_data_(NULL) {
@@ -188,14 +177,6 @@ int LibGpsLibraryWrapper::poll() {
   DCHECK(is_open());
   DCHECK(gps_poll_);
   return gps_poll_(gps_data_);
-}
-
-// This is intentionally ignoring the va_arg extension to query(): the caller
-// can use base::StringPrintf to achieve the same effect.
-int LibGpsLibraryWrapper::query(const char* fmt) {
-  DCHECK(is_open());
-  DCHECK(gps_query_);
-  return gps_query_(gps_data_, fmt);
 }
 
 int LibGpsLibraryWrapper::stream(int flags) {
