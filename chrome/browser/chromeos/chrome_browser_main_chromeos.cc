@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/main_function_params.h"
@@ -106,6 +107,14 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   // implementation.
   net::NetworkChangeNotifier::SetFactory(
       new chromeos::CrosNetworkChangeNotifierFactory());
+}
+
+void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
+  // FILE thread is created in ChromeBrowserMainParts::PreMainMessageLoopRun().
+  ChromeBrowserMainPartsGtk::PreMainMessageLoopRun();
+  // Get the statistics provider instance here to start loading statistcs
+  // on the background FILE thread.
+  chromeos::system::StatisticsProvider::GetInstance();
 }
 
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {

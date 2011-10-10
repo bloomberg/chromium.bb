@@ -20,42 +20,37 @@ TEST(NameValuePairsParser, TestGetSingleValueFromTool) {
   EXPECT_EQ("Foo", map["foo"]);
 }
 
-TEST(NameValuePairsParser, TestParseNameValuePairsFromTool) {
+TEST(NameValuePairsParser, TestParseNameValuePairs) {
   NameValuePairsParser::NameValueMap map;
   NameValuePairsParser parser(&map);
-  const char* command1[] = { "/bin/echo", "foo=Foo bar=Bar\nfoobar=FooBar\n" };
-  EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
-      arraysize(command1), command1, "=", " \n"));
+  const std::string contents1 = "foo=Foo bar=Bar\nfoobar=FooBar\n";
+  EXPECT_TRUE(parser.ParseNameValuePairs(contents1, "=", " \n"));
   ASSERT_EQ(3U, map.size());
   EXPECT_EQ("Foo", map["foo"]);
   EXPECT_EQ("Bar", map["bar"]);
   EXPECT_EQ("FooBar", map["foobar"]);
 
   map.clear();
-  const char* command2[] = { "/bin/echo", "foo=Foo,bar=Bar" };
-  EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
-      arraysize(command2), command2, "=", ",\n"));
+  const std::string contents2 = "foo=Foo,bar=Bar";
+  EXPECT_TRUE(parser.ParseNameValuePairs(contents2, "=", ",\n"));
   ASSERT_EQ(2U, map.size());
   EXPECT_EQ("Foo", map["foo"]);
   EXPECT_EQ("Bar", map["bar"]);
 
   map.clear();
-  const char* command3[] = { "/bin/echo", "foo=Foo=foo,bar=Bar" };
-  EXPECT_FALSE(parser.ParseNameValuePairsFromTool(
-      arraysize(command3), command3, "=", ",\n"));
+  const std::string contents3 = "foo=Foo=foo,bar=Bar";
+  EXPECT_FALSE(parser.ParseNameValuePairs(contents3, "=", ",\n"));
 
   map.clear();
-  const char* command4[] = { "/bin/echo", "foo=Foo,=Bar" };
-  EXPECT_FALSE(parser.ParseNameValuePairsFromTool(
-      arraysize(command4), command4, "=", ",\n"));
+  const std::string contents4 = "foo=Foo,=Bar";
+  EXPECT_FALSE(parser.ParseNameValuePairs(contents4, "=", ",\n"));
 
   map.clear();
-  const char* command5[] = { "/bin/echo",
+  const std::string contents5 =
       "\"initial_locale\"=\"ja\"\n"
       "\"initial_timezone\"=\"Asia/Tokyo\"\n"
-      "\"keyboard_layout\"=\"mozc-jp\"\n" };
-  EXPECT_TRUE(parser.ParseNameValuePairsFromTool(
-      arraysize(command5), command5, "=", "\n"));
+      "\"keyboard_layout\"=\"mozc-jp\"\n";
+  EXPECT_TRUE(parser.ParseNameValuePairs(contents5, "=", "\n"));
   ASSERT_EQ(3U, map.size());
   EXPECT_EQ("ja", map["initial_locale"]);
   EXPECT_EQ("Asia/Tokyo", map["initial_timezone"]);

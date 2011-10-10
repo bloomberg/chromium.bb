@@ -32,13 +32,7 @@ class NameValuePairsParser {
   // don't exist on Linux desktop.
   bool GetSingleValueFromTool(int argc, const char* argv[],
                               const std::string& key);
-  // Executes tool, parses the output using ParseNameValuePairs,
-  // and inserts the results into name_value_pairs_.
-  bool ParseNameValuePairsFromTool(int argc, const char* argv[],
-                                   const std::string& eq,
-                                   const std::string& delim);
 
- private:
   // This will parse strings with output in the format:
   // <key><EQ><value><DELIM>[<key><EQ><value>][...]
   // e.g. ParseNameValuePairs("key1=value1 key2=value2", "=", " ")

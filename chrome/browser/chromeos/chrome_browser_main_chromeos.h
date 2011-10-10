@@ -20,6 +20,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsGtk {
 
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
+  virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
