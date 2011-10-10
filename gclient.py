@@ -344,22 +344,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       # It may happen that len(ref) > 1 but it's no big deal.
       ref = ref[0]
       sub_target = url.sub_target_name or self.name
-      # Make sure the referenced dependency DEPS file is loaded and file the
-      # inner referenced dependency.
-      # TODO(maruel): Shouldn't do that.
-      ref.ParseDepsFile()
-      found_dep = None
-      for d in ref.dependencies:
-        if d.name == sub_target:
-          found_dep = d
-          break
-      if not found_dep:
+      found_deps = [d for d in ref.dependencies if d.name == sub_target]
+      if len(found_deps) != 1:
         raise gclient_utils.Error(
             'Couldn\'t find %s in %s, referenced by %s (parent: %s)\n%s' % (
                 sub_target, ref.name, self.name, self.parent.name,
                 str(self.root)))
 
       # Call LateOverride() again.
+      found_dep = found_deps[0]
       parsed_url = found_dep.LateOverride(found_dep.url)
       logging.info(
           'LateOverride(%s, %s) -> %s (From)' % (self.name, url, parsed_url))
@@ -396,9 +389,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def ParseDepsFile(self):
     """Parses the DEPS file for this dependency."""
-    if self.deps_parsed:
-      logging.debug('%s was already parsed' % self.name)
-      return
+    assert not self.deps_parsed
     assert not self.dependencies
     # One thing is unintuitive, vars = {} must happen before Var() use.
     local_scope = {}
@@ -561,9 +552,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         while file_list[i].startswith(('\\', '/')):
           file_list[i] = file_list[i][1:]
 
-    if self.recursion_limit:
-      # Then we can parse the DEPS file.
-      self.ParseDepsFile()
+    # Always parse the DEPS file.
+    self.ParseDepsFile()
 
     self._run_is_done(file_list, parsed_url)
 
@@ -685,6 +675,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   @property
   @gclient_utils.lockedmethod
   def deps_parsed(self):
+    """This is purely for debugging purposes. It's not used anywhere."""
     return self._deps_parsed
 
   @property

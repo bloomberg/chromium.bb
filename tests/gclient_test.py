@@ -189,8 +189,9 @@ class GclientTest(trial_dir.TestCase):
 
   def _check_requirements(self, solution, expected):
     for dependency in solution.dependencies:
-      self.assertEquals(
-          expected.pop(dependency.name), sorted(dependency.requirements))
+      e = expected.pop(dependency.name)
+      a = sorted(dependency.requirements)
+      self.assertEquals(e, a, (dependency.name, e, a))
     self.assertEquals({}, expected)
 
   def _get_processed(self):
