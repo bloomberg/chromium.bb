@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/js/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -21,6 +22,8 @@
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/user_agent.h"
+#include "webkit/glue/webkit_glue.h"
 
 // TODO(akalin): Add tests here that exercise the whole
 // ProfileSyncService/SyncBackendHost stack while mocking out as
@@ -50,6 +53,14 @@ class ProfileSyncServiceTest : public testing::Test {
     io_thread_.StartWithOptions(options);
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
+
+    // We need to set the user agent before the backend host can call
+    // webkit_glue::GetUserAgent().
+    chrome::VersionInfo version_info;
+    std::string product("Chrome/");
+    product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
+    webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(product),
+                              false);
   }
 
   virtual void TearDown() {
