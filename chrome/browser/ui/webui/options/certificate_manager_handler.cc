@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"  // for FileAccessProvider
 #include "base/memory/scoped_vector.h"
 #include "base/safe_strerror_posix.h"
@@ -184,7 +185,7 @@ CancelableRequestProvider::Handle FileAccessProvider::StartRead(
   // Send the parameters and the request to the file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &FileAccessProvider::DoRead, request, path));
+      base::Bind(&FileAccessProvider::DoRead, this, request, path));
 
   // The handle will have been set by AddRequest.
   return request->handle();
@@ -202,8 +203,7 @@ CancelableRequestProvider::Handle FileAccessProvider::StartWrite(
   // Send the parameters and the request to the file thWrite.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &FileAccessProvider::DoWrite, request, path, data));
+      base::Bind(&FileAccessProvider::DoWrite, this, request, path, data));
 
   // The handle will have been set by AddRequest.
   return request->handle();
@@ -364,54 +364,85 @@ void CertificateManagerHandler::GetLocalizedValues(
 }
 
 void CertificateManagerHandler::RegisterMessages() {
-  web_ui_->RegisterMessageCallback("viewCertificate",
-      NewCallback(this, &CertificateManagerHandler::View));
+  web_ui_->RegisterMessageCallback(
+      "viewCertificate",
+      base::Bind(&CertificateManagerHandler::View, base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("getCaCertificateTrust",
-      NewCallback(this, &CertificateManagerHandler::GetCATrust));
-  web_ui_->RegisterMessageCallback("editCaCertificateTrust",
-      NewCallback(this, &CertificateManagerHandler::EditCATrust));
+  web_ui_->RegisterMessageCallback(
+      "getCaCertificateTrust",
+      base::Bind(&CertificateManagerHandler::GetCATrust,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "editCaCertificateTrust",
+      base::Bind(&CertificateManagerHandler::EditCATrust,
+                 base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("editServerCertificate",
-      NewCallback(this, &CertificateManagerHandler::EditServer));
+  web_ui_->RegisterMessageCallback(
+      "editServerCertificate",
+      base::Bind(&CertificateManagerHandler::EditServer,
+                 base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("cancelImportExportCertificate",
-      NewCallback(this, &CertificateManagerHandler::CancelImportExportProcess));
+  web_ui_->RegisterMessageCallback(
+      "cancelImportExportCertificate",
+      base::Bind(&CertificateManagerHandler::CancelImportExportProcess,
+                 base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("exportPersonalCertificate",
-      NewCallback(this, &CertificateManagerHandler::ExportPersonal));
-  web_ui_->RegisterMessageCallback("exportAllPersonalCertificates",
-      NewCallback(this, &CertificateManagerHandler::ExportAllPersonal));
-  web_ui_->RegisterMessageCallback("exportPersonalCertificatePasswordSelected",
-      NewCallback(this,
-                  &CertificateManagerHandler::ExportPersonalPasswordSelected));
+  web_ui_->RegisterMessageCallback(
+      "exportPersonalCertificate",
+      base::Bind(&CertificateManagerHandler::ExportPersonal,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "exportAllPersonalCertificates",
+      base::Bind(&CertificateManagerHandler::ExportAllPersonal,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "exportPersonalCertificatePasswordSelected",
+      base::Bind(&CertificateManagerHandler::ExportPersonalPasswordSelected,
+                 base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("importPersonalCertificate",
-      NewCallback(this, &CertificateManagerHandler::StartImportPersonal));
-  web_ui_->RegisterMessageCallback("importPersonalCertificatePasswordSelected",
-      NewCallback(this,
-                  &CertificateManagerHandler::ImportPersonalPasswordSelected));
+  web_ui_->RegisterMessageCallback(
+      "importPersonalCertificate",
+      base::Bind(&CertificateManagerHandler::StartImportPersonal,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "importPersonalCertificatePasswordSelected",
+      base::Bind(&CertificateManagerHandler::ImportPersonalPasswordSelected,
+                 base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("importCaCertificate",
-      NewCallback(this, &CertificateManagerHandler::ImportCA));
-  web_ui_->RegisterMessageCallback("importCaCertificateTrustSelected",
-      NewCallback(this, &CertificateManagerHandler::ImportCATrustSelected));
+  web_ui_->RegisterMessageCallback(
+      "importCaCertificate",
+      base::Bind(&CertificateManagerHandler::ImportCA,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "importCaCertificateTrustSelected",
+      base::Bind(&CertificateManagerHandler::ImportCATrustSelected,
+                 base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("importServerCertificate",
-      NewCallback(this, &CertificateManagerHandler::ImportServer));
+  web_ui_->RegisterMessageCallback(
+      "importServerCertificate",
+      base::Bind(&CertificateManagerHandler::ImportServer,
+                 base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("exportCertificate",
-      NewCallback(this, &CertificateManagerHandler::Export));
+  web_ui_->RegisterMessageCallback(
+      "exportCertificate",
+      base::Bind(&CertificateManagerHandler::Export,
+                 base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("deleteCertificate",
-      NewCallback(this, &CertificateManagerHandler::Delete));
+  web_ui_->RegisterMessageCallback(
+      "deleteCertificate",
+      base::Bind(&CertificateManagerHandler::Delete,
+                 base::Unretained(this)));
 
-  web_ui_->RegisterMessageCallback("populateCertificateManager",
-      NewCallback(this, &CertificateManagerHandler::Populate));
+  web_ui_->RegisterMessageCallback(
+      "populateCertificateManager",
+      base::Bind(&CertificateManagerHandler::Populate,
+                 base::Unretained(this)));
 
 #if defined(OS_CHROMEOS)
-  web_ui_->RegisterMessageCallback("checkTpmTokenReady",
-      NewCallback(this, &CertificateManagerHandler::CheckTpmTokenReady));
+  web_ui_->RegisterMessageCallback(
+      "checkTpmTokenReady",
+      base::Bind(&CertificateManagerHandler::CheckTpmTokenReady,
+                 base::Unretained(this)));
 #endif
 }
 
