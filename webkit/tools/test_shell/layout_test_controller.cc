@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -69,7 +70,7 @@ bool LayoutTestController::stop_provisional_frame_loads_ = false;
 LayoutTestController::WorkQueue LayoutTestController::work_queue_;
 
 LayoutTestController::LayoutTestController(TestShell* shell) :
-    ALLOW_THIS_IN_INITIALIZER_LIST(timeout_factory_(this)) {
+    ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // Set static shell_ variable since we can't do it in an initializer list.
   // We also need to be careful not to assign shell_ to new windows which are
   // temporary.
@@ -151,9 +152,10 @@ void LayoutTestController::waitUntilDone(
   if (!is_debugger_present) {
     // TODO(ojan): Use base::OneShotTimer. For some reason, using OneShotTimer
     // seems to cause layout test failures on the try bots.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        timeout_factory_.NewRunnableMethod(
-            &LayoutTestController::notifyDoneTimedOut),
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&LayoutTestController::notifyDoneTimedOut,
+                   weak_factory_.GetWeakPtr()),
         shell_->GetLayoutTestTimeout());
   }
 
@@ -164,7 +166,7 @@ void LayoutTestController::waitUntilDone(
 void LayoutTestController::notifyDone(
     const CppArgumentList& args, CppVariant* result) {
   // Test didn't timeout. Kill the timeout timer.
-  timeout_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 
   completeNotifyDone(false);
   result->SetNull();

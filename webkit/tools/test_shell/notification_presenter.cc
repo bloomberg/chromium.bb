@@ -4,6 +4,7 @@
 
 #include "webkit/tools/test_shell/notification_presenter.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
@@ -74,8 +75,8 @@ bool TestNotificationPresenter::show(const WebNotification& notification) {
 
 
   WebNotification event_target(notification);
-  MessageLoop::current()->PostTask(FROM_HERE,
-      NewRunnableFunction(&DeferredDisplayDispatch, event_target));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&DeferredDisplayDispatch, event_target));
   return true;
 }
 

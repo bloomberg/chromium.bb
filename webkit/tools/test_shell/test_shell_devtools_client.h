@@ -6,6 +6,7 @@
 #define TEST_SHELL_DEVTOOLS_CLIENT_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontendClient.h"
@@ -44,7 +45,7 @@ class TestShellDevToolsClient: public WebKit::WebDevToolsFrontendClient {
  private:
   void Call(const TestShellDevToolsCallArgs& args);
 
-  ScopedRunnableMethodFactory<TestShellDevToolsClient> call_method_factory_;
+  base::WeakPtrFactory<TestShellDevToolsClient> weak_factory_;
   TestShellDevToolsAgent* dev_tools_agent_;
   WebKit::WebView* web_view_;
   scoped_ptr<WebKit::WebDevToolsFrontend> web_tools_frontend_;

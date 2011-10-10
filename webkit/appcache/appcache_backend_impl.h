@@ -41,11 +41,11 @@ class APPCACHE_EXPORT AppCacheBackendImpl {
   bool SelectCacheForSharedWorker(int host_id, int64 appcache_id);
   bool MarkAsForeignEntry(int host_id, const GURL& document_url,
                           int64 cache_document_was_loaded_from);
-  bool GetStatusWithCallback(int host_id, GetStatusCallback* callback,
+  bool GetStatusWithCallback(int host_id, const GetStatusCallback& callback,
                              void* callback_param);
-  bool StartUpdateWithCallback(int host_id, StartUpdateCallback* callback,
+  bool StartUpdateWithCallback(int host_id, const StartUpdateCallback& callback,
                                void* callback_param);
-  bool SwapCacheWithCallback(int host_id, SwapCacheCallback* callback,
+  bool SwapCacheWithCallback(int host_id, const SwapCacheCallback& callback,
                              void* callback_param);
 
   // Returns a pointer to a registered host. The backend retains ownership.

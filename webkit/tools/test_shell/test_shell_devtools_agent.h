@@ -5,6 +5,7 @@
 #ifndef TEST_SHELL_DEVTOOLS_AGENT_H_
 #define TEST_SHELL_DEVTOOLS_AGENT_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
@@ -51,7 +52,7 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
   static void DispatchMessageLoop();
   WebKit::WebDevToolsAgent* GetWebAgent();
 
-  ScopedRunnableMethodFactory<TestShellDevToolsAgent> call_method_factory_;
+  base::WeakPtrFactory<TestShellDevToolsAgent> weak_factory_;
   TestShellDevToolsClient* dev_tools_client_;
   int routing_id_;
   WebKit::WebDevToolsAgent* web_dev_tools_agent_;

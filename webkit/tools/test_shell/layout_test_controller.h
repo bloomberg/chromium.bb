@@ -16,6 +16,7 @@
 
 #include <queue>
 
+#include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "base/string16.h"
 #include "webkit/glue/cpp_bound_class.h"
@@ -108,7 +109,7 @@ class LayoutTestController : public CppBoundClass {
 
   // Used for test timeouts.
   // TODO(ojan): Use base::OneShotTimer.
-  ScopedRunnableMethodFactory<LayoutTestController> timeout_factory_;
+  base::WeakPtrFactory<LayoutTestController> weak_factory_;
 
   // Non-owning pointer.  The LayoutTestController is owned by the host.
   static TestShell* shell_;

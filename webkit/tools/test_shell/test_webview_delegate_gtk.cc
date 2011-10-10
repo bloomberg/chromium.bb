@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -104,8 +105,9 @@ void TestWebViewDelegate::show(WebNavigationPolicy policy) {
 
 void TestWebViewDelegate::closeWidgetSoon() {
   if (this == shell_->delegate()) {
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
-        &gtk_widget_destroy, GTK_WIDGET(shell_->mainWnd())));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&gtk_widget_destroy, GTK_WIDGET(shell_->mainWnd())));
   } else if (this == shell_->popup_delegate()) {
     shell_->ClosePopup();
   }

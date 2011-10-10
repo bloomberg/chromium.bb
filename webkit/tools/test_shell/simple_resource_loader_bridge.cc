@@ -206,14 +206,16 @@ class RequestProxy : public net::URLRequest::Delegate,
 
     ConvertRequestParamsForFileOverHTTPIfNeeded(params);
     // proxy over to the io thread
-    g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::AsyncStart, params));
+    g_io_thread->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestProxy::AsyncStart, this, params));
   }
 
   void Cancel() {
     // proxy over to the io thread
-    g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::AsyncCancel));
+    g_io_thread->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestProxy::AsyncCancel, this));
   }
 
  protected:
@@ -237,9 +239,11 @@ class RequestProxy : public net::URLRequest::Delegate,
     if (peer_ && peer_->OnReceivedRedirect(new_url, info,
                                            &has_new_first_party_for_cookies,
                                            &new_first_party_for_cookies)) {
-      g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &RequestProxy::AsyncFollowDeferredRedirect,
-          has_new_first_party_for_cookies, new_first_party_for_cookies));
+      g_io_thread->message_loop()->PostTask(
+          FROM_HERE,
+          base::Bind(&RequestProxy::AsyncFollowDeferredRedirect, this,
+                     has_new_first_party_for_cookies,
+                     new_first_party_for_cookies));
     } else {
       Cancel();
     }
@@ -265,8 +269,9 @@ class RequestProxy : public net::URLRequest::Delegate,
     // peer could generate new requests in reponse to the received data, which
     // when run on the io thread, could race against this function in doing
     // another InvokeLater.  See bug 769249.
-    g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::AsyncReadData));
+    g_io_thread->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestProxy::AsyncReadData, this));
 
     peer_->OnReceivedData(buf_copy.get(), bytes_read, -1);
   }
@@ -276,8 +281,9 @@ class RequestProxy : public net::URLRequest::Delegate,
       return;
 
     // Continue reading more data, see the comment in NotifyReceivedData.
-    g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::AsyncReadData));
+    g_io_thread->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestProxy::AsyncReadData, this));
 
     peer_->OnDownloadedData(bytes_read);
   }
@@ -391,26 +397,30 @@ class RequestProxy : public net::URLRequest::Delegate,
       const ResourceResponseInfo& info,
       bool* defer_redirect) {
     *defer_redirect = true;  // See AsyncFollowDeferredRedirect
-    owner_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::NotifyReceivedRedirect, new_url, info));
+    owner_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestProxy::NotifyReceivedRedirect, this, new_url, info));
   }
 
   virtual void OnReceivedResponse(
       const ResourceResponseInfo& info) {
-    owner_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::NotifyReceivedResponse, info));
+    owner_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestProxy::NotifyReceivedResponse, this, info));
   }
 
   virtual void OnReceivedData(int bytes_read) {
     if (download_to_file_) {
       file_stream_.Write(buf_->data(), bytes_read, NULL);
-      owner_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &RequestProxy::NotifyDownloadedData, bytes_read));
+      owner_loop_->PostTask(
+          FROM_HERE,
+          base::Bind(&RequestProxy::NotifyDownloadedData, this, bytes_read));
       return;
     }
 
-    owner_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::NotifyReceivedData, bytes_read));
+    owner_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestProxy::NotifyReceivedData, this, bytes_read));
   }
 
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
@@ -418,12 +428,10 @@ class RequestProxy : public net::URLRequest::Delegate,
                                   const base::Time& complete_time) {
     if (download_to_file_)
       file_stream_.Close();
-    owner_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this,
-        &RequestProxy::NotifyCompletedRequest,
-        status,
-        security_info,
-        complete_time));
+    owner_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestProxy::NotifyCompletedRequest, this, status,
+                   security_info, complete_time));
   }
 
   // --------------------------------------------------------------------------
@@ -545,8 +553,10 @@ class RequestProxy : public net::URLRequest::Delegate,
     bool too_much_time_passed = time_since_last > kOneSecond;
 
     if (is_finished || enough_new_progress || too_much_time_passed) {
-      owner_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &RequestProxy::NotifyUploadProgress, position, size));
+      owner_loop_->PostTask(
+          FROM_HERE,
+          base::Bind(&RequestProxy::NotifyUploadProgress, this, position,
+                     size));
       last_upload_ticks_ = base::TimeTicks::Now();
       last_upload_position_ = position;
     }
@@ -964,8 +974,9 @@ void SimpleResourceLoaderBridge::SetCookie(const GURL& url,
   }
 
   scoped_refptr<CookieSetter> cookie_setter(new CookieSetter());
-  g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      cookie_setter.get(), &CookieSetter::Set, url, cookie));
+  g_io_thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CookieSetter::Set, cookie_setter.get(), url, cookie));
 }
 
 // static
@@ -980,8 +991,9 @@ std::string SimpleResourceLoaderBridge::GetCookies(
 
   scoped_refptr<CookieGetter> getter(new CookieGetter());
 
-  g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      getter.get(), &CookieGetter::Get, url));
+  g_io_thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CookieGetter::Get, getter.get(), url));
 
   return getter->GetResult();
 }

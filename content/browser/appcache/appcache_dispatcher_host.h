@@ -64,9 +64,9 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
   AppCacheFrontendProxy frontend_proxy_;
   appcache::AppCacheBackendImpl backend_impl_;
 
-  scoped_ptr<appcache::GetStatusCallback> get_status_callback_;
-  scoped_ptr<appcache::StartUpdateCallback> start_update_callback_;
-  scoped_ptr<appcache::SwapCacheCallback> swap_cache_callback_;
+  appcache::GetStatusCallback get_status_callback_;
+  appcache::StartUpdateCallback start_update_callback_;
+  appcache::SwapCacheCallback swap_cache_callback_;
   scoped_ptr<IPC::Message> pending_reply_msg_;
 
   // The corresponding ChildProcessHost object's id().

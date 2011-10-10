@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,12 +20,15 @@ namespace appcache {
 class AppCacheHostTest : public testing::Test {
  public:
   AppCacheHostTest() {
-    get_status_callback_.reset(
-        NewCallback(this, &AppCacheHostTest::GetStatusCallback));
-    start_update_callback_.reset(
-        NewCallback(this, &AppCacheHostTest::StartUpdateCallback));
-    swap_cache_callback_.reset(
-        NewCallback(this, &AppCacheHostTest::SwapCacheCallback));
+    get_status_callback_ =
+        base::Bind(&AppCacheHostTest::GetStatusCallback,
+                   base::Unretained(this));
+    start_update_callback_ =
+        base::Bind(&AppCacheHostTest::StartUpdateCallback,
+                   base::Unretained(this));
+    swap_cache_callback_ =
+        base::Bind(&AppCacheHostTest::SwapCacheCallback,
+                   base::Unretained(this));
   }
 
   class MockFrontend : public AppCacheFrontend {
@@ -135,9 +139,9 @@ class AppCacheHostTest : public testing::Test {
   MockFrontend mock_frontend_;
 
   // Mock callbacks we expect to receive from the 'host'
-  scoped_ptr<appcache::GetStatusCallback> get_status_callback_;
-  scoped_ptr<appcache::StartUpdateCallback> start_update_callback_;
-  scoped_ptr<appcache::SwapCacheCallback> swap_cache_callback_;
+  appcache::GetStatusCallback get_status_callback_;
+  appcache::StartUpdateCallback start_update_callback_;
+  appcache::SwapCacheCallback swap_cache_callback_;
 
   Status last_status_result_;
   bool last_swap_result_;
@@ -157,20 +161,18 @@ TEST_F(AppCacheHostTest, Basic) {
   // See that the callbacks are delivered immediately
   // and respond as if there is no cache selected.
   last_status_result_ = OBSOLETE;
-  host.GetStatusWithCallback(get_status_callback_.get(),
-                             reinterpret_cast<void*>(1));
+  host.GetStatusWithCallback(get_status_callback_, reinterpret_cast<void*>(1));
   EXPECT_EQ(UNCACHED, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(1), last_callback_param_);
 
   last_start_result_ = true;
-  host.StartUpdateWithCallback(start_update_callback_.get(),
+  host.StartUpdateWithCallback(start_update_callback_,
                                reinterpret_cast<void*>(2));
   EXPECT_FALSE(last_start_result_);
   EXPECT_EQ(reinterpret_cast<void*>(2), last_callback_param_);
 
   last_swap_result_ = true;
-  host.SwapCacheWithCallback(swap_cache_callback_.get(),
-                             reinterpret_cast<void*>(3));
+  host.SwapCacheWithCallback(swap_cache_callback_, reinterpret_cast<void*>(3));
   EXPECT_FALSE(last_swap_result_);
   EXPECT_EQ(reinterpret_cast<void*>(3), last_callback_param_);
 }
@@ -283,8 +285,7 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   // The callback should not occur until we finish cache selection.
   last_status_result_ = OBSOLETE;
   last_callback_param_ = reinterpret_cast<void*>(-1);
-  host.GetStatusWithCallback(get_status_callback_.get(),
-                             reinterpret_cast<void*>(1));
+  host.GetStatusWithCallback(get_status_callback_, reinterpret_cast<void*>(1));
   EXPECT_EQ(OBSOLETE, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
@@ -315,8 +316,7 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
   // The callback should not occur until we finish cache selection.
   last_status_result_ = OBSOLETE;
   last_callback_param_ = reinterpret_cast<void*>(-1);
-  host.GetStatusWithCallback(get_status_callback_.get(),
-                             reinterpret_cast<void*>(1));
+  host.GetStatusWithCallback(get_status_callback_, reinterpret_cast<void*>(1));
   EXPECT_EQ(OBSOLETE, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 

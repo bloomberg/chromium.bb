@@ -4,9 +4,12 @@
 
 #include "webkit/tools/test_shell/webwidget_host.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 
 void WebWidgetHost::ScheduleAnimation() {
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      factory_.NewRunnableMethod(&WebWidgetHost::ScheduleComposite), 10);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&WebWidgetHost::ScheduleComposite, weak_factory_.GetWeakPtr()),
+      10);
 }

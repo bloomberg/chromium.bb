@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/native_widget_types.h"
@@ -153,7 +154,7 @@ class WebWidgetHost {
 #endif
 
  private:
-  ScopedRunnableMethodFactory<WebWidgetHost> factory_;
+  base::WeakPtrFactory<WebWidgetHost> weak_factory_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_WEBWIDGET_HOST_H_

@@ -4,6 +4,7 @@
 
 #include "webkit/tools/test_shell/test_shell_devtools_agent.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "grit/webkit_chromium_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
@@ -52,7 +53,7 @@ void TestShellDevToolsAgent::DispatchMessageLoop() {
 }
 
 TestShellDevToolsAgent::TestShellDevToolsAgent()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(call_method_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       dev_tools_client_(NULL) {
   static int dev_tools_agent_counter;
   routing_id_ = ++dev_tools_agent_counter;
@@ -90,11 +91,10 @@ WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
 }
 
 void TestShellDevToolsAgent::AsyncCall(const TestShellDevToolsCallArgs &args) {
-  MessageLoop::current()->PostDelayedTask(
+  MessageLoop::current()->PostTask(
       FROM_HERE,
-      call_method_factory_.NewRunnableMethod(&TestShellDevToolsAgent::Call,
-                                             args),
-      0);
+      base::Bind(&TestShellDevToolsAgent::Call, weak_factory_.GetWeakPtr(),
+                 args));
 }
 
 void TestShellDevToolsAgent::Call(const TestShellDevToolsCallArgs &args) {
@@ -134,11 +134,10 @@ void TestShellDevToolsAgent::detach() {
 }
 
 void TestShellDevToolsAgent::frontendLoaded() {
-  MessageLoop::current()->PostDelayedTask(
+  MessageLoop::current()->PostTask(
       FROM_HERE,
-      call_method_factory_.NewRunnableMethod(
-          &TestShellDevToolsAgent::DelayedFrontendLoaded),
-      0);
+      base::Bind(&TestShellDevToolsAgent::DelayedFrontendLoaded,
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool TestShellDevToolsAgent::evaluateInWebInspector(

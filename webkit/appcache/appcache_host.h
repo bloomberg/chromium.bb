@@ -27,9 +27,9 @@ class AppCache;
 class AppCacheFrontend;
 class AppCacheRequestHandler;
 
-typedef Callback2<Status, void*>::Type GetStatusCallback;
-typedef Callback2<bool, void*>::Type StartUpdateCallback;
-typedef Callback2<bool, void*>::Type SwapCacheCallback;
+typedef base::Callback<void(Status, void*)> GetStatusCallback;
+typedef base::Callback<void(bool, void*)> StartUpdateCallback;
+typedef base::Callback<void(bool, void*)> SwapCacheCallback;
 
 // Server-side representation of an application cache host.
 class APPCACHE_EXPORT AppCacheHost : public AppCacheStorage::Delegate,
@@ -65,11 +65,11 @@ class APPCACHE_EXPORT AppCacheHost : public AppCacheStorage::Delegate,
   void SelectCacheForSharedWorker(int64 appcache_id);
   void MarkAsForeignEntry(const GURL& document_url,
                           int64 cache_document_was_loaded_from);
-  void GetStatusWithCallback(GetStatusCallback* callback,
+  void GetStatusWithCallback(const GetStatusCallback& callback,
                              void* callback_param);
-  void StartUpdateWithCallback(StartUpdateCallback* callback,
+  void StartUpdateWithCallback(const StartUpdateCallback& callback,
                                void* callback_param);
-  void SwapCacheWithCallback(SwapCacheCallback* callback,
+  void SwapCacheWithCallback(const SwapCacheCallback& callback,
                              void* callback_param);
 
   // Called prior to the main resource load. When the system contains multiple
@@ -219,14 +219,13 @@ class APPCACHE_EXPORT AppCacheHost : public AppCacheStorage::Delegate,
   // Our central service object.
   AppCacheService* service_;
 
-  // Since these are synchronous scriptable api calls in the client,
-  // there can only be one type of callback pending.
-  // Also, we have to wait until we have a cache selection prior
-  // to responding to these calls, as cache selection involves
-  // async loading of a cache or a group from storage.
-  GetStatusCallback* pending_get_status_callback_;
-  StartUpdateCallback* pending_start_update_callback_;
-  SwapCacheCallback* pending_swap_cache_callback_;
+  // Since these are synchronous scriptable API calls in the client, there can
+  // only be one type of callback pending. Also, we have to wait until we have a
+  // cache selection prior to responding to these calls, as cache selection
+  // involves async loading of a cache or a group from storage.
+  GetStatusCallback pending_get_status_callback_;
+  StartUpdateCallback pending_start_update_callback_;
+  SwapCacheCallback pending_swap_cache_callback_;
   void* pending_callback_param_;
 
   // True if a fallback resource was delivered as the main resource.
