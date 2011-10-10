@@ -138,7 +138,9 @@ static BOOL g_reportAnimationStatus = NO;
 
   // Attach the RenderWigetHostView to the view hierarchy, it will render
   // HTML content.
-  [[window contentView] addSubview:[self tabContentsView]];
+  NSView* tabContentsView = [self tabContentsView];
+  DCHECK(tabContentsView);
+  [[window contentView] addSubview:tabContentsView];
   [self enableTabContentsViewAutosizing];
 }
 
@@ -152,12 +154,18 @@ static BOOL g_reportAnimationStatus = NO;
 
 - (void)disableTabContentsViewAutosizing {
   NSView* tabContentView = [self tabContentsView];
+  if (!tabContentView)
+    return;
+
   DCHECK([tabContentView superview] == [[self window] contentView]);
   [tabContentView setAutoresizingMask:NSViewNotSizable];
 }
 
 - (void)enableTabContentsViewAutosizing {
   NSView* tabContentView = [self tabContentsView];
+  if (!tabContentView)
+    return;
+
   DCHECK([tabContentView superview] == [[self window] contentView]);
 
   // Parent's bounds is child's frame.
@@ -247,10 +255,9 @@ static BOOL g_reportAnimationStatus = NO;
 
 - (NSView*)tabContentsView {
   TabContents* contents = windowShim_->browser()->GetSelectedTabContents();
-  CHECK(contents);
-  NSView* tabContentView = contents->GetNativeView();
-  CHECK(tabContentView);
-  return tabContentView;
+  if (contents)
+    return contents->GetNativeView();
+  return NULL;
 }
 
 - (PanelTitlebarViewCocoa*)titlebarView {
