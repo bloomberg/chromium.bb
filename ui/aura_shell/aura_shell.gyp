@@ -103,6 +103,7 @@
         'examples/lock_view.cc',
         'examples/toplevel_window.cc',
         'examples/toplevel_window.h',
+        'examples/widgets.cc',
         'examples/window_type_launcher.cc',
         'examples/window_type_launcher.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',

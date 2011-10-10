@@ -23,9 +23,14 @@ namespace views {
 MenuConfig* MenuConfig::Create() {
   MenuConfig* config = new MenuConfig();
 
+  // TODO(jamescook): Create menu_config_aura.cc instead.
+#if defined(USE_AURA)
+  config->text_color = SK_ColorBLACK;
+#else
   config->text_color = NativeThemeWin::instance()->GetThemeColorWithDefault(
       NativeThemeWin::MENU, MENU_POPUPITEM, MPI_NORMAL, TMT_TEXTCOLOR,
       COLOR_MENUTEXT);
+#endif
 
   NONCLIENTMETRICS metrics;
   base::win::GetNonClientMetrics(&metrics);

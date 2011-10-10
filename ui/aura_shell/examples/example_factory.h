@@ -19,6 +19,9 @@ void CreatePointyBubble(gfx::NativeWindow parent, const gfx::Point& origin);
 
 void CreateLock();
 
+// Creates a window showing samples of commonly used widgets.
+void CreateWidgetsWindow();
+
 }  // namespace examples
 }  // namespace aura_shell
 

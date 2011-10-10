@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/native_theme_linux.h"
+#include "ui/gfx/native_theme_base.h"
 
 #include <limits>
 
@@ -16,11 +16,11 @@
 
 namespace gfx {
 
-unsigned int NativeThemeLinux::button_length_ = 14;
+unsigned int NativeThemeBase::button_length_ = 14;
 #if defined(TOUCH_UI)
-unsigned int NativeThemeLinux::scrollbar_width_ = 0;
+unsigned int NativeThemeBase::scrollbar_width_ = 0;
 #else
-unsigned int NativeThemeLinux::scrollbar_width_ = 15;
+unsigned int NativeThemeBase::scrollbar_width_ = 15;
 #endif
 
 // These are the default dimensions of radio buttons and checkboxes.
@@ -38,21 +38,6 @@ static const SkColor kSliderThumbDarkGrey = SkColorSetRGB(0xea, 0xe5, 0xe0);
 static const SkColor kSliderThumbBorderDarkGrey =
     SkColorSetRGB(0x9d, 0x96, 0x8e);
 
-// static
-const NativeTheme* NativeTheme::instance() {
-  return NativeThemeLinux::instance();
-}
-
-#if !defined(OS_CHROMEOS)
-// Chromeos has a different look.
-// static
-const NativeThemeLinux* NativeThemeLinux::instance() {
-  // The global NativeThemeLinux instance.
-  static NativeThemeLinux s_native_theme;
-  return &s_native_theme;
-}
-#endif
-
 // Get lightness adjusted color.
 static SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
     double lightness_amount) {
@@ -66,15 +51,15 @@ static SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
   return color_utils::HSLToSkColor(adjusted, alpha);
 }
 
-NativeThemeLinux::NativeThemeLinux() {
+NativeThemeBase::NativeThemeBase() {
 }
 
-NativeThemeLinux::~NativeThemeLinux() {
+NativeThemeBase::~NativeThemeBase() {
 }
 
-gfx::Size NativeThemeLinux::GetPartSize(Part part,
-                                        State state,
-                                        const ExtraParams& extra) const {
+gfx::Size NativeThemeBase::GetPartSize(Part part,
+                                       State state,
+                                       const ExtraParams& extra) const {
   switch (part) {
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
@@ -114,7 +99,7 @@ gfx::Size NativeThemeLinux::GetPartSize(Part part,
   return gfx::Size();
 }
 
-void NativeThemeLinux::PaintArrowButton(
+void NativeThemeBase::PaintArrowButton(
     SkCanvas* canvas,
     const gfx::Rect& rect, Part direction, State state) const {
   int widthMiddle, lengthMiddle;
@@ -130,16 +115,16 @@ void NativeThemeLinux::PaintArrowButton(
   // Calculate button color.
   SkScalar trackHSV[3];
   SkColorToHSV(track_color_, trackHSV);
-  SkColor buttonColor = SaturateAndBrighten(trackHSV, 0, 0.2);
+  SkColor buttonColor = SaturateAndBrighten(trackHSV, 0, 0.2f);
   SkColor backgroundColor = buttonColor;
   if (state == kPressed) {
     SkScalar buttonHSV[3];
     SkColorToHSV(buttonColor, buttonHSV);
-    buttonColor = SaturateAndBrighten(buttonHSV, 0, -0.1);
+    buttonColor = SaturateAndBrighten(buttonHSV, 0, -0.1f);
   } else if (state == kHovered) {
     SkScalar buttonHSV[3];
     SkColorToHSV(buttonColor, buttonHSV);
-    buttonColor = SaturateAndBrighten(buttonHSV, 0, 0.05);
+    buttonColor = SaturateAndBrighten(buttonHSV, 0, 0.05f);
   }
 
   SkIRect skrect;
@@ -240,11 +225,11 @@ void NativeThemeLinux::PaintArrowButton(
   canvas->drawPath(path, paint);
 }
 
-void NativeThemeLinux::Paint(SkCanvas* canvas,
-                             Part part,
-                             State state,
-                             const gfx::Rect& rect,
-                             const ExtraParams& extra) const {
+void NativeThemeBase::Paint(SkCanvas* canvas,
+                            Part part,
+                            State state,
+                            const gfx::Rect& rect,
+                            const ExtraParams& extra) const {
   switch (part) {
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
@@ -293,7 +278,7 @@ void NativeThemeLinux::Paint(SkCanvas* canvas,
   }
 }
 
-void NativeThemeLinux::PaintScrollbarTrack(SkCanvas* canvas,
+void NativeThemeBase::PaintScrollbarTrack(SkCanvas* canvas,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
@@ -314,7 +299,7 @@ void NativeThemeLinux::PaintScrollbarTrack(SkCanvas* canvas,
   DrawBox(canvas, rect, paint);
 }
 
-void NativeThemeLinux::PaintScrollbarThumb(SkCanvas* canvas,
+void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
                                            Part part,
                                            State state,
                                            const gfx::Rect& rect) const {
@@ -327,7 +312,7 @@ void NativeThemeLinux::PaintScrollbarThumb(SkCanvas* canvas,
   SkColorToHSV(hovered ? thumb_active_color_ : thumb_inactive_color_, thumb);
 
   SkPaint paint;
-  paint.setColor(SaturateAndBrighten(thumb, 0, 0.02));
+  paint.setColor(SaturateAndBrighten(thumb, 0, 0.02f));
 
   SkIRect skrect;
   if (vertical)
@@ -337,7 +322,7 @@ void NativeThemeLinux::PaintScrollbarThumb(SkCanvas* canvas,
 
   canvas->drawIRect(skrect, paint);
 
-  paint.setColor(SaturateAndBrighten(thumb, 0, -0.02));
+  paint.setColor(SaturateAndBrighten(thumb, 0, -0.02f));
 
   if (vertical) {
     skrect.set(
@@ -393,24 +378,24 @@ void NativeThemeLinux::PaintScrollbarThumb(SkCanvas* canvas,
   }
 }
 
-void NativeThemeLinux::PaintCheckbox(SkCanvas* canvas,
-                                     State state,
-                                     const gfx::Rect& rect,
-                                     const ButtonExtraParams& button) const {
+void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
+                                    State state,
+                                    const gfx::Rect& rect,
+                                    const ButtonExtraParams& button) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap* image = NULL;
   if (button.indeterminate) {
     image = state == kDisabled ?
-        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE) :
-        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_INDETERMINATE);
+        rb.GetBitmapNamed(IDR_CHECKBOX_DISABLED_INDETERMINATE) :
+        rb.GetBitmapNamed(IDR_CHECKBOX_INDETERMINATE);
   } else if (button.checked) {
     image = state == kDisabled ?
-        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_ON) :
-        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_ON);
+        rb.GetBitmapNamed(IDR_CHECKBOX_DISABLED_ON) :
+        rb.GetBitmapNamed(IDR_CHECKBOX_ON);
   } else {
     image = state == kDisabled ?
-        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_DISABLED_OFF) :
-        rb.GetBitmapNamed(IDR_LINUX_CHECKBOX_OFF);
+        rb.GetBitmapNamed(IDR_CHECKBOX_DISABLED_OFF) :
+        rb.GetBitmapNamed(IDR_CHECKBOX_OFF);
   }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
@@ -418,7 +403,7 @@ void NativeThemeLinux::PaintCheckbox(SkCanvas* canvas,
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
-void NativeThemeLinux::PaintRadio(SkCanvas* canvas,
+void NativeThemeBase::PaintRadio(SkCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
                                   const ButtonExtraParams& button) const {
@@ -426,12 +411,12 @@ void NativeThemeLinux::PaintRadio(SkCanvas* canvas,
   SkBitmap* image = NULL;
   if (state == kDisabled) {
     image = button.checked ?
-        rb.GetBitmapNamed(IDR_LINUX_RADIO_DISABLED_ON) :
-        rb.GetBitmapNamed(IDR_LINUX_RADIO_DISABLED_OFF);
+        rb.GetBitmapNamed(IDR_RADIO_DISABLED_ON) :
+        rb.GetBitmapNamed(IDR_RADIO_DISABLED_OFF);
   } else {
     image = button.checked ?
-        rb.GetBitmapNamed(IDR_LINUX_RADIO_ON) :
-        rb.GetBitmapNamed(IDR_LINUX_RADIO_OFF);
+        rb.GetBitmapNamed(IDR_RADIO_ON) :
+        rb.GetBitmapNamed(IDR_RADIO_OFF);
   }
 
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
@@ -439,7 +424,7 @@ void NativeThemeLinux::PaintRadio(SkCanvas* canvas,
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
-void NativeThemeLinux::PaintButton(SkCanvas* canvas,
+void NativeThemeBase::PaintButton(SkCanvas* canvas,
                                    State state,
                                    const gfx::Rect& rect,
                                    const ButtonExtraParams& button) const {
@@ -508,10 +493,10 @@ void NativeThemeLinux::PaintButton(SkCanvas* canvas,
   }
 }
 
-void NativeThemeLinux::PaintTextField(SkCanvas* canvas,
-                                      State state,
-                                      const gfx::Rect& rect,
-                                      const TextFieldExtraParams& text) const {
+void NativeThemeBase::PaintTextField(SkCanvas* canvas,
+                                     State state,
+                                     const gfx::Rect& rect,
+                                     const TextFieldExtraParams& text) const {
   // The following drawing code simulates the user-agent css border for
   // text area and text input so that we do not break layout tests. Once we
   // have decided the desired looks, we should update the code here and
@@ -598,7 +583,7 @@ void NativeThemeLinux::PaintTextField(SkCanvas* canvas,
   }
 }
 
-void NativeThemeLinux::PaintMenuList(
+void NativeThemeBase::PaintMenuList(
     SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
@@ -625,10 +610,10 @@ void NativeThemeLinux::PaintMenuList(
   canvas->drawPath(path, paint);
 }
 
-void NativeThemeLinux::PaintSliderTrack(SkCanvas* canvas,
-                                        State state,
-                                        const gfx::Rect& rect,
-                                        const SliderExtraParams& slider) const {
+void NativeThemeBase::PaintSliderTrack(SkCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const SliderExtraParams& slider) const {
   const int kMidX = rect.x() + rect.width() / 2;
   const int kMidY = rect.y() + rect.height() / 2;
 
@@ -650,10 +635,10 @@ void NativeThemeLinux::PaintSliderTrack(SkCanvas* canvas,
   canvas->drawRect(skrect, paint);
 }
 
-void NativeThemeLinux::PaintSliderThumb(SkCanvas* canvas,
-                                        State state,
-                                        const gfx::Rect& rect,
-                                        const SliderExtraParams& slider) const {
+void NativeThemeBase::PaintSliderThumb(SkCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const SliderExtraParams& slider) const {
   const bool hovered = (state == kHovered) || slider.in_drag;
   const int kMidX = rect.x() + rect.width() / 2;
   const int kMidY = rect.y() + rect.height() / 2;
@@ -688,7 +673,7 @@ void NativeThemeLinux::PaintSliderThumb(SkCanvas* canvas,
   }
 }
 
-void NativeThemeLinux::PaintInnerSpinButton(SkCanvas* canvas,
+void NativeThemeBase::PaintInnerSpinButton(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const InnerSpinButtonExtraParams& spin_button) const {
@@ -710,7 +695,7 @@ void NativeThemeLinux::PaintInnerSpinButton(SkCanvas* canvas,
   PaintArrowButton(canvas, half, kScrollbarDownArrow, south_state);
 }
 
-void NativeThemeLinux::PaintProgressBar(SkCanvas* canvas,
+void NativeThemeBase::PaintProgressBar(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar) const {
@@ -762,7 +747,7 @@ void NativeThemeLinux::PaintProgressBar(SkCanvas* canvas,
   canvas->drawBitmapRect(*right_border_image, NULL, dest_rect);
 }
 
-bool NativeThemeLinux::IntersectsClipRectInt(
+bool NativeThemeBase::IntersectsClipRectInt(
     SkCanvas* canvas, int x, int y, int w, int h) const {
   SkRect clip;
   return canvas->getClipBounds(&clip) &&
@@ -770,29 +755,29 @@ bool NativeThemeLinux::IntersectsClipRectInt(
                      SkIntToScalar(y + h));
 }
 
-void NativeThemeLinux::DrawVertLine(SkCanvas* canvas,
-                                    int x,
-                                    int y1,
-                                    int y2,
-                                    const SkPaint& paint) const {
+void NativeThemeBase::DrawVertLine(SkCanvas* canvas,
+                                   int x,
+                                   int y1,
+                                   int y2,
+                                   const SkPaint& paint) const {
   SkIRect skrect;
   skrect.set(x, y1, x + 1, y2 + 1);
   canvas->drawIRect(skrect, paint);
 }
 
-void NativeThemeLinux::DrawHorizLine(SkCanvas* canvas,
-                                     int x1,
-                                     int x2,
-                                     int y,
-                                     const SkPaint& paint) const {
+void NativeThemeBase::DrawHorizLine(SkCanvas* canvas,
+                                    int x1,
+                                    int x2,
+                                    int y,
+                                    const SkPaint& paint) const {
   SkIRect skrect;
   skrect.set(x1, y, x2 + 1, y + 1);
   canvas->drawIRect(skrect, paint);
 }
 
-void NativeThemeLinux::DrawBox(SkCanvas* canvas,
-                               const gfx::Rect& rect,
-                               const SkPaint& paint) const {
+void NativeThemeBase::DrawBox(SkCanvas* canvas,
+                              const gfx::Rect& rect,
+                              const SkPaint& paint) const {
   const int right = rect.x() + rect.width() - 1;
   const int bottom = rect.y() + rect.height() - 1;
   DrawHorizLine(canvas, rect.x(), right, rect.y(), paint);
@@ -801,7 +786,7 @@ void NativeThemeLinux::DrawBox(SkCanvas* canvas,
   DrawVertLine(canvas, rect.x(), rect.y(), bottom, paint);
 }
 
-void NativeThemeLinux::DrawBitmapInt(
+void NativeThemeBase::DrawBitmapInt(
     SkCanvas* canvas, const SkBitmap& bitmap,
     int src_x, int src_y, int src_w, int src_h,
     int dest_x, int dest_y, int dest_w, int dest_h) const {
@@ -850,7 +835,7 @@ void NativeThemeLinux::DrawBitmapInt(
   canvas->drawRect(dest_rect, p);
 }
 
-void NativeThemeLinux::DrawTiledImage(SkCanvas* canvas,
+void NativeThemeBase::DrawTiledImage(SkCanvas* canvas,
    const SkBitmap& bitmap,
    int src_x, int src_y, double tile_scale_x, double tile_scale_y,
    int dest_x, int dest_y, int w, int h) const {
@@ -879,15 +864,15 @@ void NativeThemeLinux::DrawTiledImage(SkCanvas* canvas,
   canvas->restore();
 }
 
-SkScalar NativeThemeLinux::Clamp(SkScalar value,
-                                 SkScalar min,
-                                 SkScalar max) const {
+SkScalar NativeThemeBase::Clamp(SkScalar value,
+                                SkScalar min,
+                                SkScalar max) const {
   return std::min(std::max(value, min), max);
 }
 
-SkColor NativeThemeLinux::SaturateAndBrighten(SkScalar* hsv,
-                                              SkScalar saturate_amount,
-                                              SkScalar brighten_amount) const {
+SkColor NativeThemeBase::SaturateAndBrighten(SkScalar* hsv,
+                                             SkScalar saturate_amount,
+                                             SkScalar brighten_amount) const {
   SkScalar color[3];
   color[0] = hsv[0];
   color[1] = Clamp(hsv[1] + saturate_amount, 0.0, 1.0);
@@ -895,7 +880,7 @@ SkColor NativeThemeLinux::SaturateAndBrighten(SkScalar* hsv,
   return SkHSVToColor(color);
 }
 
-SkColor NativeThemeLinux::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
+SkColor NativeThemeBase::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
   // GTK Theme engines have way too much control over the layout of
   // the scrollbar. We might be able to more closely approximate its
   // look-and-feel, if we sent whole images instead of just colors
@@ -923,13 +908,13 @@ SkColor NativeThemeLinux::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
   //
   // The following code has been tested to look OK with all of the
   // default GTK themes.
-  SkScalar min_diff = Clamp((hsv1[1] + hsv2[1]) * 1.2, 0.28, 0.5);
-  SkScalar diff = Clamp(fabs(hsv1[2] - hsv2[2]) / 2, min_diff, 0.5);
+  SkScalar min_diff = Clamp((hsv1[1] + hsv2[1]) * 1.2f, 0.28f, 0.5f);
+  SkScalar diff = Clamp(fabs(hsv1[2] - hsv2[2]) / 2, min_diff, 0.5f);
 
   if (hsv1[2] + hsv2[2] > 1.0)
     diff = -diff;
 
-  return SaturateAndBrighten(hsv2, -0.2, diff);
+  return SaturateAndBrighten(hsv2, -0.2f, diff);
 }
 
 }  // namespace gfx

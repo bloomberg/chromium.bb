@@ -7,13 +7,15 @@
 
 #include <map>
 #include "base/compiler_specific.h"
-#include "ui/gfx/native_theme_linux.h"
+#include "ui/gfx/native_theme_base.h"
 
 class SkBitmap;
 
-class NativeThemeChromeos : public gfx::NativeThemeLinux {
+class NativeThemeChromeos : public gfx::NativeThemeBase {
+ public:
+  static const NativeThemeChromeos* instance();
+
  private:
-  friend class NativeThemeLinux;
   NativeThemeChromeos();
   virtual ~NativeThemeChromeos();
 

@@ -130,9 +130,9 @@ void GetGradientPaintForRect(const gfx::Rect& rect,
 }
 
 void GetButtonGradientPaint(const gfx::Rect bounds,
-                            gfx::NativeThemeLinux::State state,
+                            gfx::NativeThemeBase::State state,
                             SkPaint* paint) {
-  if (state == gfx::NativeThemeLinux::kPressed) {
+  if (state == gfx::NativeThemeBase::kPressed) {
     static const SkColor kGradientColors[2] = {
         kPressedGradient0,
         kPressedGradient1
@@ -171,29 +171,29 @@ void GetStrokePaint(SkColor color, SkPaint* paint) {
   paint->setColor(color);
 }
 
-void GetStrokePaint(gfx::NativeThemeLinux::State state, SkPaint* paint) {
+void GetStrokePaint(gfx::NativeThemeBase::State state, SkPaint* paint) {
 
-  if (state == gfx::NativeThemeLinux::kDisabled)
+  if (state == gfx::NativeThemeBase::kDisabled)
     GetStrokePaint(kDisabledBaseStroke, paint);
   else
     GetStrokePaint(kBaseStroke, paint);
 }
 
-void GetIndicatorStrokePaint(gfx::NativeThemeLinux::State state,
+void GetIndicatorStrokePaint(gfx::NativeThemeBase::State state,
                              SkPaint* paint) {
   paint->setStyle(SkPaint::kStroke_Style);
   paint->setAntiAlias(true);
 
-  if (state == gfx::NativeThemeLinux::kDisabled)
+  if (state == gfx::NativeThemeBase::kDisabled)
     paint->setColor(kIndicatorStrokeDisabledColor);
-  else if (state == gfx::NativeThemeLinux::kPressed)
+  else if (state == gfx::NativeThemeBase::kPressed)
     paint->setColor(kIndicatorStrokePressedColor);
   else
     paint->setColor(kIndicatorStrokeColor);
 }
 
 void GetRadioIndicatorGradientPaint(const gfx::Rect bounds,
-                                    gfx::NativeThemeLinux::State state,
+                                    gfx::NativeThemeBase::State state,
                                     SkPaint* paint) {
   paint->setStyle(SkPaint::kFill_Style);
   paint->setAntiAlias(true);
@@ -207,7 +207,7 @@ void GetRadioIndicatorGradientPaint(const gfx::Rect bounds,
       SkIntToScalar(1)
   };
 
-  if (state == gfx::NativeThemeLinux::kDisabled) {
+  if (state == gfx::NativeThemeBase::kDisabled) {
     static const SkColor kGradientColors[2] = {
         kRadioIndicatorDisabledGradient0,
         kRadioIndicatorDisabledGradient1
@@ -230,8 +230,13 @@ void GetRadioIndicatorGradientPaint(const gfx::Rect bounds,
 
 }  // namespace
 
-/* static */
-const gfx::NativeThemeLinux* gfx::NativeThemeLinux::instance() {
+// static
+const gfx::NativeTheme* gfx::NativeTheme::instance() {
+  return NativeThemeChromeos::instance();
+}
+
+// static
+const NativeThemeChromeos* NativeThemeChromeos::instance() {
   // The global NativeThemeChromeos instance.
   static NativeThemeChromeos s_native_theme;
   return &s_native_theme;
@@ -296,7 +301,7 @@ gfx::Size NativeThemeChromeos::GetPartSize(Part part,
     case kInnerSpinButton:
       return gfx::Size(kScrollbarWidth, 0);
     default:
-      return NativeThemeLinux::GetPartSize(part, state, extra);
+      return NativeThemeBase::GetPartSize(part, state, extra);
   }
   return gfx::Size(width, height);
 }
@@ -572,7 +577,7 @@ void NativeThemeChromeos::PaintInnerSpinButton(SkCanvas* canvas,
   gfx::Rect bounds = rect;
   bounds.Inset(0, -1, -1, -1);
 
-  NativeThemeLinux::PaintInnerSpinButton(canvas, state, bounds, spin_button);
+  NativeThemeBase::PaintInnerSpinButton(canvas, state, bounds, spin_button);
 }
 
 void NativeThemeChromeos::PaintProgressBar(SkCanvas* canvas,

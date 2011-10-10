@@ -41,11 +41,14 @@ WindowTypeLauncher::WindowTypeLauncher()
       ALLOW_THIS_IN_INITIALIZER_LIST(bubble_button_(
           new views::NativeTextButton(this, L"Create Pointy Bubble"))),
       ALLOW_THIS_IN_INITIALIZER_LIST(lock_button_(
-          new views::NativeTextButton(this, L"Lock Screen"))) {
+          new views::NativeTextButton(this, L"Lock Screen"))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(widgets_button_(
+          new views::NativeTextButton(this, L"Show Example Widgets"))) {
   AddChildView(create_button_);
   AddChildView(create_nonresizable_button_);
   AddChildView(bubble_button_);
   AddChildView(lock_button_);
+  AddChildView(widgets_button_);
   set_context_menu_controller(this);
 }
 
@@ -78,6 +81,11 @@ void WindowTypeLauncher::Layout() {
   lock_button_->SetBounds(
       5, create_nonresizable_button_->y() - lock_ps.height() - 5,
       lock_ps.width(), lock_ps.height());
+
+  gfx::Size widgets_ps = widgets_button_->GetPreferredSize();
+  widgets_button_->SetBounds(
+      5, lock_button_->y() - widgets_ps.height() - 5,
+      widgets_ps.width(), widgets_ps.height());
 }
 
 gfx::Size WindowTypeLauncher::GetPreferredSize() {
@@ -120,6 +128,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     CreatePointyBubble(GetWidget()->GetNativeWindow(), origin);
   } else if (sender == lock_button_) {
     CreateLock();
+  } else if (sender == widgets_button_) {
+    CreateWidgetsWindow();
   }
 }
 

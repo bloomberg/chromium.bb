@@ -95,9 +95,14 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // Render the foreground.
   // Menu color is specific to Vista, fallback to classic colors if can't
   // get color.
+#if defined(USE_AURA)
+  // TODO(jamescook): Create menu_item_view_aura.cc
+  SkColor fg_color = SK_ColorBLACK;
+#else
   SkColor fg_color = gfx::NativeThemeWin::instance()->GetThemeColorWithDefault(
       gfx::NativeThemeWin::MENU, MENU_POPUPITEM, state, TMT_TEXTCOLOR,
       default_sys_color);
+#endif
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;

@@ -3820,7 +3820,9 @@ void RenderViewImpl::OnClosePage() {
 }
 
 void RenderViewImpl::OnThemeChanged() {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // Aura doesn't care if we switch themes.
+#elif defined(OS_WIN)
   gfx::NativeThemeWin::instance()->CloseHandles();
   if (webview())
     webview()->themeChanged();

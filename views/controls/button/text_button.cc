@@ -43,6 +43,19 @@ static const int kPreferredPaddingVertical = 5;
 static const int kPreferredNativeThemePaddingHorizontal = 12;
 static const int kPreferredNativeThemePaddingVertical = 5;
 
+// Default background color for buttons.
+const SkColor kBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
+
+#if defined(USE_AURA)
+// static
+const SkColor TextButtonBase::kEnabledColor = SkColorSetRGB(0x44, 0x44, 0x44);
+// static
+const SkColor TextButtonBase::kHighlightColor = SkColorSetRGB(0, 0, 0);
+// static
+const SkColor TextButtonBase::kDisabledColor = SkColorSetRGB(0x99, 0x99, 0x99);
+// static
+const SkColor TextButtonBase::kHoverColor = TextButton::kEnabledColor;
+#else  // !defined(USE_AURA)
 // static
 const SkColor TextButtonBase::kEnabledColor = SkColorSetRGB(6, 45, 117);
 // static
@@ -52,6 +65,7 @@ const SkColor TextButtonBase::kHighlightColor =
 const SkColor TextButtonBase::kDisabledColor = SkColorSetRGB(161, 161, 146);
 // static
 const SkColor TextButtonBase::kHoverColor = TextButton::kEnabledColor;
+#endif  // defined(USE_AURA)
 
 // How long the hover fade animation should last.
 static const int kHoverAnimationDurationMs = 170;
@@ -449,7 +463,7 @@ void TextButtonBase::GetExtraParams(
   params->button.is_default = false;
   params->button.has_border = false;
   params->button.classic_state = 0;
-  params->button.background_color = kEnabledColor;
+  params->button.background_color = kBackgroundColor;
 }
 
 gfx::Rect TextButtonBase::GetContentBounds(int extra_width) const {
@@ -609,7 +623,9 @@ gfx::NativeTheme::State TextButtonBase::GetThemeState(
 }
 
 const ui::Animation* TextButtonBase::GetThemeAnimation() const {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  return hover_animation_.get();
+#elif defined(OS_WIN)
   return gfx::NativeThemeWin::instance()->IsThemingActive()
       ? hover_animation_.get() : NULL;
 #else

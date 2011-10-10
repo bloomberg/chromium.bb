@@ -65,6 +65,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::NativeTextButton* create_nonresizable_button_;
   views::NativeTextButton* bubble_button_;
   views::NativeTextButton* lock_button_;
+  views::NativeTextButton* widgets_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);

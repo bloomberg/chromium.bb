@@ -213,8 +213,10 @@ class UI_EXPORT NativeTheme {
                           unsigned track_color) const;
 
   // Returns a shared instance of the native theme.
-  // The retuned object should not be deleted by the caller.  This function
+  // The returned object should not be deleted by the caller.  This function
   // is not thread safe and should only be called from the UI thread.
+  // Each port of NativeTheme should provide its own implementation of this
+  // function, returning the port's subclass.
   static const NativeTheme* instance();
 
  protected:
