@@ -65,8 +65,6 @@ ImageEditor.prototype.isLocked = function() {
 
 ImageEditor.prototype.lockUI = function(on) {
   ImageUtil.setAttribute(this.rootContainer_, 'locked', on);
-  this.container_.style.cursor = on ? 'wait' : 'default';
-  return true;
 };
 
 ImageEditor.prototype.openSession = function(
@@ -74,8 +72,11 @@ ImageEditor.prototype.openSession = function(
   if (this.commandQueue_)
     throw new Error('Session not closed');
 
+  this.lockUI(true);
+
   var self = this;
   this.imageView_.load(source, metadata, slide, function() {
+    self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
         self.container_.ownerDocument, self.imageView_.getCanvas());
     self.commandQueue_.attachUI(
@@ -92,6 +93,7 @@ ImageEditor.prototype.openSession = function(
 ImageEditor.prototype.closeSession = function(callback) {
   if (this.imageView_.isLoading()) {
     this.imageView_.cancelLoad();
+    this.lockUI(false);
     return;
   }
   if (!this.commandQueue_)
@@ -191,9 +193,8 @@ ImageEditor.prototype.onOptionsChange = function(options) {
  * mode-specific tools.
  */
 
-ImageEditor.Mode = function(name, displayName) {
+ImageEditor.Mode = function(name) {
   this.name = name;
-  this.displayName = displayName || name;
   this.message_ = 'enter_when_done';
 };
 
@@ -597,10 +598,8 @@ ImageEditor.MouseControl.prototype.lockMouse_ = function(on) {
 };
 
 ImageEditor.MouseControl.prototype.updateCursor_ = function(position) {
-  this.container_.style.cursor =
-      this.rootContainer_.hasAttribute('locked') ?
-      '' :
-      this.buffer_.getCursorStyle(position.x, position.y, !!this.dragHandler_);
+  this.container_.setAttribute('cursor',
+      this.buffer_.getCursorStyle(position.x, position.y, !!this.dragHandler_));
 };
 
 /**

@@ -7,9 +7,10 @@
  * but do not modify the image dimensions.
  * @constructor
  */
-ImageEditor.Mode.Adjust = function(arglist) {
+ImageEditor.Mode.Adjust = function() {
   ImageEditor.Mode.apply(this, arguments);
   this.implicitCommit = true;
+  this.doneMessage_ = null;
   this.viewportGeneration_ = 0;
 };
 
@@ -22,7 +23,7 @@ ImageEditor.Mode.Adjust.prototype = {__proto__: ImageEditor.Mode.prototype};
 ImageEditor.Mode.Adjust.prototype.getCommand = function() {
   if (!this.filter_) return null;
 
-  return new Command.Filter(this.name, this.filter_, this.message_);
+  return new Command.Filter(this.name, this.filter_, this.doneMessage_);
 };
 
 ImageEditor.Mode.Adjust.prototype.cleanUpUI = function() {
@@ -229,7 +230,7 @@ ImageEditor.Mode.Exposure.prototype.createTools = function(toolbar) {
  */
 ImageEditor.Mode.Autofix = function() {
   ImageEditor.Mode.ColorFilter.call(this, 'autofix');
-  this.message_ = 'fixed';
+  this.doneMessage_ = 'fixed';
 };
 
 ImageEditor.Mode.Autofix.prototype =

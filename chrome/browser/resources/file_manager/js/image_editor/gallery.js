@@ -19,7 +19,7 @@ function Gallery(container, closeCallback, metadataProvider, shareActions,
 
   this.displayStringFunction_ = function(id) {
     return displayStringFunction('GALLERY_' + id.toUpperCase());
-  }
+  };
 
   this.onFadeTimeoutBound_ = this.onFadeTimeout_.bind(this);
   this.fadeTimeoutId_ = null;
@@ -249,7 +249,8 @@ Gallery.prototype.onEdit_ = function() {
   if (this.isEditing_()) {
     this.cancelFading_();
   } else if (!this.isSharing_()) {
-    this.editor_.leaveModeGently();
+    this.editor_.requestImage(
+        this.currentItem_.updateThumbnail.bind(this.currentItem_));
     this.initiateFading_();
   }
 
@@ -285,9 +286,8 @@ Gallery.prototype.onKeyDown_ = function(event) {
       }
       break;
 
-    case 'U+0045':  // 'e'
-      if (!this.isEditing_())
-        this.onEdit_();
+    case 'U+0045':  // 'e' toggles the editor
+      this.onEdit_();
       break;
 
     case 'Home':
@@ -306,6 +306,14 @@ Gallery.prototype.onKeyDown_ = function(event) {
 };
 
 Gallery.prototype.onMouseMove_ = function(e) {
+  if (this.clientX_ == e.clientX && this.clientY_ == e.clientY) {
+    // The mouse has not moved, must be the cursor change triggered by
+    // some of the attributes on the root container. Ignore the event.
+    return;
+  }
+  this.clientX_ = e.clientX;
+  this.clientY_ = e.clientY;
+
   this.cancelFading_();
   this.initiateFading_();
 };
@@ -392,7 +400,7 @@ Ribbon.prototype.clear = function() {
   this.items_ = [];
   this.selectedIndex_ = -1;
   this.firstVisibleIndex_ = 0;
-  this.lastVisibleIndex_ = 0;
+  this.lastVisibleIndex_ = -1;  // Zero thumbnails
 };
 
 Ribbon.prototype.add = function(url, metadataProvider) {
@@ -458,8 +466,14 @@ Ribbon.prototype.redraw = function() {
 
   var fullItems = Math.floor(width / itemWidth);
 
-  this.bars_[0].style.width = fullItems * itemWidth + 'px';
-  this.bars_[1].style.width = fullItems * itemWidth + 'px';
+  var fullWidth = fullItems * itemWidth;
+
+  this.bars_[0].style.width = fullWidth + 'px';
+  this.bars_[1].style.width = fullWidth + 'px';
+
+  // Position the shadows over the first and the last visible thumbnails.
+  this.fadeLeft_.style.left = 0;
+  this.fadeRight_.style.right = (width - fullWidth) + 'px';
 
   fullItems = Math.min(fullItems, this.items_.length);
   var firstIndex = this.firstVisibleIndex_;
@@ -585,6 +599,15 @@ Ribbon.Item.prototype.select = function(on) {
   for (var i = 0; i < 2; i++) {
     ImageUtil.setAttribute(this.boxes_[i], 'selected', on);
   }
+};
+
+Ribbon.Item.prototype.updateThumbnail = function(canvas) {
+  if (this.canvas_)
+    return;  // The image is being saved, the thumbnail is already up-to-date.
+
+  var metadataEncoder =
+      ImageEncoder.encodeMetadata(this.getMetadata(), canvas, 1);
+  this.setMetadata(metadataEncoder.getMetadata());
 };
 
 Ribbon.Item.prototype.save = function(
@@ -734,11 +757,13 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
       img.style.height = percent(1);
       img.style.width = percent(aspect);
       img.style.marginLeft = percent((1 - aspect) / 2);
+      img.style.marginTop = 0;
     } else {
       aspect = 1 / aspect;
       img.style.width = percent(1);
       img.style.height = percent(aspect);
       img.style.marginTop = percent((1 - aspect) / 2);
+      img.style.marginLeft = 0;
     }
   }
 

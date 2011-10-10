@@ -47,6 +47,44 @@ body {
   height: 100%;
   width: 100%;
   background-color: rgba(0,0,0,1);
+  cursor: none;   /* Only visible when the toolbar is active */
+}
+
+.gallery[tools][locked] *,
+.gallery[tools][locked] .image-container[cursor] {
+  cursor: wait;
+}
+
+.gallery[tools] .image-container[cursor='default'] {
+  cursor: default;
+}
+
+.gallery[tools] .image-container[cursor='move'] {
+  cursor: url(../../images/gallery/cursor_move.png) 18 18;
+}
+
+.gallery[tools] .image-container[cursor='crop'] {
+  cursor: url(../../images/gallery/cursor_crop.png) 18 18;
+}
+
+.gallery[tools] .image-container[cursor='n-resize'],
+.gallery[tools] .image-container[cursor='s-resize'] {
+  cursor: url(../../images/gallery/cursor_updown.png) 18 18;
+}
+
+.gallery[tools] .image-container[cursor='e-resize'],
+.gallery[tools] .image-container[cursor='w-resize'] {
+  cursor: url(../../images/gallery/cursor_leftright.png) 18 18;
+}
+
+.gallery[tools] .image-container[cursor='nw-resize'],
+.gallery[tools] .image-container[cursor='se-resize'] {
+  cursor: url(../../images/gallery/cursor_nwse.png) 18 18;
+}
+
+.gallery[tools] .image-container[cursor='ne-resize'],
+.gallery[tools] .image-container[cursor='sw-resize'] {
+  cursor: url(../../images/gallery/cursor_swne.png) 18 18;
 }
 
 .gallery > .image-container > canvas {
@@ -101,10 +139,6 @@ body {
 
 .gallery[tools][locked] > .toolbar {
   pointer-events: none;
-}
-
-.gallery[locked] {
-  cursor: wait;
 }
 
 .gallery .arrow {
@@ -239,9 +273,10 @@ body {
 .gallery .toolbar .fade {
   background-repeat: no-repeat;
   background-position: center center;
-  position: relative;
+  position: absolute;
   z-index: 10;
   width: 55px;
+  height: 100%;
   pointer-events: none;
   opacity: 0;
   -webkit-transition: opacity 0.2s linear;
@@ -256,12 +291,10 @@ body {
 }
 
 .gallery .toolbar .fade.left {
-  margin-right: -55px;  /* Fully overlap the next thumbnail */
   background-image: url(../../images/gallery/thumb_fade_left.png);
 }
 
 .gallery .toolbar .fade.right {
-  margin-left: -55px;   /* Fully overlap the previous thumbnail */
   background-image: url(../../images/gallery/thumb_fade_right.png);
 }
 

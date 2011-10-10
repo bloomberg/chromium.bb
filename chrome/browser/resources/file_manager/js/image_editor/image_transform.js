@@ -240,8 +240,8 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
     mode = this.getDragMode(
         this.viewport_.screenToImageX(x), this.viewport_.screenToImageY(y));
   }
-  if (mode.whole) return 'hand';
-  if (mode.outside) return 'crosshair';
+  if (mode.whole) return 'move';
+  if (mode.outside) return 'crop';
   return this.cssSide_[mode.ySide] + this.cssSide_[mode.xSide] + '-resize';
 };
 
@@ -280,6 +280,7 @@ DraggableRect.prototype.getDragHandler = function(x, y) {
     };
   } else {
     if (this.dragMode_.outside) {
+      this.dragMode_.outside = false;
       this.dragMode_.xSide = DraggableRect.RIGHT;
       this.dragMode_.ySide = DraggableRect.BOTTOM;
       this.bounds_.left = this.bounds_.right = x;
