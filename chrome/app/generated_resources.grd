@@ -10277,11 +10277,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_PROMO_MESSAGE_BODY" desc="The body of the sync promo message. This is followed by a learn more link.">
         Automatically &lt;strong&gt;back up&lt;/strong&gt; and &lt;strong&gt;sync&lt;/strong&gt; your bookmarks, history, and settings.
       </message>
-      <message name="IDS_SYNC_PROMO_SKIP_MESSAGE" desc="The text at the bottom to let the user skip the sync promo.">
-        or
-      </message>
-      <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The button at the bottom to let the user skip the sync promo.">
-        Skip setup for now
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="In Title Case: The button at the bottom to let the user skip the sync promo.">
+          Skip For Now
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The button at the bottom to let the user skip the sync promo.">
+          Skip for now
+        </message>
+      </if>
+      <message name="IDS_SYNC_PROMO_ADVANCED" desc="The link button at the bottom to let the user customize the sync settings.">
+        Advanced...
       </message>
       <message name="IDS_SYNC_PROMO_LEARN_MORE_SHOW" desc="Text for the link at the end of the message body to show more information about sync.">
         Learn more

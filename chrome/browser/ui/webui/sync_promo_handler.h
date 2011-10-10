@@ -28,6 +28,10 @@ class SyncPromoHandler : public SyncSetupHandler {
   // Javascript callback handler to close the sync promo.
   void HandleCloseSyncPromo(const base::ListValue* args);
 
+  // Javascript callback handler to switch the advanced sync settings. |args| is
+  // the list of arguments passed from JS and should be an empty list.
+  void HandleShowAdvancedSyncSettings(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(SyncPromoHandler);
 };
 

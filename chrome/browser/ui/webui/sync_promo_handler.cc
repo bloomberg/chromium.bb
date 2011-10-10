@@ -30,6 +30,9 @@ void SyncPromoHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("CloseSyncPromo",
       base::Bind(&SyncPromoHandler::HandleCloseSyncPromo,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("showAdvancedSyncSettings",
+      base::Bind(&SyncPromoHandler::HandleShowAdvancedSyncSettings,
+                 base::Unretained(this)));
   SyncSetupHandler::RegisterMessages();
 }
 
@@ -47,5 +50,14 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   CloseSyncSetup();
   web_ui_->tab_contents()->OpenURL(GURL(chrome::kChromeUINewTabURL),
                                    GURL(), CURRENT_TAB,
+                                   PageTransition::LINK);
+}
+
+void SyncPromoHandler::HandleShowAdvancedSyncSettings(
+    const base::ListValue* args) {
+  CloseSyncSetup();
+  std::string url(chrome::kChromeUISettingsURL);
+  url += chrome::kSyncSetupSubPage;
+  web_ui_->tab_contents()->OpenURL(GURL(url), GURL(), CURRENT_TAB,
                                    PageTransition::LINK);
 }

@@ -71,10 +71,6 @@ h1 {
   text-align: center;
 }
 
-#promo-skip-message {
-  font-size: 85%;
-}
-
 #promo-information > h3 {
   font-size: 85%;
   margin-bottom: 0;
@@ -84,4 +80,9 @@ h1 {
 #promo-information > p {
   font-size: 85%;
   margin-top: 0;
+}
+
+#promo-advanced-link {
+  font-size: 85%;
+  margin: 0 10px;
 }

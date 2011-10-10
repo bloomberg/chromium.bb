@@ -52,6 +52,9 @@ cr.define('sync_promo', function() {
       $('promo-learn-more-hide').addEventListener('click', function() {
         self.showLearnMore_(false);
       });
+      $('promo-advanced').addEventListener('click', function() {
+        chrome.send('showAdvancedSyncSettings');
+      });
     },
 
     // Shows or hides the sync information.
