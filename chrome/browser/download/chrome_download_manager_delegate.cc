@@ -93,7 +93,8 @@ bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
       download_id, download->url_chain(), download->referrer_url(),
           profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled));
   sb_client->CheckDownloadUrl(
-      NewCallback(this, &ChromeDownloadManagerDelegate::CheckDownloadUrlDone));
+      base::Bind(&ChromeDownloadManagerDelegate::CheckDownloadUrlDone,
+                 base::Unretained(this)));
 #else
   CheckDownloadUrlDone(download_id, false);
 #endif
@@ -203,7 +204,8 @@ void ChromeDownloadManagerDelegate::OnResponseCompleted(
                                prefs::kSafeBrowsingEnabled));
   sb_client->CheckDownloadHash(
       hash,
-      NewCallback(this, &ChromeDownloadManagerDelegate::CheckDownloadHashDone));
+      base::Bind(&ChromeDownloadManagerDelegate::CheckDownloadHashDone,
+                 base::Unretained(this)));
 #endif
 }
 
@@ -299,9 +301,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
 
   download_history_->CheckVisitedReferrerBefore(
       download_id, download->referrer_url(),
-      NewCallback(
-          this,
-          &ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone));
+      base::Bind(&ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone,
+                 base::Unretained(this)));
 }
 
 // NotificationObserver implementation.

@@ -6,22 +6,24 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SAFE_BROWSING_CLIENT_H_
 #pragma once
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
 // This is a helper class used by DownloadManager to check a download URL with
-// SafeBrowsingService. The client is refcounted and will be  released once
-// there is no reference to it.
+// SafeBrowsingService. The client is refcounted and will be released once there
+// is no reference to it.
 // Usage:
 // {
 //    scoped_refptr<DownloadSBClient> client_ = new DownloadSBClient(...);
-//    client_->CheckDownloadUrl(..., NewCallback(this,
-//                              &DownloadManager::UrlCallBack));
+//    client_->CheckDownloadUrl(
+//        ..., base::Bind(&DownloadManager::UrlCallBack,
+//                        base::Unretained(this)));
 //    or
-//    client_->CheckDownloadHash(..., NewCallback(this,
-//                               &DownloadManager::HashCallBack));
+//    client_->CheckDownloadHash(
+//        ..., base::Bind(&DownloadManager::HashCallBack,
+//                        base::Unretained(this)));
 // }
 // DownloadManager::UrlCallBack(...) or HashCallCall {
 //    // After this, the |client_| is gone.
@@ -30,8 +32,8 @@ class DownloadSBClient
     : public SafeBrowsingService::Client,
       public base::RefCountedThreadSafe<DownloadSBClient> {
  public:
-  typedef Callback2<int32, bool>::Type UrlDoneCallback;
-  typedef Callback2<int32, bool>::Type HashDoneCallback;
+  typedef base::Callback<void(int32, bool)> UrlDoneCallback;
+  typedef base::Callback<void(int32, bool)> HashDoneCallback;
 
   DownloadSBClient(int32 download_id,
                    const std::vector<GURL>& url_chain,
@@ -42,8 +44,9 @@ class DownloadSBClient
   // For each DownloadSBClient instance, either CheckDownloadUrl or
   // CheckDownloadHash can be called, and be called only once.
   // DownloadSBClient instance.
-  void CheckDownloadUrl(UrlDoneCallback* callback);
-  void CheckDownloadHash(const std::string& hash, HashDoneCallback* callback);
+  void CheckDownloadUrl(const UrlDoneCallback& callback);
+  void CheckDownloadHash(const std::string& hash,
+                         const HashDoneCallback& callback);
 
  private:
   // Call SafeBrowsingService on IO thread to verify the download URL or
@@ -99,8 +102,8 @@ class DownloadSBClient
   // Update the UMA stats.
   void UpdateDownloadCheckStats(SBStatsType stat_type);
 
-  scoped_ptr<UrlDoneCallback> url_done_callback_;
-  scoped_ptr<HashDoneCallback> hash_done_callback_;
+  UrlDoneCallback url_done_callback_;
+  HashDoneCallback hash_done_callback_;
 
   int32 download_id_;
   scoped_refptr<SafeBrowsingService> sb_service_;

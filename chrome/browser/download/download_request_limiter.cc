@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_request_limiter.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -204,9 +205,8 @@ void DownloadRequestLimiter::CanDownloadOnIOThread(int render_process_host_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &DownloadRequestLimiter::CanDownload,
-                        render_process_host_id, render_view_id, request_id,
-                        callback));
+      base::Bind(&DownloadRequestLimiter::CanDownload, this,
+                 render_process_host_id, render_view_id, request_id, callback));
 }
 
 void DownloadRequestLimiter::OnUserGesture(TabContents* tab) {
@@ -317,8 +317,8 @@ void DownloadRequestLimiter::ScheduleNotification(Callback* callback,
                                                   bool allow) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &DownloadRequestLimiter::NotifyCallback, callback, allow));
+      base::Bind(&DownloadRequestLimiter::NotifyCallback, this, callback,
+                 allow));
 }
 
 void DownloadRequestLimiter::NotifyCallback(Callback* callback, bool allow) {

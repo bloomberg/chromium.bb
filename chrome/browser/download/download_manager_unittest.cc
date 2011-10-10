@@ -5,6 +5,7 @@
 #include <string>
 #include <set>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
@@ -99,10 +100,8 @@ class DownloadManagerTest : public testing::Test {
 
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(file_manager_.get(),
-                          &DownloadFileManager::UpdateDownload,
-                          DownloadId(download_manager_.get(), id),
-                          &download_buffer_));
+        base::Bind(&DownloadFileManager::UpdateDownload, file_manager_.get(),
+                   DownloadId(download_manager_.get(), id), &download_buffer_));
 
     message_loop_.RunAllPending();
   }

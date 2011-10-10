@@ -176,10 +176,8 @@ class DownloadsObserver : public DownloadManager::Observer,
           // real UI would.
           BrowserThread::PostTask(
               BrowserThread::UI, FROM_HERE,
-              NewRunnableFunction(
-                  &AcceptDangerousDownload,
-                  download_manager_,
-                  download->id()));
+              base::Bind(&AcceptDangerousDownload, download_manager_,
+                         download->id()));
           break;
 
         case ON_DANGEROUS_DOWNLOAD_DENY:
@@ -187,10 +185,8 @@ class DownloadsObserver : public DownloadManager::Observer,
           // real UI would.
           BrowserThread::PostTask(
               BrowserThread::UI, FROM_HERE,
-              NewRunnableFunction(
-                  &DenyDangerousDownload,
-                  download_manager_,
-                  download->id()));
+              base::Bind(&DenyDangerousDownload, download_manager_,
+                         download->id()));
           break;
 
         case ON_DANGEROUS_DOWNLOAD_FAIL:
@@ -202,9 +198,8 @@ class DownloadsObserver : public DownloadManager::Observer,
       }
     }
 
-    if (download->state() == download_finished_state_) {
+    if (download->state() == download_finished_state_)
       DownloadInFinalState(download);
-    }
   }
 
   virtual void OnDownloadOpened(DownloadItem* download) {}
@@ -409,8 +404,7 @@ class DownloadsFlushObserver
         // there's a self-task posting in the IO thread cancel path.
         BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
-            NewRunnableMethod(this,
-                              &DownloadsFlushObserver::PingFileThread, 2));
+            base::Bind(&DownloadsFlushObserver::PingFileThread, this, 2));
       }
     }
   }
@@ -418,16 +412,14 @@ class DownloadsFlushObserver
   void PingFileThread(int cycle) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &DownloadsFlushObserver::PingIOThread,
-                          cycle));
+        base::Bind(&DownloadsFlushObserver::PingIOThread, this, cycle));
   }
 
   void PingIOThread(int cycle) {
     if (--cycle) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &DownloadsFlushObserver::PingFileThread,
-                            cycle));
+          base::Bind(&DownloadsFlushObserver::PingFileThread, this, cycle));
     } else {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask());
@@ -458,7 +450,7 @@ class CancelTestDataCollector
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &CancelTestDataCollector::IOInfoCollector));
+        base::Bind(&CancelTestDataCollector::IOInfoCollector, this));
     ui_test_utils::RunMessageLoop();
   }
 
@@ -477,7 +469,7 @@ class CancelTestDataCollector
     rdh_pending_requests_ = resource_dispatcher_host_->pending_requests();
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &CancelTestDataCollector::FileInfoCollector));
+        base::Bind(&CancelTestDataCollector::FileInfoCollector, this));
   }
 
   void FileInfoCollector() {

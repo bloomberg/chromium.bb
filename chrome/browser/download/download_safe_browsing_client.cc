@@ -5,6 +5,7 @@
 
 #include "chrome/browser/download/download_safe_browsing_client.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -38,35 +39,30 @@ DownloadSBClient::DownloadSBClient(int32 download_id,
 
 DownloadSBClient::~DownloadSBClient() {}
 
-void DownloadSBClient::CheckDownloadUrl(UrlDoneCallback* callback) {
+void DownloadSBClient::CheckDownloadUrl(const UrlDoneCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // It is not allowed to call this method twice.
-  CHECK(!url_done_callback_.get() && !hash_done_callback_.get());
-  CHECK(callback);
+  CHECK(url_done_callback_.is_null() && hash_done_callback_.is_null());
 
   start_time_ = base::TimeTicks::Now();
-  url_done_callback_.reset(callback);
+  url_done_callback_ = callback;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-                        &DownloadSBClient::CheckDownloadUrlOnIOThread,
-                        url_chain_));
+      base::Bind(&DownloadSBClient::CheckDownloadUrlOnIOThread, this,
+                 url_chain_));
 }
 
 void DownloadSBClient::CheckDownloadHash(const std::string& hash,
-                                         HashDoneCallback* callback) {
+                                         const HashDoneCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // It is not allowed to call this method twice.
-  CHECK(!url_done_callback_.get() && !hash_done_callback_.get());
-  CHECK(callback);
+  CHECK(url_done_callback_.is_null() && hash_done_callback_.is_null());
 
   start_time_ = base::TimeTicks::Now();
-  hash_done_callback_.reset(callback);
+  hash_done_callback_ = callback;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-                        &DownloadSBClient::CheckDownloadHashOnIOThread,
-                        hash));
+      base::Bind(&DownloadSBClient::CheckDownloadHashOnIOThread, this, hash));
 }
 
 void DownloadSBClient::CheckDownloadUrlOnIOThread(
@@ -89,10 +85,9 @@ void DownloadSBClient::OnDownloadUrlCheckResult(
     const std::vector<GURL>& url_chain,
     SafeBrowsingService::UrlCheckResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &DownloadSBClient::SafeBrowsingCheckUrlDone,
-                        result));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DownloadSBClient::SafeBrowsingCheckUrlDone, this, result));
   Release();
 }
 
@@ -113,11 +108,10 @@ void DownloadSBClient::CheckDownloadHashOnIOThread(const std::string& hash) {
 void DownloadSBClient::OnDownloadHashCheckResult(
     const std::string& hash, SafeBrowsingService::UrlCheckResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &DownloadSBClient::SafeBrowsingCheckHashDone,
-                        result,
-                        hash));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DownloadSBClient::SafeBrowsingCheckHashDone, this,  result,
+                 hash));
   Release();
 }
 
@@ -127,7 +121,7 @@ void DownloadSBClient::SafeBrowsingCheckUrlDone(
   DVLOG(1) << "SafeBrowsingCheckUrlDone with result: " << result;
 
   bool is_dangerous = result != SafeBrowsingService::SAFE;
-  url_done_callback_->Run(download_id_, is_dangerous);
+  url_done_callback_.Run(download_id_, is_dangerous);
 
   if (sb_service_.get() && sb_service_->download_protection_enabled()) {
     UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
@@ -147,7 +141,7 @@ void DownloadSBClient::SafeBrowsingCheckHashDone(
   DVLOG(1) << "SafeBrowsingCheckHashDone with result: " << result;
 
   bool is_dangerous = result != SafeBrowsingService::SAFE;
-  hash_done_callback_->Run(download_id_, is_dangerous);
+  hash_done_callback_.Run(download_id_, is_dangerous);
 
   if (sb_service_.get() && sb_service_->download_protection_enabled()) {
     UMA_HISTOGRAM_TIMES("SB2.DownloadHashCheckDuration",
