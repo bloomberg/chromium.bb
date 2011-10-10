@@ -155,6 +155,29 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Based on extension id, checks prefs to see if it is blacklisted.
   bool IsExtensionBlacklisted(const std::string& id);
 
+  // Based on extension id, checks prefs to see if it is orphaned.
+  bool IsExtensionOrphaned(const std::string& id);
+
+  // Whether the user has acknowledged an external extension.
+  bool IsExternalExtensionAcknowledged(const std::string& extension_id);
+  void AcknowledgeExternalExtension(const std::string& extension_id);
+
+  // Whether the user has acknowledged a blacklisted extension.
+  bool IsBlacklistedExtensionAcknowledged(const std::string& extension_id);
+  void AcknowledgeBlacklistedExtension(const std::string& extension_id);
+
+  // Whether the user has acknowledged an orphaned extension.
+  bool IsOrphanedExtensionAcknowledged(const std::string& extension_id);
+  void AcknowledgeOrphanedExtension(const std::string& extension_id);
+
+  // Returns true if the extension notification code has already run for the
+  // first time for this profile. Currently we use this flag to mean that any
+  // extensions that would trigger notifications should get silently
+  // acknowledged. This is a fuse. Calling it the first time returns false.
+  // Subsequent calls return true. It's not possible through an API to ever
+  // reset it. Don't call it unless you mean it!
+  bool SetAlertSystemFirstRun();
+
   // Is the extension with |extension_id| allowed by policy (checking both
   // whitelist and blacklist).
   bool IsExtensionAllowedByPolicy(const std::string& extension_id);

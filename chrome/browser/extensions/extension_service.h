@@ -52,6 +52,7 @@ class ExtensionContentSettingsStore;
 class ExtensionCookiesEventRouter;
 class ExtensionDownloadsEventRouter;
 class ExtensionFileBrowserEventRouter;
+class ExtensionGlobalError;
 class ExtensionHistoryEventRouter;
 class ExtensionInstallUI;
 class ExtensionManagementEventRouter;
@@ -513,6 +514,18 @@ class ExtensionService
       OVERRIDE;
 
   virtual void OnExternalProviderReady() OVERRIDE;
+
+  // Once all external providers are done, generate any needed alerts about
+  // extensions.
+  void IdentifyAlertableExtensions();
+
+  // The user has acknowledged the batch of alerts, so mark all the
+  // alertable extensions accordingly.
+  void HandleExtensionAlertAccept(const ExtensionGlobalError& global_error);
+
+  // The user wants to get more details about the alerts. Open the
+  // Extensions page.
+  void HandleExtensionAlertDetails(const ExtensionGlobalError& global_error);
 
   // NotificationObserver
   virtual void Observe(int type,

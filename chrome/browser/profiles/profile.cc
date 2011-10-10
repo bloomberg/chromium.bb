@@ -165,6 +165,8 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDisableExtensions,
                              false,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kExtensionAlertsInitializedPref,
+                             false, PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kSelectFileLastDirectory,
                             "",
                             PrefService::UNSYNCABLE_PREF);

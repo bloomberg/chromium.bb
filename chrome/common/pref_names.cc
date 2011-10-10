@@ -1191,6 +1191,10 @@ const char kExtensionInstallAllowList[] = "extensions.install.allowlist";
 // Google controlled.
 const char kExtensionInstallDenyList[] = "extensions.install.denylist";
 
+// Whether we have run the extension-alert system (see ExtensionGlobalError)
+// at least once for this profile.
+const char kExtensionAlertsInitializedPref[] = "extensions.alerts.initialized";
+
 // A list containing extensions that Chrome will silently install
 // at startup time. It is a list of strings, each string contains
 // an extension ID and an update URL, delimited by a semicolon.

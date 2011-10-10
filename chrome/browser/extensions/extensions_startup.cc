@@ -79,12 +79,8 @@ bool ExtensionsStartupUtil::UninstallExtension(const CommandLine& cmd_line,
 
   std::string extension_id = cmd_line.GetSwitchValueASCII(
       switches::kUninstallExtension);
-  if (ExtensionService::UninstallExtensionHelper(extension_service,
-                                                 extension_id)) {
-    return true;
-  }
-
-  return false;
+  return ExtensionService::UninstallExtensionHelper(extension_service,
+                                                    extension_id);
 }
 
 ExtensionsStartupUtil::~ExtensionsStartupUtil() {

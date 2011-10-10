@@ -1000,6 +1000,8 @@
         'browser/extensions/extension_function.h',
         'browser/extensions/extension_function_dispatcher.cc',
         'browser/extensions/extension_function_dispatcher.h',
+        'browser/extensions/extension_global_error.cc',
+        'browser/extensions/extension_global_error.h',
         'browser/extensions/extension_history_api.cc',
         'browser/extensions/extension_history_api.h',
         'browser/extensions/extension_history_api_constants.cc',

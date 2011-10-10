@@ -3704,6 +3704,29 @@ are declared in build/common.gypi.
         The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has requested additional permissions.
       </message>
 
+      <!-- Extension notifications. ALL THIS TEXT IS PLACEHOLDER. TODO(miket) -->
+      <message name="IDS_EXTENSION_NOTIFICATION_TITLE" desc="Titlebar of the extension notification alert PLACEHOLDER NOT READY FOR I18N">
+        Changes to your extensions
+      </message>
+      <message name="IDS_EXTENSION_NOTIFICATION_BODY_TEMPLATE" desc="The first part of the text in the extension notification alert PLACEHOLDER NOT READY FOR I18N">
+	Hey! Pay attention!\n\n<ph name="INNER_BODY">$1<ex>Something interesting happened!</ex></ph>\nThat's all! Back to work!
+      </message>
+      <message name="IDS_EXTENSION_NOTIFICATION_ITEM_EXTERNAL" desc="A description of a newly installed external extension PLACEHOLDER NOT READY FOR I18N">
+	A new extension called "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been installed.\n
+      </message>
+      <message name="IDS_EXTENSION_NOTIFICATION_ITEM_BLACKLISTED" desc="A description of a newly installed external extension PLACEHOLDER NOT READY FOR I18N">
+	One of your extensions, called "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>," has been blacklisted.\n
+      </message>
+      <message name="IDS_EXTENSION_NOTIFICATION_ITEM_ORPHANED" desc="A description of a newly installed external extension PLACEHOLDER NOT READY FOR I18N">
+	Update checks have repeatedly failed for one of your extensions, called "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>."\n
+      </message>
+      <message name="IDS_EXTENSION_NOTIFICATION_ITEM_OK" desc="The title of the default button acknowledging the information presented. PLACEHOLDER NOT READY FOR I18N">
+	OK
+      </message>
+      <message name="IDS_EXTENSION_NOTIFICATION_ITEM_DETAILS" desc="The title of the button asking for more information. PLACEHOLDER NOT READY FOR I18N">
+	Details
+      </message>
+
       <!-- Extension/App install dialog strings -->
       <message name="IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension or app installation prompt. Note that the exact wording is important. This should mean that the extension or app _can_ access the listed privileges, but not necessarily that it will or needs to.">
         It can access:

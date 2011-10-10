@@ -42,8 +42,13 @@ const char kPrefManifest[] = "manifest";
 // The version number.
 const char kPrefVersion[] = "manifest.version";
 
-// Indicates if an extension is blacklisted:
+// Indicates whether an extension is blacklisted.
 const char kPrefBlacklist[] = "blacklist";
+
+// Indicates whether the user has acknowledged various types of extensions.
+const char kPrefExternalAcknowledged[] = "ack_external";
+const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
+const char kPrefOrphanAcknowledged[] = "ack_orphan";
 
 // Indicates whether to show an install warning when the user enables.
 const char kExtensionDidEscalatePermissions[] = "install_warning_on_enable";
@@ -522,6 +527,57 @@ bool ExtensionPrefs::IsBlacklistBitSet(DictionaryValue* ext) {
 
 bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id, kPrefBlacklist);
+}
+
+bool ExtensionPrefs::IsExtensionOrphaned(const std::string& extension_id) {
+  // TODO(miket): we believe that this test will hinge on the number of
+  // consecutive times that an update check has returned a certain response
+  // versus a success response. For now nobody is orphaned.
+  return false;
+}
+
+bool ExtensionPrefs::IsExternalExtensionAcknowledged(
+    const std::string& extension_id) {
+  return ReadExtensionPrefBoolean(extension_id, kPrefExternalAcknowledged);
+}
+
+void ExtensionPrefs::AcknowledgeExternalExtension(
+    const std::string& extension_id) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  UpdateExtensionPref(extension_id, kPrefExternalAcknowledged,
+                      Value::CreateBooleanValue(true));
+}
+
+bool ExtensionPrefs::IsBlacklistedExtensionAcknowledged(
+    const std::string& extension_id) {
+  return ReadExtensionPrefBoolean(extension_id, kPrefBlacklistAcknowledged);
+}
+
+void ExtensionPrefs::AcknowledgeBlacklistedExtension(
+    const std::string& extension_id) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  UpdateExtensionPref(extension_id, kPrefBlacklistAcknowledged,
+                      Value::CreateBooleanValue(true));
+}
+
+bool ExtensionPrefs::IsOrphanedExtensionAcknowledged(
+    const std::string& extension_id) {
+  return ReadExtensionPrefBoolean(extension_id, kPrefOrphanAcknowledged);
+}
+
+void ExtensionPrefs::AcknowledgeOrphanedExtension(
+    const std::string& extension_id) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  UpdateExtensionPref(extension_id, kPrefOrphanAcknowledged,
+                      Value::CreateBooleanValue(true));
+}
+
+bool ExtensionPrefs::SetAlertSystemFirstRun() {
+  if (prefs_->GetBoolean(prefs::kExtensionAlertsInitializedPref)) {
+    return true;
+  }
+  prefs_->SetBoolean(prefs::kExtensionAlertsInitializedPref, true);
+  return false;
 }
 
 bool ExtensionPrefs::IsExtensionAllowedByPolicy(

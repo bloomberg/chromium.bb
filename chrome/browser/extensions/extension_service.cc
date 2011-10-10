@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
 #include "base/logging.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/extensions/extension_data_deleter.h"
 #include "chrome/browser/extensions/extension_downloads_api.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_global_error.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_input_ime_api.h"
@@ -60,6 +62,9 @@
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/global_error_service.h"
+#include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
@@ -2141,6 +2146,90 @@ void ExtensionService::OnExternalProviderReady() {
     if (Extension::IsExternalLocation(info->extension_location))
       CheckExternalUninstall(info->extension_id);
   }
+
+#if 0
+  // TODO(miket): enable upon completion of feature.
+  IdentifyAlertableExtensions();
+#endif
+}
+
+void ExtensionService::IdentifyAlertableExtensions() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Build up the lists of extensions that require acknowledgment.
+  // If this is the first time, grandfather extensions that would have
+  // caused notification.
+  scoped_ptr<ExtensionGlobalError> global_error(
+      new ExtensionGlobalError(weak_ptr_factory_.GetWeakPtr()));
+  bool needs_alert = false;
+  for (ExtensionList::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    const Extension* e = *iter;
+    if (!IsExtensionEnabled(e->id())) {
+      continue;
+    }
+    if (Extension::IsExternalLocation(e->location())) {
+      if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
+        global_error->AddExternalExtension(e->id());
+        needs_alert = true;
+      }
+    }
+    if (extension_prefs_->IsExtensionBlacklisted(e->id())) {
+      if (!extension_prefs_->IsBlacklistedExtensionAcknowledged(e->id())) {
+        global_error->AddBlacklistedExtension(e->id());
+        needs_alert = true;
+      }
+    }
+    if (extension_prefs_->IsExtensionOrphaned(e->id())) {
+      if (!extension_prefs_->IsOrphanedExtensionAcknowledged(e->id())) {
+        global_error->AddOrphanedExtension(e->id());
+        needs_alert = true;
+      }
+    }
+  }
+
+  if (needs_alert) {
+    if (extension_prefs_->SetAlertSystemFirstRun()) {
+      global_error->set_accept_callback(
+          base::Bind(&ExtensionService::HandleExtensionAlertAccept,
+                     base::Unretained(this)));
+      global_error->set_cancel_callback(
+          base::Bind(&ExtensionService::HandleExtensionAlertDetails,
+                     base::Unretained(this)));
+      GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
+          global_error.release());
+    } else {
+      // First run. Just acknowledge all the extensions, silently, by
+      // shortcutting the display of the UI and going straight to the
+      // callback for pressing the Accept button.
+      HandleExtensionAlertAccept(*global_error.get());
+    }
+  }
+}
+
+void ExtensionService::HandleExtensionAlertAccept(
+    const ExtensionGlobalError& global_error) {
+  const ExtensionIdSet *extension_ids =
+      global_error.get_external_extension_ids();
+  for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
+       iter != extension_ids->end(); ++iter) {
+    extension_prefs_->AcknowledgeExternalExtension(*iter);
+  }
+  extension_ids = global_error.get_blacklisted_extension_ids();
+  for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
+       iter != extension_ids->end(); ++iter) {
+    extension_prefs_->AcknowledgeBlacklistedExtension(*iter);
+  }
+  extension_ids = global_error.get_orphaned_extension_ids();
+  for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
+       iter != extension_ids->end(); ++iter) {
+    extension_prefs_->AcknowledgeOrphanedExtension(*iter);
+  }
+}
+
+void ExtensionService::HandleExtensionAlertDetails(
+    const ExtensionGlobalError& global_error) {
+  Browser::OpenExtensionsWindow(profile_);
 }
 
 void ExtensionService::UnloadExtension(
