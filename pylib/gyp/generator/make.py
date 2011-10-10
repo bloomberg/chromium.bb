@@ -728,6 +728,34 @@ class XcodeSettings(object):
       return os.path.join(self.GetBundleContentsFolderPath(),
                           'Resources', 'Info.plist')
 
+  def GetProductType(self):
+    """Returns the PRODUCT_TYPE of this target."""
+    if self._IsBundle():
+      return {
+        'executable': 'com.apple.product-type.application',
+        'loadable_module': 'com.apple.product-type.bundle',
+        'shared_library': 'com.apple.product-type.framework',
+      }[self.spec['type']]
+    else:
+      return {
+        'executable': 'com.apple.product-type.tool',
+        'loadable_module': 'com.apple.product-type.library.dynamic',
+        'shared_library': 'com.apple.product-type.library.dynamic',
+        'static_library': 'com.apple.product-type.library.static',
+      }[self.spec['type']]
+
+  def GetMachOType(self):
+    """Returns the MACH_O_TYPE of this target."""
+    # Weird, but matches Xcode.
+    if not self._IsBundle() and self.spec['type'] == 'executable':
+      return ''
+    return {
+      'executable': 'mh_execute',
+      'static_library': 'staticlib',
+      'shared_library': 'mh_dylib',
+      'loadable_module': 'mh_bundle',
+    }[self.spec['type']]
+
   def _GetBundleBinaryPath(self):
     """Returns the name of the bundle binary of by this target.
     E.g. Chromium.app/Contents/MacOS/Chromium. Only valid for bundles."""
@@ -855,6 +883,10 @@ class XcodeSettings(object):
     self._WarnUnimplemented('GCC_ENABLE_OBJC_GC')
     self._WarnUnimplemented('INFOPLIST_PREPROCESS')
     self._WarnUnimplemented('INFOPLIST_PREPROCESSOR_DEFINITIONS')
+
+    # TODO: This is exported correctly, but assigning to it is not supported.
+    self._WarnUnimplemented('MACH_O_TYPE')
+    self._WarnUnimplemented('PRODUCT_TYPE')
 
     # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
     cflags.append('-arch i386')
@@ -2339,6 +2371,10 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if self.type in (
         'executable', 'static_library', 'shared_library', 'loadable_module'):
       env['EXECUTABLE_PATH'] = self.xcode_settings.GetExecutablePath()
+      mach_o_type = self.xcode_settings.GetMachOType()
+      if mach_o_type:
+        env['MACH_O_TYPE'] = mach_o_type
+      env['PRODUCT_TYPE'] = self.xcode_settings.GetProductType()
     if self.is_mac_bundle:
       env['CONTENTS_FOLDER_PATH'] = \
         self.xcode_settings.GetBundleContentsFolderPath()
