@@ -39,7 +39,11 @@ ExifParser.prototype.parse = function(file, callback, errorCallback) {
 
   function nextStep(var_args) {
     self.vlog('exif nextStep: ' + steps[currentStep + 1].name);
-    steps[++currentStep].apply(null, arguments);
+    try {
+      steps[++currentStep].apply(null, arguments);
+    } catch(e) {
+      onError(e);
+    }
   }
 
   function onError(err) {

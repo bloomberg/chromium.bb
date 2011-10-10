@@ -791,8 +791,8 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
       img.style.maxHeight = '100%';
 
       function onLoad(image) {
-        image.maxWidth = 'none';
-        image.maxHeight = 'none';
+        image.style.maxWidth = '';
+        image.style.maxHeight = '';
         resizeToFill(image, image.width / image.height);
       }
       img.onload = onLoad.bind(null, img);

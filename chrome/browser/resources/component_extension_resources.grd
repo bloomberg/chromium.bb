@@ -92,6 +92,12 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CLOSE" file="file_manager/images/gallery/close_x.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_FADE_LEFT" file="file_manager/images/gallery/thumb_fade_left.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_FADE_RIGHT" file="file_manager/images/gallery/thumb_fade_right.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_CROP" file="file_manager/images/gallery/cursor_crop.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_MOVE" file="file_manager/images/gallery/cursor_move.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_LEFTRIGHT" file="file_manager/images/gallery/cursor_leftright.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_UPDOWN" file="file_manager/images/gallery/cursor_updown.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_NWSE" file="file_manager/images/gallery/cursor_nwse.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_SWNE" file="file_manager/images/gallery/cursor_swne.png" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_ICON_DETAIL_VIEW" file="file_manager/images/icon-detail-view.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_THUMB_VIEW" file="file_manager/images/icon-thumb-view.png" type="BINDATA" />
