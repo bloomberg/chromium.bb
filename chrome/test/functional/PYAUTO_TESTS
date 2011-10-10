@@ -63,6 +63,7 @@
       'pdf',
       'plugins',
       'plugins_check',
+      'policy',
       'policy_prefs_ui',
       'popups',
       'prefs',
@@ -438,6 +439,7 @@
       # Permanently-disabled tests.
       # ===========================
       # Can't use automation to change the policy data on Chrome builds.
+      '-policy',
       '-policy_prefs_ui',
 
       # ==================================================
