@@ -57,9 +57,6 @@ enum {
 
 #endif  // MAC_OS_X_VERSION_10_6
 
-// In UNIT_TESTS, this is set to YES to wait on nonblocking animations.
-static BOOL g_reportAnimationStatus = NO;
-
 @implementation PanelWindowCocoaImpl
 - (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen *)screen {
   return frameRect;
@@ -445,9 +442,6 @@ static BOOL g_reportAnimationStatus = NO;
   if (windowShim_->panel()->expansion_state() == Panel::EXPANDED)
     [self enableTabContentsViewAutosizing];
 
-  if (!g_reportAnimationStatus)
-    return;
-
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       Source<Panel>(windowShim_->panel()),
@@ -461,6 +455,10 @@ static BOOL g_reportAnimationStatus = NO;
   [boundsAnimation_ setDelegate:nil];
   [boundsAnimation_ release];
   boundsAnimation_ = nil;
+}
+
+- (BOOL)isAnimatingBounds {
+  return boundsAnimation_ && [boundsAnimation_ isAnimating];
 }
 
 - (void)tryFlipExpansionState {
@@ -540,12 +538,6 @@ static BOOL g_reportAnimationStatus = NO;
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       Source<Panel>(windowShim_->panel()),
       NotificationService::NoDetails());
-}
-
-// TestingAPI interface implementation
-
-+ (void)enableBoundsAnimationNotifications {
-  g_reportAnimationStatus = YES;
 }
 
 @end

@@ -9,9 +9,13 @@
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 
 namespace {
+
+// This value is experimental and subjective.
+const int kSetBoundsAnimationMs = 180;
 
 // RGB values for titlebar in draw attention state. A shade of orange.
 const int kDrawAttentionR = 0xfa;
@@ -122,7 +126,7 @@ void PanelBrowserWindowGtk::SetGeometryHints() {
   gtk_window_set_geometry_hints(
       window(), GTK_WIDGET(window()), &hints, GDK_HINT_MIN_SIZE);
 
-  SetBoundsImpl(bounds_, true);  // Force a move to set the initial position.
+  DCHECK(!window_size_known_);
 }
 
 void PanelBrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
@@ -133,10 +137,17 @@ void PanelBrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
 void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
   BrowserWindowGtk::OnSizeChanged(width, height);
 
-  if (!window_size_known_) {
-    window_size_known_ = true;
-    panel_->OnWindowSizeAvailable();
-  }
+  if (window_size_known_)
+    return;
+
+  window_size_known_ = true;
+  int bottom = panel_->manager()->GetBottomPositionForExpansionState(
+      panel_->expansion_state());
+  int top = bottom - height;
+
+  gtk_window_move(window_, bounds_.x(), top);
+  StartBoundsAnimation(gfx::Rect(bounds_.x(), top, width, height));
+  panel_->OnWindowSizeAvailable();
 }
 
 bool PanelBrowserWindowGtk::UseCustomFrame() {
@@ -221,11 +232,28 @@ gfx::Rect PanelBrowserWindowGtk::GetPanelBounds() const {
 }
 
 void PanelBrowserWindowGtk::SetPanelBounds(const gfx::Rect& bounds) {
-  if (bounds != bounds_)
-    SetBoundsImpl(bounds, false);  // Only move if necessary.
+  if (bounds == bounds_)
+    return;
+
+  if (drag_widget_) {
+    DCHECK(!bounds_animator_.get() || !bounds_animator_->is_animating());
+    // If the current panel is being dragged, it should just move with the
+    // user drag, we should not animate.
+    gtk_window_move(window(), bounds.x(), bounds.y());
+  } else if (window_size_known_) {
+    StartBoundsAnimation(bounds_);
+  }
+  // If window size is not known, wait till the size is known before starting
+  // the animation.
+
+  bounds_ = bounds;
 }
 
 void PanelBrowserWindowGtk::ClosePanel() {
+  // Cancel any currently running animation since we're closing down.
+  if (bounds_animator_.get())
+    bounds_animator_.reset();
+
   Close();
 }
 
@@ -338,19 +366,22 @@ int PanelBrowserWindowGtk::TitleOnlyHeight() const {
   return titlebar_widget()->allocation.height;
 }
 
-void PanelBrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds,
-                                          bool force_move) {
-  // Only move if required by caller, or if bottom right corner will change.
-  // Panels use window gravity of GDK_GRAVITY_SOUTH_EAST which means the
-  // window is anchored to the bottom right corner on resize, making it
-  // unnecessary to move the window if the bottom right corner is unchanged.
-  bool move = force_move || bounds.right() != bounds_.right() ||
-      bounds.bottom() != bounds_.bottom();
+void PanelBrowserWindowGtk::StartBoundsAnimation(
+    const gfx::Rect& current_bounds) {
+  animation_start_bounds_ = current_bounds;
 
-  bounds_ = bounds;
-  if (move)
-    gtk_window_move(window_, bounds.x(), bounds.y());
-  gtk_window_resize(window(), bounds.width(), bounds.height());
+  if (!bounds_animator_.get()) {
+    bounds_animator_.reset(new ui::SlideAnimation(this));
+    bounds_animator_->SetSlideDuration(kSetBoundsAnimationMs);
+  }
+
+  if (bounds_animator_->IsShowing())
+    bounds_animator_->Reset();
+  bounds_animator_->Show();
+}
+
+bool PanelBrowserWindowGtk::IsAnimatingBounds() const {
+  return bounds_animator_.get() && bounds_animator_->is_animating();
 }
 
 void PanelBrowserWindowGtk::WillProcessEvent(GdkEvent* event) {
@@ -388,6 +419,44 @@ void PanelBrowserWindowGtk::DidProcessEvent(GdkEvent* event) {
     gtk_target_list_unref(list);
     panel_->manager()->StartDragging(panel_.get());
   }
+}
+
+void PanelBrowserWindowGtk::AnimationEnded(const ui::Animation* animation) {
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      Source<Panel>(panel_.get()),
+      NotificationService::NoDetails());
+}
+
+void PanelBrowserWindowGtk::AnimationProgressed(
+    const ui::Animation* animation) {
+  DCHECK(!drag_widget_);
+  DCHECK(window_size_known_);
+
+  gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
+      animation_start_bounds_, bounds_);
+
+  // Resize if necessary.
+  if (animation_start_bounds_.size() != bounds_.size())
+    gtk_window_resize(window(), new_bounds.width(), new_bounds.height());
+
+  // Only move if bottom right corner will change.
+  // Panels use window gravity of GDK_GRAVITY_SOUTH_EAST which means the
+  // window is anchored to the bottom right corner on resize, making it
+  // unnecessary to move the window if the bottom right corner is unchanged.
+  // For example, when we minimize to the bottom, moving can actually
+  // result in the wrong behavior.
+  //   - Say window is 100x100 with x,y=900,900 on a 1000x1000 screen.
+  //   - Say you minimize the window to 100x3 and move it to 900,997 to keep it
+  //     anchored to the bottom.
+  //   - resize is an async operation and the window manager will decide that
+  //     the move will take the window off screen and it won't honor the
+  //     request.
+  //   - When resize finally happens, you'll have a 100x3 window a x,y=900,900.
+  bool move = (animation_start_bounds_.bottom() != bounds_.bottom()) ||
+              (animation_start_bounds_.right() != bounds_.right());
+  if (move)
+    gtk_window_move(window_, new_bounds.x(), new_bounds.y());
 }
 
 void PanelBrowserWindowGtk::CreateDragWidget() {
@@ -446,6 +515,10 @@ GdkRectangle PanelBrowserWindowGtk::GetTitlebarRectForDrawAttention() const {
 
 gboolean PanelBrowserWindowGtk::OnTitlebarButtonPressEvent(
     GtkWidget* widget, GdkEventButton* event) {
+  // Early return if animation in progress.
+  if (IsAnimatingBounds())
+    return TRUE;
+
   // Every button press ensures either a button-release-event or a drag-fail
   // signal for |widget|.
   if (event->button == 1 && event->type == GDK_BUTTON_PRESS) {
@@ -465,7 +538,6 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
     return TRUE;
   }
 
-  DCHECK(last_mouse_down_);
   CleanupDragDrop();
 
   Panel::ExpansionState new_expansion_state;
@@ -542,6 +614,9 @@ class NativePanelTestingGtk : public NativePanelTesting {
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
+  virtual void WaitForWindowCreationToComplete() const OVERRIDE;
+  virtual bool IsWindowSizeKnown() const OVERRIDE;
+  virtual bool IsAnimatingBounds() const OVERRIDE;
 
   PanelBrowserWindowGtk* panel_browser_window_gtk_;
 };
@@ -559,6 +634,11 @@ NativePanelTestingGtk::NativePanelTestingGtk(
 
 void NativePanelTestingGtk::PressLeftMouseButtonTitlebar(
     const gfx::Point& point) {
+  // If there is an animation, wait for it to finish as we don't handle button
+  // clicks while animation is in progress.
+  while (panel_browser_window_gtk_->IsAnimatingBounds())
+    MessageLoopForUI::current()->RunAllPending();
+
   GdkEvent* event = gdk_event_new(GDK_BUTTON_PRESS);
   event->button.button = 1;
   event->button.x_root = point.x();
@@ -620,4 +700,21 @@ bool NativePanelTestingGtk::VerifyDrawingAttention() const {
 bool NativePanelTestingGtk::VerifyActiveState(bool is_active) {
   // TODO(jianli): to be implemented.
   return false;
+}
+
+void NativePanelTestingGtk::WaitForWindowCreationToComplete() const {
+  while (!panel_browser_window_gtk_->window_size_known_)
+    MessageLoopForUI::current()->RunAllPending();
+  while (panel_browser_window_gtk_->bounds_animator_.get() &&
+         panel_browser_window_gtk_->bounds_animator_->is_animating()) {
+    MessageLoopForUI::current()->RunAllPending();
+  }
+}
+
+bool NativePanelTestingGtk::IsWindowSizeKnown() const {
+  return panel_browser_window_gtk_->window_size_known_;
+}
+
+bool NativePanelTestingGtk::IsAnimatingBounds() const {
+  return panel_browser_window_gtk_->IsAnimatingBounds();
 }

@@ -283,6 +283,8 @@ class NativePanelTestingCocoa : public NativePanelTesting {
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
+  virtual bool IsWindowSizeKnown() const OVERRIDE;
+  virtual bool IsAnimatingBounds() const OVERRIDE;
 
  private:
   PanelTitlebarViewCocoa* titlebar() const;
@@ -331,4 +333,12 @@ bool NativePanelTestingCocoa::VerifyDrawingAttention() const {
 bool NativePanelTestingCocoa::VerifyActiveState(bool is_active) {
   // TODO(jianli): to be implemented.
   return false;
+}
+
+bool NativePanelTestingCocoa::IsWindowSizeKnown() const {
+  return true;
+}
+
+bool NativePanelTestingCocoa::IsAnimatingBounds() const {
+  return [native_panel_window_->controller_ isAnimatingBounds];
 }

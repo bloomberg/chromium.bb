@@ -32,6 +32,7 @@ const base::TimeDelta kShortClickThresholdMs =
 // cleared.
 const base::TimeDelta kSuspendMinimizeOnClickIntervalMs =
     base::TimeDelta::FromMilliseconds(500);
+
 }
 
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
@@ -193,6 +194,13 @@ bool PanelBrowserView::AcceleratorPressed(
     return true;
 
   return BrowserView::AcceleratorPressed(accelerator);
+}
+
+void PanelBrowserView::AnimationEnded(const ui::Animation* animation) {
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      Source<Panel>(panel()),
+      NotificationService::NoDetails());
 }
 
 void PanelBrowserView::AnimationProgressed(const ui::Animation* animation) {
@@ -472,6 +480,8 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
+  virtual bool IsWindowSizeKnown() const OVERRIDE;
+  virtual bool IsAnimatingBounds() const OVERRIDE;
 
   PanelBrowserView* panel_browser_view_;
 };
@@ -531,4 +541,13 @@ bool NativePanelTestingWin::VerifyActiveState(bool is_active) {
 
   SkColor expected_color = frame_view->GetTitleColor(expected_paint_state);
   return expected_color == frame_view->title_label_->GetColor();
+}
+
+bool NativePanelTestingWin::IsWindowSizeKnown() const {
+  return true;
+}
+
+bool NativePanelTestingWin::IsAnimatingBounds() const {
+  return panel_browser_view_->bounds_animator_.get() &&
+         panel_browser_view_->bounds_animator_->is_animating();
 }

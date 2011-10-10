@@ -59,6 +59,8 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   Panel* CreatePanel(const std::string& panel_name);
 
   void WaitForPanelActiveState(Panel* panel, ActiveState state);
+  void WaitForWindowSizeAvailable(Panel* panel);
+  void WaitForBoundsAnimationFinished(Panel* panel);
 
   scoped_refptr<Extension> CreateExtension(const FilePath::StringType& path,
                                            Extension::Location location,

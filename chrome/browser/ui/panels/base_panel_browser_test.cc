@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
@@ -178,6 +179,10 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 }
 
+// TODO(prasadt): If we start having even more of these WaitFor* pattern
+// methods, refactor. The only way to refactor would be to pass in a function
+// pointer, it may not be worth complicating the code till we have more of
+// these.
 void BasePanelBrowserTest::WaitForPanelActiveState(
     Panel* panel, ActiveState expected_state) {
   DCHECK(expected_state == SHOW_AS_ACTIVE ||
@@ -190,6 +195,30 @@ void BasePanelBrowserTest::WaitForPanelActiveState(
   signal.Wait();
   // Verify that transition happened in the desired direction.
   EXPECT_TRUE(panel->IsActive() == (expected_state == SHOW_AS_ACTIVE));
+}
+
+void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+  ui_test_utils::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
+      Source<Panel>(panel));
+  if (panel_testing->IsWindowSizeKnown())
+    return;
+  signal.Wait();
+  EXPECT_TRUE(panel_testing->IsWindowSizeKnown());
+}
+
+void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+  ui_test_utils::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      Source<Panel>(panel));
+  if (!panel_testing->IsAnimatingBounds())
+    return;
+  signal.Wait();
+  EXPECT_TRUE(!panel_testing->IsAnimatingBounds());
 }
 
 Panel* BasePanelBrowserTest::CreatePanelWithParams(
@@ -229,6 +258,14 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   // asynchronous communication, and it is not enough to just run the local
   // message loop to make sure this activity has completed.
   WaitForPanelActiveState(panel, params.show_flag);
+
+  // On Linux, window size is not available right away and we should wait
+  // before moving forward with the test.
+  WaitForWindowSizeAvailable(panel);
+
+  // Wait for the bounds animations on creation to finish.
+  WaitForBoundsAnimationFinished(panel);
+
   return panel;
 }
 

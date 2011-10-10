@@ -45,7 +45,6 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePanels);
-    [PanelWindowControllerCocoa enableBoundsAnimationNotifications];
   }
 
   Panel* CreateTestPanel(const std::string& panel_name) {

@@ -915,11 +915,18 @@ enum NotificationType {
   // Panels Notifications. The Panels are small browser windows near the bottom
   // of the screen.
   // Sent when all nonblocking bounds animations are finished across panels.
+  // Used only in unit testing.
   NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
 
   // Sent when panel gains/loses focus.
   // The source is the Panel, no details.
+  // Used only in unit testing.
   NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
+
+  // Sent when panel window size is known. This is for platforms where the
+  // window creation is async and size of the window only becomes known later.
+  // Used only in unit testing.
+  NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
 
   // Sent when a global error has changed and the error UI should update it
   // self. The source is a Source<Profile> containing the profile for the

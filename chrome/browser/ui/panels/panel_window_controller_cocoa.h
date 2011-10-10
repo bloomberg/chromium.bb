@@ -117,13 +117,8 @@ class PanelBrowserWindowCocoa;
 // Terminates current bounds animation, if any.
 - (void)terminateBoundsAnimation;
 
+- (BOOL)isAnimatingBounds;
+
 @end  // @interface PanelWindowController
-
-// Methods which are either only for testing, or only public for testing.
-@interface PanelWindowControllerCocoa(TestingAPI)
-
-+ (void)enableBoundsAnimationNotifications;
-
-@end  // @interface PanelWindowControllerCocoa(TestingAPI)
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_WINDOW_CONTROLLER_COCOA_H_

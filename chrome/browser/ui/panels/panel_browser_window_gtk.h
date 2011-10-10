@@ -8,15 +8,23 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/panels/native_panel.h"
+#include "ui/base/animation/animation_delegate.h"
 
 class Panel;
 class PanelSettingsMenuModel;
 class NativePanelTestingGtk;
 
+namespace ui {
+
+class SlideAnimation;
+
+}
+
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
                               public NativePanel,
                               public MenuGtk::Delegate,
-                              public MessageLoopForUI::Observer {
+                              public MessageLoopForUI::Observer,
+                              public ui::AnimationDelegate {
   friend class NativePanelTestingGtk;
  public:
   PanelBrowserWindowGtk(Browser* browser, Panel* panel,
@@ -83,26 +91,16 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual int TitleOnlyHeight() const OVERRIDE;
 
  private:
-  // Resize the window as specified by the bounds.
-  // Panels use window gravity of GDK_GRAVITY_SOUTH_EAST which means the
-  // window is anchored to the bottom right corner on resize, making it
-  // unnecessary to move the window if the bottom right corner is unchanged.
-  // For example, when we minimize to the bottom, moving can actually
-  // result in the wrong behavior.
-  //   - Say window is 100x100 with x,y=900,900 on a 1000x1000 screen.
-  //   - Say you minimize the window to 100x3 and move it to 900,997 to keep it
-  //     anchored to the bottom.
-  //   - resize is an async operation and the window manager will decide that
-  //     the move will take the window off screen and it won't honor the
-  //     request.
-  //   - When resize finally happens, you'll have a 100x3 window a x,y=900,900.
-  // Set |force_move| to true to force a move regardless. Otherwise, the
-  // window is only moved if the bottom right corner is being changed.
-  void SetBoundsImpl(const gfx::Rect& bounds, bool force_move);
+  void StartBoundsAnimation(const gfx::Rect& current_bounds);
+  bool IsAnimatingBounds() const;
 
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
+
+  // Overridden from AnimationDelegate:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   void CreateDragWidget();
   void DestroyDragWidget();
@@ -175,6 +173,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // (via keyboard for example) which are not distinguishable at this point.
   // Apparently this disable interval is not affecting the user in other cases.
   base::Time disableMinimizeUntilTime_;
+
+  // Used to animate the bounds change.
+  scoped_ptr<ui::SlideAnimation> bounds_animator_;
+  gfx::Rect animation_start_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowGtk);
 };

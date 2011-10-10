@@ -110,6 +110,7 @@ class PanelBrowserView : public BrowserView,
   virtual void DestroyPanelBrowser() OVERRIDE;
 
   // Overridden from AnimationDelegate:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   bool EndDragging(bool cancelled);
