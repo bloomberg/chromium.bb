@@ -893,7 +893,7 @@
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "b607f6ca8f1ccf4343766b480ae21bb220dd949c",
+      "source_hash": "4d6a2fc67a692883e75a427b416bf782eda57cee",
       "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {
@@ -1252,7 +1252,7 @@
         "info.html",
         "manifest.json"
       ],
-      "source_hash": "c746d9114348f4b414c1ec05e988e2807feb963a",
+      "source_hash": "672f49ed8edbe0829c7ba5a1d890b4440b157991",
       "zip_path": "examples\/extensions\/imageinfo.zip"
     },
     {
@@ -2130,6 +2130,57 @@
       ],
       "source_hash": "ea002a57e21073801c7ac2906e6c513337584d0a",
       "zip_path": "examples\/api\/permissions\/extension-questions.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.tts.getVoices",
+        "chrome.tts.speak",
+        "chrome.tts.stop"
+      ],
+      "crx_path": null,
+      "description": "Tool for developers of Chrome TTS engine extensions to help them test their engines are implementing the API correctly.",
+      "features": [
+        "tts"
+      ],
+      "icon": "128.png",
+      "id": "1d192cce77438e1a90383a6a3a6b28f29961ffa4",
+      "name": "TTS Debug (packaged app)",
+      "path": "examples\/extensions\/ttsdebug\/",
+      "protocols": [],
+      "search_string": "TTS DEBUG (PACKAGED APP) TOOL FOR DEVELOPERS OF CHROME TTS ENGINE EXTENSIONS TO HELP THEM TEST THEIR ENGINES ARE IMPLEMENTING THE API CORRECTLY. TTS CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
+      "source_files": [
+        "manifest.json",
+        "ttsdebug.html",
+        "ttsdebug.js"
+      ],
+      "source_hash": "e81705ac4dd9a820b403e2b77d07e72b5de0198e",
+      "zip_path": "examples\/extensions\/ttsdebug.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.tts.getVoices",
+        "chrome.tts.isSpeaking",
+        "chrome.tts.speak",
+        "chrome.tts.stop"
+      ],
+      "crx_path": null,
+      "description": "Demo Chrome's synthesized text-to-speech capabilities.",
+      "features": [
+        "tts"
+      ],
+      "icon": "128.png",
+      "id": "3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f",
+      "name": "TTS Demo (packaged app)",
+      "path": "examples\/extensions\/ttsdemo\/",
+      "protocols": [],
+      "search_string": "TTS DEMO (PACKAGED APP) DEMO CHROMES SYNTHESIZED TEXT-TO-SPEECH CAPABILITIES. TTS CHROME.TTS.GETVOICES CHROME.TTS.ISSPEAKING CHROME.TTS.SPEAK CHROME.TTS.STOP",
+      "source_files": [
+        "manifest.json",
+        "ttsdemo.html",
+        "ttsdemo.js"
+      ],
+      "source_hash": "c848fa77d649be391e365b3ce6f003a18bdbc7a7",
+      "zip_path": "examples\/extensions\/ttsdemo.zip"
     },
     {
       "api_calls": [

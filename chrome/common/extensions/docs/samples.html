@@ -371,6 +371,8 @@
   "04f5d2ddea95746b0200be1ea223ccb7a748a771": "TALKING ALARM CLOCK A CLOCK WITH TWO CONFIGURABLE ALARMS THAT WILL PLAY A SOUND AND SPEAK A PHRASE OF YOUR CHOICE. BACKGROUND BACKGROUND_PAGE BROWSER_ACTION TTS CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "e1697cacebad05218798bf3e8a0f724517f0e8c3": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. NOTE: ONLY WORKS FOR CODE.GOOGLE.COM BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED",
   "e8ac89b4015052cf11436985399129c927f972aa": "TOP CHROME EXTENSION QUESTIONS SAMPLE DEMONSTRATION OF THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.EXPERIMENTAL.PERMISSIONS.CONTAINS CHROME.EXPERIMENTAL.PERMISSIONS.ONADDED CHROME.EXPERIMENTAL.PERMISSIONS.ONREMOVED CHROME.EXPERIMENTAL.PERMISSIONS.REMOVE CHROME.EXPERIMENTAL.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
+  "1d192cce77438e1a90383a6a3a6b28f29961ffa4": "TTS DEBUG (PACKAGED APP) TOOL FOR DEVELOPERS OF CHROME TTS ENGINE EXTENSIONS TO HELP THEM TEST THEIR ENGINES ARE IMPLEMENTING THE API CORRECTLY. TTS CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
+  "3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f": "TTS DEMO (PACKAGED APP) DEMO CHROMES SYNTHESIZED TEXT-TO-SPEECH CAPABILITIES. TTS CHROME.TTS.GETVOICES CHROME.TTS.ISSPEAKING CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "b3de91ab04b7d7a2670ca7ee9d740eb42cead0b6": "TYPED URL HISTORY READS YOUR HISTORY, AND SHOWS THE TOP TEN PAGES YOU GO TO BY TYPING THE URL. BROWSER_ACTION HISTORY TABS CHROME.HISTORY.GETVISITS CHROME.HISTORY.SEARCH CHROME.TABS.CREATE",
   "a3c674f7eb93621c590562ad3fa04de4f03f53a0": "WEBNAVIGATION TECH DEMO DEMONSTRATION OF THE WEBNAVIGATION EXTENSION API. BACKGROUND_PAGE BROWSER_ACTION EXTENSION POPUP WEBNAVIGATION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.WEBNAVIGATION.ONBEFORENAVIGATE CHROME.WEBNAVIGATION.ONCOMMITTED CHROME.WEBNAVIGATION.ONCOMPLETED CHROME.WEBNAVIGATION.ONCREATEDNAVIGATIONTARGET CHROME.WEBNAVIGATION.ONERROROCCURRED CHROME.WEBNAVIGATION.ONREFERENCEFRAGMENTUPDATED",
   "0fa4abe6545f0316fea7cfa07c53aa48c4f3d018": "`EXTENSION.ISALLOWED???ACCESS` EXAMPLE DEMONSTRATES THE `EXTENSION.ISALLOWED???ACCESS` APIS BROWSER_ACTION CHROME.EXTENSION.ISALLOWEDFILESCHEMEACCESS CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS"
@@ -3894,6 +3896,94 @@
     <!-- Only show the Install CRX link if a CRX file is provided -->
     <span>
     - <a href="examples/api/permissions/extension-questions.crx">Install extension</a>
+    </span>
+  </div>
+</div><div class="sample" id="1d192cce77438e1a90383a6a3a6b28f29961ffa4">
+  <img class="icon" src="examples/extensions/ttsdebug/128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a href="#1d192cce77438e1a90383a6a3a6b28f29961ffa4">TTS Debug (packaged app)</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>tts</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Tool for developers of Chrome TTS engine extensions to help them test their engines are implementing the API correctly.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="tts.html#method-getVoices">chrome.tts.getVoices</a></code>
+      </li><li>
+        <code><a href="tts.html#method-speak">chrome.tts.speak</a></code>
+      </li><li>
+        <code><a href="tts.html#method-stop">chrome.tts.stop</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/ttsdebug/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/ttsdebug/ttsdebug.html?content-type=text/plain">ttsdebug.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/ttsdebug/ttsdebug.js?content-type=text/plain">ttsdebug.js</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/ttsdebug/">Browse source</a>
+    - <a href="examples/extensions/ttsdebug.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span style="display: none; ">
+    - <a>Install extension</a>
+    </span>
+  </div>
+</div><div class="sample" id="3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f">
+  <img class="icon" src="examples/extensions/ttsdemo/128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a href="#3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f">TTS Demo (packaged app)</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>tts</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Demo Chrome's synthesized text-to-speech capabilities.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="tts.html#method-getVoices">chrome.tts.getVoices</a></code>
+      </li><li>
+        <code><a href="tts.html#method-isSpeaking">chrome.tts.isSpeaking</a></code>
+      </li><li>
+        <code><a href="tts.html#method-speak">chrome.tts.speak</a></code>
+      </li><li>
+        <code><a href="tts.html#method-stop">chrome.tts.stop</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/ttsdemo/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/ttsdemo/ttsdemo.html?content-type=text/plain">ttsdemo.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/ttsdemo/ttsdemo.js?content-type=text/plain">ttsdemo.js</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/ttsdemo/">Browse source</a>
+    - <a href="examples/extensions/ttsdemo.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span style="display: none; ">
+    - <a>Install extension</a>
     </span>
   </div>
 </div><div class="sample" id="b3de91ab04b7d7a2670ca7ee9d740eb42cead0b6">

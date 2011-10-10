@@ -205,8 +205,8 @@ class SamplesManifest(object):
     samples = []
     for path in manifest_paths:
       sample = Sample(path, api_methods, self._base_dir)
-      # Don't render apps
-      if sample.is_app() == False:
+      # Don't render hosted apps
+      if sample.is_hosted_app() == False:
         samples.append(sample)
 
     def compareSamples(sample1, sample2):
@@ -549,7 +549,10 @@ class Sample(dict):
     Returns:
       A localized version of the sample's name.
     """
-    return self._get_localized_manifest_value('name')
+    name = self._get_localized_manifest_value('name')
+    if (self.is_packaged_app()):
+      name += ' (packaged app)'
+    return name
 
   def _parse_protocols(self):
     """ Returns a list of protocols this extension requests permission for.
@@ -654,9 +657,17 @@ class Sample(dict):
                    self._manifest['page_action'].has_key('popup'))
     return has_b_popup or has_p_popup
 
-  def is_app(self):
-    """ Returns true if the extension has an 'app' section in its manifest."""
-    return self._manifest.has_key('app')
+  def is_hosted_app(self):
+    """ Returns true if the manifest has an app but not a local_path."""
+    return (self._manifest.has_key('app') and
+            (not self._manifest['app'].has_key('launch') or
+             not self._manifest['app']['launch'].has_key('local_path')))
+
+  def is_packaged_app(self):
+    """ Returns true if the manifest has an app/launch/local_path section."""
+    return (self._manifest.has_key('app') and
+            self._manifest['app'].has_key('launch') and
+            self._manifest['app']['launch'].has_key('local_path'))
 
   def write_zip(self):
     """ Writes a zip file containing all of the files in this Sample's dir."""
