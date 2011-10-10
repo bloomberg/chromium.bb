@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/renderer/safe_browsing/phishing_thumbnailer.h"
-#include "content/renderer/render_widget_browsertest.h"
+#include "content/test/render_widget_browsertest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"

@@ -1,9 +1,6 @@
 include_rules = [
   "+chrome/app",  # The plugins use the theme library to get the sad plugin bitmap.
   "+content/public/renderer",
-  # DO NOT ADD ANY content/renderer includes, we're working on removing these!
-  "+content/renderer/mock_render_process.h",
-  "+content/renderer/render_widget_browsertest.h",
   "+grit",  # For generated headers
   "+media/base",  # For initializing media library and media switches.
   "+ppapi/native_client/src/trusted/plugin/nacl_entry_points.h",  # For NaCl registration.
@@ -22,4 +19,3 @@ include_rules = [
   "+third_party/npapi/bindings",
   "+third_party/sqlite",
 ]
-

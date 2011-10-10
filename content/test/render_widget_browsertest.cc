@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/render_widget_browsertest.h"
+#include "content/test/render_widget_browsertest.h"
 
 #include "base/basictypes.h"
 #include "base/file_path.h"

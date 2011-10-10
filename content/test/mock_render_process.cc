@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/mock_render_process.h"
+#include "content/test/mock_render_process.h"
 
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/transport_dib.h"
