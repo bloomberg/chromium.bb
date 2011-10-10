@@ -11,6 +11,7 @@
 #define NO_RESOURCE_IDENTIFIER ""
 
 #include <string>
+#include <vector>
 
 #include "base/values.h"
 #include "chrome/common/content_settings.h"
@@ -23,30 +24,6 @@ namespace content_settings {
 struct Rule;
 
 typedef std::string ResourceIdentifier;
-
-class DefaultProviderInterface {
- public:
-  virtual ~DefaultProviderInterface() {}
-
-  // Returns the default content setting this provider has for the given
-  // |content_type|, or CONTENT_SETTING_DEFAULT if nothing be provided for this
-  // type.
-  virtual ContentSetting ProvideDefaultSetting(
-      ContentSettingsType content_type) const = 0;
-
-  // Notifies the provider that the host content settings map would like to
-  // update the default setting for the given |content_type|. The provider may
-  // ignore this.
-  virtual void UpdateDefaultSetting(ContentSettingsType content_type,
-                                    ContentSetting setting) = 0;
-
-  // True if the default setting for the |content_type| is policy managed, i.e.,
-  // there shouldn't be any UI shown to modify this setting.
-  virtual bool DefaultSettingIsManaged(
-      ContentSettingsType content_type) const = 0;
-
-  virtual void ShutdownOnUIThread() = 0;
-};
 
 class ProviderInterface {
  public:

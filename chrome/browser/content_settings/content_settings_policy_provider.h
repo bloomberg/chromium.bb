@@ -25,56 +25,11 @@ class PrefService;
 
 namespace content_settings {
 
-class PolicyDefaultProvider : public ObservableDefaultProvider,
-                              public NotificationObserver {
- public:
-  explicit PolicyDefaultProvider(PrefService* prefs);
-  virtual ~PolicyDefaultProvider();
-
-  // DefaultContentSettingsProvider implementation.
-  virtual ContentSetting ProvideDefaultSetting(
-      ContentSettingsType content_type) const;
-  virtual void UpdateDefaultSetting(ContentSettingsType content_type,
-                                    ContentSetting setting);
-  virtual bool DefaultSettingIsManaged(ContentSettingsType content_type) const;
-
-  virtual void ShutdownOnUIThread();
-
-  static void RegisterUserPrefs(PrefService* prefs);
-
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
- private:
-  // Reads the policy managed default settings.
-  void ReadManagedDefaultSettings();
-
-  // Reads the policy controlled default settings for a specific content type.
-  void UpdateManagedDefaultSetting(ContentSettingsType content_type);
-
-  // Copies of the pref data, so that we can read it on the IO thread.
-  ContentSettings managed_default_content_settings_;
-
-  PrefService* prefs_;
-
-  // Used around accesses to the managed_default_content_settings_ object to
-  // guarantee thread safety.
-  mutable base::Lock lock_;
-
-  PrefChangeRegistrar pref_change_registrar_;
-  NotificationRegistrar notification_registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyDefaultProvider);
-};
-
 // PolicyProvider that provider managed content-settings.
 class PolicyProvider : public ObservableProvider,
                        public NotificationObserver {
  public:
-  PolicyProvider(PrefService* prefs,
-                 DefaultProviderInterface* default_provider);
+  explicit PolicyProvider(PrefService* prefs);
   virtual ~PolicyProvider();
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -113,6 +68,12 @@ class PolicyProvider : public ObservableProvider,
                        const NotificationSource& source,
                        const NotificationDetails& details);
  private:
+  // Reads the policy managed default settings.
+  void ReadManagedDefaultSettings();
+
+  // Reads the policy controlled default settings for a specific content type.
+  void UpdateManagedDefaultSetting(ContentSettingsType content_type);
+
   void ReadManagedContentSettings(bool overwrite);
 
   void GetContentSettingsFromPreferences(OriginIdentifierValueMap* rules);
@@ -125,9 +86,6 @@ class PolicyProvider : public ObservableProvider,
   OriginIdentifierValueMap value_map_;
 
   PrefService* prefs_;
-
-  // Weak, owned by HostContentSettingsMap.
-  DefaultProviderInterface* default_provider_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

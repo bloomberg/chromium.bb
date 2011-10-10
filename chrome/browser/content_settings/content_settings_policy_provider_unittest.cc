@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
+#include "chrome/browser/content_settings/content_settings_rule.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -24,110 +26,7 @@ using ::testing::_;
 
 namespace content_settings {
 
-class PolicyDefaultProviderTest : public testing::Test {
- public:
-  PolicyDefaultProviderTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
-
- protected:
-  MessageLoop message_loop_;
-  BrowserThread ui_thread_;
-};
-
-TEST_F(PolicyDefaultProviderTest, DefaultValues) {
-  TestingProfile profile;
-  TestingPrefService* prefs = profile.GetTestingPrefService();
-  PolicyDefaultProvider provider(prefs);
-
-  // By default, policies should be off.
-  ASSERT_FALSE(
-      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
-
-  // Set managed-default-content-setting through the coresponding preferences.
-  prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  ASSERT_TRUE(
-      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
-  ASSERT_EQ(CONTENT_SETTING_BLOCK,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
-
-  // Remove managed-default-content-settings-preferences.
-  prefs->RemoveManagedPref(prefs::kManagedDefaultCookiesSetting);
-  ASSERT_FALSE(
-      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_COOKIES));
-
-  provider.ShutdownOnUIThread();
-}
-
-TEST_F(PolicyDefaultProviderTest, DefaultGeolocationContentSetting) {
-  TestingProfile profile;
-  TestingPrefService* prefs = profile.GetTestingPrefService();
-  PolicyDefaultProvider provider(prefs);
-
-  // By default, policies should be off.
-  EXPECT_FALSE(
-      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-
-  prefs->SetInteger(prefs::kGeolocationDefaultContentSetting,
-                    CONTENT_SETTING_ALLOW);
-  EXPECT_FALSE(
-      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-
-  //
-  prefs->SetManagedPref(prefs::kGeolocationDefaultContentSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  EXPECT_FALSE(
-      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-
-  // Change the managed value of the default geolocation setting
-  prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-
-  EXPECT_TRUE(
-      provider.DefaultSettingIsManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION));
-
-  provider.ShutdownOnUIThread();
-}
-
-// When a default-content-setting is set to a managed setting a
-// CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
-// if the managed setting is removed.
-TEST_F(PolicyDefaultProviderTest, ObserveManagedSettingsChange) {
-  TestingProfile profile;
-  TestingPrefService* prefs = profile.GetTestingPrefService();
-  PolicyDefaultProvider provider(prefs);
-
-  MockObserver mock_observer;
-  EXPECT_CALL(mock_observer,
-              OnContentSettingChanged(_,
-                                      _,
-                                      CONTENT_SETTINGS_TYPE_DEFAULT,
-                                      ""));
-  provider.AddObserver(&mock_observer);
-
-  // Set the managed default-content-setting.
-  prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
-
-  EXPECT_CALL(mock_observer,
-              OnContentSettingChanged(_,
-                                      _,
-                                      CONTENT_SETTINGS_TYPE_DEFAULT,
-                                      ""));
-  // Remove the managed default-content-setting.
-  prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
-  provider.ShutdownOnUIThread();
-}
+typedef std::vector<Rule> Rules;
 
 class PolicyProviderTest : public testing::Test {
  public:
@@ -144,6 +43,107 @@ class PolicyProviderTest : public testing::Test {
   BrowserThread ui_thread_;
 };
 
+TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+  PolicyProvider provider(prefs);
+
+  Rules rules;
+
+  provider.GetAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      &rules);
+  EXPECT_EQ(0U, rules.size());
+
+  prefs->SetInteger(prefs::kGeolocationDefaultContentSetting,
+                    CONTENT_SETTING_ALLOW);
+  provider.GetAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      &rules);
+  EXPECT_EQ(0U, rules.size());
+
+  prefs->SetManagedPref(prefs::kGeolocationDefaultContentSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  provider.GetAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      &rules);
+  EXPECT_EQ(0U, rules.size());
+
+  // Change the managed value of the default geolocation setting
+  prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+
+  provider.GetAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      &rules);
+  EXPECT_EQ(1U, rules.size());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), rules[0].primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), rules[0].secondary_pattern);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, rules[0].content_setting);
+
+  provider.ShutdownOnUIThread();
+}
+
+TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
+  // This feature is currently behind a flag.
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
+
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+  PolicyProvider provider(prefs);
+
+  prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+
+  Rules rules;
+  provider.GetAllContentSettingsRules(
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      std::string(),
+      &rules);
+  EXPECT_EQ(1U, rules.size());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), rules[0].primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(), rules[0].secondary_pattern);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, rules[0].content_setting);
+
+  provider.ShutdownOnUIThread();
+}
+
+// When a default-content-setting is set to a managed setting a
+// CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
+// if the managed setting is removed.
+TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+  PolicyProvider provider(prefs);
+
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(_,
+                                      _,
+                                      CONTENT_SETTINGS_TYPE_DEFAULT,
+                                      ""));
+  provider.AddObserver(&mock_observer);
+
+  // Set the managed default-content-setting.
+  prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
+                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(_,
+                                      _,
+                                      CONTENT_SETTINGS_TYPE_DEFAULT,
+                                      ""));
+  // Remove the managed default-content-setting.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultImagesSetting);
+  provider.ShutdownOnUIThread();
+}
+
 TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   TestingProfile profile;
   TestingPrefService* prefs = profile.GetTestingPrefService();
@@ -153,7 +153,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   prefs->SetManagedPref(prefs::kManagedImagesBlockedForUrls,
                         value);
 
-  PolicyProvider provider(prefs, NULL);
+  PolicyProvider provider(prefs);
 
   ContentSettingsPattern yt_url_pattern =
       ContentSettingsPattern::FromString("www.youtube.com");
@@ -205,7 +205,7 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
   prefs->SetManagedPref(prefs::kManagedPluginsAllowedForUrls,
                         value);
 
-  PolicyProvider provider(prefs, NULL);
+  PolicyProvider provider(prefs);
 
   GURL youtube_url("http://www.youtube.com");
   GURL google_url("http://mail.google.com");
@@ -241,7 +241,7 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
   TestingProfile profile;
   TestingPrefService* prefs = profile.GetTestingPrefService();
 
-  PolicyProvider provider(prefs, NULL);
+  PolicyProvider provider(prefs);
   GURL google_url("https://mail.google.com");
   // Tests the default setting for auto selecting certificates
   EXPECT_EQ(NULL,

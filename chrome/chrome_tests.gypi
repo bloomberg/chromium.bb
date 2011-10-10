@@ -1239,6 +1239,7 @@
         'browser/component_updater/component_updater_service_unittest.cc',
         'browser/component_updater/component_updater_interceptor.cc',
         'browser/component_updater/component_updater_interceptor.h',
+        'browser/content_settings/content_settings_default_provider_unittest.cc',
         'browser/content_settings/content_settings_mock_observer.cc',
         'browser/content_settings/content_settings_mock_observer.h',
         'browser/content_settings/content_settings_mock_provider.cc',

@@ -6,43 +6,16 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_MOCK_PROVIDER_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
-#include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/common/content_settings_pattern.h"
 
 namespace content_settings {
 
-// The class MockDefaultProvider is a mock for a default content settings
-// provider.
-class MockDefaultProvider : public DefaultProviderInterface {
- public:
-  // Create a content settings provider that provides a given setting for a
-  // given type.
-  MockDefaultProvider(ContentSettingsType content_type,
-                              ContentSetting setting,
-                              bool is_managed,
-                              bool can_override);
-  virtual ~MockDefaultProvider();
-
-  // DefaultProviderInterface implementation.
-  virtual ContentSetting ProvideDefaultSetting(
-      ContentSettingsType content_type) const;
-  virtual void UpdateDefaultSetting(ContentSettingsType content_type,
-                                    ContentSetting setting);
-  virtual bool DefaultSettingIsManaged(ContentSettingsType content_type) const;
-  virtual void ShutdownOnUIThread();
-
- private:
-  ContentSettingsType content_type_;
-  ContentSetting setting_;
-  bool is_managed_;
-  bool can_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDefaultProvider);
-};
-
 // The class MockProvider is a mock for a non default content settings provider.
-class MockProvider : public ProviderInterface {
+class MockProvider : public ObservableProvider {
  public:
   MockProvider();
   MockProvider(ContentSettingsPattern requesting_url_pattern,
@@ -84,7 +57,7 @@ class MockProvider : public ProviderInterface {
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) {}
 
-  virtual void ShutdownOnUIThread() {}
+  virtual void ShutdownOnUIThread();
 
   // Accessors
   void set_requesting_url_pattern(ContentSettingsPattern pattern) {

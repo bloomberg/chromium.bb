@@ -105,154 +105,6 @@ const PrefsForManagedContentSettingsMapEntry
 
 namespace content_settings {
 
-PolicyDefaultProvider::PolicyDefaultProvider(PrefService* prefs)
-    : prefs_(prefs) {
-  // Read global defaults.
-  DCHECK_EQ(arraysize(kPrefToManageType),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  ReadManagedDefaultSettings();
-
-  pref_change_registrar_.Init(prefs_);
-  // The following preferences are only used to indicate if a
-  // default-content-setting is managed and to hold the managed default-setting
-  // value. If the value for any of the following perferences is set then the
-  // corresponding default-content-setting is managed. These preferences exist
-  // in parallel to the preference default-content-settings.  If a
-  // default-content-settings-type is managed any user defined excpetions
-  // (patterns) for this type are ignored.
-  pref_change_registrar_.Add(prefs::kManagedDefaultCookiesSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultGeolocationSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultNotificationsSetting, this);
-}
-
-PolicyDefaultProvider::~PolicyDefaultProvider() {
-  DCHECK(!prefs_);
-}
-
-ContentSetting PolicyDefaultProvider::ProvideDefaultSetting(
-    ContentSettingsType content_type) const {
-  base::AutoLock auto_lock(lock_);
-  return managed_default_content_settings_.settings[content_type];
-}
-
-void PolicyDefaultProvider::UpdateDefaultSetting(
-    ContentSettingsType content_type,
-    ContentSetting setting) {
-}
-
-bool PolicyDefaultProvider::DefaultSettingIsManaged(
-    ContentSettingsType content_type) const {
-  base::AutoLock lock(lock_);
-  if (managed_default_content_settings_.settings[content_type] !=
-      CONTENT_SETTING_DEFAULT) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-void PolicyDefaultProvider::Observe(int type,
-                                    const NotificationSource& source,
-                                    const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
-    std::string* name = Details<std::string>(details).ptr();
-    if (*name == prefs::kManagedDefaultCookiesSetting) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES);
-    } else if (*name == prefs::kManagedDefaultImagesSetting) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_IMAGES);
-    } else if (*name == prefs::kManagedDefaultJavaScriptSetting) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-    } else if (*name == prefs::kManagedDefaultPluginsSetting) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
-    } else if (*name == prefs::kManagedDefaultPopupsSetting) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_POPUPS);
-    } else if (*name == prefs::kManagedDefaultGeolocationSetting) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-    } else if (*name == prefs::kManagedDefaultNotificationsSetting) {
-      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-    } else {
-      NOTREACHED() << "Unexpected preference observed";
-      return;
-    }
-
-    NotifyObservers(ContentSettingsPattern(),
-                    ContentSettingsPattern(),
-                    CONTENT_SETTINGS_TYPE_DEFAULT,
-                    std::string());
-  } else {
-    NOTREACHED() << "Unexpected notification";
-  }
-}
-
-void PolicyDefaultProvider::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(prefs_);
-  RemoveAllObservers();
-  pref_change_registrar_.RemoveAll();
-  prefs_ = NULL;
-}
-
-void PolicyDefaultProvider::ReadManagedDefaultSettings() {
-  for (size_t type = 0; type < arraysize(kPrefToManageType); ++type) {
-    if (kPrefToManageType[type] == NULL) {
-      continue;
-    }
-    UpdateManagedDefaultSetting(ContentSettingsType(type));
-  }
-}
-
-void PolicyDefaultProvider::UpdateManagedDefaultSetting(
-    ContentSettingsType type) {
-  // If a pref to manage a default-content-setting was not set (NOTICE:
-  // "HasPrefPath" returns false if no value was set for a registered pref) then
-  // the default value of the preference is used. The default value of a
-  // preference to manage a default-content-settings is CONTENT_SETTING_DEFAULT.
-  // This indicates that no managed value is set. If a pref was set, than it
-  // MUST be managed.
-  DCHECK(!prefs_->HasPrefPath(kPrefToManageType[type]) ||
-          prefs_->IsManagedPreference(kPrefToManageType[type]));
-  base::AutoLock auto_lock(lock_);
-  managed_default_content_settings_.settings[type] = IntToContentSetting(
-      prefs_->GetInteger(kPrefToManageType[type]));
-}
-
-// static
-void PolicyDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
-  // Preferences for default content setting policies. A policy is not set of
-  // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultCookiesSetting,
-                             CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultImagesSetting,
-                             CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultJavaScriptSetting,
-                             CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultPluginsSetting,
-                             CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
-                             CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultGeolocationSetting,
-                             CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultNotificationsSetting,
-                             CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
-}
-
-// ////////////////////////////////////////////////////////////////////////////
-// PolicyProvider
-
 // static
 void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(prefs::kManagedAutoSelectCertificateForUrls,
@@ -283,12 +135,35 @@ void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedNotificationsBlockedForUrls,
                           PrefService::UNSYNCABLE_PREF);
+  // Preferences for default content setting policies. If a policy is not set of
+  // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
+  prefs->RegisterIntegerPref(prefs::kManagedDefaultCookiesSetting,
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kManagedDefaultImagesSetting,
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kManagedDefaultJavaScriptSetting,
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kManagedDefaultPluginsSetting,
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kManagedDefaultPopupsSetting,
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kManagedDefaultGeolocationSetting,
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kManagedDefaultNotificationsSetting,
+                             CONTENT_SETTING_DEFAULT,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
-PolicyProvider::PolicyProvider(PrefService* prefs,
-                               DefaultProviderInterface* default_provider)
-    : prefs_(prefs),
-      default_provider_(default_provider) {
+PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
+  DCHECK_EQ(arraysize(kPrefToManageType),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  ReadManagedDefaultSettings();
   ReadManagedContentSettings(false);
 
   pref_change_registrar_.Init(prefs_);
@@ -306,6 +181,20 @@ PolicyProvider::PolicyProvider(PrefService* prefs,
   pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedNotificationsAllowedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedNotificationsBlockedForUrls, this);
+  // The following preferences are only used to indicate if a
+  // default content setting is managed and to hold the managed default setting
+  // value. If the value for any of the following perferences is set then the
+  // corresponding default content setting is managed. These preferences exist
+  // in parallel to the preference default content settings.  If a
+  // default content settings type is managed any user defined excpetions
+  // (patterns) for this type are ignored.
+  pref_change_registrar_.Add(prefs::kManagedDefaultCookiesSetting, this);
+  pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, this);
+  pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, this);
+  pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, this);
+  pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
+  pref_change_registrar_.Add(prefs::kManagedDefaultGeolocationSetting, this);
+  pref_change_registrar_.Add(prefs::kManagedDefaultNotificationsSetting, this);
 }
 
 PolicyProvider::~PolicyProvider() {
@@ -439,6 +328,45 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
   }
 }
 
+void PolicyProvider::ReadManagedDefaultSettings() {
+  for (size_t type = 0; type < arraysize(kPrefToManageType); ++type) {
+    if (kPrefToManageType[type] == NULL) {
+      continue;
+    }
+    UpdateManagedDefaultSetting(ContentSettingsType(type));
+  }
+}
+
+void PolicyProvider::UpdateManagedDefaultSetting(
+    ContentSettingsType content_type) {
+  // If a pref to manage a default-content-setting was not set (NOTICE:
+  // "HasPrefPath" returns false if no value was set for a registered pref) then
+  // the default value of the preference is used. The default value of a
+  // preference to manage a default-content-settings is CONTENT_SETTING_DEFAULT.
+  // This indicates that no managed value is set. If a pref was set, than it
+  // MUST be managed.
+  DCHECK(!prefs_->HasPrefPath(kPrefToManageType[content_type]) ||
+          prefs_->IsManagedPreference(kPrefToManageType[content_type]));
+  base::AutoLock auto_lock(lock_);
+
+  int setting = prefs_->GetInteger(kPrefToManageType[content_type]);
+  if (setting == CONTENT_SETTING_DEFAULT) {
+    value_map_.DeleteValue(
+        ContentSettingsPattern::Wildcard(),
+        ContentSettingsPattern::Wildcard(),
+        content_type,
+        std::string());
+  } else {
+    value_map_.SetValue(
+        ContentSettingsPattern::Wildcard(),
+        ContentSettingsPattern::Wildcard(),
+        content_type,
+        std::string(),
+        Value::CreateIntegerValue(setting));
+  }
+}
+
+
 void PolicyProvider::ReadManagedContentSettings(bool overwrite) {
   base::AutoLock auto_lock(lock_);
   if (overwrite)
@@ -466,14 +394,10 @@ ContentSetting PolicyProvider::GetContentSetting(
   // Resource identifier are not supported by policies as long as the feature is
   // behind a flag. So resource identifiers are simply ignored.
   base::AutoLock auto_lock(lock_);
-  ContentSetting setting =
-      ValueToContentSetting(value_map_.GetValue(primary_url,
-                                                secondary_url,
-                                                content_type,
-                                                resource_identifier));
-  if (setting == CONTENT_SETTING_DEFAULT && default_provider_)
-    setting = default_provider_->ProvideDefaultSetting(content_type);
-  return setting;
+  return ValueToContentSetting(value_map_.GetValue(primary_url,
+                                                   secondary_url,
+                                                   content_type,
+                                                   resource_identifier));
 }
 
 base::Value* PolicyProvider::GetContentSettingValue(
@@ -495,10 +419,7 @@ void PolicyProvider::GetAllContentSettingsRules(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     std::vector<Rule>* content_setting_rules) const {
-  DCHECK_NE(RequiresResourceIdentifier(content_type),
-            resource_identifier.empty());
   DCHECK(content_setting_rules);
-  content_setting_rules->clear();
 
   base::AutoLock auto_lock(lock_);
   scoped_ptr<RuleIterator> rule(
@@ -528,7 +449,21 @@ void PolicyProvider::Observe(int type,
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
     std::string* name = Details<std::string>(details).ptr();
-    if (*name == prefs::kManagedAutoSelectCertificateForUrls ||
+    if (*name == prefs::kManagedDefaultCookiesSetting) {
+      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES);
+    } else if (*name == prefs::kManagedDefaultImagesSetting) {
+      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_IMAGES);
+    } else if (*name == prefs::kManagedDefaultJavaScriptSetting) {
+      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+    } else if (*name == prefs::kManagedDefaultPluginsSetting) {
+      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
+    } else if (*name == prefs::kManagedDefaultPopupsSetting) {
+      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_POPUPS);
+    } else if (*name == prefs::kManagedDefaultGeolocationSetting) {
+      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+    } else if (*name == prefs::kManagedDefaultNotificationsSetting) {
+      UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    } else if (*name == prefs::kManagedAutoSelectCertificateForUrls ||
         *name == prefs::kManagedCookiesAllowedForUrls ||
         *name == prefs::kManagedCookiesBlockedForUrls ||
         *name == prefs::kManagedCookiesSessionOnlyForUrls ||
@@ -543,14 +478,16 @@ void PolicyProvider::Observe(int type,
         *name == prefs::kManagedNotificationsAllowedForUrls ||
         *name == prefs::kManagedNotificationsBlockedForUrls) {
       ReadManagedContentSettings(true);
-      NotifyObservers(ContentSettingsPattern(),
-                      ContentSettingsPattern(),
-                      CONTENT_SETTINGS_TYPE_DEFAULT,
-                      std::string());
+      ReadManagedDefaultSettings();
     }
   } else {
     NOTREACHED() << "Unexpected notification";
+    return;
   }
+  NotifyObservers(ContentSettingsPattern(),
+                  ContentSettingsPattern(),
+                  CONTENT_SETTINGS_TYPE_DEFAULT,
+                  std::string());
 }
 
 }  // namespace content_settings

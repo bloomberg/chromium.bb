@@ -6,40 +6,6 @@
 
 namespace content_settings {
 
-MockDefaultProvider::MockDefaultProvider(
-    ContentSettingsType content_type,
-    ContentSetting setting,
-    bool is_managed,
-    bool can_override)
-    : content_type_(content_type),
-      setting_(setting),
-      is_managed_(is_managed),
-      can_override_(can_override) {
-}
-
-MockDefaultProvider::~MockDefaultProvider() {
-}
-
-ContentSetting MockDefaultProvider::ProvideDefaultSetting(
-    ContentSettingsType content_type) const {
-  return content_type == content_type_ ? setting_ : CONTENT_SETTING_DEFAULT;
-}
-
-void MockDefaultProvider::UpdateDefaultSetting(
-    ContentSettingsType content_type,
-    ContentSetting setting) {
-  if (can_override_ && content_type == content_type_)
-    setting_ = setting;
-}
-
-bool MockDefaultProvider::DefaultSettingIsManaged(
-    ContentSettingsType content_type) const {
-  return content_type == content_type_ && is_managed_;
-}
-
-void MockDefaultProvider::ShutdownOnUIThread() {
-}
-
 MockProvider::MockProvider()
     : requesting_url_pattern_(ContentSettingsPattern()),
       embedding_url_pattern_(ContentSettingsPattern()),
@@ -105,6 +71,10 @@ void MockProvider::SetContentSetting(
   content_type_ = content_type;
   resource_identifier_ = resource_identifier;
   setting_ = content_setting;
+}
+
+void MockProvider::ShutdownOnUIThread() {
+  RemoveAllObservers();
 }
 
 }  // namespace content_settings

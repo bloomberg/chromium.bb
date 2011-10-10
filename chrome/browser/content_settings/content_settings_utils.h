@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_UTILS_H_
 
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "chrome/common/content_settings.h"
@@ -20,8 +21,15 @@ namespace content_settings {
 
 typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 
-// Returns true if the |content_type| requires a resource identifier.
-bool RequiresResourceIdentifier(ContentSettingsType content_type);
+std::string GetTypeName(ContentSettingsType type);
+
+std::string GetResourceTypeName(ContentSettingsType type);
+
+ContentSettingsType StringToContentSettingsType(
+    const std::string& content_type_str);
+
+// Returns true if the |content_type| supports a resource identifier.
+bool SupportsResourceIdentifier(ContentSettingsType content_type);
 
 // Maps CONTENT_SETTING_ASK for the CONTENT_SETTINGS_TYPE_PLUGINS to
 // CONTENT_SETTING_BLOCK if click-to-play is not enabled.

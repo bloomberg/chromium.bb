@@ -35,78 +35,6 @@ namespace {
 typedef std::pair<std::string, std::string> StringPair;
 typedef std::map<std::string, std::string> StringMap;
 
-// The preference keys where resource identifiers are stored for
-// ContentSettingsType values that support resource identifiers.
-const char* kResourceTypeNames[] = {
-  NULL,
-  NULL,
-  NULL,
-  "per_plugin",
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-};
-COMPILE_ASSERT(arraysize(kResourceTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
-               resource_type_names_incorrect_size);
-
-// The default setting for each content type.
-const ContentSetting kDefaultSettings[] = {
-  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_COOKIES
-  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_IMAGES
-  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
-  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PLUGINS
-  CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
-  CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_GEOLOCATION
-  CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_NOTIFICATIONS
-  CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_INTENTS
-  CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE
-};
-COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
-               default_settings_incorrect_size);
-
-// The names of the ContentSettingsType values, for use with dictionary prefs.
-const char* kTypeNames[] = {
-  "cookies",
-  "images",
-  "javascript",
-  "plugins",
-  "popups",
-  "geolocation",
-  "notifications",
-  "intents",
-  "auto-select-certificate"
-};
-COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
-               type_names_incorrect_size);
-
-void SetDefaultContentSettings(DictionaryValue* default_settings) {
-  default_settings->Clear();
-
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    if (kTypeNames[i] != NULL) {
-      default_settings->SetInteger(kTypeNames[i],
-                                   kDefaultSettings[i]);
-    }
-  }
-}
-
-ContentSettingsType StringToContentSettingsType(
-    const std::string& content_type_str) {
-  for (size_t type = 0; type < arraysize(kTypeNames); ++type) {
-    if ((kTypeNames[type] != NULL) && (kTypeNames[type] == content_type_str))
-      return ContentSettingsType(type);
-  }
-  for (size_t type = 0; type < arraysize(kResourceTypeNames); ++type) {
-    if ((kResourceTypeNames[type] != NULL) &&
-        (kResourceTypeNames[type] == content_type_str)) {
-      return ContentSettingsType(type);
-    }
-  }
-  return CONTENT_SETTINGS_TYPE_DEFAULT;
-}
-
 ContentSetting FixObsoleteCookiePromptMode(ContentSettingsType content_type,
                                            ContentSetting setting) {
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
@@ -120,7 +48,7 @@ ContentSetting FixObsoleteCookiePromptMode(ContentSettingsType content_type,
 // dictionary.
 void ClearSettings(ContentSettingsType type,
                    DictionaryValue* pattern_pairs) {
-  std::string type_name(kTypeNames[type]);
+  std::string type_name(content_settings::GetTypeName(type));
   for (DictionaryValue::key_iterator i = pattern_pairs->begin_keys();
        i != pattern_pairs->end_keys();
        ++i) {
@@ -137,240 +65,6 @@ void ClearSettings(ContentSettingsType type,
 }  // namespace
 
 namespace content_settings {
-
-PrefDefaultProvider::PrefDefaultProvider(PrefService* prefs,
-                                         bool incognito)
-    : prefs_(prefs),
-      is_incognito_(incognito),
-      updating_preferences_(false) {
-  DCHECK(prefs_);
-  MigrateObsoleteNotificationPref();
-  MigrateObsoleteGeolocationPref();
-
-  // Read global defaults.
-  DCHECK_EQ(arraysize(kTypeNames),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  ReadDefaultSettings(true);
-  if (default_content_settings_.settings[CONTENT_SETTINGS_TYPE_COOKIES] ==
-      CONTENT_SETTING_BLOCK) {
-    UserMetrics::RecordAction(
-        UserMetricsAction("CookieBlockingEnabledPerDefault"));
-  } else {
-    UserMetrics::RecordAction(
-        UserMetricsAction("CookieBlockingDisabledPerDefault"));
-  }
-
-  pref_change_registrar_.Init(prefs_);
-  pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);
-  pref_change_registrar_.Add(prefs::kGeolocationDefaultContentSetting, this);
-}
-
-PrefDefaultProvider::~PrefDefaultProvider() {
-  DCHECK(!prefs_);
-}
-
-ContentSetting PrefDefaultProvider::ProvideDefaultSetting(
-    ContentSettingsType content_type) const {
-  base::AutoLock lock(lock_);
-  return default_content_settings_.settings[content_type];
-}
-
-void PrefDefaultProvider::UpdateDefaultSetting(
-    ContentSettingsType content_type,
-    ContentSetting setting) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(prefs_);
-  DCHECK(kTypeNames[content_type] != NULL);
-
-  // The default settings may not be directly modified for OTR sessions.
-  // Instead, they are synced to the main profile's setting.
-  if (is_incognito_)
-    return;
-
-  std::string dictionary_path(kTypeNames[content_type]);
-  {
-    AutoReset<bool> auto_reset(&updating_preferences_, true);
-    DictionaryPrefUpdate update(prefs_, prefs::kDefaultContentSettings);
-    DictionaryValue* default_settings_dictionary = update.Get();
-
-    // PrefDefaultProvider should not send any notifications when holding
-    // |lock_|. |DictionaryPrefUpdate| destructor and
-    // |PrefService::SetInteger()| send out notifications. As a response, the
-    // upper layers may call |ProvideDefaultContentSetting| which acquires
-    // |lock_| again.
-    {
-      base::AutoLock lock(lock_);
-      if ((setting == CONTENT_SETTING_DEFAULT) ||
-          (setting == kDefaultSettings[content_type])) {
-        default_content_settings_.settings[content_type] =
-            kDefaultSettings[content_type];
-        default_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path,
-                                                                NULL);
-      } else {
-        default_content_settings_.settings[content_type] = setting;
-        default_settings_dictionary->SetWithoutPathExpansion(
-            dictionary_path, Value::CreateIntegerValue(setting));
-      }
-    }
-
-    // Keep the obsolete pref in sync as long as backwards compatibility is
-    // required. This is required to keep sync working correctly.
-    if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-       prefs_->SetInteger(prefs::kGeolocationDefaultContentSetting,
-                          setting == CONTENT_SETTING_DEFAULT ?
-                              kDefaultSettings[content_type] : setting);
-    }
-  }
-
-  NotifyObservers(ContentSettingsPattern(),
-                  ContentSettingsPattern(),
-                  content_type,
-                  std::string());
-}
-
-bool PrefDefaultProvider::DefaultSettingIsManaged(
-    ContentSettingsType content_type) const {
-  return false;
-}
-
-void PrefDefaultProvider::Observe(int type,
-                                  const NotificationSource& source,
-                                  const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
-    if (updating_preferences_)
-      return;
-
-    std::string* name = Details<std::string>(details).ptr();
-    if (*name == prefs::kDefaultContentSettings) {
-      ReadDefaultSettings(true);
-    } else if (*name == prefs::kGeolocationDefaultContentSetting) {
-      MigrateObsoleteGeolocationPref();
-      // Return and don't send a notifications. Migrating the obsolete
-      // geolocation pref will change the prefs::kDefaultContentSettings and
-      // cause the notification to be fired.
-      return;
-    } else {
-      NOTREACHED() << "Unexpected preference observed";
-      return;
-    }
-
-    NotifyObservers(ContentSettingsPattern(),
-                    ContentSettingsPattern(),
-                    CONTENT_SETTINGS_TYPE_DEFAULT,
-                    std::string());
-  } else {
-    NOTREACHED() << "Unexpected notification";
-  }
-}
-
-void PrefDefaultProvider::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(prefs_);
-  RemoveAllObservers();
-  pref_change_registrar_.RemoveAll();
-  prefs_ = NULL;
-}
-
-void PrefDefaultProvider::ReadDefaultSettings(bool overwrite) {
-  const DictionaryValue* default_settings_dictionary =
-      prefs_->GetDictionary(prefs::kDefaultContentSettings);
-
-  base::AutoLock lock(lock_);
-
-  if (overwrite)
-    default_content_settings_ = ContentSettings();
-
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (default_settings_dictionary != NULL) {
-    GetSettingsFromDictionary(default_settings_dictionary,
-                              &default_content_settings_);
-  }
-  ForceDefaultsToBeExplicit();
-}
-
-void PrefDefaultProvider::ForceDefaultsToBeExplicit() {
-  DCHECK_EQ(arraysize(kDefaultSettings),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    if (default_content_settings_.settings[i] == CONTENT_SETTING_DEFAULT)
-      default_content_settings_.settings[i] = kDefaultSettings[i];
-  }
-}
-
-void PrefDefaultProvider::GetSettingsFromDictionary(
-    const DictionaryValue* dictionary,
-    ContentSettings* settings) {
-  for (DictionaryValue::key_iterator i(dictionary->begin_keys());
-       i != dictionary->end_keys(); ++i) {
-    const std::string& content_type(*i);
-    for (size_t type = 0; type < arraysize(kTypeNames); ++type) {
-      if ((kTypeNames[type] != NULL) && (kTypeNames[type] == content_type)) {
-        int setting = CONTENT_SETTING_DEFAULT;
-        bool found = dictionary->GetIntegerWithoutPathExpansion(content_type,
-                                                                &setting);
-        DCHECK(found);
-        settings->settings[type] = IntToContentSetting(setting);
-        break;
-      }
-    }
-  }
-  // Migrate obsolete cookie prompt mode.
-  if (settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] ==
-      CONTENT_SETTING_ASK)
-    settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] = CONTENT_SETTING_BLOCK;
-
-  settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
-      ClickToPlayFixup(CONTENT_SETTINGS_TYPE_PLUGINS,
-                       settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
-}
-
-void PrefDefaultProvider::MigrateObsoleteNotificationPref() {
-  if (prefs_->HasPrefPath(prefs::kDesktopNotificationDefaultContentSetting)) {
-    ContentSetting setting = IntToContentSetting(
-        prefs_->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
-    UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
-    prefs_->ClearPref(prefs::kDesktopNotificationDefaultContentSetting);
-  }
-}
-
-void PrefDefaultProvider::MigrateObsoleteGeolocationPref() {
-  if (prefs_->HasPrefPath(prefs::kGeolocationDefaultContentSetting)) {
-    ContentSetting setting = IntToContentSetting(
-        prefs_->GetInteger(prefs::kGeolocationDefaultContentSetting));
-    UpdateDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION, setting);
-    // Do not clear the old preference yet as long as we need to maintain
-    // backward compatibility.
-  }
-}
-
-// static
-void PrefDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
-  // The registration of the preference prefs::kDefaultContentSettings should
-  // also include the default values for default content settings. This allows
-  // functional tests to get default content settings by reading the preference
-  // prefs::kDefaultContentSettings via pyauto.
-  // TODO(markusheintz): Write pyauto hooks for the content settings map as
-  // content settings should be read from the host content settings map.
-  DictionaryValue* default_content_settings = new DictionaryValue();
-  SetDefaultContentSettings(default_content_settings);
-  prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings,
-                                default_content_settings,
-                                PrefService::SYNCABLE_PREF);
-
-  // Obsolete prefs, for migrations:
-  prefs->RegisterIntegerPref(
-      prefs::kDesktopNotificationDefaultContentSetting,
-      kDefaultSettings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS],
-      PrefService::SYNCABLE_PREF);
-  prefs->RegisterIntegerPref(
-      prefs::kGeolocationDefaultContentSetting,
-      kDefaultSettings[CONTENT_SETTINGS_TYPE_GEOLOCATION],
-      PrefService::UNSYNCABLE_PREF);
-}
 
 // ////////////////////////////////////////////////////////////////////////////
 // PrefProvider:
@@ -485,7 +179,6 @@ void PrefProvider::GetAllContentSettingsRules(
     const ResourceIdentifier& resource_identifier,
     std::vector<Rule>* content_setting_rules) const {
   DCHECK(content_setting_rules);
-  content_setting_rules->clear();
 
   const OriginIdentifierValueMap* map_to_return =
       is_incognito_ ? &incognito_value_map_ : &value_map_;
@@ -505,7 +198,6 @@ void PrefProvider::SetContentSetting(
     ContentSetting setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
-  DCHECK(kTypeNames[content_type] != NULL);
 
   // Update in memory value map.
   OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
@@ -547,7 +239,6 @@ void PrefProvider::SetContentSetting(
 void PrefProvider::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(prefs_);
 
   OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
@@ -721,8 +412,9 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
       for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
         ContentSettingsType content_type = static_cast<ContentSettingsType>(i);
 
-        if (RequiresResourceIdentifier(content_type)) {
-          const std::string content_type_str = kResourceTypeNames[i];
+        if (SupportsResourceIdentifier(content_type)) {
+          const std::string content_type_str =
+              GetResourceTypeName(ContentSettingsType(i));
           DictionaryValue* resource_dictionary = NULL;
           if (settings_dictionary->GetDictionary(
                   content_type_str, &resource_dictionary)) {
@@ -744,8 +436,9 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
                                   Value::CreateIntegerValue(setting));
             }
           }
-        } else if (kTypeNames[i]) {
-          const std::string content_type_str(kTypeNames[i]);
+        } else {
+          const std::string content_type_str =
+              GetTypeName(ContentSettingsType(i));
           int setting = CONTENT_SETTING_DEFAULT;
           if (settings_dictionary->GetIntegerWithoutPathExpansion(
                   content_type_str, &setting)) {
@@ -789,9 +482,9 @@ void PrefProvider::UpdateObsoletePatternsPref(
   }
 
   if (settings_dictionary) {
-    if (RequiresResourceIdentifier(content_type)) {
+    if (SupportsResourceIdentifier(content_type)) {
       // Get resource dictionary.
-      std::string res_dictionary_path(kResourceTypeNames[content_type]);
+      std::string res_dictionary_path(GetResourceTypeName(content_type));
       DictionaryValue* resource_dictionary = NULL;
       found = settings_dictionary->GetDictionary(
           res_dictionary_path, &resource_dictionary);
@@ -815,7 +508,7 @@ void PrefProvider::UpdateObsoletePatternsPref(
       }
     } else {
       // Update settings dictionary.
-      std::string setting_path(kTypeNames[content_type]);
+      std::string setting_path = GetTypeName(content_type);
       if (setting == CONTENT_SETTING_DEFAULT) {
         settings_dictionary->RemoveWithoutPathExpansion(setting_path,
                                                         NULL);
@@ -853,9 +546,9 @@ void PrefProvider::UpdatePatternPairsSettings(
   }
 
   if (settings_dictionary) {
-    if (RequiresResourceIdentifier(content_type)) {
+    if (SupportsResourceIdentifier(content_type)) {
       // Get resource dictionary.
-      std::string res_dictionary_path(kResourceTypeNames[content_type]);
+      std::string res_dictionary_path = GetResourceTypeName(content_type);
       DictionaryValue* resource_dictionary = NULL;
       found = settings_dictionary->GetDictionary(
           res_dictionary_path, &resource_dictionary);
@@ -879,7 +572,7 @@ void PrefProvider::UpdatePatternPairsSettings(
       }
     } else {
       // Update settings dictionary.
-      std::string setting_path(kTypeNames[content_type]);
+      std::string setting_path = GetTypeName(content_type);
       if (setting == CONTENT_SETTING_DEFAULT) {
         settings_dictionary->RemoveWithoutPathExpansion(setting_path,
                                                         NULL);
@@ -1053,7 +746,7 @@ void PrefProvider::MigrateObsoletePerhostPref() {
           continue;
         }
 
-        if (!RequiresResourceIdentifier(content_type)) {
+        if (!SupportsResourceIdentifier(content_type)) {
           int setting_int_value = CONTENT_SETTING_DEFAULT;
           bool found =
               host_settings_dictionary->GetIntegerWithoutPathExpansion(
@@ -1208,8 +901,7 @@ void PrefProvider::SyncObsoletePatternPref() {
       for (size_t i = CONTENT_SETTINGS_TYPE_COOKIES;
            i <= CONTENT_SETTINGS_TYPE_POPUPS;
            ++i) {
-        DCHECK(kTypeNames[i]);
-        std::string type_name(kTypeNames[i]);
+        std::string type_name = GetTypeName(ContentSettingsType(i));
         if (settings_dictionary->HasKey(type_name)) {
           Value* value = NULL;
           bool found = settings_dictionary->GetWithoutPathExpansion(
@@ -1362,7 +1054,7 @@ void PrefProvider::SyncObsoletePrefs() {
 
     int setting_value = 0;
     if (settings_dictionary->GetInteger(
-            kTypeNames[CONTENT_SETTINGS_TYPE_NOTIFICATIONS], &setting_value)) {
+            GetTypeName(CONTENT_SETTINGS_TYPE_NOTIFICATIONS), &setting_value)) {
       UpdateObsoleteNotificationsSettings(pattern_pair.first,
                                           pattern_pair.second,
                                           ContentSetting(setting_value),
@@ -1372,7 +1064,7 @@ void PrefProvider::SyncObsoletePrefs() {
 
     setting_value = 0;
     if (settings_dictionary->GetInteger(
-            kTypeNames[CONTENT_SETTINGS_TYPE_GEOLOCATION], &setting_value)) {
+            GetTypeName(CONTENT_SETTINGS_TYPE_GEOLOCATION), &setting_value)) {
       UpdateObsoleteGeolocationPref(pattern_pair.first,
                                     pattern_pair.second,
                                     ContentSetting(setting_value));

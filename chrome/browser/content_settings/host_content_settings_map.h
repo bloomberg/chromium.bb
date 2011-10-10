@@ -28,7 +28,6 @@
 #include "content/common/notification_registrar.h"
 
 namespace content_settings {
-class DefaultProviderInterface;
 class ProviderInterface;
 }  // namespace content_settings
 
@@ -43,6 +42,14 @@ class HostContentSettingsMap
       public NotificationObserver,
       public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
+  enum ProviderType {
+    POLICY_PROVIDER = 0,
+    EXTENSION_PROVIDER = 1,
+    PREF_PROVIDER,
+    DEFAULT_PROVIDER,
+    NUM_PROVIDER_TYPES,
+  };
+
   // TODO(markusheintz): I sold my soul to the devil on order to add this tuple.
   // I really want my soul back, so I really will change this ASAP.
   typedef Tuple4<ContentSettingsPattern,
@@ -203,34 +210,6 @@ class HostContentSettingsMap
 
   virtual ~HostContentSettingsMap();
 
-  // Returns all non-default ContentSettings which apply to the given URLs. For
-  // content setting types that require an additional resource identifier,
-  // CONTENT_SETTING_DEFAULT is returned.
-  //
-  // This may be called on any thread.
-  ContentSettings GetNonDefaultContentSettings(
-      const GURL& primary_url,
-      const GURL& secondary_url) const;
-
-  // Returns a single ContentSetting which applies to the given URLs or
-  // CONTENT_SETTING_DEFAULT, if no exception applies. Note that certain
-  // internal schemes are whitelisted. For ContentSettingsTypes that require an
-  // resource identifier to be specified, the |resource_identifier| must be
-  // non-empty.
-  //
-  // This may be called on any thread.
-  ContentSetting GetNonDefaultContentSetting(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const std::string& resource_identifier) const;
-
-  ContentSetting GetContentSettingInternal(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      const std::string& resource_identifier) const;
-
   // Various migration methods (old cookie, popup and per-host data gets
   // migrated to the new format).
   void MigrateObsoleteCookiePref();
@@ -247,12 +226,8 @@ class HostContentSettingsMap
   // notifications from the preferences service that we triggered ourself.
   bool updating_preferences_;
 
-  // Default content setting providers.
-  std::vector<linked_ptr<content_settings::DefaultProviderInterface> >
-      default_content_settings_providers_;
-
   // Content setting providers.
-  std::vector<linked_ptr<content_settings::ProviderInterface> >
+  std::map<ProviderType, linked_ptr<content_settings::ProviderInterface> >
       content_settings_providers_;
 
   // Used around accesses to the following objects to guarantee thread safety.

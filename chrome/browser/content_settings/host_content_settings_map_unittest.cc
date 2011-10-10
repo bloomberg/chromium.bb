@@ -369,6 +369,10 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
        ContentSettingsPattern::FromString("[*.]example.com");
   GURL host("http://example.com");
 
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetCookieContentSetting(
+                host, host, true));
+
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
@@ -787,33 +791,6 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
                prefs_as_json.c_str());
 }
 
-TEST_F(HostContentSettingsMapTest, NonDefaultSettings) {
-  TestingProfile profile;
-  HostContentSettingsMap* host_content_settings_map =
-      profile.GetHostContentSettingsMap();
-
-  GURL host("http://example.com/");
-  ContentSettingsPattern pattern =
-       ContentSettingsPattern::FromString("[*.]example.com");
-
-  ContentSettings desired_settings(CONTENT_SETTING_DEFAULT);
-  ContentSettings settings =
-    host_content_settings_map->GetNonDefaultContentSettings(host, host);
-  EXPECT_TRUE(SettingsEqual(desired_settings, settings));
-
-  host_content_settings_map->SetContentSetting(
-      pattern,
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_IMAGES,
-      "",
-      CONTENT_SETTING_BLOCK);
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_IMAGES] =
-      CONTENT_SETTING_BLOCK;
-  settings =
-    host_content_settings_map->GetNonDefaultContentSettings(host, host);
-  EXPECT_TRUE(SettingsEqual(desired_settings, settings));
-}
-
 TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   // This feature is currently behind a flag.
   CommandLine* cmd = CommandLine::ForCurrentProcess();
@@ -829,6 +806,16 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
        ContentSettingsPattern::FromString("[*.]example.com");
   std::string resource1("someplugin");
   std::string resource2("otherplugin");
+
+  // If resource content settings are enabled GetContentSettings should return
+  // the default values for all plugins
+  ContentSetting default_plugin_setting =
+      host_content_settings_map->GetDefaultContentSetting(
+          CONTENT_SETTINGS_TYPE_PLUGINS);
+  ContentSettings settings =
+      host_content_settings_map->GetContentSettings(host, host);
+  EXPECT_EQ(default_plugin_setting,
+            settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
@@ -846,14 +833,6 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource2));
-
-  // If resource content settings are enabled GetContentSettings should return
-  // CONTENT_SETTING_DEFAULT for content types that require resource
-  // identifiers.
-  ContentSettings settings =
-      host_content_settings_map->GetContentSettings(host, host);
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
 }
 
 TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {

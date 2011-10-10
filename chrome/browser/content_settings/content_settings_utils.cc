@@ -5,7 +5,6 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -17,16 +16,51 @@ namespace {
 
 // True if a given content settings type requires additional resource
 // identifiers.
-const bool kRequiresResourceIdentifier[CONTENT_SETTINGS_NUM_TYPES] = {
+const bool kSupportsResourceIdentifier[CONTENT_SETTINGS_NUM_TYPES] = {
   false,  // CONTENT_SETTINGS_TYPE_COOKIES
   false,  // CONTENT_SETTINGS_TYPE_IMAGES
   false,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
   true,   // CONTENT_SETTINGS_TYPE_PLUGINS
   false,  // CONTENT_SETTINGS_TYPE_POPUPS
-  false,  // Not used for Geolocation
-  false,  // Not used for Notifications
-  false,  // Not used for Intents.
+  false,  // CONTENT_SETTINGS_TYPE_GEOLOCATION
+  false,  // CONTENT_SETTINGS_TYPE_NOTIFICATIONS
+  false,  // CONTENT_SETTINGS_TYPE_INTENTS
+  false,  // CONTENT_SETTINGS_TYPE_AUTO_SUBMIT_CERTIFICATE
 };
+COMPILE_ASSERT(arraysize(kSupportsResourceIdentifier) ==
+                   CONTENT_SETTINGS_NUM_TYPES,
+               resource_type_names_incorrect_size);
+
+// The preference keys where resource identifiers are stored for
+// ContentSettingsType values that support resource identifiers.
+const char* kResourceTypeNames[] = {
+  NULL,
+  NULL,
+  NULL,
+  "per_plugin",
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+};
+COMPILE_ASSERT(arraysize(kResourceTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
+               resource_type_names_incorrect_size);
+
+// The names of the ContentSettingsType values, for use with dictionary prefs.
+const char* kTypeNames[] = {
+  "cookies",
+  "images",
+  "javascript",
+  "plugins",
+  "popups",
+  "geolocation",
+  "notifications",
+  "intents",
+  "auto-select-certificate"
+};
+COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
+               type_names_incorrect_size);
 
 const char* kPatternSeparator = ",";
 
@@ -34,10 +68,33 @@ const char* kPatternSeparator = ",";
 
 namespace content_settings {
 
-bool RequiresResourceIdentifier(ContentSettingsType content_type) {
+std::string GetTypeName(ContentSettingsType type) {
+  return std::string(kTypeNames[type]);
+}
+
+std::string GetResourceTypeName(ContentSettingsType type) {
+  return std::string(kResourceTypeNames[type]);
+}
+
+ContentSettingsType StringToContentSettingsType(
+    const std::string& content_type_str) {
+  for (size_t type = 0; type < arraysize(kTypeNames); ++type) {
+    if ((kTypeNames[type] != NULL) && (kTypeNames[type] == content_type_str))
+      return ContentSettingsType(type);
+  }
+  for (size_t type = 0; type < arraysize(kResourceTypeNames); ++type) {
+    if ((kResourceTypeNames[type] != NULL) &&
+        (kResourceTypeNames[type] == content_type_str)) {
+      return ContentSettingsType(type);
+    }
+  }
+  return CONTENT_SETTINGS_TYPE_DEFAULT;
+}
+
+bool SupportsResourceIdentifier(ContentSettingsType content_type) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableResourceContentSettings)) {
-    return kRequiresResourceIdentifier[content_type];
+    return kSupportsResourceIdentifier[content_type];
   } else {
     return false;
   }
