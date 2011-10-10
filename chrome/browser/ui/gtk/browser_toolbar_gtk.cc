@@ -89,9 +89,11 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
     : toolbar_(NULL),
       location_bar_(new LocationBarViewGtk(browser)),
       model_(browser->toolbar_model()),
-      wrench_menu_model_(this, browser),
+      is_wrench_menu_model_valid_(true),
       browser_(browser),
       window_(window) {
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
+
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
@@ -220,7 +222,7 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
   gtk_container_add(GTK_CONTAINER(wrench_box), wrench_button);
   gtk_box_pack_start(GTK_BOX(toolbar_), wrench_box, FALSE, FALSE, 4);
 
-  wrench_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
+  wrench_menu_.reset(new MenuGtk(this, wrench_menu_model_.get()));
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
       Source<HostZoomMap>(profile->GetHostZoomMap()));
 
@@ -278,6 +280,10 @@ void BrowserToolbarGtk::UpdateForBookmarkBarVisibility(
 
 void BrowserToolbarGtk::ShowAppMenu() {
   wrench_menu_->Cancel();
+
+  if (!is_wrench_menu_model_valid_)
+    RebuildWrenchMenu();
+
   wrench_menu_button_->SetPaintOverride(GTK_STATE_ACTIVE);
   UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
   wrench_menu_->PopupAsFromKeyEvent(wrench_menu_button_->widget());
@@ -383,9 +389,11 @@ void BrowserToolbarGtk::Observe(int type,
     }
 
     UpdateRoundedness();
-  } else if (type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED ||
-             type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED) {
+  } else if (type == chrome::NOTIFICATION_UPGRADE_RECOMMENDED) {
     // Redraw the wrench menu to update the badge.
+    gtk_widget_queue_draw(wrench_menu_button_->widget());
+  } else if (type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED) {
+    is_wrench_menu_model_valid_ = false;
     gtk_widget_queue_draw(wrench_menu_button_->widget());
   } else if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {
     // If our zoom level changed, we need to tell the menu to update its state,
@@ -580,6 +588,9 @@ gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,
   if (event->button != 1)
     return FALSE;
 
+  if (!is_wrench_menu_model_valid_)
+    RebuildWrenchMenu();
+
   wrench_menu_button_->SetPaintOverride(GTK_STATE_ACTIVE);
   wrench_menu_->PopupForWidget(button, event->button, event->time);
 
@@ -621,6 +632,12 @@ void BrowserToolbarGtk::NotifyPrefChanged(const std::string* pref) {
 bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
   // If we're a popup window, only show the location bar (omnibox).
   return !browser_->is_type_tabbed();
+}
+
+void BrowserToolbarGtk::RebuildWrenchMenu() {
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
+  wrench_menu_.reset(new MenuGtk(this, wrench_menu_model_.get()));
+  is_wrench_menu_model_valid_ = true;
 }
 
 gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,

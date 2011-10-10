@@ -144,6 +144,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // in a popup window).
   bool ShouldOnlyShowLocation() const;
 
+  // Rebuilds the wrench menu.
+  void RebuildWrenchMenu();
+
   // An event box that holds |toolbar_|. We need the toolbar to have its own
   // GdkWindow when we use the GTK drawing because otherwise the color from our
   // parent GdkWindow will leak through with some theme engines (such as
@@ -186,7 +189,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   scoped_ptr<MenuGtk> wrench_menu_;
 
-  WrenchMenuModel wrench_menu_model_;
+  scoped_ptr<WrenchMenuModel> wrench_menu_model_;
+
+  // Flag to invalidate the wrench menu model.
+  bool is_wrench_menu_model_valid_;
 
   Browser* browser_;
   BrowserWindowGtk* window_;
