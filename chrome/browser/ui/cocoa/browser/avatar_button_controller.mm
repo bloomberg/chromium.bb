@@ -26,6 +26,7 @@
 @interface AvatarButtonController (Private)
 - (void)setOpenMenuOnClick:(BOOL)flag;
 - (IBAction)buttonClicked:(id)sender;
+- (void)bubbleWillClose:(NSNotification*)notif;
 - (NSImage*)compositeImageWithShadow:(NSImage*)image;
 - (void)updateAvatar;
 - (void)addOrRemoveButtonIfNecessary;
@@ -124,6 +125,8 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
 - (IBAction)buttonClicked:(id)sender {
   DCHECK_EQ(self.buttonView, sender);
+  if (menuController_)
+    return;
 
   NSView* view = self.view;
   NSPoint point = NSMakePoint(NSMidX([view bounds]),
@@ -132,10 +135,18 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   point = [[view window] convertBaseToScreen:point];
 
   // |menu| will automatically release itself on close.
-  AvatarMenuBubbleController* menu =
-      [[AvatarMenuBubbleController alloc] initWithBrowser:browser_
-                                               anchoredAt:point];
-  [menu showWindow:self];
+  menuController_ = [[AvatarMenuBubbleController alloc] initWithBrowser:browser_
+                                                             anchoredAt:point];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(bubbleWillClose:)
+             name:NSWindowWillCloseNotification
+           object:[menuController_ window]];
+  [menuController_ showWindow:self];
+}
+
+- (void)bubbleWillClose:(NSNotification*)notif {
+  menuController_ = nil;
 }
 
 // This will take in an original image and redraw it with a shadow.
@@ -196,6 +207,12 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   [self.view setHidden:count < 2];
 
   [static_cast<BrowserWindowController*>(wc) layoutSubviews];
+}
+
+// Testing /////////////////////////////////////////////////////////////////////
+
+- (AvatarMenuBubbleController*)menuController {
+  return menuController_;
 }
 
 @end

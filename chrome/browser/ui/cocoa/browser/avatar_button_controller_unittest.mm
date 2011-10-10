@@ -7,8 +7,9 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/browser/ui/cocoa/info_bubble_window.h"
 
 class AvatarButtonControllerTest : public CocoaProfileTest {
  public:
@@ -28,6 +29,8 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
   }
 
   NSButton* button() { return [controller_ buttonView]; }
+
+  AvatarButtonController* controller() { return controller_.get(); }
 
  private:
   scoped_nsobject<AvatarButtonController> controller_;
@@ -49,4 +52,21 @@ TEST_F(AvatarButtonControllerTest, FLAKY_AddRemoveProfiles) {
 
   testing_profile_manager()->DeleteTestingProfile("two");
   EXPECT_TRUE([button() isHidden]);
+}
+
+TEST_F(AvatarButtonControllerTest, DoubleOpen) {
+  EXPECT_FALSE([controller() menuController]);
+
+  [button() performClick:button()];
+
+  AvatarMenuBubbleController* menu = [controller() menuController];
+  EXPECT_TRUE(menu);
+
+  [button() performClick:button()];
+  EXPECT_EQ(menu, [controller() menuController]);
+
+  // Do not animate out because that is hard to test around.
+  static_cast<InfoBubbleWindow*>(menu.window).delayOnClose = NO;
+  [menu close];
+  EXPECT_FALSE([controller() menuController]);
 }

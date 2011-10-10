@@ -8,9 +8,9 @@
 
 #import <AppKit/AppKit.h>
 
-#include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
+@class AvatarMenuBubbleController;
 class Browser;
 
 namespace AvatarButtonControllerInternal {
@@ -27,6 +27,9 @@ class Observer;
 
   // Notification bridge for profile info updates.
   scoped_ptr<AvatarButtonControllerInternal::Observer> observer_;
+
+  // The menu controller, if the menu is open.
+  __weak AvatarMenuBubbleController* menuController_;
 }
 
 // The view cast to a button.
@@ -39,6 +42,10 @@ class Observer;
 // and will be resized to the frame of the button.
 - (void)setImage:(NSImage*)image;
 
+@end
+
+@interface AvatarButtonController (ExposedForTesting)
+- (AvatarMenuBubbleController*)menuController;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_AVATAR_BUTTON_CONTROLLER_H_
