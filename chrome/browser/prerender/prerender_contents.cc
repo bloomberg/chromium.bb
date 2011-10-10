@@ -319,8 +319,12 @@ void PrerenderContents::StartPrerendering(
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
 
-  new_contents->controller().LoadURL(prerender_url_,
-                                     referrer_, PageTransition::LINK,
+  PageTransition::Type transition = PageTransition::LINK;
+  if (origin_ == ORIGIN_OMNIBOX_ORIGINAL ||
+      origin_ == ORIGIN_OMNIBOX_CONSERVATIVE) {
+    transition = PageTransition::TYPED;
+  }
+  new_contents->controller().LoadURL(prerender_url_, referrer_, transition,
                                      std::string());
 }
 
