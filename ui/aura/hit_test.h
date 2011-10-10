@@ -6,6 +6,8 @@
 #define UI_AURA_HIT_TEST_H_
 #pragma once
 
+#if !defined(OS_WIN)
+
 // Defines the same symbolic names used by the WM_NCHITTEST Notification under
 // win32 (the integer values are not guaranteed to be equivalent). We do this
 // because we have a whole bunch of code that deals with window resizing and
@@ -38,5 +40,7 @@ enum HitTestCompat {
   HTVSCROLL,
   HTZOOM
 };
+
+#endif  // !defined(OS_WIN)
 
 #endif  // UI_AURA_HIT_TEST_H_

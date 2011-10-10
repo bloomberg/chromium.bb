@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
+#include "ui/aura/hit_test.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -18,7 +19,6 @@
 #include "ui/gfx/rect.h"
 
 #if defined(USE_X11)
-#include "ui/aura/hit_test.h"
 #include "base/message_pump_x.h"
 #endif
 

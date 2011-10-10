@@ -9,57 +9,22 @@
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
+#include "ui/aura/hit_test.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test_desktop_delegate.h"
+#include "ui/aura/test_window_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-
-#if !defined(OS_WIN)
-#include "ui/aura/hit_test.h"
-#endif
 
 namespace aura {
 namespace internal {
 
 namespace {
 
-// WindowDelegate implementation with all methods stubbed out.
-class WindowDelegateImpl : public WindowDelegate {
- public:
-  WindowDelegateImpl() {}
-  virtual ~WindowDelegateImpl() {}
-
-  // Overridden from WindowDelegate:
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE {}
-  virtual void OnFocus() OVERRIDE {}
-  virtual void OnBlur() OVERRIDE {}
-  virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE {
-    return false;
-  }
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
-    return NULL;
-  }
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
-    return HTCLIENT;
-  }
-  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE { return false; }
-  virtual bool ShouldActivate(MouseEvent* event) OVERRIDE { return true; }
-  virtual void OnActivated() OVERRIDE {}
-  virtual void OnLostActive() OVERRIDE {}
-  virtual void OnCaptureLost() OVERRIDE {}
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {}
-  virtual void OnWindowDestroying() OVERRIDE {}
-  virtual void OnWindowDestroyed() OVERRIDE {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowDelegateImpl);
-};
-
 // Used for verifying destruction methods are invoked.
-class DestroyTrackingDelegateImpl : public WindowDelegateImpl {
+class DestroyTrackingDelegateImpl : public TestWindowDelegate {
  public:
   DestroyTrackingDelegateImpl()
       : destroying_count_(0),
@@ -115,7 +80,7 @@ class ChildWindowDelegateImpl : public DestroyTrackingDelegateImpl {
 };
 
 // Used in verifying mouse capture.
-class CaptureWindowDelegateImpl : public WindowDelegateImpl {
+class CaptureWindowDelegateImpl : public TestWindowDelegate {
  public:
   explicit CaptureWindowDelegateImpl()
       : capture_lost_count_(0),
@@ -144,17 +109,17 @@ class CaptureWindowDelegateImpl : public WindowDelegateImpl {
 
 // A simple WindowDelegate implementation for these tests. It owns itself
 // (deletes itself when the Window it is attached to is destroyed).
-class TestWindowDelegate : public WindowDelegateImpl {
+class ColorTestWindowDelegate : public TestWindowDelegate {
  public:
-  TestWindowDelegate(SkColor color)
+  ColorTestWindowDelegate(SkColor color)
       : color_(color),
         last_key_code_(ui::VKEY_UNKNOWN) {
   }
-  virtual ~TestWindowDelegate() {}
+  virtual ~ColorTestWindowDelegate() {}
 
   ui::KeyboardCode last_key_code() const { return last_key_code_; }
 
-  // Overridden from WindowDelegateImpl:
+  // Overridden from TestWindowDelegate:
   virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE {
     last_key_code_ = event->key_code();
     return true;
@@ -170,7 +135,7 @@ class TestWindowDelegate : public WindowDelegateImpl {
   SkColor color_;
   ui::KeyboardCode last_key_code_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ColorTestWindowDelegate);
 };
 
 class WindowTest : public AuraTestBase {
@@ -186,7 +151,7 @@ class WindowTest : public AuraTestBase {
                            int id,
                            const gfx::Rect& bounds,
                            Window* parent) {
-    return CreateTestWindowWithDelegate(new TestWindowDelegate(color),
+    return CreateTestWindowWithDelegate(new ColorTestWindowDelegate(color),
                                         id, bounds, parent);
   }
 
@@ -221,7 +186,7 @@ TEST_F(WindowTest, GetChildById) {
 }
 
 TEST_F(WindowTest, HitTest) {
-  Window w1(new TestWindowDelegate(SK_ColorWHITE));
+  Window w1(new ColorTestWindowDelegate(SK_ColorWHITE));
   w1.set_id(1);
   w1.Init();
   w1.SetBounds(gfx::Rect(10, 10, 50, 50));
@@ -253,6 +218,7 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
       CreateTestWindow(SK_ColorGRAY, 13, gfx::Rect(5, 470, 50, 50), w1.get()));
 
   Window* desktop = Desktop::GetInstance()->window();
+  w1->parent()->SetBounds(gfx::Rect(500, 500));
   EXPECT_EQ(NULL, desktop->GetEventHandlerForPoint(gfx::Point(5, 5)));
   EXPECT_EQ(w1.get(), desktop->GetEventHandlerForPoint(gfx::Point(11, 11)));
   EXPECT_EQ(w11.get(), desktop->GetEventHandlerForPoint(gfx::Point(16, 16)));
@@ -275,7 +241,8 @@ TEST_F(WindowTest, Focus) {
   scoped_ptr<Window> w12(
       CreateTestWindow(SK_ColorMAGENTA, 12, gfx::Rect(10, 420, 25, 25),
                        w1.get()));
-  TestWindowDelegate* w121delegate = new TestWindowDelegate(SK_ColorYELLOW);
+  ColorTestWindowDelegate* w121delegate =
+      new ColorTestWindowDelegate(SK_ColorYELLOW);
   scoped_ptr<Window> w121(
       CreateTestWindowWithDelegate(w121delegate, 121, gfx::Rect(5, 5, 5, 5),
                                    w12.get()));
@@ -390,7 +357,7 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   EXPECT_EQ(NULL, root->capture_window());
 }
 
-class MouseEnterExitWindowDelegate : public WindowDelegateImpl {
+class MouseEnterExitWindowDelegate : public TestWindowDelegate {
  public:
   MouseEnterExitWindowDelegate() : entered_(false), exited_(false) {}
 
@@ -450,7 +417,7 @@ TEST_F(WindowTest, MouseEnterExit) {
   EXPECT_FALSE(d2.exited());
 }
 
-class ActivateWindowDelegate : public WindowDelegateImpl {
+class ActivateWindowDelegate : public TestWindowDelegate {
  public:
   ActivateWindowDelegate()
       : activate_(true),
@@ -561,7 +528,7 @@ TEST_F(WindowTest, ActivateOnMouse) {
 // because it has no children that can handle the event and it has no delegate
 // allowing it to handle the event itself.
 TEST_F(WindowTest, GetEventHandlerForPoint_NoDelegate) {
-  WindowDelegateImpl d111;
+  TestWindowDelegate d111;
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(NULL, 1,
       gfx::Rect(0, 0, 500, 500), NULL));
   scoped_ptr<Window> w11(CreateTestWindowWithDelegate(NULL, 11,
@@ -616,9 +583,9 @@ TEST_F(WindowTest, Visibility) {
 // should make sure that none behind it in the z-order see events if it has
 // children. If it does not have children, event targeting works as usual.
 TEST_F(WindowTest, StopsEventPropagation) {
-  WindowDelegateImpl d11;
-  WindowDelegateImpl d111;
-  WindowDelegateImpl d121;
+  TestWindowDelegate d11;
+  TestWindowDelegate d111;
+  TestWindowDelegate d121;
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(NULL, 1,
       gfx::Rect(0, 0, 500, 500), NULL));
   scoped_ptr<Window> w11(CreateTestWindowWithDelegate(&d11, 11,
@@ -727,8 +694,8 @@ TEST_F(WindowTest, Maximized) {
 
 // Various assertions for activating/deactivating.
 TEST_F(WindowTest, Deactivate) {
-  WindowDelegateImpl d1;
-  WindowDelegateImpl d2;
+  TestWindowDelegate d1;
+  TestWindowDelegate d2;
   scoped_ptr<Window> w1(
       CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(), NULL));
   scoped_ptr<Window> w2(

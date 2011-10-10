@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/event_filter.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace aura {
 
@@ -29,9 +30,32 @@ class ToplevelWindowEventFilter : public EventFilter {
   // NOTE: this does NOT activate the window.
   void MoveWindowToFront(Window* target);
 
-  void UpdateCursorForWindowComponent();
+  // Called during a drag to resize/position the window.
+  // The return value is returned by OnMouseEvent() above.
+  bool HandleDrag(Window* target, MouseEvent* event);
 
-  gfx::Point mouse_down_offset_;
+  // Calculates the new origin of the window during a drag.
+  gfx::Point GetOriginForDrag(int bounds_change,
+                              Window* target,
+                              MouseEvent* event) const;
+
+  // Calculates the new size of the window during a drag.
+  gfx::Size GetSizeForDrag(int bounds_change,
+                           Window* target,
+                           MouseEvent* event) const;
+
+  // The mouse position in the target window when the mouse was pressed, in
+  // target window coordinates.
+  gfx::Point mouse_down_offset_in_target_;
+
+  // The mouse position in the target window when the mouse was pressed, in
+  // the target window's parent's coordinates.
+  gfx::Point mouse_down_offset_in_parent_;
+
+  // The bounds of the target window when the mouse was pressed.
+  gfx::Rect mouse_down_bounds_;
+
+  // The window component (hit-test code) the mouse is currently over.
   int window_component_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilter);
