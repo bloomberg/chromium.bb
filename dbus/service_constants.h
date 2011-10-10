@@ -285,7 +285,9 @@ const char kRoamingStateProperty[] = "Cellular.RoamingState";
 const char kOperatorNameProperty[] = "Cellular.OperatorName";
 const char kOperatorCodeProperty[] = "Cellular.OperatorCode";
 const char kServingOperatorProperty[] = "Cellular.ServingOperator";
+// DEPRECATED
 const char kPaymentURLProperty[] = "Cellular.OlpUrl";
+const char kPaymentPortalProperty[] = "Cellular.Olp";
 const char kUsageURLProperty[] = "Cellular.UsageUrl";
 const char kCellularApnProperty[] = "Cellular.APN";
 const char kCellularLastGoodApnProperty[] = "Cellular.LastGoodAPN";
@@ -379,6 +381,11 @@ const char kApnPasswordProperty[] = "password";
 const char kApnNameProperty[] = "name";
 const char kApnLocalizedNameProperty[] = "localized_name";
 const char kApnLanguageProperty[] = "language";
+
+// Payment Portal property names.
+const char kPaymentPortalURL[] = "url";
+const char kPaymentPortalMethod[] = "method";
+const char kPaymentPortalPostData[] = "postdata";
 
 // Operator info property names.
 const char kOperatorNameKey[] = "name";
