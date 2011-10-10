@@ -374,10 +374,9 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
   UpdateInitialInteractionTimestamp(timestamp);
 }
 
-void AutofillManager::OnQueryFormFieldAutofill(
-    int query_id,
-    const webkit_glue::FormData& form,
-    const webkit_glue::FormField& field) {
+void AutofillManager::OnQueryFormFieldAutofill(int query_id,
+                                               const FormData& form,
+                                               const FormField& field) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;

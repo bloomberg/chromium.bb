@@ -4,11 +4,15 @@
 
 #include "chrome/browser/autofill/personal_data_manager.h"
 
+#include <math.h>
+
 #import <AddressBook/AddressBook.h>
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/phone_number.h"
@@ -66,36 +70,58 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
 
   ABAddressBook* addressBook = [ABAddressBook sharedAddressBook];
   ABPerson* me = [addressBook me];
-  if (me) {
-    ABMultiValue* addresses = [me valueForProperty:kABAddressProperty];
-    for (NSUInteger i = 0, count = [addresses count]; i < count; i++) {
-      NSDictionary* address = [addresses valueAtIndex:i];
-      NSString* addressLabelRaw = [addresses labelAtIndex:i];
+  if (!me)
+    return;
 
-      // Create a new profile where the guid is set to the guid portion of the
-      // |kABUIDProperty| taken from from the "me" address.  The format of
-      // the |kABUIDProperty| is "<guid>:ABPerson", so we're stripping off the
-      // raw guid here and using it directly.
-      const size_t kGUIDLength = 36U;
-      std::string guid = base::SysNSStringToUTF8(
-          [me valueForProperty:kABUIDProperty]).substr(0, kGUIDLength);
-      scoped_ptr<AutofillProfile> profile(new AutofillProfile(guid));
-      DCHECK(guid::IsValidGUID(profile->guid()));
+  ABMultiValue* addresses = [me valueForProperty:kABAddressProperty];
 
-      // Fill in name and company information.
-      GetAddressBookNames(me, addressLabelRaw, profile.get());
+  // The number of characters at the end of the GUID to reserve for
+  // distinguishing addresses within the "me" card.  Cap the number of addresses
+  // we will fetch to the number that can be distinguished by this fragment of
+  // the GUID.
+  const size_t kNumAddressGUIDChars = 2;
+  const size_t kNumHexDigits = 16;
+  const size_t kMaxAddressCount = pow(kNumHexDigits, kNumAddressGUIDChars);
+  NSUInteger count = MIN([addresses count], kMaxAddressCount);
+  for (NSUInteger i = 0; i < count; i++) {
+    NSDictionary* address = [addresses valueAtIndex:i];
+    NSString* addressLabelRaw = [addresses labelAtIndex:i];
 
-      // Fill in address information.
-      GetAddressBookAddresses(address, profile.get());
+    // Create a new profile where the guid is set to the guid portion of the
+    // |kABUIDProperty| taken from from the "me" address.  The format of
+    // the |kABUIDProperty| is "<guid>:ABPerson", so we're stripping off the
+    // raw guid here and using it directly, with one modification: we update the
+    // last |kNumAddressGUIDChars| characters in the GUID to reflect the address
+    // variant.  Note that we capped the number of addresses above, so this is
+    // safe.
+    const size_t kGUIDLength = 36U;
+    const size_t kTrimmedGUIDLength = kGUIDLength - kNumAddressGUIDChars;
+    std::string guid = base::SysNSStringToUTF8(
+        [me valueForProperty:kABUIDProperty]).substr(0, kTrimmedGUIDLength);
 
-      // Fill in email information.
-      GetAddressBookEmail(me, addressLabelRaw, profile.get());
+    // The format string to print |kNumAddressGUIDChars| hexadecimal characters,
+    // left-padded with 0's.
+    const std::string kAddressGUIDFormat =
+        base::StringPrintf("%%0%" PRIuS "X", kNumAddressGUIDChars);
+    guid += base::StringPrintf(kAddressGUIDFormat.c_str(), i);
+    DCHECK_EQ(kGUIDLength, guid.size());
 
-      // Fill in phone number information.
-      GetAddressBookPhoneNumbers(me, addressLabelRaw, profile.get());
+    scoped_ptr<AutofillProfile> profile(new AutofillProfile(guid));
+    DCHECK(guid::IsValidGUID(profile->guid()));
 
-      profiles_.push_back(profile.release());
-    }
+    // Fill in name and company information.
+    GetAddressBookNames(me, addressLabelRaw, profile.get());
+
+    // Fill in address information.
+    GetAddressBookAddresses(address, profile.get());
+
+    // Fill in email information.
+    GetAddressBookEmail(me, addressLabelRaw, profile.get());
+
+    // Fill in phone number information.
+    GetAddressBookPhoneNumbers(me, addressLabelRaw, profile.get());
+
+    profiles_.push_back(profile.release());
   }
 }
 
@@ -123,9 +149,8 @@ void AuxiliaryProfilesImpl::GetAddressBookNames(
 // second line we join with commas.
 // For example:  "c/o John Doe\n1122 Other Avenue\nApt #7" translates to
 // line 1: "c/o John Doe", line 2: "1122 Other Avenue, Apt #7".
-void AuxiliaryProfilesImpl::GetAddressBookAddresses(
-    NSDictionary* address,
-    AutofillProfile* profile) {
+void AuxiliaryProfilesImpl::GetAddressBookAddresses(NSDictionary* address,
+                                                    AutofillProfile* profile) {
   if (NSString* addressField = [address objectForKey:kABAddressStreetKey]) {
     // If there are newlines in the address, split into two lines.
     if ([addressField rangeOfCharacterFromSet:
