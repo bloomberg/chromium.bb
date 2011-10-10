@@ -71,11 +71,11 @@ deps = {
     'src/third_party/sfntly/src/sfntly':
         Var('git_url') + '/external/sfntly/cpp/src/sfntly.git@f5e2e4d0b7db0926f6519b0ed1e1d06c4f0b6f05',
     'src/third_party/skia/gpu':
-        Var('git_url') + '/external/skia/gpu.git@2b9428051720806ec8e074359f657c29eefbe258',
+        Var('git_url') + '/external/skia/gpu.git@d8998e63e7d517aa5bab95f270194c07c695e5ab',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@a4bfae645977cbfb5bd067f2ea251ee814d945ed',
+        Var('git_url') + '/external/skia/include.git@33b76b59d1840fc7731985460404de45fbe26e2b',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@ffff6ec8e1378c8593cee0d235e567b0fe202cb5',
+        Var('git_url') + '/external/skia/src.git@53696803f4b1e1c68b36f60536c09eedabf7d5dd',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@c988402115946ed3cb7fb347f6eef4a8cec543e2',
     'src/third_party/smhasher/src':
