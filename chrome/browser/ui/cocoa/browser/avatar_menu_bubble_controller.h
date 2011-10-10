@@ -109,6 +109,14 @@ class Browser;
 @property(assign, nonatomic) IBOutlet AvatarMenuItemController* viewController;
 @end
 
+////////////////////////////////////////////////////////////////////////////////
+
+@interface AccessibilityIgnoredImageCell : NSImageCell
+@end
+
+@interface AccessibilityIgnoredTextFieldCell : NSTextFieldCell
+@end
+
 // Testing API /////////////////////////////////////////////////////////////////
 
 @interface AvatarMenuBubbleController (ExposedForTesting)

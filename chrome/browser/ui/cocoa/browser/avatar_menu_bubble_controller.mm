@@ -112,6 +112,14 @@ const CGFloat kLabelInset = 49.0;
                          anchoredAt:point])) {
     bridge_.reset(bridge);
     model_.reset(model);
+
+    [window accessibilitySetOverrideValue:
+        l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_NAME)
+                             forAttribute:NSAccessibilityTitleAttribute];
+    [window accessibilitySetOverrideValue:
+        l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION)
+                             forAttribute:NSAccessibilityHelpAttribute];
+
     [[self bubble] setArrowLocation:info_bubble::kTopRight];
     [self performLayout];
   }
@@ -366,4 +374,52 @@ const CGFloat kLabelInset = 49.0;
   NSRectFill([self bounds]);
 }
 
+- (BOOL)accessibilityIsIgnored {
+  return NO;
+}
+
+- (NSArray*)accessibilityAttributeNames {
+  NSMutableArray* attributes =
+      [[super accessibilityAttributeNames] mutableCopy];
+  [attributes addObject:NSAccessibilityTitleAttribute];
+  [attributes addObject:NSAccessibilityEnabledAttribute];
+
+  return attributes;
+}
+
+- (NSArray*)accessibilityActionNames {
+  NSArray* parentActions = [super accessibilityActionNames];
+  return [parentActions arrayByAddingObject:NSAccessibilityPressAction];
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  if ([attribute isEqual:NSAccessibilityRoleAttribute])
+    return NSAccessibilityButtonRole;
+
+  if ([attribute isEqual:NSAccessibilityTitleAttribute]) {
+    return l10n_util::GetNSStringF(
+        IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME,
+        base::SysNSStringToUTF16(self.viewController.nameField.stringValue));
+  }
+
+  if ([attribute isEqual:NSAccessibilityEnabledAttribute])
+    return [NSNumber numberWithBool:YES];
+
+  return [super accessibilityAttributeValue:attribute];
+}
+
+@end
+
+////////////////////////////////////////////////////////////////////////////////
+
+@implementation AccessibilityIgnoredImageCell
+- (BOOL)accessibilityIsIgnored {
+  return YES;
+}
+@end
+
+@implementation AccessibilityIgnoredTextFieldCell
+- (BOOL)accessibilityIsIgnored {
+  return YES;
+}
 @end

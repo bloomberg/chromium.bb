@@ -17,8 +17,10 @@
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -84,17 +86,34 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
     scoped_nsobject<NSButton> button(
         [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 20, 20)]);
     [button setButtonType:NSMomentaryLightButton];
+
     [button setImagePosition:NSImageOnly];
     [[button cell] setImageScaling:NSImageScaleProportionallyDown];
     [[button cell] setImagePosition:NSImageBelow];
+
     // AppKit sets a title for some reason when using |-setImagePosition:|.
     [button setTitle:nil];
+
     [[button cell] setImageDimsWhenDisabled:NO];
     [[button cell] setHighlightsBy:NSContentsCellMask];
     [[button cell] setShowsStateBy:NSContentsCellMask];
+
     [button setBordered:NO];
     [button setTarget:self];
     [button setAction:@selector(buttonClicked:)];
+
+    NSButtonCell* cell = [button cell];
+    [cell accessibilitySetOverrideValue:NSAccessibilityButtonRole
+                           forAttribute:NSAccessibilityRoleAttribute];
+    [cell accessibilitySetOverrideValue:NSAccessibilityButtonRole
+          forAttribute:NSAccessibilityRoleDescriptionAttribute];
+    [cell accessibilitySetOverrideValue:
+        l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_NAME)
+                           forAttribute:NSAccessibilityDescriptionAttribute];
+    [cell accessibilitySetOverrideValue:
+        l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION)
+                           forAttribute:NSAccessibilityHelpAttribute];
+
     [self setView:button];
 
     if (browser_->profile()->IsOffTheRecord()) {
@@ -187,8 +206,13 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
       cache.GetIndexOfProfileWithPath(browser_->profile()->GetPath());
   if (index != std::string::npos) {
     [self setImage:cache.GetAvatarIconOfProfileAtIndex(index).ToNSImage()];
+
     const string16& name = cache.GetNameOfProfileAtIndex(index);
-    [self.view setToolTip:base::SysUTF16ToNSString(name)];
+    NSString* nsName = base::SysUTF16ToNSString(name);
+    [self.view setToolTip:nsName];
+    [[self.buttonView cell]
+        accessibilitySetOverrideValue:nsName
+                         forAttribute:NSAccessibilityTitleAttribute];
   }
 }
 

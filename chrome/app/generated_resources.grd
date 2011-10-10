@@ -8704,6 +8704,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
         Users
       </message>
+      <message name="IDS_PROFILES_BUBBLE_ACCESSIBLE_NAME" desc="Title of the avatar bubble menu for accessibility">
+        Switch Users
+      </message>
+      <message name="IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The help text for the avatar bubble.">
+        Switch to a different user.
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="Create new profile menu item and button title.">
           Add new user
