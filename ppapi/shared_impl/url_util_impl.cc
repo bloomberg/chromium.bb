@@ -5,7 +5,9 @@
 #include "ppapi/shared_impl/url_util_impl.h"
 
 #include "googleurl/src/gurl.h"
+#include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/shared_impl/var_tracker.h"
 
 namespace ppapi {
 
@@ -41,18 +43,17 @@ void ConvertComponents(const url_parse::Parsed& input,
 }  // namespace
 
 // static
-PP_Var URLUtilImpl::Canonicalize(PP_Module pp_module,
-                                 PP_Var url,
+PP_Var URLUtilImpl::Canonicalize(PP_Var url,
                                  PP_URLComponents_Dev* components) {
   StringVar* url_string = StringVar::FromPPVar(url);
   if (!url_string)
     return PP_MakeNull();
-  return GenerateURLReturn(pp_module, GURL(url_string->value()), components);
+  return GenerateURLReturn(url_string->pp_module(),
+                           GURL(url_string->value()), components);
 }
 
 // static
-PP_Var URLUtilImpl::ResolveRelativeToURL(PP_Module pp_module,
-                                         PP_Var base_url,
+PP_Var URLUtilImpl::ResolveRelativeToURL(PP_Var base_url,
                                          PP_Var relative,
                                          PP_URLComponents_Dev* components) {
   StringVar* base_url_string = StringVar::FromPPVar(base_url);
@@ -63,7 +64,7 @@ PP_Var URLUtilImpl::ResolveRelativeToURL(PP_Module pp_module,
   GURL base_gurl(base_url_string->value());
   if (!base_gurl.is_valid())
     return PP_MakeNull();
-  return GenerateURLReturn(pp_module,
+  return GenerateURLReturn(base_url_string->pp_module(),
                            base_gurl.Resolve(relative_string->value()),
                            components);
 }
@@ -92,6 +93,21 @@ PP_Var URLUtilImpl::GenerateURLReturn(PP_Module module,
     return PP_MakeNull();
   ConvertComponents(url.parsed_for_possibly_invalid_spec(), components);
   return StringVar::StringToPPVar(module, url.possibly_invalid_spec());
+}
+
+PP_Var URLUtilImpl::ConvertComponentsAndReturnURL(
+    const PP_Var& url,
+    PP_URLComponents_Dev* components) {
+  if (!components)
+    return url;  // Common case - plugin doesn't care about parsing.
+
+  StringVar* url_string = StringVar::FromPPVar(url);
+  if (!url_string)
+    return url;
+
+  PP_Var result = Canonicalize(url, components);
+  TrackerBase::Get()->GetVarTracker()->ReleaseVar(url);
+  return result;
 }
 
 }  // namespace ppapi

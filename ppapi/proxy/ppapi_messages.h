@@ -896,6 +896,24 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_LockMouse,
                     uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_UnlockMouse,
                     PP_Instance /* instance */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
+                           PP_Instance /* instance */,
+                           ppapi::proxy::SerializedVar /* relative */,
+                           ppapi::proxy::SerializedVar /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_DocumentCanRequest,
+                           PP_Instance /* instance */,
+                           ppapi::proxy::SerializedVar /* relative */,
+                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_DocumentCanAccessDocument,
+                           PP_Instance /* active */,
+                           PP_Instance /* target */,
+                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetDocumentURL,
+                           PP_Instance /* active */,
+                           ppapi::proxy::SerializedVar /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetPluginInstanceURL,
+                           PP_Instance /* active */,
+                           ppapi::proxy::SerializedVar /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED3_1(
     PpapiHostMsg_PPBPDF_GetFontFileWithFallback,
@@ -974,26 +992,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
                            ppapi::HostResource /* response */,
                            ppapi::PPB_FileRef_CreateInfo /* result */)
-
-// PPB_URLUtil.
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_ResolveRelativeToDocument,
-                           PP_Instance /* instance */,
-                           ppapi::proxy::SerializedVar /* relative */,
-                           ppapi::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_DocumentCanRequest,
-                           PP_Instance /* instance */,
-                           ppapi::proxy::SerializedVar /* relative */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_DocumentCanAccessDocument,
-                           PP_Instance /* active */,
-                           PP_Instance /* target */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLUtil_GetDocumentURL,
-                           PP_Instance /* active */,
-                           ppapi::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLUtil_GetPluginInstanceURL,
-                           PP_Instance /* active */,
-                           ppapi::proxy::SerializedVar /* result */)
 
 // PPB_Var.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVar_AddRefObject,

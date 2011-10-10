@@ -13,28 +13,28 @@ namespace thunk {
 namespace {
 
 PP_Var GetWindowObject(PP_Instance instance) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.functions()->GetWindowObject(instance);
 }
 
 PP_Var GetOwnerElementObject(PP_Instance instance) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.functions()->GetOwnerElementObject(instance);
 }
 
 PP_Bool BindGraphics(PP_Instance instance, PP_Resource graphics_id) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
   return enter.functions()->BindGraphics(instance, graphics_id);
 }
 
 PP_Bool IsFullFrame(PP_Instance instance) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
   return enter.functions()->IsFullFrame(instance);
@@ -43,7 +43,7 @@ PP_Bool IsFullFrame(PP_Instance instance) {
 PP_Var ExecuteScript(PP_Instance instance,
                      PP_Var script,
                      PP_Var* exception) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.functions()->ExecuteScript(instance, script, exception);

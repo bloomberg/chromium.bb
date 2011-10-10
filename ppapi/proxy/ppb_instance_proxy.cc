@@ -14,6 +14,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/url_util_impl.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -99,6 +100,16 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgLockMouse)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UnlockMouse,
                         OnMsgUnlockMouse)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
+                        OnMsgResolveRelativeToDocument)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DocumentCanRequest,
+                        OnMsgDocumentCanRequest)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DocumentCanAccessDocument,
+                        OnMsgDocumentCanAccessDocument)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetDocumentURL,
+                        OnMsgGetDocumentURL)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetPluginInstanceURL,
+                        OnMsgGetPluginInstanceURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -280,6 +291,56 @@ void PPB_Instance_Proxy::SubscribeToPolicyUpdates(PP_Instance instance) {
   NOTIMPLEMENTED();
 }
 
+PP_Var PPB_Instance_Proxy::ResolveRelativeToDocument(
+    PP_Instance instance,
+    PP_Var relative,
+    PP_URLComponents_Dev* components) {
+  ReceiveSerializedVarReturnValue result;
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_ResolveRelativeToDocument(
+      INTERFACE_ID_PPB_INSTANCE, instance,
+      SerializedVarSendInput(dispatcher(), relative),
+      &result));
+  return URLUtilImpl::ConvertComponentsAndReturnURL(result.Return(dispatcher()),
+                                                    components);
+}
+
+PP_Bool PPB_Instance_Proxy::DocumentCanRequest(PP_Instance instance,
+                                               PP_Var url) {
+  PP_Bool result = PP_FALSE;
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_DocumentCanRequest(
+      INTERFACE_ID_PPB_INSTANCE, instance,
+      SerializedVarSendInput(dispatcher(), url),
+      &result));
+  return result;
+}
+
+PP_Bool PPB_Instance_Proxy::DocumentCanAccessDocument(PP_Instance instance,
+                                                      PP_Instance target) {
+  PP_Bool result = PP_FALSE;
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_DocumentCanAccessDocument(
+      INTERFACE_ID_PPB_INSTANCE, instance, target, &result));
+  return result;
+}
+
+PP_Var PPB_Instance_Proxy::GetDocumentURL(PP_Instance instance,
+                                          PP_URLComponents_Dev* components) {
+  ReceiveSerializedVarReturnValue result;
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetDocumentURL(
+      INTERFACE_ID_PPB_INSTANCE, instance, &result));
+  return URLUtilImpl::ConvertComponentsAndReturnURL(result.Return(dispatcher()),
+                                                    components);
+}
+
+PP_Var PPB_Instance_Proxy::GetPluginInstanceURL(
+      PP_Instance instance,
+      PP_URLComponents_Dev* components) {
+  ReceiveSerializedVarReturnValue result;
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetPluginInstanceURL(
+      INTERFACE_ID_PPB_INSTANCE, instance, &result));
+  return URLUtilImpl::ConvertComponentsAndReturnURL(result.Return(dispatcher()),
+                                                    components);
+}
+
 void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
                                      PP_Var message) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_PostMessage(
@@ -451,6 +512,55 @@ void PPB_Instance_Proxy::OnMsgUnlockMouse(PP_Instance instance) {
   EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
   if (enter.succeeded())
     enter.functions()->UnlockMouse(instance);
+}
+
+void PPB_Instance_Proxy::OnMsgResolveRelativeToDocument(
+    PP_Instance instance,
+    SerializedVarReceiveInput relative,
+    SerializedVarReturnValue result) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  if (enter.succeeded()) {
+    result.Return(dispatcher(),
+                  enter.functions()->ResolveRelativeToDocument(
+                      instance, relative.Get(dispatcher()), NULL));
+  }
+}
+
+void PPB_Instance_Proxy::OnMsgDocumentCanRequest(PP_Instance instance,
+                                                 SerializedVarReceiveInput url,
+                                                 PP_Bool* result) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  if (enter.succeeded()) {
+    *result = enter.functions()->DocumentCanRequest(instance,
+                                                    url.Get(dispatcher()));
+  }
+}
+
+void PPB_Instance_Proxy::OnMsgDocumentCanAccessDocument(PP_Instance active,
+                                                        PP_Instance target,
+                                                        PP_Bool* result) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(active, true);
+  if (enter.succeeded())
+    *result = enter.functions()->DocumentCanAccessDocument(active, target);
+}
+
+void PPB_Instance_Proxy::OnMsgGetDocumentURL(PP_Instance instance,
+                                             SerializedVarReturnValue result) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  if (enter.succeeded()) {
+    result.Return(dispatcher(),
+                  enter.functions()->GetDocumentURL(instance, NULL));
+  }
+}
+
+void PPB_Instance_Proxy::OnMsgGetPluginInstanceURL(
+    PP_Instance instance,
+    SerializedVarReturnValue result) {
+  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  if (enter.succeeded()) {
+    result.Return(dispatcher(),
+                  enter.functions()->GetPluginInstanceURL(instance, NULL));
+  }
 }
 
 }  // namespace proxy

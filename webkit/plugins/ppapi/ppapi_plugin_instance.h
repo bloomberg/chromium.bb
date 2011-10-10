@@ -328,6 +328,18 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
                             PP_CompletionCallback callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
   virtual void SubscribeToPolicyUpdates(PP_Instance instance) OVERRIDE;
+  virtual PP_Var ResolveRelativeToDocument(
+      PP_Instance instance,
+      PP_Var relative,
+      PP_URLComponents_Dev* components) OVERRIDE;
+  virtual PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) OVERRIDE;
+  virtual PP_Bool DocumentCanAccessDocument(PP_Instance instance,
+                                            PP_Instance target) OVERRIDE;
+  virtual PP_Var GetDocumentURL(PP_Instance instance,
+                                PP_URLComponents_Dev* components) OVERRIDE;
+  virtual PP_Var GetPluginInstanceURL(
+      PP_Instance instance,
+      PP_URLComponents_Dev* components) OVERRIDE;
 
  private:
   // See the static Create functions above for creating PluginInstance objects.

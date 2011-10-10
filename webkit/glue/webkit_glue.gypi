@@ -287,8 +287,6 @@
         '../plugins/ppapi/ppb_url_request_info_impl.h',
         '../plugins/ppapi/ppb_url_response_info_impl.cc',
         '../plugins/ppapi/ppb_url_response_info_impl.h',
-        '../plugins/ppapi/ppb_url_util_impl.cc',
-        '../plugins/ppapi/ppb_url_util_impl.h',
         '../plugins/ppapi/ppb_var_impl.cc',
         '../plugins/ppapi/ppb_var_impl.h',
         '../plugins/ppapi/ppb_video_capture_impl.cc',

@@ -78,6 +78,18 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                  double minimum_factor,
                                  double maximium_factor) OVERRIDE;
   virtual void SubscribeToPolicyUpdates(PP_Instance instance) OVERRIDE;
+  virtual PP_Var ResolveRelativeToDocument(
+      PP_Instance instance,
+      PP_Var relative,
+      PP_URLComponents_Dev* components) OVERRIDE;
+  virtual PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) OVERRIDE;
+  virtual PP_Bool DocumentCanAccessDocument(PP_Instance instance,
+                                            PP_Instance target) OVERRIDE;
+  virtual PP_Var GetDocumentURL(PP_Instance instance,
+                                PP_URLComponents_Dev* components) OVERRIDE;
+  virtual PP_Var GetPluginInstanceURL(
+      PP_Instance instance,
+      PP_URLComponents_Dev* components) OVERRIDE;
   virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
   virtual int32_t LockMouse(PP_Instance instance,
                             PP_CompletionCallback callback) OVERRIDE;
@@ -128,6 +140,19 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   void OnMsgLockMouse(PP_Instance instance,
                       uint32_t serialized_callback);
   void OnMsgUnlockMouse(PP_Instance instance);
+  void OnMsgResolveRelativeToDocument(PP_Instance instance,
+                                      SerializedVarReceiveInput relative,
+                                      SerializedVarReturnValue result);
+  void OnMsgDocumentCanRequest(PP_Instance instance,
+                               SerializedVarReceiveInput url,
+                               PP_Bool* result);
+  void OnMsgDocumentCanAccessDocument(PP_Instance active,
+                                      PP_Instance target,
+                                      PP_Bool* result);
+  void OnMsgGetDocumentURL(PP_Instance instance,
+                           SerializedVarReturnValue result);
+  void OnMsgGetPluginInstanceURL(PP_Instance instance,
+                                 SerializedVarReturnValue result);
 };
 
 }  // namespace proxy

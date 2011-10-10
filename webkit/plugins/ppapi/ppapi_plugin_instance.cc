@@ -34,6 +34,7 @@
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/url_util_impl.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
@@ -198,6 +199,21 @@ COMPILE_ASSERT_MATCHING_ENUM(TypeGrabbing, PP_CURSORTYPE_GRABBING);
 void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
   *output = PP_MakeRectFromXYWH(input.x(), input.y(),
                                 input.width(), input.height());
+}
+
+// Sets |*security_origin| to be the WebKit security origin associated with the
+// document containing the given plugin instance. On success, returns true. If
+// the instance is invalid, returns false and |*security_origin| will be
+// unchanged.
+bool SecurityOriginForInstance(PP_Instance instance_id,
+                               WebKit::WebSecurityOrigin* security_origin) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return false;
+
+  WebKit::WebElement plugin_element = instance->container()->element();
+  *security_origin = plugin_element.document().securityOrigin();
+  return true;
 }
 
 }  // namespace
@@ -1703,6 +1719,65 @@ void PluginInstance::UnlockMouse(PP_Instance instance) {
 
 void PluginInstance::SubscribeToPolicyUpdates(PP_Instance instance) {
   delegate()->SubscribeToPolicyUpdates(this);
+}
+
+PP_Var PluginInstance::ResolveRelativeToDocument(
+    PP_Instance instance,
+    PP_Var relative,
+    PP_URLComponents_Dev* components) {
+  StringVar* relative_string = StringVar::FromPPVar(relative);
+  if (!relative_string)
+    return PP_MakeNull();
+
+  WebKit::WebElement plugin_element = container()->element();
+  GURL document_url = plugin_element.document().baseURL();
+  return ::ppapi::URLUtilImpl::GenerateURLReturn(
+      module()->pp_module(),
+      document_url.Resolve(relative_string->value()),
+      components);
+}
+
+PP_Bool PluginInstance::DocumentCanRequest(PP_Instance instance, PP_Var url) {
+  StringVar* url_string = StringVar::FromPPVar(url);
+  if (!url_string)
+    return PP_FALSE;
+
+  WebKit::WebSecurityOrigin security_origin;
+  if (!SecurityOriginForInstance(instance, &security_origin))
+    return PP_FALSE;
+
+  GURL gurl(url_string->value());
+  if (!gurl.is_valid())
+    return PP_FALSE;
+
+  return BoolToPPBool(security_origin.canRequest(gurl));
+}
+
+PP_Bool PluginInstance::DocumentCanAccessDocument(PP_Instance instance,
+                                                  PP_Instance target) {
+  WebKit::WebSecurityOrigin our_origin;
+  if (!SecurityOriginForInstance(instance, &our_origin))
+    return PP_FALSE;
+
+  WebKit::WebSecurityOrigin target_origin;
+  if (!SecurityOriginForInstance(instance, &target_origin))
+    return PP_FALSE;
+
+  return BoolToPPBool(our_origin.canAccess(target_origin));
+}
+
+PP_Var PluginInstance::GetDocumentURL(PP_Instance instance,
+                                      PP_URLComponents_Dev* components) {
+  WebKit::WebDocument document = container()->element().document();
+  return ::ppapi::URLUtilImpl::GenerateURLReturn(module()->pp_module(),
+                                                 document.url(), components);
+}
+
+PP_Var PluginInstance::GetPluginInstanceURL(
+    PP_Instance instance,
+    PP_URLComponents_Dev* components) {
+  return ::ppapi::URLUtilImpl::GenerateURLReturn(module()->pp_module(),
+                                                 plugin_url_, components);
 }
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {

@@ -116,8 +116,6 @@
         'proxy/ppb_url_loader_proxy.h',
         'proxy/ppb_url_response_info_proxy.cc',
         'proxy/ppb_url_response_info_proxy.h',
-        'proxy/ppb_url_util_proxy.cc',
-        'proxy/ppb_url_util_proxy.h',
         'proxy/ppb_var_deprecated_proxy.cc',
         'proxy/ppb_var_deprecated_proxy.h',
         'proxy/ppb_var_proxy.cc',

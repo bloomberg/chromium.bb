@@ -5,6 +5,7 @@
 #ifndef PPAPI_THUNK_INSTANCE_API_H_
 #define PPAPI_THUNK_INSTANCE_API_H_
 
+#include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/pp_bool.h"
@@ -81,6 +82,19 @@ class PPB_Instance_FunctionAPI {
 
   // QueryPolicy.
   virtual void SubscribeToPolicyUpdates(PP_Instance instance) = 0;
+
+  // URLUtil.
+  virtual PP_Var ResolveRelativeToDocument(
+      PP_Instance instance,
+      PP_Var relative,
+      PP_URLComponents_Dev* components) = 0;
+  virtual PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) = 0;
+  virtual PP_Bool DocumentCanAccessDocument(PP_Instance instance,
+                                            PP_Instance target) = 0;
+  virtual PP_Var GetDocumentURL(PP_Instance instance,
+                                PP_URLComponents_Dev* components) = 0;
+  virtual PP_Var GetPluginInstanceURL(PP_Instance instance,
+                                      PP_URLComponents_Dev* components) = 0;
 
   static const proxy::InterfaceID interface_id =
       proxy::INTERFACE_ID_PPB_INSTANCE;

@@ -107,7 +107,6 @@
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_uma_private_impl.h"
-#include "webkit/plugins/ppapi/ppb_url_util_impl.h"
 #include "webkit/plugins/ppapi/ppb_var_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
@@ -297,8 +296,6 @@ const void* GetInterface(const char* name) {
     return PPB_UMA_Private_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_URLLoaderTrusted_Thunk();
-  if (strcmp(name, PPB_URLUTIL_DEV_INTERFACE) == 0)
-    return PPB_URLUtil_Impl::GetInterface();
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
     return PPB_Var_Impl::GetVarDeprecatedInterface();
   if (strcmp(name, PPB_VAR_INTERFACE_1_0) == 0)

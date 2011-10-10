@@ -83,7 +83,6 @@
 #include "ppapi/proxy/ppb_text_input_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
-#include "ppapi/proxy/ppb_url_util_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
 #include "ppapi/proxy/ppb_var_proxy.h"
 #include "ppapi/proxy/ppb_video_capture_proxy.h"
@@ -164,7 +163,12 @@ InterfaceList::InterfaceList() {
   #undef PROXIED_API
   #undef PROXIED_IFACE
 
-  // New-style AddPPB not converted to the macros above.
+  // Manually add some special proxies. Some of these don't have interfaces
+  // that they support, so aren't covered by the macros above, but have proxies
+  // for message routing. Others have different implementations between the
+  // proxy and the impl and there's no obvious message routing.
+  AddProxy(INTERFACE_ID_RESOURCE_CREATION, &ResourceCreationProxy::Create);
+  AddProxy(INTERFACE_ID_PPP_CLASS, &PPP_Class_Proxy::Create);
   AddPPB(PPB_CORE_INTERFACE, INTERFACE_ID_PPB_CORE,
          PPB_Core_Proxy::GetPPB_Core_Interface());
   AddPPB(PPB_MEMORY_DEV_INTERFACE, INTERFACE_ID_NONE,
@@ -173,12 +177,6 @@ InterfaceList::InterfaceList() {
          OpenGLES2Impl::GetInterface());
   AddPPB(PPB_VAR_INTERFACE, INTERFACE_ID_NONE,
          GetPPB_Var_Interface());
-
-  // Manually add some special proxies. These don't have interfaces that they
-  // support, so aren't covered by the macros above, but have proxies for
-  // message routing.
-  AddProxy(INTERFACE_ID_RESOURCE_CREATION, &ResourceCreationProxy::Create);
-  AddProxy(INTERFACE_ID_PPP_CLASS, &PPP_Class_Proxy::Create);
 
   // PPB (browser) interfaces.
   AddPPB(PPB_Crypto_Proxy::GetInfo());
@@ -193,7 +191,6 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_PDF_Proxy::GetInfo());
   AddPPB(PPB_Testing_Proxy::GetInfo());
   AddPPB(PPB_URLLoader_Proxy::GetTrustedInfo());
-  AddPPB(PPB_URLUtil_Proxy::GetInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
 
 #ifdef ENABLE_FLAPPER_HACKS
