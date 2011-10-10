@@ -41,6 +41,9 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   RendererGLContext* context() const { return context_; }
   void SwapBuffers();
 
+  // Could be NULL when this widget is closing.
+  webkit::ppapi::PluginInstance* plugin() const { return plugin_; }
+
  protected:
   RenderWidgetFullscreenPepper(webkit::ppapi::PluginInstance* plugin,
                                const GURL& active_url);

@@ -261,6 +261,8 @@ PluginInstance::PluginInstance(
 }
 
 PluginInstance::~PluginInstance() {
+  DCHECK(!fullscreen_container_);
+
   // Free all the plugin objects. This will automatically clear the back-
   // pointer from the NPObject so WebKit can't call into the plugin any more.
   //

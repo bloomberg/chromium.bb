@@ -36,10 +36,8 @@ namespace {
 // WebWidget that simply wraps the pepper plugin.
 class PepperWidget : public WebWidget {
  public:
-  PepperWidget(webkit::ppapi::PluginInstance* plugin,
-               RenderWidgetFullscreenPepper* widget)
-      : plugin_(plugin),
-        widget_(widget) {
+  explicit PepperWidget(RenderWidgetFullscreenPepper* widget)
+      : widget_(widget) {
   }
 
   virtual ~PepperWidget() {}
@@ -57,9 +55,12 @@ class PepperWidget : public WebWidget {
   }
 
   virtual void resize(const WebSize& size) {
+    if (!widget_->plugin())
+      return;
+
     size_ = size;
     WebRect plugin_rect(0, 0, size_.width, size_.height);
-    plugin_->ViewChanged(plugin_rect, plugin_rect);
+    widget_->plugin()->ViewChanged(plugin_rect, plugin_rect);
     widget_->Invalidate();
   }
 
@@ -73,15 +74,21 @@ class PepperWidget : public WebWidget {
   }
 
   virtual void paint(WebCanvas* canvas, const WebRect& rect) {
+    if (!widget_->plugin())
+      return;
+
     WebRect plugin_rect(0, 0, size_.width, size_.height);
-    plugin_->Paint(canvas, plugin_rect, rect);
+    widget_->plugin()->Paint(canvas, plugin_rect, rect);
   }
 
   virtual void composite(bool finish) {
+    if (!widget_->plugin())
+      return;
+
     RendererGLContext* context = widget_->context();
     DCHECK(context);
     gpu::gles2::GLES2Implementation* gl = context->GetImplementation();
-    unsigned int texture = plugin_->GetBackingTextureId();
+    unsigned int texture = widget_->plugin()->GetBackingTextureId();
     gl->BindTexture(GL_TEXTURE_2D, texture);
     gl->DrawArrays(GL_TRIANGLES, 0, 3);
     widget_->SwapBuffers();
@@ -92,10 +99,13 @@ class PepperWidget : public WebWidget {
   }
 
   virtual bool handleInputEvent(const WebInputEvent& event) {
+    if (!widget_->plugin())
+      return false;
+
     // This cursor info is ignored, we always set the cursor directly from
     // RenderWidgetFullscreenPepper::DidChangeCursor.
     WebCursorInfo cursor;
-    bool result = plugin_->HandleInputEvent(event, &cursor);
+    bool result = widget_->plugin()->HandleInputEvent(event, &cursor);
 
     // For normal web pages, WebViewImpl does input event translations and
     // generates context menu events. Since we don't have a WebView, we need to
@@ -124,7 +134,7 @@ class PepperWidget : public WebWidget {
       if (send_context_menu_event) {
         WebMouseEvent context_menu_event(mouse_event);
         context_menu_event.type = WebInputEvent::ContextMenu;
-        plugin_->HandleInputEvent(context_menu_event, &cursor);
+        widget_->plugin()->HandleInputEvent(context_menu_event, &cursor);
       }
     }
     return result;
@@ -179,11 +189,11 @@ class PepperWidget : public WebWidget {
   }
 
   virtual bool isAcceleratedCompositingActive() const {
-    return widget_->context() && (plugin_->GetBackingTextureId() != 0);
+    return widget_->context() && widget_->plugin() &&
+        (widget_->plugin()->GetBackingTextureId() != 0);
   }
 
  private:
-  scoped_refptr<webkit::ppapi::PluginInstance> plugin_;
   RenderWidgetFullscreenPepper* widget_;
   WebSize size_;
 
@@ -322,7 +332,7 @@ void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
 }
 
 WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {
-  return new PepperWidget(plugin_, this);
+  return new PepperWidget(this);
 }
 
 bool RenderWidgetFullscreenPepper::SupportsAsynchronousSwapBuffers() {
