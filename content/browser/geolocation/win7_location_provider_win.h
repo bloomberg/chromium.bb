@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_GEOLOCATION_WIN7_LOCATION_PROVIDER_WIN_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
@@ -39,7 +40,7 @@ class CONTENT_EXPORT Win7LocationProvider : public LocationProviderBase {
   scoped_ptr<Win7LocationApi> api_;
   Geoposition position_;
   // Holder for the tasks which run on the thread; takes care of cleanup.
-  ScopedRunnableMethodFactory<Win7LocationProvider> task_factory_;
+  base::WeakPtrFactory<Win7LocationProvider> weak_factory_;
 };
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_WIN7_LOCATION_PROVIDER_WIN_H_

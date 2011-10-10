@@ -4,13 +4,11 @@
 
 #include "content/browser/geolocation/geolocation_provider.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/geolocation/location_arbitrator.h"
-
-// This class is guaranteed to outlive its internal thread, so ref counting
-// is not required.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(GeolocationProvider);
 
 GeolocationProvider* GeolocationProvider::GetInstance() {
   return Singleton<GeolocationProvider>::get();
@@ -46,22 +44,24 @@ bool GeolocationProvider::RemoveObserver(GeolocationObserver* observer) {
 
 void GeolocationProvider::OnObserversChanged() {
   DCHECK(OnClientThread());
-  Task* task = NULL;
+  base::Closure task;
   if (observers_.empty()) {
     DCHECK(IsRunning());
-    task = NewRunnableMethod(this, &GeolocationProvider::StopProviders);
+    task = base::Bind(&GeolocationProvider::StopProviders,
+                      base::Unretained(this));
   } else {
     if (!IsRunning()) {
       Start();
       if (HasPermissionBeenGranted())
         InformProvidersPermissionGranted(most_recent_authorized_frame_);
     }
+
     // The high accuracy requirement may have changed.
-    task = NewRunnableMethod(
-        this,
-        &GeolocationProvider::StartProviders,
-        GeolocationObserverOptions::Collapse(observers_));
+    task = base::Bind(&GeolocationProvider::StartProviders,
+                      base::Unretained(this),
+                      GeolocationObserverOptions::Collapse(observers_));
   }
+
   message_loop()->PostTask(FROM_HERE, task);
 }
 
@@ -103,11 +103,10 @@ void GeolocationProvider::InformProvidersPermissionGranted(
   DCHECK(IsRunning());
   DCHECK(requesting_frame.is_valid());
   if (!OnGeolocationThread()) {
-    Task* task = NewRunnableMethod(
-        this,
-        &GeolocationProvider::InformProvidersPermissionGranted,
-        requesting_frame);
-    message_loop()->PostTask(FROM_HERE, task);
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&GeolocationProvider::InformProvidersPermissionGranted,
+                   base::Unretained(this), requesting_frame));
     return;
   }
   DCHECK(OnGeolocationThread());
@@ -129,10 +128,10 @@ void GeolocationProvider::CleanUp() {
 
 void GeolocationProvider::OnLocationUpdate(const Geoposition& position) {
   DCHECK(OnGeolocationThread());
-  Task* task = NewRunnableMethod(this,
-                                 &GeolocationProvider::NotifyObservers,
-                                 position);
-  client_loop_->PostTask(FROM_HERE, task);
+  client_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&GeolocationProvider::NotifyObservers,
+                 base::Unretained(this), position));
 }
 
 bool GeolocationProvider::HasPermissionBeenGranted() const {

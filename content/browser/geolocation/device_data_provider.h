@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
@@ -193,8 +194,9 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
   void NotifyListeners() {
     // Always make the nitofy callback via a posted task, se we can unwind
     // callstack here and make callback without causing client re-entrancy.
-    client_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &DeviceDataProviderImplBase<DataType>::NotifyListenersInClientLoop));
+    client_loop_->PostTask(FROM_HERE, base::Bind(
+        &DeviceDataProviderImplBase<DataType>::NotifyListenersInClientLoop,
+        this));
   }
 
   bool CalledOnClientThread() const {

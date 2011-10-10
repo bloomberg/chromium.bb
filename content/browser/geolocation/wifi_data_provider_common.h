@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
@@ -119,7 +120,7 @@ class CONTENT_EXPORT WifiDataProviderCommon
   scoped_ptr<PollingPolicyInterface> polling_policy_;
 
   // Holder for the tasks which run on the thread; takes care of cleanup.
-  ScopedRunnableMethodFactory<WifiDataProviderCommon> task_factory_;
+  base::WeakPtrFactory<WifiDataProviderCommon> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderCommon);
 };

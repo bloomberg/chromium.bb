@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/threading/thread.h"
 #include "content/browser/geolocation/device_data_provider.h"
@@ -127,7 +128,7 @@ class NetworkLocationProvider
   // The network location request object, and the url it uses.
   scoped_ptr<NetworkLocationRequest> request_;
 
-  ScopedRunnableMethodFactory<NetworkLocationProvider> delayed_start_task_;
+  base::WeakPtrFactory<NetworkLocationProvider> weak_factory_;
   // The cache of positions.
   scoped_ptr<PositionCache> position_cache_;
 

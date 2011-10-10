@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -46,7 +47,7 @@ bool PositionsDifferSiginificantly(const Geoposition& position_1,
 
 GpsLocationProviderLinux::GpsLocationProviderLinux(LibGpsFactory libgps_factory)
     : libgps_factory_(libgps_factory),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(libgps_factory_);
 }
 
@@ -59,7 +60,7 @@ bool GpsLocationProviderLinux::StartProvider(bool high_accuracy) {
     return true;  // Not an error condition, so still return true.
   }
   if (gps_ != NULL) {
-    DCHECK(!task_factory_.empty());
+    DCHECK(weak_factory_.HasWeakPtrs());
     return true;
   }
   position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
@@ -73,7 +74,7 @@ bool GpsLocationProviderLinux::StartProvider(bool high_accuracy) {
 }
 
 void GpsLocationProviderLinux::StopProvider() {
-  task_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   gps_.reset();
 }
 
@@ -115,10 +116,11 @@ void GpsLocationProviderLinux::DoGpsPollTask() {
 }
 
 void GpsLocationProviderLinux::ScheduleNextGpsPoll(int interval) {
-  task_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      task_factory_.NewRunnableMethod(&GpsLocationProviderLinux::DoGpsPollTask),
+      base::Bind(&GpsLocationProviderLinux::DoGpsPollTask,
+                 weak_factory_.GetWeakPtr()),
       interval);
 }
 

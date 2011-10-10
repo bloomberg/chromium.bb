@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 
+#include "base/bind.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 
@@ -24,7 +25,7 @@ string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
 WifiDataProviderCommon::WifiDataProviderCommon()
     : Thread("Geolocation_wifi_provider"),
       is_first_scan_complete_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 WifiDataProviderCommon::~WifiDataProviderCommon() {
@@ -102,6 +103,7 @@ void WifiDataProviderCommon::DoWifiScanTask() {
 void WifiDataProviderCommon::ScheduleNextScan(int interval) {
   message_loop()->PostDelayedTask(
       FROM_HERE,
-      task_factory_.NewRunnableMethod(&WifiDataProviderCommon::DoWifiScanTask),
+      base::Bind(&WifiDataProviderCommon::DoWifiScanTask,
+                 weak_factory_.GetWeakPtr()),
       interval);
 }

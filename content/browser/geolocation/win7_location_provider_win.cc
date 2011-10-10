@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -43,7 +44,7 @@ bool PositionsDifferSiginificantly(const Geoposition& position_1,
 }
 
 Win7LocationProvider::Win7LocationProvider(Win7LocationApi* api)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(api != NULL);
   api_.reset(api);
 }
@@ -56,13 +57,13 @@ bool Win7LocationProvider::StartProvider(bool high_accuracy){
   if (api_ == NULL)
     return false;
   api_->SetHighAccuracy(high_accuracy);
-  if (task_factory_.empty())
+  if (!weak_factory_.HasWeakPtrs())
     ScheduleNextPoll(0);
   return true;
 }
 
 void Win7LocationProvider::StopProvider() {
-  task_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void Win7LocationProvider::GetPosition(Geoposition* position) {
@@ -94,7 +95,7 @@ void Win7LocationProvider::DoPollTask() {
 void Win7LocationProvider::ScheduleNextPoll(int interval) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      task_factory_.NewRunnableMethod(&Win7LocationProvider::DoPollTask),
+      base::Bind(&Win7LocationProvider::DoPollTask, weak_factory_.GetWeakPtr()),
       interval);
 }
 

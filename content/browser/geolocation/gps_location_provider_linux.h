@@ -12,6 +12,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/common/content_export.h"
@@ -51,7 +52,7 @@ class CONTENT_EXPORT GpsLocationProviderLinux : public LocationProviderBase {
   Geoposition position_;
 
   // Holder for the tasks which run on the thread; takes care of cleanup.
-  ScopedRunnableMethodFactory<GpsLocationProviderLinux> task_factory_;
+  base::WeakPtrFactory<GpsLocationProviderLinux> weak_factory_;
 };
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_GPS_LOCATION_PROVIDER_LINUX_H_

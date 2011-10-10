@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "content/browser/geolocation/core_location_data_provider_mac.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "content/browser/geolocation/core_location_provider_mac.h"
@@ -206,24 +207,25 @@ bool CoreLocationDataProviderMac::
   DCHECK(!provider_) << "StartUpdating called twice";
   if (![wrapper_ locationDataAvailable]) return false;
   provider_ = provider;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-     NewRunnableMethod(this, &CoreLocationDataProviderMac::StartUpdatingTask));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&CoreLocationDataProviderMac::StartUpdatingTask, this));
   return true;
 }
 
 // Clears provider_ so that any leftover messages from CoreLocation get ignored
 void CoreLocationDataProviderMac::StopUpdating() {
   provider_ = NULL;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-              NewRunnableMethod(this,
-                               &CoreLocationDataProviderMac::StopUpdatingTask));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&CoreLocationDataProviderMac::StopUpdatingTask, this));
 }
 
 void CoreLocationDataProviderMac::UpdatePosition(Geoposition *position) {
-  GeolocationProvider::GetInstance()->message_loop()->PostTask(FROM_HERE,
-              NewRunnableMethod(this,
-                               &CoreLocationDataProviderMac::PositionUpdated,
-                               *position));
+  GeolocationProvider::GetInstance()->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CoreLocationDataProviderMac::PositionUpdated, this,
+                 *position));
 }
 
 // Runs in BrowserThread::UI
