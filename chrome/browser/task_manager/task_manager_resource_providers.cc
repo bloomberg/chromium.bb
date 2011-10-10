@@ -567,23 +567,30 @@ void TaskManagerBackgroundContentsResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
-  // Add all the existing BackgroundContents from every profile.
+  // Add all the existing BackgroundContents from every profile, including
+  // incognito profiles.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
+  size_t num_default_profiles = profiles.size();
+  for (size_t i = 0; i < num_default_profiles; ++i) {
+    if (profiles[i]->HasOffTheRecordProfile()) {
+      profiles.push_back(profiles[i]->GetOffTheRecordProfile());
+    }
+  }
   for (size_t i = 0; i < profiles.size(); ++i) {
     BackgroundContentsService* background_contents_service =
         BackgroundContentsServiceFactory::GetForProfile(profiles[i]);
-    ExtensionService* extensions_service = profiles[i]->GetExtensionService();
     std::vector<BackgroundContents*> contents =
         background_contents_service->GetBackgroundContents();
+    ExtensionService* extension_service = profiles[i]->GetExtensionService();
     for (std::vector<BackgroundContents*>::iterator iterator = contents.begin();
          iterator != contents.end(); ++iterator) {
       string16 application_name;
       // Lookup the name from the parent extension.
-      if (extensions_service) {
+      if (extension_service) {
         const string16& application_id =
             background_contents_service->GetParentApplicationId(*iterator);
-        const Extension* extension = extensions_service->GetExtensionById(
+        const Extension* extension = extension_service->GetExtensionById(
             UTF16ToUTF8(application_id), false);
         if (extension)
           application_name = UTF8ToUTF16(extension->name());
