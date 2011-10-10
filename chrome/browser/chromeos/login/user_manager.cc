@@ -684,6 +684,10 @@ void UserManager::OnDownloadSuccess(const SkBitmap& image) {
     VLOG(1) << "Updating profile image for logged-in user";
     SetLoggedInUserImage(image, User::kProfileImageIndex);
     SaveUserImage(logged_in_user_.email(), image, User::kProfileImageIndex);
+    NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+        Source<UserManager>(this),
+        Details<const UserManager::User>(&logged_in_user()));
   }
 }
 

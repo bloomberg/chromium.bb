@@ -44,6 +44,11 @@ void UserImageScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
   localized_strings->SetString("takePhoto",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO));
+  localized_strings->SetString("profilePhoto",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_PROFILE_PHOTO));
+  localized_strings->SetString("profilePhotoLoading",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO));
   localized_strings->SetString("okButtonText",
       l10n_util::GetStringUTF16(IDS_OK));
 }

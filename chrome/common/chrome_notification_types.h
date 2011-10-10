@@ -764,6 +764,10 @@ enum NotificationType {
   // Sent when user image is updated.
   NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
 
+  // Sent by UserManager when current user image is profile image and
+  // it has been updated.
+  NOTIFICATION_PROFILE_IMAGE_UPDATED,
+
   // Sent when a chromium os user attempts to log in.  The source is
   // all and the details are AuthenticationNotificationDetails.
   NOTIFICATION_LOGIN_AUTHENTICATION,

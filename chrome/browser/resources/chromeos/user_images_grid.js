@@ -103,6 +103,16 @@ cr.define('options', function() {
       this.dataModel = new ArrayDataModel([]);
       this.itemConstructor = UserImagesGridItem;
       this.selectionModel = new ListSingleSelectionModel();
+      this.inProgramSelection_ = false;
+    },
+
+    /**
+     * Should only be queried from the 'change' event listener, true if the
+     * change event was triggered by a programmatical selection change.
+     * @type {boolean}
+     */
+    get inProgramSelection() {
+      return this.inProgramSelection_;
     },
 
     /**
@@ -116,8 +126,10 @@ cr.define('options', function() {
     set selectedItemUrl(url) {
       for (var i = 0, el; el = this.dataModel.item(i); i++) {
         if (el.url === url) {
+          this.inProgramSelection_ = true;
           this.selectionModel.selectedIndex = i;
           this.selectionModel.leadIndex = i;
+          this.inProgramSelection_ = false;
         }
       }
     },
@@ -129,8 +141,10 @@ cr.define('options', function() {
     },
     set selectedItem(selectedItem) {
       var index = this.dataModel.indexOf(selectedItem);
+      this.inProgramSelection_ = true;
       this.selectionModel.selectedIndex = index;
       this.selectionModel.leadIndex = index;
+      this.inProgramSelection_ = false;
     },
 
     /**
@@ -159,16 +173,22 @@ cr.define('options', function() {
      * Replaces an image in the grid.
      * @param {Object} imageInfo Image data returned from addItem() call.
      * @param {string} imageUrl New image URL.
+     * @param {string=} opt_title New image tooltip (if undefined, tooltip
+     *     is left unchanged).
      * @return {!Object} Image data of the added or updated image.
      */
-    updateItem: function(imageInfo, imageUrl) {
+    updateItem: function(imageInfo, imageUrl, opt_title) {
       var imageIndex = this.dataModel.indexOf(imageInfo);
+      var wasSelected = this.selectionModel.selectedIndex == imageIndex;
       this.removeItem(imageInfo);
-      return this.addItem(
+      var newInfo = this.addItem(
           imageUrl,
-          imageInfo.title,
+          opt_title === undefined ? imageInfo.title : opt_title,
           imageInfo.clickHandler,
           imageIndex);
+      if (wasSelected)
+        this.selectedItem = newInfo;
+      return newInfo;
     },
 
     /**

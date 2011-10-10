@@ -40,8 +40,11 @@ cr.define('options', function() {
       UserImagesGrid.decorate(imageGrid);
 
       imageGrid.addEventListener('change', function(e) {
-        // Button selections will be ignored by Chrome handler.
-        chrome.send('selectImage', [this.selectedItemUrl || '']);
+        // Ignore programmatical selection.
+        if (!imageGrid.inProgramSelection) {
+          // Button selections will be ignored by Chrome handler.
+          chrome.send('selectImage', [this.selectedItemUrl || '']);
+        }
       });
       imageGrid.addEventListener('activate',
                                  this.handleImageActivated_.bind(this));
@@ -57,10 +60,13 @@ cr.define('options', function() {
                         localStrings.getString('takePhoto'),
                         this.handleTakePhoto_.bind(this));
 
+      // Profile image data.
+      this.profileImage_ = imageGrid.addItem(
+          ButtonImages.PROFILE_PICTURE,
+          localStrings.getString('profilePhotoLoading'));
+
       // Old user image data (if present).
       this.oldImage_ = null;
-
-      chrome.send('getAvailableImages');
     },
 
     /**
@@ -136,15 +142,43 @@ cr.define('options', function() {
     },
 
     /**
-     * Adds old user image that isn't one of the default images and selects it.
+     * URL of the current user image.
+     * @type {string}
+     */
+    get currentUserImageUrl() {
+      return 'chrome://userimage/' + PersonalOptions.getLoggedInUserEmail() +
+          '?id=' + (new Date()).getTime();
+    },
+
+    /**
+     * Adds or updates old user image taken from file/camera (neither a profile
+     * image nor a default one).
      * @private
      */
-    addOldImage_: function() {
+    setOldImage_: function() {
       var imageGrid = $('images-grid');
-      var src = 'chrome://userimage/' + PersonalOptions.getLoggedInUserEmail() +
-                '?id=' + (new Date()).getTime();
-      this.oldImage_ = imageGrid.addItem(src, undefined, undefined, 2);
-      imageGrid.selectedItem = this.oldImage_;
+      var url = this.currentUserImageUrl;
+      if (this.oldImage_) {
+        this.oldImage_ = imageGrid.updateItem(this.oldImage_, url);
+      } else {
+        this.oldImage_ = imageGrid.addItem(url, undefined, undefined, 3);
+        imageGrid.selectedItem = this.oldImage_;
+      }
+    },
+
+    /**
+     * Updates user's profile image.
+     * @param {string} imageUrl Profile image, encoded as data URL.
+     * @param {boolean} select If true, profile image should be selected.
+     * @private
+     */
+    setProfileImage_: function(imageUrl, select) {
+      var imageGrid = $('images-grid');
+      this.profileImage_ = imageGrid.updateItem(
+          this.profileImage_, imageUrl, localStrings.getString('profilePhoto'));
+      // If there is no previous selection, select it.
+      if (select)
+        imageGrid.selectedItem = this.profileImage_;
     },
 
     /**
@@ -171,12 +205,13 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   [
-    'addOldImage',
+    'setOldImage',
+    'setProfileImage',
     'setSelectedImage',
     'setUserImages',
   ].forEach(function(name) {
-    ChangePictureOptions[name] = function(value) {
-      ChangePictureOptions.getInstance()[name + '_'](value);
+    ChangePictureOptions[name] = function(value1, value2) {
+      ChangePictureOptions.getInstance()[name + '_'](value1, value2);
     };
   });
 

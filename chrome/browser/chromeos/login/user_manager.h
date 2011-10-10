@@ -178,7 +178,7 @@ class UserManager : public UserImageLoader::Delegate,
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Accessor for current_user_is_owner_
   virtual bool current_user_is_owner() const;

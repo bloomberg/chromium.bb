@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CHANGE_PICTURE_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CHANGE_PICTURE_OPTIONS_HANDLER_H_
 
+#include "chrome/browser/chromeos/login/profile_image_downloader.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "content/common/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -20,12 +22,14 @@ namespace chromeos {
 // ChromeOS user image options page UI handler.
 class ChangePictureOptionsHandler : public OptionsPageUIHandler,
                                     public SelectFileDialog::Listener,
-                                    public TakePhotoDialog::Delegate {
+                                    public TakePhotoDialog::Delegate,
+                                    public ProfileImageDownloader::Delegate {
  public:
   ChangePictureOptionsHandler();
   virtual ~ChangePictureOptionsHandler();
 
   // OptionsPageUIHandler implementation.
+  virtual void Initialize() OVERRIDE;
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
 
@@ -33,6 +37,15 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   virtual void RegisterMessages() OVERRIDE;
 
  private:
+  // Sends list of available default images to the page.
+  void SendAvailableImages();
+
+  // Sends current selection to the page.
+  void SendSelectedImage();
+
+  // Starts download of user profile image.
+  void DownloadProfileImage();
+
   // Opens a file selection dialog to choose user image from file.
   void HandleChooseFile(const base::ListValue* args);
 
@@ -56,11 +69,34 @@ class ChangePictureOptionsHandler : public OptionsPageUIHandler,
   // TakePhotoDialog::Delegate implementation.
   virtual void OnPhotoAccepted(const SkBitmap& photo) OVERRIDE;
 
+  // ProfileImageDownloader::Delegate implementation.
+  virtual void OnDownloadSuccess(const SkBitmap& image) OVERRIDE;
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
   // Returns handle to browser window or NULL if it can't be found.
   gfx::NativeWindow GetBrowserWindow() const;
 
+  // Records previous image index and content so that user can switch
+  // back to it.
+  void RecordPreviousImage(int image_index, const SkBitmap& image);
+
   scoped_refptr<SelectFileDialog> select_file_dialog_;
+
   SkBitmap previous_image_;
+  int previous_image_index_;
+  std::string previous_image_data_url_;
+
+  SkBitmap profile_image_;
+  std::string profile_image_data_url_;
+
+  // Downloads user profile image when it's not set as current image.
+  scoped_ptr<ProfileImageDownloader> profile_image_downloader_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangePictureOptionsHandler);
 };
