@@ -744,7 +744,7 @@ void JumpList::OnFaviconDataAvailable(
   // the file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &JumpList::RunUpdate));
+      base::Bind(&JumpList::RunUpdate, this));
 }
 
 void JumpList::RunUpdate() {
