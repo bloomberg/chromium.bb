@@ -127,6 +127,8 @@
       '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/95031
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
+      # crbug.com/98918
+      '-policy.PolicyTest.testBookmarkBarPolicy',
     ],
 
     'win': [
