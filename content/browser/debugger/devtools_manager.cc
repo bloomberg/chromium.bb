@@ -174,6 +174,10 @@ void DevToolsManager::TabReplaced(TabContents* old_tab,
 int DevToolsManager::DetachClientHost(RenderViewHost* from_rvh) {
   DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
       from_rvh);
+  return DetachClientHost(agent_host);
+}
+
+int DevToolsManager::DetachClientHost(DevToolsAgentHost* agent_host) {
   DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host);
   if (!client_host)
     return -1;
@@ -189,13 +193,19 @@ int DevToolsManager::DetachClientHost(RenderViewHost* from_rvh) {
 
 void DevToolsManager::AttachClientHost(int client_host_cookie,
                                        RenderViewHost* to_rvh) {
+  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
+      to_rvh);
+  AttachClientHost(client_host_cookie, agent_host);
+}
+
+void DevToolsManager::AttachClientHost(int client_host_cookie,
+                                       DevToolsAgentHost* agent_host) {
   OrphanClientHosts::iterator it = orphan_client_hosts_.find(
       client_host_cookie);
   if (it == orphan_client_hosts_.end())
     return;
 
   DevToolsClientHost* client_host = (*it).second.first;
-  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(to_rvh);
   const std::string& state = (*it).second.second;
   BindClientHost(agent_host, client_host);
   agent_host->Reattach(state);

@@ -79,10 +79,13 @@ class CONTENT_EXPORT DevToolsManager
   // Closes all open developer tools windows.
   void CloseAllClientHosts();
 
+  void AttachClientHost(int client_host_cookie,
+                        DevToolsAgentHost* to_agent);
   DevToolsClientHost* GetDevToolsClientHostFor(DevToolsAgentHost* agent_host);
   void RegisterDevToolsClientHostFor(DevToolsAgentHost* agent_host,
                                      DevToolsClientHost* client_host);
   void UnregisterDevToolsClientHostFor(DevToolsAgentHost* agent_host);
+  int DetachClientHost(DevToolsAgentHost* from_agent);
 
  private:
   // DevToolsClientHost::CloseListener override.
