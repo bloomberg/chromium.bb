@@ -1765,6 +1765,7 @@ bool GLES2DecoderImpl::Initialize(
   if (!MakeCurrent()) {
     LOG(ERROR) << "GLES2DecoderImpl::Initialize failed because "
                << "MakeCurrent failed.";
+    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy();
     return false;
   }
@@ -1772,6 +1773,7 @@ bool GLES2DecoderImpl::Initialize(
   if (!group_->Initialize(disallowed_features, allowed_extensions)) {
     LOG(ERROR) << "GpuScheduler::InitializeCommon failed because group "
                << "failed to initialize.";
+    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy();
     return false;
   }
@@ -2414,8 +2416,10 @@ void GLES2DecoderImpl::Destroy() {
       offscreen_resolved_color_texture_->Invalidate();
   }
 
-  group_->Destroy(have_context);
-  group_ = NULL;
+  if (group_) {
+    group_->Destroy(have_context);
+    group_ = NULL;
+  }
 
   if (context_.get()) {
     context_->ReleaseCurrent(NULL);
