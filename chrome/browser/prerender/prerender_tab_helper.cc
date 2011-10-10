@@ -180,6 +180,7 @@ PrerenderTabHelper::~PrerenderTabHelper() {
 void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
     const GURL& opener_url) {
+  url_ = url;
   RecordPageviewEvent(PAGEVIEW_EVENT_NEW_URL);
   if (IsTopSite(url))
     RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_NEW_URL);
@@ -191,7 +192,6 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
   if (prerender_manager->IsTabContentsPrerendering(tab_contents()))
     return;
   prerender_manager->MarkTabContentsAsNotPrerendered(tab_contents());
-  url_ = url;
   MaybeUsePrerenderedPage(url, opener_url);
 }
 

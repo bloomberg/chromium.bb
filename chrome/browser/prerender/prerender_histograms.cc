@@ -156,15 +156,31 @@ void PrerenderHistograms::RecordPerceivedPageLoadTime(
   } else if (within_window) {
     RECORD_PLT("PerceivedPLTWindowNotMatched", perceived_page_load_time);
     if (!is_google_url) {
+      bool recorded_any = false;
+      bool recorded_non_overlapping = false;
       if (!seen_any_pageload_) {
         seen_any_pageload_ = true;
         RECORD_PLT("PerceivedPLTFirstAfterMiss", perceived_page_load_time);
+        recorded_any = true;
       }
       if (!seen_pageload_started_after_prerender_ &&
           perceived_page_load_time <= GetTimeSinceLastPrerender()) {
         seen_pageload_started_after_prerender_ = true;
         RECORD_PLT("PerceivedPLTFirstAfterMissNonOverlapping",
                    perceived_page_load_time);
+        recorded_non_overlapping = true;
+      }
+      if (recorded_any || recorded_non_overlapping) {
+        if (recorded_any && recorded_non_overlapping) {
+          RECORD_PLT("PerceivedPLTFirstAfterMissBoth",
+                     perceived_page_load_time);
+        } else if (recorded_any) {
+          RECORD_PLT("PerceivedPLTFirstAfterMissAnyOnly",
+                     perceived_page_load_time);
+        } else if (recorded_non_overlapping) {
+          RECORD_PLT("PerceivedPLTFirstAfterMissNonOverlappingOnly",
+                     perceived_page_load_time);
+        }
       }
     }
   }
