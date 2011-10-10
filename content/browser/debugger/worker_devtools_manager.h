@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_DEBUGGER_WORKER_DEVTOOLS_MANAGER_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -32,6 +34,9 @@ class WorkerDevToolsManager {
   void ForwardToDevToolsClient(int worker_process_id,
                                int worker_route_id,
                                const IPC::Message& message);
+  void SaveAgentRuntimeState(int worker_process_id,
+                             int worker_route_id,
+                             const std::string& state);
  private:
   friend struct DefaultSingletonTraits<WorkerDevToolsManager>;
   class AgentHosts;
@@ -49,6 +54,10 @@ class WorkerDevToolsManager {
       int worker_process_id,
       int worker_route_id,
       const IPC::Message& message);
+  static void SaveAgentRuntimeStateOnUIThread(
+      int worker_process_id,
+      int worker_route_id,
+      const std::string& state);
   static void NotifyWorkerDestroyedOnIOThread(int worker_process_id,
                                               int worker_route_id);
   static void NotifyWorkerDestroyedOnUIThread(int worker_process_id,

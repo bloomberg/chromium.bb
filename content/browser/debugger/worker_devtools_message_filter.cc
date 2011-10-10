@@ -11,7 +11,8 @@
 
 WorkerDevToolsMessageFilter::WorkerDevToolsMessageFilter(
     int worker_process_host_id)
-    : worker_process_host_id_(worker_process_host_id) {
+    : worker_process_host_id_(worker_process_host_id),
+      current_routing_id_(0) {
 }
 
 WorkerDevToolsMessageFilter::~WorkerDevToolsMessageFilter() {
@@ -27,9 +28,12 @@ bool WorkerDevToolsMessageFilter::OnMessageReceived(
     const IPC::Message& message,
     bool* message_was_ok) {
   bool handled = true;
+  current_routing_id_ = message.routing_id();
   IPC_BEGIN_MESSAGE_MAP_EX(WorkerDevToolsMessageFilter, message,
                            *message_was_ok)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ForwardToClient, OnForwardToClient)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
+                        OnSaveAgentRumtimeState)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -39,4 +43,10 @@ void WorkerDevToolsMessageFilter::OnForwardToClient(
     const IPC::Message& message) {
   WorkerDevToolsManager::GetInstance()->ForwardToDevToolsClient(
       worker_process_host_id_, message.routing_id(), message);
+}
+
+void WorkerDevToolsMessageFilter::OnSaveAgentRumtimeState(
+    const std::string& state) {
+  WorkerDevToolsManager::GetInstance()->SaveAgentRuntimeState(
+      worker_process_host_id_, current_routing_id_, state);
 }

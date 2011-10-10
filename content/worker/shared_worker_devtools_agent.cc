@@ -45,6 +45,12 @@ void SharedWorkerDevToolsAgent::SendDevToolsMessage(
     Send(new DevToolsHostMsg_ForwardToClient(route_id_, m));
 }
 
+void SharedWorkerDevToolsAgent::SaveDevToolsAgentState(
+    const WebKit::WebString& state) {
+  Send(new DevToolsHostMsg_SaveAgentRuntimeState(route_id_,
+                                                 state.utf8()));
+}
+
 void SharedWorkerDevToolsAgent::OnAttach() {
   webworker_->attachDevTools();
 }

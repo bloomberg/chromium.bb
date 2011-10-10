@@ -80,6 +80,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient {
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);
   virtual void dispatchDevToolsMessage(const WebKit::WebString&);
+  virtual void saveDevToolsAgentState(const WebKit::WebString&);
 
   void EnsureWorkerContextTerminates();
 

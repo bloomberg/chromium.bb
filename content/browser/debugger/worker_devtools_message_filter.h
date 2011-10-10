@@ -22,8 +22,10 @@ class WorkerDevToolsMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok);
   // Message handlers.
   void OnForwardToClient(const IPC::Message& message);
+  void OnSaveAgentRumtimeState(const std::string& state);
 
   int worker_process_host_id_;
+  int current_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsMessageFilter);
 };

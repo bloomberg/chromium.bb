@@ -27,6 +27,7 @@ class SharedWorkerDevToolsAgent {
   // Called on the Worker thread.
   bool OnMessageReceived(const IPC::Message& message);
   void SendDevToolsMessage(const WebKit::WebString&);
+  void SaveDevToolsAgentState(const WebKit::WebString& state);
 
  private:
   void OnAttach();

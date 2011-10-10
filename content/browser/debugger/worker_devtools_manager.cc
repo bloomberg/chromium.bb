@@ -281,6 +281,18 @@ void WorkerDevToolsManager::ForwardToDevToolsClient(
           message));
 }
 
+void WorkerDevToolsManager::SaveAgentRuntimeState(int worker_process_id,
+                                                  int worker_route_id,
+                                                  const std::string& state) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          SaveAgentRuntimeStateOnUIThread,
+          worker_process_id,
+          worker_route_id,
+          state));
+}
+
 void WorkerDevToolsManager::WorkerProcessDestroying(
     int worker_process_id) {
   inspected_workers_->WorkerDevToolsMessageFilterClosing(
@@ -312,6 +324,19 @@ void WorkerDevToolsManager::ForwardToDevToolsClientOnUIThread(
   if (!agent_host)
     return;
   DevToolsManager::GetInstance()->ForwardToDevToolsClient(agent_host, message);
+}
+
+// static
+void WorkerDevToolsManager::SaveAgentRuntimeStateOnUIThread(
+    int worker_process_id,
+    int worker_route_id,
+    const std::string& state) {
+  WorkerDevToolsAgentHost* agent_host = AgentHosts::GetAgentHost(WorkerId(
+      worker_process_id,
+      worker_route_id));
+  if (!agent_host)
+    return;
+  DevToolsManager::GetInstance()->SaveAgentRuntimeState(agent_host, state);
 }
 
 // static

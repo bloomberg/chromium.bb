@@ -184,6 +184,12 @@ void WebWorkerClientProxy::dispatchDevToolsMessage(const WebString& message) {
     devtools_agent_->SendDevToolsMessage(message);
 }
 
+void WebWorkerClientProxy::saveDevToolsAgentState(
+    const WebKit::WebString& state) {
+  if (devtools_agent_)
+    devtools_agent_->SaveDevToolsAgentState(state);
+}
+
 bool WebWorkerClientProxy::Send(IPC::Message* message) {
   return WorkerThread::current()->Send(message);
 }
