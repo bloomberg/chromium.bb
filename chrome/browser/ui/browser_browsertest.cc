@@ -68,8 +68,6 @@ const FilePath::CharType* kBeforeUnloadFile =
 
 const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
-const FilePath::CharType* kSubFrameNavigationFile =
-    FILE_PATH_LITERAL("subframe-navigation.html");
 
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
@@ -856,53 +854,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestTabExitsItselfFromFullscreen) {
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
   }
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserTest, TestTabExitsFullscreenOnNavigation) {
-  ASSERT_TRUE(test_server()->Start());
-
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
-
-  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
-
-  ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
-      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-      NotificationService::AllSources());
-  browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
-  tree_updated_observer1.Wait();
-
-  ASSERT_TRUE(browser()->window()->IsFullscreen());
-
-  ui_test_utils::WindowedNotificationObserver tree_updated_observer2(
-      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-      NotificationService::AllSources());
-  browser()->GoBack(CURRENT_TAB);
-  tree_updated_observer2.Wait();
-
-  ASSERT_FALSE(browser()->window()->IsFullscreen());
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserTest,
-                       TestTabDoesntExitFullscreenOnSubFrameNavigation) {
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                     FilePath(kSubFrameNavigationFile)));
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
-
-  ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
-      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-      NotificationService::AllSources());
-  browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
-  tree_updated_observer1.Wait();
-  ASSERT_TRUE(browser()->window()->IsFullscreen());
-
-  fullscreen_tab->render_view_host()->
-      ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("navigate();"));
-  ASSERT_TRUE(browser()->window()->IsFullscreen());
 }
 
 #if defined(OS_MACOSX)

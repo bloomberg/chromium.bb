@@ -843,9 +843,6 @@ class Browser : public TabHandlerDelegate,
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestNewTabExitsFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestTabExitsItselfFromFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, TabEntersPresentationModeFromWindowed);
-  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestTabExitsFullscreenOnNavigation);
-  FRIEND_TEST_ALL_PREFIXES(BrowserTest,
-                           TestTabDoesntExitFullscreenOnSubFrameNavigation);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutNoPref);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutWindowPref);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutTabPref);

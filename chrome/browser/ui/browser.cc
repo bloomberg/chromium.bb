@@ -139,7 +139,6 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
@@ -1665,11 +1664,8 @@ void Browser::ToggleFullscreenMode() {
 }
 
 void Browser::NotifyTabOfFullscreenExitIfNecessary() {
-  if (fullscreened_tab_) {
+  if (fullscreened_tab_)
     fullscreened_tab_->ExitFullscreenMode();
-    registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&fullscreened_tab_->controller()));
-  }
   fullscreened_tab_ = NULL;
   tab_caused_fullscreen_ = false;
 }
@@ -3787,12 +3783,6 @@ void Browser::ToggleFullscreenModeForTab(TabContents* tab,
 #endif
     if (!in_correct_mode_for_tab_fullscreen)
       tab_caused_fullscreen_ = true;
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&fullscreened_tab_->controller()));
-  } else {
-    registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&fullscreened_tab_->controller()));
-    fullscreened_tab_ = NULL;
   }
 
   if (tab_caused_fullscreen_) {
@@ -4129,13 +4119,6 @@ void Browser::Observe(int type,
       if (profile_->IsSameProfile(Source<Profile>(source).ptr()))
         UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
       break;
-
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      if (Details<content::LoadCommittedDetails>(details)->
-          is_navigation_to_different_page())
-        ExitTabbedFullscreenModeIfNecessary();
-      break;
-    }
 
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
