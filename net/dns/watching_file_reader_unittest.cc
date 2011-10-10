@@ -16,33 +16,20 @@ namespace {
 class WatchingFileReaderTest : public testing::Test {
  public:
 
-  // The class under test
-  class TestWatchingFileReader : public WatchingFileReader {
-   public:
-    explicit TestWatchingFileReader(WatchingFileReaderTest* t)
-      : test_(t) {}
-    virtual void DoRead() OVERRIDE {
-      ASSERT_TRUE(test_);
-      test_->OnRead();
-    }
-    virtual void OnReadFinished() OVERRIDE {
-      ASSERT_TRUE(test_);
-      test_->OnReadFinished();
-    }
-    void TestCancel() {
-      // Could execute concurrently with DoRead()
-      test_ = NULL;
-    }
-   private:
-    virtual ~TestWatchingFileReader() {}
-    WatchingFileReaderTest* test_;
-    base::Lock lock_;
-  };
-
   // Mocks
 
-  // WatcherDelegate owns the FilePathWatcherFactory it gets, so use simple
-  // proxies to call the test fixture.
+  class MockWorker : public SerialWorker {
+   public:
+    explicit MockWorker(WatchingFileReaderTest* t) : test_(t) {}
+    virtual void WorkNow() OVERRIDE {
+      test_->OnWork();
+    }
+    virtual void DoWork() OVERRIDE {}
+    virtual void OnWorkFinished() OVERRIDE {}
+   private:
+    virtual ~MockWorker() {}
+    WatchingFileReaderTest* test_;
+  };
 
   class MockFilePathWatcherShim
     : public FilePathWatcherShim {
@@ -112,28 +99,9 @@ class WatchingFileReaderTest : public testing::Test {
     return !fail_on_watch_;
   }
 
-  void OnRead() {
-    { // Check that OnRead is executed serially.
-      base::AutoLock lock(read_lock_);
-      EXPECT_FALSE(read_running_) << "DoRead is not called serially!";
-      read_running_ = true;
-    }
-    BreakNow("OnRead");
-    read_allowed_.Wait();
-    // Calling from WorkerPool, but protected by read_allowed_/read_called_.
-    output_value_ = input_value_;
-
-    { // This lock might be destroyed after read_called_ is signalled.
-      base::AutoLock lock(read_lock_);
-      read_running_ = false;
-    }
-    read_called_.Signal();
-  }
-
-  void OnReadFinished() {
+  void OnWork() {
     EXPECT_TRUE(message_loop_ == MessageLoop::current());
-    EXPECT_EQ(output_value_, input_value_);
-    BreakNow("OnReadFinished");
+    BreakNow("OnWork");
   }
 
  protected:
@@ -164,122 +132,40 @@ class WatchingFileReaderTest : public testing::Test {
   WatchingFileReaderTest()
       : watcher_shim_(NULL),
         fail_on_watch_(false),
-        input_value_(0),
-        output_value_(-1),
-        read_allowed_(false, false),
-        read_called_(false, false),
-        read_running_(false) {
-  }
-
-  // Helpers for tests.
-
-  // Lets OnRead run and waits for it to complete. Can only return if OnRead is
-  // executed on a concurrent thread.
-  void WaitForRead() {
-    RunUntilBreak("OnRead");
-    read_allowed_.Signal();
-    read_called_.Wait();
-  }
-
-  // test::Test methods
-  virtual void SetUp() OVERRIDE {
-    message_loop_ = MessageLoop::current();
-    watcher_ = new TestWatchingFileReader(this);
+        message_loop_(MessageLoop::current()),
+        watcher_(new WatchingFileReader()) {
     watcher_->set_watcher_factory(new MockFilePathWatcherFactory(this));
   }
 
-  virtual void TearDown() OVERRIDE {
-    // Cancel the watcher to catch if it makes a late DoRead call.
-    watcher_->TestCancel();
-    watcher_->Cancel();
-    // Check if OnRead is stalled.
-    EXPECT_FALSE(read_running_) << "OnRead should be done by TearDown";
-    // Release it for cleanliness.
-    if (read_running_) {
-      WaitForRead();
-    }
-  }
-
   MockFilePathWatcherShim* watcher_shim_;
-
   bool fail_on_watch_;
-
-  // Input value read on WorkerPool.
-  int input_value_;
-  // Output value written on WorkerPool.
-  int output_value_;
-
-  // read is called on WorkerPool so we need to synchronize with it.
-  base::WaitableEvent read_allowed_;
-  base::WaitableEvent read_called_;
-
-  // Protected by read_lock_. Used to verify that read calls are serialized.
-  bool read_running_;
-  base::Lock read_lock_;
-
-  // Loop for this thread.
   MessageLoop* message_loop_;
-
-  // WatcherDelegate under test.
-  scoped_refptr<TestWatchingFileReader> watcher_;
+  scoped_ptr<WatchingFileReader> watcher_;
 
   std::string breakpoint_;
 };
 
 TEST_F(WatchingFileReaderTest, FilePathWatcherFailures) {
   fail_on_watch_ = true;
-  watcher_->StartWatch(FilePath(FILE_PATH_LITERAL("some_file_name")));
+  watcher_->StartWatch(FilePath(FILE_PATH_LITERAL("some_file_name")),
+                       new MockWorker(this));
   RunUntilBreak("OnWatch");
 
   fail_on_watch_ = false;
   RunUntilBreak("OnWatch");  // Due to backoff this will take 100ms.
-  WaitForRead();
-  RunUntilBreak("OnReadFinished");
+  RunUntilBreak("OnWork");
 
   ASSERT_TRUE(watcher_shim_);
   watcher_shim_->PathError();
   RunUntilBreak("OnWatch");
-  WaitForRead();
-  RunUntilBreak("OnReadFinished");
-
-  message_loop_->AssertIdle();
-}
-
-TEST_F(WatchingFileReaderTest, ExecuteAndSerializeReads) {
-  watcher_->StartWatch(FilePath(FILE_PATH_LITERAL("some_file_name")));
-  RunUntilBreak("OnWatch");
-  WaitForRead();
-  RunUntilBreak("OnReadFinished");
+  RunUntilBreak("OnWork");
 
   message_loop_->AssertIdle();
 
-  ++input_value_;
   ASSERT_TRUE(watcher_shim_);
   watcher_shim_->PathChanged();
-  WaitForRead();
-  RunUntilBreak("OnReadFinished");
+  RunUntilBreak("OnWork");
 
-  message_loop_->AssertIdle();
-
-  ++input_value_;
-  ASSERT_TRUE(watcher_shim_);
-  watcher_shim_->PathChanged();
-  WaitForRead();
-  RunUntilBreak("OnReadFinished");
-
-  message_loop_->AssertIdle();
-
-  // Schedule two calls. OnRead checks if it is called serially.
-  ++input_value_;
-  ASSERT_TRUE(watcher_shim_);
-  watcher_shim_->PathChanged();
-  // read is blocked, so this will have to induce read_pending
-  watcher_shim_->PathChanged();
-  WaitForRead();
-  WaitForRead();
-  RunUntilBreak("OnReadFinished");
-
-  // No more tasks should remain.
   message_loop_->AssertIdle();
 }
 
