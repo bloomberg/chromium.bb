@@ -35,9 +35,8 @@
 #import <Foundation/Foundation.h>
 #include <mach/mach.h>
 
+#import "client/mac/crash_generation/ConfigFile.h"
 #import "client/mac/handler/minidump_generator.h"
-
-#define VERBOSE 0
 
 extern bool gDebugLog;
 
@@ -79,48 +78,6 @@ using std::string;
 using google_breakpad::MinidumpGenerator;
 
 namespace google_breakpad {
-
-BOOL EnsureDirectoryPathExists(NSString *dirPath);
-
-//=============================================================================
-class ConfigFile {
- public:
-  ConfigFile() {
-    config_file_ = -1;
-    config_file_path_[0] = 0;
-    has_created_file_ = false;
-  };
-
-  ~ConfigFile() {
-  };
-
-  void WriteFile(const SimpleStringDictionary *configurationParameters,
-                 const char *dump_dir,
-                 const char *minidump_id);
-
-  const char *GetFilePath() { return config_file_path_; }
-
-  void Unlink() {
-    if (config_file_ != -1)
-      unlink(config_file_path_);
-
-    config_file_ = -1;
-  }
-
- private:
-  BOOL WriteData(const void *data, size_t length);
-
-  BOOL AppendConfigData(const char *key,
-                        const void *data,
-                        size_t length);
-
-  BOOL AppendConfigString(const char *key,
-                          const char *value);
-
-  int   config_file_;                    // descriptor for config file
-  char  config_file_path_[PATH_MAX];     // Path to configuration file
-  bool  has_created_file_;
-};
 
 //=============================================================================
 class MinidumpLocation {
@@ -185,8 +142,6 @@ class Inspector {
   bool            InspectTask();
   kern_return_t   SendAcknowledgement();
   void            LaunchReporter(const char *inConfigFilePath);
-
-  void            SetCrashTimeParameters();
 
   // The bootstrap port in which the inspector is registered and into which it
   // must check in.
