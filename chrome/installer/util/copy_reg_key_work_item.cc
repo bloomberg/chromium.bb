@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Implementation of a work item that replaces the contents of one registry key
+// with that of another (i.e., the destination is erased prior to the copy).
+
 #include "chrome/installer/util/copy_reg_key_work_item.h"
 
 #include <shlwapi.h>
@@ -80,7 +83,7 @@ bool CopyRegKeyWorkItem::Do() {
           SHDeleteKey(predefined_root_, dest_key_path_.c_str());
           // Handle like a success.
           result = ERROR_SUCCESS;
-          // -- FALL THROUGH TO SUCCESS CASE --
+          // -- Fall through to success case. --
         case ERROR_SUCCESS:
           break;
         default:

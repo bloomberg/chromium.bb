@@ -49,6 +49,7 @@ class RegistryKeyBackup {
  private:
   class KeyData;
 
+  // The values and subkeys of the backed-up key.
   scoped_ptr<KeyData> key_data_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryKeyBackup);

@@ -22,16 +22,32 @@ class RegistryKeyBackup::KeyData {
  public:
   KeyData();
   ~KeyData();
+
+  // Initializes this object by reading the values and subkeys of |key|.
+  // Security descriptors are not backed up.  Returns true if the operation was
+  // successful; false otherwise, in which case the state of this object is not
+  // modified.
   bool Initialize(const RegKey& key);
+
+  // Writes the contents of this object to |key|, which must have been opened
+  // with at least REG_SET_VALUE and KEY_CREATE_SUB_KEY access rights.  Returns
+  // true if the operation was successful; false otherwise, in which case the
+  // contents of |key| may have been modified.
   bool WriteTo(RegKey* key) const;
 
  private:
   class ValueData;
 
+  // The values of this key.
   scoped_array<ValueData> values_;
+  // The names of this key's sub-keys (the data for subkey_names_[i] is in
+  // subkeys_[i]).
   scoped_array<std::wstring> subkey_names_;
+  // The key data of this key's sub-keys.
   scoped_array<KeyData> subkeys_;
+  // The number of values for this key.
   DWORD num_values_;
+  // The number of subkeys for this key.
   DWORD num_subkeys_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyData);
@@ -42,17 +58,35 @@ class RegistryKeyBackup::KeyData::ValueData {
  public:
   ValueData();
   ~ValueData();
+
+  // Initializes this object with a name (the first |name_size| characters in
+  // |name_buffer|, |type|, and data (the first |data_size| bytes in |data|).
   void Initialize(const wchar_t* name_buffer, DWORD name_size,
                   DWORD type, const uint8* data, DWORD data_size);
+
+  // The possibly empty name of this value.
   const std::wstring& name_str() const { return name_; }
+
+  // The name of this value, or NULL for the default (unnamed) value.
   const wchar_t* name() const { return name_.empty() ? NULL : name_.c_str(); }
+
+  // The type of this value.
   DWORD type() const { return type_; }
+
+  // A pointer to a buffer of |data_len()| bytes containing the value's data,
+  // or NULL if the value has no data.
   const uint8* data() const { return data_.empty() ? NULL : &data_[0]; }
+
+  // The size, in bytes, of the value's data.
   DWORD data_len() const { return static_cast<DWORD>(data_.size()); }
 
  private:
+  // This value's name, or the empty string if this is the default (unnamed)
+  // value.
   std::wstring name_;
+  // This value's data.
   std::vector<uint8> data_;
+  // This value's type (e.g., REG_DWORD, REG_SZ, REG_QWORD, etc).
   DWORD type_;
 
   DISALLOW_COPY_AND_ASSIGN(ValueData);
@@ -86,8 +120,6 @@ RegistryKeyBackup::KeyData::~KeyData()
 {
 }
 
-// Initializes this object by reading the values and subkeys of |key|.
-// Security descriptors are not backed up.
 bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
   scoped_array<ValueData> values;
   scoped_array<std::wstring> subkey_names;
@@ -229,7 +261,6 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
   return true;
 }
 
-// Writes the values and subkeys of this object into |key|.
 bool RegistryKeyBackup::KeyData::WriteTo(RegKey* key) const {
   DCHECK(key);
 

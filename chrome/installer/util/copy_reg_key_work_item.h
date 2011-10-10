@@ -25,6 +25,8 @@ class CopyRegKeyWorkItem : public WorkItem {
   virtual void Rollback() OVERRIDE;
 
  private:
+  // Grant WorkItem access to the ctor (required by the existing WorkItem
+  // design).
   friend class WorkItem;
 
   // Neither |source_key_path| nor |dest_key_path| may be empty.
@@ -44,6 +46,7 @@ class CopyRegKeyWorkItem : public WorkItem {
   // Path of the destination key.
   std::wstring dest_key_path_;
 
+  // WorkItem::ALWAYS or WorkItem::IF_NOT_PRESENT.
   CopyOverWriteOption overwrite_option_;
 
   // Backup of the destination key.
