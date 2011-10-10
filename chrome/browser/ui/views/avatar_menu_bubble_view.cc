@@ -18,6 +18,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "views/controls/button/image_button.h"
@@ -31,6 +32,8 @@ const int kItemMarginY = 4;
 const int kIconWidth = 38;
 const int kIconMarginX = 6;
 const int kSeparatorPaddingY = 5;
+const SkColor kHighlightBackgroundColor = SkColorSetRGB(0xe3, 0xed, 0xf6);
+const SkColor kLinkColor = SkColorSetRGB(0, 0x79, 0xda);
 
 inline int Round(double x) {
   return static_cast<int>(x + 0.5);
@@ -146,7 +149,9 @@ class ProfileItemView : public views::CustomButton,
         l10n_util::GetStringUTF16(IDS_PROFILES_EDIT_PROFILE_LINK), this);
     edit_link_->set_listener(edit_profile_listener);
     edit_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    edit_link_->SetNormalColor(SkColorSetRGB(0, 0x79, 0xda));
+    edit_link_->MakeReadableOverBackgroundColor(kHighlightBackgroundColor);
+    edit_link_->SetNormalColor(
+        color_utils::GetReadableColor(kLinkColor, kHighlightBackgroundColor));
     AddChildView(edit_link_);
 
     OnHighlightStateChanged();
@@ -154,7 +159,7 @@ class ProfileItemView : public views::CustomButton,
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     if (IsHighlighted()) {
-      canvas->FillRectInt(SkColorSetRGB(0xe3, 0xed, 0xf6), 0, 0,
+      canvas->FillRectInt(kHighlightBackgroundColor, 0, 0,
                           width(), height());
     }
   }
@@ -198,9 +203,16 @@ class ProfileItemView : public views::CustomButton,
   }
 
   virtual void OnHighlightStateChanged() OVERRIDE {
-    bool show_edit = IsHighlighted() && item_.active;
+    bool is_highlighted = IsHighlighted();
+    bool show_edit = is_highlighted && item_.active;
     sync_state_label_->SetVisible(!show_edit);
     edit_link_->SetVisible(show_edit);
+
+    SkColor background_color =
+        is_highlighted ? kHighlightBackgroundColor : Bubble::kBackgroundColor;
+    name_label_->MakeReadableOverBackgroundColor(background_color);
+    sync_state_label_->MakeReadableOverBackgroundColor(background_color);
+
     SchedulePaint();
   }
 
@@ -372,7 +384,9 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
       l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
   add_profile_link_->set_listener(this);
   add_profile_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  add_profile_link_->SetNormalColor(SkColorSetRGB(0, 0x79, 0xda));
+  add_profile_link_->MakeReadableOverBackgroundColor(Bubble::kBackgroundColor);
+  add_profile_link_->SetNormalColor(
+      color_utils::GetReadableColor(kLinkColor, Bubble::kBackgroundColor));
   AddChildView(add_profile_link_);
 
   PreferredSizeChanged();

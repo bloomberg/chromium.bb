@@ -89,6 +89,11 @@ SkColor Label::GetColor() const {
   return color_;
 }
 
+void Label::MakeReadableOverBackgroundColor(const SkColor& background_color) {
+  SetColor(color_utils::GetReadableColor(
+      IsEnabled() ? kEnabledColor : kDisabledColor, background_color));
+}
+
 void Label::SetHorizontalAlignment(Alignment alignment) {
   // If the View's UI layout is right-to-left and rtl_alignment_mode_ is
   // USE_UI_ALIGNMENT, we need to flip the alignment so that the alignment

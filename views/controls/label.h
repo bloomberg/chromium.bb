@@ -81,6 +81,11 @@ class VIEWS_EXPORT Label : public View {
   // Return a reference to the currently used color.
   virtual SkColor GetColor() const;
 
+  // If you'll be displaying the label over some non-system background color,
+  // call this with the relevant color and the label will auto-set its color to
+  // be readable.
+  virtual void MakeReadableOverBackgroundColor(const SkColor& background_color);
+
   // Set horizontal alignment. If the locale is RTL, and the RTL alignment
   // setting is set as USE_UI_ALIGNMENT, the alignment is flipped around.
   //

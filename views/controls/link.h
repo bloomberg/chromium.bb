@@ -46,15 +46,11 @@ class VIEWS_EXPORT Link : public Label {
 
   // Overridden from Label:
   virtual void SetFont(const gfx::Font& font) OVERRIDE;
+  virtual void MakeReadableOverBackgroundColor(const SkColor& color) OVERRIDE;
 
   void SetHighlightedColor(const SkColor& color);
   void SetDisabledColor(const SkColor& color);
   void SetNormalColor(const SkColor& color);
-
-  // If you'll be displaying the link over some non-system background color,
-  // call this with the relevant color and the link will auto-set its colors to
-  // be readable.
-  void MakeReadableOverBackgroundColor(const SkColor& color);
 
   static const char kViewClassName[];
 
