@@ -46,8 +46,10 @@ class ChromeosWifiSanity(chromeos_network.PyNetworkUITest):
     """
     ssid = 'ThisIsANonExistentNetwork'
     error = self.ConnectToHiddenWifiNetwork(ssid, 'SECURITY_NONE')
-    self.assertTrue(error, msg='Device connected to a non-existent '
+    self.assertTrue(error is not None, msg='Device connected to a non-existent '
                                            'network "%s".' % ssid)
+    self.assertTrue(error != '', msg='Device had a connection error but no '
+                                     'error message.')
 
   def testForgetWifiNetwork(self):
     """Basic test to verify there are no problems calling ForgetWifiNetwork."""
