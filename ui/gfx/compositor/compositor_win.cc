@@ -242,7 +242,7 @@ void ViewTexture::SetCanvas(const SkCanvas& canvas,
 
 void ViewTexture::Draw(const ui::TextureDrawParams& params,
                        const gfx::Rect& clip_bounds) {
-  if (!params.vertically_flipped)
+  if (params.vertically_flipped)
     NOTIMPLEMENTED();
 
   compositor_->UpdatePerspective(params.transform, view_size_);
