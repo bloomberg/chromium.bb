@@ -1,0 +1,13 @@
+# mov %rax,%rax
+# test that we accept rex prefixes with bits which are not used by
+# the command.
+48 89 C0
+47 89 C0
+46 89 C0
+45 89 C0
+44 89 C0
+43 89 C0
+42 89 C0
+41 89 C0
+40 89 C0
+4F 89 C0
