@@ -13,6 +13,7 @@
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if !defined(OS_MACOSX)
 #define FLIP_FRAMEBUFFER_VERTICALLY
@@ -51,7 +52,9 @@ namespace gpu {
 
 class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
  public:
-  WebGraphicsContext3DInProcessImpl();
+  // Creates a WebGraphicsContext3DInProcessImpl for a given window. If window
+  // is gfx::kNullPluginWindow, then it creates an offscreen context.
+  WebGraphicsContext3DInProcessImpl(gfx::PluginWindowHandle window);
   virtual ~WebGraphicsContext3DInProcessImpl();
 
   //----------------------------------------------------------------------
@@ -423,6 +426,9 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 
   typedef base::hash_map<WebGLId, ShaderSourceEntry*> ShaderSourceMap;
 
+  bool AllocateOffscreenFrameBuffer(int width, int height);
+  void ClearRenderTarget();
+
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   void FlipVertically(unsigned char* framebuffer,
                       unsigned int width,
@@ -484,6 +490,7 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
 
   ShHandle fragment_compiler_;
   ShHandle vertex_compiler_;
+  gfx::PluginWindowHandle window_;
 };
 
 }  // namespace gpu

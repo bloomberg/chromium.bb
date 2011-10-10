@@ -554,7 +554,8 @@ RendererWebKitPlatformSupportImpl::createGraphicsContext3D() {
   // layout tests (though not through this code) as well as for
   // debugging and bringing up new ports.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
-    return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
+    return new webkit::gpu::WebGraphicsContext3DInProcessImpl(
+        gfx::kNullPluginWindow);
   } else {
 #if defined(ENABLE_GPU)
     return new WebGraphicsContext3DCommandBufferImpl();

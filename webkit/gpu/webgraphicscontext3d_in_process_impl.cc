@@ -42,7 +42,8 @@ struct WebGraphicsContext3DInProcessImpl::ShaderSourceEntry {
   bool is_valid;
 };
 
-WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl()
+WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
+    gfx::PluginWindowHandle window)
     : initialized_(false),
       render_directly_to_web_view_(false),
       is_gles2_(false),
@@ -64,7 +65,8 @@ WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl()
       scanline_(0),
 #endif
       fragment_compiler_(0),
-      vertex_compiler_(0) {
+      vertex_compiler_(0),
+      window_(window) {
 }
 
 WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
@@ -129,14 +131,19 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
 
   is_gles2_ = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
 
-  // This implementation always renders offscreen regardless of
-  // whether render_directly_to_web_view is true. Both DumpRenderTree
-  // and test_shell paint first to an intermediate offscreen buffer
-  // and from there to the window, and WebViewImpl::paint already
-  // correctly handles the case where the compositor is active but
-  // the output needs to go to a WebCanvas.
-  gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false,
-                                                         gfx::Size(1, 1));
+  if (window_ != gfx::kNullPluginWindow) {
+    gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, window_);
+  } else {
+    // This implementation always renders offscreen regardless of
+    // whether render_directly_to_web_view is true. Both DumpRenderTree
+    // and test_shell paint first to an intermediate offscreen buffer
+    // and from there to the window, and WebViewImpl::paint already
+    // correctly handles the case where the compositor is active but
+    // the output needs to go to a WebCanvas.
+    gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false,
+        gfx::Size(1, 1));
+  }
+
   if (!gl_surface_.get()) {
     if (!is_gles2_)
       return false;
@@ -311,7 +318,9 @@ WebGLId WebGraphicsContext3DInProcessImpl::getPlatformTextureId() {
 }
 
 void WebGraphicsContext3DInProcessImpl::prepareTexture() {
-  if (!render_directly_to_web_view_) {
+  if (window_ != gfx::kNullPluginWindow) {
+    gl_surface_->SwapBuffers();
+  } else if (!render_directly_to_web_view_) {
     // We need to prepare our rendering results for the compositor.
     makeContextCurrent();
     ResolveMultisampledFramebuffer(0, 0, cached_width_, cached_height_);
@@ -336,6 +345,26 @@ void WebGraphicsContext3DInProcessImpl::reshape(int width, int height) {
   cached_height_ = height;
   makeContextCurrent();
 
+  bool must_restore_fbo = false;
+  if (window_ == gfx::kNullPluginWindow)
+    must_restore_fbo = AllocateOffscreenFrameBuffer(width, height);
+
+  ClearRenderTarget();
+
+  if (must_restore_fbo)
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
+
+#ifdef FLIP_FRAMEBUFFER_VERTICALLY
+  if (scanline_) {
+    delete[] scanline_;
+    scanline_ = 0;
+  }
+  scanline_ = new unsigned char[width * 4];
+#endif  // FLIP_FRAMEBUFFER_VERTICALLY
+}
+
+bool WebGraphicsContext3DInProcessImpl::AllocateOffscreenFrameBuffer(
+    int width, int height) {
   GLenum target = GL_TEXTURE_2D;
 
   if (!texture_) {
@@ -499,7 +528,10 @@ void WebGraphicsContext3DInProcessImpl::reshape(int width, int height) {
     if (bound_fbo_ == multisample_fbo_)
       must_restore_fbo = false;
   }
+  return must_restore_fbo;
+}
 
+void WebGraphicsContext3DInProcessImpl::ClearRenderTarget() {
   // Initialize renderbuffers to 0.
   GLfloat clearColor[] = {0, 0, 0, 0}, clearDepth = 0;
   GLint clearStencil = 0;
@@ -553,17 +585,6 @@ void WebGraphicsContext3DInProcessImpl::reshape(int width, int height) {
     glEnable(GL_DITHER);
   else
     glDisable(GL_DITHER);
-
-  if (must_restore_fbo)
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
-
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
-  if (scanline_) {
-    delete[] scanline_;
-    scanline_ = 0;
-  }
-  scanline_ = new unsigned char[width * 4];
-#endif  // FLIP_FRAMEBUFFER_VERTICALLY
 }
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY

@@ -372,7 +372,8 @@ WebKit::WebGraphicsContext3D*
 TestWebKitPlatformSupport::createGraphicsContext3D() {
   switch (webkit_support::GetGraphicsContext3DImplementation()) {
     case webkit_support::IN_PROCESS:
-      return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
+      return new webkit::gpu::WebGraphicsContext3DInProcessImpl(
+          gfx::kNullPluginWindow);
     case webkit_support::IN_PROCESS_COMMAND_BUFFER:
       return new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl();
     default:
