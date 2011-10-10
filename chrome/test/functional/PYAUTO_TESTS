@@ -98,6 +98,8 @@
       '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/71715
       '-omnibox.OmniboxTest.testHistoryResult',
+      # crbug.com/97140
+      '-plugins.PluginsTest.testDisableEnableAllPlugins',
       # crbug.com/82629 - real bug.
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/47935
