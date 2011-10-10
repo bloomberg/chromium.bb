@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/test/test_suite.h"
+#include "ui/aura/test_suite.h"
 
 #include "base/file_path.h"
 #include "base/path_service.h"
@@ -11,9 +11,6 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/gl/gl_implementation.h"
-
-namespace aura {
-namespace test {
 
 AuraTestSuite::AuraTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}
@@ -37,6 +34,3 @@ void AuraTestSuite::Shutdown() {
 
   base::TestSuite::Shutdown();
 }
-
-}  // namespace test
-}  // namespace aura

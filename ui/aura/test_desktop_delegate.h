@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_TEST_TEST_DESKTOP_DELEGATE_H_
-#define UI_AURA_TEST_TEST_DESKTOP_DELEGATE_H_
+#ifndef UI_AURA_TEST_DESKTOP_DELEGATE_H_
+#define UI_AURA_TEST_DESKTOP_DELEGATE_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -13,9 +13,8 @@
 #include "ui/aura/toplevel_window_container.h"
 
 namespace aura {
-class ToplevelWindowContainer;
 
-namespace test {
+class ToplevelWindowContainer;
 
 class TestDesktopDelegate : public DesktopDelegate {
  public:
@@ -34,7 +33,6 @@ class TestDesktopDelegate : public DesktopDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestDesktopDelegate);
 };
 
-}  // namespace test
 }  // namespace aura
 
-#endif  // UI_AURA_TEST_TEST_DESKTOP_DELEGATE_H_
+#endif  // UI_AURA_TEST_DESKTOP_DELEGATE_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_TEST_TEST_WINDOW_DELEGATE_H_
-#define UI_AURA_TEST_TEST_WINDOW_DELEGATE_H_
+#ifndef UI_AURA_TEST_WINDOW_DELEGATE_H_
+#define UI_AURA_TEST_WINDOW_DELEGATE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/aura/window_delegate.h"
 
 namespace aura {
-namespace test {
+namespace internal {
 
 // WindowDelegate implementation with all methods stubbed out.
 class TestWindowDelegate : public WindowDelegate {
@@ -39,7 +39,6 @@ class TestWindowDelegate : public WindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
 
-}  // namespace test
+}  // namespace internal
 }  // namespace aura
-
-#endif  // UI_AURA_TEST_TEST_WINDOW_DELEGATE_H_
+#endif  // UI_AURA_TEST_WINDOW_DELEGATE_H_
