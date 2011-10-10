@@ -465,9 +465,13 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       break;
     }
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR: {
+      // TODO(sync): We should expose a real "display an error" API on
+      // SyncSetupFlowHandler (crbug.com/92722) but for now just transition
+      // to the login state with a special error code.
       DictionaryValue args;
       SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
       args.SetInteger("error", GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+      current_state_ = SyncSetupWizard::GAIA_LOGIN;
       flow_handler_->ShowGaiaLogin(args);
       break;
     }
@@ -482,6 +486,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
       args.SetBoolean("fatalError", true);
+      current_state_ = SyncSetupWizard::GAIA_LOGIN;
       flow_handler_->ShowGaiaLogin(args);
       break;
     }

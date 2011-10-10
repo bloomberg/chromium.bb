@@ -398,7 +398,8 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
   EXPECT_EQ(SyncSetupWizard::SYNC_EVERYTHING, flow_->current_state_);
 
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);
-  EXPECT_EQ(SyncSetupWizard::FATAL_ERROR, flow_->current_state_);
+  // Stepping to FATAL_ERROR sends us back to GAIA_LOGIN.
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
   CloseSetupUI();
 }
 
@@ -415,8 +416,9 @@ TEST_F(SyncSetupWizardTest, AbortedByPendingClear) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::SYNC_EVERYTHING);
   wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
-  EXPECT_EQ(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR,
-            flow_->current_state_);
+  // Stepping to SETUP_ABORTED should redirect us to GAIA_LOGIN state, since
+  // that's where we display the error.
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
   CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
 }
@@ -440,8 +442,9 @@ TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypesAbortedByPendingClear) {
   AttachSyncSetupHandler();
   EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
   wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
-  EXPECT_EQ(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR,
-            flow_->current_state_);
+  // Stepping to SETUP_ABORTED should redirect us to GAIA_LOGIN state, since
+  // that's where we display the error.
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
 
   CloseSetupUI();
   EXPECT_FALSE(wizard_->IsVisible());
