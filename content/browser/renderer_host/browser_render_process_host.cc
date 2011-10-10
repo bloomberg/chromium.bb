@@ -121,12 +121,6 @@ class RendererMainThread : public base::Thread {
 
     render_process_ = new RenderProcessImpl();
     render_process_->set_main_thread(new RenderThreadImpl(channel_id_));
-    // It's a little lame to manually set this flag.  But the single process
-    // RendererThread will receive the WM_QUIT.  We don't need to assert on
-    // this thread, so just force the flag manually.
-    // If we want to avoid this, we could create the InProcRendererThread
-    // directly with _beginthreadex() rather than using the Thread class.
-    base::Thread::SetThreadWasQuitProperly(true);
   }
 
   virtual void CleanUp() {
@@ -135,6 +129,16 @@ class RendererMainThread : public base::Thread {
 #if defined(OS_WIN)
     CoUninitialize();
 #endif
+    // It's a little lame to manually set this flag.  But the single process
+    // RendererThread will receive the WM_QUIT.  We don't need to assert on
+    // this thread, so just force the flag manually.
+    // If we want to avoid this, we could create the InProcRendererThread
+    // directly with _beginthreadex() rather than using the Thread class.
+    // We used to set this flag in the Init function above. However there
+    // other threads like WebThread which are created by this thread
+    // which resets this flag. Please see Thread::StartWithOptions. Setting
+    // this flag to true in Cleanup works around these problems.
+    base::Thread::SetThreadWasQuitProperly(true);
   }
 
  private:
