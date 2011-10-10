@@ -18,14 +18,8 @@
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-#include "base/base_switches.h"
-#include "content/common/sandbox_policy.h"
-#include "sandbox/src/dep.h"
-#include "sandbox/src/sandbox_factory.h"
+#include "content/app/startup_helper_win.h"
 #include "sandbox/src/sandbox_types.h"
-
-// The entry point signature of chrome.dll.
-typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
 #endif  // defined(OS_WIN)
 
 class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
@@ -46,22 +40,12 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
 #if defined(OS_WIN)
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kProcessType)) {
-      // TODO(phajdan.jr): Make this not use chrome.dll.
-      // This is a child process, call ChromeMain.
-      FilePath chrome_path(command_line->GetProgram().DirName());
-      chrome_path = chrome_path.Append(chrome::kBrowserResourcesDll);
-      HMODULE dll = LoadLibrary(chrome_path.value().c_str());
-      DLL_MAIN entry_point =
-          reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll, "ChromeMain"));
-      if (!entry_point)
-        return false;
-
-      // Initialize the sandbox services.
       sandbox::SandboxInterfaceInfo sandbox_info = {0};
-      sandbox_info.target_services =
-          sandbox::SandboxFactory::GetTargetServices();
-      *return_code =
-          entry_point(GetModuleHandle(NULL), &sandbox_info, GetCommandLineW());
+      content::InitializeSandboxInfo(&sandbox_info);
+      ChromeMainDelegate chrome_main_delegate;
+      *return_code = content::ContentMain(GetModuleHandle(NULL),
+                                          &sandbox_info,
+                                          &chrome_main_delegate);
       return true;
     }
 #elif defined(OS_LINUX)
