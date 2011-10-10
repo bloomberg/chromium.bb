@@ -53,6 +53,9 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // See crbug.com/89808.
   // command_line->AppendSwitch(switches::kUseMockKeychain);
 #endif
+
+  // Disable the Instant field trial, which may cause unexpected page loads.
+  command_line->AppendSwitchASCII(switches::kInstantFieldTrial, "disabled");
 }
 
 bool OverrideUserDataDir(const FilePath& user_data_dir) {

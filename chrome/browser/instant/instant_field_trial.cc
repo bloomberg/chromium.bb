@@ -4,10 +4,12 @@
 
 #include "chrome/browser/instant/instant_field_trial.h"
 
+#include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -39,6 +41,16 @@ void InstantFieldTrial::Activate() {
 
 // static
 InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kInstantFieldTrial)) {
+    std::string switch_value =
+        command_line->GetSwitchValueASCII(switches::kInstantFieldTrial);
+    if (switch_value == switches::kInstantFieldTrialInstant)
+      return EXPERIMENT1;
+    else
+      return INACTIVE;
+  }
+
   if (!profile || profile->IsOffTheRecord())
     return INACTIVE;
 
