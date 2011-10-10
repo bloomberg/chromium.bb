@@ -462,7 +462,9 @@ void Serv::Run() {
     return;
   }
 
-  if (pipe(control_descriptor_)) {
+  if (pipe(control_descriptor_) ||
+      !SetNonBlock(control_descriptor_[0]) ||
+      !SetNonBlock(control_descriptor_[1])) {
     LOG(ERROR) << "WebSocketProxy: Failed to create control pipe";
     return;
   }

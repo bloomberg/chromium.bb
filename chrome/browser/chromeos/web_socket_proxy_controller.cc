@@ -119,7 +119,6 @@ class ProxyLifetime : public net::NetworkChangeNotifier::OnlineStateObserver {
  private:
   // net::NetworkChangeNotifier::OnlineStateObserver overrides.
   virtual void OnOnlineStateChanged(bool online) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(chromeos::WebSocketProxyController::IsInitiated());
     base::AutoLock alk(lock_);
     if (server_)
