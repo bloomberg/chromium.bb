@@ -266,6 +266,8 @@
       '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/85310
       '-instant',
+      # crbug.com/66072
+      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
       # crbug.com/87837
