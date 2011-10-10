@@ -26,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_view_types.h"
+#include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -194,34 +195,37 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
     return;
 
   registered_for_notifications_  = true;
+  Profile* profile = Profile::FromWebUI(web_ui_);
 
   // Register for notifications that we need to reload the page.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-      NotificationService::AllSources());
+                 Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED,
-      NotificationService::AllSources());
+                 Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-      NotificationService::AllSources());
+                 Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-      NotificationService::AllSources());
+                 Source<Profile>(profile));
   registrar_.Add(this,
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      NotificationService::AllSources());
+                 content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
-      content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
-      NotificationService::AllSources());
+                 content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
-      content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-      NotificationService::AllSources());
+                 content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
-      chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-      NotificationService::AllSources());
+                 chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
+                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
-      chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-      NotificationService::AllSources());
-  registrar_.Add(this,
+                 chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
+                 NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(
+      this,
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      NotificationService::AllSources());
+      Source<ExtensionPrefs>(profile->GetExtensionService()->
+                             extension_prefs()));
 }
 
 ExtensionUninstallDialog*
@@ -573,6 +577,8 @@ WebUIMessageHandler* ExtensionSettingsHandler::Attach(WebUI* web_ui) {
 void ExtensionSettingsHandler::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  Profile* source_profile = NULL;
   switch (type) {
     // We listen for notifications that will result in the page being
     // repopulated with data twice for the same event in certain cases.
@@ -584,25 +590,41 @@ void ExtensionSettingsHandler::Observe(int type,
     // the case of navigating from a non-extension page to an extension page in
     // a TabContents (which will generate NAV_ENTRY_COMMITTED) as well as
     // extension content being shown in popups and balloons (which will generate
-    // RENDER_VIEW_CREATED but no NAV_ENTRY_COMMITTED).
+    // RENDER_VIEW_HOST_CREATED but no NAV_ENTRY_COMMITTED).
     //
     // Doing it this way gets everything but causes the page to be rendered
     // more than we need. It doesn't seem to result in any noticeable flicker.
     case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED:
       deleting_rvh_ = Source<RenderViewHost>(source).ptr();
+      // Fall through.
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:
+      source_profile = Profile::FromBrowserContext(
+          Source<RenderViewHost>(source)->site_instance()->
+          browsing_instance()->browser_context());
+      if (!profile->IsSameProfile(source_profile))
+        return;
       MaybeUpdateAfterNotification();
       break;
     case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
       deleting_rvh_ = Details<BackgroundContents>(details)->render_view_host();
+      // Fall through.
+    case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED:
+      source_profile = Source<Profile>(source).ptr();
+      if (!profile->IsSameProfile(source_profile))
+          return;
+      MaybeUpdateAfterNotification();
+      break;
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
+      source_profile = Profile::FromBrowserContext(
+          Source<NavigationController>(source).ptr()->browser_context());
+      if (!profile->IsSameProfile(source_profile))
+        return;
       MaybeUpdateAfterNotification();
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED:
     case chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED:
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
-    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
-    case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED:
     case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
       MaybeUpdateAfterNotification();
       break;
