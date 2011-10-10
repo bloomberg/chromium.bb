@@ -12,8 +12,8 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -26,52 +26,30 @@ class SignedSettingsTempStorageTest : public testing::Test {
     ref_map_["name"] = "value";
     ref_map_["2bc6aa16-e0ea-11df-b13d-18a90520e2e5"] = "512";
 
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath temp_file;
-    ASSERT_TRUE(
-        file_util::CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
-    local_state_.reset(
-        PrefService::CreatePrefService(temp_file, NULL, false));
-    ASSERT_TRUE(NULL != local_state_.get());
-    SignedSettingsTempStorage::RegisterPrefs(local_state_.get());
+    SignedSettingsTempStorage::RegisterPrefs(&local_state_);
   }
 
   std::map<std::string, std::string> ref_map_;
-  ScopedTempDir temp_dir_;
-  scoped_ptr<PrefService> local_state_;
+  TestingPrefService local_state_;
 };
 
 TEST_F(SignedSettingsTempStorageTest, Basic) {
-  EXPECT_GT(ref_map_.size(), 3u);  // Number above 3 is many.
   typedef std::map<std::string, std::string>::iterator It;
-  std::vector<It> a_list;
   for (It it = ref_map_.begin(); it != ref_map_.end(); ++it) {
-    a_list.push_back(it);
+    EXPECT_TRUE(SignedSettingsTempStorage::Store(it->first,
+                                                 it->second,
+                                                 &local_state_));
   }
-  std::random_shuffle(a_list.begin(), a_list.end());
-  std::vector<It> b_list(a_list);
-  std::copy(b_list.begin(),
-            b_list.begin() + b_list.size() / 2,
-            std::back_inserter(a_list));
-  std::random_shuffle(a_list.begin(), a_list.end());
-  for (size_t i = 0; i < a_list.size(); ++i) {
-    EXPECT_TRUE(SignedSettingsTempStorage::Store(a_list[i]->first,
-                                                 a_list[i]->second,
-                                                 local_state_.get()));
+  for (It it = ref_map_.begin(); it != ref_map_.end(); ++it) {
+    std::string value;
+    EXPECT_TRUE(SignedSettingsTempStorage::Retrieve(it->first, &value,
+                                                    &local_state_));
+    EXPECT_EQ(it->second, value);
   }
-  for (int i = 0; i < 3; ++i) {
-    std::copy(a_list.begin(), a_list.end(), std::back_inserter(b_list));
-  }
-  std::random_shuffle(b_list.begin(), b_list.end());
   std::string value;
-  for (size_t i = 0; i < b_list.size(); ++i) {
-    EXPECT_TRUE(SignedSettingsTempStorage::Retrieve(b_list[i]->first, &value,
-                                                    local_state_.get()));
-    EXPECT_EQ(b_list[i]->second, value);
-    EXPECT_FALSE(SignedSettingsTempStorage::Retrieve("non-existent tv-series",
-                                                     &value,
-                                                     local_state_.get()));
-  }
+  EXPECT_FALSE(SignedSettingsTempStorage::Retrieve("non-existent tv-series",
+                                                   &value,
+                                                   &local_state_));
 }
 
 }  // namespace chromeos
