@@ -54,7 +54,8 @@ TEST_F(AvatarButtonControllerTest, FLAKY_AddRemoveProfiles) {
   EXPECT_TRUE([button() isHidden]);
 }
 
-TEST_F(AvatarButtonControllerTest, DoubleOpen) {
+// Only fails on 10.5 for some reason <http://crbug.com/99469>.
+TEST_F(AvatarButtonControllerTest, FLAKY_DoubleOpen) {
   EXPECT_FALSE([controller() menuController]);
 
   [button() performClick:button()];
