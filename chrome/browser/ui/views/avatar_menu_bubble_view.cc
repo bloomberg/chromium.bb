@@ -152,6 +152,7 @@ class ProfileItemView : public views::CustomButton,
     edit_link_->MakeReadableOverBackgroundColor(kHighlightBackgroundColor);
     edit_link_->SetNormalColor(
         color_utils::GetReadableColor(kLinkColor, kHighlightBackgroundColor));
+    edit_link_->SetHasFocusBorder(true);
     AddChildView(edit_link_);
 
     OnHighlightStateChanged();
