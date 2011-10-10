@@ -5,21 +5,21 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/aura_test_base.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/hit_test.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test_desktop_delegate.h"
-#include "ui/aura/test_window_delegate.h"
+#include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/test_desktop_delegate.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace aura {
-namespace internal {
+namespace test {
 
 namespace {
 
@@ -339,7 +339,8 @@ TEST_F(WindowTest, CaptureTests) {
 // Verifies capture is reset when a window is destroyed.
 TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   Desktop* desktop = Desktop::GetInstance();
-  RootWindow* root = static_cast<RootWindow*>(desktop->window());
+  internal::RootWindow* root =
+      static_cast<internal::RootWindow*>(desktop->window());
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
@@ -723,5 +724,5 @@ TEST_F(WindowTest, Deactivate) {
   EXPECT_EQ(w2.get(), parent->children()[1]);
 }
 
-}  // namespace internal
+}  // namespace test
 }  // namespace aura

@@ -13,7 +13,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"
-#include "ui/aura/test_desktop_delegate.h"
+#include "ui/aura/test/test_desktop_delegate.h"
 #endif
 
 namespace views {
@@ -30,7 +30,7 @@ ViewsTestBase::ViewsTestBase()
 #endif
 #if defined(USE_AURA)
   aura::Desktop::set_compositor_factory_for_testing(&TestCreateCompositor);
-  new aura::TestDesktopDelegate;
+  new aura::test::TestDesktopDelegate;
 #else
   Widget::set_compositor_factory_for_testing(&TestCreateCompositor);
 #endif

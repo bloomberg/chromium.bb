@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/test_window_delegate.h"
+#include "ui/aura/test/test_window_delegate.h"
 
 #include "ui/aura/hit_test.h"
 
 namespace aura {
-namespace internal {
+namespace test {
 
 TestWindowDelegate::TestWindowDelegate() {
 }
@@ -63,5 +63,5 @@ void TestWindowDelegate::OnWindowDestroying() {
 void TestWindowDelegate::OnWindowDestroyed() {
 }
 
-}  // namespace internal
+}  // namespace test
 }  // namespace aura
