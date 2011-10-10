@@ -8756,7 +8756,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_PROFILES_MANAGE_BUTTON_LABEL" desc="The label that appears on the profile manage button in the options dialog to allow a user to manage their profile.">
-        Manage...
+        Edit...
       </message>
       <message name="IDS_PROFILES_DELETE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user to delete their profile.">
         Delete...
@@ -13916,7 +13916,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <!-- Manage Profile Dialog -->
     <if expr="pp_ifdef('use_titlecase')">
       <message name="IDS_PROFILES_MANAGE_TITLE" desc="In Title Case: Title of the manage profile dialog">
-        Manage User
+        Edit User
       </message>
       <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="In Title Case: Label next to the profile name text field.">
         Name:
@@ -13927,7 +13927,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
     <if expr="not pp_ifdef('use_titlecase')">
       <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
-        Manage user
+        Edit user
       </message>
       <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="Label next to the profile name text field.">
         Name:
