@@ -27,8 +27,11 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "views/desktop/desktop_window_view.h"
-#include "views/widget/native_widget_gtk.h"
 #include "views/widget/widget.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "views/widget/native_widget_gtk.h"
+#endif
 
 #if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
@@ -173,9 +176,13 @@ gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
 }
 
 void WebUILoginView::OnWindowCreated() {
+#if defined(TOOLKIT_USES_GTK)
   // Freezes host window update until the tab is rendered.
   host_window_frozen_ = static_cast<views::NativeWidgetGtk*>(
       GetWidget()->native_widget())->SuppressFreezeUpdates();
+#else
+  // TODO(saintlou): Unclear if we need this for the !gtk case.
+#endif
 }
 
 void WebUILoginView::UpdateWindowType() {
@@ -281,6 +288,7 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
   VLOG(1) << "WebUI login main frame rendered.";
   InitStatusArea();
 
+#if defined(TOOLKIT_USES_GTK)
   if (host_window_frozen_) {
     host_window_frozen_ = false;
 
@@ -288,6 +296,7 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
     views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
         GetNativeWindow(), false);
   }
+#endif
 
   bool emit_login_visible = false;
 

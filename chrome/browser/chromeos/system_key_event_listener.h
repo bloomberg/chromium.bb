@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_KEY_EVENT_LISTENER_H_
 #pragma once
 
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
+#endif
 
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
@@ -56,7 +58,7 @@ class SystemKeyEventListener : public WmMessageListener::Observer,
 
   AudioHandler* GetAudioHandler() const;
 
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
   // MessageLoopForUI::Observer overrides.
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE;

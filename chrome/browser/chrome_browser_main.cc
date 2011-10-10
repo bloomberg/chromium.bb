@@ -584,7 +584,7 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 }
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
 void RegisterTranslateableItems(void) {
   struct {
     const char* stock_id;
@@ -1294,7 +1294,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
 #endif  // defined(OS_WIN)
   }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
   // This needs to be called after the locale has been set.
   RegisterTranslateableItems();
 #endif

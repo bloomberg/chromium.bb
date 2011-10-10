@@ -14,7 +14,10 @@
 #include "views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 #include "views/view.h"
+
+#if defined(TOOLKIT_USES_GTK)
 #include "views/widget/native_widget_gtk.h"
+#endif
 
 class SkBitmap;
 
@@ -74,7 +77,7 @@ class MessageBubble : public Bubble,
   // Overridden from NativeWidgetGtk/NativeWidgetViews.
   virtual void Close() OVERRIDE;
 
-#if !defined(TOUCH_UI)
+#if !defined(TOUCH_UI) && defined(TOOLKIT_USES_GTK)
   virtual gboolean OnButtonPress(GtkWidget* widget,
                                  GdkEventButton* event) OVERRIDE;
 #endif
@@ -89,7 +92,7 @@ class MessageBubble : public Bubble,
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-#if !defined(TOUCH_UI) && !defined(USE_AURA)
+#if !defined(TOUCH_UI) && defined(TOOLKIT_USES_GTK)
   // Overridden from NativeWidgetGtk.
   virtual void OnActiveChanged() OVERRIDE;
   virtual void SetMouseCapture() OVERRIDE;

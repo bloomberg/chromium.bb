@@ -164,6 +164,7 @@ void ViewsOobeDisplay::ShowScreen(WizardScreen* screen) {
   screen->Show();
   contents_->Layout();
   contents_->SchedulePaint();
+#if defined(TOOLKIT_USES_GTK)
   if (force_widget_show) {
     // This keeps the window from flashing at startup.
     GdkWindow* gdk_window = window->GetNativeView()->window;
@@ -171,6 +172,7 @@ void ViewsOobeDisplay::ShowScreen(WizardScreen* screen) {
     if (widget_)
       widget_->Show();
   }
+#endif
 }
 
 void ViewsOobeDisplay::HideScreen(WizardScreen* screen) {

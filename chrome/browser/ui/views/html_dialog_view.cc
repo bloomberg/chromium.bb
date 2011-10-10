@@ -76,7 +76,7 @@ void HtmlDialogView::ViewHierarchyChanged(
   DOMView::ViewHierarchyChanged(is_add, parent, child);
   if (is_add && GetWidget() && state_ == NONE) {
     state_ = INITIALIZED;
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
     CHECK(
         static_cast<views::NativeWidgetGtk*>(
             GetWidget()->native_widget())->SuppressFreezeUpdates());
@@ -276,7 +276,7 @@ void HtmlDialogView::Observe(int type,
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT:
       if (state_ == LOADED) {
         state_ = PAINTED;
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_TOOLKIT_GTK)
         views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
             GTK_WINDOW(GetWidget()->GetNativeView()), false);
 #endif

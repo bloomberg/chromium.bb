@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
-#include <gdk/gdk.h>
 #include <signal.h>
 #include <sys/types.h>
 

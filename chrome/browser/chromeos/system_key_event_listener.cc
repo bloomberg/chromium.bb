@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 
+#if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdkx.h>
+#endif
 #include <X11/XF86keysym.h>
 #include <X11/XKBlib.h>
 
@@ -20,7 +22,7 @@
 #include "content/browser/user_metrics.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
 #include "base/message_pump_x.h"
 #endif
 
@@ -115,7 +117,7 @@ SystemKeyEventListener::SystemKeyEventListener()
     LOG(WARNING) << "Could not install Xkb Indicator observer";
   }
 
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
   MessageLoopForUI::current()->AddObserver(this);
 #else
   gdk_window_add_filter(NULL, GdkEventFilter, this);
@@ -130,7 +132,7 @@ void SystemKeyEventListener::Stop() {
   if (stopped_)
     return;
   WmMessageListener::GetInstance()->RemoveObserver(this);
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
   MessageLoopForUI::current()->RemoveObserver(this);
 #else
   gdk_window_remove_filter(NULL, GdkEventFilter, this);
@@ -176,7 +178,7 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
   }
 }
 
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
 base::EventStatus SystemKeyEventListener::WillProcessEvent(
     const base::NativeEvent& event) {
   return ProcessedXEvent(event) ? base::EVENT_HANDLED : base::EVENT_CONTINUE;
@@ -184,7 +186,7 @@ base::EventStatus SystemKeyEventListener::WillProcessEvent(
 
 void SystemKeyEventListener::DidProcessEvent(const base::NativeEvent& event) {
 }
-#else  // defined(TOUCH_UI)
+#else  // defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
 // static
 GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
                                                        GdkEvent* gevent,
@@ -195,7 +197,7 @@ GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
   return listener->ProcessedXEvent(xevent) ? GDK_FILTER_REMOVE
                                            : GDK_FILTER_CONTINUE;
 }
-#endif  // defined(TOUCH_UI)
+#endif  // defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
 
 void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
   uint32 num_lock_mask = Mod2Mask;
