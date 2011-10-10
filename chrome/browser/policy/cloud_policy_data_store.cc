@@ -9,34 +9,6 @@
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/system/statistics_provider.h"
-#endif
-
-namespace {
-
-#if defined(OS_CHROMEOS)
-// MachineInfo key names.
-const char kMachineInfoSystemHwqual[] = "hardware_class";
-
-// These are the machine serial number keys that we check in order until we
-// find a non-empty serial number. The VPD spec says the serial number should be
-// in the "serial_number" key for v2+ VPDs. However, we cannot check this first,
-// since we'd get the "serial_number" value from the SMBIOS (yes, there's a name
-// clash here!), which is different from the serial number we want and not
-// actually per-device. So, we check the the legacy keys first. If we find a
-// serial number for these, we use it, otherwise we must be on a newer device
-// that provides the correct data in "serial_number".
-const char* kMachineInfoSerialNumberKeys[] = {
-  "sn",            // ZGB
-  "Product_S/N",   // Alex
-  "Product_SN",    // Mario
-  "serial_number"  // VPD v2+ devices
-};
-#endif
-
-}  // namespace
-
 namespace policy {
 
 CloudPolicyDataStore::~CloudPolicyDataStore() {}
@@ -44,50 +16,21 @@ CloudPolicyDataStore::~CloudPolicyDataStore() {}
 // static
 CloudPolicyDataStore* CloudPolicyDataStore::CreateForUserPolicies() {
   return new CloudPolicyDataStore(em::DeviceRegisterRequest::USER,
-                                  kChromeUserPolicyType,
-                                  "", "");
+                                  kChromeUserPolicyType);
 }
 
 // static
 CloudPolicyDataStore* CloudPolicyDataStore::CreateForDevicePolicies() {
-  std::string machine_model;
-  std::string machine_id;
-
-#if defined(OS_CHROMEOS)
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineStatistic(kMachineInfoSystemHwqual,
-                                     &machine_model)) {
-    LOG(ERROR) << "Failed to get machine model.";
-  }
-  for (unsigned int i = 0; i < arraysize(kMachineInfoSerialNumberKeys); i++) {
-    if (provider->GetMachineStatistic(kMachineInfoSerialNumberKeys[i],
-                                      &machine_id) &&
-        !machine_id.empty()) {
-      break;
-    }
-  }
-
-  if (machine_id.empty())
-    LOG(ERROR) << "Failed to get machine serial number.";
-#endif
-
   return new CloudPolicyDataStore(em::DeviceRegisterRequest::DEVICE,
-                                  kChromeDevicePolicyType,
-                                  machine_model,
-                                  machine_id);
+                                  kChromeDevicePolicyType);
 }
 
 CloudPolicyDataStore::CloudPolicyDataStore(
     const em::DeviceRegisterRequest_Type policy_register_type,
-    const std::string& policy_type,
-    const std::string& machine_model,
-    const std::string& machine_id)
+    const std::string& policy_type)
     : user_affiliation_(USER_AFFILIATION_NONE),
       policy_register_type_(policy_register_type),
       policy_type_(policy_type),
-      machine_model_(machine_model),
-      machine_id_(machine_id),
       token_cache_loaded_(false) {}
 
 void CloudPolicyDataStore::SetDeviceToken(const std::string& device_token,
@@ -139,6 +82,14 @@ void CloudPolicyDataStore::SetupForTesting(const std::string& device_token,
 
 void CloudPolicyDataStore::set_device_id(const std::string& device_id) {
   device_id_ = device_id;
+}
+
+void CloudPolicyDataStore::set_machine_id(const std::string& machine_id) {
+  machine_id_ = machine_id;
+}
+
+void CloudPolicyDataStore::set_machine_model(const std::string& machine_model) {
+  machine_model_ = machine_model;
 }
 
 const std::string& CloudPolicyDataStore::device_id() const {

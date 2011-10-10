@@ -76,6 +76,8 @@ class CloudPolicyDataStore {
                        bool token_cache_loaded);
 
   void set_device_id(const std::string& device_id);
+  void set_machine_id(const std::string& machine_id);
+  void set_machine_model(const std::string& machine_model);
   void set_user_name(const std::string& user_name);
   void set_user_affiliation(UserAffiliation user_affiliation);
 
@@ -101,9 +103,7 @@ class CloudPolicyDataStore {
  private:
   CloudPolicyDataStore(
       const em::DeviceRegisterRequest_Type policy_register_type,
-      const std::string& policy_type,
-      const std::string& machine_model,
-      const std::string& machine_id);
+      const std::string& policy_type);
 
   // Data necessary for constructing register requests.
   std::string gaia_token_;
@@ -118,11 +118,11 @@ class CloudPolicyDataStore {
   // subsystem.
   const em::DeviceRegisterRequest_Type policy_register_type_;
   const std::string policy_type_;
-  const std::string machine_model_;
-  const std::string machine_id_;
 
   // Data used for constructiong both register and policy requests.
   std::string device_id_;
+  std::string machine_model_;
+  std::string machine_id_;
 
   bool token_cache_loaded_;
 
