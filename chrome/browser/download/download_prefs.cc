@@ -10,6 +10,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_extensions.h"
@@ -74,7 +75,7 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
   // Ensure that the download directory specified in the preferences exists.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&file_util::CreateDirectory, default_download_path));
+      NewRunnableFunction(&file_util::CreateDirectory, default_download_path));
 #endif  // defined(OS_CHROMEOS)
 
   // If the download path is dangerous we forcefully reset it. But if we do
