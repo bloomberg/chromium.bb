@@ -11,7 +11,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -48,7 +48,7 @@ const char* ChromeV8Extension::GetStringResource(int resource_id) {
 }
 
 // static
-RenderView* ChromeV8Extension::GetCurrentRenderView() {
+content::RenderView* ChromeV8Extension::GetCurrentRenderView() {
   WebFrame* webframe = WebFrame::frameForCurrentContext();
   DCHECK(webframe) << "RetrieveCurrentFrame called when not in a V8 context.";
   if (!webframe)
@@ -58,7 +58,7 @@ RenderView* ChromeV8Extension::GetCurrentRenderView() {
   if (!webview)
     return NULL;  // can happen during closing
 
-  RenderView* renderview = RenderView::FromWebView(webview);
+  content::RenderView* renderview = content::RenderView::FromWebView(webview);
   DCHECK(renderview) << "Encountered a WebView without a WebViewDelegate";
   return renderview;
 }
@@ -84,11 +84,11 @@ ChromeV8Extension::ChromeV8Extension(const char* name, int resource_id,
 }
 
 const Extension* ChromeV8Extension::GetExtensionForCurrentRenderView() const {
-  RenderView* renderview = GetCurrentRenderView();
+  content::RenderView* renderview = GetCurrentRenderView();
   if (!renderview)
     return NULL;  // this can happen as a tab is closing.
 
-  GURL url = renderview->webview()->mainFrame()->document().url();
+  GURL url = renderview->GetWebView()->mainFrame()->document().url();
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
   if (!extensions->ExtensionBindingsAllowed(url))
     return NULL;

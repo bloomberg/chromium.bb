@@ -33,6 +33,7 @@
 #include "content/common/drag_messages.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/file_system/webfilesystem_callback_dispatcher.h"
+#include "content/common/intents_messages.h"
 #include "content/common/notification_service.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/pepper_plugin_registry.h"
@@ -442,19 +443,25 @@ RenderView::~RenderView() {
 }
 
 /*static*/
-void RenderView::ForEach(RenderViewVisitor* visitor) {
+RenderView* RenderView::FromWebView(WebView* webview) {
+  ViewMap* views = g_view_map.Pointer();
+  ViewMap::iterator it = views->find(webview);
+  return it == views->end() ? NULL : it->second;
+}
+
+/*static*/
+content::RenderView*
+    content::RenderView::FromWebView(WebKit::WebView* webview) {
+  return ::RenderView::FromWebView(webview);
+}
+
+/*static*/
+void content::RenderView::ForEach(content::RenderViewVisitor* visitor) {
   ViewMap* views = g_view_map.Pointer();
   for (ViewMap::iterator it = views->begin(); it != views->end(); ++it) {
     if (!visitor->Visit(it->second))
       return;
   }
-}
-
-/*static*/
-RenderView* RenderView::FromWebView(WebView* webview) {
-  ViewMap* views = g_view_map.Pointer();
-  ViewMap::iterator it = views->find(webview);
-  return it == views->end() ? NULL : it->second;
 }
 
 /*static*/
@@ -512,24 +519,6 @@ void RenderView::SetReportLoadProgressEnabled(bool enabled) {
 
 void RenderView::PluginCrashed(const FilePath& plugin_path) {
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path));
-}
-
-WebPlugin* RenderView::CreatePluginInternal(WebKit::WebFrame* frame,
-                                            const webkit::WebPluginInfo& info,
-                                            const WebPluginParams& params) {
-  bool pepper_plugin_was_registered = false;
-  scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
-      pepper_delegate_.CreatePepperPluginModule(info,
-                                                &pepper_plugin_was_registered));
-  if (pepper_plugin_was_registered) {
-    if (!pepper_module)
-      return NULL;
-    return new webkit::ppapi::WebPluginImpl(
-        pepper_module.get(), params, pepper_delegate_.AsWeakPtr());
-  }
-
-  return new webkit::npapi::WebPluginImpl(
-      frame, params, info.path, AsWeakPtr());
 }
 
 void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
@@ -1860,7 +1849,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
 
   WebPluginParams params_to_use = params;
   params_to_use.mimeType = WebString::fromUTF8(mime_type);
-  return CreatePluginInternal(frame, info, params_to_use);
+  return CreatePlugin(frame, info, params_to_use);
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -2949,7 +2938,154 @@ void RenderView::didSerializeDataForFrame(
     static_cast<int32>(status)));
 }
 
-// webkit_glue::WebPluginPageDelegate -----------------------------------------
+// content::RenderView implementation ------------------------------------------
+
+bool RenderView::Send(IPC::Message* message) {
+  return RenderWidget::Send(message);
+}
+
+int RenderView::GetRoutingId() const  {
+  return routing_id_;
+}
+
+int RenderView::GetPageId()  {
+  return page_id_;
+}
+
+gfx::Size RenderView::GetSize() {
+  return size();
+}
+
+gfx::NativeViewId RenderView::GetHostWindow() {
+  return host_window();
+}
+
+WebPreferences& RenderView::GetWebkitPreferences()  {
+  return webkit_preferences_;
+}
+
+WebKit::WebView* RenderView::GetWebView()  {
+  return webview();
+}
+
+WebKit::WebNode RenderView::GetFocusedNode() const  {
+  if (!webview())
+    return WebNode();
+  WebFrame* focused_frame = webview()->focusedFrame();
+  if (focused_frame) {
+    WebDocument doc = focused_frame->document();
+    if (!doc.isNull())
+      return doc.focusedNode();
+  }
+
+  return WebNode();
+}
+
+WebKit::WebNode RenderView::GetContextMenuNode() const  {
+  return context_menu_node_;
+}
+
+bool RenderView::IsEditableNode(const WebKit::WebNode& node)  {
+  bool is_editable_node = false;
+  if (!node.isNull()) {
+    if (node.isContentEditable()) {
+      is_editable_node = true;
+    } else if (node.isElementNode()) {
+      is_editable_node =
+          node.toConst<WebElement>().isTextFormControlElement();
+    }
+  }
+  return is_editable_node;
+}
+
+WebKit::WebPlugin* RenderView::CreatePlugin(
+    WebKit::WebFrame* frame,
+    const webkit::WebPluginInfo& info,
+    const WebKit::WebPluginParams& params)  {
+  bool pepper_plugin_was_registered = false;
+  scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
+      pepper_delegate_.CreatePepperPluginModule(info,
+                                                &pepper_plugin_was_registered));
+  if (pepper_plugin_was_registered) {
+    if (!pepper_module)
+      return NULL;
+    return new webkit::ppapi::WebPluginImpl(
+        pepper_module.get(), params, pepper_delegate_.AsWeakPtr());
+  }
+
+  return new webkit::npapi::WebPluginImpl(
+      frame, params, info.path, AsWeakPtr());
+}
+
+void RenderView::EvaluateScript(const string16& frame_xpath,
+                                const string16& jscript,
+                                int id,
+                                bool notify_result) {
+  v8::Handle<v8::Value> result;
+  WebFrame* web_frame = GetChildFrame(frame_xpath);
+  if (web_frame)
+    result = web_frame->executeScriptAndReturnValue(WebScriptSource(jscript));
+  if (notify_result) {
+    ListValue list;
+    if (!result.IsEmpty() && web_frame) {
+      v8::HandleScope handle_scope;
+      v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
+      v8::Context::Scope context_scope(context);
+      V8ValueConverterImpl converter;
+      converter.set_allow_date(true);
+      converter.set_allow_regexp(true);
+      list.Set(0, converter.FromV8Value(result, context));
+    } else {
+      list.Set(0, Value::CreateNullValue());
+    }
+    Send(new ViewHostMsg_ScriptEvalResponse(routing_id_, id, list));
+  }
+}
+
+bool RenderView::ShouldDisplayScrollbars(int width, int height) const {
+  return (!send_preferred_size_changes_ ||
+          (disable_scrollbars_size_limit_.width() <= width ||
+           disable_scrollbars_size_limit_.height() <= height));
+}
+
+int RenderView::GetEnabledBindings() {
+  return enabled_bindings_;
+}
+
+void RenderView::SetEnabledBindings(int enabled_bindings) {
+  enabled_bindings_ = enabled_bindings;
+}
+
+bool RenderView::GetContentStateImmediately() {
+  return send_content_state_immediately_;
+}
+
+float RenderView::GetFilteredTimePerFrame() {
+  return filtered_time_per_frame();
+}
+
+void RenderView::ShowContextMenu(WebKit::WebFrame* frame,
+                             const WebKit::WebContextMenuData& data)  {
+  showContextMenu(frame, data);
+}
+
+WebKit::WebPageVisibilityState RenderView::GetVisibilityState() const  {
+  return visibilityState();
+}
+
+void RenderView::RunModalAlertDialog(WebKit::WebFrame* frame,
+                                     const WebKit::WebString& message) {
+  return runModalAlertDialog(frame, message);
+}
+
+void RenderView::LoadURLExternally(
+    WebKit::WebFrame* frame,
+    const WebKit::WebURLRequest& request,
+    WebKit::WebNavigationPolicy policy) {
+  loadURLExternally(frame, request, policy);
+}
+
+// webkit_glue::WebPluginPageDelegate ------------------------------------------
 
 webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
     const FilePath& file_path,
@@ -3108,7 +3244,8 @@ GURL RenderView::GetOpenerUrl() const {
 
 WebUIBindings* RenderView::GetWebUIBindings() {
   if (!web_ui_bindings_.get()) {
-    web_ui_bindings_.reset(new WebUIBindings(this, routing_id_));
+    web_ui_bindings_.reset(new WebUIBindings(
+        static_cast<content::RenderView*>(this), routing_id_));
   }
   return web_ui_bindings_.get();
 }
@@ -3377,57 +3514,6 @@ WebFrame* RenderView::GetChildFrame(const string16& xpath) const {
   }
 
   return frame;
-}
-
-WebNode RenderView::GetFocusedNode() const {
-  if (!webview())
-    return WebNode();
-  WebFrame* focused_frame = webview()->focusedFrame();
-  if (focused_frame) {
-    WebDocument doc = focused_frame->document();
-    if (!doc.isNull())
-      return doc.focusedNode();
-  }
-
-  return WebNode();
-}
-
-bool RenderView::IsEditableNode(const WebNode& node) {
-  bool is_editable_node = false;
-  if (!node.isNull()) {
-    if (node.isContentEditable()) {
-      is_editable_node = true;
-    } else if (node.isElementNode()) {
-      is_editable_node =
-          node.toConst<WebElement>().isTextFormControlElement();
-    }
-  }
-  return is_editable_node;
-}
-
-void RenderView::EvaluateScript(const string16& frame_xpath,
-                                const string16& script,
-                                int id,
-                                bool notify_result) {
-  v8::Handle<v8::Value> result;
-  WebFrame* web_frame = GetChildFrame(frame_xpath);
-  if (web_frame)
-    result = web_frame->executeScriptAndReturnValue(WebScriptSource(script));
-  if (notify_result) {
-    ListValue list;
-    if (!result.IsEmpty() && web_frame) {
-      v8::HandleScope handle_scope;
-      v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
-      v8::Context::Scope context_scope(context);
-      V8ValueConverterImpl converter;
-      converter.set_allow_date(true);
-      converter.set_allow_regexp(true);
-      list.Set(0, converter.FromV8Value(result, context));
-    } else {
-      list.Set(0, Value::CreateNullValue());
-    }
-    Send(new ViewHostMsg_ScriptEvalResponse(routing_id_, id, list));
-  }
 }
 
 void RenderView::OnScriptEvalRequest(const string16& frame_xpath,
@@ -3802,7 +3888,7 @@ void RenderView::OnResize(const gfx::Size& new_size,
     webview()->hidePopups();
     if (send_preferred_size_changes_) {
       webview()->mainFrame()->setCanHaveScrollbars(
-          should_display_scrollbars(new_size.width(), new_size.height()));
+          ShouldDisplayScrollbars(new_size.width(), new_size.height()));
     }
     UpdateScrollState(webview()->mainFrame());
   }

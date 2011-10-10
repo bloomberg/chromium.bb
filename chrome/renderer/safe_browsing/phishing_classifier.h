@@ -24,7 +24,9 @@
 #include "base/string16.h"
 #include "base/task.h"
 
+namespace content {
 class RenderView;
+}
 
 namespace safe_browsing {
 class ClientPhishingRequest;
@@ -52,7 +54,8 @@ class PhishingClassifier {
   // |render_view|.  |clock| is used to time feature extractor operations, and
   // the PhishingClassifier takes ownership of this object.  Note that the
   // classifier will not be 'ready' until set_phishing_scorer() is called.
-  PhishingClassifier(RenderView* render_view, FeatureExtractorClock* clock);
+  PhishingClassifier(content::RenderView* render_view,
+                     FeatureExtractorClock* clock);
   virtual ~PhishingClassifier();
 
   // Sets a scorer for the classifier to use in computing the phishiness score.
@@ -123,7 +126,7 @@ class PhishingClassifier {
   // Clears the current state of the PhishingClassifier.
   void Clear();
 
-  RenderView* render_view_;  // owns us
+  content::RenderView* render_view_;  // owns us
   const Scorer* scorer_;  // owned by the caller
   scoped_ptr<FeatureExtractorClock> clock_;
   scoped_ptr<PhishingUrlFeatureExtractor> url_extractor_;

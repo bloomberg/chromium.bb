@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -42,7 +43,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
  public:
   // translate_helper can be NULL.
   ChromeRenderViewObserver(
-      RenderView* render_view,
+      content::RenderView* render_view,
       ContentSettingsObserver* content_settings,
       ChromeRenderProcessObserver* chrome_render_process_observer,
       ExtensionDispatcher* extension_dispatcher,
@@ -205,8 +206,11 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   ScopedRunnableMethodFactory<ChromeRenderViewObserver>
       page_info_method_factory_;
 
+  typedef std::vector<linked_ptr<webkit_glue::ImageResourceFetcher> >
+      ImageResourceFetcherList;
+
   // ImageResourceFetchers schedule via DownloadImage.
-  RenderView::ImageResourceFetcherList image_fetchers_;
+  ImageResourceFetcherList image_fetchers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderViewObserver);
 };

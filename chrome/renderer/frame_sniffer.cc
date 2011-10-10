@@ -10,7 +10,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 
-FrameSniffer::FrameSniffer(RenderView* render_view, const string16 &frame_name)
+FrameSniffer::FrameSniffer(content::RenderView* render_view,
+                           const string16 &frame_name)
     : content::RenderViewObserver(render_view), frame_name_(frame_name) {
 }
 

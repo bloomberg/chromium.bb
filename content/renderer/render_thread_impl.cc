@@ -117,8 +117,8 @@ class RenderViewZoomer : public content::RenderViewVisitor {
     host_ = net::GetHostOrSpecFromURL(url);
   }
 
-  virtual bool Visit(RenderView* render_view) {
-    WebView* webview = render_view->webview();
+  virtual bool Visit(content::RenderView* render_view) {
+    WebView* webview = render_view->GetWebView();
     WebDocument document = webview->mainFrame()->document();
 
     // Don't set zoom level for full-page plugin since they don't use the same

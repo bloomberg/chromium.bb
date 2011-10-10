@@ -45,7 +45,7 @@ class AutofillAgent : public content::RenderViewObserver,
                       public WebKit::WebAutofillClient {
  public:
   // PasswordAutofillManager is guaranteed to outlive AutofillAgent.
-  AutofillAgent(RenderView* render_view,
+  AutofillAgent(content::RenderView* render_view,
                 PasswordAutofillManager* password_autofill_manager);
   virtual ~AutofillAgent();
 

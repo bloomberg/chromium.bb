@@ -8,7 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/renderer/navigation_state.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
@@ -27,7 +27,7 @@ using content::NavigationState;
 
 namespace prerender {
 
-PrerenderHelper::PrerenderHelper(RenderView* render_view)
+PrerenderHelper::PrerenderHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<PrerenderHelper>(render_view),
       is_prerendering_(true),
@@ -39,14 +39,14 @@ PrerenderHelper::~PrerenderHelper() {
 }
 
 // static.
-bool PrerenderHelper::IsPrerendering(const RenderView* render_view) {
+bool PrerenderHelper::IsPrerendering(const content::RenderView* render_view) {
   PrerenderHelper* prerender_helper = PrerenderHelper::Get(render_view);
   return (prerender_helper && prerender_helper->is_prerendering_);
 }
 
 // static.
 void PrerenderHelper::RecordHistograms(
-    RenderView* render_view,
+    content::RenderView* render_view,
     const base::Time& finish_all_loads,
     const base::TimeDelta& begin_to_finish_all_loads) {
   static bool use_prerender_histogram =
@@ -117,7 +117,7 @@ void PrerenderHelper::WillCreateMediaPlayer(
     // Cancel prerendering in the case of HTML5 media, to avoid playing sounds
     // in the background.
     Send(new ChromeViewHostMsg_MaybeCancelPrerenderForHTML5Media(
-         render_view()->routing_id()));
+        render_view()->GetRoutingId()));
   }
 }
 
@@ -167,10 +167,9 @@ bool PrerenderHelper::HasUnrecordedData() const {
 }
 
 void PrerenderHelper::UpdateVisibilityState() {
-  if (render_view()->webview()) {
-    render_view()->webview()->setVisibilityState(
-        render_view()->visibilityState(),
-        false);
+  if (render_view()->GetWebView()) {
+    render_view()->GetWebView()->setVisibilityState(
+        render_view()->GetVisibilityState(), false);
   }
 }
 

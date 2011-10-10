@@ -213,7 +213,7 @@ GURL StripRef(const GURL& url) {
 }  // namespace
 
 ChromeRenderViewObserver::ChromeRenderViewObserver(
-    RenderView* render_view,
+    content::RenderView* render_view,
     ContentSettingsObserver* content_settings,
     ChromeRenderProcessObserver* chrome_render_process_observer,
     ExtensionDispatcher* extension_dispatcher,
@@ -230,11 +230,11 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
       ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDomAutomationController)) {
-    int old_bindings = render_view->enabled_bindings();
-    render_view->set_enabled_bindings(
+    int old_bindings = render_view->GetEnabledBindings();
+    render_view->SetEnabledBindings(
         old_bindings |= BindingsPolicy::DOM_AUTOMATION);
   }
-  render_view->webview()->setPermissionClient(this);
+  render_view->GetWebView()->setPermissionClient(this);
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
     OnSetClientSidePhishingDetection(true);
 }
@@ -289,11 +289,11 @@ void ChromeRenderViewObserver::OnCaptureSnapshot() {
   SkBitmap snapshot;
   bool error = false;
 
-  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   if (!main_frame)
     error = true;
 
-  if (!error && !CaptureSnapshot(render_view()->webview(), &snapshot))
+  if (!error && !CaptureSnapshot(render_view()->GetWebView(), &snapshot))
     error = true;
 
   DCHECK(error == snapshot.empty()) <<
@@ -344,7 +344,7 @@ void ChromeRenderViewObserver::OnDownloadFavicon(int id,
 
 void ChromeRenderViewObserver::OnSetAllowDisplayingInsecureContent(bool allow) {
   allow_displaying_insecure_content_ = allow;
-  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   if (main_frame)
     main_frame->reload();
 }
@@ -377,8 +377,8 @@ void ChromeRenderViewObserver::OnStartFrameSniffer(const string16& frame_name) {
 }
 
 void ChromeRenderViewObserver::OnGetFPS() {
-  float fps = (render_view()->filtered_time_per_frame() > 0.0f)?
-      1.0f / render_view()->filtered_time_per_frame() : 0.0f;
+  float fps = (render_view()->GetFilteredTimePerFrame() > 0.0f)?
+      1.0f / render_view()->GetFilteredTimePerFrame() : 0.0f;
   Send(new ChromeViewHostMsg_FPS(routing_id(), fps));
 }
 
@@ -664,7 +664,7 @@ void ChromeRenderViewObserver::OnSetIsPrerendering(bool is_prerendering) {
 }
 
 void ChromeRenderViewObserver::DidStartLoading() {
-  if (BindingsPolicy::is_web_ui_enabled(render_view()->enabled_bindings()) &&
+  if (BindingsPolicy::is_web_ui_enabled(render_view()->GetEnabledBindings()) &&
       webui_javascript_.get()) {
     render_view()->EvaluateScript(webui_javascript_->frame_xpath,
                                   webui_javascript_->jscript,
@@ -677,15 +677,16 @@ void ChromeRenderViewObserver::DidStopLoading() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       page_info_method_factory_.NewRunnableMethod(
-          &ChromeRenderViewObserver::CapturePageInfo, render_view()->page_id(),
+          &ChromeRenderViewObserver::CapturePageInfo,
+          render_view()->GetPageId(),
           false),
-      render_view()->content_state_immediately() ? 0 : kDelayForCaptureMs);
+      render_view()->GetContentStateImmediately() ? 0 : kDelayForCaptureMs);
 
-  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   GURL osd_url = main_frame->document().openSearchDescriptionURL();
   if (!osd_url.is_empty()) {
     Send(new ChromeViewHostMsg_PageHasOSDD(
-        routing_id(), render_view()->page_id(), osd_url,
+        routing_id(), render_view()->GetPageId(), osd_url,
         search_provider::AUTODETECTED_PROVIDER));
   }
 
@@ -694,7 +695,7 @@ void ChromeRenderViewObserver::DidStopLoading() {
     icon_types |= WebIconURL::TypeTouchPrecomposed | WebIconURL::TypeTouch;
 
   WebVector<WebIconURL> icon_urls =
-      render_view()->webview()->mainFrame()->iconURLs(icon_types);
+      render_view()->GetWebView()->mainFrame()->iconURLs(icon_types);
   std::vector<FaviconURL> urls;
   for (size_t i = 0; i < icon_urls.size(); i++) {
     WebURL url = icon_urls[i].iconURL();
@@ -703,7 +704,7 @@ void ChromeRenderViewObserver::DidStopLoading() {
   }
   if (!urls.empty()) {
     Send(new IconHostMsg_UpdateFaviconURL(
-        routing_id(), render_view()->page_id(), urls));
+        routing_id(), render_view()->GetPageId(), urls));
   }
 }
 
@@ -723,7 +724,7 @@ void ChromeRenderViewObserver::DidChangeIcon(WebFrame* frame,
                               ToFaviconType(icon_urls[i].iconType())));
   }
   Send(new IconHostMsg_UpdateFaviconURL(
-      routing_id(), render_view()->page_id(), urls));
+      routing_id(), render_view()->GetPageId(), urls));
 }
 
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(
@@ -734,19 +735,20 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       page_info_method_factory_.NewRunnableMethod(
-          &ChromeRenderViewObserver::CapturePageInfo, render_view()->page_id(),
+          &ChromeRenderViewObserver::CapturePageInfo,
+          render_view()->GetPageId(),
           true),
       kDelayForForcedCaptureMs);
 }
 
 void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {
   if (BindingsPolicy::is_dom_automation_enabled(
-          render_view()->enabled_bindings())) {
+          render_view()->GetEnabledBindings())) {
     BindDOMAutomationController(frame);
   }
 
   if (BindingsPolicy::is_external_host_enabled(
-          render_view()->enabled_bindings())) {
+          render_view()->GetEnabledBindings())) {
     GetExternalHostBindings()->BindToJavascript(frame, "externalHost");
   }
 }
@@ -760,13 +762,15 @@ void ChromeRenderViewObserver::DidHandleTouchEvent(const WebTouchEvent& event) {
   // Ignore the case of multiple touches
   if (event.touchesLength != 1)
     return;
-  if (render_view()->webview()->textInputType() == WebKit::WebTextInputTypeNone)
+  if (render_view()->GetWebView()->textInputType() ==
+      WebKit::WebTextInputTypeNone) {
     return;
+  }
   WebKit::WebNode node = render_view()->GetFocusedNode();
   if (node.isNull())
     return;
   WebKit::WebAccessibilityObject accessibility =
-      render_view()->webview()->accessibilityObject();
+      render_view()->GetWebView()->accessibilityObject();
   if (accessibility.isNull())
     return;
   const WebKit::WebTouchPoint point = event.touches[0];
@@ -775,12 +779,12 @@ void ChromeRenderViewObserver::DidHandleTouchEvent(const WebTouchEvent& event) {
     return;
   if (accessibility.node() == node)
     render_view()->Send(new ChromeViewHostMsg_FocusedEditableNodeTouched(
-        render_view()->routing_id()));
+    render_view()->GetRoutingId()));
 }
 
 void ChromeRenderViewObserver::CapturePageInfo(int load_id,
                                                bool preliminary_capture) {
-  if (load_id != render_view()->page_id())
+  if (load_id != render_view()->GetPageId())
     return;  // This capture call is no longer relevant due to navigation.
 
   // Skip indexing if this is not a new load.  Note that the case where
@@ -790,10 +794,10 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   if (load_id < last_indexed_page_id_)
     return;
 
-  if (!render_view()->webview())
+  if (!render_view()->GetWebView())
     return;
 
-  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   if (!main_frame)
     return;
 
@@ -894,7 +898,7 @@ void ChromeRenderViewObserver::CaptureText(WebFrame* frame,
 }
 
 void ChromeRenderViewObserver::CaptureThumbnail() {
-  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   if (!main_frame)
     return;
 
@@ -903,12 +907,12 @@ void ChromeRenderViewObserver::CaptureThumbnail() {
   if (url.is_empty())
     return;
 
-  if (render_view()->size().IsEmpty())
+  if (render_view()->GetSize().IsEmpty())
     return;  // Don't create an empty thumbnail!
 
   ThumbnailScore score;
   SkBitmap thumbnail;
-  if (!CaptureFrameThumbnail(render_view()->webview(), kThumbnailWidth,
+  if (!CaptureFrameThumbnail(render_view()->GetWebView(), kThumbnailWidth,
                              kThumbnailHeight, &thumbnail, &score))
     return;
 
@@ -1027,12 +1031,12 @@ bool ChromeRenderViewObserver::DownloadFavicon(int id,
                                                const GURL& image_url,
                                                int image_size) {
   // Make sure webview was not shut down.
-  if (!render_view()->webview())
+  if (!render_view()->GetWebView())
     return false;
   // Create an image resource fetcher and assign it with a call back object.
   image_fetchers_.push_back(linked_ptr<ImageResourceFetcher>(
       new ImageResourceFetcher(
-          image_url, render_view()->webview()->mainFrame(), id, image_size,
+          image_url, render_view()->GetWebView()->mainFrame(), id, image_size,
           WebURLRequest::TargetIsFavicon,
           NewCallback(this, &ChromeRenderViewObserver::DidDownloadFavicon))));
   return true;
@@ -1049,7 +1053,7 @@ void ChromeRenderViewObserver::DidDownloadFavicon(
 
   // Remove the image fetcher from our pending list. We're in the callback from
   // ImageResourceFetcher, best to delay deletion.
-  RenderView::ImageResourceFetcherList::iterator iter;
+  ImageResourceFetcherList::iterator iter;
   for (iter = image_fetchers_.begin(); iter != image_fetchers_.end(); ++iter) {
     if (iter->get() == fetcher) {
       iter->release();

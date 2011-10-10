@@ -92,7 +92,7 @@ class PrintWebViewHelper
       public WebKit::WebViewClient,
       public WebKit::WebFrameClient {
  public:
-  explicit PrintWebViewHelper(RenderView* render_view);
+  explicit PrintWebViewHelper(content::RenderView* render_view);
   virtual ~PrintWebViewHelper();
 
  protected:

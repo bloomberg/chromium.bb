@@ -8,7 +8,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
@@ -21,7 +21,7 @@ using WebKit::WebTextCheckingCompletion;
 using WebKit::WebTextCheckingResult;
 using WebKit::WebVector;
 
-SpellCheckProvider::SpellCheckProvider(RenderView* render_view,
+SpellCheckProvider::SpellCheckProvider(content::RenderView* render_view,
                                        SpellCheck* spellcheck)
     : content::RenderViewObserver(render_view),
 #if defined(OS_MACOSX)
@@ -31,7 +31,7 @@ SpellCheckProvider::SpellCheckProvider(RenderView* render_view,
       spelling_panel_visible_(false),
       spellcheck_(spellcheck) {
   if (render_view)  // NULL in unit tests.
-    render_view->webview()->setSpellCheckClient(this);
+    render_view->GetWebView()->setSpellCheckClient(this);
 }
 
 SpellCheckProvider::~SpellCheckProvider() {
@@ -85,8 +85,8 @@ void SpellCheckProvider::FocusedNodeChanged(const WebKit::WebNode& unused) {
     enabled = render_view()->IsEditableNode(node);
 
   bool checked = false;
-  if (enabled && render_view()->webview()) {
-    WebFrame* frame = render_view()->webview()->focusedFrame();
+  if (enabled && render_view()->GetWebView()) {
+    WebFrame* frame = render_view()->GetWebView()->focusedFrame();
     if (frame->isContinuousSpellCheckingEnabled())
       checked = true;
   }
@@ -154,9 +154,9 @@ bool SpellCheckProvider::is_using_platform_spelling_engine() const {
 }
 
 void SpellCheckProvider::OnAdvanceToNextMisspelling() {
-  if (!render_view()->webview())
+  if (!render_view()->GetWebView())
     return;
-  render_view()->webview()->focusedFrame()->executeCommand(
+  render_view()->GetWebView()->focusedFrame()->executeCommand(
       WebString::fromUTF8("AdvanceToNextMisspelling"));
 }
 
@@ -173,20 +173,20 @@ void SpellCheckProvider::OnRespondTextCheck(
 }
 
 void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {
-  if (!render_view()->webview())
+  if (!render_view()->GetWebView())
     return;
   // We need to tell the webView whether the spelling panel is visible or not so
   // that it won't need to make ipc calls later.
   spelling_panel_visible_ = is_currently_visible;
-  render_view()->webview()->focusedFrame()->executeCommand(
+  render_view()->GetWebView()->focusedFrame()->executeCommand(
       WebString::fromUTF8("ToggleSpellPanel"));
 }
 
 void SpellCheckProvider::OnToggleSpellCheck() {
-  if (!render_view()->webview())
+  if (!render_view()->GetWebView())
     return;
 
-  WebFrame* frame = render_view()->webview()->focusedFrame();
+  WebFrame* frame = render_view()->GetWebView()->focusedFrame();
   frame->enableContinuousSpellChecking(
       !frame->isContinuousSpellCheckingEnabled());
 }

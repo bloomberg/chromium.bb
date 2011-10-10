@@ -46,7 +46,7 @@ void MHTMLGenerator::NotifyBrowser(int job_id, int64 data_size) {
 //                 message loop to process other events.
 int64 MHTMLGenerator::GenerateMHTML() {
   WebKit::WebCString mhtml =
-      WebKit::WebPageSerializer::serializeToMHTML(render_view()->webview());
+      WebKit::WebPageSerializer::serializeToMHTML(render_view()->GetWebView());
   const size_t chunk_size = 1024;
   const char* data = mhtml.data();
   size_t total_bytes_written = 0;

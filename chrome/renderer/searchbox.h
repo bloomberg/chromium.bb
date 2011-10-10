@@ -18,7 +18,7 @@
 class SearchBox : public content::RenderViewObserver,
                   public content::RenderViewObserverTracker<SearchBox> {
  public:
-  explicit SearchBox(RenderView* render_view);
+  explicit SearchBox(content::RenderView* render_view);
   virtual ~SearchBox();
 
   // Sends ViewHostMsg_SetSuggestions to the browser.

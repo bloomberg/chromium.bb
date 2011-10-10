@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
@@ -31,9 +31,9 @@ ChromeV8Context::~ChromeV8Context() {
   v8_context_.Dispose();
 }
 
-RenderView* ChromeV8Context::GetRenderView() const {
+content::RenderView* ChromeV8Context::GetRenderView() const {
   if (web_frame_ && web_frame_->view())
-    return RenderView::FromWebView(web_frame_->view());
+    return content::RenderView::FromWebView(web_frame_->view());
   else
     return NULL;
 }

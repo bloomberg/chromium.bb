@@ -9,7 +9,7 @@
 
 #include "base/command_line.h"
 #include "chrome/renderer/searchbox.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
@@ -30,7 +30,7 @@ class SearchExtensionWrapper : public v8::Extension {
       v8::Handle<v8::String> name);
 
   // Helper function to find the RenderView. May return NULL.
-  static RenderView* GetRenderView();
+  static content::RenderView* GetRenderView();
 
   // Implementation of window.chrome.setSuggestResult.
   static v8::Handle<v8::Value> SetSuggestResult(const v8::Arguments& args);
@@ -60,7 +60,7 @@ v8::Handle<v8::FunctionTemplate> SearchExtensionWrapper::GetNativeFunction(
 }
 
 // static
-RenderView* SearchExtensionWrapper::GetRenderView() {
+content::RenderView* SearchExtensionWrapper::GetRenderView() {
   WebFrame* webframe = WebFrame::frameForEnteredContext();
   DCHECK(webframe) << "There should be an active frame since we just got "
       "a native function called.";
@@ -69,7 +69,7 @@ RenderView* SearchExtensionWrapper::GetRenderView() {
   WebView* webview = webframe->view();
   if (!webview) return NULL;  // can happen during closing
 
-  return RenderView::FromWebView(webview);
+  return content::RenderView::FromWebView(webview);
 }
 
 // static
@@ -77,7 +77,7 @@ v8::Handle<v8::Value> SearchExtensionWrapper::SetSuggestResult(
     const v8::Arguments& args) {
   if (!args.Length() || !args[0]->IsString()) return v8::Undefined();
 
-  RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
   std::vector<std::string> suggestions;

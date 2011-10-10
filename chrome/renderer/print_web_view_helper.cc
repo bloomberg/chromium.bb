@@ -17,7 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile_impl.h"
 #include "printing/page_size_margins.h"
@@ -35,6 +35,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/glue/webpreferences.h"
 
 #if defined(OS_POSIX)
 #include "base/process_util.h"
@@ -506,7 +507,7 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
   }
 }
 
-PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
+PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<PrintWebViewHelper>(render_view),
       print_web_view_(NULL),
@@ -567,9 +568,9 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   if (print_web_view_)
     return;
 
-  if (!render_view()->webview())
+  if (!render_view()->GetWebView())
     return;
-  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   if (!main_frame)
     return;
 
@@ -604,15 +605,15 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
 
 bool PrintWebViewHelper::GetPrintFrame(WebKit::WebFrame** frame) {
   DCHECK(frame);
-  DCHECK(render_view()->webview());
-  if (!render_view()->webview())
+  DCHECK(render_view()->GetWebView());
+  if (!render_view()->GetWebView())
     return false;
 
   // If the user has selected text in the currently focused frame we print
   // only that frame (this makes print selection work for multiple frames).
-  *frame = render_view()->webview()->focusedFrame()->hasSelection() ?
-      render_view()->webview()->focusedFrame() :
-      render_view()->webview()->mainFrame();
+  *frame = render_view()->GetWebView()->focusedFrame()->hasSelection() ?
+      render_view()->GetWebView()->focusedFrame() :
+      render_view()->GetWebView()->mainFrame();
   return true;
 }
 
@@ -773,7 +774,7 @@ void PrintWebViewHelper::OnPrintingDone(bool success) {
 }
 
 void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
-  const WebNode& context_menu_node = render_view()->context_menu_node();
+  const WebNode& context_menu_node = render_view()->GetContextMenuNode();
   if (context_menu_node.isNull()) {
     NOTREACHED();
     return;
@@ -884,7 +885,7 @@ bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
   // on the page).
-  WebPreferences prefs = render_view()->webkit_preferences();
+  WebPreferences prefs = render_view()->GetWebkitPreferences();
   prefs.javascript_enabled = false;
   prefs.java_enabled = false;
 
@@ -1073,7 +1074,7 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
   // terminate.
   bool result = true;
   if (PrintMsg_Print_Params_IsEmpty(settings.params)) {
-    render_view()->runModalAlertDialog(
+    render_view()->RunModalAlertDialog(
         frame,
         l10n_util::GetStringUTF16(
             IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
@@ -1134,7 +1135,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
         GetPrintFrame(&frame);
       }
       if (frame) {
-        render_view()->runModalAlertDialog(
+        render_view()->RunModalAlertDialog(
             frame,
             l10n_util::GetStringUTF16(
                 IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
@@ -1210,11 +1211,11 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
   // The routing id is sent across as it is needed to look up the
   // corresponding RenderViewHost instance to signal and reset the
   // pump messages event.
-  params.routing_id = render_view()->routing_id();
+  params.routing_id = render_view()->GetRoutingId();
   // host_window_ may be NULL at this point if the current window is a
   // popup and the print() command has been issued from the parent. The
   // receiver of this message has to deal with this.
-  params.host_window_id = render_view()->host_window();
+  params.host_window_id = render_view()->GetHostWindow();
   params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->hasSelection();
   params.expected_pages_count = expected_pages_count;
@@ -1314,9 +1315,9 @@ void PrintWebViewHelper::IncrementScriptedPrintCount() {
 void PrintWebViewHelper::DisplayPrintJobError() {
   WebView* web_view = print_web_view_;
   if (!web_view)
-    web_view = render_view()->webview();
+    web_view = render_view()->GetWebView();
 
-  render_view()->runModalAlertDialog(
+  render_view()->RunModalAlertDialog(
       web_view->mainFrame(),
       l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
 }

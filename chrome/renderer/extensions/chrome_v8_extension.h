@@ -13,10 +13,13 @@
 
 class Extension;
 class ExtensionDispatcher;
-class RenderView;
 
 namespace WebKit {
 class WebFrame;
+}
+
+namespace content {
+class RenderView;
 }
 
 // This is a base class for chrome extension bindings.  Common features that
@@ -58,7 +61,7 @@ class ChromeV8Extension : public v8::Extension {
   }
 
   // Gets the render view for the current v8 context.
-  static RenderView* GetCurrentRenderView();
+  static content::RenderView* GetCurrentRenderView();
 
   // Note: do not call this function before or during the chromeHidden.onLoad
   // event dispatch. The URL might not have been committed yet and might not

@@ -8,7 +8,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/search_provider.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -16,6 +16,7 @@
 
 using WebKit::WebFrame;
 using WebKit::WebView;
+using content::RenderView;
 
 namespace extensions_v8 {
 
@@ -128,11 +129,11 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::AddSearchProvider(
   if (!render_view) return v8::Undefined();
 
   if (provider_type != search_provider::EXPLICIT_DEFAULT_PROVIDER ||
-      render_view->webview()->mainFrame()->isProcessingUserGesture()) {
+      render_view->GetWebView()->mainFrame()->isProcessingUserGesture()) {
     GURL osd_url(name);
     if (!osd_url.is_empty()) {
       render_view->Send(new ChromeViewHostMsg_PageHasOSDD(
-          render_view->routing_id(), render_view->page_id(), osd_url,
+          render_view->GetRoutingId(), render_view->GetPageId(), osd_url,
           provider_type));
     }
   }
@@ -158,7 +159,7 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::IsSearchProviderInstalled(
   GURL inquiry_url = GURL(name);
   if (!inquiry_url.is_empty()) {
       render_view->Send(new ChromeViewHostMsg_GetSearchProviderInstallState(
-          render_view->routing_id(),
+          render_view->GetRoutingId(),
           webframe->document().url(),
           inquiry_url,
           &install));

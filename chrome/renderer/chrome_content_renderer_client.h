@@ -39,12 +39,12 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual ~ChromeContentRendererClient();
 
   virtual void RenderThreadStarted() OVERRIDE;
-  virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
+  virtual void RenderViewCreated(content::RenderView* render_view) OVERRIDE;
   virtual void SetNumberOfViews(int number_of_views) OVERRIDE;
   virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
   virtual std::string GetDefaultEncoding() OVERRIDE;
   virtual bool OverrideCreatePlugin(
-      RenderView* render_view,
+      content::RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       WebKit::WebPlugin** plugin) OVERRIDE;
@@ -75,13 +75,13 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;
   virtual void PrefetchHostName(const char* hostname, size_t length) OVERRIDE;
   virtual bool ShouldOverridePageVisibilityState(
-      const RenderView* render_view,
+      const content::RenderView* render_view,
       WebKit::WebPageVisibilityState* override_state) const OVERRIDE;
-  virtual bool HandleGetCookieRequest(RenderView* sender,
+  virtual bool HandleGetCookieRequest(content::RenderView* sender,
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       std::string* cookies) OVERRIDE;
-  virtual bool HandleSetCookieRequest(RenderView* sender,
+  virtual bool HandleSetCookieRequest(content::RenderView* sender,
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& value) OVERRIDE;
@@ -96,12 +96,12 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
  private:
   WebKit::WebPlugin* CreatePlugin(
-      RenderView* render_view,
+      content::RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
 
   WebKit::WebPlugin* CreatePluginPlaceholder(
-      RenderView* render_view,
+      content::RenderView* render_view,
       WebKit::WebFrame* frame,
       const webkit::WebPluginInfo& plugin,
       const WebKit::WebPluginParams& params,

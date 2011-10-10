@@ -27,7 +27,7 @@ namespace autofill {
 class PasswordAutofillManager : public content::RenderViewObserver,
                                 public PageClickListener {
  public:
-  explicit PasswordAutofillManager(RenderView* render_view);
+  explicit PasswordAutofillManager(content::RenderView* render_view);
   virtual ~PasswordAutofillManager();
 
   // WebViewClient editor related calls forwarded by the RenderView.

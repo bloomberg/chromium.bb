@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/native_library.h"
@@ -25,7 +26,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "crypto/nss_util.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
@@ -115,8 +116,9 @@ class RenderViewContentSettingsSetter : public content::RenderViewVisitor {
         content_settings_(content_settings) {
   }
 
-  virtual bool Visit(RenderView* render_view) {
-    if (GURL(render_view->webview()->mainFrame()->document().url()) == url_) {
+  virtual bool Visit(content::RenderView* render_view) {
+    if (GURL(render_view->GetWebView()->mainFrame()->document().url()) ==
+        url_) {
       ContentSettingsObserver::Get(render_view)->SetContentSettings(
           content_settings_);
     }
@@ -300,7 +302,7 @@ void ChromeRenderProcessObserver::OnSetContentSettingsForCurrentURL(
     const GURL& url,
     const ContentSettings& content_settings) {
   RenderViewContentSettingsSetter setter(url, content_settings);
-  RenderView::ForEach(&setter);
+  content::RenderView::ForEach(&setter);
 }
 
 void ChromeRenderProcessObserver::OnSetDefaultContentSettings(

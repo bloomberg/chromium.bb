@@ -62,7 +62,7 @@ bool SpeechInputDispatcher::startRecognition(
   params.origin_url = UTF16ToUTF8(origin.toString());
   params.render_view_id = routing_id();
   params.request_id = request_id;
-  gfx::Size scroll = render_view()->webview()->mainFrame()->scrollOffset();
+  gfx::Size scroll = render_view()->GetWebView()->mainFrame()->scrollOffset();
   params.element_rect = element_rect;
   params.element_rect.Offset(-scroll.width(), -scroll.height());
 
@@ -111,7 +111,7 @@ void SpeechInputDispatcher::OnSpeechRecognitionComplete(int request_id) {
 void SpeechInputDispatcher::OnSpeechRecognitionToggleSpeechInput() {
   VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionToggleSpeechInput";
 
-  WebView* web_view = render_view()->webview();
+  WebView* web_view = render_view()->GetWebView();
 
   WebFrame* frame = web_view->mainFrame();
   if (!frame)

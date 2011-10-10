@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,13 +24,13 @@ using WebKit::WebView;
 
 namespace safe_browsing {
 
-SkBitmap GrabPhishingThumbnail(RenderView* render_view,
+SkBitmap GrabPhishingThumbnail(content::RenderView* render_view,
                                const gfx::Size& view_size,
                                const gfx::Size& thumbnail_size) {
-  if (!render_view || !render_view->webview()) {
+  if (!render_view || !render_view->GetWebView()) {
     return SkBitmap();  // The WebView is going away.
   }
-  WebView* view = render_view->webview();
+  WebView* view = render_view->GetWebView();
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   skia::PlatformCanvas canvas;
   if (!canvas.initialize(view_size.width(), view_size.height(), true)) {
@@ -69,7 +69,7 @@ SkBitmap GrabPhishingThumbnail(RenderView* render_view,
   }
   // Maybe re-display the scrollbars and resize the view to its old size.
   view->mainFrame()->setCanHaveScrollbars(
-      render_view->should_display_scrollbars(old_size.width, old_size.height));
+      render_view->ShouldDisplayScrollbars(old_size.width, old_size.height));
   view->resize(old_size);
 
   UMA_HISTOGRAM_TIMES("SBClientPhishing.GrabPhishingThumbnail",

@@ -407,7 +407,7 @@ void RendererAccessibility::OnSetAccessibilityFocus(int acc_obj_id) {
   // By convention, calling SetFocus on the root of the tree should clear the
   // current focus. Otherwise set the focus to the new node.
   if (acc_obj_id == root.axID())
-    render_view()->webview()->clearFocusedNode();
+    render_view()->GetWebView()->clearFocusedNode();
   else
     obj.setFocused(true);
 }
@@ -424,7 +424,7 @@ bool RendererAccessibility::ShouldIncludeChildren(
 }
 
 WebDocument RendererAccessibility::GetMainDocument() {
-  WebView* view = render_view()->webview();
+  WebView* view = render_view()->GetWebView();
   WebFrame* main_frame = view ? view->mainFrame() : NULL;
 
   if (main_frame)

@@ -14,7 +14,7 @@
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/navigation_state.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -84,7 +84,7 @@ enum AbandonType {
 };
 
 PageLoadHistograms::PageLoadHistograms(
-    RenderView* render_view,
+    content::RenderView* render_view,
     RendererHistogramSnapshots* histogram_snapshots)
     : content::RenderViewObserver(render_view),
       cross_origin_access_count_(0),
@@ -782,7 +782,7 @@ bool PageLoadHistograms::OnMessageReceived(const IPC::Message& message) {
     // TODO(davemoore) This code should be removed once willClose() gets
     // called when a page is destroyed. page_load_histograms_.Dump() is safe
     // to call multiple times for the same frame, but it will simplify things.
-    Dump(render_view()->webview()->mainFrame());
+    Dump(render_view()->GetWebView()->mainFrame());
     ResetCrossFramePropertyAccess();
   }
   return false;

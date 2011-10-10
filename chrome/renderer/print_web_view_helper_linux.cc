@@ -10,7 +10,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/render_view.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "printing/metafile_skia_wrapper.h"

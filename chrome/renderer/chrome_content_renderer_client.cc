@@ -59,7 +59,7 @@
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/renderer_resources.h"
@@ -220,7 +220,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 }
 
-void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
+void ChromeContentRendererClient::RenderViewCreated(
+    content::RenderView* render_view) {
   ContentSettingsObserver* content_settings =
       new ContentSettingsObserver(render_view);
   new ExtensionHelper(render_view, extension_dispatcher_.get());
@@ -268,7 +269,7 @@ std::string ChromeContentRendererClient::GetDefaultEncoding() {
 }
 
 bool ChromeContentRendererClient::OverrideCreatePlugin(
-    RenderView* render_view,
+    content::RenderView* render_view,
     WebFrame* frame,
     const WebPluginParams& params,
     WebKit::WebPlugin** plugin) {
@@ -277,7 +278,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
 }
 
 WebPlugin* ChromeContentRendererClient::CreatePlugin(
-    RenderView* render_view,
+    content::RenderView* render_view,
     WebFrame* frame,
     const WebPluginParams& original_params) {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
@@ -287,7 +288,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   webkit::WebPluginInfo plugin;
   std::string actual_mime_type;
   render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
-      render_view->routing_id(), url, frame->top()->document().url(),
+      render_view->GetRoutingId(), url, frame->top()->document().url(),
       orig_mime_type, &status, &plugin, &actual_mime_type));
 
   if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
@@ -371,7 +372,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         outdated_policy == CONTENT_SETTING_BLOCK) {
       if (outdated_policy == CONTENT_SETTING_ASK) {
         render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
-            render_view->routing_id(), group->GetGroupName(),
+            render_view->GetRoutingId(), group->GetGroupName(),
             GURL(group->GetUpdateURL())));
       }
       return CreatePluginPlaceholder(
@@ -393,7 +394,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
        plugin_setting == CONTENT_SETTING_ASK) &&
       host_setting == CONTENT_SETTING_DEFAULT) {
     render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
-        render_view->routing_id(), group->GetGroupName(), GURL()));
+        render_view->GetRoutingId(), group->GetGroupName(), GURL()));
     return CreatePluginPlaceholder(
         render_view, frame, plugin, params, group.get(),
         IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_AUTHORIZED, false, true);
@@ -468,7 +469,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
     }
 
-    return render_view->CreatePluginInternal(frame, plugin, params);
+    return render_view->CreatePlugin(frame, plugin, params);
   }
 
   observer->DidBlockContentType(content_type, resource);
@@ -486,7 +487,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 }
 
 WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(
-    RenderView* render_view,
+    content::RenderView* render_view,
     WebFrame* frame,
     const webkit::WebPluginInfo& plugin,
     const WebPluginParams& params,
@@ -511,7 +512,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(
                         frame,
                         plugin,
                         params,
-                        render_view->webkit_preferences(),
+                        render_view->GetWebkitPreferences(),
                         resource_id,
                         name,
                         message,
@@ -670,7 +671,7 @@ void ChromeContentRendererClient::PrefetchHostName(const char* hostname,
 }
 
 bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
-    const RenderView* render_view,
+    const content::RenderView* render_view,
     WebKit::WebPageVisibilityState* override_state) const {
   if (!prerender::PrerenderHelper::IsPrerendering(render_view))
     return false;
@@ -680,7 +681,7 @@ bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
 }
 
 bool ChromeContentRendererClient::HandleGetCookieRequest(
-    RenderView* sender,
+    content::RenderView* sender,
     const GURL& url,
     const GURL& first_party_for_cookies,
     std::string* cookies) {
@@ -695,7 +696,7 @@ bool ChromeContentRendererClient::HandleGetCookieRequest(
 }
 
 bool ChromeContentRendererClient::HandleSetCookieRequest(
-    RenderView* sender,
+    content::RenderView* sender,
     const GURL& url,
     const GURL& first_party_for_cookies,
     const std::string& value) {

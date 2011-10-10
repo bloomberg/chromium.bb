@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/common/autofill_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
@@ -202,7 +202,7 @@ namespace autofill {
 // PasswordAutofillManager, public:
 
 PasswordAutofillManager::PasswordAutofillManager(
-    RenderView* render_view)
+    content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -409,7 +409,7 @@ void PasswordAutofillManager::OnFillPasswordForm(
     const webkit_glue::PasswordFormFillData& form_data) {
   FormElementsList forms;
   // We own the FormElements* in forms.
-  FindFormElements(render_view()->webview(), form_data.basic_data, &forms);
+  FindFormElements(render_view()->GetWebView(), form_data.basic_data, &forms);
   FormElementsList::iterator iter;
   for (iter = forms.begin(); iter != forms.end(); ++iter) {
     scoped_ptr<FormElements> form_elements(*iter);

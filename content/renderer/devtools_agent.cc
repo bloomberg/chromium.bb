@@ -196,11 +196,11 @@ void DevToolsAgent::OnNavigate() {
 }
 
 void DevToolsAgent::OnSetupDevToolsClient() {
-  new DevToolsClient(render_view());
+  new DevToolsClient(static_cast<RenderView*>(render_view()));
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
-  WebView* web_view = render_view()->webview();
+  WebView* web_view = render_view()->GetWebView();
   if (!web_view)
     return NULL;
   return web_view->devToolsAgent();

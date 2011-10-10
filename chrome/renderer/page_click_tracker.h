@@ -31,7 +31,7 @@ class PageClickListener;
 class PageClickTracker : public content::RenderViewObserver,
                          public WebKit::WebDOMEventListener {
  public:
-  explicit PageClickTracker(RenderView* render_view);
+  explicit PageClickTracker(content::RenderView* render_view);
   virtual ~PageClickTracker();
 
   // Adds/removes a listener for getting notification when an element is
@@ -52,10 +52,6 @@ class PageClickTracker : public content::RenderViewObserver,
 
   // Called after the mouse event |event| has been processed by WebKit.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
-
-  // Returns the currently focused node in the associated render view.
-  // That node may be null.
-  WebKit::WebNode GetFocusedNode();
 
   // The last node that was clicked and had focus.
   WebKit::WebNode last_node_clicked_;

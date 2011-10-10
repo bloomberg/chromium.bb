@@ -18,10 +18,13 @@
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_THUMBNAILER_H_
 #pragma once
 
+namespace content {
+class RenderView;
+}
+
 namespace gfx {
 class Size;
 }
-class RenderView;
 class SkBitmap;
 
 namespace safe_browsing {
@@ -31,7 +34,7 @@ namespace safe_browsing {
 // snapshot will then be re-sized to the given |thumbnail_size|.  If grabbing
 // the thumbnail fails this function returns SkBitmap() in which case calling
 // isNull() on the returned bitmap will return true.
-SkBitmap GrabPhishingThumbnail(RenderView* render_view,
+  SkBitmap GrabPhishingThumbnail(content::RenderView* render_view,
                                const gfx::Size& view_size,
                                const gfx::Size& thumbnail_size);
 

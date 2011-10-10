@@ -11,15 +11,17 @@
 #include "base/basictypes.h"
 #include "v8/include/v8.h"
 
-namespace base {
-class ListValue;
-}
-
 namespace WebKit {
 class WebFrame;
 }
 
+namespace base {
+class ListValue;
+}
+
+namespace content {
 class RenderView;
+}
 
 // Chrome's wrapper for a v8 context.
 class ChromeV8Context {
@@ -46,7 +48,7 @@ class ChromeV8Context {
 
   // Returns the RenderView associated with this context. Can return NULL if the
   // context is in the process of being destroyed.
-  RenderView* GetRenderView() const;
+  content::RenderView* GetRenderView() const;
 
   // Fires the onload and onunload events on the chromeHidden object.
   // TODO(aa): Does these make more sense with EventBindings?

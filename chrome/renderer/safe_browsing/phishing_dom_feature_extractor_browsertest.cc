@@ -51,7 +51,7 @@ class PhishingDOMFeatureExtractorTest : public RenderViewFakeResourcesTest {
   virtual void SetUp() {
     // Set up WebKit and the RenderView.
     RenderViewFakeResourcesTest::SetUp();
-    extractor_.reset(new PhishingDOMFeatureExtractor(view_, &clock_));
+    extractor_.reset(new PhishingDOMFeatureExtractor(view(), &clock_));
   }
 
   virtual void TearDown() {

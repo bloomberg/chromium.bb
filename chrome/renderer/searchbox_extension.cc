@@ -11,7 +11,7 @@
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "chrome/renderer/searchbox.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -132,7 +132,7 @@ class SearchBoxExtensionWrapper : public v8::Extension {
       v8::Handle<v8::String> name);
 
   // Helper function to find the RenderView. May return NULL.
-  static RenderView* GetRenderView();
+  static content::RenderView* GetRenderView();
 
   // Gets the value of the user's search query.
   static v8::Handle<v8::Value> GetValue(const v8::Arguments& args);
@@ -197,7 +197,7 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
 }
 
 // static
-RenderView* SearchBoxExtensionWrapper::GetRenderView() {
+content::RenderView* SearchBoxExtensionWrapper::GetRenderView() {
   WebFrame* webframe = WebFrame::frameForEnteredContext();
   DCHECK(webframe) << "There should be an active frame since we just got "
       "a native function called.";
@@ -206,13 +206,13 @@ RenderView* SearchBoxExtensionWrapper::GetRenderView() {
   WebView* webview = webframe->view();
   if (!webview) return NULL;  // can happen during closing
 
-  return RenderView::FromWebView(webview);
+  return content::RenderView::FromWebView(webview);
 }
 
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetValue(
     const v8::Arguments& args) {
-  RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::String::New(
       reinterpret_cast<const uint16_t*>(
@@ -223,7 +223,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetValue(
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetVerbatim(
     const v8::Arguments& args) {
-  RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::Boolean::New(SearchBox::Get(render_view)->verbatim());
 }
@@ -231,7 +231,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetVerbatim(
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSelectionStart(
     const v8::Arguments& args) {
-  RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::Int32::New(SearchBox::Get(render_view)->selection_start());
 }
@@ -239,7 +239,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSelectionStart(
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSelectionEnd(
     const v8::Arguments& args) {
-  RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::Int32::New(SearchBox::Get(render_view)->selection_end());
 }
@@ -247,7 +247,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSelectionEnd(
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetX(
     const v8::Arguments& args) {
-  RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::Int32::New(SearchBox::Get(render_view)->rect().x());
 }
@@ -255,7 +255,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetX(
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetY(
     const v8::Arguments& args) {
-  RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::Int32::New(SearchBox::Get(render_view)->rect().y());
 }
@@ -263,7 +263,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetY(
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetWidth(
     const v8::Arguments& args) {
-  RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::Int32::New(SearchBox::Get(render_view)->rect().width());
 }
@@ -271,7 +271,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetWidth(
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetHeight(
     const v8::Arguments& args) {
-  RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::Int32::New(SearchBox::Get(render_view)->rect().height());
 }
@@ -343,7 +343,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
     }
   }
 
-  if (RenderView* render_view = GetRenderView())
+  if (content::RenderView* render_view = GetRenderView())
     SearchBox::Get(render_view)->SetSuggestions(suggestions, behavior);
   return v8::Undefined();
 }

@@ -13,7 +13,7 @@
 // messages to be handled by RenderViewHostObserver.
 class FrameSniffer : public content::RenderViewObserver {
  public:
-  FrameSniffer(RenderView* render_view, const string16 &frame_name);
+  FrameSniffer(content::RenderView* render_view, const string16 &frame_name);
   virtual ~FrameSniffer();
 
   // Implements RenderViewObserver.

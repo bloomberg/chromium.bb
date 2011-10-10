@@ -18,7 +18,7 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
 
@@ -97,7 +97,7 @@ class ExtensionImpl : public ChromeV8Extension {
       const v8::Arguments& args) {
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
-    RenderView* renderview = GetCurrentRenderView();
+    content::RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -108,7 +108,7 @@ class ExtensionImpl : public ChromeV8Extension {
       std::string channel_name = *v8::String::Utf8Value(args[2]->ToString());
       int port_id = -1;
       renderview->Send(new ExtensionHostMsg_OpenChannelToExtension(
-          renderview->routing_id(), source_id, target_id,
+          renderview->GetRoutingId(), source_id, target_id,
           channel_name, &port_id));
       return v8::Integer::New(port_id);
     }
@@ -117,7 +117,7 @@ class ExtensionImpl : public ChromeV8Extension {
 
   // Sends a message along the given channel.
   static v8::Handle<v8::Value> PostMessage(const v8::Arguments& args) {
-    RenderView* renderview = GetCurrentRenderView();
+    content::RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -129,7 +129,7 @@ class ExtensionImpl : public ChromeV8Extension {
       }
       std::string message = *v8::String::Utf8Value(args[1]->ToString());
       renderview->Send(new ExtensionHostMsg_PostMessage(
-          renderview->routing_id(), port_id, message));
+          renderview->GetRoutingId(), port_id, message));
     }
     return v8::Undefined();
   }
@@ -196,7 +196,7 @@ class ExtensionImpl : public ChromeV8Extension {
     if (!l10n_messages) {
       // Get the current RenderView so that we can send a routed IPC message
       // from the correct source.
-      RenderView* renderview = GetCurrentRenderView();
+      content::RenderView* renderview = GetCurrentRenderView();
       if (!renderview)
         return v8::Undefined();
 
@@ -259,7 +259,7 @@ void RendererExtensionBindings::DeliverMessage(
     const ChromeV8ContextSet::ContextSet& contexts,
     int target_port_id,
     const std::string& message,
-    RenderView* restrict_to_render_view) {
+    content::RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope;
 
   for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();

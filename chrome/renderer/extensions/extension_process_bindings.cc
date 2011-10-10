@@ -26,6 +26,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_view_types.h"
+#include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
@@ -37,7 +38,7 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "chrome/renderer/static_v8_external_string_resource.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
@@ -94,12 +95,12 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
 
   v8::Local<v8::Array> views() { return views_; }
 
-  virtual bool Visit(RenderView* render_view) {
+  virtual bool Visit(content::RenderView* render_view) {
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
     if (!ViewTypeMatches(helper->view_type(), view_type_))
       return true;
 
-    GURL url = render_view->webview()->mainFrame()->document().url();
+    GURL url = render_view->GetWebView()->mainFrame()->document().url();
     if (!url.SchemeIs(chrome::kExtensionScheme))
       return true;
     const std::string& extension_id = url.host();
@@ -112,7 +113,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
     }
 
     v8::Local<v8::Context> context =
-        render_view->webview()->mainFrame()->mainWorldScriptContext();
+        render_view->GetWebView()->mainFrame()->mainWorldScriptContext();
     if (!context.IsEmpty()) {
       v8::Local<v8::Value> window = context->Global();
       DCHECK(!window.IsEmpty());
@@ -255,7 +256,7 @@ class ExtensionImpl : public ChromeV8Extension {
 
     ExtensionViewAccumulator accumulator(extension->id(), browser_window_id,
                                          view_type);
-    RenderView::ForEach(&accumulator);
+    content::RenderView::ForEach(&accumulator);
     return accumulator.views();
   }
 
@@ -375,7 +376,7 @@ class ExtensionImpl : public ChromeV8Extension {
   static v8::Handle<v8::Value> OpenChannelToTab(const v8::Arguments& args) {
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
-    RenderView* renderview = GetCurrentRenderView();
+    content::RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -386,7 +387,7 @@ class ExtensionImpl : public ChromeV8Extension {
       std::string channel_name = *v8::String::Utf8Value(args[2]->ToString());
       int port_id = -1;
       renderview->Send(new ExtensionHostMsg_OpenChannelToTab(
-          renderview->routing_id(), tab_id, extension_id, channel_name,
+        renderview->GetRoutingId(), tab_id, extension_id, channel_name,
           &port_id));
       return v8::Integer::New(port_id);
     }
@@ -438,7 +439,7 @@ class ExtensionImpl : public ChromeV8Extension {
 
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
-    RenderView* renderview = GetCurrentRenderView();
+    content::RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -478,10 +479,10 @@ class ExtensionImpl : public ChromeV8Extension {
         webframe ? webframe->isProcessingUserGesture() : false;
     if (for_io_thread) {
       renderview->Send(new ExtensionHostMsg_RequestForIOThread(
-          renderview->routing_id(), params));
+          renderview->GetRoutingId(), params));
     } else {
       renderview->Send(new ExtensionHostMsg_Request(
-          renderview->routing_id(), params));
+          renderview->GetRoutingId(), params));
     }
 
     return v8::Undefined();
@@ -575,10 +576,10 @@ class ExtensionImpl : public ChromeV8Extension {
   }
 
   static v8::Handle<v8::Value> GetRenderViewId(const v8::Arguments& args) {
-    RenderView* renderview = GetCurrentRenderView();
+    content::RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
-    return v8::Integer::New(renderview->routing_id());
+    return v8::Integer::New(renderview->GetRoutingId());
   }
 };
 

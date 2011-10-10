@@ -16,7 +16,7 @@ class NavigationState;
 
 class PageLoadHistograms : public content::RenderViewObserver {
  public:
-  PageLoadHistograms(RenderView* render_view,
+  PageLoadHistograms(content::RenderView* render_view,
                      RendererHistogramSnapshots* histogram_snapshots);
 
  private:

@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
@@ -48,7 +48,7 @@ const size_t kMaximumTextSizeForAutofill = 1000;
 namespace autofill {
 
 AutofillAgent::AutofillAgent(
-    RenderView* render_view,
+    content::RenderView* render_view,
     PasswordAutofillManager* password_autofill_manager)
     : content::RenderViewObserver(render_view),
       password_autofill_manager_(password_autofill_manager),
@@ -60,7 +60,7 @@ AutofillAgent::AutofillAgent(
       suggestions_options_index_(-1),
       has_shown_autofill_popup_for_current_edit_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  render_view->webview()->setAutofillClient(this);
+  render_view->GetWebView()->setAutofillClient(this);
 }
 
 AutofillAgent::~AutofillAgent() {}
@@ -244,7 +244,7 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
                                           const std::vector<string16>& labels,
                                           const std::vector<string16>& icons,
                                           const std::vector<int>& unique_ids) {
-  WebKit::WebView* web_view = render_view()->webview();
+  WebKit::WebView* web_view = render_view()->GetWebView();
   if (!web_view || query_id != autofill_query_id_)
     return;
 
@@ -329,7 +329,7 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
 
 void AutofillAgent::OnFormDataFilled(int query_id,
                                      const webkit_glue::FormData& form) {
-  if (!render_view()->webview() || query_id != autofill_query_id_)
+  if (!render_view()->GetWebView() || query_id != autofill_query_id_)
     return;
 
   switch (autofill_action_) {

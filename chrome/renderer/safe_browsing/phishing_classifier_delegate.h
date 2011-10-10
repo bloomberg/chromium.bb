@@ -39,7 +39,7 @@ class PhishingClassifierDelegate : public content::RenderViewObserver {
   // The RenderView owns us.  This object takes ownership of the classifier.
   // Note that if classifier is null, a default instance of PhishingClassifier
   // will be used.
-  static PhishingClassifierDelegate* Create(RenderView* render_view,
+  static PhishingClassifierDelegate* Create(content::RenderView* render_view,
                                             PhishingClassifier* classifier);
   virtual ~PhishingClassifierDelegate();
 
@@ -66,7 +66,7 @@ class PhishingClassifierDelegate : public content::RenderViewObserver {
  private:
   friend class PhishingClassifierDelegateTest;
 
-  PhishingClassifierDelegate(RenderView* render_view,
+  PhishingClassifierDelegate(content::RenderView* render_view,
                              PhishingClassifier* classifier);
 
   enum CancelClassificationReason {

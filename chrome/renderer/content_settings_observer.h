@@ -24,7 +24,7 @@ class ContentSettingsObserver
     : public content::RenderViewObserver,
       public content::RenderViewObserverTracker<ContentSettingsObserver> {
  public:
-  explicit ContentSettingsObserver(RenderView* render_view);
+  explicit ContentSettingsObserver(content::RenderView* render_view);
   virtual ~ContentSettingsObserver();
 
   // Sets the content settings that back allowScripts(), allowImages(), and

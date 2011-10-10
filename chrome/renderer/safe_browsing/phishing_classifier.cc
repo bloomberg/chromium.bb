@@ -20,7 +20,7 @@
 #include "chrome/renderer/safe_browsing/phishing_term_feature_extractor.h"
 #include "chrome/renderer/safe_browsing/phishing_url_feature_extractor.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -35,7 +35,7 @@ namespace safe_browsing {
 const float PhishingClassifier::kInvalidScore = -1.0;
 const float PhishingClassifier::kPhishyThreshold = 0.5;
 
-PhishingClassifier::PhishingClassifier(RenderView* render_view,
+PhishingClassifier::PhishingClassifier(content::RenderView* render_view,
                                        FeatureExtractorClock* clock)
     : render_view_(render_view),
       scorer_(NULL),
@@ -93,7 +93,7 @@ void PhishingClassifier::BeginClassification(const string16* page_text,
 }
 
 void PhishingClassifier::BeginFeatureExtraction() {
-  WebKit::WebView* web_view = render_view_->webview();
+  WebKit::WebView* web_view = render_view_->GetWebView();
   if (!web_view) {
     RunFailureCallback();
     return;
@@ -157,7 +157,7 @@ void PhishingClassifier::DOMExtractionFinished(bool success) {
 
 void PhishingClassifier::TermExtractionFinished(bool success) {
   if (success) {
-    WebKit::WebView* web_view = render_view_->webview();
+    WebKit::WebView* web_view = render_view_->GetWebView();
     if (!web_view) {
       RunFailureCallback();
       return;

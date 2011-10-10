@@ -12,7 +12,7 @@
 #include "chrome/renderer/plugin_uma.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
@@ -57,7 +57,7 @@ static const unsigned kMenuActionRemove = 2;
 
 static const BlockedPlugin* g_last_active_menu;
 
-BlockedPlugin::BlockedPlugin(RenderView* render_view,
+BlockedPlugin::BlockedPlugin(content::RenderView* render_view,
                              WebFrame* frame,
                              const webkit::WebPluginInfo& info,
                              const WebPluginParams& params,
@@ -150,7 +150,7 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
 
   menu_data.customItems.swap(custom_items);
   menu_data.mousePosition = WebPoint(event.windowX, event.windowY);
-  render_view()->showContextMenu(NULL, menu_data);
+  render_view()->ShowContextMenu(NULL, menu_data);
   g_last_active_menu = this;
 }
 
@@ -202,7 +202,7 @@ void BlockedPlugin::LoadPlugin() {
     return;
   WebPluginContainer* container = plugin_->container();
   WebPlugin* new_plugin =
-      render_view()->CreatePluginInternal(frame_, plugin_info_, plugin_params_);
+      render_view()->CreatePlugin(frame_, plugin_info_, plugin_params_);
   if (new_plugin && new_plugin->initialize(container)) {
     plugin_->RestoreTitleText();
     container->setPlugin(new_plugin);
@@ -244,7 +244,7 @@ void BlockedPlugin::OpenUrlCallback(const CppArgumentList& args,
   WebURLRequest request;
   request.initialize();
   request.setURL(url);
-  render_view()->loadURLExternally(
+  render_view()->LoadURLExternally(
       frame_, request, WebKit::WebNavigationPolicyNewForegroundTab);
 }
 

@@ -20,7 +20,6 @@
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"

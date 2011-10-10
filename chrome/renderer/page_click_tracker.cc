@@ -7,7 +7,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMouseEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -47,7 +47,7 @@ const WebInputElement GetTextWebInputElement(const WebNode& node) {
 
 }  // namespace
 
-PageClickTracker::PageClickTracker(RenderView* render_view)
+PageClickTracker::PageClickTracker(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       was_focused_(false) {
 }
@@ -73,7 +73,7 @@ void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
   if (input_element.isNull())
     return;
 
-  bool is_focused = (last_node_clicked_ == GetFocusedNode());
+  bool is_focused = (last_node_clicked_ == render_view()->GetFocusedNode());
   ObserverListBase<PageClickListener>::Iterator it(listeners_);
   PageClickListener* listener;
   while ((listener = it.GetNext()) != NULL) {
@@ -144,17 +144,5 @@ void PageClickTracker::handleEvent(const WebDOMEvent& event) {
     return;
 
   last_node_clicked_ = node;
-  was_focused_ = (GetFocusedNode() == last_node_clicked_);
-}
-
-WebNode PageClickTracker::GetFocusedNode() {
-  WebView* web_view = render_view()->webview();
-  if (!web_view)
-    return WebNode();
-
-  WebFrame* web_frame = web_view->focusedFrame();
-  if (!web_frame)
-    return WebNode();
-
-  return web_frame->document().focusedNode();
+  was_focused_ = (render_view()->GetFocusedNode() == last_node_clicked_);
 }

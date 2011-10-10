@@ -5,6 +5,7 @@
 #include "content/renderer/geolocation_dispatcher.h"
 
 #include "content/common/geolocation_messages.h"
+#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequestManager.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"

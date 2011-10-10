@@ -14,10 +14,13 @@
 
 class ChromeV8Context;
 class GURL;
-class RenderView;
 
 namespace base {
 class ListValue;
+}
+
+namespace content {
+class RenderView;
 }
 
 namespace v8 {
@@ -66,7 +69,7 @@ class ChromeV8ContextSet {
   void DispatchChromeHiddenMethod(const std::string& extension_id,
                                   const std::string& method_name,
                                   const base::ListValue& arguments,
-                                  RenderView* render_view,
+                                  content::RenderView* render_view,
                                   const GURL& event_url) const;
 
  private:

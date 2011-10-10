@@ -87,13 +87,14 @@ TEST_F(TranslateHelperTest, TranslateLibNeverReady) {
                           // translate_helper.cc
       .WillRepeatedly(Return(false));
 
-  translate_helper_->TranslatePage(view_->page_id(), "en", "fr", std::string());
+  translate_helper_->TranslatePage(
+      view_->GetPageId(), "en", "fr", std::string());
   MessageLoop::current()->RunAllPending();
 
   int page_id;
   TranslateErrors::Type error;
   ASSERT_TRUE(GetPageTranslatedMessage(&page_id, NULL, NULL, &error));
-  EXPECT_EQ(view_->page_id(), page_id);
+  EXPECT_EQ(view_->GetPageId(), page_id);
   EXPECT_EQ(TranslateErrors::INITIALIZATION_ERROR, error);
 }
 
@@ -122,8 +123,8 @@ TEST_F(TranslateHelperTest, TranslateSuccess) {
 
   std::string original_lang("en");
   std::string target_lang("fr");
-  translate_helper_->TranslatePage(view_->page_id(), original_lang, target_lang,
-                                   std::string());
+  translate_helper_->TranslatePage(
+      view_->GetPageId(), original_lang, target_lang, std::string());
   MessageLoop::current()->RunAllPending();
 
   int page_id;
@@ -134,7 +135,7 @@ TEST_F(TranslateHelperTest, TranslateSuccess) {
                                        &received_original_lang,
                                        &received_target_lang,
                                        &error));
-  EXPECT_EQ(view_->page_id(), page_id);
+  EXPECT_EQ(view_->GetPageId(), page_id);
   EXPECT_EQ(original_lang, received_original_lang);
   EXPECT_EQ(target_lang, received_target_lang);
   EXPECT_EQ(TranslateErrors::NONE, error);
@@ -165,13 +166,14 @@ TEST_F(TranslateHelperTest, TranslateFailure) {
       .Times(AtLeast(1))
       .WillRepeatedly(Return(false));
 
-  translate_helper_->TranslatePage(view_->page_id(), "en", "fr", std::string());
+  translate_helper_->TranslatePage(
+      view_->GetPageId(), "en", "fr", std::string());
   MessageLoop::current()->RunAllPending();
 
   int page_id;
   TranslateErrors::Type error;
   ASSERT_TRUE(GetPageTranslatedMessage(&page_id, NULL, NULL, &error));
-  EXPECT_EQ(view_->page_id(), page_id);
+  EXPECT_EQ(view_->GetPageId(), page_id);
   EXPECT_EQ(TranslateErrors::TRANSLATION_ERROR, error);
 }
 
@@ -197,7 +199,7 @@ TEST_F(TranslateHelperTest, UndefinedSourceLang) {
       .Times(AtLeast(1))
       .WillRepeatedly(Return(true));
 
-  translate_helper_->TranslatePage(view_->page_id(),
+  translate_helper_->TranslatePage(view_->GetPageId(),
                                    chrome::kUnknownLanguageCode, "fr",
                                    std::string());
   MessageLoop::current()->RunAllPending();
@@ -208,7 +210,7 @@ TEST_F(TranslateHelperTest, UndefinedSourceLang) {
   std::string target_lang;
   ASSERT_TRUE(GetPageTranslatedMessage(&page_id, &original_lang, &target_lang,
                                        &error));
-  EXPECT_EQ(view_->page_id(), page_id);
+  EXPECT_EQ(view_->GetPageId(), page_id);
   EXPECT_EQ("de", original_lang);
   EXPECT_EQ("fr", target_lang);
   EXPECT_EQ(TranslateErrors::NONE, error);
@@ -234,12 +236,12 @@ TEST_F(TranslateHelperTest, MultipleSimilarTranslations) {
 
   std::string original_lang("en");
   std::string target_lang("fr");
-  translate_helper_->TranslatePage(view_->page_id(), original_lang, target_lang,
-                                   std::string());
+  translate_helper_->TranslatePage(
+      view_->GetPageId(), original_lang, target_lang, std::string());
   // While this is running call again TranslatePage to make sure noting bad
   // happens.
-  translate_helper_->TranslatePage(view_->page_id(), original_lang, target_lang,
-                                   std::string());
+  translate_helper_->TranslatePage(
+      view_->GetPageId(), original_lang, target_lang, std::string());
   MessageLoop::current()->RunAllPending();
 
   int page_id;
@@ -250,7 +252,7 @@ TEST_F(TranslateHelperTest, MultipleSimilarTranslations) {
                                        &received_original_lang,
                                        &received_target_lang,
                                        &error));
-  EXPECT_EQ(view_->page_id(), page_id);
+  EXPECT_EQ(view_->GetPageId(), page_id);
   EXPECT_EQ(original_lang, received_original_lang);
   EXPECT_EQ(target_lang, received_target_lang);
   EXPECT_EQ(TranslateErrors::NONE, error);
@@ -272,12 +274,12 @@ TEST_F(TranslateHelperTest, MultipleDifferentTranslations) {
 
   std::string original_lang("en");
   std::string target_lang("fr");
-  translate_helper_->TranslatePage(view_->page_id(), original_lang, target_lang,
-                                   std::string());
+  translate_helper_->TranslatePage(
+      view_->GetPageId(), original_lang, target_lang, std::string());
   // While this is running call again TranslatePage with a new target lang.
   std::string new_target_lang("de");
-  translate_helper_->TranslatePage(view_->page_id(), original_lang,
-                                   new_target_lang, std::string());
+  translate_helper_->TranslatePage(
+      view_->GetPageId(), original_lang, new_target_lang, std::string());
   MessageLoop::current()->RunAllPending();
 
   int page_id;
@@ -288,7 +290,7 @@ TEST_F(TranslateHelperTest, MultipleDifferentTranslations) {
                                        &received_original_lang,
                                        &received_target_lang,
                                        &error));
-  EXPECT_EQ(view_->page_id(), page_id);
+  EXPECT_EQ(view_->GetPageId(), page_id);
   EXPECT_EQ(original_lang, received_original_lang);
   EXPECT_EQ(new_target_lang, received_target_lang);
   EXPECT_EQ(TranslateErrors::NONE, error);

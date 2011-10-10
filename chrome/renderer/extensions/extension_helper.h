@@ -7,14 +7,18 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/common/view_types.h"
-#include "content/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 
 class ExtensionDispatcher;
 class GURL;
+class SkBitmap;
 struct ExtensionMsg_ExecuteCode_Params;
 struct WebApplicationInfo;
 
@@ -24,6 +28,7 @@ class ListValue;
 
 namespace webkit_glue {
 class ResourceFetcher;
+class ImageResourceFetcher;
 }
 
 // RenderView-level plumbing for extension features.
@@ -31,7 +36,7 @@ class ExtensionHelper
     : public content::RenderViewObserver,
       public content::RenderViewObserverTracker<ExtensionHelper> {
  public:
-  ExtensionHelper(RenderView* render_view,
+  ExtensionHelper(content::RenderView* render_view,
                   ExtensionDispatcher* extension_dispatcher);
   virtual ~ExtensionHelper();
 
@@ -108,7 +113,9 @@ class ExtensionHelper
   scoped_ptr<webkit_glue::ResourceFetcher> app_definition_fetcher_;
 
   // Used to download the icons for an application.
-  RenderView::ImageResourceFetcherList app_icon_fetchers_;
+  typedef std::vector<linked_ptr<webkit_glue::ImageResourceFetcher> >
+      ImageResourceFetcherList;
+  ImageResourceFetcherList app_icon_fetchers_;
 
   // The number of app icon requests outstanding. When this reaches zero, we're
   // done processing an app definition file.

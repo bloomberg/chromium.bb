@@ -28,7 +28,7 @@ class SpellCheckProvider : public content::RenderViewObserver,
  public:
   typedef IDMap<WebKit::WebTextCheckingCompletion> WebTextCheckCompletions;
 
-  SpellCheckProvider(RenderView* render_view, SpellCheck* spellcheck);
+  SpellCheckProvider(content::RenderView* render_view, SpellCheck* spellcheck);
   virtual ~SpellCheckProvider();
 
   // Requests async spell and grammar checker to the platform text

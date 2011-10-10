@@ -25,10 +25,10 @@
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/edit_command.h"
-#include "content/common/intents_messages.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/page_zoom.h"
 #include "content/common/renderer_preferences.h"
+#include "content/public/renderer/render_view.h"
 #include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_platform_file.h"
@@ -57,7 +57,6 @@ class AudioMessageFilter;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class ExternalPopupMenu;
-class FilePath;
 class GeolocationDispatcher;
 class GURL;
 class IntentsDispatcher;
@@ -120,7 +119,6 @@ class WebApplicationCacheHostClient;
 class WebDataSource;
 class WebDocument;
 class WebDragData;
-class WebFrame;
 class WebGeolocationClient;
 class WebGeolocationServiceInterface;
 class WebIconURL;
@@ -130,19 +128,15 @@ class WebKeyboardEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMouseEvent;
-class WebPlugin;
 class WebSpeechInputController;
 class WebSpeechInputListener;
 class WebStorageNamespace;
 class WebTouchEvent;
 class WebURLLoader;
 class WebURLRequest;
-class WebView;
-struct WebContextMenuData;
 struct WebFileChooserParams;
 struct WebFindOptions;
 struct WebMediaPlayerAction;
-struct WebPluginParams;
 struct WebPoint;
 struct WebWindowFeatures;
 }
@@ -169,6 +163,7 @@ class RenderView : public RenderWidget,
                    public WebKit::WebViewClient,
                    public WebKit::WebFrameClient,
                    public WebKit::WebPageSerializerClient,
+                   public content::RenderView,
                    public webkit::npapi::WebPluginPageDelegate,
                    public base::SupportsWeakPtr<RenderView> {
  public:
@@ -188,10 +183,6 @@ class RenderView : public RenderWidget,
       int64 session_storage_namespace_id,
       const string16& frame_name);
 
-  // Visit all RenderViews with a live WebView (i.e., RenderViews that have
-  // been closed but not yet destroyed are excluded).
-  CONTENT_EXPORT static void ForEach(content::RenderViewVisitor* visitor);
-
   // Returns the RenderView containing the given WebView.
   CONTENT_EXPORT static RenderView* FromWebView(WebKit::WebView* webview);
 
@@ -207,30 +198,15 @@ class RenderView : public RenderWidget,
   void OnViewContextSwapBuffersComplete();
   void OnViewContextSwapBuffersAborted();
 
-  int page_id() const { return page_id_; }
   int history_list_offset() const { return history_list_offset_; }
-  PepperPluginDelegateImpl* pepper_delegate() { return &pepper_delegate_; }
 
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
   }
 
-  bool content_state_immediately() { return send_content_state_immediately_; }
-  int enabled_bindings() const { return enabled_bindings_; }
-  void set_enabled_bindings(int b) { enabled_bindings_ = b; }
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
   }
-
-  // Returns true if we should display scrollbars for the given view size and
-  // false if the scrollbars should be hidden.
-  bool should_display_scrollbars(int width, int height) const {
-    return (!send_preferred_size_changes_ ||
-            (disable_scrollbars_size_limit_.width() <= width ||
-             disable_scrollbars_size_limit_.height() <= height));
-  }
-
-  const WebKit::WebNode& context_menu_node() { return context_menu_node_; }
 
   // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
   content::P2PSocketDispatcher* p2p_socket_dispatcher() {
@@ -240,12 +216,6 @@ class RenderView : public RenderWidget,
   // Functions to add and remove observers for this object.
   void AddObserver(content::RenderViewObserver* observer);
   void RemoveObserver(content::RenderViewObserver* observer);
-
-  // Evaluates a string of JavaScript in a particular frame.
-  CONTENT_EXPORT void EvaluateScript(const string16& frame_xpath,
-                                     const string16& jscript,
-                                     int id,
-                                     bool notify_result);
 
   // Adds the given file chooser request to the file_chooser_completion_ queue
   // (see that var for more) and requests the chooser be displayed if there are
@@ -259,14 +229,7 @@ class RenderView : public RenderWidget,
   // Sets whether  the renderer should report load progress to the browser.
   void SetReportLoadProgressEnabled(bool enabled);
 
-  // Gets the focused node. If no such node exists then the node will be isNull.
-  CONTENT_EXPORT WebKit::WebNode GetFocusedNode() const;
-
-  // Returns true if the parameter node is a textfield, text area or a content
-  // editable div.
-  CONTENT_EXPORT bool IsEditableNode(const WebKit::WebNode& node);
-
-  CONTENT_EXPORT void LoadNavigationErrorPage(
+  void LoadNavigationErrorPage(
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error,
@@ -282,12 +245,6 @@ class RenderView : public RenderWidget,
   // Creates a fullscreen container for a pepper plugin instance.
   RenderWidgetFullscreenPepper* CreatePepperFullscreenContainer(
       webkit::ppapi::PluginInstance* plugin);
-
-  // Create a new plugin.
-  CONTENT_EXPORT WebKit::WebPlugin* CreatePluginInternal(
-      WebKit::WebFrame* frame,
-      const webkit::WebPluginInfo& info,
-      const WebKit::WebPluginParams& params);
 
   // Informs the render view that a PPAPI plugin has gained or lost focus.
   void PpapiPluginFocusChanged();
@@ -591,6 +548,41 @@ class RenderView : public RenderWidget,
       const WebKit::WebURL& frame_url,
       const WebKit::WebCString& data,
       PageSerializationStatus status) OVERRIDE;
+
+  // content::RenderView implementation ----------------------------------------
+
+  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual int GetRoutingId() const OVERRIDE;
+  virtual int GetPageId() OVERRIDE;
+  virtual gfx::Size GetSize() OVERRIDE;
+  virtual gfx::NativeViewId GetHostWindow() OVERRIDE;
+  virtual WebPreferences& GetWebkitPreferences() OVERRIDE;
+  virtual WebKit::WebView* GetWebView() OVERRIDE;
+  virtual WebKit::WebNode GetFocusedNode() const OVERRIDE;
+  virtual WebKit::WebNode GetContextMenuNode() const OVERRIDE;
+  virtual bool IsEditableNode(const WebKit::WebNode& node) OVERRIDE;
+  virtual WebKit::WebPlugin* CreatePlugin(
+      WebKit::WebFrame* frame,
+      const webkit::WebPluginInfo& info,
+      const WebKit::WebPluginParams& params) OVERRIDE;
+  virtual void EvaluateScript(const string16& frame_xpath,
+                              const string16& jscript,
+                              int id,
+                              bool notify_result) OVERRIDE;
+  virtual bool ShouldDisplayScrollbars(int width, int height) const OVERRIDE;
+  virtual int GetEnabledBindings() OVERRIDE;
+  virtual void SetEnabledBindings(int enabled_bindings) OVERRIDE;
+  virtual bool GetContentStateImmediately() OVERRIDE;
+  virtual float GetFilteredTimePerFrame() OVERRIDE;
+  virtual void ShowContextMenu(WebKit::WebFrame* frame,
+                               const WebKit::WebContextMenuData& data) OVERRIDE;
+  virtual WebKit::WebPageVisibilityState GetVisibilityState() const OVERRIDE;
+  virtual void RunModalAlertDialog(WebKit::WebFrame* frame,
+                                   const WebKit::WebString& message) OVERRIDE;
+  virtual void LoadURLExternally(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURLRequest& request,
+      WebKit::WebNavigationPolicy policy) OVERRIDE;
 
   // webkit_glue::WebPluginPageDelegate implementation -------------------------
 

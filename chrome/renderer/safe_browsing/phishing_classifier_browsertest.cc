@@ -80,7 +80,7 @@ class PhishingClassifierTest : public RenderViewFakeResourcesTest {
     clock_ = new MockFeatureExtractorClock;
     scorer_.reset(Scorer::Create(model.SerializeAsString()));
     ASSERT_TRUE(scorer_.get());
-    classifier_.reset(new PhishingClassifier(view_, clock_));
+    classifier_.reset(new PhishingClassifier(view(), clock_));
   }
 
   virtual void TearDown() {

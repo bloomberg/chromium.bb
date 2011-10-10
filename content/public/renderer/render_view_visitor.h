@@ -6,9 +6,9 @@
 #define CONTENT_PUBLIC_RENDERER_RENDER_VIEW_VISITOR_H_
 #pragma once
 
-class RenderView;
-
 namespace content {
+
+class RenderView;
 
 class RenderViewVisitor {
  public:

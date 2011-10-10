@@ -15,7 +15,6 @@
 
 class FilePath;
 class GURL;
-class RenderView;
 class SkBitmap;
 
 namespace WebKit {
@@ -32,6 +31,8 @@ template<class T> class Handle;
 }
 
 namespace content {
+
+class RenderView;
 
 // Embedder API for participating in renderer logic.
 class ContentRendererClient {

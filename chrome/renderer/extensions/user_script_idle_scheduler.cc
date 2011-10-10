@@ -11,7 +11,7 @@
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -97,13 +97,14 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
     const ExtensionMsg_ExecuteCode_Params& params) {
   const Extension* extension = extension_dispatcher_->extensions()->GetByID(
       params.extension_id);
-  RenderView* render_view = RenderView::FromWebView(frame_->view());
+  content::RenderView* render_view =
+      content::RenderView::FromWebView(frame_->view());
 
   // Since extension info is sent separately from user script info, they can
   // be out of sync. We just ignore this situation.
   if (!extension) {
     render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        render_view->routing_id(), params.request_id, true, ""));
+        render_view->GetRoutingId(), params.request_id, true, ""));
     return;
   }
 
@@ -132,7 +133,7 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
           continue;
         } else {
           render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-              render_view->routing_id(), params.request_id, false,
+              render_view->GetRoutingId(), params.request_id, false,
               ExtensionErrorUtils::FormatErrorMessage(
                   extension_manifest_errors::kCannotAccessPage,
                   frame->document().url().spec())));
@@ -160,7 +161,7 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
   }
 
   render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-      render_view->routing_id(), params.request_id, true, ""));
+      render_view->GetRoutingId(), params.request_id, true, ""));
 }
 
 bool UserScriptIdleScheduler::GetAllChildFrames(

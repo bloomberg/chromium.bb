@@ -70,7 +70,7 @@ void NotificationProvider::requestPermission(
     const WebSecurityOrigin& origin,
     WebNotificationPermissionCallback* callback) {
   // We only request permission in response to a user gesture.
-  if (!render_view()->webview()->mainFrame()->isProcessingUserGesture())
+      if (!render_view()->GetWebView()->mainFrame()->isProcessingUserGesture())
     return;
 
   int id = manager_.RegisterPermissionRequest(callback);
@@ -101,7 +101,7 @@ bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
   DCHECK(notification.isHTML());
   DesktopNotificationHostMsg_Show_Params params;
-  WebDocument document = render_view()->webview()->mainFrame()->document();
+  WebDocument document = render_view()->GetWebView()->mainFrame()->document();
   params.origin = GURL(document.securityOrigin().toString());
   params.is_html = true;
   params.contents_url = notification.url();
@@ -115,7 +115,7 @@ bool NotificationProvider::ShowText(const WebNotification& notification,
   DCHECK(!notification.isHTML());
   DesktopNotificationHostMsg_Show_Params params;
   params.is_html = false;
-  WebDocument document = render_view()->webview()->mainFrame()->document();
+  WebDocument document = render_view()->GetWebView()->mainFrame()->document();
   params.origin = GURL(document.securityOrigin().toString());
   params.icon_url = notification.iconURL();
   params.title = notification.title();

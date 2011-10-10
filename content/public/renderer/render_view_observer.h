@@ -28,6 +28,8 @@ struct WebURLError;
 
 namespace content {
 
+class RenderView;
+
 // Base class for objects that want to filter incoming IPCs, and also get
 // notified of changes to the frame.
 class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
@@ -87,15 +89,15 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
   // IPC::Message::Sender implementation.
   virtual bool Send(IPC::Message* message);
 
-  RenderView* render_view() { return render_view_; }
+  RenderView* render_view();
   int routing_id() { return routing_id_; }
 
  private:
   friend class ::RenderView;
 
-  void set_render_view(RenderView* rv) { render_view_ = rv; }
+  void set_render_view(::RenderView* rv);
 
-  RenderView* render_view_;
+  ::RenderView* render_view_;
   // The routing ID of the associated RenderView.
   int routing_id_;
 

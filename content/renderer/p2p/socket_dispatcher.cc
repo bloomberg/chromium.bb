@@ -8,6 +8,7 @@
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/host_address_request.h"
 #include "content/renderer/p2p/socket_client.h"
+#include "content/renderer/render_view.h"
 
 namespace content {
 

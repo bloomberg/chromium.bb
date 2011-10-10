@@ -37,7 +37,7 @@ bool TextInputClientObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 WebKit::WebView* TextInputClientObserver::webview() {
-  return render_view()->webview();
+  return render_view()->GetWebView();
 }
 
 void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {

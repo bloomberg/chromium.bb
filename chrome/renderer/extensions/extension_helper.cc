@@ -23,7 +23,7 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_idle_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -49,7 +49,7 @@ typedef std::map<WebFrame*, UserScriptIdleScheduler*> SchedulerMap;
 static base::LazyInstance<SchedulerMap> g_schedulers(base::LINKER_INITIALIZED);
 }
 
-ExtensionHelper::ExtensionHelper(RenderView* render_view,
+ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
                                  ExtensionDispatcher* extension_dispatcher)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ExtensionHelper>(render_view),
@@ -102,7 +102,7 @@ bool ExtensionHelper::InstallWebApplicationUsingDefinitionFile(
   }
 
   app_definition_fetcher_.reset(new ResourceFetcher(
-      pending_app_info_->manifest_url, render_view()->webview()->mainFrame(),
+      pending_app_info_->manifest_url, render_view()->GetWebView()->mainFrame(),
       WebURLRequest::TargetIsSubresource,
       NewCallback(this, &ExtensionHelper::DidDownloadApplicationDefinition)));
   return true;
@@ -237,7 +237,7 @@ void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
 
 void ExtensionHelper::OnExecuteCode(
     const ExtensionMsg_ExecuteCode_Params& params) {
-  WebView* webview = render_view()->webview();
+  WebView* webview = render_view()->GetWebView();
   WebFrame* main_frame = webview->mainFrame();
   if (!main_frame) {
     Send(new ExtensionHostMsg_ExecuteCodeFinished(
@@ -254,10 +254,10 @@ void ExtensionHelper::OnExecuteCode(
 
 void ExtensionHelper::OnGetApplicationInfo(int page_id) {
   WebApplicationInfo app_info;
-  if (page_id == render_view()->page_id()) {
+  if (page_id == render_view()->GetPageId()) {
     string16 error;
     web_apps::ParseWebAppFromWebDocument(
-        render_view()->webview()->mainFrame(), &app_info, &error);
+        render_view()->GetWebView()->mainFrame(), &app_info, &error);
   }
 
   // Prune out any data URLs in the set of icons.  The browser process expects
@@ -313,7 +313,7 @@ void ExtensionHelper::DidDownloadApplicationDefinition(
       app_icon_fetchers_.push_back(linked_ptr<ImageResourceFetcher>(
           new ImageResourceFetcher(
               pending_app_info_->icons[i].url,
-              render_view()->webview()->mainFrame(),
+              render_view()->GetWebView()->mainFrame(),
               static_cast<int>(i),
               pending_app_info_->icons[i].width,
               WebURLRequest::TargetIsFavicon,
@@ -331,7 +331,7 @@ void ExtensionHelper::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
 
   // Remove the image fetcher from our pending list. We're in the callback from
   // ImageResourceFetcher, best to delay deletion.
-  RenderView::ImageResourceFetcherList::iterator i;
+  ImageResourceFetcherList::iterator i;
   for (i = app_icon_fetchers_.begin(); i != app_icon_fetchers_.end(); ++i) {
     if (i->get() == fetcher) {
       i->release();
@@ -376,8 +376,8 @@ void ExtensionHelper::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
 }
 
 void ExtensionHelper::AddErrorToRootConsole(const string16& message) {
-  if (render_view()->webview() && render_view()->webview()->mainFrame()) {
-    render_view()->webview()->mainFrame()->addMessageToConsole(
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    render_view()->GetWebView()->mainFrame()->addMessageToConsole(
         WebConsoleMessage(WebConsoleMessage::LevelError, message));
   }
 }

@@ -10,7 +10,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/common/child_process_sandbox_support_linux.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
 #include "ppapi/c/pp_resource.h"
@@ -326,9 +326,9 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
     return;
 
   WebView* view = instance->container()->element().document().frame()->view();
-  RenderView* render_view = RenderView::FromWebView(view);
+  content::RenderView* render_view = content::RenderView::FromWebView(view);
   render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
-      render_view->routing_id()));
+      render_view->GetRoutingId()));
 }
 
 void SaveAs(PP_Instance instance_id) {

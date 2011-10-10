@@ -28,7 +28,7 @@ class BlockedPlugin : public content::RenderViewObserver,
                       public CppBoundClass,
                       public webkit::npapi::WebViewPlugin::Delegate {
  public:
-  BlockedPlugin(RenderView* render_view,
+  BlockedPlugin(content::RenderView* render_view,
                 WebKit::WebFrame* frame,
                 const webkit::WebPluginInfo& info,
                 const WebKit::WebPluginParams& params,

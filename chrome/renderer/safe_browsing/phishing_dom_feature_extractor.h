@@ -19,10 +19,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 
 class GURL;
-class RenderView;
 
 namespace WebKit {
 class WebElement;
+}
+
+namespace content {
+class RenderView;
 }
 
 namespace safe_browsing {
@@ -40,7 +43,7 @@ class PhishingDOMFeatureExtractor {
   // the RenderView.  |clock| is used for timing feature extractor operations,
   // and may be mocked for testing.  The caller maintains ownership of the
   // clock.
-  PhishingDOMFeatureExtractor(RenderView* render_view,
+  PhishingDOMFeatureExtractor(content::RenderView* render_view,
                               FeatureExtractorClock* clock);
   ~PhishingDOMFeatureExtractor();
 
@@ -121,7 +124,7 @@ class PhishingDOMFeatureExtractor {
   void InsertFeatures();
 
   // Non-owned pointer to the view that we will extract features from.
-  RenderView* render_view_;
+  content::RenderView* render_view_;
 
   // Non-owned pointer to our clock.
   FeatureExtractorClock* clock_;

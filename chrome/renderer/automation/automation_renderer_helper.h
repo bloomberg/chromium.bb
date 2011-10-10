@@ -17,7 +17,7 @@ class WebURL;
 // automation/testing messages to the browser.
 class AutomationRendererHelper : public content::RenderViewObserver {
  public:
-  explicit AutomationRendererHelper(RenderView* render_view);
+  explicit AutomationRendererHelper(content::RenderView* render_view);
   virtual ~AutomationRendererHelper();
 
  private:

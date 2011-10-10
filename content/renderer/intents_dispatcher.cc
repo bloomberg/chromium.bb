@@ -5,6 +5,7 @@
 #include "content/renderer/intents_dispatcher.h"
 
 #include "content/common/intents_messages.h"
+#include "content/renderer/render_view.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"

@@ -12,7 +12,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "v8/include/v8.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -30,7 +30,8 @@ namespace {
 //
 // TODO(aa): This looks super suspicious. Is it correct? Can we use something
 // else already in the system? Should it be moved elsewhere?
-bool HasSufficientPermissions(RenderView* render_view, const GURL& event_url) {
+  bool HasSufficientPermissions(content::RenderView* render_view,
+                                const GURL& event_url) {
   // During unit tests, we might be invoked without a v8 context. In these
   // cases, we only allow empty event_urls and short-circuit before retrieving
   // the render view from the current context.
@@ -38,7 +39,7 @@ bool HasSufficientPermissions(RenderView* render_view, const GURL& event_url) {
     return true;
 
   WebKit::WebDocument document =
-      render_view->webview()->mainFrame()->document();
+      render_view->GetWebView()->mainFrame()->document();
   return GURL(document.url()).SchemeIs(chrome::kExtensionScheme) &&
        document.securityOrigin().canRequest(event_url);
 }
@@ -102,7 +103,7 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
     const std::string& extension_id,
     const std::string& method_name,
     const base::ListValue& arguments,
-    RenderView* render_view,
+    content::RenderView* render_view,
     const GURL& event_url) const {
   v8::HandleScope handle_scope;
 
@@ -119,7 +120,7 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
     if (!extension_id.empty() && extension_id != (*it)->extension_id())
       continue;
 
-    RenderView* context_render_view = (*it)->GetRenderView();
+    content::RenderView* context_render_view = (*it)->GetRenderView();
     if (!context_render_view)
       continue;
 

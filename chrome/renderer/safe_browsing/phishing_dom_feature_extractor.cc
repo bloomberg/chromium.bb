@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "net/base/registry_controlled_domain.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -98,7 +98,7 @@ struct PhishingDOMFeatureExtractor::FrameData {
 };
 
 PhishingDOMFeatureExtractor::PhishingDOMFeatureExtractor(
-    RenderView* render_view,
+    content::RenderView* render_view,
     FeatureExtractorClock* clock)
     : render_view_(render_view),
       clock_(clock),
@@ -126,7 +126,7 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(
   done_callback_.reset(done_callback);
 
   page_feature_state_.reset(new PageFeatureState(clock_->Now()));
-  WebKit::WebView* web_view = render_view_->webview();
+  WebKit::WebView* web_view = render_view_->GetWebView();
   if (web_view && web_view->mainFrame()) {
     cur_document_ = web_view->mainFrame()->document();
   }

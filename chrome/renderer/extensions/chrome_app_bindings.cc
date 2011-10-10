@@ -15,8 +15,8 @@
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/weak_v8_function_map.h"
+#include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
@@ -139,7 +139,8 @@ class ChromeAppExtensionWrapper : public v8::Extension {
     if (!frame || !frame->view())
       return v8::Undefined();
 
-    RenderView* render_view = RenderView::FromWebView(frame->view());
+    content::RenderView* render_view =
+        content::RenderView::FromWebView(frame->view());
     if (!render_view)
       return v8::Undefined();
 
@@ -200,7 +201,8 @@ class ChromeAppExtensionWrapper : public v8::Extension {
     if (!frame || !frame->view())
       return v8::Undefined();
 
-    RenderView* render_view = RenderView::FromWebView(frame->view());
+    content::RenderView* render_view =
+        content::RenderView::FromWebView(frame->view());
     if (!render_view)
       return v8::Undefined();
 

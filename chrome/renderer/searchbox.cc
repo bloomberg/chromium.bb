@@ -6,12 +6,12 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/searchbox_extension.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebView;
 
-SearchBox::SearchBox(RenderView* render_view)
+SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<SearchBox>(render_view),
       verbatim_(false),
@@ -26,7 +26,7 @@ void SearchBox::SetSuggestions(const std::vector<std::string>& suggestions,
                                InstantCompleteBehavior behavior) {
   // Explicitly allow empty vector to be sent to the browser.
   render_view()->Send(new ChromeViewHostMsg_SetSuggestions(
-      render_view()->routing_id(), render_view()->page_id(), suggestions,
+      render_view()->GetRoutingId(), render_view()->GetPageId(), suggestions,
       behavior));
 }
 
@@ -52,37 +52,37 @@ void SearchBox::OnChange(const string16& value,
   verbatim_ = verbatim;
   selection_start_ = selection_start;
   selection_end_ = selection_end;
-  if (!render_view()->webview() || !render_view()->webview()->mainFrame())
+  if (!render_view()->GetWebView() || !render_view()->GetWebView()->mainFrame())
     return;
   extensions_v8::SearchBoxExtension::DispatchChange(
-      render_view()->webview()->mainFrame());
+      render_view()->GetWebView()->mainFrame());
 }
 
 void SearchBox::OnSubmit(const string16& value, bool verbatim) {
   value_ = value;
   verbatim_ = verbatim;
-  if (render_view()->webview() && render_view()->webview()->mainFrame()) {
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchSubmit(
-        render_view()->webview()->mainFrame());
+        render_view()->GetWebView()->mainFrame());
   }
   Reset();
 }
 
 void SearchBox::OnCancel() {
   verbatim_ = false;
-  if (render_view()->webview() && render_view()->webview()->mainFrame()) {
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchCancel(
-        render_view()->webview()->mainFrame());
+        render_view()->GetWebView()->mainFrame());
   }
   Reset();
 }
 
 void SearchBox::OnResize(const gfx::Rect& bounds) {
   rect_ = bounds;
-  if (!render_view()->webview() || !render_view()->webview()->mainFrame())
+  if (!render_view()->GetWebView() || !render_view()->GetWebView()->mainFrame())
     return;
   extensions_v8::SearchBoxExtension::DispatchResize(
-      render_view()->webview()->mainFrame());
+      render_view()->GetWebView()->mainFrame());
 }
 
 void SearchBox::OnDetermineIfPageSupportsInstant(const string16& value,
@@ -94,9 +94,9 @@ void SearchBox::OnDetermineIfPageSupportsInstant(const string16& value,
   selection_start_ = selection_start;
   selection_end_ = selection_end;
   bool result = extensions_v8::SearchBoxExtension::PageSupportsInstant(
-      render_view()->webview()->mainFrame());
+      render_view()->GetWebView()->mainFrame());
   render_view()->Send(new ChromeViewHostMsg_InstantSupportDetermined(
-      render_view()->routing_id(), render_view()->page_id(), result));
+      render_view()->GetRoutingId(), render_view()->GetPageId(), result));
 }
 
 void SearchBox::Reset() {

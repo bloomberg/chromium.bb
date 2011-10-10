@@ -47,8 +47,8 @@ bool RenderViewFakeResourcesTest::OnMessageReceived(
   return true;
 }
 
-bool RenderViewFakeResourcesTest::Visit(RenderView* render_view) {
-  view_ = render_view;
+bool RenderViewFakeResourcesTest::Visit(content::RenderView* render_view) {
+  view_ = static_cast<RenderView*>(render_view);
   return false;
 }
 
@@ -98,6 +98,10 @@ void RenderViewFakeResourcesTest::TearDown() {
   } while (view_);
 
   mock_process_.reset();
+}
+
+content::RenderView* RenderViewFakeResourcesTest::view() {
+  return view_;
 }
 
 WebKit::WebFrame* RenderViewFakeResourcesTest::GetMainFrame() {
@@ -186,7 +190,7 @@ void RenderViewFakeResourcesTest::GoToOffset(
     int offset,
     const WebKit::WebHistoryItem& history_item) {
   ViewMsg_Navigate_Params params;
-  params.page_id = view_->page_id() + offset;
+  params.page_id = view_->GetPageId() + offset;
   params.pending_history_list_offset =
       view_->history_list_offset() + offset;
   params.current_history_list_offset = view_->history_list_offset();

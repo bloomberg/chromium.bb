@@ -27,7 +27,8 @@ class AutofillAgent;
 class TranslateHelper : public content::RenderViewObserver {
  public:
   // autofill can be NULL.
-  TranslateHelper(RenderView* render_view, autofill::AutofillAgent* autofill);
+  TranslateHelper(content::RenderView* render_view,
+                  autofill::AutofillAgent* autofill);
   virtual ~TranslateHelper();
 
   // Informs us that the page's text has been extracted.
