@@ -612,7 +612,7 @@ def TryChange(argv,
                    help="Use HTTP to talk to the try server [default]")
   group.add_option("-H", "--host",
                    help="Host address")
-  group.add_option("-P", "--port",
+  group.add_option("-P", "--port", type="int",
                    help="HTTP port")
   group.add_option("--proxy",
                    help="HTTP proxy")
