@@ -343,8 +343,8 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &FakeSafeBrowsingService::OnCheckBrowseURLDone,
-                          gurl, client));
+        base::Bind(&FakeSafeBrowsingService::OnCheckBrowseURLDone, this, gurl,
+                   client));
     return false;
   }
 
@@ -1738,9 +1738,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearHistory) {
 
   // Post a task to clear the history, and run the message loop until it
   // destroys the prerender.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      NewRunnableFunction(ClearBrowsingData, browser(),
-                          BrowsingDataRemover::REMOVE_HISTORY));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ClearBrowsingData, browser(),
+                 BrowsingDataRemover::REMOVE_HISTORY));
   ui_test_utils::RunMessageLoop();
 
   // Make sure prerender history was cleared.
@@ -1757,8 +1758,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
   // Post a task to clear the cache, and run the message loop until it
   // destroys the prerender.
   MessageLoop::current()->PostTask(FROM_HERE,
-      NewRunnableFunction(ClearBrowsingData, browser(),
-                          BrowsingDataRemover::REMOVE_CACHE));
+      base::Bind(&ClearBrowsingData, browser(),
+                 BrowsingDataRemover::REMOVE_CACHE));
   ui_test_utils::RunMessageLoop();
 
   // Make sure prerender history was not cleared.  Not a vital behavior, but
@@ -1771,9 +1772,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
                    FINAL_STATUS_CANCELLED,
                    1);
   // Post a task to cancel all the prerenders.
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   NewRunnableFunction(CancelAllPrerenders,
-                                                       prerender_manager()));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&CancelAllPrerenders, prerender_manager()));
   ui_test_utils::RunMessageLoop();
   EXPECT_TRUE(GetPrerenderContents() == NULL);
 }

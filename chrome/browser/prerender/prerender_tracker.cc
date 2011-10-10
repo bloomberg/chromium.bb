@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_tracker.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -63,13 +64,13 @@ void HandleDelayedRequestOnUIThread(
   if (ShouldCancelRequest(child_id, route_id)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&CancelDeferredRequestOnIOThread,
-                            resource_dispatcher_host, child_id, request_id));
+        base::Bind(&CancelDeferredRequestOnIOThread, resource_dispatcher_host,
+                   child_id, request_id));
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(&StartDeferredRequestOnIOThread,
-                            resource_dispatcher_host, child_id, request_id));
+        base::Bind(&StartDeferredRequestOnIOThread, resource_dispatcher_host,
+                   child_id, request_id));
   }
 }
 
@@ -203,26 +204,21 @@ bool PrerenderTracker::PotentiallyDelayRequestOnIOThread(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableFunction(&HandleDelayedRequestOnUIThread,
-                          process_id,
-                          route_id,
-                          request_id));
+      base::Bind(&HandleDelayedRequestOnUIThread, process_id, route_id,
+                 request_id));
   return true;
 }
 
 void PrerenderTracker::AddPrerenderURLOnUIThread(const GURL& url) {
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      NewRunnableFunction(&AddURL, url, &url_counter_));
+      BrowserThread::IO, FROM_HERE, base::Bind(&AddURL, url, &url_counter_));
 }
 
 void PrerenderTracker::RemovePrerenderURLsOnUIThread(
     const std::vector<GURL>& urls) {
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      NewRunnableFunction(&RemoveURLs, urls, &url_counter_));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&RemoveURLs, urls, &url_counter_));
 }
 
 bool PrerenderTracker::GetFinalStatus(int child_id, int route_id,
@@ -252,7 +248,7 @@ void PrerenderTracker::OnPrerenderingStarted(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&AddPrerenderOnIOThreadTask, child_route_id_pair));
+      base::Bind(&AddPrerenderOnIOThreadTask, child_route_id_pair));
 
   base::AutoLock lock(final_status_map_lock_);
 
@@ -269,7 +265,7 @@ void PrerenderTracker::OnPrerenderingFinished(int child_id, int route_id) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&RemovePrerenderOnIOThreadTask, child_route_id_pair));
+      base::Bind(&RemovePrerenderOnIOThreadTask, child_route_id_pair));
 
   base::AutoLock lock(final_status_map_lock_);
   size_t num_erased = final_status_map_.erase(child_route_id_pair);
@@ -299,11 +295,9 @@ bool PrerenderTracker::SetFinalStatus(int child_id, int route_id,
     if (desired_final_status != FINAL_STATUS_USED) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(&DestroyPrerenderForRenderViewOnUI,
-                              final_status_it->second.prerender_manager,
-                              child_id,
-                              route_id,
-                              desired_final_status));
+          base::Bind(&DestroyPrerenderForRenderViewOnUI,
+                     final_status_it->second.prerender_manager, child_id,
+                     route_id, desired_final_status));
     }
 
     if (actual_final_status)

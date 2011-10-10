@@ -52,7 +52,7 @@ class PrerenderHistory;
 class PrerenderTracker;
 
 // PrerenderManager is responsible for initiating and keeping prerendered
-// views of webpages. All methods must be called on the UI thread unless
+// views of web pages. All methods must be called on the UI thread unless
 // indicated otherwise.
 class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                          public base::NonThreadSafe,
@@ -99,7 +99,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                                         const GURL& url, const GURL& referrer);
 
   // Adds a prerender for |url| if valid. As the prerender request is coming
-  // from a source without a RenderViewHost (ie, the omnibox) we don't have a
+  // from a source without a RenderViewHost (i.e., the omnibox) we don't have a
   // child or route id, or a referrer. This method uses sensible values for
   // those.
   bool AddPrerenderFromOmnibox(const GURL& url);
@@ -163,7 +163,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool WouldTabContentsBePrerendered(TabContents* tab_contents) const;
   bool IsOldRenderViewHost(const RenderViewHost* render_view_host) const;
 
-  // Checks whether navigation to the provided URL has occured in a visible
+  // Checks whether navigation to the provided URL has occurred in a visible
   // tab recently.
   bool HasRecentlyBeenNavigatedTo(const GURL& url);
 
@@ -349,7 +349,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Destroys all pending prerenders using FinalStatus.  Also deletes them as
   // well as any swapped out TabContents queued for destruction.
-  // Used both on destruction, and when clearing the browing history.
+  // Used both on destruction, and when clearing the browsing history.
   void DestroyAllContents(FinalStatus final_status);
 
   // The configuration.
@@ -400,7 +400,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   std::list<TabContentsWrapper*> old_tab_contents_list_;
 
   // Cancels pending tasks on deletion.
-  ScopedRunnableMethodFactory<PrerenderManager> runnable_method_factory_;
+  base::WeakPtrFactory<PrerenderManager> weak_factory_;
 
   ScopedVector<OnCloseTabContentsDeleter> on_close_tab_contents_deleters_;
 

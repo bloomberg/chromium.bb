@@ -241,7 +241,7 @@ PrerenderManager::PrerenderManager(Profile* profile,
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
       last_prerender_start_time_(GetCurrentTimeTicks() -
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
-      runnable_method_factory_(this),
+      weak_factory_(this),
       prerender_history_(new PrerenderHistory(kHistoryLength)),
       histograms_(new PrerenderHistograms()) {
   // There are some assumptions that the PrerenderManager is on the UI thread.
@@ -819,8 +819,8 @@ void PrerenderManager::PostCleanupTask() {
   DCHECK(CalledOnValidThread());
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      runnable_method_factory_.NewRunnableMethod(
-          &PrerenderManager::PeriodicCleanup));
+      base::Bind(&PrerenderManager::PeriodicCleanup,
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool PrerenderManager::IsTabContentsPrerendering(
