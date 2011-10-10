@@ -291,7 +291,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
   if os.path.exists(results_dir_in_chroot):
     shutil.rmtree(results_dir_in_chroot)
 
-  image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
+  image_path = os.path.join(image_dir, 'chromiumos_qemu_image.bin')
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
   # TODO(cmasone): make this look for ALL desktopui_BrowserTest control files.
