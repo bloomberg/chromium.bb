@@ -4074,11 +4074,6 @@
             ],
           },
         }],
-        ['use_aura==0', {
-          'sources/': [
-            ['exclude', '^browser/ui/views/aura/*'],
-          ],
-        }],
         ['use_aura==1', {
           'sources/': [
             ['exclude', '^browser/aeropeek_manager.cc'],
@@ -5004,7 +4999,6 @@
             ['exclude', '^browser/ui/input_window_dialog.h'],
             ['exclude', '^browser/ui/input_window_dialog_win.cc'],
             ['include', '^browser/ui/login/login_prompt_ui.cc'],
-            ['include', '^browser/ui/views/aura/aura_init.cc'],
             ['include', '^browser/ui/views/browser_bubble_aura.cc'],
             ['include', '^browser/ui/views/constrained_html_delegate_views.cc'],
             ['include', '^browser/ui/views/dropdown_bar_host_aura.cc'],
