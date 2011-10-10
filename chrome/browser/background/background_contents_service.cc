@@ -564,12 +564,6 @@ const string16& BackgroundContentsService::GetParentApplicationId(
   return EmptyString16();
 }
 
-// static
-void BackgroundContentsService::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kRegisteredBackgroundContents,
-                                PrefService::UNSYNCABLE_PREF);
-}
-
 void BackgroundContentsService::AddTabContents(
     TabContents* new_contents,
     WindowOpenDisposition disposition,

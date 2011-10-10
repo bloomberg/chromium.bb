@@ -18,12 +18,10 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -38,67 +36,21 @@
 
 namespace {
 
-class PluginPrefsWrapper : public ProfileKeyedService {
- public:
-  explicit PluginPrefsWrapper(scoped_refptr<PluginPrefs> plugin_prefs)
-      : plugin_prefs_(plugin_prefs) {}
-  virtual ~PluginPrefsWrapper() {}
-
-  PluginPrefs* plugin_prefs() { return plugin_prefs_.get(); }
-
- private:
-  // ProfileKeyedService methods:
-  virtual void Shutdown() OVERRIDE {
-    plugin_prefs_->ShutdownOnUIThread();
-  }
-
-  scoped_refptr<PluginPrefs> plugin_prefs_;
-};
-
 // Default state for a plug-in (not state of the default plug-in!).
 // Accessed only on the UI thread.
 base::LazyInstance<std::map<FilePath, bool> > g_default_plugin_state(
     base::LINKER_INITIALIZED);
 
-}
+}  // namespace
 
 // How long to wait to save the plugin enabled information, which might need to
 // go to disk.
 #define kPluginUpdateDelayMs (60 * 1000)
 
-class PluginPrefs::Factory : public ProfileKeyedServiceFactory {
- public:
-  static Factory* GetInstance();
-
-  PluginPrefsWrapper* GetWrapperForProfile(Profile* profile);
-
-  // Factory function for use with
-  // ProfileKeyedServiceFactory::SetTestingFactory.
-  static ProfileKeyedService* CreateWrapperForProfile(Profile* profile);
-
- private:
-  friend struct DefaultSingletonTraits<Factory>;
-
-  Factory();
-  virtual ~Factory() {}
-
-  // ProfileKeyedServiceFactory methods:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE { return true; }
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE { return true; }
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE { return true; }
-};
-
-// static
-void PluginPrefs::Initialize() {
-  Factory::GetInstance();
-}
-
 // static
 PluginPrefs* PluginPrefs::GetForProfile(Profile* profile) {
   PluginPrefsWrapper* wrapper =
-      Factory::GetInstance()->GetWrapperForProfile(profile);
+      PluginPrefsFactory::GetInstance()->GetWrapperForProfile(profile);
   if (!wrapper)
     return NULL;
   return wrapper->plugin_prefs();
@@ -107,8 +59,8 @@ PluginPrefs* PluginPrefs::GetForProfile(Profile* profile) {
 // static
 PluginPrefs* PluginPrefs::GetForTestingProfile(Profile* profile) {
   ProfileKeyedService* wrapper =
-      Factory::GetInstance()->SetTestingFactoryAndUse(
-          profile, &Factory::CreateWrapperForProfile);
+      PluginPrefsFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile, &PluginPrefsFactory::CreateWrapperForProfile);
   return static_cast<PluginPrefsWrapper*>(wrapper)->plugin_prefs();
 }
 
@@ -504,33 +456,6 @@ void PluginPrefs::ShutdownOnUIThread() {
   registrar_.RemoveAll();
 }
 
-// static
-PluginPrefs::Factory* PluginPrefs::Factory::GetInstance() {
-  return Singleton<PluginPrefs::Factory>::get();
-}
-
-PluginPrefsWrapper* PluginPrefs::Factory::GetWrapperForProfile(
-    Profile* profile) {
-  return static_cast<PluginPrefsWrapper*>(GetServiceForProfile(profile, true));
-}
-
-// static
-ProfileKeyedService* PluginPrefs::Factory::CreateWrapperForProfile(
-    Profile* profile) {
-  return GetInstance()->BuildServiceInstanceFor(profile);
-}
-
-PluginPrefs::Factory::Factory()
-    : ProfileKeyedServiceFactory(ProfileDependencyManager::GetInstance()) {
-}
-
-ProfileKeyedService* PluginPrefs::Factory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  scoped_refptr<PluginPrefs> plugin_prefs(new PluginPrefs());
-  plugin_prefs->SetPrefs(profile->GetPrefs());
-  return new PluginPrefsWrapper(plugin_prefs);
-}
-
 PluginPrefs::PluginPrefs() : plugin_state_(g_default_plugin_state.Get()),
                              prefs_(NULL),
                              plugin_list_(NULL) {
@@ -617,27 +542,4 @@ void PluginPrefs::NotifyPluginStatusChanged() {
       chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
       Source<PluginPrefs>(this),
       NotificationService::NoDetails());
-}
-
-/*static*/
-void PluginPrefs::RegisterPrefs(PrefService* prefs) {
-  FilePath internal_dir;
-  PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
-  prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
-                              internal_dir,
-                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPluginsEnabledNaCl,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPluginsPluginsList,
-                          PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPluginsDisabledPlugins,
-                          PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions,
-                          PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPluginsEnabledPlugins,
-                          PrefService::UNSYNCABLE_PREF);
 }

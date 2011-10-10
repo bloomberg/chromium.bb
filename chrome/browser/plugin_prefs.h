@@ -50,10 +50,6 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
     POLICY_DISABLED,
   };
 
-  // Initializes the factory for this class for dependency tracking.
-  // This should be called before the first profile is created.
-  static void Initialize();
-
   // Returns the instance associated with |profile|, creating it if necessary.
   static PluginPrefs* GetForProfile(Profile* profile);
 

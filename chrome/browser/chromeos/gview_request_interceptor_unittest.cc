@@ -8,6 +8,7 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/mock_resource_context.h"
@@ -83,7 +84,7 @@ class GViewRequestInterceptorTest : public testing::Test {
     job_factory_.SetProtocolHandler("http", new GViewRequestProtocolFactory);
     job_factory_.AddInterceptor(new GViewRequestInterceptor);
     request_context->set_job_factory(&job_factory_);
-    PluginPrefs::RegisterPrefs(&prefs_);
+    PluginPrefsFactory::GetInstance()->ForceRegisterPrefsForTest(&prefs_);
     plugin_prefs_ = new PluginPrefs();
     plugin_prefs_->SetPrefs(&prefs_);
     ChromePluginServiceFilter* filter =

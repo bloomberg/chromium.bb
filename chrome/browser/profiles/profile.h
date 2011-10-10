@@ -79,6 +79,7 @@ class SSLConfigServiceManager;
 class SpeechInputPreferences;
 class SpellCheckHost;
 class TemplateURLFetcher;
+class TestingProfile;
 class TokenService;
 class UserScriptMaster;
 class UserStyleSheetWatcher;
@@ -204,6 +205,9 @@ class Profile : public content::BrowserContext {
   virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
 
   // content::BrowserContext implementation ------------------------------------
+
+  // Typesafe upcast.
+  virtual TestingProfile* AsTestingProfile();
 
   // Returns the name associated with this profile. This name is displayed in
   // the browser frame.

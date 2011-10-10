@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
+class PrefService;
 class Profile;
 class TemplateURLService;
 
@@ -28,6 +29,7 @@ class TemplateURLServiceFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const;
+  virtual void RegisterUserPrefs(PrefService* user_prefs);
   virtual bool ServiceRedirectedInIncognito();
   virtual bool ServiceIsNULLWhileTesting();
   virtual void ProfileShutdown(Profile* profile);

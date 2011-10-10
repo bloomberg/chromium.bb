@@ -11,9 +11,10 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/extensions/extension_speech_input_manager.h"
-#include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -41,7 +42,7 @@ void AssertFactoriesBuilt() {
     BackgroundContentsServiceFactory::GetInstance();
     CloudPrintProxyServiceFactory::GetInstance();
     PersonalDataManagerFactory::GetInstance();
-    PluginPrefs::Initialize();
+    PluginPrefsFactory::GetInstance();
     prerender::PrerenderManagerFactory::GetInstance();
     SessionServiceFactory::GetInstance();
     TabRestoreServiceFactory::GetInstance();
@@ -104,6 +105,13 @@ void ProfileDependencyManager::CreateProfileServices(Profile* profile,
   for (std::vector<ProfileKeyedServiceFactory*>::reverse_iterator rit =
            destruction_order_.rbegin(); rit != destruction_order_.rend();
        ++rit) {
+    if (!profile->IsOffTheRecord() && !profile->AsTestingProfile()) {
+      // We only register preferences on normal profiles because the incognito
+      // profile shares the pref service with the normal one and the testing
+      // profile will often just insert its own PrefService.
+      (*rit)->RegisterUserPrefsOnProfile(profile);
+    }
+
     if (is_testing_profile && (*rit)->ServiceIsNULLWhileTesting()) {
       (*rit)->SetTestingFactory(profile, NULL);
     } else if ((*rit)->ServiceIsCreatedWithProfile()) {

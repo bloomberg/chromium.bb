@@ -1707,6 +1707,8 @@
         'browser/plugin_observer.h',
         'browser/plugin_prefs.cc',
         'browser/plugin_prefs.h',
+        'browser/plugin_prefs_factory.cc',
+        'browser/plugin_prefs_factory.h',
         'browser/policy/asynchronous_policy_loader.cc',
         'browser/policy/asynchronous_policy_loader.h',
         'browser/policy/asynchronous_policy_provider.cc',
