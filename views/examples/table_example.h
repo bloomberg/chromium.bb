@@ -38,7 +38,7 @@ class TableExample : public ExampleBase,
 
   // ui::TableModel:
   virtual int RowCount() OVERRIDE;
-  virtual std::wstring GetText(int row, int column_id) OVERRIDE;
+  virtual string16 GetText(int row, int column_id) OVERRIDE;
   virtual SkBitmap GetIcon(int row) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
