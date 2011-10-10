@@ -1302,8 +1302,7 @@ def CMDrebase(parser, args):
   # git svn dcommit.
   # It's the only command that doesn't use parser at all since we just defer
   # execution to git-svn.
-  subprocess2.check_call(['git', 'svn', 'rebase'] + args)
-  return 0
+  return subprocess2.call(['git', 'svn', 'rebase'] + args)
 
 
 def GetTreeStatus():
