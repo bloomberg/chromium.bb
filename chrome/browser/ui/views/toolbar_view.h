@@ -199,9 +199,6 @@ class ToolbarView : public AccessiblePaneView,
   // The display mode used when laying out the toolbar.
   DisplayMode display_mode_;
 
-  // The contents of the wrench menu.
-  scoped_ptr<ui::SimpleMenuModel> wrench_menu_model_;
-
   // Wrench menu.
   scoped_ptr<WrenchMenu> wrench_menu_;
 

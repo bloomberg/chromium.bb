@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_notification_types.h"
@@ -569,6 +570,8 @@ WrenchMenu::WrenchMenu(Browser* browser)
       selected_index_(0),
       bookmark_menu_(NULL),
       first_bookmark_command_id_(0) {
+  registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+                 Source<Profile>(browser_->profile()));
 }
 
 WrenchMenu::~WrenchMenu() {
@@ -768,6 +771,21 @@ void WrenchMenu::BookmarkModelChanged() {
   DCHECK(bookmark_menu_delegate_.get());
   if (!bookmark_menu_delegate_->is_mutating_model())
     root_->Cancel();
+}
+
+
+void WrenchMenu::Observe(int type,
+                         const NotificationSource& source,
+                         const NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
+      // A change in the global errors list can add or remove items from the
+      // menu. Close the menu to avoid have a stale menu on-screen.
+      root_->Cancel();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void WrenchMenu::PopulateMenu(MenuItemView* parent,
