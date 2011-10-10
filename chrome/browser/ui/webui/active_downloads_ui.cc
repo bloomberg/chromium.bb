@@ -248,7 +248,8 @@ void ActiveDownloadsHandler::PlayMediaFile(const ListValue* args) {
   Browser* browser = Browser::GetBrowserForController(
       &tab_contents_->controller(), NULL);
   MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
-  mediaplayer->ForcePlayMediaFile(profile_, file_path, browser);
+  mediaplayer->PopupMediaPlayer(browser);
+  mediaplayer->ForcePlayMediaFile(profile_, file_path);
 }
 
 DownloadItem* ActiveDownloadsHandler::GetDownloadById(

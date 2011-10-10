@@ -82,18 +82,11 @@ MediaPlayer* MediaPlayer::GetInstance() {
   return Singleton<MediaPlayer>::get();
 }
 
-void MediaPlayer::EnqueueMediaFile(Profile* profile, const FilePath& file_path,
-                                   Browser* creator) {
+void MediaPlayer::EnqueueMediaFile(Profile* profile,
+                                   const FilePath& file_path) {
   GURL url;
   if (!FileManagerUtil::ConvertFileToFileSystemUrl(profile, file_path,
                                                    GetOriginUrl(), &url)) {
-  }
-  EnqueueMediaFileUrl(url, creator);
-}
-
-void MediaPlayer::EnqueueMediaFileUrl(const GURL& url, Browser* creator) {
-  if (mediaplayer_browser_ == NULL) {
-    PopupMediaPlayer(creator);
   }
   EnqueueMediaFileUrl(url);
 }
@@ -104,20 +97,16 @@ void MediaPlayer::EnqueueMediaFileUrl(const GURL& url) {
 }
 
 void MediaPlayer::ForcePlayMediaFile(Profile* profile,
-                                     const FilePath& file_path,
-                                     Browser* creator) {
+                                     const FilePath& file_path) {
   GURL url;
   if (!FileManagerUtil::ConvertFileToFileSystemUrl(profile, file_path,
                                                    GetOriginUrl(), &url)) {
     return;
   }
-  ForcePlayMediaURL(url, creator);
+  ForcePlayMediaURL(url);
 }
 
-void MediaPlayer::ForcePlayMediaURL(const GURL& url, Browser* creator) {
-  if (mediaplayer_browser_ == NULL) {
-    PopupMediaPlayer(creator);
-  }
+void MediaPlayer::ForcePlayMediaURL(const GURL& url) {
   current_playlist_.clear();
   current_playlist_.push_back(MediaUrl(url));
   current_position_ = current_playlist_.size() - 1;
@@ -129,12 +118,6 @@ void MediaPlayer::TogglePlaylistWindowVisible() {
   if (playlist_browser_) {
     ClosePlaylistWindow();
   } else {
-    ShowPlaylistWindow();
-  }
-}
-
-void MediaPlayer::ShowPlaylistWindow() {
-  if (playlist_browser_ == NULL) {
     PopupPlaylist(NULL);
   }
 }
@@ -199,6 +182,9 @@ void MediaPlayer::ToggleFullscreen() {
 }
 
 void MediaPlayer::PopupPlaylist(Browser* creator) {
+  if (playlist_browser_)
+    return;  // Already opened.
+
   Profile* profile = BrowserList::GetLastActive()->profile();
   playlist_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
                                             kMediaPlayerAppName,
@@ -224,6 +210,9 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
                           static_cast<Browser*>(NULL)));
     return;
   }
+  if (mediaplayer_browser_)
+    return;  // Already opened.
+
   Profile* profile = BrowserList::GetLastActive()->profile();
   mediaplayer_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                kMediaPlayerAppName,
@@ -283,7 +272,8 @@ net::URLRequestJob* MediaPlayer::MaybeInterceptResponse(
   if (supported_mime_types_.find(mime_type) != supported_mime_types_.end()) {
     if (request->referrer() != chrome::kChromeUIMediaplayerURL &&
         !request->referrer().empty()) {
-      EnqueueMediaFileUrl(request->url(), NULL);
+      PopupMediaPlayer(NULL);
+      ForcePlayMediaURL(request->url());
       request->Cancel();
     }
   }

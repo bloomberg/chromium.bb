@@ -31,30 +31,29 @@ class MediaPlayer : public NotificationObserver,
 
   virtual ~MediaPlayer();
 
-  // Enqueues this file into the current playlist.  If the mediaplayer is
-  // not currently visible, show it, and play the given url.
-  void EnqueueMediaFile(Profile* profile, const FilePath& file_path,
-                        Browser* creator);
+  // Enqueues this file into the current playlist.
+  void EnqueueMediaFile(Profile* profile, const FilePath& file_path);
 
-  // Enqueues this fileschema url into the current playlist. If the mediaplayer
-  // is not currently visible, show it, and play the given url.
-  void EnqueueMediaFileUrl(const GURL& url, Browser* creator);
+  // Enqueues this fileschema url into the current playlist.
+  void EnqueueMediaFileUrl(const GURL& url);
 
   // Clears out the current playlist, and start playback of the given
-  // |file_path|. If there is no mediaplayer currently, show it, and play the
-  // given |file_path|.
-  void ForcePlayMediaFile(Profile* profile, const FilePath& file_path,
-                          Browser* creator);
+  // |file_path|.
+  void ForcePlayMediaFile(Profile* profile, const FilePath& file_path);
 
   // Clears out the current playlist, and start playback of the given url.
-  // If there is no mediaplayer currently, show it, and play the given url.
-  void ForcePlayMediaURL(const GURL& url, Browser* creator);
+  void ForcePlayMediaURL(const GURL& url);
 
   // Toggle the visibility of the playlist window.
   void TogglePlaylistWindowVisible();
 
-  // Force the playlist window to be shown.
-  void ShowPlaylistWindow();
+  // Popup the mediaplayer, this shows the browser, and sets up its
+  // locations correctly.
+  void PopupMediaPlayer(Browser* creator);
+
+  // Popup the playlist.  Shows the browser, sets it up to point at
+  // chrome://mediaplayer#playlist
+  void PopupPlaylist(Browser* creator);
 
   // Toggle the mediaplayer between fullscreen and windowed.
   void ToggleFullscreen();
@@ -119,16 +118,6 @@ class MediaPlayer : public NotificationObserver,
   GURL GetOriginUrl() const;
   GURL GetMediaplayerPlaylistUrl() const;
   GURL GetMediaPlayerUrl() const;
-
-  // Popup the mediaplayer, this shows the browser, and sets up its
-  // locations correctly.
-  void PopupMediaPlayer(Browser* creator);
-
-  // Popup the playlist.  Shows the browser, sets it up to point at
-  // chrome://mediaplayer#playlist
-  void PopupPlaylist(Browser* creator);
-
-  void EnqueueMediaFileUrl(const GURL& url);
 
   // Browser containing the playlist. Used to force closes. This is created
   // By the PopupPlaylist call, and is NULLed out when the window is closed.

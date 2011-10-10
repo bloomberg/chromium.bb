@@ -247,10 +247,18 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
     if (!browser)
       return;
     MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
-    if (enqueue)
-      mediaplayer->EnqueueMediaFile(browser->profile(), full_path, NULL);
-    else
-      mediaplayer->ForcePlayMediaFile(browser->profile(), full_path, NULL);
+
+    if (mediaplayer->GetPlaylist().empty())
+      enqueue = false;  // Force to start playback if current playlist is
+                        // empty.
+
+    if (enqueue) {
+      mediaplayer->PopupPlaylist(browser);
+      mediaplayer->EnqueueMediaFile(browser->profile(), full_path);
+    } else {
+      mediaplayer->PopupMediaPlayer(browser);
+      mediaplayer->ForcePlayMediaFile(browser->profile(), full_path);
+    }
     return;
   }
 #endif  // OS_CHROMEOS
