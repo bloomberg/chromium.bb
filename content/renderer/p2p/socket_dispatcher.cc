@@ -8,11 +8,11 @@
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/host_address_request.h"
 #include "content/renderer/p2p/socket_client.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 
 namespace content {
 
-P2PSocketDispatcher::P2PSocketDispatcher(RenderView* render_view)
+P2PSocketDispatcher::P2PSocketDispatcher(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       message_loop_(base::MessageLoopProxy::current()),
       network_notifications_started_(false),

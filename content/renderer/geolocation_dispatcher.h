@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationController.h"
 
+class RenderViewImpl;
 struct Geoposition;
 
 namespace WebKit {
@@ -27,7 +28,7 @@ class WebSecurityOrigin;
 class GeolocationDispatcher : public content::RenderViewObserver,
                               public WebKit::WebGeolocationClient {
  public:
-  explicit GeolocationDispatcher(RenderView* render_view);
+  explicit GeolocationDispatcher(RenderViewImpl* render_view);
   virtual ~GeolocationDispatcher();
 
  private:

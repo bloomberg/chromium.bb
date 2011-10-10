@@ -5,12 +5,12 @@
 #include "content/renderer/external_popup_menu.h"
 
 #include "content/common/view_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalPopupMenuClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 
 ExternalPopupMenu::ExternalPopupMenu(
-    RenderView* render_view,
+    RenderViewImpl* render_view,
     const WebKit::WebPopupMenuInfo& popup_menu_info,
     WebKit::WebExternalPopupMenuClient* popup_menu_client)
     : render_view_(render_view),

@@ -79,12 +79,16 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
   virtual void ContextMenuAction(unsigned id) {}
   virtual void Navigate(const GURL& url) {}
 
+  // IPC::Channel::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // This is called by the RenderView when it's going away so that this object
+  // can null out its pointer.
+  void RenderViewGone();
+
  protected:
   explicit RenderViewObserver(RenderView* render_view);
   virtual ~RenderViewObserver();
-
-  // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // IPC::Message::Sender implementation.
   virtual bool Send(IPC::Message* message);
@@ -93,11 +97,8 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
   int routing_id() { return routing_id_; }
 
  private:
-  friend class ::RenderView;
 
-  void set_render_view(::RenderView* rv);
-
-  ::RenderView* render_view_;
+  RenderView* render_view_;
   // The routing ID of the associated RenderView.
   int routing_id_;
 

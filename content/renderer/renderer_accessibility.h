@@ -13,6 +13,8 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 
+class RenderViewImpl;
+
 namespace WebKit {
 class WebAccessibilityObject;
 class WebDocument;
@@ -30,7 +32,7 @@ struct WebAccessibility;
 // nodes in the tree (e.g., change focus, or click on a button).
 class RendererAccessibility : public content::RenderViewObserver {
  public:
-  RendererAccessibility(RenderView* render_view);
+  RendererAccessibility(RenderViewImpl* render_view);
   virtual ~RendererAccessibility();
 
   // RenderView::Observer implementation.

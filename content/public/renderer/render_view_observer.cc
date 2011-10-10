@@ -4,30 +4,28 @@
 
 #include "content/public/renderer/render_view_observer.h"
 
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 
 using WebKit::WebFrame;
-
-// TODO(jam): temporary until RenderView is renamed to RenderViewImpl since
-// trying ::RenderView* below gives compile errors in gcc.
-typedef RenderView RenderViewImpl;
 
 namespace content {
 
 RenderViewObserver::RenderViewObserver(RenderView* render_view)
-    : render_view_(NULL),
+    : render_view_(render_view),
       routing_id_(MSG_ROUTING_NONE) {
   // |render_view| can be NULL on unit testing.
   if (render_view) {
-    render_view_ = static_cast<RenderViewImpl*>(render_view);
-    routing_id_ = render_view_->routing_id();
-    render_view_->AddObserver(this);
+    RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view);
+    routing_id_ = impl->routing_id();
+    impl->AddObserver(this);
   }
 }
 
 RenderViewObserver::~RenderViewObserver() {
-  if (render_view_)
-    render_view_->RemoveObserver(this);
+  if (render_view_) {
+    RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view_);
+    impl->RemoveObserver(this);
+  }
 }
 
 void RenderViewObserver::OnDestruct() {
@@ -50,8 +48,8 @@ RenderView* RenderViewObserver::render_view() {
   return render_view_;
 }
 
-void RenderViewObserver::set_render_view(::RenderView* rv) {
-  render_view_ = rv;
+void RenderViewObserver::RenderViewGone() {
+  render_view_ = NULL;
 }
 
 }  // namespace content

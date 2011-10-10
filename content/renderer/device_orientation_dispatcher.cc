@@ -5,12 +5,12 @@
 #include "content/renderer/device_orientation_dispatcher.h"
 
 #include "content/common/device_orientation_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientationController.h"
 
 DeviceOrientationDispatcher::DeviceOrientationDispatcher(
-    RenderView* render_view)
+    RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       controller_(NULL),
       started_(false) {

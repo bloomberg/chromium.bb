@@ -6,7 +6,7 @@
 
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
@@ -15,7 +15,7 @@ using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebConsoleMessage;
 
 RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
-    RenderView* render_view,
+    RenderViewImpl* render_view,
     WebApplicationCacheHostClient* client,
     AppCacheBackend* backend)
     : WebApplicationCacheHostImpl(client, backend),
@@ -25,7 +25,7 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
 
 void RendererWebApplicationCacheHostImpl::OnLogMessage(
     appcache::LogLevel log_level, const std::string& message) {
-  RenderView* render_view = GetRenderView();
+  RenderViewImpl* render_view = GetRenderView();
   if (!render_view || !render_view->webview() ||
       !render_view->webview()->mainFrame())
     return;
@@ -51,7 +51,7 @@ void RendererWebApplicationCacheHostImpl::OnCacheSelected(
   WebApplicationCacheHostImpl::OnCacheSelected(info);
 }
 
-RenderView* RendererWebApplicationCacheHostImpl::GetRenderView() {
-  return static_cast<RenderView*>
+RenderViewImpl* RendererWebApplicationCacheHostImpl::GetRenderView() {
+  return static_cast<RenderViewImpl*>
       (RenderThreadImpl::current()->ResolveRoute(routing_id_));
 }

@@ -5,7 +5,7 @@
 #include "content/renderer/geolocation_dispatcher.h"
 
 #include "content/common/geolocation_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequestManager.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
@@ -20,7 +20,7 @@ using WebKit::WebGeolocationPermissionRequest;
 using WebKit::WebGeolocationPermissionRequestManager;
 using WebKit::WebGeolocationPosition;
 
-GeolocationDispatcher::GeolocationDispatcher(RenderView* render_view)
+GeolocationDispatcher::GeolocationDispatcher(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       pending_permissions_(new WebGeolocationPermissionRequestManager()),
       enable_high_accuracy_(false),

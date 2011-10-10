@@ -13,11 +13,12 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
+class RenderViewImpl;
+struct DevToolsMessageData;
+
 namespace WebKit {
 class WebDevToolsAgent;
 }
-
-struct DevToolsMessageData;
 
 typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 
@@ -28,7 +29,7 @@ typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 class DevToolsAgent : public content::RenderViewObserver,
                       public WebKit::WebDevToolsAgentClient {
  public:
-  explicit DevToolsAgent(RenderView* render_view);
+  explicit DevToolsAgent(RenderViewImpl* render_view);
   virtual ~DevToolsAgent();
 
   // Returns agent instance for its host id.

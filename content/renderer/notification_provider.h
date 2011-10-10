@@ -11,6 +11,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotification.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
+class RenderViewImpl;
+
 namespace WebKit {
 class WebNotificationPermissionCallback;
 }
@@ -20,7 +22,7 @@ class WebNotificationPermissionCallback;
 class NotificationProvider : public content::RenderViewObserver,
                              public WebKit::WebNotificationPresenter {
  public:
-  explicit NotificationProvider(RenderView* render_view);
+  explicit NotificationProvider(RenderViewImpl* render_view);
   virtual ~NotificationProvider();
 
  private:

@@ -8,13 +8,13 @@
 
 #include "webkit/appcache/web_application_cache_host_impl.h"
 
-class RenderView;
+class RenderViewImpl;
 
 class RendererWebApplicationCacheHostImpl
     : public appcache::WebApplicationCacheHostImpl {
  public:
   RendererWebApplicationCacheHostImpl(
-      RenderView* render_view,
+      RenderViewImpl* render_view,
       WebKit::WebApplicationCacheHostClient* client,
       appcache::AppCacheBackend* backend);
 
@@ -25,7 +25,7 @@ class RendererWebApplicationCacheHostImpl
   virtual void OnCacheSelected(const appcache::AppCacheInfo& info);
 
  private:
-  RenderView* GetRenderView();
+  RenderViewImpl* GetRenderView();
 
   bool content_blocked_;
   int routing_id_;

@@ -15,7 +15,7 @@
 #include "content/renderer/devtools_client.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -56,7 +56,7 @@ class WebKitClientMessageLoopImpl
 // static
 std::map<int, DevToolsAgent*> DevToolsAgent::agent_for_routing_id_;
 
-DevToolsAgent::DevToolsAgent(RenderView* render_view)
+DevToolsAgent::DevToolsAgent(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       is_attached_(false) {
   agent_for_routing_id_[routing_id()] = this;
@@ -196,7 +196,7 @@ void DevToolsAgent::OnNavigate() {
 }
 
 void DevToolsAgent::OnSetupDevToolsClient() {
-  new DevToolsClient(static_cast<RenderView*>(render_view()));
+  new DevToolsClient(static_cast<RenderViewImpl*>(render_view()));
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {

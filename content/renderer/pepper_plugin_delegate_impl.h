@@ -23,7 +23,7 @@
 
 class FilePath;
 class PepperPluginDelegateImpl;
-class RenderView;
+class RenderViewImpl;
 
 namespace gfx {
 class Point;
@@ -119,7 +119,7 @@ class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl> {
  public:
-  explicit PepperPluginDelegateImpl(RenderView* render_view);
+  explicit PepperPluginDelegateImpl(RenderViewImpl* render_view);
   virtual ~PepperPluginDelegateImpl();
 
   // Attempts to create a PPAPI plugin for the given filepath. On success, it
@@ -339,7 +339,7 @@ class PepperPluginDelegateImpl
   }
 
   // Pointer to the RenderView that owns us.
-  RenderView* render_view_;
+  RenderViewImpl* render_view_;
 
   std::set<webkit::ppapi::PluginInstance*> active_instances_;
 

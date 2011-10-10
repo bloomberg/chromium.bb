@@ -10,7 +10,7 @@
 #include "content/common/content_switches.h"
 #include "content/common/devtools_messages.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontend.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "ui/base/ui_base_switches.h"
@@ -18,7 +18,7 @@
 using WebKit::WebDevToolsFrontend;
 using WebKit::WebString;
 
-DevToolsClient::DevToolsClient(RenderView* render_view)
+DevToolsClient::DevToolsClient(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   web_tools_frontend_.reset(

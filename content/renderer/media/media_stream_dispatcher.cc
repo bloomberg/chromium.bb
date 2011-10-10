@@ -7,11 +7,11 @@
 #include "base/logging.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 
 MediaStreamDispatcherEventHandler::~MediaStreamDispatcherEventHandler() {}
 
-MediaStreamDispatcher::MediaStreamDispatcher(RenderView* render_view)
+MediaStreamDispatcher::MediaStreamDispatcher(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       next_ipc_id_(0) {
 }

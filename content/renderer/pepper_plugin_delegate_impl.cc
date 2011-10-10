@@ -40,7 +40,7 @@
 #include "content/renderer/pepper_platform_context_3d_impl.h"
 #include "content/renderer/pepper_platform_video_decoder_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "ipc/ipc_channel_handle.h"
@@ -661,7 +661,7 @@ void PpapiBrokerImpl::ConnectPluginToBroker(
   client->BrokerConnected(PlatformFileToInt(plugin_handle), result);
 }
 
-PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
+PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
     : render_view_(render_view),
       has_saved_context_menu_action_(false),
       saved_context_menu_action_(0),

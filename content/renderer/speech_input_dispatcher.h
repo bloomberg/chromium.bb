@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputController.h"
 
 class GURL;
+class RenderViewImpl;
 
 namespace WebKit {
 class WebSpeechInputListener;
@@ -21,7 +22,7 @@ class WebSpeechInputListener;
 class SpeechInputDispatcher : public content::RenderViewObserver,
                               public WebKit::WebSpeechInputController {
  public:
-  SpeechInputDispatcher(RenderView* render_view,
+  SpeechInputDispatcher(RenderViewImpl* render_view,
                         WebKit::WebSpeechInputListener* listener);
 
  private:

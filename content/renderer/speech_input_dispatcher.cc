@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/common/speech_input_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -26,7 +26,7 @@ using WebKit::WebNode;
 using WebKit::WebView;
 
 SpeechInputDispatcher::SpeechInputDispatcher(
-    RenderView* render_view,
+    RenderViewImpl* render_view,
     WebKit::WebSpeechInputListener* listener)
     : content::RenderViewObserver(render_view),
       listener_(listener) {

@@ -26,13 +26,14 @@
 #include "base/memory/linked_ptr.h"
 #endif
 
-struct NPObject;
 class NPObjectStub;
-struct NPVariant_Param;
 class PluginChannelHost;
-struct PluginHostMsg_URLRequest_Params;
-class RenderView;
+class RenderViewImpl;
 class SkBitmap;
+
+struct NPObject;
+struct NPVariant_Param;
+struct PluginHostMsg_URLRequest_Params;
 
 namespace base {
 class SharedMemory;
@@ -58,7 +59,7 @@ class WebPluginDelegateProxy
       public base::SupportsWeakPtr<WebPluginDelegateProxy> {
  public:
   WebPluginDelegateProxy(const std::string& mime_type,
-                         const base::WeakPtr<RenderView>& render_view);
+                         const base::WeakPtr<RenderViewImpl>& render_view);
 
   // WebPluginDelegate implementation:
   virtual void PluginDestroyed();
@@ -269,7 +270,7 @@ class WebPluginDelegateProxy
   bool UseSynchronousGeometryUpdates();
 #endif
 
-  base::WeakPtr<RenderView> render_view_;
+  base::WeakPtr<RenderViewImpl> render_view_;
   webkit::npapi::WebPlugin* plugin_;
   bool uses_shared_bitmaps_;
   gfx::PluginWindowHandle window_;

@@ -19,7 +19,7 @@ namespace {
 
 class MockContentSettingsObserver : public ContentSettingsObserver {
  public:
-  explicit MockContentSettingsObserver(RenderView* render_view);
+  explicit MockContentSettingsObserver(content::RenderView* render_view);
 
   virtual bool Send(IPC::Message* message);
 
@@ -31,7 +31,7 @@ class MockContentSettingsObserver : public ContentSettingsObserver {
 };
 
 MockContentSettingsObserver::MockContentSettingsObserver(
-    RenderView* render_view)
+    content::RenderView* render_view)
     : ContentSettingsObserver(render_view) {
 }
 

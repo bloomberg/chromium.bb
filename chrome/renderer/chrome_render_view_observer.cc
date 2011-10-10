@@ -27,6 +27,7 @@
 #include "chrome/renderer/translate_helper.h"
 #include "content/common/bindings_policy.h"
 #include "content/common/view_messages.h"
+#include "content/public/renderer/render_view.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "net/base/data_url.h"
 #include "skia/ext/image_operations.h"

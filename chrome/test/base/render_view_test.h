@@ -17,7 +17,7 @@
 #include "content/common/main_function_params.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/sandbox_init_wrapper.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,6 +31,7 @@ class PasswordAutofillManager;
 class ExtensionDispatcher;
 class MockRenderProcess;
 class RendererMainPlatformDelegate;
+class RenderViewImpl;
 
 class RenderViewTest : public testing::Test {
  public:
@@ -98,7 +99,7 @@ class RenderViewTest : public testing::Test {
   ExtensionDispatcher* extension_dispatcher_;
   MockRenderThread render_thread_;
   scoped_ptr<MockRenderProcess> mock_process_;
-  scoped_refptr<RenderView> view_;
+  scoped_refptr<RenderViewImpl> view_;
   RendererWebKitPlatformSupportImplNoSandbox webkit_platform_support_;
   scoped_ptr<MockKeyboard> mock_keyboard_;
 

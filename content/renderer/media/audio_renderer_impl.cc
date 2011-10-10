@@ -14,7 +14,6 @@
 #include "content/common/content_switches.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_util.h"

@@ -9,14 +9,14 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalPopupMenu.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
 
-class RenderView;
+class RenderViewImpl;
 namespace WebKit {
 class WebExternalPopupMenuClient;
 }
 
 class ExternalPopupMenu : public WebKit::WebExternalPopupMenu {
  public:
-  ExternalPopupMenu(RenderView* render_view,
+  ExternalPopupMenu(RenderViewImpl* render_view,
                     const WebKit::WebPopupMenuInfo& popup_menu_info,
                     WebKit::WebExternalPopupMenuClient* popup_menu_client);
 
@@ -31,7 +31,7 @@ class ExternalPopupMenu : public WebKit::WebExternalPopupMenu {
   virtual void close();
 
  private:
-  RenderView* render_view_;
+  RenderViewImpl* render_view_;
   WebKit::WebPopupMenuInfo popup_menu_info_;
   WebKit::WebExternalPopupMenuClient* popup_menu_client_;
 

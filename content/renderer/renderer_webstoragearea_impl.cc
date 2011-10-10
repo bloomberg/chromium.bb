@@ -6,7 +6,6 @@
 
 #include "content/common/dom_storage_messages.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 

@@ -12,12 +12,14 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-namespace webkit_glue {
-struct WebIntentData;
-}
+class RenderViewImpl;
 
 namespace WebKit {
 class WebFrame;
+}
+
+namespace webkit_glue {
+struct WebIntentData;
 }
 
 // IntentsDispatcher is a delegate for Web Intents messages. It is the
@@ -26,7 +28,7 @@ class WebFrame;
 class IntentsDispatcher : public content::RenderViewObserver {
  public:
   // |render_view| must not be NULL.
-  explicit IntentsDispatcher(RenderView* render_view);
+  explicit IntentsDispatcher(RenderViewImpl* render_view);
   virtual ~IntentsDispatcher();
 
   // Called by the bound intent object to register the result from the service

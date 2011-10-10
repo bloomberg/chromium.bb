@@ -32,7 +32,7 @@
 #include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/mime_util.h"
 #include "skia/ext/platform_canvas.h"
@@ -165,7 +165,7 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
 
 WebPluginDelegateProxy::WebPluginDelegateProxy(
     const std::string& mime_type,
-    const base::WeakPtr<RenderView>& render_view)
+    const base::WeakPtr<RenderViewImpl>& render_view)
     : render_view_(render_view),
       plugin_(NULL),
       uses_shared_bitmaps_(false),

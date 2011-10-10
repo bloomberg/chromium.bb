@@ -26,7 +26,7 @@
 #include "content/common/content_switches.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -97,7 +97,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   attributes_ = attributes;
   render_directly_to_web_view_ = render_directly_to_web_view;
   if (render_directly_to_web_view_) {
-    RenderView* render_view = RenderView::FromWebView(web_view);
+    RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_view);
     if (!render_view)
       return false;
     render_view_routing_id_ = render_view->routing_id();
@@ -241,8 +241,8 @@ WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   // Copies the contents of the off-screen render target into the texture
   // used by the compositor.
-  RenderView* renderview =
-      web_view_ ? RenderView::FromWebView(web_view_) : NULL;
+  RenderViewImpl* renderview =
+      web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersPosted();
   context_->SwapBuffers();
@@ -1024,8 +1024,8 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
 
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
   // This may be called after tear-down of the RenderView.
-  RenderView* renderview =
-      web_view_ ? RenderView::FromWebView(web_view_) : NULL;
+  RenderViewImpl* renderview =
+      web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersComplete();
 
@@ -1083,8 +1083,8 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }
-  RenderView* renderview =
-      web_view_ ? RenderView::FromWebView(web_view_) : NULL;
+  RenderViewImpl* renderview =
+      web_view_ ? RenderViewImpl::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersAborted();
 }

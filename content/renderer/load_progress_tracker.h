@@ -9,7 +9,7 @@
 #include "base/task.h"
 #include "base/time.h"
 
-class RenderView;
+class RenderViewImpl;
 
 namespace WebKit {
 class WebFrame;
@@ -17,7 +17,7 @@ class WebFrame;
 
 class LoadProgressTracker {
  public:
-  explicit LoadProgressTracker(RenderView* render_view);
+  explicit LoadProgressTracker(RenderViewImpl* render_view);
   ~LoadProgressTracker();
 
   void DidStopLoading();
@@ -29,7 +29,7 @@ class LoadProgressTracker {
 
   void SendChangeLoadProgress();
 
-  RenderView* render_view_;
+  RenderViewImpl* render_view_;
 
   WebKit::WebFrame* tracked_frame_;
 

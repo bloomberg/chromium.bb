@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDER_VIEW_H_
-#define CONTENT_RENDERER_RENDER_VIEW_H_
+#ifndef CONTENT_RENDERER_RENDER_VIEW_IMPL_H_
+#define CONTENT_RENDERER_RENDER_VIEW_IMPL_H_
 #pragma once
 
 #include <deque>
@@ -47,9 +47,9 @@
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 
 #if defined(OS_WIN)
-// RenderView is a diamond-shaped hierarchy, with WebWidgetClient at the root.
-// VS warns when we inherit the WebWidgetClient method implementations from
-// RenderWidget.  It's safe to ignore that warning.
+// RenderViewImpl is a diamond-shaped hierarchy, with WebWidgetClient at the
+// root. VS warns when we inherit the WebWidgetClient method implementations
+// from RenderWidget.  It's safe to ignore that warning.
 #pragma warning(disable: 4250)
 #endif
 
@@ -147,7 +147,7 @@ struct WebWindowFeatures;
 // an unlimited chain of RenderViews who only have one RenderView child.
 //
 // Therefore, each new top level RenderView creates a new counter and shares it
-// with all its children and grandchildren popup RenderViews created with
+// with all its children and grandchildren popup RenderViewImpls created with
 // createView() to have a sort of global limit for the page so no more than
 // kMaximumNumberOfPopups popups are created.
 //
@@ -159,13 +159,13 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 // RenderView is an object that manages a WebView object, and provides a
 // communication interface with an embedding application process
 //
-class RenderView : public RenderWidget,
-                   public WebKit::WebViewClient,
-                   public WebKit::WebFrameClient,
-                   public WebKit::WebPageSerializerClient,
-                   public content::RenderView,
-                   public webkit::npapi::WebPluginPageDelegate,
-                   public base::SupportsWeakPtr<RenderView> {
+class RenderViewImpl : public RenderWidget,
+                       public WebKit::WebViewClient,
+                       public WebKit::WebFrameClient,
+                       public WebKit::WebPageSerializerClient,
+                       public content::RenderView,
+                       public webkit::npapi::WebPluginPageDelegate,
+                       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
   // parent of the WebView HWND that will be created.  If this is a blocked
@@ -173,7 +173,7 @@ class RenderView : public RenderWidget,
   // responsible for creating this RenderView (corresponding to parent_hwnd).
   // |counter| is either a currently initialized counter, or NULL (in which case
   // we treat this RenderView as a top level window).
-  CONTENT_EXPORT static RenderView* Create(
+  CONTENT_EXPORT static RenderViewImpl* Create(
       gfx::NativeViewId parent_hwnd,
       int32 opener_id,
       const RendererPreferences& renderer_prefs,
@@ -183,8 +183,8 @@ class RenderView : public RenderWidget,
       int64 session_storage_namespace_id,
       const string16& frame_name);
 
-  // Returns the RenderView containing the given WebView.
-  CONTENT_EXPORT static RenderView* FromWebView(WebKit::WebView* webview);
+  // Returns the RenderViewImpl containing the given WebView.
+  CONTENT_EXPORT static RenderViewImpl* FromWebView(WebKit::WebView* webview);
 
   // Sets the "next page id" counter.
   static void SetNextPageID(int32 next_page_id);
@@ -671,17 +671,17 @@ class RenderView : public RenderWidget,
     CONNECTION_ERROR,
   };
 
-  RenderView(gfx::NativeViewId parent_hwnd,
-             int32 opener_id,
-             const RendererPreferences& renderer_prefs,
-             const WebPreferences& webkit_prefs,
-             SharedRenderViewCounter* counter,
-             int32 routing_id,
-             int64 session_storage_namespace_id,
-             const string16& frame_name);
+  RenderViewImpl(gfx::NativeViewId parent_hwnd,
+                 int32 opener_id,
+                 const RendererPreferences& renderer_prefs,
+                 const WebPreferences& webkit_prefs,
+                 SharedRenderViewCounter* counter,
+                 int32 routing_id,
+                 int64 session_storage_namespace_id,
+                 const string16& frame_name);
 
   // Do not delete directly.  This class is reference counted.
-  virtual ~RenderView();
+  virtual ~RenderViewImpl();
 
   void UpdateURL(WebKit::WebFrame* frame);
   void UpdateTitle(WebKit::WebFrame* frame, const string16& title,
@@ -864,13 +864,12 @@ class RenderView : public RenderWidget,
   void DidDownloadFavicon(webkit_glue::ImageResourceFetcher* fetcher,
                           const SkBitmap& image);
 
-  // Requests to download a favicon image. When done, the RenderView
-  // is notified by way of DidDownloadFavicon. Returns true if the
-  // request was successfully started, false otherwise. id is used to
-  // uniquely identify the request and passed back to the
-  // DidDownloadFavicon method. If the image has multiple frames, the
-  // frame whose size is image_size is returned. If the image doesn't
-  // have a frame at the specified size, the first is returned.
+  // Requests to download a favicon image. When done, the RenderView is notified
+  // by way of DidDownloadFavicon. Returns true if the request was successfully
+  // started, false otherwise. id is used to uniquely identify the request and
+  // passed back to the DidDownloadFavicon method. If the image has multiple
+  // frames, the frame whose size is image_size is returned. If the image
+  // doesn't have a frame at the specified size, the first is returned.
   bool DownloadFavicon(int id, const GURL& image_url, int image_size);
 
   GURL GetAlternateErrorPageURL(const GURL& failed_url,
@@ -992,7 +991,7 @@ class RenderView : public RenderWidget,
   scoped_ptr<content::NavigationState> pending_navigation_state_;
 
   // Timer used to delay the updating of nav state (see SyncNavigationState).
-  base::OneShotTimer<RenderView> nav_state_sync_timer_;
+  base::OneShotTimer<RenderViewImpl> nav_state_sync_timer_;
 
   // Page IDs ------------------------------------------------------------------
   // See documentation in content::RenderView.
@@ -1072,7 +1071,7 @@ class RenderView : public RenderWidget,
 
   // Used to delay determining the preferred size (to avoid intermediate
   // states for the sizes).
-  base::OneShotTimer<RenderView> check_preferred_size_timer_;
+  base::OneShotTimer<RenderViewImpl> check_preferred_size_timer_;
 
   // These store the "is main frame is scrolled all the way to the left
   // or right" state that was last sent to the browser.
@@ -1094,9 +1093,9 @@ class RenderView : public RenderWidget,
 
   PepperPluginDelegateImpl pepper_delegate_;
 
-  // All the currently active plugin delegates for this RenderView; kept so that
-  // we can enumerate them to send updates about things like window location
-  // or tab focus and visibily. These are non-owning references.
+  // All the currently active plugin delegates for this RenderView; kept so
+  // that we can enumerate them to send updates about things like window
+  // location or tab focus and visibily. These are non-owning references.
   std::set<WebPluginDelegateProxy*> plugin_delegates_;
 
 #if defined(OS_WIN)
@@ -1109,8 +1108,8 @@ class RenderView : public RenderWidget,
   RendererWebCookieJarImpl cookie_jar_;
 
   // The next group of objects all implement RenderViewObserver, so are deleted
-  // along with the RenderView automatically.  This is why we just store weak
-  // references.
+  // along with the RenderView automatically.  This is why we just store
+  // weak references.
 
   // Holds a reference to the service which provides desktop notifications.
   NotificationProvider* notification_provider_;
@@ -1156,9 +1155,9 @@ class RenderView : public RenderWidget,
   int64 session_storage_namespace_id_;
 
   // The total number of unrequested popups that exist and can be followed back
-  // to a common opener. This count is shared among all RenderViews created
-  // with createView(). All popups are treated as unrequested until
-  // specifically instructed otherwise by the Browser process.
+  // to a common opener. This count is shared among all RenderViews created with
+  // createView(). All popups are treated as unrequested until specifically
+  // instructed otherwise by the Browser process.
   scoped_refptr<SharedRenderViewCounter> shared_popup_counter_;
 
   // Whether this is a top level window (instead of a popup). Top level windows
@@ -1199,12 +1198,12 @@ class RenderView : public RenderWidget,
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above
   // sections rather than throwing it randomly at the end. If you're adding a
   // bunch of stuff, you should probably create a helper class and put your
-  // data and methods on that to avoid bloating RenderView more.  You can use
-  // the Observer interface to filter IPC messages and receive frame change
+  // data and methods on that to avoid bloating RenderView more.  You can
+  // use the Observer interface to filter IPC messages and receive frame change
   // notifications.
   // ---------------------------------------------------------------------------
 
-  DISALLOW_COPY_AND_ASSIGN(RenderView);
+  DISALLOW_COPY_AND_ASSIGN(RenderViewImpl);
 };
 
-#endif  // CONTENT_RENDERER_RENDER_VIEW_H_
+#endif  // CONTENT_RENDERER_RENDER_VIEW_IMPL_H_

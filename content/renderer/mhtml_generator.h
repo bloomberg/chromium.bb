@@ -9,9 +9,11 @@
 
 #include "ipc/ipc_platform_file.h"
 
+class RenderViewImpl;
+
 class MHTMLGenerator : public content::RenderViewObserver {
  public:
-  explicit MHTMLGenerator(RenderView* render_view);
+  explicit MHTMLGenerator(RenderViewImpl* render_view);
   virtual ~MHTMLGenerator();
 
  private:

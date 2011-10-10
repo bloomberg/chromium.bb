@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
 
@@ -28,6 +27,9 @@ class TranslateHelper;
 struct ThumbnailScore;
 struct ViewMsg_Navigate_Params;
 
+namespace WebKit {
+class WebView;
+}
 namespace safe_browsing {
 class PhishingClassifierDelegate;
 }

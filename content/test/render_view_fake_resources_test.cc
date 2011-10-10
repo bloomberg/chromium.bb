@@ -15,7 +15,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/mock_render_process.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
@@ -48,7 +48,7 @@ bool RenderViewFakeResourcesTest::OnMessageReceived(
 }
 
 bool RenderViewFakeResourcesTest::Visit(content::RenderView* render_view) {
-  view_ = static_cast<RenderView*>(render_view);
+  view_ = render_view;
   return false;
 }
 
@@ -94,7 +94,7 @@ void RenderViewFakeResourcesTest::TearDown() {
   do {
     message_loop_.RunAllPending();
     view_ = NULL;
-    RenderView::ForEach(this);
+    content::RenderView::ForEach(this);
   } while (view_);
 
   mock_process_.reset();
@@ -105,7 +105,7 @@ content::RenderView* RenderViewFakeResourcesTest::view() {
 }
 
 WebKit::WebFrame* RenderViewFakeResourcesTest::GetMainFrame() {
-  return view_->webview()->mainFrame();
+  return view_->GetWebView()->mainFrame();
 }
 
 void RenderViewFakeResourcesTest::LoadURL(const std::string& url) {
@@ -181,7 +181,7 @@ void RenderViewFakeResourcesTest::OnRequestResource(
 void RenderViewFakeResourcesTest::OnRenderViewReady() {
   // Grab a pointer to the new view using RenderViewVisitor.
   ASSERT_TRUE(!view_);
-  RenderView::ForEach(this);
+  content::RenderView::ForEach(this);
   ASSERT_TRUE(view_);
   message_loop_.Quit();
 }
@@ -189,18 +189,19 @@ void RenderViewFakeResourcesTest::OnRenderViewReady() {
 void RenderViewFakeResourcesTest::GoToOffset(
     int offset,
     const WebKit::WebHistoryItem& history_item) {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   ViewMsg_Navigate_Params params;
-  params.page_id = view_->GetPageId() + offset;
+  params.page_id = impl->GetPageId() + offset;
   params.pending_history_list_offset =
-      view_->history_list_offset() + offset;
-  params.current_history_list_offset = view_->history_list_offset();
-  params.current_history_list_length = (view_->historyBackListCount() +
-                                        view_->historyForwardListCount() + 1);
+      impl->history_list_offset() + offset;
+  params.current_history_list_offset = impl->history_list_offset();
+  params.current_history_list_length = (impl->historyBackListCount() +
+                                        impl->historyForwardListCount() + 1);
   params.url = GURL(history_item.urlString());
   params.transition = PageTransition::FORWARD_BACK;
   params.state = webkit_glue::HistoryItemToString(history_item);
   params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
   params.request_time = base::Time::Now();
-  channel_->Send(new ViewMsg_Navigate(view_->routing_id(), params));
+  channel_->Send(new ViewMsg_Navigate(impl->routing_id(), params));
   message_loop_.Run();
 }

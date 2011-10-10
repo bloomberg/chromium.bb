@@ -14,7 +14,7 @@
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
-#include "content/renderer/render_view.h"
+#include "content/public/renderer/render_view.h"
 #include "content/test/render_view_fake_resources_test.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,7 +35,7 @@ namespace safe_browsing {
 namespace {
 class MockPhishingClassifier : public PhishingClassifier {
  public:
-  explicit MockPhishingClassifier(RenderView* render_view)
+  explicit MockPhishingClassifier(content::RenderView* render_view)
       : PhishingClassifier(render_view, NULL /* clock */) {}
 
   virtual ~MockPhishingClassifier() {}
@@ -101,9 +101,9 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
 
 TEST_F(PhishingClassifierDelegateTest, Navigation) {
   MockPhishingClassifier* classifier =
-      new StrictMock<MockPhishingClassifier>(view_);
+      new StrictMock<MockPhishingClassifier>(view());
   PhishingClassifierDelegate* delegate =
-      PhishingClassifierDelegate::Create(view_, classifier);
+      PhishingClassifierDelegate::Create(view(), classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());
@@ -228,9 +228,9 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
 TEST_F(PhishingClassifierDelegateTest, NoScorer) {
   // For this test, we'll create the delegate with no scorer available yet.
   MockPhishingClassifier* classifier =
-      new StrictMock<MockPhishingClassifier>(view_);
+      new StrictMock<MockPhishingClassifier>(view());
   PhishingClassifierDelegate* delegate =
-      PhishingClassifierDelegate::Create(view_, classifier);
+      PhishingClassifierDelegate::Create(view(), classifier);
   ASSERT_FALSE(classifier->is_ready());
 
   // Queue up a pending classification, cancel it, then queue up another one.
@@ -267,9 +267,9 @@ TEST_F(PhishingClassifierDelegateTest, NoScorer_Ref) {
   // Similar to the last test, but navigates within the page before
   // setting the scorer.
   MockPhishingClassifier* classifier =
-      new StrictMock<MockPhishingClassifier>(view_);
+      new StrictMock<MockPhishingClassifier>(view());
   PhishingClassifierDelegate* delegate =
-      PhishingClassifierDelegate::Create(view_, classifier);
+      PhishingClassifierDelegate::Create(view(), classifier);
   ASSERT_FALSE(classifier->is_ready());
 
   // Queue up a pending classification, cancel it, then queue up another one.
@@ -300,9 +300,9 @@ TEST_F(PhishingClassifierDelegateTest, NoStartPhishingDetection) {
   // Tests the behavior when OnStartPhishingDetection has not yet been called
   // when the page load finishes.
   MockPhishingClassifier* classifier =
-      new StrictMock<MockPhishingClassifier>(view_);
+      new StrictMock<MockPhishingClassifier>(view());
   PhishingClassifierDelegate* delegate =
-      PhishingClassifierDelegate::Create(view_, classifier);
+      PhishingClassifierDelegate::Create(view(), classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());
@@ -374,9 +374,9 @@ TEST_F(PhishingClassifierDelegateTest, NoStartPhishingDetection) {
 TEST_F(PhishingClassifierDelegateTest, IgnorePreliminaryCapture) {
   // Tests that preliminary PageCaptured notifications are ignored.
   MockPhishingClassifier* classifier =
-      new StrictMock<MockPhishingClassifier>(view_);
+      new StrictMock<MockPhishingClassifier>(view());
   PhishingClassifierDelegate* delegate =
-      PhishingClassifierDelegate::Create(view_, classifier);
+      PhishingClassifierDelegate::Create(view(), classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());
@@ -408,9 +408,9 @@ TEST_F(PhishingClassifierDelegateTest, DuplicatePageCapture) {
   // Tests that a second PageCaptured notification causes classification to
   // be cancelled.
   MockPhishingClassifier* classifier =
-      new StrictMock<MockPhishingClassifier>(view_);
+      new StrictMock<MockPhishingClassifier>(view());
   PhishingClassifierDelegate* delegate =
-      PhishingClassifierDelegate::Create(view_, classifier);
+      PhishingClassifierDelegate::Create(view(), classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());
@@ -443,9 +443,9 @@ TEST_F(PhishingClassifierDelegateTest, PhishingDetectionDone) {
   // Tests that a PhishingDetectionDone IPC is sent to the browser
   // whenever we finish classification.
   MockPhishingClassifier* classifier =
-      new StrictMock<MockPhishingClassifier>(view_);
+      new StrictMock<MockPhishingClassifier>(view());
   PhishingClassifierDelegate* delegate =
-      PhishingClassifierDelegate::Create(view_, classifier);
+      PhishingClassifierDelegate::Create(view(), classifier);
   MockScorer scorer;
   delegate->SetPhishingScorer(&scorer);
   ASSERT_TRUE(classifier->is_ready());

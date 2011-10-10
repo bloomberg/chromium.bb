@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/text_input_client_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebSubstringUtil.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -16,7 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/rect.h"
 
-TextInputClientObserver::TextInputClientObserver(RenderView* render_view)
+TextInputClientObserver::TextInputClientObserver(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view) {
 }
 

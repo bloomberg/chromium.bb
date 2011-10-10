@@ -6,7 +6,7 @@
 
 #include "content/common/indexed_db_messages.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webidbcursor_impl.h"
 #include "content/renderer/renderer_webidbdatabase_impl.h"
 #include "content/renderer/renderer_webidbindex_impl.h"
@@ -113,7 +113,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
 
   if (!web_frame)
     return; // We must be shutting down.
-  RenderView* render_view = RenderView::FromWebView(web_frame->view());
+  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
   if (!render_view)
     return; // We must be shutting down.
 
@@ -133,7 +133,7 @@ void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
 
   if (!web_frame)
     return; // We must be shutting down.
-  RenderView* render_view = RenderView::FromWebView(web_frame->view());
+  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
   if (!render_view)
     return; // We must be shutting down.
 
@@ -154,7 +154,7 @@ void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
 
   if (!web_frame)
     return; // We must be shutting down.
-  RenderView* render_view = RenderView::FromWebView(web_frame->view());
+  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
   if (!render_view)
     return; // We must be shutting down.
 

@@ -14,6 +14,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontendClient.h"
 
 class MessageLoop;
+class RenderViewImpl;
 
 namespace WebKit {
 class WebDevToolsFrontend;
@@ -31,7 +32,7 @@ struct DevToolsMessageData;
 class DevToolsClient : public content::RenderViewObserver,
                        public WebKit::WebDevToolsFrontendClient {
  public:
-  explicit DevToolsClient(RenderView* render_view);
+  explicit DevToolsClient(RenderViewImpl* render_view);
   virtual ~DevToolsClient();
 
  private:

@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 
 namespace {
 
@@ -14,7 +14,7 @@ const int kMinimumDelayBetweenUpdatesMS = 100;
 
 }
 
-LoadProgressTracker::LoadProgressTracker(RenderView* render_view)
+LoadProgressTracker::LoadProgressTracker(RenderViewImpl* render_view)
     : render_view_(render_view),
       tracked_frame_(NULL),
       progress_(0.0),

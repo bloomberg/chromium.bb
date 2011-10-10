@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "content/common/content_switches.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_accessibility.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -77,7 +77,7 @@ bool WebAccessibilityNotificationToViewHostMsg(
   return true;
 }
 
-RendererAccessibility::RendererAccessibility(RenderView* render_view)
+RendererAccessibility::RendererAccessibility(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       browser_root_(NULL),

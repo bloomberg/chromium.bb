@@ -30,6 +30,8 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "net/base/net_util.h"
 
+class RenderViewImpl;
+
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
@@ -62,7 +64,7 @@ class P2PSocketDispatcher : public content::RenderViewObserver {
     DISALLOW_COPY_AND_ASSIGN(NetworkListObserver);
   };
 
-  explicit P2PSocketDispatcher(RenderView* render_view);
+  explicit P2PSocketDispatcher(RenderViewImpl* render_view);
   virtual ~P2PSocketDispatcher();
 
   // Add a new network list observer. Each observer is called

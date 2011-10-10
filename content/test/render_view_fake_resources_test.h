@@ -130,7 +130,7 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   scoped_ptr<IPC::Channel> channel_;
   RenderThreadImpl* render_thread_;  // owned by mock_process_
   scoped_ptr<MockRenderProcess> mock_process_;
-  RenderView* view_;  // not owned, deletes itself on close
+  content::RenderView* view_;  // not owned, deletes itself on close
 
   // Map of url -> response body for network requests from the renderer.
   // Any urls not in this map are served a 404 error.

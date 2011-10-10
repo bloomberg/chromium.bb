@@ -6,11 +6,11 @@
 
 #include "base/platform_file.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 
-MHTMLGenerator::MHTMLGenerator(RenderView* render_view)
+MHTMLGenerator::MHTMLGenerator(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       file_(base::kInvalidPlatformFileValue) {
 }

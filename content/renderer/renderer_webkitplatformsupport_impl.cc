@@ -23,7 +23,6 @@
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/media/audio_device.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view.h"
 #include "content/renderer/renderer_webaudiodevice_impl.h"
 #include "content/renderer/renderer_webidbfactory_impl.h"
 #include "content/renderer/renderer_webstoragenamespace_impl.h"

@@ -46,7 +46,7 @@
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process_impl.h"
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webidbfactory_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "ipc/ipc_channel_handle.h"
@@ -590,7 +590,7 @@ int32 RenderThreadImpl::RoutingIDForCurrentContext() {
   if (v8::Context::InContext()) {
     WebFrame* frame = WebFrame::frameForCurrentContext();
     if (frame) {
-      RenderView* view = RenderView::FromWebView(frame->view());
+      RenderViewImpl* view = RenderViewImpl::FromWebView(frame->view());
       if (view)
         routing_id = view->routing_id();
     }
@@ -611,7 +611,7 @@ void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
 void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const GURL& url,
                                                    double zoom_level) {
   RenderViewZoomer zoomer(url, zoom_level);
-  RenderView::ForEach(&zoomer);
+  content::RenderView::ForEach(&zoomer);
 }
 
 void RenderThreadImpl::OnDOMStorageEvent(
@@ -657,7 +657,7 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 void RenderThreadImpl::OnSetNextPageID(int32 next_page_id) {
   // This should only be called at process initialization time, so we shouldn't
   // have to worry about thread-safety.
-  RenderView::SetNextPageID(next_page_id);
+  RenderViewImpl::SetNextPageID(next_page_id);
 }
 
 // Called when to register CSS Color name->system color mappings.
@@ -684,7 +684,7 @@ void RenderThreadImpl::OnSetCSSColors(
 void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
   EnsureWebKitInitialized();
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
-  RenderView::Create(
+  RenderViewImpl::Create(
       params.parent_window,
       MSG_ROUTING_NONE,
       params.renderer_preferences,

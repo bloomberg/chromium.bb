@@ -11,6 +11,8 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/point.h"
 
+class RenderViewImpl;
+
 namespace WebKit {
 class WebView;
 }
@@ -20,7 +22,7 @@ class WebView;
 // content/browser/renderer_host/text_input_client_mac.h for more information.
 class TextInputClientObserver : public content::RenderViewObserver {
  public:
-  explicit TextInputClientObserver(RenderView* render_view);
+  explicit TextInputClientObserver(RenderViewImpl* render_view);
   virtual ~TextInputClientObserver();
 
   // RenderViewObserver overrides:

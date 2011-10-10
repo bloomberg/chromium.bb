@@ -22,7 +22,6 @@
 #include "content/common/content_switches.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/render_view.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
 #include "skia/ext/platform_canvas.h"

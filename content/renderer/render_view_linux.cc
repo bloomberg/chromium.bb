@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/render_view.h"
+#include "content/renderer/render_view_impl.h"
 
 #include "content/common/renderer_preferences.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRendering.h"
@@ -98,7 +98,7 @@ static bool RendererPreferencesToSubpixelGlyphsFlag(
   return false;
 }
 
-void RenderView::UpdateFontRenderingFromRendererPrefs() {
+void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   const RendererPreferences& prefs = renderer_preferences_;
   WebFontRendering::setHinting(
       RendererPreferencesToSkiaHinting(prefs));
