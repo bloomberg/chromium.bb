@@ -36,6 +36,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       share_group_(new gfx::GLShareGroup),
       watchdog_(watchdog),
       software_(software),
+      handle_messages_scheduled_(false),
       task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(gpu_channel_manager);
   DCHECK(renderer_id);
@@ -76,42 +77,16 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
       message.type() != GpuChannelMsg_Echo::ID)
     return OnControlMessageReceived(message);
 
-  // If the channel is unscheduled, defer sync and async messages until it is
-  // rescheduled. Also, even if the channel is scheduled, do not allow newly
-  // received messages to be handled before previously received deferred ones;
-  // append them to the deferred queue as well.
-  if (!IsScheduled() || !deferred_messages_.empty()) {
-    deferred_messages_.push(new IPC::Message(message));
-    return true;
+  if (message.type() == GpuCommandBufferMsg_GetStateFast::ID) {
+    // Move GetStateFast commands to the head of the queue, so the renderer
+    // doesn't have to wait any longer than necessary.
+    deferred_messages_.push_front(new IPC::Message(message));
+  } else {
+    deferred_messages_.push_back(new IPC::Message(message));
   }
 
-  // Handle deferred control messages.
-  if (message.routing_id() == MSG_ROUTING_CONTROL)
-    return OnControlMessageReceived(message);
-
-  if (!router_.RouteMessage(message)) {
-    // Respond to sync messages even if router failed to route.
-    if (message.is_sync()) {
-      IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
-      reply->set_reply_error();
-      Send(reply);
-    }
-    return false;
-  }
-
-  // If the channel becomes unscheduled as a result of handling the message,
-  // synthesize an IPC message to flush the command buffer that became
-  // unscheduled.
-  for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
-       !it.IsAtEnd();
-       it.Advance()) {
-    GpuCommandBufferStub* stub = it.GetCurrentValue();
-    if (!stub->IsScheduled()) {
-      DCHECK(deferred_messages_.empty());
-      deferred_messages_.push(new GpuCommandBufferMsg_Rescheduled(
-          stub->route_id()));
-    }
-  }
+  if (IsScheduled())
+    OnScheduled();
 
   return true;
 }
@@ -154,6 +129,8 @@ bool GpuChannel::IsScheduled() {
 }
 
 void GpuChannel::OnScheduled() {
+  if (handle_messages_scheduled_)
+    return;
   // Post a task to handle any deferred messages. The deferred message queue is
   // not emptied here, which ensures that OnMessageReceived will continue to
   // defer newly received messages until the ones in the queue have all been
@@ -162,7 +139,8 @@ void GpuChannel::OnScheduled() {
   MessageLoop::current()->PostTask(
       FROM_HERE,
       task_factory_.NewRunnableMethod(
-          &GpuChannel::HandleDeferredMessages));
+          &GpuChannel::HandleMessage));
+  handle_messages_scheduled_ = true;
 }
 
 void GpuChannel::LoseAllContexts() {
@@ -241,18 +219,42 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void GpuChannel::HandleDeferredMessages() {
-  // Empty the deferred queue so OnMessageRecieved does not defer on that
-  // account and to prevent an infinite loop if the scheduler is unscheduled
-  // as a result of handling already deferred messages.
-  std::queue<IPC::Message*> deferred_messages_copy;
-  std::swap(deferred_messages_copy, deferred_messages_);
+void GpuChannel::HandleMessage() {
+  handle_messages_scheduled_ = false;
+  if (!IsScheduled())
+      return;
 
-  while (!deferred_messages_copy.empty()) {
-    scoped_ptr<IPC::Message> message(deferred_messages_copy.front());
-    deferred_messages_copy.pop();
+  if (!deferred_messages_.empty()) {
+    scoped_ptr<IPC::Message> message(deferred_messages_.front());
+    deferred_messages_.pop_front();
+    // Handle deferred control messages.
+    if (message->routing_id() == MSG_ROUTING_CONTROL)
+      OnControlMessageReceived(*message);
+    else if (!router_.RouteMessage(*message)) {
+      // Respond to sync messages even if router failed to route.
+      if (message->is_sync()) {
+        IPC::Message* reply = IPC::SyncMessage::GenerateReply(&*message);
+        reply->set_reply_error();
+        Send(reply);
+      }
+    } else {
+      // If the channel becomes unscheduled as a result of handling the message,
+      // synthesize an IPC message to flush the command buffer that became
+      // unscheduled.
+      for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
+           !it.IsAtEnd();
+           it.Advance()) {
+        GpuCommandBufferStub* stub = it.GetCurrentValue();
+        if (!stub->IsScheduled()) {
+          deferred_messages_.push_front(new GpuCommandBufferMsg_Rescheduled(
+              stub->route_id()));
+        }
+      }
+    }
+  }
 
-    OnMessageReceived(*message);
+  if (IsScheduled() && !deferred_messages_.empty()) {
+    OnScheduled();
   }
 }
 

@@ -182,6 +182,8 @@ void CommandBufferProxy::Flush(int32 put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
+  TRACE_EVENT1("gpu", "CommandBufferProxy::Flush", "put_offset", put_offset);
+
   Send(new GpuCommandBufferMsg_AsyncFlush(route_id_,
                                           put_offset,
                                           ++flush_count_));
@@ -189,20 +191,17 @@ void CommandBufferProxy::Flush(int32 put_offset) {
 
 gpu::CommandBuffer::State CommandBufferProxy::FlushSync(int32 put_offset,
                                                         int32 last_known_get) {
-  TRACE_EVENT0("gpu", "CommandBufferProxy::FlushSync");
+  TRACE_EVENT1("gpu", "CommandBufferProxy::FlushSync", "put_offset",
+               put_offset);
+  Flush(put_offset);
   if (last_known_get == last_state_.get_offset) {
     // Send will flag state with lost context if IPC fails.
     if (last_state_.error == gpu::error::kNoError) {
       gpu::CommandBuffer::State state;
-      if (Send(new GpuCommandBufferMsg_Flush(route_id_,
-                                             put_offset,
-                                             last_known_get,
-                                             ++flush_count_,
-                                             &state)))
+      if (Send(new GpuCommandBufferMsg_GetStateFast(route_id_,
+                                                    &state)))
         OnUpdateState(state);
     }
-  } else {
-    Flush(put_offset);
   }
 
   return last_state_;

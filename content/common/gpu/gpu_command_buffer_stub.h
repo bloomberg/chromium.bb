@@ -92,10 +92,7 @@ class GpuCommandBufferStub
                    uint32 parent_texture_id,
                    IPC::Message* reply_message);
   void OnGetState(IPC::Message* reply_message);
-  void OnFlush(int32 put_offset,
-               int32 last_known_get,
-               uint32 flush_count,
-               IPC::Message* reply_message);
+  void OnGetStateFast(IPC::Message* reply_message);
   void OnAsyncFlush(int32 put_offset, uint32 flush_count);
   void OnEcho(const IPC::Message& message);
   void OnRescheduled();

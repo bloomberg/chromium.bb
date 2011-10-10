@@ -122,7 +122,7 @@ class GpuChannel : public IPC::Channel::Listener,
 
   bool OnControlMessageReceived(const IPC::Message& msg);
 
-  void HandleDeferredMessages();
+  void HandleMessage();
 
   // Message handlers.
   void OnInitialize(base::ProcessHandle renderer_process);
@@ -143,7 +143,7 @@ class GpuChannel : public IPC::Channel::Listener,
 
   scoped_ptr<IPC::SyncChannel> channel_;
 
-  std::queue<IPC::Message*> deferred_messages_;
+  std::deque<IPC::Message*> deferred_messages_;
 
   // The id of the renderer who is on the other side of the channel.
   int renderer_id_;
@@ -174,6 +174,7 @@ class GpuChannel : public IPC::Channel::Listener,
   gpu::gles2::DisallowedFeatures disallowed_features_;
   GpuWatchdog* watchdog_;
   bool software_;
+  bool handle_messages_scheduled_;
 
   ScopedRunnableMethodFactory<GpuChannel> task_factory_;
 

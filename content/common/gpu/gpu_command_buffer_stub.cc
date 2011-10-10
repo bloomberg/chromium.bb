@@ -90,7 +90,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetParent,
                                     OnSetParent);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_Flush, OnFlush);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetStateFast,
+                                    OnGetStateFast);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Rescheduled, OnRescheduled);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateTransferBuffer,
@@ -308,54 +309,21 @@ void GpuCommandBufferStub::OnParseError() {
   Send(msg);
 }
 
-void GpuCommandBufferStub::OnFlush(int32 put_offset,
-                                   int32 last_known_get,
-                                   uint32 flush_count,
-                                   IPC::Message* reply_message) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnFlush");
+void GpuCommandBufferStub::OnGetStateFast(IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnGetStateFast");
   gpu::CommandBuffer::State state = command_buffer_->GetState();
-  if (flush_count - last_flush_count_ >= 0x8000000U) {
-    // We received this message out-of-order. This should not happen but is here
-    // to catch regressions. Ignore the message.
-    NOTREACHED() << "Received an AsyncFlush message out-of-order";
-    GpuCommandBufferMsg_Flush::WriteReplyParams(reply_message, state);
-    Send(reply_message);
-  } else {
-    last_flush_count_ = flush_count;
+  if (state.error == gpu::error::kLostContext &&
+      gfx::GLContext::LosesAllContextsOnContextLost())
+    channel_->LoseAllContexts();
 
-    // Reply immediately if the client was out of date with the current get
-    // offset.
-    bool reply_immediately = state.get_offset != last_known_get;
-    if (reply_immediately) {
-      GpuCommandBufferMsg_Flush::WriteReplyParams(reply_message, state);
-      Send(reply_message);
-    }
-
-    // Process everything up to the put offset.
-    state = command_buffer_->FlushSync(put_offset, last_known_get);
-
-    // Lose all contexts if the context was lost.
-    if (state.error == gpu::error::kLostContext &&
-        gfx::GLContext::LosesAllContextsOnContextLost()) {
-      channel_->LoseAllContexts();
-    }
-
-    // Then if the client was up-to-date with the get offset, reply to the
-    // synchronpous IPC only after processing all commands are processed. This
-    // prevents the client from "spinning" when it fills up the command buffer.
-    // Otherwise, since the state has changed since the immediate reply, send
-    // an asyncronous state update back to the client.
-    if (!reply_immediately) {
-      GpuCommandBufferMsg_Flush::WriteReplyParams(reply_message, state);
-      Send(reply_message);
-    } else {
-      ReportState();
-    }
-  }
+  GpuCommandBufferMsg_GetStateFast::WriteReplyParams(reply_message, state);
+  Send(reply_message);
 }
 
-void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset, uint32 flush_count) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnAsyncFlush");
+void GpuCommandBufferStub::OnAsyncFlush(int32 put_offset,
+                                        uint32 flush_count) {
+  TRACE_EVENT1("gpu", "GpuCommandBufferStub::OnAsyncFlush",
+               "put_offset", put_offset);
   if (flush_count - last_flush_count_ < 0x8000000U) {
     last_flush_count_ = flush_count;
     command_buffer_->Flush(put_offset);
