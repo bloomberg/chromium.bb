@@ -97,7 +97,7 @@
         'aura_shell',
       ],
       'sources': [
-        'aura_shell_main.cc',
+        'examples/aura_shell_main.cc',
         'examples/bubble.cc',
         'examples/example_factory.h',
         'examples/lock_view.cc',

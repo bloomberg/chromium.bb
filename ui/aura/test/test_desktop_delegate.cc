@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/test_desktop_delegate.h"
+#include "ui/aura/test/test_desktop_delegate.h"
 
 #include "ui/aura/desktop.h"
 
 namespace aura {
+namespace test {
 
 TestDesktopDelegate::TestDesktopDelegate()
     : default_container_(new ToplevelWindowContainer) {
@@ -29,4 +30,5 @@ Window* TestDesktopDelegate::GetTopmostWindowToActivate(Window* ignore) const {
   return default_container_->GetTopmostWindowToActivate(ignore);
 }
 
+}  // namespace test
 }  // namespace aura

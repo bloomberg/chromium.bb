@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/aura_test_base.h"
+#include "ui/aura/test/aura_test_base.h"
 
 #if defined(OS_WIN)
 #include <ole2.h>
 #endif
 
 #include "ui/aura/desktop.h"
-#include "ui/aura/test_desktop_delegate.h"
+#include "ui/aura/test/test_desktop_delegate.h"
 #include "ui/gfx/compositor/test_compositor.h"
 
 namespace aura {
+namespace test {
 
 static ui::Compositor* TestCreateCompositor() {
   return new ui::TestCompositor();
@@ -33,7 +34,7 @@ AuraTestBase::~AuraTestBase() {
   CHECK(setup_called_)
       << "You have overridden SetUp but never called super class's SetUp";
   CHECK(teardown_called_)
-      << "You have overrideen TearDown but never called super class's TearDown";
+      << "You have overridden TearDown but never called super class's TearDown";
 }
 
 void AuraTestBase::SetUp() {
@@ -55,4 +56,5 @@ void AuraTestBase::TearDown() {
   aura::Desktop::set_compositor_factory_for_testing(NULL);
 }
 
+}  // namespace test
 }  // namespace aura

@@ -5,12 +5,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/aura_test_base.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
 #include "ui/aura/hit_test.h"
-#include "ui/aura/test_desktop_delegate.h"
-#include "ui/aura/test_window_delegate.h"
+#include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/test_desktop_delegate.h"
+#include "ui/aura/test/test_window_delegate.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.
@@ -21,7 +21,7 @@
 
 
 namespace aura {
-namespace internal {
+namespace test {
 
 namespace {
 
@@ -185,5 +185,5 @@ TEST_F(ToplevelWindowEventFilterTest, Client) {
   EXPECT_EQ(bounds, w1->bounds());
 }
 
-}  // namespace internal
+}  // namespace test
 }  // namespace aura

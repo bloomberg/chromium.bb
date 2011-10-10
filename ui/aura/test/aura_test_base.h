@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_TEST_BASE_H_
-#define UI_AURA_TEST_BASE_H_
+#ifndef UI_AURA_TEST_AURA_TEST_BASE_H_
+#define UI_AURA_TEST_AURA_TEST_BASE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace aura {
+namespace test {
 
 // A base class for aura unit tests.
 class AuraTestBase : public testing::Test {
@@ -35,6 +36,7 @@ class AuraTestBase : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };
 
+}  // namespace test
 }  // namespace aura
 
-#endif  // UI_AURA_TEST_BASE_H_
+#endif  // UI_AURA_TEST_AURA_TEST_BASE_H_
