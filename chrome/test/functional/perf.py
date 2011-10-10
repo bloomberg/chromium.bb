@@ -304,15 +304,15 @@ class LiveWebappLoadTest(BasePerfTest):
     """Measures time to open a tab to a logged-in Docs account.
 
     Timing starts right before the new tab is opened, and stops as soon as the
-    webpage displays the expected substring 'No item selected'.
+    webpage displays the expected substring 'last modified' (case insensitive).
     """
-    EXPECTED_SUBSTRING = 'No item selected'
+    EXPECTED_SUBSTRING = 'last modified'
 
     def _SubstringExistsOnPage():
       js = """
           var divs = document.getElementsByTagName("div");
           for (var i = 0; i < divs.length; ++i) {
-            if (divs[i].innerHTML.indexOf("%s") >= 0)
+            if (divs[i].innerHTML.toLowerCase().indexOf("%s") >= 0)
               window.domAutomationController.send("true");
           }
           window.domAutomationController.send("false");
