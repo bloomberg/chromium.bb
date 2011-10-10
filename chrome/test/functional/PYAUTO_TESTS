@@ -90,8 +90,6 @@
       '-downloads.DownloadsTest.testBigZip',
       '-downloads.DownloadsTest.testFileRenaming',
       '-downloads.DownloadsTest.testCrazyFilenames',
-      # Turkish I problem. crbug.com/60638
-      '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       # Instant broken by r104553.  crbug.com/99637
       '-instant',
       # Flaky: crbug.com/83459

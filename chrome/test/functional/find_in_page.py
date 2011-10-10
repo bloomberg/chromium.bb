@@ -43,22 +43,6 @@ class FindMatchTests(pyauto.PyUITest):
                               ['match_count'])
     self.assertTrue(case_insenstive_result >= case_sensitive_result)
 
-  def testLocalizationAndCaseOrder(self):
-    """Verify that we check for localization.
-
-    Here we check the Turkish-i scenario where we verify that we
-    find both dotted and dotless I's.
-    """
-    url = self.GetFileURLForDataPath('find_in_page', 'turkish.html')
-    self.NavigateToURL(url)
-    dotless = self.FindInPage(u'\u0131')['match_count']
-    dotted = self.FindInPage('i')['match_count']
-    capital_i_with_dot = self.FindInPage(u'\u0130')['match_count']
-    capital_i = self.FindInPage('I')['match_count']
-    self.assertNotEqual(dotless, dotted)
-    self.assertNotEqual(capital_i_with_dot, capital_i)
-    self.assertNotEqual(dotted, capital_i_with_dot)
-
   def testSearchInTextAreas(self):
     """Verify search for text within various forms and text areas."""
     urls = []
