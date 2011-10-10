@@ -6,6 +6,7 @@
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
+#include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "views/widget/widget.h"
@@ -59,19 +60,18 @@ void InitDesktopWindow() {
       new internal::DesktopLayoutManager(root_window);
   root_window->SetLayoutManager(desktop_layout);
 
+  Shell* shell = Shell::GetInstance();
   views::Widget* desktop_background = internal::CreateDesktopBackground();
-  aura::Desktop::GetInstance()->window()->GetChildById(
+  shell->GetContainer(
       internal::kShellWindowId_DesktopBackgroundContainer)->AddChild(
           desktop_background->GetNativeView());
 
   views::Widget* launcher = internal::CreateLauncher();
-  aura::Desktop::GetInstance()->window()->GetChildById(
-      internal::kShellWindowId_LauncherContainer)->AddChild(
+  shell->GetContainer(internal::kShellWindowId_LauncherContainer)->AddChild(
           launcher->GetNativeView());
 
   views::Widget* status_area = internal::CreateStatusArea();
-  aura::Desktop::GetInstance()->window()->GetChildById(
-      internal::kShellWindowId_StatusContainer)->AddChild(
+  shell->GetContainer(internal::kShellWindowId_StatusContainer)->AddChild(
           status_area->GetNativeView());
 
   desktop_layout->set_background_widget(desktop_background);

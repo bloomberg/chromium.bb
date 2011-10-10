@@ -8,6 +8,7 @@
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/aura_shell_export.h"
 #include "ui/aura_shell/launcher/launcher_button.h"
+#include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
@@ -41,7 +42,7 @@ views::Widget* CreateLauncher() {
   views::Widget* launcher_widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.bounds = gfx::Rect(0, 0, 300, 64);
-  params.parent = aura::Desktop::GetInstance()->window()->GetChildById(
+  params.parent = Shell::GetInstance()->GetContainer(
       aura_shell::internal::kShellWindowId_LauncherContainer);
   LauncherView* launcher_view = new LauncherView;
   params.delegate = launcher_view;

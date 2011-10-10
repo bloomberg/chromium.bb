@@ -8,6 +8,7 @@
 #include "grit/ui_resources.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/aura_shell_export.h"
+#include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -37,7 +38,7 @@ views::Widget* CreateStatusArea() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   gfx::Size ps = status_area_view->GetPreferredSize();
   params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
-  params.parent = aura::Desktop::GetInstance()->window()->GetChildById(
+  params.parent = Shell::GetInstance()->GetContainer(
       aura_shell::internal::kShellWindowId_StatusContainer);
   params.delegate = status_area_view;
   widget->Init(params);

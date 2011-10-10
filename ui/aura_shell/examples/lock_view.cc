@@ -6,6 +6,7 @@
 #include "ui/aura/desktop.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/examples/example_factory.h"
+#include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -59,7 +60,7 @@ void CreateLock() {
                             (desktop_bounds.height() - ps.height()) / 2,
                             ps.width(), ps.height());
   params.delegate = lock_view;
-  params.parent = aura::Desktop::GetInstance()->window()->GetChildById(
+  params.parent = Shell::GetInstance()->GetContainer(
       aura_shell::internal::kShellWindowId_LockScreenContainer);
   widget->Init(params);
   widget->SetContentsView(lock_view);

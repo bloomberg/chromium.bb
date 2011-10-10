@@ -36,6 +36,11 @@
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/shell_window_ids.h"
+#endif
+
 namespace {
 
 const int kDefaultKeyboardHeight = 300;
@@ -166,6 +171,10 @@ KeyboardWidget::KeyboardWidget()
   params.keep_on_top = true;
   params.transparent = true;
   params.bounds = GetKeyboardPosition(keyboard_height_);
+#if defined(USE_AURA)
+  params.parent = aura_shell::Shell::GetInstance()->GetContainer(
+      aura_shell::internal::kShellWindowId_MenusAndTooltipsContainer);
+#endif
   Init(params);
 
   // Setup the DOM view to host the keyboard.
