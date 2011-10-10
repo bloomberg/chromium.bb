@@ -26,6 +26,23 @@
     ]],
   },
   'conditions': [
+    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+      'targets': [
+        {
+          'target_name': 'weak_ref_lib',
+          'type': 'none',
+          'variables': {
+            'nlib_target': 'libweak_ref.a',
+            'build_glibc': 1,
+            'build_newlib': 1,
+            'sources': ['weak_ref.cc'],
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+          ],
+        },
+      ],
+    }],
     ['OS=="linux"', {
       'defines': [
         'XP_UNIX',

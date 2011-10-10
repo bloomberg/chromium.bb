@@ -80,6 +80,7 @@
       ],
     },
     # ----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     {
       'target_name': 'sigpipe_test',
       'type': 'executable',
@@ -94,6 +95,23 @@
     },
   ],
   'conditions': [
+    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+      'targets' : [
+        {
+          'target_name': 'imc_lib',
+          'type': 'none',
+          'variables': {
+            'nlib_target': 'libimc.a',
+            'build_glibc': 1,
+            'build_newlib': 0,
+            'sources': ['nacl_imc_c.cc', 'nacl_imc_common.cc', 'nacl/nacl_imc.cc'],
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+          ],
+        },
+      ]
+    }],
     ['target_arch!="arm"', {
       'targets': [
         # NOTE: we cannot run this on ARM since we are using a cross compiler
@@ -156,44 +174,6 @@
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
           ],
         },
-        # ----------------------------------------------------------------------
-        # TODO(ilewis): re-enable this when we have some way of preventing
-        # it from blowing up if the build machine is 32 bit (or when we no
-        # longer build on 32-bit Windows machines).
-        #{
-        #  'target_name': 'run_sigpipe_test64',
-        #  'message': 'running test run_imc_tests64',
-        #  'type': 'none',
-        #  'dependencies': [
-        #    'sigpipe_test64',
-        #  ],
-        #  'configurations': {
-        #    'Common_Base': {
-        #      'msvs_target_platform': 'x64',
-        #    },
-        #  },
-        #  'actions': [
-        #    {
-        #      'action_name': 'run_sigpipe_test64',
-        #      'msvs_cygwin_shell': 0,
-        #      'inputs': [
-        #        '<(COMMAND_TESTER)',
-        #        '<(PRODUCT_DIR)/sigpipe_test64',
-        #      ],
-        #      'outputs': [
-        #        '<(PRODUCT_DIR)/test-output/sigpipe_test64.out',
-        #      ],
-        #      'action': [
-        #        '<@(python_exe)',
-        #        '<(COMMAND_TESTER)',
-        #        '<(PRODUCT_DIR)/sigpipe_test64',
-        #        '>',
-        #        '<@(_outputs)',
-        #       ],
-        #    },
-        #  ]
-        #},
-        # ----------------------------------------------------------------------
       ],
     }],
   ],

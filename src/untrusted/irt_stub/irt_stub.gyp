@@ -8,28 +8,20 @@
   ],
   'variables': {
     'common_sources': [
-        'gio.c',
-        'gio_mem.c',
-        'gprintf.c',
-        'gio_mem_snapshot.c',
-    ]},
-  'targets': [
-    {
-      'target_name': 'gio',
-      'type': 'static_library',
-      'sources': [
-        '<@(common_sources)',
-      ],
-    },
-  ],
+      'ppapi_plugin_main.c',
+      'ppapi_plugin_start.c',
+      'plugin_main_irt.c',
+      'thread_creator.c'
+    ]
+  },
   'conditions': [
     ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
       'targets' : [
         {
-          'target_name': 'gio_lib',
+          'target_name': 'ppapi_stub_lib',
           'type': 'none',
           'variables': {
-            'nlib_target': 'libgio.a',
+            'nlib_target': 'libppapi_stub.a',
             'build_glibc': 1,
             'build_newlib': 1,
             'sources': ['<@(common_sources)']
@@ -38,20 +30,6 @@
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
           ],
         },
-      ],
-    }],
-    ['OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'gio64',
-          'type': 'static_library',
-            'sources': [
-              '<@(common_sources)',
-            ],
-          'variables': {
-            'win_target': 'x64',
-          },
-        }
       ],
     }],
   ],

@@ -171,8 +171,36 @@
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
       ],
     },
+    # ----------------------------------------------------------------------
   ],
   'conditions': [
+    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+      'targets': [
+      {
+        'target_name': 'platform_lib',
+        'type': 'none',
+        'variables': {
+          'nlib_target': 'libplatform.a',
+          'build_glibc': 1,
+          'build_newlib': 1,
+          'sources': [
+            'nacl_check.c',
+            'nacl_log.c',
+            'linux/condition_variable.c',
+            'linux/lock.c',
+            'linux/nacl_exit.c',
+            'linux/nacl_thread_id.c',
+            'linux/nacl_threads.c',
+            'linux/nacl_timestamp.c',
+            'nacl_sync_checked.c',
+            'refcount_base.cc',
+          ]
+        },
+        'dependencies': [
+          '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        ],
+      }],
+    }],
     ['OS=="win"', {
       'targets': [
         # ---------------------------------------------------------------------
@@ -208,19 +236,3 @@
   ],
 }
 
-## TODO:
-## if env.Bit('linux'): or env.Bit('mac'):
-#    env.FilterOut(CCFLAGS=['-pedantic'])
-#if env.Bit('windows'):
-#  port_win_test_exe = env.ComponentProgram('port_win_test',
-#                                           ['win/port_win_test.c'],
-#                                           EXTRA_LIBS=['platform'])
-#
-#  node = env.CommandTest(
-#      'port_win_test.out',
-#      [port_win_test_exe],
-#      size='huge')
-#  env.AddNodeToTestSuite(node,
-#                         ['large_tests'],
-#                         'run_platform_tests')
-#

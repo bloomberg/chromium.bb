@@ -47,6 +47,36 @@
     },
   ],
   'conditions': [
+    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+      'targets' : [
+        {
+          'target_name': 'srpc_lib',
+          'type': 'none',
+          'variables': {
+            'nlib_target': 'libsrpc.a',
+            'build_glibc': 1,
+            'build_newlib': 1,
+            'sources': [
+              'invoke.c',
+              'module_init_fini.c',
+              'nacl_srpc.c',
+              'nacl_srpc_message.c',
+              'rpc_log.c',
+              'rpc_serialize.c',
+              'rpc_service.c',
+              'rpc_server_loop.c',
+              'accept.c',
+              'accept_threaded.c',
+              'nacl_srpc_ppapi_plugin_init.c',
+              'nacl_srpc_ppapi_plugin_internal.c'
+            ],
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+          ],
+        },
+      ],
+    }],
     ['OS=="win"', {
       'targets': [
         {

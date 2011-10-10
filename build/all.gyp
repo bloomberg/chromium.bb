@@ -6,9 +6,7 @@
     {
       'target_name': 'pull_in_all',
       'type': 'none',
-      # NOTE: Chrome-specific targets should not be part of this project
       'dependencies': [
-#        '../../ppapi/ppapi.gyp:*',
         '../src/shared/gio/gio.gyp:*',
         '../src/shared/imc/imc.gyp:*',
         '../src/shared/platform/platform.gyp:*',
@@ -33,6 +31,17 @@
         '../src/trusted/service_runtime/service_runtime.gyp:*',
       ],
       'conditions': [
+        ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+          'dependencies': [
+            '../src/untrusted/irt/irt.gyp:*',
+            '../src/untrusted/irt_stub/irt_stub.gyp:*',
+            '../src/untrusted/ppapi/ppapi.gyp:*',
+            '../src/untrusted/pthread/pthread.gyp:*',
+            '../src/untrusted/nacl/nacl.gyp:*',
+            '../src/untrusted/nosys/nosys.gyp:*',
+            '../tests.gyp:*',
+          ],
+        }],
         ['target_arch=="arm"', {
           'dependencies': [
             '../src/trusted/validator_arm/validator_arm.gyp:*',

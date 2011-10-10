@@ -1,0 +1,139 @@
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+{
+  ######################################################################
+  'includes': [
+    'build/common.gypi',
+  ],
+  ######################################################################
+  'conditions': [
+    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+      'targets' : [
+        {
+          'target_name': 'prep_toolchain',
+          'type': 'none',
+          'conditions': [
+            ['target_arch=="ia32"', {
+              'dependencies': [
+                'crt_platform_32',
+              ],
+            }],
+            ['target_arch=="x64"', {
+              'dependencies': [
+                'crt_platform_64',
+              ],
+            }],
+          ],
+        },
+        {
+          'target_name': 'copy_headers',
+          'type': 'none',
+          'actions': [
+            {
+              'action_name': 'Install crt1.o',
+              'msvs_cygwin_shell': 0,
+              'description': 'Install crt1.o',
+              'inputs': [
+                 'src/untrusted/stubs/crt1.x',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/32/crt1.o',
+              ],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/copy_sources.py',
+                'src/untrusted/stubs/crt1.x',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/32/crt1.o',
+              ],
+            },
+            {
+              'action_name': 'Install crt1.o',
+              'msvs_cygwin_shell': 0,
+              'description': 'Install crt1.o',
+              'inputs': [
+                 'src/untrusted/stubs/crt1.x',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crt1.o',
+              ],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/copy_sources.py',
+                'src/untrusted/stubs/crt1.x',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crt1.o',
+              ],
+            },
+          ],
+          'copies': [
+            # NEWLIB copies
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include/nacl',
+              # Alphabetical order in dst dir for easier verification.
+              'files': [
+                '<(DEPTH)/native_client/src/trusted/weak_ref/call_on_main_thread.h',
+                '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
+                '<(DEPTH)/native_client/src/untrusted/nacl//nacl_dyncode.h',
+                '<(DEPTH)/native_client/src/untrusted/ppapi/nacl_file.h',
+                '<(DEPTH)/native_client/src/shared/imc/nacl_imc_c.h',
+                '<(DEPTH)/native_client/src/shared/imc/nacl_imc.h',
+                '<(DEPTH)/native_client/src/include/nacl/nacl_inttypes.h',
+                '<(DEPTH)/native_client/src/shared/platform/nacl_log.h',
+                '<(DEPTH)/native_client/src/shared/srpc/nacl_srpc.h',
+                '<(DEPTH)/native_client/src/shared/platform/nacl_threads.h',
+                '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h',
+                '<(DEPTH)/native_client/src/shared/platform/refcount_base.h',
+                '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.h'
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include',
+              'files': [
+                '<(DEPTH)/native_client/src/untrusted/pthread/pthread.h',
+                '<(DEPTH)/native_client/src/untrusted/pthread/semaphore.h'
+              ],
+            },
+            # GLIBC copies
+            {
+              # Alphabetical order in dst dir for easier verification.
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include/nacl',
+              'files': [
+                '<(DEPTH)/native_client/src/trusted/weak_ref/call_on_main_thread.h',
+                '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
+                '<(DEPTH)/native_client/src/untrusted/ppapi/nacl_file.h',
+                '<(DEPTH)/native_client/src/shared/imc/nacl_imc.h',
+                '<(DEPTH)/native_client/src/include/nacl/nacl_inttypes.h',
+                '<(DEPTH)/native_client/src/shared/platform/nacl_log.h',
+                '<(DEPTH)/native_client/src/shared/srpc/nacl_srpc.h',
+                '<(DEPTH)/native_client/src/shared/platform/nacl_threads.h',
+                '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h',
+                '<(DEPTH)/native_client/src/shared/platform/refcount_base.h',
+                '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.h'
+              ],
+            },
+          ],
+        },
+        {
+          'target_name': 'crt_platform_64',
+          'type': 'none',
+          'dependencies': [
+            'copy_headers'
+           ],
+          'variables': {
+            'nlib_target': 'libcrt_platform.a',
+            'build_glibc': 0,
+            'build_newlib': 1,
+            'extra_args': ['--no-suffix', '--strip=_x86_64'],
+            'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
+            'sources': [
+              'src/untrusted/stubs/crti_x86_64.S',
+              'src/untrusted/stubs/crtn_x86_64.S',
+              'src/untrusted/stubs/setjmp_x86_64.S'
+            ]
+          },
+        }
+      ],
+    }],
+  ],
+}
