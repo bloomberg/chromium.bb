@@ -212,33 +212,37 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals('proto://host/path@revision', d.url)
 
   def testStr(self):
-    # Make sure __str__() works fine.
-    # pylint: disable=W0212
     parser = gclient.Parser()
     options, _ = parser.parse_args([])
     obj = gclient.GClient('foo', options)
-    obj._dependencies.append(
-        gclient.Dependency(obj, 'foo', 'url', None, None, None, None, 'DEPS',
-                           True))
-    obj._dependencies.append(
-        gclient.Dependency(obj, 'bar', 'url', None, None, None, None, 'DEPS',
-                           True))
-    obj.dependencies[0]._dependencies.append(
-        gclient.Dependency(
-          obj.dependencies[0], 'foo/dir1', 'url', None, None, None, None,
-          'DEPS', True))
-    obj.dependencies[0]._dependencies.append(
-        gclient.Dependency(
-          obj.dependencies[0], 'foo/dir2',
-          gclient.GClientKeywords.FromImpl('bar'), None, None, None, None,
-          'DEPS', True))
-    obj.dependencies[0]._dependencies.append(
-        gclient.Dependency(
-          obj.dependencies[0], 'foo/dir3',
-          gclient.GClientKeywords.FileImpl('url'), None, None, None, None,
-          'DEPS', True))
+    obj.add_dependencies_and_close(
+        [
+          gclient.Dependency(
+            obj, 'foo', 'url', None, None, None, None, 'DEPS', True),
+          gclient.Dependency(
+            obj, 'bar', 'url', None, None, None, None, 'DEPS', True),
+        ],
+        [])
+    obj.dependencies[0].add_dependencies_and_close(
+        [
+          gclient.Dependency(
+            obj.dependencies[0], 'foo/dir1', 'url', None, None, None, None,
+            'DEPS', True),
+          gclient.Dependency(
+            obj.dependencies[0], 'foo/dir2',
+            gclient.GClientKeywords.FromImpl('bar'), None, None, None, None,
+            'DEPS', True),
+          gclient.Dependency(
+            obj.dependencies[0], 'foo/dir3',
+            gclient.GClientKeywords.FileImpl('url'), None, None, None, None,
+            'DEPS', True),
+        ],
+        [])
+    # Make sure __str__() works fine.
+    # pylint: disable=W0212
     obj.dependencies[0]._file_list.append('foo')
-    self.assertEquals(434, len(str(obj)), '%d\n%s' % (len(str(obj)), str(obj)))
+    str_obj = str(obj)
+    self.assertEquals(472, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
 
 
 if __name__ == '__main__':

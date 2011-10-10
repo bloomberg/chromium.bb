@@ -258,8 +258,31 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # This dependency had its hook run
     self._hooks_ran = False
 
-    # Setup self.requirements and find any other dependency who would have self
-    # as a requirement.
+    if not self.name and self.parent:
+      raise gclient_utils.Error('Dependency without name')
+
+  def setup_requirements(self):
+    """Setup self.requirements and find any other dependency who would have self
+    as a requirement.
+
+    Returns True if this entry should be added, False if it is a duplicate of
+    another entry.
+    """
+    if self.name in [s.name for s in self.parent.dependencies]:
+      raise gclient_utils.Error(
+          'The same name "%s" appears multiple times in the deps section' %
+              self.name)
+    if self.should_process:
+      siblings = [d for d in self.root.subtree(False) if d.name == self.name]
+      for sibling in siblings:
+        if self.url != sibling.url:
+          raise gclient_utils.Error(
+              'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
+              (self.name, sibling.hierarchy(), self.hierarchy()))
+        # In theory we could keep it as a shadow of the other one. In
+        # practice, simply ignore it.
+        logging.warn('Won\'t process duplicate dependency %s' % sibling)
+        return False
 
     # self.parent is implicitly a requirement. This will be recursive by
     # definition.
@@ -298,9 +321,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         # Step 2: Find any requirements self may impose.
         if obj.name.startswith(posixpath.join(self.name, '')):
           obj.add_requirement(self.name)
-
-    if not self.name and self.parent:
-      raise gclient_utils.Error('Dependency without name')
+    return True
 
   def LateOverride(self, url):
     """Resolves the parsed url from url.
@@ -416,8 +437,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         else:
           deps.update(os_deps)
 
-    self._deps_hooks.extend(local_scope.get('hooks', []))
-
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.
     for d in self.custom_deps:
@@ -437,31 +456,21 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       deps = rel_deps
 
     # Convert the deps into real Dependency.
+    deps_to_add = []
     for name, url in deps.iteritems():
-      if name in [s.name for s in self._dependencies]:
-        raise gclient_utils.Error(
-            'The same name "%s" appears multiple times in the deps section' %
-                name)
       should_process = self.recursion_limit and self.should_process
-      if should_process:
-        tree = dict((d.name, d) for d in self.root.subtree(False))
-        if name in tree:
-          if url == tree[name].url:
-            logging.info('Won\'t process duplicate dependency %s' % tree[name])
-            # In theory we could keep it as a shadow of the other one. In
-            # practice, simply ignore it.
-            #should_process = False
-            continue
-          else:
-            raise gclient_utils.Error(
-                'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
-                (name, tree[name].hierarchy(), self.hierarchy()))
-      self._dependencies.append(
-          Dependency(
-            self, name, url, None, None, None, None,
-            self.deps_file, should_process))
-    self._deps_parsed = True
-    logging.debug('Loaded: %s' % str(self))
+      deps_to_add.append(Dependency(
+          self, name, url, None, None, None, None,
+          self.deps_file, should_process))
+    self.add_dependencies_and_close(deps_to_add, local_scope.get('hooks', []))
+    logging.info('ParseDepsFile(%s) done' % self.name)
+
+  def add_dependencies_and_close(self, deps_to_add, hooks):
+    """Adds the dependencies, hooks and mark the parsing as done."""
+    for dep in deps_to_add:
+      if dep.setup_requirements():
+        self.add_dependency(dep)
+    self._mark_as_parsed(hooks)
 
   # Arguments number differs from overridden method
   # pylint: disable=W0221
@@ -632,7 +641,17 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         if j.should_process:
           yield j
 
+  @gclient_utils.lockedmethod
+  def add_dependency(self, new_dep):
+    self._dependencies.append(new_dep)
+
+  @gclient_utils.lockedmethod
+  def _mark_as_parsed(self, new_hooks):
+    self._deps_hooks.extend(new_hooks)
+    self._deps_parsed = True
+
   @property
+  @gclient_utils.lockedmethod
   def dependencies(self):
     return tuple(self._dependencies)
 
@@ -765,13 +784,11 @@ solutions = [
       exec(content, config_dict)
     except SyntaxError, e:
       gclient_utils.SyntaxErrorToError('.gclient', e)
+
+    deps_to_add = []
     for s in config_dict.get('solutions', []):
       try:
-        tree = dict((d.name, d) for d in self.root.subtree(False))
-        if s['name'] in tree:
-          raise gclient_utils.Error(
-              'Dependency %s specified more than once in .gclient' % s['name'])
-        self._dependencies.append(Dependency(
+        deps_to_add.append(Dependency(
             self, s['name'], s['url'],
             s.get('safesync_url', None),
             s.get('managed', True),
@@ -782,9 +799,8 @@ solutions = [
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
-    # .gclient can have hooks.
-    self._deps_hooks = config_dict.get('hooks', [])
-    self._deps_parsed = True
+    self.add_dependencies_and_close(deps_to_add, config_dict.get('hooks', []))
+    logging.info('SetConfig() done')
 
   def SaveConfig(self):
     gclient_utils.FileWrite(os.path.join(self.root_dir,
