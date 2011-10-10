@@ -111,10 +111,6 @@
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
       # crbug.com/95140
       '-translate.TranslateTest.testGoBackAndForwardToTranslatePage',
-      # crbug.com/86523
-      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
-      '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
-      '-cookies.CookiesTest.testBlockCookiesUsingExceptions',
       # crbug.com/86524
       '-plugins.PluginsTest.testAllowPluginException',
       # crbug.com/85307
