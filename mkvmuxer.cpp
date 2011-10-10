@@ -261,6 +261,124 @@ bool Cues::Write(IMkvWriter* writer) const {
 
 ///////////////////////////////////////////////////////////////
 //
+// ContentEncoding Class
+
+ContentEncoding::ContentEncoding()
+    : enc_algo_(5),
+      enc_key_id_(NULL),
+      encoding_order_(0),
+      encoding_scope_(1),
+      encoding_type_(1),
+      enc_key_id_length_(0) {
+}
+
+ContentEncoding::~ContentEncoding() {
+  delete [] enc_key_id_;
+}
+
+bool ContentEncoding::SetEncryptionID(const uint8* id, uint64 length) {
+  assert(id);
+  assert(length > 0);
+
+  delete [] enc_key_id_;
+
+  enc_key_id_ = new (std::nothrow) uint8[static_cast<size_t>(length)];
+  if (!enc_key_id_)
+    return false;
+
+  memcpy(enc_key_id_, id, static_cast<size_t>(length));
+  enc_key_id_length_ = length;
+
+  return true;
+}
+
+uint64 ContentEncoding::Size() const {
+  const uint64 encryption_size = EncryptionSize();
+  const uint64 encoding_size = EncodingSize(0, encryption_size);
+  const uint64 encodings_size = EbmlElementSize(kMkvContentEncoding,
+                                                encoding_size,
+                                                true) +
+                                encoding_size;
+
+  return encodings_size;
+}
+
+bool ContentEncoding::Write(IMkvWriter* writer) const {
+  const uint64 encryption_size = EncryptionSize();
+  const uint64 encoding_size = EncodingSize(0, encryption_size);
+  const uint64 size = EbmlElementSize(kMkvContentEncoding,
+                                      encoding_size,
+                                      true) +
+                      encoding_size;
+
+  const int64 payload_position = writer->Position();
+  if (payload_position < 0)
+    return false;
+
+  if (!WriteEbmlMasterElement(writer, kMkvContentEncoding, encoding_size))
+    return false;
+  if (!WriteEbmlElement(writer, kMkvContentEncodingOrder, encoding_order_))
+    return false;
+  if (!WriteEbmlElement(writer, kMkvContentEncodingScope, encoding_scope_))
+    return false;
+  if (!WriteEbmlElement(writer, kMkvContentEncodingType, encoding_type_))
+    return false;
+
+  if (!WriteEbmlMasterElement(writer, kMkvContentEncryption, encryption_size))
+    return false;
+  if (!WriteEbmlElement(writer, kMkvContentEncAlgo, enc_algo_))
+    return false;
+  if (!WriteEbmlElement(writer,
+                        kMkvContentEncKeyID,
+                        enc_key_id_,
+                        enc_key_id_length_))
+    return false;
+
+  const int64 stop_position = writer->Position();
+  if (stop_position < 0)
+    return false;
+  assert(stop_position - payload_position == static_cast<int64>(size));
+
+  return true;
+}
+
+uint64 ContentEncoding::EncodingSize(uint64 compresion_size,
+                                     uint64 encryption_size) const {
+  // TODO(fgalligan): Add support for compression settings.
+  assert(compresion_size == 0);
+  uint64 encoding_size = 0;
+
+  if (encryption_size > 0) {
+    encoding_size += EbmlElementSize(kMkvContentEncryption,
+                                     encryption_size,
+                                     true) +
+                     encryption_size;
+  }
+  encoding_size += EbmlElementSize(kMkvContentEncodingType,
+                                   encoding_type_,
+                                   false);
+  encoding_size += EbmlElementSize(kMkvContentEncodingScope,
+                                   encoding_scope_,
+                                   false);
+  encoding_size += EbmlElementSize(kMkvContentEncodingOrder,
+                                   encoding_order_,
+                                   false);
+
+  return encoding_size;
+}
+
+uint64 ContentEncoding::EncryptionSize() const {
+  uint64 encryption_size = EbmlElementSize(kMkvContentEncKeyID,
+                                           enc_key_id_,
+                                           enc_key_id_length_,
+                                           false);
+  encryption_size += EbmlElementSize(kMkvContentEncAlgo, enc_algo_, false);
+
+  return encryption_size;
+}
+
+///////////////////////////////////////////////////////////////
+//
 // Track Class
 
 Track::Track()
@@ -271,12 +389,59 @@ Track::Track()
       number_(0),
       type_(0),
       uid_(MakeUID()),
-      codec_private_length_(0) {
+      codec_private_length_(0),
+      content_encoding_entries_(NULL),
+      content_encoding_entries_size_(0) {
 }
 
 Track::~Track() {
   delete [] codec_id_;
   delete [] codec_private_;
+
+  if (content_encoding_entries_) {
+    for (uint32 i = 0; i < content_encoding_entries_size_; ++i) {
+      ContentEncoding* const encoding = content_encoding_entries_[i];
+      delete encoding;
+    }
+    delete [] content_encoding_entries_;
+  }
+}
+
+bool Track::AddContentEncoding() {
+  const uint32 count = content_encoding_entries_size_ + 1;
+
+  ContentEncoding** const content_encoding_entries =
+      new (std::nothrow) ContentEncoding*[count];
+  if (!content_encoding_entries)
+    return false;
+
+  ContentEncoding* const content_encoding =
+      new (std::nothrow) ContentEncoding();
+  if (!content_encoding) {
+    delete [] content_encoding_entries;
+    return false;
+  }
+
+  for (uint32 i = 0; i < content_encoding_entries_size_; ++i) {
+    content_encoding_entries[i] = content_encoding_entries_[i];
+  }
+
+  delete [] content_encoding_entries_;
+
+  content_encoding_entries_ = content_encoding_entries;
+  content_encoding_entries_[content_encoding_entries_size_] = content_encoding;
+  content_encoding_entries_size_ = count;
+  return true;
+}
+
+ContentEncoding* Track::GetContentEncodingByIndex(uint32 index) const {
+  if (content_encoding_entries_ == NULL)
+    return NULL;
+
+  if (index >= content_encoding_entries_size_)
+    return NULL;
+
+  return content_encoding_entries_[index];
 }
 
 uint64 Track::PayloadSize() const {
@@ -294,6 +459,19 @@ uint64 Track::PayloadSize() const {
     size += EbmlElementSize(kMkvLanguage, language_, false);
   if (name_)
     size += EbmlElementSize(kMkvName, name_, false);
+
+  if (content_encoding_entries_size_ > 0) {
+    uint64 content_encodings_size = 0;
+    for (uint32 i = 0; i < content_encoding_entries_size_; ++i) {
+      ContentEncoding* const encoding = content_encoding_entries_[i];
+      content_encodings_size += encoding->Size();
+    }
+
+    size += EbmlElementSize(kMkvContentEncodings,
+                            content_encodings_size,
+                            true) +
+            content_encodings_size;
+  }
 
   return size;
 }
@@ -360,11 +538,33 @@ bool Track::Write(IMkvWriter* writer) const {
       return false;
   }
 
-  const int64 stop_position = writer->Position();
+  int64 stop_position = writer->Position();
   if (stop_position < 0)
     return false;
   assert(stop_position - payload_position == static_cast<int64>(size));
 
+  if (content_encoding_entries_size_ > 0) {
+    uint64 content_encodings_size = 0;
+    for (uint32 i = 0; i < content_encoding_entries_size_; ++i) {
+      ContentEncoding* const encoding = content_encoding_entries_[i];
+      content_encodings_size += encoding->Size();
+    }
+
+    if (!WriteEbmlMasterElement(writer,
+                                kMkvContentEncodings,
+                                content_encodings_size))
+      return false;
+
+    for (uint32 i = 0; i < content_encoding_entries_size_; ++i) {
+      ContentEncoding* const encoding = content_encoding_entries_[i];
+      if (!encoding->Write(writer))
+        return false;
+    }
+  }
+
+  stop_position = writer->Position();
+  if (stop_position < 0)
+    return false;
   return true;
 }
 

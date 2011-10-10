@@ -4936,6 +4936,278 @@ const char* SegmentInfo::GetTitleAsUTF8() const
     return m_pTitleAsUTF8;
 }
 
+///////////////////////////////////////////////////////////////
+// ContentEncoding element
+ContentEncoding::ContentCompression::ContentCompression()
+    : algo(0),
+      settings(NULL) {
+}
+
+ContentEncoding::ContentCompression::~ContentCompression() {
+  delete [] settings;
+}
+
+ContentEncoding::ContentEncryption::ContentEncryption()
+    : algo(0),
+      key_id(NULL),
+      key_id_len(0),
+      signature(NULL),
+      signature_len(0),
+      sig_key_id(NULL),
+      sig_key_id_len(0),
+      sig_algo(0),
+      sig_hash_algo(0) {
+}
+
+ContentEncoding::ContentEncryption::~ContentEncryption() {
+  delete [] key_id;
+  delete [] signature;
+  delete [] sig_key_id;
+}
+
+ContentEncoding::ContentEncoding()
+    : compression_entries_(NULL),
+      compression_entries_end_(NULL),
+      encryption_entries_(NULL),
+      encryption_entries_end_(NULL),
+      encoding_order_(0),
+      encoding_scope_(1),
+      encoding_type_(0) {
+}
+
+ContentEncoding::~ContentEncoding() {
+  ContentCompression** comp_i = compression_entries_;
+  ContentCompression** const comp_j = compression_entries_end_;
+
+  while (comp_i != comp_j) {
+    ContentCompression* const comp = *comp_i++;
+    delete comp;
+  }
+
+  delete [] compression_entries_;
+
+  ContentEncryption** enc_i = encryption_entries_;
+  ContentEncryption** const enc_j = encryption_entries_end_;
+
+  while (enc_i != enc_j) {
+    ContentEncryption* const enc = *enc_i++;
+    delete enc;
+  }
+
+  delete [] encryption_entries_;
+}
+
+
+const ContentEncoding::ContentCompression*
+ContentEncoding::GetCompressionByIndex(unsigned long idx) const {
+  const ptrdiff_t count = compression_entries_end_ - compression_entries_;
+  assert(count >= 0);
+
+  if (idx >= static_cast<unsigned long>(count))
+    return NULL;
+
+  return compression_entries_[idx];
+}
+
+unsigned long ContentEncoding::GetCompressionCount() const {
+  const ptrdiff_t count = compression_entries_end_ - compression_entries_;
+  assert(count >= 0);
+
+  return static_cast<unsigned long>(count);
+}
+
+const ContentEncoding::ContentEncryption*
+ContentEncoding::GetEncryptionByIndex(unsigned long idx) const {
+  const ptrdiff_t count = encryption_entries_end_ - encryption_entries_;
+  assert(count >= 0);
+
+  if (idx >= static_cast<unsigned long>(count))
+    return NULL;
+
+  return encryption_entries_[idx];
+}
+
+unsigned long ContentEncoding::GetEncryptionCount() const {
+  const ptrdiff_t count = encryption_entries_end_ - encryption_entries_;
+  assert(count >= 0);
+
+  return static_cast<unsigned long>(count);
+}
+
+void ContentEncoding::ParseEncryptionEntry(
+    long long start,
+    long long size,
+    IMkvReader* const pReader,
+    ContentEncryption* const encryption) {
+  assert(pReader);
+  assert(encryption);
+
+  long long pos = start;
+  const long long stop = start + size;
+
+  while (pos < stop) {
+#ifdef _DEBUG
+    long len;
+    const long long id = ReadUInt(pReader, pos, len);
+    assert(id >= 0);  //TODO: handle error case
+    assert((pos + len) <= stop);
+#endif
+
+    long long value;
+    unsigned char* buf;
+    size_t buf_len;
+
+    if (Match(pReader, pos, 0x7E1, value)) {
+      // ContentEncAlgo
+      encryption->algo = value;
+    } else if (Match(pReader, pos, 0x7E2, buf, buf_len)) {
+      // ContentEncKeyID
+      encryption->key_id = buf;
+      encryption->key_id_len = buf_len;
+    } else if (Match(pReader, pos, 0x7E3, buf, buf_len)) {
+      // ContentSignature
+      encryption->signature = buf;
+      encryption->signature_len = buf_len;
+    } else if (Match(pReader, pos, 0x7E4, buf, buf_len)) {
+      // ContentSigKeyID
+      encryption->sig_key_id = buf;
+      encryption->sig_key_id_len = buf_len;
+    } else if (Match(pReader, pos, 0x7E5, value)) {
+      // ContentSigAlgo
+      encoding_type_ = value;
+    } else if (Match(pReader, pos, 0x7E6, value)) {
+      // ContentSigHashAlgo
+      encoding_type_ = value;
+    } else {
+      long len;
+      const long long id = ReadUInt(pReader, pos, len);
+      assert(id >= 0);  //TODO: handle error case
+      assert((pos + len) <= stop);
+
+      pos += len;  //consume id
+
+      const long long size = ReadUInt(pReader, pos, len);
+      assert(size >= 0);  //TODO: handle error case
+      assert((pos + len) <= stop);
+
+      pos += len;  //consume length of size
+      assert((pos + size) <= stop);
+
+      pos += size;  //consume payload
+      assert(pos <= stop);
+    }
+  }
+}
+
+bool ContentEncoding::ParseContentEncodingEntry(long long start,
+                                                long long size,
+                                                IMkvReader* const pReader) {
+  assert(pReader);
+
+  long long pos = start;
+  const long long stop = start + size;
+
+  // Count ContentCompression and ContentEncryption elements.
+  long long pos1 = start;
+  int compression_count = 0;
+  int encryption_count = 0;
+
+  while (pos1 < stop) {
+    long len;
+    const long long id = ReadUInt(pReader, pos1, len);
+    assert(id >= 0);
+    assert((pos1 + len) <= stop);
+
+    pos1 += len;  //consume id
+
+    const long long size = ReadUInt(pReader, pos1, len);
+    assert(size >= 0);
+    assert((pos1 + len) <= stop);
+
+    pos1 += len;  //consume length of size
+
+    //pos now designates start of element
+    if (id == 0x1034)  // ContentCompression ID
+      ++compression_count;
+
+    if (id == 0x1035)  // ContentEncryption ID
+      ++encryption_count;
+
+    pos1 += size;  //consume payload
+    assert(pos1 <= stop);
+  }
+
+  if (compression_count <= 0 && encryption_count <= 0)
+    return false;
+
+  if (compression_count > 0) {
+    compression_entries_ = new ContentCompression*[compression_count];
+    compression_entries_end_ = compression_entries_;
+  }
+
+  if (encryption_count > 0) {
+    encryption_entries_ = new ContentEncryption*[encryption_count];
+    encryption_entries_end_ = encryption_entries_;
+  }
+
+  while (pos < stop) {
+#ifdef _DEBUG
+    long len;
+    const long long id = ReadUInt(pReader, pos, len);
+    assert(id >= 0);  //TODO: handle error case
+    assert((pos + len) <= stop);
+#endif
+
+    long long value;
+    if (Match(pReader, pos, 0x1031, value)) {
+      // ContentEncodingOrder
+      encoding_order_ = value;
+    } else if (Match(pReader, pos, 0x1032, value)) {
+      // ContentEncodingScope
+      encoding_scope_ = value;
+      assert(encoding_scope_ > 0);
+    } else if (Match(pReader, pos, 0x1033, value)) {
+      // ContentEncodingType
+      encoding_type_ = value;
+    } else {
+      long len;
+      const long long id = ReadUInt(pReader, pos, len);
+      assert(id >= 0);  //TODO: handle error case
+      assert((pos + len) <= stop);
+
+      pos += len;  //consume id
+
+      const long long size = ReadUInt(pReader, pos, len);
+      assert(size >= 0);  //TODO: handle error case
+      assert((pos + len) <= stop);
+
+      pos += len;  //consume length of size
+      assert((pos + size) <= stop);
+
+      //pos now designates start of payload
+
+      if (id == 0x1034) {
+        // ContentCompression ID
+        // TODO(fgaligan): Add code to parse ContentCompression elements.
+      } else if (id == 0x1035) {
+        // ContentEncryption ID
+        ContentEncryption* const encryption = new ContentEncryption();
+
+        ParseEncryptionEntry(pos, size, pReader, encryption);
+        *encryption_entries_end_ = encryption;
+        ++encryption_entries_end_;
+      }
+
+      pos += size;  //consume payload
+      assert(pos <= stop);
+    }
+  }
+
+  assert(pos == stop);
+
+  return true;
+}
+
 Track::Track(
     Segment* pSegment,
     const Info& i,
@@ -4944,7 +5216,9 @@ Track::Track(
     m_pSegment(pSegment),
     m_element_start(element_start),
     m_element_size(element_size),
-    m_info(i)
+    m_info(i),
+    content_encoding_entries_(NULL),
+    content_encoding_entries_end_(NULL)
 {
 }
 
@@ -4952,6 +5226,16 @@ Track::~Track()
 {
     Info& info = const_cast<Info&>(m_info);
     info.Clear();
+
+    ContentEncoding** i = content_encoding_entries_;
+    ContentEncoding** const j = content_encoding_entries_end_;
+
+    while (i != j) {
+        ContentEncoding* const encoding = *i++;
+        delete encoding;
+    }
+
+    delete [] content_encoding_entries_;
 }
 
 Track::Info::Info():
@@ -5193,6 +5477,99 @@ long Track::GetNext(
     return 1;
 }
 
+const ContentEncoding*
+Track::GetContentEncodingByIndex(unsigned long idx) const {
+  const ptrdiff_t count =
+      content_encoding_entries_end_ - content_encoding_entries_;
+  assert(count >= 0);
+
+  if (idx >= static_cast<unsigned long>(count))
+    return NULL;
+
+  return content_encoding_entries_[idx];
+}
+
+unsigned long Track::GetContentEncodingCount() const {
+  const ptrdiff_t count =
+      content_encoding_entries_end_ - content_encoding_entries_;
+  assert(count >= 0);
+
+  return static_cast<unsigned long>(count);
+}
+
+void Track::ParseContentEncodingsEntry(long long start, long long size) {
+  IMkvReader* const pReader = m_pSegment->m_pReader;
+  assert(pReader);
+
+  long long pos = start;
+  const long long stop = start + size;
+
+  // Count ContentEncoding elements.
+  long long pos1 = start;
+  int count = 0;
+
+  while (pos1 < stop) {
+    long len;
+    const long long id = ReadUInt(pReader, pos1, len);
+    assert(id >= 0);
+    assert((pos1 + len) <= stop);
+
+    pos1 += len;  //consume id
+
+    const long long size = ReadUInt(pReader, pos1, len);
+    assert(size >= 0);
+    assert((pos1 + len) <= stop);
+
+    pos1 += len;  //consume length of size
+
+    //pos now designates start of element
+    if (id == 0x2240)  // ContentEncoding ID
+      ++count;
+
+    pos1 += size;  //consume payload
+    assert(pos1 <= stop);
+  }
+
+  if (count <= 0)
+    return;
+
+  content_encoding_entries_ = new ContentEncoding*[count];
+  content_encoding_entries_end_ = content_encoding_entries_;
+
+  while (pos < stop) {
+    long len;
+    const long long id = ReadUInt(pReader, pos, len);
+    assert(id >= 0);
+    assert((pos + len) <= stop);
+
+    pos += len;  //consume id
+
+    const long long size1 = ReadUInt(pReader, pos, len);
+    assert(size1 >= 0);
+    assert((pos + len) <= stop);
+
+    pos += len;  //consume length of size
+
+    //pos now designates start of element
+    if (id == 0x2240) { // ContentEncoding ID
+      ContentEncoding* const content_encoding = new ContentEncoding();
+
+      if (!content_encoding->ParseContentEncodingEntry(pos, size1, pReader)) {
+        delete content_encoding;
+      } else {
+        *content_encoding_entries_end_ = content_encoding;
+        ++content_encoding_entries_end_;
+      }
+    }
+
+    pos += size1;  //consume payload
+    assert(pos <= stop);
+  }
+
+  assert(pos == stop);
+
+  return;
+}
 
 Track::EOSBlock::EOSBlock() :
     BlockEntry(NULL, LONG_MIN)
@@ -5687,7 +6064,6 @@ unsigned long Tracks::GetTracksCount() const
     return static_cast<unsigned long>(result);
 }
 
-
 void Tracks::ParseTrackEntry(
     long long start,
     long long size,
@@ -5709,6 +6085,10 @@ void Tracks::ParseTrackEntry(
     Track::Settings audioSettings;
     audioSettings.start = -1;
     audioSettings.size = -1;
+
+    Track::Settings content_encodings_settings;
+    content_encodings_settings.start = -1;
+    content_encodings_settings.size = -1;
 
     long long lacing = 1;  //default is true
 
@@ -5772,6 +6152,11 @@ void Tracks::ParseTrackEntry(
             {
                 audioSettings.start = start;
                 audioSettings.size = size;
+            }
+            else if (id == 0x2D80) // ContentEncodings id
+            {
+                content_encodings_settings.start = start;
+                content_encodings_settings.size = size;
             }
             else if (id == 0x33C5)  //Track UID
             {
@@ -5844,6 +6229,13 @@ void Tracks::ParseTrackEntry(
         i.Clear();
 
         pTrack = NULL;
+    }
+
+    if (content_encodings_settings.start > 0) {
+        assert(content_encodings_settings.size > 0);
+        assert(pTrack);
+        pTrack->ParseContentEncodingsEntry(content_encodings_settings.start,
+                                           content_encodings_settings.size);
     }
 
     return;

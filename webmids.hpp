@@ -92,6 +92,16 @@ enum MkvId {
   kMkvChannels = 0x9F,
   kMkvBitDepth                = 0x6264,
   //end audio
+  //ContentEncodings
+  kMkvContentEncodings        = 0x6D80,
+  kMkvContentEncoding         = 0x6240,
+  kMkvContentEncodingOrder    = 0x5031,
+  kMkvContentEncodingScope    = 0x5032,
+  kMkvContentEncodingType     = 0x5033,
+  kMkvContentEncryption       = 0x5035,
+  kMkvContentEncAlgo          = 0x47E1,
+  kMkvContentEncKeyID         = 0x47E2,
+  //end ContentEncodings
   //Cueing Data
   kMkvCues                    = 0x1C53BB6B,
   kMkvCuePoint                = 0xBB,

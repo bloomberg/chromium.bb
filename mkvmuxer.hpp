@@ -171,11 +171,66 @@ class Cues {
 };
 
 ///////////////////////////////////////////////////////////////
+// ContentEncoding element
+// Elements used to describe if the track data has been encrypted or
+// compressed with zlib or header stripping.
+// Currently only whole frames can only be encrypted once with AES. This
+// dictates that ContentEncodingOrder will be 0, ContentEncodingScope will
+// be 1, ContentEncodingType will be 1, and ContentEncAlgo will be 5.
+class ContentEncoding {
+ public:
+  ContentEncoding();
+  ~ContentEncoding();
+
+  uint64 enc_algo() const { return enc_algo_; }
+  uint64 encoding_order() const { return encoding_order_; }
+  uint64 encoding_scope() const { return encoding_scope_; }
+  uint64 encoding_type() const { return encoding_type_; }
+
+  // Sets the content encryption id. Copies |length| bytes from |id| to
+  // |enc_key_id_|. Returns true on success.
+  bool SetEncryptionID(const uint8* id, uint64 length);
+
+  // Returns the size in bytes for the ContentEncoding element.
+  uint64 Size() const;
+
+  // Writes out the ContentEncoding element to |writer|. Returns true on
+  // success.
+  bool Write(IMkvWriter* writer) const;
+
+ private:
+  // Returns the size in bytes for the encoding elements.
+  uint64 EncodingSize(uint64 compresion_size, uint64 encryption_size) const;
+
+  // Returns the size in bytes for the encryption elements.
+  uint64 EncryptionSize() const;
+
+  // Track element names
+  uint64 enc_algo_;
+  uint8* enc_key_id_;
+  uint64 encoding_order_;
+  uint64 encoding_scope_;
+  uint64 encoding_type_;
+
+  // Size of the ContentEncKeyID data in bytes.
+  uint64 enc_key_id_length_;
+
+  LIBWEBM_DISALLOW_COPY_AND_ASSIGN(ContentEncoding);
+};
+
+///////////////////////////////////////////////////////////////
 // Track element.
 class Track {
  public:
   Track();
   virtual ~Track();
+
+  // Adds a ContentEncoding element to the Track. Returns true on success.
+  virtual bool AddContentEncoding();
+
+  // Returns the ContentEncoding by index. Returns NULL if there is no
+  // ContentEncoding match.
+  ContentEncoding* GetContentEncodingByIndex(uint32 index) const;
 
   // Returns the size in bytes for the payload of the Track element.
   virtual uint64 PayloadSize() const;
@@ -204,6 +259,9 @@ class Track {
   uint64 uid() const { return uid_; }
 
   uint64 codec_private_length() const { return codec_private_length_; }
+  uint32 content_encoding_entries_size() const {
+    return content_encoding_entries_size_;
+  }
 
  private:
   // Returns a random number to be used for the Track UID.
@@ -220,6 +278,12 @@ class Track {
 
   // Size of the CodecPrivate data in bytes.
   uint64 codec_private_length_;
+
+  // ContentEncoding element list.
+  ContentEncoding** content_encoding_entries_;
+
+  // Number of ContentEncoding elements added.
+  uint32 content_encoding_entries_size_;
 
   // Flag telling if the rand call was seeded.
   static bool is_seeded_;

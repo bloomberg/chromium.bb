@@ -188,6 +188,94 @@ private:
 
 };
 
+///////////////////////////////////////////////////////////////
+// ContentEncoding element
+// Elements used to describe if the track data has been encrypted or
+// compressed with zlib or header stripping.
+class ContentEncoding {
+public:
+    ContentEncoding();
+    ~ContentEncoding();
+
+    // ContentCompression element names
+    struct ContentCompression {
+        ContentCompression();
+        ~ContentCompression();
+
+        unsigned long long algo;
+        unsigned char* settings;
+    };
+
+    // ContentEncryption element names
+    struct ContentEncryption {
+        ContentEncryption();
+        ~ContentEncryption();
+
+        unsigned long long algo;
+        unsigned char* key_id;
+        long long key_id_len;
+        unsigned char* signature;
+        long long signature_len;
+        unsigned char* sig_key_id;
+        long long sig_key_id_len;
+        unsigned long long sig_algo;
+        unsigned long long sig_hash_algo;
+    };
+
+    // Returns ContentCompression represented by |idx|. Returns NULL if |idx|
+    // is out of bounds.
+    const ContentCompression* GetCompressionByIndex(unsigned long idx) const;
+
+    // Returns number of ContentCompression elements in this ContentEncoding
+    // element.
+    unsigned long GetCompressionCount() const;
+
+    // Returns ContentEncryption represented by |idx|. Returns NULL if |idx|
+    // is out of bounds.
+    const ContentEncryption* GetEncryptionByIndex(unsigned long idx) const;
+
+    // Returns number of ContentEncryption elements in this ContentEncoding
+    // element.
+    unsigned long GetEncryptionCount() const;
+
+    // Parses the ContentEncoding element from |pReader|. |start| is the
+    // starting offset of the ContentEncoding payload. |size| is the size in
+    // bytes of the ContentEncoding payload. Returns true on success.
+    bool ParseContentEncodingEntry(long long start,
+                                   long long size,
+                                   IMkvReader* const pReader);
+
+    // Parses the ContentEncryption element from |pReader|. |start| is the
+    // starting offset of the ContentEncryption payload. |size| is the size in
+    // bytes of the ContentEncryption payload. |encryption| is where the parsed
+    // values will be stored.
+    void ParseEncryptionEntry(long long start,
+                              long long size,
+                              IMkvReader* const pReader,
+                              ContentEncryption* const encryption);
+
+    unsigned long long encoding_order() const { return encoding_order_; }
+    unsigned long long encoding_scope() const { return encoding_scope_; }
+    unsigned long long encoding_type() const { return encoding_type_; }
+
+private:
+    // Member variables for list of ContentCompression elements.
+    ContentCompression** compression_entries_;
+    ContentCompression** compression_entries_end_;
+
+    // Member variables for list of ContentEncryption elements.
+    ContentEncryption** encryption_entries_;
+    ContentEncryption** encryption_entries_end_;
+
+    // ContentEncoding element names
+    unsigned long long encoding_order_;
+    unsigned long long encoding_scope_;
+    unsigned long long encoding_type_;
+
+    // LIBWEBM_DISALLOW_COPY_AND_ASSIGN(ContentEncoding);
+    ContentEncoding(const ContentEncoding&);
+    ContentEncoding& operator=(const ContentEncoding&);
+};
 
 class Track
 {
@@ -239,6 +327,11 @@ public:
     virtual bool VetEntry(const BlockEntry*) const = 0;
     virtual long Seek(long long time_ns, const BlockEntry*&) const = 0;
 
+    const ContentEncoding* GetContentEncodingByIndex(unsigned long idx) const;
+    unsigned long GetContentEncodingCount() const;
+
+    void ParseContentEncodingsEntry(long long start, long long size);
+
 protected:
     Track(
         Segment*,
@@ -261,6 +354,9 @@ protected:
 
     EOSBlock m_eos;
 
+private:
+    ContentEncoding** content_encoding_entries_;
+    ContentEncoding** content_encoding_entries_end_;
 };
 
 
