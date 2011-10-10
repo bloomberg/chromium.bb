@@ -103,18 +103,10 @@ TEST_F(AppNotificationManagerTest, ExtensionUninstall) {
   util::ExpectListsEqual(list2, *mgr_->GetAll(id2));
 
   // Send the uninstall notification for extension id1.
-  DictionaryValue dict;
-  dict.SetString(extension_manifest_keys::kName, "Test Extension");
-  dict.SetString(extension_manifest_keys::kVersion, "0.1");
-  std::string error;
-  scoped_refptr<Extension> extension = Extension::CreateWithId(
-      temp_dir_.path().AppendASCII("dummy"), Extension::INTERNAL,
-      dict, 0, id1, &error);
-  UninstalledExtensionInfo info(*extension.get());
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       Source<Profile>(profile_.get()),
-      Details<UninstalledExtensionInfo>(&info));
+      Details<const std::string>(&id1));
 
   // The id1 items should be gone but the id2 items should still be there.
   EXPECT_EQ(NULL, mgr_->GetLast(id1));

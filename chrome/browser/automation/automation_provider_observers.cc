@@ -529,9 +529,7 @@ void ExtensionUninstallObserver::Observe(
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      UninstalledExtensionInfo* info =
-          Details<UninstalledExtensionInfo>(details).ptr();
-      if (id_ == info->extension_id) {
+      if (id_ == *Details<const std::string>(details).ptr()) {
         scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
         return_value->SetBoolean("success", true);
         AutomationJSONReply(automation_, reply_message_.release())
@@ -770,7 +768,7 @@ void ExtensionTestResultNotificationObserver::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_TEST_FAILED:
       results_.push_back(false);
-      messages_.push_back(*(Details<std::string>(details).ptr()));
+      messages_.push_back(*Details<std::string>(details).ptr());
       break;
 
     default:

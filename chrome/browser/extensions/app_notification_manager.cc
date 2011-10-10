@@ -101,9 +101,7 @@ void AppNotificationManager::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   CHECK(type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED);
-  const std::string& id =
-      Details<UninstalledExtensionInfo>(details)->extension_id;
-  ClearAll(id);
+  ClearAll(*Details<const std::string>(details).ptr());
 }
 
 void AppNotificationManager::LoadOnFileThread(const FilePath& storage_path) {

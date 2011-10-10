@@ -906,8 +906,6 @@ bool ExtensionService::UninstallExtension(
     sync_change = extension_sync_data.GetSyncChange(SyncChange::ACTION_DELETE);
   }
 
-  UninstalledExtensionInfo uninstalled_extension_info(*extension);
-
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
                             extension->GetType(), 100);
   RecordPermissionMessagesHistogram(
@@ -956,7 +954,7 @@ bool ExtensionService::UninstallExtension(
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       Source<Profile>(profile_),
-      Details<UninstalledExtensionInfo>(&uninstalled_extension_info));
+      Details<const std::string>(&extension_id));
 
   if (sync_bundle && sync_bundle->HasExtensionId(extension_id)) {
     sync_bundle->sync_processor->ProcessSyncChanges(

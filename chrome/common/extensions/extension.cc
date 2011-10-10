@@ -2977,17 +2977,6 @@ void Extension::RuntimeData::SetActivePermissions(
   active_permissions_ = active;
 }
 
-UninstalledExtensionInfo::UninstalledExtensionInfo(
-    const Extension& extension)
-    : extension_id(extension.id()),
-      extension_api_permissions(
-          extension.GetActivePermissions()->GetAPIsAsStrings()),
-      extension_type(extension.GetType()),
-      update_url(extension.update_url()) {}
-
-UninstalledExtensionInfo::~UninstalledExtensionInfo() {}
-
-
 UnloadedExtensionInfo::UnloadedExtensionInfo(
     const Extension* extension,
     extension_misc::UnloadedExtensionReason reason)

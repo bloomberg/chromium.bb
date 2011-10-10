@@ -465,9 +465,8 @@ void ExtensionManagementEventRouter::Observe(
 
   ListValue args;
   if (event_name == events::kOnExtensionUninstalled) {
-    const std::string& extension_id =
-        Details<UninstalledExtensionInfo>(details).ptr()->extension_id;
-    args.Append(Value::CreateStringValue(extension_id));
+    args.Append(
+        Value::CreateStringValue(*Details<const std::string>(details).ptr()));
   } else {
     const Extension* extension = NULL;
     if (event_name == events::kOnExtensionDisabled) {

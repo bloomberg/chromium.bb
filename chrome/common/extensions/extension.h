@@ -892,22 +892,6 @@ struct ExtensionInfo {
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfo);
 };
 
-// Struct used for the details of the EXTENSION_UNINSTALLED
-// notification.
-//
-// TODO(akalin): Now that sync doesn't need to listen to
-// EXTENSION_UNINSTALLED, everything but |extension_id| can be
-// removed.
-struct UninstalledExtensionInfo {
-  explicit UninstalledExtensionInfo(const Extension& extension);
-  ~UninstalledExtensionInfo();
-
-  std::string extension_id;
-  std::set<std::string> extension_api_permissions;
-  Extension::Type extension_type;
-  GURL update_url;
-};
-
 struct UnloadedExtensionInfo {
   extension_misc::UnloadedExtensionReason reason;
 
