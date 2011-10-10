@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -215,6 +215,19 @@ RegisterList AbstractLoad::defs(const Instruction i) const {
 }
 
 
+SafetyLevel LoadRegister::safety(const Instruction i) const {
+  bool pre_index = i.bit(24);
+  if (pre_index) {
+    // Computes base address by adding two registers -- cannot predict!
+    return FORBIDDEN;
+  }
+
+  // Don't let addressing writeback alter PC.
+  if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
 RegisterList LoadRegister::defs(const Instruction i) const {
   if (writeback(i)) {
     Register rn(i.bits(19, 16));
@@ -222,6 +235,10 @@ RegisterList LoadRegister::defs(const Instruction i) const {
   } else {
     return AbstractLoad::defs(i);
   }
+}
+
+Register LoadRegister::base_address_register(const Instruction i) const {
+  return i.reg(19, 16);
 }
 
 
@@ -235,18 +252,57 @@ RegisterList LoadImmediate::immediate_addressing_defs(const Instruction i)
   }
 }
 
+Register LoadImmediate::base_address_register(const Instruction i) const {
+  return i.reg(19, 16);
+}
+
+bool LoadImmediate::offset_is_immediate(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return true;
+}
+
 
 RegisterList LoadDoubleI::defs(const Instruction i) const {
   return LoadImmediate::defs(i) + Register(i.bits(15, 12) + 1);
 }
 
+Register LoadDoubleI::base_address_register(const Instruction i) const {
+  return i.reg(19, 16);
+}
+
+bool LoadDoubleI::offset_is_immediate(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return true;
+}
+
+
+SafetyLevel LoadDoubleR::safety(const Instruction i) const {
+  bool pre_index = i.bit(24);
+  if (pre_index) {
+    // Computes base address by adding two registers -- cannot predict!
+    return FORBIDDEN;
+  }
+
+  // Don't let addressing writeback alter PC.
+  if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
 
 RegisterList LoadDoubleR::defs(const Instruction i) const {
   return LoadRegister::defs(i) + Register(i.bits(15, 12) + 1);
 }
 
+Register LoadDoubleR::base_address_register(const Instruction i) const {
+  return i.reg(19, 16);
+}
+
 RegisterList LoadDoubleExclusive::defs(const Instruction i) const {
   return LoadExclusive::defs(i) + Register(i.bits(15, 12) + 1);
+}
+
+Register LoadDoubleExclusive::base_address_register(const Instruction i) const {
+  return i.reg(19, 16);
 }
 
 
@@ -271,6 +327,10 @@ RegisterList LoadMultiple::defs(const Instruction i) const {
 RegisterList LoadMultiple::immediate_addressing_defs(
     const Instruction i) const {
   return i.bit(21)? i.reg(19, 16) : kRegisterNone;
+}
+
+Register LoadMultiple::base_address_register(const Instruction i) const {
+  return i.reg(19, 16);
 }
 
 
@@ -302,6 +362,10 @@ RegisterList VectorLoad::immediate_addressing_defs(Instruction i) const {
 
   // Any writeback is not treated as immediate otherwise.
   return kRegisterNone;
+}
+
+Register VectorLoad::base_address_register(const Instruction i) const {
+  return i.reg(19, 16);
 }
 
 

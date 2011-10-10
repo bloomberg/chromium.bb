@@ -1,9 +1,8 @@
 #!/usr/bin/python
 #
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-# Copyright 2009, Google Inc.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 
 
@@ -48,8 +47,8 @@ def _problem_info(code):
         'kProblemBranchInvalidDest': ['This branch targets a location that is '
             'outside of the application\'s executable code, and is not a valid '
             'trampoline entry point', 0, 0],
-        'kProblemUnsafeStore': ['This store instruction is not preceded by a '
-            'valid address mask instruction', 1, 0],
+        'kProblemUnsafeLoadStore': ['This store instruction is not preceded by '
+            'a valid address mask instruction', 1, 0],
         'kProblemUnsafeBranch': ['This indirect branch instruction is not '
             'preceded by a valid address mask instruction', 1, 0],
         'kProblemUnsafeDataWrite': ['This instruction affects a register that '

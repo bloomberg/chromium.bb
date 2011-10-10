@@ -1,7 +1,7 @@
 vars = {
   # These two should be updated to the same revision whenever possible.
-  "x86_toolchain_version": "6870",
-  "pnacl_toolchain_version": "6870",
+  "x86_toolchain_version": "6885",
+  "pnacl_toolchain_version": "6885",
 
   # ARM trusted toolchain version cannot be changed for now.
   "arm_trusted_toolchain_version": "6645",
