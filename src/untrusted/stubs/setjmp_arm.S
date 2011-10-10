@@ -38,7 +38,6 @@ setjmp:
 /* void longjmp(jmp_buf env, int val) */
 longjmp:
     /* Bundle -------------------- */
-    bic     r0, r0, #NACL_DATA_FLOW_MASK
     ldmia   r0!, {r4, r5, r6, r7, r8, r10, r11, r12, lr}
     mov     sp, r12
     bic     sp, sp, #NACL_DATA_FLOW_MASK

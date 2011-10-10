@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+ * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 /*
@@ -422,7 +422,7 @@ TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
         EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety)
             << "Store should not be unsafe even though mask is bogus: "
             << message.str();
-        EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeLoadStore),
+        EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeStore),
                   first.problem_code)
             << message;
       }
@@ -476,7 +476,7 @@ TEST_F(ValidatorTests, InvalidGuardsOnSafeStores) {
       EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety)
           << "Store should not be unsafe even though guard is bogus: "
           << message.str();
-      EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeLoadStore),
+      EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeStore),
                 first.problem_code)
           << message;
     }
@@ -529,11 +529,11 @@ TEST_F(ValidatorTests, ValidMasksOnUnsafeStores) {
             << message.str();
 
         /*
-         * Note that we expect kProblemUnsafe, *not* kProblemUnsafeLoadStore.
-         * This is because the load/store instructions themselves, in
-         * isolation, are unsafe to appear anywhere in a Native Client
-         * program -- whereas kProblemUnsafeLoadStore indicates a legitimate
-         * load/store used in an unsafe manner.
+         * Note that we expect kProblemUnsafe, *not* kProblemUnsafeStore.  This
+         * is because the store instructions themselves, in isolation, are
+         * unsafe to appear anywhere in a Native Client program -- whereas
+         * kProblemUnsafeStore indicates a legitimate store used in an unsafe
+         * manner.
          */
         EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafe),
                   first.problem_code)

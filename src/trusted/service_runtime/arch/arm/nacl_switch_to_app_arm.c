@@ -44,7 +44,8 @@ static inline uintptr_t SpringboardAddr(struct NaClApp *nap) {
    */
   CHECK((nap->user_entry_pt & 0x1) | (nap->initial_entry_pt & 0x1));
   /* The real springboard target addresses are aligned 0xe mod 16. */
-  CHECK((nap->springboard_addr & 0xf) == 0xe);
+  /* Skipping a 2-byte halt brings us to 0 mod 16. */
+  CHECK((nap->springboard_addr & 0xf) == 0x0);
   return nap->springboard_addr | 0x1;
 #else
   return nap->springboard_addr;

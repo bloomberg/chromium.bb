@@ -1,7 +1,8 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
+ * Copyright 2009 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ * Copyright 2009, Google Inc.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_VALIDATOR_H
@@ -259,10 +260,6 @@ class DecodedInstruction {
     return decoder_->base_address_register(inst_);
   }
 
-  bool offset_is_immediate() const {
-    return decoder_->offset_is_immediate(inst_);
-  }
-
   bool clears_bits(uint32_t mask) const {
     return decoder_->clears_bits(inst_, mask);
   }
@@ -387,8 +384,8 @@ const char * const kProblemUnsafe = "kProblemUnsafe";
 const char * const kProblemBranchSplitsPattern = "kProblemBranchSplitsPattern";
 // A branch targets an invalid code address (out of segment).
 const char * const kProblemBranchInvalidDest = "kProblemBranchInvalidDest";
-// A load/store uses an unsafe (non-masked) base address.
-const char * const kProblemUnsafeLoadStore = "kProblemUnsafeLoadStore";
+// A store uses an unsafe (non-masked) base address.
+const char * const kProblemUnsafeStore = "kProblemUnsafeStore";
 // A branch uses an unsafe (non-masked) destination address.
 const char * const kProblemUnsafeBranch = "kProblemUnsafeBranch";
 // An instruction updates a data-address register (e.g. SP) without masking.
