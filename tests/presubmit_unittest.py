@@ -351,6 +351,20 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.assertEquals(rhs_lines[13][1], 49)
     self.assertEquals(rhs_lines[13][2], 'this is line number 48.1')
 
+  def testInvalidChange(self):
+    try:
+      presubmit.SvnChange(
+          'mychange',
+          'description',
+          self.fake_root_dir,
+          ['foo/blat.cc', 'bar'],
+          0,
+          0,
+          None)
+      self.fail()
+    except AssertionError:
+      pass
+
   def testExecPresubmitScript(self):
     description_lines = ('Hello there',
                          'this is a change',
@@ -770,7 +784,7 @@ def CheckChangeOnCommit(input_api, output_api):
     self.mox.StubOutWithMock(presubmit, 'ParseFiles')
     presubmit.scm.determine_scm(self.fake_root_dir).AndReturn(None)
     presubmit.ParseFiles(['random_file.txt'], None
-        ).AndReturn(['random_file.txt'])
+        ).AndReturn([('M', 'random_file.txt')])
     output = self.mox.CreateMock(presubmit.PresubmitOutput)
     output.should_continue().AndReturn(False)
 

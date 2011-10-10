@@ -690,6 +690,9 @@ class Change(object):
     self._description_without_tags = (
         '\n'.join(description_without_tags).rstrip())
 
+    assert all(
+        (isinstance(f, (list, tuple)) and len(f) == 2) for f in files), files
+
     self._affected_files = [
         self._AFFECTED_FILES(info[1], info[0].strip(), self._local_root)
         for info in files
