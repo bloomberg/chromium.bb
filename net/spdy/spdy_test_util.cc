@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 
@@ -923,6 +924,7 @@ HttpNetworkSession* SpdySessionDependencies::SpdyCreateSession(
   params.ssl_config_service = session_deps->ssl_config_service;
   params.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
+  params.http_server_properties = &session_deps->http_server_properties;
   return new HttpNetworkSession(params);
 }
 
@@ -938,6 +940,7 @@ HttpNetworkSession* SpdySessionDependencies::SpdyCreateSessionDeterministic(
   params.ssl_config_service = session_deps->ssl_config_service;
   params.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
+  params.http_server_properties = &session_deps->http_server_properties;
   return new HttpNetworkSession(params);
 }
 
@@ -949,6 +952,7 @@ SpdyURLRequestContext::SpdyURLRequestContext()
   storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault(
       host_resolver()));
+  storage_.set_http_server_properties(new HttpServerPropertiesImpl);
   net::HttpNetworkSession::Params params;
   params.client_socket_factory = &socket_factory_;
   params.host_resolver = host_resolver();

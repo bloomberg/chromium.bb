@@ -22,6 +22,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction.h"
 #include "net/proxy/proxy_service.h"
 
@@ -150,12 +151,14 @@ int main(int argc, char** argv) {
   net::HttpTransactionFactory* factory = NULL;
   scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
+  net::HttpServerPropertiesImpl http_server_properties;
 
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = host_resolver.get();
   session_params.cert_verifier = cert_verifier.get();
   session_params.proxy_service = proxy_service.get();
   session_params.http_auth_handler_factory = http_auth_handler_factory.get();
+  session_params.http_server_properties = &http_server_properties;
   session_params.ssl_config_service = ssl_config_service;
 
   scoped_refptr<net::HttpNetworkSession> network_session(

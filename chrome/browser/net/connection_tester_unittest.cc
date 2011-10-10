@@ -15,6 +15,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/test/test_server.h"
@@ -111,6 +112,7 @@ class ConnectionTesterTest : public PlatformTest {
   scoped_ptr<net::HttpTransactionFactory> http_transaction_factory_;
   net::HttpAuthHandlerRegistryFactory http_auth_handler_factory_;
   scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context_;
+  net::HttpServerPropertiesImpl http_server_properties_impl_;
 
  private:
   void InitializeRequestContext() {
@@ -129,6 +131,7 @@ class ConnectionTesterTest : public PlatformTest {
     session_params.http_auth_handler_factory = &http_auth_handler_factory_;
     session_params.ssl_config_service = ssl_config_service_;
     session_params.proxy_service = proxy_service_.get();
+    session_params.http_server_properties = &http_server_properties_impl_;
     scoped_refptr<net::HttpNetworkSession> network_session(
         new net::HttpNetworkSession(session_params));
     http_transaction_factory_.reset(

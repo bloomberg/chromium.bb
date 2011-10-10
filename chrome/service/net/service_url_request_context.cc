@@ -23,6 +23,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
 
@@ -122,6 +123,7 @@ ServiceURLRequestContext::ServiceURLRequestContext(
   storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
+  storage_.set_http_server_properties(new net::HttpServerPropertiesImpl);
 
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = host_resolver();
@@ -130,6 +132,7 @@ ServiceURLRequestContext::ServiceURLRequestContext(
   session_params.proxy_service = proxy_service();
   session_params.ssl_config_service = ssl_config_service();
   session_params.http_auth_handler_factory = http_auth_handler_factory();
+  session_params.http_server_properties = http_server_properties();
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
   storage_.set_http_transaction_factory(

@@ -51,6 +51,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
@@ -437,6 +438,7 @@ void IOThread::Init() {
   globals_->ssl_config_service = GetSSLConfigService();
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
+  globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl);
   // For the ProxyScriptFetcher, we use a direct ProxyService.
   globals_->proxy_script_fetcher_proxy_service.reset(
       net::ProxyService::CreateDirectWithNetLog(net_log_));
@@ -459,6 +461,8 @@ void IOThread::Init() {
   // TODO(rtenneti): We should probably use HttpServerPropertiesManager for the
   // system URLRequestContext too. There's no reason this should be tied to a
   // profile.
+  session_params.http_server_properties =
+      globals_->http_server_properties.get();
   session_params.net_log = net_log_;
   session_params.ssl_config_service = globals_->ssl_config_service;
   scoped_refptr<net::HttpNetworkSession> network_session(
@@ -617,6 +621,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   system_params.ssl_config_service = globals_->ssl_config_service.get();
   system_params.http_auth_handler_factory =
       globals_->http_auth_handler_factory.get();
+  system_params.http_server_properties = globals_->http_server_properties.get();
   system_params.network_delegate = globals_->system_network_delegate.get();
   system_params.net_log = net_log_;
   globals_->system_http_transaction_factory.reset(

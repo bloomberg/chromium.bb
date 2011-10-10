@@ -51,10 +51,10 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/base/x509_cert_types.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/http/http_alternate_protocols.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -1198,25 +1198,20 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
 void
 NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyAlternateProtocolMappings(
     const ListValue* list) {
-  net::HttpNetworkSession* http_network_session =
-      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
-
   ListValue* dict_list = new ListValue();
 
-  if (http_network_session) {
-    const net::HttpAlternateProtocols& http_alternate_protocols =
-        http_network_session->alternate_protocols();
-    const net::HttpAlternateProtocols::ProtocolMap& map =
-        http_alternate_protocols.protocol_map();
+  const net::HttpServerProperties& http_server_properties =
+      *context_getter_->GetURLRequestContext()->http_server_properties();
 
-    for (net::HttpAlternateProtocols::ProtocolMap::const_iterator it =
-             map.begin();
-         it != map.end(); ++it) {
-      DictionaryValue* dict = new DictionaryValue();
-      dict->SetString("host_port_pair", it->first.ToString());
-      dict->SetString("alternate_protocol", it->second.ToString());
-      dict_list->Append(dict);
-    }
+  const net::AlternateProtocolMap& map =
+      http_server_properties.alternate_protocol_map();
+
+  for (net::AlternateProtocolMap::const_iterator it = map.begin();
+       it != map.end(); ++it) {
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetString("host_port_pair", it->first.ToString());
+    dict->SetString("alternate_protocol", it->second.ToString());
+    dict_list->Append(dict);
   }
 
   SendJavascriptCommand(L"receivedSpdyAlternateProtocolMappings", dict_list);

@@ -44,7 +44,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
 
   // Makes a direct call to UpdateCacheFromPrefsOnIO during tests.
   void UpdateCacheFromPrefsOnIO() {
-    StringVector* spdy_servers = new StringVector;
+    std::vector<std::string>* spdy_servers = new std::vector<std::string>;
     spdy_servers->push_back("www.google.com:443");
     HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(spdy_servers, true);
   }
@@ -78,7 +78,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
   MOCK_METHOD0(UpdateCacheFromPrefs, void());
   MOCK_METHOD0(UpdatePrefsFromCache, void());
   MOCK_METHOD2(UpdateCacheFromPrefsOnIO,
-               void(StringVector* spdy_servers, bool support_spdy));
+               void(std::vector<std::string>* spdy_servers, bool support_spdy));
   MOCK_METHOD1(SetSpdyServersInPrefsOnUI,
                void(scoped_refptr<RefCountedListValue> spdy_server_list));
 

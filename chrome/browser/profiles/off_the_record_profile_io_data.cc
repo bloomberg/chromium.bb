@@ -23,6 +23,7 @@
 #include "net/base/origin_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_server_properties_impl.h"
 #include "webkit/database/database_tracker.h"
 
 OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
@@ -164,6 +165,10 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
       io_thread_globals->http_auth_handler_factory.get());
   main_context->set_dns_cert_checker(dns_cert_checker());
   main_context->set_proxy_service(proxy_service());
+
+  // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
+  http_server_properties_.reset(new net::HttpServerPropertiesImpl);
+  main_context->set_http_server_properties(http_server_properties_.get());
 
   // For incognito, we use a non-persistent origin bound cert store.
   net::OriginBoundCertService* origin_bound_cert_service =

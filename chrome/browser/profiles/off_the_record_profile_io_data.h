@@ -17,6 +17,9 @@
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
 class Profile;
+namespace net {
+class HttpServerPropertiesImpl;
+}  // namespace net
 
 // OffTheRecordProfile owns a OffTheRecordProfileIOData::Handle, which holds a
 // reference to the OffTheRecordProfileIOData. OffTheRecordProfileIOData is
@@ -102,6 +105,8 @@ class OffTheRecordProfileIOData : public ProfileIOData {
           const std::string& app_id) const;
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
+
+  mutable scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);
 };

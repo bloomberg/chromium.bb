@@ -17,6 +17,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_layer.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
@@ -355,6 +356,7 @@ class SpdySessionDependencies {
   scoped_ptr<MockClientSocketFactory> socket_factory;
   scoped_ptr<DeterministicMockClientSocketFactory> deterministic_socket_factory;
   scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
+  HttpServerPropertiesImpl http_server_properties;
 };
 
 class SpdyURLRequestContext : public URLRequestContext {

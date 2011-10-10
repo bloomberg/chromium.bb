@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_NET_HTTP_SERVER_PROPERTIES_MANAGER_H_
 #pragma once
 
+#include <string>
+#include <vector>
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -65,6 +67,16 @@ class HttpServerPropertiesManager
   // Prepare for shutdown. Must be called on the UI thread, before destruction.
   void ShutdownOnUIThread();
 
+  // Register |prefs| for properties managed here.
+  static void RegisterPrefs(PrefService* prefs);
+
+  // ----------------------------------
+  // net::HttpServerProperties methods:
+  // ----------------------------------
+
+  // Deletes all data.
+  virtual void DeleteAll() OVERRIDE;
+
   // Returns true if |server| supports SPDY. Should only be called from IO
   // thread.
   virtual bool SupportsSpdy(const net::HostPortPair& server) const OVERRIDE;
@@ -74,11 +86,28 @@ class HttpServerPropertiesManager
   virtual void SetSupportsSpdy(const net::HostPortPair& server,
                                bool support_spdy) OVERRIDE;
 
-  // Deletes all data.
-  virtual void DeleteAll() OVERRIDE;
+  // Returns true if |server| has an Alternate-Protocol header.
+  virtual bool HasAlternateProtocol(
+      const net::HostPortPair& server) const OVERRIDE;
 
-  // Register |prefs| SPDY preferences.
-  static void RegisterPrefs(PrefService* prefs);
+  // Returns the Alternate-Protocol and port for |server|.
+  // HasAlternateProtocol(server) must be true.
+  virtual net::PortAlternateProtocolPair GetAlternateProtocol(
+      const net::HostPortPair& server) const OVERRIDE;
+
+  // Sets the Alternate-Protocol for |server|.
+  virtual void SetAlternateProtocol(
+      const net::HostPortPair& server,
+      uint16 alternate_port,
+      net::AlternateProtocol alternate_protocol) OVERRIDE;
+
+  // Sets the Alternate-Protocol for |server| to be BROKEN.
+  virtual void SetBrokenAlternateProtocol(
+      const net::HostPortPair& server) OVERRIDE;
+
+  // Returns all Alternate-Protocol mappings.
+  virtual const net::AlternateProtocolMap&
+      alternate_protocol_map() const OVERRIDE;
 
  protected:
   typedef base::RefCountedData<base::ListValue> RefCountedListValue;
@@ -93,7 +122,8 @@ class HttpServerPropertiesManager
   virtual void UpdateCacheFromPrefs();
 
   // Starts the |spdy_servers| update on the IO thread. Protected for testing.
-  void UpdateCacheFromPrefsOnIO(StringVector* spdy_servers, bool support_spdy);
+  void UpdateCacheFromPrefsOnIO(std::vector<std::string>* spdy_servers,
+                                bool support_spdy);
 
   // These are used to delay updating the preferences when spdy servers_ are
   // changing, and execute only one update per simultaneous spdy server changes.

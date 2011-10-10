@@ -90,6 +90,18 @@ void HttpServerPropertiesManager::ShutdownOnUIThread() {
   pref_change_registrar_.RemoveAll();
 }
 
+// static
+void HttpServerPropertiesManager::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterListPref(prefs::kSpdyServers, PrefService::UNSYNCABLE_PREF);
+}
+
+void HttpServerPropertiesManager::DeleteAll() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  http_server_properties_impl_->DeleteAll();
+  ScheduleUpdatePrefsOnIO();
+}
+
 bool HttpServerPropertiesManager::SupportsSpdy(
     const net::HostPortPair& server) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -105,16 +117,38 @@ void HttpServerPropertiesManager::SetSupportsSpdy(
   ScheduleUpdatePrefsOnIO();
 }
 
-void HttpServerPropertiesManager::DeleteAll() {
+bool HttpServerPropertiesManager::HasAlternateProtocol(
+    const net::HostPortPair& server) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  http_server_properties_impl_->DeleteAll();
-  ScheduleUpdatePrefsOnIO();
+  return http_server_properties_impl_->HasAlternateProtocol(server);
 }
 
-// static
-void HttpServerPropertiesManager::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterListPref(prefs::kSpdyServers, PrefService::UNSYNCABLE_PREF);
+net::PortAlternateProtocolPair
+HttpServerPropertiesManager::GetAlternateProtocol(
+    const net::HostPortPair& server) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return http_server_properties_impl_->GetAlternateProtocol(server);
+}
+
+void HttpServerPropertiesManager::SetAlternateProtocol(
+    const net::HostPortPair& server,
+    uint16 alternate_port,
+    net::AlternateProtocol alternate_protocol) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  http_server_properties_impl_->SetAlternateProtocol(
+      server, alternate_port, alternate_protocol);
+}
+
+void HttpServerPropertiesManager::SetBrokenAlternateProtocol(
+    const net::HostPortPair& server) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  http_server_properties_impl_->SetBrokenAlternateProtocol(server);
+}
+
+const net::AlternateProtocolMap&
+HttpServerPropertiesManager::alternate_protocol_map() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return http_server_properties_impl_->alternate_protocol_map();
 }
 
 //
@@ -163,7 +197,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
   // preferences. Clear the cached data and use the new spdy server list from
   // preferences.
   scoped_ptr<StringVector> scoped_spdy_servers(spdy_servers);
-  http_server_properties_impl_->Initialize(spdy_servers, support_spdy);
+  http_server_properties_impl_->InitializeSpdyServers(spdy_servers,
+                                                      support_spdy);
 }
 
 //

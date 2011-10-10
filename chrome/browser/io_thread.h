@@ -35,6 +35,7 @@ class DnsRRResolver;
 class FtpTransactionFactory;
 class HostResolver;
 class HttpAuthHandlerFactory;
+class HttpServerProperties;
 class HttpTransactionFactory;
 class NetworkDelegate;
 class OriginBoundCertService;
@@ -67,6 +68,7 @@ class IOThread : public BrowserProcessSubThread {
     scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
+    scoped_ptr<net::HttpServerProperties> http_server_properties;
     scoped_ptr<net::ProxyService> proxy_script_fetcher_proxy_service;
     scoped_ptr<net::HttpTransactionFactory>
         proxy_script_fetcher_http_transaction_factory;
