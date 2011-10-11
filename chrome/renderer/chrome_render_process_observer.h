@@ -13,16 +13,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_process_observer.h"
 
-class GURL;
-struct ContentSettings;
-
 namespace chrome {
 class ChromeContentRendererClient;
 }
 
-namespace content {
+class GURL;
 class ResourceDispatcherDelegate;
-}
+struct ContentSettings;
 
 // This class filters the incoming control messages (i.e. ones not destined for
 // a RenderView) for Chrome specific messages that the content layer doesn't
@@ -65,7 +62,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   void OnPurgeMemory();
 
   static bool is_incognito_process_;
-  scoped_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
+  scoped_ptr<ResourceDispatcherDelegate> resource_delegate_;
   chrome::ChromeContentRendererClient* client_;
   // If true, the web cache shall be cleared before the next navigation event.
   bool clear_cache_pending_;

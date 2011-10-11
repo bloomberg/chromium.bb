@@ -46,6 +46,7 @@ class MockRenderThread : public content::RenderThread {
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual MessageLoop* GetMessageLoop() OVERRIDE;
   virtual IPC::SyncChannel* GetChannel() OVERRIDE;
+  virtual ResourceDispatcher* GetResourceDispatcher() OVERRIDE;
   virtual std::string GetLocale() OVERRIDE;
   virtual void AddRoute(int32 routing_id,
                         IPC::Channel::Listener* listener) OVERRIDE;

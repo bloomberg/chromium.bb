@@ -21,9 +21,9 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/security_filter_peer.h"
-#include "content/common/child_thread.h"
+#include "content/common/resource_dispatcher.h"
+#include "content/common/resource_dispatcher_delegate.h"
 #include "content/common/view_messages.h"
-#include "content/public/common/resource_dispatcher_delegate.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/render_view.h"
@@ -58,7 +58,7 @@ namespace {
 
 static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 
-class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
+class RendererResourceDelegate : public ResourceDispatcherDelegate {
  public:
   RendererResourceDelegate()
       : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
@@ -211,9 +211,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
 
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
-
-  ChildThread* child_thread = ChildThread::current();
-  child_thread->SetResourceDispatcherDelegate(resource_delegate_.get());
+  thread->GetResourceDispatcher()->set_delegate(resource_delegate_.get());
 
 #if defined(OS_POSIX)
   thread->AddFilter(new SuicideOnChannelErrorFilter());

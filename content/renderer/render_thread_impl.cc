@@ -340,6 +340,10 @@ IPC::SyncChannel* RenderThreadImpl::GetChannel() {
   return channel();
 }
 
+ResourceDispatcher* RenderThreadImpl::GetResourceDispatcher() {
+  return resource_dispatcher();
+}
+
 std::string RenderThreadImpl::GetLocale() {
   // The browser process should have passed the locale to the renderer via the
   // --lang command line flag.  In single process mode, this will return the

@@ -28,7 +28,6 @@
     '../base/base.gyp:base',
   ],
   'sources': [
-    'public/common/resource_dispatcher_delegate.h',
     'common/appcache/appcache_backend_proxy.cc',
     'common/appcache/appcache_backend_proxy.h',
     'common/appcache/appcache_dispatcher.cc',
@@ -209,6 +208,8 @@
     'common/request_extra_data.h',
     'common/resource_dispatcher.cc',
     'common/resource_dispatcher.h',
+    'common/resource_dispatcher_delegate.cc',
+    'common/resource_dispatcher_delegate.h',
     'common/resource_messages.h',
     'common/resource_response.cc',
     'common/resource_response.h',

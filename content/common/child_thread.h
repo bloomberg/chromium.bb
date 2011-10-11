@@ -24,10 +24,6 @@ class SyncChannel;
 class SyncMessageFilter;
 }
 
-namespace content {
-class ResourceDispatcherDelegate;
-}
-
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
                                    public IPC::Message::Sender {
@@ -44,10 +40,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
   // See documentation on MessageRouter for AddRoute and RemoveRoute
   void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
   void RemoveRoute(int32 routing_id);
-
-  // Set the ResourceDispatcher delegate object for this process.
-  void SetResourceDispatcherDelegate(
-      content::ResourceDispatcherDelegate* delegate);
 
   IPC::Channel::Listener* ResolveRoute(int32 routing_id);
 

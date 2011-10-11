@@ -19,11 +19,8 @@
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
-struct ResourceResponseHead;
-
-namespace content {
 class ResourceDispatcherDelegate;
-}
+struct ResourceResponseHead;
 
 // This class serves as a communication interface between the
 // ResourceDispatcherHost in the browser process and the ResourceLoaderBridge in
@@ -64,7 +61,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
 
   // This does not take ownership of the delegate. It is expected that the
   // delegate have a longer lifetime than the ResourceDispatcher.
-  void set_delegate(content::ResourceDispatcherDelegate* delegate) {
+  void set_delegate(ResourceDispatcherDelegate* delegate) {
     delegate_ = delegate;
   }
 
@@ -156,7 +153,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
 
   ScopedRunnableMethodFactory<ResourceDispatcher> method_factory_;
 
-  content::ResourceDispatcherDelegate* delegate_;
+  ResourceDispatcherDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };
