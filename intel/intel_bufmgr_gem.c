@@ -58,6 +58,7 @@
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 #include "intel_chipset.h"
+#include "intel_aub.h"
 #include "string.h"
 
 #include "i915_drm.h"
@@ -121,6 +122,9 @@ typedef struct _drm_intel_bufmgr_gem {
 	unsigned int bo_reuse : 1;
 	unsigned int no_exec : 1;
 	bool fenced_relocs;
+
+	FILE *aub_file;
+	uint32_t aub_offset;
 } drm_intel_bufmgr_gem;
 
 #define DRM_INTEL_RELOC_FENCE (1<<0)
@@ -215,6 +219,8 @@ struct _drm_intel_bo_gem {
 
 	/** Flags that we may need to do the SW_FINSIH ioctl on unmap. */
 	bool mapped_cpu_write;
+
+	uint32_t aub_offset;
 };
 
 static unsigned int
@@ -1715,6 +1721,247 @@ drm_intel_update_buffer_offsets2 (drm_intel_bufmgr_gem *bufmgr_gem)
 	}
 }
 
+static void
+aub_out(drm_intel_bufmgr_gem *bufmgr_gem, uint32_t data)
+{
+	fwrite(&data, 1, 4, bufmgr_gem->aub_file);
+}
+
+static void
+aub_out_data(drm_intel_bufmgr_gem *bufmgr_gem, void *data, size_t size)
+{
+	fwrite(data, 1, size, bufmgr_gem->aub_file);
+}
+
+static void
+aub_write_bo_data(drm_intel_bo *bo, uint32_t offset, uint32_t size)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	uint32_t *data;
+	unsigned int i;
+
+	data = malloc(bo->size);
+	drm_intel_bo_get_subdata(bo, offset, size, data);
+
+	/* Easy mode: write out bo with no relocations */
+	if (!bo_gem->reloc_count) {
+		aub_out_data(bufmgr_gem, data, size);
+		free(data);
+		return;
+	}
+
+	/* Otherwise, handle the relocations while writing. */
+	for (i = 0; i < size / 4; i++) {
+		int r;
+		for (r = 0; r < bo_gem->reloc_count; r++) {
+			struct drm_i915_gem_relocation_entry *reloc;
+			drm_intel_reloc_target *info;
+
+			reloc = &bo_gem->relocs[r];
+			info = &bo_gem->reloc_target_info[r];
+
+			if (reloc->offset == offset + i * 4) {
+				drm_intel_bo_gem *target_gem;
+				uint32_t val;
+
+				target_gem = (drm_intel_bo_gem *)info->bo;
+
+				val = reloc->delta;
+				val += target_gem->aub_offset;
+
+				aub_out(bufmgr_gem, val);
+				data[i] = val;
+				break;
+			}
+		}
+		if (r == bo_gem->reloc_count) {
+			/* no relocation, just the data */
+			aub_out(bufmgr_gem, data[i]);
+		}
+	}
+
+	free(data);
+}
+
+static void
+aub_bo_get_address(drm_intel_bo *bo)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	/* Give the object a graphics address in the AUB file.  We
+	 * don't just use the GEM object address because we do AUB
+	 * dumping before execution -- we want to successfully log
+	 * when the hardware might hang, and we might even want to aub
+	 * capture for a driver trying to execute on a different
+	 * generation of hardware by disabling the actual kernel exec
+	 * call.
+	 */
+	bo_gem->aub_offset = bufmgr_gem->aub_offset;
+	bufmgr_gem->aub_offset += bo->size;
+	/* XXX: Handle aperture overflow. */
+	assert(bufmgr_gem->aub_offset < 256 * 1024 * 1024);
+}
+
+static void
+aub_write_trace_block(drm_intel_bo *bo, uint32_t type, uint32_t subtype,
+		      uint32_t offset, uint32_t size)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	aub_out(bufmgr_gem,
+		CMD_AUB_TRACE_HEADER_BLOCK |
+		(5 - 2));
+	aub_out(bufmgr_gem,
+		AUB_TRACE_MEMTYPE_GTT | type | AUB_TRACE_OP_DATA_WRITE);
+	aub_out(bufmgr_gem, subtype);
+	aub_out(bufmgr_gem, bo_gem->aub_offset + offset);
+	aub_out(bufmgr_gem, size);
+	aub_write_bo_data(bo, offset, size);
+}
+
+static void
+aub_write_bo(drm_intel_bo *bo)
+{
+	uint32_t block_size;
+	uint32_t offset;
+
+	aub_bo_get_address(bo);
+
+	/* Break up large objects into multiple writes.  Otherwise a
+	 * 128kb VBO would overflow the 16 bits of size field in the
+	 * packet header and everything goes badly after that.
+	 */
+	for (offset = 0; offset < bo->size; offset += block_size) {
+		block_size = bo->size - offset;
+
+		if (block_size > 8 * 4096)
+			block_size = 8 * 4096;
+
+		aub_write_trace_block(bo, AUB_TRACE_TYPE_NOTYPE, 0,
+				      offset, block_size);
+	}
+}
+
+/*
+ * Make a ringbuffer on fly and dump it
+ */
+static void
+aub_build_dump_ringbuffer(drm_intel_bufmgr_gem *bufmgr_gem,
+			  uint32_t batch_buffer, int ring_flag)
+{
+	uint32_t ringbuffer[4096];
+	int ring = AUB_TRACE_TYPE_RING_PRB0; /* The default ring */
+	int ring_count = 0;
+
+	if (ring_flag == I915_EXEC_BSD)
+		ring = AUB_TRACE_TYPE_RING_PRB1;
+
+	/* Make a ring buffer to execute our batchbuffer. */
+	memset(ringbuffer, 0, sizeof(ringbuffer));
+	ringbuffer[ring_count++] = AUB_MI_BATCH_BUFFER_START;
+	ringbuffer[ring_count++] = batch_buffer;
+
+	/* Write out the ring.  This appears to trigger execution of
+	 * the ring in the simulator.
+	 */
+	aub_out(bufmgr_gem,
+		CMD_AUB_TRACE_HEADER_BLOCK |
+		(5 - 2));
+	aub_out(bufmgr_gem,
+		AUB_TRACE_MEMTYPE_GTT | ring | AUB_TRACE_OP_COMMAND_WRITE);
+	aub_out(bufmgr_gem, 0); /* general/surface subtype */
+	aub_out(bufmgr_gem, bufmgr_gem->aub_offset);
+	aub_out(bufmgr_gem, ring_count * 4);
+
+	/* FIXME: Need some flush operations here? */
+	aub_out_data(bufmgr_gem, ringbuffer, ring_count * 4);
+
+	/* Update offset pointer */
+	bufmgr_gem->aub_offset += 4096;
+}
+
+void
+drm_intel_gem_bo_aub_dump_bmp(drm_intel_bo *bo,
+			      int x1, int y1, int width, int height,
+			      enum aub_dump_bmp_format format,
+			      int pitch, int offset)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+	uint32_t cpp;
+
+	switch (format) {
+	case AUB_DUMP_BMP_FORMAT_8BIT:
+		cpp = 1;
+		break;
+	case AUB_DUMP_BMP_FORMAT_ARGB_4444:
+		cpp = 2;
+		break;
+	case AUB_DUMP_BMP_FORMAT_ARGB_0888:
+	case AUB_DUMP_BMP_FORMAT_ARGB_8888:
+		cpp = 4;
+		break;
+	default:
+		printf("Unknown AUB dump format %d\n", format);
+		return;
+	}
+
+	if (!bufmgr_gem->aub_file)
+		return;
+
+	aub_out(bufmgr_gem, CMD_AUB_DUMP_BMP | 4);
+	aub_out(bufmgr_gem, (y1 << 16) | x1);
+	aub_out(bufmgr_gem,
+		(format << 24) |
+		(cpp << 19) |
+		pitch / 4);
+	aub_out(bufmgr_gem, (height << 16) | width);
+	aub_out(bufmgr_gem, bo_gem->aub_offset + offset);
+	aub_out(bufmgr_gem,
+		((bo_gem->tiling_mode != I915_TILING_NONE) ? (1 << 2) : 0) |
+		((bo_gem->tiling_mode == I915_TILING_Y) ? (1 << 3) : 0));
+}
+
+static void
+aub_exec(drm_intel_bo *bo, int ring_flag, int used)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	int i;
+
+	if (!bufmgr_gem->aub_file)
+		return;
+
+	/* Write out all but the batchbuffer to AUB memory */
+	for (i = 0; i < bufmgr_gem->exec_count - 1; i++) {
+		if (bufmgr_gem->exec_bos[i] != bo)
+			aub_write_bo(bufmgr_gem->exec_bos[i]);
+	}
+
+	aub_bo_get_address(bo);
+
+	/* Dump the batchbuffer. */
+	aub_write_trace_block(bo, AUB_TRACE_TYPE_BATCH, 0,
+			      0, used);
+	aub_write_trace_block(bo, AUB_TRACE_TYPE_NOTYPE, 0,
+			      used, bo->size - used);
+
+	/* Dump ring buffer */
+	aub_build_dump_ringbuffer(bufmgr_gem, bo_gem->aub_offset, ring_flag);
+
+	fflush(bufmgr_gem->aub_file);
+
+	/*
+	 * One frame has been dumped. So reset the aub_offset for the next frame.
+	 *
+	 * FIXME: Can we do this?
+	 */
+	bufmgr_gem->aub_offset = 0x10000;
+}
+
 static int
 drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 		      drm_clip_rect_t * cliprects, int num_cliprects, int DR4)
@@ -1829,6 +2076,8 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 	execbuf.flags = flags;
 	execbuf.rsvd1 = 0;
 	execbuf.rsvd2 = 0;
+
+	aub_exec(bo, flags, used);
 
 	if (bufmgr_gem->no_exec)
 		goto skip_execution;
@@ -2357,6 +2606,62 @@ drm_intel_bufmgr_gem_get_devid(drm_intel_bufmgr *bufmgr)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
 
 	return bufmgr_gem->pci_device;
+}
+
+/**
+ * Sets up AUB dumping.
+ *
+ * This is a trace file format that can be used with the simulator.
+ * Packets are emitted in a format somewhat like GPU command packets.
+ * You can set up a GTT and upload your objects into the referenced
+ * space, then send off batchbuffers and get BMPs out the other end.
+ */
+void
+drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
+	int entry = 0x200003;
+	int i;
+	int gtt_size = 0x10000;
+
+	if (!enable) {
+		if (bufmgr_gem->aub_file) {
+			fclose(bufmgr_gem->aub_file);
+			bufmgr_gem->aub_file = NULL;
+		}
+	}
+
+	if (geteuid() != getuid())
+		return;
+
+	bufmgr_gem->aub_file = fopen("intel.aub", "w+");
+	if (!bufmgr_gem->aub_file)
+		return;
+
+	/* Start allocating objects from just after the GTT. */
+	bufmgr_gem->aub_offset = gtt_size;
+
+	/* Start with a (required) version packet. */
+	aub_out(bufmgr_gem, CMD_AUB_HEADER | (13 - 2));
+	aub_out(bufmgr_gem,
+		(4 << AUB_HEADER_MAJOR_SHIFT) |
+		(0 << AUB_HEADER_MINOR_SHIFT));
+	for (i = 0; i < 8; i++) {
+		aub_out(bufmgr_gem, 0); /* app name */
+	}
+	aub_out(bufmgr_gem, 0); /* timestamp */
+	aub_out(bufmgr_gem, 0); /* timestamp */
+	aub_out(bufmgr_gem, 0); /* comment len */
+
+	/* Set up the GTT. The max we can handle is 256M */
+	aub_out(bufmgr_gem, CMD_AUB_TRACE_HEADER_BLOCK | (5 - 2));
+	aub_out(bufmgr_gem, AUB_TRACE_MEMTYPE_NONLOCAL | 0 | AUB_TRACE_OP_DATA_WRITE);
+	aub_out(bufmgr_gem, 0); /* subtype */
+	aub_out(bufmgr_gem, 0); /* offset */
+	aub_out(bufmgr_gem, gtt_size); /* size */
+	for (i = 0x000; i < gtt_size; i += 4, entry += 0x1000) {
+		aub_out(bufmgr_gem, entry);
+	}
 }
 
 /**
