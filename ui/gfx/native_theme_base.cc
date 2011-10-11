@@ -92,6 +92,15 @@ gfx::Size NativeThemeBase::GetPartSize(Part part,
     case kSliderTrack:
     case kProgressBar:
       return gfx::Size();  // No default size.
+    case kMenuCheck:
+    case kMenuCheckBackground:
+    case kMenuPopupArrow:
+    case kMenuPopupBackground:
+    case kMenuPopupGutter:
+    case kMenuPopupSeparator:
+    case kMenuItemBackground:
+      NOTIMPLEMENTED() << " theme part: " << part;
+      break;
     default:
       NOTREACHED() << "Unknown theme part: " << part;
       break;
