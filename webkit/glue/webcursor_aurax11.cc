@@ -29,7 +29,7 @@ class CursorCache {
   }
 
   Cursor GetCursor(int web_cursor_info_type) {
-    Cursor cursor = NULL;
+    Cursor cursor = static_cast<Cursor>(NULL);
     std::pair<std::map<int, Cursor>::iterator, bool> it = cache_.insert(
         std::make_pair(web_cursor_info_type, cursor));
     if (it.second) {

@@ -100,7 +100,7 @@ std::string Link::GetClassName() const {
 
 gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
   if (!IsEnabled())
-    return NULL;
+    return gfx::kNullCursor;
 #if defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
@@ -108,7 +108,7 @@ gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
   return gfx::GetCursor(GDK_HAND2);
 #else
   // TODO(saintlou):
-  return NULL;
+  return gfx::kNullCursor;
 #endif
 }
 

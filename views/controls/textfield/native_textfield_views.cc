@@ -298,7 +298,7 @@ gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
 #elif defined(USE_AURA)
   // TODO(saintlou):
   (void)text_cursor;
-  return NULL;
+  return gfx::kNullCursor;
 #else
   return text_cursor ? gfx::GetCursor(GDK_XTERM) : NULL;
 #endif

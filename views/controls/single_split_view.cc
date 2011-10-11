@@ -95,7 +95,7 @@ gfx::Size SingleSplitView::GetPreferredSize() {
 
 gfx::NativeCursor SingleSplitView::GetCursor(const MouseEvent& event) {
   if (!IsPointInDivider(event.location()))
-    return NULL;
+    return gfx::kNullCursor;
 #if defined(OS_WIN)
   static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
@@ -105,7 +105,7 @@ gfx::NativeCursor SingleSplitView::GetCursor(const MouseEvent& event) {
                                          GDK_SB_V_DOUBLE_ARROW);
 #else
   // TODO(saintlou):
-  return NULL;
+  return gfx::kNullCursor;
 #endif
 }
 

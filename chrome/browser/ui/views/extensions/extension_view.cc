@@ -60,7 +60,7 @@ void ExtensionView::SetIsClipped(bool is_clipped) {
 }
 
 gfx::NativeCursor ExtensionView::GetCursor(const views::MouseEvent& event) {
-  return NULL;
+  return gfx::kNullCursor;
 }
 
 void ExtensionView::SetVisible(bool is_visible) {

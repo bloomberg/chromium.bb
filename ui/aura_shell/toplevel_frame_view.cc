@@ -492,7 +492,7 @@ gfx::NativeCursor ToplevelFrameView::GetCursor(const views::MouseEvent& event) {
   return NULL;
 #elif defined(OS_LINUX)
   NOTIMPLEMENTED();
-  return NULL;
+  return gfx::kNullCursor;
 #endif
 }
 

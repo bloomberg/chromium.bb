@@ -6,6 +6,7 @@
 
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace views {
 namespace internal {
@@ -20,7 +21,7 @@ NativeWidgetView::NativeWidgetView(NativeWidgetViews* native_widget)
     : native_widget_(native_widget),
       sent_create_(false),
       delete_native_widget_(true),
-      cursor_(NULL) {
+      cursor_(gfx::kNullCursor) {
 }
 
 NativeWidgetView::~NativeWidgetView() {

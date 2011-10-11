@@ -306,7 +306,7 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
       widget_->SetCursor(mouse_move_handler_->GetCursor(moved_event));
   } else if (mouse_move_handler_ != NULL) {
     mouse_move_handler_->OnMouseExited(e);
-    widget_->SetCursor(NULL);
+    widget_->SetCursor(gfx::kNullCursor);
   }
 }
 

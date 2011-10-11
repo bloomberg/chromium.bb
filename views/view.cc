@@ -726,7 +726,7 @@ gfx::NativeCursor View::GetCursor(const MouseEvent& event) {
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
   return arrow;
 #else
-  return NULL;
+  return gfx::kNullCursor;
 #endif
 }
 

@@ -240,7 +240,7 @@ void Window::ConvertPointToWindow(Window* source,
 }
 
 gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
-  return delegate_ ? delegate_->GetCursor(point) : NULL;
+  return delegate_ ? delegate_->GetCursor(point) : gfx::kNullCursor;
 }
 
 void Window::SetEventFilter(EventFilter* event_filter) {

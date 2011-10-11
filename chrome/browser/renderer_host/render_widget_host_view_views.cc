@@ -101,7 +101,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       about_to_validate_and_paint_(false),
       is_hidden_(false),
       is_loading_(false),
-      native_cursor_(NULL),
+      native_cursor_(gfx::kNullCursor),
       is_showing_context_menu_(false),
       visually_deemphasized_(false),
       touch_event_(),

@@ -95,7 +95,7 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
   return g_hand_cursor;
 #elif defined(USE_AURA)
   // TODO(saintlou):
-  return NULL;
+  return gfx::kNullCursor;
 #elif defined(TOOLKIT_USES_GTK)
   return gfx::GetCursor(GDK_HAND2);
 #endif

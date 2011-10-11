@@ -165,6 +165,9 @@ typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #endif
 
+// A constant value to indicate that gfx::NativeCursor refers to no cursor.
+const gfx::NativeCursor kNullCursor = static_cast<gfx::NativeCursor>(NULL);
+
 #if defined(OS_MACOSX)
 typedef NSImage NativeImageType;
 #elif defined(TOOLKIT_GTK)
