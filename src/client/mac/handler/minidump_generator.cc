@@ -1099,7 +1099,11 @@ bool MinidumpGenerator::WriteSystemInfoStream(
   }
 
   info_ptr->number_of_processors = number_of_processors;
+#if TARGET_OS_IPHONE
+  info_ptr->platform_id = MD_OS_IOS;
+#else
   info_ptr->platform_id = MD_OS_MAC_OS_X;
+#endif  // TARGET_OS_IPHONE
 
   MDLocationDescriptor build_string_loc;
 
