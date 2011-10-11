@@ -92,6 +92,7 @@ WebGraphicsContext3DInProcessImpl::~WebGraphicsContext3DInProcessImpl() {
 #endif
   glDeleteFramebuffersEXT(1, &fbo_);
 
+  gl_context_->ReleaseCurrent(gl_surface_.get());
   gl_context_->Destroy();
   gl_surface_->Destroy();
 
