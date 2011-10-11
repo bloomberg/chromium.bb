@@ -4,6 +4,7 @@
 
 #include "ppapi/thunk/enter.h"
 
+#include "base/lazy_instance.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 

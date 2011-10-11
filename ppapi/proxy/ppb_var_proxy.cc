@@ -8,6 +8,7 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -18,18 +19,22 @@ namespace {
 // PPP_Var plugin --------------------------------------------------------------
 
 void AddRefVar(PP_Var var) {
+  ppapi::ProxyAutoLock lock;
   PluginResourceTracker::GetInstance()->var_tracker().AddRefVar(var);
 }
 
 void ReleaseVar(PP_Var var) {
+  ppapi::ProxyAutoLock lock;
   PluginResourceTracker::GetInstance()->var_tracker().ReleaseVar(var);
 }
 
 PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
+  ppapi::ProxyAutoLock lock;
   return StringVar::StringToPPVar(module, data, len);
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
+  ppapi::ProxyAutoLock lock;
   StringVar* str = StringVar::FromPPVar(var);
   if (str) {
     *len = static_cast<uint32_t>(str->value().size());

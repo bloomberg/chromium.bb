@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/synchronization/lock.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
@@ -90,6 +91,9 @@ class PPAPI_PROXY_EXPORT PluginResourceTracker : public TrackerBase,
   // Map of host instance/resource pairs to a plugin resource ID.
   typedef std::map<HostResource, PP_Resource> HostResourceMap;
   HostResourceMap host_resource_map_;
+
+  // The global lock for the plugin side of the proxy.
+  base::Lock proxy_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginResourceTracker);
 };

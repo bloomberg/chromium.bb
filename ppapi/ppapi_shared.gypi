@@ -60,6 +60,8 @@
         'shared_impl/ppapi_preferences.h',
         'shared_impl/ppp_instance_combined.cc',
         'shared_impl/ppp_instance_combined.h',
+        'shared_impl/proxy_lock.cc',
+        'shared_impl/proxy_lock.h',
         'shared_impl/resource.cc',
         'shared_impl/resource.h',
         'shared_impl/resource_tracker.cc',

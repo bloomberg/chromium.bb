@@ -9,6 +9,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/shared_impl/var.h"
@@ -29,9 +30,17 @@ TrackerBase* GetTrackerBase() {
 
 PluginResourceTracker::PluginResourceTracker()
     : var_tracker_test_override_(NULL) {
+#ifdef ENABLE_PEPPER_THREADING
+  // Set the global proxy lock, since the plugin-side of the proxy needs to be
+  // synchronized.
+  ppapi::ProxyLock::Set(&proxy_lock_);
+#endif
 }
 
 PluginResourceTracker::~PluginResourceTracker() {
+#ifdef ENABLE_PEPPER_THREADING
+  ppapi::ProxyLock::Reset();
+#endif
 }
 
 // static
