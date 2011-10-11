@@ -25,7 +25,14 @@ class SingleClientSessionsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, Sanity) {
+// Timeout on Windows, see http://crbug.com/99819
+#if defined(OS_WIN)
+#define MAYBE_Sanity FAILS_Sanity
+#else
+#define MAYBE_Sanity Sanity
+#endif
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));

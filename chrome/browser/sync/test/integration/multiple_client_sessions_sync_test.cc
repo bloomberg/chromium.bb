@@ -25,7 +25,16 @@ class MultipleClientSessionsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(MultipleClientSessionsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, AllChanged) {
+// Timeout on Windows, see http://crbug.com/99819
+#if defined(OS_WIN)
+#define MAYBE_AllChanged FAILS_AllChanged
+#define MAYBE_EncryptedAndChanged FAILS_EncryptedAndChanged
+#else
+#define MAYBE_AllChanged AllChanged
+#define MAYBE_EncryptedAndChanged EncryptedAndChanged
+#endif
+
+IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, MAYBE_AllChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   std::vector<ScopedWindowMap> client_windows(num_clients());
 
@@ -52,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, AllChanged) {
 }
 
 IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
-                       EncryptedAndChanged) {
+                       MAYBE_EncryptedAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   std::vector<ScopedWindowMap> client_windows(num_clients());
 
