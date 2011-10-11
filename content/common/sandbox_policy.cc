@@ -303,7 +303,7 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
     if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
         gfx::kGLImplementationDesktopName) {
       policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
-      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     } else {
       // UI restrictions break when we access Windows from outside our job.
       // However, we don't want a proxy window in this process because it can
@@ -316,7 +316,7 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
                           JOB_OBJECT_UILIMIT_DESKTOP |
                           JOB_OBJECT_UILIMIT_EXITWINDOWS |
                           JOB_OBJECT_UILIMIT_DISPLAYSETTINGS);
-      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     }
   } else {
     policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
