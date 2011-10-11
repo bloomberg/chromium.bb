@@ -11,8 +11,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/notification_service.h"
+#include "content/public/common/bindings_policy.h"
 
 static base::LazyInstance<PropertyAccessor<HtmlDialogUIDelegate*> >
     g_html_dialog_ui_property_accessor(base::LINKER_INITIALIZED);
@@ -60,7 +60,7 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
     (*delegate)->GetWebUIMessageHandlers(&handlers);
   }
 
-  if (0 != (bindings_ & BindingsPolicy::WEB_UI))
+  if (0 != (bindings_ & content::BINDINGS_POLICY_WEB_UI))
     render_view_host->SetWebUIProperty("dialogArguments", dialog_args);
   for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();
        it != handlers.end(); ++it) {
@@ -92,7 +92,7 @@ ExternalHtmlDialogUI::ExternalHtmlDialogUI(TabContents* tab_contents)
   // for security reasons. The code hosting the dialog should provide
   // dialog specific functionality through other bindings and methods
   // that are scoped in duration to the dialogs existence.
-  bindings_ &= ~BindingsPolicy::WEB_UI;
+  bindings_ &= ~content::BINDINGS_POLICY_WEB_UI;
 }
 
 ExternalHtmlDialogUI::~ExternalHtmlDialogUI() {

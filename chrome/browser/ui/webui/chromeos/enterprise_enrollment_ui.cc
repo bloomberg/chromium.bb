@@ -18,7 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/bindings_policy.h"
+#include "content/public/common/bindings_policy.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -159,7 +159,7 @@ EnterpriseEnrollmentUI::~EnterpriseEnrollmentUI() {}
 void EnterpriseEnrollmentUI::RenderViewCreated(
     RenderViewHost* render_view_host) {
   // Bail out early if web ui is disabled.
-  if (!(bindings_ & BindingsPolicy::WEB_UI))
+  if (!(bindings_ & content::BINDINGS_POLICY_WEB_UI))
     return;
 
   handler_ = new SingleEnterpriseEnrollmentScreenHandler();

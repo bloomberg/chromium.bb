@@ -39,9 +39,9 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/notification_service.h"
+#include "content/public/common/bindings_policy.h"
 #include "grit/generated_resources.h"
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
@@ -121,7 +121,8 @@ DevToolsWindow* DevToolsWindow::Create(
   // Create TabContents with devtools.
   TabContentsWrapper* tab_contents =
       Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  tab_contents->render_view_host()->AllowBindings(BindingsPolicy::WEB_UI);
+  tab_contents->render_view_host()->AllowBindings(
+      content::BINDINGS_POLICY_WEB_UI);
   tab_contents->controller().LoadURL(
       GetDevToolsUrl(profile, docked, shared_worker_frontend),
       GURL(),

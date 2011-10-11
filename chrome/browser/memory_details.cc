@@ -22,7 +22,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/bindings_policy.h"
+#include "content/public/common/bindings_policy.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -165,7 +165,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         DCHECK(host_delegate);
         GURL url = host_delegate->GetURL();
         content::ViewType::Type type = host_delegate->GetRenderViewType();
-        if (host->enabled_bindings() & BindingsPolicy::WEB_UI) {
+        if (host->enabled_bindings() & content::BINDINGS_POLICY_WEB_UI) {
           // TODO(erikkay) the type for devtools doesn't actually appear to
           // be set.
           if (type == content::ViewType::DEV_TOOLS_UI)

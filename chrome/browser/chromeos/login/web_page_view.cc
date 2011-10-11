@@ -15,7 +15,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/bindings_policy.h"
+#include "content/public/common/bindings_policy.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ipc/ipc_message.h"

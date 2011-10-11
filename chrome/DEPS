@@ -13,6 +13,7 @@ include_rules = [
   "+chrome/test",
   "-content",
   "+content/common",
+  "+content/public/common",
   "+content/test",
 
   # Don't allow inclusion of these other libs we shouldn't be calling directly.

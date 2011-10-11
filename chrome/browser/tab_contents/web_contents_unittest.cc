@@ -21,11 +21,11 @@
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/content_constants.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/bindings_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/message_box_flags.h"
 #include "webkit/glue/webkit_glue.h"
@@ -610,7 +610,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_EQ(ntp_rvh, contents()->render_view_host());
   EXPECT_EQ(url1, entry1->url());
   EXPECT_EQ(instance1, entry1->site_instance());
-  EXPECT_TRUE(BindingsPolicy::is_web_ui_enabled(ntp_rvh->enabled_bindings()));
+  EXPECT_TRUE(ntp_rvh->enabled_bindings() & content::BINDINGS_POLICY_WEB_UI);
 
   // Navigate to new site.
   const GURL url2("http://www.google.com");
@@ -635,8 +635,8 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_FALSE(contents()->pending_rvh());
   EXPECT_EQ(url2, entry2->url());
   EXPECT_EQ(instance2, entry2->site_instance());
-  EXPECT_FALSE(BindingsPolicy::is_web_ui_enabled(
-      google_rvh->enabled_bindings()));
+  EXPECT_FALSE(google_rvh->enabled_bindings() &
+      content::BINDINGS_POLICY_WEB_UI);
 
   // Navigate to third page on same site.
   const GURL url3("http://news.google.com");

@@ -17,11 +17,11 @@
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/bindings_policy.h"
 #include "ipc/ipc_message.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -178,7 +178,7 @@ void BalloonHost::Init() {
   RenderViewHost* rvh = new RenderViewHost(
       site_instance_.get(), this, MSG_ROUTING_NONE, NULL);
   if (enable_web_ui_)
-    rvh->AllowBindings(BindingsPolicy::WEB_UI);
+    rvh->AllowBindings(content::BINDINGS_POLICY_WEB_UI);
 
   // Do platform-specific initialization.
   render_view_host_ = rvh;

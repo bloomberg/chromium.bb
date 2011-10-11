@@ -25,8 +25,8 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/page_transition_types.h"
+#include "content/public/common/bindings_policy.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -145,7 +145,7 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
   // Bind externalHost to Extension WebUI loaded in Chrome Frame.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
-    bindings_ |= BindingsPolicy::EXTERNAL_HOST;
+    bindings_ |= content::BINDINGS_POLICY_EXTERNAL_HOST;
   // For chrome:// overrides, some of the defaults are a little different.
   GURL effective_url = tab_contents->GetURL();
   if (effective_url.SchemeIs(chrome::kChromeUIScheme)) {

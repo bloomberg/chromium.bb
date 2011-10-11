@@ -9,8 +9,8 @@
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/url_constants.h"
+#include "content/public/common/bindings_policy.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
@@ -93,7 +93,7 @@ class ChildProcessSecurityPolicy::SecurityState {
   }
 
   bool has_web_ui_bindings() const {
-    return BindingsPolicy::is_web_ui_enabled(enabled_bindings_);
+    return enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI;
   }
 
   bool can_read_raw_cookies() const {
@@ -299,7 +299,7 @@ void ChildProcessSecurityPolicy::GrantWebUIBindings(int child_id) {
   if (state == security_state_.end())
     return;
 
-  state->second->GrantBindings(BindingsPolicy::WEB_UI);
+  state->second->GrantBindings(content::BINDINGS_POLICY_WEB_UI);
 
   // Web UI bindings need the ability to request chrome: URLs.
   state->second->GrantScheme(chrome::kChromeUIScheme);

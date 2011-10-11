@@ -44,11 +44,11 @@
 #include "content/browser/tab_contents/popup_menu_helper_mac.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/content_client.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/bindings_policy.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -145,7 +145,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
   if (enable_dom_automation_)
-    render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);
+    render_view_host_->AllowBindings(content::BINDINGS_POLICY_DOM_AUTOMATION);
 
   // Listen for when the render process' handle is available so we can add it
   // to the task manager then.

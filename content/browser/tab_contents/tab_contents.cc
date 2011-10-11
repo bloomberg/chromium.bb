@@ -39,7 +39,6 @@
 #include "content/browser/tab_contents/title_updated_details.h"
 #include "content/browser/user_metrics.h"
 #include "content/browser/webui/web_ui_factory.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/content_client.h"
 #include "content/common/content_constants.h"
 #include "content/common/content_restriction.h"
@@ -49,6 +48,7 @@
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/common/view_types.h"
+#include "content/public/common/bindings_policy.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -574,7 +574,7 @@ bool TabContents::NavigateToEntry(
   bool is_allowed_in_web_ui_renderer = content::GetContentClient()->
       browser()->GetWebUIFactory()->IsURLAcceptableForWebUI(browser_context(),
                                                             entry.url());
-  CHECK(!BindingsPolicy::is_web_ui_enabled(enabled_bindings) ||
+  CHECK(!(enabled_bindings & content::BINDINGS_POLICY_WEB_UI) ||
         is_allowed_in_web_ui_renderer);
 
   // Tell DevTools agent that it is attached prior to the navigation.

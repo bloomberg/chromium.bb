@@ -25,8 +25,8 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate_helper.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "net/base/data_url.h"
@@ -233,7 +233,7 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
   if (command_line.HasSwitch(switches::kDomAutomationController)) {
     int old_bindings = render_view->GetEnabledBindings();
     render_view->SetEnabledBindings(
-        old_bindings |= BindingsPolicy::DOM_AUTOMATION);
+        old_bindings |= content::BINDINGS_POLICY_DOM_AUTOMATION);
   }
   render_view->GetWebView()->setPermissionClient(this);
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
@@ -665,7 +665,7 @@ void ChromeRenderViewObserver::OnSetIsPrerendering(bool is_prerendering) {
 }
 
 void ChromeRenderViewObserver::DidStartLoading() {
-  if (BindingsPolicy::is_web_ui_enabled(render_view()->GetEnabledBindings()) &&
+  if ((render_view()->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) &&
       webui_javascript_.get()) {
     render_view()->EvaluateScript(webui_javascript_->frame_xpath,
                                   webui_javascript_->jscript,
@@ -743,13 +743,13 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
 }
 
 void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {
-  if (BindingsPolicy::is_dom_automation_enabled(
-          render_view()->GetEnabledBindings())) {
+  if (render_view()->GetEnabledBindings() &
+          content::BINDINGS_POLICY_DOM_AUTOMATION) {
     BindDOMAutomationController(frame);
   }
 
-  if (BindingsPolicy::is_external_host_enabled(
-          render_view()->GetEnabledBindings())) {
+  if (render_view()->GetEnabledBindings() &
+          content::BINDINGS_POLICY_EXTERNAL_HOST) {
     GetExternalHostBindings()->BindToJavascript(frame, "externalHost");
   }
 }

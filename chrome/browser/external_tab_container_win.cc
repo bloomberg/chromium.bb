@@ -43,12 +43,12 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/bindings_policy.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -204,7 +204,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   if (!existing_contents) {
     tab_contents_->render_view_host()->AllowBindings(
-        BindingsPolicy::EXTERNAL_HOST);
+        content::BINDINGS_POLICY_EXTERNAL_HOST);
   }
 
   NavigationController* controller = &tab_contents_->controller();

@@ -19,7 +19,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
 

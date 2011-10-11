@@ -22,13 +22,13 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/view_messages.h"
 #include "content/common/view_types.h"
+#include "content/public/common/bindings_policy.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -422,7 +422,7 @@ TabContentsView* InterstitialPage::CreateTabContentsView() {
   RenderWidgetHostView* view =
       tab_contents_view->CreateViewForWidget(render_view_host_);
   render_view_host_->SetView(view);
-  render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);
+  render_view_host_->AllowBindings(content::BINDINGS_POLICY_DOM_AUTOMATION);
 
   render_view_host_->CreateRenderView(string16());
   view->SetSize(tab_contents_view->GetContainerSize());

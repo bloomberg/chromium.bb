@@ -25,7 +25,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/appcache/appcache_dispatcher.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/content_constants.h"
 #include "content/common/content_switches.h"
@@ -42,6 +41,7 @@
 #include "content/common/request_extra_data.h"
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -2042,7 +2042,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       request.httpMethod() == "GET" && !url.SchemeIs(chrome::kAboutScheme)) {
     bool send_referrer = false;
     bool should_fork =
-        BindingsPolicy::is_web_ui_enabled(enabled_bindings_) ||
+        (enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI) ||
         frame->isViewSourceModeEnabled() ||
         url.SchemeIs(chrome::kViewSourceScheme);
 
@@ -2498,7 +2498,7 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
                     DidClearWindowObject(frame));
 
   GURL frame_url = frame->document().url();
-  if (BindingsPolicy::is_web_ui_enabled(enabled_bindings_) &&
+  if ((enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI) &&
       (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
       frame_url.SchemeIs(chrome::kDataScheme))) {
     GetWebUIBindings()->BindToJavascript(frame, "chrome");
@@ -3572,7 +3572,7 @@ void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
 
 void RenderViewImpl::OnSetWebUIProperty(const std::string& name,
                                         const std::string& value) {
-  DCHECK(BindingsPolicy::is_web_ui_enabled(enabled_bindings_));
+  DCHECK(enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI);
   GetWebUIBindings()->SetProperty(name, value);
 }
 

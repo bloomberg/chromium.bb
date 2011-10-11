@@ -29,7 +29,6 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/content_constants.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/desktop_notification_messages.h"
@@ -42,6 +41,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/bindings_policy.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -163,7 +163,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   DCHECK(process()->HasConnection());
   DCHECK(process()->browser_context());
 
-  if (BindingsPolicy::is_web_ui_enabled(enabled_bindings_)) {
+  if (enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI) {
     ChildProcessSecurityPolicy::GetInstance()->GrantWebUIBindings(
         process()->id());
   }
@@ -534,7 +534,7 @@ void RenderViewHost::AllowBindings(int bindings_flags) {
 
 void RenderViewHost::SetWebUIProperty(const std::string& name,
                                       const std::string& value) {
-  DCHECK(BindingsPolicy::is_web_ui_enabled(enabled_bindings_));
+  DCHECK(enabled_bindings_  & content::BINDINGS_POLICY_WEB_UI);
   Send(new ViewMsg_SetWebUIProperty(routing_id(), name, value));
 }
 
@@ -1070,7 +1070,7 @@ void RenderViewHost::OnAddMessageToConsole(int32 level,
                                            const string16& source_id) {
   // Pass through log level only on WebUI pages to limit console spew.
   int32 resolved_level =
-      BindingsPolicy::is_web_ui_enabled(enabled_bindings_) ? level : 0;
+      (enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI) ? level : 0;
 
   logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
       message << "\", source: " << source_id << " (" << line_no << ")";

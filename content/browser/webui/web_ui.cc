@@ -16,8 +16,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/generic_handler.h"
-#include "content/common/bindings_policy.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/bindings_policy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -43,7 +43,7 @@ WebUI::WebUI(TabContents* contents)
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
       link_transition_type_(PageTransition::LINK),
-      bindings_(BindingsPolicy::WEB_UI),
+      bindings_(content::BINDINGS_POLICY_WEB_UI),
       register_callback_overwrites_(false),
       tab_contents_(contents) {
   DCHECK(contents);
@@ -102,7 +102,7 @@ void WebUI::OnWebUISend(const GURL& source_url,
 void WebUI::RenderViewCreated(RenderViewHost* render_view_host) {
   // Do not attempt to set the toolkit property if WebUI is not enabled, e.g.,
   // the bookmarks manager page.
-  if (!(bindings_ & BindingsPolicy::WEB_UI))
+  if (!(bindings_ & content::BINDINGS_POLICY_WEB_UI))
     return;
 
 #if defined(TOOLKIT_VIEWS)
