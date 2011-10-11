@@ -40,10 +40,8 @@ ImageEncoder.createMetadataEncoder = function(metadata) {
  */
 ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
   var encoder = ImageEncoder.createMetadataEncoder(metadata);
-  if (encoder) {
-    encoder.setImageData(canvas);
-    ImageEncoder.encodeThumbnail(canvas, encoder, quality || 1);
-  }
+  encoder.setImageData(canvas);
+  encoder.setThumbnailData(ImageEncoder.createThumbnail(canvas), quality || 1);
   return encoder;
 };
 
@@ -56,11 +54,9 @@ ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
  * @return {Blob}
  */
 ImageEncoder.getBlob = function(canvas, metadataEncoder, quality) {
-  var mimeType = metadataEncoder.getMetadata().mimeType;
   var blobBuilder = new WebKitBlobBuilder();
-  ImageEncoder.buildBlob(
-      blobBuilder, canvas, metadataEncoder, mimeType, quality);
-  return blobBuilder.getBlob(mimeType);
+  ImageEncoder.buildBlob(blobBuilder, canvas, metadataEncoder, quality);
+  return blobBuilder.getBlob(metadataEncoder.getMetadata().mimeType);
 };
 
 /**
@@ -68,20 +64,25 @@ ImageEncoder.getBlob = function(canvas, metadataEncoder, quality) {
  * @param {BlobBuilder} blobBuilder
  * @param {HTMLCanvasElement} canvas The canvas with the image to be encoded.
  * @param {ImageEncoder.MetadataEncoder} metadataEncoder
- * @param {String} mimeType
  * @param {Number} quality (0..1], Encoding quality, default is 0.5
  */
 ImageEncoder.buildBlob = function(
-    blobBuilder, canvas, metadataEncoder, mimeType, quality) {
+    blobBuilder, canvas, metadataEncoder, quality) {
 
   quality = quality || 0.5;
 
-  var encodedImage = ImageEncoder.encodeImage(canvas, mimeType, quality);
+  // WebKit does not support canvas.toBlob yet so canvas.toDataURL is
+  // the only way to use the Chrome built-in image encoder.
+  var dataURL =
+      canvas.toDataURL(metadataEncoder.getMetadata().mimeType, quality);
+
+  var encodedImage = ImageEncoder.decodeDataURL(dataURL);
+
+  var encodedMetadata = metadataEncoder.encode();
 
   ImageUtil.trace.resetTimer('blob');
-  if (metadataEncoder) {
+  if (encodedMetadata.byteLength != 0) {
     var metadataRange = metadataEncoder.findInsertionRange(encodedImage);
-
     blobBuilder.append(ImageEncoder.stringToArrayBuffer(
         encodedImage, 0, metadataRange.from));
 
@@ -97,70 +98,37 @@ ImageEncoder.buildBlob = function(
 };
 
 /**
- * Return a string with encoded image.
+ * Decode a dataURL into a binary string containing the encoded image.
  *
- * Why return a string? WebKits does not support canvas.toBlob yet so the only
- * way to use the Chrome built-in encoder is canvas.toDataURL which returns
- * base64-encoded string. Calling atob and having the rest of the code deal
+ * Why return a string? Calling atob and having the rest of the code deal
  * with a string is several times faster than decoding base64 in Javascript.
  *
- * @param {HTMLCanvasElement} canvas
- * @param {String} mimeType
- * @param {Number} quality
- * @return {String}
+ * @param {String} dataURL
+ * @return {String} A binary string (char codes are the actual byte values).
  */
-ImageEncoder.encodeImage = function(canvas, mimeType, quality) {
-  var dataURL = canvas.toDataURL(mimeType, quality);
+ImageEncoder.decodeDataURL = function(dataURL) {
+  // Skip the prefix ('data:image/<type>;base64,')
   var base64string = dataURL.substring(dataURL.indexOf(',') + 1);
   return atob(base64string);
 };
 
 /**
- * Create a thumbnail and pass it to the metadata encoder.
- * @param {HTMLCanvasElement} canvas
- * @param {ImageEncoder.MetadataEncoder} metadataEncoder
- * @param {number} quality Image encoding quality
- */
-ImageEncoder.encodeThumbnail = function(canvas, metadataEncoder, quality) {
-  var thumbnailCanvas;
-  var thumbnailURL;
-
-  var pixelCount = canvas.width * canvas.height;
-
-  // Is the image large enough to need a thumbnail?
-  if (pixelCount > Math.pow(ImageEncoder.MAX_THUMBNAIL_DIMENSION, 2)) {
-    thumbnailCanvas = ImageEncoder.createThumbnail(canvas, 4);
-    // Encode the thumbnail with the quality a little lower than the original.
-    // Empirical formula with reasonable behavior:
-    // 10K for 1Mpix, 30K for 5Mpix, 50K for 9Mpix and up.
-    var maxEncodedSize = 5000 * Math.min(10, 1 + pixelCount / 1000000);
-
-    var mimeType = metadataEncoder.getMetadata().mimeType;
-
-    thumbnailURL = ImageEncoder.getThumbnailURL(
-        thumbnailCanvas, mimeType, quality * 0.9, maxEncodedSize);
-  }
-
-  metadataEncoder.setThumbnailData(thumbnailCanvas, thumbnailURL);
-};
-
-/**
  * Return a thumbnail for an image.
  * @param {HTMLCanvasElement} canvas Original image.
- * @param {Number} shrinkage Thumbnail should at least this much smaller than
- *                           the original image (in each dimension).
+ * @param {Number} opt_shrinkage Thumbnail should be at least this much smaller
+ *                               than the original image (in each dimension).
  * @return {HTMLCanvasElement} Thumbnail canvas
  */
-ImageEncoder.createThumbnail = function(canvas, shrinkage) {
+ImageEncoder.createThumbnail = function(canvas, opt_shrinkage) {
   const MAX_THUMBNAIL_DIMENSION = 320;
 
-  shrinkage = Math.max(shrinkage,
+  opt_shrinkage = Math.max(opt_shrinkage || 4,
                        canvas.width / MAX_THUMBNAIL_DIMENSION,
                        canvas.height / MAX_THUMBNAIL_DIMENSION);
 
   var thumbnailCanvas = canvas.ownerDocument.createElement('canvas');
-  thumbnailCanvas.width = Math.round(canvas.width / shrinkage);
-  thumbnailCanvas.height = Math.round(canvas.height / shrinkage);
+  thumbnailCanvas.width = Math.round(canvas.width / opt_shrinkage);
+  thumbnailCanvas.height = Math.round(canvas.height / opt_shrinkage);
 
   var context = thumbnailCanvas.getContext('2d');
   context.drawImage(canvas,
@@ -168,32 +136,6 @@ ImageEncoder.createThumbnail = function(canvas, shrinkage) {
       0, 0, thumbnailCanvas.width, thumbnailCanvas.height);
 
   return thumbnailCanvas;
-};
-
-/**
- * Return a data URL with the image encoded.
- * @param {HTMLCanvasElement} canvas.
- * @param {String} mimeType
- * @param {Number} maxQuality Maximum encoding quality (actual quality can be
- *                            lower to meet the size limit.
- * @param {Number} maxEncodedSize Maximum size of the binary encoded data.
- */
-ImageEncoder.getThumbnailURL = function(
-    canvas, mimeType, maxQuality, maxEncodedSize) {
-
-  const DATA_URL_PREFIX = 'data:' + mimeType + ';base64,';
-  const BASE64_BLOAT = 4 / 3;
-  var maxDataURLLength =
-      DATA_URL_PREFIX.length + Math.ceil(maxEncodedSize * BASE64_BLOAT);
-
-  for (var quality = maxQuality; quality > 0.2; quality *= 0.8) {
-    var dataURL = canvas.toDataURL(mimeType, quality);
-    if (dataURL.length <= maxDataURLLength)
-      return dataURL;
-  }
-
-  console.error('Unable to create thumbnail');
-  return null;
 };
 
 ImageEncoder.stringToArrayBuffer = function(string, from, to) {
@@ -208,10 +150,18 @@ ImageEncoder.stringToArrayBuffer = function(string, from, to) {
 /**
  * A base class for a metadata encoder.
  *
+ * Serves as a default metadata encoder for images that none of the metadata
+ * parsers recognized.
+ *
  * @param {Object} original_metadata
  */
 ImageEncoder.MetadataEncoder = function(original_metadata) {
   this.metadata_ = ImageUtil.deepCopy(original_metadata) || {};
+  if (!this.metadata_.mimeType) {
+    // For the purposes saving to a file and thumbnail generation we assume
+    // it is a png.
+    this.metadata_.mimeType = 'image/png';
+  }
 };
 
 ImageEncoder.MetadataEncoder.prototype.getMetadata = function() {
@@ -222,16 +172,19 @@ ImageEncoder.MetadataEncoder.prototype.getMetadata = function() {
  * @param {HTMLCanvasElement|Object} canvas Canvas or or anything with
  *                                          width and height properties.
  */
-ImageEncoder.MetadataEncoder.prototype.setImageData = function(canvas) {};
+ImageEncoder.MetadataEncoder.prototype.setImageData = function(canvas) {
+  this.metadata_.width = canvas.width;
+  this.metadata_.height = canvas.height;
+};
 
 /**
- * @param {HTMLCanvasElement|Object} canvas Canvas or or anything with
- *                                          width and height properties.
- * @param {String} dataUrl Data url containing the thumbnail.
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} quality
  */
-ImageEncoder.MetadataEncoder.prototype.
-    setThumbnailData = function(canvas, dataUrl) {
-  this.metadata_.thumbnailURL = dataUrl;
+ImageEncoder.MetadataEncoder.prototype.setThumbnailData =
+    function(canvas, quality) {
+  this.metadata_.thumbnailURL =
+      canvas.toDataURL(this.metadata_.mimeType, quality);
 };
 
 /**

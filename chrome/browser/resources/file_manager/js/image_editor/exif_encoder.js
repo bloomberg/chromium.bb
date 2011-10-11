@@ -76,12 +76,28 @@ ExifEncoder.prototype.setImageData = function(canvas) {
 
 
 /**
- * @param {HTMLCanvasElement|Object} canvas Canvas or or anything with
- *                                          width and height properties.
- * @param {String} dataURL Data url containing the thumbnail.
+ * @param {HTMLCanvasElement} canvas Thumbnail canvas
+ * @param {number} quality (0..1] Thumbnail encoding quality
  */
-ExifEncoder.prototype.setThumbnailData = function(canvas, dataURL) {
-  if (canvas) {
+ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
+  // Empirical formula with reasonable behavior:
+  // 10K for 1Mpix, 30K for 5Mpix, 50K for 9Mpix and up.
+  var pixelCount = this.metadata_.width * this.metadata_.height;
+  var maxEncodedSize = 5000 * Math.min(10, 1 + pixelCount / 1000000);
+
+  const DATA_URL_PREFIX = 'data:' + this.mimeType + ';base64,';
+  const BASE64_BLOAT = 4 / 3;
+  var maxDataURLLength =
+      DATA_URL_PREFIX.length + Math.ceil(maxEncodedSize * BASE64_BLOAT);
+
+  for (;; quality *= 0.8) {
+    ImageEncoder.MetadataEncoder.prototype.setThumbnailData.call(
+        this, canvas, quality);
+    if (this.metadata_.thumbnailURL.length <= maxDataURLLength || quality < 0.2)
+      break;
+  }
+
+  if (this.metadata_.thumbnailURL.length <= maxDataURLLength) {
     var thumbnail = this.ifd_.thumbnail;
     if (!thumbnail)
       thumbnail = this.ifd_.thumbnail = {};
@@ -98,11 +114,14 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, dataURL) {
 
     // Always save in default orientation.
     ExifEncoder.findOrCreateTag(thumbnail, EXIF_TAG_ORIENTATION).value = 1;
-
-    this.metadata_.thumbnailURL = dataURL;
-  } else if (this.ifd_.thumbnail) {
-    this.ifd_.thumbnail = null;
-    this.metadata_.thumbnailURL = null;
+  } else {
+    console.warn(
+       'Thumbnail URL too long: ' + this.metadata_.thumbnailURL.length);
+    // Delete thumbnail ifd so that it is not written out to a file, but
+    // keep thumbnailURL for display purposes.
+    if (this.ifd_.thumbnail) {
+      delete this.ifd_.thumbnail;
+    }
   }
   delete this.metadata_.thumbnailTransform;
 };
@@ -209,8 +228,6 @@ ExifEncoder.prototype.encode = function() {
       throw new Error('Missing gps dictionary reference');
   }
 
-  var thumbnailURL = this.metadata_.thumbnailURL;
-
   if (this.ifd_.thumbnail) {
     bw.resolveOffset('thumb-dir');
     ExifEncoder.encodeDirectory(
@@ -218,21 +235,12 @@ ExifEncoder.prototype.encode = function() {
         this.ifd_.thumbnail,
         [EXIF_TAG_JPG_THUMB_OFFSET, EXIF_TAG_JPG_THUMB_LENGTH]);
 
-    if (thumbnailURL) {
-      var thumbnailBase64 =
-          thumbnailURL.substring(thumbnailURL.indexOf(',') + 1);
-      var thumbnailDecoded = atob(thumbnailBase64);
-      bw.resolveOffset(EXIF_TAG_JPG_THUMB_OFFSET);
-      bw.resolve(EXIF_TAG_JPG_THUMB_LENGTH, thumbnailDecoded.length);
-      bw.writeString(thumbnailDecoded);
-    } else {
-      if (this.ifd_.thumbnail[EXIF_TAG_JPG_THUMB_OFFSET] ||
-          this.ifd_.thumbnail[EXIF_TAG_JPG_THUMB_LENGTH])
-        throw new Error('Missing thumbnailURL');
-    }
+    var thumbnailDecoded =
+        ImageEncoder.decodeDataURL(this.metadata_.thumbnailURL);
+    bw.resolveOffset(EXIF_TAG_JPG_THUMB_OFFSET);
+    bw.resolve(EXIF_TAG_JPG_THUMB_LENGTH, thumbnailDecoded.length);
+    bw.writeString(thumbnailDecoded);
   } else {
-    if (thumbnailURL)
-      throw new Error('Missing thumbnail dictionary');
     bw.resolve('thumb-dir', 0);
   }
 

@@ -189,7 +189,7 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
             return;
           }
         }
-        callback({mimeType: mimeType});  // Unrecognized mime type.
+        callback({});  // Unrecognized mime type.
       },
 
       // Reuse the last step from the standard sequence.

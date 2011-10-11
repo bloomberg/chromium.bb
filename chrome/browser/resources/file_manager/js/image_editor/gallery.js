@@ -689,11 +689,27 @@ Ribbon.Item.prototype.getCopyName = function () {
   if (index != -1) {
     ext = name.substr(index);
     name = name.substr(0, index);
-    var signaturePos = name.indexOf(Ribbon.Item.COPY_SIGNATURE);
-    if (signaturePos >= 0) {
-      // The file is likely to be a copy created during a previous session.
-      // Replace the signature instead of appending a new one.
-      name = name.substr(0, signaturePos);
+  }
+  var signaturePos = name.indexOf(Ribbon.Item.COPY_SIGNATURE);
+  if (signaturePos >= 0) {
+    // The file is likely to be a copy created during a previous session.
+    // Replace the signature instead of appending a new one.
+    name = name.substr(0, signaturePos);
+  }
+
+  var mimeType = this.metadata_.mimeType.toLowerCase();
+  if (mimeType != 'image/jpeg') {
+    // Chrome can natively encode only two formats: JPEG and PNG.
+    // All non-JPEG images are saved in PNG, hence forcing the file extension.
+    if (mimeType == 'image/png') {
+      ext = '.png';
+    } else {
+      // All non-JPEG images get 'image/png' mimeType (see
+      // ImageEncoder.MetadataEncoder constructor).
+      // This code can be reached only if someone has added a metadata parser
+      // for a format other than JPEG or PNG. The message below is to remind
+      // that one must also come up with the way to encode the image data.
+      console.error('Image encoding for ' + mimeType + ' is not supported');
     }
   }
 
