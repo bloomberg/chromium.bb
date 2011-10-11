@@ -39,7 +39,6 @@
 #import "client/mac/sender/uploader.h"
 #import "common/mac/GTMLogger.h"
 
-
 const int kMinidumpFileLengthLimit = 800000;
 
 #define kApplePrefsSyncExcludeAllKey \
@@ -48,8 +47,6 @@ const int kMinidumpFileLengthLimit = 800000;
 NSString *const kGoogleServerType = @"google";
 NSString *const kSocorroServerType = @"socorro";
 NSString *const kDefaultServerType = @"google";
-
-#define GTMLoggerDebug NSLog
 
 #pragma mark -
 
