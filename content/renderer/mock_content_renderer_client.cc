@@ -42,10 +42,11 @@ bool MockContentRendererClient::HasErrorPage(int http_status_code,
   return false;
 }
 
-std::string MockContentRendererClient::GetNavigationErrorHtml(
+void MockContentRendererClient::GetNavigationErrorStrings(
     const WebKit::WebURLRequest& failed_request,
-    const WebKit::WebURLError& error) {
-  return std::string();
+    const WebKit::WebURLError& error,
+    std::string* error_html,
+    string16* error_description) {
 }
 
 bool MockContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {

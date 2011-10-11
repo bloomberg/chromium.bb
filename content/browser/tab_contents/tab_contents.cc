@@ -904,21 +904,19 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
 }
 
 void TabContents::OnDidFailProvisionalLoadWithError(
-    int64 frame_id,
-    bool is_main_frame,
-    int error_code,
-    const GURL& url,
-    bool showing_repost_interstitial) {
-  VLOG(1) << "Failed Provisional Load: " << url.possibly_invalid_spec()
-          << ", error_code: " << error_code
-          << " is_main_frame: " << is_main_frame
-          << " showing_repost_interstitial: " << showing_repost_interstitial
-          << " frame_id: " << frame_id;
-  GURL validated_url(url);
+    const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {
+  VLOG(1) << "Failed Provisional Load: " << params.url.possibly_invalid_spec()
+          << ", error_code: " << params.error_code
+          << ", error_description: " << params.error_description
+          << ", is_main_frame: " << params.is_main_frame
+          << ", showing_repost_interstitial: " <<
+            params.showing_repost_interstitial
+          << ", frame_id: " << params.frame_id;
+  GURL validated_url(params.url);
   render_view_host()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
       GetRenderProcessHost()->id(), &validated_url);
 
-  if (net::ERR_ABORTED == error_code) {
+  if (net::ERR_ABORTED == params.error_code) {
     // EVIL HACK ALERT! Ignore failed loads when we're showing interstitials.
     // This means that the interstitial won't be torn down properly, which is
     // bad. But if we have an interstitial, go back to another tab type, and
@@ -959,18 +957,26 @@ void TabContents::OnDidFailProvisionalLoadWithError(
 
   // Send out a notification that we failed a provisional load with an error.
   ProvisionalLoadDetails details(
-      is_main_frame, controller_.IsURLInPageNavigation(validated_url),
-      validated_url, std::string(), false, frame_id);
-  details.set_error_code(error_code);
+      params.is_main_frame,
+      controller_.IsURLInPageNavigation(validated_url),
+      validated_url,
+      std::string(),
+      false,
+      params.frame_id);
+  details.set_error_code(params.error_code);
 
   NotificationService::current()->Notify(
       content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
       Source<NavigationController>(&controller_),
       Details<ProvisionalLoadDetails>(&details));
 
-  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
-                    DidFailProvisionalLoad(frame_id, is_main_frame,
-                    validated_url, error_code));
+  FOR_EACH_OBSERVER(TabContentsObserver,
+                    observers_,
+                    DidFailProvisionalLoad(params.frame_id,
+                                           params.is_main_frame,
+                                           validated_url,
+                                           params.error_code,
+                                           params.error_description));
 }
 
 void TabContents::OnDidLoadResourceFromMemoryCache(

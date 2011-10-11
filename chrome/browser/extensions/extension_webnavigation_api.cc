@@ -547,7 +547,8 @@ void ExtensionWebNavigationTabObserver::DidFailProvisionalLoad(
     int64 frame_id,
     bool is_main_frame,
     const GURL& validated_url,
-    int error_code) {
+    int error_code,
+    const string16& error_description) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   navigation_state_.SetErrorOccurredInFrame(frame_id);

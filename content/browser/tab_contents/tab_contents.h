@@ -54,10 +54,11 @@ class TabContentsObserver;
 class TabContentsView;
 struct ThumbnailScore;
 class URLPattern;
+struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_FrameNavigate_Params;
+struct ViewHostMsg_RunFileChooser_Params;
 struct WebPreferences;
 class WebUI;
-struct ViewHostMsg_RunFileChooser_Params;
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
@@ -511,11 +512,8 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
                                     const GURL& opener_url,
                                     const GURL& source_url,
                                     const GURL& target_url);
-  void OnDidFailProvisionalLoadWithError(int64 frame_id,
-                                         bool main_frame,
-                                         int error_code,
-                                         const GURL& url,
-                                         bool showing_repost_interstitial);
+  void OnDidFailProvisionalLoadWithError(
+      const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
                                         const std::string& security_info,
                                         const std::string& http_request,

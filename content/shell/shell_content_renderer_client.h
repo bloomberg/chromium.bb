@@ -26,9 +26,11 @@ class ShellContentRendererClient : public ContentRendererClient {
       WebKit::WebPlugin** plugin) OVERRIDE;
   virtual bool HasErrorPage(int http_status_code,
                             std::string* error_domain) OVERRIDE;
-  virtual std::string GetNavigationErrorHtml(
+  virtual void GetNavigationErrorStrings(
       const WebKit::WebURLRequest& failed_request,
-      const WebKit::WebURLError& error) OVERRIDE;
+      const WebKit::WebURLError& error,
+      std::string* error_html,
+      string16* error_description) OVERRIDE;
   virtual bool RunIdleHandlerWhenWidgetsHidden() OVERRIDE;
   virtual bool AllowPopup(const GURL& creator) OVERRIDE;
   virtual bool ShouldFork(WebKit::WebFrame* frame,

@@ -894,7 +894,7 @@ TEST_F(RenderViewImplTest, InsertCharacters) {
 TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   GetMainFrame()->enableViewSourceMode(true);
   WebURLError error;
-  error.domain.fromUTF8("test_domain");
+  error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
   error.unreachableURL = GURL("http://foo");
   WebFrame* web_frame = GetMainFrame();
@@ -907,7 +907,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
 TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   GetMainFrame()->enableViewSourceMode(true);
   WebURLError error;
-  error.domain.fromUTF8("test_domain");
+  error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_ABORTED;
   error.unreachableURL = GURL("http://foo");
   WebFrame* web_frame = GetMainFrame();

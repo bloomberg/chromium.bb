@@ -630,6 +630,15 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   }
 }
 
+string16 LocalizedError::GetErrorDetails(const WebKit::WebURLError& error) {
+  const LocalizedErrorMap* error_map =
+      LookupErrorMap(error.domain.utf8(), error.reason);
+  if (error_map)
+    return l10n_util::GetStringUTF16(error_map->details_resource_id);
+  else
+    return l10n_util::GetStringUTF16(IDS_ERRORPAGES_DETAILS_UNKNOWN);
+}
+
 bool LocalizedError::HasStrings(const std::string& error_domain,
                                 int error_code) {
   return LookupErrorMap(error_domain, error_code) != NULL;

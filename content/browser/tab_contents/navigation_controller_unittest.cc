@@ -423,13 +423,16 @@ TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
+  ViewHostMsg_DidFailProvisionalLoadWithError_Params params;
+  params.frame_id = 1;
+  params.is_main_frame = true;
+  params.error_code = net::ERR_ABORTED;
+  params.error_description = string16();
+  params.url = kNewURL;
+  params.showing_repost_interstitial = false;
   rvh()->TestOnMessageReceived(
-      ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
-                                                  1,  // frame_id
-                                                  true,  // is_main_frame
-                                                  net::ERR_ABORTED,  // error
-                                                  kNewURL,  // url
-                                                  false));  // repost
+          ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+                                                      params));
 
   // This should clear the pending entry and notify of a navigation state
   // change, so that we do not keep displaying kNewURL.
@@ -479,13 +482,16 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
+  ViewHostMsg_DidFailProvisionalLoadWithError_Params params;
+  params.frame_id = 1;
+  params.is_main_frame = true;
+  params.error_code = net::ERR_ABORTED;
+  params.error_description = string16();
+  params.url = kRedirectURL;
+  params.showing_repost_interstitial = false;
   rvh()->TestOnMessageReceived(
-      ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
-                                                  1,  // frame_id
-                                                  true,  // is_main_frame
-                                                  net::ERR_ABORTED,  // error
-                                                  kRedirectURL,  // url
-                                                  false));  // repost
+          ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+                                                      params));
 
   // This should clear the pending entry and notify of a navigation state
   // change, so that we do not keep displaying kNewURL.
@@ -1529,13 +1535,16 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // which causes the pending entry to be cleared.
   TestRenderViewHost* rvh =
       static_cast<TestRenderViewHost*>(our_contents.render_view_host());
+  ViewHostMsg_DidFailProvisionalLoadWithError_Params fail_load_params;
+  fail_load_params.frame_id = 1;
+  fail_load_params.is_main_frame = true;
+  fail_load_params.error_code = net::ERR_ABORTED;
+  fail_load_params.error_description = string16();
+  fail_load_params.url = url;
+  fail_load_params.showing_repost_interstitial = false;
   rvh->TestOnMessageReceived(
-      ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
-                                                  1,  // frame_id
-                                                  true,  // is_main_frame
-                                                  net::ERR_ABORTED,  // error
-                                                  url,  // url
-                                                  false));  // repost
+          ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+                                                      fail_load_params));
 
   // Now the pending restored entry commits.
   ViewHostMsg_FrameNavigate_Params params;

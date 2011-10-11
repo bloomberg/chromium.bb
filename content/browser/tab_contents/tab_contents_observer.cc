@@ -46,10 +46,12 @@ void TabContentsObserver::DidCommitProvisionalLoadForFrame(
     PageTransition::Type transition_type) {
 }
 
-void TabContentsObserver::DidFailProvisionalLoad(int64 frame_id,
-                                                 bool is_main_frame,
-                                                 const GURL& validated_url,
-                                                 int error_code) {
+void TabContentsObserver::DidFailProvisionalLoad(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    int error_code,
+    const string16& error_description) {
 }
 
 void TabContentsObserver::DocumentLoadedInFrame(int64 frame_id) {

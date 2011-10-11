@@ -551,6 +551,23 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(int, flags)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(ViewHostMsg_DidFailProvisionalLoadWithError_Params)
+  // The frame ID for the failure report.
+  IPC_STRUCT_MEMBER(int64, frame_id)
+  // True if this is the top-most frame.
+  IPC_STRUCT_MEMBER(bool, is_main_frame)
+  // Error code as reported in the DidFailProvisionalLoad callback.
+  IPC_STRUCT_MEMBER(int, error_code)
+  // An error message generated from the error_code. This can be an empty
+  // string if we were unable to find a meaningful description.
+  IPC_STRUCT_MEMBER(string16, error_description)
+  // The URL that the error is reported for.
+  IPC_STRUCT_MEMBER(GURL, url)
+  // True if the failure is the result of navigating to a POST again
+  // and we're going to show the POST interstitial.
+  IPC_STRUCT_MEMBER(bool, showing_repost_interstitial)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewMsg_SwapOut_Params)
   // The identifier of the RenderProcessHost for the currently closing view.
   //
@@ -1369,14 +1386,9 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_DidStartProvisionalLoadForFrame,
                     GURL /* url */)
 
 // Sent when the renderer fails a provisional load with an error.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_DidFailProvisionalLoadWithError,
-                    int64 /* frame_id */,
-                    bool /* true if it is the main frame */,
-                    int /* error_code */,
-                    GURL /* url */,
-                    bool /* true if the failure is the result of
-                            navigating to a POST again and we're going to
-                            show the POST interstitial */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFailProvisionalLoadWithError,
+                    ViewHostMsg_DidFailProvisionalLoadWithError_Params)
+
 
 // Tells the render view that a ViewHostMsg_PaintAtSize message was
 // processed, and the DIB is ready for use. |tag| has the same value that
@@ -1941,4 +1953,3 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_LockMouse)
 // whenever the mouse is unlocked (which may or may not be caused by
 // ViewHostMsg_UnlockMouse).
 IPC_MESSAGE_ROUTED0(ViewHostMsg_UnlockMouse)
-

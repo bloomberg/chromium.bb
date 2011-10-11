@@ -47,7 +47,8 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
   virtual void DidFailProvisionalLoad(int64 frame_id,
                                       bool is_main_frame,
                                       const GURL& validated_url,
-                                      int error_code);
+                                      int error_code,
+                                      const string16& error_description);
   virtual void DocumentLoadedInFrame(int64 frame_id);
   virtual void DidFinishLoad(int64 frame_id);
   virtual void DidGetUserGesture();

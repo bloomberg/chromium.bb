@@ -41,10 +41,11 @@ bool ShellContentRendererClient::HasErrorPage(int http_status_code,
   return false;
 }
 
-std::string ShellContentRendererClient::GetNavigationErrorHtml(
+void ShellContentRendererClient::GetNavigationErrorStrings(
     const WebKit::WebURLRequest& failed_request,
-    const WebKit::WebURLError& error) {
-  return std::string();
+    const WebKit::WebURLError& error,
+    std::string* error_html,
+    string16* error_description) {
 }
 
 bool ShellContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {

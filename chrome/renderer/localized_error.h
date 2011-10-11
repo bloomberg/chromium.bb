@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 class Extension;
 class GURL;
@@ -27,6 +28,9 @@ class LocalizedError {
   // on HTTP errors, like 404 or connection reset.
   static void GetStrings(const WebKit::WebURLError& error,
                          base::DictionaryValue* strings);
+
+  // Returns a description of the encountered error.
+  static string16 GetErrorDetails(const WebKit::WebURLError& error);
 
   // Returns true if an error page exists for the specified parameters.
   static bool HasStrings(const std::string& error_domain, int error_code);

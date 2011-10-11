@@ -1252,10 +1252,18 @@ void RenderViewImpl::LoadNavigationErrorPage(
     const WebURLError& error,
     const std::string& html,
     bool replace) {
-  std::string alt_html = !html.empty() ? html :
-      content::GetContentClient()->renderer()->GetNavigationErrorHtml(
-          failed_request, error);
-  frame->loadHTMLString(alt_html,
+  std::string alt_html;
+  const std::string* error_html;
+
+  if (!html.empty()) {
+    error_html = &html;
+  } else {
+    content::GetContentClient()->renderer()->GetNavigationErrorStrings(
+        failed_request, error, &alt_html, NULL);
+    error_html = &alt_html;
+  }
+
+  frame->loadHTMLString(*error_html,
                         GURL(chrome::kUnreachableWebDataURL),
                         error.unreachableURL,
                         replace);
@@ -2352,9 +2360,20 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   bool show_repost_interstitial =
       (error.reason == net::ERR_CACHE_MISS &&
        EqualsASCII(failed_request.httpMethod(), "POST"));
+
+  ViewHostMsg_DidFailProvisionalLoadWithError_Params params;
+  params.frame_id = frame->identifier();
+  params.is_main_frame = !frame->parent();
+  params.error_code = error.reason;
+  content::GetContentClient()->renderer()->GetNavigationErrorStrings(
+      failed_request,
+      error,
+      NULL,
+      &params.error_description);
+  params.url = error.unreachableURL;
+  params.showing_repost_interstitial = show_repost_interstitial;
   Send(new ViewHostMsg_DidFailProvisionalLoadWithError(
-      routing_id_, frame->identifier(), !frame->parent(), error.reason,
-      error.unreachableURL, show_repost_interstitial));
+      routing_id_, params));
 
   // Don't display an error page if this is simply a cancelled load.  Aside
   // from being dumb, WebCore doesn't expect it and it will cause a crash.
