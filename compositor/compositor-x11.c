@@ -491,7 +491,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				 * and fall through and handle the new
 				 * event below. */
 				notify_key(c->base.input_device,
-					   key_release->time,
+					   wlsc_compositor_get_time(),
 					   key_release->detail - 8, 0);
 				free(prev);
 				prev = NULL;
@@ -530,7 +530,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_KEY_PRESS:
 			key_press = (xcb_key_press_event_t *) event;
 			notify_key(c->base.input_device,
-				   key_press->time, key_press->detail - 8, 1);
+				   wlsc_compositor_get_time(),
+				   key_press->detail - 8, 1);
 			break;
 		case XCB_KEY_RELEASE:
 			prev = event;
@@ -538,13 +539,13 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_BUTTON_PRESS:
 			button_press = (xcb_button_press_event_t *) event;
 			notify_button(c->base.input_device,
-				      button_press->time,
+				      wlsc_compositor_get_time(),
 				      button_press->detail + BTN_LEFT - 1, 1);
 			break;
 		case XCB_BUTTON_RELEASE:
 			button_press = (xcb_button_press_event_t *) event;
 			notify_button(c->base.input_device,
-				      button_press->time,
+				      wlsc_compositor_get_time(),
 				      button_press->detail + BTN_LEFT - 1, 0);
 			break;
 
@@ -552,7 +553,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			motion_notify = (xcb_motion_notify_event_t *) event;
 			output = x11_compositor_find_output(c, motion_notify->event);
 			notify_motion(c->base.input_device,
-				      motion_notify->time,
+				      wlsc_compositor_get_time(),
 				      output->base.x + motion_notify->event_x,
 				      output->base.y + motion_notify->event_y);
 			break;
@@ -570,7 +571,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			output = x11_compositor_find_output(c, enter_notify->event);
 			notify_pointer_focus(c->base.input_device,
-					     enter_notify->time,
+					     wlsc_compositor_get_time(),
 					     &output->base,
 					     output->base.x + enter_notify->event_x,
 					     output->base.y + enter_notify->event_y);
@@ -582,7 +583,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			output = x11_compositor_find_output(c, enter_notify->event);
 			notify_pointer_focus(c->base.input_device,
-					     enter_notify->time,
+					     wlsc_compositor_get_time(),
 					     NULL,
 					     output->base.x + enter_notify->event_x,
 					     output->base.y + enter_notify->event_y);
@@ -624,7 +625,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	case XCB_KEY_RELEASE:
 		key_release = (xcb_key_press_event_t *) prev;
 		notify_key(c->base.input_device,
-			   key_release->time, key_release->detail - 8, 0);
+			   wlsc_compositor_get_time(),
+			   key_release->detail - 8, 0);
 		free(prev);
 		prev = NULL;
 		break;
