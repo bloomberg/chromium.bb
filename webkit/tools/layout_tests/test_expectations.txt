@@ -10,3 +10,8 @@
 // rebaseline after skia rev. 2351 lands
 BUG_BSALOMON WIN MAC LINUX GPU: fast/canvas/canvas-composite-transformclip.html = IMAGE
 BUG_BSALOMON WIN MAC LINUX GPU: fast/canvas/canvas-composite.html = IMAGE
+
+BUG_SATISH: fast/speech/input-appearance-numberandspeech.html = IMAGE
+BUG_SATISH: fast/speech/input-appearance-searchandspeech.html = IMAGE
+BUG_SATISH: fast/speech/input-appearance-speechbutton.html = IMAGE
+BUG_SATISH: fast/speech/speech-bidi-rendering.html = IMAGE
