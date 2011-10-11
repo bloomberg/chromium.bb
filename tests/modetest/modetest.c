@@ -566,7 +566,7 @@ set_mode(struct connector *c, int count, int page_flip)
 		return;
 
 	kms_bo_get_prop(bo, KMS_HANDLE, &handle);
-	ret = drmModeAddFB(fd, width, height, 32, 32, stride, handle, &fb_id);
+	ret = drmModeAddFB(fd, width, height, 24, 32, stride, handle, &fb_id);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
 		return;
