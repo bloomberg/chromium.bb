@@ -45,6 +45,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Var ExecuteScript(PP_Instance instance,
                                PP_Var script,
                                PP_Var* exception) OVERRIDE;
+  virtual PP_Var GetDefaultCharSet(PP_Instance instance) OVERRIDE;
   virtual void Log(PP_Instance instance,
                    int log_level,
                    PP_Var value) OVERRIDE;
@@ -111,6 +112,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                           SerializedVarReceiveInput script,
                           SerializedVarOutParam out_exception,
                           SerializedVarReturnValue result);
+  void OnMsgGetDefaultCharSet(PP_Instance instance,
+                              SerializedVarReturnValue result);
   void OnMsgLog(PP_Instance instance,
                 int log_level,
                 SerializedVarReceiveInput value);

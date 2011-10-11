@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/ppb_memory_impl.h"
-
 #include <stdlib.h>
-#include "ppapi/c/dev/ppb_memory_dev.h"
 
-namespace webkit {
+#include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
+
+// The memory interface doesn't have a normal C -> C++ thunk since it doesn't
+// actually have any proxy wrapping or associated objects; it's just a call
+// into base. So we implement the entire interface here, using the thunk
+// namespace so it magically gets hooked up in the proper places.
+
 namespace ppapi {
 
 namespace {
@@ -27,11 +31,13 @@ const PPB_Memory_Dev ppb_memory = {
 
 }  // namespace
 
+namespace thunk {
+
 // static
-const struct PPB_Memory_Dev* PPB_Memory_Impl::GetInterface() {
+PPAPI_SHARED_EXPORT const PPB_Memory_Dev* GetPPB_Memory_Dev_Thunk() {
   return &ppb_memory;
 }
 
-}  // namespace ppapi
-}  // namespace webkit
+}  // namespace thunk
 
+}  // namespace ppapi

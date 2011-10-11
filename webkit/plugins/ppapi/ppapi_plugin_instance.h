@@ -291,6 +291,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   virtual PP_Var ExecuteScript(PP_Instance instance,
                                PP_Var script,
                                PP_Var* exception) OVERRIDE;
+  virtual PP_Var GetDefaultCharSet(PP_Instance instance) OVERRIDE;
   virtual void Log(PP_Instance instance,
                    int log_level,
                    PP_Var value) OVERRIDE;

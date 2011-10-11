@@ -90,7 +90,6 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_crypto_impl.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_clipboard_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_file_impl.h"
@@ -102,7 +101,6 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
-#include "webkit/plugins/ppapi/ppb_memory_impl.h"
 #include "webkit/plugins/ppapi/ppb_opengles_impl.h"
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
@@ -256,8 +254,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Context3DTrusted_Thunk();
   if (strcmp(name, PPB_CORE_INTERFACE) == 0)
     return &core_interface;
-  if (strcmp(name, PPB_CRYPTO_DEV_INTERFACE) == 0)
-    return PPB_Crypto_Impl::GetInterface();
   if (strcmp(name, PPB_FILEIOTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
   if (strcmp(name, PPB_FLASH_INTERFACE) == 0)
@@ -286,8 +282,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_InputEvent_Thunk();
   if (strcmp(name, PPB_INSTANCE_PRIVATE_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Instance_Private_Thunk();
-  if (strcmp(name, PPB_MEMORY_DEV_INTERFACE) == 0)
-    return PPB_Memory_Impl::GetInterface();
   if (strcmp(name, PPB_OPENGLES2_INTERFACE) == 0)
     return PPB_OpenGLES_Impl::GetInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
@@ -445,11 +439,6 @@ void PluginModule::InitAsProxied(
 // static
 const PPB_Core* PluginModule::GetCore() {
   return &core_interface;
-}
-
-// static
-const PPB_Memory_Dev* PluginModule::GetMemoryDev() {
-  return static_cast<const PPB_Memory_Dev*>(PPB_Memory_Impl::GetInterface());
 }
 
 // static

@@ -546,11 +546,6 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource,
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
                     ppapi::HostResource)
 
-// PPB_CharSet.
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCharSet_GetDefaultCharSet,
-                           PP_Instance /* instance */,
-                           ppapi::proxy::SerializedVar /* result */)
-
 // PPB_CursorControl.
 IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBCursorControl_SetCursor,
                            PP_Instance /* instance */,
@@ -855,6 +850,9 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstance_ExecuteScript,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* script */,
                            ppapi::proxy::SerializedVar /* out_exception */,
+                           ppapi::proxy::SerializedVar /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBInstance_GetDefaultCharSet,
+                           PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* result */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_Log,
                     PP_Instance /* instance */,

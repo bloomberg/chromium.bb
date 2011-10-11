@@ -101,8 +101,6 @@ class PluginModule : public base::RefCounted<PluginModule>,
 
   static const PPB_Core* GetCore();
 
-  static const PPB_Memory_Dev* GetMemoryDev();
-
   // Returns a pointer to the local GetInterface function for retrieving
   // PPB interfaces.
   static GetInterfaceFunc GetLocalGetInterfaceFunc();

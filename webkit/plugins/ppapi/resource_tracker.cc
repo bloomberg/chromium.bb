@@ -18,7 +18,6 @@
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_char_set_impl.h"
 #include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_text_input_impl.h"
@@ -136,9 +135,6 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
     return proxy.get();
 
   switch (id) {
-    case ::ppapi::proxy::INTERFACE_ID_PPB_CHAR_SET:
-      proxy.reset(new PPB_CharSet_Impl(instance));
-      break;
     case ::ppapi::proxy::INTERFACE_ID_PPB_CURSORCONTROL:
       proxy.reset(new PPB_CursorControl_Impl(instance));
       break;

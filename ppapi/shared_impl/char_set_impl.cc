@@ -6,6 +6,7 @@
 
 #include "base/i18n/icu_string_conversions.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/thunk/thunk.h"
 #include "unicode/ucnv.h"
 #include "unicode/ucnv_cb.h"
 #include "unicode/ucnv_err.h"
@@ -42,13 +43,12 @@ bool PPToBaseConversionError(PP_CharSet_ConversionError on_error,
 // implementation in base, so we partially duplicate the code from
 // icu_string_conversions.cc with the correct error handling setup required
 // by the PPAPI interface.
-char* CharSetImpl::UTF16ToCharSet(const PPB_Memory_Dev* memory,
-                                  const uint16_t* utf16,
+char* CharSetImpl::UTF16ToCharSet(const uint16_t* utf16,
                                   uint32_t utf16_len,
                                   const char* output_char_set,
                                   PP_CharSet_ConversionError on_error,
                                   uint32_t* output_length) {
-  if (!memory || !utf16 || !output_char_set || !output_length)
+  if (!utf16 || !output_char_set || !output_length)
     return NULL;
 
   *output_length = 0;
@@ -101,13 +101,14 @@ char* CharSetImpl::UTF16ToCharSet(const PPB_Memory_Dev* memory,
   }
 
   // ucnv_fromUChars returns size not including terminating null.
-  char* encoded = static_cast<char*>(memory->MemAlloc(encoded_max_length + 1));
+  char* encoded = static_cast<char*>(
+      thunk::GetPPB_Memory_Dev_Thunk()->MemAlloc(encoded_max_length + 1));
   int actual_size = ucnv_fromUChars(converter, encoded,
       encoded_max_length, reinterpret_cast<const UChar*>(utf16), utf16_len,
       &status);
   ucnv_close(converter);
   if (!U_SUCCESS(status)) {
-    memory->MemFree(encoded);
+    thunk::GetPPB_Memory_Dev_Thunk()->MemFree(encoded);
     return NULL;
   }
   encoded[actual_size] = 0;
@@ -116,13 +117,12 @@ char* CharSetImpl::UTF16ToCharSet(const PPB_Memory_Dev* memory,
 }
 
 // static
-uint16_t* CharSetImpl::CharSetToUTF16(const PPB_Memory_Dev* memory,
-                                      const char* input,
+uint16_t* CharSetImpl::CharSetToUTF16(const char* input,
                                       uint32_t input_len,
                                       const char* input_char_set,
                                       PP_CharSet_ConversionError on_error,
                                       uint32_t* output_length) {
-  if (!memory || !input || !input_char_set || !output_length)
+  if (!input || !input_char_set || !output_length)
     return NULL;
 
   *output_length = 0;
@@ -139,7 +139,8 @@ uint16_t* CharSetImpl::CharSetToUTF16(const PPB_Memory_Dev* memory,
     return NULL;
 
   uint16_t* ret_buf = static_cast<uint16_t*>(
-      memory->MemAlloc((output.size() + 1) * sizeof(uint16_t)));
+      thunk::GetPPB_Memory_Dev_Thunk()->MemAlloc(
+          (output.size() + 1) * sizeof(uint16_t)));
   if (!ret_buf)
     return NULL;
 

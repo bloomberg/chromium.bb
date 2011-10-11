@@ -1555,6 +1555,11 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
   return ret;
 }
 
+PP_Var PluginInstance::GetDefaultCharSet(PP_Instance instance) {
+  std::string encoding = delegate()->GetDefaultEncoding();
+  return StringVar::StringToPPVar(module()->pp_module(), encoding);
+}
+
 void PluginInstance::Log(PP_Instance instance,
                          int log_level,
                          PP_Var value) {

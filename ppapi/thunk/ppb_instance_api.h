@@ -30,6 +30,9 @@ class PPB_Instance_FunctionAPI {
                                PP_Var script,
                                PP_Var* exception) = 0;
 
+  // CharSet.
+  virtual PP_Var GetDefaultCharSet(PP_Instance instance) = 0;
+
   // Console.
   virtual void Log(PP_Instance instance,
                    int log_level,

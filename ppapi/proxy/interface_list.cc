@@ -55,10 +55,8 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
-#include "ppapi/proxy/ppb_char_set_proxy.h"
 #include "ppapi/proxy/ppb_context_3d_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
-#include "ppapi/proxy/ppb_crypto_proxy.h"
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
 #include "ppapi/proxy/ppb_file_chooser_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
@@ -75,7 +73,6 @@
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
-#include "ppapi/proxy/ppb_memory_proxy.h"
 #include "ppapi/proxy/ppp_mouse_lock_proxy.h"
 #include "ppapi/proxy/ppb_pdf_proxy.h"
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
@@ -171,15 +168,12 @@ InterfaceList::InterfaceList() {
   AddProxy(INTERFACE_ID_PPP_CLASS, &PPP_Class_Proxy::Create);
   AddPPB(PPB_CORE_INTERFACE, INTERFACE_ID_PPB_CORE,
          PPB_Core_Proxy::GetPPB_Core_Interface());
-  AddPPB(PPB_MEMORY_DEV_INTERFACE, INTERFACE_ID_NONE,
-         GetPPB_Memory_Interface());
   AddPPB(PPB_OPENGLES2_INTERFACE, INTERFACE_ID_NONE,
          OpenGLES2Impl::GetInterface());
   AddPPB(PPB_VAR_INTERFACE, INTERFACE_ID_NONE,
          GetPPB_Var_Interface());
 
   // PPB (browser) interfaces.
-  AddPPB(PPB_Crypto_Proxy::GetInfo());
   AddPPB(PPB_Flash_Clipboard_Proxy::GetInfo());
   AddPPB(PPB_Flash_File_FileRef_Proxy::GetInfo());
   AddPPB(PPB_Flash_File_ModuleLocal_Proxy::GetInfo());

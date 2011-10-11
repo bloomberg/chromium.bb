@@ -78,6 +78,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgIsFullFrame)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ExecuteScript,
                         OnMsgExecuteScript)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetDefaultCharSet,
+                        OnMsgGetDefaultCharSet)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_Log,
                         OnMsgLog)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_LogWithSource,
@@ -165,6 +167,17 @@ PP_Var PPB_Instance_Proxy::ExecuteScript(PP_Instance instance,
       INTERFACE_ID_PPB_INSTANCE, instance,
       SerializedVarSendInput(dispatcher(), script), &se, &result));
   return result.Return(dispatcher());
+}
+
+PP_Var PPB_Instance_Proxy::GetDefaultCharSet(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
+  ReceiveSerializedVarReturnValue result;
+  dispatcher->Send(new PpapiHostMsg_PPBInstance_GetDefaultCharSet(
+      INTERFACE_ID_PPB_INSTANCE, instance, &result));
+  return result.Return(dispatcher);
 }
 
 void PPB_Instance_Proxy::Log(PP_Instance instance,
@@ -416,6 +429,14 @@ void PPB_Instance_Proxy::OnMsgExecuteScript(
       instance,
       script.Get(dispatcher()),
       out_exception.OutParam(dispatcher())));
+}
+
+void PPB_Instance_Proxy::OnMsgGetDefaultCharSet(
+    PP_Instance instance,
+    SerializedVarReturnValue result) {
+  EnterInstanceNoLock enter(instance, false);
+  if (enter.succeeded())
+    result.Return(dispatcher(), enter.functions()->GetDefaultCharSet(instance));
 }
 
 void PPB_Instance_Proxy::OnMsgLog(PP_Instance instance,
