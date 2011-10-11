@@ -206,47 +206,51 @@ FileManager.prototype = {
 
   const fileTypes = {
     // Images
-    'jpeg': {icon: 'image', name: 'IMAGE_FILE_TYPE'},
-    'jpg':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
-    'bmp':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
-    'gif':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
-    'ico':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
-    'png':  {icon: 'image', name: 'IMAGE_FILE_TYPE'},
-    'webp': {icon: 'image', name: 'IMAGE_FILE_TYPE'},
+    'jpeg': {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'JPEG'},
+    'jpg':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'JPEG'},
+    'bmp':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'BMP'},
+    'gif':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'GIF'},
+    'ico':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'ICO'},
+    'png':  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'PNG'},
+    'webp': {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'WebP'},
 
     // Video
-    '3gp':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'avi':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'mov':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'mp4':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'mpg':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'mpeg': {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'mpg4': {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'mpeg4': {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'ogm':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'ogv':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'ogx':  {icon: 'video', name: 'VIDEO_FILE_TYPE'},
-    'webm': {icon: 'video', name: 'VIDEO_FILE_TYPE'},
+    '3gp':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: '3GP'},
+    'avi':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'AVI'},
+    'mov':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'QuickTime'},
+    'mp4':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
+    'mpg':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
+    'mpeg': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
+    'mpg4': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
+    'mpeg4': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG'},
+    'ogm':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG'},
+    'ogv':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG'},
+    'ogx':  {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG'},
+    'webm': {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'WebM'},
 
     // Audio
-    'flac': {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
-    'mp3':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
-    'm4a':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
-    'oga':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
-    'ogg':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
-    'wav':  {icon: 'audio', name: 'AUDIO_FILE_TYPE'},
+    'flac': {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'FLAC'},
+    'mp3':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MP3'},
+    'm4a':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MPEG'},
+    'oga':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'OGG'},
+    'ogg':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'OGG'},
+    'wav':  {type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'WAV'},
 
     // Text
-    'pod': {icon: 'text', name: 'PLAIN_TEXT_FILE_TYPE'},
-    'rst': {icon: 'text', name: 'PLAIN_TEXT_FILE_TYPE'},
-    'txt': {icon: 'text', name: 'PLAIN_TEXT_FILE_TYPE'},
-    'log': {icon: 'text', name: 'PLAIN_TEXT_FILE_TYPE'},
+    'pod': {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'POD'},
+    'rst': {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'RST'},
+    'txt': {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'TXT'},
+    'log': {type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'LOG'},
 
     // Others
-    'zip': {name: 'ZIP_ARCHIVE_FILE_TYPE'},
-    'pdf': {icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE'},
-    'html': {icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE'},
-    'htm': {icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE'}
+    'zip': {type: 'archive', name: 'ZIP_ARCHIVE_FILE_TYPE'},
+
+    'pdf': {type: 'text', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
+            subtype: 'PDF'},
+    'html': {type: 'text', icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE',
+             subtype: 'HTML'},
+    'htm': {type: 'text', icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE',
+            subtype: 'HTML'}
   };
 
   const previewArt = {
@@ -686,9 +690,9 @@ FileManager.prototype = {
       return 'folder';
 
     var extension = getFileExtension(entry.name);
-    if (extension in fileTypes)
-      return fileTypes[extension].icon;
-    return 'undefined';
+    if (fileTypes[extension])
+      return fileTypes[extension].icon || fileTypes[extension].type;
+    return undefined;
   };
 
   /**
@@ -707,16 +711,18 @@ FileManager.prototype = {
   FileManager.prototype.computeFileType_ = function(entry) {
     if (entry.isDirectory) {
       var deviceNumber = this.getDeviceNumber(entry);
+      // The type field is used for sorting. Starting dot maked devices and
+      // directories to precede files.
       if (deviceNumber != undefined)
-        return str('DEVICE');
-      return str('FOLDER');
+        return {name: 'DEVICE', type: '.device'};
+      return {name: 'FOLDER', type: '.folder'};
     }
 
     var extension = getFileExtension(entry.name);
     if (extension in fileTypes)
-      return str(fileTypes[extension].name);
+      return fileTypes[extension];
 
-    return undefined;
+    return {};
   };
 
 
@@ -782,10 +788,18 @@ FileManager.prototype = {
   };
 
   /**
-   * Compare by type first, then by name.
+   * Compare by type first, then by subtype and then by name.
    */
   FileManager.prototype.compareType_ = function(a, b) {
-    var result = this.collator_.compare(a.cachedFileType_, b.cachedFileType_);
+    // Files of unknows type follows all the others.
+    var result = this.collator_.compare(a.cachedFileType_.type || 'Z',
+                                        b.cachedFileType_.type || 'Z');
+    if (result != 0)
+      return result;
+
+    // If types are same both subtypes are defined of both are undefined.
+    result = this.collator_.compare(a.cachedFileType_.subtype || '',
+                                    b.cachedFileType_.subtype || '');
     if (result != 0)
       return result;
 
@@ -1556,7 +1570,14 @@ FileManager.prototype = {
 
     div.textContent = '...';
     this.cacheEntryFileType(entry, function(entry) {
-      div.textContent = entry.cachedFileType_;
+      var info = entry.cachedFileType_;
+      if (info.name) {
+        if (info.subtype)
+          div.textContent = strf(info.name, info.subtype);
+        else
+          div.textContent = str(info.name);
+      } else
+        div.textContent = '';
     });
 
     return div;

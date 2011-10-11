@@ -341,12 +341,13 @@ chrome.fileBrowserPrivate = {
 
       FOLDER: 'Folder',
       DEVICE: 'Device',
-      IMAGE_FILE_TYPE: 'Image file',
-      VIDEO_FILE_TYPE: 'Video file',
-      AUDIO_FILE_TYPE: 'Audio file',
+      IMAGE_FILE_TYPE: '$1 image file',
+      VIDEO_FILE_TYPE: '$1 video file',
+      AUDIO_FILE_TYPE: '$1 audio file',
       HTML_DOCUMENT_FILE_TYPE: 'HTML document',
       ZIP_ARCHIVE_FILE_TYPE: 'Zip archive',
-      PLAIN_TEXT_FILE_TYPE: 'Plain text file'
+      PLAIN_TEXT_FILE_TYPE: 'Plain text file',
+      PDF_DOCUMENT_FILE_TYPE: 'PDF document'
     });
   }
 };
