@@ -2,5 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/aura_shell/test_suite.h"
+
 int main(int argc, char** argv) {
+  return AuraShellTestSuite(argc, argv).Run();
 }

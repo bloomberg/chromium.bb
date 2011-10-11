@@ -6,31 +6,38 @@
 #define UI_AURA_SHELL_LAUNCHER_VIEW_H_
 #pragma once
 
+#include "ui/aura_shell/launcher/launcher_model_observer.h"
 #include "views/widget/widget_delegate.h"
-#include "views/controls/button/button.h"
 
 namespace aura_shell {
+
+class LauncherModel;
+
 namespace internal {
 
 class LauncherButton;
 
 class LauncherView : public views::WidgetDelegateView,
-                     public views::ButtonListener {
+                     public LauncherModelObserver {
  public:
   LauncherView();
   virtual ~LauncherView();
 
+  // Populates this LauncherView from the contents of |model|.
+  void Init(LauncherModel* model);
+
  private:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from LauncherModelObserver:
+  virtual void LauncherItemAdded(int index) OVERRIDE;
+  virtual void LauncherItemRemoved(int index) OVERRIDE;
+  virtual void LauncherSelectionChanged() OVERRIDE;
 
-  LauncherButton* chrome_button_;
-  LauncherButton* applist_button_;
+  // The model, we don't own it.
+  LauncherModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

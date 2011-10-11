@@ -8,10 +8,33 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/desktop.h"
+#include "ui/aura_shell/examples/toplevel_window.h"
 #include "ui/aura_shell/shell.h"
+#include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+
+namespace {
+
+class ShellDelegateImpl : public aura_shell::ShellDelegate {
+ public:
+  ShellDelegateImpl() {
+  }
+
+  virtual void CreateNewWindow() OVERRIDE {
+    aura_shell::examples::ToplevelWindow::CreateParams create_params;
+    create_params.can_resize = true;
+    create_params.can_maximize = true;
+    aura_shell::examples::ToplevelWindow::CreateToplevelWindow(create_params);
+  }
+
+  virtual void ShowApps() OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+};
+
+}  // namesapce
 
 int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
@@ -26,7 +49,7 @@ int main(int argc, char** argv) {
   // Create the message-loop here before creating the desktop.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
 
-  aura_shell::Shell::GetInstance();
+  aura_shell::Shell::GetInstance()->SetDelegate(new ShellDelegateImpl);;
 
   aura_shell::examples::InitWindowTypeLauncher();
 

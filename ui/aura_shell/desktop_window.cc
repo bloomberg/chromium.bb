@@ -6,6 +6,7 @@
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
+#include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
@@ -66,7 +67,8 @@ void InitDesktopWindow() {
       internal::kShellWindowId_DesktopBackgroundContainer)->AddChild(
           desktop_background->GetNativeView());
 
-  views::Widget* launcher = internal::CreateLauncher();
+  // TODO: this leaks.
+  views::Widget* launcher = internal::CreateLauncher(new LauncherModel);
   shell->GetContainer(internal::kShellWindowId_LauncherContainer)->AddChild(
           launcher->GetNativeView());
 

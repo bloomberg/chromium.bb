@@ -14,13 +14,15 @@ class Widget;
 
 namespace aura_shell {
 
+class LauncherModel;
+
 namespace examples {
 void InitWindowTypeLauncher();
 }  // namespace examples
 
 namespace internal {
 views::Widget* CreateDesktopBackground();
-views::Widget* CreateLauncher();
+views::Widget* CreateLauncher(LauncherModel* model);
 views::Widget* CreateStatusArea();
 }  // namespace internal
 
