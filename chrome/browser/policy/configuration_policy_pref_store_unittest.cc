@@ -238,7 +238,7 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyAlwaysAuthorizePlugins,
                     prefs::kPluginsAlwaysAuthorize),
         TypeAndName(kPolicyBookmarkBarEnabled,
-                    prefs::kEnableBookmarkBar),
+                    prefs::kShowBookmarkBar),
         TypeAndName(kPolicyEditBookmarksEnabled,
                     prefs::kEditBookmarksEnabled),
         TypeAndName(kPolicyAllowFileSelectionDialogs,

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/importer/profile_writer.h"
 
+#include <map>
+#include <set>
 #include <string>
 
 #include "base/string_number_conversions.h"
@@ -57,13 +59,8 @@ void ShowBookmarkBar(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   // Check whether the bookmark bar is shown in current pref.
   if (!prefs->GetBoolean(prefs::kShowBookmarkBar)) {
-    // Set the pref and notify the notification service.
     prefs->SetBoolean(prefs::kShowBookmarkBar, true);
     prefs->ScheduleSavePersistentPrefs();
-    Source<Profile> source(profile);
-    NotificationService::current()->Notify(
-        chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED, source,
-        NotificationService::NoDetails());
   }
 }
 

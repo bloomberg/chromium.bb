@@ -106,10 +106,6 @@ class ConfigurationPolicyPrefKeeper {
   // the function takes ownership of |value|.
   bool ApplyIncognitoModePolicy(ConfigurationPolicyType policy, Value* value);
 
-  // Processes a policy that can disable the bookmarks bar. It can also affect
-  // other preferences.
-  bool ApplyBookmarksPolicy(ConfigurationPolicyType policy, Value* value);
-
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
   // a blank string.
   void EnsureStringPrefExists(const std::string& path);
@@ -291,6 +287,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kPluginsAllowOutdated },
   { Value::TYPE_BOOLEAN, kPolicyAlwaysAuthorizePlugins,
     prefs::kPluginsAlwaysAuthorize },
+  { Value::TYPE_BOOLEAN, kPolicyBookmarkBarEnabled,
+    prefs::kShowBookmarkBar },
   { Value::TYPE_BOOLEAN, kPolicyEditBookmarksEnabled,
     prefs::kEditBookmarksEnabled },
   { Value::TYPE_BOOLEAN, kPolicyAllowFileSelectionDialogs,
@@ -395,7 +393,6 @@ void ConfigurationPolicyPrefKeeper::Apply(PolicyMap* policies) {
         ApplyFileSelectionDialogsPolicy(current->first, value) ||
         ApplyDefaultSearchPolicy(current->first, value) ||
         ApplyIncognitoModePolicy(current->first, value) ||
-        ApplyBookmarksPolicy(current->first, value) ||
         ApplyPolicyFromMap(current->first, value,
                            kSimplePolicyMap, arraysize(kSimplePolicyMap))) {
       continue;
@@ -619,21 +616,6 @@ bool ConfigurationPolicyPrefKeeper::ApplyIncognitoModePolicy(
   }
   // The policy is not relevant to incognito.
   return false;
-}
-
-bool ConfigurationPolicyPrefKeeper::ApplyBookmarksPolicy(
-    ConfigurationPolicyType policy,
-    Value* value) {
-  if (policy != kPolicyBookmarkBarEnabled)
-    return false;
-  DCHECK_EQ(Value::TYPE_BOOLEAN, value->GetType());
-  prefs_.SetValue(prefs::kEnableBookmarkBar, value);
-  // kShowBookmarkBar is not managed directly by a policy, but when
-  // kEnableBookmarkBar is managed, kShowBookmarkBar should be false so that
-  // the bookmarks bar either is completely disabled or only shows on the NTP.
-  // This also disables the checkbox for this preference in the prefs UI.
-  prefs_.SetValue(prefs::kShowBookmarkBar, Value::CreateBooleanValue(false));
-  return true;
 }
 
 void ConfigurationPolicyPrefKeeper::EnsureStringPrefExists(

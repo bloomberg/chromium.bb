@@ -43,6 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/native_web_keyboard_event.h"
+#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -74,13 +75,11 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
   : browser_(browser),
     controller_(controller),
     confirm_close_factory_(browser) {
-  // Listen for bookmark bar visibility changes and set the initial state; we
-  // need to listen to all profiles because of normal profile/incognito issues.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_SIDEBAR_CHANGED,
                  Source<SidebarManager>(SidebarManager::GetInstance()));
+
+  pref_change_registrar_.Init(browser_->profile()->GetPrefs());
+  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
 
   initial_show_state_ = browser_->GetSavedWindowShowState();
 }
@@ -554,12 +553,12 @@ void BrowserWindowCocoa::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   switch (type) {
-    // Only the key window gets a direct toggle from the menu.
-    // Other windows hear about it from the notification.
-    case chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
-      if (browser_->profile()->IsSameProfile(Source<Profile>(source).ptr()))
-        [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
+    case chrome::NOTIFICATION_PREF_CHANGED: {
+      const std::string& pref_name = *Details<std::string>(details).ptr();
+      DCHECK(pref_name == prefs::kShowBookmarkBar);
+      [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
       break;
+    }
     case chrome::NOTIFICATION_SIDEBAR_CHANGED:
       UpdateSidebarForContents(
           Details<SidebarContainer>(details)->tab_contents());

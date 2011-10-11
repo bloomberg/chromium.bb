@@ -6,8 +6,6 @@
 
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 
-#include <set>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -74,12 +72,6 @@ NewTabUI::NewTabUI(TabContents* contents)
   // Override some options on the Web UI.
   hide_favicon_ = true;
 
-  if (!NTP4BookmarkFeaturesEnabled() &&
-      GetProfile()->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar) &&
-      browser_defaults::bookmarks_enabled) {
-    set_force_bookmark_bar_visible(true);
-  }
-
   focus_location_bar_by_default_ = true;
   should_hide_url_ = true;
   overridden_title_ = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
@@ -129,9 +121,8 @@ NewTabUI::NewTabUI(TabContents* contents)
                  Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(GetProfile())));
   // Listen for bookmark bar visibility changes.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 NotificationService::AllSources());
+  pref_change_registrar_.Init(GetProfile()->GetPrefs());
+  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
 }
 
 NewTabUI::~NewTabUI() {
@@ -178,6 +169,17 @@ void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
   StartTimingPaint(render_view_host);
 }
 
+bool NewTabUI::CanShowBookmarkBar() const {
+  PrefService* prefs = GetProfile()->GetPrefs();
+  bool disabled_by_policy =
+      prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
+      !prefs->GetBoolean(prefs::kShowBookmarkBar);
+  return
+      browser_defaults::bookmarks_enabled &&
+      !disabled_by_policy &&
+      !NTP4BookmarkFeaturesEnabled();
+}
+
 void NewTabUI::Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
@@ -192,16 +194,17 @@ void NewTabUI::Observe(int type,
       CallJavascriptFunction("themeChanged", args);
       break;
     }
-    case chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED: {
-      if (GetProfile()->GetPrefs()->IsManagedPreference(
-              prefs::kEnableBookmarkBar)) {
-        break;
-      }
-      if (!NTP4Enabled()) {
-        if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
-          CallJavascriptFunction("bookmarkBarAttached");
-        else
-          CallJavascriptFunction("bookmarkBarDetached");
+    case chrome::NOTIFICATION_PREF_CHANGED: {
+      const std::string& pref_name = *Details<std::string>(details).ptr();
+      if (pref_name == prefs::kShowBookmarkBar) {
+        if (!NTP4Enabled() && CanShowBookmarkBar()) {
+          if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
+            CallJavascriptFunction("bookmarkBarAttached");
+          else
+            CallJavascriptFunction("bookmarkBarDetached");
+        }
+      } else {
+        NOTREACHED();
       }
       break;
     }

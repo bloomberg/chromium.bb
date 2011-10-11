@@ -16,7 +16,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "googleurl/src/gurl.h"
 
-class BookmarkModel;
 class Profile;
 class TemplateURL;
 

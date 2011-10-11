@@ -48,9 +48,6 @@ cr.define('options', function() {
       $('startupUseCurrentButton').onclick = function(event) {
         chrome.send('setStartupPagesToCurrentPages');
       };
-      $('toolbarShowBookmarksBar').onchange = function() {
-        chrome.send('toggleShowBookmarksBar');
-      };
       $('defaultSearchManageEnginesButton').onclick = function(event) {
         OptionsPage.navigateToPage('searchEngines');
         chrome.send('coreOptionsUserMetricsAction',

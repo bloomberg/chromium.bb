@@ -74,7 +74,7 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
  private:
   // Overridden from BaseBookmarkModelObserver:
   // Any change to the model results in closing the menu.
-  virtual void BookmarkModelChanged();
+  virtual void BookmarkModelChanged() OVERRIDE;
 
   // Removes the observer from the model and NULLs out model_.
   BookmarkModel* RemoveModelObserver();

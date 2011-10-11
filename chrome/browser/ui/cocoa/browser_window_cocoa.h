@@ -9,6 +9,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
@@ -135,6 +136,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   void UpdateSidebarForContents(TabContents* tab_contents);
 
   NotificationRegistrar registrar_;
+  PrefChangeRegistrar pref_change_registrar_;
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us
   base::WeakPtrFactory<Browser> confirm_close_factory_;

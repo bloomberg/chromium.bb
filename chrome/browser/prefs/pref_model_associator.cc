@@ -82,8 +82,6 @@ void PrefModelAssociator::InitPrefAndAssociate(
       pref_service_->Set(pref_name.c_str(), *new_value);
     }
 
-    SendUpdateNotificationsIfNecessary(pref_name);
-
     // If the merge resulted in an updated value, inform the syncer.
     if (!value->Equals(new_value.get())) {
       SyncData sync_data;
@@ -273,18 +271,6 @@ Value* PrefModelAssociator::MergeDictionaryValues(
   return result;
 }
 
-void PrefModelAssociator::SendUpdateNotificationsIfNecessary(
-    const std::string& pref_name) {
-  // The bookmark bar visibility preference requires a special
-  // notification to update the UI.
-  if (0 == pref_name.compare(prefs::kShowBookmarkBar)) {
-    NotificationService::current()->Notify(
-        chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-        Source<PrefModelAssociator>(this),
-        NotificationService::NoDetails());
-  }
-}
-
 // Note: This will build a model of all preferences registered as syncable
 // with user controlled data. We do not track any information for preferences
 // not registered locally as syncable and do not inform the syncer of
@@ -365,8 +351,6 @@ SyncError PrefModelAssociator::ProcessSyncChanges(
     if (iter->change_type() == SyncChange::ACTION_ADD) {
       synced_preferences_.insert(name);
     }
-
-    SendUpdateNotificationsIfNecessary(name);
   }
   return SyncError();
 }

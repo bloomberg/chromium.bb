@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -33,7 +32,6 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_details.h"
-#include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -118,9 +116,6 @@ void BrowserOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("requestAutocompleteSuggestions",
       base::Bind(&BrowserOptionsHandler::RequestAutocompleteSuggestions,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("toggleShowBookmarksBar",
-      base::Bind(&BrowserOptionsHandler::ToggleShowBookmarksBar,
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("enableInstant",
       base::Bind(&BrowserOptionsHandler::EnableInstant,
@@ -452,14 +447,6 @@ void BrowserOptionsHandler::RequestAutocompleteSuggestions(
 
   autocomplete_controller_->Start(input, string16(), true, false, false,
                                   AutocompleteInput::ALL_MATCHES);
-}
-
-void BrowserOptionsHandler::ToggleShowBookmarksBar(const ListValue* args) {
-  Source<Profile> source(Profile::FromWebUI(web_ui_));
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-      source,
-      NotificationService::NoDetails());
 }
 
 void BrowserOptionsHandler::EnableInstant(const ListValue* args) {

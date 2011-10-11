@@ -268,7 +268,7 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
 
     case IDC_BOOKMARK_BAR_ALWAYS_SHOW:
       return !profile_->GetPrefs()->IsManagedPreference(
-          prefs::kEnableBookmarkBar);
+          prefs::kShowBookmarkBar);
 
     case IDC_COPY:
     case IDC_CUT:

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -31,7 +32,7 @@ class NTPResourceCache : public NotificationObserver,
   // NotificationObserver interface.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   Profile* profile_;

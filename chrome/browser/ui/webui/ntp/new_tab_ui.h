@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
@@ -17,7 +19,6 @@
 #include "content/common/notification_registrar.h"
 
 class GURL;
-class MessageLoop;
 class PrefService;
 class Profile;
 
@@ -92,8 +93,14 @@ class NewTabUI : public ChromeWebUI,
   // Returns true if the version was updated.
   static bool UpdateUserPrefsVersion(PrefService* prefs);
 
+  // Overridden from ChromeWebUI. Determines if the bookmarks bar can be shown
+  // detached from the location bar.
+  virtual bool CanShowBookmarkBar() const OVERRIDE;
+
   NotificationRegistrar registrar_;
 
+  // Tracks updates of the kShowBookmarkBar preference.
+  PrefChangeRegistrar pref_change_registrar_;
   // The time when we started benchmarking.
   base::TimeTicks start_;
   // The last time we got a paint notification.

@@ -773,9 +773,6 @@ const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
 // Boolean that is true when the translate feature is enabled.
 const char kEnableTranslate[] = "translate.enabled";
 
-// Boolean that is true when the bookmark bar for the new tab page is enabled.
-const char kEnableBookmarkBar[] = "bookmark_bar.enabled";
-
 const char kPinnedTabs[] = "pinned_tabs";
 
 // Boolean that is true when HTTP throttling is enabled.

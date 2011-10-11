@@ -144,6 +144,7 @@
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
 #include "content/common/content_switches.h"
+#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
@@ -304,11 +305,6 @@ Browser::Browser(Type type, Profile* profile)
       Source<ThemeService>(ThemeServiceFactory::GetForProfile(profile_)));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
                  NotificationService::AllSources());
-  // We listen to all notification sources because the bookmark bar
-  // state needs to stay in sync between the incognito and normal profiles.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 NotificationService::AllBrowserContextsAndSources());
 
   // Need to know when to alert the user of theme install delay.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
@@ -325,7 +321,7 @@ Browser::Browser(Type type, Profile* profile)
   profile_pref_registrar_.Init(profile_->GetPrefs());
   profile_pref_registrar_.Add(prefs::kDevToolsDisabled, this);
   profile_pref_registrar_.Add(prefs::kEditBookmarksEnabled, this);
-  profile_pref_registrar_.Add(prefs::kEnableBookmarkBar, this);
+  profile_pref_registrar_.Add(prefs::kShowBookmarkBar, this);
   profile_pref_registrar_.Add(prefs::kHomePage, this);
   profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
   profile_pref_registrar_.Add(prefs::kIncognitoModeAvailability, this);
@@ -2273,9 +2269,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableTranslate,
                              true,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableBookmarkBar,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kCloudPrintEmail,
                             std::string(),
                             PrefService::UNSYNCABLE_PREF);
@@ -4087,8 +4080,9 @@ void Browser::Observe(int type,
           g_browser_process->devtools_manager()->CloseAllClientHosts();
       } else if (pref_name == prefs::kEditBookmarksEnabled) {
         UpdateCommandsForBookmarkEditing();
-      } else if (pref_name == prefs::kEnableBookmarkBar) {
+      } else if (pref_name == prefs::kShowBookmarkBar) {
         UpdateCommandsForBookmarkBar();
+        UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
       } else if (pref_name == prefs::kHomePage) {
         PrefService* pref_service = Source<PrefService>(source).ptr();
         MarkHomePageAsChanged(pref_service);
@@ -4113,11 +4107,6 @@ void Browser::Observe(int type,
 
     case content::NOTIFICATION_INTERSTITIAL_ATTACHED:
       UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-      break;
-
-    case chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
-      if (profile_->IsSameProfile(Source<Profile>(source).ptr()))
-        UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
       break;
 
     default:
@@ -4553,7 +4542,7 @@ void Browser::UpdateCommandsForBookmarkBar() {
 #endif
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
       browser_defaults::bookmarks_enabled &&
-      !profile_->GetPrefs()->IsManagedPreference(prefs::kEnableBookmarkBar) &&
+      !profile_->GetPrefs()->IsManagedPreference(prefs::kShowBookmarkBar) &&
       show_main_ui);
 }
 
@@ -5214,8 +5203,8 @@ int Browser::GetContentRestrictionsForSelectedTab() {
 void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   BookmarkBar::State state;
   // The bookmark bar is hidden in fullscreen mode, unless on the new tab page.
-  if ((profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
-       profile_->GetPrefs()->GetBoolean(prefs::kEnableBookmarkBar)) &&
+  if (browser_defaults::bookmarks_enabled &&
+      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
       (!window_ || !window_->IsFullscreen())) {
     state = BookmarkBar::SHOW;
   } else {

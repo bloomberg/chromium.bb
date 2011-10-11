@@ -104,10 +104,6 @@ class PrefModelAssociator
                             const std::string& pref_name,
                             SyncChangeList* sync_changes);
 
-  // Perform any additional local operations that need to happen after a
-  // preference has been updated.
-  void SendUpdateNotificationsIfNecessary(const std::string& pref_name);
-
   static base::Value* MergeListValues(
       const base::Value& from_value, const base::Value& to_value);
   static base::Value* MergeDictionaryValues(const base::Value& from_value,

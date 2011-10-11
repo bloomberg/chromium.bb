@@ -143,11 +143,6 @@ enum NotificationType {
   // not found.
   NOTIFICATION_FIND_RESULT_AVAILABLE,
 
-  // This is sent when the users preference for when the bookmark bar should
-  // be shown changes. The source is the profile, and the details are
-  // NoDetails.
-  NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-
   // Sent just before the installation confirm dialog is shown. The source
   // is the ExtensionInstallUI, the details are NoDetails.
   NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,

@@ -12,11 +12,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
+#include "chrome/browser/ui/gtk/global_bookmark_menu.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
@@ -213,14 +215,9 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
     browser_->command_updater()->AddCommandObserver(it->first, this);
   }
 
-  // We listen to all notification sources because the bookmark bar
-  // state needs to stay in sync between the incognito and normal profiles.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                 NotificationService::AllBrowserContextsAndSources());
-  Observe(chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-          Source<Profile>(browser->profile()),
-          NotificationService::NoDetails());
+  pref_change_registrar_.Init(browser_->profile()->GetPrefs());
+  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
+  OnBookmarkBarVisibilityChanged();
 }
 
 GlobalMenuBar::~GlobalMenuBar() {
@@ -235,14 +232,7 @@ void GlobalMenuBar::Disable() {
   }
   id_to_menu_item_.clear();
 
-  if (registrar_.IsRegistered(this,
-                    chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-                    NotificationService::AllBrowserContextsAndSources())) {
-    registrar_.Remove(
-        this,
-        chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-        NotificationService::AllBrowserContextsAndSources());
-  }
+  pref_change_registrar_.RemoveAll();
 }
 
 void GlobalMenuBar::BuildGtkMenuFrom(
@@ -321,16 +311,17 @@ void GlobalMenuBar::EnabledStateChangedForCommand(int id, bool enabled) {
 void GlobalMenuBar::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED);
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
+  const std::string& pref_name = *Details<std::string>(details).ptr();
+  DCHECK_EQ(prefs::kShowBookmarkBar, pref_name);
+  OnBookmarkBarVisibilityChanged();
+}
 
-  if (!browser_->profile()->IsSameProfile(Source<Profile>(source).ptr()))
-    return;
-
+void GlobalMenuBar::OnBookmarkBarVisibilityChanged() {
   CommandIDMenuItemMap::iterator it =
       id_to_menu_item_.find(IDC_SHOW_BOOKMARK_BAR);
   if (it != id_to_menu_item_.end()) {
     PrefService* prefs = browser_->profile()->GetPrefs();
-
     block_activation_ = true;
     gtk_check_menu_item_set_active(
         GTK_CHECK_MENU_ITEM(it->second),

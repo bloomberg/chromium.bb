@@ -7,15 +7,16 @@
 
 #include <map>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/gtk/global_bookmark_menu.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/gtk/global_history_menu.h"
 #include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
+class GlobalBookmarkMenu;
 struct GlobalMenuBarCommand;
 class GlobalMenuOwner;
 
@@ -73,11 +74,15 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Updates the visibility of the bookmark bar on pref changes.
+  void OnBookmarkBarVisibilityChanged();
+
   CHROMEGTK_CALLBACK_0(GlobalMenuBar, void, OnItemActivated);
 
   Browser* browser_;
 
-  NotificationRegistrar registrar_;
+  // Tracks value of the kShowBookmarkBar preference.
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Our menu bar widget.
   ui::OwnedWidgetGtk menu_bar_;

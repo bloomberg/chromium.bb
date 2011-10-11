@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 #pragma once
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -31,30 +33,30 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   virtual void Initialize();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
-  virtual void RegisterMessages();
+  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // AutocompleteControllerDelegate implementation.
-  virtual void OnResultChanged(bool default_match_changed);
+  virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
 
   // ShellIntegration::DefaultWebClientObserver implementation.
   virtual void SetDefaultWebClientUIState(
-      ShellIntegration::DefaultWebClientUIState state);
+      ShellIntegration::DefaultWebClientUIState state) OVERRIDE;
 
   // TemplateURLServiceObserver implementation.
-  virtual void OnTemplateURLServiceChanged();
+  virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
   // ui::TableModelObserver implementation.
-  virtual void OnModelChanged();
-  virtual void OnItemsChanged(int start, int length);
-  virtual void OnItemsAdded(int start, int length);
-  virtual void OnItemsRemoved(int start, int length);
+  virtual void OnModelChanged() OVERRIDE;
+  virtual void OnItemsChanged(int start, int length) OVERRIDE;
+  virtual void OnItemsAdded(int start, int length) OVERRIDE;
+  virtual void OnItemsRemoved(int start, int length) OVERRIDE;
 
  private:
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Makes this the default browser. Called from WebUI.
   void BecomeDefaultBrowser(const ListValue* args);
@@ -82,10 +84,6 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Gets autocomplete suggestions asychronously for the given string.
   // Called from WebUI.
   void RequestAutocompleteSuggestions(const ListValue* args);
-
-  // Called when the 'Always show the bookmarks bar' checkbox is toggled.
-  // Notifies any listeners interested in this event.  |args| is ignored.
-  void ToggleShowBookmarksBar(const ListValue* args);
 
   // Enables/disables Instant.
   void EnableInstant(const ListValue* args);

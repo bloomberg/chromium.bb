@@ -1604,9 +1604,9 @@
       'example_value': True,
       'id': 82,
       'caption': '''Enable Bookmark Bar''',
-      'desc': '''Enables the bookmark bar on the new tab page on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Enables the bookmark bar on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show a bookmark bar on the "New tab" page.
+      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show a bookmark bar.
 
       If you disable this setting, users will never see the bookmark bar.
 

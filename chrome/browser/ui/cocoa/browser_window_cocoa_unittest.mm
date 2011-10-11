@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
+#include "content/common/notification_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // A BrowserWindowCocoa that goes PONG when
@@ -27,8 +29,11 @@ class BrowserWindowCocoaPong : public BrowserWindowCocoa {
   void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) {
-    if (type == chrome::NOTIFICATION_BOOKMARK_BAR_VISIBILITY_PREF_CHANGED)
-      pong_ = true;
+    if (type == chrome::NOTIFICATION_PREF_CHANGED) {
+      const std::string& pref_name = *Details<std::string>(details).ptr();
+      if (pref_name == prefs::kShowBookmarkBar)
+        pong_ = true;
+    }
     BrowserWindowCocoa::Observe(type, source, details);
   }
 

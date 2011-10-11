@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,11 +57,12 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
   ui::SimpleMenuModel* menu_model() const { return menu_model_.get(); }
 
   // ui::SimpleMenuModel::Delegate implementation:
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // Accessors:
   Profile* profile() const { return profile_; }
@@ -77,7 +78,7 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
 
   // Overridden from BaseBookmarkModelObserver:
   // Any change to the model results in closing the menu.
-  virtual void BookmarkModelChanged();
+  virtual void BookmarkModelChanged() OVERRIDE;
 
   // Returns true if selection_ has at least one bookmark of type url.
   bool HasURLs() const;

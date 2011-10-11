@@ -21,8 +21,7 @@ bool override_more_webui_ = false;
 }  // namespace
 
 ChromeWebUI::ChromeWebUI(TabContents* contents)
-    : WebUI(contents),
-      force_bookmark_bar_visible_(false) {
+    : WebUI(contents) {
 }
 
 ChromeWebUI::~ChromeWebUI() {
@@ -30,6 +29,10 @@ ChromeWebUI::~ChromeWebUI() {
 
 Profile* ChromeWebUI::GetProfile() const {
   return Profile::FromBrowserContext(tab_contents()->browser_context());
+}
+
+bool ChromeWebUI::CanShowBookmarkBar() const {
+  return false;
 }
 
 // static
