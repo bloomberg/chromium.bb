@@ -14,8 +14,6 @@ import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import test_utils
 
-from webdriver_pages import settings
-
 
 class AutofillTest(pyauto.PyUITest):
   """Tests that autofill works correctly"""
@@ -734,6 +732,7 @@ class AutofillTest(pyauto.PyUITest):
     data_file = os.path.join(self.DataDir(), 'autofill', 'functional',
                              'state_zip_labels.txt')
     import simplejson
+    from webdriver_pages import settings
     test_data = simplejson.loads(open(data_file).read())
 
     driver = self.NewWebDriver()
@@ -763,6 +762,7 @@ class AutofillTest(pyauto.PyUITest):
 
   def testNoDuplicatePhoneNumsInPrefs(self):
     """Test duplicate phone numbers entered in prefs are removed."""
+    from webdriver_pages import settings
     driver = self.NewWebDriver()
     page = settings.AutofillEditAddressDialog.FromNavigation(driver)
     non_duplicates = ['111-1111', '222-2222']

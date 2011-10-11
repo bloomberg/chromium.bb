@@ -417,7 +417,7 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # Media files test uses internal media files
       '-chromeos_file_browser.ChromeosFileBrowserTest.testOpenMediaFiles',
-      # Netflix tests 
+      # Netflix tests
       '-netflix.NetflixTest.testPlayerLoadsAndPlays',
       '-netflix.NetflixTest.testPlaying',
     ],
