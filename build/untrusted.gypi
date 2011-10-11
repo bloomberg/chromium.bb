@@ -25,7 +25,6 @@
           'extra_args': [],
           'lib_dirs': [],
           'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
-          'objdir': 'undefined',
           'defines': [
             '-DNACL_BLOCK_SHIFT=5',
             '-DNACL_BLOCK_SIZE=32',
@@ -59,14 +58,8 @@
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'outname': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)',
              },
-             'target_conditions': [
-                ['objdir=="undefined"', {
-                  'variables': {
-                    'objdir':  '>(INTERMEDIATE_DIR)/>(tool_name)',
-                  },
-                }],
-             ],
              'actions': [
                {
                  'action_name': 'build newlib x86-64 nexe',
@@ -106,14 +99,8 @@
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'outname': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/>(nlib_target)',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)',
              },
-             'condition': [
-                ['objdir=="undefined"', {
-                  'variables': {
-                    'objdir':  '>(INTERMEDIATE_DIR)/>(tool_name)',
-                  },
-                }],
-             ],
              'actions': [
                {
                  'action_name': 'build newlib x86-64 nlib',
