@@ -155,7 +155,10 @@ SyncScheduler::WaitInterval::WaitInterval(Mode mode, TimeDelta length)
 
 namespace {
 
-const int kDefaultSessionsCommitDelaySeconds = 10;
+// In practice, this is overridden by the server with something higher. We set
+// it to 5 by default so we have a safe starting value and so the integration
+// tests don't timeout.
+const int kDefaultSessionsCommitDelaySeconds = 5;
 
 bool IsConfigRelatedUpdateSourceValue(
     GetUpdatesCallerInfo::GetUpdatesSource source) {
