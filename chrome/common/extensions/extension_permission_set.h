@@ -114,7 +114,6 @@ class ExtensionAPIPermission {
     kManagement,
     kMediaPlayerPrivate,
     kNotification,
-    kPermissions,
     kPlugin,
     kProxy,
     kTab,

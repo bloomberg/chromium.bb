@@ -25,17 +25,17 @@ var UNKNOWN_PERMISSIONS_ERROR =
 var emptyPermissions = {permissions: [], origins: []};
 
 var initialPermissions = {
-  permissions: ['experimental', 'management', 'permissions'],
+  permissions: ['experimental', 'management'],
   origins: ['http://a.com/*']
 };
 
 var permissionsWithTabs = {
-  permissions: ['experimental', 'management', 'permissions', 'tabs'],
+  permissions: ['experimental', 'management', 'tabs'],
   origins: ['http://a.com/*']
 }
 
 var permissionsWithOrigin = {
-  permissions: ['experimental', 'management', 'permissions'],
+  permissions: ['experimental', 'management'],
   origins: ['http://a.com/*', 'http://*.c.com/*']
 }
 
@@ -90,10 +90,10 @@ chrome.test.getConfig(function(config) {
           {permissions: ['devtools'], origins: ['http://a.com/*']},
           pass(function(result) { assertFalse(result); }));
       chrome.experimental.permissions.contains(
-          {permissions: ['permissions', 'management']},
+          {permissions: ['management']},
           pass(function(result) { assertTrue(result); }));
       chrome.experimental.permissions.contains(
-          {permissions: ['management', 'permissions']},
+          {permissions: ['management']},
           pass(function(result) { assertTrue(result); }));
     },
 

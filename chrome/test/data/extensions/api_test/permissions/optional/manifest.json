@@ -7,7 +7,6 @@
    "permissions": [ 
      "experimental",
      "management",
-     "permissions",
      "http://a.com/*"
    ],
    "optional_permissions": [

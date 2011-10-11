@@ -69,7 +69,6 @@ IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, OptionalPermissionsGranted) {
   ExtensionAPIPermissionSet apis;
   apis.insert(ExtensionAPIPermission::kTab);
   apis.insert(ExtensionAPIPermission::kManagement);
-  apis.insert(ExtensionAPIPermission::kPermissions);
   URLPatternSet explicit_hosts;
   AddPattern(&explicit_hosts, "http://a.com/*");
   AddPattern(&explicit_hosts, "http://*.c.com/*");

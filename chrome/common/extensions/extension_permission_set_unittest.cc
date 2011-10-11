@@ -152,7 +152,6 @@ TEST(ExtensionAPIPermissionTest, HostedAppPermissions) {
   hosted_perms.insert(ExtensionAPIPermission::kNotification);
   hosted_perms.insert(ExtensionAPIPermission::kUnlimitedStorage);
   hosted_perms.insert(ExtensionAPIPermission::kWebstorePrivate);
-  hosted_perms.insert(ExtensionAPIPermission::kPermissions);
 
   ExtensionAPIPermissionSet perms = info->GetAll();
   size_t count = 0;
@@ -646,9 +645,6 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
 
   // Warned as part of host permissions.
   skip.insert(ExtensionAPIPermission::kDevtools);
-
-  // This will warn users later, when they request new permissions.
-  skip.insert(ExtensionAPIPermission::kPermissions);
 
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet permissions = info->GetAll();

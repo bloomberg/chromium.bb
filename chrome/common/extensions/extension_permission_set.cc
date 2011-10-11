@@ -45,6 +45,7 @@ const char kI18NModuleName[] = "i18n";
 const char kOmniboxModuleName[] = "omnibox";
 const char kPageActionModuleName[] = "pageAction";
 const char kPageActionsModuleName[] = "pageActions";
+const char kPermissionsModuleName[] = "permissions";
 const char kTestModuleName[] = "test";
 const char kTypesModuleName[] = "types";
 
@@ -59,6 +60,7 @@ const char* kNonPermissionModuleNames[] = {
   kOmniboxModuleName,
   kPageActionModuleName,
   kPageActionsModuleName,
+  kPermissionsModuleName,
   kTestModuleName,
   kTypesModuleName
 };
@@ -250,9 +252,6 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
       ExtensionPermissionMessage::kNone, hosted_app | optional);
   RegisterPermission(
       ExtensionAPIPermission::kUnlimitedStorage, "unlimitedStorage", 0,
-      ExtensionPermissionMessage::kNone, hosted_app);
-  RegisterPermission(
-      ExtensionAPIPermission::kPermissions, "permissions", 0,
       ExtensionPermissionMessage::kNone, hosted_app);
 
   // Hosted app and private permissions.
