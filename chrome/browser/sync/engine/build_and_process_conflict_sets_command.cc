@@ -116,8 +116,7 @@ bool RollbackEntry(syncable::WriteTransaction* trans,
   entry.Put(syncable::PARENT_ID, backup->ref(syncable::PARENT_ID));
 
   if (!backup->ref(syncable::IS_DEL)) {
-    if (!entry.PutPredecessor(backup->ref(syncable::PREV_ID)))
-      return false;
+    CHECK(entry.PutPredecessor(backup->ref(syncable::PREV_ID)));
   }
 
   if (backup->ref(syncable::PREV_ID) != entry.Get(syncable::PREV_ID))

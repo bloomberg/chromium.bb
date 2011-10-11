@@ -439,8 +439,7 @@ void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
     // value we got applies to the PARENT_ID we submitted.
     syncable::Id new_prev = local_entry->ComputePrevIdFromServerPosition(
         local_entry->Get(PARENT_ID));
-    if (!local_entry->PutPredecessor(new_prev))
-      LOG(WARNING) << "PutPredecessor failed after successful commit";
+    CHECK(local_entry->PutPredecessor(new_prev));
   }
 }
 

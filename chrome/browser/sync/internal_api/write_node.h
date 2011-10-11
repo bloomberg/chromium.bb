@@ -177,7 +177,7 @@ class WriteNode : public BaseNode {
   void PutModelType(syncable::ModelType model_type);
 
   // Helper to set the previous node.
-  void PutPredecessor(const BaseNode* predecessor);
+  bool PutPredecessor(const BaseNode* predecessor) WARN_UNUSED_RESULT;
 
   // Sets IS_UNSYNCED and SYNCING to ensure this entry is considered in an
   // upcoming commit pass.

@@ -1483,7 +1483,7 @@ bool MutableEntry::PutIsDel(bool is_del) {
   }
 
   if (!is_del)
-    PutPredecessor(Id());  // Restores position to the 0th index.
+    CHECK(PutPredecessor(Id()));  // Restores position to the 0th index.
 
   return true;
 }
@@ -1521,7 +1521,7 @@ bool MutableEntry::Put(IdField field, const Id& value) {
         return false;
     } else if (PARENT_ID == field) {
       PutParentIdPropertyOnly(value);  // Makes sibling order inconsistent.
-      PutPredecessor(Id());  // Fixes up the sibling order inconsistency.
+      CHECK(PutPredecessor(Id()));  // Fixes up the sibling order inconsistency.
     } else {
       kernel_->put(field, value);
     }
@@ -1698,7 +1698,11 @@ bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
   Id successor_id;
   if (!predecessor_id.IsRoot()) {
     MutableEntry predecessor(write_transaction(), GET_BY_ID, predecessor_id);
-    CHECK(predecessor.good());
+    if (!predecessor.good()) {
+      LOG(ERROR) << "Predecessor is not good : "
+                 << predecessor_id.GetServerId();
+      return false;
+    }
     if (predecessor.Get(PARENT_ID) != Get(PARENT_ID))
       return false;
     successor_id = predecessor.Get(NEXT_ID);
@@ -1709,7 +1713,11 @@ bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
   }
   if (!successor_id.IsRoot()) {
     MutableEntry successor(write_transaction(), GET_BY_ID, successor_id);
-    CHECK(successor.good());
+    if (!successor.good()) {
+      LOG(ERROR) << "Successor is not good: "
+                 << successor_id.GetServerId();
+      return false;
+    }
     if (successor.Get(PARENT_ID) != Get(PARENT_ID))
       return false;
     successor.Put(PREV_ID, Get(ID));

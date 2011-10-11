@@ -455,6 +455,10 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
       sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
           parent_node, bookmark_model_, i, &trans, this,
           unrecoverable_error_handler_);
+      if (sync_api::kInvalidId == sync_child_id) {
+        error->Reset(FROM_HERE, "Failed to create sync node.", model_type());
+        return false; // Creation failed.
+      }
       if (parent_node->GetChild(i)->is_folder())
         dfs_stack.push(sync_child_id);
       number_of_new_sync_nodes_created_at_association_++;

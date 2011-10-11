@@ -123,7 +123,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     entry.Put(syncable::IS_DIR, is_folder);
     entry.Put(syncable::IS_DEL, false);
     entry.Put(syncable::PARENT_ID, parent_id);
-    entry.PutPredecessor(predecessor_id);
+    CHECK(entry.PutPredecessor(predecessor_id));
     sync_pb::EntitySpecifics default_specifics;
     syncable::AddDefaultExtensionValue(model_type, &default_specifics);
     entry.Put(syncable::SPECIFICS, default_specifics);
