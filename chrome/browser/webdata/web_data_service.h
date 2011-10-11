@@ -277,8 +277,8 @@ class WebDataService
   // to Autofill records of the database.
   // NOTE: This method is intended to be called from the DB thread.  It
   // it asynchronously notifies listeners on the UI thread.
-  // |profile| may be NULL for testing purposes.
-  static void NotifyOfMultipleAutofillChanges(Profile* profile);
+  // |web_data_service| may be NULL for testing purposes.
+  static void NotifyOfMultipleAutofillChanges(WebDataService* web_data_service);
 
   // Initializes the web data service. Returns false on failure
   // Takes the path of the profile directory as its argument.

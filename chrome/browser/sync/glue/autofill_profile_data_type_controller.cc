@@ -25,10 +25,9 @@ void AutofillProfileDataTypeController::CreateSyncComponents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   ProfileSyncFactory::SyncComponents sync_components =
       profile_sync_factory()->
-          CreateAutofillProfileSyncComponents(
-          profile_sync_service(),
-          web_data_service()->GetDatabase(),
-          this);
+          CreateAutofillProfileSyncComponents(profile_sync_service(),
+                                              web_data_service(),
+                                              this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
 }

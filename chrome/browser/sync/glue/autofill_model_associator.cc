@@ -198,7 +198,8 @@ bool AutofillModelAssociator::AssociateModels(SyncError* error) {
     return false;
   }
 
-  WebDataService::NotifyOfMultipleAutofillChanges(profile_);
+  WebDataService::NotifyOfMultipleAutofillChanges(
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS));
 
   return true;
 }

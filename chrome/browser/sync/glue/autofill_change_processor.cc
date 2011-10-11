@@ -295,7 +295,8 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
     return;
   }
 
-  WebDataService::NotifyOfMultipleAutofillChanges(profile_);
+  WebDataService::NotifyOfMultipleAutofillChanges(
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS));
 
   StartObserving();
 }

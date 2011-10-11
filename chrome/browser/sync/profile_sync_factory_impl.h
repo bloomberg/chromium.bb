@@ -41,7 +41,7 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
 
   virtual SyncComponents CreateAutofillProfileSyncComponents(
       ProfileSyncService* profile_sync_service,
-      WebDatabase* web_database,
+      WebDataService* web_data_service,
       browser_sync::UnrecoverableErrorHandler* error_handler);
 
   virtual SyncComponents CreateBookmarkSyncComponents(

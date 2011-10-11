@@ -179,12 +179,12 @@ ACTION_P3(MakeAutofillSyncComponents, service, wd, dtc) {
                                             change_processor);
 }
 
-ACTION_P3(MakeAutofillProfileSyncComponents, service, wd, dtc) {
+ACTION_P3(MakeAutofillProfileSyncComponents, service, wds, dtc) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
     return ProfileSyncFactory::SyncComponents(NULL, NULL);
   AutofillProfileSyncableService* sync_service =
-      new AutofillProfileSyncableService(wd, service->profile());
+      new AutofillProfileSyncableService(wds);
   sync_api::UserShare* user_share = service->GetUserShare();
   GenericChangeProcessor* change_processor =
       new GenericChangeProcessor(sync_service, dtc, user_share);
@@ -203,9 +203,9 @@ class AbstractAutofillFactory {
       ProfileMock* profile,
       ProfileSyncService* service) = 0;
   virtual void SetExpectation(ProfileSyncFactoryMock* factory,
-      ProfileSyncService* service,
-      WebDatabase* wd,
-      DataTypeController* dtc) = 0;
+                              ProfileSyncService* service,
+                              WebDataService* wds,
+                              DataTypeController* dtc) = 0;
   virtual ~AbstractAutofillFactory() {}
 };
 
@@ -220,11 +220,11 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
   }
 
   void SetExpectation(ProfileSyncFactoryMock* factory,
-      ProfileSyncService* service,
-      WebDatabase* wd,
-      DataTypeController* dtc) {
+                      ProfileSyncService* service,
+                      WebDataService* wds,
+                      DataTypeController* dtc) {
     EXPECT_CALL(*factory, CreateAutofillSyncComponents(_,_,_)).
-        WillOnce(MakeAutofillSyncComponents(service, wd, dtc));
+        WillOnce(MakeAutofillSyncComponents(service, wds->GetDatabase(), dtc));
   }
 };
 
@@ -239,11 +239,11 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
   }
 
   void SetExpectation(ProfileSyncFactoryMock* factory,
-      ProfileSyncService* service,
-      WebDatabase* wd,
-      DataTypeController* dtc) {
+                      ProfileSyncService* service,
+                      WebDataService* wds,
+                      DataTypeController* dtc) {
     EXPECT_CALL(*factory, CreateAutofillProfileSyncComponents(_,_,_)).
-        WillOnce(MakeAutofillProfileSyncComponents(service, wd, dtc));
+        WillOnce(MakeAutofillProfileSyncComponents(service, wds, dtc));
   }
 };
 
@@ -325,7 +325,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
     factory->SetExpectation(&factory_,
                             service_.get(),
-                            web_database_.get(),
+                            web_data_service_.get(),
                             data_type_controller);
 
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).

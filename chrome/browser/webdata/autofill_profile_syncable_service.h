@@ -25,10 +25,9 @@
 #include "content/common/notification_registrar.h"
 
 class AutofillProfile;
-class Profile;
+class AutofillTable;
 class ProfileSyncServiceAutofillTest;
-
-class WebDatabase;
+class WebDataService;
 
 namespace browser_sync {
 
@@ -45,7 +44,7 @@ class AutofillProfileSyncableService
       public NotificationObserver,
       public base::NonThreadSafe {
  public:
-  AutofillProfileSyncableService(WebDatabase* web_database, Profile* profile);
+  explicit AutofillProfileSyncableService(WebDataService* web_data_service);
   virtual ~AutofillProfileSyncableService();
 
   static syncable::ModelType model_type() { return syncable::AUTOFILL_PROFILE; }
@@ -126,14 +125,15 @@ class AutofillProfileSyncableService
   // Creates SyncData based on supplied |profile|.
   static SyncData CreateData(const AutofillProfile& profile);
 
+  AutofillTable* GetAutofillTable() const;
+
   // For unit-tests.
   AutofillProfileSyncableService();
   void set_sync_processor(SyncChangeProcessor* sync_processor) {
     sync_processor_ = sync_processor;
   }
 
-  WebDatabase* web_database_;
-  Profile* profile_;
+  WebDataService* web_data_service_;  // WEAK
   NotificationRegistrar notification_registrar_;
 
   // Cached Autofill profiles. *Warning* deleted profiles are still in the

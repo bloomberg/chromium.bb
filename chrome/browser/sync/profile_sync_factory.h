@@ -20,6 +20,7 @@ class PasswordStore;
 class PersonalDataManager;
 class ProfileSyncService;
 class WebDatabase;
+class WebDataService;
 
 namespace browser_sync {
 class DataTypeManager;
@@ -84,7 +85,7 @@ class ProfileSyncFactory {
   // by the caller.
   virtual SyncComponents CreateAutofillProfileSyncComponents(
       ProfileSyncService* profile_sync_service,
-      WebDatabase* web_database,
+      WebDataService* web_data_service,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the

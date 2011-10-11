@@ -220,11 +220,10 @@ ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
 ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateAutofillProfileSyncComponents(
     ProfileSyncService* profile_sync_service,
-    WebDatabase* web_database,
+    WebDataService* web_data_service,
     browser_sync::UnrecoverableErrorHandler* error_handler) {
   AutofillProfileSyncableService* sync_service =
-      new AutofillProfileSyncableService(web_database,
-                                         profile_sync_service->profile());
+      new AutofillProfileSyncableService(web_data_service);
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   GenericChangeProcessor* change_processor =
       new GenericChangeProcessor(sync_service, error_handler, user_share);

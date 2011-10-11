@@ -81,14 +81,10 @@ WebDataService::WebDataService()
 }
 
 // static
-void WebDataService::NotifyOfMultipleAutofillChanges(Profile* profile) {
+void WebDataService::NotifyOfMultipleAutofillChanges(
+    WebDataService* web_data_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
-  if (!profile)
-    return;
-
-  WebDataService* web_data_service =
-    profile->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!web_data_service)
     return;
 
