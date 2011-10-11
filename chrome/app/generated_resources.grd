@@ -8799,6 +8799,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PROFILES_DELETE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user to delete their profile.">
         Delete...
       </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
+          Delete this user
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="In Title Case. The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
+          Delete This User
+        </message>
+      </if>
       <message name="IDS_PROFILES_SYNCED_TO_USER_WITH_TIME" desc="The message that appears in the options dialog indicating that account is synced to a user with the given email address. The last sync also appears in the message.">
         Using Chrome profile <ph name="USER_EMAIL_ADDRESS">
           $1<ex>foo@gmail.com</ex>

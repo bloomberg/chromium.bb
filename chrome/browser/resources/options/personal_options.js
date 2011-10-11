@@ -60,8 +60,9 @@ cr.define('options', function() {
       profilesList.onchange = function(event) {
         var selectedProfile = profilesList.selectedItem;
         var hasSelection = selectedProfile != null;
+        var hasSingleProfile = profilesList.dataModel.length == 1;
         $('profiles-manage').disabled = !hasSelection;
-        $('profiles-delete').disabled = !hasSelection;
+        $('profiles-delete').disabled = !hasSingleProfile && !hasSelection;
       };
       $('profiles-create').onclick = function(event) {
         chrome.send('createProfile');
@@ -220,10 +221,13 @@ cr.define('options', function() {
      * @param {number} numProfiles The number of profiles to display.
      */
     setProfileViewSingle_: function(numProfiles) {
-      $('profiles-list').hidden = numProfiles <= 1;
-      $('profiles-single-message').hidden = numProfiles > 1;
-      $('profiles-manage').hidden = numProfiles <= 1;
-      $('profiles-delete').hidden = numProfiles <= 1;
+      var hasSingleProfile = numProfiles == 1;
+      $('profiles-list').hidden = hasSingleProfile;
+      $('profiles-single-message').hidden = !hasSingleProfile;
+      $('profiles-manage').hidden = hasSingleProfile;
+      $('profiles-delete').textContent = hasSingleProfile ?
+          templateData.profilesDeleteSingle :
+          templateData.profilesDelete;
     },
 
     /**

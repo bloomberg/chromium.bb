@@ -94,6 +94,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_BUTTON_LABEL));
   localized_strings->SetString("profilesDelete",
       l10n_util::GetStringUTF16(IDS_PROFILES_DELETE_BUTTON_LABEL));
+  localized_strings->SetString("profilesDeleteSingle",
+      l10n_util::GetStringUTF16(IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL));
   localized_strings->SetString("profilesListItemCurrent",
       l10n_util::GetStringUTF16(IDS_PROFILES_LIST_ITEM_CURRENT));
   localized_strings->SetString("profilesSingleUser",
