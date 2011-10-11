@@ -253,8 +253,8 @@ static bool LoadDwarf(const std::string &dwarf_filename,
   const ElfW(Shdr) *section_names = sections + elf_header->e_shstrndx;
   for (int i = 0; i < num_sections; i++) {
     const ElfW(Shdr) *section = &sections[i];
-    std::string name = reinterpret_cast<const char *>(section_names->sh_offset
-                                                 + section->sh_name);
+    std::string name = reinterpret_cast<const char *>(section_names->sh_offset +
+                                                      section->sh_name);
     const char *contents = reinterpret_cast<const char *>(section->sh_offset);
     uint64 length = section->sh_size;
     file_context.section_map[name] = std::make_pair(contents, length);
