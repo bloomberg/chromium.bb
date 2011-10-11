@@ -66,10 +66,6 @@ IPC::SyncChannel* MockRenderThread::GetChannel() {
   return NULL;
 }
 
-ResourceDispatcher* MockRenderThread::GetResourceDispatcher() {
-  return NULL;
-}
-
 std::string MockRenderThread::GetLocale() {
   return std::string();
 }

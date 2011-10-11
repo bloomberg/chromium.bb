@@ -114,6 +114,11 @@ void ChildThread::RemoveRoute(int32 routing_id) {
   router_.RemoveRoute(routing_id);
 }
 
+void ChildThread::SetResourceDispatcherDelegate(
+    content::ResourceDispatcherDelegate* delegate) {
+  resource_dispatcher_->set_delegate(delegate);
+}
+
 IPC::Channel::Listener* ChildThread::ResolveRoute(int32 routing_id) {
   DCHECK(MessageLoop::current() == message_loop());
 
