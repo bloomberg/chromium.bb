@@ -487,7 +487,7 @@ class TableView2Test : public testing::Test, views::WidgetDelegate {
   }
 
   // Returns the contents of a cell in the table.
-  std::wstring GetCellValue(int row, int column);
+  std::string GetCellValue(int row, int column);
 
  protected:
   // Creates the model.
@@ -537,7 +537,7 @@ TestTableModel* TableView2Test::CreateModel() {
   return new TestTableModel();
 }
 
-std::wstring TableView2Test::GetCellValue(int row, int column) {
+std::string TableView2Test::GetCellValue(int row, int column) {
 #if defined(OS_WIN)
   wchar_t str[128] = {0};
   LVITEM item = {0};
@@ -548,7 +548,7 @@ std::wstring TableView2Test::GetCellValue(int row, int column) {
   item.cchTextMax = 128;
   BOOL r = ListView_GetItem(table_->GetTestingHandle(), &item);
   DCHECK(r);
-  return std::wstring(str);
+  return WideToUTF8(str);
 #else
   GtkTreeModel* gtk_model =
       gtk_tree_view_get_model(GTK_TREE_VIEW(table_->GetTestingHandle()));
@@ -559,43 +559,43 @@ std::wstring TableView2Test::GetCellValue(int row, int column) {
   gchar* text = NULL;
   gtk_tree_model_get(gtk_model, &row_iter, column, &text, -1);
   DCHECK(text);
-  std::wstring str(UTF8ToWide(text));
+  std::string value(text);
   g_free(text);
-  return str;
+  return value;
 #endif
 }
 
 // Tests that the table correctly reflects changes to the model.
 TEST_F(TableView2Test, ModelChangesTest) {
   ASSERT_EQ(3, table_->GetRowCount());
-  EXPECT_EQ(L"0", GetCellValue(0, 0));
-  EXPECT_EQ(L"1", GetCellValue(1, 0));
-  EXPECT_EQ(L"2", GetCellValue(2, 1));
+  EXPECT_EQ("0", GetCellValue(0, 0));
+  EXPECT_EQ("1", GetCellValue(1, 0));
+  EXPECT_EQ("2", GetCellValue(2, 1));
 
   // Test adding rows and that OnItemsAdded works.
   model_->AddRow(3, 3, 3);
   model_->AddRow(4, 4, 4);
   table_->OnItemsAdded(3, 2);
   ASSERT_EQ(5, table_->GetRowCount());
-  EXPECT_EQ(L"3", GetCellValue(3, 0));
-  EXPECT_EQ(L"4", GetCellValue(4, 1));
+  EXPECT_EQ("3", GetCellValue(3, 0));
+  EXPECT_EQ("4", GetCellValue(4, 1));
 
   // Test removing rows and that OnItemsRemoved works.
   model_->RemoveRow(1);
   model_->RemoveRow(1);
   table_->OnItemsRemoved(1, 2);
   ASSERT_EQ(3, table_->GetRowCount());
-  EXPECT_EQ(L"0", GetCellValue(0, 0));
-  EXPECT_EQ(L"3", GetCellValue(1, 0));
-  EXPECT_EQ(L"4", GetCellValue(2, 1));
+  EXPECT_EQ("0", GetCellValue(0, 0));
+  EXPECT_EQ("3", GetCellValue(1, 0));
+  EXPECT_EQ("4", GetCellValue(2, 1));
 
   // Test changing rows and that OnItemsChanged works.
   model_->ChangeRow(1, 1, 1);
   model_->ChangeRow(2, 2, 2);
   table_->OnItemsChanged(1, 2);
-  EXPECT_EQ(L"0", GetCellValue(0, 0));
-  EXPECT_EQ(L"1", GetCellValue(1, 0));
-  EXPECT_EQ(L"2", GetCellValue(2, 1));
+  EXPECT_EQ("0", GetCellValue(0, 0));
+  EXPECT_EQ("1", GetCellValue(1, 0));
+  EXPECT_EQ("2", GetCellValue(2, 1));
 
   // Test adding and removing rows and using OnModelChanged.
   model_->RemoveRow(2);
@@ -603,10 +603,10 @@ TEST_F(TableView2Test, ModelChangesTest) {
   model_->AddRow(3, 6, 6);
   table_->OnModelChanged();
   ASSERT_EQ(4, table_->GetRowCount());
-  EXPECT_EQ(L"0", GetCellValue(0, 0));
-  EXPECT_EQ(L"1", GetCellValue(1, 0));
-  EXPECT_EQ(L"5", GetCellValue(2, 1));
-  EXPECT_EQ(L"6", GetCellValue(3, 1));
+  EXPECT_EQ("0", GetCellValue(0, 0));
+  EXPECT_EQ("1", GetCellValue(1, 0));
+  EXPECT_EQ("5", GetCellValue(2, 1));
+  EXPECT_EQ("6", GetCellValue(3, 1));
 }
 
 // Test the selection on a single-selection table.
