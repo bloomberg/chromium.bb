@@ -823,22 +823,31 @@ const char kPpapiFlashInProcess[]          = "ppapi-flash-in-process";
 // Instant for faster searching and browsing" in Preferences -> Basics).
 const char kPreloadInstantSearch[]          = "preload-instant-search";
 
-// Controls speculative prerendering of pages, and content prefetching.  Both
-// are dispatched from <link rel=prefetch href=...> elements.
-const char kPrerender[]                     = "prerender";
 // Trigger prerendering of pages from suggestions in the omnibox. Only has an
 // effect when Instant is either disabled or restricted to search, and when
 // prerender is enabled.
 const char kPrerenderFromOmnibox[]          = "prerender-from-omnibox";
-// These are the values the switch may have, as in "--prerender=auto".
+// These are the values the kPrerenderFromOmnibox switch may have, as in
+// "--prerender-from-omnibox=auto".
+//   auto: Allow field trial selection.
+const char kPrerenderFromOmniboxSwitchValueAuto[] = "auto";
+//   disabled: No prerendering.
+const char kPrerenderFromOmniboxSwitchValueDisabled[] = "disabled";
+//   enabled: Guaranteed prerendering.
+const char kPrerenderFromOmniboxSwitchValueEnabled[] = "enabled";
+// Controls speculative prerendering of pages, and content prefetching.  Both
+// are dispatched from <link rel=prefetch href=...> elements.
+const char kPrerenderMode[]                     = "prerender";
+// These are the values the kPrerenderMode switch may have, as in
+// "--prerender=auto".
 //   auto: Allow field trial selection in both prerender and prefetch.
-const char kPrerenderSwitchValueAuto[]      = "auto";
+const char kPrerenderModeSwitchValueAuto[]      = "auto";
 //   disabled: No prerendering or prefetching.
-const char kPrerenderSwitchValueDisabled[]  = "disabled";
+const char kPrerenderModeSwitchValueDisabled[]  = "disabled";
 //   enabled: Both prerendering and prefetching.
-const char kPrerenderSwitchValueEnabled[]   = "enabled";
+const char kPrerenderModeSwitchValueEnabled[]   = "enabled";
 //   prefetch_only: No prerendering, but enable prefetching.
-const char kPrerenderSwitchValuePrefetchOnly[] = "prefetch_only";
+const char kPrerenderModeSwitchValuePrefetchOnly[] = "prefetch_only";
 
 // Prints the pages on the screen.
 const char kPrint[]                         = "print";

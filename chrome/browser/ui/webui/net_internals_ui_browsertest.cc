@@ -97,8 +97,8 @@ NetInternalsTest::~NetInternalsTest() {
 void NetInternalsTest::SetUpCommandLine(CommandLine* command_line) {
   WebUIBrowserTest::SetUpCommandLine(command_line);
   // Needed to test the prerender view.
-  command_line->AppendSwitchASCII(switches::kPrerender,
-                                  switches::kPrerenderSwitchValueEnabled);
+  command_line->AppendSwitchASCII(switches::kPrerenderMode,
+                                  switches::kPrerenderModeSwitchValueEnabled);
 }
 
 void NetInternalsTest::SetUpInProcessBrowserTestFixture() {

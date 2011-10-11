@@ -37,8 +37,6 @@ const char* NameFromOmniboxHeuristic(OmniboxHeuristic heuristic) {
 
 }  // end namespace
 
-// If the command line contains the --prerender-from-omnibox switch, enable
-// prerendering from the Omnibox. If not, enter the user into a field trial.
 void ConfigurePrerenderFromOmnibox();
 
 void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
@@ -50,20 +48,21 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   };
 
   PrerenderOption prerender_option = PRERENDER_OPTION_AUTO;
-  if (command_line.HasSwitch(switches::kPrerender)) {
+  if (command_line.HasSwitch(switches::kPrerenderMode)) {
     const std::string switch_value =
-        command_line.GetSwitchValueASCII(switches::kPrerender);
+        command_line.GetSwitchValueASCII(switches::kPrerenderMode);
 
-    if (switch_value == switches::kPrerenderSwitchValueAuto) {
+    if (switch_value == switches::kPrerenderModeSwitchValueAuto) {
       prerender_option = PRERENDER_OPTION_AUTO;
-    } else if (switch_value == switches::kPrerenderSwitchValueDisabled) {
+    } else if (switch_value == switches::kPrerenderModeSwitchValueDisabled) {
       prerender_option = PRERENDER_OPTION_DISABLED;
     } else if (switch_value.empty() ||
-               switch_value == switches::kPrerenderSwitchValueEnabled) {
+               switch_value == switches::kPrerenderModeSwitchValueEnabled) {
       // The empty string means the option was provided with no value, and that
       // means enable.
       prerender_option = PRERENDER_OPTION_ENABLED;
-    } else if (switch_value == switches::kPrerenderSwitchValuePrefetchOnly) {
+    } else if (switch_value ==
+               switches::kPrerenderModeSwitchValuePrefetchOnly) {
       prerender_option = PRERENDER_OPTION_PREFETCH_ONLY;
     } else {
       prerender_option = PRERENDER_OPTION_DISABLED;
@@ -141,23 +140,22 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
 void ConfigurePrerenderFromOmnibox() {
   // Field trial to see if we're enabled.
   const base::FieldTrial::Probability kDivisor = 100;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPrerenderFromOmnibox)) {
-    const base::FieldTrial::Probability kEnabledProbability = 40;
-    scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial("PrerenderFromOmnibox", kDivisor,
-                             "OmniboxPrerenderDisabled", 2012, 8, 30));
-    trial->AppendGroup("OmniboxPrerenderEnabled", kEnabledProbability);
-  }
+
+  const base::FieldTrial::Probability kEnabledProbability = 40;
+  scoped_refptr<base::FieldTrial> enabled_trial(
+      new base::FieldTrial("PrerenderFromOmnibox", kDivisor,
+                           "OmniboxPrerenderDisabled", 2012, 8, 30));
+  enabled_trial->AppendGroup("OmniboxPrerenderEnabled", kEnabledProbability);
 
   // Field trial to see which heuristic to use.
   const base::FieldTrial::Probability kConservativeProbability = 50;
-  scoped_refptr<base::FieldTrial> trial(
+  scoped_refptr<base::FieldTrial> heuristic_trial(
       new base::FieldTrial("PrerenderFromOmniboxHeuristic", kDivisor,
                            "OriginalAlgorithm", 2012, 8, 30));
   omnibox_original_group_id = base::FieldTrial::kDefaultGroupNumber;
   omnibox_conservative_group_id =
-      trial->AppendGroup("ConservativeAlgorithm", kConservativeProbability);
+      heuristic_trial->AppendGroup("ConservativeAlgorithm",
+                                   kConservativeProbability);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
@@ -167,9 +165,21 @@ bool IsOmniboxEnabled(Profile* profile) {
   if (!PrerenderManager::IsPrerenderingPossible())
     return false;
 
+  // Override any field trial groups if the user has set a command line flag.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPrerenderFromOmnibox))
-    return true;
+      switches::kPrerenderFromOmnibox)) {
+    const std::string switch_value =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kPrerenderFromOmnibox);
+
+    if (switch_value == switches::kPrerenderFromOmniboxSwitchValueEnabled)
+      return true;
+
+    if (switch_value == switches::kPrerenderFromOmniboxSwitchValueDisabled)
+      return false;
+
+    DCHECK(switch_value == switches::kPrerenderFromOmniboxSwitchValueAuto);
+  }
 
   if (!MetricsServiceHelper::IsMetricsReportingEnabled())
     return false;

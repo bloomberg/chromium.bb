@@ -421,8 +421,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitchASCII(switches::kPrerender,
-                                    switches::kPrerenderSwitchValueEnabled);
+    command_line->AppendSwitchASCII(switches::kPrerenderMode,
+                                    switches::kPrerenderModeSwitchValueEnabled);
     // This is needed to enable click-to-play without triggering a DCHECK.
     // It does not actually enable click-to-play.
     command_line->AppendSwitchASCII(switches::kEnableClickToPlay, "");

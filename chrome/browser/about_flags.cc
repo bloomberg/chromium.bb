@@ -45,6 +45,14 @@ const char kMediaPlayerExperimentName[] = "media-player";
 const char kAdvancedFileSystemExperimentName[] = "advanced-file-system";
 const char kVerticalTabsExperimentName[] = "vertical-tabs";
 
+const Experiment::Choice kPrerenderFromOmniboxChoices[] = {
+  { IDS_FLAGS_PRERENDER_FROM_OMNIBOX_AUTOMATIC, "", "" },
+  { IDS_FLAGS_PRERENDER_FROM_OMNIBOX_ENABLED, switches::kPrerenderFromOmnibox,
+    switches::kPrerenderFromOmniboxSwitchValueEnabled },
+  { IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DISABLED, switches::kPrerenderFromOmnibox,
+    switches::kPrerenderFromOmniboxSwitchValueDisabled }
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -327,7 +335,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_PRERENDER_FROM_OMNIBOX_NAME,
     IDS_FLAGS_PRERENDER_FROM_OMNIBOX_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kPrerenderFromOmnibox)
+    MULTI_VALUE_TYPE(kPrerenderFromOmniboxChoices)
   },
   {
     "panels",
