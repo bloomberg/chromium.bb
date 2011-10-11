@@ -97,6 +97,7 @@ ProfileInfoCache::~ProfileInfoCache() {
 
 void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
                                          const string16& name,
+                                         const string16& username,
                                          size_t icon_index) {
   std::string key = CacheKeyFromProfilePath(profile_path);
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
@@ -104,6 +105,7 @@ void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
 
   scoped_ptr<DictionaryValue> info(new DictionaryValue);
   info->SetString(kNameKey, name);
+  info->SetString(kUserNameKey, username);
   info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
   cache->Set(key, info.release());
 

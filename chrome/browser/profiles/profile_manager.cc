@@ -498,14 +498,16 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   if (cache.GetIndexOfProfileWithPath(profile->GetPath()) != std::string::npos)
     return;
 
+  string16 username = UTF8ToUTF16(profile->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername));
+
   if (profile->GetPath() == GetDefaultProfileDir(cache.GetUserDataDir())) {
     cache.AddProfileToCache(
         profile->GetPath(),
-        l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME), 0);
+        l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME), username, 0);
   } else {
     cache.AddProfileToCache(
-        profile->GetPath(),
-        cache.ChooseNameForNewProfile(),
+        profile->GetPath(), cache.ChooseNameForNewProfile(), username,
         cache.ChooseAvatarIconIndexForNewProfile());
   }
 }

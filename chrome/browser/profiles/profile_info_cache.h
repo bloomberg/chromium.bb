@@ -36,6 +36,7 @@ class ProfileInfoCache : public ProfileInfoInterface {
 
   void AddProfileToCache(const FilePath& profile_path,
                          const string16& name,
+                         const string16& username,
                          size_t icon_index);
   void DeleteProfileFromCache(const FilePath& profile_path);
 

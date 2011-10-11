@@ -60,7 +60,7 @@ TEST_F(ProfileInfoCacheUnittests, AddProfiles) {
     const SkBitmap& icon = ResourceBundle::GetSharedInstance().GetImageNamed(
         ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(i));
 
-    GetCache()->AddProfileToCache(profile_path, profile_name, 0);
+    GetCache()->AddProfileToCache(profile_path, profile_name, string16(), 0);
 
     EXPECT_EQ(i + 1, GetCache()->GetNumberOfProfiles());
     EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(i));
@@ -75,13 +75,13 @@ TEST_F(ProfileInfoCacheUnittests, DeleteProfile) {
   EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
 
   FilePath path_1 = GetUserDataDir().Append(StringToFilePath("path_1"));
-  GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"),
+  GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"), string16(),
                             0);
   EXPECT_EQ(1u, GetCache()->GetNumberOfProfiles());
 
   FilePath path_2 = GetUserDataDir().Append(StringToFilePath("path_2"));
   string16 name_2 = ASCIIToUTF16("name_2");
-  GetCache()->AddProfileToCache(path_2, name_2, 0);
+  GetCache()->AddProfileToCache(path_2, name_2, string16(), 0);
   EXPECT_EQ(2u, GetCache()->GetNumberOfProfiles());
 
   GetCache()->DeleteProfileFromCache(path_1);
@@ -94,9 +94,9 @@ TEST_F(ProfileInfoCacheUnittests, DeleteProfile) {
 
 TEST_F(ProfileInfoCacheUnittests, MutateProfile) {
   GetCache()->AddProfileToCache(GetUserDataDir().Append(
-      StringToFilePath("path_1")), ASCIIToUTF16("name_1"), 0);
+      StringToFilePath("path_1")), ASCIIToUTF16("name_1"), string16(), 0);
   GetCache()->AddProfileToCache(GetUserDataDir().Append(
-      StringToFilePath("path_2")), ASCIIToUTF16("name_2"), 0);
+      StringToFilePath("path_2")), ASCIIToUTF16("name_2"), string16(), 0);
 
   string16 new_name = ASCIIToUTF16("new_name");
   GetCache()->SetNameOfProfileAtIndex(1, new_name);
