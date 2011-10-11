@@ -249,11 +249,6 @@
       ],
       'conditions': [
         ['OS=="win"', {
-          'link_settings': {
-            'libraries': [
-              '-lcomctl32.lib',
-            ],
-          },
           'resource_include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],

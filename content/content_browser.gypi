@@ -560,6 +560,7 @@
       ],
       'link_settings': {
         'libraries': [
+	  '-lcomctl32.lib',
           '-llocationapi.lib',
           '-lsensorsapi.lib',
         ],
