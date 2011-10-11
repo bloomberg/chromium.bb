@@ -84,7 +84,7 @@ CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLogging[];
-extern const char kEnableVideoTrack[];
+CONTENT_EXPORT extern const char kEnableVideoTrack[];
 CONTENT_EXPORT extern const char kEnableWebIntents[];
 CONTENT_EXPORT extern const char kExperimentalLocationFeatures[];
 extern const char kExtraPluginDir[];
