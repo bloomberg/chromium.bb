@@ -752,7 +752,7 @@ void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
       remoting::UiStrings::RTL : remoting::UiStrings::LTR;
   LocalizeString(localize_func, /*i18n-content*/"PRODUCT_NAME",
                  &ui_strings.product_name);
-  LocalizeString(localize_func, /*i18n-content*/"DISCONNECT_BUTTON",
+  LocalizeString(localize_func, /*i18n-content*/"DISCONNECT_OTHER_BUTTON",
                  &ui_strings.disconnect_button_text);
   LocalizeString(localize_func,
 #if defined(OS_WIN)

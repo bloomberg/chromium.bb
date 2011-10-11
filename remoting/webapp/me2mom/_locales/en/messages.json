@@ -45,21 +45,25 @@
     "message": "With Chromoting you can easily and securely let another Chromium user see and control your computer.",
     "description": "Description for the host app. This is shown to the host above the 'Share This Computer' button user before the client connects."
   },
-  "DISCONNECT_BUTTON": {
-    "message": "Disconnect",
-    "description": "Label for the disconnect button, without keyboard shortcuts. Only used in case we aren't able to enable hot-key support."
-  },
   "DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX": {
     "message": "Disconnect (Ctrl+Alt+Esc)",
-    "description": "Label for the disconnect button including the Linux keyboard shortcut."
+    "description": "Label for the disconnect button including the Linux keyboard shortcut. Clicking this button disconnects the remote user."
   },
   "DISCONNECT_BUTTON_PLUS_SHORTCUT_MAC_OS_X": {
-    "message": "Disconnect (\u2325\u2303\u238b)",
-    "description": "Label for the disconnect button including the Mac OS X keyboard shortcut."
+    "message": "Disconnect (Opt+Ctrl+Esc)",
+    "description": "Label for the disconnect button including the Mac OS X keyboard shortcut. Clicking this button disconnects the remote user."
   },
   "DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS": {
     "message": "Disconnect (Ctrl+Alt+Esc)",
-    "description": "Label for the disconnect button including the Windows keyboard shortcut."
+    "description": "Label for the disconnect button including the Windows keyboard shortcut. Clicking this button disconnects the remote user."
+  },
+  "DISCONNECT_MYSELF_BUTTON": {
+    "message": "Disconnect",
+    "description": "Label for the client-side disconnect button. Clicking this button disconnects oneself from the host."
+  },
+  "DISCONNECT_OTHER_BUTTON": {
+    "message": "Disconnect",
+    "description": "Label for the host-side disconnect button, without keyboard shortcuts. Only used in case we aren't able to enable hot-key support. Clicking this button disconnects the remote user."
   },
   "ERROR_HOST_IS_OFFLINE": {
     "message": "The remote computer is not responding to connection requests. Please verify that it is online and try again.",
