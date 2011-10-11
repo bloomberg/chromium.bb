@@ -1112,9 +1112,6 @@ const char kShouldUseMinimalFirstRunBubble[] = "show-minimal-first-run-bubble";
 // Signal that we should show the welcome page when we launch Chrome.
 const char kShouldShowWelcomePage[] = "show-welcome-page";
 
-// Tracks the number of times that we have shown the sync promo at startup.
-const char kSyncPromoStartupCount[] = "sync-promo-startup-count";
-
 // String containing the last known Google URL.  We re-detect this on startup in
 // most cases, and use it to send traffic to the correct Google host or with the
 // correct Google domain/country code for whatever location the user is in.
@@ -1397,6 +1394,13 @@ const char kSyncUsingSecondaryPassphrase[] = "sync.using_secondary_passphrase";
 
 // String that identifies the user logged into sync and other google services.
 const char kGoogleServicesUsername[] = "google.services.username";
+
+// Tracks the number of times that we have shown the sync promo at startup.
+const char kSyncPromoStartupCount[] = "sync_promo.startup_count";
+
+// A counter to remember the number of times we've been to the sync promo page
+// (not at startup).
+const char kSyncPromoViewCount[] = "sync_promo.view_count";
 
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";

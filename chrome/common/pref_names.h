@@ -394,7 +394,6 @@ extern const char kShouldShowFirstRunBubble[];
 extern const char kShouldUseOEMFirstRunBubble[];
 extern const char kShouldUseMinimalFirstRunBubble[];
 extern const char kShouldShowWelcomePage[];
-extern const char kSyncPromoStartupCount[];
 
 extern const char kLastKnownGoogleURL[];
 extern const char kLastPromptedGoogleURL[];
@@ -506,6 +505,9 @@ extern const char kSyncUsingOAuth[];
 extern const char kSyncUsingSecondaryPassphrase[];
 extern const char kSyncEncryptionBootstrapToken[];
 extern const char kSyncAcknowledgedSyncTypes[];
+
+extern const char kSyncPromoStartupCount[];
+extern const char kSyncPromoViewCount[];
 
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];

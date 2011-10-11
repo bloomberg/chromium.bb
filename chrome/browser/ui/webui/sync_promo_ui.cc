@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -73,8 +73,7 @@ SyncPromoUI::SyncPromoUI(TabContents* contents) : ChromeWebUI(contents) {
   profile->GetChromeURLDataManager()->AddDataSource(theme);
 
   // Set up the sync promo source.
-  SyncPromoUIHTMLSource* html_source =
-      new SyncPromoUIHTMLSource();
+  SyncPromoUIHTMLSource* html_source = new SyncPromoUIHTMLSource();
   html_source->set_json_path(kStringsJsFile);
   html_source->add_resource_path(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
   html_source->set_default_resource(IDR_SYNC_PROMO_HTML);
@@ -99,6 +98,13 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
     return false;
 
   return true;
+}
+
+// static
+void SyncPromoUI::RegisterUserPrefs(PrefService* prefs) {
+#if !defined(OS_CHROMEOS)
+  SyncPromoHandler::RegisterUserPrefs(prefs);
+#endif
 }
 
 bool IsFirstRun(Profile* profile) {

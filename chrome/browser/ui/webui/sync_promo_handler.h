@@ -8,11 +8,18 @@
 
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 
+class NotificationSource;
+class NotificationDetails;
+
 // The handler for Javascript messages related to the "sync promo" page.
 class SyncPromoHandler : public SyncSetupHandler {
  public:
   explicit SyncPromoHandler(ProfileManager* profile_manager);
   virtual ~SyncPromoHandler();
+
+  // Called to register our preferences before we use them (so there will be a
+  // default if not present yet).
+  static void RegisterUserPrefs(PrefService* prefs);
 
   // WebUIMessageHandler implementation.
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
@@ -21,19 +28,51 @@ class SyncPromoHandler : public SyncSetupHandler {
   // SyncSetupFlowHandler implementation.
   virtual void ShowConfigure(const base::DictionaryValue& args) OVERRIDE;
 
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
  protected:
   virtual void ShowSetupUI() OVERRIDE;
 
  private:
-  // Javascript callback handler to initialize the sync promo.
-  void HandleInitializeSyncPromo(const base::ListValue* args);
-
   // Javascript callback handler to close the sync promo.
   void HandleCloseSyncPromo(const base::ListValue* args);
 
+  // Javascript callback handler to initialize the sync promo.
+  void HandleInitializeSyncPromo(const base::ListValue* args);
+
   // Javascript callback handler to switch the advanced sync settings. |args| is
   // the list of arguments passed from JS and should be an empty list.
-  void HandleShowAdvancedSyncSettings(const base::ListValue* args);
+  void HandleShowAdvancedSettings(const base::ListValue* args);
+
+  // Javascript callback handler to record user actions on the sync promo.
+  void HandleUserFlowAction(const base::ListValue* args);
+
+  // Return the number of times the user with the current profile has seen the
+  // sync promo.
+  int GetViewCount() const;
+
+  // Increment the local view count by the specified non-negative integer
+  // amount. Returns the new total view count.
+  int IncrementViewCountBy(unsigned int amount);
+
+  // Record a user's flow through the promo to our histogram in UMA.
+  void RecordUserFlowAction(int action);
+
+  // Use this to register for certain notifications (currently when tabs or
+  // windows close).
+  NotificationRegistrar registrar_;
+
+  // Weak reference that's initialized and checked in Attach() (after that
+  // guaranteed to be non-NULL).
+  PrefService* prefs_;
+
+  // If the user closes the whole window we'll get a close notification from the
+  // tab as well, so this bool acts as a small mutex to only report the close
+  // method once.
+  bool window_already_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPromoHandler);
 };
