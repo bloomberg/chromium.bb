@@ -171,10 +171,6 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
 int NaClHostDescUnmapUnsafe(void    *start_addr,
                             size_t  len) {
   int       retval;
-  uintptr_t addr;
-
-  addr = (uintptr_t) start_addr;
-
   return ((-1 == (retval = munmap(start_addr, len)))
           ? -NaClXlateErrno(errno)
           : retval);
@@ -183,10 +179,6 @@ int NaClHostDescUnmapUnsafe(void    *start_addr,
 int NaClHostDescUnmap(void    *start_addr,
                       size_t  len) {
   int       retval;
-  uintptr_t addr;
-
-  addr = (uintptr_t) start_addr;
-
   return ((-1 == (retval = (uintptr_t) mmap(start_addr,
                                             len,
                                             PROT_NONE,

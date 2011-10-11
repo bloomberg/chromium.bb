@@ -711,6 +711,18 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #endif /* NO_SEGMENT_TRAVERSAL */
 
 /*
+ * We have to do this for now, because portability.h doesn't work for
+ * Native Client compilations.
+ * TODO(sehr): make portability.h work for Native Client compilations.
+ * BUG=http://code.google.com/p/nativeclient/issues/detail?id=2350
+ */
+#if NACL_WINDOWS
+# define UNREFERENCED_PARAMETER(P) (P)
+#else
+# define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
+#endif
+
+/*
   mallopt tuning options.  SVID/XPG defines four standard parameter
   numbers for mallopt, normally defined in malloc.h.  None of these
   are used in this malloc, so setting them has no effect. But this
@@ -1518,7 +1530,7 @@ LONG __cdecl _InterlockedExchange(LONG volatile *Target, LONG Value);
 
 /* Declarations for bit scanning on win32 */
 #if defined(_MSC_VER) && _MSC_VER>=1300
-#ifndef BitScanForward	/* Try to avoid pulling in WinNT.h */
+#ifndef BitScanForward  /* Try to avoid pulling in WinNT.h */
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -1999,7 +2011,7 @@ static void init_malloc_global_mutex() {
 /* Cope with old-style linux recursive lock initialization by adding */
 /* skipped internal declaration from pthread.h */
 extern int pthread_mutexattr_setkind_np __P ((pthread_mutexattr_t *__attr,
-					   int __kind));
+                                              int __kind));
 #define PTHREAD_MUTEX_RECURSIVE PTHREAD_MUTEX_RECURSIVE_NP
 #define pthread_mutexattr_settype(x,y) pthread_mutexattr_setkind_np(x,y)
 #endif /* USE_RECURSIVE_LOCKS ... */
@@ -3834,7 +3846,7 @@ static void* mmap_alloc(mstate m, size_t nb) {
 /* Realloc using mmap */
 static mchunkptr mmap_resize(mstate m, mchunkptr oldp, size_t nb, int flags) {
   size_t oldsize = chunksize(oldp);
-  flags = flags; /* placate people compiling -Wunused */
+  UNREFERENCED_PARAMETER(flags); /* placate people compiling -Wunused */
   if (is_small(nb)) /* Can't shrink mmap regions below small size */
     return 0;
   /* Keep old chunk if big enough but not too big */
@@ -6249,4 +6261,3 @@ History:
          structure of old version,  but most details differ.)
 
 */
-

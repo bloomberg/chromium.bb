@@ -430,7 +430,7 @@ int main(int  argc,
    * the non-default value.
    */
   log_desc = fileno(log_gio->iop);
-
+  UNREFERENCED_PARAMETER(log_desc);
   if (rpc_supplies_nexe) {
     if (NULL != nacl_file) {
       fprintf(stderr,

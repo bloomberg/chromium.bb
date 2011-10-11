@@ -339,7 +339,6 @@ int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
 int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
                                 int32_t               *stack_flag) {
   uintptr_t sys_stack_flag;
-  struct NaClApp  *nap;
 
   NaClLog(4, "NaclCommonSysThreadExit(0x%08"NACL_PRIxPTR", "
           "0x%08"NACL_PRIxPTR"\n",
@@ -350,7 +349,6 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
    * NB: NaClThreads are never joinable, but the abstraction for NaClApps
    * are.
    */
-  nap = natp->nap;
 
   if (NULL != stack_flag) {
     NaClLog(4,
