@@ -25,13 +25,15 @@ UserDataDirDialog::UserDataDirDialog(const FilePath& user_data_dir)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           select_file_dialog_(SelectFileDialog::Create(this))),
       is_blocking_(true) {
-  std::wstring message_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+  string16 message_text = l10n_util::GetStringFUTF16(
       IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY,
-      user_data_dir.LossyDisplayName()));
+      user_data_dir.LossyDisplayName());
   const int kDialogWidth = 400;
   message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kIsConfirmMessageBox,
-      message_text.c_str(), std::wstring(), kDialogWidth);
+      message_text,
+      string16(),
+      kDialogWidth);
 
   views::Widget::CreateWindow(this)->Show();
 }

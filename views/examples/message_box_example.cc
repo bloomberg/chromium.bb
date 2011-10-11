@@ -20,14 +20,16 @@ MessageBoxExample::~MessageBoxExample() {
 
 void MessageBoxExample::CreateExampleView(views::View* container) {
   message_box_view_ = new views::MessageBoxView(
-      0, L"Message Box Message", L"Default Prompt");
+      0,
+      ASCIIToUTF16("Message Box Message"),
+      ASCIIToUTF16("Default Prompt"));
   status_ = new views::TextButton(this, L"Show Status");
   toggle_ = new views::TextButton(this, L"Toggle Checkbox");
 
   views::GridLayout* layout = new views::GridLayout(container);
   container->SetLayoutManager(layout);
 
-  message_box_view_->SetCheckBoxLabel(L"Check Box");
+  message_box_view_->SetCheckBoxLabel(ASCIIToUTF16("Check Box"));
 
   const int message_box_column = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(message_box_column);
@@ -53,7 +55,7 @@ void MessageBoxExample::ButtonPressed(views::Button* sender,
                                       const views::Event& event) {
   if (sender == status_) {
     message_box_view_->SetCheckBoxLabel(
-        ASCIIToWide(BoolToOnOff(message_box_view_->IsCheckBoxSelected())));
+        ASCIIToUTF16(BoolToOnOff(message_box_view_->IsCheckBoxSelected())));
     PrintStatus(message_box_view_->IsCheckBoxSelected() ?
        "Check Box Selected" : "Check Box Not Selected");
   } else if (sender == toggle_) {

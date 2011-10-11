@@ -37,8 +37,8 @@ RepostFormWarningView::RepostFormWarningView(
         message_box_view_(NULL) {
   message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kIsConfirmMessageBox,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING)),
-      std::wstring());
+      l10n_util::GetStringUTF16(IDS_HTTP_POST_WARNING),
+      string16());
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
   controller_->set_window(new ConstrainedWindowViews(wrapper, this));

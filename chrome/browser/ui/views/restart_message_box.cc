@@ -64,9 +64,8 @@ RestartMessageBox::RestartMessageBox(gfx::NativeWindow parent_window) {
   message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kFlagHasMessage |
           ui::MessageBoxFlags::kFlagHasOKButton,
-      UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_OPTIONS_RELAUNCH_REQUIRED)).c_str(),
-      std::wstring(),
+      l10n_util::GetStringUTF16(IDS_OPTIONS_RELAUNCH_REQUIRED),
+      string16(),
       kDialogWidth);
   views::Widget::CreateWindowWithParent(this, parent_window)->Show();
 }

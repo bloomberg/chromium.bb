@@ -101,9 +101,8 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
   message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kFlagHasMessage |
           ui::MessageBoxFlags::kFlagHasOKButton,
-      UTF16ToWideHack(l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED,
-                                                 product_name)),
-      std::wstring(),
+      l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED, product_name),
+      string16(),
       kDialogWidth);
   browser::CreateViewsWindow(parent_window, this)->Show();
 }

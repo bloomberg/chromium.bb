@@ -135,22 +135,21 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
   ui::ElideString(WideToUTF16Hack(command), kMaxCommandSize, &elided_command);
 
-  std::wstring message_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+  string16 message_text = l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
       ASCIIToUTF16(url.scheme() + ":"),
-      elided_url_without_scheme) + ASCIIToUTF16("\n\n"));
+      elided_url_without_scheme) + ASCIIToUTF16("\n\n");
 
-  message_text += UTF16ToWide(l10n_util::GetStringFUTF16(
+  message_text += l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH,
-      elided_command) + ASCIIToUTF16("\n\n"));
+      elided_command) + ASCIIToUTF16("\n\n");
 
-  message_text +=
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_WARNING));
+  message_text += l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_WARNING);
 
   message_box_view_ = new views::MessageBoxView(
       ui::MessageBoxFlags::kIsConfirmMessageBox,
       message_text,
-      std::wstring(),
+      string16(),
       kMessageWidth);
   message_box_view_->SetCheckBoxLabel(
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));

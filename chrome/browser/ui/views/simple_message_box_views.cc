@@ -136,10 +136,9 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
     : dialog_flags_(dialog_flags),
       disposition_(DISPOSITION_UNKNOWN) {
   message_box_title_ = title;
-  message_box_view_ = new views::MessageBoxView(
-      dialog_flags,
-      UTF16ToWide(message),
-      std::wstring());
+  message_box_view_ = new views::MessageBoxView(dialog_flags,
+                                                message,
+                                                string16());
   browser::CreateViewsWindow(parent_window, this)->Show();
 
   // Add reference to be released in DeleteDelegate().

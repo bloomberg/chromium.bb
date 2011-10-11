@@ -21,7 +21,7 @@
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"
 
-static const int kDefaultMessageWidth = 320;
+const int kDefaultMessageWidth = 320;
 
 namespace views {
 
@@ -29,10 +29,10 @@ namespace views {
 // MessageBoxView, public:
 
 MessageBoxView::MessageBoxView(int dialog_flags,
-                               const std::wstring& message,
-                               const std::wstring& default_prompt,
+                               const string16& message,
+                               const string16& default_prompt,
                                int message_width)
-    : message_label_(new Label(WideToUTF16Hack(message))),
+    : message_label_(new Label(message)),
       prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
@@ -41,9 +41,9 @@ MessageBoxView::MessageBoxView(int dialog_flags,
 }
 
 MessageBoxView::MessageBoxView(int dialog_flags,
-                               const std::wstring& message,
-                               const std::wstring& default_prompt)
-    : message_label_(new Label(WideToUTF16Hack(message))),
+                               const string16& message,
+                               const string16& default_prompt)
+    : message_label_(new Label(message)),
       prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
@@ -69,11 +69,11 @@ void MessageBoxView::SetIcon(const SkBitmap& icon) {
   ResetLayoutManager();
 }
 
-void MessageBoxView::SetCheckBoxLabel(const std::wstring& label) {
+void MessageBoxView::SetCheckBoxLabel(const string16& label) {
   if (!checkbox_)
-    checkbox_ = new Checkbox(label);
+    checkbox_ = new Checkbox(UTF16ToWideHack(label));
   else
-    checkbox_->SetText(label);
+    checkbox_->SetText(UTF16ToWideHack(label));
   ResetLayoutManager();
 }
 
@@ -127,7 +127,7 @@ bool MessageBoxView::AcceleratorPressed(
 // MessageBoxView, private:
 
 void MessageBoxView::Init(int dialog_flags,
-                          const std::wstring& default_prompt) {
+                          const string16& default_prompt) {
   message_label_->SetMultiLine(true);
   message_label_->SetAllowCharacterBreak(true);
   if (dialog_flags & ui::MessageBoxFlags::kAutoDetectAlignment) {
@@ -152,7 +152,7 @@ void MessageBoxView::Init(int dialog_flags,
 
   if (dialog_flags & ui::MessageBoxFlags::kFlagHasPromptField) {
     prompt_field_ = new Textfield;
-    prompt_field_->SetText(WideToUTF16Hack(default_prompt));
+    prompt_field_->SetText(default_prompt);
   }
 
   ResetLayoutManager();

@@ -23,15 +23,15 @@ JSModalDialogViews::JSModalDialogViews(
     : parent_(parent),
       message_box_view_(new views::MessageBoxView(
           parent->dialog_flags() | ui::MessageBoxFlags::kAutoDetectAlignment,
-          UTF16ToWideHack(parent->message_text()),
-          UTF16ToWideHack(parent->default_prompt_text()))) {
+          parent->message_text(),
+          parent->default_prompt_text())) {
   DCHECK(message_box_view_);
 
   message_box_view_->AddAccelerator(
       views::Accelerator(ui::VKEY_C, false, true, false));
   if (parent->display_suppress_checkbox()) {
-    message_box_view_->SetCheckBoxLabel(UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION)));
+    message_box_view_->SetCheckBoxLabel(
+        l10n_util::GetStringUTF16(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION));
   }
 }
 
