@@ -90,10 +90,6 @@
       '-downloads.DownloadsTest.testBigZip',
       '-downloads.DownloadsTest.testFileRenaming',
       '-downloads.DownloadsTest.testCrazyFilenames',
-      # Instant broken by r104553.  crbug.com/99637
-      '-instant',
-      # Flaky: crbug.com/83459
-      '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/71715
@@ -192,7 +188,6 @@
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # crbug.com/75724
       '-downloads.DownloadsTest.testSaveDangerousFile',
-      '-instant.InstantTest.testInstantNavigation',  # crbug.com/69090
       # crbug.com/93956
        '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/66072

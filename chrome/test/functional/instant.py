@@ -23,7 +23,7 @@ class InstantSettingsTest(pyauto.PyUITest):
     self.SetPrefs(pyauto.kInstantEnabled, True)
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kInstantEnabled),
                     msg='Instant is not enabled.')
-    self.SetOmniboxText('google.com')
+    self.SetOmniboxText('google')
     self.assertTrue(self.WaitUntil(
         lambda: self.GetInstantInfo().get('current') and not
         self.GetInstantInfo().get('loading')))
@@ -64,18 +64,6 @@ class InstantTest(pyauto.PyUITest):
 
   def testInstantNavigation(self):
     """Test that instant navigates based on omnibox input."""
-    self.SetOmniboxText('google.com')
-    self.assertTrue(self.WaitUntil(self._DoneLoading))
-    location = self.GetInstantInfo()['location']
-    self.assertTrue('google.com' in location,
-                    msg='No google.com in %s' % location)
-
-    self.SetOmniboxText('google.es')
-    self.assertTrue(self.WaitUntil(self._DoneLoading))
-    location = self.GetInstantInfo()['location']
-    self.assertTrue('google.es' in location,
-                    msg='No google.es in %s' % location)
-
     # Initiate instant search (at default google.com).
     self.SetOmniboxText('chrome instant')
     self.assertTrue(self.WaitUntil(self._DoneLoading))
@@ -118,36 +106,37 @@ class InstantTest(pyauto.PyUITest):
   def testInstantDisabledInIncognito(self):
     """Test that instant is disabled in Incognito mode."""
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-    self.SetOmniboxText('google.com', windex=1)
+    self.SetOmniboxText('google', windex=1)
     self.assertFalse(self.GetInstantInfo()['active'],
                      'Instant enabled in Incognito mode.')
 
   def testInstantOverlayNotStoredInHistory(self):
     """Test that instant overlay page is not stored in history."""
-    url = self.GetFileURLForDataPath('title2.html')
-    self.SetOmniboxText(url)
+    self.SetOmniboxText('google')
     self.assertTrue(self.WaitUntil(self._DoneLoading))
     history = self.GetHistoryInfo().History()
     self.assertEqual(0, len(history))
+
+  def testInstantDisabledForURLs(self):
+    """Test that instant is disabled for non-search URLs."""
+    self.SetOmniboxText('http://www.google.com/')
+    self.WaitUntilOmniboxQueryDone()
+    self.assertFalse(self.GetInstantInfo()['active'],
+                     'Instant enabled for non-search URLs.')
+    self.SetOmniboxText('google.es')
+    self.WaitUntilOmniboxQueryDone()
+    self.assertFalse(self.GetInstantInfo()['active'],
+                     'Instant enabled for non-search URLs.')
+    self.SetOmniboxText(self.GetFileURLForDataPath('title2.html'))
+    self.WaitUntilOmniboxQueryDone()
+    self.assertFalse(self.GetInstantInfo()['active'],
+                     'Instant enabled for non-search URLs.')
 
   def testInstantDisabledForJavaScript(self):
     """Test that instant is disabled for javascript URLs."""
     self.SetOmniboxText('javascript:')
     self.assertFalse(self.GetInstantInfo()['active'],
                      'Instant enabled for javascript URL.')
-
-  def testInstantDisablesPopupsOnPrefetch(self):
-    """Test that instant disables popups when prefetching."""
-    file_url = self.GetFileURLForDataPath(
-        'popup_blocker', 'popup-blocked-to-post-blank.html')
-    self.SetOmniboxText(file_url)
-    self.assertTrue(self.WaitUntil(self._DoneLoading))
-    location = self.GetInstantInfo()['location']
-    self.assertTrue(file_url in location,
-                    msg='Prefetched page is not %s' % file_url)
-    blocked_popups = self.GetBlockedPopupsInfo()
-    self.assertEqual(0, len(blocked_popups),
-                     msg='Unexpected popup in instant preview.')
 
   def testInstantLoadsFor100CharsLongQuery(self):
     """Test that instant loads for search query of 100 characters."""
@@ -157,12 +146,10 @@ class InstantTest(pyauto.PyUITest):
 
   def _BringUpInstant(self):
     """Helper function to bring up instant."""
-    file_path = os.path.join(os.path.abspath(self.DataDir()),
-                             'google', 'google.html')
-    self.SetOmniboxText(self.GetFileURLForPath(file_path))
+    self.SetOmniboxText('google')
     self.assertTrue(self.WaitUntil(self._DoneLoading))
-    self.assertTrue('google.html' in self.GetInstantInfo()['location'],
-                    msg='No google.html in %s' %
+    self.assertTrue('www.google.com' in self.GetInstantInfo()['location'],
+                    msg='No www.google.com in %s' %
                     self.GetInstantInfo()['location'])
 
   def testFindInCanDismissInstant(self):
@@ -198,25 +185,6 @@ class InstantTest(pyauto.PyUITest):
     history = self.GetHistoryInfo().History()
     self.assertFalse(history, msg='Pre-feteched URL saved in History')
 
-  def testPreFetchInstantURLGeneratesNoPopups(self):
-    """Test that pre-fetched URL does not generate popups."""
-    file_url = self.GetHttpURLForDataPath('pyauto_private', 'popup_blocker',
-                                          'PopupTest1.html')
-    # Set the preference to allow all sites to show popups.
-    self.SetPrefs(pyauto.kDefaultContentSettings, {u'popups': 1})
-    self.SetOmniboxText(file_url)
-    self.WaitUntilOmniboxQueryDone()
-    self.assertEqual(1, self.GetBrowserWindowCount(),
-                     msg='Pre-fetched URL generated popups.')
-
-  def testPreFetchInstantURLSetsNoCookies(self):
-    """Test that pre-fetched URL does not set cookies."""
-    file_url = self.GetHttpURLForDataPath('cookie1.html')
-    self.SetOmniboxText(file_url)
-    self.WaitUntilOmniboxQueryDone()
-    cookie_data = self.GetCookie(pyauto.GURL(file_url))
-    self.assertFalse(cookie_data, msg='Cookie set for pre-fetched instant URL')
-
   def _AssertInstantDoesNotDownloadFile(self, path):
     """Asserts instant does not download the specified file.
 
@@ -239,35 +207,6 @@ class InstantTest(pyauto.PyUITest):
     """Test that instant does not download PDF file."""
     self._AssertInstantDoesNotDownloadFile(os.path.join('printing',
                                            'cloud_print_unittest.pdf'))
-
-  def _AssertInstantLoadsFile(self, path):
-    """Asserts instant loads the specified file.
-
-       Args:
-         path: Path to file.
-    """
-    filepath = self.GetFileURLForDataPath(path)
-    error = 'Failed to load: %s' % filepath
-    self.SetOmniboxText(filepath)
-    self.assertTrue(self.WaitUntil(self._DoneLoading), msg=error)
-    self.assertEqual(self.GetInstantInfo()['location'], filepath, msg=error)
-
-  def testInstantLoadsGIF(self):
-    """Test that instant loads GIF file."""
-    self._AssertInstantLoadsFile(os.path.join('animate1.gif'))
-
-  def testInstantLoadsJPEG(self):
-    """Test that instant loads JPEG file."""
-    self._AssertInstantLoadsFile(os.path.join('gpu', 'webgl_teapot',
-                                              'bump.jpg'))
-
-  def testInstantLoadsPNG(self):
-    """Test that instant loads PNG file."""
-    self._AssertInstantLoadsFile(os.path.join('save_page', '1.png'))
-
-  def testInstantLoadsSVG(self):
-    """Test that instant loads SVG file."""
-    self._AssertInstantLoadsFile(os.path.join('circle.svg'))
 
 
 if __name__ == '__main__':
