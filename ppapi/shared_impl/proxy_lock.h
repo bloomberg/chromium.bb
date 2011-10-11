@@ -7,8 +7,6 @@
 
 #include "base/basictypes.h"
 
-#include "ppapi/c/ppp.h"
-
 namespace base {
 class Lock;
 }
@@ -23,7 +21,7 @@ namespace ppapi {
 // TODO(dmichael): If this turns out to be too slow and contentious, we'll want
 // to use multiple locks. E.g., one for the var tracker, one for the resource
 // tracker, etc.
-PP_EXPORT class ProxyLock {
+class ProxyLock {
  public:
   // Acquire the proxy lock. If it is currently held by another thread, block
   // until it is available. If the lock has not been set using the 'Set' method,
