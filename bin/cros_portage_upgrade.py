@@ -1224,6 +1224,18 @@ class Upgrader(object):
         local_cpv = self._FindCurrentCPV(local_arg)
         upstream_cpv = self._FindUpstreamCPV(arg, self._unstable_ok)
 
+        # Old-style virtual packages will resolve to their target packages,
+        # which we do not want here because if the package 'virtual/foo' was
+        # specified at the command line we want to try upgrading the actual
+        # 'virtual/foo' package, not whatever package equery resolves it to.
+        # This only matters when 'virtual/foo' is currently an old-style
+        # virtual but a new-style virtual for it exists upstream which we
+        # want to upgrade to.  For new-style virtuals, equery will resolve
+        # 'virtual/foo' to 'virtual/foo', which is fine.
+        if arg.startswith('virtual/'):
+          if local_cpv and not local_cpv.startswith('virtual/'):
+            local_cpv = None
+
         if not upstream_cpv and verrev:
           # See if --unstable-ok is required for this upstream version.
           if not self._unstable_ok and self._FindUpstreamCPV(arg, True):
