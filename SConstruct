@@ -924,10 +924,7 @@ def MakeArchSpecificEnv():
     sys.exit(-1)
   if env.Bit('bitcode') and not pnacl_frontend:
     # Set default frontend for PNaCl
-    if env.Bit('nacl_glibc'):
-      pnacl_frontend = 'llvmgcc'
-    else:
-      pnacl_frontend = 'clang'
+    pnacl_frontend = 'clang'
   env['PNACL_FRONTEND'] = pnacl_frontend
 
   if env.Bit('target_arm'):

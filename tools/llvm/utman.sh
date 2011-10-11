@@ -201,9 +201,9 @@ readonly LLVM_GCC_VER="4.2.1"
 
 # Location of PNaCl gcc/g++/as
 readonly PNACL_GCC="${INSTALL_BIN}/pnacl-gcc"
-readonly PNACL_GPP="${INSTALL_BIN}/pnacl-g++"
+readonly PNACL_GXX="${INSTALL_BIN}/pnacl-g++"
 readonly PNACL_CLANG="${INSTALL_BIN}/pnacl-clang"
-readonly PNACL_CLANGPP="${INSTALL_BIN}/pnacl-clang++"
+readonly PNACL_CLANGXX="${INSTALL_BIN}/pnacl-clang++"
 readonly PNACL_AR="${INSTALL_BIN}/pnacl-ar"
 readonly PNACL_RANLIB="${INSTALL_BIN}/pnacl-ranlib"
 readonly PNACL_AS="${INSTALL_BIN}/pnacl-as"
@@ -245,7 +245,7 @@ fi
 readonly UPSTREAM_REV=${UPSTREAM_REV:-ee0e4351508a}
 
 readonly NEWLIB_REV=c6358617f3fd
-readonly BINUTILS_REV=2f1d9c8ef12d
+readonly BINUTILS_REV=bbce0e11ca1f
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 
@@ -297,8 +297,8 @@ readonly ILLEGAL_TOOL=${INSTALL_BIN}/pnacl-illegal
 STD_ENV_FOR_LIBSTDCPP=(
   CC_FOR_BUILD="${CC}"
   CC="${PNACL_GCC}"
-  CXX="${PNACL_GPP}"
-  RAW_CXX_FOR_TARGET="${PNACL_GPP}"
+  CXX="${PNACL_GXX}"
+  RAW_CXX_FOR_TARGET="${PNACL_GXX}"
   LD="${ILLEGAL_TOOL}"
   CFLAGS="--pnacl-arm-bias"
   CPPFLAGS="--pnacl-arm-bias"
@@ -307,7 +307,7 @@ STD_ENV_FOR_LIBSTDCPP=(
   CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
   CC_FOR_TARGET="${PNACL_GCC}"
   GCC_FOR_TARGET="${PNACL_GCC}"
-  CXX_FOR_TARGET="${PNACL_GPP}"
+  CXX_FOR_TARGET="${PNACL_GXX}"
   AR="${PNACL_AR}"
   AR_FOR_TARGET="${PNACL_AR}"
   NM_FOR_TARGET="${PNACL_NM}"
@@ -322,8 +322,8 @@ STD_ENV_FOR_LIBSTDCPP=(
 STD_ENV_FOR_LIBSTDCPP_CLANG=(
   CC_FOR_BUILD="${CC}"
   CC="${PNACL_CLANG}"
-  CXX="${PNACL_CLANGPP}"
-  RAW_CXX_FOR_TARGET="${PNACL_CLANGPP}"
+  CXX="${PNACL_CLANGXX}"
+  RAW_CXX_FOR_TARGET="${PNACL_CLANGXX}"
   LD="${ILLEGAL_TOOL}"
   CFLAGS="--pnacl-arm-bias"
   CPPFLAGS="--pnacl-arm-bias"
@@ -332,7 +332,7 @@ STD_ENV_FOR_LIBSTDCPP_CLANG=(
   CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
   CC_FOR_TARGET="${PNACL_CLANG}"
   GCC_FOR_TARGET="${PNACL_CLANG}"
-  CXX_FOR_TARGET="${PNACL_CLANGPP}"
+  CXX_FOR_TARGET="${PNACL_CLANGXX}"
   AR="${PNACL_AR}"
   AR_FOR_TARGET="${PNACL_AR}"
   NM_FOR_TARGET="${PNACL_NM}"
@@ -347,7 +347,7 @@ STD_ENV_FOR_NEWLIB=(
   CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
   CC_FOR_TARGET="${PNACL_GCC}"
   GCC_FOR_TARGET="${PNACL_GCC}"
-  CXX_FOR_TARGET="${PNACL_GPP}"
+  CXX_FOR_TARGET="${PNACL_GXX}"
   AR_FOR_TARGET="${PNACL_AR}"
   NM_FOR_TARGET="${PNACL_NM}"
   RANLIB_FOR_TARGET="${PNACL_RANLIB}"
@@ -361,7 +361,7 @@ STD_ENV_FOR_NEWLIB_CLANG=(
   CPPFLAGS_FOR_TARGET="--pnacl-arm-bias"
   CC_FOR_TARGET="${PNACL_CLANG}"
   GCC_FOR_TARGET="${PNACL_CLANG}"
-  CXX_FOR_TARGET="${PNACL_CLANGPP}"
+  CXX_FOR_TARGET="${PNACL_CLANGXX}"
   AR_FOR_TARGET="${PNACL_AR}"
   NM_FOR_TARGET="${PNACL_NM}"
   RANLIB_FOR_TARGET="${PNACL_RANLIB}"
@@ -785,14 +785,16 @@ libs() {
   libs-clean
   libc
 
-  build-compiler-rt
+  if ${LIBMODE_NEWLIB}; then
+    build-compiler-rt
 
-  # NOTE: this currently depends on "llvm-gcc arm"
-  build-libgcc_eh arm
-  build-libgcc_eh x86-32
-  build-libgcc_eh x86-64
+    # NOTE: this currently depends on "llvm-gcc arm"
+    build-libgcc_eh arm
+    build-libgcc_eh x86-32
+    build-libgcc_eh x86-64
 
-  libstdcpp
+    libstdcpp
+  fi
 }
 
 libc() {
@@ -816,15 +818,18 @@ clang-libs() {
   elif ${LIBMODE_GLIBC} ; then
     glibc
   fi
-  clang-build-compiler-rt
-  # NOTE: this currently depends on "llvm-gcc arm"
-  clang-build-libgcc_eh arm
-  clang-build-libgcc_eh x86-32
-  clang-build-libgcc_eh x86-64
 
-  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2289
-  #clang-libstdcpp
-  libstdcpp
+  if ${LIBMODE_NEWLIB}; then
+    clang-build-compiler-rt
+    # NOTE: this currently depends on "llvm-gcc arm"
+    clang-build-libgcc_eh arm
+    clang-build-libgcc_eh x86-32
+    clang-build-libgcc_eh x86-64
+
+    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2289
+    #clang-libstdcpp
+    libstdcpp
+  fi
 }
 
 #@ everything            - Build and install untrusted SDK. no translator
@@ -901,10 +906,13 @@ glibc() {
   mkdir -p "${GLIBC_INSTALL_DIR}"
 
   # Files in: lib/gcc/${NACL64_TARGET}/4.4.3/[32]/
-  local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o"
+  local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o \
+               libgcc_eh.a libgcc.a"
 
   # Files in: ${NACL64_TARGET}/lib[32]/
   local LIBS2="crt1.o crti.o crtn.o \
+               libgcc_s.so libgcc_s.so.1 \
+               libstdc++.a libstdc++.so* \
                libc.a libc_nonshared.a \
                libc-2.9.so libc.so libc.so.* \
                libm-2.9.so libm.a libm.so libm.so.* \
@@ -947,9 +955,6 @@ glibc() {
   # Copy the glibc headers
   cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/include \
         "${GLIBC_INSTALL_DIR}"
-
-  # We build our own C++, so we have our own headers.
-  rm -rf "${GLIBC_INSTALL_DIR}"/include/c++
 }
 
 #@ all                   - Alias for 'everything'
@@ -2445,11 +2450,19 @@ llvm-sb-setup() {
 
   LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized"
 
+  if ${LIBMODE_GLIBC} ; then
+    local target_cc="${PNACL_CLANG}"
+    local target_cxx="${PNACL_CLANGXX}"
+  else
+    local target_cc="${PNACL_GCC}"
+    local target_cxx="${PNACL_GXX}"
+  fi
+
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="${PNACL_GCC} ${flags}" \
-    CXX="${PNACL_GPP} ${flags}" \
+    CC="${target_cc} ${flags}" \
+    CXX="${target_cxx} ${flags}" \
     LD="${PNACL_LD} ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
@@ -2731,7 +2744,7 @@ google-perftools-configure() {
   local flags="-static"
   local configure_env=(
     CC="${PNACL_GCC} ${flags}" \
-    CXX="${PNACL_GPP} ${flags}" \
+    CXX="${PNACL_GXX} ${flags}" \
     LD="${PNACL_LD} ${flags}" \
     AR="${PNACL_AR}" \
     RANLIB="${PNACL_RANLIB}")
@@ -2836,11 +2849,19 @@ binutils-sb-setup() {
   # Speed things up by avoiding an intermediate step
   flags+=" --pnacl-skip-ll"
 
+  if ${LIBMODE_GLIBC} ; then
+    local target_cc="${PNACL_CLANG}"
+    local target_cxx="${PNACL_CLANGXX}"
+  else
+    local target_cc="${PNACL_GCC}"
+    local target_cxx="${PNACL_GXX}"
+  fi
+
   BINUTILS_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="${PNACL_GCC} ${flags}" \
-    CXX="${PNACL_GPP} ${flags}" \
+    CC="${target_cc} ${flags}" \
+    CXX="${target_cxx} ${flags}" \
     CC_FOR_BUILD="${CC}" \
     CXX_FOR_BUILD="${CXX}" \
     LD="${PNACL_LD} ${flags}" \
@@ -3750,11 +3771,15 @@ verify-archive-x86-64() {
 verify() {
   StepBanner "VERIFY"
 
-  # Verify bitcode libraries
-  SubBanner "VERIFY: ${INSTALL_LIB}"
-  for i in ${INSTALL_LIB}/*.a ; do
-    verify-archive-llvm "$i"
-  done
+  # Verify bitcode libraries in lib/
+  # The GLibC build does not currently have any bitcode
+  # libraries in this location.
+  if ${LIBMODE_NEWLIB}; then
+    SubBanner "VERIFY: ${INSTALL_LIB}"
+    for i in ${INSTALL_LIB}/*.a ; do
+      verify-archive-llvm "$i"
+    done
+  fi
 
   # Verify platform libraries
   for platform in arm x86-32 x86-64; do

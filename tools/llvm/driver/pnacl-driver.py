@@ -105,8 +105,8 @@ EXTRA_ENV = {
     '${BASE_SDK}/include ' +
     '${BASE_GLIBC}/include ' +
     '${ISYSTEM_%FRONTEND%} ' +
-    '${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
-    '${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi',
+    '${BASE_GLIBC}/include/c++/4.4.3 ' +
+    '${BASE_GLIBC}/include/c++/4.4.3/x86_64-nacl',
 
   'LD_FLAGS' : '-O${OPT_LEVEL} ${STATIC ? -static} ${SHARED ? -shared} ' +
                '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS}',
@@ -140,19 +140,15 @@ EXTRA_ENV = {
   'LD_ARGS_glibc_shared':
     '--eh-frame-hdr -shared -l:crti.o -l:crtbeginS.o ' +
     '${ld_inputs} ${LIBSTDCPP} ' +
-    '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh ' +
-    # When shared libgcc is ready, use this instead:
-    # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
-    # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
+    '-lgcc --as-needed -lgcc_s --no-as-needed ' +
+    '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
     '-l:crtendS.o -l:crtn.o',
 
   'LD_ARGS_glibc_dynamic':
     '--eh-frame-hdr -l:crt1.o -l:crti.o ' +
     '-l:crtbegin.o ${ld_inputs} ${LIBSTDCPP} ' +
-    '-lgcc -lgcc_eh -lc -lgcc -lgcc_eh ' +
-    # When shared libgcc is ready, use this instead:
-    # '-lgcc --as-needed -lgcc_s --no-as-needed ' +
-    # '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
+    '-lgcc --as-needed -lgcc_s --no-as-needed ' +
+    '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
     '-l:crtend.o -l:crtn.o',
 
   'LIBSTDCPP'   : '${LANGUAGE==CXX ? -lstdc++ -lm }',

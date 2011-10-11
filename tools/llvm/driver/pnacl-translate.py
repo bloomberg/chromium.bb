@@ -174,7 +174,7 @@ def SetupChain(chain, output_type):
 def RunAS(infile, outfile):
   RunDriver('pnacl-as', [infile, '-o', outfile])
 
-# For now, we use pnacl-gcc instead of ld,
+# For now, we use pnacl-g++ instead of ld,
 # because we need to link against native libraries.
 def RunLD(infile, outfile, shared):
   args = ['--pnacl-native-hack', infile, '-o', outfile]
@@ -185,7 +185,7 @@ def RunLD(infile, outfile, shared):
     args += ['-static']
 
   extra_ld_flags = env.get('EXTRA_LD_FLAGS')
-  RunDriver('pnacl-gcc', args + extra_ld_flags)
+  RunDriver('pnacl-g++', args + extra_ld_flags)
 
 
 def RunLLC(infile, outfile, filetype):
