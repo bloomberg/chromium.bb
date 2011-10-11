@@ -72,29 +72,22 @@ class GclientTest(trial_dir.TestCase):
     return SCMMock(self, parsed_url)
 
   def testDependencies(self):
-    self._dependencies('1', False)
-
-  def testDependenciesReverse(self):
-    self._dependencies('1', True)
+    self._dependencies('1')
 
   def testDependenciesJobs(self):
-    # TODO(maruel): Reenable once parallel processing works.
-    #self._dependencies('1000', False)
-    pass
+    self._dependencies('1000')
 
-  def testDependenciesJobsReverse(self):
-    # TODO(maruel): Reenable once parallel processing works.
-    #self._dependencies('1000', True)
-    pass
+  def _dependencies(self, jobs):
+    """Verifies that dependencies are processed in the right order.
 
-  def _dependencies(self, jobs, reverse):
-    # Verify that dependencies are processed in the right order, e.g. if there
-    # is a dependency 'src' and another 'src/third_party/bar', that bar isn't
-    # fetched until 'src' is done.
-    # jobs is the number of parallel jobs simulated. reverse is to reshuffle the
-    # list to see if it is still processed in order correctly.
-    # Also test that a From() dependency that should not be processed is listed
-    # as a requirement.
+    e.g. if there is a dependency 'src' and another 'src/third_party/bar', that
+    bar isn't fetched until 'src' is done.
+    Also test that a From() dependency should not be processed when it is listed
+    as a requirement.
+
+    Args:
+      |jobs| is the number of parallel jobs simulated.
+    """
     parser = gclient.Parser()
     options, args = parser.parse_args(['--jobs', jobs])
     write(
@@ -117,6 +110,7 @@ class GclientTest(trial_dir.TestCase):
     write(
         os.path.join('bar', 'DEPS'),
         'deps = {\n'
+        # There is two foo/dir1/dir2. This one is fetched as bar/dir1/dir2.
         '  "foo/dir1/dir2": "/dir1/dir2",\n'
         '}')
     write(
@@ -129,6 +123,7 @@ class GclientTest(trial_dir.TestCase):
         'deps = {\n'
         # This one should not be fetched or set as a requirement.
         '  "foo/dir1/dir2/dir5": "svn://example.com/x",\n'
+        # This foo/dir1/dir2 points to a different url than the one in bar.
         '  "foo/dir1/dir2": "/dir1/another",\n'
         '}')
 
@@ -136,48 +131,55 @@ class GclientTest(trial_dir.TestCase):
     self._check_requirements(obj.dependencies[0], {})
     self._check_requirements(obj.dependencies[1], {})
     obj.RunOnDeps('None', args)
-    # The trick here is to manually process the list to make sure it's out of
-    # order.
-    for i in obj.dependencies:
-      # pylint: disable=W0212
-      i._dependencies.sort(key=lambda x: x.name, reverse=reverse)
     actual = self._get_processed()
-    # We don't care of the ordering of these items:
-    self.assertEquals(
-        ['svn://example.com/bar', 'svn://example.com/foo'], sorted(actual[0:2]))
-    actual = actual[2:]
-    # Ordering may not be exact in case of parallel jobs.
-    self.assertTrue(
-        actual.index('svn://example.com/bar/dir1/dir2') >
-        actual.index('svn://example.com/foo/dir1'))
-    actual.remove('svn://example.com/bar/dir1/dir2')
-
-    # Ordering may not be exact in case of parallel jobs.
-    actual.remove('svn://example.com/bar_empty')
+    first_3 = [
+        'svn://example.com/bar',
+        'svn://example.com/bar_empty',
+        'svn://example.com/foo',
+    ]
+    if jobs != 1:
+      # We don't care of the ordering of these items except that bar must be
+      # before bar/empty.
+      self.assertTrue(
+          actual.index('svn://example.com/bar') <
+          actual.index('svn://example.com/bar_empty'))
+      self.assertEquals(first_3, sorted(actual[0:3]))
+    else:
+      self.assertEquals(first_3, actual[0:3])
     self.assertEquals(
         [
           'svn://example.com/foo/dir1',
+          'svn://example.com/bar/dir1/dir2',
           'svn://example.com/foo/dir1/dir2/dir3',
           'svn://example.com/foo/dir1/dir2/dir3/dir4',
-          # TODO(maruel): This is probably wrong.
           'svn://example.com/foo/dir1/dir2/dir3/dir4/dir1/another',
         ],
-        actual)
+        actual[3:])
 
+    self.assertEquals(3, len(obj.dependencies))
+    self.assertEquals('bar', obj.dependencies[0].name)
+    self.assertEquals('bar/empty', obj.dependencies[1].name)
+    self.assertEquals('foo', obj.dependencies[2].name)
     self._check_requirements(
         obj.dependencies[0],
         {
-          'foo/dir1': ['foo'],
-          'foo/dir1/dir2/dir3': ['foo', 'foo/dir1', 'foo/dir1/dir2'],
-          'foo/dir1/dir2/dir3/dir4':
-              ['foo', 'foo/dir1', 'foo/dir1/dir2', 'foo/dir1/dir2/dir3'],
-          'foo/dir1/dir2/dir5/dir6':
-              ['foo', 'foo/dir1', 'foo/dir1/dir2', 'foo/dir1/dir2/dir3/dir4'],
+          'foo/dir1/dir2': ['bar', 'bar/empty', 'foo', 'foo/dir1'],
         })
     self._check_requirements(
         obj.dependencies[1],
+        {})
+    self._check_requirements(
+        obj.dependencies[2],
         {
-          'foo/dir1/dir2': ['bar', 'foo', 'foo/dir1'],
+          'foo/dir1': ['bar', 'bar/empty', 'foo'],
+          'foo/dir1/dir2/dir3':
+              ['bar', 'bar/empty', 'foo', 'foo/dir1', 'foo/dir1/dir2'],
+          'foo/dir1/dir2/dir3/dir4':
+              [ 'bar', 'bar/empty', 'foo', 'foo/dir1', 'foo/dir1/dir2',
+                'foo/dir1/dir2/dir3'],
+          'foo/dir1/dir2/dir5/dir6':
+              [ 'bar', 'bar/empty', 'foo', 'foo/dir1', 'foo/dir1/dir2',
+                'foo/dir1/dir2/dir3/dir4'],
         })
     self._check_requirements(
         obj,
@@ -243,7 +245,7 @@ class GclientTest(trial_dir.TestCase):
     # pylint: disable=W0212
     obj.dependencies[0]._file_list.append('foo')
     str_obj = str(obj)
-    self.assertEquals(472, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
+    self.assertEquals(471, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
 
 
 if __name__ == '__main__':

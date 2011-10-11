@@ -53,25 +53,28 @@ class GClientSmokeBase(FakeReposTestBase):
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
 
+  def untangle(self, stdout):
+    tasks = {}
+    remaining = []
+    for line in stdout.splitlines(False):
+      m = re.match(r'^(\d)+>(.*)$', line)
+      if not m:
+        remaining.append(line)
+      else:
+        self.assertEquals([], remaining)
+        tasks.setdefault(int(m.group(1)), []).append(m.group(2))
+    out = []
+    for key in sorted(tasks.iterkeys()):
+      out.extend(tasks[key])
+    out.extend(remaining)
+    return '\n'.join(out)
+
   def parseGclient(self, cmd, items, expected_stderr='', untangle=False):
     """Parse gclient's output to make it easier to test.
     If untangle is True, tries to sort out the output from parallel checkout."""
     (stdout, stderr, returncode) = self.gclient(cmd)
     if untangle:
-      tasks = {}
-      remaining = []
-      for line in stdout.splitlines(False):
-        m = re.match(r'^(\d)+>(.*)$', line)
-        if not m:
-          remaining.append(line)
-        else:
-          self.assertEquals([], remaining)
-          tasks.setdefault(int(m.group(1)), []).append(m.group(2))
-      out = []
-      for key in sorted(tasks.iterkeys()):
-        out.extend(tasks[key])
-      out.extend(remaining)
-      stdout = '\n'.join(out)
+      stdout = self.untangle(stdout)
     self.checkString(expected_stderr, stderr)
     self.assertEquals(0, returncode)
     return self.checkBlock(stdout, items)
@@ -610,17 +613,17 @@ class GClientSmokeSVN(GClientSmokeBase):
     out = self.parseGclient(
         ['status', '--deps', 'mac', '--verbose', '--jobs', '1'],
         [['running', join(self.root_dir, 'src')],
-          ['running', join(self.root_dir, 'src', 'third_party', 'fpp')],
           ['running', join(self.root_dir, 'src', 'other')],
+          ['running', join(self.root_dir, 'src', 'third_party', 'fpp')],
           ['running', join(self.root_dir, 'src', 'third_party', 'prout')]])
     out = self.svnBlockCleanup(out)
     self.checkString('other', out[0][1])
     self.checkString(join('third_party', 'fpp'), out[0][2])
     self.checkString(join('third_party', 'prout'), out[0][3])
-    self.checkString('hi', out[2][1])
+    self.checkString('hi', out[1][1])
     self.assertEquals(4, len(out[0]))
-    self.assertEquals(1, len(out[1]))
-    self.assertEquals(2, len(out[2]))
+    self.assertEquals(2, len(out[1]))
+    self.assertEquals(1, len(out[2]))
     self.assertEquals(1, len(out[3]))
     self.assertEquals(4, len(out))
 
@@ -1048,11 +1051,6 @@ class GClientSmokeBoth(GClientSmokeBase):
     self.assertTree(tree)
 
   def testMultiSolutionsJobs(self):
-    print >> sys.stderr, (
-        'Warning: testMultiSolutionsJobs is temporarily disabled')
-    return
-    # unreachable code
-    # pylint: disable=W0101
     if not self.enabled:
       return
     self.gclient(['config', '--spec',
@@ -1061,14 +1059,14 @@ class GClientSmokeBoth(GClientSmokeBase):
         ' "url": "' + self.svn_base + 'trunk/src/"},'
         '{"name": "src-git",'
         '"url": "' + self.git_base + 'repo_1"}]'])
-    self.parseGclient(['sync', '--deps', 'mac', '--jobs', '8'],
-        ['running', 'running', 'running',
-         # This is due to the way svn update is called for a single
-         # file when File() is used in a DEPS file.
-         ('running', self.root_dir + '/src/file/other'),
-         'running', 'running', 'running', 'running', 'running', 'running',
-         'running', 'running'],
-        untangle=True)
+    # There is no guarantee that the ordering will be consistent.
+    (stdout, stderr, returncode) = self.gclient(
+        ['sync', '--deps', 'mac', '--jobs', '8'])
+    stdout = self.untangle(stdout)
+    self.checkString('', stderr)
+    self.assertEquals(0, returncode)
+    results = self.splitBlock(stdout)
+    self.assertEquals(12, len(results))
     tree = self.mangle_git_tree(('repo_1@2', 'src-git'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))

@@ -261,33 +261,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
 
-  def setup_requirements(self):
-    """Setup self.requirements and find any other dependency who would have self
-    as a requirement.
-
-    Returns True if this entry should be added, False if it is a duplicate of
-    another entry.
-    """
-    if self.name in [s.name for s in self.parent.dependencies]:
-      raise gclient_utils.Error(
-          'The same name "%s" appears multiple times in the deps section' %
-              self.name)
-    if self.should_process:
-      siblings = [d for d in self.root.subtree(False) if d.name == self.name]
-      for sibling in siblings:
-        if self.url != sibling.url:
-          raise gclient_utils.Error(
-              'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
-              (self.name, sibling.hierarchy(), self.hierarchy()))
-        # In theory we could keep it as a shadow of the other one. In
-        # practice, simply ignore it.
-        logging.warn('Won\'t process duplicate dependency %s' % sibling)
-        return False
-
+  @property
+  def requirements(self):
+    """Calculate the list of requirements."""
+    requirements = set()
     # self.parent is implicitly a requirement. This will be recursive by
     # definition.
     if self.parent and self.parent.name:
-      self.add_requirement(self.parent.name)
+      requirements.add(self.parent.name)
 
     # For a tree with at least 2 levels*, the leaf node needs to depend
     # on the level higher up in an orderly way.
@@ -300,27 +281,48 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # Interestingly enough, the following condition only works in the case we
     # want: self is a 2nd level node. 3nd level node wouldn't need this since
     # they already have their parent as a requirement.
-    root_deps = self.root.dependencies
-    if self.parent in root_deps:
-      for i in root_deps:
-        if i is self.parent:
-          break
-        if i.name:
-          self.add_requirement(i.name)
+    if self.parent and self.parent.parent and not self.parent.parent.parent:
+      requirements |= set(i.name for i in self.root.dependencies if i.name)
 
     if isinstance(self.url, self.FromImpl):
-      self.add_requirement(self.url.module_name)
+      requirements.add(self.url.module_name)
 
-    if self.name and self.should_process:
-      for obj in self.root.depth_first_tree():
-        if obj is self or not obj.name:
-          continue
-        # Step 1: Find any requirements self may need.
-        if self.name.startswith(posixpath.join(obj.name, '')):
-          self.add_requirement(obj.name)
-        # Step 2: Find any requirements self may impose.
-        if obj.name.startswith(posixpath.join(self.name, '')):
-          obj.add_requirement(self.name)
+    if self.name:
+      requirements |= set(
+          obj.name for obj in self.root.subtree(False)
+          if (obj is not self
+              and obj.name and
+              self.name.startswith(posixpath.join(obj.name, ''))))
+    requirements = tuple(sorted(requirements))
+    logging.info('Dependency(%s).requirements = %s' % (self.name, requirements))
+    return requirements
+
+  def verify_validity(self):
+    """Verifies that this Dependency is fine to add as a child of another one.
+
+    Returns True if this entry should be added, False if it is a duplicate of
+    another entry.
+    """
+    logging.info('Dependency(%s).verify_validity()' % self.name)
+    if self.name in [s.name for s in self.parent.dependencies]:
+      raise gclient_utils.Error(
+          'The same name "%s" appears multiple times in the deps section' %
+              self.name)
+    if not self.should_process:
+      # Return early, no need to set requirements.
+      return True
+
+    # This require a full tree traversal with locks.
+    siblings = [d for d in self.root.subtree(False) if d.name == self.name]
+    for sibling in siblings:
+      if self.url != sibling.url:
+        raise gclient_utils.Error(
+            'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
+            (self.name, sibling.hierarchy(), self.hierarchy()))
+      # In theory we could keep it as a shadow of the other one. In
+      # practice, simply ignore it.
+      logging.warn('Won\'t process duplicate dependency %s' % sibling)
+      return False
     return True
 
   def LateOverride(self, url):
@@ -331,10 +333,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     assert self.parsed_url == None or not self.should_process, self.parsed_url
     parsed_url = self.get_custom_deps(self.name, url)
     if parsed_url != url:
-      logging.info('LateOverride(%s, %s) -> %s' % (self.name, url, parsed_url))
+      logging.info(
+          'Dependency(%s).LateOverride(%s) -> %s' %
+          (self.name, url, parsed_url))
       return parsed_url
 
     if isinstance(url, self.FromImpl):
+      # Requires tree traversal.
       ref = [
           dep for dep in self.root.subtree(True) if url.module_name == dep.name
       ]
@@ -355,7 +360,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       found_dep = found_deps[0]
       parsed_url = found_dep.LateOverride(found_dep.url)
       logging.info(
-          'LateOverride(%s, %s) -> %s (From)' % (self.name, url, parsed_url))
+          'Dependency(%s).LateOverride(%s) -> %s (From)' %
+          (self.name, url, parsed_url))
       return parsed_url
 
     if isinstance(url, basestring):
@@ -374,15 +380,20 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         parsed_url = scm.FullUrlForRelativeUrl(url)
       else:
         parsed_url = url
-      logging.info('LateOverride(%s, %s) -> %s' % (self.name, url, parsed_url))
+      logging.info(
+          'Dependency(%s).LateOverride(%s) -> %s' %
+          (self.name, url, parsed_url))
       return parsed_url
 
     if isinstance(url, self.FileImpl):
-      logging.info('LateOverride(%s, %s) -> %s (File)' % (self.name, url, url))
+      logging.info(
+          'Dependency(%s).LateOverride(%s) -> %s (File)' %
+          (self.name, url, url))
       return url
 
     if url is None:
-      logging.info('LateOverride(%s, %s) -> %s' % (self.name, url, url))
+      logging.info(
+          'Dependency(%s).LateOverride(%s) -> %s' % (self.name, url, url))
       return url
 
     raise gclient_utils.Error('Unknown url type')
@@ -459,8 +470,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def add_dependencies_and_close(self, deps_to_add, hooks):
     """Adds the dependencies, hooks and mark the parsing as done."""
-    for dep in deps_to_add:
-      if dep.setup_requirements():
+    for dep in sorted(deps_to_add, key=lambda x: x.name):
+      if dep.verify_validity():
         self.add_dependency(dep)
     self._mark_as_parsed(hooks)
 
@@ -505,6 +516,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   # pylint: disable=W0221
   def run(self, revision_overrides, command, args, work_queue, options):
     """Runs |command| then parse the DEPS file."""
+    logging.info('Dependency(%s).run()' % self.name)
     assert self._file_list == []
     if not self.should_process:
       return

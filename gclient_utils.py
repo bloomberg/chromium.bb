@@ -479,13 +479,10 @@ def lockedmethod(method):
 class WorkItem(object):
   """One work item."""
   def __init__(self, name):
-    # A list of string, each being a WorkItem name.
-    self._requirements = set()
     # A unique string representing this work item.
     self._name = name
     self.lock = threading.RLock()
 
-  @lockedmethod
   def run(self, work_queue):
     """work_queue is passed as keyword argument so it should be
     the last parameters of the function when you override it."""
@@ -494,15 +491,6 @@ class WorkItem(object):
   @property
   def name(self):
     return self._name
-
-  @property
-  @lockedmethod
-  def requirements(self):
-    return tuple(self._requirements)
-
-  @lockedmethod
-  def add_requirement(self, new):
-    self._requirements.add(new)
 
 
 class ExecutionQueue(object):
