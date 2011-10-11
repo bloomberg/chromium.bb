@@ -86,7 +86,16 @@ def determine_scm(root):
       return None
 
 
+def only_int(val):
+  if val.isdigit():
+    return int(val)
+  else:
+    return 0
+
+
 class GIT(object):
+  current_version = None
+
   @staticmethod
   def Capture(args, **kwargs):
     return subprocess2.check_output(
@@ -370,23 +379,19 @@ class GIT(object):
     root = GIT.Capture(['rev-parse', '--show-cdup'], cwd=cwd).strip()
     return os.path.abspath(os.path.join(cwd, root))
 
-  @staticmethod
-  def AssertVersion(min_version):
+  @classmethod
+  def AssertVersion(cls, min_version):
     """Asserts git's version is at least min_version."""
-    def only_int(val):
-      if val.isdigit():
-        return int(val)
-      else:
-        return 0
-    current_version =  GIT.Capture(['--version']).split()[-1]
-    current_version_list = map(only_int, current_version.split('.'))
+    if cls.current_version is None:
+      cls.current_version = cls.Capture(['--version']).split()[-1]
+    current_version_list = map(only_int, cls.current_version.split('.'))
     for min_ver in map(int, min_version.split('.')):
       ver = current_version_list.pop(0)
       if ver < min_ver:
-        return (False, current_version)
+        return (False, cls.current_version)
       elif ver > min_ver:
-        return (True, current_version)
-    return (True, current_version)
+        return (True, cls.current_version)
+    return (True, cls.current_version)
 
 
 class SVN(object):
@@ -923,24 +928,19 @@ class SVN(object):
       directory = parent
     return GetCasedPath(directory)
 
-  @staticmethod
-  def AssertVersion(min_version):
+  @classmethod
+  def AssertVersion(cls, min_version):
     """Asserts svn's version is at least min_version."""
-    def only_int(val):
-      if val.isdigit():
-        return int(val)
-      else:
-        return 0
-    if not SVN.current_version:
-      SVN.current_version = SVN.Capture(['--version']).split()[2]
-    current_version_list = map(only_int, SVN.current_version.split('.'))
+    if cls.current_version is None:
+      cls.current_version = cls.Capture(['--version']).split()[2]
+    current_version_list = map(only_int, cls.current_version.split('.'))
     for min_ver in map(int, min_version.split('.')):
       ver = current_version_list.pop(0)
       if ver < min_ver:
-        return (False, SVN.current_version)
+        return (False, cls.current_version)
       elif ver > min_ver:
-        return (True, SVN.current_version)
-    return (True, SVN.current_version)
+        return (True, cls.current_version)
+    return (True, cls.current_version)
 
   @staticmethod
   def Revert(repo_root, callback=None, ignore_externals=False):
