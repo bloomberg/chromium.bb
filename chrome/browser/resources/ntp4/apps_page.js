@@ -179,7 +179,7 @@ cr.define('ntp4', function() {
       assert(this.appData_.id, 'Got an app without an ID');
       this.id = this.appData_.id;
 
-      this.className = 'app';
+      this.className = 'app focusable';
 
       if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists)
         this.useSmallIcon_ = true;
@@ -233,6 +233,7 @@ cr.define('ntp4', function() {
         this.createAppsPromoExtras_();
 
       this.addEventListener('mousedown', this.onMousedown_, true);
+      this.addEventListener('keydown', this.onKeydown_);
     },
 
     /**
@@ -396,6 +397,21 @@ cr.define('ntp4', function() {
 
       // Don't allow the click to trigger a link or anything
       e.preventDefault();
+    },
+
+    /**
+     * Invoked when the user presses a key while the app is focused.
+     * @param {Event} e The key event.
+     * @private
+     */
+    onKeydown_: function(e) {
+      if (e.keyIdentifier == 'Enter') {
+        chrome.send('launchApp',
+                    [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED,
+                     e.altKey, e.ctrlKey, e.metaKey, e.shiftKey, 0]);
+        e.preventDefault();
+        e.stopPropagation();
+      }
     },
 
     /**
@@ -585,8 +601,10 @@ cr.define('ntp4', function() {
         this.content_.scrollTop = this.content_.scrollHeight;
       }
       var app = new App(appData);
-      if (this.classList.contains('selected-card'))
+      if (this.classList.contains('selected-card')) {
         app.loadIcon();
+        app.setTileContentsFocusable(true);
+      }
       this.appendTile(app, animate);
     },
 

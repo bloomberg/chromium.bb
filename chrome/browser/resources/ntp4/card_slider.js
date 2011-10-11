@@ -280,11 +280,13 @@ var CardSlider = (function() {
      *     current position to new position.
      */
     selectCard: function(newCardIndex, opt_animate) {
+      var previousCard = this.currentCardValue;
+
       var isChangingCard =
           !this.cards_[newCardIndex].classList.contains('selected-card');
 
       if (isChangingCard) {
-        this.currentCardValue.classList.remove('selected-card');
+        previousCard.classList.remove('selected-card');
         // If we have a new card index and it is valid then update the left
         // position and current card index.
         this.currentCard_ = newCardIndex;
@@ -299,7 +301,11 @@ var CardSlider = (function() {
         event.cardSlider = this;
         this.container_.dispatchEvent(event);
 
-        // We also dispatch an event on the card itself.
+        // We also dispatch an event on the cards themselves.
+        if (previousCard) {
+          cr.dispatchSimpleEvent(previousCard, 'carddeselected',
+                                 true, true);
+        }
         cr.dispatchSimpleEvent(this.currentCardValue, 'cardselected',
                                true, true);
       }

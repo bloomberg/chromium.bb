@@ -426,6 +426,12 @@ cr.define('ntp4', function() {
 
       // Ordered list of our tiles.
       this.tileElements_ = this.tileGrid_.getElementsByClassName('tile real');
+      // Ordered list of the elements which want to accept keyboard focus. These
+      // elements will not be a part of the normal tab order; the tile grid
+      // initially gets focused and then these elements can be focused via the
+      // arrow keys.
+      this.focusableElements_ =
+          this.tileGrid_.getElementsByClassName('focusable');
 
       // These are properties used in updateTopMargin.
       this.animatedTopMarginPx_ = 0;
@@ -442,9 +448,12 @@ cr.define('ntp4', function() {
 
       this.dragWrapper_ = new DragWrapper(this.tileGrid_, this);
 
-      $('page-list').addEventListener(
-          CardSlider.EventType.CARD_CHANGED,
-          this.onCardChanged.bind(this));
+      this.addEventListener('cardselected', this.handleCardSelection_);
+      this.addEventListener('carddeselected', this.handleCardDeselection_);
+      this.addEventListener('focus', this.handleFocus_);
+      this.addEventListener('keydown', this.handleKeyDown_);
+
+      this.focusElementIndex_ = -1;
     },
 
     get tiles() {
@@ -552,6 +561,123 @@ cr.define('ntp4', function() {
      */
     removeAllTiles: function() {
       this.tileGrid_.innerHTML = '';
+    },
+
+    /**
+     * Called when the page is selected (in the card selector).
+     * @param {Event} e A custom cardselected event.
+     * @private
+     */
+    handleCardSelection_: function(e) {
+      this.tabIndex = 1;
+
+      // When we are selected, we re-calculate the layout values. (See comment
+      // in doDrop.)
+      this.calculateLayoutValues_();
+    },
+
+    /**
+     * Called when the page loses selection (in the card selector).
+     * @param {Event} e A custom carddeselected event.
+     * @private
+     */
+    handleCardDeselection_: function(e) {
+      this.tabIndex = -1;
+      if (this.currentFocusElement_)
+        this.currentFocusElement_.tabIndex = -1;
+    },
+
+    /**
+     * When we get focus, pass it on to the focus element.
+     * @param {Event} e The focus event.
+     * @private
+     */
+    handleFocus_: function(e) {
+      if (this.focusableElements_.length == 0)
+        return;
+
+      this.updateFocusElement_();
+    },
+
+    /**
+     * Handle arrow key focus nav.
+     * @param {Event} e The focus event.
+     * @private
+     */
+    handleKeyDown_: function(e) {
+      // We only handle up, down, left, right without control keys.
+      if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey)
+        return;
+
+      // Wrap the given index to |this.focusableElements_|.
+      var wrap = function(idx) {
+        return (idx + this.focusableElements_.length) %
+            this.focusableElements_.length;
+      }.bind(this);
+
+      switch (e.keyIdentifier) {
+        case 'Right':
+        case 'Left':
+          var direction = e.keyIdentifier == 'Right' ? 1 : -1;
+          this.focusElementIndex_ = wrap(this.focusElementIndex_ + direction);
+          break;
+        case 'Up':
+        case 'Down':
+          // Look through all focusable elements. Find the first one that is
+          // in the same column.
+          var direction = e.keyIdentifier == 'Up' ? -1 : 1;
+          var currentIndex =
+              Array.prototype.indexOf.call(this.focusableElements_,
+                                           this.currentFocusElement_);
+          var newFocusIdx = wrap(currentIndex + direction)
+          var tile = this.currentFocusElement_.parentNode;
+          for (;; newFocusIdx = wrap(newFocusIdx + direction)) {
+            var newTile = this.focusableElements_[newFocusIdx].parentNode;
+            var rowTiles = this.layoutValues_.numRowTiles;
+            if ((newTile.index - tile.index) % rowTiles == 0)
+              break;
+          }
+
+          this.focusElementIndex_ = newFocusIdx;
+          break;
+
+        default:
+          return;
+      }
+
+      this.updateFocusElement_();
+
+      e.preventDefault();
+      e.stopPropagation();
+    },
+
+    /**
+     * Focuses the element for |this.focusElementIndex_|. Makes the current
+     * focus element, if any, no longer eligible for focus.
+     * @private
+     */
+    updateFocusElement_: function() {
+      this.focusElementIndex_ = Math.min(this.focusableElements_.length - 1,
+                                       this.focusElementIndex_);
+      this.focusElementIndex_ = Math.max(0, this.focusElementIndex_);
+
+      var newFocusElement = this.focusableElements_[this.focusElementIndex_];
+      var lastFocusElement = this.currentFocusElement_;
+      if (lastFocusElement && lastFocusElement != newFocusElement)
+        lastFocusElement.tabIndex = -1;
+
+      newFocusElement.tabIndex = 1;
+      newFocusElement.focus();
+      this.tabIndex = -1;
+    },
+
+    /**
+     * The current focus element is that element which is eligible for focus.
+     * @type {HTMLElement} The node.
+     * @private
+     */
+    get currentFocusElement_() {
+      return this.querySelector('.focusable[tabindex="1"]');
     },
 
     /**
@@ -898,17 +1024,6 @@ cr.define('ntp4', function() {
      */
     heightForWidth: function(width) {
       return width;
-    },
-
-    /**
-     * Handle for CARD_CHANGED.
-     * @param {Event} e The card slider event.
-     */
-    onCardChanged: function(e) {
-      // When we are selected, we re-calculate the layout values. (See comment
-      // in doDrop.)
-      if (e.cardSlider.currentCardValue == this)
-        this.calculateLayoutValues_();
     },
 
     /** Dragging **/

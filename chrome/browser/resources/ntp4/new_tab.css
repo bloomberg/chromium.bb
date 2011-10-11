@@ -248,12 +248,14 @@ html[dir='rtl'] #login-container {
   margin: 0;
   max-width: 150px;
   min-width: 90px;
+  outline: none;
   top: 0;
   z-index: 5;
   -webkit-transition: width 150ms, right 150ms, background-color 150ms;
 }
 
 .page-switcher:hover,
+.page-switcher:focus,
 .page-switcher.drag-target {
   background-color: rgba(0, 0, 0, 0.2);
 }
