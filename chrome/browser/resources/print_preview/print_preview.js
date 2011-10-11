@@ -53,6 +53,9 @@ var isPrintReadyMetafileReady = false;
 // True when preview tab is hidden.
 var isTabHidden = false;
 
+// Object holding the print and cancel buttons.
+var printHeader;
+
 // Object holding all the pages related settings.
 var pageSettings;
 
@@ -104,6 +107,9 @@ function onLoad() {
   initialPreviewRequestID = randomInteger(MIN_REQUEST_ID, MAX_REQUEST_ID);
   lastPreviewRequestID = initialPreviewRequestID;
 
+  printHeader = print_preview.PrintHeader.getInstance();
+  printHeader.addEventListeners();
+
   if (!checkCompatiblePluginExists()) {
     disableInputElementsInSidebar();
     displayErrorMessageWithButton(localStrings.getString('noPlugin'),
@@ -118,14 +124,12 @@ function onLoad() {
 
   $('printer-list').disabled = true;
 
-  printHeader = print_preview.PrintHeader.getInstance();
   pageSettings = print_preview.PageSettings.getInstance();
   copiesSettings = print_preview.CopiesSettings.getInstance();
   layoutSettings = print_preview.LayoutSettings.getInstance();
   marginSettings = print_preview.MarginSettings.getInstance();
   headerFooterSettings = print_preview.HeaderFooterSettings.getInstance();
   colorSettings = print_preview.ColorSettings.getInstance();
-  printHeader.addEventListeners();
   pageSettings.addEventListeners();
   copiesSettings.addEventListeners();
   headerFooterSettings.addEventListeners();
@@ -144,8 +148,11 @@ function onLoad() {
  */
 function disableInputElementsInSidebar() {
   var els = $('sidebar').querySelectorAll('input, button, select');
-  for (var i = 0; i < els.length; i++)
+  for (var i = 0; i < els.length; i++) {
+    if (els[i] == printHeader.cancelButton)
+      continue;
     els[i].disabled = true;
+  }
 }
 
 /**
@@ -170,6 +177,7 @@ function launchNativePrintDialog() {
     return;
   showingSystemDialog = true;
   $('error-button').disabled = true;
+  printHeader.disableCancelButton();
   $('native-print-dialog-throbber').classList.remove('hidden');
   chrome.send('showSystemDialog');
 }
@@ -890,7 +898,7 @@ function updatePrintPreview(previewUid, previewResponseId) {
 }
 
 /**
- * Checks to see if the requested print data is available for printing  and
+ * Checks to see if the requested print data is available for printing and
  * sends a print document request if needed.
  */
 function sendPrintDocumentRequestIfNeeded() {
@@ -1020,7 +1028,27 @@ function setInitiatorTabTitle(initiatorTabTitle) {
       'printPreviewTitleFormat', initiatorTabTitle);
 }
 
+/**
+ * Closes this print preview tab.
+ */
+function closePrintPreviewTab() {
+  chrome.send('closePrintPreviewTab');
+}
+
+/**
+  * Handle keyboard events.
+  * @param {KeyboardEvent} e The keyboard event.
+  */
+function onKeyDown(e) {
+  // Escape key closes the dialog.
+  if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    printHeader.disableCancelButton();
+    closePrintPreviewTab();
+  }
+}
+
 window.addEventListener('DOMContentLoaded', onLoad);
+window.onkeydown = onKeyDown;
 
 /// Pull in all other scripts in a single shot.
 <include src="print_preview_animations.js"/>

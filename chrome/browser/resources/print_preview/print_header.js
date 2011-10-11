@@ -38,13 +38,24 @@ cr.define('print_preview', function() {
      */
     addEventListeners: function() {
       this.cancelButton_.onclick = function() {
-        chrome.send('closePrintPreviewTab');
-      };
+        this.disableCancelButton();
+        closePrintPreviewTab();
+      }.bind(this);
       this.printButton_.onclick = this.onPrintButtonClicked_.bind(this);
       document.addEventListener('updateSummary',
                                 this.updateSummary_.bind(this));
       document.addEventListener('updatePrintButton',
                                 this.updatePrintButton_.bind(this));
+      document.addEventListener('disableCancelButton',
+                                this.disableCancelButton.bind(this));
+    },
+
+    /**
+     * Disables the cancel button and removes its keydown event listener.
+     */
+    disableCancelButton: function() {
+      window.onkeydown = null;
+      this.cancelButton_.disabled = true;
     },
 
     /**
@@ -58,6 +69,7 @@ cr.define('print_preview', function() {
         this.cancelButton_.classList.add('loading');
         this.summary_.innerHTML = localStrings.getString('printing');
       }
+      this.disableCancelButton();
       requestToPrintDocument();
     },
 
