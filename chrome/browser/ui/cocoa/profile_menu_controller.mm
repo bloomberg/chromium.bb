@@ -166,6 +166,8 @@ class Observer : public BrowserList::Observer,
       [item setState:NSOnState];
     [menu insertItem:item atIndex:i];
   }
+
+  [mainMenuItem_ setHidden:!model_->ShouldShowAvatarMenu()];
 }
 
 - (NSMenuItem*)createItemWithTitle:(NSString*)title action:(SEL)sel {

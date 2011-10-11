@@ -991,8 +991,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
 // Conditionally adds the Profile menu to the main menu bar.
 - (void)initProfileMenu {
-  bool enableMenu = ProfileManager::IsMultipleProfilesEnabled();
-
   NSMenu* mainMenu = [NSApp mainMenu];
   NSMenuItem* profileMenu = [mainMenu itemWithTag:IDC_PROFILE_MAIN_MENU];
 
@@ -1000,17 +998,17 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   // in Chromium as squished menu items <http://crbug.com/90753>. To prevent
   // this, remove the Profile menu on Leopard, regardless of the user's
   // multiprofile state.
-  if (base::mac::IsOSLeopard()) {
+  if (!ProfileManager::IsMultipleProfilesEnabled() ||
+      base::mac::IsOSLeopard()) {
     [mainMenu removeItem:profileMenu];
     return;
   }
 
-  [profileMenu setHidden:!enableMenu];
+  // The controller will unhide the menu if necessary.
+  [profileMenu setHidden:YES];
 
-  if (enableMenu) {
-    profileMenuController_.reset(
-        [[ProfileMenuController alloc] initWithMainMenuItem:profileMenu]);
-  }
+  profileMenuController_.reset(
+      [[ProfileMenuController alloc] initWithMainMenuItem:profileMenu]);
 }
 
 // The Confirm to Quit preference is atypical in that the preference lives in

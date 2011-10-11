@@ -64,6 +64,8 @@ class ProfileMenuControllerTest : public CocoaProfileTest {
 
   ProfileMenuController* controller() { return controller_.get(); }
 
+  NSMenuItem* menu_item() { return item_.get(); }
+
  private:
   scoped_nsobject<NSMenuItem> item_;
   scoped_nsobject<ProfileMenuController> controller_;
@@ -78,6 +80,8 @@ TEST_F(ProfileMenuControllerTest, InitializeMenu) {
   EXPECT_EQ(@selector(switchToProfile:), [item action]);
 
   TestBottomItems();
+
+  EXPECT_TRUE([menu_item() isHidden]);
 }
 
 TEST_F(ProfileMenuControllerTest, CreateItemWithTitle) {
@@ -93,6 +97,8 @@ TEST_F(ProfileMenuControllerTest, CreateItemWithTitle) {
 TEST_F(ProfileMenuControllerTest, RebuildMenu) {
   NSMenu* menu = [controller() menu];
   EXPECT_EQ(5, [menu numberOfItems]);
+
+  EXPECT_TRUE([menu_item() isHidden]);
 
   // Create some more profiles on the manager.
   TestingProfileManager* manager = testing_profile_manager();
@@ -112,6 +118,8 @@ TEST_F(ProfileMenuControllerTest, RebuildMenu) {
   EXPECT_EQ(@selector(switchToProfile:), [item action]);
 
   TestBottomItems();
+
+  EXPECT_FALSE([menu_item() isHidden]);
 }
 
 TEST_F(ProfileMenuControllerTest, InitialActiveBrowser) {
