@@ -125,6 +125,8 @@ class CONTENT_EXPORT BrowserMainParts {
   DISALLOW_COPY_AND_ASSIGN(BrowserMainParts);
 };
 
+bool ExitedMainMessageLoop();
+
 }  // namespace content
 
 CONTENT_EXPORT int BrowserMain(const MainFunctionParams& parameters);

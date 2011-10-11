@@ -252,6 +252,8 @@ void BrowserMainParts::MainMessageLoopStart() {
   PostMainMessageLoopStart();
 }
 
+static bool g_exited_main_message_loop = false;
+
 void BrowserMainParts::RunMainMessageLoopParts() {
   PreMainMessageLoopRun();
 
@@ -261,6 +263,8 @@ void BrowserMainParts::RunMainMessageLoopParts() {
   base::ThreadRestrictions::SetIOAllowed(false);
   MainMessageLoopRun();
   TRACE_EVENT_END_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
+
+  g_exited_main_message_loop = true;
 
   PostMainMessageLoopRun();
 }
@@ -355,6 +359,10 @@ void BrowserMainParts::PostMainMessageLoopRun() {
 }
 
 void BrowserMainParts::ToolkitInitialized() {
+}
+
+bool ExitedMainMessageLoop() {
+  return g_exited_main_message_loop;
 }
 
 }  // namespace content

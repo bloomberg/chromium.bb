@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
+#include "content/browser/browser_main.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/content_browser_client.h"
@@ -100,6 +101,7 @@ RenderProcessHost::RenderProcessHost(content::BrowserContext* browser_context)
       browser_context_(browser_context),
       sudden_termination_allowed_(true),
       ignore_input_events_(false) {
+  CHECK(!content::ExitedMainMessageLoop());
   all_hosts.AddWithID(this, id());
   all_hosts.set_check_on_null_data(true);
   // Initialize |child_process_activity_time_| to a reasonable value.
