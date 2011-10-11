@@ -1,0 +1,21 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+######################################################################
+# Smoke Test
+######################################################################
+nexe = env.ComponentProgram('irt_present_test',
+                            'irt_present_test.c',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'],
+                            )
+
+node = env.CommandSelLdrTestNacl(
+     'irt_present_test.out',
+     nexe,
+     )
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_present_test')

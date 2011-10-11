@@ -3026,6 +3026,12 @@ nacl_env.Append(
     ####  ALPHABETICALLY SORTED ####
     ])
 
+# These are tests that are worthwhile to run in IRT variant only.
+irt_only_tests = [
+    #### ALPHABETICALLY SORTED ####
+    'tests/irt/nacl.scons',
+    ]
+
 # These are tests that are worthwhile to run in both IRT and non-IRT variants.
 # The nacl_irt_test mode runs them in the IRT variants.
 irt_variant_tests = [
@@ -3383,7 +3389,7 @@ nacl_irt_test_env = nacl_env.Clone(
     INCLUDE_DIR = nacl_env.Dir('${INCLUDE_DIR}'),
     LIB_DIR = nacl_env.Dir('${LIB_DIR}'),
 
-    BUILD_SCONSCRIPTS = irt_variant_tests
+    BUILD_SCONSCRIPTS = irt_variant_tests + irt_only_tests
     )
 nacl_irt_test_env.SetBits('irt')
 nacl_irt_test_env.SetBits('tests_use_irt')
