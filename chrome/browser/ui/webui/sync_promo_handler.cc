@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
@@ -34,6 +35,25 @@ void SyncPromoHandler::RegisterMessages() {
       base::Bind(&SyncPromoHandler::HandleShowAdvancedSyncSettings,
                  base::Unretained(this)));
   SyncSetupHandler::RegisterMessages();
+}
+
+void SyncPromoHandler::ShowConfigure(const base::DictionaryValue& args) {
+  bool usePassphrase = false;
+  args.GetBoolean("usePassphrase", &usePassphrase);
+
+  if (usePassphrase) {
+    // If a passphrase is required then we must show the configure pane.
+    SyncSetupHandler::ShowConfigure(args);
+  } else {
+    // If no passphrase is required then skip the configure pane and sync
+    // everything by default. This makes the first run experience simpler.
+    // Note, there's an advanced link in the sync promo that takes users
+    // to Settings where the configure pane is not skipped.
+    SyncConfiguration configuration;
+    configuration.sync_everything = true;
+    DCHECK(flow());
+    flow()->OnUserConfigured(configuration);
+  }
 }
 
 void SyncPromoHandler::ShowSetupUI() {

@@ -18,6 +18,9 @@ class SyncPromoHandler : public SyncSetupHandler {
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
+  // SyncSetupFlowHandler implementation.
+  virtual void ShowConfigure(const base::DictionaryValue& args) OVERRIDE;
+
  protected:
   virtual void ShowSetupUI() OVERRIDE;
 
