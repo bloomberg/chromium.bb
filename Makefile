@@ -13,6 +13,7 @@ OBJECTS=\
 	$(OBJDIR)/integral_gesture_filter_interpreter.o \
 	$(OBJDIR)/logging_filter_interpreter.o \
 	$(OBJDIR)/lookahead_filter_interpreter.o \
+	$(OBJDIR)/prop_registry.o \
 	$(OBJDIR)/scaling_filter_interpreter.o \
 	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter.o
 
@@ -26,6 +27,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/logging_filter_interpreter_unittest.o \
 	$(OBJDIR)/lookahead_filter_interpreter_unittest.o \
 	$(OBJDIR)/map_unittest.o \
+	$(OBJDIR)/prop_registry_unittest.o \
 	$(OBJDIR)/scaling_filter_interpreter_unittest.o \
 	$(OBJDIR)/set_unittest.o \
 	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter_unittest.o
