@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -32,12 +33,9 @@ void UserImageLoader::Start(const std::string& username,
   target_message_loop_ = MessageLoop::current();
 
   ImageInfo image_info(username, image_index, should_save_image);
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          NewRunnableMethod(this,
-                                            &UserImageLoader::LoadImage,
-                                            filename,
-                                            image_info));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&UserImageLoader::LoadImage, this, filename, image_info));
 }
 
 void UserImageLoader::LoadImage(const std::string& filepath,
@@ -76,11 +74,10 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
                                       login::kUserImageSize,
                                       login::kUserImageSize);
   }
-  target_message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-                        &UserImageLoader::NotifyDelegate,
-                        final_image,
-                        image_info));
+  target_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&UserImageLoader::NotifyDelegate, this, final_image,
+                 image_info));
   image_info_map_.erase(info_it);
 }
 

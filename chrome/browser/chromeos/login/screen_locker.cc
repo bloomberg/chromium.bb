@@ -13,8 +13,10 @@
 // Evil hack to undo X11 evil #define. See crosbug.com/
 #undef Status
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -299,7 +301,7 @@ class GrabWidget : public views::NativeWidgetGtk {
   explicit GrabWidget(chromeos::ScreenLocker* screen_locker)
       : views::NativeWidgetGtk(new views::Widget),
         screen_locker_(screen_locker),
-        ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
         grab_failure_count_(0),
         kbd_grab_status_(GDK_GRAB_INVALID_TIME),
         mouse_grab_status_(GDK_GRAB_INVALID_TIME),
@@ -399,7 +401,7 @@ class GrabWidget : public views::NativeWidgetGtk {
   }
 
   chromeos::ScreenLocker* screen_locker_;
-  ScopedRunnableMethodFactory<GrabWidget> task_factory_;
+  base::WeakPtrFactory<GrabWidget> weak_factory_;
 
   // The number times the widget tried to grab all focus.
   int grab_failure_count_;
@@ -442,7 +444,7 @@ void GrabWidget::TryGrabAllInputs() {
     gdk_x11_ungrab_server();
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        task_factory_.NewRunnableMethod(&GrabWidget::TryGrabAllInputs),
+        base::Bind(&GrabWidget::TryGrabAllInputs, weak_factory_.GetWeakPtr()),
         kRetryGrabIntervalMs);
   } else {
     gdk_x11_ungrab_server();
@@ -985,10 +987,8 @@ void ScreenLocker::Authenticate(const string16& password) {
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(authenticator_.get(),
-                          &Authenticator::AuthenticateToUnlock,
-                          user_.email(),
-                          UTF16ToUTF8(password)));
+        base::Bind(&Authenticator::AuthenticateToUnlock, authenticator_.get(),
+                   user_.email(), UTF16ToUTF8(password)));
   }
 }
 

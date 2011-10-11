@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/ownership_service.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -11,10 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
-
-// We want to use NewRunnableMethod for non-static methods of this class but
-// need to disable reference counting since it is singleton.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::OwnershipService);
 
 namespace chromeos {
 
@@ -45,9 +43,8 @@ void OwnershipService::Prewarm() {
   if (g_ownership_service == this) {
     // Start getting ownership status.
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        NewRunnableMethod(this, &OwnershipService::FetchStatus));
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&OwnershipService::FetchStatus, base::Unretained(this)));
   } else {
     // This can happen only for particular test: OwnershipServiceTest. It uses
     // mocks and for that uses OwnershipService not as a regular singleton but
@@ -100,7 +97,7 @@ OwnershipService::Status OwnershipService::GetStatus(bool blocking) {
 void OwnershipService::StartLoadOwnerKeyAttempt() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&TryLoadOwnerKeyAttempt, this));
+      base::Bind(&TryLoadOwnerKeyAttempt, base::Unretained(this)));
 }
 
 void OwnershipService::StartUpdateOwnerKey(const std::vector<uint8>& new_key,
@@ -110,11 +107,8 @@ void OwnershipService::StartUpdateOwnerKey(const std::vector<uint8>& new_key,
     thread_id = BrowserThread::UI;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&OwnershipService::UpdateOwnerKey,
-                          this,
-                          thread_id,
-                          new_key,
-                          d));
+      base::Bind(&OwnershipService::UpdateOwnerKey, base::Unretained(this),
+                 thread_id, new_key, d));
   return;
 }
 
@@ -125,11 +119,8 @@ void OwnershipService::StartSigningAttempt(const std::string& data,
     thread_id = BrowserThread::UI;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&OwnershipService::TrySigningAttempt,
-                          this,
-                          thread_id,
-                          data,
-                          d));
+      base::Bind(&OwnershipService::TrySigningAttempt, base::Unretained(this),
+                 thread_id, data, d));
   return;
 }
 
@@ -141,12 +132,8 @@ void OwnershipService::StartVerifyAttempt(const std::string& data,
     thread_id = BrowserThread::UI;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&OwnershipService::TryVerifyAttempt,
-                          this,
-                          thread_id,
-                          data,
-                          signature,
-                          d));
+      base::Bind(&OwnershipService::TryVerifyAttempt, base::Unretained(this),
+                 thread_id, data, signature, d));
   return;
 }
 
@@ -196,7 +183,7 @@ void OwnershipService::TrySigningAttempt(OwnershipService* service,
     LOG(ERROR) << "Device not yet owned";
     BrowserThread::PostTask(
         thread_id, FROM_HERE,
-        NewRunnableFunction(&OwnershipService::FailAttempt, d));
+        base::Bind(&OwnershipService::FailAttempt, d));
     return;
   }
   service->manager()->Sign(thread_id, data, d);
@@ -213,7 +200,7 @@ void OwnershipService::TryVerifyAttempt(OwnershipService* service,
     LOG(ERROR) << "Device not yet owned";
     BrowserThread::PostTask(
         thread_id, FROM_HERE,
-        NewRunnableFunction(&OwnershipService::FailAttempt, d));
+        base::Bind(&OwnershipService::FailAttempt, d));
     return;
   }
   service->manager()->Verify(thread_id, data, signature, d);

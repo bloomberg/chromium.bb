@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/image_decoder.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/browser/browser_thread.h"
@@ -26,9 +27,7 @@ void ImageDecoder::Start() {
   }
   BrowserThread::PostTask(
      BrowserThread::IO, FROM_HERE,
-     NewRunnableMethod(
-         this, &ImageDecoder::DecodeImageInSandbox,
-         image_data_));
+     base::Bind(&ImageDecoder::DecodeImageInSandbox, this, image_data_));
 }
 
 bool ImageDecoder::OnMessageReceived(const IPC::Message& message) {

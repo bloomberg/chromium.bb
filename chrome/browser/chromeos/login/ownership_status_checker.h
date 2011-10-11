@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -25,16 +25,16 @@ class OwnershipStatusChecker {
   // Callback function type. The status code is guaranteed to be different from
   // OWNERSHIP_UNKNOWN. The bool parameter is true iff the current logged in
   // user is the owner.
-  typedef Callback2<OwnershipService::Status, bool>::Type Callback;
+  typedef base::Callback<void(OwnershipService::Status, bool)> Callback;
 
-  explicit OwnershipStatusChecker(Callback* callback);
+  explicit OwnershipStatusChecker(const Callback& callback);
   ~OwnershipStatusChecker();
 
  private:
   // The refcounted core that handles the thread switching.
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
-    explicit Core(Callback* callback);
+    explicit Core(const Callback& callback);
     ~Core();
 
     // Starts the check.
@@ -48,7 +48,7 @@ class OwnershipStatusChecker {
     void ReportResult(OwnershipService::Status status,
                       bool current_user_is_owner);
 
-    scoped_ptr<Callback> callback_;
+    Callback callback_;
     scoped_refptr<base::MessageLoopProxy> origin_loop_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);

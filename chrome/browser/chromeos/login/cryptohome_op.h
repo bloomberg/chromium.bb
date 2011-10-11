@@ -39,7 +39,7 @@ class CryptohomeOp
       AuthAttemptState* current_attempt,
       AuthAttemptStateResolver* callback);
 
-  virtual bool Initiate() = 0;
+  virtual void Initiate() = 0;
 
   // Implementation of CryptohomeLibrary::Delegate.
   virtual void OnComplete(bool success, int return_code);

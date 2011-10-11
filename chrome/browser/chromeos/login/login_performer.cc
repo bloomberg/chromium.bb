@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -55,7 +56,7 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
               switches::kWebUILogin) &&
           !CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSkipOAuthLogin)),
-      method_factory_(this) {
+      weak_factory_(this) {
   DCHECK(default_performer_ == NULL)
       << "LoginPerformer should have only one instance.";
   default_performer_ = this;
@@ -279,9 +280,8 @@ void LoginPerformer::CompleteLogin(const std::string& username,
     // Must not proceed without signature verification.
     UserCrosSettingsProvider user_settings;
     bool trusted_setting_available = user_settings.RequestTrustedAllowNewUser(
-        method_factory_.NewRunnableMethod(&LoginPerformer::CompleteLogin,
-                                          username,
-                                          password));
+        base::Bind(&LoginPerformer::CompleteLogin, weak_factory_.GetWeakPtr(),
+                   username, password));
     if (!trusted_setting_available) {
       // Value of AllowNewUser setting is still not verified.
       // Another attempt will be invoked after verification completion.
@@ -327,9 +327,8 @@ void LoginPerformer::Login(const std::string& username,
     // Must not proceed without signature verification.
     UserCrosSettingsProvider user_settings;
     bool trusted_setting_available = user_settings.RequestTrustedAllowNewUser(
-        method_factory_.NewRunnableMethod(&LoginPerformer::Login,
-                                          username,
-                                          password));
+        base::Bind(&LoginPerformer::Login, weak_factory_.GetWeakPtr(), username,
+                   password));
     if (!trusted_setting_available) {
       // Value of AllowNewUser setting is still not verified.
       // Another attempt will be invoked after verification completion.
@@ -367,26 +366,22 @@ void LoginPerformer::LoginOffTheRecord() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::LoginOffTheRecord));
+      base::Bind(&Authenticator::LoginOffTheRecord, authenticator_.get()));
 }
 
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::RecoverEncryptedData,
-                        old_password,
-                        cached_credentials_));
+      base::Bind(&Authenticator::RecoverEncryptedData, authenticator_.get(),
+                 old_password, cached_credentials_));
   cached_credentials_ = GaiaAuthConsumer::ClientLoginResult();
 }
 
 void LoginPerformer::ResyncEncryptedData() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::ResyncEncryptedData,
-                        cached_credentials_));
+      base::Bind(&Authenticator::ResyncEncryptedData, authenticator_.get(),
+                 cached_credentials_));
   cached_credentials_ = GaiaAuthConsumer::ClientLoginResult();
 }
 
@@ -551,11 +546,8 @@ void LoginPerformer::StartLoginCompletion() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::CompleteLogin,
-                        profile,
-                        username_,
-                        password_));
+      base::Bind(&Authenticator::CompleteLogin, authenticator_.get(), profile,
+                 username_, password_));
 
   password_.clear();
 }
@@ -568,13 +560,8 @@ void LoginPerformer::StartAuthentication() {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(authenticator_.get(),
-                          &Authenticator::AuthenticateToLogin,
-                          profile,
-                          username_,
-                          password_,
-                          captcha_token_,
-                          captcha_));
+        base::Bind(&Authenticator::AuthenticateToLogin, authenticator_.get(),
+                   profile, username_, password_, captcha_token_, captcha_));
   } else {
     DCHECK(authenticator_.get())
         << "Authenticator instance doesn't exist for login attempt retry.";
@@ -582,13 +569,8 @@ void LoginPerformer::StartAuthentication() {
     // retry online auth, using existing Authenticator instance.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(authenticator_.get(),
-                          &Authenticator::RetryAuth,
-                          profile,
-                          username_,
-                          password_,
-                          captcha_token_,
-                          captcha_));
+        base::Bind(&Authenticator::RetryAuth, authenticator_.get(), profile,
+                   username_, password_, captcha_token_, captcha_));
   }
   password_.clear();
 }

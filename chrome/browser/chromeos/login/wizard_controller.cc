@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -435,9 +436,8 @@ void WizardController::OnUserImageSelected() {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableFunction(&chromeos::LoginUtils::DoBrowserLaunch,
-                          ProfileManager::GetDefaultProfile(),
-                          host_));
+      base::Bind(&chromeos::LoginUtils::DoBrowserLaunch,
+                 ProfileManager::GetDefaultProfile(), host_));
   host_ = NULL;
   // TODO(avayvod): Sync image with Google Sync.
 }
@@ -591,7 +591,7 @@ bool WizardController::IsDeviceRegistered() {
     BrowserThread::PostTask(
         BrowserThread::FILE,
         FROM_HERE,
-        NewRunnableFunction(&CreateOobeCompleteFlagFile));
+        base::Bind(&CreateOobeCompleteFlagFile));
     return true;
   } else if (value == 0) {
     return false;
@@ -612,7 +612,7 @@ void WizardController::MarkDeviceRegistered() {
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      NewRunnableFunction(&CreateOobeCompleteFlagFile));
+      base::Bind(&CreateOobeCompleteFlagFile));
 }
 
 // static

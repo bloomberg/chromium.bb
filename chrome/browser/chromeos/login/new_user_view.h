@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
@@ -168,7 +169,7 @@ class NewUserView : public ThrobberHostView,
   // Notifications receiver.
   Delegate* delegate_;
 
-  ScopedRunnableMethodFactory<NewUserView> focus_grabber_factory_;
+  base::WeakPtrFactory<NewUserView> weak_factory_;
 
   LanguageSwitchMenu language_switch_menu_;
 

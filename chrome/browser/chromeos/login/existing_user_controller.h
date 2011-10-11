@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "base/timer.h"
@@ -185,7 +186,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   NotificationRegistrar registrar_;
 
   // Factory of callbacks.
-  ScopedRunnableMethodFactory<ExistingUserController> method_factory_;
+  base::WeakPtrFactory<ExistingUserController> weak_factory_;
 
   // Whether everything is ready to launch the browser.
   bool ready_for_browser_launch_;

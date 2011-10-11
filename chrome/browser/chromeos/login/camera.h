@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -136,12 +137,12 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   // Posts task to camera thread.
   void PostCameraTask(
       const tracked_objects::Location& from_here,
-      Task* task);
+      const base::Closure& task);
 
   // Same as above but the task is delayed.
   void PostCameraTaskWithDelay(
       const tracked_objects::Location& from_here,
-      Task* task,
+      const base::Closure& task,
       int64 delay_in_ms);
 
   // Defines a buffer in memory where one frame from the camera is stored.

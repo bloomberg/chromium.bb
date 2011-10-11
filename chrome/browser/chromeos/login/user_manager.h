@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
@@ -272,7 +272,7 @@ class UserManager : public UserImageLoader::Delegate,
   // Download user profile image on login to update it if it's changed.
   scoped_ptr<ProfileImageDownloader> profile_image_downloader_;
 
-  ScopedRunnableMethodFactory<UserManager> method_factory_;
+  base::WeakPtrFactory<UserManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManager);
 };

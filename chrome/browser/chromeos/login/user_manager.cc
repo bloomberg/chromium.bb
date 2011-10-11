@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/user_manager.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -11,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -145,10 +147,9 @@ void SaveImageToFile(const SkBitmap& image,
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      NewRunnableFunction(&SaveImageToLocalState,
-                          username, image_path.value(), image_index));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&SaveImageToLocalState, username, image_path.value(),
+                 image_index));
 }
 
 // Deletes user's image file. Runs on FILE thread.
@@ -186,9 +187,8 @@ void CheckOwnership() {
 
   // UserManager should be accessed only on UI thread.
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      NewRunnableFunction(&UpdateOwnership, is_owner));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&UpdateOwnership, is_owner));
 }
 
 // Used to handle the asynchronous response of deleting a cryptohome directory.
@@ -200,7 +200,7 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
                 chromeos::RemoveUserDelegate* delegate)
       : user_email_(user_email),
         delegate_(delegate),
-        method_factory_(this) {
+        weak_factory_(this) {
     RemoveUser();
   }
 
@@ -211,7 +211,7 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
     // Must not proceed without signature verification.
     UserCrosSettingsProvider user_settings;
     bool trusted_owner_available = user_settings.RequestTrustedOwner(
-        method_factory_.NewRunnableMethod(&RemoveAttempt::RemoveUser));
+        base::Bind(&RemoveAttempt::RemoveUser, weak_factory_.GetWeakPtr()));
     if (!trusted_owner_available) {
       // Value of owner email is still not verified.
       // Another attempt will be invoked after verification completion.
@@ -255,7 +255,7 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
   chromeos::RemoveUserDelegate* delegate_;
 
   // Factory of callbacks.
-  ScopedRunnableMethodFactory<RemoveAttempt> method_factory_;
+  base::WeakPtrFactory<RemoveAttempt> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveAttempt);
 };
@@ -464,10 +464,9 @@ void UserManager::UserLoggedIn(const std::string& email) {
     int image_index = logged_in_user_.default_image_index();
     if (image_index == User::kProfileImageIndex) {
       BrowserThread::PostDelayedTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &UserManager::DownloadProfileImage),
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&UserManager::DownloadProfileImage,
+                     weak_factory_.GetWeakPtr()),
           kProfileImageDownloadDelayMs);
     }
 
@@ -545,10 +544,8 @@ void UserManager::RemoveUserFromList(const std::string& email) {
   if (!IsDefaultImagePath(image_path_string, &default_image_id)) {
     FilePath image_path(image_path_string);
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        NewRunnableFunction(&DeleteUserImage,
-                            image_path));
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&DeleteUserImage, image_path));
   }
 }
 
@@ -603,10 +600,8 @@ void UserManager::SaveUserImage(const std::string& username,
   DVLOG(1) << "Saving user image to " << image_path.value();
 
   BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      NewRunnableFunction(&SaveImageToFile,
-                          image, image_path, username, image_index));
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&SaveImageToFile, image, image_path, username, image_index));
 }
 
 void UserManager::SaveUserOAuthStatus(const std::string& username,
@@ -702,7 +697,7 @@ UserManager::UserManager()
       current_user_is_owner_(false),
       current_user_is_new_(false),
       user_is_logged_in_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       NotificationService::AllSources());
 }
@@ -776,16 +771,16 @@ void UserManager::NotifyOnLogin() {
   }
 
   // Schedules current user ownership check on file thread.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&CheckOwnership));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE, base::Bind(&CheckOwnership));
 }
 
 void UserManager::Observe(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(&CheckOwnership));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE, base::Bind(&CheckOwnership));
   }
 }
 

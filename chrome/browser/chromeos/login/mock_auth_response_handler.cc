@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
@@ -53,12 +54,8 @@ URLFetcher* MockAuthResponseHandler::MockNetwork(
     URLFetcher::Delegate* delegate) {
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(MockAuthResponseHandler::CompleteFetch,
-                          delegate,
-                          remote_,
-                          status_,
-                          http_response_code_,
-                          data_));
+      base::Bind(MockAuthResponseHandler::CompleteFetch, delegate, remote_,
+                 status_, http_response_code_, data_));
   return new URLFetcher(GURL(), URLFetcher::GET, delegate);
 }
 

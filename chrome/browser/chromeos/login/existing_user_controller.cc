@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -79,7 +81,7 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       host_(host),
       num_login_attempts_(0),
       user_settings_(new UserCrosSettingsProvider),
-      method_factory_(this),
+      weak_factory_(this),
       is_owner_login_(false) {
   DCHECK(current_controller_ == NULL);
   current_controller_ = this;
@@ -231,8 +233,8 @@ void ExistingUserController::LoginAsGuest() {
   // Check allow_guest in case this call is fired from key accelerator.
   // Must not proceed without signature verification.
   bool trusted_setting_available = user_settings_->RequestTrustedAllowGuest(
-      method_factory_.NewRunnableMethod(
-          &ExistingUserController::LoginAsGuest));
+      base::Bind(&ExistingUserController::LoginAsGuest,
+                 weak_factory_.GetWeakPtr()));
   if (!trusted_setting_available) {
     // Value of AllowGuest setting is still not verified.
     // Another attempt will be invoked again after verification completion.
@@ -260,8 +262,10 @@ void ExistingUserController::OnUserSelected(const std::string& username) {
 void ExistingUserController::OnStartEnterpriseEnrollment() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
-    ownership_checker_.reset(new OwnershipStatusChecker(NewCallback(
-        this, &ExistingUserController::OnEnrollmentOwnershipCheckCompleted)));
+    ownership_checker_.reset(new OwnershipStatusChecker(
+        base::Bind(
+            &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
+            base::Unretained(this))));
   }
 }
 
@@ -469,9 +473,8 @@ void ExistingUserController::OnPasswordChangeDetected(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
   // Must not proceed without signature verification.
   bool trusted_setting_available = user_settings_->RequestTrustedOwner(
-      method_factory_.NewRunnableMethod(
-          &ExistingUserController::OnPasswordChangeDetected,
-          credentials));
+      base::Bind(&ExistingUserController::OnPasswordChangeDetected,
+                 weak_factory_.GetWeakPtr(), credentials));
   if (!trusted_setting_available) {
     // Value of owner email is still not verified.
     // Another attempt will be invoked after verification completion.
@@ -575,8 +578,8 @@ void ExistingUserController::ShowError(int error_id,
 
 void ExistingUserController::StartAutomaticFreeDiskSpaceControl() {
   bool trusted_owner_available = user_settings_->RequestTrustedOwner(
-      method_factory_.NewRunnableMethod(
-          &ExistingUserController::StartAutomaticFreeDiskSpaceControl));
+      base::Bind(&ExistingUserController::StartAutomaticFreeDiskSpaceControl,
+                 weak_factory_.GetWeakPtr()));
   if (!trusted_owner_available) {
     // Value of owner email is still not verified.
     // Another attempt will be invoked after verification completion.

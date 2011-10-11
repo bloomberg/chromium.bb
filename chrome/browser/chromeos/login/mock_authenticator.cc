@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 
+#include "base/bind.h"
+#include "content/browser/browser_thread.h"
+
 namespace chromeos {
 
 void MockAuthenticator::AuthenticateToLogin(Profile* profile,
@@ -13,14 +16,14 @@ void MockAuthenticator::AuthenticateToLogin(Profile* profile,
                                  const std::string& login_captcha) {
   if (expected_username_ == username && expected_password_ == password) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &MockAuthenticator::OnLoginSuccess,
-                          GaiaAuthConsumer::ClientLoginResult(), false));
+        base::Bind(&MockAuthenticator::OnLoginSuccess, this,
+                   GaiaAuthConsumer::ClientLoginResult(), false));
   }
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &MockAuthenticator::OnLoginFailure,
-                        LoginFailure::FromNetworkAuthFailure(error)));
+      base::Bind(&MockAuthenticator::OnLoginFailure, this,
+                 LoginFailure::FromNetworkAuthFailure(error)));
 }
 
 void MockAuthenticator::CompleteLogin(Profile* profile,

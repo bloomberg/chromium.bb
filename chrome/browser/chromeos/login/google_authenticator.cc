@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -75,9 +76,8 @@ void GoogleAuthenticator::CancelClientLogin() {
 
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this,
-                          &GoogleAuthenticator::LoadLocalaccount,
-                          std::string(kLocalaccountFile)));
+        base::Bind(&GoogleAuthenticator::LoadLocalaccount, this,
+                   std::string(kLocalaccountFile)));
 
     CheckOffline(LoginFailure(LoginFailure::LOGIN_TIMED_OUT));
   }

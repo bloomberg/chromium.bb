@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -364,14 +365,13 @@ void CheckWhitelistOp::Execute() {
 void CheckWhitelistOp::Fail(SignedSettings::ReturnCode code) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &CheckWhitelistOp::PerformCallback, code, false));
+      base::Bind(&CheckWhitelistOp::PerformCallback, this, code, false));
 }
 
 void CheckWhitelistOp::Succeed(bool value) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(this,
-                                            &CheckWhitelistOp::PerformCallback,
-                                            SUCCESS, value));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&CheckWhitelistOp::PerformCallback, this, SUCCESS, value));
 }
 
 void CheckWhitelistOp::OnKeyOpComplete(
@@ -382,9 +382,8 @@ void CheckWhitelistOp::OnKeyOpComplete(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &CheckWhitelistOp::OnKeyOpComplete,
-                          return_code, payload));
+        base::Bind(&CheckWhitelistOp::OnKeyOpComplete, this, return_code,
+                   payload));
     return;
   }
   if (return_code == OwnerManager::SUCCESS) {
@@ -447,13 +446,13 @@ void WhitelistOp::Execute() {
 void WhitelistOp::Fail(SignedSettings::ReturnCode code) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &WhitelistOp::PerformCallback, code, false));
+      base::Bind(&WhitelistOp::PerformCallback, this, code, false));
 }
 
 void WhitelistOp::Succeed(bool value) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &WhitelistOp::PerformCallback, SUCCESS, value));
+      base::Bind(&WhitelistOp::PerformCallback, this, SUCCESS, value));
 }
 
 void WhitelistOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
@@ -462,9 +461,7 @@ void WhitelistOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &WhitelistOp::OnKeyOpComplete,
-                          return_code, sig));
+        base::Bind(&WhitelistOp::OnKeyOpComplete, this, return_code, sig));
     return;
   }
   VLOG(2) << "WhitelistOp::OnKeyOpComplete return_code = " << return_code;
@@ -559,14 +556,13 @@ void StorePropertyOp::Execute() {
 void StorePropertyOp::Fail(SignedSettings::ReturnCode code) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &StorePropertyOp::PerformCallback, code, false));
+      base::Bind(&StorePropertyOp::PerformCallback, this, code, false));
 }
 
 void StorePropertyOp::Succeed(bool value) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          NewRunnableMethod(this,
-                                            &StorePropertyOp::PerformCallback,
-                                            SUCCESS, value));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&StorePropertyOp::PerformCallback, this, SUCCESS, value));
 }
 
 void StorePropertyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
@@ -575,9 +571,7 @@ void StorePropertyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &StorePropertyOp::OnKeyOpComplete,
-                          return_code, sig));
+        base::Bind(&StorePropertyOp::OnKeyOpComplete, this, return_code, sig));
     return;
   }
   VLOG(2) << "StorePropertyOp::OnKeyOpComplete return_code = " << return_code;
@@ -691,16 +685,14 @@ void RetrievePropertyOp::Execute() {
 void RetrievePropertyOp::Fail(SignedSettings::ReturnCode code) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &RetrievePropertyOp::PerformCallback,
-                        code, std::string()));
+      base::Bind(&RetrievePropertyOp::PerformCallback, this, code,
+                 std::string()));
 }
 
 void RetrievePropertyOp::Succeed(const std::string& value) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &RetrievePropertyOp::PerformCallback, SUCCESS, value));
+      base::Bind(&RetrievePropertyOp::PerformCallback, this, SUCCESS, value));
 }
 
 // DEPRECATED.
@@ -814,7 +806,7 @@ void StorePolicyOp::Execute() {
 void StorePolicyOp::Fail(SignedSettings::ReturnCode code) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &StorePolicyOp::PerformCallback, code, false));
+      base::Bind(&StorePolicyOp::PerformCallback, this, code, false));
 }
 
 void StorePolicyOp::Succeed(bool ignored) {
@@ -829,7 +821,7 @@ void StorePolicyOp::Succeed(bool ignored) {
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &StorePolicyOp::PerformCallback, code, to_ret));
+      base::Bind(&StorePolicyOp::PerformCallback, this, code, to_ret));
 }
 
 void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
@@ -838,9 +830,8 @@ void StorePolicyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &StorePolicyOp::OnKeyOpComplete,
-                          return_code, payload));
+        base::Bind(&StorePolicyOp::OnKeyOpComplete, this, return_code,
+                   payload));
     return;
   }
   VLOG(2) << "StorePolicyOp::OnKeyOpComplete return_code = " << return_code;
@@ -892,8 +883,8 @@ void RetrievePolicyOp::Fail(SignedSettings::ReturnCode code) {
   VLOG(2) << "RetrievePolicyOp::Execute() failed with " << code;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &RetrievePolicyOp::PerformCallback, code,
-                        em::PolicyFetchResponse()));
+      base::Bind(&RetrievePolicyOp::PerformCallback, this, code,
+                 em::PolicyFetchResponse()));
 }
 
 void RetrievePolicyOp::Succeed(const em::PolicyFetchResponse& value) {
@@ -902,9 +893,7 @@ void RetrievePolicyOp::Succeed(const em::PolicyFetchResponse& value) {
     service_->set_cached_policy(poldata);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &RetrievePolicyOp::PerformCallback,
-                          SUCCESS, value));
+        base::Bind(&RetrievePolicyOp::PerformCallback, this, SUCCESS, value));
   } else {
     Fail(NOT_FOUND);
   }
@@ -916,9 +905,8 @@ void RetrievePolicyOp::OnKeyOpComplete(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &RetrievePolicyOp::OnKeyOpComplete,
-                          return_code, payload));
+        base::Bind(&RetrievePolicyOp::OnKeyOpComplete, this, return_code,
+                   payload));
     return;
   }
   // Now, sure we're on the UI thread.

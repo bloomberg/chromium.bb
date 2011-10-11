@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -126,8 +127,8 @@ void ParallelAuthenticator::AuthenticateToLogin(
   // Sadly, this MUST be on the UI thread due to sending DBus traffic :-/
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(mounter_.get(), &CryptohomeOp::Initiate));
 
+      base::Bind(&CryptohomeOp::Initiate, mounter_.get()));
   // ClientLogin authentication check should happen immediately here.
   // We should not try OAuthLogin check until the profile loads.
   if (!using_oauth_) {
@@ -140,9 +141,8 @@ void ParallelAuthenticator::AuthenticateToLogin(
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &ParallelAuthenticator::LoadLocalaccount,
-                        std::string(kLocalaccountFile)));
+      base::Bind(&ParallelAuthenticator::LoadLocalaccount, this,
+                 std::string(kLocalaccountFile)));
 }
 
 void ParallelAuthenticator::CompleteLogin(Profile* profile,
@@ -161,7 +161,7 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
   // Sadly, this MUST be on the UI thread due to sending DBus traffic :-/
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(mounter_.get(), &CryptohomeOp::Initiate));
+      base::Bind(&CryptohomeOp::Initiate, mounter_.get()));
 
   if (!using_oauth_) {
     // Test automation needs to disable oauth, but that leads to other
@@ -178,15 +178,13 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
     // parallel.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-            &ParallelAuthenticator::ResolveLoginCompletionStatus));
+        base::Bind(&ParallelAuthenticator::ResolveLoginCompletionStatus, this));
   }
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &ParallelAuthenticator::LoadLocalaccount,
-                        std::string(kLocalaccountFile)));
+      base::Bind(&ParallelAuthenticator::LoadLocalaccount, this,
+                 std::string(kLocalaccountFile)));
 }
 
 void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
@@ -196,15 +194,14 @@ void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
                            HashPassword(password)));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &ParallelAuthenticator::LoadLocalaccount,
-                        std::string(kLocalaccountFile)));
+      base::Bind(&ParallelAuthenticator::LoadLocalaccount, this,
+                 std::string(kLocalaccountFile)));
   key_checker_ = CryptohomeOp::CreateCheckKeyAttempt(current_state_.get(),
                                                      this);
   // Sadly, this MUST be on the UI thread due to sending DBus traffic :-/
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(key_checker_.get(), &CryptohomeOp::Initiate));
+      base::Bind(&CryptohomeOp::Initiate, key_checker_.get()));
 }
 
 void ParallelAuthenticator::LoginOffTheRecord() {
@@ -261,9 +258,7 @@ void ParallelAuthenticator::CheckLocalaccount(const LoginFailure& error) {
     if (!checked_for_localaccount_) {
       BrowserThread::PostDelayedTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this,
-                            &ParallelAuthenticator::CheckLocalaccount,
-                            error),
+          base::Bind(&ParallelAuthenticator::CheckLocalaccount, this, error),
           kLocalaccountRetryIntervalMs);
       return;
     }
@@ -276,18 +271,18 @@ void ParallelAuthenticator::CheckLocalaccount(const LoginFailure& error) {
           CryptohomeOp::CreateMountGuestAttempt(current_state_.get(), this);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(guest_mounter_.get(), &CryptohomeOp::Initiate));
+          base::Bind(&CryptohomeOp::Initiate, guest_mounter_.get()));
     } else {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &ParallelAuthenticator::OnLoginSuccess,
-                            GaiaAuthConsumer::ClientLoginResult(), false));
+          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this,
+                     GaiaAuthConsumer::ClientLoginResult(), false));
     }
   } else {
     // Not the localaccount.  Fail, passing along cached error info.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &ParallelAuthenticator::OnLoginFailure, error));
+        base::Bind(&ParallelAuthenticator::OnLoginFailure, this, error));
   }
 }
 
@@ -322,9 +317,8 @@ void ParallelAuthenticator::RecoverEncryptedData(
                                                      old_hash);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-                        &ParallelAuthenticator::ResyncRecoverHelper,
-                        key_migrator_));
+      base::Bind(&ParallelAuthenticator::ResyncRecoverHelper, this,
+                 key_migrator_));
 }
 
 void ParallelAuthenticator::ResyncEncryptedData(
@@ -333,9 +327,8 @@ void ParallelAuthenticator::ResyncEncryptedData(
       CryptohomeOp::CreateRemoveAttempt(current_state_.get(), this);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-                        &ParallelAuthenticator::ResyncRecoverHelper,
-                        data_remover_));
+      base::Bind(&ParallelAuthenticator::ResyncRecoverHelper, this,
+                 data_remover_));
 }
 
 void ParallelAuthenticator::ResyncRecoverHelper(CryptohomeOp* to_initiate) {
@@ -343,7 +336,7 @@ void ParallelAuthenticator::ResyncRecoverHelper(CryptohomeOp* to_initiate) {
   current_state_->ResetCryptohomeStatus();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(to_initiate, &CryptohomeOp::Initiate));
+      base::Bind(&CryptohomeOp::Initiate, to_initiate));
 }
 
 void ParallelAuthenticator::RetryAuth(Profile* profile,
@@ -400,26 +393,24 @@ void ParallelAuthenticator::Resolve() {
       // the appropriate failure.
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &ParallelAuthenticator::OnLoginFailure,
-              LoginFailure(LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME)));
+          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
+                     LoginFailure(LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME)));
       break;
     case FAILED_REMOVE:
       // In this case, we tried to remove the user's old cryptohome at her
       // request, and the remove failed.
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &ParallelAuthenticator::OnLoginFailure,
-                            LoginFailure(LoginFailure::DATA_REMOVAL_FAILED)));
+          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
+                     LoginFailure(LoginFailure::DATA_REMOVAL_FAILED)));
       break;
     case FAILED_TMPFS:
       // In this case, we tried to mount a tmpfs for BWSI or the localaccount
       // user and failed.
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &ParallelAuthenticator::OnLoginFailure,
-                            LoginFailure(LoginFailure::COULD_NOT_MOUNT_TMPFS)));
+          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
+                     LoginFailure(LoginFailure::COULD_NOT_MOUNT_TMPFS)));
       break;
     case CREATE_NEW:
       create = true;
@@ -430,14 +421,13 @@ void ParallelAuthenticator::Resolve() {
                                                   create);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(mounter_.get(), &CryptohomeOp::Initiate));
+          base::Bind(&CryptohomeOp::Initiate, mounter_.get()));
       break;
     case NEED_OLD_PW:
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &ParallelAuthenticator::OnPasswordChangeDetected,
-                            current_state_->credentials()));
+          base::Bind(&ParallelAuthenticator::OnPasswordChangeDetected, this,
+                     current_state_->credentials()));
       break;
     case ONLINE_FAILED:
       // In this case, we know online login was rejected because the account
@@ -458,8 +448,8 @@ void ParallelAuthenticator::Resolve() {
             // OnLoginSuccess(..., ..., true) -> OnLoginFailure().
             BrowserThread::PostTask(
                 BrowserThread::UI, FROM_HERE,
-                NewRunnableMethod(this, &ParallelAuthenticator::OnLoginSuccess,
-                                  current_state_->credentials(), true));
+                base::Bind(&ParallelAuthenticator::OnLoginSuccess, this,
+                           current_state_->credentials(), true));
           }
         }
         const LoginFailure& login_failure =
@@ -467,18 +457,16 @@ void ParallelAuthenticator::Resolve() {
                                   current_state_->online_outcome();
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            NewRunnableMethod(this, &ParallelAuthenticator::OnLoginFailure,
-                              login_failure));
+            base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
+                       login_failure));
         // Check if we couldn't verify OAuth token here.
         if (using_oauth_ &&
             login_failure.reason() == LoginFailure::NETWORK_AUTH_FAILED) {
           BrowserThread::PostTask(
               BrowserThread::UI, FROM_HERE,
-              NewRunnableMethod(this,
-                                &ParallelAuthenticator::RecordOAuthCheckFailure,
-                                (reauth_state_.get() ?
-                                 reauth_state_->username :
-                                 current_state_->username)));
+              base::Bind(&ParallelAuthenticator::RecordOAuthCheckFailure, this,
+                         (reauth_state_.get() ? reauth_state_->username :
+                             current_state_->username)));
         }
         break;
     }
@@ -490,7 +478,7 @@ void ParallelAuthenticator::Resolve() {
                                              current_state_->ascii_hash);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(key_migrator_.get(), &CryptohomeOp::Initiate));
+          base::Bind(&CryptohomeOp::Initiate, key_migrator_.get()));
       break;
     case OFFLINE_LOGIN:
       VLOG(2) << "Offline login";
@@ -510,22 +498,20 @@ void ParallelAuthenticator::Resolve() {
       VLOG(2) << "Online login";
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &ParallelAuthenticator::OnLoginSuccess,
-                            current_state_->credentials(), request_pending));
+          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this,
+                     current_state_->credentials(), request_pending));
       break;
     case LOCAL_LOGIN:
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &ParallelAuthenticator::OnOffTheRecordLoginSuccess));
+          base::Bind(&ParallelAuthenticator::OnOffTheRecordLoginSuccess, this));
       break;
     case LOGIN_FAILED:
       current_state_->ResetCryptohomeStatus();
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this, &ParallelAuthenticator::CheckLocalaccount,
-                            current_state_->online_outcome()));
+          base::Bind(&ParallelAuthenticator::CheckLocalaccount, this,
+                     current_state_->online_outcome()));
       break;
     default:
       NOTREACHED();

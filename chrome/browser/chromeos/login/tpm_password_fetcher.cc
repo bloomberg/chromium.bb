@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/tpm_password_fetcher.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -19,7 +20,7 @@ const int kTpmCheckIntervalMs = 500;
 }  // namespace
 
 TpmPasswordFetcher::TpmPasswordFetcher(TpmPasswordFetcherDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       delegate_(delegate) {
   DCHECK(delegate_);
 }
@@ -29,7 +30,7 @@ TpmPasswordFetcher::~TpmPasswordFetcher() {
 
 void TpmPasswordFetcher::Fetch() {
   // Since this method is also called directly.
-  runnable_method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 
   std::string password;
 
@@ -48,7 +49,7 @@ void TpmPasswordFetcher::Fetch() {
     // Password hasn't been acquired, reschedule fetch.
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        runnable_method_factory_.NewRunnableMethod(&TpmPasswordFetcher::Fetch),
+        base::Bind(&TpmPasswordFetcher::Fetch, weak_factory_.GetWeakPtr()),
         kTpmCheckIntervalMs);
   }
 }

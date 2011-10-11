@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -126,9 +127,7 @@ class GoogleAuthenticatorTest : public testing::Test {
 
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(auth,
-                          &GoogleAuthenticator::LoadLocalaccount,
-                          filename));
+        base::Bind(&GoogleAuthenticator::LoadLocalaccount, auth, filename));
   }
 
   void PrepForLogin(GoogleAuthenticator* auth) {
@@ -150,8 +149,7 @@ class GoogleAuthenticatorTest : public testing::Test {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        NewRunnableMethod(auth,
-                          &GoogleAuthenticator::CancelClientLogin));
+        base::Bind(&GoogleAuthenticator::CancelClientLogin, auth));
   }
 
   MessageLoop message_loop_ui_;
@@ -529,9 +527,8 @@ TEST_F(GoogleAuthenticatorTest, LocalaccountLogin) {
   // haven't yet gotten off disk.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(auth.get(),
-                        &GoogleAuthenticator::CheckLocalaccount,
-                        LoginFailure(LoginFailure::LOGIN_TIMED_OUT)));
+      base::Bind(&GoogleAuthenticator::CheckLocalaccount, auth.get(),
+                 LoginFailure(LoginFailure::LOGIN_TIMED_OUT)));
   message_loop_ui_.RunAllPending();
   // The foregoing has now rescheduled itself in a few ms because we don't
   // yet have the localaccount loaded off disk.

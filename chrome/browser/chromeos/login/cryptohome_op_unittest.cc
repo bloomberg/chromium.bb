@@ -115,7 +115,8 @@ class CryptohomeOpTest : public ::testing::Test {
         .Times(1)
         .RetiresOnSaturation();
 
-    EXPECT_TRUE(op->Initiate());
+    op->Initiate();
+
     // Force IO thread to finish tasks so I can verify |state_|.
     io_thread_.Stop();
 

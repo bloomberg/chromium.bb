@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
@@ -212,7 +212,7 @@ class LoginPerformer : public LoginStatusConsumer,
   // True if we use OAuth during authorization process.
   bool using_oauth_;
 
-  ScopedRunnableMethodFactory<LoginPerformer> method_factory_;
+  base::WeakPtrFactory<LoginPerformer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPerformer);
 };

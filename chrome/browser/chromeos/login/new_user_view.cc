@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -123,7 +124,7 @@ NewUserView::NewUserView(Delegate* delegate,
       accel_login_off_the_record_(ui::VKEY_B, false, false, true),
       accel_toggle_accessibility_(WizardAccessibilityHelper::GetAccelerator()),
       delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       login_in_process_(false),
       need_border_(need_border),
       need_guest_link_(false),
@@ -338,9 +339,9 @@ void NewUserView::ViewHierarchyChanged(bool is_add,
                                        View *parent,
                                        View *child) {
   if (is_add && (child == username_field_ || child == password_field_)) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        focus_grabber_factory_.NewRunnableMethod(
-            &NewUserView::Layout));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&NewUserView::Layout, weak_factory_.GetWeakPtr()));
   }
 }
 

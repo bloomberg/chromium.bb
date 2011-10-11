@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 
@@ -37,12 +38,12 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
   // return trusted value.
   // Return false if trusted values are unavailable at a moment.
   // In latter case passed task will be posted when ready.
-  bool RequestTrustedAllowGuest(Task* callback);
-  bool RequestTrustedAllowNewUser(Task* callback);
-  bool RequestTrustedDataRoamingEnabled(Task* callback);
-  bool RequestTrustedShowUsersOnSignin(Task* callback);
-  bool RequestTrustedOwner(Task* callback);
-  bool RequestTrustedReportingEnabled(Task* callback);
+  bool RequestTrustedAllowGuest(const base::Closure& callback);
+  bool RequestTrustedAllowNewUser(const base::Closure& callback);
+  bool RequestTrustedDataRoamingEnabled(const base::Closure& callback);
+  bool RequestTrustedShowUsersOnSignin(const base::Closure& callback);
+  bool RequestTrustedOwner(const base::Closure& callback);
+  bool RequestTrustedReportingEnabled(const base::Closure& callback);
 
   // Reloads values from device settings.
   void Reload();

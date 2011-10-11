@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -71,9 +72,8 @@ class OnlineAttemptTest : public testing::Test {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(attempt_.get(),
-                          &OnlineAttempt::OnClientLoginFailure,
-                          error));
+        base::Bind(&OnlineAttempt::OnClientLoginFailure, attempt_.get(),
+                   error));
     // Force IO thread to finish tasks so I can verify |state_|.
     io_thread_.Stop();
     EXPECT_TRUE(error == state_.online_outcome().error());
@@ -81,10 +81,8 @@ class OnlineAttemptTest : public testing::Test {
 
   void CancelLogin(OnlineAttempt* auth) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        NewRunnableMethod(auth,
-                          &OnlineAttempt::CancelClientLogin));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&OnlineAttempt::CancelClientLogin, auth));
   }
 
   static void Quit() {
@@ -115,9 +113,7 @@ TEST_F(OnlineAttemptTest, LoginSuccess) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(attempt_.get(),
-                        &OnlineAttempt::OnClientLoginSuccess,
-                        result));
+      base::Bind(&OnlineAttempt::OnClientLoginSuccess, attempt_.get(), result));
   // Force IO thread to finish tasks so I can verify |state_|.
   io_thread_.Stop();
   EXPECT_TRUE(result == state_.credentials());
@@ -139,7 +135,7 @@ TEST_F(OnlineAttemptTest, LoginCancelRetry) {
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest));
+      base::Bind(&OnlineAttemptTest::RunThreadTest));
 
   MessageLoop::current()->Run();
 
@@ -164,7 +160,7 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest));
+      base::Bind(&OnlineAttemptTest::RunThreadTest));
 
   // Post a task to cancel the login attempt.
   CancelLogin(attempt_.get());
@@ -193,7 +189,7 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest));
+      base::Bind(&OnlineAttemptTest::RunThreadTest));
 
   MessageLoop::current()->Run();
 
@@ -217,7 +213,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest));
+      base::Bind(&OnlineAttemptTest::RunThreadTest));
 
   MessageLoop::current()->Run();
 

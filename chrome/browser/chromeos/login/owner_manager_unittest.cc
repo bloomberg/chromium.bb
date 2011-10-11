@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -176,11 +177,8 @@ TEST_F(OwnerManagerTest, UpdateOwnerKey) {
   MockKeyUpdateUser delegate(&event);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager.get(),
-                        &OwnerManager::UpdateOwnerKey,
-                        BrowserThread::UI,
-                        std::vector<uint8>(),
-                        &delegate));
+      base::Bind(&OwnerManager::UpdateOwnerKey, manager.get(),
+                 BrowserThread::UI, std::vector<uint8>(), &delegate));
   while (!event.IsSignaled())
     message_loop_.RunAllPending();
 }
@@ -199,8 +197,7 @@ TEST_F(OwnerManagerTest, LoadOwnerKeyFail) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager.get(),
-                        &OwnerManager::LoadOwnerKey));
+      base::Bind(&OwnerManager::LoadOwnerKey, manager.get()));
   while (!event.IsSignaled())
     message_loop_.RunAllPending();
 }
@@ -218,8 +215,7 @@ TEST_F(OwnerManagerTest, AlreadyLoadedOwnerKey) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager.get(),
-                        &OwnerManager::LoadOwnerKey));
+      base::Bind(&OwnerManager::LoadOwnerKey, manager.get()));
   while (!event.IsSignaled())
     message_loop_.RunAllPending();
 }
@@ -239,8 +235,7 @@ TEST_F(OwnerManagerTest, LoadOwnerKey) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager.get(),
-                        &OwnerManager::LoadOwnerKey));
+      base::Bind(&OwnerManager::LoadOwnerKey, manager.get()));
   while (!event.IsSignaled())
     message_loop_.RunAllPending();
 }
@@ -262,12 +257,8 @@ TEST_F(OwnerManagerTest, GetKeyFailDuringVerify) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager.get(),
-                        &OwnerManager::Verify,
-                        BrowserThread::UI,
-                        std::string(),
-                        std::vector<uint8>(),
-                        &delegate));
+      base::Bind(&OwnerManager::Verify, manager.get(), BrowserThread::UI,
+                 std::string(), std::vector<uint8>(), &delegate));
   while (!event.IsSignaled())
     message_loop_.RunAllPending();
 }
@@ -290,12 +281,8 @@ TEST_F(OwnerManagerTest, AlreadyHaveKeysVerify) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager.get(),
-                        &OwnerManager::Verify,
-                        BrowserThread::UI,
-                        data,
-                        sig,
-                        &delegate));
+      base::Bind(&OwnerManager::Verify, manager.get(), BrowserThread::UI, data,
+                 sig, &delegate));
   while (!event.IsSignaled())
     message_loop_.RunAllPending();
 }
@@ -323,12 +310,8 @@ TEST_F(OwnerManagerTest, GetKeyAndVerify) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager.get(),
-                        &OwnerManager::Verify,
-                        BrowserThread::UI,
-                        data,
-                        sig,
-                        &delegate));
+      base::Bind(&OwnerManager::Verify, manager.get(), BrowserThread::UI, data,
+                 sig, &delegate));
   while (!event.IsSignaled())
     message_loop_.RunAllPending();
 }
@@ -352,11 +335,8 @@ TEST_F(OwnerManagerTest, AlreadyHaveKeysSign) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager.get(),
-                        &OwnerManager::Sign,
-                        BrowserThread::UI,
-                        data,
-                        &delegate));
+      base::Bind(&OwnerManager::Sign, manager.get(), BrowserThread::UI, data,
+                 &delegate));
   while (!event.IsSignaled())
     message_loop_.RunAllPending();
 }
