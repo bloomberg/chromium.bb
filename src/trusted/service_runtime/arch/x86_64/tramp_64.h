@@ -17,12 +17,14 @@
  * but it doesn't really matter since we convert their addresses to
  * uintptr_t at every use.
  */
-extern char   NaCl_trampoline_code;
-extern char   NaCl_trampoline_code_end;
-extern char   NaCl_trampoline_call_target;
+extern char NaCl_trampoline_code;
+extern char NaCl_trampoline_code_end;
+extern char NaCl_trampoline_call_target;
 
-extern char   NaClDispatchThunk;
-extern char   NaClDispatchThunk_jmp_target;
-extern char   NaClDispatchThunkEnd;
+extern char NaClDispatchThunk;
+extern char NaClDispatchThunk_jmp_target;
+extern char NaClDispatchThunkEnd;
+
+extern char NaClGetTlsFastPath;
 
 #endif

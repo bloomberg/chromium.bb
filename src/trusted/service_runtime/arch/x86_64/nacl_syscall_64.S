@@ -5,6 +5,18 @@
  */
 
 /*
+ * The MacOS assembler has a macro facility that is pretty close
+ * to GNU as macros, but not quite the same.
+ */
+#if NACL_OSX || defined(__clang__)
+# define MACRO(name)    .macro name
+# define ENDMACRO       .endmacro
+#else
+# define MACRO(name)    .macro name
+# define ENDMACRO       .endm
+#endif
+
+/*
  * This code gets executed when switching from a 64-bit nacl module to
  * the 64-bit service. NaClSyscallSeg is the lcall target from the
  * syscall trampoline code, and this code is responsible for figuring
@@ -16,40 +28,13 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 /*
- * On untrusted stack:
- *      return-addr-to-caller-of-trampoline
- *      return-addr-to-trampoline (essentially syscall number)
+ * This macro gets the thread index from the nacl_thread_index TLS variable
+ * in Windows or Linux, or the corresponding pthread_getspecific(...) TSD
+ * data in OSX and puts it in %eax.
  *
- * This code must save the syscall arguments so that they can be
- * accessed in an uniformed way, regardless of whether the service
- * runtime was compiled using gcc (NACL_LINUX and NACL_OSX) or
- * using MS Studio (NACL_WINDOWS).
+ * May clobber two registers %rcx and %rdx (windows only).
  */
-        .text
-        .globl  IDENTIFIER(NaClGetStackPtr)
-        .globl  IDENTIFIER(NaClSyscallSeg)
-        HIDDEN(NaClSyscallSeg)
-IDENTIFIER(NaClSyscallSeg):
-        cld
-
-        /*
-         * pushl   %r9d
-         * pushl   %r8d
-         * pushl   %ecx
-         * pushl   %edx
-         * pushl   %esi
-         * pushl   %edi
-         */
-        subq $0x18, %rsp
-        movl %r9d, 0x14(%rsp)
-        movl %r8d, 0x10(%rsp)
-        movl %ecx, 0x0c(%rsp)
-        movl %edx, 0x08(%rsp)
-        movl %esi, 0x04(%rsp)
-        movl %edi, 0x00(%rsp)
-
-        /* rax, rdi, rsi, rdx, rcx, r8, r9 are usable for scratch */
-
+MACRO(get_tls)
         /*
          * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
          *
@@ -96,6 +81,9 @@ IDENTIFIER(NaClSyscallSeg):
          *
          * For background, see:
          * http://code.google.com/p/nativeclient/issues/detail?id=2155
+         *
+         * because of the need to do .byte, we cannot simply name the
+         * scratch registers via macro arguments.
          */
         .byte 0xba
         .secrel32 nacl_thread_index
@@ -109,6 +97,45 @@ IDENTIFIER(NaClSyscallSeg):
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
+ENDMACRO
+
+/*
+ * On untrusted stack:
+ *      return-addr-to-caller-of-trampoline
+ *      return-addr-to-trampoline (essentially syscall number)
+ *
+ * This code must save the syscall arguments so that they can be
+ * accessed in an uniformed way, regardless of whether the service
+ * runtime was compiled using gcc (NACL_LINUX and NACL_OSX) or
+ * using MS Studio (NACL_WINDOWS).
+ */
+        .text
+        .globl  IDENTIFIER(NaClGetStackPtr)
+        .globl  IDENTIFIER(NaClSyscallSeg)
+        HIDDEN(NaClSyscallSeg)
+IDENTIFIER(NaClSyscallSeg):
+        cld
+
+        /*
+         * pushl   %r9d
+         * pushl   %r8d
+         * pushl   %ecx
+         * pushl   %edx
+         * pushl   %esi
+         * pushl   %edi
+         */
+        subq $0x18, %rsp
+        movl %r9d, 0x14(%rsp)
+        movl %r8d, 0x10(%rsp)
+        movl %ecx, 0x0c(%rsp)
+        movl %edx, 0x08(%rsp)
+        movl %esi, 0x04(%rsp)
+        movl %edi, 0x00(%rsp)
+
+        /* rax, rdi, rsi, rdx, rcx, r8, r9 are usable for scratch */
+
+        get_tls
+
         /* check NaClThreadContext in sel_rt_64.h for the offsets */
         leaq    IDENTIFIER(nacl_user)(%rip), %rdx
         leaq    (%rdx,%rax,8), %rdx
@@ -180,3 +207,17 @@ IDENTIFIER(NaClGetStackPtr):
         movq %rsp, %rax
         ret
 #endif
+
+        .globl  IDENTIFIER(NaClGetTlsFastPath)
+        HIDDEN(NaClGetTlsFastPath)
+IDENTIFIER(NaClGetTlsFastPath):
+        get_tls
+        leaq    IDENTIFIER(nacl_tls)(%rip), %rdx
+        leaq    (%rdx,%rax,4), %rdx
+        movl    0x0(%rdx), %eax
+        /* sandbox the return, straight off the untrusted stack */
+        movq    0x8(%rsp), %rcx
+        addq    $0x10, %rsp
+        andl    $0xffffffe0, %ecx
+        addq    %r15, %rcx
+        jmp     *%rcx

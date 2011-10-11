@@ -5,9 +5,13 @@
  */
 
 /*
- * This code gets executed when switching from the 64-bit service
- * runtime to a 32-bit nacl module. NaClSwitch has one parameter only,
+ * This code gets executed when switching from the service
+ * runtime to the NaCl module.  NaClSwitch has one parameter only,
  * which is a struct passed by reference.
+ *
+ * NB: this is not the only place where context switches from trusted
+ * to untrusted code.  The NaClGetTlsFastPath code (nacl_syscall_64.S)
+ * also performs a partial switch (to and fro).
  */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"

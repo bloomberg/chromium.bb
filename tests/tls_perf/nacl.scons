@@ -1,0 +1,21 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+env.Replace(CCFLAGS=['-O3'])
+nexe = env.ComponentProgram('tls_perf',
+                            'tls_perf.c',
+                            EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
+node = env.CommandSelLdrTestNacl('tls_perf.out', nexe)
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_tls_perf')
+
+# TODO(bsy,jvoung): this seems like it should be in performance_tests,
+# except that we may want to separate out performance tests that fire
+# up the browser versus microbenchmark style performance tests like
+# this one.  while both attempt to detect performance regressions, we
+# may wish to only run performance tests that fire up chrome on a
+# different set of machines than where smaller-scale (but perhaps more
+# cpu intensive) microbenchmark performance tests might run.

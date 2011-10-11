@@ -114,8 +114,6 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   struct NaClPatch      patch32[1];
   struct NaClPatch      patch16[1];
 
-  UNREFERENCED_PARAMETER(nap);
-
   patch16[0].target = ((uintptr_t) &NaCl_tramp_cseg_patch) - 2;
   patch16[0].value = NaClGetGlobalCs();
 

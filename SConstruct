@@ -3096,6 +3096,7 @@ irt_variant_tests = [
     'tests/threads/nacl.scons',
     'tests/time/nacl.scons',
     'tests/tls/nacl.scons',
+    'tests/tls_perf/nacl.scons',
     'tests/toolchain/nacl.scons',
     'tests/unittests/shared/platform/nacl.scons',
     'tests/untrusted_check/nacl.scons',

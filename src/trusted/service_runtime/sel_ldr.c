@@ -38,7 +38,10 @@
 #include "native_client/src/trusted/gio/gio_nacl_desc.h"
 #include "native_client/src/trusted/gio/gio_shm.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
@@ -55,9 +58,6 @@
 
 #include "native_client/src/trusted/service_runtime/sel_ldr_thread_interface.h"
 #include "native_client/src/trusted/threading/nacl_thread_interface.h"
-
-#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
-#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 #include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
@@ -91,6 +91,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 #if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
      && NACL_BUILD_SUBARCH == 64)
   nap->dispatch_thunk = 0;
+  nap->get_tls_fast_path = 0;
 #endif
 
   nap->static_text_end = 0;
@@ -434,6 +435,11 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
        ++i, addr += NACL_SYSCALL_BLOCK_SIZE) {
     NaClPatchOneTrampoline(nap, addr);
   }
+#endif
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+  NaClPatchOneTrampolineCall(nap->get_tls_fast_path,
+                             nap->mem_start + NACL_SYSCALL_START_ADDR
+                             + NACL_SYSCALL_BLOCK_SIZE * NACL_sys_tls_get);
 #endif
 }
 
@@ -1382,7 +1388,7 @@ struct NaClConnectionHandler *NaClSecureReverseClientPopHandler(
   head = self->queue_head;
   if (NULL == head) {
     NaClLog(LOG_FATAL,
-            "NaclSecureReverseClientPopHandler:  empty handler queue\n");
+            "NaClSecureReverseClientPopHandler:  empty handler queue\n");
   }
   if (NULL == (self->queue_head = head->next)) {
     NaClLog(4, "NaClSecureReverseClientPopHandler, last elt patch up\n");

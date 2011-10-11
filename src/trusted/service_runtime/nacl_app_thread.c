@@ -37,6 +37,8 @@ void WINAPI NaClThreadLauncher(void *state) {
   nacl_thread[thread_idx] = natp;
   nacl_user[thread_idx] = &natp->user;
   nacl_sys[thread_idx] = &natp->sys;
+  nacl_tls[thread_idx] = (uint32_t) NaClSysToUser(natp->nap, natp->sys_tls);
+  natp->usr_tlsp = &nacl_tls[thread_idx];
 
   /*
    * We have to hold the threads_mu lock until after thread_num field
@@ -169,6 +171,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   natp->thread_num = -1;  /* illegal index */
   natp->sys_tls = sys_tls;
   natp->tls2 = user_tls2;
+  natp->usr_tlsp = NULL;
 
   natp->dynamic_delete_generation = 0;
 

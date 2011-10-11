@@ -302,7 +302,7 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
  * NaCl app's 4G address space, but does not reserve any additional
  * registers for thread identity.  This reduces additional register
  * pressure, but implies that we have to figure out the thread
- * identity in some othre way -- we use TLS (or TSD, see below) to do
+ * identity in some other way -- we use TLS (or TSD, see below) to do
  * so, and on context switch we must access the TLS variable in order
  * to determine where to save the user register context.
  */

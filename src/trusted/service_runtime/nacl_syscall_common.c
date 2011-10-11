@@ -2222,6 +2222,7 @@ int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
     goto cleanup;
   }
   natp->sys_tls = sys_tls;
+  *natp->usr_tlsp = (uint32_t) (uintptr_t) thread_ptr;
   retval = 0;
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -2289,6 +2290,10 @@ cleanup:
   return retval;
 }
 
+/*
+ * This is not used on x86-64 and its functionality is replaced by
+ * NaClGetTlsFastPath (see nacl_syscall_64.S).
+ */
 int32_t NaClCommonSysTlsGet(struct NaClAppThread *natp) {
   uint32_t user_tls;
 

@@ -107,6 +107,7 @@ struct NaClApp {
 #if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
      && NACL_BUILD_SUBARCH == 64)
   uintptr_t                 dispatch_thunk;
+  uintptr_t                 get_tls_fast_path;
 #endif
 
   /* only used for ET_EXEC:  for CS restriction */
@@ -602,6 +603,8 @@ int NaClMakePcrelThunk(struct NaClApp *nap);
      && NACL_BUILD_SUBARCH == 64)
 
 int NaClMakeDispatchThunk(struct NaClApp *nap);
+void NaClPatchOneTrampolineCall(uintptr_t call_target_addr,
+                                uintptr_t target_addr);
 
 #endif
 

@@ -9,6 +9,7 @@
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_asm_symbols.h"
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/springboard.h"
@@ -21,6 +22,9 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
   void                  *thunk_addr = NULL;
   struct NaClPatchInfo  patch_info;
   struct NaClPatch      jmp_target;
+  size_t                thunk_offset;
+  uintptr_t             dispatch_thunk = 0;
+  uintptr_t             get_tls_fast_path = 0;
 
   NaClLog(LOG_WARNING, "Entered NaClMakeDispatchThunk\n");
   if (0 != nap->dispatch_thunk) {
@@ -62,6 +66,24 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
   patch_info.src = (uintptr_t) &NaClDispatchThunk;
   patch_info.nbytes = ((uintptr_t) &NaClDispatchThunkEnd
                        - (uintptr_t) &NaClDispatchThunk);
+  dispatch_thunk = patch_info.dst;
+  thunk_offset = patch_info.nbytes;
+  NaClApplyPatchToMemory(&patch_info);
+
+  /* actually, global array base address, not jmp target any more */
+  jmp_target.target = (((uintptr_t) &NaClDispatchThunk_jmp_target)
+                       - sizeof(uintptr_t));
+  jmp_target.value = (uintptr_t) &NaClGetTlsFastPath;
+
+  NaClPatchInfoCtor(&patch_info);
+  patch_info.abs64 = &jmp_target;
+  patch_info.num_abs64 = 1;
+
+  patch_info.dst = (uintptr_t) thunk_addr + thunk_offset;
+  patch_info.src = (uintptr_t) &NaClDispatchThunk;
+  patch_info.nbytes = ((uintptr_t) &NaClDispatchThunkEnd
+                       - (uintptr_t) &NaClDispatchThunk);
+  get_tls_fast_path = patch_info.dst;
   NaClApplyPatchToMemory(&patch_info);
 
   if (0 != (error = NaCl_mprotect(thunk_addr,
@@ -81,7 +103,8 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
       thunk_addr = NULL;
     }
   } else {
-    nap->dispatch_thunk = (uintptr_t) thunk_addr;
+    nap->dispatch_thunk = dispatch_thunk;
+    nap->get_tls_fast_path = get_tls_fast_path;
   }
   return retval;
 }
@@ -89,13 +112,10 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
 /*
  * Install a syscall trampoline at target_addr.  NB: Thread-safe.
  */
-void  NaClPatchOneTrampoline(struct NaClApp *nap,
-                             uintptr_t      target_addr) {
+void  NaClPatchOneTrampolineCall(uintptr_t  call_target_addr,
+                                 uintptr_t  target_addr) {
   struct NaClPatchInfo  patch_info;
   struct NaClPatch      call_target;
-  uintptr_t             call_target_addr;
-
-  call_target_addr = nap->dispatch_thunk;
 
   NaClLog(4, "call_target_addr = 0x%"NACL_PRIxPTR"\n", call_target_addr);
   CHECK(0 != call_target_addr);
@@ -114,6 +134,14 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
                        - (uintptr_t) &NaCl_trampoline_code);
 
   NaClApplyPatchToMemory(&patch_info);
+}
+
+void  NaClPatchOneTrampoline(struct NaClApp *nap,
+                             uintptr_t      target_addr) {
+  uintptr_t             call_target_addr;
+
+  call_target_addr = nap->dispatch_thunk;
+  NaClPatchOneTrampolineCall(call_target_addr, target_addr);
 }
 
 void NaClFillMemoryRegionWithHalt(void *start, size_t size) {

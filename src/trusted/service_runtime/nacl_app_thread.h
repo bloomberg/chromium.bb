@@ -55,6 +55,7 @@ struct NaClAppThread {
    * The second TLS may be an arbitrary value.
    */
   uintptr_t                 sys_tls;  /* first saved TLS ptr */
+  uint32_t                  *usr_tlsp;
   uint32_t                  tls2;     /* second saved TLS value */
 
   struct NaClThread         thread;  /* low level thread representation */
@@ -95,7 +96,7 @@ struct NaClAppThread {
    * The last generation this thread reported into the service runtime
    * Protected by mu
    */
-  int dynamic_delete_generation;
+  int                       dynamic_delete_generation;
 };
 
 void NaClAppThreadTeardown(struct NaClAppThread *natp);
