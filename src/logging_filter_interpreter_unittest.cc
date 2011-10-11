@@ -73,7 +73,7 @@ class LoggingFilterInterpreterTestInterpreter : public Interpreter {
 TEST(LoggingFilterInterpreterTest, SimpleTest) {
   LoggingFilterInterpreterTestInterpreter* base_interpreter =
       new LoggingFilterInterpreterTestInterpreter;
-  LoggingFilterInterpreter interpreter(base_interpreter);
+  LoggingFilterInterpreter interpreter(NULL, base_interpreter);
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -118,7 +118,7 @@ TEST(LoggingFilterInterpreterTest, SimpleTest) {
   // Make a new interpreter and push the log through it
   LoggingFilterInterpreterTestInterpreter* base_interpreter2 =
       new LoggingFilterInterpreterTestInterpreter;
-  LoggingFilterInterpreter interpreter2(base_interpreter2);
+  LoggingFilterInterpreter interpreter2(NULL, base_interpreter2);
 
   ActivityReplay replay;
   replay.Parse(initial_log);

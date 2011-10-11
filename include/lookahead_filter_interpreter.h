@@ -10,6 +10,7 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/list.h"
+#include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_LOOKAHEAD_FILTER_INTERPRETER_H_
 #define GESTURES_LOOKAHEAD_FILTER_INTERPRETER_H_
@@ -20,7 +21,7 @@ class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, CombineGesturesTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SimpleTest);
  public:
-  explicit LookaheadFilterInterpreter(Interpreter* next);
+  LookaheadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~LookaheadFilterInterpreter();
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate,
@@ -29,10 +30,6 @@ class LookaheadFilterInterpreter : public Interpreter {
   virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
-
-  virtual void Configure(GesturesPropProvider* pp, void* data);
-
-  virtual void Deconfigure(GesturesPropProvider* pp, void* data);
 
  private:
   struct QState {
@@ -73,10 +70,8 @@ class LookaheadFilterInterpreter : public Interpreter {
 
   Gesture result_;
 
-  double min_nonsuppress_speed_;
-  GesturesProp* min_nonsuppress_speed_prop_;
-  double delay_;
-  GesturesProp* delay_prop_;
+  DoubleProperty min_nonsuppress_speed_;
+  DoubleProperty delay_;
 };
 
 }  // namespace gestures

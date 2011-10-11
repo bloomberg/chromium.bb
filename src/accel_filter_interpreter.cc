@@ -14,13 +14,11 @@
 namespace gestures {
 
 // Takes ownership of |next|:
-AccelFilterInterpreter::AccelFilterInterpreter(Interpreter* next)
-    : sensitivity_(3),
-      sensitivity_prop_(NULL),
-      custom_point_str_(""),
-      custom_point_str_prop_(NULL),
-      custom_scroll_str_(""),
-      custom_scroll_str_prop_(NULL) {
+AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
+                                               Interpreter* next)
+    : sensitivity_(prop_reg, "Sensitivity", 3),
+      custom_point_str_(prop_reg, "Pointer Accel Curve", ""),
+      custom_scroll_str_(prop_reg, "Scroll Accel Curve", "") {
   next_.reset(next);
 
   // Set up default curves.
@@ -50,15 +48,6 @@ AccelFilterInterpreter::AccelFilterInterpreter(Interpreter* next)
     const float icept = y_at_border - slope * x_border;
     curves_[i][2] = CurveSegment(INFINITY, 0, slope, icept);
   }
-}
-
-AccelFilterInterpreter::~AccelFilterInterpreter() {
-  if (sensitivity_prop_ != NULL)
-    Log("sensitivity_prop_ not NULL?");
-  if (custom_point_str_prop_ != NULL)
-    Log("custom_point_str_prop_ not NULL?");
-  if (custom_scroll_str_prop_ != NULL)
-    Log("custom_scroll_str_prop_ not NULL?");
 }
 
 Gesture* AccelFilterInterpreter::SyncInterpret(HardwareState* hwstate,
@@ -125,11 +114,11 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
     case kGestureTypeMove:
       dx = &gs->details.move.dx;
       dy = &gs->details.move.dy;
-      if (sensitivity_ >= 1 && sensitivity_ <= 5) {
-        segs = curves_[sensitivity_ - 1];
+      if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
+        segs = curves_[sensitivity_.val_ - 1];
       } else {
         segs = custom_point_;
-        ParseCurveString(custom_point_str_,
+        ParseCurveString(custom_point_str_.val_,
                          last_parsed_custom_point_str_,
                          custom_point_);
         max_segs = kMaxCustomCurveSegs;
@@ -138,11 +127,11 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
     case kGestureTypeScroll:
       dx = &gs->details.scroll.dx;
       dy = &gs->details.scroll.dy;
-      if (sensitivity_ >= 1 && sensitivity_ <= 5) {
-        segs = curves_[sensitivity_ - 1];
+      if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
+        segs = curves_[sensitivity_.val_ - 1];
       } else {
         segs = custom_scroll_;
-        ParseCurveString(custom_scroll_str_,
+        ParseCurveString(custom_scroll_str_.val_,
                          last_parsed_custom_scroll_str_,
                          custom_scroll_);
         max_segs = kMaxCustomCurveSegs;
@@ -172,30 +161,6 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
 void AccelFilterInterpreter::SetHardwareProperties(
     const HardwareProperties& hw_props) {
   next_->SetHardwareProperties(hw_props);
-}
-
-void AccelFilterInterpreter::Configure(GesturesPropProvider* pp,
-                                       void* data) {
-  sensitivity_prop_ = pp->create_int_fn(data, "Sensitivity",
-                                        &sensitivity_, sensitivity_);
-  custom_point_str_prop_ = pp->create_string_fn(data, "Pointer Accel Curve",
-                                                &custom_point_str_,
-                                                custom_point_str_);
-  custom_scroll_str_prop_ = pp->create_string_fn(data, "Scroll Accel Curve",
-                                                 &custom_scroll_str_,
-                                                 custom_scroll_str_);
-  next_->Configure(pp, data);
-}
-
-void AccelFilterInterpreter::Deconfigure(GesturesPropProvider* pp,
-                                         void* data) {
-  next_->Deconfigure(pp, data);
-  pp->free_fn(data, sensitivity_prop_);
-  sensitivity_prop_ = NULL;
-  pp->free_fn(data, custom_point_str_prop_);
-  custom_point_str_prop_ = NULL;
-  pp->free_fn(data, custom_scroll_str_prop_);
-  custom_scroll_str_prop_ = NULL;
 }
 
 }  // namespace gestures

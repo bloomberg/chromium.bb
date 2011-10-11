@@ -16,10 +16,12 @@ namespace {
 static const stime_t kMaxDelay = 0.09;  // 90ms
 }
 
-LookaheadFilterInterpreter::LookaheadFilterInterpreter(Interpreter* next)
+LookaheadFilterInterpreter::LookaheadFilterInterpreter(
+    PropRegistry* prop_reg, Interpreter* next)
     : max_fingers_per_hwstate_(0), interpreter_due_(-1.0),
-      min_nonsuppress_speed_(200.0), min_nonsuppress_speed_prop_(NULL),
-      delay_(0.05), delay_prop_(NULL) {
+      min_nonsuppress_speed_(prop_reg, "Input Queue Min Nonsuppression Speed",
+                             200.0),
+      delay_(prop_reg, "Input Queue Delay", 0.05) {
   next_.reset(next);
 }
 
@@ -38,7 +40,7 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   }
   QState* node = free_list_.PopFront();
   node->set_state(*hwstate);
-  double delay = max(0.0, min(kMaxDelay, delay_));
+  double delay = max(0.0, min(kMaxDelay, delay_.val_));
   node->due_ = hwstate->timestamp + delay;
   node->completed_ = false;
   if (!queue_.Empty() && queue_.Tail()->due_ > node->due_) {
@@ -112,7 +114,7 @@ bool LookaheadFilterInterpreter::ShouldSuppressResult(const Gesture* gesture,
   }
   stime_t time_delta = gesture->end_time - gesture->start_time;
   float min_nonsuppress_dist_sq =
-      min_nonsuppress_speed_ * min_nonsuppress_speed_ *
+      min_nonsuppress_speed_.val_ * min_nonsuppress_speed_.val_ *
       time_delta * time_delta;
   if (distance_sq >= min_nonsuppress_dist_sq)
     return false;
@@ -162,24 +164,6 @@ void LookaheadFilterInterpreter::SetHardwareProperties(
     free_list_.PushBack(node);
   }
   next_->SetHardwareProperties(hwprops);
-}
-
-void LookaheadFilterInterpreter::Configure(GesturesPropProvider* pp,
-                                           void* data) {
-  next_->Configure(pp, data);
-  min_nonsuppress_speed_prop_ = pp->create_real_fn(
-      data, "Input Queue Min Nonsuppression Speed",
-      &min_nonsuppress_speed_, min_nonsuppress_speed_);
-  delay_prop_ = pp->create_real_fn(data, "Input Queue Delay", &delay_, delay_);
-}
-
-void LookaheadFilterInterpreter::Deconfigure(GesturesPropProvider* pp,
-                                             void* data) {
-  pp->free_fn(data, min_nonsuppress_speed_prop_);
-  min_nonsuppress_speed_prop_ = NULL;
-  pp->free_fn(data, delay_prop_);
-  delay_prop_ = NULL;
-  next_->Deconfigure(pp, data);
 }
 
 void LookaheadFilterInterpreter::CombineGestures(Gesture* gesture,

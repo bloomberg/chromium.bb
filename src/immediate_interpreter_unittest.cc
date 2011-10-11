@@ -19,7 +19,7 @@ using std::vector;
 class ImmediateInterpreterTest : public ::testing::Test {};
 
 TEST(ImmediateInterpreterTest, MoveDownTest) {
-  ImmediateInterpreter ii;
+  ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -81,7 +81,7 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
 }
 
 TEST(ImmediateInterpreterTest, ScrollUpTest) {
-  ImmediateInterpreter ii;
+  ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -138,7 +138,7 @@ TEST(ImmediateInterpreterTest, ScrollUpTest) {
 }
 
 TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
-  ImmediateInterpreter ii;
+  ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -176,7 +176,7 @@ TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
 }
 
 TEST(ImmediateInterpreterTest, SameFingersTest) {
-  ImmediateInterpreter ii;
+  ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -220,7 +220,7 @@ TEST(ImmediateInterpreterTest, SameFingersTest) {
 }
 
 TEST(ImmediateInterpreterTest, PalmTest) {
-  ImmediateInterpreter ii;
+  ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -238,8 +238,8 @@ TEST(ImmediateInterpreterTest, PalmTest) {
   };
   ii.SetHardwareProperties(hwprops);
 
-  const int kBig = ii.palm_pressure_ + 1;  // big (palm) pressure
-  const int kSml = ii.palm_pressure_ - 1;  // low pressure
+  const int kBig = ii.palm_pressure_.val_ + 1;  // big (palm) pressure
+  const int kSml = ii.palm_pressure_.val_ - 1;  // low pressure
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -306,7 +306,7 @@ TEST(ImmediateInterpreterTest, PalmTest) {
 }
 
 TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
-  scoped_ptr<ImmediateInterpreter> ii(new ImmediateInterpreter);
+  scoped_ptr<ImmediateInterpreter> ii(new ImmediateInterpreter(NULL));
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -323,8 +323,8 @@ TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
     1  // is button pad
   };
 
-  const float kBig = ii->palm_pressure_ + 1.0;  // palm pressure
-  const float kSml = ii->palm_pressure_ - 1.0;  // small, low pressure
+  const float kBig = ii->palm_pressure_.val_ + 1.0;  // palm pressure
+  const float kSml = ii->palm_pressure_.val_ - 1.0;  // small, low pressure
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -356,9 +356,9 @@ TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
     if ((i % 2) == 0) {
-      ii.reset(new ImmediateInterpreter);
+      ii.reset(new ImmediateInterpreter(NULL));
       ii->SetHardwareProperties(hwprops);
-      ii->change_timeout_ = 0.0;
+      ii->change_timeout_.val_ = 0.0;
     }
     Gesture* result = ii->SyncInterpret(&hardware_state[i], NULL);
     if ((i % 2) == 0) {
@@ -383,7 +383,7 @@ TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
 }
 
 TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
-  ImmediateInterpreter ii;
+  ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -436,7 +436,7 @@ TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
 }
 
 TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
-  ImmediateInterpreter ii;
+  ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -833,11 +833,11 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     if (hwstate && hwstate->timestamp == 0.0) {
       // Reset imm interpreter
       LOG(INFO) << "Resetting imm interpreter, i = " << i;
-      ii.reset(new ImmediateInterpreter);
+      ii.reset(new ImmediateInterpreter(NULL));
       ii->SetHardwareProperties(hwprops);
-      ii->set_tap_timeout(0.05);
-      ii->set_tap_drag_timeout(0.05);
-      ii->tap_move_dist_ = 1.0;
+      ii->tap_timeout_.val_ = 0.05;
+      ii->tap_drag_timeout_.val_ = 0.05;
+      ii->tap_move_dist_.val_ = 1.0;
       EXPECT_EQ(kIdl, ii->tap_to_click_state_);
     } else {
       same_fingers = ii->SameFingers(hwsgs_full[i].hws);
@@ -935,20 +935,20 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
       if (hwstate && hwstate->timestamp == 0.0) {
         // Reset imm interpreter
         LOG(INFO) << "Resetting imm interpreter, i = " << i;
-        ii.reset(new ImmediateInterpreter);
+        ii.reset(new ImmediateInterpreter(NULL));
         ii->SetHardwareProperties(hwprops);
-        ii->set_tap_timeout(0.05);
-        ii->set_tap_drag_timeout(0.05);
-        ii->tap_move_dist_ = 1.0;
+        ii->tap_timeout_.val_ = 0.05;
+        ii->tap_drag_timeout_.val_ = 0.05;
+        ii->tap_move_dist_.val_ = 1.0;
         EXPECT_EQ(kIdl, ii->tap_to_click_state_);
-        EXPECT_TRUE(ii->tap_enable_);
+        EXPECT_TRUE(ii->tap_enable_.val_);
       } else {
         same_fingers = ii->SameFingers(hwsgs.hws);
       }
 
       // Disable tap in the middle of the gesture
       if (hwstate && hwstate->timestamp == disable_time)
-        ii->tap_enable_ = false;
+        ii->tap_enable_.val_ = false;
 
       unsigned bdown = 0;
       unsigned bup = 0;

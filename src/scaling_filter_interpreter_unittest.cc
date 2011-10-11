@@ -85,7 +85,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
 TEST(ScalingFilterInterpreterTest, SimpleTest) {
   ScalingFilterInterpreterTestInterpreter* base_interpreter =
       new ScalingFilterInterpreterTestInterpreter;
-  ScalingFilterInterpreter interpreter(base_interpreter);
+  ScalingFilterInterpreter interpreter(NULL, base_interpreter);
 
   HardwareProperties initial_hwprops = {
     133, 728, 10279, 5822,  // left, top, right, bottom
@@ -105,8 +105,8 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   EXPECT_TRUE(base_interpreter->set_hwprops_called_);
   const float kPressureScale = 2.0;
   const float kPressureTranslate = 3.0;
-  interpreter.pressure_scale_ = kPressureScale;
-  interpreter.pressure_translate_ = kPressureTranslate;
+  interpreter.pressure_scale_.val_ = kPressureScale;
+  interpreter.pressure_translate_.val_ = kPressureTranslate;
 
   FingerState fs[] = {
     { 0, 0, 0, 0, 1, 0, 150, 4000, 1 },

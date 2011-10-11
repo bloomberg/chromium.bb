@@ -6,6 +6,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/prop_registry.h"
 #include "gestures/include/map.h"
 #include "gestures/include/set.h"
 
@@ -45,7 +46,7 @@ class TapRecord {
   set<short, kMaxTapFingers> released_;
 };
 
-class ImmediateInterpreter : public Interpreter {
+class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, SameFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
@@ -63,7 +64,7 @@ class ImmediateInterpreter : public Interpreter {
     kTtcDragRetouch
   };
 
-  ImmediateInterpreter();
+  explicit ImmediateInterpreter(PropRegistry* prop_reg);
   virtual ~ImmediateInterpreter();
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate,
@@ -74,14 +75,6 @@ class ImmediateInterpreter : public Interpreter {
   void SetHardwareProperties(const HardwareProperties& hw_props);
 
   TapToClickState tap_to_click_state() const { return tap_to_click_state_; }
-
-  // TODO(adlr): replace these with proper properties when they're available.
-  void set_tap_timeout(stime_t timeout) { tap_timeout_ = timeout; }
-  void set_tap_drag_timeout(stime_t timeout) { tap_drag_timeout_ = timeout; }
-
-  virtual void Configure(GesturesPropProvider* pp, void* data);
-
-  virtual void Deconfigure(GesturesPropProvider* pp, void* data);
 
  private:
   // Returns true iff the fingers in hwstate are the same ones in prev_state_
@@ -220,59 +213,42 @@ class ImmediateInterpreter : public Interpreter {
   // Properties
 
   // Is Tap-To-Click enabled
-  GesturesPropBool tap_enable_;
-  GesturesProp* tap_enable_prop_;
+  BoolProperty tap_enable_;
   // General time limit [s] for tap gestures
-  stime_t tap_timeout_;
-  GesturesProp* tap_timeout_prop_;
+  DoubleProperty tap_timeout_;
   // Time [s] it takes to stop dragging when you let go of the touchpad
-  stime_t tap_drag_timeout_;
-  GesturesProp* tap_drag_timeout_prop_;
+  DoubleProperty tap_drag_timeout_;
   // Distance [mm] a finger can move and still register a tap
-  double tap_move_dist_;
-  GesturesProp* tap_move_dist_prop_;
+  DoubleProperty tap_move_dist_;
   // Maximum pressure above which a finger is considered a palm
-  double palm_pressure_;
-  GesturesProp* palm_pressure_prop_;
+  DoubleProperty palm_pressure_;
   // Palms are expected to hit palm pressure within this amount of border
-  double palm_edge_width_;
-  GesturesProp* palm_edge_width_prop_;
+  DoubleProperty palm_edge_width_;
   // Palms in edge are allowed to point if they move fast enough
-  double palm_edge_point_speed_;
-  GesturesProp* palm_edge_point_speed_prop_;
+  DoubleProperty palm_edge_point_speed_;
   // Fingers within this distance of each other aren't palms
-  double palm_min_distance_;
-  GesturesProp* palm_min_distance_prop_;
+  DoubleProperty palm_min_distance_;
   // Time [s] to block movement after number or identify of fingers change
-  stime_t change_timeout_;
-  GesturesProp* change_timeout_prop_;
+  DoubleProperty change_timeout_;
   // Time [s] to wait before locking on to a gesture
-  stime_t evaluation_timeout_;
-  GesturesProp* evaluation_timeout_prop_;
+  DoubleProperty evaluation_timeout_;
   // If two fingers have a pressure difference greater than this, we assume
   // one is a thumb.
-  double two_finger_pressure_diff_thresh_;
-  GesturesProp* two_finger_pressure_diff_thresh_prop_;
+  DoubleProperty two_finger_pressure_diff_thresh_;
   // Maximum distance [mm] two fingers may be separated and still be eligible
   // for a two-finger gesture (e.g., scroll / tap / click)
-  double two_finger_close_distance_thresh_;
-  GesturesProp* two_finger_close_distance_thresh_prop_;
+  DoubleProperty two_finger_close_distance_thresh_;
   // Consider scroll vs pointing if finger moves at least this distance [mm]
-  double two_finger_scroll_distance_thresh_;
-  GesturesProp* two_finger_scroll_distance_thresh_prop_;
+  DoubleProperty two_finger_scroll_distance_thresh_;
   // A finger must change in pressure by less than this amount to trigger motion
-  double max_pressure_change_;
-  GesturesProp* max_pressure_change_prop_;
+  DoubleProperty max_pressure_change_;
   // During a scroll one finger determines scroll speed and direction.
   // Maximum distance [mm] the other finger can move in opposite direction
-  double scroll_stationary_finger_max_distance_;
-  GesturesProp* scroll_stationary_finger_max_distance_prop_;
+  DoubleProperty scroll_stationary_finger_max_distance_;
   // Height [mm] of the bottom zone
-  double bottom_zone_size_;
-  GesturesProp* bottom_zone_size_prop_;
+  DoubleProperty bottom_zone_size_;
   // Time [s] to evaluate number of fingers for a click
-  stime_t button_evaluation_timeout_;
-  GesturesProp* button_evaluation_timeout_prop_;
+  DoubleProperty button_evaluation_timeout_;
 };
 
 }  // namespace gestures

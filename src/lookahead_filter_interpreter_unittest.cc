@@ -104,10 +104,10 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
         base_interpreter->return_values_.push_back(expected_movement);
       }
 
-      interpreter.reset(new LookaheadFilterInterpreter(base_interpreter));
+      interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
       interpreter->SetHardwareProperties(initial_hwprops);
       EXPECT_TRUE(base_interpreter->set_hwprops_called_);
-      expected_timeout = interpreter->delay_;
+      expected_timeout = interpreter->delay_.val_;
     }
     stime_t timeout = -1.0;
     Gesture* out = interpreter->SyncInterpret(&hs[i], &timeout);
@@ -160,7 +160,7 @@ TEST(LookaheadFilterInterpreterTest, TimeGoesBackwardsTest) {
                                       1.0);  // dy
   base_interpreter->return_values_.push_back(expected_movement);
   base_interpreter->return_values_.push_back(expected_movement);
-  LookaheadFilterInterpreter interpreter(base_interpreter);
+  LookaheadFilterInterpreter interpreter(NULL, base_interpreter);
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom

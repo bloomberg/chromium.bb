@@ -7,6 +7,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_SCALING_FILTER_INTERPRETER_H_
 #define GESTURES_SCALING_FILTER_INTERPRETER_H_
@@ -42,8 +43,8 @@ class ScalingFilterInterpreter : public Interpreter {
   FRIEND_TEST(ScalingFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:
-  explicit ScalingFilterInterpreter(Interpreter* next);
-  virtual ~ScalingFilterInterpreter();
+  ScalingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
+  virtual ~ScalingFilterInterpreter() {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate,
                                  stime_t* timeout);
@@ -51,10 +52,6 @@ class ScalingFilterInterpreter : public Interpreter {
   virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
-
-  virtual void Configure(GesturesPropProvider* pp, void* data);
-
-  virtual void Deconfigure(GesturesPropProvider* pp, void* data);
 
  private:
   void ScaleHardwareState(HardwareState* hwstate);
@@ -69,10 +66,8 @@ class ScalingFilterInterpreter : public Interpreter {
 
   // Output surface area (sq. mm) =
   // input pressure * pressure_scale_ + pressure_translate_;
-  double pressure_scale_;
-  GesturesProp* pressure_scale_prop_;
-  double pressure_translate_;
-  GesturesProp* pressure_translate_prop_;
+  DoubleProperty pressure_scale_;
+  DoubleProperty pressure_translate_;
 };
 
 }  // namespace gestures

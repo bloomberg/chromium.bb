@@ -252,6 +252,7 @@ typedef struct GesturesPropProvider {
 namespace gestures {
 
 class Interpreter;
+class PropRegistry;
 
 struct GestureInterpreter {
  public:
@@ -274,6 +275,7 @@ struct GestureInterpreter {
   GestureReadyFunction callback_;
   void* callback_data_;
 
+  scoped_ptr<PropRegistry> prop_reg_;
   scoped_ptr<Interpreter> interpreter_;
 
   GesturesTimerProvider* timer_provider_;

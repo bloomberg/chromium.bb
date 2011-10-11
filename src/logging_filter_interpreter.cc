@@ -8,7 +8,9 @@
 
 namespace gestures {
 
-LoggingFilterInterpreter::LoggingFilterInterpreter(Interpreter* next) {
+LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
+                                                   Interpreter* next)
+  : logging_notify_(prop_reg, "Logging Notify", 0, this) {
   next_.reset(next);
 }
 
@@ -42,26 +44,9 @@ void LoggingFilterInterpreter::SetHardwareProperties(
   next_->SetHardwareProperties(hwprops);
 }
 
-void LoggingFilterInterpreter::Configure(GesturesPropProvider* pp, void* data) {
-  next_->Configure(pp, data);
-  logging_notify_prop_ = pp->create_int_fn(data, "Logging Notify",
-                                           &logging_notify_, logging_notify_);
-  pp->register_handlers_fn(data, logging_notify_prop_,
-                           this,
-                           &StaticLoggingNotifyGet,
-                           &StaticLoggingNotifySet);
-}
-
-void LoggingFilterInterpreter::LoggingNotifySet() {
-  log_.Dump("/var/log/touchpad_activity_log.txt");
-}
-
-
-void LoggingFilterInterpreter::Deconfigure(GesturesPropProvider* pp,
-                                           void* data) {
-  pp->free_fn(data, logging_notify_prop_);
-  logging_notify_prop_ = NULL;
-  next_->Deconfigure(pp, data);
-}
+void LoggingFilterInterpreter::IntWasWritten(IntProperty* prop) {
+  if (prop == &logging_notify_)
+    log_.Dump("/var/log/touchpad_activity_log.txt");
+};
 
 }  // namespace gestures

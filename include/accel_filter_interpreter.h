@@ -9,6 +9,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_ACCEL_FILTER_INTERPRETER_H_
 #define GESTURES_ACCEL_FILTER_INTERPRETER_H_
@@ -24,8 +25,8 @@ class AccelFilterInterpreter : public Interpreter {
   FRIEND_TEST(AccelFilterInterpreterTest, CustomAccelTest);
  public:
   // Takes ownership of |next|:
-  explicit AccelFilterInterpreter(Interpreter* next);
-  virtual ~AccelFilterInterpreter();
+  AccelFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
+  virtual ~AccelFilterInterpreter() {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate,
                                  stime_t* timeout);
@@ -33,10 +34,6 @@ class AccelFilterInterpreter : public Interpreter {
   virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
-
-  virtual void Configure(GesturesPropProvider* pp, void* data);
-
-  virtual void Deconfigure(GesturesPropProvider* pp, void* data);
 
  private:
   struct CurveSegment {
@@ -68,18 +65,15 @@ class AccelFilterInterpreter : public Interpreter {
   CurveSegment custom_point_[kMaxCustomCurveSegs];
   CurveSegment custom_scroll_[kMaxCustomCurveSegs];
 
-  int sensitivity_;  // [1..5]
-  GesturesProp* sensitivity_prop_;
+  IntProperty sensitivity_;  // [1..5] or 0 for custom
 
   static const size_t kMaxCurveSegStrLen = 30;
   static const size_t kCacheStrLen = kMaxCustomCurveSegs * kMaxCurveSegStrLen;
 
-  const char* custom_point_str_;
+  StringProperty custom_point_str_;
   char last_parsed_custom_point_str_[kCacheStrLen];
-  GesturesProp* custom_point_str_prop_;
-  const char* custom_scroll_str_;
+  StringProperty custom_scroll_str_;
   char last_parsed_custom_scroll_str_[kCacheStrLen];
-  GesturesProp* custom_scroll_str_prop_;
 };
 
 }  // namespace gestures

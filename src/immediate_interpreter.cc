@@ -121,45 +121,36 @@ int TapRecord::TapType() const {
   return touched_.size() > 1 ? GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
 }
 
-ImmediateInterpreter::ImmediateInterpreter()
+ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
     : button_type_(0),
       sent_button_down_(false),
       button_down_timeout_(0.0),
       tap_to_click_state_(kTtcIdle),
-      tap_enable_(true),
-      tap_enable_prop_(NULL),
-      tap_timeout_(0.2),
-      tap_timeout_prop_(NULL),
-      tap_drag_timeout_(0.7),
-      tap_drag_timeout_prop_(NULL),
-      tap_move_dist_(2.0),
-      tap_move_dist_prop_(NULL),
-      palm_pressure_(200.0),
-      palm_pressure_prop_(NULL),
-      palm_edge_width_(7.0),
-      palm_edge_width_prop_(NULL),
-      palm_edge_point_speed_(100.0),
-      palm_edge_point_speed_prop_(NULL),
-      palm_min_distance_(50.0),
-      palm_min_distance_prop_(NULL),
-      change_timeout_(0.04),
-      change_timeout_prop_(NULL),
-      evaluation_timeout_(0.2),
-      evaluation_timeout_prop_(NULL),
-      two_finger_pressure_diff_thresh_(27.0),
-      two_finger_pressure_diff_thresh_prop_(NULL),
-      two_finger_close_distance_thresh_(40.0),
-      two_finger_close_distance_thresh_prop_(NULL),
-      two_finger_scroll_distance_thresh_(2.0),
-      two_finger_scroll_distance_thresh_prop_(NULL),
-      max_pressure_change_(8.0),
-      max_pressure_change_prop_(NULL),
-      scroll_stationary_finger_max_distance_(1.0),
-      scroll_stationary_finger_max_distance_prop_(NULL),
-      bottom_zone_size_(10.0),
-      bottom_zone_size_prop_(NULL),
-      button_evaluation_timeout_(0.03),
-      button_evaluation_timeout_prop_(NULL) {
+      tap_enable_(prop_reg, "Tap Enable", true),
+      tap_timeout_(prop_reg, "Tap Timeout", 0.2),
+      tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
+      tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
+      palm_pressure_(prop_reg, "Palm Pressure", 200.0),
+      palm_edge_width_(prop_reg, "Palm Ambiguous Zone Width", 7.0),
+      palm_edge_point_speed_(prop_reg, "Palm Ambiguous Zone Min Point Speed",
+                             100.0),
+      palm_min_distance_(prop_reg, "Palm Min Distance", 50.0),
+      change_timeout_(prop_reg, "Change Timeout", 0.04),
+      evaluation_timeout_(prop_reg, "Evaluation Timeout", 0.2),
+      two_finger_pressure_diff_thresh_(prop_reg,
+                                       "Two Finger Pressure Diff Thresh",
+                                       27.0),
+      two_finger_close_distance_thresh_(prop_reg,
+                                        "Two Finger Close Distance Thresh",
+                                        40.0),
+      two_finger_scroll_distance_thresh_(prop_reg,
+                                         "Two Finger Scroll Distance Thresh",
+                                         2.0),
+      max_pressure_change_(prop_reg, "Max Allowed Pressure Change", 8.0),
+      scroll_stationary_finger_max_distance_(
+          prop_reg, "Scroll Stationary Finger Max Distance", 1.0),
+      bottom_zone_size_(prop_reg, "Bottom Zone Size", 10.0),
+      button_evaluation_timeout_(prop_reg, "Button Evaluation Timeout", 0.03) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -168,41 +159,6 @@ ImmediateInterpreter::~ImmediateInterpreter() {
     free(prev_state_.fingers);
     prev_state_.fingers = NULL;
   }
-
-  if (tap_enable_prop_ != NULL)
-    Err("tap_enable_prop_ not freed?");
-  if (tap_timeout_prop_ != NULL)
-    Err("tap_timeout_prop_ not freed?");
-  if (tap_drag_timeout_prop_ != NULL)
-    Err("tap_drag_timeout_prop_ not freed?");
-  if (tap_move_dist_prop_ != NULL)
-    Err("tap_move_dist_prop_ not freed?");
-  if (palm_pressure_prop_ != NULL)
-    Err("palm_pressure_prop_ not freed?");
-  if (palm_edge_width_prop_ != NULL)
-    Err("palm_edge_width_prop_ not freed?");
-  if (palm_edge_point_speed_prop_ != NULL)
-    Err("palm_edge_point_speed_prop_ not freed?");
-  if (palm_min_distance_prop_ != NULL)
-    Err("palm_min_distance_prop_ not freed?");
-  if (change_timeout_prop_ != NULL)
-    Err("change_timeout_prop_ not freed?");
-  if (evaluation_timeout_prop_ != NULL)
-    Err("evaluation_timeout_prop_ not freed?");
-  if (two_finger_pressure_diff_thresh_prop_ != NULL)
-    Err("two_finger_pressure_diff_thresh_prop_ not freed?");
-  if (two_finger_close_distance_thresh_prop_ != NULL)
-    Err("two_finger_close_distance_thresh_prop_ not freed?");
-  if (two_finger_scroll_distance_thresh_prop_ != NULL)
-    Err("two_finger_scroll_distance_thresh_prop_ not freed?");
-  if (max_pressure_change_prop_ != NULL)
-    Err("max_pressure_change_prop_ not freed?");
-  if (scroll_stationary_finger_max_distance_prop_ != NULL)
-    Err("scroll_stationary_finger_max_distance_prop_ not freed?");
-  if (bottom_zone_size_prop_ != NULL)
-    Err("bottom_zone_size_prop_ not freed?");
-  if (button_evaluation_timeout_prop_ != NULL)
-    Err("button_evaluation_timeout_prop_ not freed?");
 }
 
 Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
@@ -276,7 +232,8 @@ bool ImmediateInterpreter::FingerNearOtherFinger(const HardwareState& hwstate,
     float dx = fs.position_x - other_fs.position_x;
     float dy = fs.position_y - other_fs.position_y;
     bool too_close_to_other_finger =
-        (dx * dx + dy * dy) < (palm_min_distance_ * palm_min_distance_) &&
+        (dx * dx + dy * dy) < (palm_min_distance_.val_ *
+                               palm_min_distance_.val_) &&
         !SetContainsValue(palm_, other_fs.tracking_id);
     if (too_close_to_other_finger)
       return true;
@@ -285,10 +242,10 @@ bool ImmediateInterpreter::FingerNearOtherFinger(const HardwareState& hwstate,
 }
 
 bool ImmediateInterpreter::FingerInPalmEdgeZone(const FingerState& fs) {
-  return fs.position_x < palm_edge_width_ ||
-      fs.position_x > (hw_props_.right - palm_edge_width_) ||
-      fs.position_y < palm_edge_width_ ||
-      fs.position_y > (hw_props_.bottom - palm_edge_width_);
+  return fs.position_x < palm_edge_width_.val_ ||
+      fs.position_x > (hw_props_.right - palm_edge_width_.val_) ||
+      fs.position_y < palm_edge_width_.val_ ||
+      fs.position_y > (hw_props_.bottom - palm_edge_width_.val_);
 }
 
 bool ImmediateInterpreter::PossiblePalmMovingQuickly(const FingerState& fs,
@@ -300,8 +257,8 @@ bool ImmediateInterpreter::PossiblePalmMovingQuickly(const FingerState& fs,
   float dy = fs.position_y - prev_fs->position_y;
   float dt = now - prev_state_.timestamp;
   float dist_sq = dx * dx + dy * dy;
-  float limit_dist_sq = palm_edge_point_speed_ *
-      palm_edge_point_speed_ *
+  float limit_dist_sq = palm_edge_point_speed_.val_ *
+      palm_edge_point_speed_.val_ *
       dt * dt;
   return dist_sq > limit_dist_sq;
 }
@@ -310,7 +267,7 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     // Mark anything over the palm thresh as a palm
-    if (fs.pressure >= palm_pressure_) {
+    if (fs.pressure >= palm_pressure_.val_) {
       palm_.insert(fs.tracking_id);
       pointing_.erase(fs.tracking_id);
       continue;
@@ -365,7 +322,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& gs_fingers) {
 
-  if (hwstate.timestamp < changed_time_ + change_timeout_) {
+  if (hwstate.timestamp < changed_time_ + change_timeout_.val_) {
     current_gesture_type_ = kGestureTypeNull;
     return;
   }
@@ -383,7 +340,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
   } else if (num_gesturing == 1) {
     current_gesture_type_ = kGestureTypeMove;
   } else if (num_gesturing == 2) {
-    if (hwstate.timestamp - changed_time_ < evaluation_timeout_ ||
+    if (hwstate.timestamp - changed_time_ < evaluation_timeout_.val_ ||
         current_gesture_type_ == kGestureTypeNull) {
       const FingerState* fingers[] = {
         hwstate.GetFingerState(*gs_fingers.begin()),
@@ -414,14 +371,15 @@ bool ImmediateInterpreter::TwoFingersGesturing(
     const FingerState& finger2) const {
   // First, make sure the pressure difference isn't too great
   float pdiff = fabsf(finger1.pressure - finger2.pressure);
-  if (pdiff > two_finger_pressure_diff_thresh_)
+  if (pdiff > two_finger_pressure_diff_thresh_.val_)
     return false;
   float xdist = fabsf(finger1.position_x - finger2.position_x);
   float ydist = fabsf(finger1.position_x - finger2.position_x);
 
   // Next, make sure distance between fingers isn't too great
   if ((xdist * xdist + ydist * ydist) >
-      (two_finger_close_distance_thresh_ * two_finger_close_distance_thresh_))
+      (two_finger_close_distance_thresh_.val_ *
+       two_finger_close_distance_thresh_.val_))
     return false;
 
   // Next, if fingers are vertically aligned and one is in the bottom zone,
@@ -452,17 +410,17 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
 
   if (fabsf(large_dx) > fabsf(large_dy)) {
     // consider horizontal scroll
-    if (fabsf(large_dx) < two_finger_scroll_distance_thresh_)
+    if (fabsf(large_dx) < two_finger_scroll_distance_thresh_.val_)
       return kGestureTypeNull;
-    if (fabsf(small_dx) < scroll_stationary_finger_max_distance_)
+    if (fabsf(small_dx) < scroll_stationary_finger_max_distance_.val_)
       small_dx = 0.0;
     return ((large_dx * small_dx) >= 0.0) ?  // same direction
         kGestureTypeScroll : kGestureTypeNull;
   } else {
     // consider vertical scroll
-    if (fabsf(large_dy) < two_finger_scroll_distance_thresh_)
+    if (fabsf(large_dy) < two_finger_scroll_distance_thresh_.val_)
       return kGestureTypeNull;
-    if (fabsf(small_dy) < scroll_stationary_finger_max_distance_)
+    if (fabsf(small_dy) < scroll_stationary_finger_max_distance_.val_)
       small_dy = 0.0;
     return ((large_dy * small_dy) >= 0.0) ?  // same direction
         kGestureTypeScroll : kGestureTypeNull;
@@ -484,13 +442,13 @@ const char* ImmediateInterpreter::TapToClickStateName(TapToClickState state) {
 
 stime_t ImmediateInterpreter::TimeoutForTtcState(TapToClickState state) {
   switch (state) {
-    case kTtcIdle: return tap_timeout_;
-    case kTtcFirstTapBegan: return tap_timeout_;
-    case kTtcTapComplete: return tap_timeout_;
-    case kTtcSubsequentTapBegan: return tap_timeout_;
-    case kTtcDrag: return tap_timeout_;
-    case kTtcDragRelease: return tap_drag_timeout_;
-    case kTtcDragRetouch: return tap_timeout_;
+    case kTtcIdle: return tap_timeout_.val_;
+    case kTtcFirstTapBegan: return tap_timeout_.val_;
+    case kTtcTapComplete: return tap_timeout_.val_;
+    case kTtcSubsequentTapBegan: return tap_timeout_.val_;
+    case kTtcDrag: return tap_timeout_.val_;
+    case kTtcDragRelease: return tap_drag_timeout_.val_;
+    case kTtcDragRetouch: return tap_timeout_.val_;
     default:
       Log("Unknown state!");
       return 0.0;
@@ -534,7 +492,7 @@ void ImmediateInterpreter::UpdateTapState(
     unsigned* buttons_down,
     unsigned* buttons_up,
     stime_t* timeout) {
-  if (tap_to_click_state_ == kTtcIdle && !tap_enable_)
+  if (tap_to_click_state_ == kTtcIdle && !tap_enable_.val_)
     return;
   Log("Entering UpdateTapState");
   if (hwstate)
@@ -649,7 +607,7 @@ void ImmediateInterpreter::UpdateTapState(
           *hwstate, added_fingers, removed_fingers, dead_fingers);
       Log("Is tap? %d Is moving? %d",
           tap_record_.TapComplete(),
-          tap_record_.Moving(*hwstate, tap_move_dist_));
+          tap_record_.Moving(*hwstate, tap_move_dist_.val_));
       if (tap_record_.TapComplete()) {
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           SetTapToClickState(kTtcTapComplete, now);
@@ -657,7 +615,7 @@ void ImmediateInterpreter::UpdateTapState(
           *buttons_down = *buttons_up = tap_record_.TapType();
           SetTapToClickState(kTtcIdle, now);
         }
-      } else if (tap_record_.Moving(*hwstate, tap_move_dist_)) {
+      } else if (tap_record_.Moving(*hwstate, tap_move_dist_.val_)) {
         SetTapToClickState(kTtcIdle, now);
       }
       break;
@@ -684,7 +642,7 @@ void ImmediateInterpreter::UpdateTapState(
       if (hwstate)
         tap_record_.Update(
             *hwstate, added_fingers, removed_fingers, dead_fingers);
-      if (is_timeout || tap_record_.Moving(*hwstate, tap_move_dist_)) {
+      if (is_timeout || tap_record_.Moving(*hwstate, tap_move_dist_.val_)) {
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           SetTapToClickState(kTtcDrag, now);
         } else {
@@ -708,7 +666,7 @@ void ImmediateInterpreter::UpdateTapState(
         SetTapToClickState(kTtcDragRelease, now);
       }
       if (tap_record_.TapType() != GESTURES_BUTTON_LEFT &&
-          now - tap_to_click_state_entered_ <= evaluation_timeout_) {
+          now - tap_to_click_state_entered_ <= evaluation_timeout_.val_) {
         // We thought we were dragging, but actually we're doing a
         // non-tap-to-click multitouch gesture.
         *buttons_up = GESTURES_BUTTON_LEFT;
@@ -745,7 +703,7 @@ void ImmediateInterpreter::UpdateTapState(
         Log("not timeout but hwstate is NULL?!");
         break;
       }
-      if (tap_record_.Moving(*hwstate, tap_move_dist_))
+      if (tap_record_.Moving(*hwstate, tap_move_dist_.val_))
         SetTapToClickState(kTtcDrag, now);
       break;
   }
@@ -778,7 +736,7 @@ void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
 bool ImmediateInterpreter::FingerInDampenedZone(
     const FingerState& finger) const {
   // TODO(adlr): cache thresh
-  float thresh = hw_props_.bottom - bottom_zone_size_;
+  float thresh = hw_props_.bottom - bottom_zone_size_.val_;
   return finger.position_y > thresh;
 }
 
@@ -824,7 +782,7 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
   if (phys_down_edge) {
     button_type_ = GESTURES_BUTTON_LEFT;
     sent_button_down_ = false;
-    button_down_timeout_ = hwstate.timestamp + button_evaluation_timeout_;
+    button_down_timeout_ = hwstate.timestamp + button_evaluation_timeout_.val_;
   }
   if (!sent_button_down_) {
     button_type_ = EvaluateButtonType(hwstate);
@@ -885,7 +843,7 @@ void ImmediateInterpreter::FillResultGesture(
         return;
       }
       if (fabsf(current->pressure - prev->pressure) >
-          max_pressure_change_)
+          max_pressure_change_.val_)
         break;
       result_ = Gesture(kGestureMove,
                         prev_state_.timestamp,
@@ -905,7 +863,7 @@ void ImmediateInterpreter::FillResultGesture(
                fingers.begin(), e = fingers.end(); it != e; ++it) {
         const FingerState* fs = hwstate.GetFingerState(*it);
         const FingerState* prev = prev_state_.GetFingerState(*it);
-        if (fabsf(fs->pressure - prev->pressure) > max_pressure_change_)
+        if (fabsf(fs->pressure - prev->pressure) > max_pressure_change_.val_)
           return;
         float local_dx = fs->position_x - prev->position_x;
         float local_dy = fs->position_y - prev->position_y;
@@ -950,100 +908,4 @@ void ImmediateInterpreter::SetHardwareProperties(
                                             sizeof(FingerState)));
 }
 
-void ImmediateInterpreter::Configure(GesturesPropProvider* pp, void* data) {
-  tap_enable_prop_ = pp->create_bool_fn(data, "Tap Enable",
-                                        &tap_enable_, tap_enable_);
-  tap_timeout_prop_ = pp->create_real_fn(data, "Tap Timeout",
-                                         &tap_timeout_, tap_timeout_);
-  tap_drag_timeout_prop_ = pp->create_real_fn(data, "Tap Drag Timeout",
-                                              &tap_drag_timeout_,
-                                              tap_drag_timeout_);
-  tap_move_dist_prop_ = pp->create_real_fn(data, "Tap Move Distance",
-                                           &tap_move_dist_, tap_move_dist_);
-  palm_pressure_prop_ = pp->create_real_fn(data, "Palm Pressure",
-                                           &palm_pressure_, palm_pressure_);
-  palm_edge_width_prop_ =
-      pp->create_real_fn(data, "Palm Ambiguous Zone Width",
-                         &palm_edge_width_,
-                         palm_edge_width_);
-  palm_edge_point_speed_prop_ =
-      pp->create_real_fn(data, "Palm Ambiguous Zone Min Point Speed",
-                         &palm_edge_point_speed_,
-                         palm_edge_point_speed_);
-  palm_min_distance_prop_ =
-      pp->create_real_fn(data, "Palm Min Distance",
-                         &palm_min_distance_,
-                         palm_min_distance_);
-  change_timeout_prop_ = pp->create_real_fn(data, "Change Timeout",
-                                            &change_timeout_, change_timeout_);
-  evaluation_timeout_prop_ = pp->create_real_fn(data, "Evaluation Timeout",
-                                                &evaluation_timeout_,
-                                                evaluation_timeout_);
-  two_finger_pressure_diff_thresh_prop_ =
-      pp->create_real_fn(data, "Two Finger Pressure Diff Thresh",
-                         &two_finger_pressure_diff_thresh_,
-                         two_finger_pressure_diff_thresh_);
-  two_finger_close_distance_thresh_prop_ =
-      pp->create_real_fn(data, "Two Finger Close Distance Thresh",
-                         &two_finger_close_distance_thresh_,
-                         two_finger_close_distance_thresh_);
-  two_finger_scroll_distance_thresh_prop_ =
-      pp->create_real_fn(data, "Two Finger Scroll Distance Thresh",
-                         &two_finger_scroll_distance_thresh_,
-                         two_finger_scroll_distance_thresh_);
-  max_pressure_change_prop_ =
-      pp->create_real_fn(data, "Max Allowed Pressure Change",
-                         &max_pressure_change_,
-                         max_pressure_change_);
-  scroll_stationary_finger_max_distance_prop_ =
-      pp->create_real_fn(data, "Scroll Stationary Finger Max Distance",
-                         &scroll_stationary_finger_max_distance_,
-                         scroll_stationary_finger_max_distance_);
-  bottom_zone_size_prop_ = pp->create_real_fn(data, "Bottom Zone Size",
-                                              &bottom_zone_size_,
-                                              bottom_zone_size_);
-  button_evaluation_timeout_prop_ =
-      pp->create_real_fn(data, "Button Evaluation Timeout",
-                         &button_evaluation_timeout_,
-                         button_evaluation_timeout_);
-}
-
-void ImmediateInterpreter::Deconfigure(GesturesPropProvider* pp, void* data) {
-  if (pp == NULL || pp->free_fn == NULL)
-    return;
-  pp->free_fn(data, tap_enable_prop_);
-  tap_enable_prop_ = NULL;
-  pp->free_fn(data, tap_timeout_prop_);
-  tap_timeout_prop_ = NULL;
-  pp->free_fn(data, tap_drag_timeout_prop_);
-  tap_drag_timeout_prop_ = NULL;
-  pp->free_fn(data, tap_move_dist_prop_);
-  tap_move_dist_prop_ = NULL;
-  pp->free_fn(data, palm_pressure_prop_);
-  palm_pressure_prop_ = NULL;
-  pp->free_fn(data, palm_edge_width_prop_);
-  palm_edge_width_prop_ = NULL;
-  pp->free_fn(data, palm_edge_point_speed_prop_);
-  palm_edge_point_speed_prop_ = NULL;
-  pp->free_fn(data, palm_min_distance_prop_);
-  palm_min_distance_prop_ = NULL;
-  pp->free_fn(data, change_timeout_prop_);
-  change_timeout_prop_ = NULL;
-  pp->free_fn(data, evaluation_timeout_prop_);
-  evaluation_timeout_prop_ = NULL;
-  pp->free_fn(data, two_finger_pressure_diff_thresh_prop_);
-  two_finger_pressure_diff_thresh_prop_ = NULL;
-  pp->free_fn(data, two_finger_close_distance_thresh_prop_);
-  two_finger_close_distance_thresh_prop_ = NULL;
-  pp->free_fn(data, two_finger_scroll_distance_thresh_prop_);
-  two_finger_scroll_distance_thresh_prop_ = NULL;
-  pp->free_fn(data, max_pressure_change_prop_);
-  max_pressure_change_prop_ = NULL;
-  pp->free_fn(data, scroll_stationary_finger_max_distance_prop_);
-  scroll_stationary_finger_max_distance_prop_ = NULL;
-  pp->free_fn(data, bottom_zone_size_prop_);
-  bottom_zone_size_prop_ = NULL;
-  pp->free_fn(data, button_evaluation_timeout_prop_);
-  button_evaluation_timeout_prop_ = NULL;
-}
 }  // namespace gestures

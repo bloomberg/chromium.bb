@@ -24,7 +24,7 @@ class StuckButtonInhibitorFilterInterpreter : public Interpreter {
  public:
   // Takes ownership of |next|:
   explicit StuckButtonInhibitorFilterInterpreter(Interpreter* next);
-  virtual ~StuckButtonInhibitorFilterInterpreter();
+  virtual ~StuckButtonInhibitorFilterInterpreter() {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate,
                                  stime_t* timeout);
@@ -32,10 +32,6 @@ class StuckButtonInhibitorFilterInterpreter : public Interpreter {
   virtual Gesture* HandleTimer(stime_t now, stime_t* timeout);
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
-
-  virtual void Configure(GesturesPropProvider* pp, void* data);
-
-  virtual void Deconfigure(GesturesPropProvider* pp, void* data);
 
  private:
   void HandleHardwareState(const HardwareState& hwstate);

@@ -16,9 +16,6 @@ StuckButtonInhibitorFilterInterpreter::StuckButtonInhibitorFilterInterpreter(
   next_.reset(next);
 }
 
-StuckButtonInhibitorFilterInterpreter::~StuckButtonInhibitorFilterInterpreter(
-) {}
-
 Gesture* StuckButtonInhibitorFilterInterpreter::SyncInterpret(
     HardwareState* hwstate, stime_t* timeout) {
   HandleHardwareState(*hwstate);
@@ -51,16 +48,6 @@ Gesture* StuckButtonInhibitorFilterInterpreter::HandleTimer(
 void StuckButtonInhibitorFilterInterpreter::SetHardwareProperties(
     const HardwareProperties& hwprops) {
   next_->SetHardwareProperties(hwprops);
-}
-
-void StuckButtonInhibitorFilterInterpreter::Configure(
-    GesturesPropProvider* pp, void* data) {
-  next_->Configure(pp, data);
-}
-
-void StuckButtonInhibitorFilterInterpreter::Deconfigure(
-    GesturesPropProvider* pp, void* data) {
-  next_->Deconfigure(pp, data);
 }
 
 void StuckButtonInhibitorFilterInterpreter::HandleHardwareState(

@@ -91,8 +91,6 @@ TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
 
   interpreter.SetHardwareProperties(initial_hwprops);
   EXPECT_TRUE(base_interpreter->set_hwprops_called_);
-  interpreter.Configure(NULL, NULL);
-  interpreter.Deconfigure(NULL, NULL);
 
   Gesture null;
   Gesture move = Gesture(kGestureMove,

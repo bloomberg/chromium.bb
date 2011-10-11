@@ -13,25 +13,17 @@
 namespace gestures {
 
 // Takes ownership of |next|:
-ScalingFilterInterpreter::ScalingFilterInterpreter(Interpreter* next)
+ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
+                                                   Interpreter* next)
     : tp_x_scale_(1.0),
       tp_y_scale_(1.0),
       tp_x_translate_(0.0),
       tp_y_translate_(0.0),
       screen_x_scale_(1.0),
       screen_y_scale_(1.0),
-      pressure_scale_(1.0),
-      pressure_scale_prop_(NULL),
-      pressure_translate_(0.0),
-      pressure_translate_prop_(NULL) {
+      pressure_scale_(prop_reg, "Pressure Calibration Slope", 1.0),
+      pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0) {
   next_.reset(next);
-}
-
-ScalingFilterInterpreter::~ScalingFilterInterpreter() {
-  if (pressure_scale_prop_ != NULL)
-    Err("pressure_scale_prop_ not freed?");
-  if (pressure_translate_prop_ != NULL)
-    Err("pressure_translate_prop_ not freed?");
 }
 
 Gesture* ScalingFilterInterpreter::SyncInterpret(HardwareState* hwstate,
@@ -56,8 +48,8 @@ void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
     hwstate->fingers[i].position_x += tp_x_translate_;
     hwstate->fingers[i].position_y *= tp_y_scale_;
     hwstate->fingers[i].position_y += tp_y_translate_;
-    hwstate->fingers[i].pressure *= pressure_scale_;
-    hwstate->fingers[i].pressure += pressure_translate_;
+    hwstate->fingers[i].pressure *= pressure_scale_.val_;
+    hwstate->fingers[i].pressure += pressure_translate_.val_;
     // TODO(adlr): scale other fields
   }
 }
@@ -106,28 +98,6 @@ void ScalingFilterInterpreter::SetHardwareProperties(
   };
 
   next_->SetHardwareProperties(friendly_props);
-}
-
-void ScalingFilterInterpreter::Configure(GesturesPropProvider* pp,
-                                         void* data) {
-  next_->Configure(pp, data);
-  pressure_scale_prop_ = pp->create_real_fn(data,
-                                            "Pressure Calibration Slope",
-                                            &pressure_scale_,
-                                            pressure_scale_);
-  pressure_translate_prop_ = pp->create_real_fn(data,
-                                                "Pressure Calibration Offset",
-                                                &pressure_translate_,
-                                                pressure_translate_);
-}
-
-void ScalingFilterInterpreter::Deconfigure(GesturesPropProvider* pp,
-                                           void* data) {
-  pp->free_fn(data, pressure_scale_prop_);
-  pressure_scale_prop_ = NULL;
-  pp->free_fn(data, pressure_translate_prop_);
-  pressure_translate_prop_ = NULL;
-  next_->Deconfigure(pp, data);
 }
 
 }  // namespace gestures

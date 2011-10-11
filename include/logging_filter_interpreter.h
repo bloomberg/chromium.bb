@@ -8,6 +8,7 @@
 #include "gestures/include/activity_log.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/prop_registry.h"
 
 #ifndef GESTURES_LOGGING_FILTER_INTERPRETER_H_
 #define GESTURES_LOGGING_FILTER_INTERPRETER_H_
@@ -17,11 +18,11 @@ namespace gestures {
 // This interpreter keeps an ActivityLog of everything that happens, and can
 // log it when requested.
 
-class LoggingFilterInterpreter : public Interpreter {
+class LoggingFilterInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(LoggingFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:
-  explicit LoggingFilterInterpreter(Interpreter* next);
+  LoggingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~LoggingFilterInterpreter();
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate,
@@ -31,25 +32,16 @@ class LoggingFilterInterpreter : public Interpreter {
 
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
-  virtual void Configure(GesturesPropProvider* pp, void* data);
-
-  virtual void Deconfigure(GesturesPropProvider* pp, void* data);
+  virtual void IntWasWritten(IntProperty* prop);
 
  private:
   scoped_ptr<Interpreter> next_;
 
   void LogOutputs(Gesture* result, stime_t* timeout);
 
-  static GesturesPropBool StaticLoggingNotifyGet(void* unused) { return 0; }
-  static void StaticLoggingNotifySet(void* data) {
-    reinterpret_cast<LoggingFilterInterpreter*>(data)->LoggingNotifySet();
-  }
-  void LoggingNotifySet();
-
   ActivityLog log_;
 
-  int logging_notify_;
-  GesturesProp* logging_notify_prop_;
+  IntProperty logging_notify_;
 };
 
 }  // namespace gestures

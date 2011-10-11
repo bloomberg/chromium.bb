@@ -49,7 +49,7 @@ class AccelFilterInterpreterTestInterpreter : public Interpreter {
 TEST(AccelFilterInterpreterTest, SimpleTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(base_interpreter);
+  AccelFilterInterpreter interpreter(NULL, base_interpreter);
 
   float last_move_dx = 0.0;
   float last_move_dy = 0.0;
@@ -57,7 +57,7 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
   float last_scroll_dy = 0.0;
 
   for (int i = 1; i <= 5; ++i) {
-    interpreter.sensitivity_ = i;
+    interpreter.sensitivity_.val_ = i;
 
     base_interpreter->return_values_.push_back(Gesture());  // Null type
     base_interpreter->return_values_.push_back(Gesture(kGestureMove,
@@ -108,7 +108,7 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
 TEST(AccelFilterInterpreterTest, TinyMoveTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(base_interpreter);
+  AccelFilterInterpreter interpreter(NULL, base_interpreter);
 
   base_interpreter->return_values_.push_back(Gesture(kGestureMove,
                                                      1,  // start time
@@ -134,9 +134,9 @@ TEST(AccelFilterInterpreterTest, TinyMoveTest) {
 TEST(AccelFilterInterpreterTest, TimingTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(base_interpreter);
+  AccelFilterInterpreter interpreter(NULL, base_interpreter);
 
-  interpreter.sensitivity_ = 3;  // standard sensitivity
+  interpreter.sensitivity_.val_ = 3;  // standard sensitivity
 
   float last_dx = 0.0;
   float last_dy = 0.0;
@@ -194,11 +194,11 @@ TEST(AccelFilterInterpreterTest, TimingTest) {
 TEST(AccelFilterInterpreterTest, CustomAccelTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(base_interpreter);
+  AccelFilterInterpreter interpreter(NULL, base_interpreter);
 
-  interpreter.sensitivity_ = 0;  // custom sensitivity
-  interpreter.custom_point_str_ = "2.0 1.0 3 3 4.1 3";
-  interpreter.custom_scroll_str_ = "0.5 1 1.0 2.0 2 2.0 3.0 4";
+  interpreter.sensitivity_.val_ = 0;  // custom sensitivity
+  interpreter.custom_point_str_.val_ = "2.0 1.0 3 3 4.1 3";
+  interpreter.custom_scroll_str_.val_ = "0.5 1 1.0 2.0 2 2.0 3.0 4";
 
   float move_in[]  = { 1.0, 2.5, 3.5, 5.0 };
   float move_out[] = { 0.5, 2.0, 3.0, 3.0 };

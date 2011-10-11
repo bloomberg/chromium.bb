@@ -14,6 +14,7 @@
 #include "gestures/include/logging.h"
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/lookahead_filter_interpreter.h"
+#include "gestures/include/prop_registry.h"
 #include "gestures/include/scaling_filter_interpreter.h"
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
 
@@ -160,14 +161,15 @@ GestureInterpreter::GestureInterpreter(int version)
       interpret_timer_(NULL),
       prop_provider_(NULL),
       prop_provider_data_(NULL) {
+  prop_reg_.reset(new PropRegistry);
   interpreter_.reset(
-      new LoggingFilterInterpreter(
+      new LoggingFilterInterpreter(prop_reg_.get(),
           new StuckButtonInhibitorFilterInterpreter(
               new IntegralGestureFilterInterpreter(
-                  new ScalingFilterInterpreter(
-                      new AccelFilterInterpreter(
-                          new LookaheadFilterInterpreter(
-                              new ImmediateInterpreter)))))));
+                  new ScalingFilterInterpreter(prop_reg_.get(),
+                      new AccelFilterInterpreter(prop_reg_.get(),
+                          new LookaheadFilterInterpreter(prop_reg_.get(),
+                              new ImmediateInterpreter(prop_reg_.get()))))))));
 }
 
 GestureInterpreter::~GestureInterpreter() {
@@ -235,12 +237,5 @@ void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,
 
 void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
                                          void* data) {
-  if (prop_provider_ == pp && prop_provider_data_ == data)
-    return;
-  if (prop_provider_)
-    interpreter_->Deconfigure(prop_provider_, prop_provider_data_);
-  prop_provider_ = pp;
-  prop_provider_data_ = data;
-  if (prop_provider_)
-    interpreter_->Configure(prop_provider_, prop_provider_data_);
+  prop_reg_->SetPropProvider(pp, data);
 }
