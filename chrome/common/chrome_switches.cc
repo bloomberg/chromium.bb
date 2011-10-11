@@ -237,6 +237,10 @@ const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 const char kDisableCustomProtocolOSCheck[]  =
     "disable-custom-protocol-os-check";
 
+// Disables installation of default apps on first run. This is used during
+// automated testing.
+const char kDisableDefaultApps[]            = "disable-default-apps";
+
 // Disables retrieval of PAC URLs from DHCP as per the WPAD standard.
 const char kDisableDhcpWpad[]               = "disable-dhcp-wpad";
 
