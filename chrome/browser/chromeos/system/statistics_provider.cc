@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/browser/browser_thread.h"
@@ -42,6 +43,9 @@ const char kMachineOSInfoDelim[] = "\n";
 const char kVpdFile[] = "/var/log/vpd_2.0.txt";
 const char kVpdEq[] = "=";
 const char kVpdDelim[] = "\n";
+
+// Timeout that we should wait for statistics to get loaded
+const int kTimeoutSecs = 3;
 
 // Gets name-value paris from the file using the parser.
 void GetNameValuePairsFromFile(NameValuePairsParser* parser,
@@ -88,16 +92,17 @@ bool StatisticsProviderImpl::GetMachineStatistic(
   // Block if the statistics are not loaded yet. Per LOG(WARNING) below,
   // the statistics are loaded before requested as of now. For regular
   // sessions (i.e. not OOBE), statistics are first requested when the
-  // user is logging in.
+  // user is logging in so we have plenty of time to load the data
+  // beforehand.
   //
-  // If you see the warning appeared, it probably means that there is
-  // new client code that uses the statistics in the very early stage of
-  // the browser startup. The statistic name should be helpful to identify
-  // the caller.
+  // If you see the warning appeared for regular sessions, it probably
+  // means that there is new client code that uses the statistics in the
+  // very early stage of the browser startup. The statistic name should be
+  // helpful to identify the caller.
   if (!on_statistics_loaded_.IsSignaled()) {
     LOG(WARNING) << "Waiting to load statistics. Requested statistic: "
                  << name;
-    on_statistics_loaded_.Wait();
+    on_statistics_loaded_.TimedWait(base::TimeDelta::FromSeconds(kTimeoutSecs));
   }
 
   NameValuePairsParser::NameValueMap::iterator iter = machine_info_.find(name);
