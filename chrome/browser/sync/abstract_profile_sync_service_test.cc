@@ -39,9 +39,9 @@ const std::string ProfileSyncServiceTestHelper::GetTagForType(
 }
 
 /* static */
-bool ProfileSyncServiceTestHelper::CreateRoot(
-    ModelType model_type, UserShare* user_share,
-    TestIdFactory* ids) {
+bool ProfileSyncServiceTestHelper::CreateRoot(ModelType model_type,
+                                              UserShare* user_share,
+                                              TestIdFactory* ids) {
   DirectoryManager* dir_manager = user_share->dir_manager.get();
 
   ScopedDirLookup dir(dir_manager, user_share->name);
@@ -119,12 +119,16 @@ bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
       service_->id_factory());
 }
 
-CreateRootTask::CreateRootTask(
-    AbstractProfileSyncServiceTest* test, ModelType model_type)
-    : test_(test), model_type_(model_type), success_(false) {
+CreateRootTask::CreateRootTask(AbstractProfileSyncServiceTest* test,
+                               ModelType model_type)
+    : test_(test),
+      model_type_(model_type),
+      success_(false) {
 }
 
-CreateRootTask::~CreateRootTask() {}
+CreateRootTask::~CreateRootTask() {
+}
+
 void CreateRootTask::Run() {
   success_ = test_->CreateRoot(model_type_);
 }
