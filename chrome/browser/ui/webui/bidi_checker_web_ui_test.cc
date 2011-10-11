@@ -24,26 +24,6 @@
 #include <gtk/gtk.h>
 #endif
 
-// These tests are failing on linux views build. crbug.com/96891
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_TestCrashesPageRTL DISABLED_TestCrashesPageRTL
-#define MAYBE_TestDownloadsPageRTL DISABLED_TestDownloadsPageRTL
-#define MAYBE_TestMainHistoryPageRTL DISABLED_TestMainHistoryPageRTL
-#define MAYBE_TestNewTabPageRTL DISABLED_TestNewTabPageRTL
-#define MAYBE_TestPluginsPageRTL DISABLED_TestPluginsPageRTL
-#define MAYBE_TestSettingsAutofillPageRTL DISABLED_TestSettingsAutofillPageRTL
-#define MAYBE_TestSettingsPageRTL DISABLED_TestSettingsPageRTL
-#else
-#define MAYBE_TestCrashesPageRTL TestCrashesPageRTL
-#define MAYBE_TestDownloadsPageRTL TestDownloadsPageRTL
-#define MAYBE_TestMainHistoryPageRTL TestMainHistoryPageRTL
-// Disabled, http://crbug.com/97453
-#define MAYBE_TestNewTabPageRTL DISABLED_TestNewTabPageRTL
-#define MAYBE_TestPluginsPageRTL TestPluginsPageRTL
-#define MAYBE_TestSettingsAutofillPageRTL TestSettingsAutofillPageRTL
-#define MAYBE_TestSettingsPageRTL TestSettingsPageRTL
-#endif
-
 static const FilePath::CharType* kWebUIBidiCheckerLibraryJS =
     FILE_PATH_LITERAL("third_party/bidichecker/bidichecker_packaged.js");
 
@@ -94,6 +74,7 @@ void WebUIBidiCheckerBrowserTestFakeBidi::SetUpOnMainThread() {
   pak_path = pak_path.ReplaceExtension(FILE_PATH_LITERAL("pak"));
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(pak_path);
   ResourceBundle::ReloadSharedInstance("he");
+  base::i18n::SetICUDefaultLocale("he");
 #if defined(OS_POSIX) && defined(TOOLKIT_USES_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
 #endif
@@ -104,6 +85,7 @@ void WebUIBidiCheckerBrowserTestFakeBidi::CleanUpOnMainThread() {
 #if defined(OS_POSIX) && defined(TOOLKIT_USES_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_LTR);
 #endif
+  base::i18n::SetICUDefaultLocale(app_locale_);
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(FilePath());
   ResourceBundle::ReloadSharedInstance(app_locale_);
 }
@@ -124,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestMainHistoryPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       MAYBE_TestMainHistoryPageRTL) {
+                       TestMainHistoryPageRTL) {
   HistoryService* history_service =
       browser()->profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
   GURL history_url = GURL("http://www.google.com");
@@ -148,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestCrashesPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       MAYBE_TestCrashesPageRTL) {
+                       TestCrashesPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(chrome::kChromeUICrashesURL,
                                                     true);
 }
@@ -158,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestDownloadsPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       MAYBE_TestDownloadsPageRTL) {
+                       TestDownloadsPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(
       chrome::kChromeUIDownloadsURL, true);
 }
@@ -167,8 +149,9 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestNewTabPageLTR) {
   RunBidiCheckerOnPage(chrome::kChromeUINewTabURL, false);
 }
 
+// http://crbug.com/97453
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       MAYBE_TestNewTabPageRTL) {
+                       DISABLED_TestNewTabPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(chrome::kChromeUINewTabURL,
                                                     true);
 }
@@ -178,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestPluginsPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       MAYBE_TestPluginsPageRTL) {
+                       TestPluginsPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(chrome::kChromeUIPluginsURL,
                                                     true);
 }
@@ -188,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestSettingsPageLTR) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       MAYBE_TestSettingsPageRTL) {
+                       TestSettingsPageRTL) {
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(
       chrome::kChromeUISettingsURL, true);
 }
@@ -234,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestFakeBidi,
-                       MAYBE_TestSettingsAutofillPageRTL) {
+                       TestSettingsAutofillPageRTL) {
   std::string url(chrome::kChromeUISettingsURL);
   url += std::string(chrome::kAutofillSubPage);
 
