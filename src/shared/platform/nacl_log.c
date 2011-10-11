@@ -500,9 +500,9 @@ void NaClLogV_mu(int        detail_level,
   }
 }
 
-void NaClLogV(int         detail_level,
-              char const  *fmt,
-              va_list     ap) {
+void NaClLogV_Function(int         detail_level,
+                       char const  *fmt,
+                       va_list     ap) {
 #if !THREAD_SAFE_DETAIL_CHECK
   if (detail_level > verbosity) {
     return;
@@ -642,9 +642,9 @@ void NaClLogDoLogAndUnsetModule(int        detail_level,
   va_end(ap);
 }
 
-void NaClLog(int         detail_level,
-             char const  *fmt,
-             ...) {
+void NaClLog_Function(int         detail_level,
+                      char const  *fmt,
+                      ...) {
   va_list ap;
 
 #if !THREAD_SAFE_DETAIL_CHECK
@@ -676,10 +676,10 @@ void NaClLog_mu(int         detail_level,
   va_end(ap);
 }
 
-void NaClLog2(char const *module_name,
-              int        detail_level,
-              char const *fmt,
-              ...) {
+void NaClLog2_Function(char const *module_name,
+                       int        detail_level,
+                       char const *fmt,
+                       ...) {
   va_list ap;
 
   NaClLogSetModule(module_name);

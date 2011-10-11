@@ -252,13 +252,13 @@ int NaClLogGetModuleVerbosity(char const *module_name);
  * string and n is the position of the first argument to be consumed
  * by the format specifier.
  */
-void NaClLogV(int         detail_level,
-              char const  *fmt,
-              va_list     ap);
+void NaClLogV_Function(int         detail_level,
+                       char const  *fmt,
+                       va_list     ap);
 
-void NaClLog(int         detail_level,
-             char const  *fmt,
-             ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+void NaClLog_Function(int         detail_level,
+                      char const  *fmt,
+                      ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 /*
  * A version of NaClLog with an explicit module name parameter.  This
@@ -267,10 +267,40 @@ void NaClLog(int         detail_level,
  * header file appears, rather than where the template expansion
  * occurs.
  */
-void NaClLog2(char const *module_name,
-              int        detail_level,
-              char const *fmt,
-              ...) ATTRIBUTE_FORMAT_PRINTF(3, 4);
+void NaClLog2_Function(char const *module_name,
+                       int        detail_level,
+                       char const *fmt,
+                       ...) ATTRIBUTE_FORMAT_PRINTF(3, 4);
+
+/*
+ * If non-fatal logging is disabled at compile time, the NaClLog
+ * family of functions will be invoked only if the level is LOG_FATAL.
+ */
+
+#ifdef NACL_DISABLE_NON_FATAL_LOGGING
+# define NaClLogV(level, fmt, ap) \
+  do { \
+    int __log_level_temp = (level); \
+    if (LOG_FATAL == __log_level_temp) \
+      NaClLogV_Function(__log_level_temp, fmt, ap); \
+  } while (0)
+# define NaClLog(level, ...) \
+  do { \
+    int __log_level_temp = (level); \
+    if (LOG_FATAL == __log_level_temp) \
+      NaClLog_Function(__log_level_temp, __VA_ARGS__); \
+  } while (0)
+# define NaClLog2(module, level, ...) \
+  do { \
+    int __log_level_temp = (level); \
+    if (LOG_FATAL == __log_level_temp) \
+      NaClLog2_Function(module, __log_level_temp, __VA_ARGS__); \
+  } while (0)
+#else
+# define NaClLogV NaClLogV_Function
+# define NaClLog NaClLog_Function
+# define NaClLog2 NaClLog2_Function
+#endif
 
 /*
  * "Internal" functions.  NaClLogSetModule and
@@ -286,8 +316,13 @@ int NaClLogSetModule(char const *module_name);
 void NaClLogDoLogAndUnsetModule(int        detail_level,
                                 char const *fmt,
                                 ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+/*
+ * TODO(bsy): With variadic macro support on the way, the macro below and
+ * the comment following it could be improved for readability.
+ */
 
 #ifdef NACL_LOG_MODULE_NAME
+# undef NaClLog
 # define NaClLog                              \
   if (NaClLogSetModule(NACL_LOG_MODULE_NAME)) \
     ;                                         \
