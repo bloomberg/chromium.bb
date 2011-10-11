@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/notification_observer.h"

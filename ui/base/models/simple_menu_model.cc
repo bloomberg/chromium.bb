@@ -4,6 +4,7 @@
 
 #include "ui/base/models/simple_menu_model.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -315,7 +316,7 @@ void SimpleMenuModel::MenuClosed() {
   // afterwards though, so post a task.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(&SimpleMenuModel::OnMenuClosed));
+      base::Bind(&SimpleMenuModel::OnMenuClosed, method_factory_.GetWeakPtr()));
 }
 
 void SimpleMenuModel::SetMenuModelDelegate(

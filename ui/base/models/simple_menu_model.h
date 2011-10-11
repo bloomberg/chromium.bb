@@ -8,8 +8,8 @@
 
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "ui/base/models/menu_model.h"
 
 namespace ui {
@@ -161,7 +161,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
 
   MenuModelDelegate* menu_model_delegate_;
 
-  ScopedRunnableMethodFactory<SimpleMenuModel> method_factory_;
+  base::WeakPtrFactory<SimpleMenuModel> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMenuModel);
 };

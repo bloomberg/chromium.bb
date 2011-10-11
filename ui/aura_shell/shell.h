@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/task.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/desktop_delegate.h"
 #include "ui/aura_shell/aura_shell_export.h"
 
@@ -55,7 +55,7 @@ class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate {
 
   std::vector<WindowAndBoundsPair> to_restore_;
 
-  ScopedRunnableMethodFactory<Shell> method_factory_;
+  base::WeakPtrFactory<Shell> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

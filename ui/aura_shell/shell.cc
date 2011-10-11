@@ -4,6 +4,7 @@
 
 #include "ui/aura_shell/shell.h"
 
+#include "base/bind.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
@@ -188,8 +189,9 @@ void Shell::TileWindows() {
   }
 
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, method_factory_.NewRunnableMethod(
-      &Shell::RestoreTiledWindows), 2000);
+      FROM_HERE,
+      base::Bind(&Shell::RestoreTiledWindows, method_factory_.GetWeakPtr()),
+      2000);
 }
 
 void Shell::RestoreTiledWindows() {

@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "ui/aura/aura_export.h"
@@ -116,7 +117,7 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   static Desktop* instance_;
 
   // Used to schedule painting.
-  ScopedRunnableMethodFactory<Desktop> schedule_paint_;
+  base::WeakPtrFactory<Desktop> schedule_paint_factory_;
 
   // Factory used to create Compositors. Settable by tests.
   static ui::Compositor*(*compositor_factory_)();

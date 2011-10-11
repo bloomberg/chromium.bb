@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/widget.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "ui/views/focus/focus_manager.h"
@@ -101,9 +102,10 @@ void Widget::Hide() {
 void Widget::Close() {
   native_widget_->Hide();
 
-  if (close_widget_factory_.empty()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-      close_widget_factory_.NewRunnableMethod(&Widget::CloseNow));
+  if (!close_widget_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&Widget::CloseNow, close_widget_factory_.GetWeakPtr()));
   }
 }
 

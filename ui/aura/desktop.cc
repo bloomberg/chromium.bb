@@ -4,6 +4,7 @@
 
 #include "ui/aura/desktop.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "ui/aura/desktop_delegate.h"
@@ -28,7 +29,7 @@ ui::Compositor*(*Desktop::compositor_factory_)() = NULL;
 Desktop::Desktop()
     : delegate_(NULL),
       host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1280, 1024))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       active_window_(NULL),
       in_destructor_(false) {
   if (compositor_factory_) {
@@ -100,9 +101,10 @@ void Desktop::OnHostResized(const gfx::Size& size) {
 }
 
 void Desktop::ScheduleDraw() {
-  if (schedule_paint_.empty()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        schedule_paint_.NewRunnableMethod(&Desktop::Draw));
+  if (!schedule_paint_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&Desktop::Draw, schedule_paint_factory_.GetWeakPtr()));
   }
 }
 
