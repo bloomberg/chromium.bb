@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
@@ -150,6 +151,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
  protected:
   OmniboxViewTest() {
     set_show_window(true);
+    // TODO(mrossetti): HQP does not yet support DeleteMatch.
+    // http://crbug.com/82335
+    HistoryQuickProvider::set_disabled(true);
   }
 
   virtual void SetUpOnMainThread() {
