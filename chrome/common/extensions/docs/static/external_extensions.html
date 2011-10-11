@@ -146,6 +146,22 @@ Example:
     "external_update_url": "http://myhost.com/mytestextension/updates.xml"
   }
 }</pre>
+<p>
+If you would like to install extension only for some browser locales,
+you can list supported locales in field name "supported_locale". Locale may
+specify parent locale like "en", in this case the extension will be
+installed for all English locales like "en-US", "en-GB", etc.
+If another browser locale is selected that is not supported by the extension,
+the external extensions will be uninstalled. If "supported_locales" list
+is missing, the extension will be installed for any locale.
+</p>
+Example:
+<pre>{
+  "aaaaaaaaaabbbbbbbbbbcccccccccc": {
+    "external_update_url": "http://myhost.com/mytestextension/updates.xml",
+    "supported_locales": [ "en", "fr", "de" ]
+  }
+}</pre>
 </li>
 
 <li>Save the JSON file. </li>

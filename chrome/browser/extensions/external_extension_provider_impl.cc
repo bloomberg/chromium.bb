@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/extensions/external_registry_extension_loader_win.h"
@@ -34,6 +35,8 @@ const char ExternalExtensionProviderImpl::kExternalVersion[] =
     "external_version";
 const char ExternalExtensionProviderImpl::kExternalUpdateUrl[] =
     "external_update_url";
+const char ExternalExtensionProviderImpl::kSupportedLocales[] =
+    "supported_locales";
 
 #if !defined(OS_CHROMEOS)
 class DefaultAppsProvider : public ExternalExtensionProviderImpl {
@@ -110,6 +113,9 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
   prefs_.reset(prefs);
   ready_ = true; // Queries for extensions are allowed from this point.
 
+  // Set of unsupported extensions that need to be deleted from prefs_.
+  std::set<std::string> unsupported_extensions;
+
   // Notify ExtensionService about all the extensions this provider has.
   for (DictionaryValue::key_iterator i = prefs_->begin_keys();
        i != prefs_->end_keys(); ++i) {
@@ -151,6 +157,41 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
                    << "followng keys should be used: " << kExternalCrx
                    << ", " << kExternalUpdateUrl << ".";
       continue;
+    }
+
+    // Check that extension supports current browser locale.
+    ListValue* supported_locales = NULL;
+    if (extension->GetList(kSupportedLocales, &supported_locales)) {
+      std::vector<std::string> browser_locales;
+      l10n_util::GetParentLocales(g_browser_process->GetApplicationLocale(),
+                                  &browser_locales);
+
+      size_t num_locales = supported_locales->GetSize();
+      bool locale_supported = false;
+      for (size_t j = 0; j < num_locales; j++) {
+        std::string current_locale;
+        if (supported_locales->GetString(j, &current_locale) &&
+            l10n_util::IsValidLocaleSyntax(current_locale)) {
+          current_locale = l10n_util::NormalizeLocale(current_locale);
+          if (std::find(browser_locales.begin(), browser_locales.end(),
+                        current_locale) != browser_locales.end()) {
+            locale_supported = true;
+            break;
+          }
+        } else {
+          LOG(WARNING) << "Unrecognized locale '" << current_locale
+                       << "' found as supported locale for extension: "
+                       << extension_id;
+        }
+      }
+
+      if (!locale_supported) {
+        unsupported_extensions.insert(extension_id);
+        LOG(INFO) << "Skip installing (or uninstall) external extension: "
+                  << extension_id << " because the extension doesn't support "
+                  << "the browser locale.";
+        continue;
+      }
     }
 
     if (has_external_crx) {
@@ -207,6 +248,13 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
       service_->OnExternalExtensionUpdateUrlFound(
           extension_id, update_url, download_location_);
     }
+  }
+
+  for (std::set<std::string>::iterator it = unsupported_extensions.begin();
+       it != unsupported_extensions.end(); ++it) {
+    // Remove extension for the list of know external extensions. The extension
+    // will be uninstalled later because provider doesn't provide it anymore.
+    prefs_->Remove(*it, NULL);
   }
 
   service_->OnExternalProviderReady();

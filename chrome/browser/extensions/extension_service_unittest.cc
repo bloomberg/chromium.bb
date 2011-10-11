@@ -25,6 +25,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -3290,6 +3291,23 @@ TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
   EXPECT_EQ(0u, loaded_.size());
 }
 
+namespace {
+  class ScopedBrowserLocale {
+   public:
+    explicit ScopedBrowserLocale(const std::string& new_locale)
+      : old_locale_(g_browser_process->GetApplicationLocale()) {
+      g_browser_process->SetApplicationLocale(new_locale);
+    }
+
+    ~ScopedBrowserLocale() {
+      g_browser_process->SetApplicationLocale(old_locale_);
+    }
+
+   private:
+    std::string old_locale_;
+  };
+}
+
 TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
   InitializeEmptyExtensionService();
 
@@ -3391,6 +3409,30 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
       "  }"
       "}";
   EXPECT_EQ(0, visitor_no_relative_paths.Visit(json_data));
+
+  // Test supported_locales.
+  json_data =
+      "{"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_crx\": \"RandomExtension.crx\","
+      "    \"external_version\": \"1.0\","
+      "    \"supported_locales\": [ \"en\" ]"
+      "  },"
+      "  \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\": {"
+      "    \"external_crx\": \"RandomExtension2.crx\","
+      "    \"external_version\": \"2.0\","
+      "    \"supported_locales\": [ \"en-GB\" ]"
+      "  },"
+      "  \"cccccccccccccccccccccccccccccccc\": {"
+      "    \"external_crx\": \"RandomExtension2.crx\","
+      "    \"external_version\": \"3.0\","
+      "    \"supported_locales\": [ \"en_US\", \"fr\" ]"
+      "  }"
+      "}";
+  {
+    ScopedBrowserLocale guard("en-US");
+    EXPECT_EQ(2, visitor.Visit(json_data));
+  }
 }
 
 // Test loading good extensions from the profile directory.

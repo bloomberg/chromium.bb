@@ -67,6 +67,7 @@ class ExternalExtensionProviderImpl
   static const char kExternalCrx[];
   static const char kExternalVersion[];
   static const char kExternalUpdateUrl[];
+  static const char kSupportedLocales[];
 
  protected:
   VisitorInterface* service() const { return service_; }
