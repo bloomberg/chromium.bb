@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_font_dev.idl modified Mon Oct  3 16:33:50 2011. */
+/* From dev/ppb_font_dev.idl modified Wed Oct  5 19:40:26 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_FONT_DEV_H_
 #define PPAPI_C_DEV_PPB_FONT_DEV_H_
@@ -60,8 +60,8 @@ typedef enum {
   PP_FONTWEIGHT_700 = 6,
   PP_FONTWEIGHT_800 = 7,
   PP_FONTWEIGHT_900 = 8,
-  PP_FONTWEIGHT_NORMAL = 3,
-  PP_FONTWEIGHT_BOLD = 6
+  PP_FONTWEIGHT_NORMAL = PP_FONTWEIGHT_400,
+  PP_FONTWEIGHT_BOLD = PP_FONTWEIGHT_700
 } PP_FontWeight_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FontWeight_Dev, 4);
 /**
