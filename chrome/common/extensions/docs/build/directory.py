@@ -291,6 +291,7 @@ class Sample(dict):
     self['id'] = hashlib.sha1(self['path']).hexdigest()
     self['zip_path'] = self._get_relative_zip_path()
     self['crx_path'] = self._get_relative_crx_path()
+    self['packaged_app'] = self.is_packaged_app()
 
   _FEATURE_ATTRIBUTES = (
     'browser_action',
@@ -549,10 +550,7 @@ class Sample(dict):
     Returns:
       A localized version of the sample's name.
     """
-    name = self._get_localized_manifest_value('name')
-    if (self.is_packaged_app()):
-      name += ' (packaged app)'
-    return name
+    return self._get_localized_manifest_value('name')
 
   def _parse_protocols(self):
     """ Returns a list of protocols this extension requests permission for.
