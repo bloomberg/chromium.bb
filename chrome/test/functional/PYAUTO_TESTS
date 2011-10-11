@@ -90,6 +90,8 @@
       '-downloads.DownloadsTest.testBigZip',
       '-downloads.DownloadsTest.testFileRenaming',
       '-downloads.DownloadsTest.testCrazyFilenames',
+      # crbug.com/99866
+      '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/71715
