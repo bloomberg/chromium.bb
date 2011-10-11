@@ -119,6 +119,7 @@ typedef struct _drm_intel_bufmgr_gem {
 	unsigned int has_relaxed_fencing : 1;
 	unsigned int has_llc : 1;
 	unsigned int bo_reuse : 1;
+	unsigned int no_exec : 1;
 	bool fenced_relocs;
 } drm_intel_bufmgr_gem;
 
@@ -1788,7 +1789,8 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
 	struct drm_i915_gem_execbuffer2 execbuf;
-	int ret, i;
+	int ret = 0;
+	int i;
 
 	switch (flags & 0x7) {
 	default:
@@ -1828,6 +1830,9 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 	execbuf.rsvd1 = 0;
 	execbuf.rsvd2 = 0;
 
+	if (bufmgr_gem->no_exec)
+		goto skip_execution;
+
 	ret = drmIoctl(bufmgr_gem->fd,
 		       DRM_IOCTL_I915_GEM_EXECBUFFER2,
 		       &execbuf);
@@ -1845,6 +1850,7 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 	}
 	drm_intel_update_buffer_offsets2(bufmgr_gem);
 
+skip_execution:
 	if (bufmgr_gem->bufmgr.debug)
 		drm_intel_gem_dump_validation_list(bufmgr_gem);
 
@@ -2315,6 +2321,45 @@ drm_intel_bufmgr_gem_set_vma_cache_size(drm_intel_bufmgr *bufmgr, int limit)
 }
 
 /**
+ * Get the PCI ID for the device.  This can be overridden by setting the
+ * INTEL_DEVID_OVERRIDE environment variable to the desired ID.
+ */
+static int
+get_pci_device_id(drm_intel_bufmgr_gem *bufmgr_gem)
+{
+	char *devid_override;
+	int devid;
+	int ret;
+	drm_i915_getparam_t gp;
+
+	if (geteuid() == getuid()) {
+		devid_override = getenv("INTEL_DEVID_OVERRIDE");
+		if (devid_override) {
+			bufmgr_gem->no_exec = true;
+			return strtod(devid_override, NULL);
+		}
+	}
+
+	VG_CLEAR(gp);
+	gp.param = I915_PARAM_CHIPSET_ID;
+	gp.value = &devid;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	if (ret) {
+		fprintf(stderr, "get chip id failed: %d [%d]\n", ret, errno);
+		fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
+	}
+	return devid;
+}
+
+int
+drm_intel_bufmgr_gem_get_devid(drm_intel_bufmgr *bufmgr)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
+
+	return bufmgr_gem->pci_device;
+}
+
+/**
  * Initializes the GEM buffer manager, which uses the kernel to allocate, map,
  * and manage map buffer objections.
  *
@@ -2356,14 +2401,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 			(int)bufmgr_gem->gtt_size / 1024);
 	}
 
-	VG_CLEAR(gp);
-	gp.param = I915_PARAM_CHIPSET_ID;
-	gp.value = &bufmgr_gem->pci_device;
-	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
-	if (ret) {
-		fprintf(stderr, "get chip id failed: %d [%d]\n", ret, errno);
-		fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
-	}
+	bufmgr_gem->pci_device = get_pci_device_id(bufmgr_gem);
 
 	if (IS_GEN2(bufmgr_gem->pci_device))
 		bufmgr_gem->gen = 2;
