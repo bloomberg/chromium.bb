@@ -6,6 +6,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/test/base/render_view_test.h"
+#include "content/public/renderer/render_view.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -301,7 +302,7 @@ TEST_F(TranslateHelperTest, MultipleDifferentTranslations) {
 TEST_F(RenderViewTest, TranslatablePage) {
   // Suppress the normal delay that occurs when the page is loaded before which
   // the renderer sends the page contents to the browser.
-  view_->set_send_content_state_immediately(true);
+  SendContentStateImmediately();
 
   LoadHTML("<html><body>A random page with random content.</body></html>");
   ProcessPendingMessages();
@@ -340,7 +341,7 @@ TEST_F(RenderViewTest, TranslatablePage) {
 TEST_F(RenderViewTest, LanguageMetaTag) {
   // Suppress the normal delay that occurs when the page is loaded before which
   // the renderer sends the page contents to the browser.
-  view_->set_send_content_state_immediately(true);
+  SendContentStateImmediately();
 
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"es\">"
            "</head><body>A random page with random content.</body></html>");

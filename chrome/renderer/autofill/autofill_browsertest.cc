@@ -25,7 +25,7 @@ TEST_F(RenderViewTest, SendForms) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
   // loop, it will generate an update.
-  view_->set_send_content_state_immediately(true);
+  SendContentStateImmediately();
 
   LoadHTML("<form method=\"POST\">"
            "  <input type=\"text\" id=\"firstname\"/>"
@@ -125,7 +125,7 @@ TEST_F(RenderViewTest, FillFormElement) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
   // loop, it will generate an update.
-  view_->set_send_content_state_immediately(true);
+  SendContentStateImmediately();
 
   LoadHTML("<form method=\"POST\">"
            "  <input type=\"text\" id=\"firstname\"/>"

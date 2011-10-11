@@ -21,7 +21,7 @@ class ThumbnailerTest : public RenderWidgetTest {
                               const gfx::Size& desired_size,
                               SkBitmap* snapshot) {
     ASSERT_TRUE(snapshot);
-    *snapshot = GrabPhishingThumbnail(view_.get(), page_size, desired_size);
+    *snapshot = GrabPhishingThumbnail(view_, page_size, desired_size);
     EXPECT_FALSE(snapshot->isNull());
   }
 };

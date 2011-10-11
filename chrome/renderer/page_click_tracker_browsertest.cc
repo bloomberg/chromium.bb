@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/test/base/render_view_test.h"
+#include "content/public/renderer/render_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
@@ -62,9 +62,9 @@ TEST_F(RenderViewTest, PageClickTracker) {
            "  <input type='text' id='text'></input><br>"
            "  <input type='button' id='button'></input><br>"
            "</form>");
-  view_->webwidget()->resize(WebKit::WebSize(500, 500));
-  view_->webwidget()->setFocus(true);
-  WebKit::WebDocument document = view_->webview()->mainFrame()->document();
+  GetWebWidget()->resize(WebKit::WebSize(500, 500));
+  GetWebWidget()->setFocus(true);
+  WebKit::WebDocument document = view_->GetWebView()->mainFrame()->document();
   WebKit::WebElement text = document.getElementById("text");
   ASSERT_FALSE(text.isNull());
   WebKit::WebElement button = document.getElementById("button");

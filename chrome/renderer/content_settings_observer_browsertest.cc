@@ -7,6 +7,7 @@
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/test/base/render_view_test.h"
 #include "content/common/view_messages.h"
+#include "content/public/renderer/render_view.h"
 #include "ipc/ipc_message_macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,11 +80,11 @@ TEST_F(RenderViewTest, AllowDOMStorage) {
           OnAllowDOMStorage(_, _, _, _, _)).WillByDefault(DeleteArg<4>());
   EXPECT_CALL(observer,
               OnAllowDOMStorage(_, _, _, _, _));
-  observer.AllowStorage(view_->webview()->focusedFrame(), true);
+  observer.AllowStorage(view_->GetWebView()->focusedFrame(), true);
 
   // Accessing localStorage from the same origin again shouldn't result in a
   // new IPC.
-  observer.AllowStorage(view_->webview()->focusedFrame(), true);
+  observer.AllowStorage(view_->GetWebView()->focusedFrame(), true);
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
@@ -120,7 +121,7 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
   GURL url(url_str);
   params.url = url;
   params.navigation_type = ViewMsg_Navigate_Type::RELOAD;
-  view_->OnNavigate(params);
+  OnNavigate(params);
   ProcessPendingMessages();
 
   // 4. Verify that the notification that javascript was blocked is sent after
@@ -155,12 +156,12 @@ TEST_F(RenderViewTest, PluginsTemporarilyAllowed) {
             observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
 
   // Temporarily allow plugins.
-  view_->OnMessageReceived(ChromeViewMsg_LoadBlockedPlugins(MSG_ROUTING_NONE));
+  OnMessageReceived(ChromeViewMsg_LoadBlockedPlugins(MSG_ROUTING_NONE));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
 
   // Simulate a navigation within the page.
-  view_->didNavigateWithinPage(GetMainFrame(), true);
+  DidNavigateWithinPage(GetMainFrame(), true);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             observer->GetContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS));
 

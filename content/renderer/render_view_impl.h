@@ -646,22 +646,23 @@ class RenderViewImpl : public RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, DontIgnoreBackAfterNavEntryLimit);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, ImeComposition);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, InsertCharacters);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, JSBlockSentAfterPageLoad);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, LastCommittedUpdateState);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnHandleKeyboardEvent);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnImeStateChanged);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnNavStateChanged);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnSetTextDirection);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnUpdateWebPreferences);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, StaleNavigationsIgnored);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, UpdateTargetURLWithInvalidURL);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
+                           DontIgnoreBackAfterNavEntryLimit);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ImeComposition);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, InsertCharacters);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, JSBlockSentAfterPageLoad);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, LastCommittedUpdateState);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnHandleKeyboardEvent);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnImeStateChanged);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnNavStateChanged);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnSetTextDirection);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnUpdateWebPreferences);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, StaleNavigationsIgnored);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, UpdateTargetURLWithInvalidURL);
 #if defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, MacTestCmdUp);
 #endif
-  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, SetHistoryLengthAndPrune);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SetHistoryLengthAndPrune);
 
   typedef std::map<GURL, double> HostZoomLevels;
 

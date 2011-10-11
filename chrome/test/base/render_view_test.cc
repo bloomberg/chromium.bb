@@ -19,6 +19,7 @@
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/test/mock_render_process.h"
 #include "grit/renderer_resources.h"
@@ -50,7 +51,7 @@ const int32 kRouteId = 5;
 const int32 kOpenerId = 7;
 }  // namespace
 
-RenderViewTest::RenderViewTest() : extension_dispatcher_(NULL) {
+RenderViewTest::RenderViewTest() : extension_dispatcher_(NULL), view_(NULL) {
 }
 
 RenderViewTest::~RenderViewTest() {
@@ -62,7 +63,7 @@ void RenderViewTest::ProcessPendingMessages() {
 }
 
 WebFrame* RenderViewTest::GetMainFrame() {
-  return view_->webview()->mainFrame();
+  return view_->GetWebView()->mainFrame();
 }
 
 void RenderViewTest::ExecuteJavaScript(const char* js) {
@@ -127,14 +128,17 @@ void RenderViewTest::SetUp() {
   render_thread_.set_routing_id(kRouteId);
 
   // This needs to pass the mock render thread to the view.
-  view_ = RenderViewImpl::Create(0,
-                                 kOpenerId,
-                                 RendererPreferences(),
-                                 WebPreferences(),
-                                 new SharedRenderViewCounter(0),
-                                 kRouteId,
-                                 kInvalidSessionStorageNamespaceId,
-                                 string16());
+  RenderViewImpl* view = RenderViewImpl::Create(
+      0,
+      kOpenerId,
+      RendererPreferences(),
+      WebPreferences(),
+      new SharedRenderViewCounter(0),
+      kRouteId,
+      kInvalidSessionStorageNamespaceId,
+      string16());
+  view->AddRef();
+  view_ = view;
 
   // Attach a pseudo keyboard device to this object.
   mock_keyboard_.reset(new MockKeyboard());
@@ -156,6 +160,8 @@ void RenderViewTest::TearDown() {
   // Run the loop so the release task from the renderwidget executes.
   ProcessPendingMessages();
 
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->Release();
   view_ = NULL;
 
   mock_process_.reset();
@@ -255,7 +261,8 @@ void RenderViewTest::SendNativeKeyEvent(
   scoped_ptr<IPC::Message> input_message(new ViewMsg_HandleInputEvent(0));
   input_message->WriteData(reinterpret_cast<const char*>(&key_event),
                            sizeof(WebKit::WebKeyboardEvent));
-  view_->OnMessageReceived(*input_message);
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->OnMessageReceived(*input_message);
 }
 
 const char* const kGetCoordinatesScript =
@@ -317,13 +324,41 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
   scoped_ptr<IPC::Message> input_message(new ViewMsg_HandleInputEvent(0));
   input_message->WriteData(reinterpret_cast<const char*>(&mouse_event),
                            sizeof(WebMouseEvent));
-  view_->OnMessageReceived(*input_message);
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->OnMessageReceived(*input_message);
   return true;
 }
 
 void RenderViewTest::ClearHistory() {
-  view_->page_id_ = -1;
-  view_->history_list_offset_ = -1;
-  view_->history_list_length_ = 0;
-  view_->history_page_ids_.clear();
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->page_id_ = -1;
+  impl->history_list_offset_ = -1;
+  impl->history_list_length_ = 0;
+  impl->history_page_ids_.clear();
+}
+
+bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  return impl->OnMessageReceived(msg);
+}
+
+void RenderViewTest::OnNavigate(const ViewMsg_Navigate_Params& params) {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->OnNavigate(params);
+}
+
+void RenderViewTest::DidNavigateWithinPage(WebKit::WebFrame* frame,
+                                           bool is_new_navigation) {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->didNavigateWithinPage(frame, is_new_navigation);
+}
+
+void RenderViewTest::SendContentStateImmediately() {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->set_send_content_state_immediately(true);
+}
+
+WebKit::WebWidget* RenderViewTest::GetWebWidget() {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  return impl->webwidget();
 }

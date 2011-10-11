@@ -17,21 +17,32 @@
 #include "content/common/main_function_params.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/sandbox_init_wrapper.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+
+class ExtensionDispatcher;
+class MockRenderProcess;
+class RendererMainPlatformDelegate;
+struct ViewMsg_Navigate_Params;
+
+namespace WebKit {
+class WebWidget;
+}
 
 namespace autofill {
 class AutofillAgent;
 class PasswordAutofillManager;
 }
 
-class ExtensionDispatcher;
-class MockRenderProcess;
-class RendererMainPlatformDelegate;
-class RenderViewImpl;
+namespace content {
+class RenderView;
+}
+
+namespace gfx {
+class Rect;
+}
 
 class RenderViewTest : public testing::Test {
  public:
@@ -89,6 +100,13 @@ class RenderViewTest : public testing::Test {
   // Clears anything associated with the browsing history.
   void ClearHistory();
 
+  // These are all methods from RenderViewImpl that we expose to testing code.
+  bool OnMessageReceived(const IPC::Message& msg);
+  void OnNavigate(const ViewMsg_Navigate_Params& params);
+  void DidNavigateWithinPage(WebKit::WebFrame* frame, bool is_new_navigation);
+  void SendContentStateImmediately();
+  WebKit::WebWidget* GetWebWidget();
+
   // testing::Test
   virtual void SetUp();
 
@@ -99,7 +117,9 @@ class RenderViewTest : public testing::Test {
   ExtensionDispatcher* extension_dispatcher_;
   MockRenderThread render_thread_;
   scoped_ptr<MockRenderProcess> mock_process_;
-  scoped_refptr<RenderViewImpl> view_;
+  // We use a naked pointer because we don't want to expose RenderViewImpl in
+  // the embedder's namespace.
+  content::RenderView* view_;
   RendererWebKitPlatformSupportImplNoSandbox webkit_platform_support_;
   scoped_ptr<MockKeyboard> mock_keyboard_;
 

@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/stringprintf.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
@@ -46,8 +47,9 @@ void RenderWidgetTest::ResizeAndPaint(const gfx::Size& page_size,
   // be closed and the handle will no longer be valid.
   scoped_ptr<TransportDIB> mapped_pixels(TransportDIB::Map(pixels->handle()));
 
-  view_->OnMsgPaintAtSize(pixels->handle(), g_sequence_num, page_size,
-                          desired_size);
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->OnMsgPaintAtSize(pixels->handle(), g_sequence_num, page_size,
+                         desired_size);
   ProcessPendingMessages();
   const IPC::Message* msg = render_thread_.sink().GetUniqueMessageMatching(
       ViewHostMsg_PaintAtSize_ACK::ID);
@@ -74,7 +76,7 @@ void RenderWidgetTest::TestResizeAndPaint() {
       "<html><body><div style='position: absolute; top: %d; left: "
       "%d; background-color: red;'>Hello World</div></body></html>",
       kTextPositionY, kTextPositionX).c_str());
-  WebKit::WebSize old_size = view_->webview()->size();
+  WebKit::WebSize old_size = view_->GetWebView()->size();
 
   SkBitmap bitmap;
   // If we re-size the view to something smaller than where the 'Hello World'
@@ -83,7 +85,7 @@ void RenderWidgetTest::TestResizeAndPaint() {
   gfx::Size size(kSmallWidth, kSmallHeight);
   ResizeAndPaint(size, size, &bitmap);
   // Make sure that the view has been re-sized to its old size.
-  EXPECT_TRUE(old_size == view_->webview()->size());
+  EXPECT_TRUE(old_size == view_->GetWebView()->size());
   EXPECT_EQ(kSmallWidth, bitmap.width());
   EXPECT_EQ(kSmallHeight, bitmap.height());
   EXPECT_FALSE(ImageContainsColor(bitmap, kRedARGB));
@@ -93,7 +95,7 @@ void RenderWidgetTest::TestResizeAndPaint() {
   // Hence, the snapshot should contain some red.
   size.SetSize(kLargeWidth, kLargeHeight);
   ResizeAndPaint(size, size, &bitmap);
-  EXPECT_TRUE(old_size == view_->webview()->size());
+  EXPECT_TRUE(old_size == view_->GetWebView()->size());
   EXPECT_EQ(kLargeWidth, bitmap.width());
   EXPECT_EQ(kLargeHeight, bitmap.height());
   EXPECT_TRUE(ImageContainsColor(bitmap, kRedARGB));
@@ -102,7 +104,7 @@ void RenderWidgetTest::TestResizeAndPaint() {
   // should still see the 'Hello World' message since the view size is
   // still large enough.
   ResizeAndPaint(size, gfx::Size(kSmallWidth, kSmallHeight), &bitmap);
-  EXPECT_TRUE(old_size == view_->webview()->size());
+  EXPECT_TRUE(old_size == view_->GetWebView()->size());
   EXPECT_EQ(kSmallWidth, bitmap.width());
   EXPECT_EQ(kSmallHeight, bitmap.height());
   EXPECT_TRUE(ImageContainsColor(bitmap, kRedARGB));

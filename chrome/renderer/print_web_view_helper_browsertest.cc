@@ -6,6 +6,7 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/test/base/render_view_test.h"
+#include "content/public/renderer/render_view.h"
 #include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -190,11 +191,11 @@ TEST_F(PrintWebViewHelperTest, PrintWithIframe) {
   // Find the frame and set it as the focused one.  This should mean that that
   // the printout should only contain the contents of that frame.
   WebFrame* sub1_frame =
-      view_->webview()->findFrameByName(WebString::fromUTF8("sub1"));
+      view_->GetWebView()->findFrameByName(WebString::fromUTF8("sub1"));
   ASSERT_TRUE(sub1_frame);
-  view_->webview()->setFocusedFrame(sub1_frame);
-  ASSERT_NE(view_->webview()->focusedFrame(),
-            view_->webview()->mainFrame());
+  view_->GetWebView()->setFocusedFrame(sub1_frame);
+  ASSERT_NE(view_->GetWebView()->focusedFrame(),
+            view_->GetWebView()->mainFrame());
 
   // Initiate printing.
   PrintWebViewHelper::Get(view_)->OnPrintPages();
