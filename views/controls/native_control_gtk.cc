@@ -172,15 +172,7 @@ void NativeControlGtk::ViewHierarchyChanged(bool is_add, View* parent,
 }
 
 void NativeControlGtk::VisibilityChanged(View* starting_from, bool is_visible) {
-  if (!is_visible) {
-    if (native_view()) {
-      // We destroy the child widget when we become invisible because of the
-      // performance cost of maintaining widgets that aren't currently needed.
-      Detach();
-      // Make sure that Detach destroyed the widget.
-      DCHECK(!native_view());
-    }
-  } else if (!native_view()) {
+  if (!native_view()) {
     if (GetWidget())
       CreateNativeControl();
   } else {

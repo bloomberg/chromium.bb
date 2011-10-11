@@ -543,9 +543,38 @@ TEST_F(WindowTest, GetEventHandlerForPoint_NoDelegate) {
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(target_point));
 }
 
+class VisibilityWindowDelegate : public TestWindowDelegate {
+ public:
+  VisibilityWindowDelegate()
+      : shown_(0),
+        hidden_(0) {
+  }
+
+  int shown() const { return shown_; }
+  int hidden() const { return hidden_; }
+  void Clear() {
+    shown_ = 0;
+    hidden_ = 0;
+  }
+
+  virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE {
+    if (visible)
+      shown_++;
+    else
+      hidden_++;
+  }
+
+ private:
+  int shown_;
+  int hidden_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisibilityWindowDelegate);
+};
+
 // Verifies show/hide propagate correctly to children and the layer.
 TEST_F(WindowTest, Visibility) {
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  VisibilityWindowDelegate d;
+  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(&d, 1, gfx::Rect(), NULL));
   scoped_ptr<Window> w2(CreateTestWindowWithId(2, w1.get()));
   scoped_ptr<Window> w3(CreateTestWindowWithId(3, w2.get()));
 
@@ -553,11 +582,15 @@ TEST_F(WindowTest, Visibility) {
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_TRUE(w3->IsVisible());
+  EXPECT_EQ(1, d.shown());
 
+  d.Clear();
   w1->Hide();
   EXPECT_FALSE(w1->IsVisible());
   EXPECT_FALSE(w2->IsVisible());
   EXPECT_FALSE(w3->IsVisible());
+  EXPECT_EQ(1, d.hidden());
+  EXPECT_EQ(0, d.shown());
 
   w2->Show();
   EXPECT_FALSE(w1->IsVisible());
@@ -569,10 +602,13 @@ TEST_F(WindowTest, Visibility) {
   EXPECT_FALSE(w2->IsVisible());
   EXPECT_FALSE(w3->IsVisible());
 
+  d.Clear();
   w1->Show();
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_FALSE(w3->IsVisible());
+  EXPECT_EQ(0, d.hidden());
+  EXPECT_EQ(1, d.shown());
 
   w3->Show();
   EXPECT_TRUE(w1->IsVisible());

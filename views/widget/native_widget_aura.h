@@ -135,6 +135,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
+  virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
  private:
   typedef std::map<const char*, void*> PropsMap;

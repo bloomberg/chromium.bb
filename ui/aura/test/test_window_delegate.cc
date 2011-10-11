@@ -63,5 +63,8 @@ void TestWindowDelegate::OnWindowDestroying() {
 void TestWindowDelegate::OnWindowDestroyed() {
 }
 
+void TestWindowDelegate::OnWindowVisibilityChanged(bool visible) {
+}
+
 }  // namespace test
 }  // namespace aura

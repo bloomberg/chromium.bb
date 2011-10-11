@@ -45,6 +45,17 @@
 
 using ::testing::_;
 
+namespace {
+
+// Returns true if |ancestor| is an ancestor of |layer|.
+bool LayerIsAncestor(const ui::Layer* ancestor, const ui::Layer* layer) {
+  while (layer && layer != ancestor)
+    layer = layer->parent();
+  return layer == ancestor;
+}
+
+}
+
 namespace views {
 
 typedef ViewsTestBase ViewTest;
@@ -2566,6 +2577,15 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
 
   v2->SetPosition(gfx::Point(11, 12));
   EXPECT_EQ(gfx::Rect(36, 48, 40, 50), v2->layer()->bounds());
+
+  // Bounds of the layer should change even if the view is not invisible.
+  v1->SetVisible(false);
+  v1->SetPosition(gfx::Point(20, 30));
+  EXPECT_EQ(gfx::Rect(31, 42, 40, 50), v2->layer()->bounds());
+
+  v2->SetVisible(false);
+  v2->SetBounds(10, 11, 20, 30);
+  EXPECT_EQ(gfx::Rect(30, 41, 20, 30), v2->layer()->bounds());
 }
 
 // Makes sure a transform persists after toggling the visibility.
@@ -2604,23 +2624,38 @@ TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
   EXPECT_EQ(2.0f, view->layer()->transform().matrix().get(0, 0));
 }
 
-// Makes sure that layer persists after toggling the visibility.
+// Makes sure that layer visibility is correct after toggling View visibility.
 TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 
+  // The view isn't attached to a widget or a parent view yet. But it should
+  // still have a layer, but the layer should not be attached to the root
+  // layer.
   View* v1 = new View;
-  content_view->AddChildView(v1);
   v1->SetPaintToLayer(true);
-
-  v1->SetVisible(true);
   EXPECT_TRUE(v1->layer());
+  EXPECT_FALSE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
+                               v1->layer()));
+
+  // Once the view is attached to a widget, its layer should be attached to the
+  // root layer and visible.
+  content_view->AddChildView(v1);
+  EXPECT_TRUE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
+                              v1->layer()));
+  EXPECT_TRUE(v1->layer()->IsDrawn());
 
   v1->SetVisible(false);
-  EXPECT_TRUE(v1->layer());
+  EXPECT_FALSE(v1->layer()->IsDrawn());
 
   v1->SetVisible(true);
-  EXPECT_TRUE(v1->layer());
+  EXPECT_TRUE(v1->layer()->IsDrawn());
+
+  widget()->Hide();
+  EXPECT_FALSE(v1->layer()->IsDrawn());
+
+  widget()->Show();
+  EXPECT_TRUE(v1->layer()->IsDrawn());
 }
 
 // Test that a hole in a layer is correctly created regardless of whether
@@ -2715,6 +2750,33 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithOpaqueLayer) {
   child_view->SetVisible(true);
   EXPECT_EQ(
       gfx::Rect(50, 50, 100, 100), parent_view->layer()->hole_rect());
+}
+
+// Tests that the layers in the subtree are orphaned after a View is removed
+// from the parent.
+TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
+  View* content_view = new View;
+  widget()->SetContentsView(content_view);
+
+  View* v1 = new View;
+  content_view->AddChildView(v1);
+
+  View* v2 = new View;
+  v1->AddChildView(v2);
+  v2->SetPaintToLayer(true);
+  EXPECT_TRUE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
+                              v2->layer()));
+  EXPECT_TRUE(v2->layer()->IsDrawn());
+
+  content_view->RemoveChildView(v1);
+  EXPECT_FALSE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
+                               v2->layer()));
+
+  // Reparent |v2|.
+  content_view->AddChildView(v2);
+  EXPECT_TRUE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
+                              v2->layer()));
+  EXPECT_TRUE(v2->layer()->IsDrawn());
 }
 
 // TODO(sky): reenable once focus issues are straightened out so that this

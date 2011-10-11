@@ -34,6 +34,7 @@ class TestWindowDelegate : public WindowDelegate {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
+  virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);

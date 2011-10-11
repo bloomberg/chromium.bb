@@ -55,6 +55,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   }
   virtual void OnWindowDestroying() OVERRIDE {}
   virtual void OnWindowDestroyed() OVERRIDE {}
+  virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE {}
 
  private:
   SkColor color_;

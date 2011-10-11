@@ -532,6 +532,10 @@ void NativeWidgetAura::OnWindowDestroyed() {
     delete this;
 }
 
+void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
+  delegate_->OnNativeWidgetVisibilityChanged(visible);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 

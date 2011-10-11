@@ -367,8 +367,11 @@ void Window::SetVisible(bool visible) {
   bool was_visible = IsVisible();
   layer_->SetVisible(visible);
   bool is_visible = IsVisible();
-  if (was_visible != is_visible)
+  if (was_visible != is_visible) {
     SchedulePaint();
+    if (delegate_)
+      delegate_->OnWindowVisibilityChanged(is_visible);
+  }
 }
 
 void Window::SchedulePaint() {
