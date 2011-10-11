@@ -132,7 +132,6 @@ class OSMesaImageTransportSurface : public ImageTransportSurface,
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
-  virtual void* GetHandle() OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation:
@@ -475,11 +474,10 @@ void OSMesaImageTransportSurface::OnResize(gfx::Size size) {
   if (shared_mem_.get())
     ReleaseSurface();
 
-  // Now that the shared memory buffer is gone, we need to change OSMesa to
-  // point at something valid, so we'll let it point to the buffer in the super
-  // class.  This would be really bad since that buffer has a different size,
-  // but we don't allow any drawing to take place until we reset the surface
-  // back to a new buffer of shared memory.
+  GLSurfaceOSMesa::Resize(size);
+
+  // Now that we resized/reallocated the memory buffer, we need to change
+  // what OSMesa is pointing at to the new buffer.
   helper_->MakeCurrent();
 
   size_ = size;
@@ -499,10 +497,6 @@ void OSMesaImageTransportSurface::OnNewSurfaceACK(
   shared_mem_.reset(TransportDIB::Map(surface_handle));
   DCHECK_NE(shared_mem_.get(), static_cast<void*>(NULL));
 
-  // When we get the shared memory buffer back we can use that for OSMesa to
-  // write in, so we give it to OSMesa.
-  helper_->MakeCurrent();
-
   helper_->SetScheduled(true);
 }
 
@@ -510,6 +504,7 @@ bool OSMesaImageTransportSurface::SwapBuffers() {
   DCHECK_NE(shared_mem_.get(), static_cast<void*>(NULL));
 
   // Copy the OSMesa buffer to the shared memory
+  glFinish();
   memcpy(shared_mem_->memory(), GetHandle(), size_.GetArea() * 4);
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
@@ -526,13 +521,6 @@ void OSMesaImageTransportSurface::OnBuffersSwappedACK() {
 
 gfx::Size OSMesaImageTransportSurface::GetSize() {
   return size_;
-}
-
-void* OSMesaImageTransportSurface::GetHandle() {
-  if (shared_mem_.get())
-    return shared_mem_->memory();
-  else
-    return GLSurfaceOSMesa::GetHandle();
 }
 
 }  // namespace
