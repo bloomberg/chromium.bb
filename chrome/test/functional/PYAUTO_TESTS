@@ -165,6 +165,8 @@
       '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
+      # causes browser crash?  crbug.com/99865
+      '-prefs.PrefsTest.testGeolocationPref',
       # crbug.com/88679
       '-sync',
       # crbug.com/86949
