@@ -222,7 +222,10 @@ def _SetEnvForPnacl(env, root):
   pnacl_lib_arch = os.path.join(root, 'lib-%s' % arch)
 
   #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
-  pnacl_include = os.path.join(root, 'sysroot', 'include')
+  if env.Bit('nacl_glibc'):
+    pnacl_include = os.path.join(root, 'pkg', 'glibc', 'include')
+  else:
+    pnacl_include = os.path.join(root, 'sysroot', 'include')
   pnacl_ar = binprefix + 'ar' + binext
   pnacl_nm = binprefix + 'nm' + binext
   pnacl_ranlib = binprefix + 'ranlib' + binext
