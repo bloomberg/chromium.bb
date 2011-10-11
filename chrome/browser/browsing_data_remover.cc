@@ -82,9 +82,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_cache_(false),
       waiting_for_clear_lso_data_(false) {
   DCHECK(profile);
-  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
-                                      profile_->GetPrefs(),
-                                      NULL);
 }
 
 BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
@@ -108,9 +105,6 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_cache_(false),
       waiting_for_clear_lso_data_(false) {
   DCHECK(profile);
-  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
-                                      profile_->GetPrefs(),
-                                      NULL);
 }
 
 BrowsingDataRemover::~BrowsingDataRemover() {
@@ -236,7 +230,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     }
   }
 
-  if (remove_mask & REMOVE_LSO_DATA && *clear_plugin_lso_data_enabled_) {
+  if (remove_mask & REMOVE_LSO_DATA) {
     UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
 
     waiting_for_clear_lso_data_ = true;

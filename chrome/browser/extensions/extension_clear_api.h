@@ -20,6 +20,8 @@ namespace base {
 class DictionaryValue;
 }
 
+class PluginPrefs;
+
 // This serves as a base class from which the browsing data API functions will
 // inherit. Each needs to be an observer of BrowsingDataRemover events, and each
 // will handle those events in the same way (by calling the passed-in callback
@@ -40,6 +42,17 @@ class BrowsingDataExtensionFunction : public AsyncExtensionFunction,
   // Children should override this method to provide the proper removal mask
   // based on the API call they represent.
   virtual int GetRemovalMask() const = 0;
+
+ private:
+  // Updates the removal bitmask according to whether removing LSO data is
+  // supported or not.
+  void CheckRemovingLSODataSupported(scoped_refptr<PluginPrefs> plugin_prefs);
+
+  // Called when we're ready to start removing data.
+  void StartRemoving();
+
+  BrowsingDataRemover::TimePeriod period_;
+  int removal_mask_;
 };
 
 class ClearBrowsingDataFunction : public BrowsingDataExtensionFunction {

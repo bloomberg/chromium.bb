@@ -259,9 +259,6 @@ class BrowsingDataRemover : public NotificationObserver,
   // Used if we need to clear history.
   CancelableRequestConsumer request_consumer_;
 
-  // Keeps track of whether clearing LSO data is supported.
-  BooleanPrefMember clear_plugin_lso_data_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemover);
 };
 

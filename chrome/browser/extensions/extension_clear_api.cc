@@ -14,6 +14,8 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/extensions/extension_clear_api_constants.h"
+#include "chrome/browser/plugin_data_remover.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/extension.h"
@@ -95,10 +97,40 @@ bool BrowsingDataExtensionFunction::RunImpl() {
 
   // Parse the |timeframe| argument to generate the TimePeriod.
   std::string timeframe;
-  BrowsingDataRemover::TimePeriod period;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &timeframe));
-  EXTENSION_FUNCTION_VALIDATE(ParseTimePeriod(timeframe, &period));
+  EXTENSION_FUNCTION_VALIDATE(ParseTimePeriod(timeframe, &period_));
 
+  removal_mask_ = GetRemovalMask();
+
+  if (removal_mask_ & BrowsingDataRemover::REMOVE_LSO_DATA) {
+    // If we're being asked to remove LSO data, check whether it's actually
+    // supported.
+    Profile* profile = GetCurrentBrowser()->profile();
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(
+            &BrowsingDataExtensionFunction::CheckRemovingLSODataSupported,
+            this,
+            make_scoped_refptr(PluginPrefs::GetForProfile(profile))));
+  } else {
+    StartRemoving();
+  }
+
+  // Will finish asynchronously.
+  return true;
+}
+
+void BrowsingDataExtensionFunction::CheckRemovingLSODataSupported(
+    scoped_refptr<PluginPrefs> plugin_prefs) {
+  if (!PluginDataRemover::IsSupported(plugin_prefs))
+    removal_mask_ &= ~BrowsingDataRemover::REMOVE_LSO_DATA;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowsingDataExtensionFunction::StartRemoving, this));
+}
+
+void BrowsingDataExtensionFunction::StartRemoving() {
   // If we're good to go, add a ref (Balanced in OnBrowsingDataRemoverDone)
   AddRef();
 
@@ -107,12 +139,9 @@ bool BrowsingDataExtensionFunction::RunImpl() {
   // we've generated above. We can use a raw pointer here, as the browsing data
   // remover is responsible for deleting itself once data removal is complete.
   BrowsingDataRemover* remover = new BrowsingDataRemover(
-      GetCurrentBrowser()->profile(), period, base::Time::Now());
+      GetCurrentBrowser()->profile(), period_, base::Time::Now());
   remover->AddObserver(this);
-  remover->Remove(GetRemovalMask());
-
-  // Will finish asynchronously.
-  return true;
+  remover->Remove(removal_mask_);
 }
 
 int ClearBrowsingDataFunction::GetRemovalMask() const {
