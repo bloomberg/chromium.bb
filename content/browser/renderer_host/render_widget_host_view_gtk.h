@@ -18,8 +18,10 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
@@ -122,6 +124,12 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
   // occurred, so that we can force the widget to scroll when it otherwise
   // would be unable to.
   void ModifyEventForEdgeDragging(GtkWidget* widget, GdkEventMotion* event);
+
+  // Mouse events always provide a movementX/Y which needs to be computed.
+  // Also, mouse lock requires knowledge of last unlocked cursor coordinates.
+  // State is stored on the host view to do this, and the mouse event modified.
+  void ModifyEventMovementAndCoords(WebKit::WebMouseEvent* event);
+
   void Paint(const gfx::Rect&);
 
   // Called by GtkIMContextWrapper to forward a keyboard event to renderer.
@@ -172,6 +180,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
   void ShowCurrentCursor();
 
   void set_last_mouse_down(GdkEventButton* event);
+
+  gfx::Point GetWidgetCenter();
 
   // The model object.
   RenderWidgetHost* host_;
@@ -234,6 +244,18 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
   // Is the widget fullscreen?
   bool is_fullscreen_;
 
+  // Used to record the last position of the mouse.
+  // While the mouse is locked, they store the last known position just as mouse
+  // lock was entered.
+  // Relative to the upper-left corner of the view.
+  gfx::Point unlocked_mouse_position_;
+  // Relative to the upper-left corner of the screen.
+  gfx::Point unlocked_global_mouse_position_;
+  // Last hidden cursor position. Relative to screen.
+  gfx::Point global_mouse_position_;
+  // Indicates when mouse motion is valid after the widget has moved.
+  bool mouse_has_been_warped_to_new_center_;
+
   // For full-screen windows we have a OnDestroy handler that we need to remove,
   // so we keep it ID here.
   unsigned long destroy_handler_id_;
@@ -253,6 +275,11 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
   // The size that we want the renderer to be.  We keep this in a separate
   // variable because resizing in GTK+ is async.
   gfx::Size requested_size_;
+
+  // The latest reported center of the widget, use GetWidgetCenter() to access.
+  gfx::Point widget_center_;
+  // If the window moves the widget_center will not be valid until we recompute.
+  bool widget_center_valid_;
 
   // The number of times the user has dragged against horizontal edge  of the
   // monitor (if the widget is aligned with that edge). Negative values
@@ -274,6 +301,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
   // Custimized tooltip window.
   scoped_ptr<ui::TooltipWindowGtk> tooltip_window_;
 #endif  // defined(OS_CHROMEOS)
+
+  ui::GtkSignalRegistrar signals_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_

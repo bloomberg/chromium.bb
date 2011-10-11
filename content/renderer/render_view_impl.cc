@@ -4575,6 +4575,15 @@ void RenderViewImpl::OnEnableViewSourceMode() {
 }
 
 void RenderViewImpl::OnLockMouseACK(bool succeeded) {
+  // Mouse Lock removes the system cursor and provides all mouse motion as
+  // .movementX/Y values on events all sent to a fixed target. This requires
+  // content to specifically request the mode to be entered.
+  // Mouse Capture is implicitly given for the duration of a drag event, and
+  // sends all mouse events to the initial target of the drag.
+  // If Lock is entered it supercedes any in progress Capture.
+  if (succeeded)
+    OnMouseCaptureLost();
+
   pepper_delegate_.OnLockMouseACK(succeeded);
 }
 
