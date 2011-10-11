@@ -22,8 +22,7 @@ class URLRequest;
 }  // namespace net
 
 // Used to show an offline interstitial page when the network is not available.
-class OfflineResourceHandler : public ResourceHandler,
-                               public chromeos::OfflineLoadPage::Delegate {
+class OfflineResourceHandler : public ResourceHandler {
  public:
   OfflineResourceHandler(ResourceHandler* handler,
                          int host_id,
@@ -34,34 +33,37 @@ class OfflineResourceHandler : public ResourceHandler,
   virtual ~OfflineResourceHandler();
 
   // ResourceHandler implementation:
-  virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
+  virtual bool OnUploadProgress(int request_id, uint64 position,
+      uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id, const GURL& new_url,
-                           ResourceResponse* response, bool* defer);
-  virtual bool OnResponseStarted(int request_id, ResourceResponse* response);
-  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer);
+      ResourceResponse* response, bool* defer) OVERRIDE;
+  virtual bool OnResponseStarted(int request_id,
+      ResourceResponse* response) OVERRIDE;
+  virtual bool OnWillStart(int request_id, const GURL& url,
+      bool* defer) OVERRIDE;
   virtual bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
-                          int min_size);
-  virtual bool OnReadCompleted(int request_id, int* bytes_read);
+      int min_size) OVERRIDE;
+  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE;
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& security_info);
-  virtual void OnRequestClosed();
+                                   const std::string& security_info) OVERRIDE;
+  virtual void OnRequestClosed() OVERRIDE;
 
-  // chromeos::OfflineLoadPage::Delegate
-  virtual void OnBlockingPageComplete(bool proceed);
+  // OfflineLoadPage callback.
+  void OnBlockingPageComplete(bool proceed);
 
  private:
-  // Erease the state assocaited with a deferred load request.
+  // Erase the state assocaited with a deferred load request.
   void ClearRequestInfo();
   bool IsRemote(const GURL& url) const;
 
   // Resume the deferred load request.
   void Resume();
 
-  // Tells if chrome should show the offline page.
+  // True if chrome should show the offline page.
   bool ShouldShowOfflinePage(const GURL& url) const;
 
-  // Shows the offline interstitinal page in UI thread.
+  // Shows the offline interstitial page on the UI thread.
   void ShowOfflinePage();
 
   // A callback to tell if an appcache exists.

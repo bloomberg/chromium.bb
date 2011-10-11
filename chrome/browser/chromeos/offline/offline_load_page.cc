@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/offline_resource_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -46,36 +47,18 @@ void SetString(DictionaryValue* strings, const char* name, int resource_id) {
 
 namespace chromeos {
 
-// static
-void OfflineLoadPage::Show(int process_host_id, int render_view_id,
-                           const GURL& url, Delegate* delegate) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!net::NetworkChangeNotifier::IsOffline()) {
-    // Check again in UI thread and proceed if it's connected.
-    delegate->OnBlockingPageComplete(true);
-  } else {
-    TabContents* tab_contents =
-        tab_util::GetTabContentsByID(process_host_id, render_view_id);
-    // There is a chance that the tab is closed after we decided to show
-    // offline and before we actually show the offline page.
-    if (!tab_contents)
-      return;
-    (new OfflineLoadPage(tab_contents, url, delegate))->Show();
-  }
-}
-
 OfflineLoadPage::OfflineLoadPage(TabContents* tab_contents,
                                  const GURL& url,
-                                 Delegate* delegate)
+                                 OfflineResourceHandler* handler)
     : ChromeInterstitialPage(tab_contents, true, url),
-      delegate_(delegate),
+      handler_(handler),
       proceeded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      in_test_(false) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
 }
 
 OfflineLoadPage::~OfflineLoadPage() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
 }
 
@@ -182,18 +165,23 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
   }
 }
 
+void OfflineLoadPage::NotifyBlockingPageComplete(bool proceed) {
+  handler_->OnBlockingPageComplete(proceed);
+}
+
 void OfflineLoadPage::Proceed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   proceeded_ = true;
-  delegate_->OnBlockingPageComplete(true);
+  NotifyBlockingPageComplete(true);
   InterstitialPage::Proceed();
 }
 
 void OfflineLoadPage::DontProceed() {
-  // Inogre if it's already proceeded.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Ignore if it's already proceeded.
   if (proceeded_)
     return;
-  delegate_->OnBlockingPageComplete(false);
+  NotifyBlockingPageComplete(false);
   InterstitialPage::DontProceed();
 }
 

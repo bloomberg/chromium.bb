@@ -15,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/net_errors.h"
@@ -40,6 +41,7 @@ OfflineResourceHandler::OfflineResourceHandler(
 }
 
 OfflineResourceHandler::~OfflineResourceHandler() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!appcache_completion_callback_.get());
 }
 
@@ -141,6 +143,8 @@ void OfflineResourceHandler::OnBlockingPageComplete(bool proceed) {
                           proceed));
     return;
   }
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (deferred_request_id_ == -1) {
     LOG(WARNING) << "OnBlockingPageComplete called after completion: "
                  << " this=" << this;
@@ -190,6 +194,20 @@ void OfflineResourceHandler::Resume() {
 }
 
 void OfflineResourceHandler::ShowOfflinePage() {
-  chromeos::OfflineLoadPage::Show(
-      process_host_id_, render_view_id_, deferred_url_, this);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!net::NetworkChangeNotifier::IsOffline()) {
+    // Check again on UI thread and proceed if it's connected.
+    OnBlockingPageComplete(true);
+  } else {
+    RenderViewHost* render_view_host =
+        RenderViewHost::FromID(process_host_id_, render_view_id_);
+    TabContents* tab_contents = render_view_host ?
+        render_view_host->delegate()->GetAsTabContents() : NULL;
+    // There is a chance that the tab closed after we decided to show
+    // the offline page on the IO thread and before we actually show the
+    // offline page here on the UI thread.
+    if (tab_contents)
+      (new chromeos::OfflineLoadPage(tab_contents, deferred_url_, this))->
+          Show();
+  }
 }

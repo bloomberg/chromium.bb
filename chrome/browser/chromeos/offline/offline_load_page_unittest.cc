@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
+#include "chrome/browser/renderer_host/offline_resource_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -13,6 +14,10 @@
 static const char* kURL1 = "http://www.google.com/";
 static const char* kURL2 = "http://www.gmail.com/";
 
+namespace chromeos {
+
+class OfflineLoadPageTest;
+
 namespace {
 
 // An OfflineLoadPage class that does not create windows.
@@ -20,23 +25,28 @@ class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
  public:
   TestOfflineLoadPage(TabContents* tab_contents,
                       const GURL& url,
-                      Delegate* delegate)
-    : chromeos::OfflineLoadPage(tab_contents, url, delegate) {
-    EnableTest();
+                      OfflineLoadPageTest* test_page)
+    : chromeos::OfflineLoadPage(tab_contents, url, NULL),
+      test_page_(test_page) {
   }
 
   // Overriden from InterstitialPage.  Don't create a view.
-  virtual TabContentsView* CreateTabContentsView() {
+  virtual TabContentsView* CreateTabContentsView() OVERRIDE {
     return NULL;
   }
+
+  // chromeos::OfflineLoadPage override.
+  virtual void NotifyBlockingPageComplete(bool proceed) OVERRIDE;
+
+ private:
+  OfflineLoadPageTest* test_page_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOfflineLoadPage);
 };
 
 }  // namespace
 
-namespace chromeos {
-
-class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness,
-                            public OfflineLoadPage::Delegate {
+class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
  public:
   // The decision the user made.
   enum UserResponse {
@@ -55,8 +65,7 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness,
     user_response_ = PENDING;
   }
 
-  // OfflineLoadPage::Delegate implementation.
-  virtual void OnBlockingPageComplete(bool proceed) {
+  void OnBlockingPageComplete(bool proceed) {
     if (proceed)
       user_response_ = OK;
     else
@@ -88,10 +97,16 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness,
 
   // Initializes / shuts down a stub CrosLibrary.
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+
+  DISALLOW_COPY_AND_ASSIGN(OfflineLoadPageTest);
 };
 
+void TestOfflineLoadPage::NotifyBlockingPageComplete(bool proceed) {
+  test_page_->OnBlockingPageComplete(proceed);
+}
 
-TEST_F(OfflineLoadPageTest, OfflinePaeProceed) {
+
+TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
   // Start a load.
   Navigate(kURL1, 1);
   // Load next page.

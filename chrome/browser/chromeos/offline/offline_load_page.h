@@ -13,6 +13,7 @@
 #include "net/base/network_change_notifier.h"
 
 class Extension;
+class OfflineResourceHandler;
 class TabContents;
 
 namespace base {
@@ -28,34 +29,15 @@ namespace chromeos {
 class OfflineLoadPage : public ChromeInterstitialPage,
                         public net::NetworkChangeNotifier::OnlineStateObserver {
  public:
-  // A delegate class that is called when the interstitinal page
-  // is closed.
-  class Delegate {
-   public:
-    Delegate() {}
-    virtual ~Delegate() {}
-    // Called when a user selected to proceed or not to proceed
-    // with loading.
-    virtual void OnBlockingPageComplete(bool proceed) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-  static void Show(int process_host_id, int render_view_id,
-                   const GURL& url, Delegate* delegate);
-  // Import show here so that overloading works.
-  using ChromeInterstitialPage::Show;
-
- protected:
   // Create a offline load page for the |tab_contents|.
   OfflineLoadPage(TabContents* tab_contents, const GURL& url,
-                  Delegate* delegate);
+                  OfflineResourceHandler* handler);
+
+ protected:
   virtual ~OfflineLoadPage();
 
-  // Only for testing.
-  void EnableTest() {
-    in_test_ = true;
-  }
+  // Overridden by tests.
+  virtual void NotifyBlockingPageComplete(bool proceed);
 
  private:
   // ChromeInterstitialPage implementation.
@@ -79,8 +61,7 @@ class OfflineLoadPage : public ChromeInterstitialPage,
   // has not been activated.
   bool ShowActivationMessage();
 
-  Delegate* delegate_;
-  NotificationRegistrar registrar_;
+  scoped_refptr<OfflineResourceHandler> handler_;
 
   // True if the proceed is chosen.
   bool proceeded_;
