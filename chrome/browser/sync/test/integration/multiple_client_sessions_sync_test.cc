@@ -27,8 +27,8 @@ class MultipleClientSessionsSyncTest : public SyncTest {
 
 // Timeout on Windows, see http://crbug.com/99819
 #if defined(OS_WIN)
-#define MAYBE_AllChanged FAILS_AllChanged
-#define MAYBE_EncryptedAndChanged FAILS_EncryptedAndChanged
+#define MAYBE_AllChanged DISABLED_AllChanged
+#define MAYBE_EncryptedAndChanged DISABLED_EncryptedAndChanged
 #else
 #define MAYBE_AllChanged AllChanged
 #define MAYBE_EncryptedAndChanged EncryptedAndChanged

@@ -27,7 +27,7 @@ class SingleClientSessionsSyncTest : public SyncTest {
 
 // Timeout on Windows, see http://crbug.com/99819
 #if defined(OS_WIN)
-#define MAYBE_Sanity FAILS_Sanity
+#define MAYBE_Sanity DISABLED_Sanity
 #else
 #define MAYBE_Sanity Sanity
 #endif
