@@ -54,7 +54,7 @@ extern "C" {
 #include <CoreFoundation/CoreFoundation.h>
 #include <Foundation/Foundation.h>
 
-#include <Breakpad/BreakpadDefines.h>
+#include "BreakpadDefines.h"
 
 // Optional user-defined function to dec to decide if we should handle
 // this crash or forward it along.
