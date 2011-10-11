@@ -23,7 +23,7 @@ function Gallery(container, closeCallback, metadataProvider, shareActions,
 
   this.onFadeTimeoutBound_ = this.onFadeTimeout_.bind(this);
   this.fadeTimeoutId_ = null;
-  this.fadingEnabled_ = true;
+  this.mouseOverTool_ = false;
 
   this.initDom_(shareActions);
 }
@@ -84,18 +84,21 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.ribbonSpacer_.className = 'ribbon-spacer';
   this.toolbar_.appendChild(this.ribbonSpacer_);
 
-  this.toolbar_.addEventListener('mouseover',
-      this.enableFading_.bind(this, false));
-  this.toolbar_.addEventListener('mouseout',
-      this.enableFading_.bind(this, true));
+  this.arrowBox_ = this.document_.createElement('div');
+  this.arrowBox_.className = 'arrow-box';
+  this.container_.appendChild(this.arrowBox_);
 
   this.arrowLeft_ = this.document_.createElement('div');
   this.arrowLeft_.className = 'arrow left';
-  this.container_.appendChild(this.arrowLeft_);
+  this.arrowBox_.appendChild(this.arrowLeft_);
+
+  this.arrowSpacer_ = this.document_.createElement('div');
+  this.arrowSpacer_.className = 'arrow-spacer';
+  this.arrowBox_.appendChild(this.arrowSpacer_);
 
   this.arrowRight_ = this.document_.createElement('div');
   this.arrowRight_.className = 'arrow right';
-  this.container_.appendChild(this.arrowRight_);
+  this.arrowBox_.appendChild(this.arrowRight_);
 
   this.ribbon_ = new Ribbon(this.ribbonSpacer_, this.onSelect_.bind(this),
       this.arrowLeft_, this.arrowRight_);
@@ -279,8 +282,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
       if (this.isEditing_()) {
         this.onEdit_();
       } else if (this.isSharing_()) {
-        this.editor_.leaveMode();
-        this.initiateFading_();
+        this.onShare_();
       } else {
         this.onClose_();
       }
@@ -315,6 +317,18 @@ Gallery.prototype.onMouseMove_ = function(e) {
   this.clientY_ = e.clientY;
 
   this.cancelFading_();
+
+  this.mouseOverTool_ = false;
+  for (var elem = e.target; elem != this.container_; elem = elem.parentNode) {
+    // TODO(kaznacheev): generalize, perhaps mark tools with a special class.
+    if (elem == this.toolbar_ ||
+        elem == this.arrowLeft_ ||
+        elem == this.arrowRight_) {
+      this.mouseOverTool_ = true;
+      break;
+    }
+  }
+
   this.initiateFading_();
 };
 
@@ -324,23 +338,13 @@ Gallery.prototype.onFadeTimeout_ = function() {
   this.container_.removeAttribute('tools');
 };
 
-Gallery.prototype.enableFading_ = function(on) {
-  this.fadingEnabled_ = on;
-  if (this.fadingEnabled_)
-    this.initiateFading_();
-  else
-    this.cancelFading_();
-};
-
 Gallery.prototype.initiateFading_ = function(opt_timeout) {
-  if (!this.fadingEnabled_)
-      return;
-
-  if (this.isEditing_() || this.isSharing_() || this.fadeTimeoutId_) {
+  if (this.mouseOverTool_ || this.isEditing_() || this.isSharing_())
     return;
-  }
-  this.fadeTimeoutId_ = window.setTimeout(
-      this.onFadeTimeoutBound_, opt_timeout || Gallery.FADE_TIMEOUT);
+
+  if (!this.fadeTimeoutId_)
+    this.fadeTimeoutId_ = window.setTimeout(
+        this.onFadeTimeoutBound_, opt_timeout || Gallery.FADE_TIMEOUT);
 };
 
 Gallery.prototype.cancelFading_ = function() {
