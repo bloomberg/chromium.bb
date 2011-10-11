@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,14 +36,11 @@ class PEInfo;
 //
 class Element {
  public:
-  Element(ExecutableType kind,
-          Ensemble* ensemble,
-          const Region& region,
-          PEInfo*info);
+  enum Kind { WIN32_X86_WITH_CODE, WIN32_NOCODE };
 
-  virtual ~Element();
+  virtual ~Element() {}
 
-  ExecutableType kind() const { return kind_; }
+  Kind kind() const { return kind_; }
   const Region& region() const { return region_; }
 
   // The name is used only for debugging and logging.
@@ -53,14 +50,16 @@ class Element {
   // containing Ensemble.
   size_t offset_in_ensemble() const;
 
-  // The ImageInfo for this executable
-  virtual PEInfo* GetImageInfo() const { return info_; }
+  // Some subclasses of Element might have a PEInfo.
+  virtual PEInfo* GetPEInfo() const { return NULL; }
+
+ protected:
+  Element(Kind kind, Ensemble* ensemble, const Region& region);
 
  private:
-  ExecutableType kind_;
+  Kind kind_;
   Ensemble* ensemble_;
   Region region_;
-  PEInfo *info_;
 
   DISALLOW_COPY_AND_ASSIGN(Element);
 };
@@ -140,8 +139,7 @@ struct CourgettePatchFile {
 
   static const uint32 kVersion = 20110216;
 
-  // Transformation method IDs. These are embedded in generated files, so
-  // never remove or change an existing id.
+  // Transformation method IDs.
   enum TransformationMethodId {
     T_COURGETTE_WIN32_X86 = 1,  // Windows 32 bit 'Portable Executable' x86.
   };

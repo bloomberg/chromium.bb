@@ -53,8 +53,7 @@ void EncodeDecodeTest::TestExe(const char* file_name) const {
 
   courgette::AssemblyProgram* program = NULL;
   const courgette::Status parse_status =
-      courgette::ParseDetectedExecutable(original_buffer, original_length,
-                                         &program);
+      courgette::ParseWin32X86PE(original_buffer, original_length, &program);
   EXPECT_EQ(courgette::C_OK, parse_status);
 
   courgette::EncodedProgram* encoded = NULL;
