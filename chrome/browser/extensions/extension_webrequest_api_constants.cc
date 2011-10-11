@@ -29,6 +29,9 @@ const char kHeaderValueKey[] = "value";
 const char kIsProxyKey[] = "isProxy";
 const char kSchemeKey[] = "scheme";
 const char kRealmKey[] = "realm";
+const char kAuthCredentialsKey[] = "authCredentials";
+const char kUsernameKey[] = "username";
+const char kPasswordKey[] = "password";
 
 const char kOnBeforeRedirect[] = "experimental.webRequest.onBeforeRedirect";
 const char kOnBeforeRequest[] = "experimental.webRequest.onBeforeRequest";

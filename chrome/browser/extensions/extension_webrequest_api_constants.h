@@ -35,6 +35,9 @@ extern const char kHeaderValueKey[];
 extern const char kIsProxyKey[];
 extern const char kSchemeKey[];
 extern const char kRealmKey[];
+extern const char kAuthCredentialsKey[];
+extern const char kUsernameKey[];
+extern const char kPasswordKey[];
 
 // Events.
 extern const char kOnAuthRequired[];

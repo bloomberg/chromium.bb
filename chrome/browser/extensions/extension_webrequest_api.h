@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "ipc/ipc_message.h"
 #include "net/base/completion_callback.h"
+#include "net/base/network_delegate.h"
 #include "net/http/http_request_headers.h"
 #include "webkit/glue/resource_type.h"
 
@@ -32,6 +33,7 @@ class StringValue;
 }
 
 namespace net {
+class AuthCredentials;
 class AuthChallengeInfo;
 class HostPortPair;
 class HttpRequestHeaders;
@@ -104,6 +106,7 @@ class ExtensionWebRequestEventRouter {
     scoped_ptr<net::HttpRequestHeaders> request_headers;
     // Contains all header lines after the status line, lines are \n separated.
     std::string response_headers_string;
+    scoped_ptr<net::AuthCredentials> auth_credentials;
 
     EventResponse(const std::string& extension_id,
                   const base::Time& extension_install_time);
@@ -134,6 +137,9 @@ class ExtensionWebRequestEventRouter {
 
     // Complete set of response headers that will replace the original ones.
     scoped_refptr<net::HttpResponseHeaders> new_response_headers;
+
+    // Authentication Credentials to use.
+    scoped_ptr<net::AuthCredentials> auth_credentials;
 
     EventResponseDelta(const std::string& extension_id,
                        const base::Time& extension_install_time);
@@ -192,11 +198,18 @@ class ExtensionWebRequestEventRouter {
       net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers);
 
-  // Dispatches the onAuthRequired event.
-  void OnAuthRequired(void* profile,
+  // Dispatches the OnAuthRequired event to any extensions whose filters match
+  // the given request. If the listener is not registered as "blocking", then
+  // AUTH_REQUIRED_RESPONSE_OK is returned. Otherwise,
+  // AUTH_REQUIRED_RESPONSE_IO_PENDING is returned and |callback| will be
+  // invoked later.
+  net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
+                     void* profile,
                      ExtensionInfoMap* extension_info_map,
                      net::URLRequest* request,
-                     const net::AuthChallengeInfo& auth_info);
+                     const net::AuthChallengeInfo& auth_info,
+                     const net::NetworkDelegate::AuthCallback& callback,
+                     net::AuthCredentials* credentials);
 
   // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests
   // only.
@@ -344,6 +357,16 @@ class ExtensionWebRequestEventRouter {
       BlockedRequest* request,
       std::list<std::string>* conflicting_extensions) const;
   void MergeOnHeadersReceivedResponses(
+      BlockedRequest* request,
+      std::list<std::string>* conflicting_extensions) const;
+
+  // Merge the responses of blocked onAuthRequired handlers. The first
+  // registered listener that supplies authentication credentials in a response,
+  // if any, will have its authentication credentials used. |request| must be
+  // non-NULL, and contain |deltas| that are sorted in decreasing order of
+  // precedence.
+  // Returns whether authentication credentials are set.
+  bool MergeOnAuthRequiredResponses(
       BlockedRequest* request,
       std::list<std::string>* conflicting_extensions) const;
 

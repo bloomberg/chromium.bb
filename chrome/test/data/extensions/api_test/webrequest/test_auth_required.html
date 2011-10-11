@@ -1,0 +1,323 @@
+﻿<script src="framework.js">
+</script>
+<script>
+function getURLAuthRequired() {
+  return getServerURL('auth-basic');
+}
+
+runTests([
+  // onAuthRequired is not a blocking function in this variant.
+  function authRequiredNonBlocking() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLAuthRequired(),
+            frameUrl: getURLAuthRequired()
+          }
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLAuthRequired(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLAuthRequired(),
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLAuthRequired(),
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized"
+          }
+        },
+        { label: "onAuthRequired",
+          event: "onAuthRequired",
+          details: {
+            url: getURLAuthRequired(),
+            isProxy: false,
+            scheme: "basic",
+            realm: "testrealm",
+            challenger: {host: testServer, port: testServerPort},
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLAuthRequired(),
+            fromCache: false,
+            statusCode: 401,
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLAuthRequired(),
+            fromCache: false,
+            statusCode: 401,
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onAuthRequired", "onResponseStarted", 
+         "onCompleted"]
+      ],
+      {}, ["responseHeaders"]);
+    navigateAndWait(getURLAuthRequired());
+  },
+
+  // onAuthRequired is a blocking function but takes no action in this variant.
+  function authRequiredNoAction() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLAuthRequired(),
+            frameUrl: getURLAuthRequired()
+          }
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLAuthRequired(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLAuthRequired(),
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLAuthRequired(),
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized"
+          }
+        },
+        { label: "onAuthRequired",
+          event: "onAuthRequired",
+          details: {
+            url: getURLAuthRequired(),
+            isProxy: false,
+            scheme: "basic",
+            realm: "testrealm",
+            challenger: {host: testServer, port: testServerPort},
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          }
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLAuthRequired(),
+            fromCache: false,
+            statusCode: 401,
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLAuthRequired(),
+            fromCache: false,
+            statusCode: 401,
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onAuthRequired", "onResponseStarted",
+         "onCompleted"]
+      ],
+      {}, ["blocking", "responseHeaders"]);
+    navigateAndWait(getURLAuthRequired());
+  },
+
+  // onAuthRequired is a blocking function that cancels the auth attempt.
+  function authRequiredCancelAuth() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLAuthRequired(),
+            frameUrl: getURLAuthRequired()
+          },
+          retval: {}
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLAuthRequired(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+          retval: {}
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLAuthRequired(),
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLAuthRequired(),
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized"
+          }
+        },
+        { label: "onAuthRequired",
+          event: "onAuthRequired",
+          details: {
+            url: getURLAuthRequired(),
+            isProxy: false,
+            scheme: "basic",
+            realm: "testrealm",
+            challenger: {host: testServer, port: testServerPort},
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          },
+          retval: {cancel: true}
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLAuthRequired(),
+            fromCache: false,
+            statusCode: 401,
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLAuthRequired(),
+            fromCache: false,
+            statusCode: 401,
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onAuthRequired", "onResponseStarted", 
+         "onCompleted"]
+      ],
+      {}, 
+      ["responseHeaders", "blocking"]);
+    navigateAndWait(getURLAuthRequired());
+  },
+
+  // onAuthRequired is a blocking function that sets authentication credentials.
+  // This needs to be done last, otherwise the authentication
+  // credentials will be cached and the other tests will fail.
+  function authRequiredSetAuth() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLAuthRequired(),
+            frameUrl: getURLAuthRequired()
+          },
+          retval: {}
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLAuthRequired(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+          retval: {}
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLAuthRequired(),
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLAuthRequired(),
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized"
+          }
+        },
+        { label: "onAuthRequired",
+          event: "onAuthRequired",
+          details: {
+            url: getURLAuthRequired(),
+            isProxy: false,
+            scheme: "basic",
+            realm: "testrealm",
+            challenger: {host: testServer, port: testServerPort},
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.0 401 Unauthorized",
+          },
+          retval: {authCredentials: {username: "foo", password: "secret"}}
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLAuthRequired(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.1 200 OK",
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLAuthRequired(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1",
+            responseHeadersExist: true,
+            statusLine: "HTTP/1.1 200 OK",
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onAuthRequired", "onResponseStarted", 
+         "onCompleted"]
+      ],
+      {}, 
+      ["responseHeaders", "blocking"]);
+    navigateAndWait(getURLAuthRequired());
+  },
+]);
+</script>

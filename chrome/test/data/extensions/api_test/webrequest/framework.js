@@ -221,7 +221,7 @@ function initListeners(filter, extraInfoSpec) {
   chrome.experimental.webRequest.onAuthRequired.addListener(
       function(details) {
     return captureEvent("onAuthRequired", details);
-  }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
+  }, filter, intersect(extraInfoSpec, ["blocking", "responseHeaders"]));
   chrome.experimental.webRequest.onResponseStarted.addListener(
       function(details) {
     return captureEvent("onResponseStarted", details);

@@ -17,6 +17,8 @@ chrome.test.runTests([
         function(details) {});
     chrome.experimental.webRequest.onErrorOccurred.addListener(
         function(details) {});
+    chrome.experimental.webRequest.onAuthRequired.addListener(
+        function(details) {});
     chrome.test.succeed();
   },
 

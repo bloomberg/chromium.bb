@@ -5822,6 +5822,15 @@
             "$ref": "HttpHeaders",
             "optional": true,
             "description": "Only used as a response to the onHeadersReceived event. If set, the server is assumed to have responsed with these response headers instead. Only return <code>responseHeaders</code> if you really want to modify the headers in order to limit the number of conflicts (only one extension may modify <code>responseHeaders</code> for each request)."
+          },
+          "authCredentials": {
+            "type": "object",
+            "description": "Only used as a response to the onAuthRequired event. If set, the request is made using the supplied credentials.",
+            "optional": true,
+            "properties": {
+              "username": {"type": "string"},
+              "password": {"type": "string"}
+            }
           }
         }
       }
@@ -6054,7 +6063,7 @@
       {
         "name": "onAuthRequired",
         "type": "function",
-        "description": "Fired when an authentication failure was received. Depending on whether the user provides credentials, the request is either reissued or cancelled.",
+        "description": "Fired when an authentication failure was received. The listener has three options: it can provide authentication credentials, it can cancel the request and display the error page, or it can take no action on the challenge. If bad user credentials are provided, this may be called multiple times for the same request.",
         "parameters": [
           {
             "type": "object",
@@ -6090,10 +6099,15 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["responseHeaders"]
+              "enum": ["responseHeaders", "blocking"]
             }
           }
-        ]
+        ],
+        "returns": {
+          "$ref": "BlockingResponse",
+          "description": "If \"blocking\" is specified in the \"extraInfoSpec\" parameter, the event listener should return an object of this type.",
+          "optional": true
+        }
       },
       {
         "name": "onResponseStarted",

@@ -176,7 +176,7 @@ ChromeNetworkDelegate::OnAuthRequired(
     const net::AuthChallengeInfo& auth_info,
     const AuthCallback& callback,
     net::AuthCredentials* credentials) {
-  ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
-      profile_, extension_info_map_.get(), request, auth_info);
-  return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
+  return ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
+      profile_, extension_info_map_.get(), request, auth_info,
+      callback, credentials);
 }

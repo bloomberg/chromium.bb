@@ -1,10 +1,6 @@
 <script src="framework.js">
 </script>
 <script>
-// Constants as functions, not to be called until after runTests.
-function getURLAuthRequired() {
-  return getServerURL('auth-basic');
-}
 function getURLHttpXHR() {
   return getServerURL('files/extensions/api_test/webrequest/xhr/a.html');
 }
@@ -201,82 +197,6 @@ runTests([
       chrome.tabs.remove(newTab.id);
       navigateAndWait(getURL("complexLoad/a.html"));
     });
-  },
-
-  // Loads a testserver page that requires authentication.
-  function authRequired() {
-    expect(
-      [  // events
-        { label: "onBeforeRequest",
-          event: "onBeforeRequest",
-          details: {
-            url: getURLAuthRequired(),
-            frameUrl: getURLAuthRequired()
-          }
-        },
-        { label: "onBeforeSendHeaders",
-          event: "onBeforeSendHeaders",
-          details: {
-            url: getURLAuthRequired(),
-            // Note: no requestHeaders because we don't ask for them.
-          },
-        },
-        { label: "onSendHeaders",
-          event: "onSendHeaders",
-          details: {
-            url: getURLAuthRequired(),
-          }
-        },
-        { label: "onHeadersReceived",
-          event: "onHeadersReceived",
-          details: {
-            url: getURLAuthRequired(),
-            responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
-          }
-        },
-        { label: "onAuthRequired",
-          event: "onAuthRequired",
-          details: {
-            url: getURLAuthRequired(),
-            isProxy: false,
-            scheme: "basic",
-            realm: "testrealm",
-            challenger: {host: testServer, port: testServerPort},
-            responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
-          }
-        },
-        { label: "onResponseStarted",
-          event: "onResponseStarted",
-          details: {
-            url: getURLAuthRequired(),
-            fromCache: false,
-            statusCode: 401,
-            ip: "127.0.0.1",
-            responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
-          }
-        },
-        { label: "onCompleted",
-          event: "onCompleted",
-          details: {
-            url: getURLAuthRequired(),
-            fromCache: false,
-            statusCode: 401,
-            ip: "127.0.0.1",
-            responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
-          }
-        },
-      ],
-      [  // event order
-        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
-         "onHeadersReceived", "onAuthRequired", "onResponseStarted",
-         "onCompleted"]
-      ],
-      {}, ["responseHeaders"]);
-    navigateAndWait(getURLAuthRequired());
   },
 
   // Navigates to a page to generates an XHR.

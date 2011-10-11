@@ -338,6 +338,15 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   // OnHeadersReceived.
   scoped_refptr<net::HttpResponseHeaders>* override_response_headers;
 
+  // If non-empty, this contains the auth credentials that may be filled in.
+  // Only valid for OnAuthRequired.
+  net::AuthCredentials* auth_credentials;
+
+  // The callback to invoke for auth. If |auth_callback.is_null()| is false,
+  // |callback| must be NULL.
+  // Only valid for OnAuthRequired.
+  net::NetworkDelegate::AuthCallback auth_callback;
+
   // Time the request was paused. Used for logging purposes.
   base::Time blocking_time;
 
@@ -352,7 +361,8 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
         callback(NULL),
         new_url(NULL),
         request_headers(NULL),
-        override_response_headers(NULL) {}
+        override_response_headers(NULL),
+        auth_credentials(NULL) {}
 };
 
 bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
@@ -636,23 +646,28 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   return net::OK;
 }
 
-void ExtensionWebRequestEventRouter::OnAuthRequired(
+net::NetworkDelegate::AuthRequiredResponse
+ExtensionWebRequestEventRouter::OnAuthRequired(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
-    const net::AuthChallengeInfo& auth_info) {
+    const net::AuthChallengeInfo& auth_info,
+    const net::NetworkDelegate::AuthCallback& callback,
+    net::AuthCredentials* credentials) {
+  // No profile means that this is for authentication challenges in the
+  // system context. Skip in that case.
   if (!profile)
-    return;
+    return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
   if (!HasWebRequestScheme(request->url()))
-    return;
+    return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
                            keys::kOnAuthRequired, request, &extra_info_spec);
   if (listeners.empty())
-    return;
+    return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
@@ -673,7 +688,14 @@ void ExtensionWebRequestEventRouter::OnAuthRequired(
   }
   args.Append(dict);
 
-  DispatchEvent(profile, request, listeners, args);
+  if (DispatchEvent(profile, request, listeners, args)) {
+    blocked_requests_[request->identifier()].event = kOnAuthRequired;
+    blocked_requests_[request->identifier()].auth_callback = callback;
+    blocked_requests_[request->identifier()].auth_credentials = credentials;
+    blocked_requests_[request->identifier()].net_log = &request->net_log();
+    return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING;
+  }
+  return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
 
 void ExtensionWebRequestEventRouter::OnBeforeRedirect(
@@ -1147,6 +1169,9 @@ linked_ptr<ExtensionWebRequestEventRouter::EventResponseDelta>
     }
   }
 
+  if (blocked_request->event == kOnAuthRequired)
+    result->auth_credentials.swap(response->auth_credentials);
+
   return result;
 }
 
@@ -1191,7 +1216,6 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeSendHeadersResponses(
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
   for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
-
     if ((*delta)->modified_request_headers.IsEmpty() &&
         (*delta)->deleted_request_headers.empty()) {
       continue;
@@ -1314,6 +1338,37 @@ void ExtensionWebRequestEventRouter::MergeOnHeadersReceivedResponses(
   }
 }
 
+bool ExtensionWebRequestEventRouter::MergeOnAuthRequiredResponses(
+    BlockedRequest* request,
+    std::list<std::string>* conflicting_extensions) const {
+  CHECK(request);
+  CHECK(request->auth_credentials);
+  bool credentials_set = false;
+
+  const EventResponseDeltas& deltas = request->response_deltas;
+  for (EventResponseDeltas::const_iterator delta = deltas.begin();
+       delta != deltas.end();
+       ++delta) {
+    if (!(*delta)->auth_credentials.get())
+      continue;
+    if (credentials_set) {
+      conflicting_extensions->push_back((*delta)->extension_id);
+      request->net_log->AddEvent(
+          net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,
+          make_scoped_refptr(
+              new NetLogExtensionIdParameter((*delta)->extension_id)));
+    } else {
+      request->net_log->AddEvent(
+          net::NetLog::TYPE_CHROME_EXTENSION_PROVIDE_AUTH_CREDENTIALS,
+          make_scoped_refptr(
+              new NetLogExtensionIdParameter((*delta)->extension_id)));
+      *request->auth_credentials = *(*delta)->auth_credentials;
+      credentials_set = true;
+    }
+  }
+  return credentials_set;
+}
+
 void ExtensionWebRequestEventRouter::DecrementBlockCount(
     void* profile,
     const std::string& extension_id,
@@ -1344,14 +1399,14 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   if (num_handlers_blocking == 0) {
     request_time_tracker_->IncrementTotalBlockTime(request_id, block_time);
 
-    EventResponseDeltas::iterator i;
     EventResponseDeltas& deltas = blocked_request.response_deltas;
-
     bool canceled = false;
-    for (i = deltas.begin(); i != deltas.end(); ++i) {
+    bool credentials_set = false;
+    for (EventResponseDeltas::const_iterator i = deltas.begin();
+         i != deltas.end(); ++i) {
       if ((*i)->cancel) {
-        canceled = true;
-        blocked_request.net_log->AddEvent(
+       canceled = true;
+       blocked_request.net_log->AddEvent(
             net::NetLog::TYPE_CHROME_EXTENSION_ABORTED_REQUEST,
             make_scoped_refptr(
                 new NetLogExtensionIdParameter((*i)->extension_id)));
@@ -1364,7 +1419,8 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
 
     if (blocked_request.event == kOnBeforeRequest) {
       CHECK(blocked_request.callback);
-      MergeOnBeforeRequestResponses(&blocked_request, &conflicting_extensions);
+      MergeOnBeforeRequestResponses(&blocked_request,
+                                    &conflicting_extensions);
     } else if (blocked_request.event == kOnBeforeSendHeaders) {
       CHECK(blocked_request.callback);
       MergeOnBeforeSendHeadersResponses(&blocked_request,
@@ -1373,6 +1429,12 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
       CHECK(blocked_request.callback);
       MergeOnHeadersReceivedResponses(&blocked_request,
                                       &conflicting_extensions);
+    } else if (blocked_request.event == kOnAuthRequired) {
+      CHECK(!blocked_request.callback);
+      CHECK(!blocked_request.auth_callback.is_null());
+      credentials_set = MergeOnAuthRequiredResponses(
+         &blocked_request,
+         &conflicting_extensions);
     } else {
       NOTREACHED();
     }
@@ -1403,6 +1465,18 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
       // might trigger the next event.
       blocked_requests_.erase(request_id);
       callback->Run(rv);
+    } else if (!blocked_request.auth_callback.is_null()) {
+      net::NetworkDelegate::AuthRequiredResponse response =
+          net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
+      if (canceled) {
+        response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_CANCEL_AUTH;
+      } else if (credentials_set) {
+        response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH;
+      }
+      net::NetworkDelegate::AuthCallback callback =
+          blocked_request.auth_callback;
+      blocked_requests_.erase(request_id);
+      callback.Run(response);
     } else {
       blocked_requests_.erase(request_id);
     }
@@ -1574,6 +1648,20 @@ bool WebRequestEventHandled::RunImpl() {
       }
       response_headers_string += '\n';
       response->response_headers_string.swap(response_headers_string);
+    }
+
+    if (value->HasKey(keys::kAuthCredentialsKey)) {
+      DictionaryValue* credentials_value = NULL;
+      EXTENSION_FUNCTION_VALIDATE(value->GetDictionary(
+          keys::kAuthCredentialsKey,
+          &credentials_value));
+      response->auth_credentials.reset(new net::AuthCredentials());
+      EXTENSION_FUNCTION_VALIDATE(
+          credentials_value->GetString(keys::kUsernameKey,
+                                       &response->auth_credentials->username));
+      EXTENSION_FUNCTION_VALIDATE(
+          credentials_value->GetString(keys::kPasswordKey,
+                                       &response->auth_credentials->password));
     }
   }
 
