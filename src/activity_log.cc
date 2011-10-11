@@ -247,16 +247,16 @@ string ActivityLog::Encode() {
     switch (entry.type) {
       case kHardwareState:
         ret += EncodeHardwareState(entry.details.hwstate);
-        break;
+        continue;
       case kTimerCallback:
         ret += EncodeTimerCallback(entry.details.timestamp);
-        break;
+        continue;
       case kCallbackRequest:
         ret += EncodeCallbackRequest(entry.details.timestamp);
-        break;
+        continue;
       case kGesture:
         ret += EncodeGesture(entry.details.gesture);
-        break;
+        continue;
     }
     Err("Unknown entry type %d", entry.type);
   }
