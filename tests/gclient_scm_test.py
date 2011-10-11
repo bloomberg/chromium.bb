@@ -73,8 +73,6 @@ class SVNWrapperTestCase(BaseTestCase):
       self.force = False
       self.reset = False
       self.nohooks = False
-      # TODO(maruel): Test --jobs > 1.
-      self.jobs = 1
 
   def Options(self, *args, **kwargs):
     return self.OptionsObject(*args, **kwargs)

@@ -994,24 +994,8 @@ class SVNWrapper(SCMWrapper):
     new_command = command[:]
     if revision:
       new_command.extend(['--revision', str(revision).strip()])
-    # We don't want interaction when jobs are used.
-    if options.jobs > 1:
-      new_command.append('--non-interactive')
     # --force was added to 'svn update' in svn 1.5.
-    # --accept was added to 'svn update' in svn 1.6.
-    if not scm.SVN.AssertVersion('1.5')[0]:
-      return new_command
-
-    # It's annoying to have it block in the middle of a sync, just sensible
-    # defaults.
-    if options.force:
+    if ((options.force or options.manually_grab_svn_rev) and
+        scm.SVN.AssertVersion("1.5")[0]):
       new_command.append('--force')
-      if command[0] != 'checkout' and scm.SVN.AssertVersion('1.6')[0]:
-        new_command.extend(('--accept', 'theirs-conflict'))
-    elif options.manually_grab_svn_rev:
-      new_command.append('--force')
-      if command[0] != 'checkout' and scm.SVN.AssertVersion('1.6')[0]:
-        new_command.extend(('--accept', 'postpone'))
-    elif command[0] != 'checkout' and scm.SVN.AssertVersion('1.6')[0]:
-      new_command.extend(('--accept', 'postpone'))
     return new_command
