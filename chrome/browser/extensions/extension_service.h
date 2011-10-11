@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/extension_settings_frontend.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
@@ -554,6 +555,10 @@ class ExtensionService
   }
 #endif
 
+  ExtensionWarningSet* extension_warnings() {
+    return &extension_warnings_;
+  }
+
  private:
   // Bundle of type (app or extension)-specific sync stuff.
   struct SyncBundle {
@@ -816,6 +821,9 @@ class ExtensionService
 
   SyncBundle app_sync_bundle_;
   SyncBundle extension_sync_bundle_;
+
+  // Contains an entry for each warning that shall be currently shown.
+  ExtensionWarningSet extension_warnings_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

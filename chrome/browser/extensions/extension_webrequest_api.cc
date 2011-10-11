@@ -496,7 +496,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
   request_time_tracker_->LogRequestStartTime(request->identifier(),
                                              base::Time::Now(),
-                                             request->url());
+                                             request->url(),
+                                             profile);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =

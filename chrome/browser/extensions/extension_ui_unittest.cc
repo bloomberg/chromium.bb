@@ -40,7 +40,7 @@ namespace {
     EXPECT_EQ("", error);
 
     return ExtensionSettingsHandler::CreateExtensionDetailValue(
-        NULL, extension.get(), pages, true, false);
+        NULL, extension.get(), pages, NULL, true, false);
   }
 
 

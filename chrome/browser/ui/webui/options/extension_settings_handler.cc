@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
+#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -143,6 +144,8 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   // Add the extensions to the results structure.
   ListValue *extensions_list = new ListValue();
 
+  ExtensionWarningSet* warnings = extension_service_->extension_warnings();
+
   const ExtensionList* extensions = extension_service_->extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
@@ -151,6 +154,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
           extension_service_,
           *extension,
           GetActivePagesForExtension(*extension),
+          warnings,
           true, false));  // enabled, terminated
     }
   }
@@ -162,6 +166,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
           extension_service_,
           *extension,
           GetActivePagesForExtension(*extension),
+          warnings,
           false, false));  // enabled, terminated
     }
   }
@@ -174,6 +179,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
           extension_service_,
           *extension,
           empty_pages,  // Terminated process has no active pages.
+          warnings,
           false, true));  // enabled, terminated
     }
   }
@@ -205,6 +211,8 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
+                 Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED,
                  Source<Profile>(profile));
   registrar_.Add(this,
                  content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -558,6 +566,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_CRASHED_EXTENSION));
   localized_strings->SetString("extensionSettingsInDevelopment",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_IN_DEVELOPMENT));
+  localized_strings->SetString("extensionSettingsWarningsTitle",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_WARNINGS_TITLE));
 }
 
 void ExtensionSettingsHandler::Initialize() {
@@ -625,6 +635,7 @@ void ExtensionSettingsHandler::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_PROCESS_CREATED:
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
+    case chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED:
     case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
       MaybeUpdateAfterNotification();
       break;
@@ -649,7 +660,9 @@ void ExtensionSettingsHandler::MaybeUpdateAfterNotification() {
 // Static
 DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     ExtensionService* service, const Extension* extension,
-    const std::vector<ExtensionPage>& pages, bool enabled, bool terminated) {
+    const std::vector<ExtensionPage>& pages,
+    const ExtensionWarningSet* warnings_set,
+    bool enabled, bool terminated) {
   DictionaryValue* extension_data = new DictionaryValue();
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
@@ -712,6 +725,22 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("hasPopupAction",
       extension->browser_action() || extension->page_action());
   extension_data->SetString("homepageUrl", extension->GetHomepageURL().spec());
+
+  // Add warnings.
+  ListValue* warnings_list = new ListValue;
+  if (warnings_set) {
+    std::set<ExtensionWarningSet::WarningType> warnings;
+    warnings_set->GetWarningsAffectingExtension(extension->id(), &warnings);
+
+    for (std::set<ExtensionWarningSet::WarningType>::const_iterator iter =
+             warnings.begin();
+         iter != warnings.end();
+         ++iter) {
+      string16 warning_string(ExtensionWarningSet::GetLocalizedWarning(*iter));
+      warnings_list->Append(Value::CreateStringValue(warning_string));
+    }
+  }
+  extension_data->Set("warnings", warnings_list);
 
   return extension_data;
 }

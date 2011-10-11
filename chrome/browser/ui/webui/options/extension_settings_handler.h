@@ -11,6 +11,7 @@
 
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
@@ -57,11 +58,12 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Extension Detail JSON Struct for page. (static for ease of testing).
-  // Note: service can be NULL in unit tests.
+  // Note: |service| and |warnings| can be NULL in unit tests.
   static base::DictionaryValue* CreateExtensionDetailValue(
       ExtensionService* service,
       const Extension* extension,
       const std::vector<ExtensionPage>& pages,
+      const ExtensionWarningSet* warnings,
       bool enabled,
       bool terminated);
 

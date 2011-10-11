@@ -603,7 +603,8 @@ ExtensionService::ExtensionService(Profile* profile,
       app_notification_manager_(new AppNotificationManager(profile)),
       permissions_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       apps_promo_(profile->GetPrefs()),
-      event_routers_initialized_(false) {
+      event_routers_initialized_(false),
+      extension_warnings_(profile) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
@@ -971,6 +972,12 @@ bool ExtensionService::UninstallExtension(
   UserMetrics::RecordAction(
       UserMetricsAction("Extensions.ExtensionUninstalled"));
 
+  // Uninstalling one extension might have solved the problems of others.
+  // Therefore, we clear warnings of this type for all extensions.
+  std::set<ExtensionWarningSet::WarningType> warnings;
+  extension_warnings_.GetWarningsAffectingExtension(extension_id, &warnings);
+  extension_warnings_.ClearWarnings(warnings);
+
   return true;
 }
 
@@ -1071,6 +1078,12 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
   NotifyExtensionUnloaded(extension, extension_misc::UNLOAD_REASON_DISABLE);
 
   SyncExtensionChangeIfNeeded(*extension);
+
+  // Deactivating one extension might have solved the problems of others.
+  // Therefore, we clear warnings of this type for all extensions.
+  std::set<ExtensionWarningSet::WarningType> warnings;
+  extension_warnings_.GetWarningsAffectingExtension(extension_id, &warnings);
+  extension_warnings_.ClearWarnings(warnings);
 }
 
 void ExtensionService::GrantPermissions(const Extension* extension) {

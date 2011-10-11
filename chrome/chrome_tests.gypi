@@ -1299,6 +1299,7 @@
         'browser/extensions/extension_sync_data_unittest.cc',
         'browser/extensions/extension_ui_unittest.cc',
         'browser/extensions/extension_updater_unittest.cc',
+        'browser/extensions/extension_warning_set_unittest.cc',
         'browser/extensions/extension_webnavigation_unittest.cc',
         'browser/extensions/extension_webrequest_api_unittest.cc',
         'browser/extensions/extension_webrequest_time_tracker_unittest.cc',

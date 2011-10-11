@@ -239,6 +239,27 @@ cr.define('options', function() {
           vbox.appendChild(link);
         }
 
+        if (extension.warnings.length > 0) {
+          var warningsDiv = this.ownerDocument.createElement('div');
+          warningsDiv.classList.add('extension-warnings');
+
+          var warningsHeader = this.ownerDocument.createElement('span');
+          warningsHeader.classList.add('extension-warnings-title');
+          warningsHeader.textContent =
+              localStrings.getString('extensionSettingsWarningsTitle');
+          warningsDiv.appendChild(warningsHeader);
+
+          var warningList = this.ownerDocument.createElement('ul');
+          for (var j = 0; j < extension.warnings.length; ++j) {
+            var warningEntry = this.ownerDocument.createElement('li');
+            warningEntry.textContent = extension.warnings[j];
+            warningList.appendChild(warningEntry);
+          }
+          warningsDiv.appendChild(warningList);
+
+          vbox.appendChild(warningsDiv);
+        }
+
         // And now the details section that is normally hidden.
         var details = this.ownerDocument.createElement('div');
         details.classList.add('vbox');

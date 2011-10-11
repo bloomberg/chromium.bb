@@ -138,6 +138,22 @@ found in the LICENSE file.
   -webkit-user-select: none;
 }
 
+.extension-warnings-title {
+  color: red;
+}
+
+.extension-warnings {
+  margin-top: 6px;
+}
+
+.extension-warnings ul {
+  margin: 0;
+}
+
+.extension-warnings > * {
+  white-space: normal;
+}
+
 .informative-text {
   color: gray;
 }

@@ -4,7 +4,13 @@
 
 #include "chrome/browser/extensions/extension_webrequest_time_tracker.h"
 
+#include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/profiles/profile_manager.h"
 
 // TODO(mpcomplete): tweak all these constants.
 namespace {
@@ -25,23 +31,86 @@ const double kThresholdExcessiveDelay = 0.50;
 // delay, then we will warn the user.
 const size_t kNumModerateDelaysBeforeWarning = 50u;
 const size_t kNumExcessiveDelaysBeforeWarning = 10u;
+
+// Handles ExtensionWebRequestTimeTrackerDelegate calls on UI thread.
+void NotifyNetworkDelaysOnUI(void* profile,
+                             std::set<std::string> extension_ids) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Profile* p = reinterpret_cast<Profile*>(profile);
+  if (!p || !g_browser_process->profile_manager()->IsValidProfile(p))
+    return;
+
+  ExtensionWarningSet* warnings =
+      p->GetExtensionService()->extension_warnings();
+
+  for (std::set<std::string>::const_iterator i = extension_ids.begin();
+       i != extension_ids.end(); ++i) {
+    warnings->SetWarning(ExtensionWarningSet::kNetworkDelay, *i);
+  }
+}
+
+// Default implementation for ExtensionWebRequestTimeTrackerDelegate
+// that sets a warning in the extension service of |profile|.
+class DefaultDelegate : public ExtensionWebRequestTimeTrackerDelegate {
+ public:
+  virtual ~DefaultDelegate() {}
+
+  // Implementation of ExtensionWebRequestTimeTrackerDelegate.
+  virtual void NotifyExcessiveDelays(
+      void* profile,
+      size_t num_delayed_messages,
+      size_t total_num_messages,
+      const std::set<std::string>& extension_ids) OVERRIDE;
+  virtual void NotifyModerateDelays(
+      void* profile,
+      size_t num_delayed_messages,
+      size_t total_num_messages,
+      const std::set<std::string>& extension_ids) OVERRIDE;
+};
+
+void DefaultDelegate::NotifyExcessiveDelays(
+    void* profile,
+    size_t num_delayed_messages,
+    size_t total_num_messages,
+    const std::set<std::string>& extension_ids) {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&NotifyNetworkDelaysOnUI, profile, extension_ids));
+}
+
+void DefaultDelegate::NotifyModerateDelays(
+    void* profile,
+    size_t num_delayed_messages,
+    size_t total_num_messages,
+    const std::set<std::string>& extension_ids) {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&NotifyNetworkDelaysOnUI, profile, extension_ids));
+}
+
 }  // namespace
 
 ExtensionWebRequestTimeTracker::RequestTimeLog::RequestTimeLog()
-    : completed(false) {
+    : profile(NULL), completed(false) {
 }
 
 ExtensionWebRequestTimeTracker::RequestTimeLog::~RequestTimeLog() {
 }
 
-ExtensionWebRequestTimeTracker::ExtensionWebRequestTimeTracker() {
+ExtensionWebRequestTimeTracker::ExtensionWebRequestTimeTracker()
+    : delegate_(new DefaultDelegate) {
 }
 
 ExtensionWebRequestTimeTracker::~ExtensionWebRequestTimeTracker() {
 }
 
 void ExtensionWebRequestTimeTracker::LogRequestStartTime(
-    int64 request_id, const base::Time& start_time, const GURL& url) {
+    int64 request_id,
+    const base::Time& start_time,
+    const GURL& url,
+    void* profile) {
   // Trim old completed request logs.
   while (request_ids_.size() > kMaxRequestsLogged) {
     int64 to_remove = request_ids_.front();
@@ -64,6 +133,7 @@ void ExtensionWebRequestTimeTracker::LogRequestStartTime(
   RequestTimeLog& log = request_time_logs_[request_id];
   log.request_start_time = start_time;
   log.url = url;
+  log.profile = profile;
 }
 
 void ExtensionWebRequestTimeTracker::LogRequestEndTime(
@@ -86,6 +156,18 @@ void ExtensionWebRequestTimeTracker::LogRequestEndTime(
   Analyze(request_id);
 }
 
+std::set<std::string> ExtensionWebRequestTimeTracker::GetExtensionIds(
+    const RequestTimeLog& log) const {
+  std::set<std::string> result;
+  for (std::map<std::string, base::TimeDelta>::const_iterator i =
+           log.extension_block_durations.begin();
+       i != log.extension_block_durations.end();
+       ++i) {
+    result.insert(i->first);
+  }
+  return result;
+}
+
 void ExtensionWebRequestTimeTracker::Analyze(int64 request_id) {
   RequestTimeLog& log = request_time_logs_[request_id];
 
@@ -101,18 +183,31 @@ void ExtensionWebRequestTimeTracker::Analyze(int64 request_id) {
       log.block_duration.InMilliseconds() << "/" <<
       log.request_duration.InMilliseconds() << " = " << percentage;
 
-  // TODO(mpcomplete): need actual UI for the warning.
   // TODO(mpcomplete): blame a specific extension. Maybe go through the list
   // of recent requests and find the extension that has caused the most delays.
   if (percentage > kThresholdExcessiveDelay) {
     excessive_delays_.insert(request_id);
     if (excessive_delays_.size() > kNumExcessiveDelaysBeforeWarning) {
       LOG(ERROR) << "WR excessive delays:" << excessive_delays_.size();
+      if (delegate_.get()) {
+        delegate_->NotifyExcessiveDelays(log.profile,
+                                         excessive_delays_.size(),
+                                         request_ids_.size(),
+                                         GetExtensionIds(log));
+      }
     }
   } else if (percentage > kThresholdModerateDelay) {
     moderate_delays_.insert(request_id);
-    if (moderate_delays_.size() > kNumModerateDelaysBeforeWarning) {
+    if (moderate_delays_.size() + excessive_delays_.size() >
+            kNumModerateDelaysBeforeWarning) {
       LOG(ERROR) << "WR moderate delays:" << moderate_delays_.size();
+      if (delegate_.get()) {
+        delegate_->NotifyModerateDelays(
+            log.profile,
+            moderate_delays_.size() + excessive_delays_.size(),
+            request_ids_.size(),
+            GetExtensionIds(log));
+      }
     }
   }
 }
@@ -151,4 +246,9 @@ void ExtensionWebRequestTimeTracker::SetRequestRedirected(int64 request_id) {
   // request would have taken, so we can't say how much an extension slowed
   // down this request. Just ignore it.
   request_time_logs_.erase(request_id);
+}
+
+void ExtensionWebRequestTimeTracker::SetDelegate(
+    ExtensionWebRequestTimeTrackerDelegate* delegate) {
+  delegate_.reset(delegate);
 }

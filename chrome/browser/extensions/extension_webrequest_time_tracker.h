@@ -11,13 +11,34 @@
 #include <set>
 #include <string>
 
-#include "base/time.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "googleurl/src/gurl.h"
 
 namespace base {
 class Time;
 }
+
+class ExtensionWebRequestTimeTrackerDelegate {
+ public:
+  virtual ~ExtensionWebRequestTimeTrackerDelegate() {}
+
+  // Notifies the delegate that |num_delayed_messages| of the last
+  // |total_num_messages| inspected messages were excessively/moderately
+  // delayed. Every excessively delayed message is also counted as a moderately
+  // delayed message.
+  virtual void NotifyExcessiveDelays(
+      void* profile,
+      size_t num_delayed_messages,
+      size_t total_num_messages,
+      const std::set<std::string>& extension_ids) = 0;
+  virtual void NotifyModerateDelays(
+      void* profile,
+      size_t num_delayed_messages,
+      size_t total_num_messages,
+      const std::set<std::string>& extension_ids) = 0;
+};
 
 // This class keeps monitors how much delay extensions add to network requests
 // by using the webRequest API. If the delay is sufficient, we will warn the
@@ -29,7 +50,7 @@ class ExtensionWebRequestTimeTracker {
 
   // Records the time that a request was created.
   void LogRequestStartTime(int64 request_id, const base::Time& start_time,
-                           const GURL& url);
+                           const GURL& url, void* profile);
 
   // Records the time that a request either completed or encountered an error.
   void LogRequestEndTime(int64 request_id, const base::Time& end_time);
@@ -53,10 +74,14 @@ class ExtensionWebRequestTimeTracker {
   // Called when an extension has redirected the given request to another URL.
   void SetRequestRedirected(int64 request_id);
 
+  // Takes ownership of |delegate|.
+  void SetDelegate(ExtensionWebRequestTimeTrackerDelegate* delegate);
+
  private:
   // Timing information for a single request.
   struct RequestTimeLog {
     GURL url;  // used for debug purposes only
+    void* profile;  // profile that created the request
     bool completed;
     base::Time request_start_time;
     base::TimeDelta request_duration;
@@ -70,6 +95,9 @@ class ExtensionWebRequestTimeTracker {
   // if necessary.
   void Analyze(int64 request_id);
 
+  // Returns a list of all extension IDs that contributed to delay for |log|.
+  std::set<std::string> GetExtensionIds(const RequestTimeLog& log) const;
+
   // A map of recent request IDs to timing info for each request.
   std::map<int64, RequestTimeLog> request_time_logs_;
 
@@ -81,6 +109,9 @@ class ExtensionWebRequestTimeTracker {
   // moderate amount by extensions.
   std::set<int64> excessive_delays_;
   std::set<int64> moderate_delays_;
+
+  // Defaults to a delegate that sets warnings in the extension service.
+  scoped_ptr<ExtensionWebRequestTimeTrackerDelegate> delegate_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTimeTrackerTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTimeTrackerTest,

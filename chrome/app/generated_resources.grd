@@ -4115,6 +4115,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Web Store
       </message>
 
+      <!-- Global error messages for extensions -->
+      <message name="IDS_EXTENSION_WARNINGS_WRENCH_MENU_ITEM" desc="The wrench menu item indicating that extensions caused problems">
+        Misbehaving extension
+      </message>
+      <message name="IDS_EXTENSION_WARNINGS_TITLE" desc="The title of a section in chrome://extensions which contains the warning(s) that relates to one particular extension">
+        Warning:
+      </message>
+      <message name="IDS_EXTENSION_WARNINGS_NETWORK_DELAY" desc="Warning message indicating that an extension caused excessive network delays for web requests">
+        This extension is slowing down <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. You should disable it to restore <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s performance.
+      </message>
+
       <!-- Plugins -->
       <message name="IDS_PLUGINS_TITLE" desc="Title for the chrome://plugins page.">
         Plug-ins
