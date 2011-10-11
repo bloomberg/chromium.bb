@@ -285,13 +285,42 @@ html[dir=rtl]  .step.left {
 #user-image-preview {
   border-radius: 4px;
   float: right;
-  height: 220px;
   margin: 4px;
-  width: 220px;
+  max-width: 220px;
 }
 
 html[dir=rtl] #user-image-preview {
   float: left;
+}
+
+#user-image-preview-img {
+  max-height: 220px;
+  max-width: 220px;
+}
+
+.default-image #user-image-preview-img {
+  border: solid 1px #cacaca;
+  background: white;
+}
+
+#user-image-preview-caption {
+  color: dimGray;
+  font-size: smaller;
+  margin: 8px 4px;
+  white-space: nowrap;
+}
+
+#user-image-preview-caption .spinner {
+  display: inline-block;
+  visibility: hidden;
+  vertical-align: -6px;
+  width: 0;
+}
+
+.profile-image.profile-image-loading #user-image-preview-caption .spinner {
+  margin-right: 2px;
+  visibility: visible;
+  width: 22px;
 }
 
 #footer {

@@ -49,14 +49,24 @@ cr.define('oobe', function() {
       imageGrid.addEventListener('dblclick',
                                  this.handleImageDblClick_.bind(this));
 
-      imageGrid.addItem(ButtonImages.TAKE_PHOTO,
-                        undefined,
-                        this.handleTakePhoto_.bind(this));
+      this.buttonImages_ = [
+        imageGrid.addItem(ButtonImages.TAKE_PHOTO,
+                          undefined,
+                          this.handleTakePhoto_.bind(this))
+      ];
+      // Whether a button image is selected.
+      this.buttonImageSelected_ = false;
+
       // Photo image data (if present).
       this.photoImage_ = null;
 
       // Profile image data (if present).
       this.profileImage_ = imageGrid.addItem(ButtonImages.PROFILE_PICTURE);
+      this.profileImageUrl_ = this.profileImage_.url;
+
+      // Initialize profile image state.
+      this.profileImageSelected = false;
+      this.profileImageLoading = true;
     },
 
     /**
@@ -77,6 +87,57 @@ cr.define('oobe', function() {
       okButton.textContent = localStrings.getString('okButtonText');
       okButton.addEventListener('click', this.acceptImage_.bind(this));
       return [ okButton ];
+    },
+
+    /**
+     * The caption to use for the Profile image preview.
+     * @type {string}
+     */
+    get profileImageCaption() {
+      return this.profileImageCaption_;
+    },
+    set profileImageCaption(value) {
+      this.profileImageCaption_ = value;
+      this.updateCaption_();
+    },
+
+    /**
+     * True if the Profile image is being loaded.
+     * @type {boolean}
+     */
+    get profileImageLoading() {
+      return this.profileImageLoading_;
+    },
+    set profileImageLoading(value) {
+      this.profileImageLoading_ = value;
+      $('user-image-preview').classList[
+          value ? 'add' : 'remove']('profile-image-loading');
+      this.profileImageCaption = localStrings.getString(
+          value ? 'profilePhotoLoading' : 'profilePhoto');
+      this.updateButtons_();
+    },
+
+    /**
+     * True when a default image is selected (including button images).
+     * @type {boolean}
+     */
+    set defaultImageSelected(value) {
+      $('user-image-preview').classList[
+          value ? 'add' : 'remove']('default-image');
+    },
+
+    /**
+     * True when the profile image is selected.
+     * @type {boolean}
+     */
+    get profileImageSelected() {
+      return this.profileImageSelected_;
+    },
+    set profileImageSelected(value) {
+      this.profileImageSelected_ = value;
+      $('user-image-preview').classList[
+          value ? 'add' : 'remove']('profile-image');
+      this.updateCaption_();
     },
 
     /**
@@ -107,14 +168,26 @@ cr.define('oobe', function() {
      * @private
      */
     handleSelection_: function() {
-      var url = $('user-image-grid').selectedItemUrl;
-      if (url)
-        $('user-image-preview').src = url;
-      // Do not send button selections.
-      if (url == ButtonImages.TAKE_PHOTO) {
-        $('ok-button').disabled = true;
-      } else if (url) {
-        $('ok-button').disabled = false;
+      var selectedItem = $('user-image-grid').selectedItem;
+      if (selectedItem === null)
+        return;
+
+      // Update preview image URL.
+      var url = selectedItem.url;
+      $('user-image-preview-img').src = url;
+
+      // Update current selection type.
+      this.defaultImageSelected = /^chrome:\/\/theme\//.test(url);
+      // Cannot compare this.profileImage_ itself because it is updated
+      // by setProfileImage_ after the selection event is fired programmaticaly.
+      this.profileImageSelected = selectedItem.url == this.profileImageUrl_;
+      this.buttonImageSelected_ =
+          this.buttonImages_.indexOf(selectedItem) != -1;
+
+      this.updateButtons_();
+
+      if (!$('ok-button').disabled) {
+        // Don't send disabled selections.
         chrome.send('selectImage', [url]);
       }
     },
@@ -164,11 +237,13 @@ cr.define('oobe', function() {
     },
 
     /**
-     * Adds or updates image with user profile image and sets it as preview.
+     * Updates user profile image.
      * @param {string} imageUrl Image encoded as data URL.
      * @private
      */
     setProfileImage_: function(imageUrl) {
+      this.profileImageUrl_ = imageUrl;
+      this.profileImageLoading = false;
       this.profileImage_ =
           $('user-image-grid').updateItem(this.profileImage_, imageUrl);
     },
@@ -193,6 +268,29 @@ cr.define('oobe', function() {
       var imageGrid = $('user-image-grid');
       imageGrid.selectedItemUrl = url;
       imageGrid.focus();
+    },
+
+    /**
+     * Updates the image preview caption.
+     * @private
+     */
+    updateCaption_: function() {
+      $('user-image-caption-text').textContent =
+          this.profileImageSelected ? this.profileImageCaption : '';
+    },
+
+    /**
+     * Updates the 'OK' button state.
+     * @private
+     */
+    updateButtons_: function() {
+      // Do not allow user to choose a button image or the profile image
+      // while it's loading.
+      var okButton = $('ok-button');
+      if (okButton)
+        okButton.disabled =
+            this.buttonImageSelected_ ||
+            this.profileImageSelected && this.profileImageLoading;
     }
   };
 
