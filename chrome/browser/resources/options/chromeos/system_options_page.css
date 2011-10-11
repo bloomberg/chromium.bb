@@ -21,7 +21,47 @@ html[dir=rtl] .touchpad-sensitivity-more {
    vertical-align: top;
 }
 
-#bluetooth-options-div{
+#bluetooth-options-div {
   -webkit-box-orient: vertical;
   display: -webkit-box;
+}
+
+#bluetooth-finder-container,
+#bluetooth-scanning-status {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  vertical-align: baseline;
+}
+
+#bluetooth-scanning-label,
+#bluetooth-scanning-icon {
+  -webkit-transition: 0.25s opacity;
+}
+
+#bluetooth-scanning-label {
+  -webkit-margin-start: 5px;
+  color: gray;
+}
+
+#bluetooth-scanning-icon {
+  -webkit-margin-start: 10px;
+  vertical-align: middle;
+}
+
+.bluetooth-headset,
+.bluetooth-keyboard,
+.bluetooth-mouse {
+  background-repeat: no-repeat;
+}
+
+.bluetooth-headset {
+  background-image: url("headset.png");
+}
+
+.bluetooth-keyboard {
+  background-image: url("keyboard.png");
+}
+
+.bluetooth-mouse {
+  background-image: url("mouse.png");
 }

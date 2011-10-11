@@ -20,6 +20,7 @@
   <include src="chromeos/internet_options.js"></include>
   <include src="chromeos/internet_detail.js"></include>
   <include src="chromeos/system_options.js"></include>
+  <include src="chromeos/bluetooth_list_element.js"></include>
   <include src="chromeos/accounts_options.js"></include>
   <include src="chromeos/proxy_options.js"></include>
   <include src="chromeos/proxy_rules_list.js"></include>

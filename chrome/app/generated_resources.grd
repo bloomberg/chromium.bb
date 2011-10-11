@@ -11389,6 +11389,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES">
         Find devices
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING">
+        Scanning
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED">
+        Connected
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_PAIRED">
+        Not Paired
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for accessbility.">
         Enable accessibility features
       </message>
