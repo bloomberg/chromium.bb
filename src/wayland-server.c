@@ -166,7 +166,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		object = &resource->object;
 		if (opcode >= object->interface->method_count) {
-			wl_resource_post_error(resource,
+			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
 					       "invalid method %d, object %s@%d",
 					       object->interface->name,
@@ -180,7 +180,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		len -= size;
 
 		if (closure == NULL && errno == EINVAL) {
-			wl_resource_post_error(resource,
+			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
 					       "invalid arguments for %s@%d.%s",
 					       object->interface->name,
