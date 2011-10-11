@@ -767,6 +767,11 @@
           'include_dirs': [
             '../third_party/wtl/include',
           ],
+          'msvs_settings': {
+            'VCManifestTool': {
+              'AdditionalManifestFiles': '$(ProjectDir)\\examples\\views_examples.exe.manifest',
+            },
+          },
           'sources': [
             'examples/table_example.cc',
             'examples/table_example.h',
