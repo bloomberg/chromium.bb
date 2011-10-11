@@ -59,13 +59,21 @@ void ReleaseModule(PP_Module module) {
     plugin_module->Release();
 }
 
+PP_Bool IsInModuleDestructor(PP_Module module) {
+  PluginModule* plugin_module = ResourceTracker::Get()->GetModule(module);
+  if (plugin_module)
+    return PP_FromBool(plugin_module->is_in_destructor());
+  return PP_FALSE;
+}
+
 const PPB_Proxy_Private ppb_proxy = {
   &PluginCrashed,
   &GetInstanceForResource,
   &SetReserveInstanceIDCallback,
   &GetURLLoaderBufferedBytes,
   &AddRefModule,
-  &ReleaseModule
+  &ReleaseModule,
+  &IsInModuleDestructor
 };
 
 }  // namespace

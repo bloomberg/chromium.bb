@@ -364,6 +364,7 @@ PluginModule::PluginModule(const std::string& name,
                            PluginDelegate::ModuleLifetime* lifetime_delegate)
     : lifetime_delegate_(lifetime_delegate),
       callback_tracker_(new CallbackTracker),
+      is_in_destructor_(false),
       is_crashed_(false),
       broker_(NULL),
       library_(NULL),
@@ -377,6 +378,11 @@ PluginModule::PluginModule(const std::string& name,
 }
 
 PluginModule::~PluginModule() {
+  // In the past there have been crashes reentering the plugin module
+  // destructor. Catch if that happens again earlier.
+  CHECK(!is_in_destructor_);
+  is_in_destructor_ = true;
+
   // When the module is being deleted, there should be no more instances still
   // holding a reference to us.
   DCHECK(instances_.empty());
@@ -391,12 +397,18 @@ PluginModule::~PluginModule() {
   if (library_)
     base::UnloadNativeLibrary(library_);
 
+  // Notifications that we've been deleted should be last.
   ResourceTracker::Get()->ModuleDeleted(pp_module_);
-
-  // When the plugin crashes, we immediately tell the lifetime delegate that
-  // we're gone, so we don't want to tell it again.
-  if (!is_crashed_)
+  if (!is_crashed_) {
+    // When the plugin crashes, we immediately tell the lifetime delegate that
+    // we're gone, so we don't want to tell it again.
     lifetime_delegate_->PluginModuleDead(this);
+  }
+
+  // Don't add stuff here, the two notifications that the module object has
+  // been deleted should be last. This allows, for example,
+  // PPB_Proxy.IsInModuleDestructor to map PP_Module to this class during the
+  // previous parts of the destructor.
 }
 
 bool PluginModule::InitAsInternalPlugin(const EntryPoints& entry_points) {

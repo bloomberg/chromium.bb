@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_PROXY_PRIVATE_INTERFACE "PPB_Proxy_Private;4"
+#define PPB_PROXY_PRIVATE_INTERFACE "PPB_Proxy_Private;5"
 
 // Exposes functions needed by the out-of-process proxy to call into the
 // renderer PPAPI implementation.
@@ -44,6 +44,9 @@ struct PPB_Proxy_Private {
   // there must be a corresponding release call.
   void (*AddRefModule)(PP_Module module);
   void (*ReleaseModule)(PP_Module module);
+
+  // Allows asserts to be written for some bad conditions while cleaning up.
+  PP_Bool (*IsInModuleDestructor)(PP_Module module);
 };
 
 #endif  // PPAPI_C_PRIVATE_PROXY_PRIVATE_H_

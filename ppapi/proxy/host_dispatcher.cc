@@ -134,21 +134,33 @@ bool HostDispatcher::Send(IPC::Message* msg) {
   TRACE_EVENT2("ppapi proxy", "HostDispatcher::Send",
                "Class", IPC_MESSAGE_ID_CLASS(msg->type()),
                "Line", IPC_MESSAGE_ID_LINE(msg->type()));
-  // Prevent the dispatcher from going away during the call. Scenarios
-  // where this could happen include a Send for a sync message which while
-  // waiting for the reply, dispatches an incoming ExecuteScript call which
-  // destroys the plugin module and in turn the dispatcher.
-  ScopedModuleReference ref(this);
 
   // Normal sync messages are set to unblock, which would normally cause the
   // plugin to be reentered to process them. We only want to do this when we
   // know the plugin is in a state to accept reentrancy. Since the plugin side
   // never clears this flag on messages it sends, we can't get deadlock, but we
   // may still get reentrancy in the host as a result.
-
   if (!allow_plugin_reentrancy_)
     msg->set_unblock(false);
-  return Dispatcher::Send(msg);
+
+  if (msg->is_sync()) {
+    // Don't allow sending sync messages during module shutdown. Seee the "else"
+    // block below for why.
+    CHECK(!PP_ToBool(ppb_proxy()->IsInModuleDestructor(pp_module())));
+
+    // Prevent the dispatcher from going away during sync calls. Scenarios
+    // where this could happen include a Send for a sync message which while
+    // waiting for the reply, dispatches an incoming ExecuteScript call which
+    // destroys the plugin module and in turn the dispatcher.
+    ScopedModuleReference scoped_ref(this);
+    return Dispatcher::Send(msg);
+  } else {
+    // We don't want to have a scoped ref for async message cases since since
+    // async messages are sent during module desruction. In this case, the
+    // module will have a 0 refcount and addrefing and releasing it will
+    // reenter the destructor and it will crash.
+    return Dispatcher::Send(msg);
+  }
 }
 
 bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {

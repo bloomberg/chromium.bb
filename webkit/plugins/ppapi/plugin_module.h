@@ -138,6 +138,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // release relevant resources and update all affected instances.
   void PluginCrashed();
 
+  bool is_in_destructor() const { return is_in_destructor_; }
   bool is_crashed() const { return is_crashed_; }
 
   // Reserves the given instance is unique within the plugin, checking for
@@ -172,6 +173,10 @@ class PluginModule : public base::RefCounted<PluginModule>,
   scoped_refptr<CallbackTracker> callback_tracker_;
 
   PP_Module pp_module_;
+
+  // True when we're running in the destructor. This allows us to write some
+  // assertions.
+  bool is_in_destructor_;
 
   // True if the plugin is running out-of-process and has crashed.
   bool is_crashed_;
