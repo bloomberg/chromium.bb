@@ -68,21 +68,21 @@ class ScreenLocker : public LoginStatusConsumer,
   void Init();
 
   // LoginStatusConsumer implements:
-  virtual void OnLoginFailure(const chromeos::LoginFailure& error);
+  virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& password,
                               const GaiaAuthConsumer::ClientLoginResult& result,
                               bool pending_requests,
-                              bool using_oauth);
+                              bool using_oauth) OVERRIDE;
 
   // Overridden from views::BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
-  virtual void OnLinkActivated(size_t index);
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
+  virtual void OnLinkActivated(size_t index) OVERRIDE;
 
   // CaptchaView::Delegate implementation:
-  virtual void OnCaptchaEntered(const std::string& captcha);
+  virtual void OnCaptchaEntered(const std::string& captcha) OVERRIDE;
 
   // Authenticates the user with given |password| and authenticator.
   void Authenticate(const string16& password);

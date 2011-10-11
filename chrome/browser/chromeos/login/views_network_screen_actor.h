@@ -36,20 +36,21 @@ class ViewsNetworkScreenActor : public ViewScreen<NetworkSelectionView>,
   virtual ~ViewsNetworkScreenActor();
 
   // NetworkScreenActor implementation:
-  virtual void SetDelegate(Delegate* screen);
-  virtual void PrepareToShow();
-  virtual void Show();
-  virtual void Hide();
-  virtual gfx::Size GetScreenSize() const;
-  virtual void ShowError(const string16& message);
-  virtual void ClearErrors();
+  virtual void SetDelegate(Delegate* screen) OVERRIDE;
+  virtual void PrepareToShow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual gfx::Size GetScreenSize() const OVERRIDE;
+  virtual void ShowError(const string16& message) OVERRIDE;
+  virtual void ClearErrors() OVERRIDE;
   virtual void ShowConnectingStatus(
       bool connecting,
-      const string16& network_id);
-  virtual void EnableContinue(bool enabled);
+      const string16& network_id) OVERRIDE;
+  virtual void EnableContinue(bool enabled) OVERRIDE;
 
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // Returns true if a bubble with error is shown currently to the user.
   bool IsErrorShown() const;
@@ -70,14 +71,14 @@ class ViewsNetworkScreenActor : public ViewScreen<NetworkSelectionView>,
 
  private:
   // Overridden views::BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
-  virtual void OnLinkActivated(size_t index);
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
+  virtual void OnLinkActivated(size_t index) OVERRIDE;
 
   // ViewScreen implementation:
-  virtual void CreateView();
-  virtual NetworkSelectionView* AllocateView();
+  virtual void CreateView() OVERRIDE;
+  virtual NetworkSelectionView* AllocateView() OVERRIDE;
 
   LanguageSwitchMenu language_switch_menu_;
   KeyboardSwitchMenu keyboard_switch_menu_;

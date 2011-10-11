@@ -41,8 +41,8 @@ const SkColor Bubble::kBackgroundColor = SK_ColorWHITE;
 
 // BubbleDelegate ---------------------------------------------------------
 
-std::wstring BubbleDelegate::accessible_name() {
-  return L"";
+string16 BubbleDelegate::accessible_name() {
+  return string16();
 }
 
 // Bubble -----------------------------------------------------------------
@@ -147,6 +147,7 @@ Bubble::Bubble()
       delegate_(NULL),
       show_status_(kOpen),
       fade_away_on_close_(false),
+      close_on_deactivate_(true),
 #if defined(TOOLKIT_USES_GTK)
       type_(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS),
 #endif
@@ -362,7 +363,8 @@ void Bubble::SizeToContents() {
 void Bubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   // The popup should close when it is deactivated.
   if (action == WA_INACTIVE) {
-    GetWidget()->Close();
+    if (close_on_deactivate_)
+      GetWidget()->Close();
   } else if (action == WA_ACTIVE) {
     DCHECK(GetWidget()->GetRootView()->has_children());
     GetWidget()->GetRootView()->child_at(0)->RequestFocus();

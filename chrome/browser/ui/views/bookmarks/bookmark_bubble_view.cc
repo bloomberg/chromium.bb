@@ -342,9 +342,8 @@ bool BookmarkBubbleView::FadeInOnShow() {
   return false;
 }
 
-std::wstring BookmarkBubbleView::accessible_name() {
-  return UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_ADD_BOOKMARK));
+string16 BookmarkBubbleView::accessible_name() {
+  return l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_ADD_BOOKMARK);
 }
 
 void BookmarkBubbleView::Close() {

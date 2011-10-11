@@ -261,21 +261,21 @@ class SpeechInputBubbleImpl
   virtual ~SpeechInputBubbleImpl();
 
   // SpeechInputBubble methods.
-  virtual void Show();
-  virtual void Hide();
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
 
   // SpeechInputBubbleBase methods.
-  virtual void UpdateLayout();
-  virtual void UpdateImage();
+  virtual void UpdateLayout() OVERRIDE;
+  virtual void UpdateImage() OVERRIDE;
 
   // Returns the screen rectangle to use as the info bubble's target.
   // |element_rect| is the html element's bounds in page coordinates.
   gfx::Rect GetInfoBubbleTarget(const gfx::Rect& element_rect);
 
   // BubbleDelegate
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
 
  private:
   Delegate* delegate_;

@@ -65,12 +65,12 @@ class ExtensionInstalledBubble
   // NotificationObserver
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // BubbleDelegate
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
 
   const Extension* extension_;
   Browser* browser_;

@@ -68,7 +68,7 @@ class BubbleDelegate {
   virtual bool FadeInOnShow() = 0;
 
   // The name of the window to which this delegate belongs.
-  virtual std::wstring accessible_name();
+  virtual string16 accessible_name();
 };
 
 // TODO(sky): this code is ifdef-tastic. It might be cleaner to refactor the
@@ -138,6 +138,11 @@ class Bubble
   // deactivated as a result of clicking outside the bubble.
   void set_fade_away_on_close(bool fade_away_on_close) {
     fade_away_on_close_ = fade_away_on_close;
+  }
+
+  // Whether the Bubble should automatically close when it gets deactivated.
+  void set_close_on_deactivate(bool close_on_deactivate) {
+    close_on_deactivate_ = close_on_deactivate;
   }
 
   // Overridden from NativeWidget:
@@ -240,6 +245,10 @@ class Bubble
 
   // Whether to fade away when the bubble closes.
   bool fade_away_on_close_;
+
+  // Whether to close automatically when the bubble deactivates. Defaults to
+  // true.
+  bool close_on_deactivate_;
 
 #if defined(OS_LINUX)
   // Some callers want the bubble to be a child control instead of a window.

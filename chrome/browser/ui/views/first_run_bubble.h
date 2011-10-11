@@ -34,13 +34,13 @@ class FirstRunBubble : public Bubble,
 
 #if defined(OS_WIN)
   // Overridden from Bubble:
-  virtual void OnActivate(UINT action, BOOL minimized, HWND window);
+  virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
 #endif
 
   // BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return true; }
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE { return true; }
+  virtual bool FadeInOnShow() OVERRIDE { return true; }
 
   // Whether we have already been activated.
   bool has_been_activated_;

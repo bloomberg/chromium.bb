@@ -76,23 +76,25 @@ class EulaView
 
  protected:
   // views::View implementation.
-  virtual void OnLocaleChanged();
+  virtual void OnLocaleChanged() OVERRIDE;
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // views::LinkListener implementation.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   // views::View implementation.
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
-  virtual bool OnKeyPressed(const views::KeyEvent& e);
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
 
   // TabContentsDelegate implementation.
   virtual void NavigationStateChanged(const TabContents* contents,
-                                      unsigned changed_flags);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+                                      unsigned changed_flags) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Loads specified URL to the specified DOMView and updates specified
   // label with its title.
@@ -101,10 +103,10 @@ class EulaView
                     const GURL& eula_url);
 
   // Overridden from views::BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
-  virtual void OnLinkActivated(size_t index);
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
+  virtual void OnLinkActivated(size_t index) OVERRIDE;
 
   // Dialog controls.
   views::Label* google_eula_label_;

@@ -44,17 +44,17 @@ class PageInfoBubbleView : public views::View,
   virtual void OnPageInfoModelChanged() OVERRIDE;
 
   // BubbleDelegate methods:
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
-  virtual std::wstring accessible_name();
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
+  virtual string16 accessible_name() OVERRIDE;
 
   // views::LinkListener methods:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // ui::AnimationDelegate methods:
-  virtual void AnimationEnded(const ui::Animation* animation);
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
  private:
   // Gets the size of the separator, including padding.

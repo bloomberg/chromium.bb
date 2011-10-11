@@ -308,8 +308,8 @@ bool PageInfoBubbleView::FadeInOnShow() {
   return false;
 }
 
-std::wstring PageInfoBubbleView::accessible_name() {
-  return L"PageInfoBubble";
+string16 PageInfoBubbleView::accessible_name() {
+  return ASCIIToUTF16("PageInfoBubble");
 }
 
 void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {

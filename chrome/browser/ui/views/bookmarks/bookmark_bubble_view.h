@@ -55,9 +55,11 @@ class BookmarkBubbleView : public views::View,
   virtual void BubbleShown();
 
   // Override to close on return.
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(
+      const views::Accelerator& accelerator) OVERRIDE;
 
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  virtual void ViewHierarchyChanged(
+      bool is_add, View* parent, View* child) OVERRIDE;
 
  private:
   // Creates a BookmarkBubbleView.
@@ -78,19 +80,20 @@ class BookmarkBubbleView : public views::View,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // ButtonListener method, closes the bubble or opens the edit dialog.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // Combobox::Listener method. Changes the parent of the bookmark.
   virtual void ItemChanged(views::Combobox* combobox,
                            int prev_index,
-                           int new_index);
+                           int new_index) OVERRIDE;
 
   // BubbleDelegate methods. These forward to the BubbleDelegate supplied in the
   // constructor as well as sending out the necessary notification.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape);
-  virtual bool CloseOnEscape();
-  virtual bool FadeInOnShow();
-  virtual std::wstring accessible_name();
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
+  virtual string16 accessible_name() OVERRIDE;
 
   // Closes the bubble.
   void Close();
