@@ -39,6 +39,12 @@ class ProfileSyncServiceTestHelper {
 
   static sync_api::ImmutableChangeRecordList MakeSingletonChangeRecordList(
       int64 node_id, sync_api::ChangeRecord::Action action);
+
+  // Deletions must provide an EntitySpecifics for the deleted data.
+  static sync_api::ImmutableChangeRecordList
+      MakeSingletonDeletionChangeRecordList(
+          int64 node_id,
+          const sync_pb::EntitySpecifics& specifics);
 };
 
 class AbstractProfileSyncServiceTest : public testing::Test {

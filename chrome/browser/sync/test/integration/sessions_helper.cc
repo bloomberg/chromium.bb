@@ -303,4 +303,9 @@ bool CheckForeignSessionsAgainst(
   return true;
 }
 
+void DeleteForeignSession(int index, std::string session_tag) {
+  test()->GetProfile(index)->GetProfileSyncService()->
+      GetSessionModelAssociator()->DeleteForeignSession(session_tag);
+}
+
 }  // namespace sessions_helper

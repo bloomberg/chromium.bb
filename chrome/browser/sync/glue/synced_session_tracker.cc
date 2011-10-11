@@ -93,6 +93,8 @@ SyncedSession* SyncedSessionTracker::GetSession(
     synced_session = synced_session_map_[session_tag];
   } else {
     synced_session = new SyncedSession;
+    VLOG(1) << "Creating new session with tag " << session_tag << " at "
+            << synced_session;
     synced_session->session_tag = session_tag;
     synced_session_map_[session_tag] = synced_session;
   }
@@ -100,17 +102,21 @@ SyncedSession* SyncedSessionTracker::GetSession(
   return synced_session;
 }
 
-bool SyncedSessionTracker::DeleteSession(
-    const std::string& session_tag) {
-    SyncedSessionMap::iterator iter =
-        synced_session_map_.find(session_tag);
+bool SyncedSessionTracker::DeleteSession(const std::string& session_tag) {
+  bool found_session = false;
+  SyncedSessionMap::iterator iter = synced_session_map_.find(session_tag);
   if (iter != synced_session_map_.end()) {
-    delete iter->second;  // Delete the SyncedSession object.
+    SyncedSession* session = iter->second;
     synced_session_map_.erase(iter);
-    return true;
-  } else {
-    return false;
+    delete session;  // Delete the SyncedSession object.
+    found_session = true;
   }
+  synced_window_map_.erase(session_tag);
+  // It's possible there was no header node but there were tab nodes.
+  if (synced_tab_map_.erase(session_tag) > 0) {
+    found_session = true;
+  }
+  return found_session;
 }
 
 void SyncedSessionTracker::ResetSessionTracking(

@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 
 using sessions_helper::CheckInitialState;
+using sessions_helper::DeleteForeignSession;
 using sessions_helper::GetLocalWindows;
 using sessions_helper::GetSessionData;
 using sessions_helper::OpenTabAndGetLocalWindows;
@@ -370,4 +371,62 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_EQ(1U, sessions1.size());
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows.Get()));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DeleteIdleSession) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(CheckInitialState(0));
+  ASSERT_TRUE(CheckInitialState(1));
+
+  // Client 0 opened some tabs then went idle.
+  ScopedWindowMap client0_windows;
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
+      client0_windows.GetMutable()));
+
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Get foreign session data from client 1.
+  SyncedSessionVector sessions1;
+  ASSERT_TRUE(GetSessionData(1, &sessions1));
+
+  // Verify client 1's foreign session matches client 0 current window.
+  ASSERT_EQ(1U, sessions1.size());
+  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
+
+  // Client 1 now deletes client 0's tabs. This frees the memory of sessions1.
+  DeleteForeignSession(1, sessions1[0]->session_tag);
+  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_FALSE(GetSessionData(1, &sessions1));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DeleteActiveSession) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(CheckInitialState(0));
+  ASSERT_TRUE(CheckInitialState(1));
+
+  // Client 0 opened some tabs then went idle.
+  ScopedWindowMap client0_windows;
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
+      client0_windows.GetMutable()));
+
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  SyncedSessionVector sessions1;
+  ASSERT_TRUE(GetSessionData(1, &sessions1));
+  ASSERT_EQ(1U, sessions1.size());
+  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
+
+  // Client 1 now deletes client 0's tabs. This frees the memory of sessions1.
+  DeleteForeignSession(1, sessions1[0]->session_tag);
+  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_FALSE(GetSessionData(1, &sessions1));
+
+  // Client 0 becomes active again with a new tab.
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL2),
+      client0_windows.GetMutable()));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(GetSessionData(1, &sessions1));
+  ASSERT_EQ(1U, sessions1.size());
+  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
 }

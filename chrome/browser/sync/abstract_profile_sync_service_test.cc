@@ -82,6 +82,18 @@ sync_api::ImmutableChangeRecordList
   return sync_api::ImmutableChangeRecordList(&records);
 }
 
+/* static */
+sync_api::ImmutableChangeRecordList
+    ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
+        int64 node_id, const sync_pb::EntitySpecifics& specifics) {
+  sync_api::ChangeRecord record;
+  record.action = sync_api::ChangeRecord::ACTION_DELETE;
+  record.id = node_id;
+  record.specifics = specifics;
+  sync_api::ChangeRecordList records(1, record);
+  return sync_api::ImmutableChangeRecordList(&records);
+}
+
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
     : ui_thread_(BrowserThread::UI, &ui_loop_),
       db_thread_(BrowserThread::DB),

@@ -59,6 +59,7 @@ int GetNumForeignSessions(int index);
 
 // Fills the sessions vector with the model associator's foreign session data.
 // Caller owns |sessions|, but not SyncedSessions objects within.
+// Returns true if foreign sessions were found, false otherwise.
 bool GetSessionData(int index, SyncedSessionVector* sessions);
 
 // Compares a foreign session based on the first session window.
@@ -112,6 +113,12 @@ bool ModelAssociatorHasTabWithUrl(int index, const GURL& url);
 // Stores a pointer to the local session for a given profile in |session|.
 // Returns true on success, false on failure.
 bool GetLocalSession(int index, const browser_sync::SyncedSession** session);
+
+// Deletes the foreign session with tag |session_tag| from the profile specified
+// by |index|. This will affect all synced clients.
+// Note: We pass the session_tag in by value to ensure it's not a reference
+// to the session tag within the SyncedSession we plan to delete.
+void DeleteForeignSession(int index, std::string session_tag);
 
 }  // namespace sessions_helper
 

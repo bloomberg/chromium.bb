@@ -298,8 +298,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   // Check that we can get the correct session specifics back from the node.
   sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode node(&trans);
-  ASSERT_TRUE(node.InitByClientTagLookup(syncable::SESSIONS,
-      machine_tag));
+  ASSERT_TRUE(node.InitByClientTagLookup(syncable::SESSIONS, machine_tag));
   const sync_pb::SessionSpecifics& specifics(node.GetSessionSpecifics());
   ASSERT_EQ(machine_tag, specifics.session_tag());
   ASSERT_TRUE(specifics.has_header());
@@ -387,9 +386,9 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
     BuildTabSpecifics(tag, 0, tab_list1[i], &tabs1[i]);
   }
 
-  // Update associator with the session's meta node containing two windows.
+  // Update associator with the session's meta node containing one window.
   model_associator_->AssociateForeignSpecifics(meta, base::Time());
-  // Add tabs for first window.
+  // Add tabs for the window.
   for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs1.begin();
        iter != tabs1.end(); ++iter) {
     model_associator_->AssociateForeignSpecifics(*iter, base::Time());
@@ -669,13 +668,15 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionDelete) {
 
   int64 node_id = model_associator_->GetSyncIdFromSessionTag(
       model_associator_->GetCurrentMachineTag());
+  sync_pb::EntitySpecifics deleted_specifics;
+  deleted_specifics.MutableExtension(sync_pb::session)->set_session_tag("tag");
   ASSERT_FALSE(notified_of_update_);
   {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
         &trans,
-        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
-            node_id, ChangeRecord::ACTION_DELETE));
+        ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
+            node_id, deleted_specifics));
   }
   ASSERT_TRUE(notified_of_update_);
 }
@@ -736,6 +737,61 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
   ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
   ASSERT_FALSE(model_associator_->tab_pool_.empty());
   ASSERT_TRUE(model_associator_->tab_pool_.full());
+}
+
+
+// Write a foreign session to a node, and then retrieve it.
+TEST_F(ProfileSyncServiceSessionTest, DeleteForeignSession) {
+  CreateRootTask task(this);
+  ASSERT_TRUE(StartSyncService(&task, false));
+  ASSERT_TRUE(task.success());
+
+  // Check that the DataTypeController associated the models.
+  bool has_nodes;
+  ASSERT_TRUE(model_associator_->SyncModelHasUserCreatedNodes(&has_nodes));
+  ASSERT_TRUE(has_nodes);
+
+  // A foreign session's tag.
+  std::string tag = "tag1";
+
+  // Should do nothing if the foreign session doesn't exist.
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  model_associator_->DeleteForeignSession(tag);
+  ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+
+  // Fill an instance of session specifics with a foreign session's data.
+  sync_pb::SessionSpecifics meta;
+  BuildSessionSpecifics(tag, &meta);
+  SessionID::id_type tab_nums1[] = {5, 10, 13, 17};
+  std::vector<SessionID::id_type> tab_list1(
+      tab_nums1, tab_nums1 + arraysize(tab_nums1));
+  AddWindowSpecifics(0, tab_list1, &meta);
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  tabs1.resize(tab_list1.size());
+  for (size_t i = 0; i < tab_list1.size(); ++i) {
+    BuildTabSpecifics(tag, 0, tab_list1[i], &tabs1[i]);
+  }
+
+  // Update associator with the session's meta node containing one window.
+  model_associator_->AssociateForeignSpecifics(meta, base::Time());
+  // Add tabs for the window.
+  for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs1.begin();
+       iter != tabs1.end(); ++iter) {
+    model_associator_->AssociateForeignSpecifics(*iter, base::Time());
+  }
+
+  // Check that the foreign session was associated and retrieve the data.
+  ASSERT_TRUE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
+  std::vector<std::vector<SessionID::id_type> > session_reference;
+  session_reference.push_back(tab_list1);
+  VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
+
+  // Now delete the foreign session.
+  model_associator_->DeleteForeignSession(tag);
+  ASSERT_FALSE(model_associator_->GetAllForeignSessions(&foreign_sessions));
+
 }
 
 }  // namespace browser_sync

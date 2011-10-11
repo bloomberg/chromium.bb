@@ -121,8 +121,6 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   tabs2.push_back(tracker.GetTab(tag2, 0));
   ASSERT_EQ(1U, tracker.num_synced_tabs(tag2));
   ASSERT_EQ(0U, tracker.num_synced_sessions());
-
-  ASSERT_FALSE(tracker.DeleteSession(tag1));
   ASSERT_FALSE(tracker.DeleteSession(tag3));
 
   SyncedSession* session = tracker.GetSession(tag1);

@@ -65,20 +65,20 @@ class SessionModelAssociator
   // The has_nodes out parameter is set to true if the sync model has
   // nodes other than the permanent tagged nodes.  The method may
   // return false if an error occurred.
-  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
+  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
 
   // AssociatorInterface and PerDataTypeAssociator Interface implementation.
-  virtual void AbortAssociation() {
+  virtual void AbortAssociation() OVERRIDE {
     // No implementation needed, this associator runs on the main thread.
   }
 
   // See ModelAssociator interface.
-  virtual bool CryptoReadyIfNecessary();
+  virtual bool CryptoReadyIfNecessary() OVERRIDE;
 
   // Returns sync id for the given chrome model id.
   // Returns sync_api::kInvalidId if the sync node is not found for the given
   // chrome id.
-  virtual int64 GetSyncIdFromChromeId(const size_t& id);
+  virtual int64 GetSyncIdFromChromeId(const size_t& id) OVERRIDE;
 
   // Returns sync id for the given session tag.
   // Returns sync_api::kInvalidId if the sync node is not found for the given
@@ -86,11 +86,18 @@ class SessionModelAssociator
   virtual int64 GetSyncIdFromSessionTag(const std::string& tag);
 
   // Not used.
-  virtual const SyncedTabDelegate* GetChromeNodeFromSyncId(int64 sync_id);
+  virtual const SyncedTabDelegate* GetChromeNodeFromSyncId(int64 sync_id)
+      OVERRIDE;
 
   // Not used.
   virtual bool InitSyncNodeFromChromeId(const size_t& id,
-                                        sync_api::BaseNode* sync_node);
+                                        sync_api::BaseNode* sync_node) OVERRIDE;
+
+  // Not used.
+  virtual void Associate(const SyncedTabDelegate* tab, int64 sync_id) OVERRIDE;
+
+  // Not used.
+  virtual void Disassociate(int64 sync_id) OVERRIDE;
 
   // Resync local window information. Updates the local sessions header node
   // with the status of open windows and the order of tabs they contain. Should
@@ -98,23 +105,21 @@ class SessionModelAssociator
   // single tab.
   //
   // If |reload_tabs| is true, will also resync all tabs (same as calling
-  // ReassociateTabs with a vector of all tabs).
-  void ReassociateWindows(bool reload_tabs);
+  // AssociateTabs with a vector of all tabs).
+  // Returns: false if the local session's sync nodes were deleted and
+  // reassociation is necessary, true otherwise.
+  bool AssociateWindows(bool reload_tabs);
 
   // Loads and reassociates the local tabs referenced in |tabs|.
-  void ReassociateTabs(const std::vector<SyncedTabDelegate*>& tabs);
+  // Returns: false if the local session's sync nodes were deleted and
+  // reassociation is necessary, true otherwise.
+  bool AssociateTabs(const std::vector<SyncedTabDelegate*>& tabs);
 
   // Reassociates a single tab with the sync model. Will check if the tab
   // already is associated with a sync node and allocate one if necessary.
-  void ReassociateTab(const SyncedTabDelegate& tab);
-
-  // Associate a local tab and it's sync node. Will overwrite the contents of
-  // the sync node with new specifics built from the tab.
-  virtual void Associate(const SyncedTabDelegate* tab, int64 sync_id);
-
-  // Looks up the specified sync node, and marks that tab as closed, then marks
-  // the node as free and deletes association.
-  virtual void Disassociate(int64 sync_id);
+  // Returns: false if the local session's sync nodes were deleted and
+  // reassociation is necessary, true otherwise.
+  bool AssociateTab(const SyncedTabDelegate& tab);
 
   // Load any foreign session info stored in sync db and update the sync db
   // with local client data. Processes/reuses any sync nodes owned by this
@@ -134,7 +139,7 @@ class SessionModelAssociator
 
   // Returns the tag used to uniquely identify this machine's session in the
   // sync model.
-  inline const std::string& GetCurrentMachineTag() {
+  const std::string& GetCurrentMachineTag() const {
     DCHECK(!current_machine_tag_.empty());
     return current_machine_tag_;
   }
@@ -144,27 +149,34 @@ class SessionModelAssociator
                                  const base::Time& modification_time);
 
   // Removes a foreign session from our internal bookkeeping.
-  void DisassociateForeignSession(const std::string& foreign_session_tag);
+  // Returns true if the session was found and deleted, false if no data was
+  // found for that session.
+  bool DisassociateForeignSession(const std::string& foreign_session_tag);
 
   // Sets |*local_session| to point to the associator's representation of the
   // local machine. Used primarily for testing.
   bool GetLocalSession(const SyncedSession* * local_session);
 
-  // Builds a list of all foreign sessions.
-  // Caller does NOT own ForeignSession objects.
+  // Builds a list of all foreign sessions. Caller does NOT own SyncedSession
+  // objects.
+  // Returns true if foreign sessions were found, false otherwise.
   bool GetAllForeignSessions(std::vector<const SyncedSession*>* sessions);
 
-  // Loads all windows for foreign session with session tag |tag|.
-  // Caller does NOT own SyncedSession objects.
+  // Loads all windows for foreign session with session tag |tag|. Caller does
+  // NOT own SyncedSession objects.
+  // Returns true if the foreign session was found, false otherwise.
   bool GetForeignSession(const std::string& tag,
                          std::vector<const SessionWindow*>* windows);
 
   // Looks up the foreign tab identified by |tab_id| and belonging to foreign
-  // session |tag|.
-  // Caller does NOT own the SessionTab object.
+  // session |tag|. Caller does NOT own the SessionTab object.
+  // Returns true if the foreign session and tab were found, false otherwise.
   bool GetForeignTab(const std::string& tag,
                      const SessionID::id_type tab_id,
                      const SessionTab** tab);
+
+  // Delete a foreign session and all it's sync data.
+  void DeleteForeignSession(const std::string& tag);
 
   // Control which local tabs we're interested in syncing.
   // Ensures the profile matches sync's profile and that the tab has at least
@@ -208,6 +220,8 @@ class SessionModelAssociator
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionTab);
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest,
                            InitializeCurrentSessionName);
+  FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest,
+                           TabNodePool);
 
   // Keep all the links to local tab data in one place.
   class TabLinks {
@@ -220,7 +234,7 @@ class SessionModelAssociator
           tab_(NULL) {}
 
     // We only ever have either a SessionTab (for foreign tabs), or a
-    // TabContents (for local tabs).
+    // SyncedTabDelegate (for local tabs).
     TabLinks(int64 sync_id, const SyncedTabDelegate* tab)
       : sync_id_(sync_id),
         session_tab_(NULL) {
@@ -232,9 +246,9 @@ class SessionModelAssociator
       session_tab_ = const_cast<SessionTab*>(session_tab);
     }
 
-    inline int64 sync_id() const { return sync_id_; }
-    inline const SessionTab* session_tab() const { return session_tab_; }
-    inline const SyncedTabDelegate* tab() const { return tab_; }
+    int64 sync_id() const { return sync_id_; }
+    const SessionTab* session_tab() const { return session_tab_; }
+    const SyncedTabDelegate* tab() const { return tab_; }
    private:
     int64 sync_id_;
     SessionTab* session_tab_;
@@ -278,21 +292,24 @@ class SessionModelAssociator
     void FreeTabNode(int64 sync_id);
 
     // Clear tab pool.
-    inline void clear() { tab_syncid_pool_.clear(); }
+    void clear() {
+      tab_syncid_pool_.clear();
+      tab_pool_fp_ = -1;
+    }
 
     // Return the number of tab nodes this client currently has allocated
     // (including both free and used nodes)
-    inline size_t capacity() const { return tab_syncid_pool_.size(); }
+    size_t capacity() const { return tab_syncid_pool_.size(); }
 
     // Return empty status (all tab nodes are in use).
-    inline bool empty() const { return tab_pool_fp_ == -1; }
+    bool empty() const { return tab_pool_fp_ == -1; }
 
     // Return full status (no tab nodes are in use).
-    inline bool full() {
+    bool full() {
       return tab_pool_fp_ == static_cast<int64>(tab_syncid_pool_.size())-1;
     }
 
-    inline void set_machine_tag(const std::string& machine_tag) {
+    void set_machine_tag(const std::string& machine_tag) {
       machine_tag_ = machine_tag;
     }
    private:
@@ -318,16 +335,11 @@ class SessionModelAssociator
   // Datatypes for accessing local tab data.
   typedef std::map<SessionID::id_type, TabLinks> TabLinksMap;
 
-  // Delete all foreign session/window/tab objects allocated dynamically.
-  // This is comprised of SyncedSession*, IDToSessionTabMap*, and any orphaned
-  // SessionTab*'s.
-  void DeleteForeignSessions();
-
   // Determine if a window is of a type we're interested in syncing.
   static bool ShouldSyncWindow(const SyncedWindowDelegate* window);
 
   // Build a sync tag from tab_node_id.
-  static inline std::string TabIdToTag(
+  static std::string TabIdToTag(
       const std::string machine_tag,
       size_t tab_node_id) {
     return base::StringPrintf("%s %"PRIuS"", machine_tag.c_str(), tab_node_id);
@@ -341,7 +353,8 @@ class SessionModelAssociator
 
   // Updates the server data based upon the current client session.  If no node
   // corresponding to this machine exists in the sync model, one is created.
-  void UpdateSyncModelDataFromClient();
+  // Returns true on success, false if association failed.
+  bool UpdateSyncModelDataFromClient();
 
   // Pulls the current sync model from the sync database and returns true upon
   // update of the client model. Will associate any foreign sessions as well as
@@ -351,6 +364,7 @@ class SessionModelAssociator
 
   // Fills a tab sync node with data from a TabContents object.
   // (from a local navigation event)
+  // Returns true on success, false if we need to reassociate due to corruption.
   bool WriteTabContentsToSyncModel(const SyncedWindowDelegate& window,
                                    const SyncedTabDelegate& tab,
                                    const int64 sync_id);
