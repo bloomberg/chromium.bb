@@ -35,6 +35,7 @@
 
 #import "common/mac/HTTPMultipartUpload.h"
 
+#import "client/mac/Framework/BreakpadDefines.h"
 #import "client/mac/sender/uploader.h"
 #import "common/mac/GTMLogger.h"
 

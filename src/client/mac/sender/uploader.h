@@ -34,7 +34,6 @@
 
 #include <Foundation/Foundation.h>
 
-#include "client/mac/Framework/Breakpad.h"
 #import "common/mac/GTMDefines.h"
 
 #define kClientIdPreferenceKey @"clientid"

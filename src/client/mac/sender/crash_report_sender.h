@@ -32,7 +32,7 @@
 // It will perform throttling based on the parameters passed to it and will
 // prompt the user to send the minidump.
 
-#include <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
 
 #include "client/mac/sender/uploader.h"
 #import "GTMDefines.h"

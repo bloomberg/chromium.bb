@@ -27,17 +27,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import <pwd.h>
-#import <sys/stat.h>
-#import <unistd.h>
+#import "client/mac/sender/crash_report_sender.h"
 
 #import <Cocoa/Cocoa.h>
+#import <pwd.h>
+#import <sys/stat.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+#import <unistd.h>
 
-#import "common/mac/HTTPMultipartUpload.h"
-
-#import "crash_report_sender.h"
+#import "client/mac/Framework/BreakpadDefines.h"
 #import "common/mac/GTMLogger.h"
+#import "common/mac/HTTPMultipartUpload.h"
 
 
 #define kLastSubmission @"LastSubmission"
