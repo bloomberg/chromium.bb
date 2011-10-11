@@ -566,6 +566,11 @@ NSString *const kDefaultServerType = @"google";
 }
 
 //=============================================================================
+- (NSMutableDictionary *)parameters {
+  return parameters_;
+}
+
+//=============================================================================
 - (void)dealloc {
   [parameters_ release];
   [minidumpContents_ release];
