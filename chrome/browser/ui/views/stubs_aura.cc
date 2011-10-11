@@ -41,23 +41,6 @@ class TemplateURL;
 
 namespace browser {
 
-// Declared in browser_dialogs.h so others don't need to depend on our header.
-void ShowTaskManager() {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-
-void ShowBackgroundPages() {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-
-void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContentsWrapper* tab_contents) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-
 void ShowSSLClientCertificateSelector(
     TabContentsWrapper* parent,
     net::SSLCertRequestInfo* cert_request_info,
@@ -67,23 +50,6 @@ void ShowSSLClientCertificateSelector(
 }
 
 void ShowAboutIPCDialog() {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-
-gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window,
-                             std::vector<unsigned char>* png_representation) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return gfx::Rect();
-}
-
-void ShowHungRendererDialog(TabContents* contents) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-
-void HideHungRendererDialog(TabContents* contents) {
   // TODO(beng):
   NOTIMPLEMENTED();
 }
@@ -109,17 +75,12 @@ void EditSearchEngine(
   NOTIMPLEMENTED();
 }
 
-void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
-                                 TabContents* tab_contents) {
-  // TODO(saintlou):
-  NOTIMPLEMENTED();
-}
-
-void ShowCryptoModulePasswordDialog(const std::string& module_name,
-                            bool retry,
-                            CryptoModulePasswordReason reason,
-                            const std::string& server,
-                            const CryptoModulePasswordCallback& callback) {
+void ShowCryptoModulePasswordDialog(
+    const std::string& module_name,
+    bool retry,
+    CryptoModulePasswordReason reason,
+    const std::string& server,
+    const CryptoModulePasswordCallback& callback) {
   // TODO(saintlou):
   NOTIMPLEMENTED();
 }

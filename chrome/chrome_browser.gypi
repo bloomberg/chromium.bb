@@ -4142,6 +4142,12 @@
             ['exclude', '^browser/ui/window_snapshot/window_snapshot_win.cc'],
             ['include', '^browser/ui/views/simple_message_box_views.cc'],
             ['include', '^browser/ui/views/simple_message_box_views.h'],
+            ['include', '^browser/ui/webui/collected_cookies_ui_delegate.cc'],
+            ['include', '^browser/ui/webui/collected_cookies_ui_delegate.h'],
+            ['include', '^browser/ui/webui/cookies_tree_model_adapter.cc'],
+            ['include', '^browser/ui/webui/cookies_tree_model_adapter.h'],
+            ['include', '^browser/ui/webui/repost_form_warning_ui.cc'],
+            ['include', '^browser/ui/webui/repost_form_warning_ui.h'],
           ],
           'dependencies': [
             '../ui/aura_shell/aura_shell.gyp:aura_shell',
@@ -4182,7 +4188,7 @@
               ],
             }],
           ],
-        }],        
+        }],
         ['OS=="linux" and use_aura==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
@@ -4190,7 +4196,7 @@
             '../build/linux/system.gyp:x11',
             '../dbus/dbus.gyp:dbus',
           ],
-        }],        
+        }],
         # Exclude WebUI certificate viewer if not POSIX or mac (these OS's have
         # native certificate viewers).
         ['os_posix == 0 or OS == "mac"', {
