@@ -24,6 +24,11 @@
     # Linux-Mac cross compiler distcc farm.
     'chromium_mac_pch%': 1,
 
+    # Enable building with ASAN (Clang's -fasan option).
+    # -fasan only works with clang, but asan=1 implies clang=1
+    # See https://sites.google.com/a/chromium.org/dev/developers/testing/addresssanitizer
+    'asan%': 0,
+
     # Set this to true when building with Clang.
     'clang%': 0,
 
@@ -665,7 +670,7 @@
           '<(DEPTH)/third_party/platformsdk_win7/files/Include',
         ],
         'msvs_cygwin_dirs': ['../third_party/cygwin'],
-        'msvs_disabled_warnings': [4396, 4503, 4819],
+        'msvs_disabled_warnings': [4355, 4396, 4503, 4819],
         'msvs_settings': {
           'VCCLCompilerTool': {
             'MinimalRebuild': 'false',

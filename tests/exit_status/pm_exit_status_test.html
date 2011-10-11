@@ -43,17 +43,13 @@ function setupTests(tester, plugin) {
     plugin.postMessage('init');
   });
   tester.addAsyncTest('Exit0Test', function(status) {
-    if (plugin.hasOwnProperty('exitStatus')) {
-      plugin.addEventListener('crash', status.wrap(function(crash_event) {
-        this.removeEventListener('crash', arguments.callee, false);
-        status.assertEqual($('naclModule').exitStatus,
-                           parseInt(args.expected_exit));
-        status.pass();
-      }), true);
-      plugin.postMessage(args.trigger);
-    } else {
-      status.pass();  // trivially passes until cross repo updates done
-    }
+    plugin.addEventListener('crash', status.wrap(function(crash_event) {
+      this.removeEventListener('crash', arguments.callee, false);
+      status.assertEqual($('naclModule').exitStatus,
+                         parseInt(args.expected_exit));
+      status.pass();
+    }), true);
+    plugin.postMessage(args.trigger);
   });
 }
 

@@ -2508,7 +2508,9 @@ def MakeWindowsEnv():
           ['NOMINMAX', '1'],
       ],
       LIBS = ['wsock32', 'advapi32'],
-      CCFLAGS = ['/EHsc', '/WX'],
+      # disable warning 4355: allow 'this' to be passed into member
+      # initializer
+      CCFLAGS = ['/EHsc', '/WX', '/wd4355'],
   )
 
   # This linker option allows us to ensure our builds are compatible with
