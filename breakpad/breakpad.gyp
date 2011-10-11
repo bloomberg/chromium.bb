@@ -56,6 +56,7 @@
             'src/common/mac',
           ],
           'sources': [
+            'src/client/mac/crash_generation/ConfigFile.mm',
             'src/client/mac/crash_generation/Inspector.mm',
             'src/client/mac/crash_generation/InspectorMain.mm',
           ],
@@ -79,6 +80,7 @@
           'sources': [
             'src/common/mac/HTTPMultipartUpload.m',
             'src/client/mac/sender/crash_report_sender.m',
+            'src/client/mac/sender/uploader.m',
             'src/common/mac/GTMLogger.m',
           ],
           'mac_bundle_resources': [
