@@ -158,7 +158,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		resource = wl_map_lookup(&client->objects, p[0]);
 		if (resource == NULL) {
-			wl_resource_post_error(resource,
+			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_OBJECT,
 					       "invalid object %d", p[0]);
 			break;
