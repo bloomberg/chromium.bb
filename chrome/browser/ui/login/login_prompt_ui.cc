@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -129,7 +131,8 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
   virtual void RegisterMessages() OVERRIDE {
     web_ui_->RegisterMessageCallback(
         "GetAutofill",
-        NewCallback(this, &LoginHandlerHtmlDelegate::GetAutofill));
+        base::Bind(&LoginHandlerHtmlDelegate::GetAutofill,
+                   base::Unretained(this)));
   }
 
   void ShowAutofillData(const std::wstring& username,
