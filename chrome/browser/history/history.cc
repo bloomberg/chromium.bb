@@ -78,15 +78,19 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
   virtual void NotifyProfileError(int backend_id,
                                   sql::InitStatus init_status) OVERRIDE {
     // Send to the history service on the main thread.
-    message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::NotifyProfileError, backend_id, init_status));
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&HistoryService::NotifyProfileError, history_service_.get(),
+                   backend_id, init_status));
   }
 
   virtual void SetInMemoryBackend(int backend_id,
       history::InMemoryHistoryBackend* backend) OVERRIDE {
     // Send the backend to the history service on the main thread.
-    message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::SetInMemoryBackend, backend_id, backend));
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&HistoryService::SetInMemoryBackend, history_service_.get(),
+                   backend_id, backend));
   }
 
   virtual void BroadcastNotifications(
@@ -100,18 +104,24 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                                              det);
     }
     // Send the notification to the history service on the main thread.
-    message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::BroadcastNotifications, type, details));
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&HistoryService::BroadcastNotifications,
+                   history_service_.get(), type, details));
   }
 
   virtual void DBLoaded(int backend_id) OVERRIDE {
-    message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::OnDBLoaded, backend_id));
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&HistoryService::OnDBLoaded, history_service_.get(),
+                   backend_id));
   }
 
   virtual void StartTopSitesMigration(int backend_id) OVERRIDE {
-    message_loop_->PostTask(FROM_HERE, NewRunnableMethod(history_service_.get(),
-        &HistoryService::StartTopSitesMigration, backend_id));
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&HistoryService::StartTopSitesMigration,
+                   history_service_.get(), backend_id));
   }
 
  private:
@@ -185,14 +195,21 @@ void HistoryService::UnloadBackend() {
   // run before we release our backend refptr, the last reference will be held
   // by this thread and the destructor will be called from here.
   //
-  // Therefore, we create a task to run the Closing operation first. This holds
-  // a reference to the backend. Then we release our reference, then we schedule
-  // the task to run. After the task runs, it will delete its reference from
-  // the history thread, ensuring everything works properly.
-  Task* closing_task =
-      NewRunnableMethod(history_backend_.get(), &HistoryBackend::Closing);
-  history_backend_ = NULL;
+  // Therefore, we create a closure to run the Closing operation first. This
+  // holds a reference to the backend. Then we release our reference, then we
+  // schedule the task to run. After the task runs, it will delete its reference
+  // from the history thread, ensuring everything works properly.
+  //
+  // TODO(ajwong): Cleanup HistoryBackend lifetime issues.
+  //     See http://crbug.com/99767.
+  history_backend_->AddRef();
+  base::Closure closing_task =
+      base::Bind(&HistoryBackend::Closing, history_backend_.get());
   ScheduleTask(PRIORITY_NORMAL, closing_task);
+  closing_task.Reset();
+  HistoryBackend* raw_ptr = history_backend_.get();
+  history_backend_ = NULL;
+  thread_->message_loop()->ReleaseSoon(FROM_HERE, raw_ptr);
 }
 
 void HistoryService::Cleanup() {
@@ -682,8 +699,8 @@ void HistoryService::ScheduleAutocomplete(HistoryURLProvider* provider,
 }
 
 void HistoryService::ScheduleTask(SchedulePriority priority,
-                                  Task* task) {
-  // TODO(brettw): do prioritization.
+                                  const base::Closure& task) {
+  // TODO(brettw): Do prioritization.
   thread_->message_loop()->PostTask(FROM_HERE, task);
 }
 

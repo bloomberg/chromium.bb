@@ -690,7 +690,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Call to schedule a given task for running on the history thread with the
   // specified priority. The task will have ownership taken.
-  void ScheduleTask(SchedulePriority priority, Task* task);
+  void ScheduleTask(SchedulePriority priority, const base::Closure& task);
 
   // Schedule ------------------------------------------------------------------
   //
@@ -708,8 +708,8 @@ class HistoryService : public CancelableRequestProvider,
     if (consumer)
       AddRequest(request, consumer);
     ScheduleTask(priority,
-                 NewRunnableMethod(history_backend_.get(), func,
-                                   scoped_refptr<RequestType>(request)));
+                 base::Bind(func, history_backend_.get(),
+                            scoped_refptr<RequestType>(request)));
     return request->handle();
   }
 
@@ -724,9 +724,8 @@ class HistoryService : public CancelableRequestProvider,
     if (consumer)
       AddRequest(request, consumer);
     ScheduleTask(priority,
-                 NewRunnableMethod(history_backend_.get(), func,
-                                   scoped_refptr<RequestType>(request),
-                                   a));
+                 base::Bind(func, history_backend_.get(),
+                            scoped_refptr<RequestType>(request), a));
     return request->handle();
   }
 
@@ -745,9 +744,8 @@ class HistoryService : public CancelableRequestProvider,
     if (consumer)
       AddRequest(request, consumer);
     ScheduleTask(priority,
-                 NewRunnableMethod(history_backend_.get(), func,
-                                   scoped_refptr<RequestType>(request),
-                                   a, b));
+                 base::Bind(func, history_backend_.get(),
+                            scoped_refptr<RequestType>(request), a, b));
     return request->handle();
   }
 
@@ -768,9 +766,8 @@ class HistoryService : public CancelableRequestProvider,
     if (consumer)
       AddRequest(request, consumer);
     ScheduleTask(priority,
-                 NewRunnableMethod(history_backend_.get(), func,
-                                   scoped_refptr<RequestType>(request),
-                                   a, b, c));
+                 base::Bind(func, history_backend_.get(),
+                            scoped_refptr<RequestType>(request), a, b, c));
     return request->handle();
   }
 
@@ -784,7 +781,7 @@ class HistoryService : public CancelableRequestProvider,
                          BackendFunc func) {  // Function to call on backend.
     DCHECK(thread_) << "History service being called after cleanup";
     LoadBackendIfNecessary();
-    ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func));
+    ScheduleTask(priority, base::Bind(func, history_backend_.get()));
   }
 
   template<typename BackendFunc, typename ArgA>
@@ -793,7 +790,7 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgA& a) {
     DCHECK(thread_) << "History service being called after cleanup";
     LoadBackendIfNecessary();
-    ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func, a));
+    ScheduleTask(priority, base::Bind(func, history_backend_.get(), a));
   }
 
   template<typename BackendFunc, typename ArgA, typename ArgB>
@@ -803,8 +800,7 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgB& b) {
     DCHECK(thread_) << "History service being called after cleanup";
     LoadBackendIfNecessary();
-    ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func,
-                                             a, b));
+    ScheduleTask(priority, base::Bind(func, history_backend_.get(), a, b));
   }
 
   template<typename BackendFunc, typename ArgA, typename ArgB, typename ArgC>
@@ -815,8 +811,7 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgC& c) {
     DCHECK(thread_) << "History service being called after cleanup";
     LoadBackendIfNecessary();
-    ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func,
-                                             a, b, c));
+    ScheduleTask(priority, base::Bind(func, history_backend_.get(), a, b, c));
   }
 
   template<typename BackendFunc,
@@ -832,8 +827,8 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgD& d) {
     DCHECK(thread_) << "History service being called after cleanup";
     LoadBackendIfNecessary();
-    ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func,
-                                             a, b, c, d));
+    ScheduleTask(priority, base::Bind(func, history_backend_.get(),
+                                      a, b, c, d));
   }
 
   NotificationRegistrar registrar_;
