@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
@@ -17,7 +18,8 @@ class Point;
 }
 
 namespace views {
-class Menu2;
+class MenuRunner;
+class Widget;
 }
 
 class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
@@ -25,16 +27,17 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
   explicit DownloadShelfContextMenuView(BaseDownloadItemModel* model);
   virtual ~DownloadShelfContextMenuView();
 
-  void Run(const gfx::Point& point);
+  // Returns true if menu has been deleted.
+  bool Run(views::Widget* parent_widget,
+           const gfx::Point& point) WARN_UNUSED_RESULT;
 
   // This method runs when the caller has been deleted and we should not attempt
   // to access download_item().
   void Stop();
 
  private:
-#if !defined(USE_AURA)
-  scoped_ptr<views::Menu2> menu_;
-#endif
+  scoped_ptr<views::MenuRunner> menu_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenuView);
 };
 

@@ -9,7 +9,9 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "content/browser/download/download_item.h"
 #include "ui/gfx/point.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
     BaseDownloadItemModel* model)
@@ -19,20 +21,23 @@ DownloadShelfContextMenuView::DownloadShelfContextMenuView(
 
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}
 
-void DownloadShelfContextMenuView::Run(const gfx::Point& point) {
-#if defined(USE_AURA)
-  NOTIMPLEMENTED();
-#else
-  menu_.reset(new views::Menu2(GetMenuModel()));
+bool DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
+                                       const gfx::Point& point) {
+  views::MenuModelAdapter menu_model_adapter(GetMenuModel());
+  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
 
   // The menu's alignment is determined based on the UI layout.
-  views::Menu2::Alignment alignment;
+  views::MenuItemView::AnchorPosition position;
   if (base::i18n::IsRTL())
-    alignment = views::Menu2::ALIGN_TOPRIGHT;
+    position = views::MenuItemView::TOPRIGHT;
   else
-    alignment = views::Menu2::ALIGN_TOPLEFT;
-  menu_->RunMenuAt(point, alignment);
-#endif
+    position = views::MenuItemView::TOPLEFT;
+  return menu_runner_->RunMenuAt(
+      parent_widget,
+      NULL,
+      gfx::Rect(point, gfx::Size()),
+      position,
+      views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED;
 }
 
 void DownloadShelfContextMenuView::Stop() {
