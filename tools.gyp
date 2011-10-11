@@ -9,7 +9,7 @@
   ],
   ######################################################################
   'conditions': [
-    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+    ['disable_untrusted==0 and target_arch!="arm"', {
       'targets' : [
         {
           'target_name': 'prep_toolchain',
@@ -32,26 +32,26 @@
           'type': 'none',
           'actions': [
             {
-              'action_name': 'Install crt1.o',
+              'action_name': 'Install crt1.o 32',
               'msvs_cygwin_shell': 0,
-              'description': 'Install crt1.o',
+              'description': 'Install crt1.o 32',
               'inputs': [
                  'src/untrusted/stubs/crt1.x',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/32/crt1.o',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/32/crt1.o',
               ],
               'action': [
                 '>(python_exe)',
                 '<(DEPTH)/native_client/build/copy_sources.py',
                 'src/untrusted/stubs/crt1.x',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/32/crt1.o',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/32/crt1.o',
               ],
             },
             {
-              'action_name': 'Install crt1.o',
+              'action_name': 'Install crt1.o 64',
               'msvs_cygwin_shell': 0,
-              'description': 'Install crt1.o',
+              'description': 'Install crt1.o 64',
               'inputs': [
                  'src/untrusted/stubs/crt1.x',
               ],
@@ -114,6 +114,10 @@
             },
           ],
         },
+      ],
+    }],
+    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+      'targets' : [
         {
           'target_name': 'crt_platform_64',
           'type': 'none',
@@ -130,6 +134,29 @@
               'src/untrusted/stubs/crti_x86_64.S',
               'src/untrusted/stubs/crtn_x86_64.S',
               'src/untrusted/stubs/setjmp_x86_64.S'
+             ]
+          },
+        }
+      ],
+    }],
+    ['disable_untrusted==0 and OS!="mac" and target_arch=="ia32"', {
+      'targets' : [
+        {
+          'target_name': 'crt_platform_32',
+          'type': 'none',
+          'dependencies': [
+            'copy_headers'
+           ],
+          'variables': {
+            'nlib_target': 'libcrt_platform.a',
+            'build_glibc': 0,
+            'build_newlib': 1,
+            'extra_args': ['--no-suffix', '--strip=_x86_32'],
+            'objdir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
+            'sources': [
+              'src/untrusted/stubs/crti_x86_32.S',
+              'src/untrusted/stubs/crtn_x86_32.S',
+              'src/untrusted/stubs/setjmp_x86_32.S'
             ]
           },
         }

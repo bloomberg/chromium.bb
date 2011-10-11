@@ -15,7 +15,7 @@
     ]
   },
   'conditions': [
-    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+    ['disable_untrusted==0 and OS!="mac" and target_arch!="arm"', {
       'targets' : [
         {
           'target_name': 'ppapi_stub_lib',

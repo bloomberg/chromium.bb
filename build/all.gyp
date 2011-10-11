@@ -31,7 +31,7 @@
         '../src/trusted/service_runtime/service_runtime.gyp:*',
       ],
       'conditions': [
-        ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+        ['disable_untrusted==0 and OS!="mac" and target_arch!="arm"', {
           'dependencies': [
             '../src/untrusted/irt/irt.gyp:*',
             '../src/untrusted/irt_stub/irt_stub.gyp:*',

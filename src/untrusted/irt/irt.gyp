@@ -43,7 +43,7 @@
     ],
   },
   'conditions': [
-    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+    ['disable_untrusted==0 and OS!="mac" and target_arch!="arm"', {
       'targets': [
         {
           'target_name': 'irt_core_nexe',
@@ -55,14 +55,14 @@
             'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
           },
           'conditions': [
-            ['target_arch=="x64"', {
+            ['target_arch=="x64" or target_arch == "ia32"', {
               'variables': {
                 'link_flags': [
                   '-Wl,--section-start,.rodata=0x3ef00000',
                   '-Wl,-Ttext-segment=0x0fc00000',
                 ],
               },
-           }],
+            }],
           ],
           'dependencies': [
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
@@ -79,7 +79,7 @@
             'sources': ['<@(irt_sources)', '<@(irt_browser)'],
           },
           'conditions': [
-            ['target_arch == "x64"', {
+            ['target_arch == "x64" or target_arch == "ia32"', {
               'variables': {
                 'link_flags': [
                   '-Wl,--section-start,.rodata=0x3ef00000',

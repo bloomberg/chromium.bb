@@ -15,10 +15,16 @@ additional arguments, and use them to build.
 
 
 def ErrOut(text):
-  print "\n\n"
-  print '>>>' + '>> <<'.join(sys.argv) + '<<'
-  print ' '.join(sys.argv) + '<<\n'
-  print text
+  """ErrOut prints an error message and the command-line that caused it.
+
+  Prints to standard err, both the command-line normally, and separated by
+  >>...<< to make it easier to copy and paste the command, or to
+  find command formating issues.
+  """
+  sys.stderr.write('\n\n')
+  sys.stderr.write( '>>>' + '>> <<'.join(sys.argv) + '<<\n\n')
+  sys.stderr.write(' '.join(sys.argv) + '<<\n\n')
+  sys.stderr.write(text + '\n')
   sys.exit(-1)
 
 
@@ -110,8 +116,8 @@ class Builder(object):
     self.strip = options.strip
 
     if self.verbose:
-      print "Compile options: %s" % self.compile_options
-      print "Linker options: %s" % self.link_options
+      print 'Compile options: %s' % self.compile_options
+      print 'Linker options: %s' % self.link_options
 
   def GenNaClPath(self, path):
     """Helper which prepends path with the native client source directory."""
@@ -128,14 +134,13 @@ class Builder(object):
   def BuildCompileOptions(self, options, defines):
     """Generates compile options, called once by __init__."""
     options = ArgToList(options)
-#    if self.toolname in ['glibc', 'newlib'] and self.mainarch == 'x86':
-#      options += ['-m' + self.subarch]
     options += ['-D' + define for define in defines]
     self.compile_options = options + ['-I' + name for name in self.inc_paths]
 
   def BuildLinkOptions(self, options):
     """Generates link options, called once by __init__."""
     options = ArgToList(options)
+    print 'LINK OPTIONS: >>%s<<' % '<< >>'.join(options)
     if self.toolname in ['glibc', 'newlib'] and self.mainarch == 'x86':
       options += ['-B' + self.toollib]
     self.link_options = options + ['-L' + name for name in self.lib_paths]
@@ -261,7 +266,8 @@ class Builder(object):
   def Generate(self, srcs):
     """Generate final output file.
 
-    Link or Archive the final output file, from the compiled sources."""
+    Link or Archive the final output file, from the compiled sources.
+    """
     if self.outtype == 'nexe':
       self.Link(srcs)
     elif self.outtype == 'nlib':
@@ -300,6 +306,10 @@ def Main(argv):
                     help='Enable verbosity', action='store_true')
   parser.add_option('-D', dest='defines', default=[], action='append')
   (options, files) = parser.parse_args(argv[1:])
+
+  if not files:
+    parser.print_help()
+    return -1
 
   build = Builder(options)
   objs = []

@@ -7,10 +7,12 @@ import sys
 
 """Copy Sources
 
+Copy from a source file or directory to a new file or directory.  This
+supports renaming of the file.
 """
 
 def ErrOut(text):
-  print "\n\n"
+  print '\n\n'
   print ' '.join(sys.argv)
   print text
   sys.exit(-1)
@@ -23,11 +25,11 @@ def MakeDir(outdir):
 
 def Main(argv):
   if len(argv) != 3:
-    print "Expecting: copy_sources.py <source filer> <dest file/dir>"
+    print 'Expecting: copy_sources.py <source file> <dest file/dir>'
     return -1
 
   if not os.path.exists(argv[1]):
-    print "File not fount: %s" % argv[1]
+    print 'File not found: %s' % argv[1]
     return -1
 
   shutil.copy(argv[1], argv[2])
