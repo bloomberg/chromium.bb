@@ -397,6 +397,8 @@
     'browser/renderer_host/render_widget_host_mac.cc',
     'browser/renderer_host/render_widget_host_view.cc',
     'browser/renderer_host/render_widget_host_view.h',
+    'browser/renderer_host/render_widget_host_view_aura.cc',
+    'browser/renderer_host/render_widget_host_view_aura.h',
     'browser/renderer_host/render_widget_host_view_gtk.cc',
     'browser/renderer_host/render_widget_host_view_gtk.h',
     'browser/renderer_host/render_widget_host_view_mac.h',
@@ -652,6 +654,11 @@
         ['exclude', '^browser/renderer_host/render_widget_host_view_win.cc'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_win.h'],
         ['exclude', '^browser/renderer_host/render_message_filter_win.cc'],
+      ],
+    }, {
+      'sources/': [
+        ['exclude', '^browser/renderer_host/render_widget_host_view_aura.cc'],
+        ['exclude', '^browser/renderer_host/render_widget_host_view_aura.h'],
       ],
     }],
   ],

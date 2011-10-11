@@ -43,6 +43,8 @@ include_rules = [
   # Allow inclusion of WebKit API files.
   "+third_party/WebKit/Source/WebKit/chromium",
 
+  # Aura is analogous to Win32 or a Gtk, so it is allowed.
+  "+ui/aura",
   "+ui/base",
   "+ui/gfx",
   # Content knows about grd files, but the specifics of how to get a resource
@@ -57,8 +59,7 @@ include_rules = [
   # explicit. 
   "-views",
   
-  # Treat Aura like Views for now.
-  "-ui/aura",
+  # Aura Shell consumes views, so it too is banned.
   "-ui/aura_shell",
 
   "+webkit",
