@@ -2448,7 +2448,8 @@ llvm-sb-setup() {
   # Speed things up by avoiding an intermediate step
   flags+=" --pnacl-skip-ll"
 
-  LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized"
+  LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized \
+  --target=${CROSS_TARGET_ARM}"
 
   if ${LIBMODE_GLIBC} ; then
     local target_cc="${PNACL_CLANG}"
@@ -2497,7 +2498,8 @@ llvm-sb-setup-jit() {
   local naclgcc_root="";
   naclgcc_root="${NNACL_GLIBC_ROOT}"
 
-  LLVM_SB_EXTRA_CONFIG_FLAGS="--enable-jit --disable-optimized"
+  LLVM_SB_EXTRA_CONFIG_FLAGS="--enable-jit --disable-optimized \
+  --target=${LLVM_SB_ARCH}-nacl"
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${naclgcc_root}/bin/i686-nacl-ar" \
@@ -2574,7 +2576,6 @@ llvm-sb-configure() {
         "${LLVM_SB_CONFIGURE_ENV[@]}" \
         --prefix=${installdir} \
         --host=nacl \
-        --target=${CROSS_TARGET_ARM} \
         --enable-targets=${targets} \
         --enable-pic=no \
         --enable-static \
