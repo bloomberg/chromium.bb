@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -244,9 +243,8 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
     // Initially active_input_method_ids_ is empty. In this case, just
     // returns the fallback input method descriptor.
     if (result->empty()) {
-      if (system::runtime_environment::IsRunningOnChromeOS()) {
-        LOG(WARNING) << "No active input methods found.";
-      }
+      // Since browser_tests call neither SetImeConfig("preload_engines") nor
+      // EnableInputMethod(), this path might be taken.
       result->push_back(
           InputMethodDescriptor::GetFallbackInputMethodDescriptor());
     }
