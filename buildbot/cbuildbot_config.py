@@ -628,7 +628,7 @@ add_config('x86-alex-toolchain', [internal, full, official, {
   'gs_path': GS_PATH_DEFAULT,
 }])
 
-add_config('arm-tegra2_seaboard-toolchain', [arm, internal, full, official, {
+add_config('arm-tegra2_seaboard-toolchain', [internal, arm, full, official, {
   'board' : 'tegra2_seaboard',
   'build_tests' : True,
   'chrome_tests' : True,
@@ -684,33 +684,33 @@ add_config('lumpy-release', [internal, full, official, release, {
 }])
 
 add_config('arm-tegra2_seaboard-release', [
-    arm, internal, full, official, release, {
+    internal, arm, full, official, release, {
   'board' : 'tegra2_seaboard',
 }])
 
 add_config('arm-tegra2_seaboard-tangent-release',
-  [arm, internal, full, official, release, {
+  [internal, arm, full, official, release, {
     'board' : 'tegra2_seaboard',
     'profile' : 'cosine',
     'prebuilts' : False,
 }])
 
 add_config('arm-tegra2_aebl-release', [
-    arm, internal, full, official, release, {
+    internal, arm, full, official, release, {
   'board' : 'tegra2_aebl',
 }])
 
 add_config('arm-tegra2_arthur-release', [
-    arm, internal, full, official, release, {
+    internal, arm, full, official, release, {
   'board' : 'tegra2_arthur',
 }])
 
 add_config('arm-tegra2_asymptote-release', [
-    arm, internal, full, official, release, {
+    internal, arm, full, official, release, {
   'board' : 'tegra2_asymptote',
 }])
 
 add_config('arm-tegra2_kaen-release', [
-    arm, internal, full, official, release, {
+    internal, arm, full, official, release, {
   'board' : 'tegra2_kaen',
 }])
