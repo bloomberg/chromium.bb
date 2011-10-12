@@ -69,10 +69,8 @@ class PolicyPrefsUITest(pyauto.PyUITest):
   #      all platforms are tested. Valid platforms are 'win', 'mac', 'linux'
   #      and 'chromeos'.
   policies = {
-    # TODO(joaodasilva) Should be BROWSER. http://crbug.com/97749
-    'HomepageLocation': ('http://chromium.org', []),
-    # TODO(joaodasilva) Should be BROWSER. http://crbug.com/97749
-    'HomepageIsNewTabPage': (True, []),
+    'HomepageLocation': ('http://chromium.org', [ BROWSER ]),
+    'HomepageIsNewTabPage': (True, [ BROWSER ]),
     # TODO(joaodasilva): Couldn't verify on linux.
     'DefaultBrowserSettingEnabled': (False, [], [ 'win', 'mac', 'linux' ]),
     # TODO(joaodasilva): Test this on windows.
