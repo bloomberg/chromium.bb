@@ -473,11 +473,14 @@ body {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
+  -webkit-box-align: center;
   pointer-events: auto;
 }
 
 .gallery .edit-modal .label {
-  padding: 0 10px;
+  height: 20px;
+  padding-left: 50px;
+  padding-right: 10px;
 
   display: -webkit-box;
   -webkit-box-orient: horizontal;
@@ -488,18 +491,25 @@ body {
 }
 
 .gallery .edit-modal .label.brightness {
-  padding-left: 50px;
   background-image: url(../../images/gallery/icon_brightness.png);
 }
 
 .gallery .edit-modal .label.contrast {
   margin-left: 15px;
-  padding-left: 50px;
   background-image: url(../../images/gallery/icon_contrast.png);
 }
 
 .gallery .edit-modal .range {
-  margin: 12px 10px 6px 0;
+  -webkit-appearance: none !important;
+  height: 3px;
+  margin-right: 10px;
+}
+
+.gallery .edit-modal .range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 29px;
+  background-image: url(../../images/gallery/slider_thumb.png);
 }
 
 /* Crop frame */
