@@ -1204,9 +1204,14 @@ LRESULT NativeWidgetWin::OnAppCommand(HWND window,
                                       int keystate) {
   // We treat APPCOMMAND ids as an extension of our command namespace, and just
   // let the delegate figure out what to do...
-  SetMsgHandled(GetWidget()->widget_delegate() &&
-      GetWidget()->widget_delegate()->ExecuteWindowsCommand(app_command));
-  return 0;
+  BOOL is_handled = (GetWidget()->widget_delegate() &&
+      GetWidget()->widget_delegate()->ExecuteWindowsCommand(app_command)) ?
+      TRUE : FALSE;
+  SetMsgHandled(is_handled);
+  // Make sure to return TRUE if the event was handled or in some cases the
+  // system will execute the default handler which can cause bugs like going
+  // forward or back two pages instead of one.
+  return is_handled;
 }
 
 void NativeWidgetWin::OnCancelMode() {
