@@ -413,14 +413,13 @@ bool CreateWindowFunction::RunImpl() {
         window_type = Browser::TYPE_POPUP;
         extension_id = GetExtension()->id();
       } else if (type_str == keys::kWindowTypeValuePanel) {
-        if (GetExtension()->HasAPIPermission(
-                ExtensionAPIPermission::kExperimental)) {
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnablePanels)) {
           window_type = Browser::TYPE_PANEL;
-          extension_id = GetExtension()->id();
         } else {
-          error_ = errors::kExperimentalFeature;
-          return false;
+          window_type = Browser::TYPE_POPUP;
         }
+        extension_id = GetExtension()->id();
       } else if (type_str != keys::kWindowTypeValueNormal) {
         EXTENSION_FUNCTION_VALIDATE(false);
       }

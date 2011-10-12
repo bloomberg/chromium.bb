@@ -1136,7 +1136,7 @@
           "incognito": {"type": "boolean", "description": "Whether the window is incognito."},
           "type": {
             "type": "string",
-            "description": "The type of browser window this is. The 'panel' type requires the 'experimental' permission.",
+            "description": "The type of browser window this is.",
             "enum": ["normal", "popup", "panel", "app"]
           }
         }
@@ -1252,7 +1252,7 @@
               "type": {
                 "type": "string",
                 "optional": true,
-                "description": "Specifies what type of browser window to create. The 'panel' type requires the 'experimental' permission.",
+                "description": "Specifies what type of browser window to create. The 'panel' type creates a popup unless the '--enable-panels' flag is set.",
                 "enum": ["normal", "popup", "panel"]
               }
             },

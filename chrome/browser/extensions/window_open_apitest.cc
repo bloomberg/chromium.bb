@@ -153,10 +153,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowArgumentsOverflow) {
   ASSERT_TRUE(RunExtensionTest("window_open/argument_overflow")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPanelNotEnabled) {
+  ASSERT_TRUE(RunExtensionTest("window_open/panel_not_enabled")) << message_;
+}
+
 class WindowOpenPanelTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
     command_line->AppendSwitch(switches::kEnablePanels);
   }
 };

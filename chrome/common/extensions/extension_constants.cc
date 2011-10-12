@@ -166,9 +166,6 @@ const char* kExpectString = "Expect string value.";
 const char* kExperimentalFlagRequired =
     "Loading extensions with 'experimental' permission requires"
     " --enable-experimental-extension-apis command line flag.";
-const char *kExperimentalFeature =
-    "This feature requires 'experimental' permissions and"
-    " --enable-experimental-extension-apis command line flag.";
 const char* kHostedAppsCannotIncludeExtensionFeatures =
     "Hosted apps cannot use the extension feature '*'.";
 const char* kInvalidAllFrames =
