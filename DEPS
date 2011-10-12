@@ -374,7 +374,7 @@ deps_os = {
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
 
     "src/third_party/lss":
-      (Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@3",
+      (Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@8",
 
     "src/third_party/openssl":
       "/trunk/deps/third_party/openssl@101988",
