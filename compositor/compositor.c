@@ -342,6 +342,26 @@ wlsc_compositor_get_time(void)
 }
 
 static void
+wlsc_compositor_repick(struct wlsc_compositor *compositor)
+{
+	struct wlsc_input_device *device;
+	struct wlsc_surface *surface;
+	int32_t sx, sy;
+	uint32_t time;
+
+	time = wlsc_compositor_get_time();
+	wl_list_for_each(device, &compositor->input_device_list, link) {
+		surface = pick_surface(&device->input_device, &sx, &sy);
+		wl_input_device_set_pointer_focus(&device->input_device,
+						  &surface->surface,
+						  time,
+						  device->input_device.x,
+						  device->input_device.y,
+						  sx, sy);
+	}
+}
+
+static void
 destroy_surface(struct wl_resource *resource)
 {
 	struct wlsc_surface *surface =
@@ -351,6 +371,8 @@ destroy_surface(struct wl_resource *resource)
 	wlsc_surface_damage_below(surface);
 
 	wl_list_remove(&surface->link);
+	wlsc_compositor_repick(compositor);
+
 	if (surface->saved_texture == 0)
 		glDeleteTextures(1, &surface->texture);
 	else
@@ -685,6 +707,7 @@ wlsc_surface_raise(struct wlsc_surface *surface)
 
 	wl_list_remove(&surface->link);
 	wl_list_insert(&compositor->surface_list, &surface->link);
+	wlsc_compositor_repick(compositor);
 	wlsc_surface_damage(surface);
 }
 
@@ -1018,6 +1041,7 @@ surface_attach(struct wl_client *client,
 {
 	struct wlsc_surface *es = resource->data;
 	struct wl_buffer *buffer = buffer_resource->data;
+	int repick = 0;
 
 	buffer->busy_count++;
 	wlsc_buffer_post_release(es->buffer);
@@ -1027,17 +1051,24 @@ surface_attach(struct wl_client *client,
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
 		       &es->buffer_destroy_listener.link);
 
-	if (es->visual == WLSC_NONE_VISUAL)
+	if (es->visual == WLSC_NONE_VISUAL) {
 		wl_list_insert(&es->compositor->surface_list, &es->link);
+		repick = 1;
+	}
 
 	if (x != 0 || y != 0 ||
-	    es->width != buffer->width || es->height != buffer->height)
+	    es->width != buffer->width || es->height != buffer->height) {
 		wlsc_surface_configure(es, es->x + x, es->y + y,
 				       buffer->width, buffer->height);
+		repick = 1;
+	}
 
 	wlsc_buffer_attach(buffer, &es->surface);
 
 	es->compositor->shell->attach(es->compositor->shell, es);
+
+	if (repick)
+		wlsc_compositor_repick(es->compositor);
 }
 
 static void
@@ -1641,6 +1672,12 @@ const static struct wl_input_device_interface input_device_interface = {
 	input_device_attach,
 };
 
+static void unbind_input_device(struct wl_resource *resource)
+{
+	wl_list_remove(&resource->link);
+	free(resource);
+}
+
 static void
 bind_input_device(struct wl_client *client,
 		  void *data, uint32_t version, uint32_t id)
@@ -1651,6 +1688,7 @@ bind_input_device(struct wl_client *client,
 	resource = wl_client_add_object(client, &wl_input_device_interface,
 					&input_device_interface, id, data);
 	wl_list_insert(&device->resource_list, &resource->link);
+	resource->destroy = unbind_input_device;
 }
 
 WL_EXPORT void
