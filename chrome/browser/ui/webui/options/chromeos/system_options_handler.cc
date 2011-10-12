@@ -124,10 +124,13 @@ void SystemOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("accessibilityChange",
       base::Bind(&SystemOptionsHandler::AccessibilityChangeCallback,
                  base::Unretained(this)));
+
   web_ui_->RegisterMessageCallback("bluetoothEnableChange",
-      NewCallback(this, &SystemOptionsHandler::BluetoothEnableChangeCallback));
+      base::Bind(&SystemOptionsHandler::BluetoothEnableChangeCallback,
+                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("findBluetoothDevices",
-      NewCallback(this, &SystemOptionsHandler::FindBluetoothDevicesCallback));
+      base::Bind(&SystemOptionsHandler::FindBluetoothDevicesCallback,
+                 base::Unretained(this)));
 }
 
 void SystemOptionsHandler::AccessibilityChangeCallback(const ListValue* args) {
