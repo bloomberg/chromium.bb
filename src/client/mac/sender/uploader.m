@@ -27,8 +27,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#import <fcntl.h>
 #import <pwd.h>
 #import <sys/stat.h>
+#include <TargetConditionals.h>
 #import <unistd.h>
 
 #import <SystemConfiguration/SystemConfiguration.h>
@@ -241,6 +243,9 @@ NSString *const kDefaultServerType = @"google";
 
 //=============================================================================
 - (BOOL)readLogFileData {
+#if TARGET_OS_IPHONE
+  return NO;
+#else
   unsigned int logFileCounter = 0;
 
   NSString *logPath;
@@ -331,6 +336,7 @@ NSString *const kDefaultServerType = @"google";
     return NO;
   }
   return YES;
+#endif  // TARGET_OS_IPHONE
 }
 
 //=============================================================================
