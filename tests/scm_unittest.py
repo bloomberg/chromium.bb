@@ -45,8 +45,8 @@ class RootTestCase(BaseSCMTestCase):
     members = [
         'ElementTree', 'GetCasedPath', 'GenFakeDiff', 'GIT', 'SVN',
         'ValidateEmail',
-        'cStringIO', 'determine_scm', 'gclient_utils', 'glob', 'logging', 'os',
-        're', 'subprocess2', 'sys', 'tempfile', 'time',
+        'cStringIO', 'determine_scm', 'gclient_utils', 'glob', 'logging',
+        'only_int', 'os', 're', 'subprocess2', 'sys', 'tempfile', 'time',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm, members)
@@ -60,6 +60,7 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'GenerateDiff', 'GetBranch', 'GetBranchRef', 'GetCheckoutRoot',
         'GetDifferentFiles', 'GetEmail', 'GetPatchName', 'GetSVNBranch',
         'GetUpstreamBranch', 'IsGitSvn', 'MatchSvnGlob', 'ShortBranchName',
+        'current_version',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.GIT, members)
