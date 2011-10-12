@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -66,7 +65,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
   virtual DownloadManager* GetDownloadManager() OVERRIDE;
-  virtual bool HasCreatedDownloadManager() const OVERRIDE;
   virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
@@ -136,9 +134,6 @@ class OffTheRecordProfileImpl : public Profile,
                        const NotificationDetails& details) OVERRIDE;
 
  private:
-  virtual void SetDownloadManagerDelegate(
-      ChromeDownloadManagerDelegate* delegate) OVERRIDE;
-
   void CreateQuotaManagerAndClients();
 
   NotificationRegistrar registrar_;
@@ -152,13 +147,6 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
 
   OffTheRecordProfileIOData::Handle io_data_;
-
-  // Used so that Chrome code can influence how content module's DownloadManager
-  // functions.
-  scoped_refptr<ChromeDownloadManagerDelegate> download_manager_delegate_;
-
-  // The download manager that only stores downloaded items in memory.
-  scoped_refptr<DownloadManager> download_manager_;
 
   // We use a non-persistent content settings map for OTR.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;

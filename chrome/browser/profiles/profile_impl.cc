@@ -26,7 +26,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -94,7 +95,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/chrome_blob_storage_context.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -329,7 +329,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       favicon_service_created_(false),
       created_web_data_service_(false),
       created_password_store_(false),
-      created_download_manager_(false),
       start_time_(Time::Now()),
 #if defined(OS_WIN)
       checked_instant_promo_(false),
@@ -726,14 +725,6 @@ ProfileImpl::~ProfileImpl() {
         NewRunnableMethod(
             db_tracker_.get(),
             &webkit_database::DatabaseTracker::Shutdown));
-  }
-
-  // DownloadManager is lazily created, so check before accessing it.
-  if (download_manager_.get()) {
-    // The download manager queries the history system and should be shut down
-    // before the history is shut down so it can properly cancel all requests.
-    download_manager_->Shutdown();
-    download_manager_ = NULL;
   }
 
   // Password store uses WebDB, shut it down before the WebDB has been shutdown.
@@ -1302,23 +1293,7 @@ void ProfileImpl::CreatePasswordStore() {
 }
 
 DownloadManager* ProfileImpl::GetDownloadManager() {
-  if (!created_download_manager_) {
-    // In case the delegate has already been set by SetDownloadManagerDelegate.
-    if (!download_manager_delegate_.get())
-      download_manager_delegate_= new ChromeDownloadManagerDelegate(this);
-    scoped_refptr<DownloadManager> dlm(
-        new DownloadManager(download_manager_delegate_,
-                            g_browser_process->download_status_updater()));
-    dlm->Init(this);
-    download_manager_delegate_->SetDownloadManager(dlm);
-    created_download_manager_ = true;
-    download_manager_.swap(dlm);
-  }
-  return download_manager_.get();
-}
-
-bool ProfileImpl::HasCreatedDownloadManager() const {
-  return created_download_manager_;
+  return DownloadServiceFactory::GetForProfile(this)->GetDownloadManager();
 }
 
 fileapi::FileSystemContext* ProfileImpl::GetFileSystemContext() {
@@ -1761,9 +1736,4 @@ SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {
   if (!spellcheck_profile_.get())
     spellcheck_profile_.reset(new SpellCheckProfile());
   return spellcheck_profile_.get();
-}
-
-void ProfileImpl::SetDownloadManagerDelegate(
-    ChromeDownloadManagerDelegate* delegate) {
-  download_manager_delegate_ = delegate;
 }

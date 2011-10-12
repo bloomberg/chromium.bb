@@ -18,7 +18,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class ChromeDownloadManagerDelegate;
 class ExtensionNavigationObserver;
 class ExtensionPrefs;
 class ExtensionPrefValueMap;
@@ -48,7 +47,6 @@ class ProfileImpl : public Profile,
   virtual FilePath GetPath() OVERRIDE;
   virtual SSLHostState* GetSSLHostState() OVERRIDE;
   virtual DownloadManager* GetDownloadManager() OVERRIDE;
-  virtual bool HasCreatedDownloadManager() const OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
@@ -184,9 +182,6 @@ class ProfileImpl : public Profile,
 
   SpellCheckProfile* GetSpellCheckProfile();
 
-  virtual void SetDownloadManagerDelegate(
-      ChromeDownloadManagerDelegate* delegate);
-
   NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
@@ -234,8 +229,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
   scoped_ptr<FindBarState> find_bar_state_;
-  scoped_refptr<ChromeDownloadManagerDelegate> download_manager_delegate_;
-  scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;
   scoped_ptr<FaviconService> favicon_service_;
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
@@ -249,7 +242,6 @@ class ProfileImpl : public Profile,
   bool favicon_service_created_;
   bool created_web_data_service_;
   bool created_password_store_;
-  bool created_download_manager_;
   bool clear_local_state_on_exit_;
   // Whether or not the last session exited cleanly. This is set only once.
   bool last_session_exited_cleanly_;

@@ -21,6 +21,8 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_downloads_api_constants.h"
 #include "chrome/browser/extensions/extension_event_names.h"
@@ -414,7 +416,10 @@ base::DictionaryValue* DownloadItemToJSON(DownloadItem* item) {
 ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
     Profile* profile)
   : profile_(profile),
-    manager_(profile ? profile->GetDownloadManager() : NULL) {
+    manager_(
+        profile ?
+        DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager() :
+        NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   DCHECK(manager_);

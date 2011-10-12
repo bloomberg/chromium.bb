@@ -39,6 +39,8 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -4849,19 +4851,23 @@ void Browser::CheckDownloadsInProgress(bool* normal_downloads_are_present,
 
   // If there are no download in-progress, our job is done.
   DownloadManager* download_manager = NULL;
+  DownloadService* download_service =
+      DownloadServiceFactory::GetForProfile(profile());
   // But first we need to check for the existence of the download manager, as
   // GetDownloadManager() will unnecessarily try to create one if it does not
   // exist.
-  if (profile()->HasCreatedDownloadManager())
-    download_manager = profile()->GetDownloadManager();
+  if (download_service->HasCreatedDownloadManager())
+    download_manager = download_service->GetDownloadManager();
   if (profile()->IsOffTheRecord()) {
     // Browser is incognito and so download_manager if present is for incognito
     // downloads.
     *incognito_downloads_are_present =
         (download_manager && download_manager->in_progress_count() != 0);
     // Check original profile.
-    if (profile()->GetOriginalProfile()->HasCreatedDownloadManager())
-      download_manager = profile()->GetOriginalProfile()->GetDownloadManager();
+    DownloadService* download_service = DownloadServiceFactory::GetForProfile(
+        profile()->GetOriginalProfile());
+    if (download_service->HasCreatedDownloadManager())
+      download_manager = download_service->GetDownloadManager();
   }
 
   *normal_downloads_are_present =

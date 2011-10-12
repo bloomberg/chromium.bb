@@ -20,6 +20,8 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_util.h"
@@ -1505,7 +1507,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       const GURL& url =
           (id == IDC_CONTENT_CONTEXT_SAVELINKAS ? params_.link_url :
                                                   params_.src_url);
-      DownloadManager* dlm = profile_->GetDownloadManager();
+      DownloadManager* dlm =
+          DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
       dlm->DownloadUrl(url, referrer, params_.frame_charset,
                        source_tab_contents_);
       break;

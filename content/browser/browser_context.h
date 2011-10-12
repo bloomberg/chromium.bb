@@ -58,7 +58,6 @@ class BrowserContext {
 
   // Returns the DownloadManager associated with this context.
   virtual DownloadManager* GetDownloadManager() = 0;
-  virtual bool HasCreatedDownloadManager() const = 0;
 
   // Returns the request context information associated with this context.  Call
   // this only on the UI thread, since it can send notifications that should

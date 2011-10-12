@@ -294,21 +294,23 @@ class CONTENT_EXPORT DownloadManager
 
   DownloadManagerDelegate* delegate() const { return delegate_; }
 
+  // For testing only.  May be called from tests indirectly (through
+  // other for testing only methods).
+  void SetDownloadManagerDelegate(DownloadManagerDelegate* delegate);
+
  private:
   typedef std::set<DownloadItem*> DownloadSet;
   typedef base::hash_map<int64, DownloadItem*> DownloadMap;
 
   // For testing.
   friend class DownloadManagerTest;
-  friend class MockDownloadManager;
   friend class DownloadTest;
+  friend class MockDownloadManager;
 
   friend class base::RefCountedThreadSafe<DownloadManager,
                                           BrowserThread::DeleteOnUIThread>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<DownloadManager>;
-
-  void set_delegate(DownloadManagerDelegate* delegate) { delegate_ = delegate; }
 
   virtual ~DownloadManager();
 

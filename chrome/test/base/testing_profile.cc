@@ -565,10 +565,6 @@ quota::QuotaManager* TestingProfile::GetQuotaManager() {
   return quota_manager_.get();
 }
 
-bool TestingProfile::HasCreatedDownloadManager() const {
-  return false;
-}
-
 net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return request_context_.get();
 }
@@ -775,13 +771,6 @@ ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
         new ChromeURLDataManager(
             base::Callback<ChromeURLDataManagerBackend*(void)>()));
   return chrome_url_data_manager_.get();
-}
-
-void TestingProfile::SetDownloadManagerDelegate(
-    ChromeDownloadManagerDelegate* delegate) {
-  // Specially marked so errors from use will occur near to the site
-  // of the error.
-  NOTIMPLEMENTED();
 }
 
 chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {

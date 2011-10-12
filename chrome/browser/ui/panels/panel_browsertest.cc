@@ -4,6 +4,8 @@
 
 #include "base/bind.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1164,7 +1166,8 @@ class PanelDownloadTest : public PanelBrowserTest {
 class DownloadObserver : public DownloadManager::Observer {
  public:
   explicit DownloadObserver(Profile* profile)
-      : download_manager_(profile->GetDownloadManager()),
+      : download_manager_(
+          DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager()),
         saw_download_(false),
         waiting_(false) {
     download_manager_->AddObserver(this);

@@ -44,10 +44,10 @@ class ChromeDownloadManagerDelegate
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
 
+  void SetDownloadManager(DownloadManager* dm);
+
   // Returns true if the given item is for an extension download.
   static bool IsExtensionDownload(const DownloadItem* item);
-
-  void SetDownloadManager(DownloadManager* dm);
 
   virtual void Shutdown() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;

@@ -21,7 +21,7 @@ class ShellDownloadManagerDelegate
  public:
   ShellDownloadManagerDelegate();
 
-  void SetDownloadManager(DownloadManager* download_manager);
+  void SetDownloadManager(DownloadManager* manager);
 
   virtual void Shutdown() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;

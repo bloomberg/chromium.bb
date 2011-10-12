@@ -19,6 +19,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -645,7 +647,11 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i) {
-    DownloadManager* download_manager = profiles[i]->GetDownloadManager();
+    DownloadService* download_service =
+      DownloadServiceFactory::GetForProfile(profiles[i]);
+    DownloadManager* download_manager =
+        (download_service->HasCreatedDownloadManager() ?
+         download_service->GetDownloadManager() : NULL);
     if (download_manager && download_manager->in_progress_count() > 0) {
       int downloadCount = download_manager->in_progress_count();
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {

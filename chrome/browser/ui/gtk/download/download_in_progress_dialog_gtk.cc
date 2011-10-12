@@ -8,6 +8,8 @@
 
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -19,8 +21,9 @@
 
 DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
     : browser_(browser) {
-  int download_count = browser->profile()->GetDownloadManager()->
-      in_progress_count();
+  int download_count =
+      DownloadServiceFactory::GetForProfile(
+          browser->profile())->GetDownloadManager()->in_progress_count();
 
   std::string warning_text;
   std::string explanation_text;

@@ -130,10 +130,6 @@ DownloadManager* ShellBrowserContext::GetDownloadManager()  {
   return download_manager_.get();
 }
 
-bool ShellBrowserContext::HasCreatedDownloadManager() const  {
-  return download_manager_.get() != NULL;
-}
-
 net::URLRequestContextGetter* ShellBrowserContext::GetRequestContext()  {
   if (!url_request_getter_) {
     url_request_getter_ = new ShellURLRequestContextGetter(

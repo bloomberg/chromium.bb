@@ -191,7 +191,6 @@ class TestingProfile : public Profile {
   virtual fileapi::FileSystemContext* GetFileSystemContext();
   virtual void SetQuotaManager(quota::QuotaManager* manager);
   virtual quota::QuotaManager* GetQuotaManager();
-  virtual bool HasCreatedDownloadManager() const;
 
   // Returns a testing ContextGetter (if one has been created via
   // CreateRequestContext) or NULL. This is not done on-demand for two reasons:
@@ -294,9 +293,6 @@ class TestingProfile : public Profile {
   TestingPrefService* testing_prefs_;
 
  private:
-  virtual void SetDownloadManagerDelegate(
-      ChromeDownloadManagerDelegate* delegate);
-
   // Common initialization between the two constructors.
   void Init();
 

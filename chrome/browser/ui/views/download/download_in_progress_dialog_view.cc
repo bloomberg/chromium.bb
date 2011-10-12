@@ -8,6 +8,8 @@
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/browser/download/download_manager.h"
@@ -25,8 +27,9 @@
 DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
     : browser_(browser),
       product_name_(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)) {
-  int download_count = browser->profile()->GetDownloadManager()->
-      in_progress_count();
+  int download_count =
+      DownloadServiceFactory::GetForProfile(
+          browser->profile())->GetDownloadManager()->in_progress_count();
 
   string16 warning_text;
   string16 explanation_text;

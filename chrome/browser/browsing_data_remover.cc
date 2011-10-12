@@ -16,6 +16,8 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
@@ -187,7 +189,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
 
   if (remove_mask & REMOVE_DOWNLOADS) {
     UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
-    DownloadManager* download_manager = profile_->GetDownloadManager();
+    DownloadManager* download_manager =
+        DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
     download_manager->RemoveDownloadsBetween(delete_begin_, delete_end_);
     download_manager->ClearLastDownloadPath();
   }

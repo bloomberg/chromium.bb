@@ -35,7 +35,6 @@ class ShellBrowserContext : public BrowserContext {
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual SSLHostState* GetSSLHostState() OVERRIDE;
   virtual DownloadManager* GetDownloadManager() OVERRIDE;
-  virtual bool HasCreatedDownloadManager() const OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;

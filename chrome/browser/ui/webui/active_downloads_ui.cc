@@ -25,6 +25,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/media/media_player.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -217,7 +219,8 @@ WebUIMessageHandler* ActiveDownloadsHandler::Attach(WebUI* web_ui) {
 }
 
 void ActiveDownloadsHandler::Init() {
-  download_manager_ = profile_->GetDownloadManager();
+  download_manager_ =
+      DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
   download_manager_->AddObserver(this);
 }
 

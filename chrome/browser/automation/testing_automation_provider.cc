@@ -46,6 +46,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -3086,9 +3088,12 @@ void TestingAutomationProvider::GetDownloadsInfo(Browser* browser,
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   ListValue* list_of_downloads = new ListValue;
 
-  if (browser->profile()->HasCreatedDownloadManager()) {
+  DownloadService* download_service(
+      DownloadServiceFactory::GetForProfile(browser->profile()));
+
+  if (download_service->HasCreatedDownloadManager()) {
     std::vector<DownloadItem*> downloads;
-    browser->profile()->GetDownloadManager()->
+    download_service->GetDownloadManager()->
         GetAllDownloads(FilePath(), &downloads);
 
     for (std::vector<DownloadItem*>::iterator it = downloads.begin();
@@ -3112,7 +3117,10 @@ void TestingAutomationProvider::WaitForAllDownloadsToComplete(
         .SendError(StringPrintf("List of IDs of previous downloads required."));
     return;
   }
-  if (!browser->profile()->HasCreatedDownloadManager()) {
+
+  DownloadService* download_service =
+      DownloadServiceFactory::GetForProfile(browser->profile());
+  if (!download_service->HasCreatedDownloadManager()) {
     // No download manager, so no downloads to wait for.
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
@@ -3120,7 +3128,7 @@ void TestingAutomationProvider::WaitForAllDownloadsToComplete(
 
   // This observer will delete itself.
   new AllDownloadsCompleteObserver(
-      this, reply_message, browser->profile()->GetDownloadManager(),
+      this, reply_message, download_service->GetDownloadManager(),
       pre_download_ids);
 }
 
@@ -3154,7 +3162,9 @@ void TestingAutomationProvider::PerformActionOnDownload(
   int id;
   std::string action;
 
-  if (!browser->profile()->HasCreatedDownloadManager()) {
+  DownloadService* download_service =
+      DownloadServiceFactory::GetForProfile(browser->profile());
+  if (!download_service->HasCreatedDownloadManager()) {
     AutomationJSONReply(this, reply_message).SendError("No download manager.");
     return;
   }
@@ -3164,7 +3174,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
     return;
   }
 
-  DownloadManager* download_manager = browser->profile()->GetDownloadManager();
+  DownloadManager* download_manager = download_service->GetDownloadManager();
   DownloadItem* selected_item = GetDownloadItemFromId(id, download_manager);
   if (!selected_item) {
     AutomationJSONReply(this, reply_message)
@@ -3693,7 +3703,9 @@ void TestingAutomationProvider::SaveTabContents(
   }
   // The observer will delete itself when done.
   new SavePackageNotificationObserver(
-      browser->profile()->GetDownloadManager(), this, reply_message);
+      DownloadServiceFactory::GetForProfile(
+          browser->profile())->GetDownloadManager(),
+      this, reply_message);
 }
 
 // Refer to ImportSettings() in chrome/test/pyautolib/pyauto.py for sample

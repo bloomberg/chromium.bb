@@ -16,6 +16,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
@@ -45,7 +47,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/chrome_blob_storage_context.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
@@ -116,16 +117,6 @@ void OffTheRecordProfileImpl::Init() {
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
-  // Shutdown the DownloadManager here in the dtor as ProfileImpl does to
-  // guarantee that it happens before the last scoped_refptr<DM> is reaped.
-  // DownloadManager is lazily created, so check before accessing it.
-  if (download_manager_.get()) {
-    // Drop our download manager so we forget about all the downloads made
-    // in incognito mode.
-    download_manager_->Shutdown();
-    download_manager_ = NULL;
-  }
-
   NotificationService::current()->Notify(
     chrome::NOTIFICATION_PROFILE_DESTROYED, Source<Profile>(this),
     NotificationService::NoDetails());
@@ -317,23 +308,7 @@ TemplateURLFetcher* OffTheRecordProfileImpl::GetTemplateURLFetcher() {
 }
 
 DownloadManager* OffTheRecordProfileImpl::GetDownloadManager() {
-  if (!download_manager_.get()) {
-    // In case the delegate has already been set by
-    // SetDownloadManagerDelegate.
-    if (!download_manager_delegate_.get())
-      download_manager_delegate_ = new ChromeDownloadManagerDelegate(this);
-    scoped_refptr<DownloadManager> dlm(
-        new DownloadManager(download_manager_delegate_,
-                            g_browser_process->download_status_updater()));
-    dlm->Init(this);
-    download_manager_delegate_->SetDownloadManager(dlm);
-    download_manager_.swap(dlm);
-  }
-  return download_manager_.get();
-}
-
-bool OffTheRecordProfileImpl::HasCreatedDownloadManager() const {
-  return download_manager_.get() != NULL;
+  return DownloadServiceFactory::GetForProfile(this)->GetDownloadManager();
 }
 
 fileapi::FileSystemContext* OffTheRecordProfileImpl::GetFileSystemContext() {
@@ -599,11 +574,6 @@ void OffTheRecordProfileImpl::Observe(int type,
       GetHostZoomMap()->SetZoomLevel(host, level);
     }
   }
-}
-
-void OffTheRecordProfileImpl::SetDownloadManagerDelegate(
-    ChromeDownloadManagerDelegate* delegate) {
-  download_manager_delegate_ = delegate;
 }
 
 void OffTheRecordProfileImpl::CreateQuotaManagerAndClients() {

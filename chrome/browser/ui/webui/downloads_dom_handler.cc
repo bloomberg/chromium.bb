@@ -20,6 +20,8 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -83,7 +85,9 @@ class DownloadsDOMHandler::OriginalDownloadManagerObserver
       DownloadManager::Observer* observer,
       Profile* original_profile)
       : observer_(observer) {
-    original_profile_download_manager_ = original_profile->GetDownloadManager();
+    original_profile_download_manager_ =
+        DownloadServiceFactory::GetForProfile(
+            original_profile)->GetDownloadManager();
     original_profile_download_manager_->AddObserver(this);
   }
 
@@ -217,8 +221,9 @@ void DownloadsDOMHandler::ModelChanged() {
   Profile* profile =
       Profile::FromBrowserContext(download_manager_->browser_context());
   if (profile->GetOriginalProfile() != profile) {
-    profile->GetOriginalProfile()->GetDownloadManager()->SearchDownloads(
-        WideToUTF16(search_text_), &download_items_);
+    DownloadServiceFactory::GetForProfile(
+        profile->GetOriginalProfile())->GetDownloadManager()->SearchDownloads(
+            WideToUTF16(search_text_), &download_items_);
   }
 
   sort(download_items_.begin(), download_items_.end(), DownloadItemSorter());
@@ -339,7 +344,9 @@ void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
   // If this is an incognito downloader, clear All should clear main download
   // manager as well.
   if (profile->GetOriginalProfile() != profile)
-    profile->GetOriginalProfile()->GetDownloadManager()->RemoveAllDownloads();
+    DownloadServiceFactory::GetForProfile(
+        profile->GetOriginalProfile())->
+            GetDownloadManager()->RemoveAllDownloads();
 }
 
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(const ListValue* args) {

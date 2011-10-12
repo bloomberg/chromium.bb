@@ -30,10 +30,6 @@ DownloadManager* TestBrowserContext::GetDownloadManager() {
   return NULL;
 }
 
-bool TestBrowserContext::HasCreatedDownloadManager() const {
-  return false;
-}
-
 net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
   return NULL;
 }

@@ -17,6 +17,8 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -490,7 +492,8 @@ class PickSuggestedFileDelegate : public ChromeDownloadManagerDelegate {
  public:
   explicit PickSuggestedFileDelegate(Profile* profile)
       : ChromeDownloadManagerDelegate(profile) {
-    SetDownloadManager(profile->GetDownloadManager());
+    SetDownloadManager(
+        DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager());
   }
 
   virtual void ChooseDownloadPath(TabContents* tab_contents,
@@ -586,6 +589,11 @@ class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
   virtual void OnInstallFailure(const std::string& error) {}
 };
 
+static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
+  return DownloadServiceFactory::GetForProfile(browser->profile())
+      ->GetDownloadManager();
+}
+
 }  // namespace
 
 // While an object of this class exists, it will mock out download
@@ -658,7 +666,7 @@ class DownloadTest : public InProcessBrowserTest {
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
                                                  prompt_for_download);
 
-    DownloadManager* manager = browser()->profile()->GetDownloadManager();
+    DownloadManager* manager = DownloadManagerForBrowser(browser());
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
     manager->RemoveAllDownloads();
 
@@ -702,7 +710,7 @@ class DownloadTest : public InProcessBrowserTest {
 
   DownloadPrefs* GetDownloadPrefs(Browser* browser) {
     return DownloadPrefs::FromDownloadManager(
-        browser->profile()->GetDownloadManager());
+        DownloadManagerForBrowser(browser));
   }
 
   FilePath GetDownloadDirectory(Browser* browser) {
@@ -712,8 +720,7 @@ class DownloadTest : public InProcessBrowserTest {
   // Create a DownloadsObserver that will wait for the
   // specified number of downloads to finish.
   DownloadsObserver* CreateWaiter(Browser* browser, int num_downloads) {
-    DownloadManager* download_manager =
-        browser->profile()->GetDownloadManager();
+    DownloadManager* download_manager = DownloadManagerForBrowser(browser);
     return new DownloadsObserver(
         download_manager, num_downloads,
         DownloadItem::COMPLETE,  // Really done
@@ -725,8 +732,7 @@ class DownloadTest : public InProcessBrowserTest {
   // specified number of downloads to start.
   DownloadsObserver* CreateInProgressWaiter(Browser* browser,
                                             int num_downloads) {
-    DownloadManager* download_manager =
-        browser->profile()->GetDownloadManager();
+    DownloadManager* download_manager = DownloadManagerForBrowser(browser);
     return new DownloadsObserver(
         download_manager, num_downloads,
         DownloadItem::IN_PROGRESS,      // Has started
@@ -742,8 +748,7 @@ class DownloadTest : public InProcessBrowserTest {
       int num_downloads,
       DownloadItem::DownloadState final_state,
       DangerousDownloadAction dangerous_download_action) {
-    DownloadManager* download_manager =
-        browser->profile()->GetDownloadManager();
+    DownloadManager* download_manager = DownloadManagerForBrowser(browser);
     return new DownloadsObserver(
         download_manager, num_downloads,
         final_state,
@@ -903,7 +908,7 @@ class DownloadTest : public InProcessBrowserTest {
 
   void GetDownloads(Browser* browser, std::vector<DownloadItem*>* downloads) {
     DCHECK(downloads);
-    DownloadManager* manager = browser->profile()->GetDownloadManager();
+    DownloadManager* manager = DownloadManagerForBrowser(browser);
     manager->SearchDownloads(string16(), downloads);
   }
 
@@ -965,13 +970,9 @@ class DownloadTest : public InProcessBrowserTest {
     PickSuggestedFileDelegate* new_delegate =
         new PickSuggestedFileDelegate(browser->profile());
 
-    DownloadManager* manager = browser->profile()->GetDownloadManager();
-
-    new_delegate->SetDownloadManager(manager);
-    manager->set_delegate(new_delegate);
-
-    // Gives ownership to Profile.
-    browser->profile()->SetDownloadManagerDelegate(new_delegate);
+    // Gives ownership to DownloadService.
+    DownloadServiceFactory::GetForProfile(
+        browser->profile())->SetDownloadManagerDelegateForTesting(new_delegate);
   }
 
  private:
@@ -1038,7 +1039,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
   // due to the MIME type, but we still wait until the download completes.
   scoped_ptr<DownloadsObserver> observer(
       new DownloadsObserver(
-          browser()->profile()->GetDownloadManager(),
+          DownloadManagerForBrowser(browser()),
           1,
           DownloadItem::COMPLETE,  // Really done
           false,                   // Continue on select file.
@@ -1483,7 +1484,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   observer->WaitForFinished();
 
   std::vector<DownloadItem*> downloads;
-  browser()->profile()->GetDownloadManager()->SearchDownloads(
+  DownloadManagerForBrowser(browser())->SearchDownloads(
       string16(), &downloads);
   ASSERT_EQ(1u, downloads.size());
   ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->state());
@@ -1492,7 +1493,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   // Cancel the download and wait for download system quiesce.
   downloads[0]->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   scoped_refptr<DownloadsFlushObserver> flush_observer(
-      new DownloadsFlushObserver(browser()->profile()->GetDownloadManager()));
+      new DownloadsFlushObserver(DownloadManagerForBrowser(browser())));
   flush_observer->WaitForFlush();
 
   // Get the important info from other threads and check it.
@@ -1533,7 +1534,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   // Check history results.
   DownloadsHistoryDataCollector history_collector(
       db_handle,
-      browser()->profile()->GetDownloadManager());
+      DownloadManagerForBrowser(browser()));
   DownloadPersistentStoreInfo info;
   EXPECT_TRUE(history_collector.GetDownloadsHistoryEntry(&info)) << db_handle;
   EXPECT_EQ(file, info.path.BaseName());
@@ -1627,13 +1628,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
 
   // Mock out external opening on all downloads until end of test.
   MockDownloadOpeningObserver observer(
-      browser()->profile()->GetDownloadManager());
+      DownloadManagerForBrowser(browser()));
 
   DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
 
   // Find the download and confirm it was opened.
   std::vector<DownloadItem*> downloads;
-  browser()->profile()->GetDownloadManager()->SearchDownloads(
+  DownloadManagerForBrowser(browser())->SearchDownloads(
       string16(), &downloads);
   ASSERT_EQ(1u, downloads.size());
   EXPECT_EQ(DownloadItem::COMPLETE, downloads[0]->state());

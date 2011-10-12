@@ -613,6 +613,11 @@ void DownloadManager::RemoveFromActiveList(DownloadItem* download) {
   }
 }
 
+void DownloadManager::SetDownloadManagerDelegate(
+    DownloadManagerDelegate* delegate) {
+  delegate_ = delegate;
+}
+
 void DownloadManager::UpdateDownloadProgress() {
   delegate_->DownloadProgressUpdated();
 }

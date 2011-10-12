@@ -11,6 +11,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -123,7 +125,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
   DownloadManager* GetDownloadManager() const {
     DownloadManager* download_manager =
-        browser()->profile()->GetDownloadManager();
+        DownloadServiceFactory::GetForProfile(
+            browser()->profile())->GetDownloadManager();
     EXPECT_TRUE(download_manager);
     return download_manager;
   }
