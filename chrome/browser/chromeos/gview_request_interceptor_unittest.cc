@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
@@ -68,6 +69,10 @@ class GViewRequestProtocolFactory
   }
 };
 
+void QuitMessageLoop(const std::vector<webkit::WebPluginInfo>&) {
+  MessageLoop::current()->Quit();
+}
+
 class GViewRequestInterceptorTest : public testing::Test {
  public:
   GViewRequestInterceptorTest()
@@ -110,33 +115,41 @@ class GViewRequestInterceptorTest : public testing::Test {
     PluginService::GetInstance()->set_filter(NULL);
   }
 
+  // GetPluginInfoByPath() will only use stale information. Because plugin
+  // refresh is asynchronous, spin a MessageLoop until the callback is run,
+  // after which, the test will continue.
   void RegisterPDFPlugin() {
     webkit::WebPluginInfo info;
     info.path = pdf_path_;
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
-    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+
+    PluginService::GetInstance()->RefreshPluginList();
+    PluginService::GetInstance()->GetPlugins(base::Bind(&QuitMessageLoop));
+    MessageLoop::current()->Run();
   }
 
   void UnregisterPDFPlugin() {
     webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(pdf_path_);
-    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+
+    PluginService::GetInstance()->RefreshPluginList();
+    PluginService::GetInstance()->GetPlugins(base::Bind(&QuitMessageLoop));
+    MessageLoop::current()->Run();
   }
 
   void SetPDFPluginLoadedState(bool want_loaded) {
     webkit::WebPluginInfo info;
-    bool is_loaded =
-        webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
-            pdf_path_, &info);
+    bool is_loaded = PluginService::GetInstance()->GetPluginInfoByPath(
+        pdf_path_, &info);
     if (is_loaded && !want_loaded) {
       UnregisterPDFPlugin();
-      is_loaded = webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+      is_loaded = PluginService::GetInstance()->GetPluginInfoByPath(
           pdf_path_, &info);
     } else if (!is_loaded && want_loaded) {
       // This "loads" the plug-in even if it's not present on the
       // system - which is OK since we don't actually use it, just
       // need it to be "enabled" for the test.
       RegisterPDFPlugin();
-      is_loaded = webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+      is_loaded = PluginService::GetInstance()->GetPluginInfoByPath(
           pdf_path_, &info);
     }
     EXPECT_EQ(want_loaded, is_loaded);

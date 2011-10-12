@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_old.h"
 #include "base/i18n/time_formatting.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/gpu/gpu_data_manager.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "grit/browser_resources.h"
@@ -34,7 +36,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
@@ -82,6 +83,9 @@ class FlashDOMHandler : public WebUIMessageHandler,
   // Callback for the GPU information update.
   void OnGpuInfoUpdate();
 
+  // Callback for the Flash plugin information.
+  void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
+
  private:
   // Called when we think we might have enough information to return data back
   // to the page.
@@ -104,20 +108,27 @@ class FlashDOMHandler : public WebUIMessageHandler,
   // Crash list.
   scoped_refptr<CrashUploadList> upload_list_;
 
+  // Factory for the creating refs in callbacks.
+  base::WeakPtrFactory<FlashDOMHandler> weak_ptr_factory_;
+
   // Whether the list of all crashes is available.
   bool crash_list_available_;
   // Whether the page has requested data.
   bool page_has_requested_data_;
   // Whether the GPU data has been collected.
   bool has_gpu_info_;
+  // Whether the plugin information is ready.
+  bool has_plugin_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FlashDOMHandler);
 };
 
 FlashDOMHandler::FlashDOMHandler()
-    : crash_list_available_(false),
+    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      crash_list_available_(false),
       page_has_requested_data_(false),
-      has_gpu_info_(false) {
+      has_gpu_info_(false),
+      has_plugin_info_(false) {
   // Request Crash data asynchronously.
   upload_list_ = CrashUploadList::Create(this);
   upload_list_->LoadCrashListAsynchronously();
@@ -136,6 +147,9 @@ FlashDOMHandler::FlashDOMHandler()
   // call back.
   if (!gpu_data_manager_->GpuAccessAllowed())
     OnGpuInfoUpdate();
+
+  PluginService::GetInstance()->GetPlugins(base::Bind(
+      &FlashDOMHandler::OnGotPlugins, weak_ptr_factory_.GetWeakPtr()));
 
   // And lastly, we fire off a timer to make sure we never get stuck at the
   // "Loading..." message.
@@ -175,11 +189,18 @@ void FlashDOMHandler::OnGpuInfoUpdate() {
   MaybeRespondToPage();
 }
 
+void FlashDOMHandler::OnGotPlugins(
+    const std::vector<webkit::WebPluginInfo>& plugins) {
+  has_plugin_info_ = true;
+  MaybeRespondToPage();
+}
+
 void FlashDOMHandler::OnTimeout() {
   // We don't set page_has_requested_data_ because that is guaranteed to appear
   // and we shouldn't be responding to the page before then.
   has_gpu_info_ = true;
   crash_list_available_ = true;
+  has_plugin_info_ = true;
   MaybeRespondToPage();
 }
 
@@ -187,8 +208,10 @@ void FlashDOMHandler::MaybeRespondToPage() {
   // We don't reply until everything is ready. The page is showing a 'loading'
   // message until then. If you add criteria to this list, please update the
   // function OnTimeout() as well.
-  if (!page_has_requested_data_ || !crash_list_available_ || !has_gpu_info_)
+  if (!page_has_requested_data_ || !crash_list_available_ || !has_gpu_info_ ||
+      !has_plugin_info_) {
     return;
+  }
 
   timeout_.Stop();
 
@@ -232,8 +255,8 @@ void FlashDOMHandler::MaybeRespondToPage() {
 
   // Obtain the version of the Flash plugins.
   std::vector<webkit::WebPluginInfo> info_array;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      GURL(), "application/x-shockwave-flash", false, NULL, &info_array, NULL);
+  PluginService::GetInstance()->GetPluginInfoArray(
+      GURL(), "application/x-shockwave-flash", false, &info_array, NULL);
   string16 flash_version;
   if (info_array.empty()) {
     AddPair(list, ASCIIToUTF16("Flash plugin"), "Disabled");

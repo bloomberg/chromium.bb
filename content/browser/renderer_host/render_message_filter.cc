@@ -304,19 +304,6 @@ void RenderMessageFilter::OnChannelError() {
 }
 #endif
 
-void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
-                                                   BrowserThread::ID* thread) {
-  switch (message.type()) {
-    // The PluginService::GetPluginInfo may need to load the plugins.  Don't do
-    // it on the IO thread.
-    case ViewHostMsg_GetPluginInfo::ID:
-      *thread = BrowserThread::FILE;
-      break;
-    default:
-      break;
-  }
-}
-
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                             bool* message_was_ok) {
   bool handled = true;

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/number_formatting.h"
@@ -47,6 +48,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/sensors/sensors_provider.h"
@@ -64,7 +66,6 @@
 #include "v8/include/v8.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
@@ -1167,8 +1168,8 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
 
   // Obtain the version of the first enabled Flash plugin.
   std::vector<webkit::WebPluginInfo> info_array;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      GURL(), "application/x-shockwave-flash", false, NULL, &info_array, NULL);
+  PluginService::GetInstance()->GetPluginInfoArray(
+      GURL(), "application/x-shockwave-flash", false, &info_array, NULL);
   string16 flash_version =
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
@@ -1239,6 +1240,21 @@ std::string AboutVersionStrings(DictionaryValue* localized_strings,
   std::string data;
   jstemplate_builder::AppendJsonJS(localized_strings, &data);
   return data;
+}
+
+// Used as a callback for PluginService::GetPlugins().
+void HandleAboutVersionStrings(AboutSource* source,
+                               int request_id,
+                               const std::vector<webkit::WebPluginInfo>&) {
+#if defined(OS_CHROMEOS)
+  new ChromeOSAboutVersionHandler(source, request_id);
+#else
+  DictionaryValue localized_strings;
+  localized_strings.SetString("os_version", "");
+  source->FinishDataRequest(
+      AboutVersionStrings(&localized_strings, source->profile()),
+      request_id);
+#endif
 }
 
 // AboutMemoryHandler ----------------------------------------------------------
@@ -1471,14 +1487,12 @@ void AboutSource::StartDataRequest(const std::string& path,
 #endif
   } else if (host == chrome::kChromeUIVersionHost) {
     if (path == kStringsJsPath) {
-#if defined(OS_CHROMEOS)
-      new ChromeOSAboutVersionHandler(this, request_id);
+      // The Flash version information is needed on this page, so make sure
+      // the plugins are loaded.
+      PluginService::GetInstance()->GetPlugins(
+          base::Bind(&HandleAboutVersionStrings,
+                     make_scoped_refptr(this), request_id));
       return;
-#else
-      DictionaryValue localized_strings;
-      localized_strings.SetString("os_version", "");
-      response = AboutVersionStrings(&localized_strings, profile_);
-#endif
     } else {
       response = AboutVersionStaticContent(path);
     }

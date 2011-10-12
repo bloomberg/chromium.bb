@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/plugin_service.h"
 #include "content/common/notification_service.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -107,7 +108,7 @@ bool PluginPrefs::EnablePlugin(bool enabled, const FilePath& path) {
   // Do policy checks first. These don't need to run on the FILE thread.
   webkit::npapi::PluginList* plugin_list = GetPluginList();
   webkit::WebPluginInfo plugin;
-  if (plugin_list->GetPluginInfoByPath(path, &plugin)) {
+  if (PluginService::GetInstance()->GetPluginInfoByPath(path, &plugin)) {
     scoped_ptr<webkit::npapi::PluginGroup> group(
         plugin_list->GetPluginGroup(plugin));
     PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);

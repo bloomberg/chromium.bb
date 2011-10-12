@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_PLUGIN_FILTER_H_
 #pragma once
 
-class GURL;
+#include "googleurl/src/gurl.h"
 
 namespace webkit {
 struct WebPluginInfo;
@@ -16,11 +16,21 @@ namespace content {
 
 class ResourceContext;
 
+// base::Bind() has limited arity, and the filter-related methods tend to
+// surpass that limit.
+struct PluginServiceFilterParams {
+  int render_process_id;
+  int render_view_id;
+  GURL page_url;
+  const ResourceContext* resource_context;
+};
+
 // Callback class to let the client filter the list of all installed plug-ins.
 // This class is called on the FILE thread.
 class PluginServiceFilter {
  public:
   virtual ~PluginServiceFilter() {}
+
   // Whether to use |plugin|. The client can return false to disallow the
   // plugin, or return true and optionally change the passed in plugin.
   virtual bool ShouldUsePlugin(

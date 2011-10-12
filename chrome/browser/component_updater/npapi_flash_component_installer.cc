@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/flash_component_installer.h"
 
+#include "base/bind.h"
 #include "base/base_paths.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -16,7 +17,9 @@
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/plugin_service.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/webplugininfo.h"
 
 namespace {
 
@@ -133,9 +136,8 @@ void FinishFlashUpdateRegistration(ComponentUpdateService* cus,
 // chrome is using and what is its version. This will determine if we register
 // for component update or not. Read the comments on RegisterNPAPIFlashComponent
 // for more background.
-void StartFlashUpdateRegistration(ComponentUpdateService* cus) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
+void StartFlashUpdateRegistration(ComponentUpdateService* cus,
+                                  const std::vector<webkit::WebPluginInfo>&) {
   FilePath builtin_plugin_path;
   if (!PathService::Get(chrome::FILE_FLASH_PLUGIN, &builtin_plugin_path))
     return;
@@ -143,7 +145,7 @@ void StartFlashUpdateRegistration(ComponentUpdateService* cus) {
   FilePath updated_plugin_path =
       GetNPAPIFlashBaseDirectory().Append(kFlashPluginFileName);
 
-  webkit::npapi::PluginList* plugins = webkit::npapi::PluginList::Singleton();
+  PluginService* plugins = PluginService::GetInstance();
   webkit::WebPluginInfo plugin_info;
 
   if (plugins->GetPluginInfoByPath(updated_plugin_path, &plugin_info)) {
@@ -165,7 +167,7 @@ void StartFlashUpdateRegistration(ComponentUpdateService* cus) {
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&FinishFlashUpdateRegistration, cus, plugin_info));
+      base::Bind(&FinishFlashUpdateRegistration, cus, plugin_info));
 }
 
 // Here is the general plan of action: we are going to update flash and we have
@@ -205,7 +207,12 @@ void RegisterNPAPIFlashComponent(ComponentUpdateService* cus) {
   plugins->AddExtraPluginPath(path);
   plugins->RefreshPlugins();
 
+  // Post the task to the FILE thread because IO may be done once the plugins
+  // are loaded.
   BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&StartFlashUpdateRegistration, cus), 8000);
+      base::Bind(&PluginService::GetPlugins,
+                 base::Unretained(PluginService::GetInstance()),
+                 base::Bind(&StartFlashUpdateRegistration, cus)),
+      8000);
 #endif
 }

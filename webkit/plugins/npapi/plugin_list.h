@@ -148,11 +148,6 @@ class PluginList {
                           std::vector<webkit::WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types);
 
-  // Get plugin info by plugin path (including disabled plugins). Returns true
-  // if the plugin is found and WebPluginInfo has been filled in |info|.
-  bool GetPluginInfoByPath(const FilePath& plugin_path,
-                           webkit::WebPluginInfo* info);
-
   // Populates the given vector with all available plugin groups. If
   // |load_if_necessary| is true, this will potentially load the plugin list
   // synchronously.

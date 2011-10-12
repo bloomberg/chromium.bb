@@ -67,9 +67,9 @@ static void GetPluginsForGroupsCallback(
 void WillLoadPluginsCallback() {
   // TODO(rsesek): Change these to CHECKs.
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
-  LOG_IF(ERROR, !BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 #else
-  LOG(ERROR) << "Plugin loading should happen out-of-process.";
+  CHECK(false) << "Plugin loading should happen out-of-process.";
 #endif
 }
 
@@ -326,8 +326,7 @@ PluginProcessHost* PluginService::FindOrStartNpapiPluginProcess(
     return plugin_host;
 
   webkit::WebPluginInfo info;
-  if (!webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
-          plugin_path, &info)) {
+  if (!GetPluginInfoByPath(plugin_path, &info)) {
     return NULL;
   }
 
@@ -389,14 +388,17 @@ void PluginService::OpenChannelToNpapiPlugin(
     PluginProcessHost::Client* client) {
   DCHECK(!ContainsKey(pending_plugin_clients_, client));
   pending_plugin_clients_.insert(client);
-  // The PluginList::GetPluginInfo may need to load the plugins.  Don't do it on
-  // the IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &PluginService::GetAllowedPluginForOpenChannelToPlugin,
-          render_process_id, render_view_id, url, page_url, mime_type,
-          client, &client->GetResourceContext()));
+
+  // Make sure plugins are loaded if necessary.
+  content::PluginServiceFilterParams params = {
+    render_process_id,
+    render_view_id,
+    page_url,
+    &client->GetResourceContext()
+  };
+  GetPlugins(
+      base::Bind(&PluginService::ForwardGetAllowedPluginForOpenChannelToPlugin,
+                 base::Unretained(this), params, url, mime_type, client));
 }
 
 void PluginService::OpenChannelToPpapiPlugin(
@@ -427,6 +429,17 @@ void PluginService::CancelOpenChannelToNpapiPlugin(
   pending_plugin_clients_.erase(client);
 }
 
+void PluginService::ForwardGetAllowedPluginForOpenChannelToPlugin(
+    const content::PluginServiceFilterParams& params,
+    const GURL& url,
+    const std::string& mime_type,
+    PluginProcessHost::Client* client,
+    const std::vector<webkit::WebPluginInfo>&) {
+  GetAllowedPluginForOpenChannelToPlugin(params.render_process_id,
+      params.render_view_id, url, params.page_url, mime_type, client,
+      params.resource_context);
+}
+
 void PluginService::GetAllowedPluginForOpenChannelToPlugin(
     int render_process_id,
     int render_view_id,
@@ -435,8 +448,6 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
     const std::string& mime_type,
     PluginProcessHost::Client* client,
     const content::ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(resource_context);
   webkit::WebPluginInfo info;
   bool allow_wildcard = true;
   bool found = GetPluginInfo(
@@ -448,11 +459,9 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
     plugin_path = info.path;
 
   // Now we jump back to the IO thread to finish opening the channel.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &PluginService::FinishOpenChannelToPlugin,
-          plugin_path, client));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&PluginService::FinishOpenChannelToPlugin,
+                 base::Unretained(this), plugin_path, client));
 }
 
 void PluginService::FinishOpenChannelToPlugin(
@@ -493,18 +502,15 @@ bool PluginService::GetPluginInfo(int render_process_id,
                                   const GURL& page_url,
                                   const std::string& mime_type,
                                   bool allow_wildcard,
-                                  bool* use_stale,
+                                  bool* is_stale,
                                   webkit::WebPluginInfo* info,
                                   std::string* actual_mime_type) {
-  webkit::npapi::PluginList* plugin_list =
-      webkit::npapi::PluginList::Singleton();
-  // GetPluginInfoArray may need to load the plugins, so we need to be
-  // on the FILE thread.
-  DCHECK(use_stale || BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<webkit::WebPluginInfo> plugins;
   std::vector<std::string> mime_types;
-  plugin_list->GetPluginInfoArray(
-      url, mime_type, allow_wildcard, use_stale, &plugins, &mime_types);
+  bool stale = GetPluginInfoArray(
+      url, mime_type, allow_wildcard, &plugins, &mime_types);
+  if (is_stale)
+    *is_stale = stale;
   if (plugins.size() > 1 &&
       plugins.back().path ==
           FilePath(webkit::npapi::kDefaultPluginLibraryName)) {
@@ -526,6 +532,24 @@ bool PluginService::GetPluginInfo(int render_process_id,
       return true;
     }
   }
+  return false;
+}
+
+bool PluginService::GetPluginInfoByPath(const FilePath& plugin_path,
+                                        webkit::WebPluginInfo* info) {
+  std::vector<webkit::WebPluginInfo> plugins;
+  webkit::npapi::PluginList::Singleton()->GetPluginsIfNoRefreshNeeded(
+      &plugins);
+
+  for (std::vector<webkit::WebPluginInfo>::iterator it = plugins.begin();
+       it != plugins.end();
+       ++it) {
+    if (it->path == plugin_path) {
+      *info = *it;
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -640,8 +664,7 @@ PepperPluginInfo* PluginService::GetRegisteredPpapiPluginInfo(
   // construct it and add it to the list. This same deal needs to be done
   // in the renderer side in PepperPluginRegistry.
   webkit::WebPluginInfo webplugin_info;
-  if (!webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
-      plugin_path, &webplugin_info))
+  if (!GetPluginInfoByPath(plugin_path, &webplugin_info))
     return NULL;
   PepperPluginInfo new_pepper_info;
   if (!MakePepperPluginInfo(webplugin_info, &new_pepper_info))

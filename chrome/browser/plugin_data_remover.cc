@@ -17,7 +17,6 @@
 #include "content/browser/plugin_service.h"
 #include "content/common/plugin_messages.h"
 #include "webkit/plugins/npapi/plugin_group.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
@@ -179,11 +178,10 @@ void PluginDataRemover::SignalDone() {
 
 // static
 bool PluginDataRemover::IsSupported(PluginPrefs* plugin_prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool allow_wildcard = false;
   std::vector<webkit::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      GURL(), kFlashMimeType, allow_wildcard, NULL, &plugins, NULL);
+  PluginService::GetInstance()->GetPluginInfoArray(
+      GURL(), kFlashMimeType, allow_wildcard, &plugins, NULL);
   std::vector<webkit::WebPluginInfo>::iterator plugin = plugins.begin();
   if (plugin == plugins.end())
     return false;

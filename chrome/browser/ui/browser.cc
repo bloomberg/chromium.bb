@@ -135,6 +135,7 @@
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/host_zoom_map.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/interstitial_page.h"
@@ -187,8 +188,6 @@
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/extensions/file_manager_util.h"
 #endif
-
-#include "webkit/plugins/npapi/plugin_list.h"
 
 using base::TimeDelta;
 
@@ -2509,7 +2508,7 @@ void Browser::CrashedPluginHelper(TabContents* tab,
 
   string16 plugin_name = plugin_path.LossyDisplayName();
   webkit::WebPluginInfo plugin_info;
-  if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+  if (PluginService::GetInstance()->GetPluginInfoByPath(
           plugin_path, &plugin_info) &&
       !plugin_info.name.empty()) {
     plugin_name = plugin_info.name;

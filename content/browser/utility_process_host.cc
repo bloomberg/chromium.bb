@@ -12,6 +12,7 @@
 #include "content/common/utility_messages.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
+#include "webkit/plugins/plugin_switches.h"
 
 UtilityProcessHost::Client::Client() {
 }
@@ -103,6 +104,8 @@ bool UtilityProcessHost::StartProcess() {
     cmd_line->AppendSwitch(switches::kChromeFrame);
   if (no_sandbox_ || browser_command_line.HasSwitch(switches::kNoSandbox))
     cmd_line->AppendSwitch(switches::kNoSandbox);
+  if (browser_command_line.HasSwitch(switches::kDebugPluginLoading))
+    cmd_line->AppendSwitch(switches::kDebugPluginLoading);
 
 #if defined(OS_POSIX)
   // TODO(port): Sandbox this on Linux.  Also, zygote this to work with

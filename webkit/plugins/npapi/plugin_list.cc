@@ -597,24 +597,6 @@ void PluginList::GetPluginInfoArray(
   }
 }
 
-bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
-                                     webkit::WebPluginInfo* info) {
-  LoadPlugins();
-  base::AutoLock lock(lock_);
-  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<webkit::WebPluginInfo>& plugins =
-        plugin_groups_[i]->web_plugin_infos();
-    for (size_t i = 0; i < plugins.size(); ++i) {
-      if (plugins[i].path == plugin_path) {
-        *info = plugins[i];
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 void PluginList::GetPluginGroups(
     bool load_if_necessary,
     std::vector<PluginGroup>* plugin_groups) {

@@ -34,8 +34,8 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   base::WaitableEvent* StartRemoving(base::Time begin_time);
 
   // Returns whether there is a plug-in installed that supports removing
-  // LSO data. Because this method possibly has to load the plug-in list, it
-  // should only be called on the FILE thread.
+  // LSO data. This method will use cached plugin data. Call
+  // PluginService::GetPlugins() if the latest data is needed.
   static bool IsSupported(PluginPrefs* plugin_prefs);
 
   // Indicates whether we are still in the process of removing plug-in data.

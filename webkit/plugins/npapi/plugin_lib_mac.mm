@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Carbon/Carbon.h>
+#import <CoreFoundation/CoreFoundation.h>
 
 #include "webkit/plugins/npapi/plugin_lib.h"
 
@@ -176,24 +177,38 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   ScopedCFTypeRef<CFURLRef> bundle_url(CFURLCreateFromFileSystemRepresentation(
       kCFAllocatorDefault, (const UInt8*)filename.value().c_str(),
       filename.value().length(), true));
-  if (!bundle_url)
+  if (!bundle_url) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "PluginLib::ReadWebPluginInfo could not create bundle URL";
     return false;
+  }
   ScopedCFTypeRef<CFBundleRef> bundle(CFBundleCreate(kCFAllocatorDefault,
                                                      bundle_url.get()));
-  if (!bundle)
+  if (!bundle) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "PluginLib::ReadWebPluginInfo could not create CFBundleRef";
     return false;
+  }
 
   // preflight
 
   OSType type = 0;
   CFBundleGetPackageInfo(bundle.get(), &type, NULL);
-  if (type != FOUR_CHAR_CODE('BRPL'))
+  if (type != FOUR_CHAR_CODE('BRPL')) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "PluginLib::ReadWebPluginInfo bundle is not BRPL, is " << type;
     return false;
+  }
 
   CFErrorRef error;
   Boolean would_load = CFBundlePreflightExecutable(bundle.get(), &error);
-  if (!would_load)
+  if (!would_load) {
+    ScopedCFTypeRef<CFStringRef> error_string(CFErrorCopyDescription(error));
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "PluginLib::ReadWebPluginInfo bundle failed preflight: "
+        << base::SysCFStringRefToUTF8(error_string);
     return false;
+  }
 
   // get the info
 

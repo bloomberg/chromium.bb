@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/plugin_prefs.h"
@@ -14,9 +15,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/plugin_service.h"
 #include "content/common/notification_service.h"
 
 // The internal class is refcounted so it can outlive PluginDataRemoverHelper.
+// TODO(bauerb): Replace with a WeakPtrFactory now that plugin callbacks run on
+// the UI thread.
 class PluginDataRemoverHelper::Internal
     : public base::RefCountedThreadSafe<PluginDataRemoverHelper::Internal> {
  public:
@@ -24,12 +28,9 @@ class PluginDataRemoverHelper::Internal
       : pref_name_(pref_name), profile_(profile) {}
 
   void StartUpdate() {
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&PluginDataRemoverHelper::Internal::UpdateOnFileThread,
-                   this,
-                   make_scoped_refptr(PluginPrefs::GetForProfile(profile_))));
+    PluginService::GetInstance()->GetPlugins(
+        base::Bind(&PluginDataRemoverHelper::Internal::GotPlugins, this,
+            make_scoped_refptr(PluginPrefs::GetForProfile(profile_))));
   }
 
   void Invalidate() {
@@ -41,8 +42,8 @@ class PluginDataRemoverHelper::Internal
 
   ~Internal() {}
 
-  void UpdateOnFileThread(scoped_refptr<PluginPrefs> plugin_prefs) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  void GotPlugins(scoped_refptr<PluginPrefs> plugin_prefs,
+                  const std::vector<webkit::WebPluginInfo>& plugins) {
     bool result = PluginDataRemover::IsSupported(plugin_prefs);
     BrowserThread::PostTask(
         BrowserThread::UI,

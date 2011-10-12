@@ -46,6 +46,7 @@ namespace content {
 class BrowserContext;
 class ResourceContext;
 class PluginServiceFilter;
+struct PluginServiceFilterParams;
 }
 
 namespace webkit {
@@ -139,9 +140,15 @@ class CONTENT_EXPORT PluginService
                      const GURL& page_url,
                      const std::string& mime_type,
                      bool allow_wildcard,
-                     bool* use_stale,
+                     bool* is_stale,
                      webkit::WebPluginInfo* info,
                      std::string* actual_mime_type);
+
+  // Get plugin info by plugin path (including disabled plugins). Returns true
+  // if the plugin is found and WebPluginInfo has been filled in |info|. This
+  // will use cached data in the plugin list.
+  bool GetPluginInfoByPath(const FilePath& plugin_path,
+                           webkit::WebPluginInfo* info);
 
   // Marks the plugin list as dirty and will cause the plugins to be reloaded
   // on the next access through GetPlugins() or GetPluginGroups().
@@ -191,6 +198,14 @@ class CONTENT_EXPORT PluginService
   void GetPluginsInternal(base::MessageLoopProxy* target_loop,
                           const GetPluginsCallback& callback);
 
+  // Binding directly to GetAllowedPluginForOpenChannelToPlugin() isn't possible
+  // because more arity is needed <http://crbug.com/98542>. This just forwards.
+  void ForwardGetAllowedPluginForOpenChannelToPlugin(
+      const content::PluginServiceFilterParams& params,
+      const GURL& url,
+      const std::string& mime_type,
+      PluginProcessHost::Client* client,
+      const std::vector<webkit::WebPluginInfo>&);
   // Helper so we can do the plugin lookup on the FILE thread.
   void GetAllowedPluginForOpenChannelToPlugin(
       int render_process_id,

@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "googleurl/src/gurl.h"
@@ -15,7 +16,7 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_redirect_job.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/webplugininfo.h"
 
 namespace chromeos {
 
@@ -65,8 +66,7 @@ bool GViewRequestInterceptor::ShouldUsePdfPlugin(
     return false;
 
   webkit::WebPluginInfo plugin;
-  if (!webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
-      pdf_path, &plugin)) {
+  if (!PluginService::GetInstance()->GetPluginInfoByPath(pdf_path, &plugin)) {
     return false;
   }
 
