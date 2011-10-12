@@ -132,6 +132,16 @@ typedef bool (*RenderPDFPageToDCProc)(
     int bounds_width, int bounds_height, bool fit_to_bounds,
     bool stretch_to_bounds, bool keep_aspect_ratio, bool center_in_bounds,
     bool autorotate);
+
+void DrawEmptyRectangle(HDC dc) {
+  // TODO(sanjeevr): This is a temporary hack. If we output a JPEG
+  // to the EMF, the EnumEnhMetaFile call fails in the browser
+  // process. The failure also happens if we output nothing here.
+  // We need to investigate the reason for this failure and fix it.
+  // In the meantime this temporary hack of drawing an empty
+  // rectangle in the DC gets us by.
+  Rectangle(dc, 0, 0, 0, 0);
+}
 #endif  // defined(OS_WIN)
 
 namespace {
@@ -1324,6 +1334,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
     // On Windows, we now need to render the PDF to the DC that backs the
     // supplied canvas.
     HDC dc = skia::BeginPlatformPaint(canvas);
+    DrawEmptyRectangle(dc);
     gfx::Size size_in_pixels;
     size_in_pixels.set_width(printing::ConvertUnit(
         current_print_settings_.printable_area.size.width,
@@ -1443,13 +1454,7 @@ bool PluginInstance::DrawJPEGToPlatformDC(
 
   skia::ScopedPlatformPaint scoped_platform_paint(canvas);
   HDC dc = scoped_platform_paint.GetPlatformSurface();
-  // TODO(sanjeevr): This is a temporary hack. If we output a JPEG
-  // to the EMF, the EnumEnhMetaFile call fails in the browser
-  // process. The failure also happens if we output nothing here.
-  // We need to investigate the reason for this failure and fix it.
-  // In the meantime this temporary hack of drawing an empty
-  // rectangle in the DC gets us by.
-  Rectangle(dc, 0, 0, 0, 0);
+  DrawEmptyRectangle(dc);
   BITMAPINFOHEADER bmi = {0};
   gfx::CreateBitmapHeader(bitmap.width(), bitmap.height(), &bmi);
   bmi.biCompression = BI_JPEG;
