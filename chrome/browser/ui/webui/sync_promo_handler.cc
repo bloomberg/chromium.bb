@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -23,7 +24,8 @@
 #include "content/common/notification_service.h"
 
 SyncPromoHandler::SyncPromoHandler(ProfileManager* profile_manager)
-    : SyncSetupHandler(profile_manager), window_already_closed_(false) {
+    : SyncSetupHandler(profile_manager),
+      window_already_closed_(false) {
 }
 
 SyncPromoHandler::~SyncPromoHandler() {
@@ -123,9 +125,19 @@ void SyncPromoHandler::ShowSetupUI() {
 
 void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   CloseSyncSetup();
-  web_ui_->tab_contents()->OpenURL(GURL(chrome::kChromeUINewTabURL),
-                                   GURL(), CURRENT_TAB,
-                                   PageTransition::LINK);
+
+  // If there's no previous page on this tab then it means that the promo was
+  // displayed at startup. In this case we want to close the browser tab that
+  // the promo is in.
+  if (!web_ui_->tab_contents()->controller().CanGoBack()) {
+    Browser* browser =
+        BrowserList::FindBrowserWithTabContents(web_ui_->tab_contents());
+    browser->CloseTabContents(web_ui_->tab_contents());
+  } else {
+    web_ui_->tab_contents()->OpenURL(GURL(chrome::kChromeUINewTabURL),
+                                     GURL(), CURRENT_TAB,
+                                     PageTransition::LINK);
+  }
 }
 
 void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {

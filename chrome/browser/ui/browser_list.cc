@@ -690,6 +690,16 @@ Browser* BrowserList::FindBrowserWithWindow(gfx::NativeWindow window) {
 }
 
 // static
+Browser* BrowserList::FindBrowserWithTabContents(TabContents* tab_contents) {
+  DCHECK(tab_contents);
+  for (TabContentsIterator it; !it.done(); ++it) {
+    if (it->tab_contents() == tab_contents)
+      return it.browser();
+  }
+  return NULL;
+}
+
+// static
 size_t BrowserList::GetBrowserCountForType(Profile* profile,
                                            bool match_tabbed) {
   size_t result = 0;

@@ -49,9 +49,6 @@ class NTPLoginHandler : public WebUIMessageHandler,
   // Internal helper method
   void UpdateLogin();
 
-  // Gets the browser window that's currently hosting the new tab page.
-  Browser* GetBrowser();
-
   StringPrefMember username_pref_;
 };
 

@@ -78,7 +78,8 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
     }
   } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.
-    Browser* browser = GetBrowser();
+    Browser* browser =
+        BrowserList::FindBrowserWithTabContents(web_ui_->tab_contents());
     if (!browser)
       return;
     double x = 0;
@@ -134,13 +135,4 @@ bool NTPLoginHandler::ShouldShow(Profile* profile) {
 
   return profile->GetOriginalProfile()->IsSyncAccessible();
 #endif
-}
-
-Browser* NTPLoginHandler::GetBrowser() {
-  for (TabContentsIterator it; !it.done(); ++it) {
-    TabContents* tab = it->tab_contents();
-    if (tab == web_ui_->tab_contents())
-      return it.browser();
-  }
-  return NULL;
 }

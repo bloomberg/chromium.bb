@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "ui/gfx/native_widget_types.h"
 
+class TabContents;
+
 // Stores a list of all Browser objects.
 class BrowserList {
  public:
@@ -97,6 +99,10 @@ class BrowserList {
 
   // Find the browser represented by |window| or NULL if not found.
   static Browser* FindBrowserWithWindow(gfx::NativeWindow window);
+
+  // Find the browser containing |tab_contents| or NULL if none is found.
+  // |tab_contents| must not be NULL.
+  static Browser* FindBrowserWithTabContents(TabContents* tab_contents);
 
   // Checks if the browser can be automatically restarted to install upgrades
   // The browser can be automatically restarted when:
