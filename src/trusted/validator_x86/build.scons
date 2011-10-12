@@ -393,3 +393,12 @@ def __AddNegMaxErrors():
               STANDARD_TESTS)
 
 __AddNegMaxErrors()
+
+if test_env.Bit('target_x86_64'):
+  node = test_env.CommandTest('ncval_hello_x32.out',
+                              [ncval,
+                               env.File(os.path.join('${MAIN_DIR}/src/trusted',
+                                                     'service_runtime',
+                                                     'testdata/x86_64',
+                                                     'hello_x32.nexe'))])
+  env.AddNodeToTestSuite(node, STANDARD_TESTS, 'run_ncval_hello_x32_test')

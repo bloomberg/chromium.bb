@@ -653,6 +653,16 @@ if not env.CrossToolsBuild():
       exit_status = '0')
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
 
+if env.Bit('target_x86_64') and not env.CrossToolsBuild():
+  node = env.CommandSelLdrTestNacl(
+      'hello_x32.out',
+      env.File(os.path.join(arch_testdata_dir, 'hello_x32.nexe')),
+      stdout_golden=env.File(os.path.join('${MAIN_DIR}',
+                                          'tests/hello_world',
+                                          'hello_world.stdout'))
+      )
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_x32_test')
+
 # ----------------------------------------------------------
 # Integration Tests
 # ----------------------------------------------------------

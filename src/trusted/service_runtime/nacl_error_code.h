@@ -19,6 +19,7 @@ extern "C" {
 // 1) make sure you understand UMA, first.
 // 2) update src/tools/histograms/histograms.xml in
 //  svn://svn.chromium.org/chrome-internal/trunk/src-internal
+// 3) never reuse old numbers for a different meaning; add new ones on the end
 // Values are explicitly specified to make sure they don't shift around when
 // edited, and also to make reading about:histograms easier.
 typedef enum NaClErrorCode {
@@ -32,7 +33,7 @@ typedef enum NaClErrorCode {
   LOAD_OPEN_ERROR = 7,
   LOAD_READ_ERROR = 8,
   LOAD_TOO_MANY_PROG_HDRS = 9,
-  LOAD_PROG_HDR_SIZE_TOO_SMALL = 10,
+  LOAD_BAD_PHENTSIZE = 10,
   LOAD_BAD_ELF_MAGIC = 11,
   LOAD_NOT_32_BIT = 12,
   LOAD_NOT_64_BIT = 13,
@@ -84,9 +85,14 @@ typedef enum NaClErrorCode {
   /*
    * service runtime errors (post load, during startup phase)
    */
-  SRT_NO_SEG_SEL = 59
+  SRT_NO_SEG_SEL = 59,
+
+  LOAD_BAD_EHSIZE = 60,
+  LOAD_EHDR_OVERFLOW = 61,
+  LOAD_PHDR_OVERFLOW = 62
 } NaClErrorCode;
-#define NACL_ERROR_CODE_MAX (SRT_NO_SEG_SEL+1)
+
+#define NACL_ERROR_CODE_MAX (LOAD_PHDR_OVERFLOW + 1)
 
 char const  *NaClErrorString(NaClErrorCode  errcode);
 

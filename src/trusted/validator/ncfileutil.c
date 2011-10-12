@@ -83,8 +83,16 @@ static const char* GetEiClassName(unsigned char c) {
 }
 
 static int nc_load(ncfile *ncf, int fd) {
-
-  Elf_Ehdr h;
+  union {
+    Elf32_Ehdr h32;
+#if NACL_TARGET_SUBARCH == 64
+    Elf64_Ehdr h64;
+#endif
+  } h;
+  Elf_Half phnum;
+  Elf_Half shnum;
+  Elf_Off phoff;
+  Elf_Off shoff;
   ssize_t nread;
   Elf_Addr vmemlo, vmemhi;
   size_t shsize, phsize;
@@ -98,42 +106,100 @@ static int nc_load(ncfile *ncf, int fd) {
   }
 
   /* do a bunch of sanity checks */
-  if (strncmp((char *)h.e_ident, ELFMAG, strlen(ELFMAG))) {
+  if (memcmp(h.h32.e_ident, ELFMAG, SELFMAG)) {
     ncf->error_fn("nc_load(%s): bad magic number", ncf->fname);
     return -1;
   }
 
-  if (h.e_ident[EI_CLASS] != NACL_ELF_CLASS) {
-    ncf->error_fn("nc_load(%s): bad EI CLASS %d %s\n", ncf->fname,
-                  h.e_ident[EI_CLASS], GetEiClassName(h.e_ident[EI_CLASS]));
+#if NACL_TARGET_SUBARCH == 64
+  if (h.h32.e_ident[EI_CLASS] == ELFCLASS64) {
+    if (h.h64.e_phoff > 0xffffffffU) {
+      ncf->error_fn("nc_load(%s): e_phoff overflows 32 bits\n", ncf->fname);
+      return -1;
+    }
+    if (h.h64.e_shoff > 0xffffffffU) {
+      ncf->error_fn("nc_load(%s): e_shoff overflows 32 bits\n", ncf->fname);
+      return -1;
+    }
+    phoff = (Elf32_Off) h.h64.e_phoff;
+    shoff = (Elf32_Off) h.h64.e_shoff;
+    phnum = h.h64.e_phnum;
+    shnum = h.h64.e_shnum;
+  } else
+#endif
+  {
+    if (h.h32.e_ident[EI_CLASS] == ELFCLASS32) {
+      phoff = h.h32.e_phoff;
+      shoff = h.h32.e_shoff;
+      phnum = h.h32.e_phnum;
+      shnum = h.h32.e_shnum;
+    } else {
+      ncf->error_fn("nc_load(%s): bad EI CLASS %d %s\n", ncf->fname,
+                    h.h32.e_ident[EI_CLASS],
+                    GetEiClassName(h.h32.e_ident[EI_CLASS]));
+      return -1;
+    }
   }
 
   /* We now support only 32-byte bundle alignment.  */
   ncf->ncalign = 32;
 
   /* Read the program header table */
-  if (h.e_phnum <= 0 || h.e_phnum > kMaxPhnum) {
-    ncf->error_fn("nc_load(%s): h.e_phnum %d > kMaxPhnum %d\n",
-                  ncf->fname, h.e_phnum, kMaxPhnum);
+  if (phnum <= 0 || phnum > kMaxPhnum) {
+    ncf->error_fn("nc_load(%s): e_phnum %d > kMaxPhnum %d\n",
+                  ncf->fname, phnum, kMaxPhnum);
     return -1;
   }
-  ncf->phnum = h.e_phnum;
-  ncf->pheaders = (Elf_Phdr *)calloc(h.e_phnum, sizeof(Elf_Phdr));
+  ncf->phnum = phnum;
+  ncf->pheaders = (Elf_Phdr *)calloc(phnum, sizeof(Elf_Phdr));
   if (NULL == ncf->pheaders) {
     ncf->error_fn("nc_load(%s): calloc(%d, %"NACL_PRIdS") failed\n",
-                  ncf->fname, h.e_phnum, sizeof(Elf_Phdr));
+                  ncf->fname, phnum, sizeof(Elf_Phdr));
     return -1;
   }
-  phsize = h.e_phnum * sizeof(*ncf->pheaders);
-  /* TODO(karl) Remove the cast to size_t, or verify size. */
-  nread = readat(ncf, fd, ncf->pheaders, (off_t) phsize, (off_t) h.e_phoff);
-  if (nread < 0 || (size_t) nread < phsize) return -1;
+  phsize = phnum * sizeof(*ncf->pheaders);
+#if NACL_TARGET_SUBARCH == 64
+  if (h.h32.e_ident[EI_CLASS] == ELFCLASS64) {
+    /*
+     * Read 64-bit program headers and convert them.
+     */
+    Elf64_Phdr phdr64[kMaxPhnum];
+    nread = readat(ncf, fd, phdr64, (off_t) (phnum * sizeof(phdr64[0])),
+                   (off_t) phoff);
+    if (nread < 0 || (size_t) nread < phsize) return -1;
+    for (i = 0; i < phnum; ++i) {
+      if (phdr64[i].p_offset > 0xffffffffU ||
+          phdr64[i].p_vaddr > 0xffffffffU ||
+          phdr64[i].p_paddr > 0xffffffffU ||
+          phdr64[i].p_filesz > 0xffffffffU ||
+          phdr64[i].p_memsz > 0xffffffffU ||
+          phdr64[i].p_align > 0xffffffffU) {
+        ncf->error_fn("nc_load(%s): phdr[%d] fields overflow 32 bits\n",
+                      ncf->fname, i);
+        return -1;
+      }
+      ncf->pheaders[i].p_type = phdr64[i].p_type;
+      ncf->pheaders[i].p_flags = phdr64[i].p_flags;
+      ncf->pheaders[i].p_offset = (Elf32_Off) phdr64[i].p_offset;
+      ncf->pheaders[i].p_vaddr = (Elf32_Addr) phdr64[i].p_vaddr;
+      ncf->pheaders[i].p_paddr = (Elf32_Addr) phdr64[i].p_paddr;
+      ncf->pheaders[i].p_filesz = (Elf32_Word) phdr64[i].p_filesz;
+      ncf->pheaders[i].p_memsz = (Elf32_Word) phdr64[i].p_memsz;
+      ncf->pheaders[i].p_align = (Elf32_Word) phdr64[i].p_align;
+    }
+  } else
+#endif
+  {
+    /* TODO(karl) Remove the cast to size_t, or verify size. */
+    nread = readat(ncf, fd, ncf->pheaders, (off_t) phsize, (off_t) phoff);
+    if (nread < 0 || (size_t) nread < phsize) return -1;
+  }
 
   /* Iterate through the program headers to find the virtual */
   /* size of loaded text.                                    */
   vmemlo = MAX_ELF_ADDR;
   vmemhi = MIN_ELF_ADDR;
-  for (i = 0; i < h.e_phnum; i++) {
+  for (i = 0; i < phnum; i++) {
     if (ncf->pheaders[i].p_type != PT_LOAD) continue;
     if (0 == (ncf->pheaders[i].p_flags & PF_X)) continue;
     /* This is executable text. Check low and high addrs */
@@ -153,7 +219,7 @@ static int nc_load(ncfile *ncf, int fd) {
   }
 
   /* Load program text segments */
-  for (i = 0; i < h.e_phnum; i++) {
+  for (i = 0; i < phnum; i++) {
     const Elf_Phdr *p = &ncf->pheaders[i];
     if (p->p_type != PT_LOAD) continue;
     if (0 == (ncf->pheaders[i].p_flags & PF_X)) continue;
@@ -169,8 +235,9 @@ static int nc_load(ncfile *ncf, int fd) {
       return -1;
     }
   }
+
   /* load the section headers */
-  ncf->shnum = h.e_shnum;
+  ncf->shnum = shnum;
   shsize = ncf->shnum * sizeof(*ncf->sheaders);
   ncf->sheaders = (Elf_Shdr *)calloc(1, shsize);
   if (NULL == ncf->sheaders) {
@@ -178,12 +245,56 @@ static int nc_load(ncfile *ncf, int fd) {
                   ncf->fname, shsize);
     return -1;
   }
-  /* TODO(karl) Remove the cast to size_t, or verify value in range. */
-  nread = readat(ncf, fd, ncf->sheaders, (off_t) shsize, (off_t) h.e_shoff);
-  if (nread < 0 || (size_t) nread < shsize) {
-    ncf->error_fn("nc_load(%s): could not read section headers\n",
-                  ncf->fname);
-    return -1;
+#if NACL_TARGET_SUBARCH == 64
+  if (h.h32.e_ident[EI_CLASS] == ELFCLASS64) {
+    /*
+     * Read 64-bit section headers and convert them.
+     */
+    Elf64_Shdr *shdr64 = (Elf64_Shdr *)calloc(shnum, sizeof(shdr64[0]));
+    if (NULL == shdr64) {
+      ncf->error_fn(
+          "nc_load(%s): calloc(%"NACL_PRIdS", %"NACL_PRIdS") failed\n",
+          ncf->fname, (size_t) shnum, sizeof(shdr64[0]));
+      return -1;
+    }
+    shsize = ncf->shnum * sizeof(shdr64[0]);
+    nread = readat(ncf, fd, shdr64, (off_t) shsize, (off_t) shoff);
+    if (nread < 0 || (size_t) nread < shsize) {
+      ncf->error_fn("nc_load(%s): could not read section headers\n",
+                    ncf->fname);
+      return -1;
+    }
+    for (i = 0; i < shnum; ++i) {
+      if (shdr64[i].sh_flags > 0xffffffffU ||
+          shdr64[i].sh_size > 0xffffffffU ||
+          shdr64[i].sh_addralign > 0xffffffffU ||
+          shdr64[i].sh_entsize > 0xffffffffU) {
+        ncf->error_fn("nc_load(%s): shdr[%d] fields overflow 32 bits\n",
+                      ncf->fname, i);
+        return -1;
+      }
+      ncf->sheaders[i].sh_name = shdr64[i].sh_name;
+      ncf->sheaders[i].sh_type = shdr64[i].sh_type;
+      ncf->sheaders[i].sh_flags = (Elf32_Word) shdr64[i].sh_flags;
+      ncf->sheaders[i].sh_addr = (Elf32_Addr) shdr64[i].sh_addr;
+      ncf->sheaders[i].sh_offset = (Elf32_Off) shdr64[i].sh_offset;
+      ncf->sheaders[i].sh_size = (Elf32_Word) shdr64[i].sh_size;
+      ncf->sheaders[i].sh_link = shdr64[i].sh_link;
+      ncf->sheaders[i].sh_info = shdr64[i].sh_info;
+      ncf->sheaders[i].sh_addralign = (Elf32_Word) shdr64[i].sh_addralign;
+      ncf->sheaders[i].sh_entsize = (Elf32_Word) shdr64[i].sh_entsize;
+    }
+    free(shdr64);
+  } else
+#endif
+  {
+    /* TODO(karl) Remove the cast to size_t, or verify value in range. */
+    nread = readat(ncf, fd, ncf->sheaders, (off_t) shsize, (off_t) shoff);
+    if (nread < 0 || (size_t) nread < shsize) {
+      ncf->error_fn("nc_load(%s): could not read section headers\n",
+                    ncf->fname);
+      return -1;
+    }
   }
 
   /* success! */

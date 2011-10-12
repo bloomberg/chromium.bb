@@ -30,8 +30,8 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "Cannot read file";
     case LOAD_TOO_MANY_PROG_HDRS:
       return "Too many program header entries in ELF file";
-    case LOAD_PROG_HDR_SIZE_TOO_SMALL:
-      return "ELF program header size too small";
+    case LOAD_BAD_PHENTSIZE:
+      return "ELF program header size wrong";
     case LOAD_BAD_ELF_MAGIC:
       return "Bad ELF header magic number";
     case LOAD_NOT_32_BIT:
@@ -134,6 +134,12 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "Not implemented for this architecture.";
     case SRT_NO_SEG_SEL:
       return "Service Runtime: cannot allocate segment selector";
+    case LOAD_BAD_EHSIZE:
+      return "ELFCLASS64 file header has wrong e_ehsize value";
+    case LOAD_EHDR_OVERFLOW:
+      return "ELFCLASS64 file header has fields that overflow 32 bits";
+    case LOAD_PHDR_OVERFLOW:
+      return "ELFCLASS64 program header has fields that overflow 32 bits";
   }
 
   /*

@@ -155,17 +155,10 @@ NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image) {
     return LOAD_BAD_ELF_MAGIC;
   }
 
-#if NACL_TARGET_SUBARCH == 64
-  if (ELFCLASS64 != hdr->e_ident[EI_CLASS]) {
-    NaClLog(LOG_ERROR, "bad elf class\n");
-    return LOAD_NOT_64_BIT;
-  }
-#else
   if (ELFCLASS32 != hdr->e_ident[EI_CLASS]) {
     NaClLog(LOG_ERROR, "bad elf class\n");
     return LOAD_NOT_32_BIT;
   }
-#endif
 
   if (ET_EXEC != hdr->e_type) {
     NaClLog(LOG_ERROR, "non executable\n");
@@ -281,21 +274,18 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
               php->p_vaddr);
       return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
     }
-    /*
-     * integer overflow?  Elf_Addr and Elf_Word are uint32_t or
-     * uint64_t, so the addition/comparison is well defined.
-     */
-    if (php->p_vaddr + php->p_memsz < php->p_vaddr) {
-      NaClLog(2,
-              "Segment %d: p_memsz caused integer overflow\n",
-              segnum);
-      return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
-    }
-    if (php->p_vaddr + php->p_memsz >= ((Elf_Addr) 1U << addr_bits)) {
-      NaClLog(2,
-              "Segment %d: too large, ends at 0x%08"NACL_PRIxElf_Addr"\n",
-              segnum,
-              php->p_vaddr + php->p_memsz);
+    if (php->p_vaddr >= ((uint64_t) 1U << addr_bits) ||
+        ((uint64_t) 1U << addr_bits) - php->p_vaddr < php->p_memsz) {
+      if (php->p_vaddr + php->p_memsz < php->p_vaddr) {
+        NaClLog(2,
+                "Segment %d: p_memsz caused integer overflow\n",
+                segnum);
+      } else {
+        NaClLog(2,
+                "Segment %d: too large, ends at 0x%08"NACL_PRIxElf_Addr"\n",
+                segnum,
+                php->p_vaddr + php->p_memsz);
+      }
       return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
     }
     if (php->p_filesz > php->p_memsz) {
@@ -363,6 +353,12 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
                                      NaClErrorCode  *err_code) {
   struct NaClElfImage *result;
   struct NaClElfImage image;
+  union {
+    Elf32_Ehdr ehdr32;
+#if NACL_TARGET_SUBARCH == 64
+    Elf64_Ehdr ehdr64;
+#endif
+  } ehdr;
   int                 cur_ph;
 
   memset(image.loadable, 0, sizeof image.loadable);
@@ -373,15 +369,64 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
     }
     return 0;
   }
+
+  /*
+   * We read the larger size of an ELFCLASS64 header even if it turns out
+   * we're reading an ELFCLASS32 file.  No usable ELFCLASS32 binary could
+   * be so small that it's not larger than Elf64_Ehdr anyway.
+   */
   if ((*gp->vtbl->Read)(gp,
-                        &image.ehdr,
-                        sizeof image.ehdr)
-      != sizeof image.ehdr) {
+                        &ehdr,
+                        sizeof ehdr)
+      != sizeof ehdr) {
     if (NULL != err_code) {
       *err_code = LOAD_READ_ERROR;
     }
     NaClLog(2, "could not load elf headers\n");
     return 0;
+  }
+
+#if NACL_TARGET_SUBARCH == 64
+  if (ELFCLASS64 == ehdr.ehdr64.e_ident[EI_CLASS]) {
+    /*
+     * Convert ELFCLASS64 format to ELFCLASS32 format.
+     * The initial four fields are the same in both classes.
+     */
+    memcpy(image.ehdr.e_ident, ehdr.ehdr64.e_ident, EI_NIDENT);
+    image.ehdr.e_ident[EI_CLASS] = ELFCLASS32;
+    image.ehdr.e_type = ehdr.ehdr64.e_type;
+    image.ehdr.e_machine = ehdr.ehdr64.e_machine;
+    image.ehdr.e_version = ehdr.ehdr64.e_version;
+    if (ehdr.ehdr64.e_entry > 0xffffffffU ||
+        ehdr.ehdr64.e_phoff > 0xffffffffU ||
+        ehdr.ehdr64.e_shoff > 0xffffffffU) {
+      if (NULL != err_code) {
+        *err_code = LOAD_EHDR_OVERFLOW;
+      }
+      NaClLog(2, "ELFCLASS64 file header fields overflow 32 bits\n");
+      return 0;
+    }
+    image.ehdr.e_entry = (Elf32_Addr) ehdr.ehdr64.e_entry;
+    image.ehdr.e_phoff = (Elf32_Off) ehdr.ehdr64.e_phoff;
+    image.ehdr.e_shoff = (Elf32_Off) ehdr.ehdr64.e_shoff;
+    image.ehdr.e_flags = ehdr.ehdr64.e_flags;
+    if (ehdr.ehdr64.e_ehsize != sizeof(ehdr.ehdr64)) {
+      if (NULL != err_code) {
+        *err_code = LOAD_BAD_EHSIZE;
+      }
+      NaClLog(2, "ELFCLASS64 file e_ehsize != %d\n", (int) sizeof(ehdr.ehdr64));
+      return 0;
+    }
+    image.ehdr.e_ehsize = sizeof(image.ehdr);
+    image.ehdr.e_phentsize = sizeof(image.phdrs[0]);
+    image.ehdr.e_phnum = ehdr.ehdr64.e_phnum;
+    image.ehdr.e_shentsize = ehdr.ehdr64.e_shentsize;
+    image.ehdr.e_shnum = ehdr.ehdr64.e_shnum;
+    image.ehdr.e_shstrndx = ehdr.ehdr64.e_shstrndx;
+  } else
+#endif
+  {
+    image.ehdr = ehdr.ehdr32;
   }
 
   NaClDumpElfHeader(2, &image.ehdr);
@@ -394,23 +439,6 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
     return 0;
   }
 
-  if (image.ehdr.e_phentsize < sizeof image.phdrs[0]) {
-    if (NULL != err_code) {
-      *err_code = LOAD_PROG_HDR_SIZE_TOO_SMALL;
-    }
-    NaClLog(2, "bad prog headers size\n");
-    NaClLog(2, " image.ehdr.e_phentsize = 0x%"NACL_PRIxElf_Half"\n",
-            image.ehdr.e_phentsize);
-    NaClLog(2, "  sizeof image.phdrs[0] = 0x%"NACL_PRIxS"\n",
-            sizeof image.phdrs[0]);
-    return 0;
-  }
-
-  /*
-   * NB: cast from e_phoff to off_t may not be valid, since off_t can be
-   * smaller than Elf64_off, but since invalid values will be rejected
-   * by Seek() the cast is safe (cf bsy)
-   */
   if ((*gp->vtbl->Seek)(gp,
                         (off_t) image.ehdr.e_phoff,
                         SEEK_SET) == (off_t) -1) {
@@ -421,15 +449,87 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
     return 0;
   }
 
-  if ((size_t) (*gp->vtbl->Read)(gp,
-                                 &image.phdrs[0],
-                                 image.ehdr.e_phnum * sizeof image.phdrs[0])
-      != (image.ehdr.e_phnum * sizeof image.phdrs[0])) {
-    if (NULL != err_code) {
-      *err_code = LOAD_READ_ERROR;
+#if NACL_TARGET_SUBARCH == 64
+  if (ELFCLASS64 == ehdr.ehdr64.e_ident[EI_CLASS]) {
+    /*
+     * We'll load the 64-bit phdrs and convert them to 32-bit format.
+     */
+    Elf64_Phdr phdr64[NACL_MAX_PROGRAM_HEADERS];
+
+    if (ehdr.ehdr64.e_phentsize != sizeof(Elf64_Phdr)) {
+      if (NULL != err_code) {
+        *err_code = LOAD_BAD_PHENTSIZE;
+      }
+      NaClLog(2, "bad prog headers size\n");
+      NaClLog(2, " ehdr64.e_phentsize = 0x%"NACL_PRIxElf_Half"\n",
+              ehdr.ehdr64.e_phentsize);
+      NaClLog(2, "  sizeof(Elf64_Phdr) = 0x%"NACL_PRIxS"\n",
+              sizeof(Elf64_Phdr));
+      return 0;
     }
-    NaClLog(2, "cannot load tp prog headers\n");
-    return 0;
+
+    /*
+     * We know the multiplication won't overflow since we rejected
+     * e_phnum values larger than the small constant NACL_MAX_PROGRAM_HEADERS.
+     */
+    if ((size_t) (*gp->vtbl->Read)(gp,
+                                   &phdr64[0],
+                                   image.ehdr.e_phnum * sizeof phdr64[0])
+        != (image.ehdr.e_phnum * sizeof phdr64[0])) {
+      if (NULL != err_code) {
+        *err_code = LOAD_READ_ERROR;
+      }
+      NaClLog(2, "cannot load tp prog headers\n");
+      return 0;
+    }
+
+    for (cur_ph = 0; cur_ph < image.ehdr.e_phnum; ++cur_ph) {
+      if (phdr64[cur_ph].p_offset > 0xffffffffU ||
+          phdr64[cur_ph].p_vaddr > 0xffffffffU ||
+          phdr64[cur_ph].p_paddr > 0xffffffffU ||
+          phdr64[cur_ph].p_filesz > 0xffffffffU ||
+          phdr64[cur_ph].p_memsz > 0xffffffffU ||
+          phdr64[cur_ph].p_align > 0xffffffffU) {
+        if (NULL != err_code) {
+          *err_code = LOAD_PHDR_OVERFLOW;
+        }
+        NaClLog(2, "ELFCLASS64 program header fields overflow 32 bits\n");
+        return 0;
+      }
+      image.phdrs[cur_ph].p_type = phdr64[cur_ph].p_type;
+      image.phdrs[cur_ph].p_offset = (Elf32_Off) phdr64[cur_ph].p_offset;
+      image.phdrs[cur_ph].p_vaddr = (Elf32_Addr) phdr64[cur_ph].p_vaddr;
+      image.phdrs[cur_ph].p_paddr = (Elf32_Addr) phdr64[cur_ph].p_paddr;
+      image.phdrs[cur_ph].p_filesz = (Elf32_Word) phdr64[cur_ph].p_filesz;
+      image.phdrs[cur_ph].p_memsz = (Elf32_Word) phdr64[cur_ph].p_memsz;
+      image.phdrs[cur_ph].p_flags = phdr64[cur_ph].p_flags;
+      image.phdrs[cur_ph].p_align = (Elf32_Word) phdr64[cur_ph].p_align;
+    }
+  } else
+#endif
+  {
+    if (image.ehdr.e_phentsize != sizeof image.phdrs[0]) {
+      if (NULL != err_code) {
+        *err_code = LOAD_BAD_PHENTSIZE;
+      }
+      NaClLog(2, "bad prog headers size\n");
+      NaClLog(2, " image.ehdr.e_phentsize = 0x%"NACL_PRIxElf_Half"\n",
+              image.ehdr.e_phentsize);
+      NaClLog(2, "  sizeof image.phdrs[0] = 0x%"NACL_PRIxS"\n",
+              sizeof image.phdrs[0]);
+      return 0;
+    }
+
+    if ((size_t) (*gp->vtbl->Read)(gp,
+                                   &image.phdrs[0],
+                                   image.ehdr.e_phnum * sizeof image.phdrs[0])
+        != (image.ehdr.e_phnum * sizeof image.phdrs[0])) {
+      if (NULL != err_code) {
+        *err_code = LOAD_READ_ERROR;
+      }
+      NaClLog(2, "cannot load tp prog headers\n");
+      return 0;
+    }
   }
 
   NaClLog(2, "=================================================\n");
@@ -608,7 +708,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
        * instead.)
        */
       result = NaClCommonSysMmapIntern(
-          nap, (void *) php->p_vaddr, mapping_size,
+          nap, (void *) (uintptr_t) php->p_vaddr, mapping_size,
           NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
           NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
           -1, 0);

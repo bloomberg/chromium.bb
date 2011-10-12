@@ -80,18 +80,18 @@ static void CheckBounds(unsigned char *data, size_t data_size,
   CHECK((unsigned char *) ptr + inside_size <= data + data_size);
 }
 
-static Bool FixUpELF(unsigned char *data, size_t data_size) {
-  Elf_Ehdr *header;
+static Bool FixUpELF32(unsigned char *data, size_t data_size) {
+  Elf32_Ehdr *header;
   int index;
   Bool fixed = TRUE;  /* until proven otherwise. */
 
-  header = (Elf_Ehdr *) data;
+  header = (Elf32_Ehdr *) data;
   CheckBounds(data, data_size, header, sizeof(*header));
   CHECK(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
 
   for (index = 0; index < header->e_shnum; index++) {
-    Elf_Shdr *section = (Elf_Shdr *) (data + header->e_shoff +
-                                      header->e_shentsize * index);
+    Elf32_Shdr *section = (Elf32_Shdr *) (data + header->e_shoff +
+                                          header->e_shentsize * index);
     CheckBounds(data, data_size, section, sizeof(*section));
 
     if ((section->sh_flags & SHF_EXECINSTR) != 0) {
@@ -104,6 +104,42 @@ static Bool FixUpELF(unsigned char *data, size_t data_size) {
     }
   }
   return fixed;
+}
+
+#if NACL_TARGET_SUBARCH == 64
+static Bool FixUpELF64(unsigned char *data, size_t data_size) {
+  Elf64_Ehdr *header;
+  int index;
+  Bool fixed = TRUE;  /* until proven otherwise. */
+
+  header = (Elf64_Ehdr *) data;
+  CheckBounds(data, data_size, header, sizeof(*header));
+  CHECK(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
+
+  for (index = 0; index < header->e_shnum; index++) {
+    Elf64_Shdr *section = (Elf64_Shdr *) (data + header->e_shoff +
+                                          header->e_shentsize * index);
+    CheckBounds(data, data_size, section, sizeof(*section));
+
+    if ((section->sh_flags & SHF_EXECINSTR) != 0) {
+      CheckBounds(data, data_size,
+                  data + section->sh_offset, section->sh_size);
+      if (!FixUpSection(section->sh_addr,
+                        data + section->sh_offset, section->sh_size)) {
+        fixed = FALSE;
+      }
+    }
+  }
+  return fixed;
+}
+#endif
+
+static Bool FixUpELF(unsigned char *data, size_t data_size) {
+#if NACL_TARGET_SUBARCH == 64
+  if (data_size > EI_CLASS && data[EI_CLASS] == ELFCLASS64)
+    return FixUpELF64(data, data_size);
+#endif
+  return FixUpELF32(data, data_size);
 }
 
 static Bool FixUpELFFile(const char *input_file, const char *output_file) {
