@@ -798,11 +798,14 @@ void ChromeBrowserMainParts::SocketTimeoutFieldTrial() {
   const int idle_to_trial_group = socket_timeout_trial->group();
 
   if (idle_to_trial_group == socket_timeout_5) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(5);
+    net::ClientSocketPool::set_unused_idle_socket_timeout(
+        base::TimeDelta::FromSeconds(5));
   } else if (idle_to_trial_group == socket_timeout_10) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(10);
+    net::ClientSocketPool::set_unused_idle_socket_timeout(
+        base::TimeDelta::FromSeconds(10));
   } else if (idle_to_trial_group == socket_timeout_20) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(20);
+    net::ClientSocketPool::set_unused_idle_socket_timeout(
+        base::TimeDelta::FromSeconds(20));
   } else {
     NOTREACHED();
   }
