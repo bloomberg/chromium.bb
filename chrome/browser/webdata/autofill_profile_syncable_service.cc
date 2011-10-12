@@ -34,8 +34,6 @@ bool MergeField(FormGroup* form_group,
 
 }  // namespace
 
-namespace browser_sync {
-
 const char kAutofillProfileTag[] = "google_chrome_autofill_profiles";
 
 AutofillProfileSyncableService::AutofillProfileSyncableService(
@@ -56,6 +54,7 @@ AutofillProfileSyncableService::~AutofillProfileSyncableService() {
 AutofillProfileSyncableService::AutofillProfileSyncableService()
     : web_data_service_(NULL),
       sync_processor_(NULL) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
 SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
@@ -408,5 +407,3 @@ AutofillProfileSyncableService::DataBundle::DataBundle() {}
 
 AutofillProfileSyncableService::DataBundle::~DataBundle() {
 }
-
-}  // namespace browser_sync
