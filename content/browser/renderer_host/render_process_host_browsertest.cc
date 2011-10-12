@@ -29,7 +29,7 @@ int RenderProcessHostTest::RenderProcessHostCount() {
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   // Set max renderers to 1 to force running out of processes.
-  RenderProcessHost::SetMaxRendererProcessCount(1);
+  RenderProcessHost::SetMaxRendererProcessCountForTest(1);
 
   CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
 // in a process of that type, even if that means creating a new process.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   // Set max renderers to 1 to force running out of processes.
-  RenderProcessHost::SetMaxRendererProcessCount(1);
+  RenderProcessHost::SetMaxRendererProcessCountForTest(1);
 
   int tab_count = 1;
   int host_count = 1;

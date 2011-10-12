@@ -83,6 +83,9 @@ class ExtensionProcessManager : public NotificationObserver {
   // enabled.
   bool AreBindingsEnabledForProcess(int render_process_id);
 
+  // True if this process host is restricted to only access isolated storage.
+  bool IsStorageIsolatedForProcess(int host_id);
+
   // Returns the extension process that |url| is associated with if it exists.
   // This is not valid for hosted apps without the background permission, since
   // such apps may have multiple processes.
@@ -135,6 +138,11 @@ class ExtensionProcessManager : public NotificationObserver {
   // A map of process ID to site instance ID of the site instances it hosts.
   typedef std::map<int, std::set<int> > ProcessIDMap;
   ProcessIDMap process_ids_;
+
+  // A set of all process IDs that are designated for hosting webapps with
+  // isolated storage.
+  typedef std::set<int> ProcessIDSet;
+  ProcessIDSet isolated_storage_process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

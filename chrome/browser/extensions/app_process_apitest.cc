@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
   EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
       contents->render_view_host()->process()->id()));
 
-  // Load app and reload page.
+  // Load app and navigate to the page.
   const Extension* app =
       LoadExtension(test_data_dir_.AppendASCII("app_process"));
   ASSERT_TRUE(app);
@@ -295,29 +295,55 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       contents->render_view_host()->process()->id()));
 
-  // Disable app and reload page.
+  // Disable app and navigate to the page.
   DisableExtension(app->id());
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
       contents->render_view_host()->process()->id()));
 
+  // Enable app and reload the page.
+  EnableExtension(app->id());
+  ui_test_utils::WindowedNotificationObserver reload_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &browser()->GetSelectedTabContentsWrapper()->controller()));
+  browser()->Reload(CURRENT_TAB);
+  reload_observer.Wait();
+  EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
+      contents->render_view_host()->process()->id()));
+
+  // Disable app and reload the page.
+  DisableExtension(app->id());
+  ui_test_utils::WindowedNotificationObserver reload_observer2(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &browser()->GetSelectedTabContentsWrapper()->controller()));
+  browser()->Reload(CURRENT_TAB);
+  reload_observer2.Wait();
+  EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
+      contents->render_view_host()->process()->id()));
+
   // Enable app and reload via JavaScript.
   EnableExtension(app->id());
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+  ui_test_utils::WindowedNotificationObserver js_reload_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &browser()->GetSelectedTabContentsWrapper()->controller()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->render_view_host(),
                                                L"", L"location.reload();"));
-  observer.Wait();
+  js_reload_observer.Wait();
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
       contents->render_view_host()->process()->id()));
 
   // Disable app and reload via JavaScript.
   DisableExtension(app->id());
-  ui_test_utils::WindowedNotificationObserver observer2(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+  ui_test_utils::WindowedNotificationObserver js_reload_observer2(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &browser()->GetSelectedTabContentsWrapper()->controller()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->render_view_host(),
                                                L"", L"location.reload();"));
-  observer2.Wait();
+  js_reload_observer2.Wait();
   EXPECT_FALSE(extension_process_manager->IsExtensionProcess(
       contents->render_view_host()->process()->id()));
 }

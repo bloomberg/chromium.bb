@@ -116,7 +116,7 @@
 namespace {
 
 // Handles rewriting Web UI URLs.
-static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
+bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
   if (!ChromeWebUIFactory::GetInstance()->UseWebUIForURL(browser_context, *url))
     return false;
 
@@ -130,6 +130,54 @@ static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
   }
 
   return true;
+}
+
+// Used by the GetPrivilegeRequiredByUrl() and GetProcessPrivilege() functions
+// below.  Extension, and isolated apps require different privileges to be
+// granted to their RenderProcessHosts.  This classification allows us to make
+// sure URLs are served by hosts with the right set of privileges.
+enum RenderProcessHostPrivilege {
+  PRIV_NORMAL,
+  PRIV_EXTENSION,
+  PRIV_ISOLATED,
+};
+
+RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
+    const GURL& url,
+    ExtensionService* service) {
+  // Default to a normal renderer cause it is lower privileged. This should only
+  // occur if the URL on a site instance is either malformed, or uninitialized.
+  // If it is malformed, then there is no need for better privileges anyways.
+  // If it is uninitialized, but eventually settles on being an a scheme other
+  // than normal webrenderer, the navigation logic will correct us out of band
+  // anyways.
+  if (!url.is_valid())
+    return PRIV_NORMAL;
+
+  if (url.SchemeIs(chrome::kExtensionScheme)) {
+    const Extension* extension = service->GetExtensionByURL(url);
+    if (extension && extension->is_storage_isolated()) {
+      return PRIV_ISOLATED;
+    }
+
+    return PRIV_EXTENSION;
+  }
+
+  return PRIV_NORMAL;
+}
+
+RenderProcessHostPrivilege GetProcessPrivilege(
+    RenderProcessHost* process_host,
+    ExtensionProcessManager* extension_process_manager) {
+  if (extension_process_manager->IsExtensionProcess(process_host->id())) {
+    if (extension_process_manager->IsStorageIsolatedForProcess(
+        process_host->id())) {
+      return PRIV_ISOLATED;
+    }
+    return PRIV_EXTENSION;
+  }
+
+  return PRIV_NORMAL;
 }
 
 }  // namespace
@@ -290,14 +338,15 @@ bool ChromeContentBrowserClient::IsSuitableHost(
       Profile::FromBrowserContext(process_host->browser_context());
   ExtensionProcessManager* extension_process_manager =
       profile->GetExtensionProcessManager();
+  ExtensionService* service = profile->GetExtensionService();
 
-  // Maybe NULL during tests.
-  if (!extension_process_manager)
+  // These may be NULL during tests. In that case, just assume any site can
+  // share any host.
+  if (!extension_process_manager || !service)
     return true;
 
-  bool is_extension_host =
-      extension_process_manager->IsExtensionProcess(process_host->id());
-  return site_url.SchemeIs(chrome::kExtensionScheme) == is_extension_host;
+  return GetProcessPrivilege(process_host, extension_process_manager) ==
+      GetPrivilegeRequiredByUrl(site_url, service);
 }
 
 bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(

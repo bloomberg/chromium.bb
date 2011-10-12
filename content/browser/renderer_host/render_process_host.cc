@@ -88,7 +88,7 @@ IDMap<RenderProcessHost> all_hosts;
 bool RenderProcessHost::run_renderer_in_process_ = false;
 
 // static
-void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
+void RenderProcessHost::SetMaxRendererProcessCountForTest(size_t count) {
   max_renderer_count_override = count;
 }
 

@@ -263,6 +263,10 @@ void ExtensionProcessManager::RegisterExtensionSiteInstance(
                    render_process_id));
   }
 
+  if (extension->is_storage_isolated()) {
+    isolated_storage_process_ids_.insert(render_process_id);
+  }
+
   SiteInstanceIDMap::const_iterator it = extension_ids_.find(site_instance_id);
   if (it != extension_ids_.end() && (*it).second == extension->id())
     return;
@@ -286,7 +290,8 @@ void ExtensionProcessManager::UnregisterExtensionSiteInstance(
     if (host != process_ids_.end()) {
       host->second.erase(site_instance_id);
       if (host->second.empty()) {
-        process_ids_.erase(host++);
+        isolated_storage_process_ids_.erase(render_process_id);
+        process_ids_.erase(host);
         Profile* profile = Profile::FromBrowserContext(
             site_instance->GetProcess()->browser_context());
         BrowserThread::PostTask(
@@ -305,6 +310,8 @@ bool ExtensionProcessManager::IsExtensionProcess(int render_process_id) {
 
 bool ExtensionProcessManager::AreBindingsEnabledForProcess(
     int render_process_id) {
+  // Must behave logically the same as AreBindingsEnabledForProcess() in
+  // extension_info_map.cc.
   ProcessIDMap::iterator it = process_ids_.find(render_process_id);
   if (it == process_ids_.end())
     return false;
@@ -322,6 +329,11 @@ bool ExtensionProcessManager::AreBindingsEnabledForProcess(
       return true;
   }
   return false;
+}
+
+bool ExtensionProcessManager::IsStorageIsolatedForProcess(int host_id) {
+  return isolated_storage_process_ids_.find(host_id) !=
+      isolated_storage_process_ids_.end();
 }
 
 RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
@@ -549,6 +561,7 @@ const Extension* IncognitoExtensionProcessManager::GetExtensionOrAppByURL(
 
 bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
     const Extension* extension) {
+  // Keep in sync with duplicate in extension_info_map.cc.
   Profile* profile =
       Profile::FromBrowserContext(browsing_instance_->browser_context());
   ExtensionService* service = profile->GetExtensionService();

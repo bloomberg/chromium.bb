@@ -1,0 +1,13 @@
+{
+  "name": "hosted_app",
+  "version": "0.1",
+  "description": "Trivial hosted app.",
+  "app": {
+    "urls": [
+      "http://localhost/files/extensions/hosted_app/main.html"
+    ],
+    "launch": {
+      "web_url": "http://localhost/files/extensions/hosted_app/main.html"
+    }
+  }
+}

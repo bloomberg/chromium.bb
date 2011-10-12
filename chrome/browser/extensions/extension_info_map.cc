@@ -83,6 +83,7 @@ base::Time ExtensionInfoMap::GetInstallTime(
 
 bool ExtensionInfoMap::IsIncognitoEnabled(
     const std::string& extension_id) const {
+  // Keep in sync with duplicate in extension_process_manager.cc.
   ExtraDataMap::const_iterator iter = extra_data_.find(extension_id);
   if (iter != extra_data_.end())
     return iter->second.incognito_enabled;
@@ -107,6 +108,8 @@ void ExtensionInfoMap::BindingsDisabledForProcess(int render_process_id) {
 
 bool ExtensionInfoMap::AreBindingsEnabledForProcess(
     int render_process_id) const {
+  // Must behave logically the same as AreBindingsEnabledForProcess() in
+  // extension_process_manager.cc.
   return extension_bindings_process_ids_.find(render_process_id) !=
       extension_bindings_process_ids_.end();
 }

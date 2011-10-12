@@ -57,7 +57,7 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   // Unregisters the RenderProcessHost with |render_process_id|.
   void BindingsDisabledForProcess(int render_process_id);
 
-  // True if this process host is hosting an extension.
+  // True if this process host is hosting an extension with extension bindings.
   bool AreBindingsEnabledForProcess(int render_process_id) const;
 
  private:
