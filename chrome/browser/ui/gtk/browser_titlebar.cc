@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
-#include "chrome/browser/ui/gtk/avatar_menu_button_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #if defined(USE_GCONF)
@@ -33,6 +32,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
+#include "chrome/browser/ui/gtk/profile_menu_button.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/unity_service.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
@@ -67,10 +67,10 @@ const int kNormalVerticalOffset = kTitlebarHeight + kTabOuterThickness;
 // A linux specific menu item for toggling window decorations.
 const int kShowWindowDecorationsCommand = 200;
 
-const int kAvatarBottomSpacing = 1;
-// There are 2 px on each side of the avatar (between the frame border and
+const int kOTRBottomSpacing = 1;
+// There are 2 px on each side of the OTR avatar (between the frame border and
 // it on the left, and between it and the tabstrip on the right).
-const int kAvatarSideSpacing = 2;
+const int kOTRSideSpacing = 2;
 
 // The thickness of the custom frame border; we need it here to enlarge the
 // close button whent the custom frame border isn't showing but the custom
@@ -144,15 +144,6 @@ GdkColor PickLuminosityContrastingColor(const GdkColor* base,
     return *one;
 }
 
-// Returns true if there are multiple profiles created. This is used to
-// determine whether to display the avatar image.
-bool HasMultipleProfiles() {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  return ProfileManager::IsMultipleProfilesEnabled() &&
-      cache.GetNumberOfProfiles() > 1;
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -224,9 +215,8 @@ BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
       titlebar_right_buttons_vbox_(NULL),
       titlebar_left_buttons_hbox_(NULL),
       titlebar_right_buttons_hbox_(NULL),
-      titlebar_left_avatar_frame_(NULL),
-      titlebar_right_avatar_frame_(NULL),
-      avatar_(NULL),
+      titlebar_left_spy_frame_(NULL),
+      titlebar_right_spy_frame_(NULL),
       top_padding_left_(NULL),
       top_padding_right_(NULL),
       app_mode_favicon_(NULL),
@@ -234,7 +224,6 @@ BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
       using_custom_frame_(false),
       window_has_focus_(false),
       window_has_mouse_(false),
-      display_avatar_on_left_(false),
       theme_service_(NULL) {
   Init();
 }
@@ -307,36 +296,55 @@ void BrowserTitlebar::Init() {
                      G_CALLBACK(OnLeaveNotifyThunk), this);
   }
 
-  // Allocate the two button boxes on the left and right parts of the bar. These
-  // are always allocated, but only displayed in incognito mode or when using
-  // multiple profiles.
+  // Allocate the two button boxes on the left and right parts of the bar,
+  // spyguy frames in case of incognito mode, and profile button boxes.
   titlebar_left_buttons_vbox_ = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container_hbox_), titlebar_left_buttons_vbox_,
                      FALSE, FALSE, 0);
-  titlebar_left_avatar_frame_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_widget_set_no_show_all(titlebar_left_avatar_frame_, TRUE);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_left_avatar_frame_), 0,
-      kAvatarBottomSpacing, kAvatarSideSpacing, kAvatarSideSpacing);
-  gtk_box_pack_start(GTK_BOX(container_hbox_), titlebar_left_avatar_frame_,
+  if (browser_window_->browser()->profile()->IsOffTheRecord() &&
+      browser_window_->browser()->is_type_tabbed()) {
+    titlebar_left_spy_frame_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+    gtk_widget_set_no_show_all(titlebar_left_spy_frame_, TRUE);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_left_spy_frame_), 0,
+        kOTRBottomSpacing, kOTRSideSpacing, kOTRSideSpacing);
+    gtk_box_pack_start(GTK_BOX(container_hbox_), titlebar_left_spy_frame_,
+                       FALSE, FALSE, 0);
+  }
+
+  // If multi-profile is enabled set up profile button and login notifications.
+  // The button lives in its own vbox in container_hbox_.
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  if (ProfileManager::IsMultipleProfilesEnabled() &&
+      cache.GetNumberOfProfiles() > 1 &&
+      !browser_window_->browser()->profile()->IsOffTheRecord()) {
+    PrefService* prefs = browser_window_->browser()->profile()->GetPrefs();
+    usernamePref_.Init(prefs::kGoogleServicesUsername, prefs, this);
+
+    titlebar_profile_vbox_ = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(container_hbox_), titlebar_profile_vbox_,
+                       FALSE, FALSE, 0);
+    gtk_widget_show_all(titlebar_profile_vbox_);
+
+    profile_button_.reset(new ProfileMenuButton(
+        browser_window_->browser()));
+    gtk_box_pack_start(GTK_BOX(titlebar_profile_vbox_),
+                       profile_button_->widget(), FALSE, FALSE, 0);
+    profile_button_->UpdateText();
+  }
+
+  if (browser_window_->browser()->profile()->IsOffTheRecord() &&
+      browser_window_->browser()->is_type_tabbed()) {
+    titlebar_right_spy_frame_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+    gtk_widget_set_no_show_all(titlebar_right_spy_frame_, TRUE);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_right_spy_frame_), 0,
+        kOTRBottomSpacing, kOTRSideSpacing, kOTRSideSpacing);
+    gtk_box_pack_end(GTK_BOX(container_hbox_), titlebar_right_spy_frame_,
                      FALSE, FALSE, 0);
-
-  titlebar_right_avatar_frame_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_widget_set_no_show_all(titlebar_right_avatar_frame_, TRUE);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_right_avatar_frame_), 0,
-      kAvatarBottomSpacing, kAvatarSideSpacing, kAvatarSideSpacing);
-  gtk_box_pack_end(GTK_BOX(container_hbox_), titlebar_right_avatar_frame_,
-                   FALSE, FALSE, 0);
-
+  }
   titlebar_right_buttons_vbox_ = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_end(GTK_BOX(container_hbox_), titlebar_right_buttons_vbox_,
                    FALSE, FALSE, 0);
-
-  // Create the Avatar button and listen for notifications. It must always be
-  // created because a new profile can be added at any time.
-  avatar_button_.reset(new AvatarMenuButtonGtk(browser_window_->browser()));
-
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-                 NotificationService::AllSources());
 
 #if defined(USE_GCONF)
   // Either read the gconf database and register for updates (on GNOME), or use
@@ -345,8 +353,6 @@ void BrowserTitlebar::Init() {
 #else
   BuildButtons(kDefaultButtonString);
 #endif
-
-  UpdateAvatar();
 
   // We use an alignment to control the titlebar height.
   titlebar_alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -491,7 +497,27 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
 
   // If we are in incognito mode, add the spy guy to either the end of the left
   // or the beginning of the right depending on which side has fewer buttons.
-  display_avatar_on_left_ = right_count > left_count;
+  if (browser_window_->browser()->profile()->IsOffTheRecord() &&
+      browser_window_->browser()->is_type_tabbed()) {
+    GtkWidget* spy_guy = gtk_image_new_from_pixbuf(GetOTRAvatar());
+    gtk_misc_set_alignment(GTK_MISC(spy_guy), 0.0, 1.0);
+    gtk_widget_set_size_request(spy_guy, -1, 0);
+    gtk_widget_show(spy_guy);
+
+    // Remove previous state.
+    gtk_util::RemoveAllChildren(titlebar_left_spy_frame_);
+    gtk_util::RemoveAllChildren(titlebar_right_spy_frame_);
+
+    if (right_count > left_count) {
+      gtk_container_add(GTK_CONTAINER(titlebar_left_spy_frame_), spy_guy);
+      gtk_widget_show(titlebar_left_spy_frame_);
+      gtk_widget_hide(titlebar_right_spy_frame_);
+    } else {
+      gtk_container_add(GTK_CONTAINER(titlebar_right_spy_frame_), spy_guy);
+      gtk_widget_show(titlebar_right_spy_frame_);
+      gtk_widget_hide(titlebar_left_spy_frame_);
+    }
+  }
 
   // Now show the correct widgets in the two hierarchies.
   if (using_custom_frame_) {
@@ -750,55 +776,6 @@ void BrowserTitlebar::UpdateTextColor() {
   }
 }
 
-void BrowserTitlebar::UpdateAvatar() {
-  // Remove previous state.
-  gtk_util::RemoveAllChildren(titlebar_left_avatar_frame_);
-  gtk_util::RemoveAllChildren(titlebar_right_avatar_frame_);
-
-  if (!ShouldDisplayAvatar())
-    return;
-
-  if (!avatar_) {
-    if (IsOffTheRecord()) {
-      avatar_ = gtk_image_new_from_pixbuf(GetOTRAvatar());
-      gtk_misc_set_alignment(GTK_MISC(avatar_), 0.0, 1.0);
-      gtk_widget_set_size_request(avatar_, -1, 0);
-    } else {
-      // Is using multi-profile avatar.
-      avatar_ = avatar_button_->widget();
-    }
-  }
-
-  gtk_widget_show_all(avatar_);
-
-  if (display_avatar_on_left_) {
-    gtk_container_add(GTK_CONTAINER(titlebar_left_avatar_frame_), avatar_);
-    gtk_widget_show(titlebar_left_avatar_frame_);
-    gtk_widget_hide(titlebar_right_avatar_frame_);
-  } else {
-    gtk_container_add(GTK_CONTAINER(titlebar_right_avatar_frame_), avatar_);
-    gtk_widget_show(titlebar_right_avatar_frame_);
-    gtk_widget_hide(titlebar_left_avatar_frame_);
-  }
-
-  if (IsOffTheRecord())
-    return;
-
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  Profile* profile = browser_window_->browser()->profile();
-  size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  if (index != std::string::npos) {
-    avatar_button_->SetIcon(cache.GetAvatarIconOfProfileAtIndex(index));
-
-    BubbleGtk::ArrowLocationGtk arrow_location =
-        display_avatar_on_left_ ^ base::i18n::IsRTL() ?
-            BubbleGtk::ARROW_LOCATION_TOP_LEFT :
-            BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-    avatar_button_->set_menu_arrow_location(arrow_location);
-  }
-}
-
 void BrowserTitlebar::ShowFaviconMenu(GdkEventButton* event) {
   if (!favicon_menu_model_.get()) {
     favicon_menu_model_.reset(
@@ -998,9 +975,12 @@ void BrowserTitlebar::Observe(int type,
       UpdateTextColor();
       break;
 
-    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-      UpdateAvatar();
+    case chrome::NOTIFICATION_PREF_CHANGED: {
+      std::string* name = Details<std::string>(details).ptr();
+      if (prefs::kGoogleServicesUsername == *name)
+        profile_button_->UpdateText();
       break;
+    }
 
     default:
       NOTREACHED();
@@ -1025,15 +1005,6 @@ void BrowserTitlebar::ActiveWindowChanged(GdkWindow* active_window) {
 
 bool BrowserTitlebar::IsTypePanel() {
   return browser_window_->browser()->is_type_panel();
-}
-
-bool BrowserTitlebar::ShouldDisplayAvatar() {
-  return (IsOffTheRecord() || HasMultipleProfiles()) &&
-      browser_window_->browser()->is_type_tabbed();
-}
-
-bool BrowserTitlebar::IsOffTheRecord() {
-  return browser_window_->browser()->profile()->IsOffTheRecord();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
