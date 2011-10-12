@@ -89,11 +89,6 @@ void RunAllPendingInMessageLoop();
 // Puts the current tab title in |title|. Returns true on success.
 bool GetCurrentTabTitle(const Browser* browser, string16* title);
 
-// Waits for |controller| to complete a navigation. This blocks until
-// the navigation finishes. TODO(gbillock): remove this race hazard.
-// Use WindowedNotificationObserver instead.
-void WaitForNavigation(NavigationController* controller);
-
 // Waits for a new tab to be added to |browser|. TODO(gbillock): remove this
 // race hazard. Use WindowedNotificationObserver instead.
 void WaitForNewTab(Browser* browser);

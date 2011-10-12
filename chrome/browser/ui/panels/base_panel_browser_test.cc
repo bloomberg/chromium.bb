@@ -242,10 +242,12 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
         new TabContentsWrapper(new TestTabContents(browser()->profile(), NULL));
     panel_browser->AddTab(tab_contents, PageTransition::LINK);
   } else {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        NotificationService::AllSources());
     panel_browser->AddSelectedTabWithURL(params.url,
                                          PageTransition::START_PAGE);
-    ui_test_utils::WaitForNavigation(
-        &panel_browser->GetSelectedTabContents()->controller());
+    observer.Wait();
   }
 
   Panel* panel = static_cast<Panel*>(panel_browser->window());

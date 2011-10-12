@@ -263,10 +263,6 @@ void WaitForNavigations(NavigationController* controller,
   observer.WaitForObservation();
 }
 
-void WaitForNavigation(NavigationController* controller) {
-  WaitForNavigations(controller, 1);
-}
-
 void WaitForNewTab(Browser* browser) {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, content::NOTIFICATION_TAB_ADDED,
@@ -310,10 +306,9 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
 }
 
 void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
+  TestNavigationObserver observer(NotificationService::AllSources(), NULL, 1);
   Browser::OpenURLOffTheRecord(profile, url);
-  Browser* browser = BrowserList::FindTabbedBrowser(
-      profile->GetOffTheRecordProfile(), false);
-  WaitForNavigations(&browser->GetSelectedTabContents()->controller(), 1);
+  observer.WaitForObservation();
 }
 
 void NavigateToURL(browser::NavigateParams* params) {
