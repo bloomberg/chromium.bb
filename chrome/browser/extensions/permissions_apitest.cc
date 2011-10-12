@@ -80,6 +80,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, OptionalPermissionsGranted) {
   prefs->AddGrantedPermissions("kjmkgkdkpedkejedfhmfcenooemhbpbo",
                                granted_permissions);
 
+  RequestPermissionsFunction::SetIgnoreUserGestureForTests(true);
   host_resolver()->AddRule("*.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   EXPECT_TRUE(RunExtensionTest("permissions/optional")) << message_;
@@ -90,6 +91,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, OptionalPermissionsAutoConfirm) {
   // Rather than setting the granted permissions, set the UI autoconfirm flag
   // and run the same tests.
   RequestPermissionsFunction::SetAutoConfirmForTests(true);
+  RequestPermissionsFunction::SetIgnoreUserGestureForTests(true);
   host_resolver()->AddRule("*.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   EXPECT_TRUE(RunExtensionTest("permissions/optional")) << message_;
@@ -98,7 +100,17 @@ IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, OptionalPermissionsAutoConfirm) {
 // Test that denying the optional permissions confirmation dialog works.
 IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, OptionalPermissionsDeny) {
   RequestPermissionsFunction::SetAutoConfirmForTests(false);
+  RequestPermissionsFunction::SetIgnoreUserGestureForTests(true);
   host_resolver()->AddRule("*.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   EXPECT_TRUE(RunExtensionTest("permissions/optional_deny")) << message_;
+}
+
+// Tests that the permissions.request function must be called from within a
+// user gesture.
+IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, OptionalPermissionsGesture) {
+  RequestPermissionsFunction::SetIgnoreUserGestureForTests(false);
+  host_resolver()->AddRule("*.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+  EXPECT_TRUE(RunExtensionTest("permissions/optional_gesture")) << message_;
 }

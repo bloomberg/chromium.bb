@@ -7,7 +7,6 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_permissions_api_constants.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,10 +19,26 @@
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 
-
-namespace keys = extension_permissions_module_constants;
-
 namespace {
+
+const char kApisKey[] = "permissions";
+const char kOriginsKey[] = "origins";
+
+const char kCantRemoveRequiredPermissionsError[] =
+    "You cannot remove required permissions.";
+const char kNotInOptionalPermissionsError[] =
+    "Optional permissions must be listed in extension manifest.";
+const char kNotWhitelistedError[] =
+    "The optional permissions API does not support '*'.";
+const char kUnknownPermissionError[] =
+    "'*' is not a recognized permission.";
+const char kUserGestureRequiredError[] =
+    "This function must be called during a user gesture";
+const char kInvalidOrigin[] =
+    "Invalid value for origin pattern *: *";
+
+const char kOnAdded[] = "experimental.permissions.onAdded";
+const char kOnRemoved[] = "experimental.permissions.onRemoved";
 
 enum AutoConfirmForTest {
   DO_NOT_SKIP = 0,
@@ -31,6 +46,7 @@ enum AutoConfirmForTest {
   ABORT
 };
 AutoConfirmForTest auto_confirm_for_tests = DO_NOT_SKIP;
+bool ignore_user_gesture_for_tests = false;
 
 DictionaryValue* PackPermissionsToValue(const ExtensionPermissionSet* set) {
   DictionaryValue* value = new DictionaryValue();
@@ -48,8 +64,8 @@ DictionaryValue* PackPermissionsToValue(const ExtensionPermissionSet* set) {
   for (URLPatternSet::const_iterator i = hosts.begin(); i != hosts.end(); ++i)
     origins->Append(Value::CreateStringValue(i->GetAsString()));
 
-  value->Set(keys::kApisKey, apis);
-  value->Set(keys::kOriginsKey, origins);
+  value->Set(kApisKey, apis);
+  value->Set(kOriginsKey, origins);
   return value;
 }
 
@@ -62,9 +78,9 @@ bool UnpackPermissionsFromValue(DictionaryValue* value,
                                 std::string* error) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet apis;
-  if (value->HasKey(keys::kApisKey)) {
+  if (value->HasKey(kApisKey)) {
     ListValue* api_list = NULL;
-    if (!value->GetList(keys::kApisKey, &api_list)) {
+    if (!value->GetList(kApisKey, &api_list)) {
       *bad_message = true;
       return false;
     }
@@ -78,7 +94,7 @@ bool UnpackPermissionsFromValue(DictionaryValue* value,
       ExtensionAPIPermission* permission = info->GetByName(api_name);
       if (!permission) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            keys::kUnknownPermissionError, api_name);
+            kUnknownPermissionError, api_name);
         return false;
       }
       apis.insert(permission->id());
@@ -86,9 +102,9 @@ bool UnpackPermissionsFromValue(DictionaryValue* value,
   }
 
   URLPatternSet origins;
-  if (value->HasKey(keys::kOriginsKey)) {
+  if (value->HasKey(kOriginsKey)) {
     ListValue* origin_list = NULL;
-    if (!value->GetList(keys::kOriginsKey, &origin_list)) {
+    if (!value->GetList(kOriginsKey, &origin_list)) {
       *bad_message = true;
       return false;
     }
@@ -104,7 +120,7 @@ bool UnpackPermissionsFromValue(DictionaryValue* value,
           origin.Parse(pattern, URLPattern::IGNORE_PORTS);
       if (URLPattern::PARSE_SUCCESS != parse_result) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            keys::kInvalidOrigin,
+            kInvalidOrigin,
             pattern,
             URLPattern::GetParseResultString(parse_result));
         return false;
@@ -186,11 +202,11 @@ void ExtensionPermissionsManager::NotifyPermissionsUpdated(
 
   if (event_type == REMOVED) {
     reason = UpdatedExtensionPermissionsInfo::REMOVED;
-    event_name = keys::kOnRemoved;
+    event_name = kOnRemoved;
   } else {
     CHECK_EQ(ADDED, event_type);
     reason = UpdatedExtensionPermissionsInfo::ADDED;
-    event_name = keys::kOnAdded;
+    event_name = kOnAdded;
   }
 
   // Notify other APIs or interested parties.
@@ -265,7 +281,7 @@ bool RemovePermissionsFunction::RunImpl() {
     const ExtensionAPIPermission* api = info->GetByID(*i);
     if (!api->supports_optional()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(
-          keys::kNotWhitelistedError, api->name());
+          kNotWhitelistedError, api->name());
       return false;
     }
   }
@@ -275,7 +291,7 @@ bool RemovePermissionsFunction::RunImpl() {
   scoped_refptr<ExtensionPermissionSet> intersection(
       ExtensionPermissionSet::CreateIntersection(permissions.get(), required));
   if (!intersection->IsEmpty()) {
-    error_ = keys::kCantRemoveRequiredPermissionsError;
+    error_ = kCantRemoveRequiredPermissionsError;
     result_.reset(Value::CreateBooleanValue(false));
     return false;
   }
@@ -290,10 +306,21 @@ void RequestPermissionsFunction::SetAutoConfirmForTests(bool should_proceed) {
   auto_confirm_for_tests = should_proceed ? PROCEED : ABORT;
 }
 
+// static
+void RequestPermissionsFunction::SetIgnoreUserGestureForTests(
+    bool ignore) {
+  ignore_user_gesture_for_tests = ignore;
+}
+
 RequestPermissionsFunction::RequestPermissionsFunction() {}
 RequestPermissionsFunction::~RequestPermissionsFunction() {}
 
 bool RequestPermissionsFunction::RunImpl() {
+  if (!user_gesture() && !ignore_user_gesture_for_tests) {
+    error_ = kUserGestureRequiredError;
+    return false;
+  }
+
   DictionaryValue* args = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
   if (!args)
@@ -317,7 +344,7 @@ bool RequestPermissionsFunction::RunImpl() {
     const ExtensionAPIPermission* api = info->GetByID(*i);
     if (!api->supports_optional()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(
-          keys::kNotWhitelistedError, api->name());
+          kNotWhitelistedError, api->name());
       return false;
     }
   }
@@ -325,7 +352,7 @@ bool RequestPermissionsFunction::RunImpl() {
   // The requested permissions must be defined as optional in the manifest.
   if (!extension_->optional_permission_set()->Contains(
           *requested_permissions_)) {
-    error_ = keys::kNotInOptionalPermissionsError;
+    error_ = kNotInOptionalPermissionsError;
     result_.reset(Value::CreateBooleanValue(false));
     return false;
   }

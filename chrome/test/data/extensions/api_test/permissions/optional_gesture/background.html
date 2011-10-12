@@ -1,0 +1,17 @@
+<script>
+
+var fail = chrome.test.callbackFail;
+
+var GESTURE_ERROR = "This function must be called during a user gesture";
+
+chrome.test.getConfig(function(config) {
+  chrome.test.runTests([
+    function testGesture() {
+      chrome.experimental.permissions.request(
+          {permissions: ['tabs']},
+          fail(GESTURE_ERROR));
+    }
+  ]);
+});
+
+</script>

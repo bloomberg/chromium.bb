@@ -89,6 +89,7 @@ class RequestPermissionsFunction : public AsyncExtensionFunction,
  public:
   // FOR TESTS ONLY to bypass the confirmation UI.
   static void SetAutoConfirmForTests(bool should_proceed);
+  static void SetIgnoreUserGestureForTests(bool ignore);
 
   RequestPermissionsFunction();
 
