@@ -1482,14 +1482,16 @@ struct kernel_statfs {
                            "mov  "SYS_SYSCALL_ENTRYPOINT"@GOT(%%eax), %%eax\n"\
                            "mov  0(%%eax), %%eax\n"                           \
                            "test %%eax, %%eax\n"                              \
-                           "jz   10001f\n"                                    \
+                           "jz   10002f\n"                                    \
                            "push %%eax\n"                                     \
-                           "lea  10002f, %%eax\n"                             \
+                           "call 10001f\n"                                    \
+                     "10001:pop  %%eax\n"                                     \
+                           "add  $(10003f-10001b), %%eax\n"                   \
                            "xchg 4(%%esp), %%eax\n"                           \
                            "ret\n"                                            \
-                     "10001:pop  %%eax\n"                                     \
+                     "10002:pop  %%eax\n"                                     \
                            "int $0x80\n"                                      \
-                     "10002:\n"
+                     "10003:\n"
     #else
     #define LSS_ENTRYPOINT "int $0x80\n"
     #endif
