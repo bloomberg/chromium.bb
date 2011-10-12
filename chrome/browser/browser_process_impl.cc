@@ -1020,7 +1020,8 @@ void BrowserProcessImpl::CreateTabCloseableStateWatcher() {
 void BrowserProcessImpl::CreateBackgroundModeManager() {
   DCHECK(background_mode_manager_.get() == NULL);
   background_mode_manager_.reset(
-      new BackgroundModeManager(CommandLine::ForCurrentProcess()));
+      new BackgroundModeManager(CommandLine::ForCurrentProcess(),
+                                &profile_manager()->GetProfileInfoCache()));
 }
 
 void BrowserProcessImpl::CreateStatusTray() {

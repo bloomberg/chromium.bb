@@ -22,6 +22,7 @@ class CommandLine;
 class Extension;
 class PrefService;
 class Profile;
+class ProfileInfoCache;
 class StatusIcon;
 class StatusTray;
 
@@ -45,12 +46,18 @@ class BackgroundModeManager
       public ProfileKeyedService,
       public ui::SimpleMenuModel::Delegate {
  public:
-  explicit BackgroundModeManager(CommandLine* command_line);
+  BackgroundModeManager(CommandLine* command_line,
+                        ProfileInfoCache* profile_cache);
   virtual ~BackgroundModeManager();
 
   static void RegisterPrefs(PrefService* prefs);
 
   virtual void RegisterProfile(Profile* profile);
+
+  // Returns true if background mode is permanently disabled for this Chrome
+  // session.
+  static bool IsBackgroundModePermanentlyDisabled(
+      const CommandLine* command_line);
 
   static void LaunchBackgroundApplication(Profile* profile,
                                           const Extension* extension);
@@ -68,6 +75,8 @@ class BackgroundModeManager
                            EnableAfterBackgroundAppInstall);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            MultiProfile);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           ProfileInfoCacheStorage);
 
   class BackgroundModeData : public ui::SimpleMenuModel::Delegate {
    public:
@@ -200,7 +209,7 @@ class BackgroundModeManager
   // Returns the BackgroundModeData associated with this profile. If it does
   // not exist, returns NULL.
   BackgroundModeManager::BackgroundModeData* GetBackgroundModeData(
-      Profile* profile);
+      Profile* const profile) const;
 
   // Returns true if the "Let chrome run in the background" pref is checked.
   // (virtual to allow overriding in tests).
@@ -216,10 +225,12 @@ class BackgroundModeManager
   // overriding in unit tests).
   virtual int GetBackgroundAppCount() const;
 
-  // Returns true if background mode is permanently disabled for this chrome
-  // session.
-  static bool IsBackgroundModePermanentlyDisabled(
-      const CommandLine* command_line);
+  // Returns the number of background apps for a profile.
+  virtual int GetBackgroundAppCountForProfile(Profile* const profile) const;
+
+  // Reference to the profile info cache. It is used to update the background
+  // app status of profiles when they open/close background apps.
+  ProfileInfoCache* profile_cache_;
 
   // Registrars for managing our change observers.
   NotificationRegistrar registrar_;

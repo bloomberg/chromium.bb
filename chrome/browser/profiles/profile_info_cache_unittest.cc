@@ -114,4 +114,31 @@ TEST_F(ProfileInfoCacheUnittests, MutateProfile) {
   GetCache()->GetAvatarIconOfProfileAtIndex(1);
 }
 
+TEST_F(ProfileInfoCacheUnittests, BackgroundModeStatus) {
+  GetCache()->AddProfileToCache(
+      GetUserDataDir().Append(StringToFilePath("path_1")),
+      ASCIIToUTF16("name_1"), string16(), 0);
+  GetCache()->AddProfileToCache(
+      GetUserDataDir().Append(StringToFilePath("path_2")),
+      ASCIIToUTF16("name_2"), string16(), 0);
+
+  EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
+  EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
+
+  GetCache()->SetBackgroundStatusOfProfileAtIndex(1, true);
+
+  EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
+  EXPECT_TRUE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
+
+  GetCache()->SetBackgroundStatusOfProfileAtIndex(0, true);
+
+  EXPECT_TRUE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
+  EXPECT_TRUE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
+
+  GetCache()->SetBackgroundStatusOfProfileAtIndex(1, false);
+
+  EXPECT_TRUE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
+  EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
+}
+
 }  // namespace

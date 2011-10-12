@@ -31,6 +31,11 @@ class ProfileInfoInterface {
   virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
       size_t index) const = 0;
 
+  // Returns true if the profile at the given index is currently running any
+  // background apps.
+  virtual bool GetBackgroundStatusOfProfileAtIndex(
+      size_t index) const = 0;
+
  protected:
   virtual ~ProfileInfoInterface() {}
 };

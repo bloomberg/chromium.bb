@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -129,8 +130,11 @@ bool BackgroundModeManager::BackgroundModeData::BackgroundModeDataCompare(
 
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager, public
-BackgroundModeManager::BackgroundModeManager(CommandLine* command_line)
-    : status_tray_(NULL),
+BackgroundModeManager::BackgroundModeManager(
+    CommandLine* command_line,
+    ProfileInfoCache* profile_cache)
+    : profile_cache_(profile_cache),
+      status_tray_(NULL),
       status_icon_(NULL),
       context_menu_(NULL),
       in_background_mode_(false),
@@ -320,6 +324,12 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
   // Figure out what just happened based on the count of background apps.
   int count = GetBackgroundAppCount();
 
+  // Update the profile cache with the fact whether background apps are running
+  // for this profile.
+  profile_cache_->SetBackgroundStatusOfProfileAtIndex(
+      profile_cache_->GetIndexOfProfileWithPath(profile->GetPath()),
+      GetBackgroundAppCountForProfile(profile) != 0);
+
   if (count == 0) {
     // We've uninstalled our last background app, make sure we exit background
     // mode and no longer launch on startup.
@@ -484,6 +494,12 @@ int BackgroundModeManager::GetBackgroundAppCount() const {
   return count;
 }
 
+int BackgroundModeManager::GetBackgroundAppCountForProfile(
+    Profile* const profile) const {
+  BackgroundModeData* bmd = GetBackgroundModeData(profile);
+  return bmd->GetBackgroundAppCount();
+}
+
 void BackgroundModeManager::OnBackgroundAppInstalled(
     const Extension* extension) {
   // Background mode is disabled - don't do anything.
@@ -606,9 +622,9 @@ void BackgroundModeManager::RemoveStatusTrayIcon() {
 }
 
 BackgroundModeManager::BackgroundModeData*
-BackgroundModeManager::GetBackgroundModeData(Profile* profile) {
+BackgroundModeManager::GetBackgroundModeData(Profile* const profile) const {
   DCHECK(background_mode_data_.find(profile) != background_mode_data_.end());
-  return background_mode_data_[profile].get();
+  return background_mode_data_.find(profile)->second.get();
 }
 
 // static

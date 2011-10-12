@@ -27,6 +27,7 @@ namespace {
 const char kNameKey[] = "name";
 const char kUserNameKey[] = "user_name";
 const char kAvatarIconKey[] = "avatar_icon";
+const char kBackgroundAppsKey[] = "background_apps";
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 
 const int kDefaultAvatarIconResources[] = {
@@ -98,6 +99,8 @@ void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
   info->SetString(kNameKey, name);
   info->SetString(kUserNameKey, username);
   info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
+  // Default value for whether background apps are running is false.
+  info->SetBoolean(kBackgroundAppsKey, false);
   cache->Set(key, info.release());
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
@@ -167,6 +170,14 @@ const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
   return ResourceBundle::GetSharedInstance().GetImageNamed(resource_id);
 }
 
+bool ProfileInfoCache::GetBackgroundStatusOfProfileAtIndex(
+    size_t index) const {
+  bool background_app_status;
+  GetInfoForProfileAtIndex(index)->GetBoolean(kBackgroundAppsKey,
+                                              &background_app_status);
+  return background_app_status;
+}
+
 size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
     const {
   std::string icon_url;
@@ -199,6 +210,17 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
                                                      size_t icon_index) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetBackgroundStatusOfProfileAtIndex(
+    size_t index,
+    bool running_background_apps) {
+  if (GetBackgroundStatusOfProfileAtIndex(index) == running_background_apps)
+    return;
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetBoolean(kBackgroundAppsKey, running_background_apps);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 }

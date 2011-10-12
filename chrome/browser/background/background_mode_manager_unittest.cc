@@ -5,28 +5,36 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/background/background_mode_manager.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BackgroundModeManagerTest : public testing::Test {
  public:
-  BackgroundModeManagerTest() {}
+  BackgroundModeManagerTest()
+      : profile_manager_(
+            static_cast<TestingBrowserProcess*>(g_browser_process)) {}
   ~BackgroundModeManagerTest() {}
   void SetUp() {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
+    ASSERT_TRUE(profile_manager_.SetUp());
   }
   scoped_ptr<CommandLine> command_line_;
+  TestingProfileManager profile_manager_;
 };
 
 class TestBackgroundModeManager : public BackgroundModeManager {
  public:
-  explicit TestBackgroundModeManager(CommandLine* command_line)
-      : BackgroundModeManager(command_line),
+  explicit TestBackgroundModeManager(
+      CommandLine* command_line, ProfileInfoCache* cache)
+      : BackgroundModeManager(command_line, cache),
         enabled_(true),
         app_count_(0),
+        profile_app_count_(0),
         have_status_tray_(false),
         launch_on_startup_(false) {}
   virtual void EnableLaunchOnStartup(bool launch) OVERRIDE {
@@ -35,14 +43,22 @@ class TestBackgroundModeManager : public BackgroundModeManager {
   virtual void CreateStatusTrayIcon() OVERRIDE { have_status_tray_ = true; }
   virtual void RemoveStatusTrayIcon() OVERRIDE { have_status_tray_ = false; }
   virtual int GetBackgroundAppCount() const OVERRIDE { return app_count_; }
+  virtual int GetBackgroundAppCountForProfile(
+      Profile* const profile) const OVERRIDE {
+    return profile_app_count_;
+  }
   virtual bool IsBackgroundModePrefEnabled() const OVERRIDE { return enabled_; }
   void SetBackgroundAppCount(int count) { app_count_ = count; }
+  void SetBackgroundAppCountForProfile(int count) {
+    profile_app_count_ = count;
+  }
   void SetEnabled(bool enabled) { enabled_ = enabled; }
   bool HaveStatusTray() const { return have_status_tray_; }
   bool IsLaunchOnStartup() const { return launch_on_startup_; }
  private:
   bool enabled_;
   int app_count_;
+  int profile_app_count_;
 
   // Flags to track whether we are launching on startup/have a status tray.
   bool have_status_tray_;
@@ -64,28 +80,30 @@ static void AssertBackgroundModeInactive(
 }
 
 TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
-  TestingProfile profile;
-  TestBackgroundModeManager manager(command_line_.get());
-  manager.RegisterProfile(&profile);
+  TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
+  TestBackgroundModeManager manager(
+      command_line_.get(), profile_manager_.profile_info_cache());
+  manager.RegisterProfile(profile);
   EXPECT_FALSE(BrowserList::WillKeepAlive());
 
   // Mimic app load.
   manager.OnBackgroundAppInstalled(NULL);
   manager.SetBackgroundAppCount(1);
-  manager.OnApplicationListChanged(&profile);
+  manager.OnApplicationListChanged(profile);
   AssertBackgroundModeActive(manager);
 
   // Mimic app unload.
   manager.SetBackgroundAppCount(0);
-  manager.OnApplicationListChanged(&profile);
+  manager.OnApplicationListChanged(profile);
   AssertBackgroundModeInactive(manager);
 }
 
 // App installs while background mode is disabled should do nothing.
 TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
-  TestingProfile profile;
-  TestBackgroundModeManager manager(command_line_.get());
-  manager.RegisterProfile(&profile);
+  TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
+  TestBackgroundModeManager manager(
+      command_line_.get(), profile_manager_.profile_info_cache());
+  manager.RegisterProfile(profile);
   // Turn off background mode.
   manager.SetEnabled(false);
   manager.DisableBackgroundMode();
@@ -95,11 +113,11 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
   // be modified.
   manager.OnBackgroundAppInstalled(NULL);
   manager.SetBackgroundAppCount(1);
-  manager.OnApplicationListChanged(&profile);
+  manager.OnApplicationListChanged(profile);
   AssertBackgroundModeInactive(manager);
 
   manager.SetBackgroundAppCount(0);
-  manager.OnApplicationListChanged(&profile);
+  manager.OnApplicationListChanged(profile);
   AssertBackgroundModeInactive(manager);
 
   // Re-enable background mode.
@@ -112,9 +130,10 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
 // App installs while disabled should do nothing until background mode is
 // enabled..
 TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
-  TestingProfile profile;
-  TestBackgroundModeManager manager(command_line_.get());
-  manager.RegisterProfile(&profile);
+  TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
+  TestBackgroundModeManager manager(
+      command_line_.get(), profile_manager_.profile_info_cache());
+  manager.RegisterProfile(profile);
 
   // Install app, should show status tray icon.
   manager.OnBackgroundAppInstalled(NULL);
@@ -122,7 +141,7 @@ TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
   // BackgroundApplicationListModel which would result in another
   // call to CreateStatusTray.
   manager.SetBackgroundAppCount(1);
-  manager.OnApplicationListChanged(&profile);
+  manager.OnApplicationListChanged(profile);
   AssertBackgroundModeActive(manager);
 
   // Turn off background mode - should hide status tray icon.
@@ -138,28 +157,29 @@ TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
 
   // Uninstall app, should hide status tray icon again.
   manager.SetBackgroundAppCount(0);
-  manager.OnApplicationListChanged(&profile);
+  manager.OnApplicationListChanged(profile);
   AssertBackgroundModeInactive(manager);
 }
 
 TEST_F(BackgroundModeManagerTest, MultiProfile) {
-  TestingProfile profile1;
-  TestingProfile profile2;
-  TestBackgroundModeManager manager(command_line_.get());
-  manager.RegisterProfile(&profile1);
-  manager.RegisterProfile(&profile2);
+  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
+  TestingProfile* profile2 = profile_manager_.CreateTestingProfile("p2");
+  TestBackgroundModeManager manager(
+      command_line_.get(), profile_manager_.profile_info_cache());
+  manager.RegisterProfile(profile1);
+  manager.RegisterProfile(profile2);
   EXPECT_FALSE(BrowserList::WillKeepAlive());
 
   // Install app, should show status tray icon.
   manager.OnBackgroundAppInstalled(NULL);
   manager.SetBackgroundAppCount(1);
-  manager.OnApplicationListChanged(&profile1);
+  manager.OnApplicationListChanged(profile1);
   AssertBackgroundModeActive(manager);
 
   // Install app for other profile, hsould show other status tray icon.
   manager.OnBackgroundAppInstalled(NULL);
   manager.SetBackgroundAppCount(2);
-  manager.OnApplicationListChanged(&profile2);
+  manager.OnApplicationListChanged(profile2);
   AssertBackgroundModeActive(manager);
 
   // Should hide both status tray icons.
@@ -173,11 +193,58 @@ TEST_F(BackgroundModeManagerTest, MultiProfile) {
   AssertBackgroundModeActive(manager);
 
   manager.SetBackgroundAppCount(1);
-  manager.OnApplicationListChanged(&profile2);
+  manager.OnApplicationListChanged(profile2);
   // There is still one background app alive
   AssertBackgroundModeActive(manager);
 
   manager.SetBackgroundAppCount(0);
-  manager.OnApplicationListChanged(&profile1);
+  manager.OnApplicationListChanged(profile1);
   AssertBackgroundModeInactive(manager);
+}
+
+TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
+  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
+  TestingProfile* profile2 = profile_manager_.CreateTestingProfile("p2");
+  TestBackgroundModeManager manager(
+      command_line_.get(), profile_manager_.profile_info_cache());
+  manager.RegisterProfile(profile1);
+  manager.RegisterProfile(profile2);
+  EXPECT_FALSE(BrowserList::WillKeepAlive());
+
+  ProfileInfoCache* cache = profile_manager_.profile_info_cache();
+  EXPECT_EQ(2u, cache->GetNumberOfProfiles());
+
+  EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(0));
+  EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(1));
+
+  // Install app, should show status tray icon.
+  manager.OnBackgroundAppInstalled(NULL);
+  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(1);
+  manager.OnApplicationListChanged(profile1);
+
+  // Install app for other profile.
+  manager.OnBackgroundAppInstalled(NULL);
+  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(1);
+  manager.OnApplicationListChanged(profile2);
+
+  EXPECT_TRUE(cache->GetBackgroundStatusOfProfileAtIndex(0));
+  EXPECT_TRUE(cache->GetBackgroundStatusOfProfileAtIndex(1));
+
+  manager.SetBackgroundAppCountForProfile(0);
+  manager.OnApplicationListChanged(profile1);
+
+  size_t p1_index = cache->GetIndexOfProfileWithPath(profile1->GetPath());
+  EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(p1_index));
+
+  manager.SetBackgroundAppCountForProfile(0);
+  manager.OnApplicationListChanged(profile2);
+
+  size_t p2_index = cache->GetIndexOfProfileWithPath(profile1->GetPath());
+  EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(p2_index));
+
+  // Even though neither has background status on, there should still be two
+  // profiles in the cache.
+  EXPECT_EQ(2u, cache->GetNumberOfProfiles());
 }

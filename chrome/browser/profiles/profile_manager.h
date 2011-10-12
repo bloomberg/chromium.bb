@@ -180,6 +180,9 @@ class ProfileManager : public base::NonThreadSafe,
   // Checks if multiple profiles is enabled.
   static bool IsMultipleProfilesEnabled();
 
+  // Autoloads profiles if they are running background apps.
+  void AutoloadProfiles();
+
   // Register and add testing profile to the ProfileManager. Use ONLY in tests.
   // This allows the creation of Profiles outside of the standard creation path
   // for testing. If |addToCache|, add to ProfileInfoCache as well.

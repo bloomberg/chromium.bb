@@ -545,6 +545,19 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
 #endif
 }
 
+void ProfileManager::AutoloadProfiles() {
+  ProfileInfoCache& cache = GetProfileInfoCache();
+  size_t number_of_profiles = cache.GetNumberOfProfiles();
+  for (size_t p = 0; p < number_of_profiles; ++p) {
+    if (cache.GetBackgroundStatusOfProfileAtIndex(p)) {
+      // If status is true, that profile is running background apps. By calling
+      // GetProfile, we automatically cause the profile to be loaded which will
+      // register it with the BackgroundModeManager.
+      GetProfile(cache.GetPathOfProfileAtIndex(p));
+    }
+  }
+}
+
 ProfileManagerWithoutInit::ProfileManagerWithoutInit(
     const FilePath& user_data_dir) : ProfileManager(user_data_dir) {
 }

@@ -29,6 +29,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_gtk.h"
@@ -1579,6 +1580,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
   if (!profile_)
     return content::RESULT_CODE_NORMAL_EXIT;
 
+  // Autoload any profiles which are running background apps.
+  // TODO(rlp): Do this on a separate thread. See http://crbug.com/99075.
+  if (!BackgroundModeManager::IsBackgroundModePermanentlyDisabled(
+      &parsed_command_line())) {
+    g_browser_process->profile_manager()->AutoloadProfiles();
+  }
   // Post-profile init ---------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
