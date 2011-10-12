@@ -337,7 +337,7 @@
    bug_100026
    ThreadSanitizer:Race
    ...
-   fun:std::ostream::operator<<
+   fun:std::ostream::operator*
    ...
    fun:logging::LogMessage::*LogMessage
    fun:base::PlatformThread::SetThreadPriority
