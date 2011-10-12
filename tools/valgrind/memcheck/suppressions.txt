@@ -4039,9 +4039,9 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base22PosixDynamicThreadPool7AddTaskEPNS0_11PendingTaskE
-   fun:_ZN4base22PosixDynamicThreadPool8PostTaskERKN15tracked_objects8LocationEP4Task
-   fun:_ZN4base12_GLOBAL__N_114WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationEP4Taskb
-   fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   fun:_ZN4base22PosixDynamicThreadPool8PostTask*
+   fun:_ZN4base12_GLOBAL__N_114WorkerPoolImpl8PostTask*
+   fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8Location*
 }
 {
    bug_90644_a
@@ -4694,6 +4694,14 @@
    fun:_Znw*
    ...
    fun:_ZN8chromeos*OncNetworkParserTest_TestCreateNetworkWifi*_Test8TestBodyEv
+}
+{
+   bug_100043
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIN6webkit13WebPluginInfoEE8allocateEjPKv
+   ...
+   fun:_ZNSt6vectorIN6webkit13WebPluginInfoESaIS1*
 }
 
 #-----------------------------------------------------------------------
