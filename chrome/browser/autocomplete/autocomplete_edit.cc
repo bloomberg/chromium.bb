@@ -1013,8 +1013,13 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
   if (!tab)
     return false;
 
-  return instant->Update(tab, match, view_->GetText(), UseVerbatimInstant(),
-                         suggested_text);
+  if (user_input_in_progress() && popup_->IsOpen()) {
+    return instant->Update(tab, match, view_->GetText(), UseVerbatimInstant(),
+                           suggested_text);
+  } else {
+    instant->DestroyPreviewContentsAndLeaveActive();
+    return false;
+  }
 }
 
 void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
