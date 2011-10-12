@@ -74,10 +74,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SimpleTest) {
   ASSERT_TRUE(RunExtensionTest("settings/simple_test")) << message_;
 }
 
-// Structure of this test taken from DISABLED_IncognitoSplitMode, so it's
-// likely that they will need to be disabled on the bots, too.  See
-// http://crbug.com/53991.
-//
+// Structure of this test taken from IncognitoSplitMode.
 // Note that only split-mode incognito is tested, because spanning mode
 // incognito looks the same as normal mode when the only API activity comes
 // from background pages.
