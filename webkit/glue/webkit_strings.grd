@@ -218,16 +218,16 @@ below:
       <message name="IDS_DETAILS_WITHOUT_SUMMARY_LABEL" desc="Clickable label to show detailed information or to hide the detailed information.">
         Details
       </message>
-      <message name="IDS_SEARCHABLE_INDEX_INTRO" desc="Text that appears at the start of nearly-obsolete web pages in the form of a 'searchable index'.">
+      <message name="IDS_SEARCHABLE_INDEX_INTRO" desc="Text that appears at the start of nearly-obsolete webpages in the form of a 'searchable index'.">
         This is a searchable index. Enter search keywords: '''
       </message>
-      <message name="IDS_FORM_SUBMIT_LABEL" desc="Default label for Submit buttons in forms on web pages.">
+      <message name="IDS_FORM_SUBMIT_LABEL" desc="Default label for Submit buttons in forms on webpages.">
         Submit
       </message>
       <message name="IDS_FORM_INPUT_ALT" desc="alt text for &lt;input&gt; elements with no alt, title, or value">
         Submit
       </message>
-      <message name="IDS_FORM_RESET_LABEL" desc="default label for Reset buttons in forms on web pages">
+      <message name="IDS_FORM_RESET_LABEL" desc="default label for Reset buttons in forms on webpages">
         Reset
       </message>
       <message name="IDS_FORM_FILE_BUTTON_LABEL" desc="title for a single file chooser button used in HTML forms">
@@ -302,22 +302,22 @@ below:
         1024 (Medium Grade)
       </message>
 
-      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE" desc="Heading or short sentence shown when a file upload control in a web page requires one or more files selected, but the user didn't specify any files.">
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE" desc="Heading or short sentence shown when a file upload control in a webpage requires one or more files selected, but the user didn't specify any files.">
         Please select one or more files.
       </message>
-      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH" desc="Heading or short sentence shown when a form control in a web page requires specific type such as email address or URL, but the specified value does not comform to the type.">
+      <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH" desc="Heading or short sentence shown when a form control in a webpage requires specific type such as email address or URL, but the specified value does not comform to the type.">
         Invalid value.
       </message>
       <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_MULTIPLE_EMAIL" desc="Heading or short sentence shown there is a field which accepts multiple e-mail addresses and a user specified a value which is not a comma-separated e-mail addresses.">
         Please enter a comma separated list of email addresses.
       </message>
-      <message name="IDS_FORM_VALIDATION_RANGE_UNDERFLOW" desc="Heading or short sentence shown when a form control value in a web page needs to be larger than or equal to a minimum value specified by the page author, but a user specified a too small value.">
+      <message name="IDS_FORM_VALIDATION_RANGE_UNDERFLOW" desc="Heading or short sentence shown when a form control value in a webpage needs to be larger than or equal to a minimum value specified by the page author, but a user specified a too small value.">
         Value must be greater than or equal to <ph name="MINIMUM">$1<ex>0</ex></ph>.
       </message>
-      <message name="IDS_FORM_VALIDATION_RANGE_OVERFLOW" desc="Heading or short sentence shown when a form control value in a web page needs to be smaller than or equal to a maximum value specified by the page author, but a user specified a too large value.">
+      <message name="IDS_FORM_VALIDATION_RANGE_OVERFLOW" desc="Heading or short sentence shown when a form control value in a webpage needs to be smaller than or equal to a maximum value specified by the page author, but a user specified a too large value.">
         Value must be less than or equal to <ph name="MAXIMUM">$1<ex>100</ex></ph>.
       </message>
-      <message name="IDS_FORM_VALIDATION_STEP_MISMATCH" desc="Heading or short sentence shown when a form control value in a web page should be aligned to a step value specified by the page author, but a user speficified non-aligned value. e.g. A number type field, minimum value is 0, and step value is 4. If A user-specified value is not a multiple of 4, this warning message is shown.">
+      <message name="IDS_FORM_VALIDATION_STEP_MISMATCH" desc="Heading or short sentence shown when a form control value in a webpage should be aligned to a step value specified by the page author, but a user speficified non-aligned value. e.g. A number type field, minimum value is 0, and step value is 4. If A user-specified value is not a multiple of 4, this warning message is shown.">
         Invalid value.
       </message>
 
@@ -361,19 +361,19 @@ below:
 #
 # ***** END LICENSE BLOCK *****
 -->
-      <message name="IDS_FORM_VALIDATION_VALUE_MISSING" desc="Heading or short sentence shown when a text form control in a web page requires a value, but the user didn't specify any value.">
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING" desc="Heading or short sentence shown when a text form control in a webpage requires a value, but the user didn't specify any value.">
         Please fill out this field.
       </message>
-      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_CHECKBOX" desc="Heading or short sentence shown when a checkbox control in a web page requires to be checked, but the user didn't check it.">
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_CHECKBOX" desc="Heading or short sentence shown when a checkbox control in a webpage must be checked, but the user didn't check it.">
         Please check this box if you want to proceed.
       </message>
-      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_FILE" desc="Heading or short sentence shown when a file upload control in a web page requires a file selected, but the user didn't specify any file.">
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_FILE" desc="Heading or short sentence shown when a file upload control in a webpage requires a file selected, but the user didn't specify any file.">
         Please select a file.
       </message>
-      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_RADIO" desc="Heading or short sentence shown when a radio button of a radio button group in a web page requires to be selected, but the user selected nothing.">
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_RADIO" desc="Heading or short sentence shown when a radio button of a radio button group in a webpage must be selected, but the user selected nothing.">
         Please select one of these options.
       </message>
-      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_SELECT" desc="Heading or short sentence shown when a value of a menu-list control in a web page requires to be selected, but the user selected nothing.">
+      <message name="IDS_FORM_VALIDATION_VALUE_MISSING_SELECT" desc="Heading or short sentence shown when a value of a menu-list control in a webpage must be selected, but the user selected nothing.">
         Please select an item in the list.
       </message>
       <message name="IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL" desc="Heading or short sentence shown when there is an email field in a form and a user specified a value which doesn't look like an e-mail address.">
@@ -385,7 +385,7 @@ below:
       <message name="IDS_FORM_VALIDATION_PATTERN_MISMATCH" desc="Heading or short sentence shown when a form control value needs to satisfy a pattern specified by the page author, but a user specified unmatched value.">
         Please match the requested format.
       </message>
-      <message name="IDS_FORM_VALIDATION_TOO_LONG" desc="Heading or short sentence shown when a form control in a web page needs to be shoter than a length specified by the page author, but a user specified long value.">
+      <message name="IDS_FORM_VALIDATION_TOO_LONG" desc="Heading or short sentence shown when a form control in a webpage needs to be shorter than a length specified by the page author, but a user specified long value.">
         Please shorten this text to <ph name="MAX_CHARACTERS">$2<ex>100</ex></ph> characters or less (you are currently using <ph name="CURRENT_LENGTH">$1<ex>101</ex></ph> characters).
       </message>
 

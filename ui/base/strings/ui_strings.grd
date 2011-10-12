@@ -187,7 +187,7 @@ need to be translated for each locale.-->
 
       <!-- General application strings -->
       <message name="IDS_APP_UNTITLED_SHORTCUT_FILE_NAME" desc="The name of the Internet Shortcut file created for URLs dragged that have no title">
-        Untitled Web Page
+        Untitled Webpage
       </message>
       <message name="IDS_APP_SAVEAS_ALL_FILES" desc="Save As dialog box default text">
         All Files
