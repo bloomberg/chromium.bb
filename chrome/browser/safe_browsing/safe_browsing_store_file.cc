@@ -560,6 +560,9 @@ bool SafeBrowsingStoreFile::DoUpdate(
   UMA_HISTOGRAM_COUNTS("SB2.DatabaseUpdateKilobytes",
                        std::max(static_cast<int>(size / 1024), 1));
 
+  // TODO(shess): For SB2.AddPrefixesReallocs histogram.
+  int add_prefixes_reallocs = 0;
+
   // Append the accumulated chunks onto the vectors read from |file_|.
   for (int i = 0; i < chunks_written_; ++i) {
     ChunkHeader header;
@@ -581,6 +584,10 @@ bool SafeBrowsingStoreFile::DoUpdate(
     if (expected_size > size)
       return false;
 
+    // TODO(shess): For SB2.AddPrefixesReallocs histogram.
+    SBAddPrefix* add_prefixes_old_start =
+        (add_prefixes.size() ? &add_prefixes[0] : NULL);
+
     // TODO(shess): If the vectors were kept sorted, then this code
     // could use std::inplace_merge() to merge everything together in
     // sorted order.  That might still be slower than just sorting at
@@ -597,7 +604,19 @@ bool SafeBrowsingStoreFile::DoUpdate(
         !ReadToVector(&sub_full_hashes, header.sub_hash_count,
                       new_file_.get(), NULL))
       return false;
+
+    // Determine if the vector data moved to a new location.  This
+    // won't track cases where the malloc library was able to expand
+    // the storage in place, but those cases shouldn't cause memory
+    // fragmentation anyhow.
+    SBAddPrefix* add_prefixes_new_start =
+        (add_prefixes.size() ? &add_prefixes[0] : NULL);
+    if (add_prefixes_old_start != add_prefixes_new_start)
+      ++add_prefixes_reallocs;
   }
+
+  // Track the number of times this number of re-allocations occurred.
+  UMA_HISTOGRAM_COUNTS_100("SB2.AddPrefixesReallocs", add_prefixes_reallocs);
 
   // Append items from |pending_adds|.
   add_full_hashes.insert(add_full_hashes.end(),
