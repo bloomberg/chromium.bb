@@ -59,13 +59,13 @@ WidgetsWindow::WidgetsWindow()
       checkbox_checked_(new views::Checkbox(L"Checkbox checked")),
       checkbox_checked_disabled_(
           new views::Checkbox(L"Checkbox checked disabled")),
-      radio_button_(new views::RadioButton(L"Radio button", 0)),
-      radio_button_disabled_(
-          new views::RadioButton(L"Radio button disabled", 0)),
-      radio_button_selected_(
-          new views::RadioButton(L"Radio button selected", 0)),
-      radio_button_selected_disabled_(
-          new views::RadioButton(L"Radio button selected disabled", 1)) {
+      radio_button_(new views::RadioButton(ASCIIToUTF16("Radio button"), 0)),
+      radio_button_disabled_(new views::RadioButton(
+          ASCIIToUTF16("Radio button disabled"), 0)),
+      radio_button_selected_(new views::RadioButton(
+          ASCIIToUTF16("Radio button selected"), 0)),
+      radio_button_selected_disabled_(new views::RadioButton(
+          ASCIIToUTF16("Radio button selected disabled"), 1)) {
   AddChildView(button_);
   disabled_button_->SetEnabled(false);
   AddChildView(disabled_button_);

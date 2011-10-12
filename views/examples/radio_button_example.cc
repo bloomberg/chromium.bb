@@ -5,6 +5,7 @@
 #include "views/examples/radio_button_example.h"
 
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "views/controls/button/text_button.h"
 #include "views/layout/grid_layout.h"
 #include "views/view.h"
@@ -25,7 +26,8 @@ void RadioButtonExample::CreateExampleView(views::View* container) {
   int group = 1;
   for (size_t i = 0; i < arraysize(radio_buttons_); ++i) {
     radio_buttons_[i] = new views::RadioButton(
-        base::StringPrintf( L"Radio %d in group %d", i + 1, group), group);
+        UTF8ToUTF16(base::StringPrintf("Radio %d in group %d", i + 1, group)),
+        group);
     radio_buttons_[i]->set_listener(this);
   }
 

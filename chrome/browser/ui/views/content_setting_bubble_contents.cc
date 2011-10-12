@@ -9,8 +9,8 @@
 #endif
 
 #include <algorithm>
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/utf_string_conversions.h"
@@ -257,7 +257,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
     for (ContentSettingBubbleModel::RadioItems::const_iterator i =
          radio_group.radio_items.begin();
          i != radio_group.radio_items.end(); ++i) {
-      views::RadioButton* radio = new views::RadioButton(UTF8ToWide(*i), 0);
+      views::RadioButton* radio = new views::RadioButton(UTF8ToUTF16(*i), 0);
       radio->set_listener(this);
       radio_group_.push_back(radio);
       if (!bubble_content_empty)

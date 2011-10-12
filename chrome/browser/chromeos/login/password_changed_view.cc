@@ -29,7 +29,9 @@ using views::Textfield;
 namespace chromeos {
 
 namespace {
+
 const int kPasswordFieldWidthChars = 20;
+
 }  // namespace
 
 PasswordChangedView::PasswordChangedView(Delegate* delegate,
@@ -107,15 +109,12 @@ void PasswordChangedView::Init() {
   description_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
 
   full_sync_radio_ = new RadioButton(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_RESET)),
-      0);
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_RESET), 0);
   full_sync_radio_->set_listener(this);
   full_sync_radio_->SetMultiLine(true);
 
   delta_sync_radio_ = new RadioButton(
-      UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_MIGRATE)),
-      0);
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_MIGRATE), 0);
   delta_sync_radio_->set_listener(this);
   delta_sync_radio_->SetMultiLine(true);
 

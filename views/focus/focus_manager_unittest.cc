@@ -577,20 +577,20 @@ void FocusTraversalTest::InitContentView() {
   y = 10;
   int radio_button_height = 18;
   int gap_between_radio_buttons = 10;
-  RadioButton* radio_button = new RadioButton(L"Asparagus", 1);
+  RadioButton* radio_button = new RadioButton(ASCIIToUTF16("Asparagus"), 1);
   radio_button->set_id(kAsparagusButtonID);
   right_container_->AddChildView(radio_button);
   radio_button->SetBounds(5, y, 70, radio_button_height);
   radio_button->SetGroup(1);
   y += radio_button_height + gap_between_radio_buttons;
-  radio_button = new RadioButton(L"Broccoli", 1);
+  radio_button = new RadioButton(ASCIIToUTF16("Broccoli"), 1);
   radio_button->set_id(kBroccoliButtonID);
   right_container_->AddChildView(radio_button);
   radio_button->SetBounds(5, y, 70, radio_button_height);
   radio_button->SetGroup(1);
   RadioButton* radio_button_to_check = radio_button;
   y += radio_button_height + gap_between_radio_buttons;
-  radio_button = new RadioButton(L"Cauliflower", 1);
+  radio_button = new RadioButton(ASCIIToUTF16("Cauliflower"), 1);
   radio_button->set_id(kCauliflowerButtonID);
   right_container_->AddChildView(radio_button);
   radio_button->SetBounds(5, y, 70, radio_button_height);
@@ -887,7 +887,7 @@ class TestCheckbox : public Checkbox {
 
 class TestRadioButton : public RadioButton {
  public:
-  explicit TestRadioButton(const std::wstring& text)
+  explicit TestRadioButton(const string16& text)
       : RadioButton(text, 1) {
   }
   virtual gfx::NativeView TestGetNativeControlView() {
