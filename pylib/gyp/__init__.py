@@ -335,6 +335,7 @@ def main(args):
                            'linux2':   'make',
                            'linux3':   'make',
                            'openbsd4': 'make',
+                           'openbsd5': 'make',
                            'sunos5':   'make',}[sys.platform] ]
 
   if not options.generator_output and options.use_environment:
