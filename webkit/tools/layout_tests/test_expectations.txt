@@ -11,11 +11,6 @@
 BUG_BSALOMON WIN MAC LINUX GPU: fast/canvas/canvas-composite-transformclip.html = IMAGE
 BUG_BSALOMON WIN MAC LINUX GPU: fast/canvas/canvas-composite.html = IMAGE
 
-BUG_SATISH: fast/speech/input-appearance-numberandspeech.html = IMAGE
-BUG_SATISH: fast/speech/input-appearance-searchandspeech.html = IMAGE
-BUG_SATISH: fast/speech/input-appearance-speechbutton.html = IMAGE
-BUG_SATISH: fast/speech/speech-bidi-rendering.html = IMAGE
-
 // We need to upstream new test expectations for these after fixing some
 // V8 bugs. Keeping here until we are sure that the push with the new GC
 // stays in.
