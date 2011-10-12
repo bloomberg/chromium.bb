@@ -342,7 +342,7 @@ lose_pointer_focus(struct wl_listener *listener,
 		container_of(listener, struct wl_input_device,
 			     pointer_focus_listener);
 
-	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
+	device->pointer_focus_resource = NULL;
 }
 
 static void
@@ -353,7 +353,7 @@ lose_keyboard_focus(struct wl_listener *listener,
 		container_of(listener, struct wl_input_device,
 			     keyboard_focus_listener);
 
-	wl_input_device_set_keyboard_focus(device, NULL, time);
+	device->keyboard_focus_resource = NULL;
 }
 
 WL_EXPORT void
@@ -412,7 +412,7 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 		wl_resource_post_event(resource,
 				       WL_INPUT_DEVICE_POINTER_FOCUS,
 				       time, surface, x, y, sx, sy);
-		wl_list_insert(surface->resource.destroy_listener_list.prev,
+		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->pointer_focus_listener.link);
 	}
 
@@ -445,7 +445,7 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 		wl_resource_post_event(resource,
 				       WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				       time, surface, &device->keys);
-		wl_list_insert(surface->resource.destroy_listener_list.prev,
+		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->keyboard_focus_listener.link);
 	}
 
