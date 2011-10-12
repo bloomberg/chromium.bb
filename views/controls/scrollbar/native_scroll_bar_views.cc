@@ -296,6 +296,9 @@ void NativeScrollBarViews::OnPaint(gfx::Canvas* canvas) {
   const gfx::NativeTheme* native_theme = gfx::NativeTheme::instance();
   gfx::Rect bounds = GetTrackBounds();
 
+  if (bounds.IsEmpty())
+    return;
+
   params_.scrollbar_track.track_x = bounds.x();
   params_.scrollbar_track.track_y = bounds.y();
   params_.scrollbar_track.track_width = bounds.width();
