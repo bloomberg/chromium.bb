@@ -589,7 +589,11 @@ void BrowserWindowCocoa::UpdateSidebarForContents(TabContents* tab_contents) {
 void BrowserWindowCocoa::ShowAvatarBubble(TabContents* tab_contents,
                                           const gfx::Rect& rect) {
   NSView* view = tab_contents->GetNativeView();
-  NSPoint point = NSMakePoint(rect.right(), rect.bottom());
+  NSRect bounds = [view bounds];
+  NSPoint point;
+  point.x = NSMinX(bounds) + rect.right();
+  // The view's origin is at the bottom but |rect|'s origin is at the top.
+  point.y = NSMaxY(bounds) - rect.bottom();
   point = [view convertPoint:point toView:nil];
   point = [[view window] convertBaseToScreen:point];
 
