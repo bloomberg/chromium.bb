@@ -133,6 +133,7 @@
 #include "chrome/browser/chromeos/brightness_observer.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
@@ -1809,6 +1810,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunInternal() {
       new chromeos::BrightnessObserver();
   chromeos::DBusThreadManager::Get()->power_manager_client()->AddObserver(
       brightness_observer);
+
+  // Probe for power supply status.
+  static chromeos::PowerManagerClient::Observer* power_lib =
+      chromeos::CrosLibrary::Get()->GetPowerLibrary();
+  chromeos::DBusThreadManager::Get()->power_manager_client()->
+      AddObserver(power_lib);
 
   // Listen for system key events so that the user will be able to adjust the
   // volume on the login screen.

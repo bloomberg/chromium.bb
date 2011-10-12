@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_POWER_LIBRARY_H_
 #pragma once
 
+// TODO(sque): Move to chrome/browser/chromeos/system, crosbug.com/16558
+
 #include "base/callback.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 
 namespace base {
 class TimeDelta;
@@ -15,11 +18,12 @@ class TimeDelta;
 namespace chromeos {
 
 typedef base::Callback<void(int64_t)> CalculateIdleTimeCallback;
+struct PowerStatus;
 
 // This interface defines interaction with the ChromeOS power library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
 // library class like this: chromeos::CrosLibrary::Get()->GetPowerLibrary()
-class PowerLibrary {
+class PowerLibrary : public PowerManagerClient::Observer {
  public:
   class Observer {
    public:
@@ -70,6 +74,10 @@ class PowerLibrary {
 
   // UI initiated request for status update.
   virtual void RequestStatusUpdate() = 0;
+
+  // Requests power supply info.
+  virtual void UpdatePowerStatus(const chromeos::PowerStatus& status) = 0;
+
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
