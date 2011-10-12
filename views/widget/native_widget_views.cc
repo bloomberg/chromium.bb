@@ -381,6 +381,14 @@ void NativeWidgetViews::Hide() {
   view_->SetVisible(false);
   if (HasMouseCapture())
     ReleaseMouseCapture();
+
+  // This is necessary because views desktop's window manager doesn't
+  // set the focus back to parent.
+  if (GetWidget()->is_top_level()) {
+    Widget* parent_widget = view_->GetWidget();
+    if (parent_widget && parent_widget->GetInputMethod())
+      parent_widget->GetInputMethod()->OnFocus();
+  }
 }
 
 void NativeWidgetViews::ShowWithWindowState(ui::WindowShowState show_state) {
