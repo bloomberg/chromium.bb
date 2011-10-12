@@ -170,10 +170,11 @@ wlsc_wm_get_properties(struct wlsc_wm *wm, xcb_window_t window)
 		value = xcb_get_property_value(reply);
 
 		fprintf(stderr, "property %s, type %d, format %d, "
-			"length %d (value_len %d), value \"%s\"\n",
+			"length %d (value_len %d), value \"%.*s\"\n",
 			get_atom_name(wm->conn, props[i].atom),
 			reply->type, reply->format,
-			xcb_get_property_value_length(reply), reply->value_len,
+			xcb_get_property_value_length(reply),
+			reply->value_len, reply->value_len,
 			reply->type ? (char *) value : "(nil)");
 
 		free(reply);
