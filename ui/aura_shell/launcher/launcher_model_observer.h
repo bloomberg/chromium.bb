@@ -23,7 +23,7 @@ class AURA_SHELL_EXPORT LauncherModelObserver {
   virtual void LauncherSelectionChanged() = 0;
 
  protected:
-  ~LauncherModelObserver() {}
+  virtual ~LauncherModelObserver() {}
 };
 
 }  // namespace aura_shell

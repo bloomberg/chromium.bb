@@ -6,13 +6,15 @@
 #define UI_AURA_SHELL_SHELL_DELEGATE_H_
 #pragma once
 
+#include "ui/aura_shell/aura_shell_export.h"
+
 namespace aura_shell {
 
 // Delegate of the Shell.
 class AURA_SHELL_EXPORT ShellDelegate {
  public:
   // The Shell owns the delegate.
-  ~ShellDelegate() {}
+  virtual ~ShellDelegate() {}
 
   // Invoked when the user clicks on button in the launcher to create a new
   // window.
