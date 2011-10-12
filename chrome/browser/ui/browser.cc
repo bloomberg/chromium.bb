@@ -4134,10 +4134,6 @@ void Browser::OnStateChanged() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, InstantDelegate implementation:
 
-void Browser::PrepareForInstant() {
-  window_->PrepareForInstant();
-}
-
 void Browser::ShowInstant(TabContentsWrapper* preview_contents) {
   DCHECK(instant_->tab_contents() == GetSelectedTabContentsWrapper());
   window_->ShowInstant(preview_contents);

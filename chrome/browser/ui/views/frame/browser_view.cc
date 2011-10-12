@@ -1229,32 +1229,14 @@ void BrowserView::Paste() {
                             true, false, false, false);
 }
 
-void BrowserView::PrepareForInstant() {
-  contents_->FadeActiveContents();
-}
-
 void BrowserView::ShowInstant(TabContentsWrapper* preview) {
   if (!preview_container_)
     preview_container_ = new TabContentsContainer();
   contents_->SetPreview(preview_container_, preview->tab_contents());
   preview_container_->ChangeTabContents(preview->tab_contents());
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Removing the fade is instant (on windows). We need to force the preview to
-  // draw, otherwise the current page flickers before the new page appears.
-  RedrawWindow(preview->tab_contents()->view()->GetContentNativeView(), NULL,
-               NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
-#endif
-
-  contents_->RemoveFade();
 }
 
 void BrowserView::HideInstant(bool instant_is_active) {
-  if (instant_is_active)
-    contents_->ShowFade();
-  else
-    contents_->RemoveFade();
-
   if (!preview_container_)
     return;
 

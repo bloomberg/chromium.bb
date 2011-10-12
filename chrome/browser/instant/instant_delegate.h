@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,6 @@ class Rect;
 // InstantController for details.
 class InstantDelegate {
  public:
-  // Invoked when instant starts loading, but before the preview tab contents is
-  // ready to be shown. This may be used to animate between the states.
-  // This is followed by ShowInstant and/or HideInstant.
-  virtual void PrepareForInstant() = 0;
-
   // Invoked when the instant TabContents should be shown.
   virtual void ShowInstant(TabContentsWrapper* preview_contents) = 0;
 

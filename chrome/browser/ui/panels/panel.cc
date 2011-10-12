@@ -471,10 +471,6 @@ bool Panel::InPresentationMode() {
 }
 #endif
 
-void Panel::PrepareForInstant() {
-  NOTIMPLEMENTED();
-}
-
 void Panel::ShowInstant(TabContentsWrapper* preview) {
   NOTIMPLEMENTED();
 }

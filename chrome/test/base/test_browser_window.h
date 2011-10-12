@@ -104,7 +104,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual bool InPresentationMode() OVERRIDE;
 #endif
 
-  virtual void PrepareForInstant() OVERRIDE {}
   virtual void ShowInstant(TabContentsWrapper* preview_contents) OVERRIDE {}
   virtual void HideInstant(bool instant_is_active) OVERRIDE {}
   virtual gfx::Rect GetInstantBounds() OVERRIDE;

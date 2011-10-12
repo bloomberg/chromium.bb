@@ -312,7 +312,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;
-  virtual void PrepareForInstant() OVERRIDE;
   virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;
   virtual void HideInstant(bool instant_is_active) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;

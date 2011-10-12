@@ -1025,7 +1025,6 @@ class Browser : public TabHandlerDelegate,
   virtual void OnStateChanged();
 
   // Overriden from InstantDelegate:
-  virtual void PrepareForInstant() OVERRIDE;
   virtual void ShowInstant(TabContentsWrapper* preview_contents) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
   virtual void CommitInstant(TabContentsWrapper* preview_contents) OVERRIDE;

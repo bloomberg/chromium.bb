@@ -140,7 +140,6 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void Cut();
   virtual void Copy();
   virtual void Paste();
-  virtual void PrepareForInstant();
   virtual void ShowInstant(TabContentsWrapper* preview);
   virtual void HideInstant(bool instant_is_active);
   virtual gfx::Rect GetInstantBounds();
@@ -290,13 +289,6 @@ class BrowserWindowGtk : public BrowserWindow,
   scoped_ptr<DownloadShelfGtk> download_shelf_;
 
  private:
-  // Shows a fade effect over the tab contents. Repeated calls will be ignored
-  // until the fade is canceled. If |animate| is true the fade should animate.
-  void FadeForInstant(bool animate);
-
-  // Immediately removes the fade.
-  void CancelInstantFade();
-
   // Show or hide the bookmark bar.
   void MaybeShowBookmarkBar(bool animate);
 

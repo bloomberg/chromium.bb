@@ -147,7 +147,6 @@ class Panel : public BrowserWindow, public NotificationObserver {
   virtual void SetPresentationMode(bool presentation_mode) OVERRIDE;
   virtual bool InPresentationMode() OVERRIDE;
 #endif
-  virtual void PrepareForInstant() OVERRIDE;
   virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;
   virtual void HideInstant(bool instant_is_active) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;

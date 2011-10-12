@@ -1148,32 +1148,14 @@ void BrowserWindowGtk::Paste() {
   gtk_util::DoPaste(this);
 }
 
-void BrowserWindowGtk::PrepareForInstant() {
-  TabContentsWrapper* contents = contents_container_->tab();
-  if (contents)
-    FadeForInstant(true);
-}
-
 void BrowserWindowGtk::ShowInstant(TabContentsWrapper* preview) {
   contents_container_->SetPreview(preview);
   MaybeShowBookmarkBar(false);
-
-  TabContentsWrapper* contents = contents_container_->tab();
-  if (contents)
-    CancelInstantFade();
 }
 
 void BrowserWindowGtk::HideInstant(bool instant_is_active) {
   contents_container_->PopPreview();
   MaybeShowBookmarkBar(false);
-
-  TabContentsWrapper* contents = contents_container_->tab();
-  if (contents) {
-    if (instant_is_active)
-      FadeForInstant(false);
-    else
-      CancelInstantFade();
-  }
 }
 
 gfx::Rect BrowserWindowGtk::GetInstantBounds() {
@@ -1301,24 +1283,6 @@ bool BrowserWindowGtk::DrawInfoBarArrows(int* x) const {
     NOTREACHED();
   }
   return true;
-}
-
-void BrowserWindowGtk::FadeForInstant(bool animate) {
-  DCHECK(contents_container_->tab());
-  RenderWidgetHostView* rwhv =
-      contents_container_->tab()->tab_contents()->GetRenderWidgetHostView();
-  if (rwhv) {
-    SkColor whitish = SkColorSetARGB(192, 255, 255, 255);
-    rwhv->SetVisuallyDeemphasized(&whitish, animate);
-  }
-}
-
-void BrowserWindowGtk::CancelInstantFade() {
-  DCHECK(contents_container_->tab());
-  RenderWidgetHostView* rwhv =
-      contents_container_->tab()->tab_contents()->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetVisuallyDeemphasized(NULL, false);
 }
 
 void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {

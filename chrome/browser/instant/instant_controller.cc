@@ -169,10 +169,8 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
   if (!loader_.get())
     loader_.reset(new InstantLoader(this, template_url->id()));
 
-  if (!is_active_) {
+  if (!is_active_)
     is_active_ = true;
-    delegate_->PrepareForInstant();
-  }
 
   UpdateLoader(template_url, match.destination_url, match.transition, user_text,
                verbatim, suggested_text);
