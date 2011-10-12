@@ -22,7 +22,7 @@ MacChromeProcessInfoList GetRunningMacProcessInfo(
   std::vector<std::string> cmdline;
   cmdline.push_back("ps");
   cmdline.push_back("-o");
-  cmdline.push_back("pid=,rsz=,vsz=");  // fields we need, no headings
+  cmdline.push_back("pid=,rss=,vsz=");  // fields we need, no headings
   ChromeProcessList::const_iterator process_iter;
   for (process_iter = process_list.begin();
        process_iter != process_list.end();
