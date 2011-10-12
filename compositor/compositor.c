@@ -351,6 +351,8 @@ wlsc_compositor_repick(struct wlsc_compositor *compositor)
 
 	time = wlsc_compositor_get_time();
 	wl_list_for_each(device, &compositor->input_device_list, link) {
+		if (device->input_device.grab)
+			continue;
 		surface = pick_surface(&device->input_device, &sx, &sy);
 		wl_input_device_set_pointer_focus(&device->input_device,
 						  &surface->surface,
