@@ -3608,6 +3608,21 @@ ExtractAndCheck() {
   spopd
 }
 
+IsLinkerScript() {
+  local fname="$1"
+  local type="$(file --brief --mime-type "${fname}")"
+  case "$type" in
+    text/x-c)
+      # A linker script with C comments looks like C to "file".
+      return 0
+      ;;
+    text/plain)
+      return 0
+      ;;
+  esac
+  return 1
+}
+
 # Usage: VerifyLinkerScript <filename>
 VerifyLinkerScript() {
   local archive="$1"
@@ -3631,23 +3646,11 @@ VerifyArchive() {
   local pattern="$2"
   local archive="$3"
   echo -n "verify $(basename "${archive}"): "
-  type="$(file --brief --mime-type "${archive}")"
-  case "$type" in
-    application/x-archive)
-      ExtractAndCheck "$checker" "$pattern" "$archive"
-      ;;
-    text/x-c)
-      # A linker script with C comments looks like C to "file".
-      VerifyLinkerScript "$archive"
-      ;;
-    text/plain)
-      VerifyLinkerScript "$archive"
-      ;;
-    *)
-      echo "FAIL - unknown file type ($type): ${archive}"
-      exit -1
-      ;;
-  esac
+  if IsLinkerScript "${archive}"; then
+    VerifyLinkerScript "${archive}"
+  else
+    ExtractAndCheck "$checker" "$pattern" "$archive"
+  fi
 }
 
 #
@@ -3660,6 +3663,9 @@ verify-object-llvm() {
     echo
     echo "ERROR asm in $1"
     echo
+    exit -1
+  fi
+  if [ ${PIPESTATUS[0]} -ne 0 ]; then
     exit -1
   fi
 }
@@ -3719,10 +3725,15 @@ verify-object-x86-64() {
 # verify-pso <psofile>
 #
 verify-pso() {
-  echo -n "verify $(basename "$1"): "
-  verify-object-llvm "$1"
-  echo "PASS"
-  # TODO(pdox): Add a call to pnacl-meta to check for the "shared" property.
+  local psofile="$1"
+  echo -n "verify $(basename "${psofile}"): "
+  if IsLinkerScript "${psofile}"; then
+    VerifyLinkerScript "${psofile}"
+  else
+    verify-object-llvm "$1"
+    echo "PASS"
+    # TODO(pdox): Add a call to pnacl-meta to check for the "shared" property.
+  fi
 }
 
 #

@@ -124,11 +124,19 @@ def main(argv):
   if intype == 'pso':
     env.set('PIC', '1')
 
+  # Normally, only pso files need to be translated with PIC, but since we
+  # are linking executables with unresolved symbols, dynamic nexe's
+  # also need to be PIC to be able to generate the correct relocations.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2351
+  if intype == 'pexe' and env.getbool('LIBMODE_GLIBC'):
+    env.set('PIC', '1')
+    env.append('EXTRA_LD_FLAGS', '-Wl,--unresolved-symbols=ignore-all')
+
   # Read the bitcode metadata to extract library
   # dependencies and SOName.
   metadata = GetBitcodeMetadata(infile)
   for lib in metadata['NeedsLibrary']:
-    env.append('EXTRA_LD_FLAGS', '-l:' + lib)
+    env.append('EXTRA_LD_FLAGS', '-Wl,--pnacl-add-libdep=' + lib)
 
   if intype == 'pso':
     soname = metadata['SOName']

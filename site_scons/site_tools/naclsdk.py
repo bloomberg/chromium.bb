@@ -509,7 +509,7 @@ def generate(env):
   # some of them are linker scripts too.
   ldscript_scanner = SCons.Scanner.Base(
       function=ScanLinkerScript,
-      skeys=['.a', '.so'],
+      skeys=['.a', '.so', '.pso'],
       path_function=SCons.Scanner.FindPathDirs('LIBPATH'),
       recursive=True
       )

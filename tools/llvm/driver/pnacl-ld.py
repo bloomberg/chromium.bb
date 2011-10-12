@@ -33,6 +33,12 @@ EXTRA_ENV = {
   'INPUTS'   : '',
   'OUTPUT'   : '',
 
+  # Library dependencies to add (as DT_NEEDED records)
+  # This only applies to native dynamic/shared linking.
+  # This is used during pso -> so translation to set the
+  # correct dependencies on the generated ELF file.
+  'LIBDEPS'  : '',
+
   'SHARED'   : '0',
   'STATIC'   : '0',
   'PIC'      : '0',
@@ -138,7 +144,10 @@ EXTRA_ENV = {
                 '${!SHARED && !RELOCATABLE ? --undef-sym-check} ' +
                 '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
 
-  'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}"',
+
+  'LIBDEPS_FLAGS': '${@AddPrefix:--add-extra-dt-needed :LIBDEPS}',
+
+  'RUN_LD' : '${LD} ${LD_FLAGS} ${LIBDEPS_FLAGS} ${inputs} -o "${output}"',
 
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} '
                '-o "${output}"'),
@@ -147,6 +156,7 @@ env.update(EXTRA_ENV)
 
 LDPatterns = [
   ( '--pnacl-native-hack', "env.set('NATIVE_HACK', '1')"),
+  ( '--pnacl-add-libdep=(.+)', "env.append('LIBDEPS', $0)"),
   ( ('--add-translate-option=(.+)'),
                        "env.append('PNACL_TRANSLATE_FLAGS', $0)"),
   # todo(dschuff): get rid of this when we get closer to tip and fix bug 1941
@@ -200,6 +210,7 @@ LDPatterns = [
 
   ( '(--print-gc-sections)',      "env.append('LD_FLAGS', $0)"),
   ( '(-gc-sections)',             "env.append('LD_FLAGS', $0)"),
+  ( '(--unresolved-symbols=.*)',  "env.append('LD_FLAGS', $0)"),
 
   ( '-melf_nacl',          "env.set('ARCH', 'X8632')"),
   ( ('-m','elf_nacl'),     "env.set('ARCH', 'X8632')"),
@@ -284,6 +295,9 @@ def main(argv):
   # Expand input files which are linker scripts
   inputs = ExpandLinkerScripts(inputs)
 
+  if env.getbool('LIBMODE_GLIBC'):
+    TranslateInputs(inputs)
+
   # NATIVE HACK
   native_left, native_right = RemoveBitcode(inputs)
   if env.getbool('NATIVE_HACK'):
@@ -310,9 +324,6 @@ def main(argv):
       Log.Fatal("Native linking requires -arch")
   else:
     Log.Fatal("No input objects")
-
-  if env.getbool('LIBMODE_GLIBC'):
-    TranslateInputs(inputs)
 
   # Path A: Bitcode link, then opt, then translate.
   if has_bitcode:
