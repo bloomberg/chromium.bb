@@ -64,6 +64,9 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(unrecoverable_error_detected, bool());
   MOCK_METHOD1(OnActionableError, void(
       const browser_sync::SyncProtocolError&));
+
+  MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
+  MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_

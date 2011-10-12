@@ -987,6 +987,17 @@ bool ProfileSyncService::unrecoverable_error_detected() const {
   return unrecoverable_error_detected_;
 }
 
+bool ProfileSyncService::IsPassphraseRequired() const {
+  return passphrase_required_reason_ !=
+      sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
+}
+
+bool ProfileSyncService::IsPassphraseRequiredForDecryption() const {
+  return IsEncryptedDatatypeEnabled() &&
+      (passphrase_required_reason_ == sync_api::REASON_DECRYPTION ||
+       passphrase_required_reason_ == sync_api::REASON_SET_PASSPHRASE_FAILED);
+}
+
 string16 ProfileSyncService::GetLastSyncedTimeString() const {
   if (last_synced_time_.is_null())
     return l10n_util::GetStringUTF16(IDS_SYNC_TIME_NEVER);

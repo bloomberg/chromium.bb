@@ -41,3 +41,22 @@ TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
   EXPECT_TRUE(strings.HasKey("unrecoverable_error_detected"));
 }
 
+// Test that GetStatusLabelsForSyncGlobalError returns an error if a
+// passphrase is required.
+TEST(SyncUIUtilTest, PassphraseGlobalError) {
+  MessageLoopForUI message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  NiceMock<ProfileSyncServiceMock> service;
+
+  EXPECT_CALL(service, HasSyncSetupCompleted())
+              .WillOnce(Return(true));
+  EXPECT_CALL(service, IsPassphraseRequired())
+              .WillOnce(Return(true));
+  EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
+              .WillOnce(Return(true));
+
+  sync_ui_util::MessageType type =
+      sync_ui_util::GetStatusLabelsForSyncGlobalError(
+          &service, NULL, NULL, NULL);
+  EXPECT_EQ(type, sync_ui_util::SYNC_ERROR);
+}

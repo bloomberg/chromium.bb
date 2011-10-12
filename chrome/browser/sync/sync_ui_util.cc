@@ -346,9 +346,6 @@ MessageType GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
                                               string16* bubble_accept_label) {
   if (!service->HasSyncSetupCompleted())
     return PRE_SYNCED;
-  MessageType status = GetStatus(service);
-  if (status != SYNC_ERROR)
-    return status;
 
   if (service->IsPassphraseRequired() &&
       service->IsPassphraseRequiredForDecryption()) {
@@ -368,6 +365,10 @@ MessageType GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
     }
     return SYNC_ERROR;
   }
+
+  MessageType status = GetStatus(service);
+  if (status != SYNC_ERROR)
+    return status;
 
   const AuthError& auth_error = service->GetAuthError();
   if (auth_error.state() != AuthError::NONE) {
