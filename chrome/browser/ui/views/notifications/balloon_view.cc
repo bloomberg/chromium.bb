@@ -34,7 +34,9 @@
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/painter.h"
 #include "views/widget/widget.h"
@@ -99,9 +101,6 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       close_button_(NULL),
       animation_(NULL),
       options_menu_model_(NULL),
-#if !defined(USE_AURA)
-      options_menu_menu_(NULL),
-#endif
       options_menu_button_(NULL) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
@@ -135,7 +134,20 @@ BalloonHost* BalloonViewImpl::GetHost() const {
 }
 
 void BalloonViewImpl::RunMenu(views::View* source, const gfx::Point& pt) {
-  RunOptionsMenu(pt);
+  CreateOptionsMenu();
+
+  views::MenuModelAdapter menu_model_adapter(options_menu_model_.get());
+  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
+
+  gfx::Point screen_location;
+  views::View::ConvertPointToScreen(options_menu_button_, &screen_location);
+  if (menu_runner_->RunMenuAt(
+          source->GetWidget()->GetTopLevelWidget(),
+          options_menu_button_,
+          gfx::Rect(screen_location, options_menu_button_->size()),
+          views::MenuItemView::TOPRIGHT,
+          views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 void BalloonViewImpl::OnDisplayChanged() {
@@ -367,24 +379,10 @@ void BalloonViewImpl::Show(Balloon* balloon) {
     Source<Balloon>(balloon));
 }
 
-void BalloonViewImpl::RunOptionsMenu(const gfx::Point& pt) {
-  CreateOptionsMenu();
-#if defined(USE_AURA)
-  NOTIMPLEMENTED();
-#else
-  options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
-#endif
-}
-
 void BalloonViewImpl::CreateOptionsMenu() {
   if (options_menu_model_.get())
     return;
-#if defined(USE_AURA)
-  NOTIMPLEMENTED();
-#else
   options_menu_model_.reset(new NotificationOptionsMenuModel(balloon_));
-  options_menu_menu_.reset(new views::Menu2(options_menu_model_.get()));
-#endif
 }
 
 void BalloonViewImpl::GetContentsMask(const gfx::Rect& rect,

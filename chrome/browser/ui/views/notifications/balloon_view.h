@@ -25,14 +25,6 @@
 #include "views/view.h"
 #include "views/widget/widget_delegate.h"
 
-namespace views {
-class ButtonListener;
-class ImageButton;
-class ImagePainter;
-class TextButton;
-class Menu2;
-}  // namespace views
-
 class BalloonCollection;
 class NotificationDetails;
 class NotificationOptionsMenuModel;
@@ -40,6 +32,14 @@ class NotificationSource;
 
 namespace ui {
 class SlideAnimation;
+}
+
+namespace views {
+class ButtonListener;
+class ImageButton;
+class ImagePainter;
+class MenuRunner;
+class TextButton;
 }
 
 // A balloon view is the UI component for a desktop notification toasts.
@@ -86,9 +86,6 @@ class BalloonViewImpl : public BalloonView,
 
   // ui::AnimationDelegate interface.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-
-  // Launches the options menu at screen coordinates |pt|.
-  void RunOptionsMenu(const gfx::Point& pt);
 
   // Initializes the options menu.
   void CreateOptionsMenu();
@@ -159,9 +156,7 @@ class BalloonViewImpl : public BalloonView,
 
   // The options menu.
   scoped_ptr<NotificationOptionsMenuModel> options_menu_model_;
-#if !defined(USE_AURA)
-  scoped_ptr<views::Menu2> options_menu_menu_;
-#endif
+  scoped_ptr<views::MenuRunner> menu_runner_;
   views::MenuButton* options_menu_button_;
 
   NotificationRegistrar notification_registrar_;
