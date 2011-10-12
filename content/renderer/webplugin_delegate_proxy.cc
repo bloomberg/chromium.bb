@@ -262,22 +262,6 @@ static bool SilverlightColorIsTransparent(const std::string& color) {
   return false;
 }
 
-#if defined(OS_MACOSX)
-// Returns true if the given Flash version assumes QuickDraw support is present
-// instead of checking using the negotiation system.
-static bool FlashVersionAssumesQuickDrawSupport(const string16& version) {
-  scoped_ptr<Version> plugin_version(
-      webkit::npapi::PluginGroup::CreateVersionFromString(version));
-  if (plugin_version.get() && plugin_version->components().size() >= 2) {
-    uint16 major = plugin_version->components()[0];
-    uint16 minor = plugin_version->components()[1];
-    return major < 10 || (major == 10 && minor < 3);
-  }
-  // If parsing fails for some reason, assume the best.
-  return false;
-}
-#endif
-
 bool WebPluginDelegateProxy::Initialize(
     const GURL& url,
     const std::vector<std::string>& arg_names,
@@ -343,18 +327,6 @@ bool WebPluginDelegateProxy::Initialize(
       transparent_ = true;
     }
   }
-#if defined(OS_MACOSX)
-  // Older versions of Flash just assume QuickDraw support during negotiation,
-  // so force everything but transparent mode to use opaque mode on 10.5
-  // (where Flash doesn't use CA) to prevent QuickDraw from being used.
-  // TODO(stuartmorgan): Remove this code once the two latest major Flash
-  // releases negotiate correctly.
-  if (flash && !transparent_ && base::mac::IsOSLeopardOrEarlier() &&
-      FlashVersionAssumesQuickDrawSupport(info_.version)) {
-    params.arg_names.push_back("wmode");
-    params.arg_values.push_back("opaque");
-  }
-#endif
   params.load_manually = load_manually;
 
   plugin_ = plugin;
