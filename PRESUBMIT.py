@@ -112,7 +112,7 @@ def _CheckNoIOStreamInHeaders(input_api, output_api):
 
 def _CheckNoNewWStrings(input_api, output_api):
   """Checks to make sure we don't introduce use of wstrings."""
-  errors = []
+  problems = []
   for f in input_api.AffectedFiles():
     for line_num, line in f.ChangedContents():
       if (not f.LocalPath().endswith(('.cc', '.h')) or
@@ -120,12 +120,13 @@ def _CheckNoNewWStrings(input_api, output_api):
         continue
 
       if 'wstring' in line:
-        errors.append(output_api.PresubmitError(
-            '%s, line %d: new code should not use wstrings.  If you are '
-            'calling an API that accepts a wstring, fix the API.'
-            % (f.LocalPath(), line_num)))
+        problems.append('    %s:%d' % (f.LocalPath(), line_num))
 
-  return errors
+  if not problems:
+    return []
+  return [output_api.PresubmitPromptWarning('New code should not use wstrings.'
+      '  If you are calling an API that accepts a wstring, fix the API.\n' +
+      '\n'.join(problems))]
 
 
 def _CommonChecks(input_api, output_api):
