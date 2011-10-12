@@ -10,7 +10,7 @@ namespace gestures {
 
 LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
                                                    Interpreter* next)
-  : logging_notify_(prop_reg, "Logging Notify", 0, this) {
+  : log_(prop_reg), logging_notify_(prop_reg, "Logging Notify", 0, this) {
   next_.reset(next);
 }
 

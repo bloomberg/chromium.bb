@@ -16,6 +16,8 @@
 
 namespace gestures {
 
+class PropRegistry;
+
 class ActivityLog {
   FRIEND_TEST(ActivityLogTest, SimpleTest);
   FRIEND_TEST(LoggingFilterInterpreterTest, SimpleTest);
@@ -35,7 +37,7 @@ class ActivityLog {
     } details;
   };
 
-  ActivityLog();
+  explicit ActivityLog(PropRegistry* prop_reg);
   void SetHardwareProperties(const HardwareProperties& hwprops);
 
   // Log*() functions record an argument into the buffer
@@ -110,6 +112,8 @@ class ActivityLog {
   static const char kKeyHardwarePropSemiMt[];
   static const char kKeyHardwarePropIsButtonPad[];
 
+  static const char kKeyProperties[];
+
  private:
   // Extends the tail of the buffer by one element and returns that new element.
   // This may cause an older element to be overwritten if the buffer is full.
@@ -123,6 +127,9 @@ class ActivityLog {
   std::string EncodeTimerCallback(stime_t timestamp);
   std::string EncodeCallbackRequest(stime_t timestamp);
   std::string EncodeGesture(const Gesture& gesture);
+
+  // Encode user-configurable properties
+  std::string EncodePropRegistry();
 
   // Returns a JSON string representing all the state in the buffer
   std::string Encode();
@@ -140,6 +147,7 @@ class ActivityLog {
   size_t max_fingers_;
 
   HardwareProperties hwprops_;
+  PropRegistry* prop_reg_;
 };
 
 }  // namespace gestures

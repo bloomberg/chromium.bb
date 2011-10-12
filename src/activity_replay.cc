@@ -15,6 +15,8 @@ using std::string;
 
 namespace gestures {
 
+ActivityReplay::ActivityReplay() : log_(NULL) {}
+
 bool ActivityReplay::Parse(const string& data) {
   int error_code;
   string error_msg;

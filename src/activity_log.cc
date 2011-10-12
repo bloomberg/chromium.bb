@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <set>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -13,12 +14,15 @@
 #include <base/string_util.h>
 
 #include "gestures/include/logging.h"
+#include "gestures/include/prop_registry.h"
 
+using std::set;
 using std::string;
 
 namespace gestures {
 
-ActivityLog::ActivityLog() : head_idx_(0), size_(0), max_fingers_(0) {}
+ActivityLog::ActivityLog(PropRegistry* prop_reg)
+: head_idx_(0), size_(0), max_fingers_(0), prop_reg_(prop_reg) {}
 
 void ActivityLog::SetHardwareProperties(const HardwareProperties& hwprops) {
   hwprops_ = hwprops;
@@ -233,8 +237,25 @@ string ActivityLog::EncodeGesture(const Gesture& gesture) {
                             gesture.type);
 }
 
+string ActivityLog::EncodePropRegistry() {
+  if (!prop_reg_)
+    return "{}";
+  string ret = "{";
+  const set<Property*>& props = prop_reg_->props();
+  bool first = true;
+  for (set<Property*>::const_iterator it = props.begin(), e = props.end();
+       it != e; ++it, first = false) {
+    ret += StringPrintf("%s\"%s\": %s", !first ? ",\n   " : "",
+                        (*it)->name(), (*it)->Value().c_str());
+  }
+  return ret + "}";
+}
+
 string ActivityLog::Encode() {
-  string ret(StringPrintf("{\"version\": 1,\n  \"%s\":\n  %s,\n  \"%s\": [",
+  string ret(StringPrintf("{\"version\": 1,\n  \"%s\":\n  %s,"
+                          "\n  \"%s\":\n  %s,\n  \"%s\": [",
+                          kKeyProperties,
+                          EncodePropRegistry().c_str(),
                           kKeyHardwarePropRoot,
                           EncodeHardwareProperties().c_str(),
                           kKeyRoot));
@@ -313,5 +334,8 @@ const char ActivityLog::kKeyHardwarePropMaxTouchCount[] = "maxTouchCount";
 const char ActivityLog::kKeyHardwarePropSupportsT5R2[] = "supportsT5R2";
 const char ActivityLog::kKeyHardwarePropSemiMt[] = "semiMt";
 const char ActivityLog::kKeyHardwarePropIsButtonPad[] = "isButtonPad";
+
+const char ActivityLog::kKeyProperties[] = "properties";
+
 
 }  // namespace gestures

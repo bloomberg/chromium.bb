@@ -20,6 +20,7 @@ namespace gestures {
 
 class ActivityReplay {
  public:
+  ActivityReplay();
   // Returns true on success.
   bool Parse(const std::string& data);
   void Replay(Interpreter* interpreter);

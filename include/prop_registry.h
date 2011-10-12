@@ -27,6 +27,7 @@ class PropRegistry {
   void SetPropProvider(GesturesPropProvider* prop_provider, void* data);
   GesturesPropProvider* PropProvider() const { return prop_provider_; }
   void* PropProviderData() const { return prop_provider_data_; }
+  const std::set<Property*>& props() const { return props_; }
 
  private:
   GesturesPropProvider* prop_provider_;

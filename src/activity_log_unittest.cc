@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_log.h"
+#include "gestures/include/prop_registry.h"
 
 using std::string;
 
@@ -17,7 +18,21 @@ namespace gestures {
 class ActivityLogTest : public ::testing::Test {};
 
 TEST(ActivityLogTest, SimpleTest) {
-  ActivityLog log;
+  PropRegistry prop_reg;
+  BoolProperty true_prop(&prop_reg, "true prop", true);
+  BoolProperty false_prop(&prop_reg, "false prop", false);
+  DoubleProperty double_prop(&prop_reg, "double prop", 77.33);
+  IntProperty int_prop(&prop_reg, "int prop", 816);
+  ShortProperty short_prop(&prop_reg, "short prop", -998);
+  StringProperty string_prop(&prop_reg, "string prop", "foobarstr");
+
+  ActivityLog log(&prop_reg);
+  EXPECT_TRUE(strstr(log.Encode().c_str(), "true"));
+  EXPECT_TRUE(strstr(log.Encode().c_str(), "false"));
+  EXPECT_TRUE(strstr(log.Encode().c_str(), "77.33"));
+  EXPECT_TRUE(strstr(log.Encode().c_str(), "816"));
+  EXPECT_TRUE(strstr(log.Encode().c_str(), "-998"));
+  EXPECT_TRUE(strstr(log.Encode().c_str(), "foobarstr"));
 
   HardwareProperties hwprops = {
     6011,  // left edge
