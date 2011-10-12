@@ -16,11 +16,9 @@
       "matches": [ "<all_urls>" ],
       "all_frames": true,
       "js": [
-        "build/build_defs.js",
-        "build/build_config_chrome.js",
-        "chromevox/injected/main.js",
-        "common/extension_bridge.js"
+        "chromeVoxChromePageScript.js"
       ]
     }
-  ]
+  ],
+  "default_locale": "en"
 }
