@@ -612,3 +612,11 @@
    fun:media::CompositeFilter::CallFilter
    fun:media::CompositeFilter::SerialCallback
 }
+{
+  bug_100020
+  ThreadSanitizer:Race
+  fun:linked_ptr_internal::join
+  fun:linked_ptr::copy
+  ...
+  fun:HostContentSettingsMap::GetDefaultContentSetting
+}
