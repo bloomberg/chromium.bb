@@ -9,7 +9,8 @@
 class NativeConstrainedWindowAura : public NativeConstrainedWindow,
                                    public views::NativeWidgetAura {
  public:
-  explicit NativeConstrainedWindowAura(NativeConstrainedWindowDelegate* delegate)
+  explicit NativeConstrainedWindowAura(
+      NativeConstrainedWindowDelegate* delegate)
       : views::NativeWidgetAura(delegate->AsNativeWidgetDelegate()),
         delegate_(delegate) {
   }

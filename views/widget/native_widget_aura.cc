@@ -32,8 +32,10 @@ namespace views {
 
 namespace {
 
-int GetAuraWindowTypeForWidgetType(Widget::InitParams::Type type) {
-  switch (type) {
+int GetAuraWindowTypeFromInitParams(const Widget::InitParams& params) {
+  if (params.child)
+    return aura::kWindowType_Control;
+  switch (params.type) {
     case Widget::InitParams::TYPE_WINDOW:
     case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
     case Widget::InitParams::TYPE_POPUP:
@@ -92,7 +94,7 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   window_->set_user_data(this);
-  window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
+  window_->SetType(GetAuraWindowTypeFromInitParams(params));
   window_->Init();
   // TODO(beng): respect |params| authoritah wrt transparency.
   window_->layer()->SetFillsBoundsOpaquely(false);
@@ -221,7 +223,11 @@ InputMethod* NativeWidgetAura::CreateInputMethod() {
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
-  NOTIMPLEMENTED();
+  const gfx::Rect parent_bounds = window_->parent()->bounds();
+  window_->SetBounds(gfx::Rect((parent_bounds.width() - size.width())/2,
+                               (parent_bounds.height() - size.height())/2,
+                               size.width(),
+                               size.height()));
 }
 
 void NativeWidgetAura::GetWindowPlacement(

@@ -554,17 +554,13 @@ gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
 }
 
 void ConstrainedWindowFrameView::InitWindowResources() {
-#if !defined(USE_AURA)
-
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   resources_.reset(views::NativeWidgetWin::IsAeroGlassEnabled() ?
       static_cast<views::WindowResources*>(new VistaWindowResources) :
       new XPWindowResources);
 #else
-  // TODO(rhashimoto): Use non-Windows frame decoration.
+  // TODO(oshima): Use aura frame decoration.
   resources_.reset(new XPWindowResources);
-#endif
-
 #endif
 }
 
@@ -574,10 +570,6 @@ void ConstrainedWindowFrameView::InitClass() {
   if (!initialized) {
 #if defined(OS_WIN) && !defined(USE_AURA)
     title_font_ = new gfx::Font(views::NativeWidgetWin::GetWindowTitleFont());
-#elif defined(USE_AURA)
-    // TODO(beng):
-    NOTIMPLEMENTED();
-    title_font_ = NULL;
 #else
     ResourceBundle& resources = ResourceBundle::GetSharedInstance();
     title_font_ = &resources.GetFont(ResourceBundle::MediumFont);
@@ -599,18 +591,14 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
 
-  if (views::Widget::IsPureViews()) {
-    if (views::ViewsDelegate::views_delegate &&
-        views::ViewsDelegate::views_delegate->GetDefaultParentView()) {
-      // Don't set parent so that constrained window is attached to
-      // desktop. This is necessary for key events to work under views desktop
-      // because key events need to be sent to toplevel window
-      // which has an inputmethod object that knows where to forward
-      // event.
-    } else {
-      params.parent_widget =
-          static_cast<TabContentsViewViews*>(wrapper->view());
-    }
+  if (views::Widget::IsPureViews() &&
+      views::ViewsDelegate::views_delegate &&
+      views::ViewsDelegate::views_delegate->GetDefaultParentView()) {
+    // Don't set parent so that constrained window is attached to
+    // desktop. This is necessary for key events to work under views desktop
+    // because key events need to be sent to toplevel window
+    // which has an inputmethod object that knows where to forward
+    // event.
   } else {
     params.child = true;
     params.parent = wrapper->tab_contents()->GetNativeView();

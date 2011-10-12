@@ -65,9 +65,8 @@ void Window::Init() {
     type = ui::Layer::LAYER_HAS_TEXTURE;
   layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), type));
   // Windows (and therefore the layer) should initially be hidden.
-  // TODO: when we distinguish control (child) windows, they should be initially
-  // visible.
-  layer_->SetVisible(false);
+  // Control window is visible by default.
+  layer_->SetVisible(type_ == kWindowType_Control);
   layer_->set_delegate(this);
 }
 
