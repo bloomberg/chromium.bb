@@ -39,7 +39,7 @@ deps = {
     'src/third_party/cacheinvalidation/files/src/google':
         Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@b638a24e0215731f1c0c3bd2c77f110f49a11305',
     'src/third_party/ffmpeg':
-        Var('git_url') + '/chromium/deps/ffmpeg/source.git@743d31aa354d292fb82f7df0568914829f3cc2fc',
+        Var('git_url') + '/chromium/deps/ffmpeg/source.git@99dcae1b83a1a8c01b0377bea0c28c2ca3f5df61',
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@1cde08e295604898d14367eda0414ade8121ec43',
     'src/third_party/hunspell':
@@ -53,9 +53,9 @@ deps = {
     'src/third_party/libjingle/source':
         Var('git_url') + '/external/libjingle.git@61b45e02e09a933fe9d920236baf8aebbe47271b',
     'src/third_party/libjpeg_turbo':
-        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@f1c0942d30591341980fe506468f99ca06567ed6',
+        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@654337e78ef4afeb86775c44fa07931be91dbd66',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@d3300f8a1301a7d4fa5661762606cfed43b0c05d',
+        Var('git_url') + '/chromium/deps/libvpx.git@b3c3acc1cc5528d92ba97dee9602ad7fb87b53bf',
     'src/third_party/mozc/session':
         Var('git_url') + '/external/mozc/src/session.git@98ab3939dd391d5f93ddecc6b4f5a2a98fefd82f',
     'src/third_party/ots':
