@@ -249,7 +249,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetX(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(SearchBox::Get(render_view)->rect().x());
+  return v8::Int32::New(SearchBox::Get(render_view)->GetRect().x());
 }
 
 // static
@@ -257,7 +257,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetY(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(SearchBox::Get(render_view)->rect().y());
+  return v8::Int32::New(SearchBox::Get(render_view)->GetRect().y());
 }
 
 // static
@@ -265,7 +265,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetWidth(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(SearchBox::Get(render_view)->rect().width());
+  return v8::Int32::New(SearchBox::Get(render_view)->GetRect().width());
 }
 
 // static
@@ -273,7 +273,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetHeight(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(SearchBox::Get(render_view)->rect().height());
+  return v8::Int32::New(SearchBox::Get(render_view)->GetRect().height());
 }
 
 // Accepts a single argument in form:

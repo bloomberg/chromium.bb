@@ -30,6 +30,22 @@ void SearchBox::SetSuggestions(const std::vector<std::string>& suggestions,
       behavior));
 }
 
+gfx::Rect SearchBox::GetRect() {
+  // Need to adjust for scale.
+  if (rect_.IsEmpty())
+    return rect_;
+  WebView* web_view = render_view()->GetWebView();
+  if (!web_view)
+    return rect_;
+  double zoom = WebView::zoomLevelToZoomFactor(web_view->zoomLevel());
+  if (zoom == 0)
+    return rect_;
+  return gfx::Rect(static_cast<int>(static_cast<float>(rect_.x()) / zoom),
+                   static_cast<int>(static_cast<float>(rect_.y()) / zoom),
+                   static_cast<int>(static_cast<float>(rect_.width()) / zoom),
+                   static_cast<int>(static_cast<float>(rect_.height()) / zoom));
+}
+
 bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchBox, message)

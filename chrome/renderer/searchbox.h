@@ -25,11 +25,11 @@ class SearchBox : public content::RenderViewObserver,
   void SetSuggestions(const std::vector<std::string>& suggestions,
                       InstantCompleteBehavior behavior);
 
-  const string16& value() { return value_; }
-  bool verbatim() { return verbatim_; }
-  uint32 selection_start() { return selection_start_; }
-  uint32 selection_end() { return selection_end_; }
-  const gfx::Rect& rect() { return rect_; }
+  const string16& value() const { return value_; }
+  bool verbatim() const { return verbatim_; }
+  uint32 selection_start() const { return selection_start_; }
+  uint32 selection_end() const { return selection_end_; }
+  gfx::Rect GetRect();
 
  private:
   // RenderViewObserver implementation.
