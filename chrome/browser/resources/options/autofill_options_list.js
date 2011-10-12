@@ -305,19 +305,20 @@ cr.define('options.autofillOptions', function() {
   };
 
   /**
-   * Create a new address list.
+   * Base class for shared implementation between address and credit card lists.
    * @constructor
    * @extends {options.DeletableItemList}
    */
-  var AutofillAddressList = cr.ui.define('list');
+  var AutofillProfileList = cr.ui.define('list');
 
-  AutofillAddressList.prototype = {
+  AutofillProfileList.prototype = {
     __proto__: DeletableItemList.prototype,
 
-    decorate: function() {
+    decorate:  function() {
       DeletableItemList.prototype.decorate.call(this);
 
       this.addEventListener('blur', this.onBlur_);
+      this.addEventListener('dblclick', this.onDoubleClick_);
     },
 
     /**
@@ -326,6 +327,48 @@ cr.define('options.autofillOptions', function() {
      */
     onBlur_: function() {
       this.selectionModel.unselectAll();
+    },
+
+    /**
+     * When a list item is double clicked, open the corresponding profile for
+     * editing.
+     * @param {Event} event The double-click event.
+     * @private
+     */
+    onDoubleClick_: function(event) {
+      if (this.disabled)
+        return;
+
+      var target = this.getListItemAncestor(event.target);
+      if (target)
+        this.activateItemAtIndex_(this.getIndexOfListItem(target));
+    },
+
+    /**
+     * Opens the item at |index| for editing. Subclasses should override.
+     * @param {Number} index The item index.
+     */
+    activateItemAtIndex_: function(index) {
+    },
+  };
+
+  /**
+   * Create a new address list.
+   * @constructor
+   * @extends {options.AutofillProfileList}
+   */
+  var AutofillAddressList = cr.ui.define('list');
+
+  AutofillAddressList.prototype = {
+    __proto__: AutofillProfileList.prototype,
+
+    decorate: function() {
+      AutofillProfileList.prototype.decorate.call(this);
+    },
+
+    /** @inheritDoc */
+    activateItemAtIndex_: function(index) {
+      AutofillOptions.loadAddressEditor(this.dataModel.item(index)[0]);
     },
 
     /** @inheritDoc */
@@ -347,20 +390,15 @@ cr.define('options.autofillOptions', function() {
   var AutofillCreditCardList = cr.ui.define('list');
 
   AutofillCreditCardList.prototype = {
-    __proto__: DeletableItemList.prototype,
+    __proto__: AutofillProfileList.prototype,
 
     decorate: function() {
-      DeletableItemList.prototype.decorate.call(this);
-
-      this.addEventListener('blur', this.onBlur_);
+      AutofillProfileList.prototype.decorate.call(this);
     },
 
-    /**
-     * When the list loses focus, unselect all items in the list.
-     * @private
-     */
-    onBlur_: function() {
-      this.selectionModel.unselectAll();
+    /** @inheritDoc */
+    activateItemAtIndex_: function(index) {
+      AutofillOptions.loadCreditCardEditor(this.dataModel.item(index)[0]);
     },
 
     /** @inheritDoc */
