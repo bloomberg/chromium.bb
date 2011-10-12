@@ -534,6 +534,7 @@ void FirstRunBubble::EnableParent() {
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_SHOWWINDOW);
 }
 
+#if defined(OS_WIN) && !defined(USE_AURA)
 void FirstRunBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   // Keep the bubble around for kLingerTime milliseconds, to prevent accidental
   // closure.
@@ -558,6 +559,7 @@ void FirstRunBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   if (::IsWindowEnabled(GetParent()))
     Bubble::OnActivate(action, minimized, window);
 }
+#endif
 
 void FirstRunBubble::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
   // Make sure our parent window is re-enabled.

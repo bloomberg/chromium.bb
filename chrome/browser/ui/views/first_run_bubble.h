@@ -32,7 +32,7 @@ class FirstRunBubble : public Bubble,
   // Re-enable the parent window.
   void EnableParent();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Overridden from Bubble:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
 #endif
