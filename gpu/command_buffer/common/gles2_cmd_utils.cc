@@ -348,6 +348,7 @@ int BytesPerElement(int type) {
   switch (type) {
     case GL_FLOAT:
     case GL_UNSIGNED_INT_24_8_OES:
+    case GL_UNSIGNED_INT:
       return 4;
     case GL_HALF_FLOAT_OES:
     case GL_UNSIGNED_SHORT:

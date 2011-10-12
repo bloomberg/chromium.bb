@@ -81,6 +81,9 @@ TEST_F(GLES2UtilTest, ComputeImageDataSizeTypes) {
   EXPECT_TRUE(GLES2Util::ComputeImageDataSize(
       kWidth, kHeight, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 1, &size));
   EXPECT_EQ(kWidth * kHeight * 2, size);
+  EXPECT_TRUE(GLES2Util::ComputeImageDataSize(
+      kWidth, kHeight, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 1, &size));
+  EXPECT_EQ(kWidth * kHeight * 4, size);
 }
 
 TEST_F(GLES2UtilTest, ComputeImageDataSizeUnpackAlignment) {
