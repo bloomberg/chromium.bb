@@ -308,4 +308,114 @@ TEST(LookaheadFilterInterpreterTest, CombineGesturesTest) {
   }
 }
 
+TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest) {
+  // This test takes the first two HardwareStates, Interpolates them, putting
+  // the output into the fourth slot. The third slot is the expected output.
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, pr, orient, x, y, id
+    { 0.1, 0.4, 1.6, 1.2, 10, 3, 102, 102, 1 },
+    { 0.2, 0.5, 1.7, 1.3, 11, 4, 4, 4, 2 },
+    { 0.3, 0.6, 1.8, 1.4, 12, 5, 4444, 9999, 3 },
+
+    { 0.5, 0.2, 2.0, 1.2, 13, 8, 200, 100, 1 },
+    { 0.7, 0.4, 2.3, 1.3, 17, 7, 20, 22, 2 },
+    { 1.0, 0.5, 2.4, 1.6, 10, 9, 5000, 5000, 3 },
+
+    { 0.3, 0.3, 1.8, 1.2, 11.5, 5.5, 151, 101, 1 },
+    { 0.45, 0.45, 2.0, 1.3, 14, 5.5, 12, 13, 2 },
+    { 0.65, 0.55, 2.1, 1.5, 11, 7, 4722, 7499.5, 3 },
+
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+  };
+  HardwareState hs[] = {
+    // Expect movement to take
+    { 1.011,  2, 3, 3, &fs[0] },
+    { 1.022,  2, 3, 3, &fs[3] },
+    { 1.0165, 2, 3, 3, &fs[6] },
+    { 0, 0, 0, 0, &fs[9] },
+  };
+
+  LookaheadFilterInterpreter::Interpolate(hs[0], hs[1], &hs[3]);
+  EXPECT_DOUBLE_EQ(hs[2].timestamp, hs[3].timestamp);
+  EXPECT_EQ(hs[2].buttons_down, hs[3].buttons_down);
+  EXPECT_EQ(hs[2].touch_cnt, hs[3].touch_cnt);
+  EXPECT_EQ(hs[2].finger_cnt, hs[3].finger_cnt);
+  for (size_t i = 0; i < hs[3].finger_cnt; i++)
+    EXPECT_TRUE(hs[2].fingers[i] == hs[3].fingers[i]) << "i=" << i;
+}
+
+TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
+  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+
+  HardwareProperties initial_hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    10,  // x res (pixels/mm)
+    10,  // y res (pixels/mm)
+    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    1, 0, 0  // t5r2, semi, button pad
+  };
+
+  FingerState fs = {
+    // TM, Tm, WM, Wm, pr, orient, x, y, id
+    0, 0, 0, 0, 1, 0, 10, 1, 1
+  };
+  HardwareState hs[] = {
+    // Expect movement to take
+    { 1.01, 0, 1, 1, &fs },
+    { 1.02, 0, 1, 1, &fs },
+    { 1.04, 0, 1, 1, &fs },
+  };
+
+  // Tests that we can properly decide when to interpolate two events.
+  for (size_t i = 0; i < 2; ++i) {
+    bool should_interpolate = i;
+    base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
+    base_interpreter->return_values_.push_back(
+        Gesture(kGestureMove,
+                0,  // start time
+                1,  // end time
+                0,  // dx
+                1));  // dy
+    base_interpreter->return_values_.push_back(
+        Gesture(kGestureMove,
+                1,  // start time
+                2,  // end time
+                0,  // dx
+                2));  // dy
+    base_interpreter->return_values_.push_back(
+        Gesture(kGestureMove,
+                2,  // start time
+                3,  // end time
+                0,  // dx
+                3));  // dy
+    interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+    interpreter->SetHardwareProperties(initial_hwprops);
+
+    stime_t timeout = -1.0;
+    Gesture* out = interpreter->SyncInterpret(&hs[0], &timeout);
+    EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+    EXPECT_GT(timeout, 0);
+    const size_t next_idx = should_interpolate ? 2 : 1;
+    timeout = -1.0;
+    out = interpreter->SyncInterpret(&hs[next_idx], &timeout);
+    EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+    EXPECT_GT(timeout, 0);
+
+    // Fetch the gestures
+    size_t gs_count = 0;
+    stime_t now = hs[next_idx].timestamp + timeout;
+    do {
+      timeout = -1.0;
+      out = interpreter->HandleTimer(now, &timeout);
+      EXPECT_NE(reinterpret_cast<Gesture*>(NULL), out);
+      gs_count++;
+      now += timeout;
+    } while(timeout > 0.0);
+    EXPECT_EQ(should_interpolate ? 3 : 2, gs_count);
+  }
+}
+
 }  // namespace gestures

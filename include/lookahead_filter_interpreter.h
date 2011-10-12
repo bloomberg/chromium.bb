@@ -19,6 +19,7 @@ namespace gestures {
 
 class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, CombineGesturesTest);
+  FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SimpleTest);
  public:
   LookaheadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
@@ -50,6 +51,18 @@ class LookaheadFilterInterpreter : public Interpreter {
     QState* prev_;
   };
 
+  // Looks at the most recent 2 states in the queue (one of which may have
+  // already completed), and if they are separated by split_min_period_ time,
+  // tries to insert an interpolated event in the middle.
+  void AttemptInterpolation();
+
+  // Interpolates first and second, storing the result into out.
+  // first and second must have the same the same number of fingers and
+  // have the same tracking_ids for all fingers.
+  static void Interpolate(const HardwareState& first,
+                          const HardwareState& second,
+                          HardwareState* out);
+
   void UpdateInterpreterDue(stime_t new_interpreter_due,
                             stime_t now,
                             stime_t* timeout);
@@ -68,10 +81,16 @@ class LookaheadFilterInterpreter : public Interpreter {
   scoped_ptr<Interpreter> next_;
   stime_t interpreter_due_;
 
+  // We want to present time to next_ in a monotonically increasing manner,
+  // so this keeps track of the most recent timestamp we've given next_.
+  stime_t last_interpreted_time_;
+
   Gesture result_;
 
   DoubleProperty min_nonsuppress_speed_;
   DoubleProperty delay_;
+  // If this much time passes between consecutive events, interpolate.
+  DoubleProperty split_min_period_;
 };
 
 }  // namespace gestures

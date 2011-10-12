@@ -19,9 +19,11 @@ static const stime_t kMaxDelay = 0.09;  // 90ms
 LookaheadFilterInterpreter::LookaheadFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
     : max_fingers_per_hwstate_(0), interpreter_due_(-1.0),
+      last_interpreted_time_(0.0),
       min_nonsuppress_speed_(prop_reg, "Input Queue Min Nonsuppression Speed",
                              200.0),
-      delay_(prop_reg, "Input Queue Delay", 0.05) {
+      delay_(prop_reg, "Input Queue Delay", 0.05),
+      split_min_period_(prop_reg, "Min Interpolate Period", 0.021) {
   next_.reset(next);
 }
 
@@ -49,10 +51,68 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
       free_list_.PushBack(queue_.PopFront());
     } while (!queue_.Empty());
     interpreter_due_ = -1.0;
+    last_interpreted_time_ = 0.0;
   }
   queue_.PushBack(node);
-
+  AttemptInterpolation();
   return HandleTimer(hwstate->timestamp, timeout);
+}
+
+// Interpolates the two hardware states into out.
+// out must have finger states allocated and pointed to already.
+void LookaheadFilterInterpreter::Interpolate(const HardwareState& first,
+                                             const HardwareState& second,
+                                             HardwareState* out) {
+  out->timestamp = (first.timestamp + second.timestamp) / 2.0;
+  out->buttons_down = first.buttons_down;
+  out->touch_cnt = first.touch_cnt;
+  out->finger_cnt = first.finger_cnt;
+  for (size_t i = 0; i < first.finger_cnt; i++) {
+    const FingerState& older = first.fingers[i];
+    const FingerState& newer = second.fingers[i];
+    FingerState* mid = &out->fingers[i];
+    mid->touch_major = (older.touch_major + newer.touch_major) / 2.0;
+    mid->touch_minor = (older.touch_minor + newer.touch_minor) / 2.0;
+    mid->width_major = (older.width_major + newer.width_major) / 2.0;
+    mid->width_minor = (older.width_minor + newer.width_minor) / 2.0;
+    mid->pressure = (older.pressure + newer.pressure) / 2.0;
+    mid->orientation = (older.orientation + newer.orientation) / 2.0;
+    mid->position_x = (older.position_x + newer.position_x) / 2.0;
+    mid->position_y = (older.position_y + newer.position_y) / 2.0;
+    mid->tracking_id = older.tracking_id;
+  }
+}
+
+void LookaheadFilterInterpreter::AttemptInterpolation() {
+  if (queue_.size() < 2)
+    return;
+  QState* new_node = queue_.Tail();
+  QState* prev = new_node->prev_;
+  if (new_node->state_.timestamp - prev->state_.timestamp <
+      split_min_period_.val_)
+    return;  // Nodes came in too quickly to need interpolation
+  if (!prev->state_.SameFingersAs(new_node->state_))
+    return;
+  QState* node = free_list_.PopFront();
+  if (!node) {
+    Err("out of nodes?");
+    return;
+  }
+  node->state_.fingers = node->fs_.get();
+  node->completed_ = false;
+  Interpolate(prev->state_, new_node->state_, &node->state_);
+
+  double delay = max(0.0, min(kMaxDelay, delay_.val_));
+  node->due_ = node->state_.timestamp + delay;
+
+  if (node->state_.timestamp <= last_interpreted_time_) {
+    // Time wouldn't seem monotonically increasing w/ this new event, so
+    // discard it.
+    free_list_.PushBack(node);
+    return;
+  }
+
+  queue_.InsertBefore(new_node, node);
 }
 
 Gesture* LookaheadFilterInterpreter::HandleTimer(stime_t now,
@@ -65,6 +125,7 @@ Gesture* LookaheadFilterInterpreter::HandleTimer(stime_t now,
       if (interpreter_due_ > now)
         break;  // Spurious callback
       next_timeout = -1.0;
+      last_interpreted_time_ = now;
       result = next_->HandleTimer(now, &next_timeout);
     } else {
       if (queue_.Empty())
@@ -76,6 +137,7 @@ Gesture* LookaheadFilterInterpreter::HandleTimer(stime_t now,
       if (node->completed_ || node->due_ > now)
         break;
       next_timeout = -1.0;
+      last_interpreted_time_ = node->state_.timestamp;
       result = next_->SyncInterpret(&node->state_, &next_timeout);
 
       // Clear previously completed nodes
@@ -119,13 +181,9 @@ bool LookaheadFilterInterpreter::ShouldSuppressResult(const Gesture* gesture,
   if (distance_sq >= min_nonsuppress_dist_sq)
     return false;
   // Speed is slow. Suppress if fingers have changed.
-  for (QState* iter = node->next_; iter != queue_.End(); iter = iter->next_) {
-    if (node->state_.finger_cnt != iter->state_.finger_cnt)
+  for (QState* iter = node->next_; iter != queue_.End(); iter = iter->next_)
+    if (!node->state_.SameFingersAs(iter->state_))
       return true;
-    for (size_t i = 0; i < node->state_.finger_cnt; ++i)
-      if (!iter->state_.GetFingerState(node->state_.fingers[i].tracking_id))
-        return true;
-  }
   return false;
 }
 
