@@ -133,6 +133,7 @@ bool LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
 
 // static
 void LanguageSwitchMenu::LoadFontsForCurrentLocale() {
+#if defined(TOOLKIT_USES_GTK)
   std::string gtkrc = l10n_util::GetStringUTF8(IDS_LOCALE_GTKRC);
 
   // Read locale-specific gtkrc.  Ideally we'd discard all the previously read
@@ -145,6 +146,10 @@ void LanguageSwitchMenu::LoadFontsForCurrentLocale() {
     gtk_rc_parse_string(gtkrc.c_str());
   else
     gtk_rc_parse("/etc/gtk-2.0/gtkrc");
+#else
+  // TODO(saintlou): Need to figure out an Aura equivalent.
+  NOTIMPLEMENTED();
+#endif
 
   // Switch the font.
   gfx::PlatformFontPango::ReloadDefaultFont();

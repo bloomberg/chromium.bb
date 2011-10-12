@@ -82,6 +82,7 @@ ThrobberHostView::~ThrobberHostView() {
 }
 
 void ThrobberHostView::StartThrobber() {
+#if defined(TOOLKIT_USES_GTK)
   StopThrobber();
 
   views::Widget* host_widget = host_view_->GetWidget();
@@ -118,6 +119,10 @@ void ThrobberHostView::StartThrobber() {
   // WM can ignore bounds before widget is shown.
   throbber_widget_->SetBounds(throbber_bounds);
   throbber->Start();
+#else
+  // TODO(saintlou): Do we need a throbber for Aura?
+  NOTIMPLEMENTED();
+#endif
 }
 
 void ThrobberHostView::StopThrobber() {

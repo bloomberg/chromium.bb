@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdkx.h>
-#endif
+// TODO(saintlou): should we handle this define in gyp even if only used once?
+#define XK_MISCELLANY 1
+#include <X11/keysymdef.h>
 #include <X11/XF86keysym.h>
 #include <X11/XKBlib.h>
 
@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/volume_bubble.h"
 #include "content/browser/user_metrics.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
+#include "ui/base/x/x11_util.h"
 
 #if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
 #include "base/message_pump_x.h"
@@ -68,19 +69,20 @@ SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
       caps_lock_is_on_(input_method::XKeyboard::CapsLockIsEnabled()),
       xkb_event_base_(0) {
-  key_brightness_down_ = XKeysymToKeycode(GDK_DISPLAY(),
+  Display* display = ui::GetXDisplay();
+  key_brightness_down_ = XKeysymToKeycode(display,
                                           XF86XK_MonBrightnessDown);
-  key_brightness_up_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_MonBrightnessUp);
-  key_volume_mute_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioMute);
-  key_volume_down_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioLowerVolume);
-  key_volume_up_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioRaiseVolume);
-  key_f6_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F6);
-  key_f7_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F7);
-  key_f8_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F8);
-  key_f9_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F9);
-  key_f10_ = XKeysymToKeycode(GDK_DISPLAY(), XK_F10);
-  key_left_shift_ = XKeysymToKeycode(GDK_DISPLAY(), XK_Shift_L);
-  key_right_shift_ = XKeysymToKeycode(GDK_DISPLAY(), XK_Shift_R);
+  key_brightness_up_ = XKeysymToKeycode(display, XF86XK_MonBrightnessUp);
+  key_volume_mute_ = XKeysymToKeycode(display, XF86XK_AudioMute);
+  key_volume_down_ = XKeysymToKeycode(display, XF86XK_AudioLowerVolume);
+  key_volume_up_ = XKeysymToKeycode(display, XF86XK_AudioRaiseVolume);
+  key_f6_ = XKeysymToKeycode(display, XK_F6);
+  key_f7_ = XKeysymToKeycode(display, XK_F7);
+  key_f8_ = XKeysymToKeycode(display, XK_F8);
+  key_f9_ = XKeysymToKeycode(display, XK_F9);
+  key_f10_ = XKeysymToKeycode(display, XK_F10);
+  key_left_shift_ = XKeysymToKeycode(display, XK_Shift_L);
+  key_right_shift_ = XKeysymToKeycode(display, XK_Shift_R);
 
   if (key_brightness_down_)
     GrabKey(key_brightness_down_, 0);
@@ -100,7 +102,7 @@ SystemKeyEventListener::SystemKeyEventListener()
 
   int xkb_major_version = XkbMajorVersion;
   int xkb_minor_version = XkbMinorVersion;
-  if (!XkbQueryExtension(GDK_DISPLAY(),
+  if (!XkbQueryExtension(display,
                          NULL,  // opcode_return
                          &xkb_event_base_,
                          NULL,  // error_return
@@ -109,7 +111,7 @@ SystemKeyEventListener::SystemKeyEventListener()
     LOG(WARNING) << "Could not query Xkb extension";
   }
 
-  if (!XkbSelectEvents(GDK_DISPLAY(), XkbUseCoreKbd,
+  if (!XkbSelectEvents(display, XkbUseCoreKbd,
                        XkbStateNotifyMask,
                        XkbStateNotifyMask)) {
     LOG(WARNING) << "Could not install Xkb Indicator observer";
@@ -177,13 +179,14 @@ GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
 void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
   uint32 num_lock_mask = Mod2Mask;
   uint32 caps_lock_mask = LockMask;
-  Window root = DefaultRootWindow(GDK_DISPLAY());
-  XGrabKey(GDK_DISPLAY(), key, mask, root, True, GrabModeAsync, GrabModeAsync);
-  XGrabKey(GDK_DISPLAY(), key, mask | caps_lock_mask, root, True,
+  Display* display = ui::GetXDisplay();
+  Window root = DefaultRootWindow(display);
+  XGrabKey(display, key, mask, root, True, GrabModeAsync, GrabModeAsync);
+  XGrabKey(display, key, mask | caps_lock_mask, root, True,
            GrabModeAsync, GrabModeAsync);
-  XGrabKey(GDK_DISPLAY(), key, mask | num_lock_mask, root, True,
+  XGrabKey(display, key, mask | num_lock_mask, root, True,
            GrabModeAsync, GrabModeAsync);
-  XGrabKey(GDK_DISPLAY(), key, mask | caps_lock_mask | num_lock_mask, root,
+  XGrabKey(display, key, mask | caps_lock_mask | num_lock_mask, root,
            True, GrabModeAsync, GrabModeAsync);
 }
 

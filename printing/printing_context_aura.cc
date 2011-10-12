@@ -8,7 +8,6 @@
 
 namespace printing {
 
-#if !defined(OS_CHROMEOS)
 // static
 PrintingContext* PrintingContext::Create(const std::string& app_locale) {
   // TODO(saintlou): This a stub to allow us to build under Aura.
@@ -16,6 +15,5 @@ PrintingContext* PrintingContext::Create(const std::string& app_locale) {
   NOTIMPLEMENTED();
   return NULL;
 }
-#endif
 
 }  // namespace printing

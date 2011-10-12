@@ -10,8 +10,10 @@
 class ChromeBrowserMainPartsAura : public ChromeBrowserMainParts {
  public:
   explicit ChromeBrowserMainPartsAura(const MainFunctionParams& parameters);
+  virtual ~ChromeBrowserMainPartsAura();
 
   virtual void PreEarlyInitialization() OVERRIDE;
+  virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
 
  private:

@@ -8,7 +8,7 @@
 
 namespace printing {
 
-#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX)
 void PrintedDocument::RenderPrintedPage(const PrintedPage& page,
                                         PrintingContext* context) const {
   // TODO(saintlou): This a stub to allow us to build under Aura.

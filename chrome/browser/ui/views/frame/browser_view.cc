@@ -114,7 +114,7 @@
 #include "chrome/browser/ui/views/accelerator_table_linux.h"
 #include "views/window/hit_test.h"
 #if !defined(TOUCH_UI)
-#include "chrome/browser/ui/views/handle_web_keyboard_event_gtk.h"
+#include "chrome/browser/ui/views/handle_web_keyboard_event.h"
 #endif
 #endif
 
@@ -1280,7 +1280,12 @@ FindBar* BrowserView::CreateFindBar() {
 
 #if defined(OS_CHROMEOS)
 void BrowserView::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
+#if defined(TOOLKIT_USES_GTK)
   KeyboardOverlayDialogView::ShowDialog(owning_window, this);
+#else
+  // TODO(saintlou): Add Keyboard Overlay for Aura: crbug.com/99858.
+  NOTIMPLEMENTED();
+#endif
 }
 #endif
 

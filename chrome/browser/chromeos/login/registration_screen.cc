@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/views/handle_web_keyboard_event_gtk.h"
+#include "chrome/browser/ui/views/handle_web_keyboard_event.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"

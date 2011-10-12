@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include <gdk/gdk.h>
-
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -127,7 +125,7 @@ void SettingLevelBubble::ShowBubble(double percent, bool enabled) {
     // specifies the center of the bubble).
     const gfx::Rect monitor_area =
         gfx::Screen::GetMonitorAreaNearestWindow(
-            GTK_WIDGET(parent_widget->GetNativeWindow()));
+            parent_widget->GetNativeView());
     const gfx::Size view_size = view_->GetPreferredSize();
     const gfx::Rect position_relative_to(
         monitor_area.x() + kBubbleXRatio * monitor_area.width(),

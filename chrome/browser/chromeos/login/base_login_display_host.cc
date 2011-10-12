@@ -267,11 +267,16 @@ void ShowLoginWizard(const std::string& first_screen_name,
       first_screen_name == chromeos::WizardController::kLoginScreenName;
 
   chromeos::LoginDisplayHost* display_host;
+#if defined(USE_AURA)
+  // Under Aura we always use the WebUI.
+  display_host = new chromeos::WebUILoginDisplayHost(screen_bounds);
+#else
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
     display_host = new chromeos::WebUILoginDisplayHost(screen_bounds);
   } else {
     display_host = new chromeos::ViewsLoginDisplayHost(screen_bounds);
   }
+#endif
 
   if (show_login_screen && chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     // R11 > R12 migration fix. See http://crosbug.com/p/4898.

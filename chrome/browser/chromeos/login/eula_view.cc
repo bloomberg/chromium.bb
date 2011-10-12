@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/login/views_eula_screen_actor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
-#include "chrome/browser/ui/views/handle_web_keyboard_event_gtk.h"
+#include "chrome/browser/ui/views/handle_web_keyboard_event.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
