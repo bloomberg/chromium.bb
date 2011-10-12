@@ -13,7 +13,7 @@ class RenderWidgetHostView;
 class ExtensionHostMac : public ExtensionHost {
  public:
   ExtensionHostMac(const Extension* extension, SiteInstance* site_instance,
-                   const GURL& url, content::ViewType::Type host_type) :
+                   const GURL& url, content::ViewType host_type) :
       ExtensionHost(extension, site_instance, url, host_type) {}
   virtual ~ExtensionHostMac();
  protected:

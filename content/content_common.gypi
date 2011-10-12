@@ -30,6 +30,7 @@
   'sources': [
     'public/common/bindings_policy.h',
     'public/common/resource_dispatcher_delegate.h',
+    'public/common/view_types.h',
     'common/appcache/appcache_backend_proxy.cc',
     'common/appcache/appcache_backend_proxy.h',
     'common/appcache/appcache_dispatcher.cc',
@@ -249,7 +250,6 @@
     'common/utility_messages.h',
     'common/view_messages.h',
     'common/view_message_enums.h',
-    'common/view_types.h',
     'common/web_database_observer_impl.cc',
     'common/web_database_observer_impl.h',
     'common/webblobregistry_impl.cc',

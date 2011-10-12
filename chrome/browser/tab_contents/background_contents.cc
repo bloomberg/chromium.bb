@@ -74,8 +74,8 @@ const GURL& BackgroundContents::GetURL() const {
   return url_;
 }
 
-content::ViewType::Type BackgroundContents::GetRenderViewType() const {
-  return chrome::ViewType::BACKGROUND_CONTENTS;
+content::ViewType BackgroundContents::GetRenderViewType() const {
+  return chrome::VIEW_TYPE_BACKGROUND_CONTENTS;
 }
 
 void BackgroundContents::DidNavigate(

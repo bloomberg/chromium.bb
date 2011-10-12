@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/view_types.h"
+#include "content/public/common/view_types.h"
 
 class Browser;
 class BrowsingInstance;
@@ -39,10 +39,10 @@ class ExtensionProcessManager : public NotificationObserver {
   virtual ExtensionHost* CreateViewHost(const Extension* extension,
                                         const GURL& url,
                                         Browser* browser,
-                                        content::ViewType::Type view_type);
+                                        content::ViewType view_type);
   ExtensionHost* CreateViewHost(const GURL& url,
                                 Browser* browser,
-                                content::ViewType::Type view_type);
+                                content::ViewType view_type);
   ExtensionHost* CreatePopupHost(const Extension* extension,
                                  const GURL& url,
                                  Browser* browser);

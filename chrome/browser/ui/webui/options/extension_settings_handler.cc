@@ -787,8 +787,8 @@ void ExtensionSettingsHandler::GetActivePagesForExtensionProcess(
     const RenderViewHost* host = static_cast<const RenderViewHost*>(widget);
     int host_type = host->delegate()->GetRenderViewType();
     if (host == deleting_rvh_ ||
-        chrome::ViewType::EXTENSION_POPUP == host_type ||
-        chrome::ViewType::EXTENSION_DIALOG == host_type)
+        chrome::VIEW_TYPE_EXTENSION_POPUP == host_type ||
+        chrome::VIEW_TYPE_EXTENSION_DIALOG == host_type)
       continue;
 
     GURL url = host->delegate()->GetURL();

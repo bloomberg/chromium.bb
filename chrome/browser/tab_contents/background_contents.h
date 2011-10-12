@@ -62,7 +62,7 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual BackgroundContents* GetAsBackgroundContents() OVERRIDE;
   virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
-  virtual content::ViewType::Type GetRenderViewType() const OVERRIDE;
+  virtual content::ViewType GetRenderViewType() const OVERRIDE;
   virtual void DidNavigate(
       RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;

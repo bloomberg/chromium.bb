@@ -5,11 +5,11 @@
 #include "chrome/common/chrome_view_types.h"
 
 namespace chrome {
-const char* const ViewType::kTabContents = "TAB";
-const char* const ViewType::kBackgroundPage = "BACKGROUND";
-const char* const ViewType::kPopup = "POPUP";
-const char* const ViewType::kInfobar = "INFOBAR";
-const char* const ViewType::kNotification = "NOTIFICATION";
-const char* const ViewType::kExtensionDialog = "EXTENSION_DIALOG";
-const char* const ViewType::kAll = "ALL";
+const char kViewTypeTabContents[] = "TAB";
+const char kViewTypeBackgroundPage[] = "BACKGROUND";
+const char kViewTypePopup[] = "POPUP";
+const char kViewTypeInfobar[] = "INFOBAR";
+const char kViewTypeNotification[] = "NOTIFICATION";
+const char kViewTypeExtensionDialog[] = "EXTENSION_DIALOG";
+const char kViewTypeAll[] = "ALL";
 }  // namespace chrome

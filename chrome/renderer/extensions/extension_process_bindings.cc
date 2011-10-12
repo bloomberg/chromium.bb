@@ -85,7 +85,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
  public:
   ExtensionViewAccumulator(const std::string& extension_id,
                            int browser_window_id,
-                           content::ViewType::Type view_type)
+                           content::ViewType view_type)
       : extension_id_(extension_id),
         browser_window_id_(browser_window_id),
         view_type_(view_type),
@@ -131,20 +131,19 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
     views_->Set(v8::Integer::New(index_), view_window);
     index_++;
 
-    if (view_type_ == chrome::ViewType::EXTENSION_BACKGROUND_PAGE)
+    if (view_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
       return false;  // There can be only one...
 
     return true;
   }
 
   // Returns true is |type| "isa" |match|.
-  static bool ViewTypeMatches(content::ViewType::Type type,
-                              content::ViewType::Type match) {
+  static bool ViewTypeMatches(content::ViewType type, content::ViewType match) {
     if (type == match)
       return true;
 
     // INVALID means match all.
-    if (match == content::ViewType::INVALID)
+    if (match == content::VIEW_TYPE_INVALID)
       return true;
 
     return false;
@@ -152,7 +151,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
 
   std::string extension_id_;
   int browser_window_id_;
-  content::ViewType::Type view_type_;
+  content::ViewType view_type_;
   v8::Local<v8::Array> views_;
   int index_;
 };
@@ -229,22 +228,22 @@ class ExtensionImpl : public ChromeV8Extension {
 
     std::string view_type_string = *v8::String::Utf8Value(args[1]->ToString());
     StringToUpperASCII(&view_type_string);
-    // |view_type| == content::ViewType::INVALID means getting any type of
+    // |view_type| == content::VIEW_TYPE_INVALID means getting any type of
     // views.
-    content::ViewType::Type view_type = content::ViewType::INVALID;
-    if (view_type_string == chrome::ViewType::kBackgroundPage) {
-      view_type = chrome::ViewType::EXTENSION_BACKGROUND_PAGE;
-    } else if (view_type_string == chrome::ViewType::kInfobar) {
-      view_type = chrome::ViewType::EXTENSION_INFOBAR;
-    } else if (view_type_string == chrome::ViewType::kNotification) {
-      view_type = chrome::ViewType::NOTIFICATION;
-    } else if (view_type_string == chrome::ViewType::kTabContents) {
-      view_type = content::ViewType::TAB_CONTENTS;
-    } else if (view_type_string == chrome::ViewType::kPopup) {
-      view_type = chrome::ViewType::EXTENSION_POPUP;
-    } else if (view_type_string == chrome::ViewType::kExtensionDialog) {
-      view_type = chrome::ViewType::EXTENSION_DIALOG;
-    } else if (view_type_string != chrome::ViewType::kAll) {
+    content::ViewType view_type = content::VIEW_TYPE_INVALID;
+    if (view_type_string == chrome::kViewTypeBackgroundPage) {
+      view_type = chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
+    } else if (view_type_string == chrome::kViewTypeInfobar) {
+      view_type = chrome::VIEW_TYPE_EXTENSION_INFOBAR;
+    } else if (view_type_string == chrome::kViewTypeNotification) {
+      view_type = chrome::VIEW_TYPE_NOTIFICATION;
+    } else if (view_type_string == chrome::kViewTypeTabContents) {
+      view_type = content::VIEW_TYPE_TAB_CONTENTS;
+    } else if (view_type_string == chrome::kViewTypePopup) {
+      view_type = chrome::VIEW_TYPE_EXTENSION_POPUP;
+    } else if (view_type_string == chrome::kViewTypeExtensionDialog) {
+      view_type = chrome::VIEW_TYPE_EXTENSION_DIALOG;
+    } else if (view_type_string != chrome::kViewTypeAll) {
       return v8::Undefined();
     }
 

@@ -16,8 +16,8 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
-#include "content/common/view_types.h"
 #include "content/common/window_container_type.h"
+#include "content/public/common/view_types.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
@@ -209,7 +209,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual BackgroundContents* GetAsBackgroundContents();
 
   // Return type of RenderView which is attached with this object.
-  virtual content::ViewType::Type GetRenderViewType() const = 0;
+  virtual content::ViewType GetRenderViewType() const = 0;
 
   // The RenderView is being constructed (message sent to the renderer process
   // to construct a RenderView).  Now is a good time to send other setup events

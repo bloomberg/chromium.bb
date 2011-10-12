@@ -54,7 +54,7 @@ ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
       content::RenderViewObserverTracker<ExtensionHelper>(render_view),
       extension_dispatcher_(extension_dispatcher),
       pending_app_icon_requests_(0),
-      view_type_(content::ViewType::INVALID),
+      view_type_(content::VIEW_TYPE_INVALID),
       browser_window_id_(-1) {
 }
 
@@ -259,7 +259,7 @@ void ExtensionHelper::OnGetApplicationInfo(int page_id) {
       routing_id(), page_id, app_info));
 }
 
-void ExtensionHelper::OnNotifyRendererViewType(content::ViewType::Type type) {
+void ExtensionHelper::OnNotifyRendererViewType(content::ViewType type) {
   view_type_ = type;
 }
 

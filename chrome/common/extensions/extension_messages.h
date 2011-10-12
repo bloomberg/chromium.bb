@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/web_apps.h"
-#include "content/common/view_types.h"
+#include "content/public/common/view_types.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart
@@ -236,7 +236,7 @@ IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
 
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
-                    content::ViewType::Type /* view_type */)
+                    content::ViewType /* view_type */)
 
 // Messages sent from the renderer to the browser.
 

@@ -2916,16 +2916,16 @@ void TestingAutomationProvider::GetBrowserInfo(
       item->Set("view", view);
       std::string type;
       switch (ex_host->extension_host_type()) {
-        case chrome::ViewType::EXTENSION_BACKGROUND_PAGE:
+        case chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
           type = "EXTENSION_BACKGROUND_PAGE";
           break;
-        case chrome::ViewType::EXTENSION_POPUP:
+        case chrome::VIEW_TYPE_EXTENSION_POPUP:
           type = "EXTENSION_POPUP";
           break;
-        case chrome::ViewType::EXTENSION_INFOBAR:
+        case chrome::VIEW_TYPE_EXTENSION_INFOBAR:
           type = "EXTENSION_INFOBAR";
           break;
-        case chrome::ViewType::EXTENSION_DIALOG:
+        case chrome::VIEW_TYPE_EXTENSION_DIALOG:
           type = "EXTENSION_DIALOG";
           break;
         default:

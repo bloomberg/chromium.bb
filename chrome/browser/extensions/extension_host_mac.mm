@@ -52,7 +52,7 @@ void ExtensionHostMac::ShowCreatedWidgetInternal(
 void ExtensionHostMac::UnhandledKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char ||
-      extension_host_type() != chrome::ViewType::EXTENSION_POPUP) {
+      extension_host_type() != chrome::VIEW_TYPE_EXTENSION_POPUP) {
     return;
   }
 

@@ -164,11 +164,11 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         RenderViewHostDelegate* host_delegate = host->delegate();
         DCHECK(host_delegate);
         GURL url = host_delegate->GetURL();
-        content::ViewType::Type type = host_delegate->GetRenderViewType();
+        content::ViewType type = host_delegate->GetRenderViewType();
         if (host->enabled_bindings() & content::BINDINGS_POLICY_WEB_UI) {
           // TODO(erikkay) the type for devtools doesn't actually appear to
           // be set.
-          if (type == content::ViewType::DEV_TOOLS_UI)
+          if (type == content::VIEW_TYPE_DEV_TOOLS_UI)
             process.renderer_type = ChildProcessInfo::RENDERER_DEVTOOLS;
           else
             process.renderer_type = ChildProcessInfo::RENDERER_CHROME;
@@ -190,14 +190,14 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
                      ChildProcessInfo::RENDERER_UNKNOWN) {
             process.titles.push_back(UTF8ToUTF16(url.spec()));
             switch (type) {
-              case chrome::ViewType::BACKGROUND_CONTENTS:
+              case chrome::VIEW_TYPE_BACKGROUND_CONTENTS:
                 process.renderer_type =
                     ChildProcessInfo::RENDERER_BACKGROUND_APP;
                 break;
-              case content::ViewType::INTERSTITIAL_PAGE:
+              case content::VIEW_TYPE_INTERSTITIAL_PAGE:
                 process.renderer_type = ChildProcessInfo::RENDERER_INTERSTITIAL;
                 break;
-              case chrome::ViewType::NOTIFICATION:
+              case chrome::VIEW_TYPE_NOTIFICATION:
                 process.renderer_type = ChildProcessInfo::RENDERER_NOTIFICATION;
                 break;
               default:

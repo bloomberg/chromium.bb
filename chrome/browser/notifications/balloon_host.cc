@@ -102,8 +102,8 @@ void BalloonHost::RenderViewGone(RenderViewHost* render_view_host,
   Close(render_view_host);
 }
 
-content::ViewType::Type BalloonHost::GetRenderViewType() const {
-  return chrome::ViewType::NOTIFICATION;
+content::ViewType BalloonHost::GetRenderViewType() const {
+  return chrome::VIEW_TYPE_NOTIFICATION;
 }
 
 RenderViewHostDelegate::View* BalloonHost::GetViewDelegate() {
