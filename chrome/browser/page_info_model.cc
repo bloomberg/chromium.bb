@@ -59,19 +59,12 @@ PageInfoModel::PageInfoModel(Profile* profile,
     empty_subject_name = true;
   }
 
-  // Some of what IsCertStatusError classifies as errors we want to show as
-  // warnings instead.
-  static const int cert_warnings =
-      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION |
-      net::CERT_STATUS_NO_REVOCATION_MECHANISM;
-  int status_with_warnings_removed = ssl.cert_status() & ~cert_warnings;
-
   if (ssl.cert_id() &&
       CertStore::GetInstance()->RetrieveCert(ssl.cert_id(), &cert) &&
-      !net::IsCertStatusError(status_with_warnings_removed)) {
-    // No error found so far, check cert_status warnings.
-    net::CertStatus cert_status = ssl.cert_status();
-    if (cert_status & cert_warnings) {
+      (!net::IsCertStatusError(ssl.cert_status()) ||
+       net::IsCertStatusMinorError(ssl.cert_status()))) {
+    // There are no major errors. Check for minor errors.
+    if (net::IsCertStatusMinorError(ssl.cert_status())) {
       string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
       if (issuer_name.empty()) {
         issuer_name.assign(l10n_util::GetStringUTF16(
@@ -81,10 +74,10 @@ PageInfoModel::PageInfoModel(Profile* profile,
           IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
 
       description += ASCIIToUTF16("\n\n");
-      if (cert_status & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION) {
+      if (ssl.cert_status() & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION) {
         description += l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_UNABLE_TO_CHECK_REVOCATION);
-      } else if (cert_status & net::CERT_STATUS_NO_REVOCATION_MECHANISM) {
+      } else if (ssl.cert_status() & net::CERT_STATUS_NO_REVOCATION_MECHANISM) {
         description += l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_NO_REVOCATION_MECHANISM);
       } else {

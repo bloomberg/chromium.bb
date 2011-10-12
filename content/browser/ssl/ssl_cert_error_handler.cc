@@ -27,7 +27,15 @@ SSLCertErrorHandler* SSLCertErrorHandler::AsSSLCertErrorHandler() {
 }
 
 void SSLCertErrorHandler::OnDispatchFailed() {
-  CancelRequest();
+  // Requests that don't have a tab (i.e. requests from extensions) will fail
+  // to dispatch because they don't have a TabContents. See crbug.com/86537. In
+  // this case we have to make a decision in this function, so we ignore
+  // revocation check failures.
+  if (net::IsCertStatusMinorError(ssl_info().cert_status)) {
+    ContinueRequest();
+  } else {
+    CancelRequest();
+  }
 }
 
 void SSLCertErrorHandler::OnDispatched() {

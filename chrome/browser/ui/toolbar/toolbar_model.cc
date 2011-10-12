@@ -111,8 +111,7 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
       if (ssl.displayed_insecure_content())
         return SECURITY_WARNING;
       if (net::IsCertStatusError(ssl.cert_status())) {
-        DCHECK_EQ(net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-                  ssl.cert_status() & net::CERT_STATUS_ALL_ERRORS);
+        DCHECK(net::IsCertStatusMinorError(ssl.cert_status()));
         return SECURITY_WARNING;
       }
       if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) &&
