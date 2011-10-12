@@ -19,8 +19,6 @@
         'object_suffix': 'o',
       }],
     ],
-
-    'use_system_yasm%': 0,
   },
   'conditions': [
     [ 'use_system_libjpeg==0', {
