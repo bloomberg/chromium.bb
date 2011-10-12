@@ -312,7 +312,8 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // Instead, you should check if an incoming message is what you are
   // interested in, in the filter functions.
   //
-  // The same match rule must not be added more than once.
+  // The same match rule can be added more than once, but ignored from the
+  // second time.
   //
   // The match rule looks like:
   // "type='signal', interface='org.chromium.SomeInterface'".

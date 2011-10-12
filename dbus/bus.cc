@@ -484,7 +484,7 @@ void Bus::AddMatch(const std::string& match_rule, DBusError* error) {
   AssertOnDBusThread();
 
   if (match_rules_added_.find(match_rule) != match_rules_added_.end()) {
-    LOG(ERROR) << "Match rule already exists: " << match_rule;
+    VLOG(1) << "Match rule already exists: " << match_rule;
     return;
   }
 
