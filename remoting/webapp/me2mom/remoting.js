@@ -485,16 +485,16 @@ function onClientStateChange_(oldState) {
   } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
     remoting.debug.log('Client plugin reported connection failed');
     if (remoting.session.error ==
-        remoting.ClientSession.Error.HOST_IS_OFFLINE) {
+        remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE) {
       showConnectError_(remoting.ClientError.HOST_IS_OFFLINE);
     } else if (remoting.session.error ==
-               remoting.ClientSession.Error.SESSION_REJECTED) {
+               remoting.ClientSession.ConnectionError.SESSION_REJECTED) {
       showConnectError_(remoting.ClientError.INVALID_ACCESS_CODE);
     } else if (remoting.session.error ==
-               remoting.ClientSession.Error.INCOMPATIBLE_PROTOCOL) {
+               remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL) {
       showConnectError_(remoting.ClientError.INCOMPATIBLE_PROTOCOL);
     } else if (remoting.session.error ==
-               remoting.ClientSession.Error.NETWORK_FAILURE) {
+               remoting.ClientSession.ConnectionError.NETWORK_FAILURE) {
       showConnectError_(remoting.ClientError.OTHER_ERROR);
     } else {
       showConnectError_(remoting.ClientError.OTHER_ERROR);

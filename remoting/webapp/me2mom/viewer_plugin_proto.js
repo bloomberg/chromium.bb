@@ -32,6 +32,12 @@ remoting.ViewerPlugin.setScaleToFit = function(scale) {};
 /** @type {number} */ remoting.ViewerPlugin.STATUS_CLOSED;
 /** @type {number} */ remoting.ViewerPlugin.STATUS_FAILED;
 
+/** @type {number} */ remoting.ViewerPlugin.ERROR_NONE;
+/** @type {number} */ remoting.ViewerPlugin.ERROR_HOST_IS_OFFLINE;
+/** @type {number} */ remoting.ViewerPlugin.ERROR_SESSION_REJECTED;
+/** @type {number} */ remoting.ViewerPlugin.ERROR_INCOMPATIBLE_PROTOCOL;
+/** @type {number} */ remoting.ViewerPlugin.ERROR_NETWORK_FAILURE;
+
 /** @type {number} */ remoting.ViewerPlugin.videoBandwidth;
 /** @type {number} */ remoting.ViewerPlugin.videoCaptureLatency;
 /** @type {number} */ remoting.ViewerPlugin.videoEncodeLatency;

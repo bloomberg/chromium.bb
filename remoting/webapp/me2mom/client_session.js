@@ -61,7 +61,7 @@ remoting.ClientSession.ConnectionError = {
   SESSION_REJECTED: 2,
   INCOMPATIBLE_PROTOCOL: 3,
   NETWORK_FAILURE: 4,
-  OTHER: 5,
+  OTHER: 5
 };
 
 /**
