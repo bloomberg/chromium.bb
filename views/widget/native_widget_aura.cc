@@ -486,7 +486,8 @@ bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
   InputMethod* input_method = GetWidget()->GetInputMethod();
   DCHECK(input_method);
   // TODO(oshima): DispatchKeyEvent should return bool?
-  input_method->DispatchKeyEvent(KeyEvent(event));
+  KeyEvent views_event(event);
+  input_method->DispatchKeyEvent(views_event);
   return true;
 }
 
@@ -500,9 +501,12 @@ int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
 
 bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
   DCHECK(window_->IsVisible());
-  if (event->type() == ui::ET_MOUSEWHEEL)
-    return delegate_->OnMouseEvent(MouseWheelEvent(event));
-  return delegate_->OnMouseEvent(MouseEvent(event));
+  if (event->type() == ui::ET_MOUSEWHEEL) {
+    MouseWheelEvent wheel_event(event);
+    return delegate_->OnMouseEvent(wheel_event);
+  }
+  MouseEvent mouse_event(event);
+  return delegate_->OnMouseEvent(mouse_event);
 }
 
 bool NativeWidgetAura::ShouldActivate(aura::MouseEvent* event) {

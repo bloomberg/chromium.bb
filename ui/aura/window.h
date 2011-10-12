@@ -48,7 +48,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   typedef std::vector<Window*> Windows;
 
   explicit Window(WindowDelegate* delegate);
-  ~Window();
+  virtual ~Window();
 
   void Init();
 

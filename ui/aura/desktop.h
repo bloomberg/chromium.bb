@@ -32,7 +32,7 @@ class MouseEvent;
 class AURA_EXPORT Desktop : public ui::CompositorDelegate {
  public:
   Desktop();
-  ~Desktop();
+  virtual ~Desktop();
 
   DesktopDelegate* delegate() { return delegate_.get(); }
   void SetDelegate(DesktopDelegate* delegate);

@@ -19,7 +19,7 @@ class MouseEvent;
 class ToplevelWindowEventFilter : public EventFilter {
  public:
   explicit ToplevelWindowEventFilter(Window* owner);
-  ~ToplevelWindowEventFilter();
+  virtual ~ToplevelWindowEventFilter();
 
   // Overridden from EventFilter:
   virtual bool OnMouseEvent(Window* target, MouseEvent* event) OVERRIDE;
