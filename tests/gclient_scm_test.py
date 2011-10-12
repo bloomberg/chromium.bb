@@ -65,12 +65,12 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
 
 class SVNWrapperTestCase(BaseTestCase):
   class OptionsObject(object):
-    def __init__(self, verbose=False, revision=None):
+    def __init__(self, verbose=False, revision=None, force=False):
       self.verbose = verbose
       self.revision = revision
       self.manually_grab_svn_rev = True
       self.deps_os = None
-      self.force = False
+      self.force = force
       self.reset = False
       self.nohooks = False
       # TODO(maruel): Test --jobs > 1.
@@ -134,6 +134,7 @@ class SVNWrapperTestCase(BaseTestCase):
   def testRevertMissing(self):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
+    gclient_scm.os.path.exists(self.base_path).AndReturn(False)
     gclient_scm.scm.SVN.Capture(['--version']
         ).AndReturn('svn, version 1.5.1 (r32289)')
     # It'll to a checkout instead.
@@ -155,9 +156,37 @@ class SVNWrapperTestCase(BaseTestCase):
     self.checkstdout(
         ('\n_____ %s is missing, synching instead\n' % self.relpath))
 
+  def testRevertNoDotSvn(self):
+    options = self.Options(verbose=True, force=True)
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(False)
+    gclient_scm.os.path.isdir(join(self.base_path, '.git')).AndReturn(False)
+    gclient_scm.os.path.isdir(join(self.base_path, '.hg')).AndReturn(False)
+    # Checkout.
+    gclient_scm.os.path.exists(self.base_path).AndReturn(False)
+    gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
+    gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
+    gclient_scm.os.path.exists(self.base_path).AndReturn(False)
+    files_list = self.mox.CreateMockAnything()
+    gclient_scm.scm.SVN.Capture(['--version']).AndReturn('svn, version 1.6')
+    gclient_scm.scm.SVN.RunAndGetFileList(
+        options.verbose,
+        ['checkout', self.url, self.base_path, '--force', '--ignore-externals'],
+        cwd=self.root_dir,
+        file_list=files_list)
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    scm.revert(options, self.args, files_list)
+    self.checkstdout(
+        '\n_____ %s is not a valid svn checkout, synching instead\n' %
+        self.relpath)
+
   def testRevertNone(self):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(True)
     gclient_scm.scm.SVN.CaptureStatus(self.base_path).AndReturn([])
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
@@ -174,6 +203,7 @@ class SVNWrapperTestCase(BaseTestCase):
   def testRevertDirectory(self):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(True)
     items = [
       ('~      ', 'a'),
     ]

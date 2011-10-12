@@ -920,9 +920,27 @@ class SVNWrapper(SCMWrapper):
     doesn't know about them.
     """
     if not os.path.isdir(self.checkout_path):
+      if os.path.exists(self.checkout_path):
+        gclient_utils.rmtree(self.checkout_path)
       # svn revert won't work if the directory doesn't exist. It needs to
       # checkout instead.
       print('\n_____ %s is missing, synching instead' % self.relpath)
+      # Don't reuse the args.
+      return self.update(options, [], file_list)
+
+    if not os.path.isdir(os.path.join(self.checkout_path, '.svn')):
+      if os.path.isdir(os.path.join(self.checkout_path, '.git')):
+        print('________ found .git directory; skipping %s' % self.relpath)
+        return
+      if os.path.isdir(os.path.join(self.checkout_path, '.hg')):
+        print('________ found .hg directory; skipping %s' % self.relpath)
+        return
+      if not options.force:
+        raise gclient_utils.Error('Invalid checkout path, aborting')
+      print(
+          '\n_____ %s is not a valid svn checkout, synching instead' %
+          self.relpath)
+      gclient_utils.rmtree(self.checkout_path)
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
