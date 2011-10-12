@@ -21,12 +21,12 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/x/active_window_watcher_x.h"
 
+class AvatarMenuButtonGtk;
 class BrowserWindowGtk;
 class CustomDrawButton;
 class GtkThemeService;
 class MenuGtk;
 class PopupPageMenuModel;
-class ProfileMenuButton;
 class TabContents;
 
 class BrowserTitlebar : public NotificationObserver,
@@ -118,6 +118,10 @@ class BrowserTitlebar : public NotificationObserver,
   // change in the window.
   void UpdateTextColor();
 
+  // Updates the avatar image displayed, either a multi-profile avatar or the
+  // incognito spy guy.
+  void UpdateAvatar();
+
   // Show the menu that the user gets from left-clicking the favicon.
   void ShowFaviconMenu(GdkEventButton* event);
 
@@ -172,6 +176,13 @@ class BrowserTitlebar : public NotificationObserver,
 
   bool IsTypePanel();
 
+  // Whether to display the avatar image.
+  bool ShouldDisplayAvatar();
+
+  // Returns true if the profile associated with this BrowserWindow is off the
+  // record.
+  bool IsOffTheRecord();
+
   // Pointers to the browser window that owns us and it's GtkWindow.
   BrowserWindowGtk* browser_window_;
   GtkWindow* window_;
@@ -193,11 +204,15 @@ class BrowserTitlebar : public NotificationObserver,
   GtkWidget* titlebar_left_buttons_hbox_;
   GtkWidget* titlebar_right_buttons_hbox_;
 
-  // Spy frame. One of these frames holds the spy guy in incognito mode. It's
-  // the side with the least buttons. These are NULL when we aren't in
-  // incognito mode.
-  GtkWidget* titlebar_left_spy_frame_;
-  GtkWidget* titlebar_right_spy_frame_;
+  // Avatar frame. One of these frames holds either the spy guy in incognito
+  // mode, or the avatar image when using multiple-profiles. It's the side with
+  // the least window control buttons (close, maximize, minimize).
+  // These pointers are never NULL.
+  GtkWidget* titlebar_left_avatar_frame_;
+  GtkWidget* titlebar_right_avatar_frame_;
+
+  // The avatar image widget. It will be NULL if there is no avatar displayed.
+  GtkWidget* avatar_;
 
   // Padding between the titlebar buttons and the top of the screen. Only show
   // when not maximized.
@@ -227,6 +242,9 @@ class BrowserTitlebar : public NotificationObserver,
   // window has focus or mouse is in a panel window.
   bool window_has_mouse_;
 
+  // Whether to display the avatar image on the left or right of the titlebar.
+  bool display_avatar_on_left_;
+
   // We change the size of these three buttons when the window is maximized, so
   // we use these structs to keep track of their original size.
   GtkRequisition close_button_req_;
@@ -250,14 +268,8 @@ class BrowserTitlebar : public NotificationObserver,
   // The throbber used when the window is in app mode or popup window mode.
   Throbber throbber_;
 
-  // Profile button container.
-  GtkWidget* titlebar_profile_vbox_;
-
-  // The profile button.
-  scoped_ptr<ProfileMenuButton> profile_button_;
-
-  // Shown in the profile button. Only used to register a notification observer.
-  StringPrefMember usernamePref_;
+  // The avatar button.
+  scoped_ptr<AvatarMenuButtonGtk> avatar_button_;
 
   // Theme provider for building buttons.
   GtkThemeService* theme_service_;
