@@ -4,9 +4,7 @@
 
 #include "chrome/test/base/ui_test_utils.h"
 
-#if !defined(USE_AURA)
 #include <gtk/gtk.h>
-#endif
 
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -21,7 +19,7 @@
 
 namespace ui_test_utils {
 
-#if !defined(TOOLKIT_VIEWS) && !defined(USE_AURA)
+#if !defined(TOOLKIT_VIEWS)
 namespace {
 
 // Check if the focused widget for |root| is |target| or a child of |target|.
@@ -86,22 +84,14 @@ void ClickOnView(const Browser* browser, ViewID vid) {
 }
 
 void HideNativeWindow(gfx::NativeWindow window) {
-#if !defined(USE_AURA)
   gtk_widget_hide(GTK_WIDGET(window));
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void ShowAndFocusNativeWindow(gfx::NativeWindow window) {
-#if !defined(USE_AURA)
   if (gtk_window_has_toplevel_focus(GTK_WINDOW(window)))
     return;
 
   gtk_window_present(GTK_WINDOW(window));
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 }  // namespace ui_test_utils

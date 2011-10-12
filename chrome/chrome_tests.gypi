@@ -212,7 +212,8 @@
         'test/base/thread_observer_helper.h',
         'test/base/ui_test_utils.cc',
         'test/base/ui_test_utils.h',
-        'test/base/ui_test_utils_linux.cc',
+        'test/base/ui_test_utils_aura.cc',
+        'test/base/ui_test_utils_gtk.cc',
         'test/base/ui_test_utils_mac.mm',
         'test/base/ui_test_utils_win.cc',
         'test/base/values_test_util.cc',
@@ -762,6 +763,9 @@
         ['use_aura==1', {
           'sources!': [
             'test/automation/automation_proxy_uitest.cc',
+          ],
+          'dependencies': [
+            '../ui/aura/aura.gyp:aura',
           ],
         }],
         ['OS=="mac"', {
