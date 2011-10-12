@@ -387,15 +387,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   TabContents* newtab = last_active_browser->GetSelectedTabContents();
   EXPECT_TRUE(newtab);
   if (!newtab->controller().GetLastCommittedEntry() ||
-      newtab->controller().GetLastCommittedEntry()->url() != app_url) {
-    // TODO(gbillock): This still looks racy. Need to make a custom
-    // observer to intercept new window creation and then look for
-    // NAV_ENTRY_COMMITTED on the new tab there.
-    ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&(newtab->controller())));
-    observer.Wait();
-  }
+      newtab->controller().GetLastCommittedEntry()->url() != app_url)
+    ui_test_utils::WaitForNavigation(&newtab->controller());
 
   // Popup window should be in the app's process.
   EXPECT_TRUE(extension_process_manager->IsExtensionProcess(
@@ -426,9 +419,6 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   const Extension* app =
       LoadExtension(test_data_dir_.AppendASCII("app_process"));
   ASSERT_TRUE(app);
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       base_url.Resolve("path1/container.html"),
@@ -455,7 +445,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   TabContents* newtab = last_active_browser->GetSelectedTabContents();
   EXPECT_TRUE(newtab);
   GURL non_app_url = base_url.Resolve("path3/empty.html");
-  observer.Wait();
+  if (!newtab->controller().GetLastCommittedEntry() ||
+      newtab->controller().GetLastCommittedEntry()->url() != non_app_url)
+    ui_test_utils::WaitForNavigation(&newtab->controller());
 
   // Popup window should be in the app's process.
   RenderProcessHost* popup_process =
