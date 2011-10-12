@@ -979,8 +979,9 @@ IPC_MESSAGE_ROUTED4(
     int /* selection_end */)
 
 // This message confirms an ongoing composition.
-IPC_MESSAGE_ROUTED1(ViewMsg_ImeConfirmComposition,
-                    string16 /* text */)
+IPC_MESSAGE_ROUTED2(ViewMsg_ImeConfirmComposition,
+                    string16 /* text */,
+                    ui::Range /* replacement_range */)
 
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.

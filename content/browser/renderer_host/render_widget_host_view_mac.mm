@@ -2471,15 +2471,15 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // events, such as the Characters dialog. In this case the text should be
   // sent as an input method event as well.
   // TODO(suzhe): It's hard for us to support replacementRange without accessing
-  // the full web content. NOTE: If someone adds support for this, make sure
-  // it works with the default range passed in by -insertText: below.
+  // the full web content.
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
   if (handlingKeyDown_) {
     textToBeInserted_.append(base::SysNSStringToUTF16(im_text));
   } else {
+    ui::Range replacement_range(replacementRange);
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
-        base::SysNSStringToUTF16(im_text));
+        base::SysNSStringToUTF16(im_text), replacement_range);
   }
 
   // Inserting text will delete all marked text automatically.
@@ -2489,7 +2489,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (void)insertText:(id)string {
   // This is a method on NSTextInput, not NSTextInputClient. But on 10.5, this
   // gets called anyway. Forward to the right method. http://crbug.com/47890
-  [self insertText:string replacementRange:NSMakeRange(0, 0)];
+  [self insertText:string replacementRange:NSMakeRange(NSNotFound, 0)];
 }
 
 - (void)viewDidMoveToWindow {

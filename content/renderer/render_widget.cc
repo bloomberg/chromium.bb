@@ -1126,9 +1126,17 @@ void RenderWidget::OnImeSetComposition(
   }
 }
 
-void RenderWidget::OnImeConfirmComposition(const string16& text) {
-  if (webwidget_)
+void RenderWidget::OnImeConfirmComposition(
+    const string16& text, const ui::Range& replacement_range) {
+  if (webwidget_) {
+    // TODO(thakis): Uncomment this once
+    // https://bugs.webkit.org/show_bug.cgi?id=69846 has landed.
+    // if (replacement_range.IsValid()) {
+    //   webwidget_->setSelectionOnFocusedFrame(replacement_range.start(),
+    //                                          replacement_range.end());
+    // }
     webwidget_->confirmComposition(text);
+  }
   // Send an updated IME range with just the caret range.
   ui::Range range(ui::Range::InvalidRange());
   size_t location, length;

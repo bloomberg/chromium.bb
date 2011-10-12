@@ -783,11 +783,17 @@ void RenderWidgetHost::ImeSetComposition(
 }
 
 void RenderWidgetHost::ImeConfirmComposition(const string16& text) {
-  Send(new ViewMsg_ImeConfirmComposition(routing_id(), text));
+  ImeConfirmComposition(text, ui::Range::InvalidRange());
+}
+
+void RenderWidgetHost::ImeConfirmComposition(
+    const string16& text, const ui::Range& replacement_range) {
+  Send(new ViewMsg_ImeConfirmComposition(
+        routing_id(), text, replacement_range));
 }
 
 void RenderWidgetHost::ImeConfirmComposition() {
-  Send(new ViewMsg_ImeConfirmComposition(routing_id(), string16()));
+  ImeConfirmComposition(string16());
 }
 
 void RenderWidgetHost::ImeCancelComposition() {

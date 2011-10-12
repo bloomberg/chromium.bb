@@ -49,6 +49,10 @@ namespace skia {
 class PlatformCanvas;
 }
 
+namespace ui {
+class Range;
+}
+
 namespace webkit {
 namespace npapi {
 struct WebPluginGeometry;
@@ -206,7 +210,8 @@ class CONTENT_EXPORT RenderWidget
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
-  virtual void OnImeConfirmComposition(const string16& text);
+  virtual void OnImeConfirmComposition(
+      const string16& text, const ui::Range& replacement_range);
   void OnMsgPaintAtSize(const TransportDIB::Handle& dib_id,
                         int tag,
                         const gfx::Size& page_size,

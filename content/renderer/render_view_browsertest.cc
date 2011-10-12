@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "webkit/glue/web_io_operators.h"
 
@@ -444,7 +445,8 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_CONFIRMCOMPOSITION:
         view()->OnImeConfirmComposition(
-            WideToUTF16Hack(ime_message->ime_string));
+            WideToUTF16Hack(ime_message->ime_string),
+            ui::Range::InvalidRange());
         break;
 
       case IME_CANCELCOMPOSITION:

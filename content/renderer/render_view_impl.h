@@ -632,7 +632,8 @@ class RenderViewImpl : public RenderWidget,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end) OVERRIDE;
-  virtual void OnImeConfirmComposition(const string16& text) OVERRIDE;
+  virtual void OnImeConfirmComposition(
+      const string16& text, const ui::Range& replacement_range) OVERRIDE;
   virtual ui::TextInputType GetTextInputType() OVERRIDE;
   virtual bool CanComposeInline() OVERRIDE;
   virtual bool WebWidgetHandlesCompositorScheduling() const OVERRIDE;

@@ -348,6 +348,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // * when it receives a "commit" signal of GtkIMContext (on Linux);
   // * when insertText of NSTextInput is called (on Mac).
   void ImeConfirmComposition(const string16& text);
+  void ImeConfirmComposition(const string16& text,
+                             const ui::Range& replacement_range);
 
   // Finishes an ongoing composition with the composition text set by last
   // SetComposition() call.

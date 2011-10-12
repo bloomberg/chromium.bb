@@ -4205,7 +4205,8 @@ void RenderViewImpl::OnImeSetComposition(
   }
 }
 
-void RenderViewImpl::OnImeConfirmComposition(const string16& text) {
+void RenderViewImpl::OnImeConfirmComposition(
+      const string16& text, const ui::Range& replacement_range) {
   if (pepper_delegate_.IsPluginFocused()) {
     // TODO(kinaba) Until PPAPI has an interface for handling IME events, we
     // send character events.
@@ -4226,6 +4227,7 @@ void RenderViewImpl::OnImeConfirmComposition(const string16& text) {
     // Same as OnImeSetComposition(), we send the text from IMEs directly to
     // plug-ins. When we send IME text directly to plug-ins, we should not send
     // it to WebKit to prevent WebKit from controlling IMEs.
+    // TODO(thakis): Honor |replacement_range| for plugins?
     if (focused_plugin_id_ >= 0) {
       std::set<WebPluginDelegateProxy*>::iterator it;
       for (it = plugin_delegates_.begin();
@@ -4235,7 +4237,7 @@ void RenderViewImpl::OnImeConfirmComposition(const string16& text) {
       return;
     }
 #endif
-    RenderWidget::OnImeConfirmComposition(text);
+    RenderWidget::OnImeConfirmComposition(text, replacement_range);
   }
 }
 
