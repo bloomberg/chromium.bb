@@ -38,7 +38,6 @@
 #include "chrome/browser/chromeos/login/shutdown_button.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/view_ids.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -60,6 +59,10 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"
 #include "views/widget/native_widget_gtk.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 
 namespace {
 
@@ -827,11 +830,13 @@ void ScreenLocker::Init() {
   if (background_view_->ScreenSaverEnabled())
     StartScreenSaver();
 
+#if defined(TOOLKIT_USES_GTK)
   DCHECK(GTK_WIDGET_REALIZED(lock_window_->GetNativeView()));
   WmIpc::instance()->SetWindowType(
       lock_window_->GetNativeView(),
       WM_IPC_WINDOW_CHROME_SCREEN_LOCKER,
       NULL);
+#endif
 
   lock_window_->SetContentsView(background_view_);
   lock_window_->Show();
@@ -1010,7 +1015,9 @@ void ScreenLocker::EnableInput() {
 void ScreenLocker::Signout() {
   if (!error_info_) {
     UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
+#if defined(TOOLKIT_USES_GTK)
     WmIpc::instance()->NotifyAboutSignout();
+#endif
     if (CrosLibrary::Get()->EnsureLoaded()) {
       CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
     }
@@ -1202,11 +1209,13 @@ void ScreenLocker::ScreenLockReady() {
 }
 
 void ScreenLocker::OnClientEvent(GtkWidget* widge, GdkEventClient* event) {
+#if defined(TOOLKIT_USES_GTK)
   WmIpc::Message msg;
   WmIpc::instance()->DecodeMessage(*event, &msg);
   if (msg.type() == WM_IPC_MESSAGE_CHROME_NOTIFY_SCREEN_REDRAWN_FOR_LOCK) {
     OnWindowManagerReady();
   }
+#endif
 }
 
 void ScreenLocker::OnWindowManagerReady() {

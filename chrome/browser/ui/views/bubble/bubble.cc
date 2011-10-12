@@ -16,7 +16,7 @@
 #include "views/widget/widget.h"
 #include "views/window/client_view.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #endif
@@ -238,7 +238,7 @@ void Bubble::InitBubble(views::Widget* parent,
   GetWidget()->Init(params);
   if (fade_in)
     SetOpacity(0);
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
   {
     vector<int> params;
     params.push_back(show_while_screen_is_locked_ ? 1 : 0);

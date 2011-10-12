@@ -101,7 +101,9 @@
 #include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/sms_observer.h"
 #include "chrome/browser/chromeos/update_observer.h"
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/wm_message_listener.h"
+#endif
 #endif
 
 #if defined(TOUCH_UI)
@@ -598,9 +600,11 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   // GetOffTheRecordProfile() call above.
   profile->InitChromeOSPreferences();
 
+#if defined(TOOLKIT_USES_GTK)
   // Create the WmMessageListener so that it can listen for messages regardless
   // of what window has focus.
   chromeos::WmMessageListener::GetInstance();
+#endif
 
   if (process_startup) {
     // This observer is a singleton. It is never deleted but the pointer is kept

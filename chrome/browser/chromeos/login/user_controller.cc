@@ -229,6 +229,7 @@ void UserController::StopThrobber() {
 }
 
 void UserController::UpdateUserCount(int index, int total_user_count) {
+#if defined(TOOLKIT_USES_GTK)
   user_index_ = index;
   std::vector<int> params;
   params.push_back(index);
@@ -239,6 +240,7 @@ void UserController::UpdateUserCount(int index, int total_user_count) {
       border_window_->GetNativeView(),
       WM_IPC_WINDOW_LOGIN_BORDER,
       &params);
+#endif
 }
 
 std::string UserController::GetAccessibleUserLabel() {
@@ -346,12 +348,14 @@ void UserController::ConfigureAndShow(Widget* widget,
                                       views::View* contents_view) {
   widget->SetContentsView(contents_view);
 
+#if defined(TOOLKIT_USES_GTK)
   std::vector<int> params;
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
       widget->GetNativeView(),
       type,
       &params);
+#endif
 
   widget->Show();
 }

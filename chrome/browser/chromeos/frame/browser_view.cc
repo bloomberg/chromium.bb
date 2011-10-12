@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/view_ids.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -46,6 +45,10 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/hit_test.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 
 namespace {
 
@@ -269,9 +272,11 @@ class BrowserViewLayout : public ::BrowserViewLayout {
 
     if (status_area_bounds_for_property_ != current_bounds) {
       status_area_bounds_for_property_ = current_bounds;
+#if defined(TOOLKIT_USES_GTK)
       WmIpc::instance()->SetStatusBoundsProperty(
           GTK_WIDGET(chromeos_browser_view()->frame()->GetNativeWindow()),
           status_area_bounds_for_property_);
+#endif
     }
   }
 
@@ -299,11 +304,13 @@ BrowserView::BrowserView(Browser* browser)
   BrowserList::AddObserver(this);
   MessageLoopForUI::current()->AddObserver(this);
 
+#if defined(TOOLKIT_USES_GTK)
   if (!g_chrome_state_gdk_atom)
     g_chrome_state_gdk_atom =
         gdk_atom_intern(
             WmIpc::instance()->GetAtomName(WmIpc::ATOM_CHROME_STATE).c_str(),
             FALSE);  // !only_if_exists
+#endif
 }
 
 BrowserView::~BrowserView() {
@@ -344,10 +351,12 @@ void BrowserView::Init() {
   params.push_back(browser()->tab_count());
   params.push_back(browser()->active_index());
   params.push_back(gtk_get_current_event_time());
+#if defined(TOOLKIT_USES_GTK)
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(frame()->GetNativeWindow()),
       WM_IPC_WINDOW_CHROME_TOPLEVEL,
       &params);
+#endif
 }
 
 void BrowserView::Show() {
@@ -369,10 +378,12 @@ void BrowserView::ShowInternal(bool is_active) {
     std::vector<int> params;
     params.push_back(browser()->tab_count());
     params.push_back(browser()->active_index());
+#if defined(TOOLKIT_USES_GTK)
     WmIpc::instance()->SetWindowType(
         GTK_WIDGET(frame()->GetNativeWindow()),
         WM_IPC_WINDOW_CHROME_TOPLEVEL,
         &params);
+#endif
   }
 }
 
@@ -590,6 +601,7 @@ void BrowserView::InitSystemMenu() {
 }
 
 void BrowserView::FetchHideStatusAreaProperty() {
+#if defined(TOOLKIT_USES_GTK)
   std::set<WmIpc::AtomType> state_atoms;
   if (WmIpc::instance()->GetWindowState(
           GTK_WIDGET(frame()->GetNativeWindow()), &state_atoms)) {
@@ -598,6 +610,7 @@ void BrowserView::FetchHideStatusAreaProperty() {
       return;
     }
   }
+#endif
   has_hide_status_area_property_ = false;
 }
 

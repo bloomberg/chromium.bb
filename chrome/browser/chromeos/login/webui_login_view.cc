@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/common/render_messages.h"
@@ -30,6 +29,7 @@
 #include "views/widget/widget.h"
 
 #if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
 #include "views/widget/native_widget_gtk.h"
 #endif
 
@@ -186,11 +186,13 @@ void WebUILoginView::OnWindowCreated() {
 }
 
 void WebUILoginView::UpdateWindowType() {
+#if defined(TOOLKIT_USES_GTK)
   std::vector<int> params;
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(GetNativeWindow()),
       WM_IPC_WINDOW_LOGIN_WEBUI,
       &params);
+#endif
 }
 
 void WebUILoginView::LoadURL(const GURL & url) {
@@ -348,10 +350,14 @@ void WebUILoginView::InitStatusArea() {
   widget_params.parent_widget = login_window;
   status_window_ = new views::Widget;
   status_window_->Init(widget_params);
+
+#if defined(TOOLKIT_USES_GTK)
   chromeos::WmIpc::instance()->SetWindowType(
       status_window_->GetNativeView(),
       chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
       NULL);
+#endif
+
   views::View* contents_view = new RightAlignedView;
   contents_view->AddChildView(status_area_);
   status_window_->SetContentsView(contents_view);

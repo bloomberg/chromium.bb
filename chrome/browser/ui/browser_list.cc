@@ -33,7 +33,9 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 #endif
 
 namespace {
@@ -217,6 +219,7 @@ bool FastShutdown() {
 }
 
 void NotifyWindowManagerAboutSignout() {
+#if defined(TOOLKIT_USES_GTK)
   static bool notified = false;
   if (!notified) {
     // Let the window manager know that we're going away before we start closing
@@ -224,6 +227,7 @@ void NotifyWindowManagerAboutSignout() {
     chromeos::WmIpc::instance()->NotifyAboutSignout();
     notified = true;
   }
+#endif
 }
 
 #endif

@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -41,6 +40,9 @@
 // TODO(altimofeev): move to ViewsLoginDisplayHost
 #include "chrome/browser/chromeos/login/views_oobe_display.h"
 
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 
 namespace {
 
@@ -233,8 +235,10 @@ void ShowLoginWizard(const std::string& first_screen_name,
       chromeos::input_method::InputMethodManager::GetInstance();
   manager->SetDeferImeStartup(true);
 
+#if defined(TOOLKIT_USES_GTK)
   // Tell the window manager that the user isn't logged in.
   chromeos::WmIpc::instance()->SetLoggedInProperty(false);
+#endif
 
   // Set up keyboards. For example, when |locale| is "en-US", enable US qwerty
   // and US dvorak keyboard layouts.

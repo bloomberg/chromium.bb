@@ -15,10 +15,15 @@
 #include "chrome/browser/chromeos/login/new_user_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_view.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#else
+#include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
+#endif
 
 namespace views {
 class Widget;

@@ -11,7 +11,7 @@
 #include "views/widget/root_view.h"
 #include "views/widget/native_widget_gtk.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #endif
@@ -101,7 +101,7 @@ void BrowserBubble::InitPopup(const gfx::Insets& content_margins) {
   params.parent = frame_->GetNativeView();
   params.native_widget = bubble_widget;
   popup_->Init(params);
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
   {
     vector<int> params;
     params.push_back(0);  // don't show while screen is locked

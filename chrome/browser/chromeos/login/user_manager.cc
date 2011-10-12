@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -42,6 +41,10 @@
 #include "content/common/notification_service.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 
 namespace chromeos {
 
@@ -757,8 +760,12 @@ void UserManager::NotifyOnLogin() {
   // Shut down the IME so that it will reload the user's settings.
   chromeos::input_method::InputMethodManager::GetInstance()->
       StopInputMethodDaemon();
+
+#if defined(TOOLKIT_USES_GTK)
   // Let the window manager know that we're logged in now.
   WmIpc::instance()->SetLoggedInProperty(true);
+#endif
+
   // Ensure we've opened the real user's key/certificate database.
   crypto::OpenPersistentNSSDB();
 

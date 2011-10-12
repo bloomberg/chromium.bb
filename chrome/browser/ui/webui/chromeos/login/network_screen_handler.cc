@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/status/input_method_menu.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -27,6 +26,10 @@
 #include "ui/gfx/rect.h"
 #include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 
 namespace {
 

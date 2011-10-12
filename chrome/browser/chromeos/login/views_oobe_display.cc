@@ -13,11 +13,14 @@
 #include "chrome/browser/chromeos/login/views_user_image_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 
 namespace chromeos {
 
@@ -239,10 +242,14 @@ views::Widget* ViewsOobeDisplay::CreateScreenWindow(
   // For initial show WM would animate background window.
   // Otherwise it stays unchanged.
   params.push_back(initial_show);
+
+#if defined(TOOLKIT_USES_GTK)
   chromeos::WmIpc::instance()->SetWindowType(
       widget_->GetNativeView(),
       chromeos::WM_IPC_WINDOW_LOGIN_GUEST,
       &params);
+#endif
+
   widget_->SetContentsView(contents_);
   return widget_;
 }

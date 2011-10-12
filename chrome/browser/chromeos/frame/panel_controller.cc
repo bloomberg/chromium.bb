@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -36,6 +35,10 @@
 #include "views/painter.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 
 #if defined(TOUCH_UI)
 namespace {
@@ -188,7 +191,7 @@ void PanelController::Init(bool initial_focus,
   params.bounds = title_bounds;
   title_window_->Init(params);
 
-#if !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
   gtk_widget_set_size_request(title_window_->GetNativeView(),
                               title_bounds.width(), title_bounds.height());
   title_ = title_window_->GetNativeView();
@@ -211,7 +214,7 @@ void PanelController::Init(bool initial_focus,
 
   client_event_handler_id_ = g_signal_connect(
       panel_, "client-event", G_CALLBACK(OnPanelClientEvent), this);
-#endif  // !USE_AURA
+#endif
 
   title_content_ = new TitleContentView(this);
   title_window_->SetContentsView(title_content_);
@@ -307,18 +310,22 @@ void PanelController::TitleMouseCaptureLost() {
       delegate_->ActivatePanel();
     }
   } else {
+#if defined(TOOLKIT_USES_GTK)
     WmIpc::Message msg(WM_IPC_MESSAGE_WM_NOTIFY_PANEL_DRAG_COMPLETE);
     msg.set_param(0, panel_xid_);
     WmIpc::instance()->SendMessage(msg);
+#endif
     dragging_ = false;
   }
 }
 
 void PanelController::SetState(State state) {
+#if defined(TOOLKIT_USES_GTK)
   WmIpc::Message msg(WM_IPC_MESSAGE_WM_SET_PANEL_STATE);
   msg.set_param(0, panel_xid_);
   msg.set_param(1, state == EXPANDED);
   WmIpc::instance()->SendMessage(msg);
+#endif
 }
 
 bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
@@ -348,6 +355,7 @@ bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
       dragging_ = true;
     }
   }
+#if defined(TOOLKIT_USES_GTK)
   if (dragging_) {
     WmIpc::Message msg(WM_IPC_MESSAGE_WM_NOTIFY_PANEL_DRAGGED);
     msg.set_param(0, panel_xid_);
@@ -355,6 +363,7 @@ bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
     msg.set_param(2, y_root - mouse_down_offset_y_);
     WmIpc::instance()->SendMessage(msg);
   }
+#endif
   return true;
 }
 
@@ -381,6 +390,7 @@ void PanelController::OnFocusOut() {
 }
 
 bool PanelController::PanelClientEvent(GdkEventClient* event) {
+#if defined(TOOLKIT_USES_GTK)
   WmIpc::Message msg;
   WmIpc::instance()->DecodeMessage(*event, &msg);
   if (msg.type() == WM_IPC_MESSAGE_CHROME_NOTIFY_PANEL_STATE) {
@@ -394,6 +404,7 @@ bool PanelController::PanelClientEvent(GdkEventClient* event) {
           Details<State>(&state));
     }
   }
+#endif
   return true;
 }
 

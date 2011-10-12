@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
@@ -40,6 +39,10 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/widget/widget.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 
 using views::Widget;
 
@@ -382,11 +385,13 @@ void BackgroundView::InitProgressBar() {
 }
 
 void BackgroundView::UpdateWindowType() {
+#if defined(TOOLKIT_USES_GTK)
   std::vector<int> params;
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(GetNativeWindow()),
       WM_IPC_WINDOW_LOGIN_BACKGROUND,
       &params);
+#endif
 }
 
 }  // namespace chromeos
