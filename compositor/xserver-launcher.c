@@ -213,13 +213,13 @@ wlsc_xserver_surface_activate(struct wlsc_surface *surface)
 	struct wlsc_wm_window *window = get_wm_window(surface);
 	struct wlsc_xserver *wxs = surface->compositor->wxs;
 
-	if (window == NULL && wxs && wxs->wm)
+	if (window)
+		wlsc_wm_activate(wxs->wm, window, XCB_TIME_CURRENT_TIME);
+	else if (wxs && wxs->wm)
 		xcb_set_input_focus (wxs->wm->conn,
 				     XCB_INPUT_FOCUS_POINTER_ROOT,
 				     XCB_NONE,
 				     XCB_TIME_CURRENT_TIME);
-	else
-		wlsc_wm_activate(wxs->wm, window, XCB_TIME_CURRENT_TIME);
 }
 
 static void
