@@ -192,7 +192,8 @@ cr.define('ntp4', function() {
     chrome.send('getRecentlyClosedTabs');
 
     mostVisitedPage = new ntp4.MostVisitedPage();
-    appendTilePage(mostVisitedPage, localStrings.getString('mostvisited'));
+    appendTilePage(mostVisitedPage, localStrings.getString('mostvisited'),
+                   false);
     chrome.send('getMostVisited');
 
     if (localStrings.getString('ntp4_intro_message')) {
@@ -218,7 +219,8 @@ cr.define('ntp4', function() {
     var bookmarkFeatures = localStrings.getString('bookmark_features');
     if (bookmarkFeatures == 'true') {
       bookmarksPage = new ntp4.BookmarksPage();
-      appendTilePage(bookmarksPage, localStrings.getString('bookmarksPage'));
+      appendTilePage(bookmarksPage, localStrings.getString('bookmarksPage'),
+                     false);
       chrome.send('getBookmarksData');
     }
 
@@ -323,7 +325,7 @@ cr.define('ntp4', function() {
           pageName = pageNames[appsPages.length];
 
         var origPageCount = appsPages.length;
-        appendTilePage(new ntp4.AppsPage(), pageName, bookmarksPage);
+        appendTilePage(new ntp4.AppsPage(), pageName, true, bookmarksPage);
         // Confirm that appsPages is a live object, updated when a new page is
         // added (otherwise we'd have an infinite loop)
         assert(appsPages.length == origPageCount + 1, 'expected new page');
@@ -366,7 +368,7 @@ cr.define('ntp4', function() {
 
     if (pageIndex >= appsPages.length) {
       while (pageIndex >= appsPages.length) {
-        appendTilePage(new ntp4.AppsPage(), '', bookmarksPage);
+        appendTilePage(new ntp4.AppsPage(), '', true, bookmarksPage);
       }
       updateSliderCards();
     }
@@ -480,21 +482,24 @@ cr.define('ntp4', function() {
    *
    * @param {TilePage} page The page element.
    * @param {string} title The title of the tile page.
-   * @param {TilePage} refNode Optional reference node to insert in front of.
-   * When refNode is falsey, |page| will just be appended to the end of the
+   * @param {bool} titleIsEditable If true, the title can be changed.
+   * @param {TilePage} opt_refNode Optional reference node to insert in front
+   * of.
+   * When opt_refNode is falsey, |page| will just be appended to the end of the
    * page list.
    */
-  function appendTilePage(page, title, refNode) {
-    // When refNode is falsey, insertBefore acts just like appendChild.
-    pageList.insertBefore(page, refNode);
+  function appendTilePage(page, title, titleIsEditable, opt_refNode) {
+    // When opt_refNode is falsey, insertBefore acts just like appendChild.
+    pageList.insertBefore(page, opt_refNode);
 
     // If we're appending an AppsPage and it's a temporary page, animate it.
     var animate = page instanceof ntp4.AppsPage &&
                   page.classList.contains('temporary');
     // Make a deep copy of the dot template to add a new one.
-    var newDot = new ntp4.NavDot(page, title, true, animate);
+    var newDot = new ntp4.NavDot(page, title, titleIsEditable, animate);
     page.navigationDot = newDot;
-    dotList.insertBefore(newDot, refNode ? refNode.navigationDot : null);
+    dotList.insertBefore(newDot, opt_refNode ? opt_refNode.navigationDot
+                                             : null);
 
     if (infoBubble)
       window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
@@ -524,7 +529,7 @@ cr.define('ntp4', function() {
   function enterRearrangeMode() {
     var tempPage = new ntp4.AppsPage();
     tempPage.classList.add('temporary');
-    appendTilePage(tempPage, '', bookmarksPage);
+    appendTilePage(tempPage, '', true, bookmarksPage);
     var tempIndex = Array.prototype.indexOf.call(tilePages, tempPage);
     if (cardSlider.currentCard >= tempIndex)
       cardSlider.currentCard += 1;
