@@ -567,12 +567,9 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
 void IOThread::ClearHostCache() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (globals_->host_resolver->GetAsHostResolverImpl()) {
-    net::HostCache* host_cache =
-        globals_->host_resolver.get()->GetAsHostResolverImpl()->cache();
-    if (host_cache)
-      host_cache->clear();
-  }
+  net::HostCache* host_cache = globals_->host_resolver->GetHostCache();
+  if (host_cache)
+    host_cache->clear();
 }
 
 net::SSLConfigService* IOThread::GetSSLConfigService() {

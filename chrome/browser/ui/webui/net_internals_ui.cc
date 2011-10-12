@@ -45,7 +45,8 @@
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
 #include "net/base/escape.h"
-#include "net/base/host_resolver_impl.h"
+#include "net/base/host_cache.h"
+#include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
@@ -85,13 +86,7 @@ const int kLogFormatVersion = 1;
 // Returns the HostCache for |context|'s primary HostResolver, or NULL if
 // there is none.
 net::HostCache* GetHostResolverCache(net::URLRequestContext* context) {
-  net::HostResolverImpl* host_resolver_impl =
-      context->host_resolver()->GetAsHostResolverImpl();
-
-  if (!host_resolver_impl)
-    return NULL;
-
-  return host_resolver_impl->cache();
+  return context->host_resolver()->GetHostCache();
 }
 
 // Returns the disk cache backend for |context| if there is one, or NULL.
@@ -881,11 +876,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
     const ListValue* list) {
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
-  net::HostResolverImpl* host_resolver_impl =
-      context->host_resolver()->GetAsHostResolverImpl();
   net::HostCache* cache = GetHostResolverCache(context);
 
-  if (!host_resolver_impl || !cache) {
+  if (!cache) {
     SendJavascriptCommand(L"receivedHostResolverInfo", NULL);
     return;
   }
@@ -894,7 +887,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
 
   dict->SetInteger(
       "default_address_family",
-      static_cast<int>(host_resolver_impl->GetDefaultAddressFamily()));
+      static_cast<int>(context->host_resolver()->GetDefaultAddressFamily()));
 
   DictionaryValue* cache_info_dict = new DictionaryValue();
 
@@ -963,13 +956,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
 void NetInternalsMessageHandler::IOThreadImpl::OnEnableIPv6(
     const ListValue* list) {
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
-  net::HostResolverImpl* host_resolver_impl =
-      context->host_resolver()->GetAsHostResolverImpl();
+  net::HostResolver* host_resolver = context->host_resolver();
 
-  if (host_resolver_impl) {
-    host_resolver_impl->SetDefaultAddressFamily(
-        net::ADDRESS_FAMILY_UNSPECIFIED);
-  }
+  host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_UNSPECIFIED);
 
   // Cause the renderer to be notified of the new value.
   OnGetHostResolverInfo(NULL);

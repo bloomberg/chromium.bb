@@ -351,8 +351,8 @@ AddressFamily AsyncHostResolver::GetDefaultAddressFamily() const {
   return ADDRESS_FAMILY_IPV4;
 }
 
-HostResolverImpl* AsyncHostResolver::GetAsHostResolverImpl() {
-  return NULL;
+HostCache* AsyncHostResolver::GetHostCache() {
+  return cache_.get();
 }
 
 void AsyncHostResolver::OnTransactionComplete(

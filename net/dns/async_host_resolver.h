@@ -52,7 +52,7 @@ class NET_EXPORT AsyncHostResolver
   virtual void RemoveObserver(HostResolver::Observer* observer) OVERRIDE;
   virtual void SetDefaultAddressFamily(AddressFamily address_family) OVERRIDE;
   virtual AddressFamily GetDefaultAddressFamily() const OVERRIDE;
-  virtual HostResolverImpl* GetAsHostResolverImpl() OVERRIDE;
+  virtual HostCache* GetHostCache() OVERRIDE;
 
   // DnsTransaction::Delegate interface
   virtual void OnTransactionComplete(

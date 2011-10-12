@@ -10,7 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/benchmarking_messages.h"
 #include "chrome/common/chrome_switches.h"
-#include "net/base/host_resolver_impl.h"
+#include "net/base/host_cache.h"
+#include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -159,12 +160,9 @@ void ChromeBenchmarkingMessageFilter::OnClearHostResolverCache(int* result) {
     return;
   }
   *result = -1;
-  net::HostResolverImpl* host_resolver_impl =
-      request_context_->GetURLRequestContext()->
-      host_resolver()->GetAsHostResolverImpl();
-  if (host_resolver_impl) {
-    net::HostCache* cache = host_resolver_impl->cache();
-    DCHECK(cache);
+  net::HostCache* cache =
+      request_context_->GetURLRequestContext()->host_resolver()->GetHostCache();
+  if (cache) {
     cache->clear();
     *result = 0;
   }
