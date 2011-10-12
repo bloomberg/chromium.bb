@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/renderer/translate_helper.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -52,10 +53,11 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view,
       translation_pending_(false),
       page_id_(-1),
       autofill_(autofill),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_method_factory_(this)) {
 }
 
 TranslateHelper::~TranslateHelper() {
+  CancelPendingTranslation();
 }
 
 void TranslateHelper::PageCaptured(const string16& contents) {
@@ -75,7 +77,7 @@ void TranslateHelper::PageCaptured(const string16& contents) {
 }
 
 void TranslateHelper::CancelPendingTranslation() {
-  method_factory_.RevokeAll();
+  weak_method_factory_.InvalidateWeakPtrs();
   translation_pending_ = false;
   page_id_ = -1;
   source_lang_.clear();
@@ -344,7 +346,8 @@ void TranslateHelper::CheckTranslateStatus() {
 
   // The translation is still pending, check again later.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&TranslateHelper::CheckTranslateStatus),
+      base::Bind(&TranslateHelper::CheckTranslateStatus,
+                 weak_method_factory_.GetWeakPtr()),
       DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs);
 }
 
@@ -405,8 +408,8 @@ void TranslateHelper::TranslatePageImpl(int count) {
       return;
     }
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(&TranslateHelper::TranslatePageImpl,
-                                          count),
+        base::Bind(&TranslateHelper::TranslatePageImpl,
+                   weak_method_factory_.GetWeakPtr(), count),
         DontDelayTasks() ? 0 : count * kTranslateInitCheckDelayMs);
     return;
   }
@@ -417,7 +420,8 @@ void TranslateHelper::TranslatePageImpl(int count) {
   }
   // Check the status of the translation.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&TranslateHelper::CheckTranslateStatus),
+      base::Bind(&TranslateHelper::CheckTranslateStatus,
+                 weak_method_factory_.GetWeakPtr()),
       DontDelayTasks() ? 0 : kTranslateStatusCheckDelayMs);
 }
 

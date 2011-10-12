@@ -13,7 +13,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/translate_errors.h"
 #include "content/common/net/url_fetcher.h"
@@ -192,7 +192,7 @@ class TranslateManager : public NotificationObserver,
   typedef std::map<PrefService*, LanguageSet> PrefServiceLanguagesMap;
   PrefServiceLanguagesMap accept_languages_;
 
-  ScopedRunnableMethodFactory<TranslateManager> method_factory_;
+  base::WeakPtrFactory<TranslateManager> weak_method_factory_;
 
   // The JS injected in the page to do the translation.
   std::string translate_script_;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/translate/translate_manager.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
@@ -144,6 +145,7 @@ base::LazyInstance<std::set<std::string> >
     TranslateManager::supported_languages_(base::LINKER_INITIALIZED);
 
 TranslateManager::~TranslateManager() {
+  weak_method_factory_.InvalidateWeakPtrs();
 }
 
 // static
@@ -289,8 +291,9 @@ void TranslateManager::Observe(int type,
       // current infobars.  Since InitTranslation might add an infobar, it must
       // be done after that.
       MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
+          base::Bind(
               &TranslateManager::InitiateTranslationPosted,
+              weak_method_factory_.GetWeakPtr(),
               controller->tab_contents()->render_view_host()->process()->id(),
               controller->tab_contents()->render_view_host()->routing_id(),
               helper->language_state().original_language()));
@@ -382,8 +385,8 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
       // running browsers still get fixes that might get pushed with newer
       // scripts.
       MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &TranslateManager::ClearTranslateScript),
+          base::Bind(&TranslateManager::ClearTranslateScript,
+                     weak_method_factory_.GetWeakPtr()),
           translate_script_expiration_delay_);
     }
     // Process any pending requests.
@@ -437,7 +440,7 @@ bool TranslateManager::IsShowingTranslateInfobar(TabContents* tab) {
 }
 
 TranslateManager::TranslateManager()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_method_factory_(this)),
       translate_script_expiration_delay_(kTranslateScriptExpirationDelayMS) {
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                               NotificationService::AllSources());

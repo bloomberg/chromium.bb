@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/translate_errors.h"
 #include "content/public/renderer/render_view_observer.h"
 
@@ -139,7 +139,7 @@ class TranslateHelper : public content::RenderViewObserver {
   autofill::AutofillAgent* autofill_;
 
   // Method factory used to make calls to TranslatePageImpl.
-  ScopedRunnableMethodFactory<TranslateHelper> method_factory_;
+  base::WeakPtrFactory<TranslateHelper> weak_method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateHelper);
 };
