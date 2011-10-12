@@ -42,7 +42,7 @@ static const KeyIdentifier kKeyIdentifiers[] = {
   { {"Attn", "", ""}, ui::VKEY_ATTN, 0 },
   { {"BrowserBack", "", ""}, ui::VKEY_BROWSER_BACK, 0 },
   { {"BrowserFavorites", "", ""}, ui::VKEY_BROWSER_FAVORITES, 0 },
-  { {"BrowserForward", "", ""}, ui::VKEY_BROWSER_FAVORITES, 0 },
+  { {"BrowserForward", "", ""}, ui::VKEY_BROWSER_FORWARD, 0 },
   { {"BrowserHome", "", ""}, ui::VKEY_BROWSER_HOME, 0 },
   { {"BrowserRefresh", "", ""}, ui::VKEY_BROWSER_REFRESH, 0 },
   { {"BrowserSearch", "", ""}, ui::VKEY_BROWSER_SEARCH, 0 },
