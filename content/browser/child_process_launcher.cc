@@ -219,6 +219,9 @@ class ChildProcessLauncher::Context
       base::ProcessHandle handle) {
     starting_ = false;
     process_.set_handle(handle);
+    if (!handle)
+      LOG(ERROR) << "Failed to launch child process";
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     zygote_ = zygote;
 #endif

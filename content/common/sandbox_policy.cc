@@ -531,8 +531,10 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   TRACE_EVENT_END_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
-  if (sandbox::SBOX_ALL_OK != result)
+  if (sandbox::SBOX_ALL_OK != result) {
+    LOG(ERROR) << "Failed to launch process. Error: " << result;
     return 0;
+  }
 
   // For Native Client sel_ldr processes on 32-bit Windows, reserve 1 GB of
   // address space to prevent later failure due to address space fragmentation
