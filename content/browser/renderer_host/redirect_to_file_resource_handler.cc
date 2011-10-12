@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/redirect_to_file_resource_handler.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
@@ -34,8 +35,6 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
       buf_(new net::GrowableIOBuffer()),
       buf_write_pending_(false),
       write_cursor_(0),
-      write_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                      &RedirectToFileResourceHandler::DidWriteToFile),
       write_callback_pending_(false),
       request_was_closed_(false),
       completed_during_write_(false) {
@@ -222,9 +221,11 @@ bool RedirectToFileResourceHandler::WriteMore() {
     if (write_callback_pending_)
       return true;
     DCHECK(write_cursor_ < buf_->offset());
-    int rv = file_stream_->Write(buf_->StartOfBuffer() + write_cursor_,
-                                 buf_->offset() - write_cursor_,
-                                 &write_callback_);
+    int rv = file_stream_->Write(
+        buf_->StartOfBuffer() + write_cursor_,
+        buf_->offset() - write_cursor_,
+        base::Bind(&RedirectToFileResourceHandler::DidWriteToFile,
+                   base::Unretained(this)));
     if (rv == net::ERR_IO_PENDING) {
       write_callback_pending_ = true;
       return true;

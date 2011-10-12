@@ -189,7 +189,8 @@ class Writer : public Task {
   // Writes raw text out returning true on success. This does not escape
   // the text in anyway.
   bool Write(const std::string& text) {
-    size_t wrote = file_stream_.Write(text.c_str(), text.length(), NULL);
+    size_t wrote = file_stream_.Write(text.c_str(), text.length(),
+                                      net::CompletionCallback());
     bool result = (wrote == text.length());
     DCHECK(result);
     return result;

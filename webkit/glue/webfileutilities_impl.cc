@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "webkit/glue/webfileutilities_impl.h"
 
@@ -147,7 +147,7 @@ int WebFileUtilitiesImpl::readFromFile(base::PlatformFile handle,
   std::string buffer;
   buffer.resize(length);
   net::FileStream file_stream(handle, base::PLATFORM_FILE_READ);
-  return file_stream.Read(data, length, NULL);
+  return file_stream.Read(data, length, net::CompletionCallback());
 }
 
 int WebFileUtilitiesImpl::writeToFile(base::PlatformFile handle,
@@ -156,7 +156,7 @@ int WebFileUtilitiesImpl::writeToFile(base::PlatformFile handle,
   if (handle == base::kInvalidPlatformFileValue || !data || length <= 0)
     return -1;
   net::FileStream file_stream(handle, base::PLATFORM_FILE_WRITE);
-  return file_stream.Write(data, length, NULL);
+  return file_stream.Write(data, length, net::CompletionCallback());
 }
 
 }  // namespace webkit_glue

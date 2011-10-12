@@ -411,7 +411,7 @@ class RequestProxy : public net::URLRequest::Delegate,
 
   virtual void OnReceivedData(int bytes_read) {
     if (download_to_file_) {
-      file_stream_.Write(buf_->data(), bytes_read, NULL);
+      file_stream_.Write(buf_->data(), bytes_read, net::CompletionCallback());
       owner_loop_->PostTask(
           FROM_HERE,
           base::Bind(&RequestProxy::NotifyDownloadedData, this, bytes_read));
@@ -725,7 +725,7 @@ class SyncRequestProxy : public RequestProxy {
 
   virtual void OnReceivedData(int bytes_read) {
     if (download_to_file_)
-      file_stream_.Write(buf_->data(), bytes_read, NULL);
+      file_stream_.Write(buf_->data(), bytes_read, net::CompletionCallback());
     else
       result_->data.append(buf_->data(), bytes_read);
     AsyncReadData();  // read more (may recurse)

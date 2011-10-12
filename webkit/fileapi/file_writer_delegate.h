@@ -13,7 +13,6 @@
 #include "base/platform_file.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
@@ -81,7 +80,6 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_ptr<net::FileStream> file_stream_;
   net::URLRequest* request_;
-  net::OldCompletionCallbackImpl<FileWriterDelegate> io_callback_;
   ScopedRunnableMethodFactory<FileWriterDelegate> method_factory_;
   base::ScopedCallbackFactory<FileWriterDelegate> callback_factory_;
 };

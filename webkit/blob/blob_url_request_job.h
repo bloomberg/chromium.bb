@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/task.h"
-#include "net/base/completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/blob/blob_data.h"
@@ -72,7 +71,6 @@ class BlobURLRequestJob : public net::URLRequestJob {
   base::ScopedCallbackFactory<BlobURLRequestJob> callback_factory_;
   scoped_refptr<BlobData> blob_data_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
-  net::OldCompletionCallbackImpl<BlobURLRequestJob> io_callback_;
   std::vector<int64> item_length_list_;
   scoped_ptr<net::FileStream> stream_;
   size_t item_index_;

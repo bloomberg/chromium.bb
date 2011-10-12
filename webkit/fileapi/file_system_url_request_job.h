@@ -13,7 +13,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/task.h"
-#include "net/base/completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 
@@ -64,7 +63,6 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   ScopedRunnableMethodFactory<FileSystemURLRequestJob> method_factory_;
   base::ScopedCallbackFactory<FileSystemURLRequestJob> callback_factory_;
-  net::OldCompletionCallbackImpl<FileSystemURLRequestJob> io_callback_;
   scoped_ptr<net::FileStream> stream_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;

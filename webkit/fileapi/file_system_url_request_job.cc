@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/file_system_url_request_job.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
@@ -107,8 +108,6 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
       file_thread_proxy_(file_thread_proxy),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          io_callback_(this, &FileSystemURLRequestJob::DidRead)),
       stream_(NULL),
       is_directory_(false),
       remaining_bytes_(0) {
@@ -154,7 +153,9 @@ bool FileSystemURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
     return true;
   }
 
-  int rv = stream_->Read(dest->data(), dest_size, &io_callback_);
+  int rv = stream_->Read(dest->data(), dest_size,
+                         base::Bind(&FileSystemURLRequestJob::DidRead,
+                                    base::Unretained(this)));
   if (rv >= 0) {
     // Data is immediately available.
     *bytes_read = rv;

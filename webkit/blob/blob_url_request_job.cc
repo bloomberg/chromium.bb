@@ -4,6 +4,7 @@
 
 #include "webkit/blob/blob_url_request_job.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -54,8 +55,6 @@ BlobURLRequestJob::BlobURLRequestJob(
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       blob_data_(blob_data),
       file_thread_proxy_(file_thread_proxy),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          io_callback_(this, &BlobURLRequestJob::DidRead)),
       item_index_(0),
       total_size_(0),
       current_item_offset_(0),
@@ -355,7 +354,8 @@ bool BlobURLRequestJob::ReadFile(const BlobData::Item& item) {
   // Start the asynchronous reading.
   int rv = stream_->Read(read_buf_->data() + read_buf_offset_,
                          bytes_to_read_,
-                         &io_callback_);
+                         base::Bind(&BlobURLRequestJob::DidRead,
+                                    base::Unretained(this)));
 
   // If I/O pending error is returned, we just need to wait.
   if (rv == net::ERR_IO_PENDING) {

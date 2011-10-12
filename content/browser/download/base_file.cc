@@ -251,7 +251,8 @@ net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
   const char* current_data = data;
   while (len > 0) {
     write_count++;
-    int write_result = file_stream_->Write(current_data, len, NULL);
+    int write_result =
+        file_stream_->Write(current_data, len, net::CompletionCallback());
     DCHECK_NE(0, write_result);
 
     // Check for errors.

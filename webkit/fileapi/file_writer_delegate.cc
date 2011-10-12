@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/file_writer_delegate.h"
 
+#include "base/bind.h"
 #include "base/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
@@ -94,8 +95,6 @@ FileWriterDelegate::FileWriterDelegate(
       total_bytes_written_(0),
       allowed_bytes_to_write_(0),
       io_buffer_(new net::IOBufferWithSize(kReadBufSize)),
-      io_callback_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                   &FileWriterDelegate::OnDataWritten),
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -232,9 +231,11 @@ void FileWriterDelegate::Write() {
   if (bytes_to_write > allowed_bytes_to_write_ - total_bytes_written_)
     bytes_to_write = allowed_bytes_to_write_ - total_bytes_written_;
 
-  int write_response = file_stream_->Write(io_buffer_->data() + bytes_written_,
-                                           static_cast<int>(bytes_to_write),
-                                           &io_callback_);
+  int write_response =
+      file_stream_->Write(io_buffer_->data() + bytes_written_,
+                          static_cast<int>(bytes_to_write),
+                          base::Bind(&FileWriterDelegate::OnDataWritten,
+                                     base::Unretained(this)));
   if (write_response > 0)
     MessageLoop::current()->PostTask(
         FROM_HERE,

@@ -88,7 +88,8 @@ static bool ExtractCurrentFile(unzFile zip_file,
       break;
     }
     if (num_bytes > 0) {
-      if (num_bytes != stream.Write(buf, num_bytes, NULL)) {
+      if (num_bytes != stream.Write(buf, num_bytes,
+                                    net::CompletionCallback())) {
         ret = false;
         break;
       }
@@ -214,7 +215,7 @@ static bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
   int num_bytes;
   char buf[kZipBufSize];
   do {
-    num_bytes = stream.Read(buf, kZipBufSize, NULL);
+    num_bytes = stream.Read(buf, kZipBufSize, net::CompletionCallback());
     if (num_bytes > 0) {
       if (ZIP_OK != zipWriteInFileInZip(zip_file, buf, num_bytes)) {
         LOG(ERROR) << "Could not write data to zip for path "
