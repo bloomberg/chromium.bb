@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@e94111edfd5e2964a3b3c4551d336e0864ab61ef'
+         '@28e257f973165225008b9a9cf059bb5b876279b6'
 }
 
 deps = {
@@ -75,7 +75,7 @@ deps = {
     'src/third_party/skia/include':
         Var('git_url') + '/external/skia/include.git@6bc620db4af1df9e7952df81cd7622c4964fbcf0',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@0c0f996cb6172ee84864411431e60af18a5fcdac',
+        Var('git_url') + '/external/skia/src.git@caef55aefa384e62365047c8688f17f2296bc6cc',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@c988402115946ed3cb7fb347f6eef4a8cec543e2',
     'src/third_party/smhasher/src':
