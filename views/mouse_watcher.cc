@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "ui/base/events.h"
 #include "ui/gfx/screen.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
@@ -54,16 +55,16 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
     // WM_NCMOUSELEAVE:
     //   For notification when the mouse leaves the _non-client_ area.
     //
-  switch (event.message) {
-    case WM_MOUSEMOVE:
-      HandleGlobalMouseMoveEvent(false);
-      break;
-    case WM_MOUSELEAVE:
-    case WM_NCMOUSELEAVE:
-      HandleGlobalMouseMoveEvent(true);
-      break;
+    switch (event.message) {
+      case WM_MOUSEMOVE:
+        HandleGlobalMouseMoveEvent(false);
+        break;
+      case WM_MOUSELEAVE:
+      case WM_NCMOUSELEAVE:
+        HandleGlobalMouseMoveEvent(true);
+        break;
+    }
   }
-}
 #elif defined(USE_WAYLAND)
   virtual MessageLoopForUI::Observer::EventStatus WillProcessEvent(
       ui::WaylandEvent* event) OVERRIDE {
@@ -86,7 +87,18 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
     return base::EVENT_CONTINUE;
   }
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
-    NOTIMPLEMENTED();
+    switch (ui::EventTypeFromNative(event)) {
+      case ui::ET_MOUSE_MOVED:
+      case ui::ET_MOUSE_DRAGGED:
+        // DRAGGED is a special case of MOVED. See events_win.cc/events_x.cc.
+        HandleGlobalMouseMoveEvent(false);
+        break;
+      case ui::ET_MOUSE_EXITED:
+        HandleGlobalMouseMoveEvent(true);
+        break;
+      default:
+        break;
+    }
   }
 #elif defined(TOOLKIT_USES_GTK)
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {

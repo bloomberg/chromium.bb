@@ -152,6 +152,10 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
           (Button1Mask | Button2Mask | Button3Mask))
         return ET_MOUSE_DRAGGED;
       return ET_MOUSE_MOVED;
+    case EnterNotify:
+      return ET_MOUSE_ENTERED;
+    case LeaveNotify:
+      return ET_MOUSE_EXITED;
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
