@@ -52,14 +52,10 @@ bool WebIntentsTable::Init() {
                     "disposition VARCHAR,"
                     "UNIQUE (service_url, action, type))")) {
     NOTREACHED();
-    return false;
   }
 
-  if (!db_->Execute("CREATE INDEX web_intents_index "
-                     "ON web_intents (action)")) {
+  if (!db_->Execute("CREATE INDEX web_intents_index ON web_intents (action)"))
     NOTREACHED();
-    return false;
-  }
 
   return true;
 }
@@ -76,10 +72,8 @@ bool WebIntentsTable::GetWebIntents(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service_url, action, type, title, disposition FROM web_intents "
       "WHERE action=?"));
-  if (!s) {
+  if (!s)
     NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   s.BindString16(0, action);
   return ExtractIntents(&s, intents);
@@ -90,10 +84,8 @@ bool WebIntentsTable::GetAllWebIntents(
   DCHECK(intents);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service_url, action, type, title, disposition FROM web_intents"));
-  if (!s) {
+  if (!s)
     NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   return ExtractIntents(&s, intents);
 }
@@ -103,10 +95,8 @@ bool WebIntentsTable::SetWebIntent(const WebIntentServiceData& intent) {
       "INSERT OR REPLACE INTO web_intents "
       "(service_url, type, action, title, disposition) "
       "VALUES (?, ?, ?, ?, ?)"));
-  if (!s) {
+  if (!s)
     NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   // Default to window disposition.
   string16 disposition = ASCIIToUTF16("window");
@@ -127,10 +117,8 @@ bool WebIntentsTable::RemoveWebIntent(const WebIntentServiceData& intent) {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM web_intents "
       "WHERE service_url = ? AND action = ? AND type = ?"));
-  if (!s) {
+  if (!s)
     NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
 
   s.BindString(0, intent.service_url.spec());
   s.BindString16(1, intent.action);
