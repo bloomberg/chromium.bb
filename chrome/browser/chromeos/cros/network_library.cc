@@ -1033,6 +1033,7 @@ CellularNetwork::CellularNetwork(const std::string& service_path)
       activation_state_(ACTIVATION_STATE_UNKNOWN),
       network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
       roaming_state_(ROAMING_STATE_UNKNOWN),
+      using_post_(false),
       data_left_(DATA_UNKNOWN) {
 }
 
@@ -4784,7 +4785,6 @@ void NetworkLibraryImplStub::Init() {
   WifiNetwork* wifi1 = new WifiNetwork("wifi1");
   wifi1->set_name("Fake WiFi1");
   wifi1->set_strength(100);
-  wifi1->set_is_active(true);
   wifi1->set_connected(true);
   wifi1->set_encryption(SECURITY_NONE);
   AddStubNetwork(wifi1, PROFILE_NONE);
@@ -4827,7 +4827,6 @@ void NetworkLibraryImplStub::Init() {
   CellularNetwork* cellular1 = new CellularNetwork("cellular1");
   cellular1->set_name("Fake Cellular1");
   cellular1->set_strength(100);
-  cellular1->set_is_active(true);
   cellular1->set_connected(true);
   cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
   cellular1->set_payment_url(std::string("http://www.google.com"));

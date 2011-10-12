@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -17,6 +18,8 @@ namespace chromeos {
 
 // Local constants.
 namespace {
+
+const char kPostMethod[] = "post";
 
 EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kActivationStateProperty, PROPERTY_INDEX_ACTIVATION_STATE },
@@ -100,7 +103,6 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kPRLVersionProperty, PROPERTY_INDEX_PRL_VERSION },
   { flimflam::kPassphraseProperty, PROPERTY_INDEX_PASSPHRASE },
   { flimflam::kPassphraseRequiredProperty, PROPERTY_INDEX_PASSPHRASE_REQUIRED },
-  { flimflam::kPaymentURLProperty, PROPERTY_INDEX_PAYMENT_URL },
   { flimflam::kPortalURLProperty, PROPERTY_INDEX_PORTAL_URL },
   { flimflam::kPoweredProperty, PROPERTY_INDEX_POWERED },
   { flimflam::kPriorityProperty, PROPERTY_INDEX_PRIORITY },
@@ -124,6 +126,7 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kTechnologyFamilyProperty, PROPERTY_INDEX_TECHNOLOGY_FAMILY },
   { flimflam::kTypeProperty, PROPERTY_INDEX_TYPE },
   { flimflam::kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
+  { flimflam::kPaymentPortalProperty, PROPERTY_INDEX_OLP },
   { flimflam::kWifiAuthMode, PROPERTY_INDEX_WIFI_AUTH_MODE },
   { flimflam::kWifiFrequency, PROPERTY_INDEX_WIFI_FREQUENCY },
   { flimflam::kWifiHexSsid, PROPERTY_INDEX_WIFI_HEX_SSID },
@@ -787,19 +790,33 @@ bool NativeCellularNetworkParser::ParseValue(PropertyIndex index,
       }
       break;
     }
-    case PROPERTY_INDEX_PAYMENT_URL: {
-      std::string value_str;
-      if (!value.GetAsString(&value_str))
-        break;
-      cellular_network->set_payment_url(value_str);
-      return true;
-    }
     case PROPERTY_INDEX_USAGE_URL: {
       std::string value_str;
       if (!value.GetAsString(&value_str))
         break;
       cellular_network->set_usage_url(value_str);
       return true;
+    }
+    case PROPERTY_INDEX_OLP: {
+      if (value.IsType(base::Value::TYPE_DICTIONARY)) {
+        const DictionaryValue& dict =
+            static_cast<const DictionaryValue&>(value);
+        std::string portal_url;
+        std::string method;
+        std::string postdata;
+        dict.GetStringWithoutPathExpansion(flimflam::kPaymentPortalURL,
+                                           &portal_url);
+        dict.GetStringWithoutPathExpansion(flimflam::kPaymentPortalMethod,
+                                           &method);
+        dict.GetStringWithoutPathExpansion(flimflam::kPaymentPortalPostData,
+                                           &postdata);
+        cellular_network->set_payment_url(portal_url);
+        cellular_network->set_post_data(postdata);
+        cellular_network->set_using_post(
+            LowerCaseEqualsASCII(method, kPostMethod));
+        return true;
+      }
+      break;
     }
     case PROPERTY_INDEX_STATE: {
       // Save previous state before calling WirelessNetwork::ParseValue.

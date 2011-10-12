@@ -111,7 +111,6 @@ enum PropertyIndex {
   PROPERTY_INDEX_OPERATOR_NAME,
   PROPERTY_INDEX_PASSPHRASE,
   PROPERTY_INDEX_PASSPHRASE_REQUIRED,
-  PROPERTY_INDEX_PAYMENT_URL,
   PROPERTY_INDEX_PORTAL_URL,
   PROPERTY_INDEX_POWERED,
   PROPERTY_INDEX_PRIORITY,
@@ -137,6 +136,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_TYPE,
   PROPERTY_INDEX_UNKNOWN,
   PROPERTY_INDEX_USAGE_URL,
+  PROPERTY_INDEX_OLP,
   PROPERTY_INDEX_WIFI_AUTH_MODE,
   PROPERTY_INDEX_WIFI_FREQUENCY,
   PROPERTY_INDEX_WIFI_HEX_SSID,
@@ -994,6 +994,8 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& operator_country() const { return operator_country_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& usage_url() const { return usage_url_; }
+  const std::string& post_data() const { return post_data_; }
+  const bool using_post() const { return using_post_; }
   DataLeft data_left() const { return data_left_; }
   const CellularApn& apn() const { return apn_; }
   const CellularApn& last_good_apn() const { return last_good_apn_; }
@@ -1057,6 +1059,12 @@ class CellularNetwork : public WirelessNetwork {
   void set_payment_url(const std::string& payment_url) {
     payment_url_ = payment_url;
   }
+  void set_post_data(const std::string& post_data) {
+    post_data_ = post_data;
+  }
+  void set_using_post(bool using_post) {
+    using_post_ = using_post;
+  }
   void set_usage_url(const std::string& usage_url) { usage_url_ = usage_url; }
   void set_data_left(DataLeft data_left) { data_left_ = data_left; }
   void set_apn(const base::DictionaryValue& apn) { apn_.Set(apn); }
@@ -1073,6 +1081,8 @@ class CellularNetwork : public WirelessNetwork {
   std::string operator_country_;
   std::string payment_url_;
   std::string usage_url_;
+  std::string post_data_;
+  bool using_post_;
   // Cached values
   DataLeft data_left_;  // Updated when data plans are updated.
   CellularApn apn_;
