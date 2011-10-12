@@ -15,17 +15,25 @@ class WebThreadImpl : public WebKit::WebThread {
   WebThreadImpl(const char* name);
   virtual ~WebThreadImpl();
 
-  virtual void postTask(Task* task);
-#ifdef WEBTHREAD_HAS_LONGLONG_CHANGE
-  virtual void postDelayedTask(Task* task, long long delay_ms);
-#else
-  virtual void postDelayedTask(Task* task, int64 delay_ms);
-#endif
+  virtual void postTask(Task* task) OVERRIDE;
+  virtual void postDelayedTask(Task* task, long long delay_ms) OVERRIDE;
 
   MessageLoop* message_loop() const { return thread_->message_loop(); }
 
  protected:
   scoped_ptr<base::Thread> thread_;
+};
+
+class WebThreadImplForMessageLoop : public WebKit::WebThread {
+ public:
+  WebThreadImplForMessageLoop(base::MessageLoopProxy* message_loop);
+  virtual ~WebThreadImplForMessageLoop();
+
+  virtual void postTask(Task* task) OVERRIDE;
+  virtual void postDelayedTask(Task* task, long long delay_ms) OVERRIDE;
+
+ protected:
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
 
 } // namespace webkit_glue

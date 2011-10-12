@@ -6,6 +6,7 @@
 #define WEBKIT_PLATFORM_SUPPORT_IMPL_H_
 
 #include "base/platform_file.h"
+#include "base/threading/thread_local_storage.h"
 #include "base/timer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
 #if defined(OS_WIN)
@@ -78,6 +79,7 @@ class WebKitPlatformSupportImpl : public WebKit::WebKitPlatformSupport {
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual WebKit::WebThread* createThread(const char* name);
+  virtual WebKit::WebThread* currentThread();
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
@@ -87,6 +89,7 @@ class WebKitPlatformSupportImpl : public WebKit::WebKitPlatformSupport {
     if (shared_timer_func_ && !shared_timer_suspended_)
       shared_timer_func_();
   }
+  static void DestroyCurrentThread(void*);
 
   MessageLoop* main_loop_;
   base::OneShotTimer<WebKitPlatformSupportImpl> shared_timer_;
@@ -94,6 +97,7 @@ class WebKitPlatformSupportImpl : public WebKit::WebKitPlatformSupport {
   double shared_timer_fire_time_;
   int shared_timer_suspended_;  // counter
   WebThemeEngineImpl theme_engine_;
+  base::ThreadLocalStorage::Slot current_thread_slot_;
 };
 
 }  // namespace webkit_glue

@@ -210,7 +210,8 @@ WebKitPlatformSupportImpl::WebKitPlatformSupportImpl()
     : main_loop_(MessageLoop::current()),
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
-      shared_timer_suspended_(0) {
+      shared_timer_suspended_(0),
+      current_thread_slot_(&DestroyCurrentThread) {
 }
 
 WebKitPlatformSupportImpl::~WebKitPlatformSupportImpl() {
@@ -545,6 +546,22 @@ WebKit::WebThread* WebKitPlatformSupportImpl::createThread(const char* name) {
   return new WebThreadImpl(name);
 }
 
+WebKit::WebThread* WebKitPlatformSupportImpl::currentThread() {
+  WebThreadImplForMessageLoop* thread =
+      static_cast<WebThreadImplForMessageLoop*>(current_thread_slot_.Get());
+  if (thread)
+    return (thread);
+
+  scoped_refptr<base::MessageLoopProxy> message_loop =
+      base::MessageLoopProxy::current();
+  if (!message_loop)
+    return NULL;
+
+  thread = new WebThreadImplForMessageLoop(message_loop);
+  current_thread_slot_.Set(thread);
+  return thread;
+}
+
 base::PlatformFile WebKitPlatformSupportImpl::databaseOpenFile(
     const WebKit::WebString& vfs_file_name, int desired_flags) {
   return base::kInvalidPlatformFileValue;
@@ -655,6 +672,13 @@ void WebKitPlatformSupportImpl::ResumeSharedTimer() {
     setSharedTimerFireInterval(
         monotonicallyIncreasingTime() - shared_timer_fire_time_);
   }
+}
+
+// static
+void WebKitPlatformSupportImpl::DestroyCurrentThread(void* thread) {
+  WebThreadImplForMessageLoop* impl =
+      static_cast<WebThreadImplForMessageLoop*>(thread);
+  delete impl;
 }
 
 }  // namespace webkit_glue
