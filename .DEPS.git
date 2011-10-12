@@ -129,7 +129,7 @@ deps_os = {
         'src/chrome/tools/test/reference_build/chrome_linux':
             Var('git_url') + '/chromium/reference_builds/chrome_linux.git@30e720f6bfd2be52c37307114b6fca8817a90562',
         'src/third_party/lss':
-            Var('git_url') + '/external/linux-syscall-support/lss.git@d4ba6b8d8c6ab24825d11d4e5b69920c41b36880',
+            Var('git_url') + '/external/linux-syscall-support/lss.git@92bafa4c45f03a440868c5e2f066ef61e6f4c517',
         'src/third_party/openssl':
             Var('git_url') + '/chromium/deps/openssl.git@c12e2b6979ff54c83f69bf85f8915388ee2c668c',
         'src/third_party/swig/linux':
