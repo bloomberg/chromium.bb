@@ -20,7 +20,6 @@
 
 class AutofillChange;
 class AutofillProfile;
-class AutofillProfileSyncableService;
 class CreditCard;
 class GURL;
 #if defined(OS_WIN)
@@ -513,12 +512,6 @@ class WebDataService
       const base::Time& delete_begin,
       const base::Time& delete_end);
 
-  // TODO(georgey): Add support for autocomplete as well: http://crbug.com/95759
-  // Returns the syncable service for Autofill addresses and credit cards stored
-  // in this table. The returned service is owned by |this| object.
-  virtual AutofillProfileSyncableService*
-      GetAutofillProfileSyncableService() const;
-
   // Testing
 #ifdef UNIT_TEST
   void set_failed_init(bool value) { failed_init_ = value; }
@@ -560,17 +553,11 @@ class WebDataService
   // Initialize the database, if it hasn't already been initialized.
   void InitializeDatabaseIfNecessary();
 
-  // Initialize any syncable services.
-  void InitializeSyncableServices();
-
   // The notification method.
   void NotifyDatabaseLoadedOnUIThread();
 
   // Commit any pending transaction and deletes the database.
   void ShutdownDatabase();
-
-  // Deletes the syncable services.
-  void ShutdownSyncableServices();
 
   // Commit the current transaction and creates a new one.
   void Commit();
@@ -677,16 +664,8 @@ class WebDataService
   // The path with which to initialize the database.
   FilePath path_;
 
-  // Our database.  We own the |db_|, but don't use a |scoped_ptr| because the
-  // |db_| lifetime must be managed on the database thread.
+  // Our database.
   WebDatabase* db_;
-
-  // Syncable services for the database data.  We own the services, but don't
-  // use |scoped_ptr|s because the lifetimes must be managed on the database
-  // thread.
-  // Currently only Autofill profiles (and credit cards) use the new Sync API,
-  // but all the database data should migrate to this API over time.
-  AutofillProfileSyncableService* autofill_profile_syncable_service_;
 
   // Whether the database failed to initialize.  We use this to avoid
   // continually trying to reinit.

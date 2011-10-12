@@ -30,10 +30,10 @@ class ProfileSyncServiceAutofillTest;
 class WebDataService;
 
 namespace browser_sync {
-class UnrecoverableErrorHandler;
-}
 
 extern const char kAutofillProfileTag[];
+
+class UnrecoverableErrorHandler;
 
 // The sync implementation for AutofillProfiles.
 // MergeDataAndStartSyncing() called first, it does cloud->local and
@@ -83,7 +83,7 @@ class AutofillProfileSyncableService
   virtual bool SaveChangesToWebData(const DataBundle& bundle);
 
  private:
-  friend class ProfileSyncServiceAutofillTest;
+  friend class ::ProfileSyncServiceAutofillTest;
   friend class MockAutofillProfileSyncableService;
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
                            MergeDataAndStartSyncing);
@@ -155,5 +155,7 @@ struct AutofillProfileSyncableService::DataBundle {
   std::vector<AutofillProfile*> profiles_to_update;
   std::vector<AutofillProfile*> profiles_to_add;
 };
+
+}  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_

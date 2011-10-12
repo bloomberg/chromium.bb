@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
-#include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/keyword_table.h"
 #include "chrome/browser/webdata/logins_table.h"
@@ -75,7 +74,6 @@ WDKeywordsResult::~WDKeywordsResult() {}
 WebDataService::WebDataService()
   : is_running_(false),
     db_(NULL),
-    autofill_profile_syncable_service_(NULL),
     failed_init_(false),
     should_commit_(false),
     next_request_handle_(1),
@@ -103,7 +101,6 @@ bool WebDataService::Init(const FilePath& profile_path) {
 }
 
 void WebDataService::Shutdown() {
-  ScheduleTask(Bind(&WebDataService::ShutdownSyncableServices, this));
   UnloadDatabase();
 }
 
@@ -541,7 +538,6 @@ bool WebDataService::InitWithPath(const FilePath& path) {
   path_ = path;
   is_running_ = true;
   ScheduleTask(Bind(&WebDataService::InitializeDatabaseIfNecessary, this));
-  ScheduleTask(Bind(&WebDataService::InitializeSyncableServices, this));
   return true;
 }
 
@@ -632,13 +628,6 @@ void WebDataService::InitializeDatabaseIfNecessary() {
   db_->BeginTransaction();
 }
 
-void WebDataService::InitializeSyncableServices() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  DCHECK(!autofill_profile_syncable_service_);
-
-  autofill_profile_syncable_service_ = new AutofillProfileSyncableService(this);
-}
-
 void WebDataService::NotifyDatabaseLoadedOnUIThread() {
   // Notify that the database has been initialized.
   NotificationService::current()->Notify(
@@ -654,13 +643,6 @@ void WebDataService::ShutdownDatabase() {
     delete db_;
     db_ = NULL;
   }
-}
-
-void WebDataService::ShutdownSyncableServices() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-
-  delete autofill_profile_syncable_service_;
-  autofill_profile_syncable_service_ = NULL;
 }
 
 void WebDataService::Commit() {
@@ -1376,14 +1358,6 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl(
     }
   }
   request->RequestComplete();
-}
-
-AutofillProfileSyncableService*
-    WebDataService::GetAutofillProfileSyncableService() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  DCHECK(autofill_profile_syncable_service_);  // Make sure we're initialized.
-
-  return autofill_profile_syncable_service_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

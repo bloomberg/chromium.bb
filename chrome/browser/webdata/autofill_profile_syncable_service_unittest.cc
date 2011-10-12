@@ -22,8 +22,10 @@ using ::testing::Return;
 using ::testing::Property;
 class AutofillProfile;
 
+namespace browser_sync {
+
 class MockAutofillProfileSyncableService
-    : public AutofillProfileSyncableService {
+    : public browser_sync::AutofillProfileSyncableService {
  public:
   MockAutofillProfileSyncableService() {
   }
@@ -260,3 +262,5 @@ TEST_F(AutofillProfileSyncableServiceTest, ActOnChange) {
   autofill_syncable_service_.ActOnChange(change1);
   autofill_syncable_service_.ActOnChange(change2);
 }
+
+}  // namespace browser_sync
