@@ -93,7 +93,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual MessageLoop* GetMessageLoop() OVERRIDE;
   virtual IPC::SyncChannel* GetChannel() OVERRIDE;
-  virtual ResourceDispatcher* GetResourceDispatcher() OVERRIDE;
   virtual std::string GetLocale() OVERRIDE;
   virtual void AddRoute(int32 routing_id,
                         IPC::Channel::Listener* listener) OVERRIDE;
@@ -105,6 +104,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual void AddObserver(content::RenderProcessObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
       content::RenderProcessObserver* observer) OVERRIDE;
+  virtual void SetResourceDispatcherDelegate(
+      content::ResourceDispatcherDelegate* delegate) OVERRIDE;
   virtual void WidgetHidden() OVERRIDE;
   virtual void WidgetRestored() OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;

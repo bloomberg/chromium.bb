@@ -30,6 +30,7 @@
 #include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/renderer_preferences.h"
+#include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
@@ -340,10 +341,6 @@ IPC::SyncChannel* RenderThreadImpl::GetChannel() {
   return channel();
 }
 
-ResourceDispatcher* RenderThreadImpl::GetResourceDispatcher() {
-  return resource_dispatcher();
-}
-
 std::string RenderThreadImpl::GetLocale() {
   // The browser process should have passed the locale to the renderer via the
   // --lang command line flag.  In single process mode, this will return the
@@ -387,6 +384,11 @@ void RenderThreadImpl::AddObserver(content::RenderProcessObserver* observer) {
 void RenderThreadImpl::RemoveObserver(
     content::RenderProcessObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void RenderThreadImpl::SetResourceDispatcherDelegate(
+    content::ResourceDispatcherDelegate* delegate) {
+  resource_dispatcher()->set_delegate(delegate);
 }
 
 void RenderThreadImpl::WidgetHidden() {

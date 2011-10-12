@@ -66,10 +66,6 @@ IPC::SyncChannel* MockRenderThread::GetChannel() {
   return NULL;
 }
 
-ResourceDispatcher* MockRenderThread::GetResourceDispatcher() {
-  return NULL;
-}
-
 std::string MockRenderThread::GetLocale() {
   return std::string();
 }
@@ -102,6 +98,10 @@ void MockRenderThread::AddObserver(content::RenderProcessObserver* observer) {
 
 void MockRenderThread::RemoveObserver(
     content::RenderProcessObserver* observer) {
+}
+
+void MockRenderThread::SetResourceDispatcherDelegate(
+    content::ResourceDispatcherDelegate* delegate) {
 }
 
 void MockRenderThread::WidgetHidden() {

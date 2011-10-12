@@ -15,7 +15,6 @@
 #endif
 
 class MessageLoop;
-class ResourceDispatcher;
 
 namespace IPC {
 class SyncChannel;
@@ -28,6 +27,7 @@ class Extension;
 namespace content {
 
 class RenderProcessObserver;
+class ResourceDispatcherDelegate;
 
 class CONTENT_EXPORT RenderThread : public IPC::Message::Sender {
  public:
@@ -40,7 +40,6 @@ class CONTENT_EXPORT RenderThread : public IPC::Message::Sender {
 
   virtual MessageLoop* GetMessageLoop() = 0;
   virtual IPC::SyncChannel* GetChannel() = 0;
-  virtual ResourceDispatcher* GetResourceDispatcher() = 0;
   virtual std::string GetLocale() = 0;
 
   // Called to add or remove a listener for a particular message routing ID.
@@ -55,8 +54,12 @@ class CONTENT_EXPORT RenderThread : public IPC::Message::Sender {
       IPC::ChannelProxy::OutgoingMessageFilter* filter) = 0;
 
   // Add/remove observers for the process.
-  virtual void AddObserver(content::RenderProcessObserver* observer) = 0;
-  virtual void RemoveObserver(content::RenderProcessObserver* observer) = 0;
+  virtual void AddObserver(RenderProcessObserver* observer) = 0;
+  virtual void RemoveObserver(RenderProcessObserver* observer) = 0;
+
+  // Set the ResourceDispatcher delegate object for this process.
+  virtual void SetResourceDispatcherDelegate(
+      ResourceDispatcherDelegate* delegate) = 0;
 
   // Called by a RenderWidget when it is hidden or restored.
   virtual void WidgetHidden() = 0;
