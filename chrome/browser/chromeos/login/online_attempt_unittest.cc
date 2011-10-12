@@ -261,9 +261,7 @@ TEST_F(OnlineAttemptTest, TwoFactorSuccess) {
   GoogleServiceAuthError error(GoogleServiceAuthError::TWO_FACTOR);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(attempt_.get(),
-                        &OnlineAttempt::OnClientLoginFailure,
-                        error));
+      base::Bind(&OnlineAttempt::OnClientLoginFailure, attempt_.get(), error));
 
   // Force IO thread to finish tasks so I can verify |state_|.
   io_thread_.Stop();

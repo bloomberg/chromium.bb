@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -554,10 +553,6 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
 }  // namespace
 
 }  // namespace chromeos
-
-// We want to use NewRunnableMethod with this class but need to disable
-// reference counting since it is singleton.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::UserCrosSettingsTrust);
 
 namespace chromeos {
 
