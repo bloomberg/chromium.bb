@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/ui_export.h"
@@ -38,10 +39,15 @@ UI_EXPORT SkShader* CreateGradientShader(int start_point,
 UI_EXPORT bool BitmapsAreEqual(const SkBitmap& bitmap1,
                                const SkBitmap& bitmap2);
 
-// Strip the accelerator char (typically '&') from a menu string.  A
-// double accelerator char ('&&') will be converted to a single char.
-UI_EXPORT std::string RemoveAcceleratorChar(const std::string& s,
-                                            char accelerator_char);
+// Strip the accelerator char (typically '&') from a menu string.  A double
+// accelerator char ('&&') will be converted to a single char.  The out params
+// |accelerated_char_pos| and |accelerated_char_span| will be set to the index
+// and span of the last accelerated character, respectively, or -1 and 0 if
+// there was none.
+UI_EXPORT string16 RemoveAcceleratorChar(const string16& s,
+                                         char16 accelerator_char,
+                                         int *accelerated_char_pos,
+                                         int *accelerated_char_span);
 
 }  // namespace gfx;
 

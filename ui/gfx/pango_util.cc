@@ -165,25 +165,30 @@ void SetupPangoLayout(PangoLayout* layout,
   pango_font_description_free(desc);
 
   // Set text and accelerator character if needed.
-  std::string utf8 = UTF16ToUTF8(text);
   if (flags & Canvas::SHOW_PREFIX) {
     // Escape the text string to be used as markup.
+    std::string utf8 = UTF16ToUTF8(text);
     gchar* escaped_text = g_markup_escape_text(utf8.c_str(), utf8.size());
     pango_layout_set_markup_with_accel(layout,
                                        escaped_text,
                                        strlen(escaped_text),
                                        kAcceleratorChar, NULL);
     g_free(escaped_text);
-  } else if (flags & Canvas::HIDE_PREFIX) {
+  } else {
+    std::string utf8;
+
     // Remove the ampersand character.  A double ampersand is output as
     // a single ampersand.
-    DCHECK_EQ(1, g_unichar_to_utf8(kAcceleratorChar, NULL));
-    const std::string accelerator_removed =
-        RemoveAcceleratorChar(utf8, static_cast<char>(kAcceleratorChar));
+    if (flags & Canvas::HIDE_PREFIX) {
+      DCHECK_EQ(1, g_unichar_to_utf8(kAcceleratorChar, NULL));
+      string16 accelerator_removed =
+          RemoveAcceleratorChar(text, static_cast<char16>(kAcceleratorChar),
+                                NULL, NULL);
+      utf8 = UTF16ToUTF8(accelerator_removed);
+    } else {
+      utf8 = UTF16ToUTF8(text);
+    }
 
-    pango_layout_set_text(layout,
-        accelerator_removed.data(), accelerator_removed.size());
-  } else {
     pango_layout_set_text(layout, utf8.data(), utf8.size());
   }
 }

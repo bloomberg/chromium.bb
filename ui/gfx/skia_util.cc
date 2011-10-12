@@ -4,6 +4,7 @@
 
 #include "ui/gfx/skia_util.h"
 
+#include "base/i18n/char_iterator.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -58,19 +59,40 @@ bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2) {
   return (size1 == size2) && (0 == memcmp(addr1, addr2, bitmap1.getSize()));
 }
 
-std::string RemoveAcceleratorChar(const std::string& s,
-                                  char accelerator_char) {
+string16 RemoveAcceleratorChar(const string16& s,
+                               char16 accelerator_char,
+                               int *accelerated_char_pos,
+                               int *accelerated_char_span) {
   bool escaped = false;
-  std::string accelerator_removed;
+  int last_char_pos = -1;
+  int last_char_span = 0;
+  base::i18n::UTF16CharIterator chars(&s);
+  string16 accelerator_removed;
+
   accelerator_removed.reserve(s.size());
-  for (size_t i = 0; i < s.size(); ++i) {
-    if (s[i] != accelerator_char || escaped) {
-      accelerator_removed.push_back(s[i]);
+  while (!chars.end()) {
+    int32 c = chars.get();
+    int array_pos = chars.array_pos();
+    chars.Advance();
+
+    if (c != accelerator_char || escaped) {
+      int span = chars.array_pos() - array_pos;
+      if (escaped && c != accelerator_char) {
+        last_char_pos = accelerator_removed.size();
+        last_char_span = span;
+      }
+      for (int i = 0; i < span; i++)
+        accelerator_removed.push_back(s[array_pos + i]);
       escaped = false;
     } else {
       escaped = true;
     }
   }
+
+  if (accelerated_char_pos)
+    *accelerated_char_pos = last_char_pos;
+  if (accelerated_char_span)
+    *accelerated_char_span = last_char_span;
 
   return accelerator_removed;
 }
