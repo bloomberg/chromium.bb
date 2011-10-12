@@ -1894,8 +1894,6 @@
         'browser/printing/print_preview_message_handler.h',
         'browser/printing/print_preview_tab_controller.cc',
         'browser/printing/print_preview_tab_controller.h',
-        'browser/printing/print_system_task_proxy.cc',
-        'browser/printing/print_system_task_proxy.h',
         'browser/printing/print_view_manager.cc',
         'browser/printing/print_view_manager.h',
         'browser/printing/print_view_manager_observer.h',

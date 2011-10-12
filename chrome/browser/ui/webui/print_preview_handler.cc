@@ -17,6 +17,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -28,7 +30,6 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
-#include "chrome/browser/printing/print_system_task_proxy.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -46,14 +47,124 @@
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "printing/page_range.h"
-#include "printing/print_settings.h"
+#include "printing/print_job_constants.h"
+
+#if defined(USE_CUPS)
+#include <cups/cups.h>
+#include <cups/ppd.h>
+
+#include "base/file_util.h"
+#endif
 
 #if !defined(OS_CHROMEOS)
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #endif
 
+#if defined(USE_CUPS) && !defined(OS_MACOSX)
+namespace printing_internal {
+
+void parse_lpoptions(const FilePath& filepath, const std::string& printer_name,
+                     int* num_options, cups_option_t** options) {
+  std::string content;
+  if (!file_util::ReadFileToString(filepath, &content))
+    return;
+
+  const char kDest[] = "dest";
+  const char kDefault[] = "default";
+  size_t kDestLen = sizeof(kDest) - 1;
+  size_t kDefaultLen = sizeof(kDefault) - 1;
+  std::vector <std::string> lines;
+  base::SplitString(content, '\n', &lines);
+
+  for (size_t i = 0; i < lines.size(); ++i) {
+    std::string line = lines[i];
+    if (line.empty())
+      continue;
+
+    if (base::strncasecmp (line.c_str(), kDefault, kDefaultLen) == 0 &&
+        isspace(line[kDefaultLen])) {
+      line = line.substr(kDefaultLen);
+    } else if (base::strncasecmp (line.c_str(), kDest, kDestLen) == 0 &&
+               isspace(line[kDestLen])) {
+      line = line.substr(kDestLen);
+    } else {
+      continue;
+    }
+
+    TrimWhitespaceASCII(line, TRIM_ALL, &line);
+    if (line.empty())
+      continue;
+
+    size_t space_found = line.find(' ');
+    if (space_found == std::string::npos)
+      continue;
+
+    std::string name = line.substr(0, space_found);
+    if (name.empty())
+      continue;
+
+    if (base::strncasecmp(printer_name.c_str(), name.c_str(),
+                          name.length()) != 0) {
+      continue;  // This is not the required printer.
+    }
+
+    line = line.substr(space_found + 1);
+    TrimWhitespaceASCII(line, TRIM_ALL, &line);  // Remove extra spaces.
+    if (line.empty())
+      continue;
+    // Parse the selected printer custom options.
+    *num_options = cupsParseOptions(line.c_str(), 0, options);
+  }
+}
+
+void mark_lpoptions(const std::string& printer_name, ppd_file_t** ppd) {
+  cups_option_t* options = NULL;
+  int num_options = 0;
+  ppdMarkDefaults(*ppd);
+
+  const char kSystemLpOptionPath[] = "/etc/cups/lpoptions";
+  const char kUserLpOptionPath[] = ".cups/lpoptions";
+
+  std::vector<FilePath> file_locations;
+  file_locations.push_back(FilePath(kSystemLpOptionPath));
+  file_locations.push_back(file_util::GetHomeDir().Append(kUserLpOptionPath));
+
+  for (std::vector<FilePath>::const_iterator it = file_locations.begin();
+       it != file_locations.end(); ++it) {
+    num_options = 0;
+    options = NULL;
+    parse_lpoptions(*it, printer_name, &num_options, &options);
+    if (num_options > 0 && options) {
+      cupsMarkOptions(*ppd, num_options, options);
+      cupsFreeOptions(num_options, options);
+    }
+  }
+}
+
+}  // printing_internal namespace
+#endif
+
 namespace {
+
+const char kDisableColorOption[] = "disableColorOption";
+const char kSetColorAsDefault[] = "setColorAsDefault";
+const char kSetDuplexAsDefault[] = "setDuplexAsDefault";
+const char kPrinterColorModelForColor[] = "printerColorModelForColor";
+const char kPrinterDefaultDuplexValue[] = "printerDefaultDuplexValue";
+
+#if defined(USE_CUPS)
+const char kColorDevice[] = "ColorDevice";
+const char kColorModel[] = "ColorModel";
+const char kColorModelForColor[] = "Color";
+const char kCMYK[] = "CMYK";
+const char kDuplex[] = "Duplex";
+const char kDuplexNone[] = "None";
+#elif defined(OS_WIN)
+const char kPskColor[] = "psk:Color";
+const char kPskDuplexFeature[] = "psk:JobDuplexAllDocumentsContiguously";
+const char kPskTwoSided[] = "psk:TwoSided";
+#endif
 
 enum UserActionBuckets {
   PRINT_TO_PRINTER,
@@ -152,8 +263,8 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
 
   int color_mode;
   if (settings.GetInteger(printing::kSettingColor, &color_mode)) {
-    ReportPrintSettingHistogram(
-        printing::isColorModelSelected(color_mode) ? COLOR : BLACK_AND_WHITE);
+    ReportPrintSettingHistogram(color_mode == printing::GRAY ? BLACK_AND_WHITE :
+                                                               COLOR);
   }
 }
 
@@ -162,6 +273,229 @@ printing::BackgroundPrintingManager* GetBackgroundPrintingManager() {
 }
 
 }  // namespace
+
+class PrintSystemTaskProxy
+    : public base::RefCountedThreadSafe<PrintSystemTaskProxy,
+                                        BrowserThread::DeleteOnUIThread> {
+ public:
+  PrintSystemTaskProxy(const base::WeakPtr<PrintPreviewHandler>& handler,
+                       printing::PrintBackend* print_backend,
+                       bool has_logged_printers_count)
+      : handler_(handler),
+        print_backend_(print_backend),
+        has_logged_printers_count_(has_logged_printers_count) {
+  }
+
+  void GetDefaultPrinter() {
+    VLOG(1) << "Get default printer start";
+    StringValue* default_printer = NULL;
+    if (PrintPreviewHandler::last_used_printer_name_ == NULL) {
+      default_printer = new StringValue(
+          print_backend_->GetDefaultPrinterName());
+    } else {
+      default_printer = new StringValue(
+          *PrintPreviewHandler::last_used_printer_name_);
+    }
+    std::string default_printer_string;
+    default_printer->GetAsString(&default_printer_string);
+    VLOG(1) << "Get default printer finished, found: "
+            << default_printer_string;
+
+    StringValue* cloud_print_data = NULL;
+    if (PrintPreviewHandler::last_used_printer_cloud_print_data_ != NULL) {
+      cloud_print_data = new StringValue(
+          *PrintPreviewHandler::last_used_printer_cloud_print_data_);
+    } else {
+      cloud_print_data = new StringValue("");
+    }
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PrintSystemTaskProxy::SendDefaultPrinter, this,
+                   default_printer, cloud_print_data));
+  }
+
+  void SendDefaultPrinter(const StringValue* default_printer,
+                          const StringValue* cloud_print_data) {
+    if (handler_)
+      handler_->SendDefaultPrinter(*default_printer, *cloud_print_data);
+    delete default_printer;
+  }
+
+  void EnumeratePrinters() {
+    VLOG(1) << "Enumerate printers start";
+    ListValue* printers = new ListValue;
+
+    printing::PrinterList printer_list;
+    print_backend_->EnumeratePrinters(&printer_list);
+
+    if (!has_logged_printers_count_) {
+      // Record the total number of printers.
+      UMA_HISTOGRAM_COUNTS("PrintPreview.NumberOfPrinters",
+                           printer_list.size());
+    }
+
+    int i = 0;
+    for (printing::PrinterList::iterator iter = printer_list.begin();
+         iter != printer_list.end(); ++iter, ++i) {
+      DictionaryValue* printer_info = new DictionaryValue;
+      std::string printerName;
+  #if defined(OS_MACOSX)
+      // On Mac, |iter->printer_description| specifies the printer name and
+      // |iter->printer_name| specifies the device name / printer queue name.
+      printerName = iter->printer_description;
+  #else
+      printerName = iter->printer_name;
+  #endif
+      printer_info->SetString(printing::kSettingPrinterName, printerName);
+      printer_info->SetString(printing::kSettingDeviceName, iter->printer_name);
+      printers->Append(printer_info);
+    }
+    VLOG(1) << "Enumerate printers finished, found " << i << " printers";
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PrintSystemTaskProxy::SetupPrinterList, this, printers));
+  }
+
+  void SetupPrinterList(ListValue* printers) {
+    if (handler_) {
+      handler_->SetupPrinterList(*printers);
+    }
+    delete printers;
+  }
+
+  void GetPrinterCapabilities(const std::string& printer_name) {
+    VLOG(1) << "Get printer capabilities start for " << printer_name;
+    printing::PrinterCapsAndDefaults printer_info;
+    bool supports_color = true;
+    bool set_duplex_as_default = false;
+    int printer_color_space = printing::GRAY;
+    int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
+    if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
+                                                   &printer_info)) {
+      return;
+    }
+
+#if defined(USE_CUPS)
+    FilePath ppd_file_path;
+    if (!file_util::CreateTemporaryFile(&ppd_file_path))
+      return;
+
+    int data_size = printer_info.printer_capabilities.length();
+    if (data_size != file_util::WriteFile(
+                         ppd_file_path,
+                         printer_info.printer_capabilities.data(),
+                         data_size)) {
+      file_util::Delete(ppd_file_path, false);
+      return;
+    }
+
+    ppd_file_t* ppd = ppdOpenFile(ppd_file_path.value().c_str());
+    if (ppd) {
+#if !defined(OS_MACOSX)
+      printing_internal::mark_lpoptions(printer_name, &ppd);
+#endif
+      ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, NULL);
+      if (attr && attr->value)
+        supports_color = ppd->color_device;
+
+      ppd_choice_t* duplex_choice = ppdFindMarkedChoice(ppd, kDuplex);
+      if (duplex_choice) {
+        ppd_option_t* option = ppdFindOption(ppd, kDuplex);
+        if (option)
+          duplex_choice = ppdFindChoice(option, option->defchoice);
+      }
+
+      if (duplex_choice) {
+        if (base::strcasecmp(duplex_choice->choice, kDuplexNone) != 0) {
+          set_duplex_as_default = true;
+          default_duplex_setting_value = printing::LONG_EDGE;
+        } else {
+          default_duplex_setting_value = printing::SIMPLEX;
+        }
+      }
+
+      if (supports_color) {
+        // Identify the color space (COLOR/CMYK) for this printer.
+        ppd_option_t* color_model = ppdFindOption(ppd, kColorModel);
+        if (color_model) {
+          if (ppdFindChoice(color_model, kColorModelForColor))
+            printer_color_space = printing::COLOR;
+          else if (ppdFindChoice(color_model, kCMYK))
+            printer_color_space = printing::CMYK;
+        }
+      }
+      ppdClose(ppd);
+    }
+    file_util::Delete(ppd_file_path, false);
+#elif defined(OS_WIN)
+    // According to XPS 1.0 spec, only color printers have psk:Color.
+    // Therefore we don't need to parse the whole XML file, we just need to
+    // search the string.  The spec can be found at:
+    // http://msdn.microsoft.com/en-us/windows/hardware/gg463431.
+    supports_color = (printer_info.printer_capabilities.find(kPskColor) !=
+                      std::string::npos);
+    if (supports_color)
+      printer_color_space = printing::COLOR;
+
+    set_duplex_as_default =
+        (printer_info.printer_defaults.find(kPskDuplexFeature) !=
+            std::string::npos) &&
+        (printer_info.printer_defaults.find(kPskTwoSided) !=
+            std::string::npos);
+
+    if (printer_info.printer_defaults.find(kPskDuplexFeature) !=
+            std::string::npos) {
+        if (printer_info.printer_defaults.find(kPskTwoSided) !=
+                std::string::npos) {
+          default_duplex_setting_value = printing::LONG_EDGE;
+        } else {
+          default_duplex_setting_value = printing::SIMPLEX;
+        }
+    }
+#else
+  NOTIMPLEMENTED();
+#endif
+
+    DictionaryValue settings_info;
+    settings_info.SetBoolean(kDisableColorOption, !supports_color);
+    if (!supports_color) {
+      settings_info.SetBoolean(kSetColorAsDefault, false);
+    } else {
+       settings_info.SetBoolean(kSetColorAsDefault,
+                                PrintPreviewHandler::last_used_color_setting_);
+    }
+    settings_info.SetBoolean(kSetDuplexAsDefault, set_duplex_as_default);
+    settings_info.SetInteger(kPrinterColorModelForColor, printer_color_space);
+    settings_info.SetInteger(kPrinterDefaultDuplexValue,
+                             default_duplex_setting_value);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PrintSystemTaskProxy::SendPrinterCapabilities, this,
+                   settings_info.DeepCopy()));
+  }
+
+  void SendPrinterCapabilities(DictionaryValue* settings_info) {
+    if (handler_)
+      handler_->SendPrinterCapabilities(*settings_info);
+    delete settings_info;
+  }
+
+ private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<PrintSystemTaskProxy>;
+
+  ~PrintSystemTaskProxy() {}
+
+  base::WeakPtr<PrintPreviewHandler> handler_;
+
+  scoped_refptr<printing::PrintBackend> print_backend_;
+
+  bool has_logged_printers_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrintSystemTaskProxy);
+};
 
 // A Task implementation that stores a PDF file on disk.
 class PrintToPdfTask : public Task {
@@ -195,8 +529,7 @@ class PrintToPdfTask : public Task {
 FilePath* PrintPreviewHandler::last_saved_path_ = NULL;
 std::string* PrintPreviewHandler::last_used_printer_cloud_print_data_ = NULL;
 std::string* PrintPreviewHandler::last_used_printer_name_ = NULL;
-printing::ColorModels PrintPreviewHandler::last_used_color_model_ =
-    printing::UNKNOWN_COLOR_MODEL;
+bool PrintPreviewHandler::last_used_color_setting_ = false;
 
 PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
@@ -377,11 +710,11 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   if (!settings.get())
     return;
 
-  // Storing last used color model.
-  int color_model;
-  if (!settings->GetInteger(printing::kSettingColor, &color_model))
-    color_model = printing::GRAY;
-  last_used_color_model_ = static_cast<printing::ColorModels>(color_model);
+  // Storing last used color setting.
+  int color_mode;
+  if (!settings->GetInteger(printing::kSettingColor, &color_mode))
+    color_mode = printing::GRAY;
+  last_used_color_setting_ = (color_mode != printing::GRAY);
 
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);

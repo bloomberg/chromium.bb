@@ -28,6 +28,12 @@ using printing::PrintSettings;
 
 namespace {
 
+// CUPS ColorModel attribute and values.
+const char kCMYK[] = "CMYK";
+const char kCUPSColorModel[] = "cups-ColorModel";
+const char kColor[] = "Color";
+const char kGrayscale[] = "Grayscale";
+
 // CUPS Duplex attribute and values.
 const char kCUPSDuplex[] = "cups-Duplex";
 const char kDuplexNone[] = "None";
@@ -187,11 +193,19 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
     gtk_print_settings_set_n_copies(gtk_settings_, copies);
     gtk_print_settings_set_collate(gtk_settings_, collate);
 
-    std::string color_value;
-    std::string color_setting_name;
-    printing::GetColorModelForMode(color, &color_setting_name, &color_value);
-    gtk_print_settings_set(gtk_settings_, color_setting_name.c_str(),
-                           color_value.c_str());
+    const char* color_mode;
+    switch (color) {
+      case printing::COLOR:
+        color_mode = kColor;
+        break;
+      case printing::CMYK:
+        color_mode = kCMYK;
+        break;
+      default:
+        color_mode = kGrayscale;
+        break;
+    }
+    gtk_print_settings_set(gtk_settings_, kCUPSColorModel, color_mode);
 
     if (duplex_mode != printing::UNKNOWN_DUPLEX_MODE) {
       const char* cups_duplex_mode = NULL;

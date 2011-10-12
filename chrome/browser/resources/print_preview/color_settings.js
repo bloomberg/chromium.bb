@@ -14,13 +14,12 @@ cr.define('print_preview', function() {
     this.colorOption_ = $('color-option');
     this.colorRadioButton_ = $('color');
     this.bwRadioButton_ = $('bw');
-
-    this.printerColorModelForColor_ = ColorSettings.COLOR;
-    this.printerColorModelForBlack_ = ColorSettings.GRAY;
+    this.GRAY = 1;
+    this.COLOR = 2;
+    this.CMYK = 3;  // cmyk - Cyan, magenta, yellow, black
+    this.printerColorModelForColor_ = this.COLOR;
   }
 
-  ColorSettings.GRAY = 1;
-  ColorSettings.COLOR = 2;
   cr.addSingletonGetter(ColorSettings);
 
   ColorSettings.prototype = {
@@ -41,12 +40,13 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {number} The color mode for print preview.
+     * Returns the color mode for print preview.
+     * @return {Number} Returns the printer color space
      */
     get colorMode() {
-      return this.bwRadioButton_.checked ?
-             this.printerColorModelForBlack_:
-             this.printerColorModelForColor_;
+      if (this.bwRadioButton_.checked)
+        return this.GRAY;
+      return this.printerColorModelForColor_;
     },
 
     /**
@@ -79,19 +79,13 @@ cr.define('print_preview', function() {
       var setColorAsDefault = e.printerCapabilities.setColorAsDefault;
       this.printerColorModelForColor_ =
           e.printerCapabilities.printerColorModelForColor;
-      if (e.printerCapabilities.printerColorModelForBlack) {
-        this.printerColorModelForBlack_ =
-            e.printerCapabilities.printerColorModelForBlack;
-      } else {
-        this.printerColorModelForBlack_ = ColorSettings.GRAY;
-      }
       this.colorRadioButton_.checked = setColorAsDefault;
       this.bwRadioButton_.checked = !setColorAsDefault;
       setColor(this.colorRadioButton_.checked);
     },
 
     /**
-     * Executes when a PDFLoaded event occurs.
+     * Listener executing when a PDFLoaded event occurs.
      * @private
      */
     onPDFLoaded_: function() {

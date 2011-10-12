@@ -121,22 +121,4 @@ const char kSettingPrintToPDF[] = "printToPDF";
 const int FIRST_PAGE_INDEX = 0;
 const int COMPLETE_PREVIEW_DOCUMENT_INDEX = -1;
 
-#if defined (USE_CUPS)
-const char kBlack[] = "Black";
-const char kCMYK[] = "CMYK";
-const char kKCMY[] = "KCMY";
-const char kCMY_K[] = "CMY+K";
-const char kCMY[] = "CMY";
-const char kColor[] = "Color";
-const char kGray[] = "Gray";
-const char kGrayscale[] = "Grayscale";
-const char kGreyscale[] = "Greyscale";
-const char kMonochrome[] = "Monochrome";
-const char kNormal[] = "Normal";
-const char kNormalGray[] = "Normal.Gray";
-const char kRGB[] = "RGB";
-const char kRGBA[] = "RGBA";
-const char kRGB16[] = "RGB16";
-#endif
-
 }  // namespace printing
