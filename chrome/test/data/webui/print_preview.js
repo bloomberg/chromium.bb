@@ -167,6 +167,19 @@ PrintPreviewWebUITest.prototype = {
     pdfViewer.removePrintButton = fakeFunction;
     pdfViewer.fitToHeight = fakeFunction;
     pdfViewer.grayscale = fakeFunction;
+    pdfViewer.getZoomLevel = fakeFunction;
+    pdfViewer.setZoomLevel = fakeFunction;
+    pdfViewer.pageXOffset = fakeFunction;
+    pdfViewer.pageYOffset = fakeFunction;
+    pdfViewer.setPageXOffset = fakeFunction;
+    pdfViewer.setPageYOffset = fakeFunction;
+    pdfViewer.getHeight = fakeFunction;
+    pdfViewer.getWidth = fakeFunction;
+    pdfViewer.getPageLocationNormalized = fakeFunction;
+    pdfViewer.onScroll = fakeFunction;
+    pdfViewer.onPluginSizeChanged = fakeFunction;
+    pdfViewer.getHorizontalScrollbarThickness = fakeFunction;
+    pdfViewer.getVerticalScrollbarThickness = fakeFunction;
     $('mainview').appendChild(pdfViewer);
     onPDFLoad();
   },

@@ -203,3 +203,24 @@ function randomInteger(endPointA, endPointB) {
   to = Math.max(endPointA, endPointB);
   return Math.floor(Math.random() * (to - from + 1) + from);
 }
+
+// Number of points per inch.
+POINTS_PER_INCH = 72;
+
+/**
+ * Converts |value| from inches to points.
+ * @param {number} value The number in inches.
+ * @return {number} |value| in points.
+ */
+function convertInchesToPoints(value) {
+  return value * POINTS_PER_INCH;
+}
+
+/**
+ * Converts |value| from points to inches.
+ * @param {number} value The number in points.
+ * @return {number} |value| in inches.
+ */
+function convertPointsToInches(value) {
+  return value / POINTS_PER_INCH;
+}

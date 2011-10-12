@@ -53,26 +53,31 @@ var isPrintReadyMetafileReady = false;
 // True when preview tab is hidden.
 var isTabHidden = false;
 
-// Object holding the print and cancel buttons.
+// @type {print_preview.PrintHeader} Holds the print and cancel buttons.
 var printHeader;
 
-// Object holding all the pages related settings.
+// @type {print_preview.PageSettings} Holds all the pages related settings.
 var pageSettings;
 
-// Object holding all the copies related settings.
+// @type {print_preview.CopiesSettings} Holds all the copies related settings.
 var copiesSettings;
 
-// Object holding all the layout related settings.
+// @type {print_preview.LayoutSettings} Holds all the layout related settings.
 var layoutSettings;
 
-// Object holding all the margin related settings.
+// @type {print_preview.MarginSettings} Holds all the margin related settings.
 var marginSettings;
 
-// Object holding all the header footer related settings.
+// @type {print_preview.HeaderFooterSettings} Holds all the header footer
+//     related settings.
 var headerFooterSettings;
 
-// Object holding all the color related settings.
+// @type {print_preview.ColorSettings} Holds all the color related settings.
 var colorSettings;
+
+// @type {print_preview.PreviewArea} Holds information related to the preview
+//     area (on the right).
+var previewArea;
 
 // True if the user has click 'Advanced...' in order to open the system print
 // dialog.
@@ -130,12 +135,14 @@ function onLoad() {
   marginSettings = print_preview.MarginSettings.getInstance();
   headerFooterSettings = print_preview.HeaderFooterSettings.getInstance();
   colorSettings = print_preview.ColorSettings.getInstance();
+  previewArea = print_preview.PreviewArea.getInstance();
   pageSettings.addEventListeners();
   copiesSettings.addEventListeners();
   headerFooterSettings.addEventListeners();
   layoutSettings.addEventListeners();
   marginSettings.addEventListeners();
   colorSettings.addEventListeners();
+  previewArea.addEventListeners();
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
   showLoadingAnimation();
@@ -321,8 +328,8 @@ function finishedCloudPrinting() {
 function areSettingsValid() {
   var selectedPrinter = getSelectedPrinterName();
   return pageSettings.isPageSelectionValid() &&
-      (copiesSettings.isValid() ||
-       selectedPrinter == PRINT_TO_PDF ||
+      marginSettings.areMarginSettingsValid() &&
+      (copiesSettings.isValid() || selectedPrinter == PRINT_TO_PDF ||
        selectedPrinter == PRINT_WITH_CLOUD_PRINT);
 }
 
@@ -504,6 +511,7 @@ function requestPrintPreview() {
 
   printSettings.save();
   layoutSettings.updateState();
+  previewArea.resetState();
   isPrintReadyMetafileReady = false;
   isFirstPageLoaded = false;
 
@@ -762,7 +770,6 @@ function onPDFLoad() {
   if (previewModifiable) {
     setPluginPreviewPageCount();
   }
-  $('pdf-viewer').fitToHeight();
   cr.dispatchSimpleEvent(document, 'PDFLoaded');
   isFirstPageLoaded = true;
   checkAndHideOverlayLayerIfValid();
@@ -794,8 +801,18 @@ function onDidGetPreviewPageCount(pageCount, isModifiable, previewResponseId) {
   cr.dispatchSimpleEvent(document, 'updateSummary');
 }
 
+/**
+ * @param {printing::PageSizeMargins} pageLayout The default layout of the page
+ *     in points.
+ */
 function onDidGetDefaultPageLayout(pageLayout) {
-  // TODO(aayushkumar): Do something here!
+  marginSettings.currentDefaultPageLayout = new print_preview.PageLayout(
+      pageLayout.contentWidth,
+      pageLayout.contentHeight,
+      pageLayout.marginLeft,
+      pageLayout.marginTop,
+      pageLayout.marginRight,
+      pageLayout.marginBottom);
 }
 
 /**
@@ -971,21 +988,48 @@ function createPDFPlugin(srcDataIndex) {
   pdfViewer.setAttribute('aria-atomic', 'true');
   $('mainview').appendChild(pdfViewer);
   pdfViewer.onload('onPDFLoad()');
+  pdfViewer.onScroll('onPreviewPositionChanged()');
+  pdfViewer.onPluginSizeChanged('onPreviewPositionChanged()');
   pdfViewer.removePrintButton();
   pdfViewer.grayscale(true);
+}
+
+/**
+ * Called either when there is a scroll event or when the plugin size changes.
+ */
+function onPreviewPositionChanged() {
+  marginSettings.onPreviewPositionChanged();
 }
 
 /**
  * @return {boolean} true if a compatible pdf plugin exists.
  */
 function checkCompatiblePluginExists() {
-  var dummyPlugin = $('dummy-viewer')
-  return !!(dummyPlugin.onload &&
-            dummyPlugin.goToPage &&
-            dummyPlugin.removePrintButton &&
-            dummyPlugin.loadPreviewPage &&
-            dummyPlugin.printPreviewPageCount &&
-            dummyPlugin.resetPrintPreviewUrl);
+  var dummyPlugin = $('dummy-viewer');
+  var pluginInterface = [ dummyPlugin.onload,
+                          dummyPlugin.goToPage,
+                          dummyPlugin.removePrintButton,
+                          dummyPlugin.loadPreviewPage,
+                          dummyPlugin.printPreviewPageCount,
+                          dummyPlugin.resetPrintPreviewUrl,
+                          dummyPlugin.onPluginSizeChanged,
+                          dummyPlugin.onScroll,
+                          dummyPlugin.pageXOffset,
+                          dummyPlugin.pageYOffset,
+                          dummyPlugin.setZoomLevel,
+                          dummyPlugin.setPageXOffset,
+                          dummyPlugin.setPageYOffset,
+                          dummyPlugin.getHorizontalScrollbarThickness,
+                          dummyPlugin.getVerticalScrollbarThickness,
+                          dummyPlugin.getPageLocationNormalized,
+                          dummyPlugin.getHeight,
+                          dummyPlugin.getWidth ];
+
+  for (var i = 0; i < pluginInterface.length; i++) {
+    if (!pluginInterface[i])
+      return false;
+  }
+  return true;
 }
 
 /**
@@ -1063,3 +1107,8 @@ window.onkeydown = onKeyDown;
 <include src="layout_settings.js"/>
 <include src="color_settings.js"/>
 <include src="margin_settings.js"/>
+<include src="margin_textbox.js"/>
+<include src="margin_line.js"/>
+<include src="margin_utils.js"/>
+<include src="margins_ui.js"/>
+<include src="preview_area.js"/>

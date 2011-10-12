@@ -100,6 +100,11 @@ cr.define('print_preview', function() {
         return;
       }
 
+      if (!marginSettings.areMarginSettingsValid()) {
+        this.summary_.innerHTML = '';
+        return;
+      }
+
       var pageSet = pageSettings.selectedPagesSet;
       var numOfSheets = pageSet.length;
       var summaryLabel =

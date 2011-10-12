@@ -722,6 +722,45 @@ select {
   pointer-events: none;
 }
 
+input[type='text'].margin-box {
+  background-color: #2a2a2a;
+  color: #fff;
+  cursor: auto;
+  font-family: arial;
+  font-size: 10px;
+  height: 15px;
+  padding: 5px 10px;
+  position: absolute;
+  text-align: center;
+  width: 40px;
+  z-index: 3;
+}
+
+input[type='text'].margin-box.invalid {
+  background-color: #c11b17;
+}
+
+.draggable-area {
+  background-color: transparent;
+  border-color: transparent;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.margin-line {
+  border-color: #4080FA;
+  border-style: dashed;
+  border-width: 1px;
+  position: absolute;
+  z-index: 2;
+}
+
+#customized-margins {
+  position: absolute;
+  top: 0;
+}
+
 #messages {
   color: #404040;
   font-size: 13px;
