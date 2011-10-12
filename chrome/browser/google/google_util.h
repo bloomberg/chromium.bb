@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include <base/basictypes.h>
+
 class GURL;
 
 namespace google_util {
@@ -43,6 +45,18 @@ bool IsOrganic(const std::string& brand);
 // a slightly different set of brand codes from the standard IsOrganic
 // method.
 bool IsOrganicFirstRun(const std::string& brand);
+
+// This class is meant to be used only from test code, and sets the brand
+// code returned by the function GetBrand() above while the object exists.
+class BrandForTesting {
+ public:
+  explicit BrandForTesting(const std::string& brand);
+  ~BrandForTesting();
+
+ private:
+  std::string brand_;
+  DISALLOW_COPY_AND_ASSIGN(BrandForTesting);
+};
 
 }  // namespace google_util
 

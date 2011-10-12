@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_service.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -887,6 +888,40 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_FALSE(updater.crx_install_is_running_);
   }
 
+  static void TestGalleryRequestsWithBrand(bool use_organic_brand_code) {
+    google_util::BrandForTesting brand_for_testing(
+        use_organic_brand_code ? "GGLS" : "TEST");
+
+    // We want to test a variety of combinations of expected ping conditions for
+    // rollcall and active pings.
+    int ping_cases[] = { ManifestFetchData::kNeverPinged, 0, 1, 5 };
+
+    for (size_t i = 0; i < arraysize(ping_cases); i++) {
+      for (size_t j = 0; j < arraysize(ping_cases); j++) {
+        for (size_t k = 0; k < 2; k++) {
+          int rollcall_ping_days = ping_cases[i];
+          int active_ping_days = ping_cases[j];
+          // Skip cases where rollcall_ping_days == -1, but
+          // active_ping_days > 0, because rollcall_ping_days == -1 means the
+          // app was just installed and this is the first update check after
+          // installation.
+          if (rollcall_ping_days == ManifestFetchData::kNeverPinged &&
+              active_ping_days > 0)
+            continue;
+
+          bool active_bit = k > 0;
+          ExtensionUpdaterTest::TestGalleryRequests(
+              rollcall_ping_days, active_ping_days, active_bit,
+              !use_organic_brand_code);
+          ASSERT_FALSE(HasFailure()) <<
+            " rollcall_ping_days=" << ping_cases[i] <<
+            " active_ping_days=" << ping_cases[j] <<
+            " active_bit=" << active_bit;
+        }
+      }
+    }
+  }
+
   // Test requests to both a Google server and a non-google server. This allows
   // us to test various combinations of installed (ie roll call) and active
   // (ie app launch) ping scenarios. The invariant is that each type of ping
@@ -895,7 +930,8 @@ class ExtensionUpdaterTest : public testing::Test {
   // pings, that delta plus whether the app has been active).
   static void TestGalleryRequests(int rollcall_ping_days,
                                   int active_ping_days,
-                                  bool active_bit) {
+                                  bool active_bit,
+                                  bool expect_brand_code) {
     MessageLoop message_loop;
     BrowserThread ui_thread(BrowserThread::UI, &message_loop);
     BrowserThread file_thread(BrowserThread::FILE, &message_loop);
@@ -998,6 +1034,24 @@ class ExtensionUpdaterTest : public testing::Test {
     bool ping_found = url1_query.find(search_string) != std::string::npos;
     EXPECT_EQ(ping_expected, ping_found) << "query was: " << url1_query
         << " was looking for " << search_string;
+
+    // Make sure the non-google query has no brand parameter.
+    const std::string brand_string = "brand%3D";
+    EXPECT_TRUE(url2_query.find(brand_string) == std::string::npos);
+
+#if defined(GOOGLE_CHROME_BUILD)
+    // Make sure the google query has a brand parameter, but only if the
+    // brand is non-organic.
+    if (expect_brand_code) {
+      EXPECT_TRUE(url1_query.find(brand_string) != std::string::npos);
+    } else {
+      EXPECT_TRUE(url1_query.find(brand_string) == std::string::npos);
+    }
+#else
+    // Chromium builds never add the brand to the parameter, even for google
+    // queries.
+    EXPECT_TRUE(url1_query.find(brand_string) == std::string::npos);
+#endif
   }
 
   // This makes sure that the extension updater properly stores the results
@@ -1096,33 +1150,12 @@ TEST_F(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesSucceed) {
   ExtensionUpdaterTest::TestMultipleExtensionDownloading(true);
 }
 
-TEST_F(ExtensionUpdaterTest, TestGalleryRequests) {
-  // We want to test a variety of combinations of expected ping conditions for
-  // rollcall and active pings.
-  int ping_cases[] = { ManifestFetchData::kNeverPinged, 0, 1, 5 };
+TEST_F(ExtensionUpdaterTest, TestGalleryRequestsWithOrganicBrand) {
+  ExtensionUpdaterTest::TestGalleryRequestsWithBrand(true);
+}
 
-  for (size_t i = 0; i < arraysize(ping_cases); i++) {
-    for (size_t j = 0; j < arraysize(ping_cases); j++) {
-      for (size_t k = 0; k < 2; k++) {
-        int rollcall_ping_days = ping_cases[i];
-        int active_ping_days = ping_cases[j];
-        // Skip cases where rollcall_ping_days == -1, but active_ping_days > 0,
-        // because rollcall_ping_days == -1 means the app was just installed and
-        // this is the first update check after installation.
-        if (rollcall_ping_days == ManifestFetchData::kNeverPinged &&
-            active_ping_days > 0)
-          continue;
-
-        bool active_bit = k > 0;
-        ExtensionUpdaterTest::TestGalleryRequests(
-            rollcall_ping_days, active_ping_days, active_bit);
-        ASSERT_FALSE(HasFailure()) <<
-          " rollcall_ping_days=" << ping_cases[i] <<
-          " active_ping_days=" << ping_cases[j] <<
-          " active_bit=" << active_bit;
-      }
-    }
-  }
+TEST_F(ExtensionUpdaterTest, TestGalleryRequestsWithNonOrganicBrand) {
+  ExtensionUpdaterTest::TestGalleryRequestsWithBrand(false);
 }
 
 TEST_F(ExtensionUpdaterTest, TestHandleManifestResults) {

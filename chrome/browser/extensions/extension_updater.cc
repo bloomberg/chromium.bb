@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -186,8 +187,15 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
     parts.push_back("ap=" + net::EscapeQueryParamValue(update_url_data, true));
   }
 
-  // Append rollcall and active ping parameters.
+  // Append brand code, rollcall and active ping parameters.
   if (base_url_.DomainIs("google.com")) {
+#if defined(GOOGLE_CHROME_BUILD)
+    std::string brand;
+    google_util::GetBrand(&brand);
+    if (!brand.empty() && !google_util::IsOrganic(brand))
+      parts.push_back("brand=" + brand);
+#endif
+
     std::string ping_value;
     pings_[id] = PingData(0, 0);
 

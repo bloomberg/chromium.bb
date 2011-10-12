@@ -23,6 +23,8 @@
 
 namespace {
 
+const char* brand_for_testing = NULL;
+
 // A helper method for adding a query param to |url|.
 GURL AppendParam(const GURL& url,
                  const std::string& param_name,
@@ -42,6 +44,15 @@ namespace google_util {
 
 const char kLinkDoctorBaseURL[] =
     "http://linkhelp.clients.google.com/tbproxy/lh/fixurl";
+
+BrandForTesting::BrandForTesting(const std::string& brand) : brand_(brand) {
+  DCHECK(brand_for_testing == NULL);
+  brand_for_testing = brand_.c_str();
+}
+
+BrandForTesting::~BrandForTesting() {
+  brand_for_testing = NULL;
+}
 
 GURL AppendGoogleLocaleParam(const GURL& url) {
   // Google does not yet recognize 'nb' for Norwegian Bokmal, but it uses
@@ -74,6 +85,11 @@ GURL AppendGoogleTLDParam(const GURL& url) {
 #if defined(OS_WIN)
 
 bool GetBrand(std::string* brand) {
+  if (brand_for_testing) {
+    brand->assign(brand_for_testing);
+    return true;
+  }
+
   string16 brand16;
   bool ret = GoogleUpdateSettings::GetBrand(&brand16);
   if (ret)
@@ -92,6 +108,11 @@ bool GetReactivationBrand(std::string* brand) {
 #elif defined(OS_MACOSX)
 
 bool GetBrand(std::string* brand) {
+  if (brand_for_testing) {
+    brand->assign(brand_for_testing);
+    return true;
+  }
+
   brand->assign(keystone_glue::BrandCode());
   return true;
 }
@@ -104,6 +125,11 @@ bool GetReactivationBrand(std::string* brand) {
 #else
 
 bool GetBrand(std::string* brand) {
+  if (brand_for_testing) {
+    brand->assign(brand_for_testing);
+    return true;
+  }
+
   brand->clear();
   return true;
 }
