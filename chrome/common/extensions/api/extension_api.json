@@ -1439,7 +1439,7 @@
         "name": "request",
         "type": "function",
         "unprivileged": true,
-        "description": "Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest.",
+        "description": "Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest. If there are any problems requesting the permissions, <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set.",
         "parameters": [
           {
             "name": "permissions",
@@ -1463,7 +1463,7 @@
         "name": "remove",
         "type": "function",
         "unprivileged": true,
-        "description": "Removes access to the specified permissions.",
+        "description": "Removes access to the specified permissions. If there are any problems removing the permissions, <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set.",
         "parameters": [
           {
             "name": "permissions",

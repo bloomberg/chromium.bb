@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.permissions - Google Chrome Extensions - Google Code</title></head>
+  <title>Permissions - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -250,17 +250,27 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.permissions</h1>
+        <h1 class="page_title">Permissions</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li style="display: none; ">
-              <a>h2Name</a>
+            <li>
+              <a href="#howto"> Implementing optional permissions </a>
               <ol>
                 <li>
-                  <a>h3Name</a>
+                  <a href="#types">
+  Step 1: Decide which permissions are optional and required
+</a>
+                </li><li>
+                  <a href="#manifest"> Step 2: Declare optional permissions in the manifest </a>
+                </li><li>
+                  <a href="#request"> Step 3: Request optional permissions </a>
+                </li><li>
+                  <a href="#contains"> Step 4: Check the extension's current permissions </a>
+                </li><li>
+                  <a href="#remove"> Step 5: Remove the permissions </a>
                 </li>
               </ol>
             </li>
@@ -314,12 +324,177 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
+        <p id="classSummary" style="display: none; ">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-name" class="pageData">Permissions</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+  Use the <code>chrome.experimental.permissions</code> module to implement
+  optional permissions. You can request optional permissions during your
+  extension's regular application flow rather than at install time, so users
+  understand why the permissions are needed and use only those that are
+  necessary.
+</p>
+
+<h2 id="howto"> Implementing optional permissions </h2>
+
+<h3 id="types">
+  Step 1: Decide which permissions are optional and required
+</h3>
+<p>
+  Extensions should generally require permissions when they are needed for the
+  extension's basic functionality and employ optional permissions for optional
+  features.
+</p>
+
+<p>
+  Advantages of optional permissions:
+  </p><ul>
+    <li>
+      Users run with less permissions since they enable only what is needed.
+    </li>
+    <li>
+      The extension can help explain why it needs particular permissions by
+      requesting them when the user enables the relevant feature.
+    </li>
+    <li>
+      Chrome can avoid disabling extensions that upgrade if they add permissions
+      as optional rather than required.
+    </li>
+  </ul>
+<p></p>
+
+<p>
+  Advantages of required permissions:
+  </p><ul>
+    <li>
+      The extension can prompt the user once to accept all permissions.
+    </li>
+    <li>
+      They simplify extension development by guarenteeing which permissions are
+      present.
+    </li>
+  </ul>
+<p></p>
+
+
+<h3 id="manifest"> Step 2: Declare optional permissions in the manifest </h3>
+<p>
+  Declare optional permissions in your <a href="manifest.html">extension
+  manifest</a> with the <code>optional_permissions</code> key, using the
+  same format as the <a href="manifest.html#permissions">permissions</a>
+  field:
+
+</p><pre>{
+  "name": "My extension",
+  ...
+  <b>"optional_permissions": [ "tabs", "http://www.google.com/" ],</b>
+  ...
+}</pre>
+<p></p>
+
+<p>
+You can specify any of the following as optional permissions:
+</p><ul>
+  <li><i>host permissions</i></li>
+  <li>background</li>
+  <li>bookmarks</li>
+  <li>clipboardRead</li>
+  <li>clipboardWrite</li>
+  <li>contextMenus</li>
+  <li>cookies</li>
+  <li>debugger</li>
+  <li>history</li>
+  <li>idle</li>
+  <li>management</li>
+  <li>notifications</li>
+  <li>tabs</li>
+</ul>
+<p></p>
+
+<p class="note">
+  <b>Version note:</b> This list is correct as of Chrome 16.
+  More optional permissions might be allowed in future releases.
+</p>
+
+<h3 id="request"> Step 3: Request optional permissions </h3>
+<p>
+  Request the permissions from within a user gesture using
+  <code>permissions.request()</code>:
+</p><pre>document.querySelector('#my-button').addEventListener('click', function(event) {
+  // Permissions must be requested from inside a user gesture, like a button's
+  // click handler.
+  chrome.experimental.permissions.request({
+    permissions: ['tabs'],
+    origins: ['http://www.google.com/']
+  }, function(granted) {
+    // The callback argument will be true if the user granted the permissions.
+    if (granted) {
+      doSomething();
+    } else {
+      doSomethingElse();
+    }
+  });
+});
+</pre>
+<p></p>
+
+<p>
+  Chrome prompts the user if adding the permissions results in different
+  <a href="permission_warnings.html">warning messages</a> than the user has
+  already seen and accepted. For example, the previous code might result in
+  a prompt like this:
+</p>
+
+<p style="text-align: center">
+  <img src="images/perms-optional.png" alt="example permission confirmation prompt" width="416" height="234">
+</p>
+
+<h3 id="contains"> Step 4: Check the extension's current permissions </h3>
+<p>
+  To check whether your extension has a specific permission or set of
+  permissions, use <code>permission.contains()</code>:
+</p>
+
+<pre>chrome.experimental.permissions.contains({
+  permissions: ['tabs'],
+  origins: ['http://www.google.com/']
+}, function(result) {
+  if (result) {
+    // The extension has the permissions.
+  } else {
+    // The extension doesn't have the permissions.
+  }
+});
+</pre>
+
+<h3 id="remove"> Step 5: Remove the permissions </h3>
+<p>
+  You should remove permissions when you no longer need them.
+  After a permission has been removed, calling
+  <code>permissions.request()</code> usually adds the permission back without
+  prompting the user.
+</p>
+
+<pre>chrome.experimental.permissions.remove({
+  permissions: ['tabs'],
+  origins: ['http://www.google.com/']
+}, function(removed) {
+  if (removed) {
+    // The permissions have been removed.
+  } else {
+    // The permissions have not been removed (e.g., you tried to remove
+    // required permissions).
+  }
+});
+</pre>
+
+<!-- END AUTHORED CONTENT -->
+</div>
 
         <!-- API PAGE -->
         <div class="apiPage">
@@ -825,7 +1000,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Removes access to the specified permissions.</p>
+                <p>Removes access to the specified permissions. If there are any problems removing the permissions, <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1092,7 +1267,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest.</p>
+                <p>Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest. If there are any problems requesting the permissions, <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>

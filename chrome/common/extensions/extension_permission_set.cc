@@ -224,6 +224,9 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
   int component_only = ExtensionAPIPermission::kFlagComponentOnly;
   int full_access = ExtensionAPIPermission::kFlagImpliesFullAccess;
   int all_urls = ExtensionAPIPermission::kFlagImpliesFullURLAccess;
+
+  // Note: please update the permissions API documentation when modifying which
+  // permissions can be specified as optional.
   int optional = ExtensionAPIPermission::kFlagSupportsOptional;
 
   // Hosted app permissions
