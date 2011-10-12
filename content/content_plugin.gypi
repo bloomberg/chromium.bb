@@ -14,7 +14,6 @@
   'sources': [
     # All .cc, .h, .m, and .mm files under plugins except for tests and
     # mocks.
-    'plugin/content_plugin_client.h',
     'plugin/plugin_channel.cc',
     'plugin/plugin_channel.h',
     'plugin/plugin_interpose_util_mac.mm',
@@ -30,6 +29,7 @@
     'plugin/webplugin_delegate_stub.h',
     'plugin/webplugin_proxy.cc',
     'plugin/webplugin_proxy.h',
+    'public/plugin/content_plugin_client.h',
   ],
   # These are layered in conditionals in the event other platforms
   # end up using this module as well.

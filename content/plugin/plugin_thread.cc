@@ -23,7 +23,7 @@
 #include "content/common/content_switches.h"
 #include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
-#include "content/plugin/content_plugin_client.h"
+#include "content/public/plugin/content_plugin_client.h"
 #include "ipc/ipc_channel_handle.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_lib.h"

@@ -1109,7 +1109,7 @@
             'chrome_dll',
           ],
           'sources': [
-            'browser/plugin_carbon_interpose_mac.cc',
+            '../content/plugin/plugin_carbon_interpose_mac.cc',
           ],
           'include_dirs': [
             '..',

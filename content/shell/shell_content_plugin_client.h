@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "content/plugin/content_plugin_client.h"
+#include "content/public/plugin/content_plugin_client.h"
 
 namespace content {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PLUGIN_CONTENT_PLUGIN_CLIENT_H_
-#define CONTENT_PLUGIN_CONTENT_PLUGIN_CLIENT_H_
+#ifndef CONTENT_PUBLIC_PLUGIN_CONTENT_PLUGIN_CLIENT_H_
+#define CONTENT_PUBLIC_PLUGIN_CONTENT_PLUGIN_CLIENT_H_
 #pragma once
 
 #include "base/string16.h"
@@ -20,4 +20,5 @@ class ContentPluginClient {
 
 }  // namespace content
 
-#endif  // CONTENT_PLUGIN_CONTENT_PLUGIN_CLIENT_H_
+#endif  // CONTENT_PUBLIC_PLUGIN_CONTENT_PLUGIN_CLIENT_H_
+
