@@ -483,7 +483,7 @@ node = env.CommandTest(
     'env_cleanser_test.out',
     command=[env_cleanser_test_exe])
 env.Requires(env_cleanser_test_exe, crt)
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_env_cleanser_test')
 
 # Test nacl_signal
 if (not env.Bit('coverage_enabled') and

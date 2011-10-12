@@ -47,6 +47,7 @@ char const *const kNaClEnvWhitelist[] = {
   "LC_PAPER",
   "LC_TELEPHONE",
   "LC_TIME",
+  "NACLVERBOSITY",
   "NACL_NPAPI_DEBUG",       /* src/shared/npruntime/naclnp_util.cc */
   "NACL_PLUGIN_DEBUG",      /* src/trusted/plugin/srpc/utility.cc */
   "NACL_PPAPI_PROXY_DEBUG", /* src/shared/ppapi_proxy/utility.cc */

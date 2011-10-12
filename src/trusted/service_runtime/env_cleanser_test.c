@@ -27,6 +27,7 @@ static char const *const kValidEnvs[] = {
   "LC_MEASUREMENT=en_US.UTF-8",
   "LC_PAPER=en_US.UTF-8@legal",
   "LC_TIME=%a, %B %d, %Y",
+  "NACLVERBOSITY",
   NULL,
 };
 
