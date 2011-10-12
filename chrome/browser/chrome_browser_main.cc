@@ -1177,10 +1177,6 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 }
 #endif
 
-void ChromeBrowserMainParts::PostMainMessageLoopStart() {
-  Profiling::MainMessageLoopStarted();
-}
-
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
   set_result_code(PreMainMessageLoopRunInternal());
 }

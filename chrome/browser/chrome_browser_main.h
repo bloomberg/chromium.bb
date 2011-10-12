@@ -43,7 +43,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
  protected:
   explicit ChromeBrowserMainParts(const MainFunctionParams& parameters);
 
-  virtual void PostMainMessageLoopStart() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   int PreMainMessageLoopRunInternal();
   virtual void MainMessageLoopRun() OVERRIDE;

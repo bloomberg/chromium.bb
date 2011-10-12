@@ -351,6 +351,25 @@ void HandleHelpSwitches(const CommandLine& command_line) {
 }
 #endif
 
+#if !defined(OS_MACOSX)
+void SIGTERMProfilingShutdown(int signal) {
+  Profiling::Stop();
+  struct sigaction sigact;
+  memset(&sigact, 0, sizeof(sigact));
+  sigact.sa_handler = SIG_DFL;
+  CHECK(sigaction(SIGTERM, &sigact, NULL) == 0);
+  raise(signal);
+}
+
+void SetUpProfilingShutdownHandler() {
+  struct sigaction sigact;
+  sigact.sa_handler = SIGTERMProfilingShutdown;
+  sigact.sa_flags = SA_RESETHAND;
+  sigemptyset(&sigact.sa_mask);
+  CHECK(sigaction(SIGTERM, &sigact, NULL) == 0);
+}
+#endif
+
 #endif  // OS_POSIX
 
 struct MainFunction {
@@ -703,6 +722,12 @@ void ChromeMainDelegate::ZygoteForked() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  Profiling::ProcessStarted();
+  if (Profiling::BeingProfiled()) {
+    base::debug::RestartProfilingAfterFork();
+    SetUpProfilingShutdownHandler();
+  }
 
 #if defined(USE_LINUX_BREAKPAD)
   // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
