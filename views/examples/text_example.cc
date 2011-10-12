@@ -1,3 +1,4 @@
+
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -26,11 +27,14 @@ const char kLongText[] =
     "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
     "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
     "mollit anim id est laborum.";
+const char kAmpersandText[] =
+    "The quick && &brown fo&x jumps over the lazy dog.";
 
 const char* kTextExamples[] = {
     "Short",
     "Medium",
     "Long",
+    "Ampersands",
 };
 
 const char* kElidingBehaviors[] = {
@@ -41,6 +45,12 @@ const char* kElidingBehaviors[] = {
     "Fade Head",
     "Fade Head and Tail",
 #endif
+};
+
+const char* kPrefixOptions[] = {
+    "Default",
+    "Show",
+    "Hide",
 };
 
 const char* kHorizontalAligments[] = {
@@ -173,6 +183,10 @@ void TextExample::CreateExampleView(views::View* container) {
                             "Eliding",
                             kElidingBehaviors,
                             arraysize(kElidingBehaviors));
+  prefix_cb_ = AddCombobox(layout,
+                           "Prefix",
+                           kPrefixOptions,
+                           arraysize(kPrefixOptions));
   text_cb_ = AddCombobox(layout,
                          "Example Text",
                          kTextExamples,
@@ -266,6 +280,9 @@ void TextExample::ItemChanged(views::Combobox* combo_box,
       case 2:
         text_view_->set_text(ASCIIToUTF16(kLongText));
         break;
+      case 3:
+        text_view_->set_text(ASCIIToUTF16(kAmpersandText));
+        break;
     }
   } else if (combo_box == eliding_cb_) {
     switch (new_index) {
@@ -291,6 +308,18 @@ void TextExample::ItemChanged(views::Combobox* combo_box,
         text_view_->set_fade(true);
         break;
 #endif
+    }
+  } else if (combo_box == prefix_cb_) {
+    text_flags &= ~(gfx::Canvas::SHOW_PREFIX | gfx::Canvas::HIDE_PREFIX);
+    switch (new_index) {
+      case 0:
+        break;
+      case 1:
+        text_flags |= gfx::Canvas::SHOW_PREFIX;
+        break;
+      case 2:
+        text_flags |= gfx::Canvas::HIDE_PREFIX;
+        break;
     }
   }
   text_view_->set_text_flags(text_flags);

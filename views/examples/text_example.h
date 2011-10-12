@@ -59,6 +59,9 @@ class TextExample : public ExampleBase,
   // Combo box for text eliding style.
   views::Combobox* eliding_cb_;
 
+  // Combo box for ampersand prefix show / hide behavior.
+  views::Combobox* prefix_cb_;
+
   // Combo box to choose one of the sample texts.
   views::Combobox* text_cb_;
 
