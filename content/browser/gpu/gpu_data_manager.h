@@ -114,10 +114,55 @@ class CONTENT_EXPORT GpuDataManager {
   DictionaryValue* GpuInfoAsDictionaryValue() const;
 
  private:
+  class UserFlags {
+   public:
+    UserFlags();
+
+    void Initialize();
+
+    bool disable_accelerated_2d_canvas() const {
+      return disable_accelerated_2d_canvas_;
+    }
+
+    bool disable_accelerated_compositing() const {
+      return disable_accelerated_compositing_;
+    }
+
+    bool disable_accelerated_layers() const {
+      return disable_accelerated_layers_;
+    }
+
+    bool disable_experimental_webgl() const {
+      return disable_experimental_webgl_;
+    }
+
+    bool disable_gl_multisampling() const { return disable_gl_multisampling_; }
+
+    bool ignore_gpu_blacklist() const { return ignore_gpu_blacklist_; }
+
+    const std::string& use_gl() const { return use_gl_; }
+
+   private:
+    // Manage the correlations between switches.
+    void ApplyPolicies();
+
+    bool disable_accelerated_2d_canvas_;
+    bool disable_accelerated_compositing_;
+    bool disable_accelerated_layers_;
+    bool disable_experimental_webgl_;
+    bool disable_gl_multisampling_;
+
+    bool ignore_gpu_blacklist_;
+
+    std::string use_gl_;
+  };
+
   friend struct DefaultSingletonTraits<GpuDataManager>;
 
   GpuDataManager();
   virtual ~GpuDataManager();
+
+  void Initialize();
 
   // Check if we should go ahead and use gpu blacklist.
   // If not, return NULL; otherwise, update and return the current list.
@@ -130,10 +175,17 @@ class CONTENT_EXPORT GpuDataManager {
   // Call all callbacks.
   void RunGpuInfoUpdateCallbacks();
 
+  // If use-gl switch is osmesa or any, return true.
+  bool UseGLIsOSMesaOrAny();
+
   bool complete_gpu_info_already_requested_;
+
+  bool initialized_;
 
   GpuFeatureFlags gpu_feature_flags_;
   GpuFeatureFlags preliminary_gpu_feature_flags_;
+
+  UserFlags user_flags_;
 
   GPUInfo gpu_info_;
   mutable base::Lock gpu_info_lock_;
