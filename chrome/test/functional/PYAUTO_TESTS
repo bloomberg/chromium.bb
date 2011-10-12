@@ -98,6 +98,11 @@
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/97140
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
+      # Popup-blocker broken.  crbug.com/100079
+      '-browser.BrowserTest.testPopupSharesSameProcessInIncognito',
+      '-browser.BrowserTest.testKillAndReloadSharedProcess',
+      '-browser.BrowserTest.testPopupSharesProcess',
+      '-popups',
       # crbug.com/82629 - real bug.
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/47935
