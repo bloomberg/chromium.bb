@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
+#include "chrome/browser/component_updater/recovery_component_installer.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
@@ -63,6 +64,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -531,7 +533,8 @@ void RegisterComponentsForUpdate() {
     return;
   // Registration can be before of after cus->Start() so it is ok to post
   // a task to the UI thread to do registration once you done the necessary
-  // file IO to know your current version.
+  // file IO to know you existing component version.
+  RegisterRecoveryComponent(cus, chrome::VersionInfo().Version().c_str());
   RegisterPepperFlashComponent(cus);
   RegisterNPAPIFlashComponent(cus);
 
