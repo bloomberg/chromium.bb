@@ -457,7 +457,7 @@ const CGFloat kRapidCloseDist = 2.5;
   [attributes addObject:NSAccessibilityTitleAttribute];
   [attributes addObject:NSAccessibilityEnabledAttribute];
 
-  return attributes;
+  return [attributes autorelease];
 }
 
 - (BOOL)accessibilityIsAttributeSettable:(NSString*)attribute {

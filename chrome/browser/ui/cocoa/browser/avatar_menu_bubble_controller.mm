@@ -389,7 +389,7 @@ const CGFloat kLabelInset = 49.0;
   [attributes addObject:NSAccessibilityTitleAttribute];
   [attributes addObject:NSAccessibilityEnabledAttribute];
 
-  return attributes;
+  return [attributes autorelease];
 }
 
 - (NSArray*)accessibilityActionNames {
