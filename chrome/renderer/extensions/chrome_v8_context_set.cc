@@ -138,8 +138,9 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
       v8_arguments.push_back(converter->ToV8Value(item, context));
     }
 
-    v8::Handle<v8::Value> retval = (*it)->CallChromeHiddenMethod(
-        method_name, v8_arguments.size(), &v8_arguments[0]);
+    v8::Handle<v8::Value> retval;
+    (*it)->CallChromeHiddenMethod(
+        method_name, v8_arguments.size(), &v8_arguments[0], &retval);
     // In debug, the js will validate the event parameters and return a
     // string if a validation error has occured.
     // TODO(rafaelw): Consider only doing this check if function_name ==

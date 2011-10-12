@@ -30,10 +30,6 @@ class Context;
 // A container of ExtensionBindingsContext. Since calling JavaScript within a
 // context can cause any number of contexts to be created or destroyed, this
 // has additional smarts to help with the set changing underneath callers.
-//
-// TODO(aa): Remove extension-specific bits, rename to BindingsContextSet, and
-// move into renderer/bindings with DEPS to protect against dependencies on
-// extensions.
 class ChromeV8ContextSet {
  public:
   ChromeV8ContextSet();

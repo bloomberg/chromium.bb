@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
-#include "chrome/renderer/extensions/chrome_app_bindings.h"
+#include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/chrome_webstore_bindings.h"
@@ -89,7 +89,7 @@ void ExtensionDispatcher::WebKitInitialized() {
         RenderThread::Get(), &RenderThread::IdleHandler);
   }
 
-  RegisterExtension(extensions_v8::ChromeAppExtension::Get(this), false);
+  RegisterExtension(new AppBindings(this), false);
   RegisterExtension(ChromeWebstoreExtension::Get(), false);
 
   // Add v8 extensions related to chrome extensions.
@@ -225,10 +225,6 @@ bool ExtensionDispatcher::AllowScriptExtension(
 
 void ExtensionDispatcher::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
-  // TODO(aa): Create a BindingsPolicy object that encapsulates all the rules
-  // about when to allow each type of bindings. This just becomes looking to see
-  // if any bindings are allowed for this v8_context and creating an
-  // ChromeV8Context if so.
   std::string extension_id;
   if (!test_extension_id_.empty()) {
     extension_id = test_extension_id_;
@@ -237,18 +233,16 @@ void ExtensionDispatcher::DidCreateScriptContext(
   } else {
     GURL frame_url = UserScriptSlave::GetLatestURLForFrame(frame);
     extension_id = extensions_.GetIdByURL(frame_url);
-    if (extension_id.empty() ||
-        !extensions_.ExtensionBindingsAllowed(frame_url)) {
-      return;
-    }
   }
 
   ChromeV8Context* context =
       new ChromeV8Context(v8_context, frame, extension_id);
   v8_context_set_.Add(context);
+
   context->DispatchOnLoadEvent(
       is_extension_process_,
       ChromeRenderProcessObserver::is_incognito_process());
+
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
@@ -259,6 +253,13 @@ void ExtensionDispatcher::WillReleaseScriptContext(
     return;
 
   context->DispatchOnUnloadEvent();
+
+  ChromeV8Extension::InstanceSet extensions = ChromeV8Extension::GetAll();
+  for (ChromeV8Extension::InstanceSet::const_iterator iter = extensions.begin();
+       iter != extensions.end(); ++iter) {
+    (*iter)->ContextWillBeReleased(context);
+  }
+
   v8_context_set_.Remove(context);
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }

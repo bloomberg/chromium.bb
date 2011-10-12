@@ -10,13 +10,13 @@
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "v8/include/v8.h"
 
 using WebKit::WebFrame;
 using WebKit::WebView;
@@ -32,7 +32,11 @@ const char kValidateCallbacks[] = "validateCallbacks";
 typedef std::map<int, std::string> StringMap;
 static base::LazyInstance<StringMap> g_string_map(base::LINKER_INITIALIZED);
 
+static base::LazyInstance<ChromeV8Extension::InstanceSet> g_instances(
+    base::LINKER_INITIALIZED);
+
 }  // namespace
+
 
 // static
 const char* ChromeV8Extension::GetStringResource(int resource_id) {
@@ -70,6 +74,7 @@ ChromeV8Extension::ChromeV8Extension(const char* name, int resource_id,
                     0,  // num dependencies
                     NULL),  // dependencies array
       extension_dispatcher_(extension_dispatcher) {
+  g_instances.Get().insert(this);
 }
 
 ChromeV8Extension::ChromeV8Extension(const char* name, int resource_id,
@@ -81,6 +86,29 @@ ChromeV8Extension::ChromeV8Extension(const char* name, int resource_id,
                     dependency_count,
                     dependencies),
       extension_dispatcher_(extension_dispatcher) {
+  g_instances.Get().insert(this);
+}
+
+ChromeV8Extension::~ChromeV8Extension() {
+  g_instances.Get().erase(this);
+}
+
+// static
+const ChromeV8Extension::InstanceSet& ChromeV8Extension::GetAll() {
+  return g_instances.Get();
+}
+
+void ChromeV8Extension::ContextWillBeReleased(ChromeV8Context* context) {
+  handlers_.erase(context);
+}
+
+ChromeV8ExtensionHandler* ChromeV8Extension::GetHandler(
+    ChromeV8Context* context) const {
+  HandlerMap::const_iterator iter = handlers_.find(context);
+  if (iter == handlers_.end())
+    return NULL;
+  else
+    return iter->second.get();
 }
 
 const Extension* ChromeV8Extension::GetExtensionForCurrentRenderView() const {
@@ -123,7 +151,35 @@ v8::Handle<v8::FunctionTemplate>
     return v8::FunctionTemplate::New(Print);
   }
 
-  return v8::Handle<v8::FunctionTemplate>();
+  return v8::FunctionTemplate::New(HandleNativeFunction,
+                                   v8::External::New(this));
+}
+
+// static
+v8::Handle<v8::Value> ChromeV8Extension::HandleNativeFunction(
+    const v8::Arguments& arguments) {
+  ChromeV8Extension* self = GetFromArguments<ChromeV8Extension>(arguments);
+  ChromeV8Context* context =
+      self->extension_dispatcher()->v8_context_set().GetCurrent();
+  CHECK(context) << "Unknown V8 context. Maybe a native function is getting "
+                 << "called during parse of a v8 extension, before the context "
+                 << "has been registered.";
+
+  ChromeV8ExtensionHandler* handler = self->GetHandler(context);
+  if (!handler) {
+    handler = self->CreateHandler(context);
+    if (handler)
+      self->handlers_[context] = linked_ptr<ChromeV8ExtensionHandler>(handler);
+  }
+  CHECK(handler) << "No handler for v8 extension: " << self->name();
+
+  std::string name = *v8::String::AsciiValue(arguments.Callee()->GetName());
+  return handler->HandleNativeFunction(name, arguments);
+}
+
+ChromeV8ExtensionHandler* ChromeV8Extension::CreateHandler(
+    ChromeV8Context* context) {
+  return NULL;
 }
 
 v8::Handle<v8::Value> ChromeV8Extension::GetChromeHidden(

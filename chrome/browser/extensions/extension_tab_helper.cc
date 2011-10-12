@@ -159,9 +159,10 @@ void ExtensionTabHelper::OnInlineWebstoreInstall(
 }
 
 void ExtensionTabHelper::OnGetAppNotifyChannel(
-    int request_id,
     const GURL& requestor_url,
-    const std::string& client_id) {
+    const std::string& client_id,
+    int return_route_id,
+    int callback_id) {
 
   // Check for permission first.
   Profile* profile =
@@ -181,23 +182,26 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
       (extension->is_hosted_app() ||
        process_manager->GetExtensionProcess(requestor_url) == process);
   if (!allowed) {
-    AppNotifyChannelSetupComplete(request_id, "", "permission_error");
+    AppNotifyChannelSetupComplete("", "permission_error", return_route_id,
+                                  callback_id);
     return;
   }
 
   scoped_refptr<AppNotifyChannelSetup> channel_setup(
-      new AppNotifyChannelSetup(request_id,
-                                client_id,
+      new AppNotifyChannelSetup(client_id,
                                 requestor_url,
+                                return_route_id,
+                                callback_id,
                                 this->AsWeakPtr()));
   channel_setup->Start();
   // We'll get called back in AppNotifyChannelSetupComplete.
 }
 
 void ExtensionTabHelper::AppNotifyChannelSetupComplete(
-    int request_id, const std::string& client_id, const std::string& error) {
+    const std::string& client_id, const std::string& error, int return_route_id,
+    int callback_id) {
   Send(new ExtensionMsg_GetAppNotifyChannelResponse(
-      routing_id(), request_id, client_id, error));
+      return_route_id, client_id, error, callback_id));
 }
 
 void ExtensionTabHelper::OnRequest(

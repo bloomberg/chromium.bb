@@ -326,16 +326,17 @@ IPC_MESSAGE_ROUTED3(ExtensionMsg_InlineWebstoreInstallResponse,
 
 // Sent by the renderer when an App is requesting permission to send server
 // pushed notifications.
-IPC_MESSAGE_ROUTED3(ExtensionHostMsg_GetAppNotifyChannel,
-                    int32 /* request_id */,
+IPC_MESSAGE_ROUTED4(ExtensionHostMsg_GetAppNotifyChannel,
                     GURL /* requestor_url */,
-                    std::string /* client_id */)
+                    std::string /* client_id */,
+                    int32 /* return_route_id */,
+                    int32 /* callback_id */)
 
 // Response to the renderer for the above message.
 IPC_MESSAGE_ROUTED3(ExtensionMsg_GetAppNotifyChannelResponse,
-                    int32 /* request_id */,
                     std::string /* channel_id */,
-                    std::string /* error */)
+                    std::string /* error */,
+                    int32 /* callback_id */)
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,

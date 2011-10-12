@@ -273,8 +273,12 @@ void RendererExtensionBindings::DeliverMessage(
     // Check to see whether the context has this port before bothering to create
     // the message.
     v8::Handle<v8::Value> port_id_handle = v8::Integer::New(target_port_id);
-    v8::Handle<v8::Value> has_port = (*it)->CallChromeHiddenMethod(
-        "Port.hasPort", 1, &port_id_handle);
+    v8::Handle<v8::Value> has_port;
+    if (!(*it)->CallChromeHiddenMethod("Port.hasPort", 1, &port_id_handle,
+                                       &has_port)) {
+      continue;
+    }
+
     CHECK(!has_port.IsEmpty());
     if (!has_port->BooleanValue())
       continue;
@@ -282,8 +286,9 @@ void RendererExtensionBindings::DeliverMessage(
     std::vector<v8::Handle<v8::Value> > arguments;
     arguments.push_back(v8::String::New(message.c_str(), message.size()));
     arguments.push_back(port_id_handle);
-    (*it)->CallChromeHiddenMethod("Port.dispatchOnMessage",
-                                  arguments.size(),
-                                  &arguments[0]);
+    CHECK((*it)->CallChromeHiddenMethod("Port.dispatchOnMessage",
+                                        arguments.size(),
+                                        &arguments[0],
+                                        NULL));
   }
 }

@@ -38,10 +38,11 @@ content::RenderView* ChromeV8Context::GetRenderView() const {
     return NULL;
 }
 
-v8::Handle<v8::Value> ChromeV8Context::CallChromeHiddenMethod(
+bool ChromeV8Context::CallChromeHiddenMethod(
     const std::string& function_name,
     int argc,
-    v8::Handle<v8::Value>* argv) const {
+    v8::Handle<v8::Value>* argv,
+    v8::Handle<v8::Value>* result) const {
   v8::Context::Scope context_scope(v8_context_);
 
   // Look up the function name, which may be a sub-property like
@@ -56,9 +57,20 @@ v8::Handle<v8::Value> ChromeV8Context::CallChromeHiddenMethod(
           v8::String::New(components[i].c_str()));
     }
   }
-  CHECK(!value.IsEmpty() && value->IsFunction());
-  return v8::Local<v8::Function>::Cast(value)->Call(
-      v8::Object::New(), argc, argv);
+
+  // TODO(aa): CHECK that this succeeds. Can't do this now because not all
+  // callers know if the method they are calling exists. Should be able to fix
+  // this when all the bindings are converted to the new framework.
+  if (value.IsEmpty() || !value->IsFunction()) {
+    VLOG(1) << "Could not execute chrome hidden method: " << function_name;
+    return false;
+  }
+
+  v8::Handle<v8::Value> result_temp =
+      v8::Local<v8::Function>::Cast(value)->Call(v8::Object::New(), argc, argv);
+  if (result)
+    *result = result_temp;
+  return true;
 }
 
 void ChromeV8Context::DispatchOnLoadEvent(bool is_extension_process,
@@ -68,10 +80,10 @@ void ChromeV8Context::DispatchOnLoadEvent(bool is_extension_process,
   argv[0] = v8::String::New(extension_id_.c_str());
   argv[1] = v8::Boolean::New(is_extension_process);
   argv[2] = v8::Boolean::New(is_incognito_process);
-  CallChromeHiddenMethod("dispatchOnLoad", arraysize(argv), argv);
+  CallChromeHiddenMethod("dispatchOnLoad", arraysize(argv), argv, NULL);
 }
 
 void ChromeV8Context::DispatchOnUnloadEvent() const {
   v8::HandleScope handle_scope;
-  CallChromeHiddenMethod("dispatchOnUnload", 0, NULL);
+  CallChromeHiddenMethod("dispatchOnUnload", 0, NULL, NULL);
 }

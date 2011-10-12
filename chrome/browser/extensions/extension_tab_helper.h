@@ -105,9 +105,10 @@ class ExtensionTabHelper
   void OnInlineWebstoreInstall(int install_id,
                                const std::string& webstore_item_id,
                                const GURL& requestor_url);
-  void OnGetAppNotifyChannel(int request_id,
-                             const GURL& requestor_url,
-                             const std::string& client_id);
+  void OnGetAppNotifyChannel(const GURL& requestor_url,
+                             const std::string& client_id,
+                             int return_route_id,
+                             int callback_id);
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // App extensions related methods:
@@ -126,9 +127,10 @@ class ExtensionTabHelper
                                       const std::string& error) OVERRIDE;
 
   // AppNotifyChannelSetup::Delegate.
-  virtual void AppNotifyChannelSetupComplete(int request_id,
-                                             const std::string& channel_id,
-                                             const std::string& error);
+  virtual void AppNotifyChannelSetupComplete(const std::string& channel_id,
+                                             const std::string& error,
+                                             int return_route_id,
+                                             int callback_id);
 
   // Data for app extensions ---------------------------------------------------
 

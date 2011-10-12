@@ -622,10 +622,11 @@ void ExtensionProcessBindings::HandleResponse(
   argv[3] = v8::String::New(response.c_str());
   argv[4] = v8::String::New(error.c_str());
 
-  v8::Handle<v8::Value> retval =
-      v8_context->CallChromeHiddenMethod("handleResponse",
-                                         arraysize(argv),
-                                         argv);
+  v8::Handle<v8::Value> retval;
+  CHECK(v8_context->CallChromeHiddenMethod("handleResponse",
+                                           arraysize(argv),
+                                           argv,
+                                           &retval));
   // In debug, the js will validate the callback parameters and return a
   // string if a validation error has occured.
 #ifndef NDEBUG

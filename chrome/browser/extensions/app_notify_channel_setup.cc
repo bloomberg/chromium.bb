@@ -7,13 +7,15 @@
 #include "content/browser/browser_thread.h"
 
 AppNotifyChannelSetup::AppNotifyChannelSetup(
-    int request_id,
     const std::string& client_id,
     const GURL& requestor_url,
+    int return_route_id,
+    int callback_id,
     base::WeakPtr<AppNotifyChannelSetup::Delegate> delegate)
-    : request_id_(request_id),
-      client_id_(client_id),
+    : client_id_(client_id),
       requestor_url_(requestor_url),
+      return_route_id_(return_route_id),
+      callback_id_(callback_id),
       delegate_(delegate) {}
 
 AppNotifyChannelSetup::~AppNotifyChannelSetup() {}
@@ -44,6 +46,7 @@ void AppNotifyChannelSetup::ReportResult(
     const std::string& error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (delegate_.get())
-    delegate_->AppNotifyChannelSetupComplete(request_id_, channel_id, error);
+    delegate_->AppNotifyChannelSetupComplete(
+        channel_id, error, return_route_id_, callback_id_);
   Release(); // Matches AddRef in Start.
 }

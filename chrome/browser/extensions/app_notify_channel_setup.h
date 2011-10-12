@@ -19,14 +19,16 @@ class AppNotifyChannelSetup
     // If successful, |channel_id| will be non-empty. On failure, |channel_id|
     // will be empty and |error| will contain an error to report to the JS
     // callback.
-    virtual void AppNotifyChannelSetupComplete(int request_id,
-                                               const std::string& channel_id,
-                                               const std::string& error) = 0;
+    virtual void AppNotifyChannelSetupComplete(const std::string& channel_id,
+                                               const std::string& error,
+                                               int return_route_id,
+                                               int callback_id) = 0;
   };
 
-  AppNotifyChannelSetup(int request_id,
-                        const std::string& client_id,
+  AppNotifyChannelSetup(const std::string& client_id,
                         const GURL& requestor_url,
+                        int return_route_id,
+                        int callback_id,
                         base::WeakPtr<Delegate> delegate);
 
   // This begins the process of fetching the channel id using the browser login
@@ -41,9 +43,10 @@ class AppNotifyChannelSetup
 
   void ReportResult(const std::string& channel_id, const std::string& error);
 
-  int request_id_;
   std::string client_id_;
   GURL requestor_url_;
+  int return_route_id_;
+  int callback_id_;
   base::WeakPtr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelSetup);

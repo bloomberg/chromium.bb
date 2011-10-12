@@ -16,6 +16,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_DISABLED_PLUGIN_HTML" file="resources\disabled_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DOM_AUTOMATION_JS" file="resources\dom_automation.js" type="BINDATA" />
       <include name="IDR_EXTENSION_APITEST_JS" file="resources\extensions\apitest.js" type="BINDATA" />
+      <include name="IDR_APP_BINDINGS_JS" file="resources\extensions\app.js" type="BINDATA" />
       <include name="IDR_EVENT_BINDINGS_JS" file="resources\extensions\event.js" type="BINDATA" />
       <include name="IDR_EXTENSION_PROCESS_BINDINGS_JS" file="resources\extensions\extension_process_bindings.js" type="BINDATA" />
       <include name="IDR_GREASEMONKEY_API_JS" file="resources\extensions\greasemonkey_api.js" type="BINDATA" />
