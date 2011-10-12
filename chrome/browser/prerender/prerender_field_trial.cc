@@ -13,6 +13,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 
 namespace prerender {
@@ -74,30 +75,35 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
 
   switch (prerender_option) {
     case PRERENDER_OPTION_AUTO: {
-      const base::FieldTrial::Probability kPrerenderDivisor = 1000;
-      const base::FieldTrial::Probability kPrerenderExp1Probability = 250;
-      const base::FieldTrial::Probability kPrerenderControl1Probability = 250;
-      const base::FieldTrial::Probability kPrerenderExp2Probability = 250;
-      const base::FieldTrial::Probability kPrerenderControl2Probability = 250;
-      COMPILE_ASSERT(
-          kPrerenderExp1Probability + kPrerenderControl1Probability +
-          kPrerenderExp2Probability + kPrerenderControl2Probability ==
-          kPrerenderDivisor,
-          PrerenderFieldTrial_numerator_matches_denominator);
+      base::FieldTrial::Probability divisor = 1000;
+      base::FieldTrial::Probability exp1_probability = 250;
+      base::FieldTrial::Probability control1_probability = 250;
+      base::FieldTrial::Probability exp2_probability = 250;
+      base::FieldTrial::Probability control2_probability = 250;
+      chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+      if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+          channel == chrome::VersionInfo::CHANNEL_BETA) {
+        exp1_probability = 495;
+        control1_probability = 5;
+        exp2_probability = 495;
+        control2_probability = 5;
+      }
+      CHECK_EQ(divisor, exp1_probability + control1_probability +
+               exp2_probability + control2_probability);
       scoped_refptr<base::FieldTrial> trial(
-          new base::FieldTrial("Prefetch", kPrerenderDivisor,
+          new base::FieldTrial("Prefetch", divisor,
                                "ContentPrefetchPrerender1", 2012, 6, 30));
 
       const int kPrerenderExperiment1Group = trial->kDefaultGroupNumber;
       const int kPrerenderControl1Group =
           trial->AppendGroup("ContentPrefetchPrerenderControl1",
-                             kPrerenderControl1Probability);
+                             control1_probability);
       const int kPrerenderExperiment2Group =
           trial->AppendGroup("ContentPrefetchPrerender2",
-                             kPrerenderExp2Probability);
+                             exp2_probability);
       const int kPrerenderControl2Group =
           trial->AppendGroup("ContentPrefetchPrerenderControl2",
-                             kPrerenderControl2Probability);
+                             control2_probability);
       const int trial_group = trial->group();
       if (trial_group == kPrerenderExperiment1Group ||
                  trial_group == kPrerenderExperiment2Group) {
