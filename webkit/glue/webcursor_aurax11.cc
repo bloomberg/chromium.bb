@@ -29,7 +29,7 @@ class CursorCache {
   }
 
   Cursor GetCursor(int web_cursor_info_type) {
-    Cursor cursor = static_cast<Cursor>(NULL);
+    Cursor cursor = gfx::kNullCursor;
     std::pair<std::map<int, Cursor>::iterator, bool> it = cache_.insert(
         std::make_pair(web_cursor_info_type, cursor));
     if (it.second) {
@@ -37,7 +37,7 @@ class CursorCache {
           GetXCursorType(web_cursor_info_type));
       it.first->second = cursor;
     }
-    return cursor;
+    return it.first->second;
   }
 
  private:
