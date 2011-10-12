@@ -421,5 +421,7 @@ int
 wlsc_xserver_init(struct wlsc_compositor *compositor);
 void
 wlsc_xserver_destroy(struct wlsc_compositor *compositor);
+void
+wlsc_xserver_surface_activate(struct wlsc_surface *surface);
 
 #endif

@@ -892,6 +892,9 @@ activate(struct wlsc_shell *base, struct wlsc_surface *es,
 
 	wlsc_surface_activate(es, device, time);
 
+	if (compositor->wxs)
+		wlsc_xserver_surface_activate(es);
+
 	if (es == shell->background) {
 		wl_list_remove(&es->link);
 		wl_list_insert(compositor->surface_list.prev, &es->link);

@@ -92,6 +92,9 @@ struct wlsc_wm_window {
 	struct wl_listener surface_destroy_listener;
 };
 
+static struct wlsc_wm_window *
+get_wm_window(struct wlsc_surface *surface);
+
 static void
 wlsc_wm_handle_configure_request(struct wlsc_wm *wm, xcb_generic_event_t *event)
 {
@@ -187,8 +190,36 @@ static void
 wlsc_wm_activate(struct wlsc_wm *wm,
 		 struct wlsc_wm_window *window, xcb_timestamp_t time)
 {
+	xcb_client_message_event_t client_message;
+
+	client_message.response_type = XCB_CLIENT_MESSAGE;
+	client_message.format = 32;
+	client_message.window = window->id;
+	client_message.type = wm->atom.wm_protocols;
+	client_message.data.data32[0] = wm->atom.wm_take_focus;
+	client_message.data.data32[1] = XCB_TIME_CURRENT_TIME;
+
+	xcb_send_event(wm->conn, 0, window->id, 
+		       XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+		       (char *) &client_message);
+
 	xcb_set_input_focus (wm->conn,
 			     XCB_INPUT_FOCUS_POINTER_ROOT, window->id, time);
+}
+
+WL_EXPORT void
+wlsc_xserver_surface_activate(struct wlsc_surface *surface)
+{
+	struct wlsc_wm_window *window = get_wm_window(surface);
+	struct wlsc_xserver *wxs = surface->compositor->wxs;
+
+	if (window == NULL && wxs && wxs->wm)
+		xcb_set_input_focus (wxs->wm->conn,
+				     XCB_INPUT_FOCUS_POINTER_ROOT,
+				     XCB_NONE,
+				     XCB_TIME_CURRENT_TIME);
+	else
+		wlsc_wm_activate(wxs->wm, window, XCB_TIME_CURRENT_TIME);
 }
 
 static void
@@ -214,7 +245,6 @@ wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	xcb_map_notify_event_t *map_notify =
 		(xcb_map_notify_event_t *) event;
 	struct wlsc_wm_window *window;
-	xcb_client_message_event_t client_message;
 
 	fprintf(stderr, "XCB_MAP_NOTIFY\n");
 
@@ -222,18 +252,6 @@ wlsc_wm_handle_map_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 
 	window = wl_hash_table_lookup(wm->window_hash, map_notify->window);
 	wlsc_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
-
-	client_message.response_type = XCB_CLIENT_MESSAGE;
-	client_message.format = 32;
-	client_message.window = window->id;
-	client_message.type = wm->atom.wm_protocols;
-	client_message.data.data32[0] = wm->atom.wm_take_focus;
-	client_message.data.data32[1] = XCB_TIME_CURRENT_TIME;
-
-	xcb_send_event(wm->conn, 0, window->id, 
-		       XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
-		       (char *) &client_message);
-
 }
 
 static void
@@ -589,6 +607,22 @@ surface_destroy(struct wl_listener *listener,
 			     struct wlsc_wm_window, surface_destroy_listener);
 
 	fprintf(stderr, "surface for xid %d destroyed\n", window->id);
+}
+
+static struct wlsc_wm_window *
+get_wm_window(struct wlsc_surface *surface)
+{
+	struct wl_resource *resource = &surface->surface.resource;
+	struct wl_listener *listener;
+
+	wl_list_for_each(listener, &resource->destroy_listener_list, link) {
+		if (listener->func == surface_destroy)
+			return container_of(listener,
+					    struct wlsc_wm_window,
+					    surface_destroy_listener);
+	}
+
+	return NULL;
 }
 
 static void
