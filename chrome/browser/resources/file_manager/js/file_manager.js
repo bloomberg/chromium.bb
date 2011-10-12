@@ -1440,7 +1440,67 @@ FileManager.prototype = {
     }
 
     return input;
-  }
+  };
+
+  /**
+   * Insert a thumbnail image to fit/fill the container.
+   *
+   * Using webkit center packing does not align the image properly, so we need
+   * to wait until the image loads and its proportions are known, then manually
+   * position it at the center.
+   *
+   * @param {HTMLElement} parent
+   * @param {HTMLImageElement} img
+   * @param {string} url
+   * @param {boolean} fill True: the image should fill the entire container,
+   *                       false: the image should fully fit into the container.
+   */
+  FileManager.insertCenteredImage_ = function(parent, img, url, fill) {
+    img.onload = function() {
+      function percent(fraction) {
+        return Math.round(fraction * 100 * 10) / 10 + '%';  // Round to 0.1%
+      }
+
+      // First try vertical fit or horizontal fill.
+      var fractionX = img.width / img.height;
+      var fractionY = 1;
+      if ((fractionX < 1) == !!fill) {  // Vertical fill or horizontal fit.
+        fractionY = 1 / fractionX;
+        fractionX = 1;
+      }
+
+      img.style.width = percent(fractionX);
+      img.style.height = percent(fractionY);
+      img.style.left = percent((1 - fractionX) / 2);
+      img.style.top = percent((1 - fractionY) / 2);
+
+      parent.appendChild(img);
+    };
+    img.src = url;
+  };
+
+  /**
+   * Create a box containing a centered thumbnail image.
+   *
+   * @param {Entry} entry
+   * @param {boolean} True if fill, false if fit.
+   * @return {HTMLDivElement}
+   */
+  FileManager.prototype.renderThumbnailBox_ = function(entry, fill) {
+    var box = this.document_.createElement('div');
+    box.className = 'img-container';
+    var img = this.document_.createElement('img');
+    this.getThumbnailURL(entry, function(iconType, url, transform) {
+      FileManager.insertCenteredImage_(box, img, url, fill);
+      if (transform) {
+        box.style.webkitTransform =
+            'scaleX(' + transform.scaleX + ') ' +
+            'scaleY(' + transform.scaleY + ') ' +
+            'rotate(' + transform.rotate90 * 90 + 'deg)';
+      }
+    });
+    return box;
+  };
 
   FileManager.prototype.renderThumbnail_ = function(entry) {
     var li = this.document_.createElement('li');
@@ -1449,15 +1509,9 @@ FileManager.prototype = {
     if (this.showCheckboxes_)
       li.appendChild(this.renderCheckbox_(entry));
 
+    li.appendChild(this.renderThumbnailBox_(entry, false));
+
     var div = this.document_.createElement('div');
-    div.className = 'img-container';
-    li.appendChild(div);
-
-    var img = this.document_.createElement('img');
-    this.getThumbnailURL(entry, function(type, url) { img.src = url });
-    div.appendChild(img);
-
-    div = this.document_.createElement('div');
     div.className = 'filename-label';
     var labelText = entry.name;
     if (this.currentDirEntry_.name == '')
@@ -2278,7 +2332,12 @@ FileManager.prototype = {
         }
       }
 
-      callback(iconType, url);
+      var transform =
+          metadata.thumbnailURL ?
+          metadata.thumbnailTransform :
+          metadata.imageTransform;
+
+      callback(iconType, url, transform);
     });
   };
 

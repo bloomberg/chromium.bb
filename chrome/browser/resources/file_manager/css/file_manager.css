@@ -218,7 +218,7 @@ button.thumbnail-view > img {
   margin-top: 10px;
   margin-left: 10px;
   width: 120px;
-  height: 120px;
+  height: 145px;
   text-align: center;
 }
 
@@ -228,18 +228,19 @@ button.thumbnail-view > img {
   left: 0;
 }
 
-.thumbnail-item > div.img-container {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  height: 91px;
-  margin: 2px;
-  width: 116px;
+/* When changing these properties please preserve these conditions:
+   1. width == height (so that the rotated thumbnail does not look off-center)
+   2. width % 8 == 0 (to minimize rounding errors in the centering code) */
+div.img-container {
+  position: relative;
+  overflow: hidden;
+  margin: 4px;
+  width: 112px;
+  height: 112px;
 }
 
-.thumbnail-item > div.img-container > img {
-  max-width: 110px;
-  max-height: 85px;
+div.img-container > img{
+  position: absolute;
 }
 
 .thumbnail-item > div.filename-label {
