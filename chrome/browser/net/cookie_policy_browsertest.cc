@@ -68,7 +68,7 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
             new GetCookiesTask(url, context_getter, &event, &cookies)));
-    EXPECT_TRUE(event.Wait());
+    event.Wait();
     return cookies;
   }
 

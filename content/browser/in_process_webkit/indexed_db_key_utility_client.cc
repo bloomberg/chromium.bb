@@ -197,9 +197,9 @@ void KeyUtilityClientImpl::StartUtilityProcess() {
   DCHECK(state_ == STATE_UNINITIALIZED);
 
   GetRDHAndStartUtilityProcess();
-  bool ret = waitable_event_.Wait();
+  waitable_event_.Wait();
 
-  DCHECK(ret && state_ == STATE_INITIALIZED);
+  DCHECK(state_ == STATE_INITIALIZED);
 }
 
 void KeyUtilityClientImpl::CreateIDBKeysFromSerializedValuesAndKeyPath(
@@ -216,8 +216,8 @@ void KeyUtilityClientImpl::CreateIDBKeysFromSerializedValuesAndKeyPath(
 
   state_ = STATE_CREATING_KEYS;
   CallStartIDBKeyFromValueAndKeyPathFromIOThread(values, key_path);
-  bool ret = waitable_event_.Wait();
-  DCHECK(ret && state_ == STATE_INITIALIZED);
+  waitable_event_.Wait();
+  DCHECK(state_ == STATE_INITIALIZED);
 
   *keys = keys_;
 }
@@ -235,8 +235,8 @@ SerializedScriptValue KeyUtilityClientImpl::InjectIDBKeyIntoSerializedValue(
   state_ = STATE_INJECTING_KEY;
   CallStartInjectIDBKeyFromIOThread(key, value, key_path);
 
-  bool ret = waitable_event_.Wait();
-  DCHECK(ret && state_ == STATE_INITIALIZED);
+  waitable_event_.Wait();
+  DCHECK(state_ == STATE_INITIALIZED);
 
   return value_after_injection_;
 }

@@ -92,7 +92,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     ready_event_.Signal();
     // And then wait for the test to tell us to GO!
     ASSERT_NE(static_cast<base::WaitableEvent*>(NULL), start_event);
-    ASSERT_TRUE(start_event->Wait());
+    start_event->Wait();
 
     // Here we don't wait for the app to be terminated because one of the
     // process will stay alive while the others will be restarted. If we would
@@ -266,7 +266,7 @@ TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
     // We could replace this loop if we ever implement a WaitAll().
     for (size_t i = 0; i < kNbThreads; ++i) {
       SCOPED_TRACE(testing::Message() << "Waiting on thread: " << i << ".");
-      ASSERT_TRUE(chrome_starters_[i]->ready_event_.Wait());
+      chrome_starters_[i]->ready_event_.Wait();
     }
     // GO!
     threads_waker_.Signal();

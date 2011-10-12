@@ -80,7 +80,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     // (otherwise the Wait below will hang).
     MessageLoop::current()->RunAllPending();
 
-    EXPECT_TRUE(io_finished.Wait());
+    io_finished.Wait();
   }
 
   extension_pref_value_map_.reset(new ExtensionPrefValueMap);

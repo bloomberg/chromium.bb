@@ -198,9 +198,9 @@ bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
     return false;
   }
 
-  if (!http_post_completed_.Wait())  // Block until network request completes
-    NOTREACHED();                    // or is aborted. See OnURLFetchComplete
-                                     // and Abort.
+  // Block until network request completes or is aborted. See
+  // OnURLFetchComplete and Abort.
+  http_post_completed_.Wait();
 
   base::AutoLock lock(fetch_state_lock_);
   DCHECK(fetch_state_.request_completed || fetch_state_.aborted);

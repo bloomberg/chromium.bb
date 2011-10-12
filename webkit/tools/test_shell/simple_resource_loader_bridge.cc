@@ -698,8 +698,7 @@ class SyncRequestProxy : public RequestProxy {
   }
 
   void WaitForCompletion() {
-    if (!event_.Wait())
-      NOTREACHED();
+    event_.Wait();
   }
 
   // --------------------------------------------------------------------------
@@ -889,8 +888,7 @@ class CookieGetter : public base::RefCountedThreadSafe<CookieGetter> {
   }
 
   std::string GetResult() {
-    if (!event_.Wait())
-      NOTREACHED();
+    event_.Wait();
     return result_;
   }
 

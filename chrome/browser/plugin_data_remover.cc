@@ -71,14 +71,12 @@ base::WaitableEvent* PluginDataRemover::StartRemoving(base::Time begin_time) {
 
 void PluginDataRemover::Wait() {
   base::Time start_time(base::Time::Now());
-  bool result = true;
   if (is_removing_)
-    result = event_->Wait();
+    event_->Wait();
   UMA_HISTOGRAM_TIMES("ClearPluginData.wait_at_shutdown",
                       base::Time::Now() - start_time);
   UMA_HISTOGRAM_TIMES("ClearPluginData.time_at_shutdown",
                       base::Time::Now() - remove_start_time_);
-  DCHECK(result) << "Error waiting for plugin process";
 }
 
 int PluginDataRemover::ID() {
