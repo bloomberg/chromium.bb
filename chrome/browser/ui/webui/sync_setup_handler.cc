@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -415,6 +416,10 @@ void SyncSetupHandler::ShowSetupDone(const std::wstring& user) {
   StringValue page("done");
   web_ui_->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page);
+
+  // Suppress the sync promo once the user signs into sync. This way the user
+  // doesn't see the sync promo even if they sign out of sync later on.
+  SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui_));
 }
 
 void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {

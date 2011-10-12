@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -158,6 +159,9 @@ void SyncPromoHandler::HandleUserFlowAction(const base::ListValue* args) {
   } else {
     NOTREACHED() << "Attempt to record invalid user flow action on sync promo.";
   }
+
+  if (action == extension_misc::SYNC_PROMO_SKIP_CLICKED)
+    SyncPromoUI::SetUserSkippedSyncPromo(Profile::FromWebUI(web_ui_));
 }
 
 int SyncPromoHandler::GetViewCount() const {

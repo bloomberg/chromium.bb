@@ -32,13 +32,6 @@ const char kSyncPromoJsFile[]  = "sync_promo.js";
 // The maximum number of times we want to show the sync promo at startup.
 const int kSyncPromoShowAtStartupMaxiumum = 10;
 
-void RegisterSyncPromoPrefs(Profile* profile) {
-  if (!profile->GetPrefs()->FindPreference(prefs::kSyncPromoStartupCount)) {
-    profile->GetPrefs()->RegisterIntegerPref(
-        prefs::kSyncPromoStartupCount, 0, PrefService::UNSYNCABLE_PREF);
-  }
-}
-
 // The Web UI data source for the sync promo page.
 class SyncPromoUIHTMLSource : public ChromeWebUIDataSource {
  public:
@@ -102,13 +95,12 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
 
 // static
 void SyncPromoUI::RegisterUserPrefs(PrefService* prefs) {
-#if !defined(OS_CHROMEOS)
-  SyncPromoHandler::RegisterUserPrefs(prefs);
-#endif
-}
+  prefs->RegisterIntegerPref(
+      prefs::kSyncPromoStartupCount, 0, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(
+      prefs::kSyncPromoUserSkipped, false, PrefService::UNSYNCABLE_PREF);
 
-bool IsFirstRun(Profile* profile) {
-  return FirstRun::IsChromeFirstRun();
+  SyncPromoHandler::RegisterUserPrefs(prefs);
 }
 
 bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
@@ -120,11 +112,13 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (command_line.HasSwitch(switches::kNoFirstRun))
     is_new_profile = false;
 
-  RegisterSyncPromoPrefs(profile);
   if (!is_new_profile) {
     if (!profile->GetPrefs()->HasPrefPath(prefs::kSyncPromoStartupCount))
       return false;
   }
+
+  if (HasUserSkippedSyncPromo(profile))
+    return false;
 
   int show_count = profile->GetPrefs()->GetInteger(
       prefs::kSyncPromoStartupCount);
@@ -132,9 +126,16 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
 }
 
 void SyncPromoUI::DidShowSyncPromoAtStartup(Profile* profile) {
-  RegisterSyncPromoPrefs(profile);
   int show_count = profile->GetPrefs()->GetInteger(
       prefs::kSyncPromoStartupCount);
   show_count++;
   profile->GetPrefs()->SetInteger(prefs::kSyncPromoStartupCount, show_count);
+}
+
+bool SyncPromoUI::HasUserSkippedSyncPromo(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(prefs::kSyncPromoUserSkipped);
+}
+
+void SyncPromoUI::SetUserSkippedSyncPromo(Profile* profile) {
+  profile->GetPrefs()->SetBoolean(prefs::kSyncPromoUserSkipped, true);
 }

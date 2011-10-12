@@ -509,6 +509,7 @@ extern const char kSyncMaxInvalidationVersions[];
 
 extern const char kSyncPromoStartupCount[];
 extern const char kSyncPromoViewCount[];
+extern const char kSyncPromoUserSkipped[];
 
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];

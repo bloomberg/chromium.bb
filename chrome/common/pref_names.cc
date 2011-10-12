@@ -1406,6 +1406,9 @@ const char kSyncPromoStartupCount[] = "sync_promo.startup_count";
 // (not at startup).
 const char kSyncPromoViewCount[] = "sync_promo.view_count";
 
+// Boolean tracking whether the user chose to skip the sync promo.
+const char kSyncPromoUserSkipped[] = "sync_promo.user_skipped";
+
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";
 const char kWebAppCreateInAppsMenu[] = "browser.web_app.create_in_apps_menu";
