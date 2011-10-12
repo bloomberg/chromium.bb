@@ -1562,7 +1562,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     UpdatePluginListWithNaClModules();
 
   if (plugins_changed || nacl_modules_changed)
-    PluginService::GetInstance()->PurgePluginListCache(false);
+    PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 
 #if defined(OS_CHROMEOS)
 #if defined(TOUCH_UI)
@@ -1655,7 +1655,7 @@ void ExtensionService::NotifyExtensionUnloaded(
     UpdatePluginListWithNaClModules();
 
   if (plugins_changed || nacl_modules_changed)
-    PluginService::GetInstance()->PurgePluginListCache(false);
+    PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 }
 
 void ExtensionService::UpdateExtensionBlacklist(

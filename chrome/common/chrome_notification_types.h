@@ -908,8 +908,8 @@ enum NotificationType {
   // Sent when the browser enters or exits fullscreen mode.
   NOTIFICATION_FULLSCREEN_CHANGED,
 
-  // Sent by the PluginPrefs when there is a change of plugin
-  // enable/disable status.
+  // Sent by the PluginPrefs when there is a change of plugin enable/disable
+  // status. The source is the profile.
   NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
 
   // Panels Notifications. The Panels are small browser windows near the bottom

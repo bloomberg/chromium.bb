@@ -97,6 +97,8 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   // This method should only be called on the UI thread.
   static void RegisterPrefs(PrefService* prefs);
 
+  void set_profile(Profile* profile) { profile_ = profile; }
+
   // NotificationObserver method override.
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -105,8 +107,6 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
  private:
   friend class base::RefCountedThreadSafe<PluginPrefs>;
   friend class PluginPrefsTest;
-
-  class Factory;
 
   virtual ~PluginPrefs();
 
@@ -149,7 +149,10 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   std::set<string16> policy_disabled_plugin_exception_patterns_;
   std::set<string16> policy_enabled_plugin_patterns_;
 
-  // Weak pointer, owned by the profile (which owns us).
+  // Weak pointer, owns us. Only used as a notification source.
+  Profile* profile_;
+
+  // Weak pointer, owned by the profile.
   PrefService* prefs_;
 
   // PluginList to use for testing. If this is NULL, defaults to the global

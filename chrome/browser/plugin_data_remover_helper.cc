@@ -78,7 +78,7 @@ void PluginDataRemoverHelper::Init(const char* pref_name,
                                    NotificationObserver* observer) {
   pref_.Init(pref_name, profile->GetPrefs(), observer);
   registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-                 Source<PluginPrefs>(PluginPrefs::GetForProfile(profile)));
+                 Source<Profile>(profile));
   internal_ = make_scoped_refptr(new Internal(pref_name, profile));
   internal_->StartUpdate();
 }

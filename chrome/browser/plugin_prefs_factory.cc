@@ -56,6 +56,7 @@ PluginPrefsFactory::~PluginPrefsFactory() {}
 ProfileKeyedService* PluginPrefsFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   scoped_refptr<PluginPrefs> plugin_prefs(new PluginPrefs());
+  plugin_prefs->set_profile(profile->GetOriginalProfile());
   plugin_prefs->SetPrefs(profile->GetPrefs());
   return new PluginPrefsWrapper(plugin_prefs);
 }

@@ -158,7 +158,9 @@ class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
     VLOG(1) << "Watched path changed: " << path.value();
     // Make the plugin list update itself
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+    PluginService::GetInstance()->PurgePluginListCache(NULL, false);
   }
+
   virtual void OnFilePathError(const FilePath& path) OVERRIDE {
     // TODO(pastarmovj): Add some sensible error handling. Maybe silently
     // stopping the watcher would be enough. Or possibly restart it.
@@ -580,7 +582,7 @@ void PluginService::OnWaitableEventSignaled(
   }
 
   webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-  PurgePluginListCache(true);
+  PurgePluginListCache(NULL, false);
 #else
   // This event should only get signaled on a Windows machine.
   NOTREACHED();
@@ -600,10 +602,14 @@ void PluginService::Observe(int type,
   NOTREACHED();
 }
 
-void PluginService::PurgePluginListCache(bool reload_pages) {
+void PluginService::PurgePluginListCache(
+    content::BrowserContext* browser_context,
+    bool reload_pages) {
   for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
        !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Send(new ViewMsg_PurgePluginListCache(reload_pages));
+    RenderProcessHost* host = it.GetCurrentValue();
+    if (!browser_context || host->browser_context() == browser_context)
+      host->Send(new ViewMsg_PurgePluginListCache(reload_pages));
   }
 }
 

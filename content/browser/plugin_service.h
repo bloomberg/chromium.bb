@@ -43,6 +43,7 @@ class MessageLoopProxy;
 }
 
 namespace content {
+class BrowserContext;
 class ResourceContext;
 class PluginServiceFilter;
 }
@@ -154,10 +155,13 @@ class CONTENT_EXPORT PluginService
   // back to the provided function on the calling MessageLoop on completion.
   void GetPluginGroups(const GetPluginGroupsCallback& callback);
 
-  // Tells all the renderer processes to throw away their cache of the plugin
-  // list, and optionally also reload all the pages with plugins.
+  // Tells all the renderer processes associated with the given browser context
+  // to throw away their cache of the plugin list, and optionally also reload
+  // all the pages with plugins. If |browser_context| is NULL, purges the cache
+  // in all renderers.
   // NOTE: can only be called on the UI thread.
-  static void PurgePluginListCache(bool reload_pages);
+  static void PurgePluginListCache(content::BrowserContext* browser_context,
+                                   bool reload_pages);
 
   void set_filter(content::PluginServiceFilter* filter) {
     filter_ = filter;

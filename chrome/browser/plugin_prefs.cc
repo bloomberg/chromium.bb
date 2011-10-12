@@ -457,6 +457,7 @@ void PluginPrefs::ShutdownOnUIThread() {
 }
 
 PluginPrefs::PluginPrefs() : plugin_state_(g_default_plugin_state.Get()),
+                             profile_(NULL),
                              prefs_(NULL),
                              plugin_list_(NULL) {
 }
@@ -540,6 +541,6 @@ void PluginPrefs::NotifyPluginStatusChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-      Source<PluginPrefs>(this),
+      Source<Profile>(profile_),
       NotificationService::NoDetails());
 }

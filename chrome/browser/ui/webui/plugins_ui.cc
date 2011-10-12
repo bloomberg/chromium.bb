@@ -147,7 +147,7 @@ WebUIMessageHandler* PluginsDOMHandler::Attach(WebUI* web_ui) {
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-                 Source<PluginPrefs>(PluginPrefs::GetForProfile(profile)));
+                 Source<Profile>(profile));
 
   return WebUIMessageHandler::Attach(web_ui);
 }
