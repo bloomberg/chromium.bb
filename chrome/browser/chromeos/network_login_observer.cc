@@ -27,6 +27,10 @@ NetworkLoginObserver::~NetworkLoginObserver() {
 }
 
 void NetworkLoginObserver::CreateModalPopup(views::WidgetDelegate* view) {
+#if defined(USE_AURA)
+  // TODO(saintlou): This needs to be done for Aura.
+  NOTIMPLEMENTED();
+#else
   Browser* browser = BrowserList::GetLastActive();
   if (browser && !browser->is_type_tabbed()) {
     browser = BrowserList::FindTabbedBrowser(browser->profile(), true);
@@ -43,6 +47,7 @@ void NetworkLoginObserver::CreateModalPopup(views::WidgetDelegate* view) {
       background_view->CreateModalPopup(view);
     }
   }
+#endif
 }
 
 void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {

@@ -1002,9 +1002,13 @@ void BrowserProcessImpl::CreateIntranetRedirectDetector() {
 }
 
 void BrowserProcessImpl::CreateNotificationUIManager() {
+#if defined(USE_AURA) && defined(OS_CHROMEOS)
+  // TODO(saintlou): Implement notifications.
+  NOTIMPLEMENTED();
+#else
   DCHECK(notification_ui_manager_.get() == NULL);
   notification_ui_manager_.reset(NotificationUIManager::Create(local_state()));
-
+#endif
   created_notification_ui_manager_ = true;
 }
 

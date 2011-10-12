@@ -46,7 +46,7 @@
 #include "net/url_request/url_request_job.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
 #endif
 
@@ -222,7 +222,7 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
                  chrome::NOTIFICATION_BROWSER_CLOSED,
                  Source<Browser>(mediaplayer_browser_));
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
   // Since we are on chromeos, popups should be a PanelBrowserView,
   // so we can just cast it.
   if (creator) {
