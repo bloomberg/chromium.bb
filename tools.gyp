@@ -116,7 +116,7 @@
         },
       ],
     }],
-    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+    ['disable_untrusted==0 and target_arch=="x64"', {
       'targets' : [
         {
           'target_name': 'crt_platform_64',
@@ -139,7 +139,7 @@
         }
       ],
     }],
-    ['disable_untrusted==0 and OS!="mac" and target_arch=="ia32"', {
+    ['disable_untrusted==0 and target_arch=="ia32"', {
       'targets' : [
         {
           'target_name': 'crt_platform_32',

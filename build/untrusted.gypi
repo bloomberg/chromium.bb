@@ -4,7 +4,7 @@
 
 {
   'conditions': [
-    ['disable_untrusted==0 and OS!="mac" and target_arch!="arm"', {
+    ['disable_untrusted==0 and target_arch!="arm"', {
       'target_defaults': {
         'conditions': [
           ['OS=="win"', {
@@ -50,7 +50,7 @@
         },
       },
     }],
-    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+    ['disable_untrusted==0 and target_arch=="x64"', {
       'target_defaults': {
         'target_conditions': [
            ['nexe_target!="" and build_newlib!=0', {
@@ -58,7 +58,7 @@
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'outname': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64',
              },
              'actions': [
                {
@@ -91,7 +91,7 @@
         ],
       },
     }],
-    ['disable_untrusted==0 and OS!="mac" and target_arch=="x64"', {
+    ['disable_untrusted==0 and target_arch=="x64"', {
       'target_defaults': {
         'target_conditions': [
            ['nlib_target!="" and build_newlib!=0', {
@@ -99,7 +99,7 @@
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'outname': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/>(nlib_target)',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64',
              },
              'actions': [
                {
@@ -132,7 +132,7 @@
         ],
       },
     }],
-    ['disable_untrusted==0 and OS!="mac" and target_arch=="ia32"', {
+    ['disable_untrusted==0 and target_arch=="ia32"', {
       'target_defaults': {
         'target_conditions': [
            ['nexe_target!="" and build_newlib!=0', {
@@ -140,15 +140,8 @@
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'outname': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32',
              },
-             'target_conditions': [
-                ['objdir=="undefined"', {
-                  'variables': {
-                    'objdir':  '>(INTERMEDIATE_DIR)/>(tool_name)',
-                  },
-                }],
-             ],
              'actions': [
                {
                  'action_name': 'build newlib x86-32 nexe',
@@ -180,7 +173,7 @@
         ],
       },
     }],
-    ['disable_untrusted==0 and OS!="mac" and target_arch=="ia32"', {
+    ['disable_untrusted==0 and target_arch=="ia32"', {
       'target_defaults': {
         'target_conditions': [
            ['nlib_target!="" and build_newlib!=0', {
@@ -188,15 +181,8 @@
                 'tool_name': 'newlib',
                 'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
                 'outname': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/>(nlib_target)',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-32',
              },
-             'condition': [
-                ['objdir=="undefined"', {
-                  'variables': {
-                    'objdir':  '>(INTERMEDIATE_DIR)/>(tool_name)',
-                  },
-                }],
-             ],
              'actions': [
                {
                  'action_name': 'build newlib x86-32 nlib',

@@ -8,6 +8,7 @@
     # http://code.google.com/p/nativeclient/issues/detail?id=1643
     'nacl_strict_warnings': 0,
     'p2p_apis%': 1,
+    'disable_untrusted': 1,
 
     # NaCl uses the C and C++ PPAPI targets. We want it to be able to use its
     # own version of PPAPI when compiling into Chrome, which means we'll

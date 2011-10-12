@@ -31,11 +31,10 @@
         '../src/trusted/service_runtime/service_runtime.gyp:*',
       ],
       'conditions': [
-        ['disable_untrusted==0 and OS!="mac" and target_arch!="arm"', {
+        ['disable_untrusted==0 and target_arch!="arm"', {
           'dependencies': [
             '../src/untrusted/irt/irt.gyp:*',
             '../src/untrusted/irt_stub/irt_stub.gyp:*',
-            '../src/untrusted/ppapi/ppapi.gyp:*',
             '../src/untrusted/pthread/pthread.gyp:*',
             '../src/untrusted/nacl/nacl.gyp:*',
             '../src/untrusted/nosys/nosys.gyp:*',

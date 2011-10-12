@@ -23,7 +23,7 @@
     },
   ],
   'conditions': [
-    ['disable_untrusted==0 and OS!="mac" and target_arch!="arm"', {
+    ['disable_untrusted==0 and target_arch!="arm"', {
       'targets' : [
         {
           'target_name': 'gio_lib',
