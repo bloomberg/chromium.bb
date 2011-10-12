@@ -175,6 +175,10 @@ bool ToplevelWindowEventFilter::HandleDrag(Window* target, MouseEvent* event) {
   if (bounds_change == kBoundsChange_None)
     return false;
 
+  // Only a normal window can be moved/resized.
+  if (target->show_state() != ui::SHOW_STATE_NORMAL)
+    return false;
+
   target->SetBounds(gfx::Rect(GetOriginForDrag(bounds_change, target, event),
                               GetSizeForDrag(bounds_change, target, event)));
   return true;

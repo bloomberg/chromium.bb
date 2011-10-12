@@ -40,7 +40,7 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
 
 MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
     : MouseEvent(native_event),
-      offset_(0 /* TODO(beng): obtain */) {
+      offset_(ui::GetMouseWheelOffset(native_event->native_event())) {
 }
 
 }  // namespace views

@@ -494,6 +494,8 @@ int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
 
 bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
   DCHECK(window_->IsVisible());
+  if (event->type() == ui::ET_MOUSEWHEEL)
+    return delegate_->OnMouseEvent(MouseWheelEvent(event));
   return delegate_->OnMouseEvent(MouseEvent(event));
 }
 
