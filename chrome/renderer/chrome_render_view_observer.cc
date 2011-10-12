@@ -10,7 +10,6 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/thumbnail_score.h"
@@ -535,6 +534,9 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
     bool allowed_per_settings,
     const WebKit::WebSecurityOrigin& origin,
     const WebKit::WebURL& url) {
+  // Single value to control permissive mixed content behaviour.
+  const bool enforce_insecure_content_on_all_domains = true;
+
   UMA_HISTOGRAM_ENUMERATION(kSSLInsecureContent,
                             INSECURE_CONTENT_RUN,
                             INSECURE_CONTENT_NUM_EVENTS);
@@ -630,12 +632,9 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
   if (allow_running_insecure_content_ || allowed_per_settings)
     return true;
 
-  bool enforce_insecure_content_on_all_domains =
-      (chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_STABLE
-       || CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kNoRunningInsecureContent));
-
-  if (!enforce_insecure_content_on_all_domains) {
+  if (!(enforce_insecure_content_on_all_domains ||
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kNoRunningInsecureContent))) {
     bool mandatory_enforcement = (is_google ||
                                   isHostInDomain(host, kFacebookDotCom) ||
                                   isHostInDomain(host, kTwitterDotCom));
