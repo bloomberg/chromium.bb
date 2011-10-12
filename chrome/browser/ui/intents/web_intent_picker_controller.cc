@@ -158,6 +158,29 @@ void WebIntentPickerController::Observe(int type,
   ClosePicker();
 }
 
+// Used to forward messages to the source tab from the service context.
+// TODO(gbillock): Add an observer here to make sure the source tab isn't
+// closed when we try to send to it?
+class InvokingTabReplyForwarder : public IPC::Message::Sender {
+ public:
+  InvokingTabReplyForwarder(TabContentsWrapper* wrapper, int routing_id)
+      : wrapper_(wrapper),
+        routing_id_(routing_id) {}
+  virtual ~InvokingTabReplyForwarder() {}
+
+  virtual bool Send(IPC::Message* message) OVERRIDE {
+    message->set_routing_id(routing_id_);
+    return wrapper_->Send(message);
+  }
+
+ private:
+  // Weak pointer to the source tab invoking the intent.
+  TabContentsWrapper* wrapper_;
+
+  // Renderer-side object invoking the intent.
+  int routing_id_;
+};
+
 void WebIntentPickerController::OnServiceChosen(size_t index) {
   DCHECK(index < urls_.size());
 
@@ -173,7 +196,9 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
 
   IntentInjector* injector = new IntentInjector(
       params.target_contents->tab_contents());
-  injector->SetIntent(routing_id_, intent_, intent_id_);
+  injector->SetIntent(new InvokingTabReplyForwarder(wrapper_, routing_id_),
+                      intent_,
+                      intent_id_);
 
   ClosePicker();
 }

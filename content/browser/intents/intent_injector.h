@@ -43,7 +43,12 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
 
   // Sets the intent data to be injected. Call after the user has selected a
   // service to pass the intent data to that service.
-  void SetIntent(int routing_id,
+  // |source_tab| is a sender to use to communicate to the source tab. Takes
+  // ownership of |source_tab|.
+  // |intent| is the intent data from the source
+  // |intent_id| is the ID assigned to the intent invocation from the source
+  // context.
+  void SetIntent(IPC::Message::Sender* source_tab,
                  const webkit_glue::WebIntentData& intent,
                  int intent_id);
 
@@ -59,7 +64,11 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
 
   // Source intent data provided by caller.
   scoped_ptr<webkit_glue::WebIntentData> source_intent_;
-  int source_routing_id_;
+
+  // The tab invoking the intent.
+  scoped_ptr<IPC::Message::Sender> source_tab_;
+
+  // Unique ID assigned to the intent by the source tab.
   int intent_id_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentInjector);
