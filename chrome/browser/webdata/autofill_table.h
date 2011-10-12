@@ -116,9 +116,8 @@ struct FormField;
 //
 class AutofillTable : public WebDatabaseTable {
  public:
-  AutofillTable(sql::Connection* db, sql::MetaTable* meta_table)
-      : WebDatabaseTable(db, meta_table) {}
-  virtual ~AutofillTable() {}
+  AutofillTable(sql::Connection* db, sql::MetaTable* meta_table);
+  virtual ~AutofillTable();
   virtual bool Init();
   virtual bool IsSyncable();
 

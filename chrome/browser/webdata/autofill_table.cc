@@ -346,6 +346,14 @@ bool RemoveAutofillProfilePieces(const std::string& guid, sql::Connection* db) {
 
 }  // namespace
 
+
+AutofillTable::AutofillTable(sql::Connection* db, sql::MetaTable* meta_table)
+    : WebDatabaseTable(db, meta_table) {
+}
+
+AutofillTable::~AutofillTable() {
+}
+
 bool AutofillTable::Init() {
  return (InitMainTable() && InitCreditCardsTable() && InitDatesTable() &&
      InitProfilesTable() && InitProfileNamesTable() &&
