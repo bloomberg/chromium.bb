@@ -12,28 +12,9 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/process.h"
 
 class FilePath;
-
-// This structure holds the name and creation time
-// details of all the chrome nightly builds.
-class FileInfo {
- public:
-  FileInfo() {}
-  FileInfo(const std::wstring& in_name, int in_creation_time) {
-    name_.assign(in_name);
-    creation_time_ = in_creation_time;
-  }
-  // This is a predicate to sort file information.
-  bool IsNewer(const FileInfo& creation_time_begin,
-               const FileInfo& creation_time_end);
-
-  std::wstring name_;
-  int creation_time_;
-};
-typedef std::vector<FileInfo> FileInfoList;
 
 // This class maintains all the utility methods that are needed by mini
 // installer test class.
@@ -45,10 +26,6 @@ class MiniInstallerTestUtil {
 
   // Closes specified process.
   static void CloseProcesses(const std::wstring& executable_name);
-
-  // Close Window whose name is 'window_name', by sending Windows message
-  // 'message' to it.
-  static bool CloseWindow(const wchar_t* window_name, UINT message);
 
   // Returns the directory containing exe_name.
   static FilePath GetFilePath(const wchar_t* exe_name);

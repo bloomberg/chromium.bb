@@ -18,7 +18,7 @@ void BackUpProfile(bool chrome_frame) {
            "Please close Chrome and run the tests again.\n");
     exit(1);
   }
-  ChromeMiniInstaller installer(false, chrome_frame);
+  ChromeMiniInstaller installer(false, chrome_frame, "");
   FilePath path;
   installer.GetChromeInstallDirectoryLocation(&path);
   path = path.Append(mini_installer_constants::kChromeAppDir).DirName();

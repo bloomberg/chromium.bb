@@ -17,7 +17,8 @@
 // This class has methods to install and uninstall Chrome mini installer.
 class ChromeMiniInstaller {
  public:
-  ChromeMiniInstaller(bool system_install, bool is_chrome_frame);
+  ChromeMiniInstaller(bool system_install,
+      bool is_chrome_frame, const std::string& build);
   ~ChromeMiniInstaller() {}
 
   enum RepairChrome {
@@ -33,6 +34,8 @@ class ChromeMiniInstaller {
   void InstallFullInstaller(bool over_install);
 
   void InstallUsingMultiInstall();
+
+  void InstallChromeFrameUsingMultiInstall();
 
   // Installs chrome.
   void Install();
@@ -65,8 +68,6 @@ class ChromeMiniInstaller {
 
   // This method will perform a over install
   void OverInstall();
-
-  void SetBuildUnderTest(const std::string& build);
 
  private:
   // Will clean up the machine if Chrome install is messed up.
@@ -150,7 +151,7 @@ class ChromeMiniInstaller {
   // Build under test.
   std::string build_;
   // Build numbers.
-  std::string current_build_, previous_build_;
+  std::string current_build_, current_diff_build_, previous_build_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMiniInstaller);
 };

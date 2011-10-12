@@ -49,27 +49,6 @@ void MiniInstallerTestUtil::CloseProcesses(
   ASSERT_EQ(0, base::GetProcessCount(executable_name, NULL));
 }
 
-bool MiniInstallerTestUtil::CloseWindow(const wchar_t* window_name,
-                                        UINT message) {
-  int timer = 0;
-  bool return_val = false;
-  HWND hndl = FindWindow(NULL, window_name);
-  while (hndl == NULL && (timer < 60000)) {
-    hndl = FindWindow(NULL, window_name);
-    base::PlatformThread::Sleep(200);
-    timer = timer + 200;
-  }
-  if (hndl != NULL) {
-    LRESULT _result = SendMessage(hndl, message, 1, 0);
-    return_val = true;
-  }
-  return return_val;
-}
-
-bool IsNewer(const FileInfo& file_rbegin, const FileInfo& file_rend) {
-  return (file_rbegin.creation_time_ > file_rend.creation_time_);
-}
-
 FilePath MiniInstallerTestUtil::GetFilePath(const wchar_t* exe_name) {
   FilePath installer_path;
   PathService::Get(base::DIR_EXE, &installer_path);
