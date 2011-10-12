@@ -203,8 +203,6 @@ unsigned int IOSurfaceImageTransportSurface::GetBackingFrameBufferObject() {
 }
 
 bool IOSurfaceImageTransportSurface::SwapBuffers() {
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
   glFlush();
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
@@ -238,10 +236,15 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
 
   size_ = size;
 
-  if (texture_id_)
+  if (texture_id_) {
     glDeleteTextures(1, &texture_id_);
+    texture_id_ = 0;
+  }
 
   glGenTextures(1, &texture_id_);
+
+  GLint previous_texture_id = 0;
+  glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &previous_texture_id);
 
   // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on
   // Mac OS X and is required for IOSurface interoperability.
@@ -251,6 +254,11 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
   glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  GLint previous_fbo_id = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previous_fbo_id);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
 
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                             GL_COLOR_ATTACHMENT0_EXT,
@@ -295,6 +303,9 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
 
   io_surface_id_ = io_surface_support->IOSurfaceGetID(io_surface_);
   glFlush();
+
+  glBindTexture(target, previous_texture_id);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previous_fbo_id);
 
   GpuHostMsg_AcceleratedSurfaceNew_Params params;
   params.width = size_.width();
@@ -374,7 +385,12 @@ unsigned int TransportDIBImageTransportSurface::GetBackingFrameBufferObject() {
 bool TransportDIBImageTransportSurface::SwapBuffers() {
   DCHECK_NE(shared_mem_.get(), static_cast<void*>(NULL));
 
-  GLint current_alignment;
+  GLint previous_fbo_id = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previous_fbo_id);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
+
+  GLint current_alignment = 0;
   glGetIntegerv(GL_PACK_ALIGNMENT, &current_alignment);
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
   glReadPixels(0, 0,
@@ -383,6 +399,8 @@ bool TransportDIBImageTransportSurface::SwapBuffers() {
                GL_UNSIGNED_INT_8_8_8_8_REV,
                shared_mem_->memory());
   glPixelStorei(GL_PACK_ALIGNMENT, current_alignment);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previous_fbo_id);
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_id = next_id_;
@@ -415,7 +433,15 @@ void TransportDIBImageTransportSurface::OnResize(gfx::Size size) {
   if (!render_buffer_id_)
     glGenRenderbuffersEXT(1, &render_buffer_id_);
 
+  GLint previous_fbo_id = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previous_fbo_id);
+
+  GLint previous_renderbuffer_id = 0;
+  glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &previous_renderbuffer_id);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, render_buffer_id_);
+
   glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
                            GL_RGBA,
                            size_.width(), size_.height());
@@ -423,7 +449,9 @@ void TransportDIBImageTransportSurface::OnResize(gfx::Size size) {
                                GL_COLOR_ATTACHMENT0_EXT,
                                GL_RENDERBUFFER_EXT,
                                render_buffer_id_);
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previous_renderbuffer_id);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previous_fbo_id);
 
   GpuHostMsg_AcceleratedSurfaceNew_Params params;
   params.width = size_.width();
