@@ -643,6 +643,7 @@ class ThreadSanitizerBase(object):
     ret += ["--cut_stack_below=MessageLoop*Run"]
     ret += ["--cut_stack_below=RunnableMethod*"]
     ret += ["--cut_stack_below=RunnableFunction*"]
+    ret += ["--cut_stack_below=DispatchToMethod*"]
 
     return ret
 
@@ -824,7 +825,8 @@ class DrMemory(BaseTool):
     proc += ["-callstack_truncate_below",
              "main,BaseThreadInitThunk,"+
              "testing*Test*Run*,testing::internal::Handle*Exceptions*,"+
-             "MessageLoop::Run,RunnableMethod*,RunnableFunction*"]
+             "MessageLoop::Run,"+
+             "RunnableMethod*,RunnableFunction*,DispatchToMethod*"]
     proc += ["-callstack_modname_hide",
              "*.exe,chrome.dll"]
 
