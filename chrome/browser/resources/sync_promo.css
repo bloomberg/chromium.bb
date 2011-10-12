@@ -86,3 +86,19 @@ h1 {
   font-size: 85%;
   margin: 0 10px;
 }
+
+#promo-info-pane {
+  height: 186px;
+  position: relative;
+}
+
+#promo-info-pane > * {
+  -webkit-transition: opacity .2s linear;
+  opacity: 1;
+  position: absolute;
+}
+
+#promo-info-pane > [hidden] {
+  display: inline-block; /* Override default user-agent styles. */
+  opacity: 0;
+}

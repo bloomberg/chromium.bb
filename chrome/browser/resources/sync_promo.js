@@ -132,17 +132,45 @@ cr.define('sync_promo', function() {
       };
       $('confirm-everything-cancel').addEventListener('click', cancelFunc);
       $('choose-datatypes-cancel').addEventListener('click', cancelFunc);
+
+      this.infographic_ = $('promo-infographic');
+      this.learnMore_ = $('promo-information');
+
+      this.infographic_.addEventListener('webkitTransitionEnd',
+                                         this.toggleHidden_.bind(this));
+      this.learnMore_.addEventListener('webkitTransitionEnd',
+                                       this.toggleHidden_.bind(this));
     },
 
-    // Shows or hides the sync information.
-    // @param {Boolean} show True if sync information should be shown, false
-    //     otherwise.
-    // @private
+    /**
+     * Remove the [hidden] attribute from the node that was not previously
+     * transitioning.
+     * @param {Event} e A -webkit-transition end event.
+     * @private
+     */
+    toggleHidden_: function(e) {
+      // Only show the other element if the target of this event was hidden
+      // (showing also triggers a transition end).
+      if (e.target.hidden) {
+        if (e.target === this.infographic_)
+          this.learnMore_.hidden = false;
+        else
+          this.infographic_.hidden = false;
+      }
+    },
+
+    /**
+     * Shows or hides the sync information.
+     * @param {Boolean} show True if sync information should be shown, false
+     *     otherwise.
+     * @private
+     */
     showLearnMore_: function(show) {
       $('promo-learn-more-show').hidden = show;
       $('promo-learn-more-hide').hidden = !show;
-      $('promo-infographic').hidden = show;
-      $('promo-information').hidden = !show;
+      // Setting [hidden] triggers a transition, which (when ended) will trigger
+      // this.toggleHidden_.
+      (show ? this.infographic_ : this.learnMore_).hidden = true;
     },
 
     /** @inheritDoc */
