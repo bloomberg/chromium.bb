@@ -103,7 +103,6 @@
       # crbug.com/47935
       '-popups.PopupsTest.testBlockedPopupNotShowInHistory',
       # crbug.com/83827
-      '-popups.PopupsTest.testUnblockedPopupShowsInHistory',
       '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',

@@ -146,9 +146,10 @@ class PopupsTest(pyauto.PyUITest):
     self.NavigateToURL(file_url)
     self.assertEqual(1, len(self.GetBlockedPopupsInfo()))
     self.UnblockAndLaunchBlockedPopup(0)
-    history = self.GetHistoryInfo().History()
-    self.assertEqual(2, len(history))
-    self.assertEqual('Popup Success!', history[0]['title'])
+    self.assertTrue(self.WaitUntil(
+        lambda: len(self.GetHistoryInfo().History()) == 2))
+    self.assertEqual('Popup Success!',
+        self.GetHistoryInfo().History()[0]['title'])
 
   def testBlockedPopupNotShowInHistory(self):
     """Verify that a blocked popup does not show up in history."""
