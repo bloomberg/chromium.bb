@@ -433,8 +433,10 @@ void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
   BrowserVector browsers_to_close;
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    if ((*i)->profile() == profile)
+    if (BrowserMatches(*i, profile, Browser::FEATURE_NONE,
+        kMatchOriginalProfile)) {
       browsers_to_close.push_back(*i);
+    }
   }
 
   for (BrowserVector::const_iterator i = browsers_to_close.begin();
