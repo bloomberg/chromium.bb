@@ -4156,6 +4156,16 @@ void RenderViewImpl::PpapiPluginFocusChanged() {
   UpdateInputMethod();
 }
 
+void RenderViewImpl::PpapiPluginTextInputTypeChanged() {
+  UpdateInputMethod();
+}
+
+void RenderViewImpl::PpapiPluginCancelComposition() {
+  Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
+  ui::Range range(ui::Range::InvalidRange());
+  Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
+}
+
 void RenderViewImpl::RequestRemoteAccessClientFirewallTraversal() {
   Send(new ViewHostMsg_RequestRemoteAccessClientFirewallTraversal(routing_id_));
 }
@@ -4165,13 +4175,13 @@ void RenderViewImpl::OnImeSetComposition(
     const std::vector<WebKit::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
-  // Until PPAPI has an interface for handling IME events, we skip sending
-  // OnImeSetComposition. Otherwise the composition is canceled when a
-  // non-editable DOM element is focused.
-  //
-  // TODO(kinaba) This temporal remedy can be removed after PPAPI is extended
-  // with an IME handling interface.
-  if (!pepper_delegate_.IsPluginFocused()) {
+  if (pepper_delegate_.IsPluginFocused()) {
+    // When a PPAPI plugin has focus, we bypass WebKit.
+    pepper_delegate_.OnImeSetComposition(text,
+                                         underlines,
+                                         selection_start,
+                                         selection_end);
+  } else {
 #if defined(OS_WIN)
     // When a plug-in has focus, we create platform-specific IME data used by
     // our IME emulator and send it directly to the focused plug-in, i.e. we
@@ -4208,20 +4218,8 @@ void RenderViewImpl::OnImeSetComposition(
 void RenderViewImpl::OnImeConfirmComposition(
       const string16& text, const ui::Range& replacement_range) {
   if (pepper_delegate_.IsPluginFocused()) {
-    // TODO(kinaba) Until PPAPI has an interface for handling IME events, we
-    // send character events.
-    for (size_t i = 0; i < text.size(); ++i) {
-      WebKit::WebKeyboardEvent char_event;
-      char_event.type = WebKit::WebInputEvent::Char;
-      char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
-      char_event.modifiers = 0;
-      char_event.windowsKeyCode = text[i];
-      char_event.nativeKeyCode = text[i];
-      char_event.text[0] = text[i];
-      char_event.unmodifiedText[0] = text[i];
-      if (webwidget_)
-        webwidget_->handleInputEvent(char_event);
-    }
+    // When a PPAPI plugin has focus, we bypass WebKit.
+    pepper_delegate_.OnImeConfirmComposition(text);
   } else {
 #if defined(OS_WIN)
     // Same as OnImeSetComposition(), we send the text from IMEs directly to
@@ -4242,29 +4240,18 @@ void RenderViewImpl::OnImeConfirmComposition(
 }
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {
-  if (pepper_delegate_.IsPluginFocused()) {
-#if !defined(TOUCH_UI)
-    // TODO(kinaba) Until PPAPI has an interface for handling IME events, we
-    // consider all the parts of PPAPI plugins are accepting text inputs.
-    return ui::TEXT_INPUT_TYPE_TEXT;
-#else
-    // Disable keyboard input in flash for touch ui until PPAPI can support IME
-    // events.
-    return ui::TEXT_INPUT_TYPE_NONE;
-#endif
-  }
-  return RenderWidget::GetTextInputType();
+  return pepper_delegate_.IsPluginFocused() ?
+      pepper_delegate_.GetTextInputType() : RenderWidget::GetTextInputType();
+}
+
+gfx::Rect RenderViewImpl::GetCaretBounds() {
+  return pepper_delegate_.IsPluginFocused() ?
+      pepper_delegate_.GetCaretBounds() : RenderWidget::GetCaretBounds();
 }
 
 bool RenderViewImpl::CanComposeInline() {
-  if (pepper_delegate_.IsPluginFocused()) {
-    // TODO(kinaba) Until PPAPI has an interface for handling IME events, there
-    // is no way for the browser to know whether the plugin is capable of
-    // drawing composition text.  We assume plugins are incapable and let the
-    // browser handle composition display for now.
-    return false;
-  }
-  return true;
+  return pepper_delegate_.IsPluginFocused() ?
+      pepper_delegate_.CanComposeInline() : true;
 }
 
 #if defined(OS_WIN)

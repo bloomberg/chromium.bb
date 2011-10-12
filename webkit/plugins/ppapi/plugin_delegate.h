@@ -246,7 +246,14 @@ class PluginDelegate {
   };
 
   // Notification that the given plugin is focused or unfocused.
-  virtual void PluginFocusChanged(bool focused) = 0;
+  virtual void PluginFocusChanged(webkit::ppapi::PluginInstance* instance,
+                                  bool focused) = 0;
+  // Notification that the text input status of the given plugin is changed.
+  virtual void PluginTextInputTypeChanged(
+      webkit::ppapi::PluginInstance* instance) = 0;
+  // Notification that the plugin requested to cancel the current composition.
+  virtual void PluginRequestedCancelComposition(
+      webkit::ppapi::PluginInstance* instance) = 0;
 
   // Notification that the given plugin has crashed. When a plugin crashes, all
   // instances associated with that plugin will notify that they've crashed via

@@ -665,7 +665,7 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
     : render_view_(render_view),
       has_saved_context_menu_action_(false),
       saved_context_menu_action_(0),
-      is_pepper_plugin_focused_(false),
+      focused_plugin_(NULL),
       mouse_lock_owner_(NULL),
       mouse_locked_(false),
       pending_lock_request_(false),
@@ -849,10 +849,108 @@ PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
   return NULL;
 }
 
-void PepperPluginDelegateImpl::PluginFocusChanged(bool focused) {
-  is_pepper_plugin_focused_ = focused;
+void PepperPluginDelegateImpl::PluginFocusChanged(
+    webkit::ppapi::PluginInstance* instance,
+    bool focused) {
+  if (focused)
+    focused_plugin_ = instance;
+  else if (focused_plugin_ == instance)
+    focused_plugin_ = NULL;
   if (render_view_)
     render_view_->PpapiPluginFocusChanged();
+}
+
+void PepperPluginDelegateImpl::PluginTextInputTypeChanged(
+    webkit::ppapi::PluginInstance* instance) {
+  if (focused_plugin_ == instance && render_view_)
+    render_view_->PpapiPluginTextInputTypeChanged();
+}
+
+void PepperPluginDelegateImpl::PluginRequestedCancelComposition(
+    webkit::ppapi::PluginInstance* instance) {
+  if (focused_plugin_ == instance && render_view_)
+    render_view_->PpapiPluginCancelComposition();
+}
+
+void PepperPluginDelegateImpl::OnImeSetComposition(
+    const string16& text,
+    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    int selection_start,
+    int selection_end) {
+  if (!IsPluginAcceptingCompositionEvents()) {
+    composition_text_ = text;
+  } else {
+    // TODO(kinaba) currently all composition events are sent directly to
+    // plugins. Use DOM event mechanism after WebKit is made aware about
+    // plugins that support composition.
+    // The code below mimics the behavior of WebCore::Editor::setComposition.
+
+    // Empty -> nonempty: composition started.
+    if (composition_text_.empty() && !text.empty())
+      focused_plugin_->HandleCompositionStart(string16());
+    // Nonempty -> empty: composition canceled.
+    if (!composition_text_.empty() && text.empty())
+       focused_plugin_->HandleCompositionEnd(string16());
+    composition_text_ = text;
+    // Nonempty: composition is ongoing.
+    if (!composition_text_.empty()) {
+      focused_plugin_->HandleCompositionUpdate(composition_text_, underlines,
+                                               selection_start, selection_end);
+    }
+  }
+}
+
+void PepperPluginDelegateImpl::OnImeConfirmComposition(const string16& text) {
+  // Here, text.empty() has a special meaning. It means to commit the last
+  // update of composition text (see RenderWidgetHost::ImeConfirmComposition()).
+  const string16& last_text = text.empty() ? composition_text_ : text;
+
+  // last_text is empty only when both text and composition_text_ is. Ignore it.
+  if (last_text.empty())
+    return;
+
+  if (!IsPluginAcceptingCompositionEvents()) {
+    for (size_t i = 0; i < text.size(); ++i) {
+      WebKit::WebKeyboardEvent char_event;
+      char_event.type = WebKit::WebInputEvent::Char;
+      char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
+      char_event.modifiers = 0;
+      char_event.windowsKeyCode = last_text[i];
+      char_event.nativeKeyCode = last_text[i];
+      char_event.text[0] = last_text[i];
+      char_event.unmodifiedText[0] = last_text[i];
+      if (render_view_->webwidget())
+        render_view_->webwidget()->handleInputEvent(char_event);
+    }
+  } else {
+    // Mimics the order of events sent by WebKit.
+    // See WebCore::Editor::setComposition() for the corresponding code.
+    focused_plugin_->HandleCompositionEnd(last_text);
+    focused_plugin_->HandleTextInput(last_text);
+  }
+  composition_text_.clear();
+}
+
+gfx::Rect PepperPluginDelegateImpl::GetCaretBounds() const {
+  if (!focused_plugin_)
+    return gfx::Rect(0, 0, 0, 0);
+  return focused_plugin_->GetCaretBounds();
+}
+
+ui::TextInputType PepperPluginDelegateImpl::GetTextInputType() const {
+  if (!focused_plugin_)
+    return ui::TEXT_INPUT_TYPE_NONE;
+  return focused_plugin_->text_input_type();
+}
+
+bool PepperPluginDelegateImpl::IsPluginAcceptingCompositionEvents() const {
+  if (!focused_plugin_)
+    return false;
+  return focused_plugin_->IsPluginAcceptingCompositionEvents();
+}
+
+bool PepperPluginDelegateImpl::CanComposeInline() const {
+  return IsPluginAcceptingCompositionEvents();
 }
 
 void PepperPluginDelegateImpl::PluginCrashed(
@@ -1053,7 +1151,7 @@ void PepperPluginDelegateImpl::OnSetFocus(bool has_focus) {
 }
 
 bool PepperPluginDelegateImpl::IsPluginFocused() const {
-  return is_pepper_plugin_focused_;
+  return focused_plugin_ != NULL;
 }
 
 void PepperPluginDelegateImpl::OnLockMouseACK(bool succeeded) {

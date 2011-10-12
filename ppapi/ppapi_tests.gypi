@@ -313,6 +313,16 @@
           ],
         },
         {
+          'target_name': 'ppapi_example_ime',
+          'dependencies': [
+            'ppapi_example_skeleton',
+            'ppapi.gyp:ppapi_cpp',
+          ],
+          'sources': [
+            'examples/ime/ime.cc',
+          ],
+        },
+        {
           'target_name': 'ppapi_example_paint_manager',
           'dependencies': [
             'ppapi_example_skeleton',

@@ -18,7 +18,15 @@ MockPluginDelegate::MockPluginDelegate() {
 MockPluginDelegate::~MockPluginDelegate() {
 }
 
-void MockPluginDelegate::PluginFocusChanged(bool focused) {
+void MockPluginDelegate::PluginFocusChanged(PluginInstance* instance,
+                                            bool focused) {
+}
+
+void MockPluginDelegate::PluginTextInputTypeChanged(PluginInstance* instance) {
+}
+
+void MockPluginDelegate::PluginRequestedCancelComposition(
+    PluginInstance* instance) {
 }
 
 void MockPluginDelegate::PluginCrashed(PluginInstance* instance) {

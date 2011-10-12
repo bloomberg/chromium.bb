@@ -4,6 +4,7 @@ include_rules = [
   "+ppapi/thunk",
   "+printing",
   "+media/video",
+  "+ui/base/ime",
 
   # This should technically not be allowed. Brett is refactoring this and will
   # move this file to a more proper shared location in a future iteration.

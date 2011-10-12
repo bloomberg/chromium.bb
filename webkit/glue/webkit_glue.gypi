@@ -116,6 +116,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         'webkit_resources',
         'webkit_strings',

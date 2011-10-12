@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/proxy/proxy_channel.h"
+#include "ui/base/ime/text_input_type.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
@@ -46,6 +47,7 @@ class PluginModule;
 namespace WebKit {
 class WebFileChooserCompletion;
 class WebMouseEvent;
+struct WebCompositionUnderline;
 struct WebFileChooserParams;
 }
 
@@ -166,8 +168,20 @@ class PepperPluginDelegateImpl
   // notifies all of the plugins.
   void OnSetFocus(bool has_focus);
 
-  // Returns whether or not a Pepper plugin is focused.
+  // IME status.
   bool IsPluginFocused() const;
+  gfx::Rect GetCaretBounds() const;
+  ui::TextInputType GetTextInputType() const;
+  bool IsPluginAcceptingCompositionEvents() const;
+  bool CanComposeInline() const;
+
+  // IME events.
+  void OnImeSetComposition(
+      const string16& text,
+      const std::vector<WebKit::WebCompositionUnderline>& underlines,
+      int selection_start,
+      int selection_end);
+  void OnImeConfirmComposition(const string16& text);
 
   // Notification that the request to lock the mouse has completed.
   void OnLockMouseACK(bool succeeded);
@@ -180,7 +194,12 @@ class PepperPluginDelegateImpl
   bool HandleMouseEvent(const WebKit::WebMouseEvent& event);
 
   // PluginDelegate implementation.
-  virtual void PluginFocusChanged(bool focused) OVERRIDE;
+  virtual void PluginFocusChanged(webkit::ppapi::PluginInstance* instance,
+                                  bool focused) OVERRIDE;
+  virtual void PluginTextInputTypeChanged(
+      webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual void PluginRequestedCancelComposition(
+      webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void PluginCrashed(webkit::ppapi::PluginInstance* instance);
   virtual void InstanceCreated(
       webkit::ppapi::PluginInstance* instance);
@@ -359,7 +378,11 @@ class PepperPluginDelegateImpl
   BrokerMap pending_connect_broker_;
 
   // Whether or not the focus is on a PPAPI plugin
-  bool is_pepper_plugin_focused_;
+  webkit::ppapi::PluginInstance* focused_plugin_;
+
+  // Current text input composition text. Empty if no composition is in
+  // progress.
+  string16 composition_text_;
 
   // Set of instances to receive a notification when the enterprise policy has
   // been updated.

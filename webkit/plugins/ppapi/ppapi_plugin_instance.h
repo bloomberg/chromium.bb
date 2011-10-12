@@ -22,6 +22,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/function_group_base.h"
@@ -31,6 +32,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
@@ -48,14 +50,11 @@ struct PPP_Zoom_Dev;
 class SkBitmap;
 class TransportDIB;
 
-namespace gfx {
-class Rect;
-}
-
 namespace WebKit {
-struct WebCursorInfo;
 class WebInputEvent;
 class WebPluginContainer;
+struct WebCompositionUnderline;
+struct WebCursorInfo;
 }
 
 namespace ppapi {
@@ -166,6 +165,26 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   void HandlePolicyUpdate(const std::string& policy_json);
   PP_Var GetInstanceObject();
   void ViewChanged(const gfx::Rect& position, const gfx::Rect& clip);
+
+  // Handlers for composition events.
+  bool HandleCompositionStart(const string16& text);
+  bool HandleCompositionUpdate(
+      const string16& text,
+      const std::vector<WebKit::WebCompositionUnderline>& underlines,
+      int selection_start,
+      int selection_end);
+  bool HandleCompositionEnd(const string16& text);
+  bool HandleTextInput(const string16& text);
+
+  // Implementation of composition API.
+  void UpdateCaretPosition(const gfx::Rect& caret,
+                           const gfx::Rect& bounding_box);
+  void SetTextInputType(ui::TextInputType type);
+
+  // Gets the current text input status.
+  ui::TextInputType text_input_type() const { return text_input_type_; }
+  gfx::Rect GetCaretBounds() const;
+  bool IsPluginAcceptingCompositionEvents() const;
 
   // Notifications about focus changes, see has_webkit_focus_ below.
   void SetWebKitFocus(bool has_focus);
@@ -412,6 +431,17 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
 
   void DoSetCursor(WebKit::WebCursorInfo* cursor);
 
+  // Internal helper functions for HandleCompositionXXX().
+  bool SendCompositionEventToPlugin(
+      PP_InputEvent_Type type,
+      const string16& text);
+  bool SendCompositionEventWithUnderlineInformationToPlugin(
+      PP_InputEvent_Type type,
+      const string16& text,
+      const std::vector<WebKit::WebCompositionUnderline>& underlines,
+      int selection_start,
+      int selection_end);
+
   // Checks if the security origin of the document containing this instance can
   // assess the security origin of the main frame document.
   bool CanAccessMainFrame() const;
@@ -554,6 +584,12 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // and not. The bits are PP_INPUTEVENT_CLASS_*.
   uint32_t input_event_mask_;
   uint32_t filtered_input_event_mask_;
+
+  // Text composition status.
+  ui::TextInputType text_input_type_;
+  gfx::Rect text_input_caret_;
+  gfx::Rect text_input_caret_bounds_;
+  bool text_input_caret_set_;
 
   PP_CompletionCallback lock_mouse_callback_;
 

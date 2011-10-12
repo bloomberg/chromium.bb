@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
@@ -34,6 +35,7 @@
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/url_util_impl.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
@@ -133,6 +135,20 @@ typedef bool (*RenderPDFPageToDCProc)(
 #endif  // defined(OS_WIN)
 
 namespace {
+
+#if !defined(TOUCH_UI)
+// The default text input type is to regard the plugin always accept text input.
+// This is for allowing users to use input methods even on completely-IME-
+// unaware plugins (e.g., PPAPI Flash or PDF plugin for M16).
+// Plugins need to explicitly opt out the text input mode if they know
+// that they don't accept texts.
+const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_TEXT;
+#else
+// On the other hand, for touch ui, accepting text input implies to pop up
+// virtual keyboard always. It makes IME-unaware plugins almost unusable,
+// and hence is disabled by default (codereview.chromium.org/7800044).
+const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_NONE;
+#endif
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name) \
     COMPILE_ASSERT(static_cast<int>(WebCursorInfo::webkit_name) \
@@ -266,6 +282,10 @@ PluginInstance::PluginInstance(
       sad_plugin_(NULL),
       input_event_mask_(0),
       filtered_input_event_mask_(0),
+      text_input_type_(kPluginDefaultTextInputType),
+      text_input_caret_(0, 0, 0, 0),
+      text_input_caret_bounds_(0, 0, 0, 0),
+      text_input_caret_set_(false),
       lock_mouse_callback_(PP_BlockUntilComplete()) {
   pp_instance_ = ResourceTracker::Get()->AddInstance(this);
 
@@ -475,6 +495,148 @@ bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
       pp_instance(), loader->pp_resource()));
 }
 
+bool PluginInstance::SendCompositionEventToPlugin(PP_InputEvent_Type type,
+                                                  const string16& text) {
+  std::vector<WebKit::WebCompositionUnderline> empty;
+  return SendCompositionEventWithUnderlineInformationToPlugin(
+      type, text, empty, static_cast<int>(text.size()),
+      static_cast<int>(text.size()));
+}
+
+bool PluginInstance::SendCompositionEventWithUnderlineInformationToPlugin(
+    PP_InputEvent_Type type,
+    const string16& text,
+    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    int selection_start,
+    int selection_end) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
+
+  if (!LoadInputEventInterface())
+    return false;
+
+  PP_InputEvent_Class event_class = PP_INPUTEVENT_CLASS_IME;
+  if (!(filtered_input_event_mask_ & event_class) &&
+      !(input_event_mask_ & event_class))
+    return false;
+
+  ::ppapi::InputEventData event;
+  event.event_type = type;
+  event.event_time_stamp = ::ppapi::TimeTicksToPPTimeTicks(
+      base::TimeTicks::Now());
+
+  // Convert UTF16 text to UTF8 with offset conversion.
+  std::vector<size_t> utf16_offsets;
+  utf16_offsets.push_back(selection_start);
+  utf16_offsets.push_back(selection_end);
+  for (size_t i = 0; i < underlines.size(); ++i) {
+    utf16_offsets.push_back(underlines[i].startOffset);
+    utf16_offsets.push_back(underlines[i].endOffset);
+  }
+  std::vector<size_t> utf8_offsets(utf16_offsets);
+  event.character_text = UTF16ToUTF8AndAdjustOffsets(text, &utf8_offsets);
+
+  // Set the converted selection range.
+  event.composition_selection_start = (utf8_offsets[0] == std::string::npos ?
+      event.character_text.size() : utf8_offsets[0]);
+  event.composition_selection_end = (utf8_offsets[1] == std::string::npos ?
+      event.character_text.size() : utf8_offsets[1]);
+
+  // Set the converted segmentation points.
+  // Be sure to add 0 and size(), and remove duplication or errors.
+  std::set<size_t> offset_set(utf8_offsets.begin()+2, utf8_offsets.end());
+  offset_set.insert(0);
+  offset_set.insert(event.character_text.size());
+  offset_set.erase(std::string::npos);
+  event.composition_segment_offsets.assign(offset_set.begin(),
+                                           offset_set.end());
+
+  // Set the composition target.
+  for (size_t i = 0; i < underlines.size(); ++i) {
+    if (underlines[i].thick) {
+      std::vector<uint32_t>::iterator it =
+          std::find(event.composition_segment_offsets.begin(),
+                    event.composition_segment_offsets.end(),
+                    utf8_offsets[2*i+2]);
+      if (it != event.composition_segment_offsets.end()) {
+        event.composition_target_segment =
+            it - event.composition_segment_offsets.begin();
+        break;
+      }
+    }
+  }
+
+  // Send the event.
+  bool handled = false;
+  if (filtered_input_event_mask_ & event_class)
+    event.is_filtered = true;
+  else
+    handled = true; // Unfiltered events are assumed to be handled.
+  scoped_refptr<InputEventImpl> event_resource(
+      new InputEventImpl(InputEventImpl::InitAsImpl(),
+                         pp_instance(), event));
+  handled |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
+      pp_instance(), event_resource->pp_resource()));
+  return handled;
+}
+
+bool PluginInstance::HandleCompositionStart(const string16& text) {
+  return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_COMPOSITION_START,
+                                      text);
+}
+
+bool PluginInstance::HandleCompositionUpdate(
+    const string16& text,
+    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    int selection_start,
+    int selection_end) {
+  return SendCompositionEventWithUnderlineInformationToPlugin(
+      PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE,
+      text, underlines, selection_start, selection_end);
+}
+
+bool PluginInstance::HandleCompositionEnd(const string16& text) {
+  return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_COMPOSITION_END,
+                                      text);
+}
+
+bool PluginInstance::HandleTextInput(const string16& text) {
+  return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_TEXT,
+                                      text);
+}
+
+void PluginInstance::UpdateCaretPosition(const gfx::Rect& caret,
+                                         const gfx::Rect& bounding_box) {
+  text_input_caret_ = caret;
+  text_input_caret_bounds_ = bounding_box;
+  text_input_caret_set_ = true;
+}
+
+void PluginInstance::SetTextInputType(ui::TextInputType type) {
+  text_input_type_ = type;
+}
+
+bool PluginInstance::IsPluginAcceptingCompositionEvents() const {
+  return (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_IME) ||
+      (input_event_mask_ & PP_INPUTEVENT_CLASS_IME);
+}
+
+gfx::Rect PluginInstance::GetCaretBounds() const {
+  if (!text_input_caret_set_) {
+    // If it is never set by the plugin, use the bottom left corner.
+    return gfx::Rect(position().x(), position().y()+position().height(), 0, 0);
+  }
+
+  // TODO(kinaba) Take CSS transformation into accont.
+  // TODO(kinaba) Take bounding_box into account. On some platforms, an
+  // "exclude rectangle" where candidate window must avoid the region can be
+  // passed to IME. Currently, we pass only the caret rectangle because
+  // it is the only information supported uniformly in Chromium.
+  gfx::Rect caret(text_input_caret_);
+  caret.Offset(position().origin());
+  return caret;
+}
+
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
                                       WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PluginInstance::HandleInputEvent");
@@ -583,7 +745,7 @@ void PluginInstance::SetWebKitFocus(bool has_focus) {
   bool old_plugin_focus = PluginHasFocus();
   has_webkit_focus_ = has_focus;
   if (PluginHasFocus() != old_plugin_focus) {
-    delegate()->PluginFocusChanged(PluginHasFocus());
+    delegate()->PluginFocusChanged(this, PluginHasFocus());
     instance_interface_->DidChangeFocus(pp_instance(),
                                         PP_FromBool(PluginHasFocus()));
   }

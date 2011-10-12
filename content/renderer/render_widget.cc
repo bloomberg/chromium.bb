@@ -1302,10 +1302,7 @@ void RenderWidget::UpdateInputMethod() {
 
   ui::TextInputType new_type = GetTextInputType();
   bool new_can_compose_inline = CanComposeInline();
-  WebRect new_caret_bounds;
-
-  if (webwidget_)
-   new_caret_bounds = webwidget_->caretOrSelectionBounds();
+  WebRect new_caret_bounds = GetCaretBounds();
 
   // Only sends text input type and caret bounds to the browser process if they
   // are changed.
@@ -1319,6 +1316,13 @@ void RenderWidget::UpdateInputMethod() {
   }
 }
 
+gfx::Rect RenderWidget::GetCaretBounds() {
+  if (!webwidget_)
+    return gfx::Rect();
+  return webwidget_->caretOrSelectionBounds();
+}
+
+// Check WebKit::WebTextInputType and ui::TextInputType is kept in sync.
 COMPILE_ASSERT(int(WebKit::WebTextInputTypeNone) == \
                int(ui::TEXT_INPUT_TYPE_NONE), mismatching_enums);
 COMPILE_ASSERT(int(WebKit::WebTextInputTypeText) == \

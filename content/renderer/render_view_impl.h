@@ -249,6 +249,12 @@ class RenderViewImpl : public RenderWidget,
   // Informs the render view that a PPAPI plugin has gained or lost focus.
   void PpapiPluginFocusChanged();
 
+  // Informs the render view that a PPAPI plugin has changed text input status.
+  void PpapiPluginTextInputTypeChanged();
+
+  // Cancels current composition.
+  void PpapiPluginCancelComposition();
+
   // Request updated policy regarding firewall NAT traversal being enabled.
   void RequestRemoteAccessClientFirewallTraversal();
 
@@ -635,6 +641,7 @@ class RenderViewImpl : public RenderWidget,
   virtual void OnImeConfirmComposition(
       const string16& text, const ui::Range& replacement_range) OVERRIDE;
   virtual ui::TextInputType GetTextInputType() OVERRIDE;
+  virtual gfx::Rect GetCaretBounds() OVERRIDE;
   virtual bool CanComposeInline() OVERRIDE;
   virtual bool WebWidgetHandlesCompositorScheduling() const OVERRIDE;
 
