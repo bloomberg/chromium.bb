@@ -24,10 +24,10 @@
 namespace {
 
 // CRX hash. The extension id is: immdilkhigodmjbnngapbehchmihabbg.
-const uint8 sha2_hash[] = {0x5c, 0x40, 0x30, 0xe3, 0x5d, 0x83, 0x2b, 0xd9,
-                           0x7b, 0xa3, 0x69, 0xae, 0xbc, 0x7c, 0x5e, 0x5a,
-                           0xef, 0xa5, 0xdf, 0x64, 0x6a, 0xe1, 0xc6, 0xdf,
-                           0x23, 0x47, 0x30, 0x2a, 0xde, 0xae, 0x9d, 0xf7};
+const uint8 sha2_hash[] = {0x8c, 0xc3, 0x8b, 0xa7, 0x86, 0xe3, 0xc9, 0x1d,
+                           0xd6, 0x0f, 0x14, 0x72, 0x7c, 0x87, 0x01, 0x16,
+                           0xe2, 0x00, 0x6c, 0x98, 0xbc, 0xfb, 0x14, 0x1b,
+                           0x5c, 0xcd, 0xff, 0x3d, 0xa3, 0x2e, 0x2c, 0x49};
 
 // File name of the internal Flash plugin on different platforms.
 const FilePath::CharType kFlashPluginFileName[] =
@@ -201,7 +201,7 @@ void StartFlashUpdateRegistration(ComponentUpdateService* cus,
 // probably somebody (unknowingly) will pay for the file IO, so usually get
 // the information for free.
 void RegisterNPAPIFlashComponent(ComponentUpdateService* cus) {
-#if defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
   webkit::npapi::PluginList* plugins = webkit::npapi::PluginList::Singleton();
   FilePath path = GetNPAPIFlashBaseDirectory().Append(kFlashPluginFileName);
   plugins->AddExtraPluginPath(path);
