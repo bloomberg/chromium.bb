@@ -5,6 +5,7 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,6 +53,136 @@ bool LayerIsAncestor(const ui::Layer* ancestor, const ui::Layer* layer) {
   while (layer && layer != ancestor)
     layer = layer->parent();
   return layer == ancestor;
+}
+
+// Convenience functions for walking a View tree.
+const views::View* FirstView(const views::View* view) {
+  const views::View* v = view;
+  while (v->has_children())
+    v = v->child_at(0);
+  return v;
+}
+
+const views::View* NextView(const views::View* view) {
+  const views::View* v = view;
+  const views::View* parent = v->parent();
+  if (!parent)
+    return NULL;
+  int next = parent->GetIndexOf(v) + 1;
+  if (next != parent->child_count())
+    return FirstView(parent->child_at(next));
+  return parent;
+}
+
+// Convenience functions for walking a Layer tree.
+const ui::Layer* FirstLayer(const ui::Layer* layer) {
+  const ui::Layer* l = layer;
+  while (l->children().size() > 0)
+    l = l->children()[0];
+  return l;
+}
+
+const ui::Layer* NextLayer(const ui::Layer* layer) {
+  const ui::Layer* parent = layer->parent();
+  if (!parent)
+    return NULL;
+  const std::vector<ui::Layer*> children = parent->children();
+  size_t index;
+  for (index = 0; index < children.size(); index++) {
+    if (children[index] == layer)
+      break;
+  }
+  size_t next = index + 1;
+  if (next < children.size())
+    return FirstLayer(children[next]);
+  return parent;
+}
+
+// Given the root nodes of a View tree and a Layer tree, makes sure the two
+// trees are in sync.
+bool ViewAndLayerTreeAreConsistent(const views::View* view,
+                                   const ui::Layer* layer) {
+  const views::View* v = FirstView(view);
+  const ui::Layer* l = FirstLayer(layer);
+  while (v && l) {
+    // Find the view with a layer.
+    while (v && !v->layer())
+      v = NextView(v);
+    EXPECT_TRUE(v);
+    if (!v)
+      return false;
+
+    // Check if the View tree and the Layer tree are in sync.
+    EXPECT_EQ(l, v->layer());
+    if (v->layer() != l)
+      return false;
+
+    // Check if the visibility states of the View and the Layer are in sync.
+    EXPECT_EQ(l->IsDrawn(), v->IsVisibleInRootView());
+    if (v->IsVisibleInRootView() != l->IsDrawn()) {
+      for (const views::View* vv = v; vv; vv = vv->parent())
+        LOG(ERROR) << "V: " << vv << " " << vv->IsVisible() << " "
+                   << vv->IsVisibleInRootView() << " " << vv->layer();
+      for (const ui::Layer* ll = l; ll; ll = ll->parent())
+        LOG(ERROR) << "L: " << ll << " " << ll->IsDrawn();
+      return false;
+    }
+
+    // Check if the size of the View and the Layer are in sync.
+    EXPECT_EQ(l->bounds(), v->bounds());
+    if (v->bounds() != l->bounds())
+      return false;
+
+    if (v == view || l == layer)
+      return v == view && l == layer;
+
+    v = NextView(v);
+    l = NextLayer(l);
+  }
+
+  return false;
+}
+
+// Constructs a View tree with the specified depth.
+void ConstructTree(views::View* view, int depth) {
+  if (depth == 0)
+    return;
+  int count = base::RandInt(1, 5);
+  for (int i = 0; i < count; i++) {
+    views::View* v = new views::View;
+    view->AddChildView(v);
+    if (base::RandDouble() > 0.5)
+      v->SetPaintToLayer(true);
+    if (base::RandDouble() < 0.2)
+      v->SetVisible(false);
+
+    ConstructTree(v, depth - 1);
+  }
+}
+
+void ScrambleTree(views::View* view) {
+  int count = view->child_count();
+  if (count == 0)
+    return;
+  for (int i = 0; i < count; i++) {
+    ScrambleTree(view->child_at(i));
+  }
+
+  if (count > 1) {
+    int a = base::RandInt(0, count - 1);
+    int b = base::RandInt(0, count - 1);
+
+    views::View* view_a = view->child_at(a);
+    views::View* view_b = view->child_at(b);
+    view->ReorderChildView(view_a, b);
+    view->ReorderChildView(view_b, a);
+  }
+
+  if (!view->layer() && base::RandDouble() < 0.1)
+    view->SetPaintToLayer(true);
+
+  if (base::RandDouble() < 0.1)
+    view->SetVisible(!view->IsVisible());
 }
 
 }
@@ -2864,6 +2995,74 @@ TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
   content_view->layer()->SchedulePaint(gfx::Rect(0, 0, 10, 10));
   GetRootLayer()->DrawTree();
   EXPECT_TRUE(content_view->painted());
+}
+
+// Tests that the visibility of child layers are updated correctly when a View's
+// visibility changes.
+TEST_F(ViewLayerTest, VisibilityChildLayers) {
+  View* v1 = new View;
+  v1->SetPaintToLayer(true);
+  widget()->SetContentsView(v1);
+
+  View* v2 = new View;
+  v1->AddChildView(v2);
+
+  View* v3 = new View;
+  v2->AddChildView(v3);
+  v3->SetVisible(false);
+
+  View* v4 = new View;
+  v4->SetPaintToLayer(true);
+  v3->AddChildView(v4);
+
+  EXPECT_TRUE(v1->layer()->IsDrawn());
+  EXPECT_FALSE(v4->layer()->IsDrawn());
+
+  v2->SetVisible(false);
+  EXPECT_TRUE(v1->layer()->IsDrawn());
+  EXPECT_FALSE(v4->layer()->IsDrawn());
+
+  v2->SetVisible(true);
+  EXPECT_TRUE(v1->layer()->IsDrawn());
+  EXPECT_FALSE(v4->layer()->IsDrawn());
+
+  v2->SetVisible(false);
+  EXPECT_TRUE(v1->layer()->IsDrawn());
+  EXPECT_FALSE(v4->layer()->IsDrawn());
+  EXPECT_TRUE(ViewAndLayerTreeAreConsistent(v1, v1->layer()));
+
+  v3->SetVisible(true);
+  EXPECT_TRUE(v1->layer()->IsDrawn());
+  EXPECT_FALSE(v4->layer()->IsDrawn());
+  EXPECT_TRUE(ViewAndLayerTreeAreConsistent(v1, v1->layer()));
+
+  // Reparent |v3| to |v1|.
+  v1->AddChildView(v3);
+  EXPECT_TRUE(v1->layer()->IsDrawn());
+  EXPECT_TRUE(v4->layer()->IsDrawn());
+  EXPECT_TRUE(ViewAndLayerTreeAreConsistent(v1, v1->layer()));
+}
+
+// This test creates a random View tree, and then randomly reorders child views,
+// reparents views etc. Unrelated changes can appear to break this test. So
+// marking this as FLAKY.
+TEST_F(ViewLayerTest, FLAKY_ViewLayerTreesInSync) {
+  View* content = new View;
+  content->SetPaintToLayer(true);
+  widget()->SetContentsView(content);
+  widget()->Show();
+
+  ConstructTree(content, 5);
+  EXPECT_TRUE(ViewAndLayerTreeAreConsistent(content, content->layer()));
+
+  ScrambleTree(content);
+  EXPECT_TRUE(ViewAndLayerTreeAreConsistent(content, content->layer()));
+
+  ScrambleTree(content);
+  EXPECT_TRUE(ViewAndLayerTreeAreConsistent(content, content->layer()));
+
+  ScrambleTree(content);
+  EXPECT_TRUE(ViewAndLayerTreeAreConsistent(content, content->layer()));
 }
 
 #endif  // VIEWS_COMPOSITOR

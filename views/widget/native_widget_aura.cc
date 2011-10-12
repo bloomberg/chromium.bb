@@ -169,7 +169,7 @@ void NativeWidgetAura::ReorderLayers() {
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
-  NOTIMPLEMENTED();
+//  NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetNativeWindowProperty(const char* name, void* value) {

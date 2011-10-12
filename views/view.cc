@@ -184,6 +184,12 @@ void View::AddChildViewAt(View* view, int index) {
 
   if (use_acceleration_when_possible)
     ReorderLayers();
+
+  // Make sure the visibility of the child layers are correct.
+  // If any of the parent View is hidden, then the layers of the subtree
+  // rooted at |this| should be hidden. Otherwise, all the child layers should
+  // inherit the visibility of the owner View.
+  UpdateLayerVisibility();
 }
 
 void View::ReorderChildView(View* view, int index) {
@@ -374,11 +380,10 @@ void View::SetVisible(bool visible) {
       SchedulePaint();
 
     visible_ = visible;
-    if (layer())
-      layer()->SetVisible(visible_);
 
     // This notifies all sub-views recursively.
     PropagateVisibilityNotifications(this, visible_);
+    UpdateLayerVisibility();
 
     // If we are newly visible, schedule paint.
     if (visible_)
@@ -1129,6 +1134,25 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
   }
 }
 
+void View::UpdateLayerVisibility() {
+  if (!use_acceleration_when_possible)
+    return;
+  bool visible = IsVisible();
+  for (const View* v = parent_; visible && v && !v->layer(); v = v->parent_)
+    visible = v->IsVisible();
+
+  UpdateChildLayerVisibility(visible);
+}
+
+void View::UpdateChildLayerVisibility(bool ancestor_visible) {
+  if (layer()) {
+    layer()->SetVisible(ancestor_visible && IsVisible());
+  } else {
+    for (int i = 0, count = child_count(); i < count; ++i)
+      child_at(i)->UpdateChildLayerVisibility(ancestor_visible && IsVisible());
+  }
+}
+
 void View::UpdateChildLayerBounds(const gfx::Point& offset) {
   if (layer()) {
     layer_property_setter_->SetBounds(layer(), gfx::Rect(offset.x(), offset.y(),
@@ -1467,6 +1491,7 @@ void View::DoRemoveChildView(View* view,
       UnregisterChildrenForVisibleBoundsNotification(view);
     view->PropagateRemoveNotifications(this);
     view->parent_ = NULL;
+    view->UpdateLayerVisibility();
 
     if (delete_removed_view && view->parent_owned())
       view_to_be_deleted.reset(view);
@@ -1747,15 +1772,20 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
 // Accelerated painting --------------------------------------------------------
 
 void View::CreateLayer() {
+  // A new layer is being created for the view. So all the layers of the
+  // sub-tree can inherit the visibility of the corresponding view.
+  for (int i = 0, count = child_count(); i < count; ++i)
+    child_at(i)->UpdateChildLayerVisibility(true);
+
   layer_.reset(new ui::Layer(NULL));
   layer_->set_delegate(this);
   if (layer_property_setter_.get())
     layer_property_setter_->Installed(layer());
   else
     SetLayerPropertySetter(NULL);
-  layer_->SetVisible(IsVisible());
 
   UpdateParentLayers();
+  UpdateLayerVisibility();
 
   // The new layer needs to be ordered in the layer tree according
   // to the view tree. Children of this layer were added in order

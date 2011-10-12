@@ -69,7 +69,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimatorDelegate {
   void MoveToFront(Layer* child);
 
   // Returns the child Layers.
-  const std::vector<Layer*>& children() { return children_; }
+  const std::vector<Layer*>& children() const { return children_; }
 
   // The parent.
   const Layer* parent() const { return parent_; }

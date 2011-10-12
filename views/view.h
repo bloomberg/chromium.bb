@@ -1247,6 +1247,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |parent_layer|.
   void ReparentLayer(const gfx::Point& offset, ui::Layer* parent_layer);
 
+  // Called to update the layer visibility. The layer will be visible if the
+  // View itself, and all its parent Views are visible. This also updates
+  // visibility of the child layers.
+  void UpdateLayerVisibility();
+  void UpdateChildLayerVisibility(bool visible);
+
   // Orphans the layers in this subtree that are parented to layers outside of
   // this subtree.
   void OrphanLayers();
