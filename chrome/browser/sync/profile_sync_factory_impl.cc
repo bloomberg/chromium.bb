@@ -51,7 +51,6 @@ using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::AutofillModelAssociator;
-using browser_sync::AutofillProfileSyncableService;
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
@@ -223,7 +222,7 @@ ProfileSyncFactoryImpl::CreateAutofillProfileSyncComponents(
     WebDataService* web_data_service,
     browser_sync::UnrecoverableErrorHandler* error_handler) {
   AutofillProfileSyncableService* sync_service =
-      new AutofillProfileSyncableService(web_data_service);
+      web_data_service->GetAutofillProfileSyncableService();
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
   GenericChangeProcessor* change_processor =
       new GenericChangeProcessor(sync_service, error_handler, user_share);
