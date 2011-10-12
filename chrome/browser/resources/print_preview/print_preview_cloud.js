@@ -406,6 +406,7 @@ cr.define('cloudprint', function() {
               printers[i]['name'],
               printers[i]['id'],
               printers[i]['name'] == defaultOrLastUsedPrinterName,
+              false,
               false);
           cloudprint.setCloudPrint(option,
                                    printers[i]['name'],
@@ -417,6 +418,7 @@ cr.define('cloudprint', function() {
         addDestinationListOptionAtPosition(lastCloudPrintOptionPos++,
                                            localStrings.getString('signIn'),
                                            SIGN_IN,
+                                           false,
                                            false,
                                            false);
         trackCloudPrinterAdded(SIGN_IN);

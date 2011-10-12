@@ -544,7 +544,7 @@ function fileSelectionCompleted() {
  */
 function setDefaultPrinter(printer_name, cloudPrintData) {
   // Add a placeholder value so the printer list looks valid.
-  addDestinationListOption('', '', true, true);
+  addDestinationListOption('', '', true, true, true);
   if (printer_name) {
     defaultOrLastUsedPrinterName = printer_name;
     if (cloudPrintData) {
@@ -573,36 +573,38 @@ function setPrinters(printers) {
   for (var i = 0; i < printers.length; ++i) {
     var isDefault = (printers[i].deviceName == defaultOrLastUsedPrinterName);
     addDestinationListOption(printers[i].printerName, printers[i].deviceName,
-                             isDefault, false);
+                             isDefault, false, false);
   }
 
   if (printers.length != 0)
-    addDestinationListSeparator();
+    addDestinationListOption('', '', false, true, true);
 
   // Adding option for saving PDF to disk.
   addDestinationListOption(localStrings.getString('printToPDF'),
                            PRINT_TO_PDF,
                            defaultOrLastUsedPrinterName == PRINT_TO_PDF,
+                           false,
                            false);
-  addDestinationListSeparator();
+  addDestinationListOption('', '', false, true, true);
   if (useCloudPrint) {
     addDestinationListOption(localStrings.getString('printWithCloudPrint'),
                              PRINT_WITH_CLOUD_PRINT,
                              false,
+                             false,
                              false);
-    addDestinationListSeparator();
+    addDestinationListOption('', '', false, true, true);
   }
   // Add options to manage printers.
   if (!cr.isChromeOS) {
     addDestinationListOption(localStrings.getString('managePrinters'),
-        MANAGE_LOCAL_PRINTERS, false, false);
+        MANAGE_LOCAL_PRINTERS, false, false, false);
   } else if (useCloudPrint) {
     // Fetch recent printers.
     cloudprint.fetchPrinters(addDestinationListOptionAtPosition, false);
     // Fetch the full printer list.
     cloudprint.fetchPrinters(addDestinationListOptionAtPosition, true);
     addDestinationListOption(localStrings.getString('managePrinters'),
-        MANAGE_CLOUD_PRINTERS, false, false);
+        MANAGE_CLOUD_PRINTERS, false, false, false);
   }
 
   printerList.disabled = false;
@@ -617,15 +619,20 @@ function setPrinters(printers) {
  * @param {string} optionValue specifies the option value.
  * @param {boolean} isDefault is true if the option needs to be selected.
  * @param {boolean} isDisabled is true if the option needs to be disabled.
+ * @param {boolean} isSeparator is true if the option is a visual separator and
+ *     needs to be disabled.
  * @return {Object} The created option.
  */
 function createDestinationListOption(optionText, optionValue, isDefault,
-    isDisabled) {
+    isDisabled, isSeparator) {
   var option = document.createElement('option');
   option.textContent = optionText;
   option.value = optionValue;
   option.selected = isDefault;
-  option.disabled = isDisabled;
+  option.disabled = isSeparator || isDisabled;
+  // Adding attribute for improved accessibility.
+  if (isSeparator)
+    option.setAttribute("role", "separator");
   return option;
 }
 
@@ -638,11 +645,12 @@ function createDestinationListOption(optionText, optionValue, isDefault,
  * @return {Object} The created option.
  */
 function addDestinationListOption(optionText, optionValue, isDefault,
-    isDisabled) {
+    isDisabled, isSeparator) {
   var option = createDestinationListOption(optionText,
                                            optionValue,
                                            isDefault,
-                                           isDisabled);
+                                           isDisabled,
+                                           isSeparator);
   $('printer-list').add(option);
   return option;
 }
@@ -661,24 +669,18 @@ function addDestinationListOptionAtPosition(position,
                                             optionText,
                                             optionValue,
                                             isDefault,
-                                            isDisabled) {
+                                            isDisabled,
+                                            isSeparator) {
   var option = createDestinationListOption(optionText,
                                            optionValue,
                                            isDefault,
-                                           isDisabled);
+                                           isDisabled,
+                                           isSeparator);
   var printerList = $('printer-list');
   var before = printerList[position];
   printerList.add(option, before);
   return option;
 }
-
-/**
- * Adds a separator to the printer destination list.
- */
-function addDestinationListSeparator() {
-  $('printer-list').add(document.createElement('hr'));
-}
-
 /**
  * Sets the color mode for the PDF plugin.
  * Called from PrintPreviewHandler::ProcessColorSetting().
