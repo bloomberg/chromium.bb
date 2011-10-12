@@ -211,6 +211,10 @@ bool CrashService::Initialize(const std::wstring& command_line) {
   if (cmd_line.HasSwitch(kPipeName))
     pipe_name = cmd_line.GetSwitchValueNative(kPipeName);
 
+#ifdef _WIN64
+  pipe_name += L"-x64";
+#endif
+
   if (max_reports > 0) {
     // Create the http sender object.
     sender_ = new CrashReportSender(checkpoint_path.value());

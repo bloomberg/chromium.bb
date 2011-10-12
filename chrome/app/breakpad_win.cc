@@ -665,6 +665,9 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
     pipe_name = kGoogleUpdatePipeName;
     pipe_name += user_sid;
   }
+#ifdef _WIN64
+  pipe_name += L"-x64";
+#endif
 
   // Get the alternate dump directory. We use the temp path.
   wchar_t temp_dir[MAX_PATH] = {0};
