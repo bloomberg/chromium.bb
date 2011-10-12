@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
@@ -122,10 +123,11 @@ class SyncBackendHost {
 
   // Create a SyncBackendHost with a reference to the |frontend| that
   // it serves and communicates to via the SyncFrontend interface (on
-  // the same thread it used to call the constructor).  Does not take
-  // ownership of |sync_prefs|.
+  // the same thread it used to call the constructor).  Must outlive
+  // |sync_prefs|.
   SyncBackendHost(const std::string& name,
-                  Profile* profile, SyncPrefs* sync_prefs);
+                  Profile* profile,
+                  const base::WeakPtr<SyncPrefs>& sync_prefs);
   // For testing.
   // TODO(skrul): Extract an interface so this is not needed.
   SyncBackendHost();
@@ -552,7 +554,7 @@ class SyncBackendHost {
 
   Profile* const profile_;
 
-  SyncPrefs* const sync_prefs_;
+  const base::WeakPtr<SyncPrefs> sync_prefs_;
 
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;

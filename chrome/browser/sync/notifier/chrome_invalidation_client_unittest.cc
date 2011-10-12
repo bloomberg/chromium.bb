@@ -9,6 +9,7 @@
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 #include "google/cacheinvalidation/v2/invalidation-client.h"
 #include "google/cacheinvalidation/v2/types.h"
 #include "google/cacheinvalidation/v2/types.pb.h"
@@ -45,6 +46,14 @@ class MockListener : public ChromeInvalidationClient::Listener {
   MOCK_METHOD1(OnSessionStatusChanged, void(bool));
 };
 
+class MockInvalidationVersionTracker
+    : public InvalidationVersionTracker,
+      public base::SupportsWeakPtr<MockInvalidationVersionTracker> {
+ public:
+  MOCK_CONST_METHOD0(GetAllMaxVersions, InvalidationVersionMap());
+  MOCK_METHOD2(SetMaxVersion, void(syncable::ModelType, int64));
+};
+
 class MockStateWriter : public StateWriter {
  public:
   MOCK_METHOD1(WriteState, void(const std::string&));
@@ -65,6 +74,9 @@ class ChromeInvalidationClientTest : public testing::Test {
  protected:
   virtual void SetUp() {
     client_.Start(kClientId, kClientInfo, kState,
+                  InvalidationVersionMap(),
+                  browser_sync::WeakHandle<InvalidationVersionTracker>(
+                      mock_invalidation_version_tracker_.AsWeakPtr()),
                   &mock_listener_, &mock_state_writer_,
                   fake_base_task_.AsWeakPtr());
   }
@@ -89,6 +101,9 @@ class ChromeInvalidationClientTest : public testing::Test {
     invalidation::AckHandle ack_handle("fakedata");
     EXPECT_CALL(mock_invalidation_client_, Acknowledge(ack_handle));
     client_.Invalidate(&mock_invalidation_client_, inv, ack_handle);
+    // Pump message loop to trigger
+    // InvalidationVersionTracker::SetMaxVersion().
+    message_loop_.RunAllPending();
   }
 
   // |payload| can be NULL, but not |type_name|.
@@ -110,6 +125,8 @@ class ChromeInvalidationClientTest : public testing::Test {
 
   MessageLoop message_loop_;
   StrictMock<MockListener> mock_listener_;
+  StrictMock<MockInvalidationVersionTracker>
+      mock_invalidation_version_tracker_;
   StrictMock<MockStateWriter> mock_state_writer_;
   StrictMock<MockInvalidationClient> mock_invalidation_client_;
   notifier::FakeBaseTask fake_base_task_;
@@ -150,12 +167,16 @@ TEST_F(ChromeInvalidationClientTest, InvalidateBadObjectId) {
 TEST_F(ChromeInvalidationClientTest, InvalidateNoPayload) {
   EXPECT_CALL(mock_listener_,
               OnInvalidate(MakeMap(syncable::BOOKMARKS, "")));
+  EXPECT_CALL(mock_invalidation_version_tracker_,
+              SetMaxVersion(syncable::BOOKMARKS, 1));
   FireInvalidate("BOOKMARK", 1, NULL);
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateWithPayload) {
   EXPECT_CALL(mock_listener_,
               OnInvalidate(MakeMap(syncable::PREFERENCES, "payload")));
+  EXPECT_CALL(mock_invalidation_version_tracker_,
+              SetMaxVersion(syncable::PREFERENCES, 1));
   FireInvalidate("PREFERENCE", 1, "payload");
 }
 
@@ -164,6 +185,8 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersion) {
 
   EXPECT_CALL(mock_listener_,
               OnInvalidate(MakeMap(syncable::APPS, "")));
+  EXPECT_CALL(mock_invalidation_version_tracker_,
+              SetMaxVersion(syncable::APPS, 1));
 
   // Should trigger.
   FireInvalidate("APP", 1, NULL);
@@ -197,23 +220,31 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
   EXPECT_CALL(mock_listener_,
               OnInvalidate(MakeMap(syncable::EXTENSIONS, "")));
 
+  EXPECT_CALL(mock_invalidation_version_tracker_,
+              SetMaxVersion(syncable::APPS, 3));
+  EXPECT_CALL(mock_invalidation_version_tracker_,
+              SetMaxVersion(syncable::EXTENSIONS, 2));
+
   // Should trigger both.
   FireInvalidate("APP", 3, NULL);
   FireInvalidate("EXTENSION", 2, NULL);
 
   Mock::VerifyAndClearExpectations(&mock_listener_);
+  Mock::VerifyAndClearExpectations(&mock_invalidation_version_tracker_);
 
   // Should both be dropped.
   FireInvalidate("APP", 1, NULL);
   FireInvalidate("EXTENSION", 1, NULL);
 
   Mock::VerifyAndClearExpectations(&mock_listener_);
+  Mock::VerifyAndClearExpectations(&mock_invalidation_version_tracker_);
 
   // InvalidateAll shouldn't change any version state.
   EXPECT_CALL(mock_listener_, OnInvalidate(MakeMapFromSet(types, "")));
   FireInvalidateAll();
 
   Mock::VerifyAndClearExpectations(&mock_listener_);
+  Mock::VerifyAndClearExpectations(&mock_invalidation_version_tracker_);
 
   EXPECT_CALL(mock_listener_,
               OnInvalidate(MakeMap(syncable::PREFERENCES, "")));
@@ -221,6 +252,13 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
               OnInvalidate(MakeMap(syncable::EXTENSIONS, "")));
   EXPECT_CALL(mock_listener_,
               OnInvalidate(MakeMap(syncable::APPS, "")));
+
+  EXPECT_CALL(mock_invalidation_version_tracker_,
+              SetMaxVersion(syncable::PREFERENCES, 5));
+  EXPECT_CALL(mock_invalidation_version_tracker_,
+              SetMaxVersion(syncable::EXTENSIONS, 3));
+  EXPECT_CALL(mock_invalidation_version_tracker_,
+              SetMaxVersion(syncable::APPS, 4));
 
   // Should trigger all three.
   FireInvalidate("PREFERENCE", 5, NULL);

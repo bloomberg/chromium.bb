@@ -315,7 +315,8 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 
 void ProfileSyncService::CreateBackend() {
   backend_.reset(
-      new SyncBackendHost(profile_->GetDebugName(), profile_, &sync_prefs_));
+      new SyncBackendHost(profile_->GetDebugName(),
+                          profile_, sync_prefs_.AsWeakPtr()));
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {

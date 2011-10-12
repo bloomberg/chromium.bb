@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/tracked_objects.h"
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
 #include "chrome/browser/sync/notifier/registration_manager.h"
@@ -43,7 +44,11 @@ ChromeInvalidationClient::~ChromeInvalidationClient() {
 
 void ChromeInvalidationClient::Start(
     const std::string& client_id, const std::string& client_info,
-    const std::string& state, Listener* listener,
+    const std::string& state,
+    const InvalidationVersionMap& initial_max_invalidation_versions,
+    const browser_sync::WeakHandle<InvalidationVersionTracker>&
+        invalidation_version_tracker,
+    Listener* listener,
     StateWriter* state_writer,
     base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
@@ -56,6 +61,21 @@ void ChromeInvalidationClient::Start(
   // it with the initial state on startup, so subsequent writes go to disk and
   // update the in-memory cache, while reads just return the cached state.
   chrome_system_resources_.storage()->SetInitialState(state);
+
+  max_invalidation_versions_ = initial_max_invalidation_versions;
+  if (max_invalidation_versions_.empty()) {
+    VLOG(2) << "No initial max invalidation versions for any type";
+  } else {
+    for (InvalidationVersionMap::const_iterator it =
+             max_invalidation_versions_.begin();
+         it != max_invalidation_versions_.end(); ++it) {
+      VLOG(2) << "Initial max invalidation version for "
+              << syncable::ModelTypeToString(it->first) << " is "
+              << it->second;
+    }
+  }
+  invalidation_version_tracker_ = invalidation_version_tracker;
+  DCHECK(invalidation_version_tracker_.IsInitialized());
 
   DCHECK(!listener_);
   DCHECK(listener);
@@ -104,6 +124,9 @@ void ChromeInvalidationClient::Stop() {
   invalidation_client_.reset();
   state_writer_ = NULL;
   listener_ = NULL;
+
+  invalidation_version_tracker_.Reset();
+  max_invalidation_versions_.clear();
 }
 
 void ChromeInvalidationClient::RegisterTypes(
@@ -145,9 +168,7 @@ void ChromeInvalidationClient::Invalidate(
   // should drop invalidations for unregistered types.  We may also
   // have to filter it at a higher level, as invalidations for
   // newly-unregistered types may already be in flight.
-  //
-  // TODO(akalin): Persist |max_invalidation_versions_| somehow.
-  std::map<syncable::ModelType, int64>::const_iterator it =
+  InvalidationVersionMap::const_iterator it =
       max_invalidation_versions_.find(model_type);
   if ((it != max_invalidation_versions_.end()) &&
       (invalidation.version() <= it->second)) {
@@ -155,7 +176,14 @@ void ChromeInvalidationClient::Invalidate(
     client->Acknowledge(ack_handle);
     return;
   }
+  VLOG(2) << "Setting max invalidation version for "
+          << syncable::ModelTypeToString(model_type) << " to "
+          << invalidation.version();
   max_invalidation_versions_[model_type] = invalidation.version();
+  invalidation_version_tracker_.Call(
+      FROM_HERE,
+      &InvalidationVersionTracker::SetMaxVersion,
+      model_type, invalidation.version());
 
   std::string payload;
   // payload() CHECK()'s has_payload(), so we must check it ourselves first.

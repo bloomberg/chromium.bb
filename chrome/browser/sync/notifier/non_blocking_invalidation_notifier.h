@@ -14,7 +14,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 #include "jingle/notifier/base/notifier_options.h"
 
 namespace base {
@@ -25,8 +27,12 @@ namespace sync_notifier {
 
 class NonBlockingInvalidationNotifier : public SyncNotifier {
  public:
+  // |invalidation_version_tracker| must be initialized.
   NonBlockingInvalidationNotifier(
       const notifier::NotifierOptions& notifier_options,
+      const InvalidationVersionMap& initial_max_invalidation_versions,
+      const browser_sync::WeakHandle<InvalidationVersionTracker>&
+          invalidation_version_tracker,
       const std::string& client_info);
 
   virtual ~NonBlockingInvalidationNotifier();

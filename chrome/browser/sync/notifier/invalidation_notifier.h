@@ -21,9 +21,11 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
+#include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
 
@@ -36,8 +38,12 @@ class InvalidationNotifier
       public ChromeInvalidationClient::Listener,
       public StateWriter {
  public:
+  // |invalidation_version_tracker| must be initialized.
   InvalidationNotifier(
       const notifier::NotifierOptions& notifier_options,
+      const InvalidationVersionMap& initial_max_invalidation_versions,
+      const browser_sync::WeakHandle<InvalidationVersionTracker>&
+          invalidation_version_tracker,
       const std::string& client_info);
 
   virtual ~InvalidationNotifier();
@@ -83,6 +89,13 @@ class InvalidationNotifier
 
   // Used to build parameters for |login_|.
   const notifier::NotifierOptions notifier_options_;
+
+  // Passed to |invalidation_client_|.
+  const InvalidationVersionMap initial_max_invalidation_versions_;
+
+  // Passed to |invalidation_client_|.
+  const browser_sync::WeakHandle<InvalidationVersionTracker>
+      invalidation_version_tracker_;
 
   // Passed to |invalidation_client_|.
   const std::string client_info_;

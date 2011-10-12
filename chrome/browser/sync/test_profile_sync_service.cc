@@ -48,7 +48,7 @@ namespace browser_sync {
 
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
-    SyncPrefs* sync_prefs,
+    const base::WeakPtr<SyncPrefs>& sync_prefs,
     bool set_initial_sync_ended_on_init,
     bool synchronous_init,
     bool fail_initial_download)
@@ -238,7 +238,7 @@ void TestProfileSyncService::fail_initial_download() {
 void TestProfileSyncService::CreateBackend() {
   backend_.reset(new browser_sync::SyncBackendHostForProfileSyncTest(
       profile(),
-      &sync_prefs_,
+      sync_prefs_.AsWeakPtr(),
       set_initial_sync_ended_on_init_,
       synchronous_backend_initialization_,
       fail_initial_download_));

@@ -8,6 +8,9 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 
 class CommandLine;
 
@@ -24,11 +27,14 @@ class SyncNotifier;
 class SyncNotifierFactory {
  public:
   // |client_info| is a string identifying the client, e.g. a user
-  // agent string.
+  // agent string.  |invalidation_version_tracker| may be NULL (for
+  // tests).
   SyncNotifierFactory(
       const std::string& client_info,
       const scoped_refptr<net::URLRequestContextGetter>&
           request_context_getter,
+      const base::WeakPtr<InvalidationVersionTracker>&
+          invalidation_version_tracker,
       const CommandLine& command_line);
   ~SyncNotifierFactory();
 
@@ -39,7 +45,10 @@ class SyncNotifierFactory {
 
  private:
   const std::string client_info_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  const scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  const InvalidationVersionMap initial_max_invalidation_versions_;
+  const browser_sync::WeakHandle<InvalidationVersionTracker>
+      invalidation_version_tracker_;
   const CommandLine& command_line_;
 };
 

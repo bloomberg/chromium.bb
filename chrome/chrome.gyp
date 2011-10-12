@@ -783,6 +783,7 @@
         'browser/sync/notifier/invalidation_notifier.cc',
         'browser/sync/notifier/invalidation_util.cc',
         'browser/sync/notifier/invalidation_util.h',
+        'browser/sync/notifier/invalidation_version_tracker.h',
         'browser/sync/notifier/non_blocking_invalidation_notifier.h',
         'browser/sync/notifier/non_blocking_invalidation_notifier.cc',
         'browser/sync/notifier/p2p_notifier.h',

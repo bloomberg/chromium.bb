@@ -26,8 +26,12 @@ class NonBlockingInvalidationNotifier::Core
   void RemoveObserver(SyncNotifierObserver* observer);
 
   // Helpers called on I/O thread.
-  void Initialize(const notifier::NotifierOptions& notifier_options,
-                  const std::string& client_info);
+  void Initialize(
+      const notifier::NotifierOptions& notifier_options,
+      const InvalidationVersionMap& initial_max_invalidation_versions,
+      const browser_sync::WeakHandle<InvalidationVersionTracker>&
+          invalidation_version_tracker,
+      const std::string& client_info);
   void Teardown();
   void SetUniqueId(const std::string& unique_id);
   void SetState(const std::string& state);
@@ -61,6 +65,9 @@ NonBlockingInvalidationNotifier::Core::~Core() {
 
 void NonBlockingInvalidationNotifier::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
+    const InvalidationVersionMap& initial_max_invalidation_versions,
+    const browser_sync::WeakHandle<InvalidationVersionTracker>&
+        invalidation_version_tracker,
     const std::string& client_info) {
   DCHECK(notifier_options.request_context_getter);
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
@@ -69,7 +76,11 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
       GetIOMessageLoopProxy();
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   invalidation_notifier_.reset(
-      new InvalidationNotifier(notifier_options, client_info));
+      new InvalidationNotifier(
+          notifier_options,
+          initial_max_invalidation_versions,
+          invalidation_version_tracker,
+          client_info));
   invalidation_notifier_->AddObserver(this);
 }
 
@@ -137,6 +148,9 @@ void NonBlockingInvalidationNotifier::Core::StoreState(
 
 NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
+    const InvalidationVersionMap& initial_max_invalidation_versions,
+    const browser_sync::WeakHandle<InvalidationVersionTracker>&
+        invalidation_version_tracker,
     const std::string& client_info)
         : core_(new Core),
           parent_message_loop_proxy_(
@@ -148,7 +162,10 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
           NewRunnableMethod(
               core_.get(),
               &NonBlockingInvalidationNotifier::Core::Initialize,
-              notifier_options, client_info))) {
+              notifier_options,
+              initial_max_invalidation_versions,
+              invalidation_version_tracker,
+              client_info))) {
     NOTREACHED();
   }
 }

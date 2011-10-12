@@ -6,9 +6,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/notifier/mock_sync_notifier_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
@@ -35,8 +37,13 @@ class InvalidationNotifierTest : public testing::Test {
     // Note: URLRequestContextGetters are ref-counted.
     notifier_options.request_context_getter =
         new TestURLRequestContextGetter();
-    invalidation_notifier_.reset(new InvalidationNotifier(notifier_options,
-                                                          "fake_client_info"));
+    invalidation_notifier_.reset(
+        new InvalidationNotifier(
+            notifier_options,
+            InvalidationVersionMap(),
+            browser_sync::MakeWeakHandle(
+                base::WeakPtr<InvalidationVersionTracker>()),
+            "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);
   }
 
@@ -68,6 +75,7 @@ TEST_F(InvalidationNotifierTest, Basic) {
   EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
 
   invalidation_notifier_->SetState("fake_state");
+  invalidation_notifier_->SetUniqueId("fake_id");
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
 
   invalidation_notifier_->OnConnect(fake_base_task_.AsWeakPtr());

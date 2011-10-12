@@ -85,7 +85,8 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   profile.CreateRequestContext();
 
   SyncPrefs sync_prefs(profile.GetPrefs());
-  SyncBackendHost backend(profile.GetDebugName(), &profile, &sync_prefs);
+  SyncBackendHost backend(profile.GetDebugName(),
+                          &profile, sync_prefs.AsWeakPtr());
 
   MockSyncFrontend mock_frontend;
   sync_api::SyncCredentials credentials;

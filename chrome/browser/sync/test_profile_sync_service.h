@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
@@ -31,7 +32,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   //     completed setting itself up and called us back.
   SyncBackendHostForProfileSyncTest(
       Profile* profile,
-      SyncPrefs* sync_prefs,
+      const base::WeakPtr<SyncPrefs>& sync_prefs,
       bool set_initial_sync_ended_on_init,
       bool synchronous_init,
       bool fail_initial_download);

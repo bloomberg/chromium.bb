@@ -58,7 +58,7 @@ using sync_api::SyncCredentials;
 
 SyncBackendHost::SyncBackendHost(const std::string& name,
                                  Profile* profile,
-                                 SyncPrefs* sync_prefs)
+                                 const base::WeakPtr<SyncPrefs>& sync_prefs)
     : core_(new Core(name, ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       initialization_state_(NOT_ATTEMPTED),
       sync_thread_("Chrome_SyncThread"),
@@ -66,14 +66,15 @@ SyncBackendHost::SyncBackendHost(const std::string& name,
       profile_(profile),
       sync_prefs_(sync_prefs),
       name_(name),
-      sync_notifier_factory_(webkit_glue::GetUserAgent(GURL()),
-                             profile_->GetRequestContext(),
-                             *CommandLine::ForCurrentProcess()),
+      sync_notifier_factory_(
+          webkit_glue::GetUserAgent(GURL()),
+          profile_->GetRequestContext(),
+          sync_prefs,
+          *CommandLine::ForCurrentProcess()),
       frontend_(NULL),
       sync_data_folder_path_(
           profile_->GetPath().Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()) {
-  CHECK(sync_prefs_);
 }
 
 SyncBackendHost::SyncBackendHost()
@@ -81,11 +82,12 @@ SyncBackendHost::SyncBackendHost()
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(NULL),
-      sync_prefs_(NULL),
       name_("Unknown"),
-      sync_notifier_factory_(webkit_glue::GetUserAgent(GURL()),
-                             NULL,
-                             *CommandLine::ForCurrentProcess()),
+      sync_notifier_factory_(
+          webkit_glue::GetUserAgent(GURL()),
+          NULL,
+          base::WeakPtr<sync_notifier::InvalidationVersionTracker>(),
+          *CommandLine::ForCurrentProcess()),
       frontend_(NULL),
       last_auth_error_(AuthError::None()) {
 }
@@ -109,6 +111,7 @@ void SyncBackendHost::Initialize(
   DCHECK(frontend);
 
   syncable::ModelTypeSet initial_types_with_nigori(initial_types);
+  CHECK(sync_prefs_.get());
   if (sync_prefs_->HasSyncSetupCompleted()) {
     initial_types_with_nigori.insert(syncable::NIGORI);
   }
@@ -884,6 +887,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
 
   // If setup has completed, start off in DOWNLOADING_NIGORI so that
   // we start off by refreshing encryption.
+  CHECK(sync_prefs_.get());
   if (sync_prefs_->HasSyncSetupCompleted() &&
       initialization_state_ < DOWNLOADING_NIGORI) {
     initialization_state_ = DOWNLOADING_NIGORI;
@@ -994,6 +998,7 @@ sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
 
 void SyncBackendHost::PersistEncryptionBootstrapToken(
     const std::string& token) {
+  CHECK(sync_prefs_.get());
   sync_prefs_->SetEncryptionBootstrapToken(token);
 }
 

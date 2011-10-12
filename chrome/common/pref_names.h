@@ -505,6 +505,7 @@ extern const char kSyncUsingOAuth[];
 extern const char kSyncUsingSecondaryPassphrase[];
 extern const char kSyncEncryptionBootstrapToken[];
 extern const char kSyncAcknowledgedSyncTypes[];
+extern const char kSyncMaxInvalidationVersions[];
 
 extern const char kSyncPromoStartupCount[];
 extern const char kSyncPromoViewCount[];

@@ -5,6 +5,8 @@
 #include "chrome/browser/sync/sync_prefs.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -49,6 +51,9 @@ void SyncPrefs::ClearPreferences() {
 
   // TODO(nick): The current behavior does not clear
   // e.g. prefs::kSyncBookmarks.  Is that really what we want?
+
+  pref_service_->ClearPref(prefs::kSyncMaxInvalidationVersions);
+
   pref_service_->ScheduleSavePersistentPrefs();
 }
 
@@ -191,6 +196,74 @@ void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
   CHECK(pref_service_);
   pref_service_->SetString(prefs::kSyncEncryptionBootstrapToken, token);
   pref_service_->ScheduleSavePersistentPrefs();
+}
+
+sync_notifier::InvalidationVersionMap SyncPrefs::GetAllMaxVersions() const {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  if (!pref_service_) {
+    return sync_notifier::InvalidationVersionMap();
+  }
+  // Complicated gross code to convert from a string -> string
+  // DictionaryValue to a ModelType -> int64 map.
+  const base::DictionaryValue* max_versions_dict =
+      pref_service_->GetDictionary(prefs::kSyncMaxInvalidationVersions);
+  CHECK(max_versions_dict);
+  sync_notifier::InvalidationVersionMap max_versions;
+  for (base::DictionaryValue::key_iterator it =
+           max_versions_dict->begin_keys();
+       it != max_versions_dict->end_keys(); ++it) {
+    int model_type_int = 0;
+    if (!base::StringToInt(*it, &model_type_int)) {
+      LOG(WARNING) << "Invalid model type key: " << *it;
+      continue;
+    }
+    if ((model_type_int < syncable::FIRST_REAL_MODEL_TYPE) ||
+        (model_type_int >= syncable::MODEL_TYPE_COUNT)) {
+      LOG(WARNING) << "Out-of-range model type key: " << model_type_int;
+      continue;
+    }
+    const syncable::ModelType model_type =
+        syncable::ModelTypeFromInt(model_type_int);
+    std::string max_version_str;
+    CHECK(max_versions_dict->GetString(*it, &max_version_str));
+    int64 max_version = 0;
+    if (!base::StringToInt64(max_version_str, &max_version)) {
+      LOG(WARNING) << "Invalid max invalidation version for "
+                   << syncable::ModelTypeToString(model_type) << ": "
+                   << max_version_str;
+      continue;
+    }
+    max_versions[model_type] = max_version;
+  }
+  return max_versions;
+}
+
+void SyncPrefs::SetMaxVersion(syncable::ModelType model_type,
+                              int64 max_version) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(syncable::IsRealDataType(model_type));
+  CHECK(pref_service_);
+  sync_notifier::InvalidationVersionMap max_versions =
+      GetAllMaxVersions();
+  sync_notifier::InvalidationVersionMap::iterator it =
+      max_versions.find(model_type);
+  if ((it != max_versions.end()) && (max_version <= it->second)) {
+    NOTREACHED();
+    return;
+  }
+  max_versions[model_type] = max_version;
+
+  // Gross code to convert from a ModelType -> int64 map to a string
+  // -> string DictionaryValue.
+  base::DictionaryValue max_versions_dict;
+  for (sync_notifier::InvalidationVersionMap::const_iterator it =
+           max_versions.begin();
+       it != max_versions.end(); ++it) {
+    max_versions_dict.SetString(
+        base::IntToString(it->first),
+        base::Int64ToString(it->second));
+  }
+  pref_service_->Set(prefs::kSyncMaxInvalidationVersions, max_versions_dict);
 }
 
 void SyncPrefs::AcknowledgeSyncedTypes(
@@ -362,6 +435,9 @@ void SyncPrefs::RegisterPreferences() {
   pref_service_->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
                                   syncable::ModelTypeBitSetToValue(model_set),
                                   PrefService::UNSYNCABLE_PREF);
+
+  pref_service_->RegisterDictionaryPref(prefs::kSyncMaxInvalidationVersions,
+                                        PrefService::UNSYNCABLE_PREF);
 }
 
 void SyncPrefs::RegisterDataTypePreferredPref(syncable::ModelType type,

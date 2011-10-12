@@ -8,10 +8,12 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "content/common/notification_observer.h"
 
@@ -30,7 +32,8 @@ class SyncPrefObserver {
 };
 
 // SyncPrefs is a helper class that manages getting, setting, and
-// persisting global sync preferences.
+// persisting global sync preferences.  It is not thread-safe, and
+// lives on the UI thread.
 //
 // TODO(akalin): Some classes still read the prefs directly.  Consider
 // passing down a pointer to SyncPrefs to them.  A list of files:
@@ -41,7 +44,9 @@ class SyncPrefObserver {
 //   sync_setup_wizard.cc
 //   sync_setup_wizard_unittest.cc
 //   two_client_preferences_sync_test.cc
-class SyncPrefs : public NotificationObserver {
+class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
+                  public sync_notifier::InvalidationVersionTracker,
+                  public NotificationObserver {
  public:
   // |pref_service| may be NULL (for unit tests), but in that case no
   // setter methods should be called.  Does not take ownership of
@@ -90,6 +95,12 @@ class SyncPrefs : public NotificationObserver {
 
   std::string GetEncryptionBootstrapToken() const;
   void SetEncryptionBootstrapToken(const std::string& token);
+
+  // InvalidationVersionTracker implementation.
+  virtual sync_notifier::InvalidationVersionMap
+      GetAllMaxVersions() const OVERRIDE;
+  virtual void SetMaxVersion(syncable::ModelType model_type,
+                             int64 max_version) OVERRIDE;
 
   // Merges the given set of types with the set of acknowledged types.
   void AcknowledgeSyncedTypes(const syncable::ModelTypeSet& types);

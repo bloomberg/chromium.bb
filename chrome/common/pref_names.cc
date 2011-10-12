@@ -1380,6 +1380,10 @@ const char kSyncSuppressStart[] = "sync.suppress_start";
 // if a new sync type has rolled out so we can notify the user.
 const char kSyncAcknowledgedSyncTypes[] = "sync.acknowledged_types";
 
+// Dictionary from sync model type (as an int) to max invalidation
+// version (int64 represented as a string).
+const char kSyncMaxInvalidationVersions[] = "sync.max_invalidation_versions";
+
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.
 const char kSyncEncryptionBootstrapToken[] =

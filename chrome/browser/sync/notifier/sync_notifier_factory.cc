@@ -49,6 +49,9 @@ net::HostPortPair StringToHostPortPair(const std::string& host_port_str,
 SyncNotifier* CreateDefaultSyncNotifier(
     const CommandLine& command_line,
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    const InvalidationVersionMap& initial_max_invalidation_versions,
+    const browser_sync::WeakHandle<InvalidationVersionTracker>&
+        invalidation_version_tracker,
     const std::string& client_info) {
   // Contains options specific to how sync clients send and listen to
   // jingle notifications.
@@ -105,7 +108,9 @@ SyncNotifier* CreateDefaultSyncNotifier(
     return new P2PNotifier(talk_mediator, NOTIFY_ALL);
   }
 
-  return new NonBlockingInvalidationNotifier(notifier_options, client_info);
+  return new NonBlockingInvalidationNotifier(
+      notifier_options, initial_max_invalidation_versions,
+      invalidation_version_tracker, client_info);
 }
 }  // namespace
 
@@ -113,9 +118,16 @@ SyncNotifierFactory::SyncNotifierFactory(
     const std::string& client_info,
     const scoped_refptr<net::URLRequestContextGetter>&
         request_context_getter,
+    const base::WeakPtr<InvalidationVersionTracker>&
+        invalidation_version_tracker,
     const CommandLine& command_line)
     : client_info_(client_info),
       request_context_getter_(request_context_getter),
+      initial_max_invalidation_versions_(
+          invalidation_version_tracker.get() ?
+          invalidation_version_tracker->GetAllMaxVersions() :
+          InvalidationVersionMap()),
+      invalidation_version_tracker_(invalidation_version_tracker),
       command_line_(command_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -127,6 +139,8 @@ SyncNotifierFactory::~SyncNotifierFactory() {
 SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {
   return CreateDefaultSyncNotifier(command_line_,
                                    request_context_getter_,
+                                   initial_max_invalidation_versions_,
+                                   invalidation_version_tracker_,
                                    client_info_);
 }
 }  // namespace sync_notifier

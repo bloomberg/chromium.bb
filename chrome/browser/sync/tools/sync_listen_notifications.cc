@@ -8,10 +8,13 @@
 #include "base/at_exit.h"
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
@@ -32,7 +35,7 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
   virtual ~NotificationPrinter() {}
 
   virtual void OnIncomingNotification(
-      const syncable::ModelTypePayloadMap& type_payloads) {
+      const syncable::ModelTypePayloadMap& type_payloads) OVERRIDE {
     for (syncable::ModelTypePayloadMap::const_iterator it =
              type_payloads.begin(); it != type_payloads.end(); ++it) {
       LOG(INFO) << "Notification: type = "
@@ -41,11 +44,12 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
     }
   }
 
-  virtual void OnNotificationStateChange(bool notifications_enabled) {
+  virtual void OnNotificationStateChange(
+      bool notifications_enabled) OVERRIDE {
     LOG(INFO) << "Notifications enabled: " << notifications_enabled;
   }
 
-  virtual void StoreState(const std::string& state) {
+  virtual void StoreState(const std::string& state) OVERRIDE {
     std::string base64_state;
     CHECK(base::Base64Encode(state, &base64_state));
     LOG(INFO) << "Got state to store: " << base64_state;
@@ -53,6 +57,27 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationPrinter);
+};
+
+class NullInvalidationVersionTracker
+    : public base::SupportsWeakPtr<NullInvalidationVersionTracker>,
+      public sync_notifier::InvalidationVersionTracker {
+ public:
+  NullInvalidationVersionTracker() {}
+  virtual ~NullInvalidationVersionTracker() {}
+
+  virtual sync_notifier::InvalidationVersionMap
+      GetAllMaxVersions() const OVERRIDE {
+    return sync_notifier::InvalidationVersionMap();
+  }
+
+  virtual void SetMaxVersion(
+      syncable::ModelType model_type,
+      int64 max_invalidation_version) OVERRIDE {
+    VLOG(1) << "Setting max invalidation version for "
+            << syncable::ModelTypeToString(model_type) << " to "
+            << max_invalidation_version;
+  }
 };
 
 }  // namespace
@@ -95,19 +120,27 @@ int main(int argc, char* argv[]) {
   const char kClientInfo[] = "sync_listen_notifications";
   scoped_refptr<TestURLRequestContextGetter> request_context_getter(
       new TestURLRequestContextGetter());
+  NullInvalidationVersionTracker null_invalidation_version_tracker;
   sync_notifier::SyncNotifierFactory sync_notifier_factory(
-      kClientInfo, request_context_getter, command_line);
+      kClientInfo, request_context_getter,
+      null_invalidation_version_tracker.AsWeakPtr(), command_line);
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
       sync_notifier_factory.CreateSyncNotifier());
   NotificationPrinter notification_printer;
   sync_notifier->AddObserver(&notification_printer);
 
+  const char kUniqueId[] = "fake_unique_id";
+  sync_notifier->SetUniqueId(kUniqueId);
+  sync_notifier->SetState("");
   sync_notifier->UpdateCredentials(email, token);
   {
     // Listen for notifications for all known types.
     syncable::ModelTypeSet types;
+    // TODO(akalin): There is a server bug where unrecognized data
+    // types mean no invalidations are sent.  Change
+    // EXTENSION_SETTINGS back to MODEL_TYPE_COUNT when this is fixed.
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < syncable::MODEL_TYPE_COUNT; ++i) {
+         i < syncable::EXTENSION_SETTINGS; ++i) {
       types.insert(syncable::ModelTypeFromInt(i));
     }
     sync_notifier->UpdateEnabledTypes(types);

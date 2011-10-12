@@ -9,7 +9,6 @@
 #define CHROME_BROWSER_SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
 #pragma once
 
-#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -19,9 +18,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
+#include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 #include "google/cacheinvalidation/v2/invalidation-listener.h"
 
 // TODO(akalin): Move invalidation::InvalidationListener into its own
@@ -39,6 +40,8 @@ using invalidation::InvalidationListener;
 class CacheInvalidationPacketHandler;
 class RegistrationManager;
 
+// ChromeInvalidationClient is not thread-safe and lives on the sync
+// thread.
 class ChromeInvalidationClient
     : public InvalidationListener,
       public StateWriter {
@@ -59,10 +62,15 @@ class ChromeInvalidationClient
   virtual ~ChromeInvalidationClient();
 
   // Does not take ownership of |listener| or |state_writer|.
+  // |invalidation_version_tracker| must be initialized.
   // |base_task| must still be non-NULL.
   void Start(
       const std::string& client_id, const std::string& client_info,
-      const std::string& state, Listener* listener,
+      const std::string& state,
+      const InvalidationVersionMap& initial_max_invalidation_versions,
+      const browser_sync::WeakHandle<InvalidationVersionTracker>&
+          invalidation_version_tracker,
+      Listener* listener,
       StateWriter* state_writer,
       base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
 
@@ -120,13 +128,15 @@ class ChromeInvalidationClient
   ChromeSystemResources chrome_system_resources_;
   base::ScopedCallbackFactory<ChromeInvalidationClient>
       scoped_callback_factory_;
+  InvalidationVersionMap max_invalidation_versions_;
+  browser_sync::WeakHandle<InvalidationVersionTracker>
+      invalidation_version_tracker_;
   Listener* listener_;
   StateWriter* state_writer_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
   scoped_ptr<CacheInvalidationPacketHandler>
       cache_invalidation_packet_handler_;
   scoped_ptr<RegistrationManager> registration_manager_;
-  std::map<syncable::ModelType, int64> max_invalidation_versions_;
   // Stored to pass to |registration_manager_| on start.
   syncable::ModelTypeSet registered_types_;
   bool ticl_ready_;
