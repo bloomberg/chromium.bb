@@ -11,7 +11,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/ui/webui/print_preview_handler.h"
+#include "chrome/browser/printing/print_system_task_proxy.h"
+#include "printing/backend/print_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -45,7 +46,7 @@ void verifyOptionValue(ppd_file_t* ppd,
 using printing_internal::parse_lpoptions;
 
 // Test to verify that lpoption custom settings are marked on the ppd file.
-TEST(PrintPreviewHandlerTest, MarkLpoptionsInPPD) {
+TEST(PrintSystemTaskProxyTest, MarkLpoptionsInPPD) {
   const std::string kColorModel = "ColorModel";
   const std::string kBlack = "Black";
   const std::string kGray = "Gray";
@@ -152,7 +153,7 @@ TEST(PrintPreviewHandlerTest, MarkLpoptionsInPPD) {
 }
 
 // Test the lpoption parsing code.
-TEST(PrintPreviewHandlerTest, ParseLpoptionData) {
+TEST(PrintSystemTaskProxyTest, ParseLpoptionData) {
   // Specifies the user lpoption data.
   std::string user_lpoptions;
 

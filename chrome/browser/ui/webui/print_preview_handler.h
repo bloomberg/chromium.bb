@@ -15,6 +15,7 @@
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "content/browser/webui/web_ui.h"
+#include "printing/print_job_constants.h"
 
 class FilePath;
 class PrintSystemTaskProxy;
@@ -29,21 +30,6 @@ class StringValue;
 namespace printing {
 class PrintBackend;
 }
-
-#if defined(UNIT_TEST) && defined(USE_CUPS) && !defined(OS_MACOSX)
-typedef struct cups_option_s cups_option_t;
-
-namespace printing_internal {
-
-// Helper function to parse the lpoptions custom settings. |num_options| and
-// |options| will be updated if the custom settings for |printer_name| are
-// found, otherwise nothing is done.
-// NOTE: This function is declared here so it can be exposed for unit testing.
-void parse_lpoptions(const FilePath& filepath, const std::string& printer_name,
-                     int* num_options, cups_option_t** options);
-
-}  // namespace printing_internal
-#endif
 
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler : public WebUIMessageHandler,
@@ -198,7 +184,7 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   static FilePath* last_saved_path_;
   static std::string* last_used_printer_cloud_print_data_;
   static std::string* last_used_printer_name_;
-  static bool last_used_color_setting_;
+  static printing::ColorModels last_used_color_model_;
 
   // A count of how many requests received to regenerate preview data.
   // Initialized to 0 then incremented and emitted to a histogram.

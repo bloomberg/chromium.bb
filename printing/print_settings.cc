@@ -10,6 +10,102 @@
 
 namespace printing {
 
+#if defined (USE_CUPS)
+void GetColorModelForMode(
+    int color_mode, std::string* color_setting_name, std::string* color_value) {
+#if defined(OS_MACOSX)
+  const char kCUPSColorMode[] = "ColorMode";
+  const char kCUPSColorModel[] = "ColorModel";
+  const char kCUPSPrintoutMode[] = "PrintoutMode";
+  const char kCUPSProcessColorModel[] = "ProcessColorModel";
+#else
+  const char kCUPSColorMode[] = "cups-ColorMode";
+  const char kCUPSColorModel[] = "cups-ColorModel";
+  const char kCUPSPrintoutMode[] = "cups-PrintoutMode";
+  const char kCUPSProcessColorModel[] = "cups-ProcessColorModel";
+#endif
+
+  color_setting_name->assign(kCUPSColorModel);
+  switch (color_mode) {
+    case printing::COLOR:
+      color_value->assign(printing::kColor);
+      break;
+    case printing::CMYK:
+      color_value->assign(printing::kCMYK);
+      break;
+    case printing::PRINTOUTMODE_NORMAL:
+      color_value->assign(printing::kNormal);
+      color_setting_name->assign(kCUPSPrintoutMode);
+      break;
+    case printing::PRINTOUTMODE_NORMAL_GRAY:
+      color_value->assign(printing::kNormalGray);
+      color_setting_name->assign(kCUPSPrintoutMode);
+      break;
+    case printing::RGB16:
+      color_value->assign(printing::kRGB16);
+      break;
+    case printing::RGBA:
+      color_value->assign(printing::kRGBA);
+      break;
+    case printing::RGB:
+      color_value->assign(printing::kRGB);
+      break;
+    case printing::CMY:
+      color_value->assign(printing::kCMY);
+      break;
+    case printing::CMY_K:
+      color_value->assign(printing::kCMY_K);
+      break;
+    case printing::BLACK:
+      color_value->assign(printing::kBlack);
+      break;
+    case printing::GRAY:
+      color_value->assign(printing::kGray);
+      break;
+    case printing::COLORMODE_COLOR:
+      color_setting_name->assign(kCUPSColorMode);
+      color_value->assign(printing::kColor);
+      break;
+    case printing::COLORMODE_MONOCHROME:
+      color_setting_name->assign(kCUPSColorMode);
+      color_value->assign(printing::kMonochrome);
+      break;
+    case printing::HP_COLOR_COLOR:
+      color_setting_name->assign(kColor);
+      color_value->assign(printing::kColor);
+      break;
+    case printing::HP_COLOR_BLACK:
+      color_setting_name->assign(kColor);
+      color_value->assign(printing::kBlack);
+      break;
+    case printing::PROCESSCOLORMODEL_CMYK:
+      color_setting_name->assign(kCUPSProcessColorModel);
+      color_value->assign(printing::kCMYK);
+      break;
+    case printing::PROCESSCOLORMODEL_GREYSCALE:
+      color_setting_name->assign(kCUPSProcessColorModel);
+      color_value->assign(printing::kGreyscale);
+      break;
+    case printing::PROCESSCOLORMODEL_RGB:
+      color_setting_name->assign(kCUPSProcessColorModel);
+      color_value->assign(printing::kRGB);
+      break;
+    default:
+      color_value->assign(printing::kGrayscale);
+      break;
+  }
+}
+#endif
+
+bool isColorModelSelected(int model) {
+  return (model != printing::GRAY &&
+          model != printing::BLACK &&
+          model != printing::PRINTOUTMODE_NORMAL_GRAY &&
+          model != printing::COLORMODE_MONOCHROME &&
+          model != printing::PROCESSCOLORMODEL_GREYSCALE &&
+          model != printing::HP_COLOR_BLACK);
+}
+
 // Global SequenceNumber used for generating unique cookie values.
 static base::AtomicSequenceNumber cookie_seq(base::LINKER_INITIALIZED);
 

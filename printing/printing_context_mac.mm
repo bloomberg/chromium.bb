@@ -15,10 +15,6 @@
 #include "base/values.h"
 #include "printing/print_settings_initializer_mac.h"
 
-static const CFStringRef kColorModel = CFSTR("ColorModel");
-static const CFStringRef kGrayColor = CFSTR("Gray");
-static const CFStringRef kCMYK = CFSTR("CMYK");
-
 namespace printing {
 
 // static
@@ -253,15 +249,17 @@ bool PrintingContextMac::SetDuplexModeInPrintSettings(DuplexMode mode) {
 bool PrintingContextMac::SetOutputColor(int color_mode) {
   PMPrintSettings pmPrintSettings =
       static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
-  CFStringRef output_color = NULL;
-  if (color_mode == printing::GRAY)
-    output_color = kGrayColor;
-  else if (color_mode == printing::CMYK)
-    output_color = kCMYK;
+  std::string color_setting_name;
+  std::string color_value;
+  printing::GetColorModelForMode(color_mode, &color_setting_name, &color_value);
+  base::mac::ScopedCFTypeRef<CFStringRef> color_setting(
+      base::SysUTF8ToCFStringRef(color_setting_name));
+  base::mac::ScopedCFTypeRef<CFStringRef> output_color(
+      base::SysUTF8ToCFStringRef(color_value));
 
   return PMPrintSettingsSetValue(pmPrintSettings,
-                                 kColorModel,
-                                 output_color,
+                                 color_setting.get(),
+                                 output_color.get(),
                                  false) == noErr;
 }
 
