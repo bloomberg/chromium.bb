@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/login/mock_signed_settings_helper.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/policy/device_policy_cache.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #endif
@@ -132,6 +133,16 @@ class EnterpriseMetricsTest : public testing::Test {
     } else {
       NOTREACHED();
     }
+  }
+
+  virtual void SetUp() OVERRIDE {
+#if defined(OS_CHROMEOS)
+    // StatisticsProvider posts a task to FILE thread to read statistics
+    // when the instance is created.
+    chromeos::system::StatisticsProvider::GetInstance();
+    // Run the FILE thread's message loop to process the task.
+    file_thread_.message_loop()->RunAllPending();
+#endif
   }
 
   // Run pending tasks, and check that no unexpected samples were recorded.
