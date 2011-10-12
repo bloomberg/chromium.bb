@@ -108,12 +108,12 @@ void RemoveDuplicateSuggestions(std::vector<string16>* values,
 // Precondition: |form_structure| and |form| should correspond to the same
 // logical form.  Returns true if any field in the given |section| within |form|
 // is auto-filled.
-bool SectionIsAutofilled(const FormStructure* form_structure,
+bool SectionIsAutofilled(const FormStructure& form_structure,
                          const webkit_glue::FormData& form,
                          const string16& section) {
-  DCHECK_EQ(form_structure->field_count(), form.fields.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i) {
-    if (form_structure->field(i)->section() == section &&
+  DCHECK_EQ(form_structure.field_count(), form.fields.size());
+  for (size_t i = 0; i < form_structure.field_count(); ++i) {
+    if (form_structure.field(i)->section() == section &&
         form.fields[i].is_autofilled) {
       return true;
     }
@@ -122,8 +122,8 @@ bool SectionIsAutofilled(const FormStructure* form_structure,
   return false;
 }
 
-bool FormIsHTTPS(FormStructure* form) {
-  return form->source_url().SchemeIs(chrome::kHttpsScheme);
+bool FormIsHTTPS(const FormStructure& form) {
+  return form.source_url().SchemeIs(chrome::kHttpsScheme);
 }
 
 // Check for unidentified forms among those with the most query or upload
@@ -412,7 +412,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       int warning = 0;
       if (!form_structure->IsAutofillable(true))
         warning = IDS_AUTOFILL_WARNING_FORM_DISABLED;
-      else if (is_filling_credit_card && !FormIsHTTPS(form_structure))
+      else if (is_filling_credit_card && !FormIsHTTPS(*form_structure))
         warning = IDS_AUTOFILL_WARNING_INSECURE_CONNECTION;
       if (warning) {
         values.assign(1, l10n_util::GetStringUTF16(warning));
@@ -421,7 +421,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         unique_ids.assign(1, -1);
       } else {
         bool section_is_autofilled =
-            SectionIsAutofilled(form_structure, form,
+            SectionIsAutofilled(*form_structure, form,
                                 autofill_field->section());
         if (section_is_autofilled) {
           // If the relevant section is auto-filled and the renderer is querying
@@ -484,7 +484,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
 
   // If the relevant section is auto-filled, we should fill |field| but not the
   // rest of the form.
-  if (SectionIsAutofilled(form_structure, form, autofill_field->section())) {
+  if (SectionIsAutofilled(*form_structure, form, autofill_field->section())) {
     for (std::vector<FormField>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
       if ((*iter) == field) {
