@@ -121,3 +121,6 @@ AutomatedUITestBase.DuplicateTab
 
 # Flaky failure on Linux/ChromeOS, http://crbug.com/96553
 OptionsUITest.LoadOptionsByURL
+
+# Flaky failure on Linux/ChromeOS, http://crbug.com/100031
+IFrameTest.InEmptyFrame

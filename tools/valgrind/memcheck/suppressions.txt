@@ -4661,13 +4661,6 @@
    fun:_ZN22InternetOptionsHandler10GetNetworkERKSsRK8SkBitmapS1_bbbN8chromeos14ConnectionTypeEbbNS5_15ActivationStateEb
    ...
    fun:_ZN22InternetOptionsHandler15FillNetworkInfoEPN4base15DictionaryValueE
-   fun:_ZN22InternetOptionsHandler18RefreshNetworkDataEv
-   fun:_ZN22InternetOptionsHandler23OnNetworkManagerChangedEPN8chromeos14NetworkLibraryE
-   fun:_ZN8chromeos22NetworkLibraryImplBase29SignalNetworkManagerObserversEv
-   fun:_ZN8chromeos22NetworkLibraryImplStub18RequestNetworkScanEv
-   fun:_ZN22InternetOptionsHandler10InitializeEv
-   fun:_ZN9OptionsUI18InitializeHandlersEv
-   fun:_ZN18CoreOptionsHandler16HandleInitializeEPKN4base9ListValueE
 }
 {
    bug_99308
@@ -4701,19 +4694,6 @@
    fun:_Znw*
    ...
    fun:_ZN8chromeos*OncNetworkParserTest_TestCreateNetworkWifi*_Test8TestBodyEv
-}
-{
-   bug_100025
-   Memcheck:Value4
-   fun:modp_b64_encode
-   fun:_ZN4base12Base64EncodeERKNS_11StringPieceEPSs
-   fun:_ZN11web_ui_util15GetImageDataUrlERK8SkBitmap
-   fun:_ZN22InternetOptionsHandler10GetNetworkERKSsRK8SkBitmapS1_bbbN8chromeos14ConnectionTypeEbbNS5_15ActivationStateEb
-   fun:_ZN22InternetOptionsHandler*
-   fun:_ZN22InternetOptionsHandler15FillNetworkInfoEPN4base15DictionaryValueE
-   fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEPN4base15DictionaryValueE
-   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEPN4base15DictionaryValueEP20OptionsPageUIHandler
-   fun:_ZN9OptionsUIC1EP11TabContents
 }
 
 #-----------------------------------------------------------------------
