@@ -26,8 +26,8 @@ vars = {
   "nacl_toolchain_revision": "6757",
 
   "libjingle_revision": "85",
-  "libvpx_revision": "103347",
-  "ffmpeg_revision": "103983",
+  "libvpx_revision": "105133",
+  "ffmpeg_revision": "105133",
   "sfntly_revision": "98",
   "skia_revision": "2465",
   "v8_revision": "9586",
@@ -257,7 +257,7 @@ deps = {
     "/trunk/deps/third_party/yasm/patched-yasm@73761",
 
   "src/third_party/libjpeg_turbo":
-    "/trunk/deps/third_party/libjpeg_turbo@102926",
+    "/trunk/deps/third_party/libjpeg_turbo@105131",
 
   "src/third_party/flac":
     "/trunk/deps/third_party/flac@96404",
