@@ -374,6 +374,11 @@ const CGFloat kLabelInset = 49.0;
   NSRectFill([self bounds]);
 }
 
+// Make sure the element is focusable for accessibility.
+- (BOOL)canBecomeKeyView {
+  return YES;
+}
+
 - (BOOL)accessibilityIsIgnored {
   return NO;
 }
@@ -396,6 +401,9 @@ const CGFloat kLabelInset = 49.0;
   if ([attribute isEqual:NSAccessibilityRoleAttribute])
     return NSAccessibilityButtonRole;
 
+  if ([attribute isEqual:NSAccessibilityRoleDescriptionAttribute])
+    return NSAccessibilityRoleDescription(NSAccessibilityButtonRole, nil);
+
   if ([attribute isEqual:NSAccessibilityTitleAttribute]) {
     return l10n_util::GetNSStringF(
         IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME,
@@ -406,6 +414,15 @@ const CGFloat kLabelInset = 49.0;
     return [NSNumber numberWithBool:YES];
 
   return [super accessibilityAttributeValue:attribute];
+}
+
+- (void)accessibilityPerformAction:(NSString*)action {
+  if ([action isEqual:NSAccessibilityPressAction]) {
+    [viewController_ switchToProfile:self];
+    return;
+  }
+
+  [super accessibilityPerformAction:action];
 }
 
 @end

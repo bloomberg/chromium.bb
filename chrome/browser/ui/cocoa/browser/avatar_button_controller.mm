@@ -105,11 +105,9 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
     NSButtonCell* cell = [button cell];
     [cell accessibilitySetOverrideValue:NSAccessibilityButtonRole
                            forAttribute:NSAccessibilityRoleAttribute];
-    [cell accessibilitySetOverrideValue:NSAccessibilityButtonRole
-          forAttribute:NSAccessibilityRoleDescriptionAttribute];
     [cell accessibilitySetOverrideValue:
-        l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_NAME)
-                           forAttribute:NSAccessibilityDescriptionAttribute];
+        NSAccessibilityRoleDescription(NSAccessibilityButtonRole, nil)
+          forAttribute:NSAccessibilityRoleDescriptionAttribute];
     [cell accessibilitySetOverrideValue:
         l10n_util::GetNSString(IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION)
                            forAttribute:NSAccessibilityHelpAttribute];
@@ -213,6 +211,11 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
     [[self.buttonView cell]
         accessibilitySetOverrideValue:nsName
                          forAttribute:NSAccessibilityTitleAttribute];
+    [[self.buttonView cell]
+        accessibilitySetOverrideValue:
+            l10n_util::GetNSStringF(IDS_PROFILES_AVATAR_ACCESSIBLE_DESCRIPTION,
+                                name)
+                         forAttribute:NSAccessibilityDescriptionAttribute];
   }
 }
 

@@ -8724,6 +8724,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
         Users
       </message>
+      <message name="IDS_PROFILES_AVATAR_ACCESSIBLE_DESCRIPTION" desc="The help text for the avatar button for accessibility">
+        <ph name="CURRENT_USER">$1<ex>First user</ex></ph>, switch users
+      </message>
       <message name="IDS_PROFILES_BUBBLE_ACCESSIBLE_NAME" desc="Title of the avatar bubble menu for accessibility">
         Switch Users
       </message>
