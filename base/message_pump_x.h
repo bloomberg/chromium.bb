@@ -52,12 +52,6 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   // Overridden from MessagePumpGlib:
   virtual bool RunOnce(GMainContext* context, bool block) OVERRIDE;
 
-#if defined(TOOLKIT_USES_GTK)
-  // Disables Gtk/Gdk event pumping. This will be used when
-  // NativeWidgetX is enabled.
-  static void DisableGtkMessagePump();
-#endif
-
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
 
