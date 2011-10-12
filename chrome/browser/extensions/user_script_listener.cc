@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/user_script_listener.h"
 
+#include "base/bind.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -15,6 +16,17 @@
 #include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
 
+struct UserScriptListener::ProfileData {
+  // True if the user scripts contained in |url_patterns| are ready for
+  // injection.
+  bool user_scripts_ready;
+
+  // A list of URL patterns that have will have user scripts applied to them.
+  URLPatterns url_patterns;
+
+  ProfileData() : user_scripts_ready(false) {}
+};
+
 UserScriptListener::UserScriptListener()
     : resource_queue_(NULL),
       user_scripts_ready_(false) {
@@ -25,6 +37,8 @@ UserScriptListener::UserScriptListener()
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  NotificationService::AllSources());
   AddRef();  // Will be balanced in Cleanup().
 }
@@ -46,16 +60,23 @@ bool UserScriptListener::ShouldDelayRequest(
     return false;
   }
 
+  // Note: we could delay only requests made by the profile who is causing the
+  // delay, but it's a little more complicated to associate requests with the
+  // right profile. Since this is a rare case, we'll just take the easy way
+  // out.
   if (user_scripts_ready_)
     return false;
 
-  for (URLPatterns::iterator it = url_patterns_.begin();
-       it != url_patterns_.end(); ++it) {
-    if ((*it).MatchesURL(request->url())) {
-      // One of the user scripts wants to inject into this request, but the
-      // script isn't ready yet. Delay the request.
-      delayed_request_ids_.push_front(request_id);
-      return true;
+  for (ProfileDataMap::const_iterator pt = profile_data_.begin();
+       pt != profile_data_.end(); ++pt) {
+    for (URLPatterns::const_iterator it = pt->second.url_patterns.begin();
+         it != pt->second.url_patterns.end(); ++it) {
+      if ((*it).MatchesURL(request->url())) {
+        // One of the user scripts wants to inject into this request, but the
+        // script isn't ready yet. Delay the request.
+        delayed_request_ids_.push_front(request_id);
+        return true;
+      }
     }
   }
 
@@ -68,38 +89,69 @@ void UserScriptListener::WillShutdownResourceQueue() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &UserScriptListener::Cleanup));
+      base::Bind(&UserScriptListener::Cleanup, this));
 }
 
 UserScriptListener::~UserScriptListener() {
 }
 
-void UserScriptListener::StartDelayedRequests() {
+void UserScriptListener::CheckIfAllUserScriptsReady() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  bool was_ready = user_scripts_ready_;
 
   user_scripts_ready_ = true;
-
-  if (resource_queue_) {
-    for (DelayedRequests::iterator it = delayed_request_ids_.begin();
-         it != delayed_request_ids_.end(); ++it) {
-      resource_queue_->StartDelayedRequest(this, *it);
-    }
+  for (ProfileDataMap::const_iterator it = profile_data_.begin();
+       it != profile_data_.end(); ++it) {
+    if (!it->second.user_scripts_ready)
+      user_scripts_ready_ = false;
   }
 
-  delayed_request_ids_.clear();
+  if (user_scripts_ready_ && !was_ready) {
+    if (resource_queue_) {
+      for (DelayedRequests::iterator it = delayed_request_ids_.begin();
+           it != delayed_request_ids_.end(); ++it) {
+        resource_queue_->StartDelayedRequest(this, *it);
+      }
+    }
+
+    delayed_request_ids_.clear();
+  }
 }
 
-void UserScriptListener::AppendNewURLPatterns(const URLPatterns& new_patterns) {
+void UserScriptListener::UserScriptsReady(void* profile_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  profile_data_[profile_id].user_scripts_ready = true;
+  CheckIfAllUserScriptsReady();
+}
+
+void UserScriptListener::ProfileDestroyed(void* profile_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  profile_data_.erase(profile_id);
+
+  // We may have deleted the only profile we were waiting on.
+  CheckIfAllUserScriptsReady();
+}
+
+void UserScriptListener::AppendNewURLPatterns(void* profile_id,
+                                              const URLPatterns& new_patterns) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   user_scripts_ready_ = false;
-  url_patterns_.insert(url_patterns_.end(),
-                       new_patterns.begin(), new_patterns.end());
+
+  ProfileData& data = profile_data_[profile_id];
+  data.user_scripts_ready = false;
+
+  data.url_patterns.insert(data.url_patterns.end(),
+                           new_patterns.begin(), new_patterns.end());
 }
 
-void UserScriptListener::ReplaceURLPatterns(const URLPatterns& patterns) {
+void UserScriptListener::ReplaceURLPatterns(void* profile_id,
+                                            const URLPatterns& patterns) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  url_patterns_ = patterns;
+
+  ProfileData& data = profile_data_[profile_id];
+  data.url_patterns = patterns;
 }
 
 void UserScriptListener::Cleanup() {
@@ -128,23 +180,23 @@ void UserScriptListener::Observe(int type,
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      Profile* profile = Source<Profile>(source).ptr();
       const Extension* extension = Details<const Extension>(details).ptr();
       if (extension->content_scripts().empty())
         return;  // no new patterns from this extension.
 
       URLPatterns new_patterns;
-      CollectURLPatterns(Details<const Extension>(details).ptr(),
-                         &new_patterns);
+      CollectURLPatterns(extension, &new_patterns);
       if (!new_patterns.empty()) {
-        BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE,
-            NewRunnableMethod(
-                this, &UserScriptListener::AppendNewURLPatterns, new_patterns));
+        BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+            &UserScriptListener::AppendNewURLPatterns, this,
+            profile, new_patterns));
       }
       break;
     }
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      Profile* profile = Source<Profile>(source).ptr();
       const Extension* unloaded_extension =
           Details<UnloadedExtensionInfo>(details)->extension;
       if (unloaded_extension->content_scripts().empty())
@@ -152,24 +204,29 @@ void UserScriptListener::Observe(int type,
 
       // Clear all our patterns and reregister all the still-loaded extensions.
       URLPatterns new_patterns;
-      ExtensionService* service =
-          Source<Profile>(source).ptr()->GetExtensionService();
+      ExtensionService* service = profile->GetExtensionService();
       for (ExtensionList::const_iterator it = service->extensions()->begin();
            it != service->extensions()->end(); ++it) {
         if (*it != unloaded_extension)
           CollectURLPatterns(*it, &new_patterns);
       }
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this, &UserScriptListener::ReplaceURLPatterns, new_patterns));
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+          &UserScriptListener::ReplaceURLPatterns, this,
+          profile, new_patterns));
       break;
     }
 
     case chrome::NOTIFICATION_USER_SCRIPTS_UPDATED: {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this, &UserScriptListener::StartDelayedRequests));
+      Profile* profile = Source<Profile>(source).ptr();
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+          &UserScriptListener::UserScriptsReady, this, profile));
+      break;
+    }
+
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+      Profile* profile = Source<Profile>(source).ptr();
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+          &UserScriptListener::ProfileDestroyed, this, profile));
       break;
     }
 

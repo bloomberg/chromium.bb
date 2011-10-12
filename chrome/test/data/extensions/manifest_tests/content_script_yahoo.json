@@ -1,0 +1,10 @@
+{
+  "name": "test",
+  "version": "1",
+  "content_scripts": [
+    {
+      "matches": ["http://yahoo.com/*"],
+      "js": ["foo.js"]
+    }
+  ]
+}
