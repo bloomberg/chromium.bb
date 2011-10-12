@@ -177,8 +177,7 @@ void TabContentsViewWin::ShowCreatedWindow(int route_id,
 
   RenderViewHost* new_rvh = iter->second;
   pending_contents_.erase(route_id);
-  if (!new_rvh->process()->HasConnection() ||
-      (new_rvh->delegate()->GetAsTabContents() && !new_rvh->view()))
+  if (!new_rvh->process()->HasConnection() || !new_rvh->view())
     return;
   new_rvh->Init();
 }

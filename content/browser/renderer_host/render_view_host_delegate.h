@@ -205,6 +205,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Return this object cast to a BackgroundContents, if it is one. If the
   // object is not a BackgroundContents, returns NULL.
+  // DEPRECATED: http://crbug.com/98934
   virtual BackgroundContents* GetAsBackgroundContents();
 
   // Return type of RenderView which is attached with this object.
