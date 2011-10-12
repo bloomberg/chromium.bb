@@ -158,10 +158,10 @@ void Textfield::ClearSelection() const {
 }
 
 bool Textfield::HasSelection() const {
-  gfx::SelectionModel sel;
+  ui::Range range;
   if (native_wrapper_)
-    native_wrapper_->GetSelectionModel(&sel);
-  return sel.selection_start() != sel.selection_end();
+    native_wrapper_->GetSelectedRange(&range);
+  return !range.is_empty();
 }
 
 void Textfield::SetTextColor(SkColor color) {
@@ -266,6 +266,16 @@ void Textfield::SyncText() {
 
 bool Textfield::IsIMEComposing() const {
   return native_wrapper_ && native_wrapper_->IsIMEComposing();
+}
+
+void Textfield::GetSelectedRange(ui::Range* range) const {
+  DCHECK(native_wrapper_);
+  native_wrapper_->GetSelectedRange(range);
+}
+
+void Textfield::SelectRange(const ui::Range& range) {
+  DCHECK(native_wrapper_);
+  native_wrapper_->SelectRange(range);
 }
 
 void Textfield::GetSelectionModel(gfx::SelectionModel* sel) const {
@@ -394,10 +404,10 @@ void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
   state->value = text_;
 
   DCHECK(native_wrapper_);
-  gfx::SelectionModel sel;
-  native_wrapper_->GetSelectionModel(&sel);
-  state->selection_start = sel.selection_start();
-  state->selection_end = sel.selection_end();
+  ui::Range range;
+  native_wrapper_->GetSelectedRange(&range);
+  state->selection_start = range.start();
+  state->selection_end = range.end();
 }
 
 TextInputClient* Textfield::GetTextInputClient() {

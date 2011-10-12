@@ -122,7 +122,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
   textfield_->SetText(ASCIIToUTF16("some text"));
 
   // Test selecting a range.
-  textfield_->SelectSelectionModel(gfx::SelectionModel(3, 7));
+  textfield_->SelectRange(ui::Range(3, 7));
   VerifySelectionHandlePositions(false);
 
   // Test selecting everything.
@@ -153,46 +153,35 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
   VerifySelectionHandlePositions(false);
 
   // Test selection range inside one run and starts or ends at run boundary.
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(2, 3, 2, gfx::SelectionModel::TRAILING));
+  textfield_->SelectRange(ui::Range(2, 3));
   VerifySelectionHandlePositions(false);
 
-  // TODO(xji): change to textfield_->SelectRange(3, 2).
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(3, 2, 2, gfx::SelectionModel::LEADING));
+  textfield_->SelectRange(ui::Range(3, 2));
   VerifySelectionHandlePositions(false);
 
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(3, 4, 3, gfx::SelectionModel::TRAILING));
+  textfield_->SelectRange(ui::Range(3, 4));
   VerifySelectionHandlePositions(false);
 
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(4, 3, 3, gfx::SelectionModel::LEADING));
+  textfield_->SelectRange(ui::Range(4, 3));
   VerifySelectionHandlePositions(false);
 
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(3, 6, 5, gfx::SelectionModel::TRAILING));
+  textfield_->SelectRange(ui::Range(3, 6));
   VerifySelectionHandlePositions(false);
 
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(6, 3, 3, gfx::SelectionModel::LEADING));
+  textfield_->SelectRange(ui::Range(6, 3));
   VerifySelectionHandlePositions(false);
 
   // Test selection range accross runs.
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(0, 6, 5, gfx::SelectionModel::TRAILING));
+  textfield_->SelectRange(ui::Range(0, 6));
   VerifySelectionHandlePositions(false);
 
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(6, 0, 0, gfx::SelectionModel::LEADING));
+  textfield_->SelectRange(ui::Range(6, 0));
   VerifySelectionHandlePositions(false);
 
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(1, 4, 3, gfx::SelectionModel::TRAILING));
+  textfield_->SelectRange(ui::Range(1, 4));
   VerifySelectionHandlePositions(false);
 
-  textfield_->SelectSelectionModel(
-      gfx::SelectionModel(4, 1, 1, gfx::SelectionModel::LEADING));
+  textfield_->SelectRange(ui::Range(4, 1));
   VerifySelectionHandlePositions(false);
 }
 
@@ -201,7 +190,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
 TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   CreateTextfield();
   textfield_->SetText(ASCIIToUTF16("textfield with selected text"));
-  textfield_->SelectSelectionModel(gfx::SelectionModel(3, 7));
+  textfield_->SelectRange(ui::Range(3, 7));
 
   EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "tfie");
   VerifySelectionHandlePositions(false);
@@ -228,6 +217,124 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   x = textfield_->font().GetStringWidth(ASCIIToUTF16("with selected "));
   SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
   EXPECT_EQ(UTF16ToUTF8(textfield_->GetSelectedText()), "selected ");
+  VerifySelectionHandlePositions(false);
+}
+
+TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
+  CreateTextfield();
+  textfield_->SetText(WideToUTF16(L"abc\x05e1\x05e2\x05e3"L"def"));
+
+  // Select [c] from left to right.
+  textfield_->SelectRange(ui::Range(2, 3));
+  EXPECT_EQ(WideToUTF16(L"c"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  // Drag selection handle 2 to right by 1 char.
+  int x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e3"));
+  SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
+  EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  // Drag selection handle 1 to left by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"b"));
+  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 1);
+  EXPECT_EQ(WideToUTF16(L"bc\x05e1\x05e2"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(true);
+
+  // Select [c] from right to left.
+  textfield_->SelectRange(ui::Range(3, 2));
+  EXPECT_EQ(WideToUTF16(L"c"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  // Drag selection handle 1 to right by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e3"));
+  SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
+  EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(true);
+
+  // Drag selection handle 2 to left by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"b"));
+  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 2);
+  EXPECT_EQ(WideToUTF16(L"bc\x05e1\x05e2"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  // Select [\x5e1] from right to left.
+  textfield_->SelectRange(ui::Range(3, 4));
+  EXPECT_EQ(WideToUTF16(L"\x05e1"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  /* TODO(xji): for bidi text "abcDEF" whose display is "abcFEDhij", when click
+     right of 'D' and select [D] then move the left selection handle to left
+     by one character, it should select [ED], instead it selects [F].
+     Reason: click right of 'D' and left of 'h' return the same x-axis position,
+     pass this position to FindCursorPosition() returns index of 'h'. which
+     means the selection start changed from 3 to 6.
+     Need further investigation on whether this is a bug in Pango and how to
+     work around it.
+  // Drag selection handle 2 to left by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e2"));
+  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 2);
+  EXPECT_EQ(WideToUTF16(L"\x05e1\x05e2"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+  */
+
+  // Drag selection handle 1 to right by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"d"));
+  SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
+  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3"L"d"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(true);
+
+  // Select [\x5e1] from left to right.
+  textfield_->SelectRange(ui::Range(4, 3));
+  EXPECT_EQ(WideToUTF16(L"\x05e1"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  /* TODO(xji): see detail of above commented out test case.
+  // Drag selection handle 1 to left by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e2"));
+  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 1);
+  EXPECT_EQ(WideToUTF16(L"\x05e1\x05e2"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(true);
+  */
+
+  // Drag selection handle 2 to right by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"d"));
+  SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
+  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3"L"d"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  // Select [\x05r3] from right to left.
+  textfield_->SelectRange(ui::Range(5, 6));
+  EXPECT_EQ(WideToUTF16(L"\x05e3"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  // Drag selection handle 2 to left by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"c"));
+  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 2);
+  EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  // Drag selection handle 1 to right by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e2"));
+  SimulateSelectionHandleDrag(gfx::Point(x, 0), 1);
+  EXPECT_EQ(WideToUTF16(L"c\x05e1"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(true);
+
+  // Select [\x05r3] from left to right.
+  textfield_->SelectRange(ui::Range(6, 5));
+  EXPECT_EQ(WideToUTF16(L"\x05e3"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(false);
+
+  // Drag selection handle 1 to left by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"c"));
+  SimulateSelectionHandleDrag(gfx::Point(-x, 0), 1);
+  EXPECT_EQ(WideToUTF16(L"c\x05e1\x05e2"), textfield_->GetSelectedText());
+  VerifySelectionHandlePositions(true);
+
+  // Drag selection handle 2 to right by 1 char.
+  x = textfield_->font().GetStringWidth(WideToUTF16(L"\x05e2"));
+  SimulateSelectionHandleDrag(gfx::Point(x, 0), 2);
+  EXPECT_EQ(WideToUTF16(L"c\x05e1"), textfield_->GetSelectedText());
   VerifySelectionHandlePositions(false);
 }
 

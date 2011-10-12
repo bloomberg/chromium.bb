@@ -226,15 +226,13 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
                                             selected.selection_end());
     size_t selected_range_length = max_of_selected_range -
                                    min_of_selected_range;
-    if (max_of_selected_range <= drop_destination.selection_end())
-      drop_destination.set_selection_end(
-          drop_destination.selection_end() - selected_range_length);
-    else if (min_of_selected_range <= drop_destination.selection_end())
-      drop_destination.set_selection_end(min_of_selected_range);
-    model_->DeleteSelectionAndInsertTextAt(text,
-                                           drop_destination.selection_end());
+    size_t drop_destination_end = drop_destination.selection_end();
+    if (max_of_selected_range <= drop_destination_end)
+      drop_destination_end -= selected_range_length;
+    else if (min_of_selected_range <= drop_destination_end)
+      drop_destination_end = min_of_selected_range;
+    model_->DeleteSelectionAndInsertTextAt(text, drop_destination_end);
   } else {
-    drop_destination.set_selection_start(drop_destination.selection_end());
     model_->MoveCursorTo(drop_destination);
     // Drop always inserts text even if the textfield is not in insert mode.
     model_->InsertText(text);
@@ -278,9 +276,11 @@ void NativeTextfieldViews::SelectRect(const gfx::Point& start,
   // Merge selection models of "start_pos" and "end_pos" so that
   // selection start is the value from "start_pos", while selection end,
   // caret position, and caret placement are values from "end_pos".
-  gfx::SelectionModel sel(end_pos);
-  sel.set_selection_start(start_pos.selection_start());
-  model_->SelectSelectionModel(sel);
+  if (start_pos.selection_start() == end_pos.selection_end())
+    model_->SelectSelectionModel(end_pos);
+  else
+    model_->SelectRange(ui::Range(start_pos.selection_start(),
+                                  end_pos.selection_end()));
 
   OnCaretBoundsChanged();
   SchedulePaint();
@@ -488,6 +488,16 @@ gfx::NativeView NativeTextfieldViews::GetTestingHandle() const {
 
 bool NativeTextfieldViews::IsIMEComposing() const {
   return model_->HasCompositionText();
+}
+
+void NativeTextfieldViews::GetSelectedRange(ui::Range* range) const {
+  model_->GetSelectedRange(range);
+}
+
+void NativeTextfieldViews::SelectRange(const ui::Range& range) {
+  model_->SelectRange(range);
+  OnCaretBoundsChanged();
+  SchedulePaint();
 }
 
 void NativeTextfieldViews::GetSelectionModel(gfx::SelectionModel* sel) const {
@@ -758,7 +768,7 @@ bool NativeTextfieldViews::SetSelectionRange(const ui::Range& range) {
     return false;
 
   OnBeforeUserAction();
-  SelectSelectionModel(gfx::SelectionModel(range.start(), range.end()));
+  SelectRange(range);
   OnAfterUserAction();
   return true;
 }
@@ -768,8 +778,7 @@ bool NativeTextfieldViews::DeleteRange(const ui::Range& range) {
     return false;
 
   OnBeforeUserAction();
-  gfx::SelectionModel selection(range.start(), range.end());
-  model_->SelectSelectionModel(selection);
+  model_->SelectRange(range);
   if (model_->HasSelection()) {
     model_->DeleteSelection();
     UpdateAfterChange(true, true);

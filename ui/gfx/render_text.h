@@ -100,10 +100,6 @@ class UI_EXPORT RenderText {
   size_t GetCursorPosition() const;
   void SetCursorPosition(size_t position);
 
-  void SetCaretPlacement(SelectionModel::CaretPlacement placement) {
-      selection_model_.set_caret_placement(placement);
-  }
-
   // Moves the cursor left or right. Cursor movement is visual, meaning that
   // left and right are relative to screen, not the directionality of the text.
   // If |select| is false, the selection start is moved to the same position.
@@ -122,6 +118,13 @@ class UI_EXPORT RenderText {
   // If |select| is false, the selection start is moved to the same position.
   // Returns true if the cursor position or selection range changed.
   bool MoveCursorTo(const Point& point, bool select);
+
+  // Set the selection_model_ based on |range|.
+  // If the |range| start or end is greater than text length, it is modified
+  // to be the text length.
+  // If the |range| start or end is not a cursorable position (not on grapheme
+  // boundary), it is a NO-OP and returns false. Otherwise, returns true.
+  bool SelectRange(const ui::Range& range);
 
   size_t GetSelectionStart() const {
       return selection_model_.selection_start();

@@ -336,6 +336,14 @@ bool NativeTextfieldWin::IsIMEComposing() const {
   return composition_size > 0;
 }
 
+void NativeTextfieldWin::GetSelectedRange(ui::Range* range) const {
+  NOTREACHED();
+}
+
+void NativeTextfieldWin::SelectRange(const ui::Range& range) {
+  NOTREACHED();
+}
+
 void NativeTextfieldWin::GetSelectionModel(gfx::SelectionModel* sel) const {
   NOTREACHED();
 }

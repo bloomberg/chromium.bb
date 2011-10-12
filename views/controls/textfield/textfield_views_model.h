@@ -148,6 +148,14 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // Returns the selected text.
   string16 GetSelectedText() const;
 
+  // Gets the selected range.
+  void GetSelectedRange(ui::Range* range) const;
+
+  // The current composition text will be confirmed. The selection starts with
+  // the range's start position, and ends with the range's end position,
+  // therefore the cursor position becomes the end position.
+  void SelectRange(const ui::Range& range);
+
   void GetSelectionModel(gfx::SelectionModel* sel) const;
 
   // The current composition text will be confirmed.

@@ -99,6 +99,12 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // Returns whether or not an IME is composing text.
   virtual bool IsIMEComposing() const = 0;
 
+  // Gets the selected range.
+  virtual void GetSelectedRange(ui::Range* range) const = 0;
+
+  // Selects the text given by |range|.
+  virtual void SelectRange(const ui::Range& range) = 0;
+
   // Gets the selection model.
   virtual void GetSelectionModel(gfx::SelectionModel* sel) const = 0;
 

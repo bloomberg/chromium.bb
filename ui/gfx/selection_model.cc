@@ -14,10 +14,6 @@ SelectionModel::SelectionModel(size_t pos) {
   Init(pos, pos, pos, LEADING);
 }
 
-SelectionModel::SelectionModel(size_t start, size_t end) {
-  Init(start, end, end, LEADING);
-}
-
 SelectionModel::SelectionModel(size_t end,
                                size_t pos,
                                CaretPlacement placement) {

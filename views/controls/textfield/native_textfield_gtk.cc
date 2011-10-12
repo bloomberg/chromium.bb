@@ -249,12 +249,20 @@ bool NativeTextfieldGtk::IsIMEComposing() const {
   return false;
 }
 
-void NativeTextfieldGtk::GetSelectionModel(gfx::SelectionModel* sel) const {
+void NativeTextfieldGtk::GetSelectedRange(ui::Range* range) const {
   gint start_pos;
   gint end_pos;
   gtk_editable_get_selection_bounds(
       GTK_EDITABLE(native_view()), &start_pos, &end_pos);
-  *sel = gfx::SelectionModel(start_pos, end_pos);
+  *range = ui::Range(start_pos, end_pos);
+}
+
+void NativeTextfieldGtk::SelectRange(const ui::Range& range) {
+  NOTREACHED();
+}
+
+void NativeTextfieldGtk::GetSelectionModel(gfx::SelectionModel* sel) const {
+  NOTREACHED();
 }
 
 void NativeTextfieldGtk::SelectSelectionModel(const gfx::SelectionModel& sel) {

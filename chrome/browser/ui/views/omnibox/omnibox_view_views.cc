@@ -241,7 +241,7 @@ bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
       GetSelectionBounds(&start, &end);
       if (start != end || start < length) {
         OnBeforePossibleChange();
-        textfield_->SelectSelectionModel(gfx::SelectionModel(length, length));
+        textfield_->SelectRange(ui::Range(length, length));
         OnAfterPossibleChange();
         handled = true;
       }
@@ -413,12 +413,10 @@ void OmniboxViewViews::SetWindowTextAndCaretPos(const string16& text,
 void OmniboxViewViews::SetForcedQuery() {
   const string16 current_text(GetText());
   const size_t start = current_text.find_first_not_of(kWhitespaceUTF16);
-  if (start == string16::npos || (current_text[start] != '?')) {
+  if (start == string16::npos || (current_text[start] != '?'))
     SetUserText(ASCIIToUTF16("?"));
-  } else {
-    textfield_->SelectSelectionModel(gfx::SelectionModel(current_text.size(),
-                                                         start + 1));
-  }
+  else
+    textfield_->SelectRange(ui::Range(current_text.size(), start + 1));
 }
 
 bool OmniboxViewViews::IsSelectAll() {
@@ -432,17 +430,17 @@ bool OmniboxViewViews::DeleteAtEndPressed() {
 
 void OmniboxViewViews::GetSelectionBounds(string16::size_type* start,
                                           string16::size_type* end) {
-  gfx::SelectionModel sel;
-  textfield_->GetSelectionModel(&sel);
-  *start = static_cast<size_t>(sel.selection_end());
-  *end = static_cast<size_t>(sel.selection_start());
+  ui::Range range;
+  textfield_->GetSelectedRange(&range);
+  *start = static_cast<size_t>(range.end());
+  *end = static_cast<size_t>(range.start());
 }
 
 void OmniboxViewViews::SelectAll(bool reversed) {
   if (reversed)
-    textfield_->SelectSelectionModel(gfx::SelectionModel(GetTextLength(), 0));
+    textfield_->SelectRange(ui::Range(GetTextLength(), 0));
   else
-    textfield_->SelectSelectionModel(gfx::SelectionModel(0, GetTextLength()));
+    textfield_->SelectRange(ui::Range(0, GetTextLength()));
 }
 
 void OmniboxViewViews::RevertAll() {
@@ -458,15 +456,12 @@ void OmniboxViewViews::UpdatePopup() {
 
   // Don't inline autocomplete when the caret/selection isn't at the end of
   // the text, or in the middle of composition.
-  gfx::SelectionModel sel;
-  textfield_->GetSelectionModel(&sel);
-  size_t max_of_selection = std::max(sel.selection_start(),
-                                     sel.selection_end());
+  ui::Range sel;
+  textfield_->GetSelectedRange(&sel);
   bool no_inline_autocomplete =
-      max_of_selection < GetTextLength() || textfield_->IsIMEComposing();
+      sel.GetMax() < GetTextLength() || textfield_->IsIMEComposing();
 
-  bool is_sel_empty = (sel.selection_start() == sel.selection_end());
-  model_->StartAutocomplete(!is_sel_empty, no_inline_autocomplete);
+  model_->StartAutocomplete(!sel.is_empty(), no_inline_autocomplete);
 }
 
 void OmniboxViewViews::ClosePopup() {
@@ -481,12 +476,8 @@ void OmniboxViewViews::SetFocus() {
 void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     const string16& display_text,
     bool save_original_selection) {
-  if (save_original_selection) {
-    gfx::SelectionModel sel;
-    textfield_->GetSelectionModel(&sel);
-    saved_temporary_selection_.set_start(sel.selection_start());
-    saved_temporary_selection_.set_end(sel.selection_end());
-  }
+  if (save_original_selection)
+    textfield_->GetSelectedRange(&saved_temporary_selection_);
 
   SetWindowTextAndCaretPos(display_text, display_text.length());
   TextChanged();
@@ -504,28 +495,20 @@ bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
 }
 
 void OmniboxViewViews::OnRevertTemporaryText() {
-  gfx::SelectionModel sel(saved_temporary_selection_.start(),
-                          saved_temporary_selection_.end());
-  textfield_->SelectSelectionModel(sel);
+  textfield_->SelectRange(saved_temporary_selection_);
   TextChanged();
 }
 
 void OmniboxViewViews::OnBeforePossibleChange() {
   // Record our state.
   text_before_change_ = GetText();
-  gfx::SelectionModel sel;
-  textfield_->GetSelectionModel(&sel);
-  sel_before_change_.set_start(sel.selection_start());
-  sel_before_change_.set_end(sel.selection_end());
+  textfield_->GetSelectedRange(&sel_before_change_);
   ime_composing_before_change_ = textfield_->IsIMEComposing();
 }
 
 bool OmniboxViewViews::OnAfterPossibleChange() {
-  gfx::SelectionModel sel;
-  textfield_->GetSelectionModel(&sel);
   ui::Range new_sel;
-  new_sel.set_start(sel.selection_start());
-  new_sel.set_end(sel.selection_end());
+  textfield_->GetSelectedRange(&new_sel);
 
   // See if the text or selection have changed since OnBeforePossibleChange().
   const string16 new_text = GetText();
@@ -714,15 +697,13 @@ void OmniboxViewViews::SetTextAndSelectedRange(const string16& text,
                                                const ui::Range& range) {
   if (text != GetText())
     textfield_->SetText(text);
-  textfield_->SelectSelectionModel(gfx::SelectionModel(
-      range.start(), range.end()));
+  textfield_->SelectRange(range);
 }
 
 string16 OmniboxViewViews::GetSelectedText() const {
   // TODO(oshima): Support instant, IME.
   return textfield_->GetSelectedText();
 }
-
 
 AutocompletePopupView* OmniboxViewViews::CreatePopupView(
     View* location_bar) {

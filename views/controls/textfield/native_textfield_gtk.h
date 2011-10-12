@@ -53,6 +53,8 @@ class NativeTextfieldGtk : public NativeControlGtk,
   virtual View* GetView() OVERRIDE;
   virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
   virtual bool IsIMEComposing() const OVERRIDE;
+  virtual void GetSelectedRange(ui::Range* range) const OVERRIDE;
+  virtual void SelectRange(const ui::Range& range) OVERRIDE;
   virtual void GetSelectionModel(gfx::SelectionModel* sel) const OVERRIDE;
   virtual void SelectSelectionModel(const gfx::SelectionModel& sel) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;

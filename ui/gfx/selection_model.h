@@ -49,30 +49,29 @@ class UI_EXPORT SelectionModel {
 
   SelectionModel();
   explicit SelectionModel(size_t pos);
-  SelectionModel(size_t start, size_t end);
   SelectionModel(size_t end, size_t pos, CaretPlacement status);
   SelectionModel(size_t start, size_t end, size_t pos, CaretPlacement status);
 
   virtual ~SelectionModel();
 
   size_t selection_start() const { return selection_start_; }
-  void set_selection_start(size_t pos) { selection_start_ = pos; }
-
   size_t selection_end() const { return selection_end_; }
-  void set_selection_end(size_t pos) { selection_end_ = pos; }
-
   size_t caret_pos() const { return caret_pos_; }
-  void set_caret_pos(size_t pos) { caret_pos_ = pos; }
-
   CaretPlacement caret_placement() const { return caret_placement_; }
-  void set_caret_placement(CaretPlacement placement) {
-    caret_placement_ = placement;
-  }
 
   bool Equals(const SelectionModel& sel) const;
 
  private:
+  friend class RenderText;
+
   void Init(size_t start, size_t end, size_t pos, CaretPlacement status);
+
+  void set_selection_start(size_t pos) { selection_start_ = pos; }
+  void set_selection_end(size_t pos) { selection_end_ = pos; }
+  void set_caret_pos(size_t pos) { caret_pos_ = pos; }
+  void set_caret_placement(CaretPlacement placement) {
+    caret_placement_ = placement;
+  }
 
   // Logical selection start. If there is non-empty selection, if
   // selection_start_ is less than selection_end_, the selection starts visually

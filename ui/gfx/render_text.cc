@@ -220,6 +220,30 @@ bool RenderText::MoveCursorTo(const Point& point, bool select) {
   return MoveCursorTo(selection);
 }
 
+bool RenderText::SelectRange(const ui::Range& range) {
+  size_t text_length = text().length();
+  size_t start = std::min(range.start(), text_length);
+  size_t end = std::min(range.end(), text_length);
+
+  if (!IsCursorablePosition(start) || !IsCursorablePosition(end))
+    return false;
+
+  size_t pos = end;
+  SelectionModel::CaretPlacement placement = SelectionModel::LEADING;
+  if (start < end) {
+    pos = GetIndexOfPreviousGrapheme(end);
+    DCHECK_LT(pos, end);
+    placement = SelectionModel::TRAILING;
+  } else if (end == text_length) {
+    SelectionModel boundary = GetTextDirection() == base::i18n::RIGHT_TO_LEFT ?
+        LeftEndSelectionModel() : RightEndSelectionModel();
+    pos = boundary.caret_pos();
+    placement = boundary.caret_placement();
+  }
+  SetSelectionModel(SelectionModel(start, end, pos, placement));
+  return true;
+}
+
 bool RenderText::IsPointInSelection(const Point& point) {
   if (EmptySelection())
     return false;
@@ -450,7 +474,7 @@ const Point& RenderText::GetUpdatedDisplayOffset() {
 SelectionModel RenderText::GetLeftSelectionModel(const SelectionModel& current,
                                                  BreakType break_type) {
   if (break_type == LINE_BREAK)
-    return SelectionModel(0, 0, SelectionModel::LEADING);
+    return LeftEndSelectionModel();
   size_t pos = std::max(static_cast<long>(current.selection_end() - 1),
                         static_cast<long>(0));
   if (break_type == CHARACTER_BREAK)
@@ -491,8 +515,7 @@ SelectionModel RenderText::GetRightSelectionModel(const SelectionModel& current,
   if (text_.empty())
     return SelectionModel(0, 0, SelectionModel::LEADING);
   if (break_type == LINE_BREAK)
-    return SelectionModel(text().length(),
-        GetIndexOfPreviousGrapheme(text().length()), SelectionModel::TRAILING);
+    return RightEndSelectionModel();
   size_t pos = std::min(current.selection_end() + 1, text().length());
   if (break_type == CHARACTER_BREAK)
     return SelectionModel(pos, pos, SelectionModel::LEADING);

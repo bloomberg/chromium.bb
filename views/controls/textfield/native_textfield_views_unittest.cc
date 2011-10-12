@@ -794,7 +794,8 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_InitiateDrag) {
   // Ensure the textfield will provide selected text for drag data.
   string16 string;
   ui::OSExchangeData data;
-  textfield_->SelectSelectionModel(gfx::SelectionModel(6, 12));
+  const ui::Range kStringRange(6, 12);
+  textfield_->SelectRange(kStringRange);
   const gfx::Point kStringPoint(GetCursorPositionX(9), 0);
   textfield_view_->WriteDragDataForView(NULL, kStringPoint, &data);
   EXPECT_TRUE(data.GetString(&string));
@@ -809,7 +810,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_InitiateDrag) {
   textfield_->ClearSelection();
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
             textfield_view_->GetDragOperationsForView(NULL, kStringPoint));
-  textfield_->SelectSelectionModel(gfx::SelectionModel(6, 12));
+  textfield_->SelectRange(kStringRange);
   // Ensure that textfields only initiate drag operations inside the selection.
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
             textfield_view_->GetDragOperationsForView(NULL, gfx::Point()));
@@ -835,7 +836,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheRight) {
   std::set<OSExchangeData::CustomFormat> custom_formats;
 
   // Start dragging "ello".
-  textfield_->SelectSelectionModel(gfx::SelectionModel(1, 5));
+  textfield_->SelectRange(ui::Range(1, 5));
   MouseEvent click_a(ui::ET_MOUSE_PRESSED, GetCursorPositionX(3), 0,
                      ui::EF_LEFT_BUTTON_DOWN);
   textfield_view_->OnMousePressed(click_a);
@@ -889,7 +890,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheLeft) {
   std::set<OSExchangeData::CustomFormat> custom_formats;
 
   // Start dragging " worl".
-  textfield_->SelectSelectionModel(gfx::SelectionModel(5, 10));
+  textfield_->SelectRange(ui::Range(5, 10));
   MouseEvent click_a(ui::ET_MOUSE_PRESSED, GetCursorPositionX(7), 0,
                      ui::EF_LEFT_BUTTON_DOWN);
   textfield_view_->OnMousePressed(click_a);
@@ -936,7 +937,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_Canceled) {
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
   // Start dragging "worl".
-  textfield_->SelectSelectionModel(gfx::SelectionModel(6, 10));
+  textfield_->SelectRange(ui::Range(6, 10));
   MouseEvent click(ui::ET_MOUSE_PRESSED, GetCursorPositionX(8), 0,
                    ui::EF_LEFT_BUTTON_DOWN);
   textfield_view_->OnMousePressed(click);

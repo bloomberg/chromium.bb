@@ -390,8 +390,12 @@ bool TextfieldViewsModel::MoveCursorTo(const gfx::SelectionModel& selection) {
     ConfirmCompositionText();
     // ConfirmCompositionText() updates cursor position. Need to reflect it in
     // the SelectionModel parameter of MoveCursorTo().
-    gfx::SelectionModel sel(selection);
-    sel.set_selection_start(render_text_->GetSelectionStart());
+    if (render_text_->GetSelectionStart() != selection.selection_end())
+      return render_text_->SelectRange(ui::Range(
+          render_text_->GetSelectionStart(), selection.selection_end()));
+    gfx::SelectionModel sel(selection.selection_end(),
+                            selection.caret_pos(),
+                            selection.caret_placement());
     return render_text_->MoveCursorTo(sel);
   }
   return render_text_->MoveCursorTo(selection);
@@ -406,6 +410,17 @@ bool TextfieldViewsModel::MoveCursorTo(const gfx::Point& point, bool select) {
 string16 TextfieldViewsModel::GetSelectedText() const {
   return GetText().substr(render_text_->MinOfSelection(),
       (render_text_->MaxOfSelection() - render_text_->MinOfSelection()));
+}
+
+void TextfieldViewsModel::GetSelectedRange(ui::Range* range) const {
+  range->set_start(render_text_->GetSelectionStart());
+  range->set_end(render_text_->GetCursorPosition());
+}
+
+void TextfieldViewsModel::SelectRange(const ui::Range& range) {
+  if (HasCompositionText())
+    ConfirmCompositionText();
+  render_text_->SelectRange(range);
 }
 
 void TextfieldViewsModel::GetSelectionModel(gfx::SelectionModel* sel) const {
@@ -499,11 +514,8 @@ bool TextfieldViewsModel::Cut() {
     // than beginning, unlike Delete/Backspace.
     // TODO(oshima): Change Delete/Backspace to use DeleteSelection,
     // update DeleteEdit and remove this trick.
-    gfx::SelectionModel sel(render_text_->GetCursorPosition(),
-                            render_text_->GetSelectionStart(),
-                            render_text_->GetSelectionStart(),
-                            gfx::SelectionModel::LEADING);
-    render_text_->MoveCursorTo(sel);
+    render_text_->SelectRange(ui::Range(render_text_->GetCursorPosition(),
+                                        render_text_->GetSelectionStart()));
     DeleteSelection();
     return true;
   }
@@ -582,8 +594,7 @@ void TextfieldViewsModel::SetCompositionText(
         std::min(range.start() + composition.selection.start(), range.end());
     size_t end =
         std::min(range.start() + composition.selection.end(), range.end());
-    gfx::SelectionModel sel(start, end);
-    render_text_->MoveCursorTo(sel);
+    render_text_->SelectRange(ui::Range(start, end));
   } else {
     render_text_->SetCursorPosition(range.end());
   }
@@ -654,9 +665,14 @@ void TextfieldViewsModel::ReplaceTextInternal(const string16& text,
     CancelCompositionText();
   } else if (!HasSelection()) {
     size_t cursor = GetCursorPosition();
-    gfx::SelectionModel sel(render_text_->selection_model());
-    sel.set_selection_start(render_text_->GetIndexOfNextGrapheme(cursor));
-    render_text_->MoveCursorTo(sel);
+    const gfx::SelectionModel& model = render_text_->selection_model();
+    // When there is no selection, the default is to replace the next grapheme
+    // with |text|. So, need to find the index of next grapheme first.
+    size_t next = render_text_->GetIndexOfNextGrapheme(cursor);
+    if (next == model.selection_end())
+      render_text_->MoveCursorTo(model);
+    else
+      render_text_->SelectRange(ui::Range(next, model.selection_end()));
   }
   // Edit history is recorded in InsertText.
   InsertTextInternal(text, mergeable);
