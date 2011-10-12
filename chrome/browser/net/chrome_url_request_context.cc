@@ -16,10 +16,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_client.h"
 #include "content/common/notification_service.h"
 #include "net/base/cookie_store.h"
 #include "net/http/http_util.h"
-#include "webkit/glue/webkit_glue.h"
 
 class ChromeURLRequestContextFactory {
  public:
@@ -367,7 +367,7 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
 
 const std::string& ChromeURLRequestContext::GetUserAgent(
     const GURL& url) const {
-  return webkit_glue::GetUserAgent(url);
+  return content::GetUserAgent(url);
 }
 
 void ChromeURLRequestContext::OnAcceptLanguageChange(

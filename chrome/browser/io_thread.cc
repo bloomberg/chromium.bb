@@ -33,6 +33,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
+#include "content/common/content_client.h"
 #include "content/common/net/url_fetcher.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
@@ -56,7 +57,6 @@
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/dns_cert_provenance_checker.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(USE_NSS)
 #include "net/ocsp/nss_ocsp.h"
@@ -71,7 +71,7 @@ class URLRequestContextWithUserAgent : public net::URLRequestContext {
  public:
   virtual const std::string& GetUserAgent(
       const GURL& url) const OVERRIDE {
-    return webkit_glue::GetUserAgent(url);
+    return content::GetUserAgent(url);
   }
 };
 

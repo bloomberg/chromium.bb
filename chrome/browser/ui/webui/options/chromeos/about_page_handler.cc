@@ -25,6 +25,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
+#include "content/common/content_client.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -33,7 +34,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
-#include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -214,7 +214,7 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   // user agent
 
   localized_strings->SetString("user_agent_info",
-                               webkit_glue::GetUserAgent(GURL()));
+                               content::GetUserAgent(GURL()));
 
   // command line
 

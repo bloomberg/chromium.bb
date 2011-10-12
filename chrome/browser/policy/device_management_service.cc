@@ -12,6 +12,7 @@
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_backend_impl.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_client.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
@@ -23,7 +24,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
-#include "webkit/glue/webkit_glue.h"
 
 namespace policy {
 
@@ -91,7 +91,7 @@ DeviceManagementRequestContext::~DeviceManagementRequestContext() {
 
 const std::string& DeviceManagementRequestContext::GetUserAgent(
     const GURL& url) const {
-  return webkit_glue::GetUserAgent(url);
+  return content::GetUserAgent(url);
 }
 
 // Request context holder.

@@ -33,8 +33,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_client.h"
 #include "content/common/notification_service.h"
-#include "webkit/glue/webkit_glue.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
 static const FilePath::CharType kSyncDataFolderName[] =
@@ -67,7 +67,7 @@ SyncBackendHost::SyncBackendHost(const std::string& name,
       sync_prefs_(sync_prefs),
       name_(name),
       sync_notifier_factory_(
-          webkit_glue::GetUserAgent(GURL()),
+          content::GetUserAgent(GURL()),
           profile_->GetRequestContext(),
           sync_prefs,
           *CommandLine::ForCurrentProcess()),
@@ -84,7 +84,7 @@ SyncBackendHost::SyncBackendHost()
       profile_(NULL),
       name_("Unknown"),
       sync_notifier_factory_(
-          webkit_glue::GetUserAgent(GURL()),
+          content::GetUserAgent(GURL()),
           NULL,
           base::WeakPtr<sync_notifier::InvalidationVersionTracker>(),
           *CommandLine::ForCurrentProcess()),

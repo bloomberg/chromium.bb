@@ -8,6 +8,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/content_client.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
@@ -18,7 +19,6 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
-#include "webkit/glue/webkit_glue.h"
 
 namespace browser_sync {
 
@@ -102,7 +102,7 @@ HttpBridge::RequestContext::RequestContext(
 
   // We default to the browser's user agent. This can (and should) be overridden
   // with set_user_agent.
-  set_user_agent(webkit_glue::GetUserAgent(GURL()));
+  set_user_agent(content::GetUserAgent(GURL()));
 
   set_net_log(baseline_context->net_log());
 }

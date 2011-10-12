@@ -4,6 +4,7 @@
 
 #include "content/common/content_client.h"
 
+#include "base/logging.h"
 #include "base/string_piece.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -30,6 +31,11 @@ void SetContentClient(ContentClient* client) {
 
 ContentClient* GetContentClient() {
   return g_client;
+}
+
+const std::string& GetUserAgent(const GURL& url) {
+  DCHECK(g_client);
+  return webkit_glue::GetUserAgent(url);
 }
 
 ContentClient::ContentClient()
