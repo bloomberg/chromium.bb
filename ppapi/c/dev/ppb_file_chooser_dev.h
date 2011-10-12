@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_file_chooser_dev.idl modified Tue Oct 04 13:39:06 2011. */
+/* From dev/ppb_file_chooser_dev.idl modified Tue Oct 11 11:17:39 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
 #define PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
@@ -41,12 +41,7 @@ typedef enum {
   /**
    * Mode for choosing multiple existing files.
    */
-  PP_FILECHOOSERMODE_OPENMULTIPLE,
-  /**
-   * Mode for choosing a file for saving. If the user selects a file that
-   * doesn't exist, it will be created.
-   */
-  PP_FILECHOOSERMODE_SAVE
+  PP_FILECHOOSERMODE_OPENMULTIPLE
 } PP_FileChooserMode_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileChooserMode_Dev, 4);
 /**
@@ -86,19 +81,17 @@ struct PPB_FileChooser_Dev {
    * @param[in] resource A <code>PP_Resource</code> corresponding to a generic
    * resource.
    *
-   * @return A <code>PP_Bool</code> containing containing <code>PP_TRUE</code>
-   * if the given resource is a file chooser resource, otherwise
-   * <code>PP_FALSE</code>.
+   * @return A <code>PP_Bool</code> that is <code>PP_TRUE</code> if the given
+   * resource is a file chooser resource, otherwise <code>PP_FALSE</code>.
    */
   PP_Bool (*IsFileChooser)(PP_Resource resource);
   /**
    * This function displays a previously created file chooser resource as a
    * dialog box, prompting the user to choose a file or files. This function
-   * must be called in response to an input event that is a user gesture, such
-   * as a mouse click or touch event. The callback is called with PP_OK on
-   * successful completion with a file (or files) selected, PP_ERROR_USERCANCEL
-   * if the user selected no file, or another error code from pp_errors.h on
-   * failure.
+   * must be called in response to a user gesture, such as a mouse click or
+   * touch event. The callback is called with PP_OK on successful completion
+   * with a file (or files) selected, PP_ERROR_USERCANCEL if the user selected
+   * no file, or another error code from pp_errors.h on failure.
    *
    * @param[in] chooser The file chooser resource.
    * @param[in] callback A <code>CompletionCallback</code> to be called after
@@ -111,10 +104,8 @@ struct PPB_FileChooser_Dev {
   /**
    * After a successful completion callback call from Show, this method may be
    * used to query the chosen files.  It should be called in a loop until it
-   * returns 0.  Depending on the PP_ChooseFileMode_Dev requested when the
-   * FileChooser was created, the file refs will either be readable or
-   * writable.  Their file system type will be PP_FileSystemType_External.  If
-   * the user chose no files or cancelled the dialog, then this method will
+   * returns 0.  Their file system type will be PP_FileSystemType_External.  If
+   * the user chose no files or canceled the dialog, then this method will
    * simply return 0 the first time it is called.
    *
    * @param[in] chooser The file chooser resource.

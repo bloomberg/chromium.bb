@@ -3,17 +3,19 @@
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_file_chooser_trusted.idl modified Tue Oct 04 10:48:17 2011. */
+/* From trusted/ppb_file_chooser_trusted.idl modified Tue Oct 11 11:43:26 2011. */
 
 #ifndef PPAPI_C_TRUSTED_PPB_FILE_CHOOSER_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_FILE_CHOOSER_TRUSTED_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
 
-#define PPB_FILECHOOSER_TRUSTED_INTERFACE_0_5 "PPB_FileChooser_Trusted;0.5"
+#define PPB_FILECHOOSER_TRUSTED_INTERFACE_0_5 "PPB_FileChooserTrusted;0.5"
 #define PPB_FILECHOOSER_TRUSTED_INTERFACE PPB_FILECHOOSER_TRUSTED_INTERFACE_0_5
 
 /**
@@ -26,14 +28,19 @@
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_FileChooser_Trusted {
+struct PPB_FileChooserTrusted {
   /**
    * This function displays a previously created file chooser resource as a
-   * dialog box, prompting the user to choose a file or files. The callback is
-   * called with PP_OK on successful completion with a file (or files) selected
-   * or PP_ERROR_USERCANCEL if the user selected no file.
+   * dialog box, prompting the user to choose a file or files to open, or a
+   * single file for saving. The callback is called with PP_OK on successful
+   * completion with a file (or files) selected or PP_ERROR_USERCANCEL if the
+   * user selected no file.
    *
    * @param[in] chooser The file chooser resource.
+   * @param[in] save_as A <code>PP_Bool</code> value indicating if this dialog
+   * is choosing a file for saving.
+   * @param[in] suggested_file_name If saving, the suggested name for the
+   * file, otherwise, null or undefined.
    * @param[in] callback A <code>CompletionCallback</code> to be called after
    * the user has closed the file chooser dialog.
    *
@@ -41,6 +48,8 @@ struct PPB_FileChooser_Trusted {
    * successful, another error code from pp_errors.h on failure.
    */
   int32_t (*ShowWithoutUserGesture)(PP_Resource chooser,
+                                    PP_Bool save_as,
+                                    struct PP_Var suggested_file_name,
                                     struct PP_CompletionCallback callback);
 };
 /**
