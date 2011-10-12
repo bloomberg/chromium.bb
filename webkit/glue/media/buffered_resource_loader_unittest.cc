@@ -214,6 +214,24 @@ class BufferedResourceLoaderTest : public testing::Test {
                             size);
   }
 
+  void WriteData(int size) {
+    EXPECT_CALL(*this, NetworkCallback())
+        .RetiresOnSaturation();
+
+    scoped_array<char> data(new char[size]);
+    loader_->didReceiveData(url_loader_, data.get(), size, size);
+  }
+
+  void WriteUntilThreshold() {
+    size_t buffered = loader_->buffer_->forward_bytes();
+    size_t capacity = loader_->buffer_->forward_capacity();
+    CHECK_LT(buffered, capacity);
+
+    EXPECT_CALL(*this, NetworkCallback());
+    WriteData(capacity - buffered);
+    ConfirmLoaderDeferredState(true);
+  }
+
   // Helper method to read from |loader_|.
   void ReadLoader(int64 position, int size, uint8* buffer) {
     loader_->Read(position, size, buffer,
@@ -223,6 +241,24 @@ class BufferedResourceLoaderTest : public testing::Test {
   // Verifies that data in buffer[0...size] is equal to data_[pos...pos+size].
   void VerifyBuffer(uint8* buffer, int pos, int size) {
     EXPECT_EQ(0, memcmp(buffer, data_ + pos, size));
+  }
+
+  void ConfirmLoaderOffsets(int64 expected_offset,
+                            int expected_first_offset,
+                            int expected_last_offset) {
+    EXPECT_EQ(loader_->offset_, expected_offset);
+    EXPECT_EQ(loader_->first_offset_, expected_first_offset);
+    EXPECT_EQ(loader_->last_offset_, expected_last_offset);
+  }
+
+  void ConfirmBufferState(size_t backward_bytes,
+                          size_t backward_capacity,
+                          size_t forward_bytes,
+                          size_t forward_capacity) {
+    EXPECT_EQ(backward_bytes, loader_->buffer_->backward_bytes());
+    EXPECT_EQ(backward_capacity, loader_->buffer_->backward_capacity());
+    EXPECT_EQ(forward_bytes, loader_->buffer_->forward_bytes());
+    EXPECT_EQ(forward_capacity, loader_->buffer_->forward_capacity());
   }
 
   void ConfirmLoaderBufferBackwardCapacity(size_t expected_backward_capacity) {
@@ -254,6 +290,10 @@ class BufferedResourceLoaderTest : public testing::Test {
   MOCK_METHOD1(StartCallback, void(int error));
   MOCK_METHOD1(ReadCallback, void(int error));
   MOCK_METHOD0(NetworkCallback, void());
+
+  // Accessors for private variables on |loader_|.
+  size_t forward_bytes() { return loader_->buffer_->forward_bytes(); }
+  size_t forward_capacity() { return loader_->buffer_->forward_capacity(); }
 
  protected:
   GURL gurl_;
@@ -592,28 +632,343 @@ TEST_F(BufferedResourceLoaderTest, ReadThenDeferStrategy) {
 TEST_F(BufferedResourceLoaderTest, ThresholdDeferStrategy) {
   Initialize(kHttpUrl, 10, 99);
   SetLoaderBuffer(10, 20);
-  loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
   Start();
   PartialResponse(10, 99, 100);
 
   uint8 buffer[10];
+  InSequence s;
 
-  WriteLoader(10, 5);
-  // Haven't reached threshold, don't defer.
+  // Initial expectation: we're not deferring.
   ConfirmLoaderDeferredState(false);
 
-  // We're at the threshold now, let's defer.
+  // Write half of threshold: keep not deferring.
+  WriteData(5);
+  ConfirmLoaderDeferredState(false);
+
+  // Write rest of space until threshold: start deferring.
   EXPECT_CALL(*this, NetworkCallback());
-  WriteLoader(15, 5);
+  WriteData(5);
   ConfirmLoaderDeferredState(true);
 
-  // Now we've read over half of the buffer, disable deferring.
-  EXPECT_CALL(*this, ReadCallback(6));
-  EXPECT_CALL(*this, NetworkCallback());
-  ReadLoader(10, 6, buffer);
+  // Read a little from the buffer: keep deferring.
+  EXPECT_CALL(*this, ReadCallback(2));
+  ReadLoader(10, 2, buffer);
+  ConfirmLoaderDeferredState(true);
 
+  // Read a little more and go under threshold: stop deferring.
+  EXPECT_CALL(*this, ReadCallback(4));
+  EXPECT_CALL(*this, NetworkCallback());
+  ReadLoader(12, 4, buffer);
   ConfirmLoaderDeferredState(false);
-  VerifyBuffer(buffer, 10, 6);
+
+  // Write rest of space until threshold: start deferring.
+  EXPECT_CALL(*this, NetworkCallback());
+  WriteData(6);
+  ConfirmLoaderDeferredState(true);
+
+  // Read a little from the buffer: keep deferring.
+  EXPECT_CALL(*this, ReadCallback(4));
+  ReadLoader(16, 4, buffer);
+  ConfirmLoaderDeferredState(true);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, Tricky_ReadForwardsPastBuffered) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 10);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[256];
+  InSequence s;
+
+  // PRECONDITION
+  WriteUntilThreshold();
+  EXPECT_CALL(*this, ReadCallback(4));
+  ReadLoader(10, 4, buffer);
+  ConfirmBufferState(4, 10, 6, 10);
+  ConfirmLoaderOffsets(14, 0, 0);
+  ConfirmLoaderDeferredState(true);
+
+  // *** TRICKY BUSINESS, PT. I ***
+  // Read past buffered: stop deferring.
+  //
+  // In order for the read to complete we must:
+  //   1) Stop deferring to receive more data.
+  //
+  // BEFORE
+  //   offset=14 [xxxxxx____]
+  //                    ^^^^ requested 4 bytes @ offset 20
+  // AFTER
+  //   offset=24 [__________]
+  //
+  EXPECT_CALL(*this, NetworkCallback());
+  ReadLoader(20, 4, buffer);
+  ConfirmLoaderDeferredState(false);
+
+  // Write a little, make sure we didn't start deferring.
+  WriteData(2);
+  ConfirmLoaderDeferredState(false);
+
+  // Write the rest, read should complete.
+  EXPECT_CALL(*this, ReadCallback(4));
+  WriteData(2);
+  ConfirmLoaderDeferredState(false);
+
+  // POSTCONDITION
+  ConfirmBufferState(4, 10, 0, 10);
+  ConfirmLoaderOffsets(24, 0, 0);
+  ConfirmLoaderDeferredState(false);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, Tricky_ReadBackwardsPastBuffered) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 10);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[256];
+  InSequence s;
+
+  // PRECONDITION
+  WriteUntilThreshold();
+  ConfirmBufferState(0, 10, 10, 10);
+  ConfirmLoaderOffsets(10, 0, 0);
+  ConfirmLoaderDeferredState(true);
+
+  // *** TRICKY BUSINESS, PT. II ***
+  // Read backwards a little too much: cache miss.
+  //
+  // BEFORE
+  //   offset=10 [__________|xxxxxxxxxx]
+  //                       ^ ^^^ requested 10 bytes @ offset 9
+  // AFTER
+  //   offset=10 [__________|xxxxxxxxxx]  !!! cache miss !!!
+  //
+  EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
+  ReadLoader(9, 4, buffer);
+
+  // POSTCONDITION
+  ConfirmBufferState(0, 10, 10, 10);
+  ConfirmLoaderOffsets(10, 0, 0);
+  ConfirmLoaderDeferredState(true);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, Tricky_SmallReadWithinThreshold) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 10);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[256];
+  InSequence s;
+
+  // PRECONDITION
+  WriteUntilThreshold();
+  ConfirmBufferState(0, 10, 10, 10);
+  ConfirmLoaderOffsets(10, 0, 0);
+  ConfirmLoaderDeferredState(true);
+
+  // *** TRICKY BUSINESS, PT. III ***
+  // Read past forward capacity but within threshold: stop deferring.
+  //
+  // In order for the read to complete we must:
+  //   1) Adjust offset forward to create capacity.
+  //   2) Stop deferring to receive more data.
+  //
+  // BEFORE
+  //   offset=10 [xxxxxxxxxx]
+  //                             ^^^^ requested 4 bytes @ offset 24
+  // ADJUSTED OFFSET
+  //   offset=20 [__________]
+  //                  ^^^^ requested 4 bytes @ offset 24
+  // AFTER
+  //   offset=28 [__________]
+  //
+  EXPECT_CALL(*this, NetworkCallback());
+  ReadLoader(24, 4, buffer);
+  ConfirmLoaderOffsets(20, 4, 8);
+  ConfirmLoaderDeferredState(false);
+
+  // Write a little, make sure we didn't start deferring.
+  WriteData(4);
+  ConfirmLoaderDeferredState(false);
+
+  // Write the rest, read should complete.
+  EXPECT_CALL(*this, ReadCallback(4));
+  WriteData(4);
+  ConfirmLoaderDeferredState(false);
+
+  // POSTCONDITION
+  ConfirmBufferState(8, 10, 0, 10);
+  ConfirmLoaderOffsets(28, 0, 0);
+  ConfirmLoaderDeferredState(false);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, Tricky_LargeReadWithinThreshold) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 10);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[256];
+  InSequence s;
+
+  // PRECONDITION
+  WriteUntilThreshold();
+  ConfirmBufferState(0, 10, 10, 10);
+  ConfirmLoaderOffsets(10, 0, 0);
+  ConfirmLoaderDeferredState(true);
+
+  // *** TRICKY BUSINESS, PT. IV ***
+  // Read a large amount past forward capacity but within
+  // threshold: stop deferring.
+  //
+  // In order for the read to complete we must:
+  //   1) Adjust offset forward to create capacity.
+  //   2) Expand capacity to make sure we don't defer as data arrives.
+  //   3) Stop deferring to receive more data.
+  //
+  // BEFORE
+  //   offset=10 [xxxxxxxxxx]
+  //                             ^^^^^^^^^^^^ requested 12 bytes @ offset 24
+  // ADJUSTED OFFSET
+  //   offset=20 [__________]
+  //                  ^^^^^^ ^^^^^^ requested 12 bytes @ offset 24
+  // ADJUSTED CAPACITY
+  //   offset=20 [________________]
+  //                  ^^^^^^^^^^^^ requested 12 bytes @ offset 24
+  // AFTER
+  //   offset=36 [__________]
+  //
+  EXPECT_CALL(*this, NetworkCallback());
+  ReadLoader(24, 12, buffer);
+  ConfirmLoaderOffsets(20, 4, 16);
+  ConfirmBufferState(10, 10, 0, 16);
+  ConfirmLoaderDeferredState(false);
+
+  // Write a little, make sure we didn't start deferring.
+  WriteData(10);
+  ConfirmLoaderDeferredState(false);
+
+  // Write the rest, read should complete and capacity should go back to normal.
+  EXPECT_CALL(*this, ReadCallback(12));
+  WriteData(6);
+  ConfirmLoaderBufferForwardCapacity(10);
+  ConfirmLoaderDeferredState(false);
+
+  // POSTCONDITION
+  ConfirmBufferState(6, 10, 0, 10);
+  ConfirmLoaderOffsets(36, 0, 0);
+  ConfirmLoaderDeferredState(false);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, Tricky_LargeReadBackwards) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 10);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[256];
+  InSequence s;
+
+  // PRECONDITION
+  WriteUntilThreshold();
+  EXPECT_CALL(*this, ReadCallback(10));
+  EXPECT_CALL(*this, NetworkCallback());
+  ReadLoader(10, 10, buffer);
+  WriteUntilThreshold();
+  ConfirmBufferState(10, 10, 10, 10);
+  ConfirmLoaderOffsets(20, 0, 0);
+  ConfirmLoaderDeferredState(true);
+
+  // *** TRICKY BUSINESS, PT. V ***
+  // Read a large amount that involves backwards data: stop deferring.
+  //
+  // In order for the read to complete we must:
+  //   1) Adjust offset *backwards* to create capacity.
+  //   2) Expand capacity to make sure we don't defer as data arrives.
+  //   3) Stop deferring to receive more data.
+  //
+  // BEFORE
+  //   offset=20 [xxxxxxxxxx|xxxxxxxxxx]
+  //                    ^^^^ ^^^^^^^^^^ ^^^^ requested 18 bytes @ offset 16
+  // ADJUSTED OFFSET
+  //   offset=16 [____xxxxxx|xxxxxxxxxx]xxxx
+  //                         ^^^^^^^^^^ ^^^^^^^^ requested 18 bytes @ offset 16
+  // ADJUSTED CAPACITY
+  //   offset=16 [____xxxxxx|xxxxxxxxxxxxxx____]
+  //                         ^^^^^^^^^^^^^^^^^^ requested 18 bytes @ offset 16
+  // AFTER
+  //   offset=34 [xxxxxxxxxx|__________]
+  //
+  EXPECT_CALL(*this, NetworkCallback());
+  ReadLoader(16, 18, buffer);
+  ConfirmLoaderOffsets(16, 0, 18);
+  ConfirmBufferState(6, 10, 14, 18);
+  ConfirmLoaderDeferredState(false);
+
+  // Write a little, make sure we didn't start deferring.
+  WriteData(2);
+  ConfirmLoaderDeferredState(false);
+
+  // Write the rest, read should complete and capacity should go back to normal.
+  EXPECT_CALL(*this, ReadCallback(18));
+  WriteData(2);
+  ConfirmLoaderBufferForwardCapacity(10);
+  ConfirmLoaderDeferredState(false);
+
+  // POSTCONDITION
+  ConfirmBufferState(4, 10, 0, 10);
+  ConfirmLoaderOffsets(34, 0, 0);
+  ConfirmLoaderDeferredState(false);
+
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, Tricky_ReadPastThreshold) {
+  const size_t kSize = 5 * 1024 * 1024;
+  const size_t kThreshold = 2 * 1024 * 1024;
+
+  Initialize(kHttpUrl, 10, kSize);
+  SetLoaderBuffer(10, 10);
+  Start();
+  PartialResponse(10, kSize - 1, kSize);
+
+  uint8 buffer[256];
+  InSequence s;
+
+  // PRECONDITION
+  WriteUntilThreshold();
+  ConfirmBufferState(0, 10, 10, 10);
+  ConfirmLoaderOffsets(10, 0, 0);
+  ConfirmLoaderDeferredState(true);
+
+  // *** TRICKY BUSINESS, PT. VI ***
+  // Read past the forward wait threshold: cache miss.
+  //
+  // BEFORE
+  //   offset=10 [xxxxxxxxxx] ...
+  //                              ^^^^ requested 10 bytes @ threshold
+  // AFTER
+  //   offset=10 [xxxxxxxxxx]  !!! cache miss !!!
+  //
+  EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
+  ReadLoader(kThreshold + 20, 10, buffer);
+
+  // POSTCONDITION
+  ConfirmBufferState(0, 10, 10, 10);
+  ConfirmLoaderOffsets(10, 0, 0);
+  ConfirmLoaderDeferredState(true);
 
   StopWhenLoad();
 }

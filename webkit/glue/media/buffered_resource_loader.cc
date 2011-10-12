@@ -269,20 +269,42 @@ void BufferedResourceLoader::Read(int64 position,
     return;
   }
 
-  // If you're deferred and you can't fulfill the read because you don't have
-  // enough data, you will never fulfill the read.
-  // Update defer behavior to re-enable deferring if need be.
-  UpdateDeferBehavior();
-
-  // If we expect the read request to be fulfilled later, return
-  // and let more data to flow in.
+  // If we expect the read request to be fulfilled later, expand capacity as
+  // necessary and disable deferring.
   if (WillFulfillRead()) {
-    // If necessary, expand the forward capacity of the buffer to accomodate an
-    // unusually large read.
-    if (read_size_ > buffer_->forward_capacity()) {
+    // Advance offset as much as possible to create additional capacity.
+    int advance = std::min(first_offset_,
+                           static_cast<int>(buffer_->forward_bytes()));
+    bool ret = buffer_->Seek(advance);
+    DCHECK(ret);
+
+    offset_ += advance;
+    first_offset_ -= advance;
+    last_offset_ -= advance;
+
+    // Expand capacity to accomodate a read that extends past the normal
+    // capacity.
+    //
+    // This can happen when reading in a large seek index or when the
+    // first byte of a read request falls within kForwardWaitThreshold.
+    if (last_offset_ > static_cast<int>(buffer_->forward_capacity())) {
       saved_forward_capacity_ = buffer_->forward_capacity();
-      buffer_->set_forward_capacity(read_size_);
+      buffer_->set_forward_capacity(last_offset_);
     }
+
+    // Make sure we stop deferring now that there's additional capacity.
+    //
+    // XXX: can we DCHECK(url_loader_.get()) at this point in time?
+    if (deferred_ && url_loader_.get()) {
+      deferred_ = false;
+
+      url_loader_->setDefersLoading(deferred_);
+      NotifyNetworkEvent();
+    }
+
+    DCHECK(!ShouldEnableDefer())
+        << "Capacity was not adjusted properly to prevent deferring.";
+
     return;
   }
 
@@ -685,7 +707,7 @@ bool BufferedResourceLoader::WillFulfillRead() {
     return false;
 
   // Trying to read too far ahead.
-  if (first_offset_ - static_cast<int>(buffer_->forward_bytes()) >
+  if (first_offset_ - static_cast<int>(buffer_->forward_bytes()) >=
       kForwardWaitThreshold)
     return false;
 
