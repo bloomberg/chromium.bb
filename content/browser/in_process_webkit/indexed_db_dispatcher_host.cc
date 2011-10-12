@@ -897,9 +897,6 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::CursorDispatcherHost,
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDirection, OnDirection)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorKey, OnKey)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrimaryKey, OnPrimaryKey)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorValue, OnValue)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorUpdate, OnUpdate)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDelete, OnDelete)

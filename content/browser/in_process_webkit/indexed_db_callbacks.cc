@@ -28,8 +28,10 @@ void IndexedDBCallbacksBase::onBlocked() {
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
     WebKit::WebIDBCursor* idb_object) {
   int32 object_id = dispatcher_host()->Add(idb_object);
-  dispatcher_host()->Send(
-      new IndexedDBMsg_CallbacksSuccessIDBCursor(response_id(), object_id));
+  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(
+      response_id(), object_id, IndexedDBKey(idb_object->key()),
+      IndexedDBKey(idb_object->primaryKey()),
+      SerializedScriptValue(idb_object->value())));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(

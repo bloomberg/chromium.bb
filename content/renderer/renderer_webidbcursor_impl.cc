@@ -13,8 +13,13 @@ using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKey;
 using WebKit::WebSerializedScriptValue;
 
-RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 idb_cursor_id)
-    : idb_cursor_id_(idb_cursor_id) {
+RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 idb_cursor_id,
+    const IndexedDBKey& key, const IndexedDBKey& primary_key,
+    const SerializedScriptValue& value)
+    : idb_cursor_id_(idb_cursor_id),
+      key_(key),
+      primary_key_(primary_key),
+      value_(value) {
 }
 
 RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
@@ -34,24 +39,15 @@ unsigned short RendererWebIDBCursorImpl::direction() const {
 }
 
 WebIDBKey RendererWebIDBCursorImpl::key() const {
-  IndexedDBKey key;
-  RenderThreadImpl::current()->Send(
-      new IndexedDBHostMsg_CursorKey(idb_cursor_id_, &key));
-  return key;
+  return key_;
 }
 
 WebIDBKey RendererWebIDBCursorImpl::primaryKey() const {
-  IndexedDBKey primaryKey;
-  RenderThreadImpl::current()->Send(
-      new IndexedDBHostMsg_CursorPrimaryKey(idb_cursor_id_, &primaryKey));
-  return primaryKey;
+  return primary_key_;
 }
 
 WebSerializedScriptValue RendererWebIDBCursorImpl::value() const {
-  SerializedScriptValue scriptValue;
-  RenderThreadImpl::current()->Send(
-      new IndexedDBHostMsg_CursorValue(idb_cursor_id_, &scriptValue));
-  return scriptValue;
+  return value_;
 }
 
 void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,

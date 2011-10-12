@@ -141,9 +141,12 @@ IPC_STRUCT_END()
 // Indexed DB messages sent from the browser to the renderer.
 
 // IDBCallback message handlers.
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBCursor,
+IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessIDBCursor,
                      int32 /* response_id */,
-                     int32 /* cursor_id */)
+                     int32 /* cursor_id */,
+                     IndexedDBKey /* key */,
+                     IndexedDBKey /* primary key */,
+                     SerializedScriptValue /* script_value */)
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBDatabase,
                      int32 /* response_id */,
                      int32 /* idb_database_id */)
@@ -182,21 +185,6 @@ IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksVersionChange,
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorDirection,
                             int32, /* idb_cursor_id */
                             int32 /* direction */)
-
-// WebIDBCursor::key() message.
-IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorKey,
-                            int32, /* idb_cursor_id */
-                            IndexedDBKey /* key */)
-
-// WebIDBCursor::primaryKey() message.
-IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorPrimaryKey,
-                            int32, /* idb_cursor_id */
-                            IndexedDBKey /* primary_key */)
-
-// WebIDBCursor::value() message.
-IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorValue,
-                            int32, /* idb_cursor_id */
-                            SerializedScriptValue /* script_value */)
 
 // WebIDBCursor::update() message.
 IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_CursorUpdate,

@@ -426,10 +426,12 @@ void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
 }
 
 void IndexedDBDispatcher::OnSuccessOpenCursor(int32 repsonse_id,
-                                              int32 object_id) {
+    int32 object_id, const IndexedDBKey& key, const IndexedDBKey& primaryKey,
+    const SerializedScriptValue& value) {
   WebIDBCallbacks* callbacks =
       pending_callbacks_.Lookup(repsonse_id);
-  callbacks->onSuccess(new RendererWebIDBCursorImpl(object_id));
+  callbacks->onSuccess(new RendererWebIDBCursorImpl(object_id, key,
+                       primaryKey, value));
   pending_callbacks_.Remove(repsonse_id);
 }
 
