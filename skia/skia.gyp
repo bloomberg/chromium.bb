@@ -280,6 +280,7 @@
 
         '../third_party/skia/src/core/ARGB32_Clamp_Bilinear_BitmapShader.h',
         '../third_party/skia/src/core/Sk64.cpp',
+        '../third_party/skia/src/core/SkAAClip.cpp',
         '../third_party/skia/src/core/SkAdvancedTypefaceMetrics.cpp',
         '../third_party/skia/src/core/SkAlphaRuns.cpp',
         '../third_party/skia/src/core/SkAntiRun.h',
@@ -379,6 +380,7 @@
         '../third_party/skia/src/core/SkPtrRecorder.cpp',
         '../third_party/skia/src/core/SkQuadClipper.cpp',
         '../third_party/skia/src/core/SkQuadClipper.h',
+        '../third_party/skia/src/core/SkRasterClip.cpp',
         '../third_party/skia/src/core/SkRasterizer.cpp',
         '../third_party/skia/src/core/SkRect.cpp',
         '../third_party/skia/src/core/SkRefDict.cpp',
@@ -828,7 +830,6 @@
             },
             { # use_skia
               'defines': [
-                'SK_SUPPORT_888_TEXT',
                 'SK_USE_MAC_CORE_TEXT',
               ],
             }],
