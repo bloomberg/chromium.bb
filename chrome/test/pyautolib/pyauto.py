@@ -3719,6 +3719,43 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
 
+  def ConnectToCellularNetwork(self):
+    """Connects to the available cellular network.
+
+    Blocks until connection succeeds or fails.
+
+    Returns:
+      An error string if an error occured.
+      None otherwise.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    # Every device should only have one cellular network present, so we can
+    # scan for it.
+    cellular_networks = self.NetworkScan().get('cellular_networks', {}).keys()
+    self.assertTrue(cellular_networks, 'Could not find cellular service.')
+    service_path = cellular_networks[0]
+
+    cmd_dict = {
+        'command': 'ConnectToCellularNetwork',
+        'service_path': service_path,
+    }
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=-1, timeout=50000)
+    return result.get('error_string')
+
+  def DisconnectFromCellularNetwork(self):
+    """Disconnect from the connected cellular network.
+
+    Blocks until disconnect is complete.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'DisconnectFromCellularNetwork',
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def ConnectToWifiNetwork(self, service_path, password=''):
     """Connect to a wifi network by its service path.

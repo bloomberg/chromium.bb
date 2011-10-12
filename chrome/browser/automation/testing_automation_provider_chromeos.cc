@@ -553,6 +553,54 @@ void TestingAutomationProvider::SetProxySettings(DictionaryValue* args,
   reply.SendSuccess(NULL);
 }
 
+void TestingAutomationProvider::ConnectToCellularNetwork(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  std::string service_path;
+  if (!args->GetString("service_path", &service_path)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid or missing args.");
+    return;
+  }
+
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::CellularNetwork* cellular =
+      network_library->FindCellularNetworkByPath(service_path);
+  if (!cellular) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "No network found with specified service path.");
+    return;
+  }
+
+  // Set up an observer (it will delete itself).
+  new ServicePathConnectObserver(this, reply_message, service_path);
+
+  network_library->ConnectToCellularNetwork(cellular);
+  network_library->RequestNetworkScan();
+}
+
+void TestingAutomationProvider::DisconnectFromCellularNetwork(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  if (!EnsureCrosLibraryLoaded(this, reply_message))
+    return;
+
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  const chromeos::CellularNetwork* cellular =
+        network_library->cellular_network();
+  if (!cellular) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Not connected to any cellular network.");
+    return;
+  }
+
+  // Set up an observer (it will delete itself).
+  new NetworkDisconnectObserver(this, reply_message, cellular->service_path());
+
+  network_library->DisconnectFromNetwork(cellular);
+}
+
 void TestingAutomationProvider::ConnectToWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
   if (!EnsureCrosLibraryLoaded(this, reply_message))

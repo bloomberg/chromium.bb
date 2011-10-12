@@ -848,27 +848,55 @@ class ToggleNetworkDeviceObserver
   DISALLOW_COPY_AND_ASSIGN(ToggleNetworkDeviceObserver);
 };
 
+class NetworkStatusObserver
+    : public chromeos::NetworkLibrary::NetworkManagerObserver {
+ public:
+  NetworkStatusObserver(AutomationProvider* automation,
+                        IPC::Message* reply_message);
+  virtual ~NetworkStatusObserver();
+
+  virtual const chromeos::Network* GetNetwork(
+      chromeos::NetworkLibrary* network_library) = 0;
+  // NetworkLibrary::NetworkManagerObserver implementation.
+  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
+  virtual void NetworkStatusCheck(const chromeos::Network* network) = 0;
+
+ protected:
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkStatusObserver);
+};
+
 // Waits for a connection success or failure for the specified
 // network and returns the status to the automation provider.
-class NetworkConnectObserver
-    : public chromeos::NetworkLibrary::NetworkManagerObserver {
+class NetworkConnectObserver : public NetworkStatusObserver {
  public:
   NetworkConnectObserver(AutomationProvider* automation,
                          IPC::Message* reply_message);
 
-  virtual ~NetworkConnectObserver();
-
-  virtual const chromeos::WifiNetwork* GetWifiNetwork(
-      chromeos::NetworkLibrary* network_library) = 0;
-
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
+  virtual void NetworkStatusCheck(const chromeos::Network* network);
 
  private:
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectObserver);
+};
+
+// Waits until a network has disconnected.  Then returns success
+// or failure.
+class NetworkDisconnectObserver : public NetworkStatusObserver {
+ public:
+  NetworkDisconnectObserver(AutomationProvider* automation,
+                            IPC::Message* reply_message,
+                            const std::string& service_path);
+
+  virtual void NetworkStatusCheck(const chromeos::Network* network);
+  const chromeos::Network* GetNetwork(
+      chromeos::NetworkLibrary* network_library);
+
+ private:
+  std::string service_path_;
+  DISALLOW_COPY_AND_ASSIGN(NetworkDisconnectObserver);
 };
 
 // Waits for a connection success or failure for the specified
@@ -879,13 +907,28 @@ class ServicePathConnectObserver : public NetworkConnectObserver {
                              IPC::Message* reply_message,
                              const std::string& service_path);
 
-  virtual const chromeos::WifiNetwork* GetWifiNetwork(
+  const chromeos::Network* GetNetwork(
       chromeos::NetworkLibrary* network_library);
 
  private:
   std::string service_path_;
-
   DISALLOW_COPY_AND_ASSIGN(ServicePathConnectObserver);
+};
+
+// Waits for a connection success or failure for the specified
+// network and returns the status to the automation provider.
+class SSIDConnectObserver : public NetworkConnectObserver {
+ public:
+  SSIDConnectObserver(AutomationProvider* automation,
+                      IPC::Message* reply_message,
+                      const std::string& ssid);
+
+  const chromeos::Network* GetNetwork(
+      chromeos::NetworkLibrary* network_library);
+
+ private:
+  std::string ssid_;
+  DISALLOW_COPY_AND_ASSIGN(SSIDConnectObserver);
 };
 
 // Waits for a connection success or failure for the specified
@@ -960,23 +1003,6 @@ class EnrollmentObserver
   chromeos::EnterpriseEnrollmentScreen* enrollment_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentObserver);
-};
-
-// Waits for a connection success or failure for the specified
-// network and returns the status to the automation provider.
-class SSIDConnectObserver : public NetworkConnectObserver {
- public:
-  SSIDConnectObserver(AutomationProvider* automation,
-                      IPC::Message* reply_message,
-                      const std::string& ssid);
-
-  virtual const chromeos::WifiNetwork* GetWifiNetwork(
-      chromeos::NetworkLibrary* network_library);
-
- private:
-  std::string ssid_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSIDConnectObserver);
 };
 
 // Waits for profile photo to be captured by the camera,

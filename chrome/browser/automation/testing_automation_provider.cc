@@ -2340,6 +2340,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetProxySettings;
   handler_map["SetProxySettings"] =
       &TestingAutomationProvider::SetProxySettings;
+  handler_map["ConnectToCellularNetwork"] =
+      &TestingAutomationProvider::ConnectToCellularNetwork;
+  handler_map["DisconnectFromCellularNetwork"] =
+      &TestingAutomationProvider::DisconnectFromCellularNetwork;
   handler_map["ConnectToWifiNetwork"] =
       &TestingAutomationProvider::ConnectToWifiNetwork;
   handler_map["ConnectToHiddenWifiNetwork"] =

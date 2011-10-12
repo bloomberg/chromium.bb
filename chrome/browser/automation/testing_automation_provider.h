@@ -1275,6 +1275,12 @@ class TestingAutomationProvider : public AutomationProvider,
   void SetProxySettings(base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
+  void ConnectToCellularNetwork(base::DictionaryValue* args,
+                            IPC::Message* reply_message);
+
+  void DisconnectFromCellularNetwork(base::DictionaryValue* args,
+                                 IPC::Message* reply_message);
+
   void ConnectToWifiNetwork(base::DictionaryValue* args,
                             IPC::Message* reply_message);
 

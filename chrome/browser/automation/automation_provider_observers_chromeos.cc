@@ -195,23 +195,23 @@ void ToggleNetworkDeviceObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   }
 }
 
-NetworkConnectObserver::NetworkConnectObserver(AutomationProvider* automation,
+NetworkStatusObserver::NetworkStatusObserver(AutomationProvider* automation,
                                                IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()), reply_message_(reply_message) {
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   network_library->AddNetworkManagerObserver(this);
 }
 
-NetworkConnectObserver::~NetworkConnectObserver() {
+NetworkStatusObserver::~NetworkStatusObserver() {
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   network_library->RemoveNetworkManagerObserver(this);
 }
 
-void NetworkConnectObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
-  const chromeos::WifiNetwork* wifi = GetWifiNetwork(obj);
-  if (!wifi) {
+void NetworkStatusObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
+  const chromeos::Network* network = GetNetwork(obj);
+  if (!network) {
     // The network was not found, and we assume it no longer exists.
-    // This could be because the SSID is invalid, or the network went away.
+    // This could be because the ssid is invalid, or the network went away.
     if (automation_) {
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
       return_value->SetString("error_string", "Network not found.");
@@ -222,15 +222,24 @@ void NetworkConnectObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
     return;
   }
 
-  if (wifi->failed()) {
+  NetworkStatusCheck(network);
+}
+
+NetworkConnectObserver::NetworkConnectObserver(
+    AutomationProvider* automation, IPC::Message* reply_message)
+    : NetworkStatusObserver(automation, reply_message) {}
+
+void NetworkConnectObserver::NetworkStatusCheck(const chromeos::Network*
+                                                network) {
+  if (network->failed()) {
     if (automation_) {
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-      return_value->SetString("error_string", wifi->GetErrorString());
+      return_value->SetString("error_string", network->GetErrorString());
       AutomationJSONReply(automation_, reply_message_.release())
           .SendSuccess(return_value.get());
     }
     delete this;
-  } else if (wifi->connected()) {
+  } else if (network->connected()) {
     if (automation_)
       AutomationJSONReply(automation_,
                           reply_message_.release()).SendSuccess(NULL);
@@ -241,15 +250,53 @@ void NetworkConnectObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   // success condition, so just continue waiting for more network events.
 }
 
+NetworkDisconnectObserver::NetworkDisconnectObserver(
+    AutomationProvider* automation, IPC::Message* reply_message,
+    const std::string& service_path)
+    : NetworkStatusObserver(automation, reply_message),
+      service_path_(service_path) {}
+
+void NetworkDisconnectObserver::NetworkStatusCheck(const chromeos::Network*
+                                                   network) {
+  if (!network->connected()) {
+      AutomationJSONReply(automation_, reply_message_.release()).SendSuccess(
+                                                                 NULL);
+      delete this;
+  }
+}
+
+const chromeos::Network* NetworkDisconnectObserver::GetNetwork(
+    NetworkLibrary* network_library) {
+  return network_library->FindNetworkByPath(service_path_);
+}
+
 ServicePathConnectObserver::ServicePathConnectObserver(
     AutomationProvider* automation, IPC::Message* reply_message,
     const std::string& service_path)
     : NetworkConnectObserver(automation, reply_message),
-    service_path_(service_path) {}
+      service_path_(service_path) {}
 
-const chromeos::WifiNetwork* ServicePathConnectObserver::GetWifiNetwork(
+const chromeos::Network* ServicePathConnectObserver::GetNetwork(
     NetworkLibrary* network_library) {
-  return network_library->FindWifiNetworkByPath(service_path_);
+  return network_library->FindNetworkByPath(service_path_);
+}
+
+SSIDConnectObserver::SSIDConnectObserver(
+    AutomationProvider* automation, IPC::Message* reply_message,
+    const std::string& ssid)
+    : NetworkConnectObserver(automation, reply_message), ssid_(ssid) {}
+
+const chromeos::Network* SSIDConnectObserver::GetNetwork(
+    NetworkLibrary* network_library) {
+  const chromeos::WifiNetworkVector& wifi_networks =
+      network_library->wifi_networks();
+  for (chromeos::WifiNetworkVector::const_iterator iter = wifi_networks.begin();
+       iter != wifi_networks.end(); ++iter) {
+    const chromeos::WifiNetwork* wifi = *iter;
+    if (wifi->name() == ssid_)
+      return wifi;
+  }
+  return NULL;
 }
 
 VirtualConnectObserver::VirtualConnectObserver(AutomationProvider* automation,
@@ -372,24 +419,6 @@ void EnrollmentObserver::OnEnrollmentComplete(
     }
   }
   delete this;
-}
-
-SSIDConnectObserver::SSIDConnectObserver(
-    AutomationProvider* automation, IPC::Message* reply_message,
-    const std::string& ssid)
-    : NetworkConnectObserver(automation, reply_message), ssid_(ssid) {}
-
-const chromeos::WifiNetwork* SSIDConnectObserver::GetWifiNetwork(
-    NetworkLibrary* network_library) {
-  const chromeos::WifiNetworkVector& wifi_networks =
-      network_library->wifi_networks();
-  for (chromeos::WifiNetworkVector::const_iterator iter = wifi_networks.begin();
-       iter != wifi_networks.end(); ++iter) {
-    const chromeos::WifiNetwork* wifi = *iter;
-    if (wifi->name() == ssid_)
-      return wifi;
-  }
-  return NULL;
 }
 
 PhotoCaptureObserver::PhotoCaptureObserver(

@@ -10,7 +10,7 @@ import chromeos_network  # pyauto_functional must come before chromeos_network
 
 
 class ChromeosWifiSanity(chromeos_network.PyNetworkUITest):
-  """Tests for ChromeOS wifi."""
+  """Tests for ChromeOS network related functions."""
 
   def testNetworkInfoAndScan(self):
     """Get basic info on networks."""
