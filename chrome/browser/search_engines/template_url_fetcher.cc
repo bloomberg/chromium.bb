@@ -254,7 +254,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
 
     case EXPLICIT_DEFAULT_PROVIDER:
       callbacks_->ConfirmSetDefaultSearchProvider(template_url_.release(),
-                                                  model);
+                                                  fetcher_->profile());
       break;
   }
 

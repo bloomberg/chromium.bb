@@ -23,74 +23,23 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
-namespace {
-
-void GetColors(const SkColor* background_color,  // NULL means "use default"
-               SkColor* highlighted_color,
-               SkColor* disabled_color,
-               SkColor* normal_color) {
-  static SkColor kHighlightedColor, kDisabledColor, kNormalColor;
-  static bool initialized = false;
-  if (!initialized) {
-#if defined(OS_WIN)
-    kHighlightedColor = color_utils::GetReadableColor(
-        SkColorSetRGB(200, 0, 0), color_utils::GetSysSkColor(COLOR_WINDOW));
-    kDisabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-    kNormalColor = color_utils::GetSysSkColor(COLOR_HOTLIGHT);
-#else
-    // TODO(beng): source from theme provider.
-    kHighlightedColor = SK_ColorRED;
-    kDisabledColor = SK_ColorBLACK;
-    kNormalColor = SkColorSetRGB(0, 51, 153);
-#endif
-
-    initialized = true;
-  }
-
-  if (background_color) {
-    *highlighted_color = color_utils::GetReadableColor(kHighlightedColor,
-                                                       *background_color);
-    *disabled_color = color_utils::GetReadableColor(kDisabledColor,
-                                                    *background_color);
-    *normal_color = color_utils::GetReadableColor(kNormalColor,
-                                                  *background_color);
-  } else {
-    *highlighted_color = kHighlightedColor;
-    *disabled_color = kDisabledColor;
-    *normal_color = kNormalColor;
-  }
-}
-}
-
 namespace views {
 
 const char Link::kViewClassName[] = "views/Link";
 
-Link::Link() : Label(string16()),
-               listener_(NULL),
-               highlighted_(false) {
+Link::Link() : Label(string16()) {
   Init();
-  set_focusable(true);
 }
 
-Link::Link(const string16& title) : Label(title),
-                                        listener_(NULL),
-                                        highlighted_(false) {
+Link::Link(const string16& title) : Label(title) {
   Init();
-  set_focusable(true);
-}
-
-void Link::Init() {
-  GetColors(NULL, &highlighted_color_, &disabled_color_, &normal_color_);
-  SetColor(normal_color_);
-  ValidateStyle();
 }
 
 Link::~Link() {
 }
 
 void Link::OnEnabledChanged() {
-  ValidateStyle();
+  RecalculateFont();
   View::OnEnabledChanged();
 }
 
@@ -122,14 +71,14 @@ bool Link::OnMousePressed(const MouseEvent& event) {
   if (!IsEnabled() ||
       (!event.IsLeftMouseButton() && !event.IsMiddleMouseButton()))
     return false;
-  SetHighlighted(true);
+  SetPressed(true);
   return true;
 }
 
 bool Link::OnMouseDragged(const MouseEvent& event) {
-  SetHighlighted(IsEnabled() &&
-                 (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
-                 HitTest(event.location()));
+  SetPressed(IsEnabled() &&
+             (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
+             HitTest(event.location()));
   return true;
 }
 
@@ -149,7 +98,7 @@ void Link::OnMouseReleased(const MouseEvent& event) {
 }
 
 void Link::OnMouseCaptureLost() {
-  SetHighlighted(false);
+  SetPressed(false);
 }
 
 bool Link::OnKeyPressed(const KeyEvent& event) {
@@ -158,7 +107,7 @@ bool Link::OnKeyPressed(const KeyEvent& event) {
   if (!activate)
     return false;
 
-  SetHighlighted(false);
+  SetPressed(false);
 
   // Focus the link on key pressed.
   RequestFocus();
@@ -182,50 +131,66 @@ void Link::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void Link::SetFont(const gfx::Font& font) {
   Label::SetFont(font);
-  ValidateStyle();
+  RecalculateFont();
 }
 
-void Link::SetHighlightedColor(const SkColor& color) {
-  highlighted_color_ = color;
-  ValidateStyle();
+void Link::SetEnabledColor(const SkColor& color) {
+  requested_enabled_color_ = color;
+  if (!pressed_)
+    Label::SetEnabledColor(requested_enabled_color_);
 }
 
-void Link::SetDisabledColor(const SkColor& color) {
-  disabled_color_ = color;
-  ValidateStyle();
+void Link::SetPressedColor(const SkColor& color) {
+  requested_pressed_color_ = color;
+  if (pressed_)
+    Label::SetEnabledColor(requested_pressed_color_);
 }
 
-void Link::SetNormalColor(const SkColor& color) {
-  normal_color_ = color;
-  ValidateStyle();
+void Link::Init() {
+  static bool initialized = false;
+  static SkColor kDefaultEnabledColor;
+  static SkColor kDefaultDisabledColor;
+  static SkColor kDefaultPressedColor;
+  if (!initialized) {
+#if defined(OS_WIN)
+    kDefaultEnabledColor = color_utils::GetSysSkColor(COLOR_HOTLIGHT);
+    kDefaultDisabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+    kDefaultPressedColor = SkColorSetRGB(200, 0, 0);
+#else
+    // TODO(beng): source from theme provider.
+    kDefaultEnabledColor = SkColorSetRGB(0, 51, 153);
+    kDefaultDisabledColor = SK_ColorBLACK;
+    kDefaultPressedColor = SK_ColorRED;
+#endif
+
+    initialized = true;
+  }
+
+  listener_ = NULL;
+  pressed_ = false;
+  SetEnabledColor(kDefaultEnabledColor);
+  SetDisabledColor(kDefaultDisabledColor);
+  SetPressedColor(kDefaultPressedColor);
+  RecalculateFont();
+  set_focusable(true);
 }
 
-void Link::MakeReadableOverBackgroundColor(const SkColor& color) {
-  GetColors(&color, &highlighted_color_, &disabled_color_, &normal_color_);
-  ValidateStyle();
-}
-
-void Link::SetHighlighted(bool f) {
-  if (f != highlighted_) {
-    highlighted_ = f;
-    ValidateStyle();
+void Link::SetPressed(bool pressed) {
+  if (pressed_ != pressed) {
+    pressed_ = pressed;
+    Label::SetEnabledColor(pressed_ ?
+        requested_pressed_color_ : requested_enabled_color_);
+    RecalculateFont();
     SchedulePaint();
   }
 }
 
-void Link::ValidateStyle() {
-  if (IsEnabled()) {
-    if (!(font().GetStyle() & gfx::Font::UNDERLINED)) {
-      Label::SetFont(
-          font().DeriveFont(0, font().GetStyle() | gfx::Font::UNDERLINED));
-    }
-    Label::SetColor(highlighted_ ? highlighted_color_ : normal_color_);
-  } else {
-    if (font().GetStyle() & gfx::Font::UNDERLINED) {
-      Label::SetFont(
-          font().DeriveFont(0, font().GetStyle() & ~gfx::Font::UNDERLINED));
-    }
-    Label::SetColor(disabled_color_);
+void Link::RecalculateFont() {
+  // The font should be underlined iff the link is enabled.
+  if (IsEnabled() == !(font().GetStyle() & gfx::Font::UNDERLINED)) {
+    Label::SetFont(font().DeriveFont(0, IsEnabled() ?
+        (font().GetStyle() | gfx::Font::UNDERLINED) :
+        (font().GetStyle() & ~gfx::Font::UNDERLINED)));
   }
 }
 

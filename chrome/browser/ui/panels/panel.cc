@@ -321,10 +321,9 @@ void Panel::DisableInactiveFrame() {
   NOTIMPLEMENTED();
 }
 
-void Panel::ConfirmSetDefaultSearchProvider(
-    TabContents* tab_contents,
-    TemplateURL* template_url,
-    TemplateURLService* template_url_service) {
+void Panel::ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
+                                            TemplateURL* template_url,
+                                            Profile* profile) {
   NOTIMPLEMENTED();
 }
 

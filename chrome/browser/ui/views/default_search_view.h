@@ -12,9 +12,11 @@
 #include "views/window/dialog_delegate.h"
 
 class PrefService;
+class Profile;
 class TabContents;
 class TemplateURL;
 class TemplateURLService;
+class ThemeService;
 
 namespace gfx {
 class Canvas;
@@ -29,15 +31,14 @@ class View;
 
 // Responsible for displaying the contents of the default search
 // prompt for when InstallSearchProvider(url, true) is called.
-class DefaultSearchView
-    : public views::View,
-      public views::ButtonListener,
-      public views::DialogDelegate {
+class DefaultSearchView : public views::View,
+                          public views::ButtonListener,
+                          public views::DialogDelegate {
  public:
   // Takes ownership of |proposed_default_turl|.
   static void Show(TabContents* tab_contents,
-                   TemplateURL* ,
-                   TemplateURLService* template_url_service);
+                   TemplateURL* proposed_default_turl,
+                   Profile* profile);
 
   virtual ~DefaultSearchView();
 
@@ -64,7 +65,8 @@ class DefaultSearchView
   // Takes ownership of |proposed_default_turl|.
   DefaultSearchView(TabContents* tab_contents,
                     TemplateURL* proposed_default_turl,
-                    TemplateURLService* template_url_service);
+                    TemplateURLService* template_url_service,
+                    PrefService* prefs);
 
   // Initializes the labels and controls in the view.
   void SetupControls(PrefService* prefs);

@@ -29,12 +29,10 @@ class TemplateURLFetcherTestCallbacks : public TemplateURLFetcherCallbacks {
   virtual ~TemplateURLFetcherTestCallbacks();
 
   // TemplateURLFetcherCallbacks implementation.
-  virtual void ConfirmSetDefaultSearchProvider(
-      TemplateURL* template_url,
-      TemplateURLService* template_url_service);
-  virtual void ConfirmAddSearchProvider(
-      TemplateURL* template_url,
-      Profile* profile);
+  virtual void ConfirmSetDefaultSearchProvider(TemplateURL* template_url,
+                                               Profile* profile) OVERRIDE;
+  virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
+                                        Profile* profile) OVERRIDE;
 
  private:
   TemplateURLFetcherTest* test_;
@@ -47,7 +45,7 @@ class TemplateURLFetcherTest : public testing::Test {
  public:
   TemplateURLFetcherTest();
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     test_util_.SetUp();
     test_util_.StartIOThread();
     ASSERT_TRUE(test_util_.profile());
@@ -59,7 +57,7 @@ class TemplateURLFetcherTest : public testing::Test {
     ASSERT_TRUE(test_server_.Start());
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     test_util_.TearDown();
   }
 
@@ -68,12 +66,9 @@ class TemplateURLFetcherTest : public testing::Test {
 
   // TemplateURLFetcherCallbacks implementation.  (Although not derived from
   // this class, these methods handle those calls for the test.)
-  virtual void ConfirmSetDefaultSearchProvider(
-      TemplateURL* template_url,
-      TemplateURLService* template_url_service);
-  virtual void ConfirmAddSearchProvider(
-      TemplateURL* template_url,
-      Profile* profile);
+  void ConfirmSetDefaultSearchProvider(TemplateURL* template_url,
+                                       Profile* profile);
+  void ConfirmAddSearchProvider(TemplateURL* template_url, Profile* profile);
 
  protected:
   // Schedules the download of the url.
@@ -114,8 +109,8 @@ TemplateURLFetcherTestCallbacks::~TemplateURLFetcherTestCallbacks() {
 
 void TemplateURLFetcherTestCallbacks::ConfirmSetDefaultSearchProvider(
     TemplateURL* template_url,
-    TemplateURLService* template_url_service) {
-  test_->ConfirmSetDefaultSearchProvider(template_url, template_url_service);
+    Profile* profile) {
+  test_->ConfirmSetDefaultSearchProvider(template_url, profile);
 }
 
 void TemplateURLFetcherTestCallbacks::ConfirmAddSearchProvider(
@@ -142,7 +137,7 @@ void TemplateURLFetcherTest::DestroyedCallback(
 
 void TemplateURLFetcherTest::ConfirmSetDefaultSearchProvider(
     TemplateURL* template_url,
-    TemplateURLService* template_url_service) {
+    Profile* profile) {
   last_callback_template_url_.reset(template_url);
   set_default_called_++;
 }

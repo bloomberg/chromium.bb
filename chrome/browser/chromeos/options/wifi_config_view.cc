@@ -949,7 +949,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   layout->SkipColumns(1);
   error_label_ = new views::Label();
   error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  error_label_->SetColor(SK_ColorRED);
+  error_label_->SetEnabledColor(SK_ColorRED);
   layout->AddView(error_label_);
 
   // Initialize the field and checkbox values.

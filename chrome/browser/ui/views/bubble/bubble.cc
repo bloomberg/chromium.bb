@@ -41,7 +41,7 @@ const SkColor Bubble::kBackgroundColor = SK_ColorWHITE;
 
 // BubbleDelegate ---------------------------------------------------------
 
-string16 BubbleDelegate::accessible_name() {
+string16 BubbleDelegate::GetAccessibleName() {
   return string16();
 }
 
@@ -229,7 +229,7 @@ void Bubble::InitBubble(views::Widget* parent,
     border_->SetOpacity(0);
     GetWidget()->SetOpacity(0);
   }
-  SetWindowText(GetNativeView(), delegate_->accessible_name().c_str());
+  SetWindowText(GetNativeView(), delegate_->GetAccessibleName().c_str());
 #elif defined(TOOLKIT_USES_GTK)
   views::Widget::InitParams params(type_);
   params.transparent = true;

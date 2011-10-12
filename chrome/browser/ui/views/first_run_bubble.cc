@@ -111,6 +111,7 @@ FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
 
   label1_ = new views::Label(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_TITLE));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
+  label1_->SetBackgroundColor(Bubble::kBackgroundColor);
   label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label1_);
 
@@ -119,6 +120,7 @@ FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
   label2_ = new views::Label(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT));
   label2_->SetMultiLine(true);
   label2_->SetFont(font);
+  label2_->SetBackgroundColor(Bubble::kBackgroundColor);
   label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label2_->SizeToFit(ps.width() - kBubblePadding * 2);
   AddChildView(label2_);
@@ -129,6 +131,7 @@ FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
   label3_ = new views::Label(question_str);
   label3_->SetMultiLine(true);
   label3_->SetFont(font);
+  label3_->SetBackgroundColor(Bubble::kBackgroundColor);
   label3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label3_->SizeToFit(ps.width() - kBubblePadding * 2);
   AddChildView(label3_);
@@ -275,13 +278,15 @@ FirstRunOEMBubbleView::FirstRunOEMBubbleView(FirstRunBubble* bubble_window,
   label1_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_FR_OEM_BUBBLE_TITLE_1));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
-  label1_->SetColor(SK_ColorRED);
+  label1_->SetBackgroundColor(Bubble::kBackgroundColor);
+  label1_->SetEnabledColor(SK_ColorRED);
   label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label1_);
 
   label2_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_FR_OEM_BUBBLE_TITLE_2));
   label2_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
+  label2_->SetBackgroundColor(Bubble::kBackgroundColor);
   label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label2_);
 
@@ -291,6 +296,7 @@ FirstRunOEMBubbleView::FirstRunOEMBubbleView(FirstRunBubble* bubble_window,
       l10n_util::GetStringUTF16(IDS_FR_OEM_BUBBLE_SUBTEXT));
   label3_->SetMultiLine(true);
   label3_->SetFont(font);
+  label3_->SetBackgroundColor(Bubble::kBackgroundColor);
   label3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label3_->SizeToFit(ps.width() - kOEMBubblePadding * 2);
   AddChildView(label3_);
@@ -423,6 +429,7 @@ FirstRunMinimalBubbleView::FirstRunMinimalBubbleView(
       IDS_FR_SE_BUBBLE_TITLE,
       GetDefaultSearchEngineName(profile_)));
   label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
+  label1_->SetBackgroundColor(Bubble::kBackgroundColor);
   label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label1_);
 
@@ -432,6 +439,7 @@ FirstRunMinimalBubbleView::FirstRunMinimalBubbleView(
       l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT));
   label2_->SetMultiLine(true);
   label2_->SetFont(font);
+  label2_->SetBackgroundColor(Bubble::kBackgroundColor);
   label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label2_->SizeToFit(ps.width() - kBubblePadding * 2);
   AddChildView(label2_);

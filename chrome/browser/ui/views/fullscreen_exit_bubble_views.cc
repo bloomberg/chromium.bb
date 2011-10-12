@@ -55,8 +55,9 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
   link_.set_listener(bubble);
   link_.SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::LargeFont));
-  link_.SetNormalColor(SK_ColorWHITE);
-  link_.SetHighlightedColor(SK_ColorWHITE);
+  link_.SetBackgroundColor(SK_ColorBLACK);
+  link_.SetEnabledColor(SK_ColorWHITE);
+  link_.SetPressedColor(SK_ColorWHITE);
   AddChildView(&link_);
 }
 

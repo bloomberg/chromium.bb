@@ -994,10 +994,9 @@ class Browser : public TabHandlerDelegate,
                                TabContentsWrapper* new_tab_contents) OVERRIDE;
 
   // Overridden from SearchEngineTabHelperDelegate:
-  virtual void ConfirmSetDefaultSearchProvider(
-      TabContents* tab_contents,
-      TemplateURL* template_url,
-      TemplateURLService* template_url_service) OVERRIDE;
+  virtual void ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
+                                               TemplateURL* template_url,
+                                               Profile* profile) OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
 

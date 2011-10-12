@@ -495,6 +495,8 @@ NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
 NativePanelTestingWin::NativePanelTestingWin(
     PanelBrowserView* panel_browser_view) :
     panel_browser_view_(panel_browser_view) {
+  PanelBrowserFrameView* frame_view = panel_browser_view_->GetFrameView();
+  frame_view->title_label_->SetAutoColorReadabilityEnabled(false);
 }
 
 void NativePanelTestingWin::PressLeftMouseButtonTitlebar(
@@ -527,7 +529,7 @@ bool NativePanelTestingWin::VerifyDrawingAttention() const {
   PanelBrowserFrameView* frame_view = panel_browser_view_->GetFrameView();
   SkColor attention_color = frame_view->GetTitleColor(
       PanelBrowserFrameView::PAINT_FOR_ATTENTION);
-  return attention_color == frame_view->title_label_->GetColor();
+  return attention_color == frame_view->title_label_->enabled_color();
 }
 
 bool NativePanelTestingWin::VerifyActiveState(bool is_active) {
@@ -540,7 +542,7 @@ bool NativePanelTestingWin::VerifyActiveState(bool is_active) {
     return false;
 
   SkColor expected_color = frame_view->GetTitleColor(expected_paint_state);
-  return expected_color == frame_view->title_label_->GetColor();
+  return expected_color == frame_view->title_label_->enabled_color();
 }
 
 bool NativePanelTestingWin::IsWindowSizeKnown() const {

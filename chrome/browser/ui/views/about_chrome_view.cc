@@ -33,6 +33,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
@@ -58,10 +59,6 @@ const string16 kBeginLinkChr(ASCIIToUTF16("BEGIN_LINK_CHR"));
 const string16 kBeginLinkOss(ASCIIToUTF16("BEGIN_LINK_OSS"));
 const string16 kEndLinkChr(ASCIIToUTF16("END_LINK_CHR"));
 const string16 kEndLinkOss(ASCIIToUTF16("END_LINK_OSS"));
-
-// The background bitmap used to draw the background color for the About box
-// and the separator line (this is the image we will draw the logo on top of).
-static const SkBitmap* kBackgroundBmp = NULL;
 
 // Returns a substring from |text| between start and end.
 string16 StringSubRange(const string16& text, size_t start, size_t end) {
@@ -109,11 +106,6 @@ AboutChromeView::AboutChromeView(Profile* profile)
   google_updater_ = new GoogleUpdate();
   google_updater_->set_status_listener(this);
 #endif
-
-  if (kBackgroundBmp == NULL) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    kBackgroundBmp = rb.GetBitmapNamed(IDR_ABOUT_BACKGROUND_COLOR);
-  }
 }
 
 AboutChromeView::~AboutChromeView() {
@@ -166,7 +158,8 @@ void AboutChromeView::Init() {
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   about_title_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(18));
-  about_title_label_->SetColor(SK_ColorBLACK);
+  about_title_label_->SetBackgroundColor(SK_ColorWHITE);
+  about_title_label_->SetEnabledColor(SK_ColorBLACK);
   AddChildView(about_title_label_);
 
   // This is a text field so people can copy the version number from the dialog.
@@ -222,6 +215,14 @@ void AboutChromeView::Init() {
                      text.find(kEndLinkOss)));
   AddChildView(open_source_url_);
   open_source_url_->set_listener(this);
+
+#if defined(OS_WIN)
+  SkColor background_color = color_utils::GetSysSkColor(COLOR_3DFACE);
+  copyright_label_->SetBackgroundColor(background_color);
+  main_text_label_->SetBackgroundColor(background_color);
+  chromium_url_->SetBackgroundColor(background_color);
+  open_source_url_->SetBackgroundColor(background_color);
+#endif
 
   // Add together all the strings in the dialog for the purpose of calculating
   // the height of the dialog. The space for the Terms of Service string is not
@@ -381,8 +382,10 @@ void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
   // Draw the background image color (and the separator) across the dialog.
   // This will become the background for the logo image at the top of the
   // dialog.
-  canvas->TileImageInt(*kBackgroundBmp, 0, 0,
-                       dialog_dimensions_.width(), kBackgroundBmp->height());
+  SkBitmap* background = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_ABOUT_BACKGROUND_COLOR);
+  canvas->TileImageInt(*background, 0, 0, dialog_dimensions_.width(),
+                       background->height());
 
   gfx::Font font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);

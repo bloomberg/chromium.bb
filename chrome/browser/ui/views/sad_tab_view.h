@@ -57,9 +57,13 @@ class SadTabView : public views::View,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
+  views::Label* CreateLabel(const string16& text);
+  views::Link* CreateLink(const string16& text);
+
   TabContents* tab_contents_;
   Kind kind_;
   bool painted_;
+  const gfx::Font& base_font_;
   views::Label* message_;
   views::Link* help_link_;
   views::Link* feedback_link_;

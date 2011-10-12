@@ -25,12 +25,14 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
     : background_painter_(background_images),
       is_extension_icon_(false) {
   image_ = new views::ImageView();
-  AddChildView(image_);
   image_->SetImage(
       ResourceBundle::GetSharedInstance().GetBitmapNamed(contained_image));
+  AddChildView(image_);
+
   label_ = new views::Label();
+  label_->SetAutoColorReadabilityEnabled(false);
+  label_->SetEnabledColor(color);
   AddChildView(label_);
-  label_->SetColor(color);
 }
 
 IconLabelBubbleView::~IconLabelBubbleView() {

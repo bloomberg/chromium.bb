@@ -9,7 +9,6 @@
 class Profile;
 class TabContents;
 class TemplateURL;
-class TemplateURLService;
 
 // Objects implement this interface to get notified about changes in the
 // SearchEngineTabHelper and to provide necessary functionality.
@@ -17,10 +16,9 @@ class SearchEngineTabHelperDelegate {
  public:
   // Shows a confirmation dialog box for setting the default search engine
   // described by |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmSetDefaultSearchProvider(
-      TabContents* tab_contents,
-      TemplateURL* template_url,
-      TemplateURLService* template_url_service) = 0;
+  virtual void ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
+                                               TemplateURL* template_url,
+                                               Profile* profile) = 0;
 
   // Shows a confirmation dialog box for adding a search engine described by
   // |template_url|. Takes ownership of |template_url|.

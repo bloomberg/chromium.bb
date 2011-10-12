@@ -23,6 +23,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/size.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
@@ -289,18 +290,24 @@ void NetworkSelectionView::Init() {
       &BorderDefinition::kScreenBorder);
   contents_view_->set_background(
       views::Background::CreateBackgroundPainter(true, painter));
+  SkColor background_color = color_utils::AlphaBlend(
+      BorderDefinition::kScreenBorder.top_color,
+      BorderDefinition::kScreenBorder.bottom_color, 128);
 
   welcome_label_ = new views::Label();
-  welcome_label_->SetColor(kWelcomeColor);
+  welcome_label_->SetEnabledColor(kWelcomeColor);
+  welcome_label_->SetBackgroundColor(background_color);
   welcome_label_->SetMultiLine(true);
 
   select_language_label_ = new views::Label();
+  select_language_label_->SetBackgroundColor(background_color);
 
   languages_menubutton_ = new NotifyingMenuButton(
       NULL, std::wstring(), actor_->language_switch_menu(), true, actor_);
   InitMenuButtonProperties(languages_menubutton_);
 
   select_keyboard_label_ = new views::Label();
+  select_keyboard_label_->SetBackgroundColor(background_color);
 
   keyboards_menubutton_ = new DropDownButton(
       NULL /* listener */, L"", actor_->keyboard_switch_menu(),
@@ -308,6 +315,7 @@ void NetworkSelectionView::Init() {
   InitMenuButtonProperties(keyboards_menubutton_);
 
   select_network_label_ = new views::Label();
+  select_network_label_->SetBackgroundColor(background_color);
 
   network_dropdown_ = new NetworkControlReportOnActivate(false,
                                                          GetNativeWindow(),
@@ -315,14 +323,16 @@ void NetworkSelectionView::Init() {
   InitMenuButtonProperties(network_dropdown_);
 
   connecting_network_label_ = new views::Label();
+  connecting_network_label_->SetBackgroundColor(background_color);
   connecting_network_label_->SetVisible(false);
 
   proxy_settings_link_ = new views::Link();
   proxy_settings_link_->set_listener(this);
   proxy_settings_link_->SetVisible(true);
   proxy_settings_link_->set_focusable(true);
-  proxy_settings_link_->SetNormalColor(login::kLinkColor);
-  proxy_settings_link_->SetHighlightedColor(login::kLinkColor);
+  proxy_settings_link_->SetBackgroundColor(background_color);
+  proxy_settings_link_->SetEnabledColor(login::kLinkColor);
+  proxy_settings_link_->SetPressedColor(login::kLinkColor);
 
   UpdateLocalizedStringsAndFonts();
 }

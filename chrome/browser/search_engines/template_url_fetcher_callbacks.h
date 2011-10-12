@@ -8,7 +8,6 @@
 
 class Profile;
 class TemplateURL;
-class TemplateURLService;
 
 // Callbacks for the TemplateURLFetcher.
 class TemplateURLFetcherCallbacks {
@@ -18,15 +17,13 @@ class TemplateURLFetcherCallbacks {
 
   // Performs the confirmation step for setting the default search engine
   // described by |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmSetDefaultSearchProvider(
-      TemplateURL* template_url,
-      TemplateURLService* template_url_service) = 0;
+  virtual void ConfirmSetDefaultSearchProvider(TemplateURL* template_url,
+                                               Profile* profile) = 0;
 
   // Performs the confirmation step for adding a search engine described by
   // |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmAddSearchProvider(
-      TemplateURL* template_url,
-      Profile* profile) = 0;
+  virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
+                                        Profile* profile) = 0;
 };
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_CALLBACKS_H_

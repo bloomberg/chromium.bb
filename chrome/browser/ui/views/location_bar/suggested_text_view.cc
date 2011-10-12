@@ -14,6 +14,10 @@
 SuggestedTextView::SuggestedTextView(AutocompleteEditModel* edit_model)
     : edit_model_(edit_model),
       bg_color_(0) {
+  SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  SetAutoColorReadabilityEnabled(false);
+  SetEnabledColor(LocationBarView::GetColor(ToolbarModel::NONE,
+      LocationBarView::DEEMPHASIZED_TEXT));
 }
 
 SuggestedTextView::~SuggestedTextView() {
@@ -32,8 +36,8 @@ void SuggestedTextView::StopAnimation() {
     // Reset the delegate so that we don't attempt to commit in AnimationEnded.
     animation_->set_delegate(NULL);
     animation_.reset(NULL);
-    SetColor(LocationBarView::GetColor(ToolbarModel::NONE,
-                                       LocationBarView::DEEMPHASIZED_TEXT));
+    SetEnabledColor(LocationBarView::GetColor(ToolbarModel::NONE,
+        LocationBarView::DEEMPHASIZED_TEXT));
     SchedulePaint();
   }
 }
@@ -57,8 +61,7 @@ void SuggestedTextView::AnimationProgressed(const ui::Animation* animation) {
       ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT);
   SkColor sel_fg_color = LocationBarView::GetColor(
       ToolbarModel::NONE, LocationBarView::SELECTED_TEXT);
-  SetColor(color_utils::AlphaBlend(
-      sel_fg_color, fg_color,
+  SetEnabledColor(color_utils::AlphaBlend(sel_fg_color, fg_color,
       ui::Tween::ValueBetween(animation->GetCurrentValue(), 0, 255)));
 
   SchedulePaint();

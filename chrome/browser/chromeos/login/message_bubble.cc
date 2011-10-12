@@ -66,6 +66,7 @@ MessageBubble::MessageBubble(views::Widget::InitParams::Type type,
   text_ = new views::Label(WideToUTF16Hack(text));
   text_->SetMultiLine(true);
   text_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  text_->SetBackgroundColor(Bubble::kBackgroundColor);
   text_->SizeToFit(kMaxLabelWidth);
   layout->AddView(text_);
 
@@ -83,8 +84,9 @@ MessageBubble::MessageBubble(views::Widget::InitParams::Type type,
     views::Link* help_link_ = new views::Link(WideToUTF16Hack(links[i]));
     help_links_.push_back(help_link_);
     help_link_->set_listener(this);
-    help_link_->SetNormalColor(login::kLinkColor);
-    help_link_->SetHighlightedColor(login::kLinkColor);
+    help_link_->SetBackgroundColor(Bubble::kBackgroundColor);
+    help_link_->SetEnabledColor(login::kLinkColor);
+    help_link_->SetPressedColor(login::kLinkColor);
     layout->AddView(help_link_);
   }
 }

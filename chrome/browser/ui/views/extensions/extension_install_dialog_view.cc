@@ -208,7 +208,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
     layout->StartRow(0, column_set_id);
     views::Label* user_count = new views::Label(prompt.GetUserCount());
-    user_count->SetColor(SK_ColorGRAY);
+    user_count->SetAutoColorReadabilityEnabled(false);
+    user_count->SetEnabledColor(SK_ColorGRAY);
     user_count->SetFont(user_count->font().DeriveFont(kRatingFontSizeDelta));
     layout->AddView(user_count);
 

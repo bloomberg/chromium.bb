@@ -93,7 +93,7 @@ class BookmarkBubbleView : public views::View,
   virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
   virtual bool CloseOnEscape() OVERRIDE;
   virtual bool FadeInOnShow() OVERRIDE;
-  virtual string16 accessible_name() OVERRIDE;
+  virtual string16 GetAccessibleName() OVERRIDE;
 
   // Closes the bubble.
   void Close();

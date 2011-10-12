@@ -25,10 +25,6 @@
 
 namespace views {
 
-// The colors to use for enabled and disabled labels.
-static SkColor kEnabledColor;
-static SkColor kDisabledColor;
-
 // static
 const char Label::kViewClassName[] = "views/Label";
 
@@ -81,17 +77,24 @@ const GURL Label::GetURL() const {
   return url_set_ ? url_ : GURL(UTF16ToUTF8(text_));
 }
 
-void Label::SetColor(const SkColor& color) {
-  color_ = color;
+void Label::SetAutoColorReadabilityEnabled(bool enabled) {
+  auto_color_readability_ = enabled;
+  RecalculateColors();
 }
 
-SkColor Label::GetColor() const {
-  return color_;
+void Label::SetEnabledColor(const SkColor& color) {
+  requested_enabled_color_ = color;
+  RecalculateColors();
 }
 
-void Label::MakeReadableOverBackgroundColor(const SkColor& background_color) {
-  SetColor(color_utils::GetReadableColor(
-      IsEnabled() ? kEnabledColor : kDisabledColor, background_color));
+void Label::SetDisabledColor(const SkColor& color) {
+  requested_disabled_color_ = color;
+  RecalculateColors();
+}
+
+void Label::SetBackgroundColor(const SkColor& color) {
+  background_color_ = color;
+  RecalculateColors();
 }
 
 void Label::SetHorizontalAlignment(Alignment alignment) {
@@ -216,11 +219,6 @@ int Label::GetHeightForWidth(int w) {
   return h + GetInsets().height();
 }
 
-void Label::OnEnabledChanged() {
-  View::OnEnabledChanged();
-  SetColor(IsEnabled() ? kEnabledColor : kDisabledColor);
-}
-
 std::string Label::GetClassName() const {
   return kViewClassName;
 }
@@ -269,9 +267,10 @@ void Label::PaintText(gfx::Canvas* canvas,
                       const string16& text,
                       const gfx::Rect& text_bounds,
                       int flags) {
-  canvas->DrawStringInt(text, font_, color_,
-                        text_bounds.x(), text_bounds.y(),
-                        text_bounds.width(), text_bounds.height(), flags);
+  canvas->DrawStringInt(text, font_,
+      IsEnabled() ? actual_enabled_color_ : actual_disabled_color_,
+      text_bounds.x(), text_bounds.y(), text_bounds.width(),
+      text_bounds.height(), flags);
 
   if (HasFocus() || paint_as_focused_) {
     gfx::Rect focus_bounds = text_bounds;
@@ -332,14 +331,19 @@ gfx::Font Label::GetDefaultFont() {
 
 void Label::Init(const string16& text, const gfx::Font& font) {
   static bool initialized = false;
+  static SkColor kDefaultEnabledColor;
+  static SkColor kDefaultDisabledColor;
+  static SkColor kDefaultBackgroundColor;
   if (!initialized) {
 #if defined(OS_WIN)
-    kEnabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-    kDisabledColor = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
+    kDefaultEnabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+    kDefaultDisabledColor = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
+    kDefaultBackgroundColor = color_utils::GetSysSkColor(COLOR_WINDOW);
 #else
     // TODO(beng): source from theme provider.
-    kEnabledColor = SK_ColorBLACK;
-    kDisabledColor = SK_ColorGRAY;
+    kDefaultEnabledColor = SK_ColorBLACK;
+    kDefaultDisabledColor = SK_ColorGRAY;
+    kDefaultBackgroundColor = SK_ColorWHITE;
 #endif
 
     initialized = true;
@@ -348,9 +352,12 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   contains_mouse_ = false;
   font_ = font;
   text_size_valid_ = false;
-  SetText(text);
   url_set_ = false;
-  color_ = kEnabledColor;
+  requested_enabled_color_ = kDefaultEnabledColor;
+  requested_disabled_color_ = kDefaultDisabledColor;
+  background_color_ = kDefaultBackgroundColor;
+  auto_color_readability_ = true;
+  RecalculateColors();
   horiz_alignment_ = ALIGN_CENTER;
   is_multi_line_ = false;
   allow_character_break_ = false;
@@ -359,6 +366,19 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   rtl_alignment_mode_ = USE_UI_ALIGNMENT;
   paint_as_focused_ = false;
   has_focus_border_ = false;
+
+  SetText(text);
+}
+
+void Label::RecalculateColors() {
+  actual_enabled_color_ = auto_color_readability_ ?
+      color_utils::GetReadableColor(requested_enabled_color_,
+                                    background_color_) :
+      requested_enabled_color_;
+  actual_disabled_color_ = auto_color_readability_ ?
+      color_utils::GetReadableColor(requested_disabled_color_,
+                                    background_color_) :
+      requested_disabled_color_;
 }
 
 void Label::UpdateContainsMouse(const MouseEvent& event) {

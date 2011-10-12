@@ -24,7 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
@@ -50,9 +49,6 @@ static const int kTitlePadding = 4;
 // of the bubble far enough so that the edit button's left edge is to the right
 // of the field's left edge.
 static const int kMinimumFieldSize = 180;
-
-// Bubble close image.
-static SkBitmap* kCloseImage = NULL;
 
 // Declared in browser_dialogs.h so callers don't have to depend on our header.
 
@@ -179,20 +175,10 @@ BookmarkBubbleView::BookmarkBubbleView(BubbleDelegate* delegate,
 }
 
 void BookmarkBubbleView::Init() {
-  static SkColor kTitleColor;
-  static bool initialized = false;
-  if (!initialized) {
-    kTitleColor = color_utils::GetReadableColor(SkColorSetRGB(6, 45, 117),
-                                                Bubble::kBackgroundColor);
-    kCloseImage = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_INFO_BUBBLE_CLOSE);
-
-    initialized = true;
-  }
-
   remove_link_ = new views::Link(l10n_util::GetStringUTF16(
       IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
   remove_link_->set_listener(this);
+  remove_link_->SetBackgroundColor(Bubble::kBackgroundColor);
 
   edit_button_ = new views::NativeTextButton(
       this,
@@ -204,6 +190,7 @@ void BookmarkBubbleView::Init() {
 
   views::Label* combobox_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_FOLDER_TEXT));
+  combobox_label->SetBackgroundColor(Bubble::kBackgroundColor);
 
   parent_combobox_ = new views::Combobox(&parent_model_);
   parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
@@ -216,7 +203,8 @@ void BookmarkBubbleView::Init() {
                               IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
   title_label->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
-  title_label->SetColor(kTitleColor);
+  title_label->SetBackgroundColor(Bubble::kBackgroundColor);
+  title_label->SetEnabledColor(SkColorSetRGB(6, 45, 117));
 
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
@@ -256,8 +244,10 @@ void BookmarkBubbleView::Init() {
 
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, 2);
-  layout->AddView(new views::Label(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_TITLE_TEXT)));
+  views::Label* label = new views::Label(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_TITLE_TEXT));
+  label->SetBackgroundColor(Bubble::kBackgroundColor);
+  layout->AddView(label);
   title_tf_ = new views::Textfield();
   title_tf_->SetText(GetTitle());
   layout->AddView(title_tf_);
@@ -342,7 +332,7 @@ bool BookmarkBubbleView::FadeInOnShow() {
   return false;
 }
 
-string16 BookmarkBubbleView::accessible_name() {
+string16 BookmarkBubbleView::GetAccessibleName() {
   return l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_ADD_BOOKMARK);
 }
 

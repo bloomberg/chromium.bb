@@ -367,7 +367,7 @@ void UserController::SetupControlsWidget(
   views::View* control_view;
   if (is_new_user_) {
     NewUserView* new_user_view =
-        new NewUserView(this, true, need_browse_without_signin);
+        new NewUserView(this, need_browse_without_signin);
     new_user_view->Init();
     control_view = new_user_view;
     user_input_ = new_user_view;
@@ -491,7 +491,8 @@ Widget* UserController::CreateLabelWidget(int index, WmIpcWindowType type) {
   const gfx::Font& font = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
       GetLabelFont() : GetUnselectedLabelFont();
   label->SetFont(font);
-  label->SetColor(login::kTextColor);
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetEnabledColor(login::kTextColor);
 
   if (type == WM_IPC_WINDOW_LOGIN_LABEL)
     label_view_ = label;

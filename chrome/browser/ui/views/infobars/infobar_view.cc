@@ -76,26 +76,24 @@ InfoBarView::~InfoBarView() {
   DCHECK(!menu_runner_.get());
 }
 
-// static
-views::Label* InfoBarView::CreateLabel(const string16& text) {
+views::Label* InfoBarView::CreateLabel(const string16& text) const {
   views::Label* label = new views::Label(text,
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
-  label->SetColor(SK_ColorBLACK);
+  label->SetBackgroundColor(background()->get_color());
+  label->SetEnabledColor(SK_ColorBLACK);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   return label;
 }
 
-// static
 views::Link* InfoBarView::CreateLink(const string16& text,
-                                     views::LinkListener* listener,
-                                     const SkColor& background_color) {
+                                     views::LinkListener* listener) const {
   views::Link* link = new views::Link;
   link->SetText(text);
   link->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   link->set_listener(listener);
-  link->MakeReadableOverBackgroundColor(background_color);
+  link->SetBackgroundColor(background()->get_color());
   return link;
 }
 

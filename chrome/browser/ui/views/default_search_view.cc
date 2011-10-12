@@ -10,7 +10,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -60,7 +62,8 @@ void GetShortNameAndLogoId(PrefService* prefs,
 views::Label* CreateProviderLabel(int message_id) {
   views::Label* choice_label =
       new views::Label(l10n_util::GetStringUTF16(message_id));
-  choice_label->SetColor(SK_ColorBLACK);
+  choice_label->SetBackgroundColor(SK_ColorWHITE);
+  choice_label->SetEnabledColor(SK_ColorBLACK);
   choice_label->SetFont(
       choice_label->font().DeriveFont(1, gfx::Font::NORMAL));
   return choice_label;
@@ -89,7 +92,8 @@ views::View* CreateProviderLogo(
   } else {
     // No logo -- show a text label.
     views::Label* logo_label = new views::Label(short_name);
-    logo_label->SetColor(SK_ColorDKGRAY);
+    logo_label->SetBackgroundColor(SK_ColorWHITE);
+    logo_label->SetEnabledColor(SK_ColorDKGRAY);
     logo_label->SetFont(logo_label->font().DeriveFont(3, gfx::Font::BOLD));
     logo_label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
     // Tooltip text provides accessibility for low-vision users.
@@ -111,16 +115,18 @@ views::View* CreateProviderChoiceButton(
 
 // static
 void DefaultSearchView::Show(TabContents* tab_contents,
-                             TemplateURL* default_url,
-                             TemplateURLService* template_url_service) {
-  scoped_ptr<TemplateURL> template_url(default_url);
-  if (!template_url_service->CanMakeDefault(default_url) ||
-      default_url->url()->GetHost().empty())
-    return;
-
-  // When the window closes, it will delete itself.
-  new DefaultSearchView(tab_contents, template_url.release(),
-                        template_url_service);
+                             TemplateURL* proposed_default_turl,
+                             Profile* profile) {
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (template_url_service->CanMakeDefault(proposed_default_turl) &&
+      !proposed_default_turl->url()->GetHost().empty()) {
+    // When the window closes, it will delete itself.
+    new DefaultSearchView(tab_contents, proposed_default_turl,
+                          template_url_service, profile->GetPrefs());
+  } else {
+    delete proposed_default_turl;
+  }
 }
 
 DefaultSearchView::~DefaultSearchView() {
@@ -128,8 +134,8 @@ DefaultSearchView::~DefaultSearchView() {
 
 void DefaultSearchView::OnPaint(gfx::Canvas* canvas) {
   // Fill in behind the background image with the standard gray toolbar color.
-  canvas->FillRectInt(SkColorSetRGB(237, 238, 237), 0, 0, width(),
-                      background_image_->height());
+  canvas->FillRectInt(GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR),
+                      0, 0, width(), background_image_->height());
   // The rest of the dialog background should be white.
   DCHECK(height() > background_image_->height());
   canvas->FillRectInt(SK_ColorWHITE, 0, background_image_->height(), width(),
@@ -183,29 +189,21 @@ const views::Widget* DefaultSearchView::GetWidget() const {
 
 DefaultSearchView::DefaultSearchView(TabContents* tab_contents,
                                      TemplateURL* proposed_default_turl,
-                                     TemplateURLService* template_url_service)
+                                     TemplateURLService* template_url_service,
+                                     PrefService* prefs)
     : background_image_(NULL),
       default_provider_button_(NULL),
       proposed_provider_button_(NULL),
       proposed_turl_(proposed_default_turl),
       template_url_service_(template_url_service) {
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
-  PrefService* prefs = profile->GetPrefs();
   SetupControls(prefs);
 
   // Show the dialog.
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  new ConstrainedWindowViews(wrapper, this);
+  new ConstrainedWindowViews(
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents), this);
 }
 
 void DefaultSearchView::SetupControls(PrefService* prefs) {
-  using views::ColumnSet;
-  using views::GridLayout;
-  using views::ImageView;
-  using views::Label;
-
   // Column set id's.
   const int kWholeDialogViewSetId = 0;
   const int kPaddedWholeDialogViewSetId = 1;
@@ -231,61 +229,60 @@ void DefaultSearchView::SetupControls(PrefService* prefs) {
                         &default_logo_id);
 
   // Now set-up the dialog contents.
-  GridLayout* layout = new views::GridLayout(this);
+  views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(0, 0, views::kPanelVertMargin, 0);
   SetLayoutManager(layout);
 
   // Add a column set that spans the whole dialog.
-  ColumnSet* whole_dialog_column_set =
+  views::ColumnSet* whole_dialog_column_set =
       layout->AddColumnSet(kWholeDialogViewSetId);
-  whole_dialog_column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                                     1, GridLayout::FIXED,
-                                     views::Widget::GetLocalizedContentsWidth(
-                                         IDS_DEFAULT_SEARCH_WIDTH_CHARS),
-                                     0);
+  whole_dialog_column_set->AddColumn(views::GridLayout::LEADING,
+      views::GridLayout::LEADING, 1, views::GridLayout::FIXED,
+      views::Widget::GetLocalizedContentsWidth(IDS_DEFAULT_SEARCH_WIDTH_CHARS),
+      0);
 
   // Add a column set that spans the whole dialog but obeying padding.
-  ColumnSet* padded_whole_dialog_column_set =
+  views::ColumnSet* padded_whole_dialog_column_set =
       layout->AddColumnSet(kPaddedWholeDialogViewSetId);
   padded_whole_dialog_column_set->AddPaddingColumn(1, views::kPanelVertMargin);
-  padded_whole_dialog_column_set->AddColumn(
-      GridLayout::LEADING, GridLayout::LEADING,
-      1, GridLayout::USE_PREF, 0, 0);
+  padded_whole_dialog_column_set->AddColumn(views::GridLayout::LEADING,
+      views::GridLayout::LEADING, 1, views::GridLayout::USE_PREF, 0, 0);
   padded_whole_dialog_column_set->AddPaddingColumn(1, views::kPanelVertMargin);
 
   // Add a column set for the search engine choices.
-  ColumnSet* choices_column_set = layout->AddColumnSet(kChoicesViewSetId);
+  views::ColumnSet* choices_column_set =
+      layout->AddColumnSet(kChoicesViewSetId);
   choices_column_set->AddPaddingColumn(1, views::kPanelVertMargin);
-  choices_column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER,
-                                1, GridLayout::USE_PREF, 0, 0);
+  choices_column_set->AddColumn(views::GridLayout::CENTER,
+      views::GridLayout::CENTER, 1, views::GridLayout::USE_PREF, 0, 0);
   choices_column_set->AddPaddingColumn(
       1, views::kRelatedControlHorizontalSpacing);
-  choices_column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER,
-                                1, GridLayout::USE_PREF, 0, 0);
+  choices_column_set->AddColumn(views::GridLayout::CENTER,
+      views::GridLayout::CENTER, 1, views::GridLayout::USE_PREF, 0, 0);
   choices_column_set->LinkColumnSizes(0, 2, -1);
   choices_column_set->AddPaddingColumn(1, views::kPanelVertMargin);
 
   // Add the "search box" image.
   layout->StartRow(0, kWholeDialogViewSetId);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  background_image_ = new ImageView();
+  background_image_ = new views::ImageView();
   background_image_->SetImage(rb.GetBitmapNamed(IDR_SEARCH_ENGINE_DIALOG_TOP));
   background_image_->EnableCanvasFlippingForRTLUI(true);
-  ImageView::Alignment horizontal_alignment =
-      base::i18n::IsRTL() ? ImageView::LEADING : ImageView::TRAILING;
+  views::ImageView::Alignment horizontal_alignment = base::i18n::IsRTL() ?
+      views::ImageView::LEADING : views::ImageView::TRAILING;
   background_image_->SetHorizontalAlignment(horizontal_alignment);
   layout->AddView(background_image_);
 
   // Add text informing the user about the requested default change.
   layout->StartRowWithPadding(0, kPaddedWholeDialogViewSetId,
                               1, views::kLabelToControlVerticalSpacing);
-  Label* summary_label = new Label(l10n_util::GetStringFUTF16(
-      IDS_DEFAULT_SEARCH_SUMMARY,
-      WideToUTF16(proposed_short_name)));
-  summary_label->SetColor(SK_ColorBLACK);
+  views::Label* summary_label = new views::Label(l10n_util::GetStringFUTF16(
+      IDS_DEFAULT_SEARCH_SUMMARY, WideToUTF16(proposed_short_name)));
+  summary_label->SetBackgroundColor(SK_ColorWHITE);
+  summary_label->SetEnabledColor(SK_ColorBLACK);
   summary_label->SetFont(
       summary_label->font().DeriveFont(1, gfx::Font::NORMAL));
-  summary_label->SetHorizontalAlignment(Label::ALIGN_LEFT);
+  summary_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(summary_label);
 
   // Add the labels for the tops of the choices.

@@ -24,12 +24,10 @@
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/link_listener.h"
-#include "views/painter.h"
 
 namespace {
 
-// Background color and corner radius of the login status label and
-// signout button.
+// Background color of the signout button.
 const SkColor kSignoutBackgroundColor = 0xFF007700;
 
 // Horiz/Vert insets for Signout view.
@@ -43,21 +41,6 @@ const SkColor kImageBorderColor = 0xFFCCCCCC;
 // Padding between remove button and top right image corner.
 const int kRemoveButtonPadding = 3;
 
-// Draws green-ish background for signout view with
-// rounded corners at the bottom.
-class SignoutBackgroundPainter : public views::Painter {
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
-    SkRect rect = {0, 0, w, h};
-    SkPath path;
-    path.addRect(rect);
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
-    paint.setColor(kSignoutBackgroundColor);
-    canvas->GetSkCanvas()->drawPath(path, paint);
-  }
-};
-
 }  // namespace
 
 namespace chromeos {
@@ -70,30 +53,30 @@ using login::kUserImageSize;
 class SignoutView : public views::View {
  public:
   explicit SignoutView(views::LinkListener* link_listener) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const gfx::Font& font = rb.GetFont(ResourceBundle::SmallFont);
+    set_background(
+        views::Background::CreateSolidBackground(kSignoutBackgroundColor));
 
     active_user_label_ = new views::Label(
         l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_ACTIVE_USER));
+    const gfx::Font& font =
+        ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::SmallFont);
     active_user_label_->SetFont(font);
-    active_user_label_->SetColor(kTextColor);
+    active_user_label_->SetBackgroundColor(background()->get_color());
+    active_user_label_->SetEnabledColor(kTextColor);
 
     signout_link_ = new views::Link(
         l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT));
     signout_link_->set_listener(link_listener);
     signout_link_->SetFont(font);
-    signout_link_->SetColor(kTextColor);
     signout_link_->set_focusable(true);
-    signout_link_->SetHighlightedColor(kTextColor);
+    signout_link_->SetBackgroundColor(background()->get_color());
+    signout_link_->SetPressedColor(kTextColor);
     signout_link_->SetDisabledColor(kTextColor);
-    signout_link_->SetNormalColor(kTextColor);
+    signout_link_->SetEnabledColor(kTextColor);
     signout_link_->set_id(VIEW_ID_SCREEN_LOCKER_SIGNOUT_LINK);
 
     AddChildView(active_user_label_);
     AddChildView(signout_link_);
-
-    set_background(views::Background::CreateBackgroundPainter(
-        true, new SignoutBackgroundPainter()));
   }
 
   // views::View overrides.
@@ -174,15 +157,11 @@ class RemoveButton : public views::TextButton {
       const int kHorizontalPadding = 8;
       const int kCornerRadius = 4;
 
-      set_background(
-          CreateRoundedBackground(
-              kCornerRadius, kStrokeWidth, kButtonColor, kStrokeColor));
+      set_background(CreateRoundedBackground(kCornerRadius, kStrokeWidth,
+                                             kButtonColor, kStrokeColor));
 
-      set_border(
-          views::Border::CreateEmptyBorder(kVerticalPadding,
-                                           kHorizontalPadding,
-                                           kVerticalPadding,
-                                           kHorizontalPadding));
+      set_border(views::Border::CreateEmptyBorder(kVerticalPadding,
+          kHorizontalPadding, kVerticalPadding, kHorizontalPadding));
 
       UpdatePosition();
       was_first_click_ = true;
@@ -283,10 +262,9 @@ void UserView::Init(bool need_background) {
     AddChildView(signout_view_);
   }
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   remove_button_ = new RemoveButton(
       this,
-      *rb.GetBitmapNamed(IDR_CLOSE_BAR_H),
+      *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_CLOSE_BAR_H),
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE)),
       gfx::Point(kUserImageSize - kRemoveButtonPadding, kRemoveButtonPadding));
   remove_button_->SetVisible(false);

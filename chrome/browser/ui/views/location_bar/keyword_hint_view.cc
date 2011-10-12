@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,10 +28,8 @@ static const int kTabImageYOffset = 4;
 static const SkBitmap* kTabButtonBitmap = NULL;
 
 KeywordHintView::KeywordHintView(Profile* profile) : profile_(profile) {
-  leading_label_ = new views::Label();
-  trailing_label_ = new views::Label();
-  AddChildView(leading_label_);
-  AddChildView(trailing_label_);
+  leading_label_ = CreateLabel();
+  trailing_label_ = CreateLabel();
 
   if (!kTabButtonBitmap) {
     kTabButtonBitmap = ResourceBundle::GetSharedInstance().
@@ -44,11 +43,6 @@ KeywordHintView::~KeywordHintView() {
 void KeywordHintView::SetFont(const gfx::Font& font) {
   leading_label_->SetFont(font);
   trailing_label_->SetFont(font);
-}
-
-void KeywordHintView::SetColor(const SkColor& color) {
-  leading_label_->SetColor(color);
-  trailing_label_->SetColor(color);
 }
 
 void KeywordHintView::SetKeyword(const string16& keyword) {
@@ -133,4 +127,14 @@ void KeywordHintView::Layout() {
     pref = trailing_label_->GetPreferredSize();
     trailing_label_->SetBounds(x, 0, pref.width(), height());
   }
+}
+
+views::Label* KeywordHintView::CreateLabel() {
+  views::Label* label = new views::Label();
+  label->SetBackgroundColor(LocationBarView::GetColor(ToolbarModel::NONE,
+      LocationBarView::BACKGROUND));
+  label->SetEnabledColor(LocationBarView::GetColor(ToolbarModel::NONE,
+      LocationBarView::DEEMPHASIZED_TEXT));
+  AddChildView(label);
+  return label;
 }

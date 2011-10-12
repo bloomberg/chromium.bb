@@ -3913,12 +3913,11 @@ void Browser::OnInstallApplication(TabContentsWrapper* source,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SearchEngineTabHelperDelegate implementation:
 
-void Browser::ConfirmSetDefaultSearchProvider(
-    TabContents* tab_contents,
-    TemplateURL* template_url,
-    TemplateURLService* template_url_service) {
+void Browser::ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
+                                              TemplateURL* template_url,
+                                              Profile* profile) {
   window()->ConfirmSetDefaultSearchProvider(tab_contents, template_url,
-                                            template_url_service);
+                                            profile);
 }
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,

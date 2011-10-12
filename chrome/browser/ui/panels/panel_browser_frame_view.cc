@@ -280,6 +280,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
 
   title_label_ = new views::Label(string16());
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label_->SetAutoColorReadabilityEnabled(false);
   AddChildView(title_label_);
 
   mouse_watcher_.reset(new MouseWatcher(this));
@@ -587,7 +588,7 @@ void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
   paint_state_ = paint_state;
 
   SkColor title_color = GetTitleColor(paint_state_);
-  title_label_->SetColor(title_color);
+  title_label_->SetEnabledColor(title_color);
   title_label_->SetFont(*GetTitleFont());
 
   close_button_->SetBackground(title_color,

@@ -60,10 +60,7 @@ class NewUserView : public ThrobberHostView,
     virtual void NavigateAway() = 0;
   };
 
-  // If |need_border| is true, RoundedRect border and background are required.
-  NewUserView(Delegate* delegate,
-              bool need_border,
-              bool need_guest_link);
+  NewUserView(Delegate* delegate, bool need_guest_link);
 
   virtual ~NewUserView();
 
@@ -129,7 +126,7 @@ class NewUserView : public ThrobberHostView,
 
  private:
   // Creates Link control and adds it as a child.
-  void InitLink(views::Link** link);
+  views::Link* InitLink(SkColor background_color);
 
   // Delete and recreate native controls that fail to update preferred size
   // after text/locale update.
@@ -175,9 +172,6 @@ class NewUserView : public ThrobberHostView,
 
   // True when login is in process.
   bool login_in_process_;
-
-  // If true, this view needs RoundedRect border and background.
-  bool need_border_;
 
   // Whether Guest Mode link is needed.
   bool need_guest_link_;

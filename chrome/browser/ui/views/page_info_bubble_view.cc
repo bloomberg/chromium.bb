@@ -308,7 +308,7 @@ bool PageInfoBubbleView::FadeInOnShow() {
   return false;
 }
 
-string16 PageInfoBubbleView::accessible_name() {
+string16 PageInfoBubbleView::GetAccessibleName() {
   return ASCIIToUTF16("PageInfoBubble");
 }
 

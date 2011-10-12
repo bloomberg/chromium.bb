@@ -58,8 +58,9 @@ TEST(LabelTest, UrlProperty) {
 TEST(LabelTest, ColorProperty) {
   Label label;
   SkColor color = SkColorSetARGB(20, 40, 10, 5);
-  label.SetColor(color);
-  EXPECT_EQ(color, label.GetColor());
+  label.SetAutoColorReadabilityEnabled(false);
+  label.SetEnabledColor(color);
+  EXPECT_EQ(color, label.enabled_color());
 }
 
 TEST(LabelTest, AlignmentProperty) {

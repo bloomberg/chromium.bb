@@ -952,12 +952,11 @@ void BrowserView::DisableInactiveFrame() {
 #endif  // No tricks are needed to get the right behavior on Linux.
 }
 
-void BrowserView::ConfirmSetDefaultSearchProvider(
-    TabContents* tab_contents,
-    TemplateURL* template_url,
-    TemplateURLService* template_url_service) {
+void BrowserView::ConfirmSetDefaultSearchProvider(TabContents* tab_contents,
+                                                  TemplateURL* template_url,
+                                                  Profile* profile) {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  DefaultSearchView::Show(tab_contents, template_url, template_url_service);
+  DefaultSearchView::Show(tab_contents, template_url, profile);
 #else
   // TODO(levin): Implement for other platforms. Right now this is behind
   // a command line flag which is off. http://crbug.com/38475

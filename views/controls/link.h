@@ -46,36 +46,29 @@ class VIEWS_EXPORT Link : public Label {
 
   // Overridden from Label:
   virtual void SetFont(const gfx::Font& font) OVERRIDE;
-  virtual void MakeReadableOverBackgroundColor(const SkColor& color) OVERRIDE;
 
-  void SetHighlightedColor(const SkColor& color);
-  void SetDisabledColor(const SkColor& color);
-  void SetNormalColor(const SkColor& color);
+  virtual void SetEnabledColor(const SkColor& color) OVERRIDE;
+  void SetPressedColor(const SkColor& color);
 
   static const char kViewClassName[];
 
  private:
-  // A highlighted link is clicked.
-  void SetHighlighted(bool f);
-
-  // Make sure the label style matched the current state.
-  void ValidateStyle();
-
   void Init();
+
+  void SetPressed(bool pressed);
+
+  void RecalculateFont();
 
   LinkListener* listener_;
 
-  // Whether the link is currently highlighted.
-  bool highlighted_;
+  // Whether the link is currently pressed.
+  bool pressed_;
 
-  // The color when the link is highlighted.
-  SkColor highlighted_color_;
+  // The color when the link is neither pressed nor disabled.
+  SkColor requested_enabled_color_;
 
-  // The color when the link is disabled.
-  SkColor disabled_color_;
-
-  // The color when the link is neither highlighted nor disabled.
-  SkColor normal_color_;
+  // The color when the link is pressed.
+  SkColor requested_pressed_color_;
 
   DISALLOW_COPY_AND_ASSIGN(Link);
 };

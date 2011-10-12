@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,6 @@ class KeywordHintView : public views::View {
 
   void SetFont(const gfx::Font& font);
 
-  void SetColor(const SkColor& color);
-
   void SetKeyword(const string16& keyword);
   string16 keyword() const { return keyword_; }
 
@@ -46,6 +44,8 @@ class KeywordHintView : public views::View {
   virtual void Layout();
 
  private:
+  views::Label* CreateLabel();
+
   views::Label* leading_label_;
   views::Label* trailing_label_;
 

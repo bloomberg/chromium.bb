@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/size.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
@@ -88,13 +87,6 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
                           const gfx::Font& font,
                           bool text_direction_is_rtl,
                           bool ltr_within_rtl) {
-#if defined(OS_WIN)
-  const SkColor text_color = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-#else
-  // TODO(beng): source from theme provider.
-  const SkColor text_color = SK_ColorBLACK;
-#endif
-
   // Iterate through line breaking opportunities (which in English would be
   // spaces and such). This tells us where to wrap.
   string16 text16(WideToUTF16(text));
@@ -140,8 +132,8 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
     int y = position->height() + bounds.y();
 
     // Draw the text on the screen (mirrored, if RTL run).
-    canvas->DrawStringInt(word, font, text_color, x, y, w, font.GetHeight(),
-                          flags);
+    canvas->DrawStringInt(word, font, label->enabled_color(), x, y, w,
+                          font.GetHeight(), flags);
 
     if (!word.empty() && word[word.size() - 1] == '\x0a') {
       // When we come across '\n', we move to the beginning of the next line.

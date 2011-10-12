@@ -294,6 +294,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     Panel* panel = CreatePanel("PanelTest");
     PanelBrowserView* browser_view = GetBrowserView(panel);
     PanelBrowserFrameView* frame_view = browser_view->GetFrameView();
+    frame_view->title_label_->SetAutoColorReadabilityEnabled(false);
     SkColor attention_color = frame_view->GetTitleColor(
         PanelBrowserFrameView::PAINT_FOR_ATTENTION);
 
@@ -302,20 +303,20 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     browser_view->DrawAttention();
     EXPECT_FALSE(browser_view->IsDrawingAttention());
     MessageLoopForUI::current()->RunAllPending();
-    EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
+    EXPECT_NE(attention_color, frame_view->title_label_->enabled_color());
 
     // Test that the attention is drawn when the expanded panel is not in focus.
     panel->Deactivate();
     browser_view->DrawAttention();
     EXPECT_TRUE(browser_view->IsDrawingAttention());
     MessageLoopForUI::current()->RunAllPending();
-    EXPECT_EQ(attention_color, frame_view->title_label_->GetColor());
+    EXPECT_EQ(attention_color, frame_view->title_label_->enabled_color());
 
     // Test that the attention is cleared.
     browser_view->StopDrawingAttention();
     EXPECT_FALSE(browser_view->IsDrawingAttention());
     MessageLoopForUI::current()->RunAllPending();
-    EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
+    EXPECT_NE(attention_color, frame_view->title_label_->enabled_color());
 
     // Test that the attention is drawn and the title-bar is brought up when the
     // minimized panel is not in focus.
@@ -326,7 +327,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_TRUE(browser_view->IsDrawingAttention());
     EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
     MessageLoopForUI::current()->RunAllPending();
-    EXPECT_EQ(attention_color, frame_view->title_label_->GetColor());
+    EXPECT_EQ(attention_color, frame_view->title_label_->enabled_color());
 
     // Test that we cannot bring up other minimized panel if the mouse is over
     // the panel that draws attension.
@@ -342,7 +343,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_FALSE(browser_view->IsDrawingAttention());
     EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
     MessageLoopForUI::current()->RunAllPending();
-    EXPECT_NE(attention_color, frame_view->title_label_->GetColor());
+    EXPECT_NE(attention_color, frame_view->title_label_->enabled_color());
 
     panel->Close();
   }

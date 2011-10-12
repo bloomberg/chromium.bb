@@ -241,11 +241,9 @@ void PanelController::SetUrgent(bool urgent) {
   urgent_ = urgent;
   if (title_window_) {
     gtk_window_set_urgency_hint(panel_, urgent ? TRUE : FALSE);
+    title_content_->title_label()->SetDisabledColor(urgent ?
+        kTitleUrgentTextColor : kTitleInactiveTextColor);
     title_content_->SchedulePaint();
-    if (urgent)
-      title_content_->title_label()->SetColor(kTitleUrgentTextColor);
-    else
-      title_content_->title_label()->SetColor(kTitleInactiveTextColor);
   }
 }
 
@@ -452,6 +450,10 @@ PanelController::TitleContentView::TitleContentView(
   AddChildView(title_icon_);
   title_label_ = new views::Label(string16());
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label_->SetAutoColorReadabilityEnabled(false);
+  title_label_->SetEnabledColor(kTitleActiveTextColor);
+  title_label_->SetDisabledColor(kTitleInactiveTextColor);
+  title_label_->SetEnabled(false);
   AddChildView(title_label_);
 
   set_background(
@@ -501,14 +503,14 @@ bool PanelController::TitleContentView::OnMouseDragged(
 }
 
 void PanelController::TitleContentView::OnFocusIn() {
-  title_label_->SetColor(kTitleActiveTextColor);
+  title_label_->SetEnabled(true);
   title_label_->SetFont(*active_font);
   Layout();
   SchedulePaint();
 }
 
 void PanelController::TitleContentView::OnFocusOut() {
-  title_label_->SetColor(kTitleInactiveTextColor);
+  title_label_->SetEnabled(false);
   title_label_->SetFont(*inactive_font);
   Layout();
   SchedulePaint();

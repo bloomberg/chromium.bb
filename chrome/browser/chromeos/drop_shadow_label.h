@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,8 +44,6 @@ class DropShadowLabel : public views::Label  {
   virtual gfx::Size GetTextSize() const OVERRIDE;
 
  private:
-  void Init();
-
   int drop_shadow_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DropShadowLabel);

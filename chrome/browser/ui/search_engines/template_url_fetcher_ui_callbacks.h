@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -23,17 +24,15 @@ class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
   virtual ~TemplateURLFetcherUICallbacks();
 
   // TemplateURLFetcherCallback implementation.
-  virtual void ConfirmSetDefaultSearchProvider(
-      TemplateURL* template_url,
-      TemplateURLService* template_url_service);
-  virtual void ConfirmAddSearchProvider(
-      TemplateURL* template_url,
-      Profile* profile);
+  virtual void ConfirmSetDefaultSearchProvider(TemplateURL* template_url,
+                                               Profile* profile) OVERRIDE;
+  virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
+                                        Profile* profile) OVERRIDE;
 
   // NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   // The SearchEngineTabHelper where this request originated. Can be NULL if the

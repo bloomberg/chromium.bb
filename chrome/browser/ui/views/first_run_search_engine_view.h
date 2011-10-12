@@ -17,6 +17,7 @@
 class Profile;
 class TemplateURL;
 class TemplateURLService;
+class ThemeService;
 
 namespace views {
 class ImageView;
@@ -94,6 +95,9 @@ class FirstRunSearchEngineView : public views::WidgetDelegateView,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Override from views::View so we can draw the gray background at dialog top.
@@ -105,11 +109,9 @@ class FirstRunSearchEngineView : public views::WidgetDelegateView,
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
  private:
-  // Initializes the labels and controls in the view.
-  void SetupControls();
-
-  // Owned by the profile_.
-  TemplateURLService* search_engines_model_;
+  // Once the TemplateURLService has loaded and we're in a View hierarchy, it's
+  // OK to add the search engines from the TemplateURLService.
+  void AddSearchEnginesIfPossible();
 
   // One for each search engine choice offered, either three or four.
   std::vector<SearchEngineChoice*> search_engine_choices_;
@@ -117,10 +119,14 @@ class FirstRunSearchEngineView : public views::WidgetDelegateView,
   // If logos are to be displayed in random order. Used for UX testing.
   bool randomize_;
 
-  // The profile associated with this import process.
-  Profile* profile_;
+  // Services associated with the current profile.
+  TemplateURLService* template_url_service_;
+  ThemeService* theme_service_;
 
   bool text_direction_is_rtl_;
+
+  bool template_url_service_loaded_;
+  bool added_to_view_hierarchy_;
 
   // Image of browser search box with grey background and bubble arrow.
   views::ImageView* background_image_;

@@ -280,6 +280,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     dangerous_download_label_->SetMultiLine(true);
     dangerous_download_label_->SetHorizontalAlignment(
         views::Label::ALIGN_LEFT);
+    dangerous_download_label_->SetAutoColorReadabilityEnabled(false);
     AddChildView(dangerous_download_label_);
     SizeLabelToMinWidth();
   }
@@ -404,7 +405,7 @@ void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
 // In dangerous mode we have to layout our buttons.
 void DownloadItemView::Layout() {
   if (IsDangerousMode()) {
-    dangerous_download_label_->SetColor(
+    dangerous_download_label_->SetEnabledColor(
       GetThemeProvider()->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
 
     int x = kLeftPadding + dangerous_mode_body_image_set_.top_left->width() +

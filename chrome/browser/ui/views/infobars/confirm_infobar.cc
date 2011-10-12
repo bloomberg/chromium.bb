@@ -86,7 +86,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
 
     string16 link_text(delegate->GetLinkText());
     if (!link_text.empty()) {
-      link_ = CreateLink(link_text, this, background()->get_color());
+      link_ = CreateLink(link_text, this);
       AddChildView(link_);
     }
   }

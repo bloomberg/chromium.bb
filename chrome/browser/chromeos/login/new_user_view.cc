@@ -32,6 +32,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
@@ -103,9 +104,7 @@ class UsernameField : public chromeos::TextfieldWithMargin {
 
 namespace chromeos {
 
-NewUserView::NewUserView(Delegate* delegate,
-                         bool need_border,
-                         bool need_guest_link)
+NewUserView::NewUserView(Delegate* delegate, bool need_guest_link)
     : username_field_(NULL),
       password_field_(NULL),
       title_label_(NULL),
@@ -126,7 +125,6 @@ NewUserView::NewUserView(Delegate* delegate,
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       login_in_process_(false),
-      need_border_(need_border),
       need_guest_link_(false),
       need_create_account_(false),
       languages_menubutton_order_(-1),
@@ -142,22 +140,24 @@ NewUserView::~NewUserView() {
 }
 
 void NewUserView::Init() {
-  if (need_border_) {
-    // Use rounded rect background.
-    set_border(CreateWizardBorder(&BorderDefinition::kUserBorder));
-    views::Painter* painter = CreateWizardPainter(
-        &BorderDefinition::kUserBorder);
-    set_background(views::Background::CreateBackgroundPainter(true, painter));
-  }
+  // Use rounded rect background.
+  set_border(CreateWizardBorder(&BorderDefinition::kUserBorder));
+  views::Painter* painter = CreateWizardPainter(&BorderDefinition::kUserBorder);
+  set_background(views::Background::CreateBackgroundPainter(true, painter));
+  SkColor background_color = color_utils::AlphaBlend(
+      BorderDefinition::kUserBorder.top_color,
+      BorderDefinition::kUserBorder.bottom_color, 128);
 
   title_label_ = new views::Label();
+  title_label_->SetBackgroundColor(background_color);
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
   AddChildView(title_label_);
 
   title_hint_label_ = new views::Label();
+  title_hint_label_->SetBackgroundColor(background_color);
   title_hint_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_hint_label_->SetColor(SK_ColorGRAY);
+  title_hint_label_->SetEnabledColor(SK_ColorGRAY);
   title_hint_label_->SetMultiLine(true);
   AddChildView(title_hint_label_);
 
@@ -181,12 +181,10 @@ void NewUserView::Init() {
   RecreatePeculiarControls();
 
   AddChildView(sign_in_button_);
-  if (need_guest_link_) {
-    InitLink(&guest_link_);
-  }
-  if (need_create_account_) {
-    InitLink(&create_account_link_);
-  }
+  if (need_guest_link_)
+    guest_link_ = InitLink(background_color);
+  if (need_create_account_)
+    create_account_link_ = InitLink(background_color);
   AddChildView(languages_menubutton_);
 
   // Set up accelerators.
@@ -561,21 +559,21 @@ void NewUserView::EnableInputControls(bool enabled) {
 }
 
 bool NewUserView::NavigateAway() {
-  if (username_field_->text().empty() &&
-      password_field_->text().empty()) {
-    delegate_->NavigateAway();
-    return true;
-  } else {
+  if (!username_field_->text().empty() ||
+      !password_field_->text().empty())
     return false;
-  }
+  delegate_->NavigateAway();
+  return true;
 }
 
-void NewUserView::InitLink(views::Link** link) {
-  *link = new views::Link(string16());
-  (*link)->set_listener(this);
-  (*link)->SetNormalColor(login::kLinkColor);
-  (*link)->SetHighlightedColor(login::kLinkColor);
-  AddChildView(*link);
+views::Link* NewUserView::InitLink(SkColor background_color) {
+  views::Link* link = new views::Link(string16());
+  link->set_listener(this);
+  link->SetBackgroundColor(background_color);
+  link->SetEnabledColor(login::kLinkColor);
+  link->SetPressedColor(login::kLinkColor);
+  AddChildView(link);
+  return link;
 }
 
 }  // namespace chromeos

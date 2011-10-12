@@ -217,13 +217,10 @@ void LocationBarView::Init() {
   selected_keyword_view_->SetFont(font_);
   selected_keyword_view_->SetVisible(false);
 
-  SkColor dimmed_text = GetColor(ToolbarModel::NONE, DEEMPHASIZED_TEXT);
-
   keyword_hint_view_ = new KeywordHintView(profile);
   AddChildView(keyword_hint_view_);
   keyword_hint_view_->SetVisible(false);
   keyword_hint_view_->SetFont(font_);
-  keyword_hint_view_->SetColor(dimmed_text);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_blocked_view =
@@ -431,10 +428,6 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
   if (!text.empty()) {
     if (!suggested_text_view_) {
       suggested_text_view_ = new SuggestedTextView(location_entry_->model());
-      suggested_text_view_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      suggested_text_view_->SetColor(
-          GetColor(ToolbarModel::NONE,
-                   LocationBarView::DEEMPHASIZED_TEXT));
       suggested_text_view_->SetText(text);
       if (views::Widget::IsPureViews())
         NOTIMPLEMENTED();

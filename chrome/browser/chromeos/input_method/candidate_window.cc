@@ -119,26 +119,20 @@ views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
 }
 
 // Creates shortcut text from the given index and the orientation.
-std::wstring CreateShortcutText(
-    int index,
-    InputMethodLookupTable::Orientation orientation) {
+string16 CreateShortcutText(int index,
+                            InputMethodLookupTable::Orientation orientation) {
   // Choose the character used for the shortcut label.
-  const wchar_t kShortcutCharacters[] = L"1234567890ABCDEF";
+  const char kShortcutCharacters[] = "1234567890ABCDEF";
   // The default character should not be used but just in case.
-  wchar_t shortcut_character = L'?';
+  char shortcut_character = L'?';
   // -1 to exclude the null character at the end.
-  if (index < static_cast<int>(arraysize(kShortcutCharacters) - 1)) {
+  if (index < static_cast<int>(arraysize(kShortcutCharacters) - 1))
     shortcut_character = kShortcutCharacters[index];
-  }
 
-  std::wstring shortcut_text;
-  if (orientation == InputMethodLookupTable::kVertical) {
-    shortcut_text = base::StringPrintf(L"%lc", shortcut_character);
-  } else {
-    shortcut_text = base::StringPrintf(L"%lc.", shortcut_character);
-  }
-
-  return shortcut_text;
+  std::string shortcut_text(1, shortcut_character);
+  if (orientation != InputMethodLookupTable::kVertical)
+    shortcut_text += '.';
+  return ASCIIToUTF16(shortcut_text);
 }
 
 // Creates the shortcut label, and returns it (never returns NULL).
@@ -159,7 +153,8 @@ views::Label* CreateShortcutLabel(
   }
   // TODO(satorux): Maybe we need to use language specific fonts for
   // candidate_label, like Chinese font for Chinese input method?
-  shortcut_label->SetColor(kShortcutColor);
+  shortcut_label->SetEnabledColor(kShortcutColor);
+  shortcut_label->SetDisabledColor(kDisabledShortcutColor);
 
   return shortcut_label;
 }
@@ -186,6 +181,8 @@ views::View* CreateWrappedShortcutLabel(
     wrapped_shortcut_label->set_background(
         views::Background::CreateSolidBackground(
             kShortcutBackgroundColor));
+    shortcut_label->SetBackgroundColor(
+        wrapped_shortcut_label->background()->get_color());
   }
 
   return wrapped_shortcut_label;
@@ -223,7 +220,7 @@ views::Label* CreateAnnotationLabel(
   // Change the font size and color.
   annotation_label->SetFont(
       annotation_label->font().DeriveFont(kFontSizeDelta));
-  annotation_label->SetColor(kAnnotationColor);
+  annotation_label->SetEnabledColor(kAnnotationColor);
   annotation_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   return annotation_label;
@@ -243,8 +240,7 @@ int ComputeShortcutColumnWidth(
   // Compute the max width in shortcut labels.
   // We'll create temporary shortcut labels, and choose the largest width.
   for (int i = 0; i < lookup_table.page_size; ++i) {
-    shortcut_label->SetText(
-        WideToUTF16Hack(CreateShortcutText(i, lookup_table.orientation)));
+    shortcut_label->SetText(CreateShortcutText(i, lookup_table.orientation));
     shortcut_column_width =
         std::max(shortcut_column_width,
                  wrapped_shortcut_label->GetPreferredSize().width());
@@ -392,6 +388,7 @@ class InformationTextArea : public HidableArea {
         views::Background::CreateVerticalGradientBackground(
             kFooterTopColor,
             kFooterBottomColor));
+    label_->SetBackgroundColor(contents->background()->get_color());
   }
 
   // Set the displayed text.
@@ -596,13 +593,13 @@ class CandidateView : public views::View {
             int annotation_column_width);
 
   // Sets candidate text to the given text.
-  void SetCandidateText(const std::wstring& text);
+  void SetCandidateText(const string16& text);
 
   // Sets shortcut text to the given text.
-  void SetShortcutText(const std::wstring& text);
+  void SetShortcutText(const string16& text);
 
   // Sets annotation text to the given text.
-  void SetAnnotationText(const std::wstring& text);
+  void SetAnnotationText(const string16& text);
 
   // Sets infolist icon.
   void SetInfolistIcon(bool enable);
@@ -625,6 +622,10 @@ class CandidateView : public views::View {
  private:
   // Overridden from View:
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+
+  // Notifies labels of their new background colors.  Called whenever the view's
+  // background color changes.
+  void UpdateLabelBackgroundColors();
 
   // Zero-origin index in the current page.
   int index_in_page_;
@@ -655,8 +656,8 @@ class InfolistView;
 // InfolistWindowView is the main container of the infolist window UI.
 class InfolistWindowView : public views::View {
  public:
-  InfolistWindowView(
-      views::Widget* parent_frame, views::Widget* candidate_window_frame);
+  InfolistWindowView(views::Widget* parent_frame,
+                     views::Widget* candidate_window_frame);
   virtual ~InfolistWindowView();
   void Init();
   void Show();
@@ -722,6 +723,10 @@ class InfolistView : public views::View {
   void Unselect();
 
  private:
+  // Notifies labels of their new background colors.  Called whenever the view's
+  // background color changes.
+  void UpdateLabelBackgroundColors();
+
   // The parent candidate window that contains this view.
   InfolistWindowView* parent_infolist_window_;
 
@@ -861,40 +866,36 @@ void CandidateView::Init(int shortcut_column_width,
     layout->AddView(WrapWithPadding(infolist_label_,
         gfx::Insets(2, 0, 2, 0)));
   }
+  UpdateLabelBackgroundColors();
 }
 
-void CandidateView::SetCandidateText(const std::wstring& text) {
-  candidate_label_->SetText(WideToUTF16Hack(text));
+void CandidateView::SetCandidateText(const string16& text) {
+  candidate_label_->SetText(text);
 }
 
-void CandidateView::SetShortcutText(const std::wstring& text) {
-  shortcut_label_->SetText(WideToUTF16Hack(text));
+void CandidateView::SetShortcutText(const string16& text) {
+  shortcut_label_->SetText(text);
 }
 
-void CandidateView::SetAnnotationText(const std::wstring& text) {
-  annotation_label_->SetText(WideToUTF16Hack(text));
+void CandidateView::SetAnnotationText(const string16& text) {
+  annotation_label_->SetText(text);
 }
 
 void CandidateView::SetInfolistIcon(bool enable) {
-  if (!infolist_label_) {
+  if (!infolist_label_ || (infolist_icon_enabled_ == enable))
     return;
-  }
-  if (enable) {
-    infolist_label_->set_background(
-        views::Background::CreateSolidBackground(kSelectedRowFrameColor));
-  } else {
-    infolist_label_->set_background(NULL);
-  }
-  if (infolist_icon_enabled_ != enable) {
-    SchedulePaint();
-  }
   infolist_icon_enabled_ = enable;
+  infolist_label_->set_background(enable ?
+      views::Background::CreateSolidBackground(kSelectedRowFrameColor) : NULL);
+  UpdateLabelBackgroundColors();
+  SchedulePaint();
 }
 
 void CandidateView::Select() {
   set_background(
       views::Background::CreateSolidBackground(kSelectedRowBackgroundColor));
   set_border(views::Border::CreateSolidBorder(1, kSelectedRowFrameColor));
+  UpdateLabelBackgroundColors();
   // Need to call SchedulePaint() for background and border color changes.
   SchedulePaint();
 }
@@ -902,12 +903,12 @@ void CandidateView::Select() {
 void CandidateView::Unselect() {
   set_background(NULL);
   set_border(NULL);
+  UpdateLabelBackgroundColors();
   SchedulePaint();  // See comments at Select().
 }
 
 void CandidateView::SetRowEnabled(bool enabled) {
-  shortcut_label_->SetColor(
-      enabled ? kShortcutColor : kDisabledShortcutColor);
+  shortcut_label_->SetEnabled(enabled);
 }
 
 gfx::Point CandidateView::GetCandidateLabelPosition() const {
@@ -957,8 +958,20 @@ bool CandidateView::OnMousePressed(const views::MouseEvent& event) {
   return false;
 }
 
-CandidateWindowView::CandidateWindowView(
-    views::Widget* parent_frame)
+void CandidateView::UpdateLabelBackgroundColors() {
+  SkColor color = background() ?
+      background()->get_color() : kDefaultBackgroundColor;
+  if (orientation_ != InputMethodLookupTable::kVertical)
+    shortcut_label_->SetBackgroundColor(color);
+  candidate_label_->SetBackgroundColor(color);
+  annotation_label_->SetBackgroundColor(color);
+  if (infolist_label_) {
+    infolist_label_->SetBackgroundColor(infolist_label_->background() ?
+        infolist_label_->background()->get_color() : color);
+  }
+}
+
+CandidateWindowView::CandidateWindowView(views::Widget* parent_frame)
     : selected_candidate_index_in_page_(0),
       parent_frame_(parent_frame),
       preedit_area_(NULL),
@@ -1105,14 +1118,14 @@ void CandidateWindowView::UpdateCandidates(
     // case, we should not show shortcut labels.
     const bool no_shortcut_mode =
         (start_from < new_lookup_table.labels.size() &&
-         new_lookup_table.labels[start_from] == "");
+         new_lookup_table.labels[start_from].empty());
     for (size_t i = 0; i < candidate_views_.size(); ++i) {
       const size_t index_in_page = i;
       const size_t candidate_index = start_from + index_in_page;
       CandidateView* candidate_view = candidate_views_[index_in_page];
       // Set the shortcut text.
       if (no_shortcut_mode) {
-        candidate_view->SetShortcutText(L"");
+        candidate_view->SetShortcutText(string16());
       } else {
         // At this moment, we don't use labels sent from engines for UX
         // reasons. First, we want to show shortcut labels in empty rows
@@ -1126,9 +1139,9 @@ void CandidateWindowView::UpdateCandidates(
       if (candidate_index < new_lookup_table.candidates.size() &&
           candidate_index < new_lookup_table.annotations.size()) {
         candidate_view->SetCandidateText(
-            UTF8ToWide(new_lookup_table.candidates[candidate_index]));
+            UTF8ToUTF16(new_lookup_table.candidates[candidate_index]));
         candidate_view->SetAnnotationText(
-            UTF8ToWide(new_lookup_table.annotations[candidate_index]));
+            UTF8ToUTF16(new_lookup_table.annotations[candidate_index]));
         candidate_view->SetRowEnabled(true);
 
         if ((new_lookup_table.mozc_candidates.candidate_size() >
@@ -1141,8 +1154,8 @@ void CandidateWindowView::UpdateCandidates(
         }
       } else {
         // Disable the empty row.
-        candidate_view->SetCandidateText(L"");
-        candidate_view->SetAnnotationText(L"");
+        candidate_view->SetCandidateText(string16());
+        candidate_view->SetAnnotationText(string16());
         candidate_view->SetRowEnabled(false);
         candidate_view->SetInfolistIcon(false);
       }
@@ -1412,6 +1425,7 @@ void InfolistView::Init() {
   layout->AddView(wrapped_title_label);
   layout->StartRow(0, 0);
   layout->AddView(wrapped_description_label);
+  UpdateLabelBackgroundColors();
 }
 
 
@@ -1424,11 +1438,11 @@ void InfolistView::SetDescriptionText(const std::wstring& text) {
 }
 
 void InfolistView::Select() {
-  set_background(
-      views::Background::CreateSolidBackground(
-          kSelectedInfolistRowBackgroundColor));
+  set_background(views::Background::CreateSolidBackground(
+      kSelectedInfolistRowBackgroundColor));
   set_border(
       views::Border::CreateSolidBorder(1, kSelectedInfolistRowFrameColor));
+  UpdateLabelBackgroundColors();
   // Need to call SchedulePaint() for background and border color changes.
   SchedulePaint();
 }
@@ -1436,11 +1450,19 @@ void InfolistView::Select() {
 void InfolistView::Unselect() {
   set_background(NULL);
   set_border(NULL);
+  UpdateLabelBackgroundColors();
   SchedulePaint();  // See comments at Select().
 }
 
-InfolistWindowView::InfolistWindowView(
-    views::Widget* parent_frame, views::Widget* candidate_window_frame)
+void InfolistView::UpdateLabelBackgroundColors() {
+  SkColor color = background() ?
+      background()->get_color() : kDefaultBackgroundColor;
+  title_label_->SetBackgroundColor(color);
+  description_label_->SetBackgroundColor(color);
+}
+
+InfolistWindowView::InfolistWindowView(views::Widget* parent_frame,
+                                       views::Widget* candidate_window_frame)
     : parent_frame_(parent_frame),
       candidate_window_frame_(candidate_window_frame),
       infolist_area_(NULL),
@@ -1484,6 +1506,8 @@ void InfolistWindowView::Init() {
       WrapWithPadding(caption_label, gfx::Insets(2, 2, 2, 2));
   wrapped_caption_label->set_background(
       views::Background::CreateSolidBackground(kInfolistTitleBackgroundColor));
+  caption_label->SetBackgroundColor(
+      wrapped_caption_label->background()->get_color());
   layout->AddView(wrapped_caption_label);
 
   layout->StartRow(0, 0);

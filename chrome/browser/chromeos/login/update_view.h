@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UPDATE_VIEW_H_
 #pragma once
 
+#include "third_party/skia/include/core/SkColor.h"
 #include "views/view.h"
 
 namespace views {
@@ -50,7 +51,7 @@ class UpdateView : public views::View {
 
  private:
   // Creates Label control and adds it as a child.
-  void InitLabel(views::Label** label);
+  views::Label* InitLabel(SkColor background_color);
 
   // Updates visibility of the elements.
   void UpdateVisibility();

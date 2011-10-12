@@ -152,7 +152,8 @@ void ScreenLockView::Init() {
   UsernameView* username =
       UsernameView::CreateShapedUsernameView(UTF8ToWide(display_name), false);
   username_ = username;
-  username->SetColor(login::kTextColor);
+  username->SetEnabledColor(login::kTextColor);
+  username->SetBackgroundColor(main_->background()->get_color());
   username->SetFont(font);
 
   // Add tooltip if screen name is not unique.

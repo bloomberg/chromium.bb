@@ -59,8 +59,7 @@ void LinkInfoBar::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     label_1_ = CreateLabel(message_text.substr(0, offset));
     AddChildView(label_1_);
 
-    link_ = CreateLink(delegate->GetLinkText(), this,
-                       background()->get_color());
+    link_ = CreateLink(delegate->GetLinkText(), this);
     AddChildView(link_);
 
     label_2_ = CreateLabel(message_text.substr(offset));

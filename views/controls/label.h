@@ -75,16 +75,22 @@ class VIEWS_EXPORT Label : public View {
   // Return the label URL.
   const GURL GetURL() const;
 
-  // Set the color
-  virtual void SetColor(const SkColor& color);
+  // Enables or disables auto-color-readability (enabled by default).  If this
+  // is enabled, then calls to set any foreground or background color will
+  // trigger an automatic mapper that uses color_utils::GetReadableColor() to
+  // ensure that the foreground colors are readable over the background color.
+  void SetAutoColorReadabilityEnabled(bool enabled);
 
-  // Return a reference to the currently used color.
-  virtual SkColor GetColor() const;
+  // Set the color.  This will automatically force the color to be readable
+  // over the current background color.
+  virtual void SetEnabledColor(const SkColor& color);
+  void SetDisabledColor(const SkColor& color);
 
-  // If you'll be displaying the label over some non-system background color,
-  // call this with the relevant color and the label will auto-set its color to
-  // be readable.
-  virtual void MakeReadableOverBackgroundColor(const SkColor& background_color);
+  SkColor enabled_color() const { return actual_enabled_color_; }
+
+  // Set the background color.  This won't be explicitly drawn, but the label
+  // will force the text color to be readable over it.
+  void SetBackgroundColor(const SkColor& color);
 
   // Set horizontal alignment. If the locale is RTL, and the RTL alignment
   // setting is set as USE_UI_ALIGNMENT, the alignment is flipped around.
@@ -168,8 +174,6 @@ class VIEWS_EXPORT Label : public View {
   // This method is used to layout multi-line labels. It is equivalent to
   // GetPreferredSize().height() if the receiver is not multi-line.
   virtual int GetHeightForWidth(int w);
-  // Sets the enabled state. Setting the enabled state resets the color.
-  virtual void OnEnabledChanged() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
   // Mouse enter/exit are overridden to render mouse over background color.
@@ -196,6 +200,8 @@ class VIEWS_EXPORT Label : public View {
 
   virtual gfx::Size GetTextSize() const;
 
+  SkColor disabled_color() const { return actual_disabled_color_; }
+
   // Overridden from View:
   // Overridden to dirty our text bounds if we're multi-line.
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -215,6 +221,8 @@ class VIEWS_EXPORT Label : public View {
   static gfx::Font GetDefaultFont();
 
   void Init(const string16& text, const gfx::Font& font);
+
+  void RecalculateColors();
 
   // If the mouse is over the text, SetContainsMouse(true) is invoked, otherwise
   // SetContainsMouse(false) is invoked.
@@ -240,7 +248,12 @@ class VIEWS_EXPORT Label : public View {
   string16 text_;
   GURL url_;
   gfx::Font font_;
-  SkColor color_;
+  SkColor requested_enabled_color_;
+  SkColor actual_enabled_color_;
+  SkColor requested_disabled_color_;
+  SkColor actual_disabled_color_;
+  SkColor background_color_;
+  bool auto_color_readability_;
   mutable gfx::Size text_size_;
   mutable bool text_size_valid_;
   bool is_multi_line_;

@@ -29,6 +29,7 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
       updated_colors_(false) {
   instructions_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARKS_NO_ITEMS));
+  instructions_->SetAutoColorReadabilityEnabled(false);
   AddChildView(instructions_);
 
   if (browser_defaults::kShowImportOnBookmarkBar) {
@@ -37,6 +38,7 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
     // We don't want the link to alter tab navigation.
     import_link_->set_focusable(false);
     import_link_->set_listener(this);
+    import_link_->SetAutoColorReadabilityEnabled(false);
     AddChildView(import_link_);
   }
 }
@@ -109,7 +111,7 @@ void BookmarkBarInstructionsView::UpdateColors() {
   updated_colors_ = true;
   SkColor text_color =
       theme_provider->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
-  instructions_->SetColor(text_color);
+  instructions_->SetEnabledColor(text_color);
   if (import_link_)
-    import_link_->SetColor(text_color);
+    import_link_->SetEnabledColor(text_color);
 }

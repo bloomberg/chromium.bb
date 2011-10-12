@@ -345,7 +345,8 @@ void BackgroundView::InitInfoLabels() {
     delete os_version_label_;
     os_version_label_ = new views::Label();
     os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    os_version_label_->SetColor(kVersionColor);
+    os_version_label_->SetEnabledColor(kVersionColor);
+    os_version_label_->SetBackgroundColor(background()->get_color());
     os_version_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
     if (idx < 0)
       AddChildView(os_version_label_);
@@ -357,7 +358,8 @@ void BackgroundView::InitInfoLabels() {
     delete boot_times_label_;
     boot_times_label_ = new views::Label();
     boot_times_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    boot_times_label_->SetColor(kVersionColor);
+    boot_times_label_->SetEnabledColor(kVersionColor);
+    boot_times_label_->SetBackgroundColor(background()->get_color());
     boot_times_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
     if (idx < 0)
       AddChildView(boot_times_label_);

@@ -545,7 +545,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   layout->SkipColumns(1);
   error_label_ = new views::Label();
   error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  error_label_->SetColor(SK_ColorRED);
+  error_label_->SetEnabledColor(SK_ColorRED);
   layout->AddView(error_label_);
 
   // Set or hide the UI, update comboboxes and error labels.

@@ -48,13 +48,12 @@ class InfoBarView : public InfoBar,
   virtual ~InfoBarView();
 
   // Creates a label with the appropriate font and color for an infobar.
-  static views::Label* CreateLabel(const string16& text);
+  views::Label* CreateLabel(const string16& text) const;
 
   // Creates a link with the appropriate font and color for an infobar.
   // NOTE: Subclasses must ignore link clicks if we're unowned.
-  static views::Link* CreateLink(const string16& text,
-                                 views::LinkListener* listener,
-                                 const SkColor& background_color);
+  views::Link* CreateLink(const string16& text,
+                          views::LinkListener* listener) const;
 
   // Creates a menu button with an infobar-specific appearance.
   // NOTE: Subclasses must ignore button presses if we're unowned.

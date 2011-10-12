@@ -49,13 +49,16 @@ class DownloadShelfView : public AccessiblePaneView,
   void OpenedDownload(DownloadItemView* view);
 
   // Implementation of View.
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Implementation of ui::AnimationDelegate.
-  virtual void AnimationProgressed(const ui::Animation* animation);
-  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // Implementation of views::LinkListener.
   // Invoked when the user clicks the 'show all downloads' link button.
@@ -64,22 +67,23 @@ class DownloadShelfView : public AccessiblePaneView,
   // Implementation of ButtonListener.
   // Invoked when the user clicks the close button. Asks the browser to
   // hide the download shelf.
-  virtual void ButtonPressed(views::Button* button, const views::Event& event);
+  virtual void ButtonPressed(views::Button* button,
+                             const views::Event& event) OVERRIDE;
 
   // Implementation of DownloadShelf.
-  virtual void AddDownload(BaseDownloadItemModel* download_model);
-  virtual bool IsShowing() const;
-  virtual bool IsClosing() const;
-  virtual void Show();
-  virtual void Close();
-  virtual Browser* browser() const;
+  virtual void AddDownload(BaseDownloadItemModel* download_model) OVERRIDE;
+  virtual bool IsShowing() const OVERRIDE;
+  virtual bool IsClosing() const OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual Browser* browser() const OVERRIDE;
 
-  // Implementation of MouseWatcherDelegate.
+  // Implementation of MouseWatcherDelegate OVERRIDE.
   virtual void MouseMovedOutOfView();
 
   // Override views::FocusChangeListener method from AccessiblePaneView.
   virtual void FocusWillChange(View* focused_before,
-                               View* focused_now);
+                               View* focused_now) OVERRIDE;
 
   // Removes a specified download view. The supplied view is deleted after
   // it's removed.
@@ -87,18 +91,16 @@ class DownloadShelfView : public AccessiblePaneView,
 
  protected:
   // From AccessiblePaneView
-  virtual views::View* GetDefaultFocusableChild();
+  virtual views::View* GetDefaultFocusableChild() OVERRIDE;
 
  private:
-  void Init();
-
   // Adds a View representing a download to this DownloadShelfView.
   // DownloadShelfView takes ownership of the View, and will delete it as
   // necessary.
   void AddDownloadView(DownloadItemView* view);
 
   // Paints the border.
-  virtual void OnPaintBorder(gfx::Canvas* canvas);
+  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Returns true if the shelf is wide enough to show the first download item.
   bool CanFitFirstDownloadItem();

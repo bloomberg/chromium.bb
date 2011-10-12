@@ -68,7 +68,7 @@ class BubbleDelegate {
   virtual bool FadeInOnShow() = 0;
 
   // The name of the window to which this delegate belongs.
-  virtual string16 accessible_name();
+  virtual string16 GetAccessibleName();
 };
 
 // TODO(sky): this code is ifdef-tastic. It might be cleaner to refactor the
