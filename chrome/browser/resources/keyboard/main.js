@@ -189,25 +189,26 @@ window.onload = function() {
   window.onhashchange();
 
   chrome.experimental.input.onTextInputTypeChanged.addListener(function(type) {
+    var newMode = SHIFT_MODE;
     switch(type) {
       case "text":
-        currentMode = SHIFT_MODE;
+        newMode = SHIFT_MODE;
         break;
       case "email":
       case "password":
       case "search":
       case "url":
-        currentMode = KEY_MODE;
+        newMode = KEY_MODE;
         break;
       case "number":
       case "tel":
-        currentMode = NUMBER_MODE;
+        newMode = NUMBER_MODE;
         break;
       default:
-        currentMode = KEY_MODE;
+        newMode = KEY_MODE;
         break;
     }
-    setMode(currentMode);
+    setMode(newMode);
   });
 }
 // TODO(bryeung): would be nice to leave less gutter (without causing

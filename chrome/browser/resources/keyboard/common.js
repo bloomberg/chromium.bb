@@ -103,9 +103,11 @@ var touchedKeys = [];
  * @return {void}
  */
 function setMode(mode) {
+  currentMode = mode;
+
   var rows = KEYBOARDS[currentKeyboardLayout]['rows'];
   for (var i = 0; i < rows.length; ++i) {
-    rows[i].showMode(mode);
+    rows[i].showMode(currentMode);
   }
 
   if (!currentPopupName) {
@@ -113,7 +115,7 @@ function setMode(mode) {
   }
   var popupRows = KEYBOARDS[currentPopupName]['rows'];
   for (var i = 0; i < popupRows.length; ++i) {
-    popupRows[i].showMode(mode);
+    popupRows[i].showMode(currentMode);
   }
 }
 
@@ -123,8 +125,7 @@ function setMode(mode) {
  * @return {void}
  */
 function transitionMode(transition) {
-  currentMode = MODE_TRANSITIONS[currentMode + transition];
-  setMode(currentMode);
+  setMode(MODE_TRANSITIONS[currentMode + transition]);
 }
 
 /**
@@ -151,7 +152,7 @@ function sendKey(key) {
   if (enterShiftModeOnSpace) {
     enterShiftModeOnSpace = false;
     if (currentMode != SHIFT_MODE && key == 'Spacebar') {
-      transitionMode(SHIFT_MODE);
+      setMode(SHIFT_MODE);
     }
   }
   if (currentMode != SHIFT_MODE && (key == '.' || key == '?' || key == '!')) {
