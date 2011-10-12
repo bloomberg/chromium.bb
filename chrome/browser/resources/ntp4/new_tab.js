@@ -56,6 +56,12 @@ cr.define('ntp4', function() {
   var dotList;
 
   /**
+   * Live list of the navigation dots.
+   * @type {!NodeList|undefined}
+   */
+  var navDots;
+
+  /**
    * The 'notification-container' element.
    * @type {!Element|undefined}
    */
@@ -136,6 +142,9 @@ cr.define('ntp4', function() {
     themeChanged();
 
     dotList = getRequiredElement('dot-list');
+    dotList.addEventListener('keydown', onDotListKeyDown);
+    navDots = dotList.getElementsByClassName('dot');
+
     pageList = getRequiredElement('page-list');
     trash = getRequiredElement('trash');
     new ntp4.Trash(trash);
@@ -155,6 +164,7 @@ cr.define('ntp4', function() {
                   [rect.left, rect.top, rect.width, rect.height]);
     });
 
+    document.addEventListener('keydown', onKeyDown);
     // Prevent touch events from triggering any sort of native scrolling
     document.addEventListener('touchmove', function(e) {
       e.preventDefault();
@@ -500,6 +510,9 @@ cr.define('ntp4', function() {
     page.navigationDot = newDot;
     dotList.insertBefore(newDot, opt_refNode ? opt_refNode.navigationDot
                                              : null);
+    // Set a tab index on the first dot.
+    if (navDots.length == 1)
+      newDot.tabIndex = 3;
 
     if (infoBubble)
       window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
@@ -559,6 +572,65 @@ cr.define('ntp4', function() {
     }
 
     $('footer').classList.remove('showing-trash-mode');
+  }
+
+  /**
+   * Handler for key events on the page. Ctrl-Arrow will switch the visible
+   * page.
+   * @param {Event} e The KeyboardEvent.
+   */
+  function onKeyDown(e) {
+    if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey)
+      return;
+
+    var direction = 0;
+    if (e.keyIdentifier == 'Left')
+      direction = -1;
+    else if (e.keyIdentifier == 'Right')
+      direction = 1;
+    else
+      return;
+
+    var cardIndex =
+        (cardSlider.currentCard + direction + cardSlider.cardCount) %
+        cardSlider.cardCount;
+    cardSlider.selectCard(cardIndex, true);
+
+    e.stopPropagation();
+  }
+
+  /**
+   * Handler for key events on the dot list. These keys will change the focus
+   * element.
+   * @param {Event} e The KeyboardEvent.
+   */
+  function onDotListKeyDown(e) {
+    if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey)
+      return;
+
+    var direction = 0;
+    if (e.keyIdentifier == 'Left')
+      direction = -1;
+    else if (e.keyIdentifier == 'Right')
+      direction = 1;
+    else
+      return;
+
+    var focusDot = dotList.querySelector('.dot:focus');
+    if (!focusDot)
+      return;
+    var focusIndex = Array.prototype.indexOf.call(navDots, focusDot);
+    var newFocusIndex = focusIndex + direction;
+    if (focusIndex == newFocusIndex)
+      return;
+
+    newFocusIndex = (newFocusIndex + navDots.length) % navDots.length;
+    navDots[newFocusIndex].tabIndex = 3;
+    navDots[newFocusIndex].focus();
+    focusDot.tabIndex = -1;
+
+    e.stopPropagation();
+    e.preventDefault();
   }
 
   /**

@@ -33,7 +33,6 @@ cr.define('ntp4', function() {
 
     initialize: function(page, title, titleIsEditable, animate) {
       this.className = 'dot';
-      this.setAttribute('tabindex', 0);
       this.setAttribute('role', 'button');
 
       this.page_ = page;
@@ -53,6 +52,7 @@ cr.define('ntp4', function() {
       this.displayTitle = title;
       this.titleIsEditable_ = titleIsEditable;
 
+      this.addEventListener('keydown', this.onKeyDown_);
       this.addEventListener('click', this.onClick_);
       this.addEventListener('dblclick', this.onDoubleClick_);
       this.dragWrapper_ = new DragWrapper(this, this);
@@ -103,6 +103,17 @@ cr.define('ntp4', function() {
      */
     switchToPage: function() {
       ntp4.getCardSlider().selectCardByValue(this.page_, true);
+    },
+
+    /**
+     * Handler for keydown event on the dot.
+     * @param {Event} e The KeyboardEvent.
+     */
+    onKeyDown_: function(e) {
+      if (e.keyIdentifier == 'Enter') {
+        this.onClick_(e);
+        e.stopPropagation();
+      }
     },
 
     /**
