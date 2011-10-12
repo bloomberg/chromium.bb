@@ -952,6 +952,7 @@ shell_init(struct wlsc_compositor *ec)
 	if (shell == NULL)
 		return -1;
 
+	memset(shell, 0, sizeof *shell);
 	shell->compositor = ec;
 	shell->shell.activate = activate;
 	shell->shell.lock = lock;

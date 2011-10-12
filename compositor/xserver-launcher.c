@@ -87,6 +87,7 @@ struct wlsc_wm {
 struct wlsc_wm_window {
 	xcb_window_t id;
 	struct wlsc_surface *surface;
+	struct wl_listener surface_destroy_listener;
 };
 
 static void
@@ -568,6 +569,17 @@ wlsc_xserver_cleanup(struct wlsc_process *process, int status)
 }
 
 static void
+surface_destroy(struct wl_listener *listener,
+		struct wl_resource *resource, uint32_t time)
+{
+	struct wlsc_wm_window *window =
+		container_of(listener,
+			     struct wlsc_wm_window, surface_destroy_listener);
+
+	fprintf(stderr, "surface for xid %d destroyed\n", window->id);
+}
+
+static void
 xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 		      struct wl_resource *surface_resource, uint32_t id)
 {
@@ -588,7 +600,9 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 	fprintf(stderr, "set_window_id %d for surface %p\n", id, surface);
 
 	window->surface = (struct wlsc_surface *) surface;
-	/* FIXME: Do we need a surface destroy listener? */
+	window->surface_destroy_listener.func = surface_destroy;
+	wl_list_insert(surface->resource.destroy_listener_list.prev,
+		       &window->surface_destroy_listener.link);
 }
 
 static const struct xserver_interface xserver_implementation = {
