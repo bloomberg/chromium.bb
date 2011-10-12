@@ -28,8 +28,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -149,6 +151,8 @@ TopSites::TopSites(Profile* profile)
   if (NotificationService::current()) {
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                    Source<Profile>(profile_));
+    // Listen for any nav commits. We'll ignore those not related to this
+    // profile when we get the notification.
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    NotificationService::AllSources());
   }
@@ -830,7 +834,11 @@ void TopSites::Observe(int type,
     }
     StartQueryForMostVisited();
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    if (!IsFull()) {
+    NavigationController* controller =
+        Source<NavigationController>(source).ptr();
+    Profile* profile = Profile::FromBrowserContext(
+        controller->tab_contents()->browser_context());
+    if (profile == profile_ && !IsFull()) {
       content::LoadCommittedDetails* load_details =
           Details<content::LoadCommittedDetails>(details).ptr();
       if (!load_details)
