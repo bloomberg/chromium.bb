@@ -370,8 +370,10 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 
   // VPN may require certificates, so always set the library and observe.
   cert_library_ = chromeos::CrosLibrary::Get()->GetCertLibrary();
-  cert_library_->AddObserver(this);
-  cert_library_->RequestCertificates();
+
+  // Setup a callback if certificates are yet to be loaded.
+  if (!cert_library_->CertificatesLoaded())
+    cert_library_->AddObserver(this);
 
   int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);

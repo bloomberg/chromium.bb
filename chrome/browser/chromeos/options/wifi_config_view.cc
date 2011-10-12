@@ -791,8 +791,9 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   if (show_8021x) {
     // Initialize cert_library_ for 802.1X netoworks.
     cert_library_ = chromeos::CrosLibrary::Get()->GetCertLibrary();
-    cert_library_->AddObserver(this);
-    cert_library_->RequestCertificates();
+    // Setup a callback if certificates are yet to be loaded,
+    if (!cert_library_->CertificatesLoaded())
+      cert_library_->AddObserver(this);
 
     // EAP method
     layout->StartRow(0, column_view_set_id);
