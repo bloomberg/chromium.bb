@@ -179,6 +179,8 @@ window_for_each_item(struct window *window, item_func_t func, void *data);
 
 struct item *
 window_get_focus_item(struct window *window);
+struct display *
+window_get_display(struct window *window);
 
 void
 window_move(struct window *window, struct input *input, uint32_t time);

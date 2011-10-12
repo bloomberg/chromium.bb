@@ -862,6 +862,12 @@ window_resize_cairo_window_surface(struct window *window)
 }
 #endif
 
+struct display *
+window_get_display(struct window *window)
+{
+	return window->display;
+}
+
 void
 window_create_surface(struct window *window)
 {

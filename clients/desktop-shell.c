@@ -46,6 +46,7 @@ struct desktop {
 
 struct panel {
 	struct window *window;
+	struct window *menu;
 };
 
 struct panel_item {
@@ -64,6 +65,21 @@ sigchild_handler(int s)
 
 	while (pid = waitpid(-1, &status, WNOHANG), pid > 0)
 		fprintf(stderr, "child %d exited\n", pid);
+}
+
+static void
+show_menu(struct panel *panel, struct input *input)
+{
+	int32_t x, y, width = 200, height = 200;
+	struct display *display;
+
+	input_get_position(input, &x, &y);
+	display = window_get_display(panel->window);
+	panel->menu = window_create_transient(display, panel->window,
+					      x - 10, y - 10, width, height);
+
+	window_draw(panel->menu);
+	window_flush(panel->menu);
 }
 
 static void
@@ -164,6 +180,11 @@ panel_button_handler(struct window *window,
 		window_schedule_redraw(panel->window);
 		if (state == 0)
 			panel_activate_item(panel, pi);
+	} else if (button == BTN_RIGHT) {
+		if (state)
+			show_menu(panel, input);
+		else
+			window_destroy(panel->menu);
 	}
 }
 
