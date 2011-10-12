@@ -4084,6 +4084,8 @@
           'sources/': [
             ['exclude', '^browser/aeropeek_manager.cc'],
             ['exclude', '^browser/automation/automation_provider_win.cc'],
+            ['exclude', '^browser/automation/chrome_frame_automation_provider.cc'],
+            ['exclude', '^browser/automation/chrome_frame_automation_provider.h'],
             ['exclude', '^browser/automation/testing_automation_provider_win.cc'],
             ['exclude', '^browser/chromeos/native_dialog_window.cc'],
             ['exclude', '^browser/chromeos/native_dialog_window.h'],
