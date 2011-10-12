@@ -54,9 +54,15 @@ class BufferedResourceLoader
   // |kPositionNotSpecified| for not specified.
   // |last_byte_position| - Last byte to be loaded,
   // |kPositionNotSpecified| for not specified.
+  // |strategy| is the initial loading strategy to use.
+  // |bitrate| is the bitrate of the media, 0 if unknown.
+  // |playback_rate| is the current playback rate of the media.
   BufferedResourceLoader(const GURL& url,
                          int64 first_byte_position,
                          int64 last_byte_position,
+                         DeferStrategy strategy,
+                         int bitrate,
+                         float playback_rate,
                          media::MediaLog* media_log);
 
   // Start the resource loading with the specified URL and range.
@@ -167,6 +173,7 @@ class BufferedResourceLoader
   virtual ~BufferedResourceLoader();
 
  private:
+  friend class BufferedDataSourceTest2;
   friend class BufferedResourceLoaderTest;
 
   // Updates the |buffer_|'s forward and backward capacities.

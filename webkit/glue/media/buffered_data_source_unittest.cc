@@ -11,9 +11,12 @@
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/mocks/mock_webframeclient.h"
+#include "webkit/mocks/mock_weburlloader.h"
 
 using ::testing::_;
 using ::testing::Assign;
@@ -32,6 +35,9 @@ using ::testing::NiceMock;
 using ::testing::WithArgs;
 
 using WebKit::WebFrame;
+using WebKit::WebString;
+using WebKit::WebURLError;
+using WebKit::WebURLResponse;
 using WebKit::WebView;
 
 namespace webkit_glue {
@@ -71,7 +77,8 @@ class MockBufferedDataSource : public BufferedDataSource {
 class MockBufferedResourceLoader : public BufferedResourceLoader {
  public:
   MockBufferedResourceLoader()
-      : BufferedResourceLoader(GURL(), 0, 0, new media::MediaLog()) {
+      : BufferedResourceLoader(GURL(), 0, 0, kThresholdDefer,
+                               0, 0, new media::MediaLog()) {
   }
 
   MOCK_METHOD3(Start, void(net::OldCompletionCallback* read_callback,
@@ -586,6 +593,194 @@ TEST_F(BufferedDataSourceTest, BoundedCacheMisses) {
   InitializeDataSource(kHttpUrl, net::OK, true, 1024, LOADING);
 
   ReadDataSourceAlwaysCacheMiss(0, 10);
+
+  StopDataSource();
+}
+
+// TODO(scherkus): de-dupe from buffered_resource_loader_unittest.cc
+ACTION_P(RequestCanceled, loader) {
+  WebURLError error;
+  error.reason = net::ERR_ABORTED;
+  error.domain = WebString::fromUTF8(net::kErrorDomain);
+  loader->didFail(NULL, error);
+}
+
+// A more realistic BufferedDataSource that uses BufferedResourceLoader instead
+// of a mocked version but injects a MockWebURLLoader.
+//
+// TODO(scherkus): re-write these tests to use this class then drop the "2"
+// suffix.
+class MockBufferedDataSource2 : public BufferedDataSource {
+ public:
+  MockBufferedDataSource2(MessageLoop* message_loop, WebFrame* frame)
+      : BufferedDataSource(message_loop, frame, new media::MediaLog()),
+        url_loader_(NULL) {
+  }
+
+  virtual base::TimeDelta GetTimeoutMilliseconds() {
+    return base::TimeDelta::FromMilliseconds(
+                            TestTimeouts::tiny_timeout_ms());
+  }
+
+  virtual BufferedResourceLoader* CreateResourceLoader(int64 first_position,
+                                                       int64 last_position) {
+    loader_ = BufferedDataSource::CreateResourceLoader(first_position,
+                                                       last_position);
+
+    url_loader_ = new NiceMock<MockWebURLLoader>();
+    ON_CALL(*url_loader_, cancel())
+        .WillByDefault(RequestCanceled(loader_));
+
+    loader_->SetURLLoaderForTest(url_loader_);
+    return loader_;
+  }
+
+  const scoped_refptr<BufferedResourceLoader>& loader() { return loader_; }
+  NiceMock<MockWebURLLoader>* url_loader() { return url_loader_; }
+
+ private:
+  scoped_refptr<BufferedResourceLoader> loader_;
+  NiceMock<MockWebURLLoader>* url_loader_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBufferedDataSource2);
+};
+
+class BufferedDataSourceTest2 : public testing::Test {
+ public:
+  BufferedDataSourceTest2()
+      : view_(WebView::create(NULL)),
+        message_loop_(MessageLoop::current()) {
+    view_->initializeMainFrame(&client_);
+  }
+
+  virtual ~BufferedDataSourceTest2() {
+    view_->close();
+  }
+
+  void InitializeDataSource(const char* url) {
+    gurl_ = GURL(url);
+
+    data_source_ = new MockBufferedDataSource2(message_loop_,
+                                               view_->mainFrame());
+    data_source_->set_host(&host_);
+    data_source_->Initialize(url,
+                             media::NewExpectedStatusCB(media::PIPELINE_OK));
+    message_loop_->RunAllPending();
+
+    // Simulate 206 response for a 5,000,000 byte length file.
+    WebURLResponse response(gurl_);
+    response.setHTTPHeaderField(WebString::fromUTF8("Accept-Ranges"),
+                                WebString::fromUTF8("bytes"));
+    response.setHTTPHeaderField(WebString::fromUTF8("Content-Range"),
+                                WebString::fromUTF8("bytes 0-4999999/5000000"));
+    response.setHTTPHeaderField(WebString::fromUTF8("Content-Length"),
+                                WebString::fromUTF8("5000000"));
+    response.setExpectedContentLength(5000000);
+    response.setHTTPStatusCode(206);
+
+    // We should receive corresponding information about the media resource.
+    EXPECT_CALL(host_, SetLoaded(false));
+    EXPECT_CALL(host_, SetTotalBytes(5000000));
+    EXPECT_CALL(host_, SetBufferedBytes(0));
+
+    data_source_->loader()->didReceiveResponse(data_source_->url_loader(),
+                                               response);
+
+    message_loop_->RunAllPending();
+  }
+
+  void StopDataSource() {
+    data_source_->Stop(media::NewExpectedClosure());
+    message_loop_->RunAllPending();
+  }
+
+  MOCK_METHOD1(ReadCallback, void(size_t size));
+  media::DataSource::ReadCallback NewReadCallback(size_t size) {
+    EXPECT_CALL(*this, ReadCallback(size));
+    return base::Bind(&BufferedDataSourceTest2::ReadCallback,
+                      base::Unretained(this));
+  }
+
+  // Accessors for private variables on |data_source_|.
+  media::Preload preload() { return data_source_->preload_; }
+  BufferedResourceLoader::DeferStrategy defer_strategy() {
+    return data_source_->loader()->defer_strategy_;
+  }
+  int data_source_bitrate() { return data_source_->bitrate_; }
+  int data_source_playback_rate() { return data_source_->playback_rate_; }
+  int loader_bitrate() { return data_source_->loader()->bitrate_; }
+  int loader_playback_rate() { return data_source_->loader()->playback_rate_; }
+
+  scoped_refptr<MockBufferedDataSource2> data_source_;
+
+  GURL gurl_;
+  MockWebFrameClient client_;
+  WebView* view_;
+
+  StrictMock<media::MockFilterHost> host_;
+  MessageLoop* message_loop_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BufferedDataSourceTest2);
+};
+
+TEST_F(BufferedDataSourceTest2, Default) {
+  InitializeDataSource("http://localhost/foo.webm");
+
+  // Ensure we have sane values for default loading scenario.
+  EXPECT_EQ(media::AUTO, preload());
+  EXPECT_EQ(BufferedResourceLoader::kThresholdDefer, defer_strategy());
+
+  EXPECT_EQ(0, data_source_bitrate());
+  EXPECT_EQ(0.0f, data_source_playback_rate());
+  EXPECT_EQ(0, loader_bitrate());
+  EXPECT_EQ(0.0f, loader_playback_rate());
+
+  StopDataSource();
+}
+
+TEST_F(BufferedDataSourceTest2, SetBitrate) {
+  InitializeDataSource("http://localhost/foo.webm");
+
+  data_source_->SetBitrate(1234);
+  message_loop_->RunAllPending();
+  EXPECT_EQ(1234, data_source_bitrate());
+  EXPECT_EQ(1234, loader_bitrate());
+
+  // Read so far ahead to cause the loader to get recreated.
+  BufferedResourceLoader* old_loader = data_source_->loader();
+
+  uint8 buffer[1024];
+  data_source_->Read(4000000, 1024, buffer,
+                     NewReadCallback(media::DataSource::kReadError));
+  message_loop_->RunAllPending();
+
+  // Verify loader changed but still has same bitrate.
+  EXPECT_NE(old_loader, data_source_->loader().get());
+  EXPECT_EQ(1234, loader_bitrate());
+
+  StopDataSource();
+}
+
+TEST_F(BufferedDataSourceTest2, SetPlaybackRate) {
+  InitializeDataSource("http://localhost/foo.webm");
+
+  data_source_->SetPlaybackRate(2.0f);
+  message_loop_->RunAllPending();
+  EXPECT_EQ(2.0f, data_source_playback_rate());
+  EXPECT_EQ(2.0f, loader_playback_rate());
+
+  // Read so far ahead to cause the loader to get recreated.
+  BufferedResourceLoader* old_loader = data_source_->loader();
+
+  uint8 buffer[1024];
+  data_source_->Read(4000000, 1024, buffer,
+                     NewReadCallback(media::DataSource::kReadError));
+  message_loop_->RunAllPending();
+
+  // Verify loader changed but still has same bitrate.
+  EXPECT_NE(old_loader, data_source_->loader().get());
+  EXPECT_EQ(2.0f, loader_playback_rate());
 
   StopDataSource();
 }

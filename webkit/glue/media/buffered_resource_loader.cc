@@ -35,11 +35,10 @@ static const int kHttpPartialContent = 206;
 // Define the number of bytes in a megabyte.
 static const size_t kMegabyte = 1024 * 1024;
 
-// Default backward capacity of the buffer.
-static const size_t kBackwardCapacity = 2 * kMegabyte;
-
-// Default forward capacity of the buffer.
-static const size_t kForwardCapacity = 10 * kMegabyte;
+// Minimum capacity of the buffer in forward or backward direction.
+//
+// 2MB is an arbitrary limit; it just seems to be "good enough" in practice.
+static const size_t kMinBufferCapacity = 2 * kMegabyte;
 
 // Maximum capacity of the buffer in forward or backward direction. This is
 // effectively the largest single read the code path can handle.
@@ -52,14 +51,60 @@ static const size_t kMaxBufferCapacity = 20 * kMegabyte;
 // location and will instead reset the request.
 static const int kForwardWaitThreshold = 2 * kMegabyte;
 
+// Computes the suggested backward and forward capacity for the buffer
+// if one wants to play at |playback_rate| * the natural playback speed.
+// Use a value of 0 for |bitrate| if it is unknown.
+static void ComputeTargetBufferWindow(float playback_rate, int bitrate,
+                                      size_t* out_backward_capacity,
+                                      size_t* out_forward_capacity) {
+  static const size_t kDefaultBitrate = 200 * 1024 * 8;  // 200 Kbps.
+  static const size_t kMaxBitrate = 20 * kMegabyte * 8;  // 20 Mbps.
+  static const float kMaxPlaybackRate = 25.0;
+  static const size_t kTargetSecondsBufferedAhead = 10;
+  static const size_t kTargetSecondsBufferedBehind = 2;
+
+  // Use a default bit rate if unknown and clamp to prevent overflow.
+  if (bitrate <= 0)
+    bitrate = kDefaultBitrate;
+  bitrate = std::min(static_cast<size_t>(bitrate), kMaxBitrate);
+
+  // Only scale the buffer window for playback rates greater than 1.0 in
+  // magnitude and clamp to prevent overflow.
+  bool backward_playback = false;
+  if (playback_rate < 0.0f) {
+    backward_playback = true;
+    playback_rate *= -1.0f;
+  }
+
+  playback_rate = std::max(playback_rate, 1.0f);
+  playback_rate = std::min(playback_rate, kMaxPlaybackRate);
+
+  size_t bytes_per_second = static_cast<size_t>(playback_rate * bitrate / 8.0);
+
+  // Clamp between kMinBufferCapacity and kMaxBufferCapacity.
+  *out_forward_capacity = std::max(
+      kTargetSecondsBufferedAhead * bytes_per_second, kMinBufferCapacity);
+  *out_backward_capacity = std::max(
+      kTargetSecondsBufferedBehind * bytes_per_second, kMinBufferCapacity);
+
+  *out_forward_capacity = std::min(*out_forward_capacity, kMaxBufferCapacity);
+  *out_backward_capacity = std::min(*out_backward_capacity, kMaxBufferCapacity);
+
+  if (backward_playback)
+    std::swap(*out_forward_capacity, *out_backward_capacity);
+}
+
+
 BufferedResourceLoader::BufferedResourceLoader(
     const GURL& url,
     int64 first_byte_position,
     int64 last_byte_position,
+    DeferStrategy strategy,
+    int bitrate,
+    float playback_rate,
     media::MediaLog* media_log)
-    : buffer_(new media::SeekableBuffer(kBackwardCapacity, kForwardCapacity)),
-      deferred_(false),
-      defer_strategy_(kReadThenDefer),
+    : deferred_(false),
+      defer_strategy_(strategy),
       completed_(false),
       range_requested_(false),
       range_supported_(false),
@@ -79,9 +124,15 @@ BufferedResourceLoader::BufferedResourceLoader(
       first_offset_(0),
       last_offset_(0),
       keep_test_loader_(false),
-      bitrate_(0),
-      playback_rate_(0.0),
+      bitrate_(bitrate),
+      playback_rate_(playback_rate),
       media_log_(media_log) {
+
+  size_t backward_capacity;
+  size_t forward_capacity;
+  ComputeTargetBufferWindow(
+      playback_rate_, bitrate_, &backward_capacity, &forward_capacity);
+  buffer_.reset(new media::SeekableBuffer(backward_capacity, forward_capacity));
 }
 
 BufferedResourceLoader::~BufferedResourceLoader() {
@@ -232,7 +283,7 @@ void BufferedResourceLoader::Read(int64 position,
       saved_forward_capacity_ = buffer_->forward_capacity();
       buffer_->set_forward_capacity(read_size_);
     }
-   return;
+    return;
   }
 
   // Make a callback to report failure.
@@ -498,6 +549,12 @@ void BufferedResourceLoader::UpdateDeferStrategy(DeferStrategy strategy) {
 
 void BufferedResourceLoader::SetPlaybackRate(float playback_rate) {
   playback_rate_ = playback_rate;
+
+  // This is a pause so don't bother updating the buffer window as we'll likely
+  // get unpaused in the future.
+  if (playback_rate_ == 0.0)
+    return;
+
   UpdateBufferWindow();
 }
 
@@ -510,47 +567,8 @@ void BufferedResourceLoader::SetBitrate(int bitrate) {
 /////////////////////////////////////////////////////////////////////////////
 // Helper methods.
 
-// Computes the suggested backward and forward capacity for the buffer
-// if one wants to play at |playback_rate| * the natural playback speed.
-// Use a value of 0 for |bitrate| if it is unknown.
-static void ComputeTargetBufferWindow(float playback_rate, int bitrate,
-                                      size_t* out_backward_capacity,
-                                      size_t* out_forward_capacity) {
-  DCHECK_GE(bitrate, 0);
-  DCHECK_NE(playback_rate, 0.0);
-  static const size_t kDefaultBitrate = kMegabyte;
-  static const size_t kMaxBitrate = 50 * kMegabyte;
-  static const float kMaxPlaybackRate = 25.0;
-  static const size_t kTargetSecondsBufferedAhead = 10;
-  static const size_t kTargetSecondsBufferedBehind = 2;
-
-  if (bitrate <= 0)
-    bitrate = kDefaultBitrate;
-
-  bool backward_playback = playback_rate < 0.0;
-  if (backward_playback)
-    playback_rate *= -1.0;
-
-  // Cap playback rate and bitrate to prevent overflow.
-  playback_rate = std::min(kMaxPlaybackRate, playback_rate);
-  bitrate  = std::min(kMaxBitrate, static_cast<size_t>(bitrate));
-
-  size_t bytes_per_second = static_cast<size_t>(playback_rate * bitrate / 8.0);
-
-  *out_forward_capacity = std::min(
-      kTargetSecondsBufferedAhead * bytes_per_second, kMaxBufferCapacity);
-  *out_backward_capacity = std::min(
-      kTargetSecondsBufferedBehind * bytes_per_second, kMaxBufferCapacity);
-  if (backward_playback)
-    std::swap(*out_forward_capacity, *out_backward_capacity);
-}
-
 void BufferedResourceLoader::UpdateBufferWindow() {
   if (!buffer_.get())
-    return;
-
-  // Don't adjust buffer window if video is paused.
-  if (playback_rate_ == 0.0)
     return;
 
   size_t backward_capacity;

@@ -67,6 +67,8 @@ class BufferedDataSource : public WebDataSource {
       int64 first_byte_position, int64 last_byte_position);
 
  private:
+  friend class BufferedDataSourceTest2;
+
   // Posted to perform initialization on render thread and start resource
   // loading.
   void InitializeTask();
@@ -214,6 +216,12 @@ class BufferedDataSource : public WebDataSource {
 
   // Number of cache miss retries left.
   int cache_miss_retries_left_;
+
+  // Bitrate of the content, 0 if unknown.
+  int bitrate_;
+
+  // Current playback rate.
+  float playback_rate_;
 
   scoped_refptr<media::MediaLog> media_log_;
 

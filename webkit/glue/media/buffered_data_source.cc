@@ -61,9 +61,11 @@ BufferedDataSource::BufferedDataSource(
       stopped_on_render_loop_(false),
       media_is_paused_(true),
       media_has_played_(false),
-      preload_(media::METADATA),
+      preload_(media::AUTO),
       using_range_request_(true),
       cache_miss_retries_left_(kNumCacheMissRetries),
+      bitrate_(0),
+      playback_rate_(0.0),
       media_log_(media_log) {
 }
 
@@ -79,6 +81,9 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
   return new BufferedResourceLoader(url_,
                                     first_byte_position,
                                     last_byte_position,
+                                    ChooseDeferStrategy(),
+                                    bitrate_,
+                                    playback_rate_,
                                     media_log_);
 }
 
@@ -304,8 +309,6 @@ void BufferedDataSource::RestartLoadingTask() {
   }
 
   loader_ = CreateResourceLoader(read_position_, kPositionNotSpecified);
-  BufferedResourceLoader::DeferStrategy strategy = ChooseDeferStrategy();
-  loader_->UpdateDeferStrategy(strategy);
   loader_->Start(
       NewCallback(this, &BufferedDataSource::PartialReadStartCallback),
       base::Bind(&BufferedDataSource::NetworkEventCallback, this),
@@ -316,6 +319,7 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
+  playback_rate_ = playback_rate;
   loader_->SetPlaybackRate(playback_rate);
 
   bool previously_paused = media_is_paused_;
@@ -336,28 +340,27 @@ void BufferedDataSource::SetPreloadTask(media::Preload preload) {
 void BufferedDataSource::SetBitrateTask(int bitrate) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
+
+  bitrate_ = bitrate;
   loader_->SetBitrate(bitrate);
 }
 
 BufferedResourceLoader::DeferStrategy
 BufferedDataSource::ChooseDeferStrategy() {
   DCHECK(MessageLoop::current() == render_loop_);
-  // If the user indicates preload=metadata, then just load exactly
-  // what is needed for starting the pipeline and prerolling frames.
-  if (preload_ == media::METADATA && !media_has_played_)
+  // If the page indicated preload=metadata, then load exactly what is needed
+  // needed for starting playback.
+  if (!media_has_played_ && preload_ == media::METADATA)
     return BufferedResourceLoader::kReadThenDefer;
 
-  // In general, we want to try to buffer the entire video when the video
-  // is paused. But we don't want to do this if the video hasn't played yet
-  // and preload!=auto.
-  if (media_is_paused_ &&
-      (preload_ == media::AUTO || media_has_played_)) {
+  // If the playback has started (at which point the preload value is ignored)
+  // and we're paused, then try to load as much as possible.
+  if (media_has_played_ && media_is_paused_)
     return BufferedResourceLoader::kNeverDefer;
-  }
 
-  // When the video is playing, regardless of preload state, we buffer up
-  // to a hard limit and enable/disable deferring when the buffer is
-  // depleted/full.
+  // If media is currently playing or the page indicated preload=auto,
+  // use threshold strategy to enable/disable deferring when the buffer
+  // is full/depleted.
   return BufferedResourceLoader::kThresholdDefer;
 }
 
@@ -417,7 +420,6 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
 
   int64 instance_size = loader_->instance_size();
   bool success = error == net::OK;
-
 
   bool initialize_cb_is_null = false;
   {
