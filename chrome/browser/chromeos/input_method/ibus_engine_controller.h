@@ -57,6 +57,31 @@ class IBusEngineController {
     std::string annotation;
   };
 
+  enum {
+    PROPERTY_MODIFIED_LABEL     = 0x0001,
+    PROPERTY_MODIFIED_TOOLTIP   = 0x0002,
+    PROPERTY_MODIFIED_SENSITIVE = 0x0004,
+    PROPERTY_MODIFIED_VISIBLE   = 0x0008,
+    PROPERTY_MODIFIED_TYPE      = 0x0010,
+    PROPERTY_MODIFIED_CHECKED   = 0x0020,
+  };
+
+  struct EngineProperty {
+    EngineProperty();
+    virtual ~EngineProperty();
+
+    std::string key;
+    std::string label;
+    std::string tooltip;
+    bool sensitive;
+    bool visible;
+    int type;
+    bool checked;
+
+    unsigned int modified;
+    std::vector<EngineProperty*> children;
+  };
+
   // Constants for the button parameter of OnCandidateClicked
   enum {
     MOUSE_BUTTON_1_MASK = 0x01,
@@ -71,6 +96,15 @@ class IBusEngineController {
     UNDERLINE_DOUBLE,
     UNDERLINE_LOW,
     UNDERLINE_ERROR
+  };
+
+  // Constants for RegisterProperties and UpdateProperties
+  enum {
+    PROPERTY_TYPE_NORMAL,
+    PROPERTY_TYPE_TOGGLE,
+    PROPERTY_TYPE_RADIO,
+    PROPERTY_TYPE_SEPARATOR,
+    PROPERTY_TYPE_MENU
   };
 
   static IBusEngineController* Create(Observer* observer,
@@ -117,6 +151,14 @@ class IBusEngineController {
 
   // Set the posistion of the cursor in the candidate window.
   virtual void SetCursorPosition(unsigned int position) = 0;
+
+  // Set the properties that ibus will display in the language bar.
+  virtual bool RegisterProperties(
+      const std::vector<EngineProperty*>& properties) = 0;
+
+  // Update the attributes of the listed properties.
+  virtual bool UpdateProperties(
+      const std::vector<EngineProperty*>& properties) = 0;
 
   // Inform the engine that a key event has been processed.
   virtual void KeyEventDone(KeyEventHandle* key_data, bool handled) = 0;

@@ -9,13 +9,24 @@
 #endif
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace chromeos {
 namespace input_method {
+
+IBusEngineController::EngineProperty::EngineProperty()
+    : sensitive(false), visible(false), type(PROPERTY_TYPE_NORMAL),
+      checked(false), modified(0) {
+}
+
+IBusEngineController::EngineProperty::~EngineProperty() {
+  STLDeleteContainerPointers(children.begin(), children.end());
+}
 
 #if defined(HAVE_IBUS)
 
@@ -55,7 +66,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   explicit IBusEngineControllerImpl(IBusEngineController::Observer* observer)
       : observer_(observer),
         ibus_(NULL),
-        engine_(NULL),
+        active_engine_(NULL),
         preedit_text_(NULL),
         preedit_cursor_(0),
         table_visible_(false),
@@ -79,6 +90,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
       g_object_unref(ibus_);
     }
     g_connections_->erase(engine_id_);
+    ClearProperties();
     VLOG(1) << "Removing engine: " << engine_id_;
   }
 
@@ -128,7 +140,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   virtual void SetPreeditText(const char* text, int cursor) {
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "SetPreeditText";
       if (preedit_text_) {
         g_object_unref(preedit_text_);
@@ -137,14 +149,15 @@ class IBusEngineControllerImpl : public IBusEngineController {
       preedit_cursor_ = cursor;
       preedit_text_ = static_cast<IBusText*>(
           g_object_ref_sink(ibus_text_new_from_string(text)));
-      ibus_engine_update_preedit_text(IBUS_ENGINE(engine_), preedit_text_,
+      ibus_engine_update_preedit_text(IBUS_ENGINE(active_engine_),
+                                      preedit_text_,
                                       preedit_cursor_, TRUE);
     }
   }
 
   virtual void SetPreeditUnderline(int start, int end, int type) {
     VLOG(1) << "SetPreeditUnderline";
-    if (engine_ && preedit_text_) {
+    if (active_engine_ && preedit_text_) {
       // Translate the type to ibus's constants.
       int underline_type;
       switch (type) {
@@ -174,13 +187,14 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
       ibus_text_append_attribute(preedit_text_, IBUS_ATTR_TYPE_UNDERLINE,
                                  underline_type, start, end);
-      ibus_engine_update_preedit_text(IBUS_ENGINE(engine_), preedit_text_,
+      ibus_engine_update_preedit_text(IBUS_ENGINE(active_engine_),
+                                      preedit_text_,
                                       preedit_cursor_, TRUE);
     }
   }
 
   virtual void CommitText(const char* text) {
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "CommitText";
       // Reset the preedit text when a commit occurs.
       SetPreeditText("", 0);
@@ -189,62 +203,67 @@ class IBusEngineControllerImpl : public IBusEngineController {
         preedit_text_ = NULL;
       }
       IBusText* ibus_text = static_cast<IBusText*>(
-          g_object_ref_sink(ibus_text_new_from_string(text)));
-      ibus_engine_commit_text(IBUS_ENGINE(engine_), ibus_text);
+          ibus_text_new_from_string(text));
+      ibus_engine_commit_text(IBUS_ENGINE(active_engine_), ibus_text);
     }
   }
 
   virtual void SetTableVisible(bool visible) {
     table_visible_ = visible;
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "SetTableVisible";
-      ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
+      ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
+                                      active_engine_->table,
                                       table_visible_);
       if (visible) {
-        ibus_engine_show_lookup_table(IBUS_ENGINE(engine_));
+        ibus_engine_show_lookup_table(IBUS_ENGINE(active_engine_));
       } else {
-        ibus_engine_hide_lookup_table(IBUS_ENGINE(engine_));
+        ibus_engine_hide_lookup_table(IBUS_ENGINE(active_engine_));
       }
     }
   }
 
   virtual void SetCursorVisible(bool visible) {
     cursor_visible_ = visible;
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "SetCursorVisible";
-      ibus_lookup_table_set_cursor_visible(engine_->table, visible);
-      ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
+      ibus_lookup_table_set_cursor_visible(active_engine_->table, visible);
+      ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
+                                      active_engine_->table,
                                       table_visible_);
     }
   }
 
   virtual void SetOrientationVertical(bool vertical) {
     vertical_ = vertical;
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "SetOrientationVertical";
-      ibus_lookup_table_set_orientation(engine_->table,
+      ibus_lookup_table_set_orientation(active_engine_->table,
                                         vertical ? IBUS_ORIENTATION_VERTICAL :
                                         IBUS_ORIENTATION_HORIZONTAL);
-      ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
+      ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
+                                      active_engine_->table,
                                       table_visible_);
     }
   }
 
   virtual void SetPageSize(unsigned int size) {
     page_size_ = size;
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "SetPageSize";
-      ibus_lookup_table_set_page_size(engine_->table, size);
-      ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
+      ibus_lookup_table_set_page_size(active_engine_->table, size);
+      ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
+                                      active_engine_->table,
                                       table_visible_);
     }
   }
 
   virtual void ClearCandidates() {
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "ClearCandidates";
-      ibus_lookup_table_clear(engine_->table);
-      ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
+      ibus_lookup_table_clear(active_engine_->table);
+      ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
+                                      active_engine_->table,
                                       table_visible_);
     }
   }
@@ -252,9 +271,9 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetCandidates(std::vector<Candidate> candidates) {
     // Text with this foreground color will be treated as an annotation.
     const guint kAnnotationForegroundColor = 0x888888;
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "SetCandidates";
-      ibus_lookup_table_clear(engine_->table);
+      ibus_lookup_table_clear(active_engine_->table);
 
       for (std::vector<Candidate>::iterator ix = candidates.begin();
            ix != candidates.end(); ++ix ) {
@@ -269,67 +288,262 @@ class IBusEngineControllerImpl : public IBusEngineController {
           // candidate window will treat it properly.
           size_t end = start + g_utf8_strlen(ix->annotation.c_str(), -1);
           IBusText* ibus_text = static_cast<IBusText*>(
-              g_object_ref_sink(ibus_text_new_from_string(candidate.c_str())));
+              ibus_text_new_from_string(candidate.c_str()));
           ibus_text_append_attribute(ibus_text,
                                      IBUS_ATTR_TYPE_FOREGROUND,
                                      kAnnotationForegroundColor,
                                      start,
                                      end);
-          ibus_lookup_table_append_candidate(engine_->table, ibus_text);
+          ibus_lookup_table_append_candidate(active_engine_->table, ibus_text);
         } else {
           IBusText* ibus_text = static_cast<IBusText*>(
-              g_object_ref_sink(ibus_text_new_from_string(ix->value.c_str())));
-          ibus_lookup_table_append_candidate(engine_->table, ibus_text);
+              ibus_text_new_from_string(ix->value.c_str()));
+          ibus_lookup_table_append_candidate(active_engine_->table, ibus_text);
         }
 
         // Add the label if it's set.
         if (!ix->label.empty()) {
           IBusText* ibus_label = static_cast<IBusText*>(
-              g_object_ref_sink(ibus_text_new_from_string(ix->label.c_str())));
-          ibus_lookup_table_set_label(engine_->table,
+              ibus_text_new_from_string(ix->label.c_str()));
+          ibus_lookup_table_set_label(active_engine_->table,
                                       std::distance(candidates.begin(), ix),
                                       ibus_label);
         }
       }
-      ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
+      ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
+                                      active_engine_->table,
                                       table_visible_);
     }
   }
 
   virtual void SetCandidateAuxText(const char* text) {
     aux_text_ = text;
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "SetCandidateAuxText";
       IBusText* ibus_text = static_cast<IBusText*>(
-          g_object_ref_sink(ibus_text_new_from_string(aux_text_.c_str())));
-      ibus_engine_update_auxiliary_text(IBUS_ENGINE(engine_), ibus_text,
+          ibus_text_new_from_string(aux_text_.c_str()));
+      ibus_engine_update_auxiliary_text(IBUS_ENGINE(active_engine_), ibus_text,
                                         aux_text_visible_);
-      ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
+      ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
+                                      active_engine_->table,
                                       table_visible_);
     }
   }
 
   virtual void SetCandidateAuxTextVisible(bool visible) {
     aux_text_visible_ = visible;
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "SetCandidateAuxTextVisible";
       IBusText* ibus_text = static_cast<IBusText*>(
-          g_object_ref_sink(ibus_text_new_from_string(aux_text_.c_str())));
-      ibus_engine_update_auxiliary_text(IBUS_ENGINE(engine_), ibus_text,
+          ibus_text_new_from_string(aux_text_.c_str()));
+      ibus_engine_update_auxiliary_text(IBUS_ENGINE(active_engine_), ibus_text,
                                         aux_text_visible_);
-      ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
+      ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
+                                      active_engine_->table,
                                       table_visible_);
     }
   }
 
   virtual void SetCursorPosition(unsigned int position) {
     cursor_position_ = position;
-    if (engine_) {
+    if (active_engine_) {
       VLOG(1) << "SetCursorPosition";
-      ibus_lookup_table_set_cursor_pos(engine_->table, position);
-      ibus_engine_update_lookup_table(IBUS_ENGINE(engine_), engine_->table,
+      ibus_lookup_table_set_cursor_pos(active_engine_->table, position);
+      ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
+                                      active_engine_->table,
                                       table_visible_);
     }
+  }
+
+  virtual bool RegisterProperties(
+      const std::vector<EngineProperty*>& properties) {
+    VLOG(1) << "RegisterProperties";
+    ClearProperties();
+    CopyProperties(properties, &properties_);
+
+    if (active_engine_) {
+      if (!SetProperties()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void ClearProperties() {
+    STLDeleteContainerPointers(properties_.begin(), properties_.end());
+    properties_.clear();
+    property_map_.clear();
+  }
+
+  virtual bool UpdateProperties(
+      const std::vector<EngineProperty*>& properties) {
+    VLOG(1) << "UpdateProperties";
+    return UpdatePropertyList(properties);
+  }
+
+  void CopyProperties(const std::vector<EngineProperty*>& properties,
+                      std::vector<EngineProperty*>* dest) {
+    for (std::vector<EngineProperty*>::const_iterator property =
+         properties.begin(); property != properties.end(); ++property) {
+      if (property_map_.find((*property)->key) != property_map_.end()) {
+        LOG(ERROR) << "Property collision on name: " << (*property)->key;
+        return;
+      }
+
+      EngineProperty* new_property = new EngineProperty;
+      dest->push_back(new_property);
+      property_map_[(*property)->key] = new_property;
+
+      new_property->key = (*property)->key;
+      new_property->label = (*property)->label;
+      new_property->tooltip = (*property)->tooltip;
+      new_property->sensitive = (*property)->sensitive;
+      new_property->visible = (*property)->visible;
+      new_property->type = (*property)->type;
+      new_property->checked = (*property)->checked;
+
+      CopyProperties((*property)->children, &(new_property->children));
+    }
+  }
+
+  IBusPropList *MakePropertyList(
+      const std::vector<EngineProperty*>& properties) {
+    IBusPropList *prop_list = ibus_prop_list_new();
+    for (std::vector<EngineProperty*>::const_iterator property =
+         properties.begin(); property != properties.end(); ++property) {
+      IBusPropList *children = NULL;
+      if (!(*property)->children.empty()) {
+        children = MakePropertyList((*property)->children);
+      }
+
+      IBusPropType type = PROP_TYPE_NORMAL;
+      switch ((*property)->type) {
+        case PROPERTY_TYPE_NORMAL:
+          type = PROP_TYPE_NORMAL;
+          break;
+        case PROPERTY_TYPE_TOGGLE:
+          type = PROP_TYPE_TOGGLE;
+          break;
+        case PROPERTY_TYPE_RADIO:
+          type = PROP_TYPE_RADIO;
+          break;
+        case PROPERTY_TYPE_SEPARATOR:
+          type = PROP_TYPE_SEPARATOR;
+          break;
+        case PROPERTY_TYPE_MENU:
+          type = PROP_TYPE_MENU;
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+
+      IBusPropState state = (*property)->checked ? PROP_STATE_CHECKED :
+                                                   PROP_STATE_UNCHECKED;
+
+      IBusProperty *ibus_property =
+          ibus_property_new((*property)->key.c_str(),
+                            type,
+                            static_cast<IBusText*>(
+                                ibus_text_new_from_string(
+                                    (*property)->label.c_str())),
+                            NULL,
+                            static_cast<IBusText*>(
+                                ibus_text_new_from_string(
+                                    (*property)->tooltip.c_str())),
+                            (*property)->sensitive,
+                            (*property)->visible,
+                            state,
+                            children);
+
+      ibus_prop_list_append(prop_list, ibus_property);
+    }
+    return prop_list;
+  }
+
+  bool SetProperties() {
+    IBusPropList *prop_list = MakePropertyList(properties_);
+    ibus_engine_register_properties(IBUS_ENGINE(active_engine_), prop_list);
+    return true;
+  }
+
+  bool UpdatePropertyList(const std::vector<EngineProperty*>& properties) {
+    for (std::vector<EngineProperty*>::const_iterator property =
+         properties.begin(); property != properties.end(); ++property) {
+      std::map<std::string, EngineProperty*>::iterator cur_property =
+          property_map_.find((*property)->key);
+      if (cur_property == property_map_.end()) {
+        LOG(ERROR) << "Missing property: " << (*property)->key;
+        return false;
+      }
+
+      if ((*property)->modified & PROPERTY_MODIFIED_LABEL) {
+        cur_property->second->label = (*property)->label;
+      }
+      if ((*property)->modified & PROPERTY_MODIFIED_TOOLTIP) {
+        cur_property->second->tooltip = (*property)->tooltip;
+      }
+      if ((*property)->modified & PROPERTY_MODIFIED_SENSITIVE) {
+        cur_property->second->sensitive = (*property)->sensitive;
+      }
+      if ((*property)->modified & PROPERTY_MODIFIED_VISIBLE) {
+        cur_property->second->visible = (*property)->visible;
+      }
+      if ((*property)->modified & PROPERTY_MODIFIED_TYPE) {
+        cur_property->second->type = (*property)->type;
+      }
+      if ((*property)->modified & PROPERTY_MODIFIED_CHECKED) {
+        cur_property->second->checked = (*property)->checked;
+      }
+
+      if (active_engine_) {
+        IBusPropType type = PROP_TYPE_NORMAL;
+        switch (cur_property->second->type) {
+          case PROPERTY_TYPE_NORMAL:
+            type = PROP_TYPE_NORMAL;
+            break;
+          case PROPERTY_TYPE_TOGGLE:
+            type = PROP_TYPE_TOGGLE;
+            break;
+          case PROPERTY_TYPE_RADIO:
+            type = PROP_TYPE_RADIO;
+            break;
+          case PROPERTY_TYPE_SEPARATOR:
+            type = PROP_TYPE_SEPARATOR;
+            break;
+          case PROPERTY_TYPE_MENU:
+            type = PROP_TYPE_MENU;
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+
+        IBusPropState state = cur_property->second->checked ?
+            PROP_STATE_CHECKED : PROP_STATE_UNCHECKED;
+
+        IBusProperty *ibus_property =
+            ibus_property_new(cur_property->second->key.c_str(),
+                              type,
+                              static_cast<IBusText*>(
+                                  ibus_text_new_from_string(
+                                      cur_property->second->label.c_str())),
+                              NULL,
+                              static_cast<IBusText*>(
+                                  ibus_text_new_from_string(
+                                      cur_property->second->tooltip.c_str())),
+                              cur_property->second->sensitive,
+                              cur_property->second->visible,
+                              state,
+                              NULL);
+
+        ibus_engine_update_property(IBUS_ENGINE(active_engine_), ibus_property);
+      }
+      if (!UpdatePropertyList((*property)->children)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   virtual void KeyEventDone(KeyEventHandle* key_data, bool handled) {
@@ -506,19 +720,25 @@ class IBusEngineControllerImpl : public IBusEngineController {
   static void OnEnable(IBusEngine* ibus_engine) {
     VLOG(1) << "OnEnable";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
+    engine->connection->active_engine_ = engine;
     engine->connection->observer_->OnEnable();
+    engine->connection->SetProperties();
   }
 
   static void OnDisable(IBusEngine* ibus_engine) {
     VLOG(1) << "OnDisable";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     engine->connection->observer_->OnDisable();
+    if (engine->connection->active_engine_ == engine) {
+      engine->connection->active_engine_ = NULL;
+    }
   }
 
   static void OnFocusIn(IBusEngine* ibus_engine) {
     VLOG(1) << "OnFocusIn";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     engine->connection->observer_->OnFocusIn();
+    engine->connection->SetProperties();
   }
 
   static void OnFocusOut(IBusEngine* ibus_engine) {
@@ -579,7 +799,13 @@ class IBusEngineControllerImpl : public IBusEngineController {
       LOG(ERROR) << "Connection never created: " << name;
       return (GObject *) engine;
     }
-    connection->second->engine_ = engine;
+
+    connection->second->engine_instances_.insert(engine);
+
+    if (!connection->second->active_engine_) {
+      connection->second->active_engine_ = engine;
+    }
+
     engine->connection = connection->second;
 
     engine->table = ibus_lookup_table_new(connection->second->page_size_,
@@ -593,6 +819,10 @@ class IBusEngineControllerImpl : public IBusEngineController {
                                         IBUS_ORIENTATION_HORIZONTAL);
     ibus_engine_update_lookup_table(IBUS_ENGINE(engine), engine->table,
                                     connection->second->table_visible_);
+
+
+    connection->second->SetProperties();
+
     return (GObject *) engine;
   }
 
@@ -601,7 +831,11 @@ class IBusEngineControllerImpl : public IBusEngineController {
     ConnectionMap::iterator connection = g_connections_->find(name);
     if (connection == g_connections_->end()) {
       LOG(ERROR) << "Connection already destroyed, or never created: " << name;
-      return;
+    } else {
+      connection->second->engine_instances_.erase(chromeos_engine);
+      if (connection->second->active_engine_ == chromeos_engine) {
+        connection->second->active_engine_ = NULL;
+      }
     }
     if (chromeos_engine->table) {
       g_object_unref(chromeos_engine->table);
@@ -613,7 +847,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   IBusEngineController::Observer* observer_;
   IBusBus* ibus_;
-  IBusChromeOSEngine* engine_;
+  IBusChromeOSEngine* active_engine_;
 
   std::string engine_id_;
   std::string engine_name_;
@@ -631,6 +865,10 @@ class IBusEngineControllerImpl : public IBusEngineController {
   unsigned int cursor_position_;
   std::string aux_text_;
   bool aux_text_visible_;
+  std::vector<EngineProperty*> properties_;
+  std::map<std::string, EngineProperty*> property_map_;
+
+  std::set<IBusChromeOSEngine*> engine_instances_;
 
   static ConnectionMap* g_connections_;
 };

@@ -110,14 +110,14 @@ class SetCursorPositionFunction : public AsyncExtensionFunction {
       "experimental.input.setCursorPosition");
 };
 
-class SetMenuItemsFunction : public AsyncExtensionFunction {
+class SetMenuItemsFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.input.setMenuItems");
 };
 
-class UpdateMenuItemsFunction : public AsyncExtensionFunction {
+class UpdateMenuItemsFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(

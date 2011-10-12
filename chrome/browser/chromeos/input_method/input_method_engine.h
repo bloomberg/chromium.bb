@@ -33,6 +33,16 @@ class InputMethodEngine {
     bool shift_key;
   };
 
+  enum {
+    MENU_ITEM_MODIFIED_LABEL        = 0x0001,
+    MENU_ITEM_MODIFIED_STYLE        = 0x0002,
+    MENU_ITEM_MODIFIED_VISIBLE      = 0x0004,
+    MENU_ITEM_MODIFIED_ENABLED      = 0x0008,
+    MENU_ITEM_MODIFIED_CHECKED      = 0x0010,
+    MENU_ITEM_MODIFIED_ICON         = 0x0020,
+    MENU_ITEM_MODIFIED_SHORTCUT_KEY = 0x0040,
+  };
+
   struct MenuItem {
     MenuItem();
     virtual ~MenuItem();
@@ -45,6 +55,8 @@ class InputMethodEngine {
     bool checked;
     std::string icon;
     KeyboardEvent shortcut_key;
+
+    unsigned int modified;
     std::vector<MenuItem> children;
   };
 
@@ -169,10 +181,10 @@ class InputMethodEngine {
 
   // Set the list of items that appears in the language menu when this IME is
   // active.
-  virtual void SetMenuItems(const std::vector<MenuItem>& items) = 0;
+  virtual bool SetMenuItems(const std::vector<MenuItem>& items) = 0;
 
   // Update the state of the menu items.
-  virtual void UpdateMenuItems(const std::vector<MenuItem>& items) = 0;
+  virtual bool UpdateMenuItems(const std::vector<MenuItem>& items) = 0;
 
   // Returns true if this IME is active, false if not.
   virtual bool IsActive() const = 0;

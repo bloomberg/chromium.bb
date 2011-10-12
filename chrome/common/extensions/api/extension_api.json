@@ -3544,11 +3544,6 @@
                 "description": "ID of the engine to use",
                 "type": "string"
               },
-              "parentId": {
-                "description": "ID of the parent menu item",
-                "optional": true,
-                "type": "string"
-              },
               "items": {
                 "description": "MenuItems to add. They will be added in the order they exist in the array.",
                 "type": "array",
@@ -3573,8 +3568,7 @@
                       "optional": true,
                       "description": "Used to create a shortcut key label.  The IME should handle the shortcut key itself, however.",
                       "properties": {
-                        "key": {"type": "string", "description": "Value of the key being pressed"},
-                        "keyCode": {"type": "string", "description": "Value of the key being press, unmodified by control keys."},
+                        "key": {"type": "string", "description": "Value of the shortcut key"},
                         "altKey": {"type": "boolean", "optional": true, "description": "Whether or not the ALT key is pressed."},
                         "ctrlKey": {"type": "boolean", "optional": true, "description": "Whether or not the CTRL key is pressed."},
                         "shiftKey": {"type": "boolean", "optional": true, "description": "Whether or not the SHIFT key is pressed."}
@@ -3632,7 +3626,6 @@
                       "description": "Used to create a shortcut key label.  The IME should handle the shortcut key itself, however.",
                       "properties": {
                         "key": {"type": "string", "description": "Value of the key being pressed"},
-                        "keyCode": {"type": "string", "description": "Value of the key being press, unmodified by control keys."},
                         "altKey": {"type": "boolean", "optional": true, "description": "Whether or not the ALT key is pressed."},
                         "ctrlKey": {"type": "boolean", "optional": true, "description": "Whether or not the CTRL key is pressed."},
                         "shiftKey": {"type": "boolean", "optional": true, "description": "Whether or not the SHIFT key is pressed."}
