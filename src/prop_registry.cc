@@ -85,6 +85,18 @@ std::string BoolProperty::Value() {
   return StringPrintf("%s", val_ ? "true" : "false");
 }
 
+bool BoolProperty::SetValue(::Value* value) {
+  if (value->GetType() != Value::TYPE_BOOLEAN) {
+    return false;
+  }
+  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
+  bool val = false;
+  if (!type_value->GetAsBoolean(&val))
+    return false;
+  val_ = static_cast<GesturesPropBool>(val);
+  return true;
+}
+
 void BoolProperty::HandleGesturesPropWritten() {
   if (delegate_)
     delegate_->BoolWasWritten(this);
@@ -100,6 +112,14 @@ void DoubleProperty::CreatePropImpl() {
 
 std::string DoubleProperty::Value() {
   return StringPrintf("%f", val_);
+}
+
+bool DoubleProperty::SetValue(::Value* value) {
+  if (value->GetType() != Value::TYPE_DOUBLE) {
+    return false;
+  }
+  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
+  return type_value->GetAsDouble(&val_);
 }
 
 void DoubleProperty::HandleGesturesPropWritten() {
@@ -119,6 +139,14 @@ std::string IntProperty::Value() {
   return StringPrintf("%d", val_);
 }
 
+bool IntProperty::SetValue(::Value* value) {
+  if (value->GetType() != Value::TYPE_INTEGER) {
+    return false;
+  }
+  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
+  return type_value->GetAsInteger(&val_);
+}
+
 void IntProperty::HandleGesturesPropWritten() {
   if (delegate_)
     delegate_->IntWasWritten(this);
@@ -136,6 +164,18 @@ std::string ShortProperty::Value() {
   return StringPrintf("%d", val_);
 }
 
+bool ShortProperty::SetValue(::Value* value) {
+  if (value->GetType() != Value::TYPE_INTEGER) {
+    return false;
+  }
+  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
+  int val;
+  if (!type_value->GetAsInteger(&val))
+    return false;
+  val_ = static_cast<short>(val);
+  return true;
+}
+
 void ShortProperty::HandleGesturesPropWritten() {
   if (delegate_)
     delegate_->ShortWasWritten(this);
@@ -151,6 +191,17 @@ void StringProperty::CreatePropImpl() {
 
 std::string StringProperty::Value() {
   return StringPrintf("\"%s\"", val_);
+}
+
+bool StringProperty::SetValue(::Value* value) {
+  if (value->GetType() != Value::TYPE_STRING) {
+    return false;
+  }
+  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
+  if (!type_value->GetAsString(&parsed_val_))
+    return false;
+  val_ = parsed_val_.c_str();
+  return true;
 }
 
 void StringProperty::HandleGesturesPropWritten() {

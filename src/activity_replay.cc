@@ -10,12 +10,15 @@
 #include <base/json/json_writer.h>
 
 #include "gestures/include/logging.h"
+#include "gestures/include/prop_registry.h"
 
+using std::set;
 using std::string;
 
 namespace gestures {
 
-ActivityReplay::ActivityReplay() : log_(NULL) {}
+ActivityReplay::ActivityReplay(PropRegistry* prop_reg)
+    : log_(NULL), prop_reg_(prop_reg) {}
 
 bool ActivityReplay::Parse(const string& data) {
   int error_code;
@@ -32,12 +35,20 @@ bool ActivityReplay::Parse(const string& data) {
     return false;
   }
   DictionaryValue* dict = static_cast<DictionaryValue*>(root);
+  // Get and apply user-configurable properties
   DictionaryValue* props_dict = NULL;
-  if (!dict->GetDictionary(ActivityLog::kKeyHardwarePropRoot, &props_dict)) {
+  if (dict->GetDictionary(ActivityLog::kKeyProperties, &props_dict) &&
+      !ParseProperties(props_dict)) {
+    Err("Unable to parse properties.");
+    return false;
+  }
+  // Get and apply hardware properties
+  DictionaryValue* hwprops_dict = NULL;
+  if (!dict->GetDictionary(ActivityLog::kKeyHardwarePropRoot, &hwprops_dict)) {
     Err("Unable to get hwprops dict.");
     return false;
   }
-  if (!ParseHardwareProperties(props_dict, &hwprops_))
+  if (!ParseHardwareProperties(hwprops_dict, &hwprops_))
     return false;
   log_.SetHardwareProperties(hwprops_);
   ListValue* entries = NULL;
@@ -53,6 +64,26 @@ bool ActivityReplay::Parse(const string& data) {
     }
     if (!ParseEntry(entry))
       return false;
+  }
+  return true;
+}
+
+bool ActivityReplay::ParseProperties(DictionaryValue* dict) {
+  if (!prop_reg_)
+    return true;
+  set<Property*> props = prop_reg_->props();
+  for (set<Property*>::const_iterator it = props.begin(), e = props.end();
+       it != e; ++it) {
+    const char* key = (*it)->name();
+    Value* value = NULL;
+    if (!dict->Get(key, &value)) {
+      Err("Log doesn't have value for property %s", key);
+      return false;
+    }
+    if (!(*it)->SetValue(value)) {
+      Err("Unable to restore value for property %s", key);
+      return false;
+    }
   }
   return true;
 }

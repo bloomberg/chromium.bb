@@ -9,6 +9,7 @@
 #include <string>
 
 #include <base/string_util.h>
+#include <base/values.h>
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/logging.h"
@@ -55,6 +56,8 @@ class Property {
 
   const char* name() { return name_; }
   virtual std::string Value() = 0;
+  // Returns true on success
+  virtual bool SetValue(::Value* value) = 0;
 
   static GesturesPropBool StaticHandleGesturesPropWillRead(void* data) {
     GesturesPropBool ret =
@@ -92,6 +95,7 @@ class BoolProperty : public Property {
   }
   virtual void CreatePropImpl();
   virtual std::string Value();
+  virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
   GesturesPropBool val_;
@@ -112,6 +116,7 @@ class DoubleProperty : public Property {
   }
   virtual void CreatePropImpl();
   virtual std::string Value();
+  virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
   double val_;
@@ -132,6 +137,7 @@ class IntProperty : public Property {
   }
   virtual void CreatePropImpl();
   virtual std::string Value();
+  virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
   int val_;
@@ -152,6 +158,7 @@ class ShortProperty : public Property {
   }
   virtual void CreatePropImpl();
   virtual std::string Value();
+  virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
   short val_;
@@ -172,8 +179,10 @@ class StringProperty : public Property {
   }
   virtual void CreatePropImpl();
   virtual std::string Value();
+  virtual bool SetValue(::Value* value);
   virtual void HandleGesturesPropWritten();
 
+  std::string parsed_val_;
   const char* val_;
 };
 

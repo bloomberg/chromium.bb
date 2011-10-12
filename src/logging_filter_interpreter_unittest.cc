@@ -10,6 +10,7 @@
 #include "gestures/include/activity_replay.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/logging_filter_interpreter.h"
+#include "gestures/include/prop_registry.h"
 
 using std::string;
 
@@ -19,14 +20,24 @@ class LoggingFilterInterpreterTest : public ::testing::Test {};
 
 class LoggingFilterInterpreterTestInterpreter : public Interpreter {
  public:
-  LoggingFilterInterpreterTestInterpreter()
+  explicit LoggingFilterInterpreterTestInterpreter(PropRegistry* prop_reg)
       : expected_hwstate_(NULL),
         set_hwprops_call_count_(0),
         interpret_call_count_(0),
-        handle_timer_call_count_(0) {}
+        handle_timer_call_count_(0),
+        bool_prop_(prop_reg, "BoolProp", 0),
+        double_prop_(prop_reg, "DoubleProp", 0),
+        int_prop_(prop_reg, "IntProp", 0),
+        short_prop_(prop_reg, "ShortProp", 0),
+        string_prop_(prop_reg, "StringProp", "") {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     interpret_call_count_++;
+    EXPECT_NE(0, bool_prop_.val_);
+    EXPECT_NE(0, double_prop_.val_);
+    EXPECT_NE(0, int_prop_.val_);
+    EXPECT_NE(0, short_prop_.val_);
+    EXPECT_NE("", string_prop_.val_);
     EXPECT_TRUE(expected_hwstate_);
     EXPECT_DOUBLE_EQ(expected_hwstate_->timestamp, hwstate->timestamp);
     EXPECT_EQ(expected_hwstate_->buttons_down, hwstate->buttons_down);
@@ -67,13 +78,25 @@ class LoggingFilterInterpreterTestInterpreter : public Interpreter {
   int set_hwprops_call_count_;
   int interpret_call_count_;
   int handle_timer_call_count_;
+  BoolProperty bool_prop_;
+  DoubleProperty double_prop_;
+  IntProperty int_prop_;
+  ShortProperty short_prop_;
+  StringProperty string_prop_;
 };
 
 
 TEST(LoggingFilterInterpreterTest, SimpleTest) {
+  PropRegistry prop_reg;
   LoggingFilterInterpreterTestInterpreter* base_interpreter =
-      new LoggingFilterInterpreterTestInterpreter;
-  LoggingFilterInterpreter interpreter(NULL, base_interpreter);
+      new LoggingFilterInterpreterTestInterpreter(&prop_reg);
+  base_interpreter->bool_prop_.val_ = 1;
+  base_interpreter->double_prop_.val_ = 1;
+  base_interpreter->int_prop_.val_ = 1;
+  base_interpreter->short_prop_.val_ = 1;
+  base_interpreter->string_prop_.val_ = "x";
+
+  LoggingFilterInterpreter interpreter(&prop_reg, base_interpreter);
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -116,11 +139,12 @@ TEST(LoggingFilterInterpreterTest, SimpleTest) {
   string initial_log = interpreter.log_.Encode();
 
   // Make a new interpreter and push the log through it
+  PropRegistry prop_reg2;
   LoggingFilterInterpreterTestInterpreter* base_interpreter2 =
-      new LoggingFilterInterpreterTestInterpreter;
-  LoggingFilterInterpreter interpreter2(NULL, base_interpreter2);
+      new LoggingFilterInterpreterTestInterpreter(&prop_reg2);
+  LoggingFilterInterpreter interpreter2(&prop_reg2, base_interpreter2);
 
-  ActivityReplay replay;
+  ActivityReplay replay(&prop_reg2);
   replay.Parse(initial_log);
 
   base_interpreter2->expected_hwstate_ = &hardware_state;

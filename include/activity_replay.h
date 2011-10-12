@@ -18,15 +18,18 @@
 
 namespace gestures {
 
+class PropRegistry;
+
 class ActivityReplay {
  public:
-  ActivityReplay();
+  explicit ActivityReplay(PropRegistry* prop_reg);
   // Returns true on success.
   bool Parse(const std::string& data);
   void Replay(Interpreter* interpreter);
 
  private:
   // These return true on success
+  bool ParseProperties(DictionaryValue* dict);
   bool ParseHardwareProperties(DictionaryValue* obj,
                                HardwareProperties* out_props);
   bool ParseEntry(DictionaryValue* entry);
@@ -41,6 +44,7 @@ class ActivityReplay {
 
   ActivityLog log_;
   HardwareProperties hwprops_;
+  PropRegistry* prop_reg_;
 };
 
 }  // namespace gestures
