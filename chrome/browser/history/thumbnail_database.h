@@ -225,6 +225,7 @@ class ThumbnailDatabase {
  private:
   friend class ExpireHistoryBackend;
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion4);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion5);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
 
   // Creates the thumbnail table, returning true if the table already exists
@@ -240,11 +241,17 @@ class ThumbnailDatabase {
   // need to copy the favicons between two database files.
   bool InitFaviconsTable(sql::Connection* db, bool is_temporary);
 
+  // Helper function to handle cleanup on upgrade failures.
+  sql::InitStatus CantUpgradeToVersion(int cur_version);
+
   // Adds support for the new metadata on web page thumbnails.
   bool UpgradeToVersion3();
 
   // Adds support for the icon_type in favicon table.
   bool UpgradeToVersion4();
+
+  // Adds support for sizes in favicon table.
+  bool UpgradeToVersion5();
 
   // Migrates the icon mapping data from URL database to Thumbnail database.
   // Return whether the migration succeeds.

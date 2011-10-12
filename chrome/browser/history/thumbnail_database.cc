@@ -39,12 +39,19 @@ static void FillIconMapping(const sql::Statement& statement,
 namespace history {
 
 // Version number of the database.
-static const int kCurrentVersionNumber = 4;
-static const int kCompatibleVersionNumber = 4;
+static const int kCurrentVersionNumber = 5;
+static const int kCompatibleVersionNumber = 5;
 
 ThumbnailDatabase::ThumbnailDatabase()
     : history_publisher_(NULL),
       use_top_sites_(false) {
+}
+
+sql::InitStatus ThumbnailDatabase::CantUpgradeToVersion(int cur_version) {
+  LOG(WARNING) << "Unable to update to thumbnail database to version 4" <<
+               cur_version << ".";
+  db_.Close();
+  return sql::INIT_FAILURE;
 }
 
 ThumbnailDatabase::~ThumbnailDatabase() {
@@ -90,21 +97,20 @@ sql::InitStatus ThumbnailDatabase::Init(
 
   int cur_version = meta_table_.GetVersionNumber();
   if (cur_version == 2) {
-    if (!UpgradeToVersion3()) {
-      LOG(WARNING) << "Unable to update to thumbnail database to version 3.";
-      db_.Close();
-      return sql::INIT_FAILURE;
-    }
     ++cur_version;
+    if (!UpgradeToVersion3())
+      return CantUpgradeToVersion(cur_version);
   }
 
   if (cur_version == 3) {
-    if (!UpgradeToVersion4() || !MigrateIconMappingData(url_db)) {
-      LOG(WARNING) << "Unable to update to thumbnail database to version 4.";
-      db_.Close();
-      return sql::INIT_FAILURE;
-    }
     ++cur_version;
+    if (!UpgradeToVersion4() || !MigrateIconMappingData(url_db))
+      return CantUpgradeToVersion(cur_version);
+  }
+
+  if (cur_version == 4) {
+    if (!UpgradeToVersion5())
+      return CantUpgradeToVersion(cur_version);
   }
 
   LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
@@ -199,10 +205,10 @@ bool ThumbnailDatabase::InitFaviconsTable(sql::Connection* db,
                "url LONGVARCHAR NOT NULL,"
                "last_updated INTEGER DEFAULT 0,"
                "image_data BLOB,"
-               "icon_type INTEGER DEFAULT 1)"); // Set the default as FAVICON
-                                                // to be consistent with table
-                                                // upgrade in
-                                                // UpgradeToVersion4().
+               // Set the default icon_type as FAVICON to be consistent with
+               // table upgrade in UpgradeToVersion4().
+               "icon_type INTEGER DEFAULT 1,"
+               "sizes LONGVARCHAR)");
     if (!db->Execute(sql.c_str()))
       return false;
   }
@@ -740,6 +746,16 @@ bool ThumbnailDatabase::UpgradeToVersion4() {
   }
   meta_table_.SetVersionNumber(4);
   meta_table_.SetCompatibleVersionNumber(std::min(4, kCompatibleVersionNumber));
+  return true;
+}
+
+bool ThumbnailDatabase::UpgradeToVersion5() {
+  if (!db_.Execute("ALTER TABLE favicons ADD sizes LONGVARCHAR")) {
+    NOTREACHED();
+    return false;
+  }
+  meta_table_.SetVersionNumber(5);
+  meta_table_.SetCompatibleVersionNumber(std::min(5, kCompatibleVersionNumber));
   return true;
 }
 

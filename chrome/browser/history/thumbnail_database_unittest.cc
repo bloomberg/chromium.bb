@@ -286,6 +286,34 @@ TEST_F(ThumbnailDatabaseTest, UpgradeToVersion4) {
   EXPECT_EQ(id, icon_mapping.icon_id);
 }
 
+TEST_F(ThumbnailDatabaseTest, UpgradeToVersion5) {
+  ThumbnailDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
+  db.BeginTransaction();
+
+  const char* name = "favicons";
+  std::string sql;
+  sql.append("DROP TABLE IF EXISTS ");
+  sql.append(name);
+  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
+
+  sql.resize(0);
+  sql.append("CREATE TABLE ");
+  sql.append(name);
+  sql.append("("
+             "id INTEGER PRIMARY KEY,"
+             "url LONGVARCHAR NOT NULL,"
+             "last_updated INTEGER DEFAULT 0,"
+             "image_data BLOB,"
+             "icon_type INTEGER DEFAULT 1)");
+  ASSERT_TRUE(db.db_.Execute(sql.c_str()));
+
+  ASSERT_TRUE(db.UpgradeToVersion5());
+
+  sql = "SELECT sizes FROM favicons";
+  EXPECT_TRUE(db.db_.Execute(sql.c_str()));
+}
+
 TEST_F(ThumbnailDatabaseTest, TemporayIconMapping) {
   ThumbnailDatabase db;
 
