@@ -9910,7 +9910,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Manage your synced data on the Google Dashboard
       </message>
       <message name="IDS_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
-        Customize...
+        Advanced...
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
