@@ -6,12 +6,14 @@
 #define CONTENT_BROWSER_DEBUGGER_WORKER_DEVTOOLS_MANAGER_H_
 #pragma once
 
+#include <list>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
+#include "content/browser/worker_host/worker_service_observer.h"
 
 namespace IPC {
 class Message;
@@ -20,7 +22,7 @@ class DevToolsAgentHost;
 class WorkerDevToolsMessageFilter;
 
 // All methods are supposed to be called on the IO thread.
-class WorkerDevToolsManager {
+class WorkerDevToolsManager : private WorkerServiceObserver {
  public:
   // Returns the WorkerDevToolsManager singleton.
   static WorkerDevToolsManager* GetInstance();
@@ -30,7 +32,6 @@ class WorkerDevToolsManager {
       int worker_process_id,
       int worker_route_id);
 
-  void WorkerProcessDestroying(int worker_process_host_id);
   void ForwardToDevToolsClient(int worker_process_id,
                                int worker_route_id,
                                const IPC::Message& message);
@@ -39,11 +40,25 @@ class WorkerDevToolsManager {
                              const std::string& state);
  private:
   friend struct DefaultSingletonTraits<WorkerDevToolsManager>;
+  typedef std::pair<int, int> WorkerId;
   class AgentHosts;
+  class DetachedClientHosts;
   class WorkerDevToolsAgentHost;
 
   WorkerDevToolsManager();
-  ~WorkerDevToolsManager();
+  virtual ~WorkerDevToolsManager();
+
+  // WorkerServiceOberver implementation.
+  virtual void WorkerCreated(
+      WorkerProcessHost* process,
+      const WorkerProcessHost::WorkerInstance& instance) OVERRIDE;
+  virtual void WorkerDestroyed(
+      WorkerProcessHost* process,
+      const WorkerProcessHost::WorkerInstance& instance) OVERRIDE;
+  virtual void WorkerContextStarted(WorkerProcessHost* process,
+                                    int worker_route_id) OVERRIDE;
+
+  void RemoveInspectedWorkerData(const WorkerId& id);
 
   void RegisterDevToolsAgentHostForWorker(int worker_process_id,
                                           int worker_route_id);
@@ -62,9 +77,32 @@ class WorkerDevToolsManager {
                                               int worker_route_id);
   static void NotifyWorkerDestroyedOnUIThread(int worker_process_id,
                                               int worker_route_id);
+  static void SendResumeToWorker(const WorkerId& id);
 
   class InspectedWorkersList;
   scoped_ptr<InspectedWorkersList> inspected_workers_;
+
+  struct TerminatedInspectedWorker;
+  typedef std::list<TerminatedInspectedWorker> TerminatedInspectedWorkers;
+  // List of terminated workers for which there may be a devtools client on
+  // the UI thread. Worker entry is added into this list when inspected worker
+  // is terminated and will be removed in one of two cases:
+  // - shared worker with the same URL and name is started(in wich case we will
+  // try to reattach existing DevTools client to the new worker).
+  // - DevTools client which was inspecting terminated worker is closed on the
+  // UI thread and and WorkerDevToolsManager is notified about that on the IO
+  // thread.
+  TerminatedInspectedWorkers terminated_workers_;
+
+  typedef std::map<WorkerId, WorkerId> PausedWorkers;
+  // Map from old to new worker id for the inspected workers that have been
+  // terminated and started again in paused state. Worker data will be removed
+  // from this list in one of two cases:
+  // - DevTools client is closed on the UI thread, WorkerDevToolsManager was
+  // notified about that on the IO thread and sent "resume" message to the
+  // worker.
+  // - Existing DevTools client was reattached to the new worker.
+  PausedWorkers paused_workers_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsManager);
 };

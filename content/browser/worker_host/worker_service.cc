@@ -13,6 +13,7 @@
 #include "content/browser/resource_context.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/browser/worker_host/worker_service_observer.h"
 #include "content/common/content_switches.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
@@ -31,6 +32,8 @@ WorkerService::WorkerService() : next_worker_route_id_(0) {
 }
 
 WorkerService::~WorkerService() {
+  // The observers in observers_ can't be used here because they might be
+  // gone already.
 }
 
 void WorkerService::OnWorkerMessageFilterClosing(WorkerMessageFilter* filter) {
@@ -323,6 +326,8 @@ bool WorkerService::CreateWorkerFromInstance(
   // DCHECK(worker->request_context() == instance.request_context());
 
   worker->CreateWorker(instance);
+  FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
+                    WorkerCreated(worker, instance));
   return true;
 }
 
@@ -487,6 +492,29 @@ const WorkerProcessHost::WorkerInstance* WorkerService::FindWorkerInstance(
     return instance == worker->instances().end() ? NULL : &*instance;
   }
   return NULL;
+}
+
+void WorkerService::AddObserver(WorkerServiceObserver* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  observers_.AddObserver(observer);
+}
+
+void WorkerService::RemoveObserver(WorkerServiceObserver* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  observers_.RemoveObserver(observer);
+}
+
+void WorkerService::NotifyWorkerDestroyed(
+    WorkerProcessHost* process,
+    const WorkerProcessHost::WorkerInstance& instance) {
+  FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
+                    WorkerDestroyed(process, instance));
+}
+
+void WorkerService::NotifyWorkerContextStarted(WorkerProcessHost* process,
+                                               int worker_route_id) {
+  FOR_EACH_OBSERVER(WorkerServiceObserver, observers_,
+                    WorkerContextStarted(process, worker_route_id));
 }
 
 WorkerProcessHost::WorkerInstance*

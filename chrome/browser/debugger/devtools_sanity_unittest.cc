@@ -24,6 +24,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/browser/worker_host/worker_service.h"
+#include "content/browser/worker_host/worker_service_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "net/test/test_server.h"
@@ -267,10 +269,37 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
  protected:
   struct WorkerData : public base::RefCountedThreadSafe<WorkerData> {
-    WorkerData() : worker_process_id(0), worker_route_id(0), valid(false) {}
+    WorkerData() : worker_process_id(0), worker_route_id(0) {}
     int worker_process_id;
     int worker_route_id;
-    bool valid;
+  };
+
+  class WorkerCreationObserver : public WorkerServiceObserver {
+   public:
+    explicit WorkerCreationObserver(WorkerData* worker_data)
+        : worker_data_(worker_data) {
+    }
+
+   private:
+    virtual ~WorkerCreationObserver() {}
+
+    virtual void WorkerCreated (
+        WorkerProcessHost* process,
+        const WorkerProcessHost::WorkerInstance& instance) OVERRIDE {
+      worker_data_->worker_process_id = process->id();
+      worker_data_->worker_route_id = instance.worker_route_id();
+      WorkerService::GetInstance()->RemoveObserver(this);
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          new MessageLoop::QuitTask);
+      delete this;
+    }
+    virtual void WorkerDestroyed(
+        WorkerProcessHost*,
+        const WorkerProcessHost::WorkerInstance&) OVERRIDE {}
+    virtual void WorkerContextStarted(
+        WorkerProcessHost*,
+        int worker_route_id) OVERRIDE {}
+    scoped_refptr<WorkerData> worker_data_;
   };
 
   void RunTest(const char* test_name, const char* test_page) {
@@ -284,8 +313,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   }
 
   static void WaitForFirstSharedWorkerOnIOThread(
-      scoped_refptr<WorkerData> worker_data,
-      int attempt) {
+      scoped_refptr<WorkerData> worker_data) {
     BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
     for (; !iter.Done(); ++iter) {
       WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
@@ -296,30 +324,21 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
           continue;
         worker_data->worker_process_id = worker->id();
         worker_data->worker_route_id = i->worker_route_id();
-        worker_data->valid = true;
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
             new MessageLoop::QuitTask);
         return;
       }
     }
-    if (attempt > TestTimeouts::action_timeout_ms() /
-            TestTimeouts::tiny_timeout_ms())
-      FAIL() << "Shared worker not found.";
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        NewRunnableFunction(
-            &WaitForFirstSharedWorkerOnIOThread,
-            worker_data,
-            attempt + 1),
-        TestTimeouts::tiny_timeout_ms());
+
+    WorkerService::GetInstance()->AddObserver(
+        new WorkerCreationObserver(worker_data.get()));
   }
 
   void OpenDevToolsWindowForFirstSharedWorker() {
     scoped_refptr<WorkerData> worker_data(new WorkerData());
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
-        &WaitForFirstSharedWorkerOnIOThread, worker_data, 1));
+        &WaitForFirstSharedWorkerOnIOThread, worker_data));
     ui_test_utils::RunMessageLoop();
-    ASSERT_TRUE(worker_data->valid);
 
     Profile* profile = browser()->profile();
     window_ = DevToolsWindow::CreateDevToolsWindowForWorker(profile);

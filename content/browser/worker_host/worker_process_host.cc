@@ -110,6 +110,7 @@ WorkerProcessHost::~WorkerProcessHost() {
           new WorkerCrashTask(parent_iter->render_process_id(),
                               parent_iter->render_view_id()));
     }
+    WorkerService::GetInstance()->NotifyWorkerDestroyed(this, *i);
   }
 
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());
@@ -344,6 +345,7 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
       }
 
       if (message.type() == WorkerHostMsg_WorkerContextDestroyed::ID) {
+        WorkerService::GetInstance()->NotifyWorkerDestroyed(this, *i);
         instances_.erase(i);
         UpdateTitle();
       }
@@ -438,6 +440,8 @@ void WorkerProcessHost::RelayMessage(
     IPC::Message* new_message = new IPC::Message(message);
     new_message->set_routing_id(route_id);
     filter->Send(new_message);
+    if (message.type() == WorkerMsg_StartWorkerContext::ID)
+      WorkerService::GetInstance()->NotifyWorkerContextStarted(this, route_id);
     return;
   }
 }

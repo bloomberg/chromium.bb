@@ -18,12 +18,6 @@ WorkerDevToolsMessageFilter::WorkerDevToolsMessageFilter(
 WorkerDevToolsMessageFilter::~WorkerDevToolsMessageFilter() {
 }
 
-void WorkerDevToolsMessageFilter::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
-  WorkerDevToolsManager::GetInstance()->WorkerProcessDestroying(
-      worker_process_host_id_);
-}
-
 bool WorkerDevToolsMessageFilter::OnMessageReceived(
     const IPC::Message& message,
     bool* message_was_ok) {

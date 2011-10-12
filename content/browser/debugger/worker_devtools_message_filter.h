@@ -17,7 +17,6 @@ class WorkerDevToolsMessageFilter : public BrowserMessageFilter {
   virtual ~WorkerDevToolsMessageFilter();
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing();
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
   // Message handlers.

@@ -13,15 +13,12 @@
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
+#include "content/browser/worker_host/worker_service.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
-
-namespace {
-typedef std::pair<int, int> WorkerId;
-}
 
 class WorkerDevToolsManager::AgentHosts : private NotificationObserver {
 public:
@@ -73,6 +70,17 @@ private:
 
 WorkerDevToolsManager::AgentHosts*
     WorkerDevToolsManager::AgentHosts::instance_ = NULL;
+
+
+struct WorkerDevToolsManager::TerminatedInspectedWorker {
+  TerminatedInspectedWorker(WorkerId id, const GURL& url, const string16& name)
+      : old_worker_id(id),
+        worker_url(url),
+        worker_name(name) {}
+  WorkerId old_worker_id;
+  GURL worker_url;
+  string16 worker_name;
+};
 
 
 class WorkerDevToolsManager::WorkerDevToolsAgentHost
@@ -133,6 +141,77 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
   DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsAgentHost);
 };
 
+
+class WorkerDevToolsManager::DetachedClientHosts {
+ public:
+  static void WorkerReloaded(WorkerId old_id, WorkerId new_id) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (instance_ && instance_->ReattachClient(old_id, new_id))
+      return;
+    RemovePendingWorkerData(old_id);
+  }
+
+  static void WorkerDestroyed(WorkerId id) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    WorkerDevToolsAgentHost* agent = AgentHosts::GetAgentHost(id);
+    if (!agent) {
+      RemovePendingWorkerData(id);
+      return;
+    }
+    int cookie = DevToolsManager::GetInstance()->DetachClientHost(agent);
+    if (cookie == -1) {
+      RemovePendingWorkerData(id);
+      return;
+    }
+    if (!instance_)
+      new DetachedClientHosts();
+    instance_->worker_id_to_cookie_[id] = cookie;
+  }
+
+ private:
+  DetachedClientHosts() {
+    instance_ = this;
+  }
+  ~DetachedClientHosts() {
+    instance_ = NULL;
+  }
+
+  bool ReattachClient(WorkerId old_id, WorkerId new_id) {
+    WorkerIdToCookieMap::iterator it = worker_id_to_cookie_.find(old_id);
+    if (it == worker_id_to_cookie_.end())
+      return false;
+    DevToolsAgentHost* agent =
+        WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+            new_id.first,
+            new_id.second);
+    DevToolsManager::GetInstance()->AttachClientHost(
+        it->second,
+        agent);
+    worker_id_to_cookie_.erase(it);
+    if (worker_id_to_cookie_.empty())
+      delete this;
+    return true;
+  }
+
+  static void RemovePendingWorkerData(WorkerId id) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableFunction(RemoveInspectedWorkerDataOnIOThread, id));
+  }
+
+  static void RemoveInspectedWorkerDataOnIOThread(WorkerId id) {
+    WorkerDevToolsManager::GetInstance()->RemoveInspectedWorkerData(id);
+  }
+
+  static DetachedClientHosts* instance_;
+  typedef std::map<WorkerId, int> WorkerIdToCookieMap;
+  WorkerIdToCookieMap worker_id_to_cookie_;
+};
+
+WorkerDevToolsManager::DetachedClientHosts*
+    WorkerDevToolsManager::DetachedClientHosts::instance_ = NULL;
+
+
 void WorkerDevToolsManager::AgentHosts::Observe(int type,
                                                 const NotificationSource&,
                                                 const NotificationDetails&) {
@@ -163,26 +242,12 @@ class WorkerDevToolsManager::InspectedWorkersList {
     return it->host;
   }
 
-  WorkerProcessHost* RemoveInstance(int host_id, int route_id) {
+  bool RemoveInstance(int host_id, int route_id) {
     Entries::iterator it = FindEntry(host_id, route_id);
     if (it == map_.end())
-      return NULL;
-    WorkerProcessHost* host = it->host;
+      return false;
     map_.erase(it);
-    return host;
-  }
-
-  void WorkerDevToolsMessageFilterClosing(int worker_process_id) {
-    Entries::iterator it = map_.begin();
-    while (it != map_.end()) {
-      if (it->host->id() == worker_process_id) {
-        NotifyWorkerDestroyedOnIOThread(
-                it->host->id(),
-                it->route_id);
-        it = map_.erase(it);
-      } else
-        ++it;
-    }
+    return true;
   }
 
  private:
@@ -228,9 +293,85 @@ DevToolsAgentHost* WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
 
 WorkerDevToolsManager::WorkerDevToolsManager()
     : inspected_workers_(new InspectedWorkersList()) {
+  WorkerService::GetInstance()->AddObserver(this);
 }
 
 WorkerDevToolsManager::~WorkerDevToolsManager() {
+}
+
+void WorkerDevToolsManager::WorkerCreated(
+    WorkerProcessHost* worker,
+    const WorkerProcessHost::WorkerInstance& instance) {
+  for (TerminatedInspectedWorkers::iterator it = terminated_workers_.begin();
+       it != terminated_workers_.end(); ++it) {
+    if (instance.Matches(it->worker_url, it->worker_name,
+                         instance.resource_context())) {
+      worker->Send(new DevToolsAgentMsg_PauseWorkerContextOnStart(
+          instance.worker_route_id()));
+      WorkerId new_worker_id(worker->id(), instance.worker_route_id());
+      paused_workers_[new_worker_id] = it->old_worker_id;
+      terminated_workers_.erase(it);
+      return;
+    }
+  }
+}
+
+void WorkerDevToolsManager::WorkerDestroyed(
+    WorkerProcessHost* worker,
+    const WorkerProcessHost::WorkerInstance& instance) {
+  if (!instance.shared())
+    return;
+  if (!inspected_workers_->RemoveInstance(worker->id(),
+                                          instance.worker_route_id())) {
+    return;
+  }
+
+  WorkerId worker_id(worker->id(), instance.worker_route_id());
+  terminated_workers_.push_back(TerminatedInspectedWorker(
+      worker_id,
+      instance.url(),
+      instance.name()));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          DetachedClientHosts::WorkerDestroyed,
+          worker_id));
+}
+
+void WorkerDevToolsManager::WorkerContextStarted(WorkerProcessHost* process,
+                                                 int worker_route_id) {
+  WorkerId new_worker_id(process->id(), worker_route_id);
+  PausedWorkers::iterator it = paused_workers_.find(new_worker_id);
+  if (it == paused_workers_.end())
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          DetachedClientHosts::WorkerReloaded,
+          it->second,
+          new_worker_id));
+  paused_workers_.erase(it);
+}
+
+void WorkerDevToolsManager::RemoveInspectedWorkerData(
+    const WorkerId& id) {
+  for (TerminatedInspectedWorkers::iterator it = terminated_workers_.begin();
+       it != terminated_workers_.end(); ++it) {
+    if (it->old_worker_id == id) {
+      terminated_workers_.erase(it);
+      return;
+    }
+  }
+
+  for (PausedWorkers::iterator it = paused_workers_.begin();
+       it != paused_workers_.end(); ++it) {
+    if (it->second == id) {
+      SendResumeToWorker(it->first);
+      paused_workers_.erase(it);
+      return;
+    }
+  }
 }
 
 static WorkerProcessHost* FindWorkerProcessHostForWorker(
@@ -291,12 +432,6 @@ void WorkerDevToolsManager::SaveAgentRuntimeState(int worker_process_id,
           worker_process_id,
           worker_route_id,
           state));
-}
-
-void WorkerDevToolsManager::WorkerProcessDestroying(
-    int worker_process_id) {
-  inspected_workers_->WorkerDevToolsMessageFilterClosing(
-      worker_process_id);
 }
 
 void WorkerDevToolsManager::ForwardToWorkerDevToolsAgent(
@@ -360,3 +495,15 @@ void WorkerDevToolsManager::NotifyWorkerDestroyedOnUIThread(
   if (host)
     host->WorkerDestroyed();
 }
+
+// static
+void WorkerDevToolsManager::SendResumeToWorker(const WorkerId& id) {
+  BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (; !iter.Done(); ++iter) {
+    if (iter->id() == id.first) {
+      iter->Send(new DevToolsAgentMsg_ResumeWorkerContext(id.second));
+      return;
+    }
+  }
+}
+

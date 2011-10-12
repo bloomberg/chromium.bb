@@ -535,6 +535,7 @@
     'browser/worker_host/worker_process_host.h',
     'browser/worker_host/worker_service.cc',
     'browser/worker_host/worker_service.h',
+    'browser/worker_host/worker_service_observer.h',
     'browser/zygote_host_linux.cc',
     'browser/zygote_host_linux.h',
     'browser/zygote_main_linux.cc',

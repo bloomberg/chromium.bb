@@ -94,6 +94,13 @@ IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_InspectElement,
                     int /* x */,
                     int /* y */)
 
+// Notifies worker devtools agent that it should pause worker context
+// when it starts and wait until either DevTools client is attached or
+// explicit resume notification is received.
+IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_PauseWorkerContextOnStart)
+
+// Worker DevTools agent should resume worker execution.
+IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_ResumeWorkerContext)
 
 //-----------------------------------------------------------------------------
 // These are messages sent from the browser to the renderer.

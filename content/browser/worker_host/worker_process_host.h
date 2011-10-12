@@ -175,9 +175,9 @@ class WorkerProcessHost : public BrowserChildProcessHost {
 
   // Relays a message to the given endpoint.  Takes care of parsing the message
   // if it contains a message port and sending it a valid route id.
-  static void RelayMessage(const IPC::Message& message,
-                           WorkerMessageFilter* filter,
-                           int route_id);
+  void RelayMessage(const IPC::Message& message,
+                    WorkerMessageFilter* filter,
+                    int route_id);
 
   virtual bool CanShutdown();
 
