@@ -923,8 +923,8 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   if (show_8021x) {
     layout->StartRow(0, column_view_set_id);
     save_credentials_checkbox_ = new views::Checkbox(
-        UTF16ToWide(l10n_util::GetStringUTF16(
-            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS)));
+        l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS));
     layout->SkipColumns(1);
     layout->AddView(save_credentials_checkbox_);
   }
@@ -936,8 +936,8 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
        !wifi->RequiresUserProfile())) {
     layout->StartRow(0, column_view_set_id);
     share_network_checkbox_ = new views::Checkbox(
-        UTF16ToWide(l10n_util::GetStringUTF16(
-            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK)));
+        l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK));
     layout->SkipColumns(1);
     layout->AddView(share_network_checkbox_);
   }

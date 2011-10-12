@@ -60,7 +60,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
 
  protected:
   // Adds a new check-box as a child to the view.
-  views::Checkbox* AddCheckbox(const std::wstring& text, bool checked);
+  views::Checkbox* AddCheckbox(const string16& text, bool checked);
 
   // Profile in which the shortcuts will be created.
   Profile* profile_;

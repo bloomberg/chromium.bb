@@ -5,7 +5,6 @@
 #include "views/controls/button/radio_button.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "views/widget/widget.h"
 
@@ -15,7 +14,7 @@ namespace views {
 const char RadioButton::kViewClassName[] = "views/RadioButton";
 
 RadioButton::RadioButton(const string16& label, int group_id)
-    : Checkbox(UTF16ToWideHack(label)) {
+    : Checkbox(label) {
   SetGroup(group_id);
   set_focusable(true);
 }

@@ -1225,7 +1225,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
       contents_ = new View;
       button1_ = new NativeTextButton(this, L"Button1");
       button2_ = new NativeTextButton(this, L"Button2");
-      checkbox_ = new Checkbox(L"My checkbox");
+      checkbox_ = new Checkbox(ASCIIToUTF16("My checkbox"));
       button_drop_ = new ButtonDropDown(this, mock_menu_model_);
       contents_->AddChildView(button1_);
       contents_->AddChildView(button2_);

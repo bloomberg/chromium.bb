@@ -476,7 +476,7 @@ void FocusTraversalTest::InitContentView() {
   content_view_->set_background(
       Background::CreateSolidBackground(SK_ColorWHITE));
 
-  Checkbox* cb = new Checkbox(L"This is a checkbox");
+  Checkbox* cb = new Checkbox(ASCIIToUTF16("This is a checkbox"));
   content_view_->AddChildView(cb);
   // In this fast paced world, who really has time for non hard-coded layout?
   cb->SetBounds(10, 10, 200, 20);
@@ -555,7 +555,7 @@ void FocusTraversalTest::InitContentView() {
   left_container_->AddChildView(button);
   y += 40;
 
-  cb =  new Checkbox(L"This is another check box");
+  cb =  new Checkbox(ASCIIToUTF16("This is another check box"));
   cb->SetBounds(label_x + label_width + 5, y, 180, 20);
   cb->set_id(kFruitCheckBoxID);
   left_container_->AddChildView(cb);
@@ -666,17 +666,17 @@ void FocusTraversalTest::InitContentView() {
   // Left bottom box with style checkboxes.
   View* contents = new View();
   contents->set_background(Background::CreateSolidBackground(SK_ColorWHITE));
-  cb = new Checkbox(L"Bold");
+  cb = new Checkbox(ASCIIToUTF16("Bold"));
   contents->AddChildView(cb);
   cb->SetBounds(10, 10, 50, 20);
   cb->set_id(kBoldCheckBoxID);
 
-  cb = new Checkbox(L"Italic");
+  cb = new Checkbox(ASCIIToUTF16("Italic"));
   contents->AddChildView(cb);
   cb->SetBounds(70, 10, 50, 20);
   cb->set_id(kItalicCheckBoxID);
 
-  cb = new Checkbox(L"Underlined");
+  cb = new Checkbox(ASCIIToUTF16("Underlined"));
   contents->AddChildView(cb);
   cb->SetBounds(130, 10, 70, 20);
   cb->set_id(kUnderlinedCheckBoxID);
@@ -878,7 +878,7 @@ class TestNativeButton : public NativeTextButton {
 
 class TestCheckbox : public Checkbox {
  public:
-  explicit TestCheckbox(const std::wstring& text) : Checkbox(text) {
+  explicit TestCheckbox(const string16& text) : Checkbox(text) {
   };
   virtual gfx::NativeView TestGetNativeControlView() {
     return GetWidget()->GetNativeView();

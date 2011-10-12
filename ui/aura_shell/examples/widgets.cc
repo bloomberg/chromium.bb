@@ -54,11 +54,12 @@ class WidgetsWindow : public views::WidgetDelegateView {
 WidgetsWindow::WidgetsWindow()
     : button_(new views::NativeTextButton(NULL, L"Button")),
       disabled_button_(new views::NativeTextButton(NULL, L"Disabled button")),
-      checkbox_(new views::Checkbox(L"Checkbox")),
-      checkbox_disabled_(new views::Checkbox(L"Checkbox disabled")),
-      checkbox_checked_(new views::Checkbox(L"Checkbox checked")),
-      checkbox_checked_disabled_(
-          new views::Checkbox(L"Checkbox checked disabled")),
+      checkbox_(new views::Checkbox(ASCIIToUTF16("Checkbox"))),
+      checkbox_disabled_(new views::Checkbox(
+          ASCIIToUTF16("Checkbox disabled"))),
+      checkbox_checked_(new views::Checkbox(ASCIIToUTF16("Checkbox checked"))),
+      checkbox_checked_disabled_(new views::Checkbox(
+          ASCIIToUTF16("Checkbox checked disabled"))),
       radio_button_(new views::RadioButton(ASCIIToUTF16("Radio button"), 0)),
       radio_button_disabled_(new views::RadioButton(
           ASCIIToUTF16("Radio button disabled"), 0)),

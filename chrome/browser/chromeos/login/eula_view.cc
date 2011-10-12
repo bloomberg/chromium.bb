@@ -307,7 +307,7 @@ void EulaView::Init() {
 
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, SINGLE_CONTROL_WITH_SHIFT_ROW);
-  usage_statistics_checkbox_ = new views::Checkbox(L"");
+  usage_statistics_checkbox_ = new views::Checkbox(string16());
   usage_statistics_checkbox_->SetMultiLine(true);
   usage_statistics_checkbox_->SetChecked(
       actor_->screen()->IsUsageStatsEnabled());

@@ -252,27 +252,27 @@ void CreateApplicationShortcutView::InitControls() {
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
   create_shortcuts_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
-  desktop_check_box_ = AddCheckbox(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX)),
+  desktop_check_box_ = AddCheckbox(
+      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX),
       profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateOnDesktop));
 
   menu_check_box_ = NULL;
   quick_launch_check_box_ = NULL;
 
 #if defined(OS_WIN)
-  menu_check_box_ = AddCheckbox(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX)),
+  menu_check_box_ = AddCheckbox(
+      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX),
       profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
 
   quick_launch_check_box_ = AddCheckbox(
       (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX)) :
-        UTF16ToWide(l10n_util::GetStringUTF16(
-            IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX)),
+        l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX) :
+        l10n_util::GetStringUTF16(
+            IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
       profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInQuickLaunchBar));
 #elif defined(OS_POSIX)
   menu_check_box_ = AddCheckbox(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_MENU_CHKBOX)),
+      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_MENU_CHKBOX),
       profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
 #endif
 
@@ -387,7 +387,7 @@ views::View* CreateApplicationShortcutView::GetContentsView() {
 }
 
 views::Checkbox* CreateApplicationShortcutView::AddCheckbox(
-    const std::wstring& text, bool checked) {
+    const string16& text, bool checked) {
   views::Checkbox* checkbox = new views::Checkbox(text);
   checkbox->SetChecked(checked);
   checkbox->set_listener(this);

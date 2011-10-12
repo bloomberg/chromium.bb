@@ -9,11 +9,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
-#include "views/controls/label.h"
 #include "views/controls/button/checkbox.h"
+#include "views/controls/label.h"
 #include "views/examples/example_combobox_model.h"
-#include "views/view.h"
 #include "views/layout/grid_layout.h"
+#include "views/view.h"
 
 namespace {
 
@@ -193,10 +193,10 @@ void TextExample::CreateExampleView(views::View* container) {
                          arraysize(kTextExamples));
 
   layout->StartRow(0, 0);
-  multiline_checkbox_ = new views::Checkbox(L"Multiline");
+  multiline_checkbox_ = new views::Checkbox(ASCIIToUTF16("Multiline"));
   multiline_checkbox_->set_listener(this);
   layout->AddView(multiline_checkbox_);
-  break_checkbox_ = new views::Checkbox(L"Character Break");
+  break_checkbox_ = new views::Checkbox(ASCIIToUTF16("Character Break"));
   break_checkbox_->set_listener(this);
   layout->AddView(break_checkbox_);
 

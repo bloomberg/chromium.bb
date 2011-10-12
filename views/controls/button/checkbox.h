@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
+#include "base/string16.h"
 #include "views/controls/button/text_button.h"
 
 namespace views {
@@ -16,10 +18,9 @@ namespace views {
 // platform specific objects to replicate the native platforms looks and feel.
 class VIEWS_EXPORT Checkbox : public TextButtonBase {
  public:
-  // The button's class name.
   static const char kViewClassName[];
 
-  explicit Checkbox(const std::wstring& label);
+  explicit Checkbox(const string16& label);
   virtual ~Checkbox();
 
   // Sets a listener for this checkbox. Checkboxes aren't required to have them

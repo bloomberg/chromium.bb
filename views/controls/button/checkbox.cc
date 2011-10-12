@@ -5,6 +5,7 @@
 #include "views/controls/button/checkbox.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/label.h"
@@ -19,8 +20,8 @@ static const int kCheckboxLabelSpacing = 4;
 ////////////////////////////////////////////////////////////////////////////////
 // Checkbox, public:
 
-Checkbox::Checkbox(const std::wstring& label)
-    : TextButtonBase(NULL, label),
+Checkbox::Checkbox(const string16& label)
+    : TextButtonBase(NULL, UTF16ToWideHack(label)),
       checked_(false) {
   set_border(new TextButtonNativeThemeBorder(this));
   set_focusable(true);
