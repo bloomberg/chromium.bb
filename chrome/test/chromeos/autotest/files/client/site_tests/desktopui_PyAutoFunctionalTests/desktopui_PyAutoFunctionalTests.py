@@ -50,7 +50,7 @@ class desktopui_PyAutoFunctionalTests(chrome_test.ChromeTestBase):
             # Allow browser restart by its babysitter (session_manager)
             if os.path.exists(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE):
                 os.remove(constants.DISABLE_BROWSER_RESTART_MAGIC_FILE)
-            login.nuke_login_manager()
+            cros_ui.nuke()
         assert os.path.exists(minidumps_file)
 
         # Setup /tmp/disable_chrome_restart

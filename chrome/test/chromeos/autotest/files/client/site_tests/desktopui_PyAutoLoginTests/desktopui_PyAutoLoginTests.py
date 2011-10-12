@@ -53,7 +53,7 @@ class desktopui_PyAutoLoginTests(chrome_test.ChromeTestBase):
         minidumps_file = '/mnt/stateful_partition/etc/enable_chromium_minidumps'
         if not os.path.exists(minidumps_file):
             open(minidumps_file, 'w').close()
-            login.nuke_login_manager()
+            cros_ui.nuke()
         assert os.path.exists(minidumps_file)
 
     def run_once(self):
