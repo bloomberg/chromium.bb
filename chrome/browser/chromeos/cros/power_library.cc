@@ -5,14 +5,12 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 
 #include "base/basictypes.h"
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "content/browser/browser_thread.h"
 #include "third_party/cros/chromeos_power.h"
 #include "third_party/cros/chromeos_resume.h"
@@ -22,11 +20,16 @@ namespace chromeos {
 class PowerLibraryImpl : public PowerLibrary {
  public:
   PowerLibraryImpl()
-      : resume_status_connection_(NULL),
+      : power_status_connection_(NULL),
+        resume_status_connection_(NULL),
         status_(chromeos::PowerStatus()) {
   }
 
   virtual ~PowerLibraryImpl() {
+    if (power_status_connection_) {
+      chromeos::DisconnectPowerStatus(power_status_connection_);
+      power_status_connection_ = NULL;
+    }
     if (resume_status_connection_) {
       chromeos::DisconnectResume(resume_status_connection_);
       resume_status_connection_ = NULL;
@@ -36,6 +39,8 @@ class PowerLibraryImpl : public PowerLibrary {
   // Begin PowerLibrary implementation.
   virtual void Init() OVERRIDE {
     DCHECK(CrosLibrary::Get()->libcros_loaded());
+    power_status_connection_ =
+        chromeos::MonitorPowerStatus(&PowerStatusChangedHandler, this);
     resume_status_connection_ =
         chromeos::MonitorResume(&SystemResumedHandler, this);
   }
@@ -79,9 +84,14 @@ class PowerLibraryImpl : public PowerLibrary {
   }
 
   virtual void EnableScreenLock(bool enable) OVERRIDE {
-    // Make sure we run on FILE thread because chromeos::EnableScreenLock
+    // Make sure we run on FILE thread becuase chromeos::EnableScreenLock
     // would write power manager config file to disk.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          NewRunnableMethod(this, &PowerLibraryImpl::EnableScreenLock, enable));
+      return;
+    }
 
     chromeos::EnableScreenLock(enable);
   }
@@ -98,20 +108,6 @@ class PowerLibraryImpl : public PowerLibrary {
     // TODO(stevenjb): chromeos::RetrievePowerInformation has been deprecated;
     // we should add a mechanism to immediately request an update, probably
     // when we migrate the DBus code from libcros to here.
-  }
-
-  // PowerManagerClient::Observer implementation.
-  virtual void UpdatePowerStatus(const chromeos::PowerStatus& status) OVERRIDE {
-    // Make this is being called from UI thread.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-    DVLOG(1) << "Power lpo=" << status.line_power_on
-             << " sta=" << status.battery_state
-             << " per=" << status.battery_percentage
-             << " tte=" << status.battery_time_to_empty
-             << " ttf=" << status.battery_time_to_full;
-    status_ = status;
-    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(this));
   }
 
   // End PowerLibrary implementation.
@@ -143,14 +139,42 @@ class PowerLibraryImpl : public PowerLibrary {
     power->SystemResumed();
   }
 
+  void UpdatePowerStatus(const chromeos::PowerStatus& status) {
+    // Make sure we run on UI thread.
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(
+              this, &PowerLibraryImpl::UpdatePowerStatus, status));
+      return;
+    }
+
+    DVLOG(1) << "Power lpo=" << status.line_power_on
+             << " sta=" << status.battery_state
+             << " per=" << status.battery_percentage
+             << " tte=" << status.battery_time_to_empty
+             << " ttf=" << status.battery_time_to_full;
+    status_ = status;
+    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(this));
+  }
+
   void SystemResumed() {
     // Make sure we run on the UI thread.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &PowerLibraryImpl::SystemResumed));
+      return;
+    }
 
     FOR_EACH_OBSERVER(Observer, observers_, SystemResumed());
   }
 
   ObserverList<Observer> observers_;
+
+  // A reference to the power battery API, to allow callbacks when the battery
+  // status changes.
+  chromeos::PowerStatusConnection power_status_connection_;
 
   // A reference to the resume alerts.
   chromeos::ResumeConnection resume_status_connection_;
@@ -234,9 +258,6 @@ class PowerLibraryStubImpl : public PowerLibrary {
     } else {
       timer_.Stop();
     }
-  }
-
-  virtual void UpdatePowerStatus(const chromeos::PowerStatus& status) OVERRIDE {
   }
 
   // End PowerLibrary implementation.

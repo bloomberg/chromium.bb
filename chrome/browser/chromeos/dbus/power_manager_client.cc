@@ -6,14 +6,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
-#include "third_party/cros/chromeos_power.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-// TODO(sque): Remove chromeos_power.h, crosbug.com/16558
 
 namespace chromeos {
 
@@ -35,16 +32,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kBrightnessChangedSignal,
         base::Bind(&PowerManagerClientImpl::BrightnessChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    // Monitor the D-Bus signal for power supply polling signals.
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kPowerSupplyPollSignal,
-        base::Bind(&PowerManagerClientImpl::PowerSupplyPollReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
+        base::Bind(&PowerManagerClientImpl::BrightnessChangedConnected,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -88,15 +76,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
- private:
-  // Called when a dbus signal is initially connected.
-  void SignalConnected(const std::string& interface_name,
-                       const std::string& signal_name,
-                       bool success) {
-    LOG_IF(WARNING, !success) << "Failed to connect to signal "
-                              << signal_name << ".";
-  }
-
   // Called when a brightness change signal is received.
   void BrightnessChangedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
@@ -112,6 +91,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
             << ": user initiated " << user_initiated;
     FOR_EACH_OBSERVER(Observer, observers_,
                       BrightnessChanged(brightness_level, user_initiated));
+  }
+
+  // Called when the brightness change signal is initially connected.
+  void BrightnessChangedConnected(const std::string& interface_name,
+                                  const std::string& signal_name,
+                                  bool success) {
+    LOG_IF(WARNING, !success)
+        << "Failed to connect to brightness changed signal.";
   }
 
   // Called when a response for DecreaseScreenBrightness() is received.
@@ -130,53 +117,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
       return;
     }
     VLOG(1) << "screen brightness increased: " << response->ToString();
-  }
-
-  // Called when a power supply polling signal is received.
-  void PowerSupplyPollReceived(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
-    VLOG(1) << "Received power supply poll signal.";
-    GetPowerSupplyInfo();
-  }
-
-  // Gets the state of the power supply (line power and battery) from power
-  // manager.
-  void GetPowerSupplyInfo() {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kGetAllPropertiesMethod);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnPowerSupplyPoll,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  void OnPowerSupplyPoll(dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Error calling " << power_manager::kGetAllPropertiesMethod
-                 << ".";
-      return;
-    }
-    dbus::MessageReader reader(response);
-    chromeos::PowerStatus status;
-    bool battery_is_charged;
-    if (!reader.PopBool(&status.line_power_on) ||
-        !reader.PopDouble(&status.battery_energy) ||
-        !reader.PopDouble(&status.battery_energy_rate) ||
-        !reader.PopDouble(&status.battery_voltage) ||
-        !reader.PopInt64(&status.battery_time_to_empty) ||
-        !reader.PopInt64(&status.battery_time_to_full) ||
-        !reader.PopDouble(&status.battery_percentage) ||
-        !reader.PopBool(&status.battery_is_present) ||
-        !reader.PopBool(&battery_is_charged)) {
-      LOG(ERROR) << "Error reading response from powerd: "
-                 << response->ToString();
-      return;
-    }
-    status.battery_state = battery_is_charged ? BATTERY_STATE_FULLY_CHARGED
-                                               : BATTERY_STATE_UNKNOWN;
-
-    FOR_EACH_OBSERVER(Observer, observers_, UpdatePowerStatus(status));
   }
 
   dbus::ObjectProxy* power_manager_proxy_;

@@ -19,8 +19,6 @@ class Signal;
 
 namespace chromeos {
 
-struct PowerStatus;
-
 // PowerManagerClient is used to communicate with the power manager.
 class PowerManagerClient {
  public:
@@ -30,11 +28,7 @@ class PowerManagerClient {
     // Called when the brightness is changed.
     // |level| is of the range [0, 100].
     // |user_initiated| is true if the action is initiated by the user.
-    virtual void BrightnessChanged(int level, bool user_initiated) {}
-
-    // Called when power supply polling takes place.  |status| is a data
-    // structure that contains the current state of the power supply.
-    virtual void UpdatePowerStatus(const chromeos::PowerStatus& status) {}
+    virtual void BrightnessChanged(int level, bool user_initiated) = 0;
   };
 
   // Adds and removes the observer.
