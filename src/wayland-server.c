@@ -461,7 +461,6 @@ wl_input_device_end_grab(struct wl_input_device *device, uint32_t time)
 
 	interface = device->grab->interface;
 	interface->end(device->grab, time);
-	device->grab->input_device = NULL;
 	device->grab = NULL;
 
 	wl_list_remove(&device->grab_listener.link);
