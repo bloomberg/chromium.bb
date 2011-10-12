@@ -13,6 +13,7 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_factory.h"
@@ -24,7 +25,6 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/web_intent_service_data.h"
 
 using testing::_;
@@ -87,7 +87,7 @@ class WebIntentPickerMock : public WebIntentPicker {
 class WebIntentPickerFactoryMock : public WebIntentPickerFactory {
  public:
   MOCK_METHOD3(Create,
-               WebIntentPicker*(gfx::NativeWindow parent,
+               WebIntentPicker*(Browser* browser,
                                 TabContentsWrapper* wrapper,
                                 WebIntentPickerDelegate* delegate));
   MOCK_METHOD1(ClosePicker, void(WebIntentPicker* picker));

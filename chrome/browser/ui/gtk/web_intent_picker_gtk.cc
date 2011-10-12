@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/gtk/web_intent_picker_gtk.h"
 
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
@@ -63,13 +65,13 @@ void SetServiceButtonImage(GtkWidget* button, GdkPixbuf* pixbuf) {
 } // namespace
 
 // static
-WebIntentPicker* WebIntentPicker::Create(gfx::NativeWindow parent,
+WebIntentPicker* WebIntentPicker::Create(Browser* browser,
                                          TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate) {
-  return new WebIntentPickerGtk(parent, wrapper, delegate);
+  return new WebIntentPickerGtk(browser, wrapper, delegate);
 }
 
-WebIntentPickerGtk::WebIntentPickerGtk(gfx::NativeWindow parent,
+WebIntentPickerGtk::WebIntentPickerGtk(Browser* browser,
                                        TabContentsWrapper* wrapper,
                                        WebIntentPickerDelegate* delegate)
     : wrapper_(wrapper),
@@ -79,7 +81,8 @@ WebIntentPickerGtk::WebIntentPickerGtk(gfx::NativeWindow parent,
       bubble_(NULL) {
   DCHECK(delegate_ != NULL);
   BrowserWindowGtk* browser_window =
-      BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
+      BrowserWindowGtk::GetBrowserWindowForNativeWindow(
+          browser->window()->GetNativeHandle());
 
   GtkWidget* anchor = browser_window->
       GetToolbar()->GetLocationBarView()->location_icon_widget();

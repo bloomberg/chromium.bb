@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
@@ -133,13 +134,13 @@ void WebIntentPickerController::SetIntent(
   intent_id_ = intent_id;
 }
 
-void WebIntentPickerController::ShowDialog(gfx::NativeWindow parent,
+void WebIntentPickerController::ShowDialog(Browser* browser,
                                            const string16& action,
                                            const string16& type) {
   if (picker_ != NULL)
     return;
 
-  picker_ = picker_factory_->Create(parent, wrapper_, this);
+  picker_ = picker_factory_->Create(browser, wrapper_, this);
 
   // TODO(binji) Remove this check when there are implementations of the picker
   // for windows and mac.

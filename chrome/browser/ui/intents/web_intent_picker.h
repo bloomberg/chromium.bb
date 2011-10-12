@@ -9,8 +9,7 @@
 #include <stddef.h>
 #include <vector>
 
-#include "ui/gfx/native_widget_types.h"
-
+class Browser;
 class GURL;
 class SkBitmap;
 class TabContentsWrapper;
@@ -23,7 +22,7 @@ class WebIntentPicker {
 
   // Platform specific factory function. This function will automatically show
   // the picker.
-  static WebIntentPicker* Create(gfx::NativeWindow parent,
+  static WebIntentPicker* Create(Browser* browser,
                                  TabContentsWrapper* wrapper,
                                  WebIntentPickerDelegate* delegate);
 

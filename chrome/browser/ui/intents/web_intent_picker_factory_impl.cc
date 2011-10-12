@@ -16,13 +16,13 @@ WebIntentPickerFactoryImpl::~WebIntentPickerFactoryImpl() {
 }
 
 WebIntentPicker* WebIntentPickerFactoryImpl::Create(
-    gfx::NativeWindow parent,
+    Browser* browser,
     TabContentsWrapper* wrapper,
     WebIntentPickerDelegate* delegate) {
   // Only allow one picker per factory.
   DCHECK(picker_ == NULL);
 
-  picker_ = WebIntentPicker::Create(parent, wrapper, delegate);
+  picker_ = WebIntentPicker::Create(browser, wrapper, delegate);
   return picker_;
 }
 

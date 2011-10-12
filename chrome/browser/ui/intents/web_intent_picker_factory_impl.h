@@ -21,7 +21,7 @@ class WebIntentPickerFactoryImpl : public WebIntentPickerFactory {
 
   // WebIntentPickerFactory implementation.
   virtual WebIntentPicker* Create(
-      gfx::NativeWindow parent,
+      Browser* browser,
       TabContentsWrapper* wrapper,
       WebIntentPickerDelegate* delegate) OVERRIDE;
   virtual void ClosePicker(WebIntentPicker* picker) OVERRIDE;

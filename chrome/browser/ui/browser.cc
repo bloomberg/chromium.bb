@@ -3838,7 +3838,7 @@ void Browser::WebIntentDispatch(TabContents* tab,
   tcw->web_intent_picker_controller()->SetIntent(routing_id,
                                                  intent,
                                                  intent_id);
-  tcw->web_intent_picker_controller()->ShowDialog(window()->GetNativeHandle(),
+  tcw->web_intent_picker_controller()->ShowDialog(this,
                                                   intent.action, intent.type);
 }
 

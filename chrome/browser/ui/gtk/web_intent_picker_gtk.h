@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
-#include "ui/gfx/native_widget_types.h"
 
+class Browser;
 class CustomDrawButton;
 class GURL;
 class TabContents;
@@ -29,7 +29,7 @@ class WebIntentPickerDelegate;
 class WebIntentPickerGtk : public WebIntentPicker,
                            public BubbleDelegateGtk {
  public:
-  WebIntentPickerGtk(gfx::NativeWindow parent,
+  WebIntentPickerGtk(Browser* browser,
                      TabContentsWrapper* tab_contents,
                      WebIntentPickerDelegate* delegate);
   virtual ~WebIntentPickerGtk();

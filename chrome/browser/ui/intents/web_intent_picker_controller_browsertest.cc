@@ -53,7 +53,7 @@ class WebIntentPickerMock : public WebIntentPicker {
 class WebIntentPickerFactoryMock : public WebIntentPickerFactory {
  public:
   MOCK_METHOD3(Create,
-               WebIntentPicker*(gfx::NativeWindow parent,
+               WebIntentPicker*(Browser* browser,
                                 TabContentsWrapper* wrapper,
                                 WebIntentPickerDelegate* delegate));
   MOCK_METHOD1(ClosePicker, void(WebIntentPicker* picker));

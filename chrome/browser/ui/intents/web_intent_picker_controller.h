@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/web_intent_data.h"
 
+class Browser;
 class FaviconService;
 class GURL;
 class SkBitmap;
@@ -45,9 +45,9 @@ class WebIntentPickerController : public NotificationObserver,
                  const webkit_glue::WebIntentData& intent,
                  int intent_id);
 
-  // Shows the web intent picker for the window |parent|, given the intent
-  // |action| and MIME-type |type|.
-  void ShowDialog(gfx::NativeWindow parent,
+  // Shows the web intent picker for |browser|, given the intent |action| and
+  // MIME-type |type|.
+  void ShowDialog(Browser* browser,
                   const string16& action,
                   const string16& type);
 
