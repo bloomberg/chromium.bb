@@ -67,7 +67,9 @@ IN_PROC_BROWSER_TEST_F(GPUBrowserTest, MAYBE_BrowserTestCanLaunchWithOSMesa) {
             browser()->GetSelectedTabContents()->GetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(GPUBrowserTest, CanOpenPopupAndRenderWithWebGLCanvas) {
+// Test is flaky and timing out.  See crbug.com/99883
+IN_PROC_BROWSER_TEST_F(GPUBrowserTest,
+                       DISABLED_CanOpenPopupAndRenderWithWebGLCanvas) {
   ui_test_utils::DOMMessageQueue message_queue;
 
   ui_test_utils::NavigateToURL(
