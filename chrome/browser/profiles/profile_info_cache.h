@@ -62,7 +62,7 @@ class ProfileInfoCache : public ProfileInfoInterface {
   // Returns an avatar icon index that can be assigned to a newly created
   // profile. Note that the icon may not be unique since there are a limited
   // set of default icons.
-  int ChooseAvatarIconIndexForNewProfile();
+  size_t ChooseAvatarIconIndexForNewProfile() const;
 
   const FilePath& GetUserDataDir() const;
 
@@ -90,6 +90,15 @@ class ProfileInfoCache : public ProfileInfoInterface {
   std::vector<std::string>::iterator FindPositionForProfile(
       std::string search_key,
       const string16& search_name);
+
+  // Returns true if the given icon index is not in use by another profie.
+  bool IconIndexIsUnique(size_t icon_index) const;
+
+  // Tries to find an icon index that satisfies all the given conditions.
+  // Returns true if an icon was found, false otherwise.
+  bool ChooseAvatarIconIndexForNewProfile(bool allow_generic_icon,
+                                          bool must_be_unique,
+                                          size_t* out_icon_index) const;
 
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;

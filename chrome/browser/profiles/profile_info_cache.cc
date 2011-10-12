@@ -60,17 +60,8 @@ const int kDefaultAvatarIconResources[] = {
 
 const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
 
-// Returns true if the resource ID belongs to a generic avatar icon.
-bool IsAvatarIconGeneric(int icon_id) {
-  return icon_id == IDR_PROFILE_AVATAR_0 ||
-         icon_id == IDR_PROFILE_AVATAR_1 ||
-         icon_id == IDR_PROFILE_AVATAR_2 ||
-         icon_id == IDR_PROFILE_AVATAR_3 ||
-         icon_id == IDR_PROFILE_AVATAR_4 ||
-         icon_id == IDR_PROFILE_AVATAR_5 ||
-         icon_id == IDR_PROFILE_AVATAR_6 ||
-         icon_id == IDR_PROFILE_AVATAR_7;
-}
+// The first 8 icons are generic.
+const size_t kGenericIconCount = 8;
 
 } // namespace
 
@@ -228,30 +219,48 @@ string16 ProfileInfoCache::ChooseNameForNewProfile() {
   }
 }
 
-int ProfileInfoCache::ChooseAvatarIconIndexForNewProfile() {
-  // Start with a random icon to introduce variety.
-  size_t rand_start_index = base::RandInt(0, GetDefaultAvatarIconCount() - 1);
-  for (size_t icon_index = 0; icon_index < GetDefaultAvatarIconCount();
-       ++icon_index) {
-    size_t rand_icon_index =
-        (icon_index + rand_start_index) % GetDefaultAvatarIconCount();
-    if (IsAvatarIconGeneric(GetDefaultAvatarIconResourceIDAtIndex(
-        rand_icon_index)))
-      continue;
+bool ProfileInfoCache::IconIndexIsUnique(size_t icon_index) const {
+  for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
+    if (GetAvatarIconIndexOfProfileAtIndex(i) == icon_index)
+      return false;
+  }
+  return true;
+}
 
-    bool icon_found = false;
-    for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
-      if (GetAvatarIconIndexOfProfileAtIndex(i) == rand_icon_index) {
-        icon_found = true;
-        break;
-      }
+bool ProfileInfoCache::ChooseAvatarIconIndexForNewProfile(
+    bool allow_generic_icon,
+    bool must_be_unique,
+    size_t* out_icon_index) const {
+  size_t start = allow_generic_icon ? 0 : kGenericIconCount;
+  size_t end = GetDefaultAvatarIconCount();
+  size_t count = end - start;
+
+  int rand = base::RandInt(0, count);
+  for (size_t i = 0; i < count; ++i) {
+    size_t icon_index = start + (rand + i) %  count;
+    if (!must_be_unique || IconIndexIsUnique(icon_index)) {
+      *out_icon_index = icon_index;
+      return true;
     }
-    if (!icon_found)
-      return rand_icon_index;
   }
 
-  // If there's no unique icon then just use the random one.
-  return rand_start_index;
+  return false;
+}
+
+size_t ProfileInfoCache::ChooseAvatarIconIndexForNewProfile() const {
+  size_t icon_index = 0;
+  // Try to find a unique, non-generic icon.
+  if (ChooseAvatarIconIndexForNewProfile(false, true, &icon_index))
+    return icon_index;
+  // Try to find any unique icon.
+  if (ChooseAvatarIconIndexForNewProfile(true, true, &icon_index))
+    return icon_index;
+  // Settle for any random icon, even if it's not unique.
+  if (ChooseAvatarIconIndexForNewProfile(true, false, &icon_index))
+    return icon_index;
+
+  NOTREACHED();
+  return 0;
 }
 
 const FilePath& ProfileInfoCache::GetUserDataDir() const {
