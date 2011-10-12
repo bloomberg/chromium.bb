@@ -1412,6 +1412,12 @@ void View::SchedulePaintBoundsChanged(SchedulePaintType type) {
     // Otherwise, if the size changes or we don't have a layer then we need to
     // use SchedulePaint to invalidate the area occupied by the View.
     SchedulePaint();
+  } else if (parent_ && type == SCHEDULE_PAINT_SIZE_SAME) {
+    // The compositor doesn't Draw() until something on screen changes, so
+    // if our position changes but nothing is being animated on screen, then
+    // tell the compositor to redraw the scene. We know layer() exists due to
+    // the above if clause.
+    layer()->ScheduleDraw();
   }
 }
 
