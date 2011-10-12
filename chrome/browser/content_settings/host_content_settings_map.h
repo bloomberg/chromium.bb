@@ -14,17 +14,19 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/tuple.h"
-#include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_observer.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace content_settings {
 class ProviderInterface;
@@ -91,7 +93,7 @@ class HostContentSettingsMap
   // is transfered to the caller.
   //
   // This may be called on any thread.
-  Value* GetContentSettingValue(
+  base::Value* GetContentSettingValue(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
@@ -205,7 +207,16 @@ class HostContentSettingsMap
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
   friend class HostContentSettingsMapTest_NonDefaultSettings_Test;
 
+  typedef std::map<ProviderType, content_settings::ProviderInterface*>
+      ProviderMap;
+  typedef ProviderMap::iterator ProviderIterator;
+  typedef ProviderMap::const_iterator ConstProviderIterator;
+
   virtual ~HostContentSettingsMap();
+
+  ContentSetting GetDefaultContentSettingFromProvider(
+      ContentSettingsType content_type,
+      ProviderType provider_type) const;
 
   // Various migration methods (old cookie, popup and per-host data gets
   // migrated to the new format).
@@ -224,8 +235,7 @@ class HostContentSettingsMap
   bool updating_preferences_;
 
   // Content setting providers.
-  std::map<ProviderType, linked_ptr<content_settings::ProviderInterface> >
-      content_settings_providers_;
+  ProviderMap content_settings_providers_;
 
   // Used around accesses to the following objects to guarantee thread safety.
   mutable base::Lock lock_;

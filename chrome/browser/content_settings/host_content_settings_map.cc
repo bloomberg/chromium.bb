@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_default_provider.h"
@@ -48,12 +49,6 @@ bool ShouldAllowAllContent(const GURL& url, ContentSettingsType content_type) {
          url.SchemeIs(chrome::kExtensionScheme);
 }
 
-typedef linked_ptr<content_settings::ProviderInterface> ProviderPtr;
-typedef std::map<HostContentSettingsMap::ProviderType, ProviderPtr>
-    ProviderMap;
-typedef ProviderMap::iterator ProviderIterator;
-typedef ProviderMap::const_iterator ConstProviderIterator;
-
 typedef std::vector<content_settings::Rule> Rules;
 
 typedef std::pair<std::string, std::string> StringPair;
@@ -73,11 +68,10 @@ bool ContentTypeHasCompoundValue(ContentSettingsType type) {
 }
 
 ContentSetting GetDefaultSetting(Rules rules) {
-  for (Rules::iterator rule = rules.begin();
-       rule != rules.end();
-       ++rule) {
-    if (rule->primary_pattern == ContentSettingsPattern::Wildcard() &&
-        rule->secondary_pattern == ContentSettingsPattern::Wildcard()) {
+  ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
+  for (Rules::iterator rule = rules.begin(); rule != rules.end(); ++rule) {
+    if (rule->primary_pattern == wildcard &&
+        rule->secondary_pattern == wildcard) {
       return rule->content_setting;
     }
   }
@@ -98,8 +92,7 @@ HostContentSettingsMap::HostContentSettingsMap(
   content_settings::ObservableProvider* policy_provider =
       new content_settings::PolicyProvider(prefs_);
   policy_provider->AddObserver(this);
-  content_settings_providers_[POLICY_PROVIDER] =
-      make_linked_ptr(policy_provider);
+  content_settings_providers_[POLICY_PROVIDER] = policy_provider;
 
   if (extension_service) {
     // |extension_service| can be NULL in unit tests.
@@ -108,21 +101,18 @@ HostContentSettingsMap::HostContentSettingsMap(
             extension_service->GetExtensionContentSettingsStore(),
             is_off_the_record_);
     extension_provider->AddObserver(this);
-    content_settings_providers_[EXTENSION_PROVIDER] =
-        make_linked_ptr(extension_provider);
+    content_settings_providers_[EXTENSION_PROVIDER] = extension_provider;
   }
 
   content_settings::ObservableProvider* pref_provider =
       new content_settings::PrefProvider(prefs_, is_off_the_record_);
   pref_provider->AddObserver(this);
-  content_settings_providers_[PREF_PROVIDER] =
-      make_linked_ptr(pref_provider);
+  content_settings_providers_[PREF_PROVIDER] = pref_provider;
 
   content_settings::ObservableProvider* default_provider =
       new content_settings::DefaultProvider(prefs_, is_off_the_record_);
   default_provider->AddObserver(this);
-  content_settings_providers_[DEFAULT_PROVIDER] =
-      make_linked_ptr(default_provider);
+  content_settings_providers_[DEFAULT_PROVIDER] = default_provider;
 
   MigrateObsoleteCookiePref();
 
@@ -163,25 +153,29 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   content_settings::PolicyProvider::RegisterUserPrefs(prefs);
 }
 
+ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(
+    ContentSettingsType content_type, ProviderType provider_type) const {
+  ConstProviderIterator it = content_settings_providers_.find(provider_type);
+  if (it == content_settings_providers_.end())
+    return CONTENT_SETTING_DEFAULT;
+  Rules rules;
+  it->second->GetAllContentSettingsRules(content_type, std::string(), &rules);
+  return GetDefaultSetting(rules);
+}
+
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
     ContentSettingsType content_type) const {
   DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
-  ContentSetting default_setting = CONTENT_SETTING_DEFAULT;
 
   // First check if there is a default setting set by policy.
-  ProviderPtr provider =
-      content_settings_providers_.find(POLICY_PROVIDER)->second;
-  Rules rules;
-  provider->GetAllContentSettingsRules(content_type, std::string(), &rules);
-
-  default_setting = GetDefaultSetting(rules);
+  ContentSetting default_setting = GetDefaultContentSettingFromProvider(
+      content_type, POLICY_PROVIDER);
   if (default_setting != CONTENT_SETTING_DEFAULT)
     return default_setting;
 
   // Get the default setting.
-  provider = content_settings_providers_.find(DEFAULT_PROVIDER)->second;
-  provider->GetAllContentSettingsRules(content_type, std::string(), &rules);
-  default_setting = GetDefaultSetting(rules);
+  default_setting = GetDefaultContentSettingFromProvider(
+      content_type, DEFAULT_PROVIDER);
 
   // The method GetDefaultContentSetting always has to return an explicit
   // value that is to be used as default. We here rely on the
@@ -547,18 +541,14 @@ void HostContentSettingsMap::Observe(int type,
 
 HostContentSettingsMap::~HostContentSettingsMap() {
   DCHECK(!prefs_);
+  STLDeleteValues(&content_settings_providers_);
 }
 
 bool HostContentSettingsMap::IsDefaultContentSettingManaged(
     ContentSettingsType content_type) const {
-  Rules rules;
-  content_settings_providers_.find(POLICY_PROVIDER)->second->
-      GetAllContentSettingsRules(content_type, std::string(), &rules);
-  ContentSetting default_setting = GetDefaultSetting(rules);
-
-  if (default_setting != CONTENT_SETTING_DEFAULT)
-    return true;
-  return false;
+  ContentSetting default_setting =
+      GetDefaultContentSettingFromProvider(content_type, POLICY_PROVIDER);
+  return (default_setting != CONTENT_SETTING_DEFAULT);
 }
 
 void HostContentSettingsMap::ShutdownOnUIThread() {
