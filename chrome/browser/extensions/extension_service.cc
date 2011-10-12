@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
 #include "base/logging.h"
@@ -63,6 +63,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -2209,19 +2210,26 @@ void ExtensionService::IdentifyAlertableExtensions() {
       global_error->set_cancel_callback(
           base::Bind(&ExtensionService::HandleExtensionAlertDetails,
                      base::Unretained(this)));
-      GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
-          global_error.release());
+      ShowExtensionAlert(global_error.release());
     } else {
       // First run. Just acknowledge all the extensions, silently, by
       // shortcutting the display of the UI and going straight to the
       // callback for pressing the Accept button.
-      HandleExtensionAlertAccept(*global_error.get());
+      HandleExtensionAlertAccept(*global_error.get(), NULL);
     }
   }
 }
 
+void ExtensionService::ShowExtensionAlert(ExtensionGlobalError* global_error) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (browser) {
+    global_error->ShowBubbleView(browser);
+  }
+}
+
 void ExtensionService::HandleExtensionAlertAccept(
-    const ExtensionGlobalError& global_error) {
+    const ExtensionGlobalError& global_error, Browser* browser) {
   const ExtensionIdSet *extension_ids =
       global_error.get_external_extension_ids();
   for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
@@ -2241,8 +2249,10 @@ void ExtensionService::HandleExtensionAlertAccept(
 }
 
 void ExtensionService::HandleExtensionAlertDetails(
-    const ExtensionGlobalError& global_error) {
-  Browser::OpenExtensionsWindow(profile_);
+    const ExtensionGlobalError& global_error, Browser* browser) {
+  if (browser) {
+    browser->ShowExtensionsTab();
+  }
 }
 
 void ExtensionService::UnloadExtension(

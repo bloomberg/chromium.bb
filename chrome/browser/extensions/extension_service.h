@@ -516,17 +516,22 @@ class ExtensionService
 
   virtual void OnExternalProviderReady() OVERRIDE;
 
-  // Once all external providers are done, generate any needed alerts about
+  // Once all external providers are done, generates any needed alerts about
   // extensions.
   void IdentifyAlertableExtensions();
 
-  // The user has acknowledged the batch of alerts, so mark all the
-  // alertable extensions accordingly.
-  void HandleExtensionAlertAccept(const ExtensionGlobalError& global_error);
+  // Marks alertable extensions as acknowledged, after the user presses the
+  // accept button.
+  void HandleExtensionAlertAccept(const ExtensionGlobalError& global_error,
+                                  Browser* browser);
 
-  // The user wants to get more details about the alerts. Open the
-  // Extensions page.
-  void HandleExtensionAlertDetails(const ExtensionGlobalError& global_error);
+  // Opens the Extensions page because the user wants to get more details
+  // about the alerts.
+  void HandleExtensionAlertDetails(const ExtensionGlobalError& global_error,
+                                   Browser* browser);
+
+  // Displays the extension alert in the last-active browser window.
+  void ShowExtensionAlert(ExtensionGlobalError* global_error);
 
   // NotificationObserver
   virtual void Observe(int type,
