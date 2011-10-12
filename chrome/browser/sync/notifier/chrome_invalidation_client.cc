@@ -283,9 +283,17 @@ void ChromeInvalidationClient::InformRegistrationFailure(
     return;
   }
 
-  // We don't care about |unknown_hint|; we let
-  // |registration_manager_| handle the registration backoff policy.
-  registration_manager_->MarkRegistrationLost(model_type);
+  if (is_transient) {
+    // We don't care about |unknown_hint|; we let
+    // |registration_manager_| handle the registration backoff policy.
+    registration_manager_->MarkRegistrationLost(model_type);
+  } else {
+    // Non-transient failures are permanent, so block any future
+    // registration requests for |model_type|.  (This happens if the
+    // server doesn't recognize the data type, which could happen for
+    // brand-new data types.)
+    registration_manager_->DisableType(model_type);
+  }
 }
 
 void ChromeInvalidationClient::ReissueRegistrations(

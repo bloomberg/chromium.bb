@@ -20,6 +20,7 @@ RegistrationManager::PendingRegistrationInfo::PendingRegistrationInfo() {}
 RegistrationManager::RegistrationStatus::RegistrationStatus()
     : model_type(syncable::UNSPECIFIED),
       registration_manager(NULL),
+      enabled(true),
       state(invalidation::InvalidationListener::UNREGISTERED) {}
 
 RegistrationManager::RegistrationStatus::~RegistrationStatus() {}
@@ -27,12 +28,20 @@ RegistrationManager::RegistrationStatus::~RegistrationStatus() {}
 void RegistrationManager::RegistrationStatus::DoRegister() {
   DCHECK_NE(model_type, syncable::UNSPECIFIED);
   DCHECK(registration_manager);
+  CHECK(enabled);
   // We might be called explicitly, so stop the timer manually and
   // reset the delay.
   registration_timer.Stop();
   delay = base::TimeDelta();
   registration_manager->DoRegisterType(model_type);
   DCHECK(!last_registration_request.is_null());
+}
+
+void RegistrationManager::RegistrationStatus::Disable() {
+  enabled = false;
+  state = invalidation::InvalidationListener::UNREGISTERED;
+  registration_timer.Stop();
+  delay = base::TimeDelta();
 }
 
 const int RegistrationManager::kInitialRegistrationDelaySeconds = 5;
@@ -83,6 +92,9 @@ void RegistrationManager::MarkRegistrationLost(
     syncable::ModelType model_type) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   RegistrationStatus* status = &registration_statuses_[model_type];
+  if (!status->enabled) {
+    return;
+  }
   status->state = invalidation::InvalidationListener::UNREGISTERED;
   bool is_retry = !status->last_registration_request.is_null();
   TryRegisterType(model_type, is_retry);
@@ -97,6 +109,13 @@ void RegistrationManager::MarkAllRegistrationsLost() {
       MarkRegistrationLost(model_type);
     }
   }
+}
+
+void RegistrationManager::DisableType(syncable::ModelType model_type) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  RegistrationStatus* status = &registration_statuses_[model_type];
+  LOG(INFO) << "Disabling " << syncable::ModelTypeToString(model_type);
+  status->Disable();
 }
 
 syncable::ModelTypeSet RegistrationManager::GetRegisteredTypes() const {
@@ -176,6 +195,10 @@ void RegistrationManager::TryRegisterType(syncable::ModelType model_type,
                                           bool is_retry) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   RegistrationStatus* status = &registration_statuses_[model_type];
+  if (!status->enabled) {
+    // Disabled, so do nothing.
+    return;
+  }
   status->last_registration_attempt = base::Time::Now();
   if (is_retry) {
     // If we're a retry, we must have tried at least once before.

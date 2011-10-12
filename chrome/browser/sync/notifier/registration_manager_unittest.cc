@@ -159,6 +159,14 @@ class RegistrationManagerTest : public testing::Test {
     }
   }
 
+  void DisableTypes(const syncable::ModelTypeSet& types) {
+    for (syncable::ModelTypeSet::const_iterator it = types.begin();
+         it != types.end(); ++it) {
+      fake_invalidation_client_.LoseRegistration(*it);
+      fake_registration_manager_.DisableType(*it);
+    }
+  }
+
   // Used by MarkRegistrationLostBackoff* tests.
   void RunBackoffTest(double jitter) {
     fake_registration_manager_.SetJitter(jitter);
@@ -371,6 +379,38 @@ TEST_F(RegistrationManagerTest, MarkAllRegistrationsLost) {
   fake_registration_manager_.FirePendingRegistrationsForTest();
   EXPECT_EQ(types, fake_registration_manager_.GetRegisteredTypes());
   EXPECT_EQ(types, fake_invalidation_client_.GetRegisteredTypes());
+}
+
+TEST_F(RegistrationManagerTest, DisableType) {
+  syncable::ModelTypeSet types(kModelTypes, kModelTypes + kModelTypeCount);
+
+  fake_registration_manager_.SetRegisteredTypes(types);
+  EXPECT_TRUE(fake_registration_manager_.GetPendingRegistrations().empty());
+
+  // Disable some types.
+  syncable::ModelTypeSet disabled_types(
+      kModelTypes, kModelTypes + 3);
+  syncable::ModelTypeSet enabled_types(
+      kModelTypes + 3, kModelTypes + kModelTypeCount);
+  DisableTypes(disabled_types);
+  ExpectPendingRegistrations(
+      syncable::ModelTypeSet(), 0.0,
+      fake_registration_manager_.GetPendingRegistrations());
+  EXPECT_EQ(enabled_types, fake_registration_manager_.GetRegisteredTypes());
+  EXPECT_EQ(enabled_types, fake_invalidation_client_.GetRegisteredTypes());
+
+  fake_registration_manager_.SetRegisteredTypes(types);
+  EXPECT_EQ(enabled_types, fake_registration_manager_.GetRegisteredTypes());
+
+  fake_registration_manager_.MarkRegistrationLost(*disabled_types.begin());
+  ExpectPendingRegistrations(
+      syncable::ModelTypeSet(), 0.0,
+      fake_registration_manager_.GetPendingRegistrations());
+
+  fake_registration_manager_.MarkAllRegistrationsLost();
+  ExpectPendingRegistrations(
+      enabled_types, 0.0,
+      fake_registration_manager_.GetPendingRegistrations());
 }
 
 }  // namespace
