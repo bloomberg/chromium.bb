@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 
-#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"

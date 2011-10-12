@@ -8,8 +8,6 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_RULE_H_
 #pragma once
 
-#include <vector>
-
 #include "base/compiler_specific.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"

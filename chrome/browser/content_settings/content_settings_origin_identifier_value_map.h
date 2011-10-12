@@ -5,11 +5,9 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_ORIGIN_IDENTIFIER_VALUE_MAP_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_ORIGIN_IDENTIFIER_VALUE_MAP_H_
 
-#include <list>
 #include <map>
 #include <string>
 
-#include "base/tuple.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/content_settings_types.h"

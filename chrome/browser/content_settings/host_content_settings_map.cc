@@ -4,7 +4,7 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 
-#include <list>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/string_util.h"
@@ -20,8 +20,6 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
@@ -34,7 +32,6 @@
 #include "content/common/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/base/static_cookie_policy.h"
 
 namespace {
@@ -42,8 +39,7 @@ namespace {
 // Returns true if we should allow all content types for this URL.  This is
 // true for various internal objects like chrome:// URLs, so UI and other
 // things users think of as "not webpages" don't break.
-static bool ShouldAllowAllContent(const GURL& url,
-                                  ContentSettingsType content_type) {
+bool ShouldAllowAllContent(const GURL& url, ContentSettingsType content_type) {
   if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
     return false;
   return url.SchemeIs(chrome::kChromeDevToolsScheme) ||

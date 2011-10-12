@@ -22,6 +22,7 @@
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
 
@@ -105,6 +106,10 @@ class ConfigurationPolicyPrefKeeper {
   // specified policy is pertinent to incognito mode availability. In that case,
   // the function takes ownership of |value|.
   bool ApplyIncognitoModePolicy(ConfigurationPolicyType policy, Value* value);
+
+  // Processes policies that determine whether Javascript can be enabled.
+  // Returns true if the specified policy was processed.
+  bool ApplyJavascriptPolicy(ConfigurationPolicyType policy, Value* value);
 
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
   // a blank string.
@@ -199,8 +204,6 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kPluginsEnabledPlugins},
   { Value::TYPE_BOOLEAN, kPolicyShowHomeButton,
     prefs::kShowHomeButton },
-  { Value::TYPE_BOOLEAN, kPolicyJavascriptEnabled,
-    prefs::kWebKitJavascriptEnabled },
   { Value::TYPE_BOOLEAN, kPolicySavingBrowserHistoryDisabled,
     prefs::kSavingBrowserHistoryDisabled },
   { Value::TYPE_BOOLEAN, kPolicyClearSiteDataOnExit,
@@ -213,8 +216,6 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kManagedDefaultCookiesSetting },
   { Value::TYPE_INTEGER, kPolicyDefaultImagesSetting,
     prefs::kManagedDefaultImagesSetting },
-  { Value::TYPE_INTEGER, kPolicyDefaultJavaScriptSetting,
-    prefs::kManagedDefaultJavaScriptSetting },
   { Value::TYPE_INTEGER, kPolicyDefaultPluginsSetting,
     prefs::kManagedDefaultPluginsSetting },
   { Value::TYPE_INTEGER, kPolicyDefaultPopupsSetting,
@@ -393,6 +394,7 @@ void ConfigurationPolicyPrefKeeper::Apply(PolicyMap* policies) {
         ApplyFileSelectionDialogsPolicy(current->first, value) ||
         ApplyDefaultSearchPolicy(current->first, value) ||
         ApplyIncognitoModePolicy(current->first, value) ||
+        ApplyJavascriptPolicy(current->first, value) ||
         ApplyPolicyFromMap(current->first, value,
                            kSimplePolicyMap, arraysize(kSimplePolicyMap))) {
       continue;
@@ -615,6 +617,33 @@ bool ConfigurationPolicyPrefKeeper::ApplyIncognitoModePolicy(
     return true;
   }
   // The policy is not relevant to incognito.
+  return false;
+}
+
+bool ConfigurationPolicyPrefKeeper::ApplyJavascriptPolicy(
+    ConfigurationPolicyType policy,
+    Value* value) {
+  if (policy == kPolicyJavascriptEnabled) {
+    bool enabled;
+    if (value->GetAsBoolean(&enabled) && !enabled) {
+      // Force the content setting policy for javascript to BLOCK too.
+      prefs_.SetValue(prefs::kManagedDefaultJavaScriptSetting,
+                      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+    }
+    prefs_.SetValue(prefs::kWebKitJavascriptEnabled, value);
+    return true;
+  }
+  if (policy == kPolicyDefaultJavaScriptSetting) {
+    // Ignore this policy if it has been overridden by kPolicyJavascriptEnabled.
+    Value* existing_value;
+    if (prefs_.GetValue(prefs::kManagedDefaultJavaScriptSetting,
+                        &existing_value)) {
+      delete value;
+    } else {
+      prefs_.SetValue(prefs::kManagedDefaultJavaScriptSetting, value);
+    }
+    return true;
+  }
   return false;
 }
 

@@ -7,19 +7,15 @@
 #include <map>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
@@ -28,7 +24,6 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/net_util.h"
 
 namespace {
 

@@ -7,16 +7,11 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 
-class ContentSettingsDetails;
-class HostContentSettingsMap;
-class Profile;
-
 namespace content_settings {
-
-class Observer;
 
 // A content settings provider which manages settings defined by extensions.
 class ExtensionProvider : public ObservableProvider,

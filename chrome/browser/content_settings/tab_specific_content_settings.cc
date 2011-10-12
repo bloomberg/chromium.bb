@@ -84,6 +84,7 @@ TabSpecificContentSettings* TabSpecificContentSettings::Get(
   return NULL;
 }
 
+// static
 void TabSpecificContentSettings::CookiesRead(int render_process_id,
                                              int render_view_id,
                                              const GURL& url,
@@ -94,6 +95,7 @@ void TabSpecificContentSettings::CookiesRead(int render_process_id,
     settings->OnCookiesRead(url, cookie_list, blocked_by_policy);
 }
 
+// static
 void TabSpecificContentSettings::CookieChanged(
     int render_process_id,
     int render_view_id,
@@ -106,6 +108,7 @@ void TabSpecificContentSettings::CookieChanged(
     settings->OnCookieChanged(url, cookie_line, options, blocked_by_policy);
 }
 
+// static
 void TabSpecificContentSettings::WebDatabaseAccessed(
     int render_process_id,
     int render_view_id,
@@ -118,6 +121,7 @@ void TabSpecificContentSettings::WebDatabaseAccessed(
     settings->OnWebDatabaseAccessed(url, name, display_name, blocked_by_policy);
 }
 
+// static
 void TabSpecificContentSettings::DOMStorageAccessed(int render_process_id,
                                                     int render_view_id,
                                                     const GURL& url,
@@ -128,6 +132,7 @@ void TabSpecificContentSettings::DOMStorageAccessed(int render_process_id,
     settings->OnLocalStorageAccessed(url, storage_type, blocked_by_policy);
 }
 
+// static
 void TabSpecificContentSettings::IndexedDBAccessed(int render_process_id,
                                                    int render_view_id,
                                                    const GURL& url,
@@ -138,6 +143,7 @@ void TabSpecificContentSettings::IndexedDBAccessed(int render_process_id,
     settings->OnIndexedDBAccessed(url, description, blocked_by_policy);
 }
 
+// static
 void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
                                                     int render_view_id,
                                                     const GURL& url,

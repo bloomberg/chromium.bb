@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/common/content_settings.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -18,7 +19,6 @@
 
 class Browser;
 class Profile;
-class SkBitmap;
 class TabContentsWrapper;
 
 // This model provides data for ContentSettingBubble, and also controls
@@ -83,7 +83,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   // NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   virtual void OnRadioClicked(int radio_index) {}
   virtual void OnPopupClicked(int index) {}
@@ -125,6 +125,8 @@ class ContentSettingBubbleModel : public NotificationObserver {
   BubbleContent bubble_content_;
   // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
   NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleModel);
 };
 
 #endif  // CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_H_

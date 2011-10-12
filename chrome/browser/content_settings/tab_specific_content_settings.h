@@ -10,6 +10,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -27,7 +29,6 @@ class CannedBrowsingDataLocalStorageHelper;
 class CookiesTreeModel;
 class TabContents;
 class Profile;
-struct ContentSettings;
 
 namespace net {
 class CookieList;
@@ -158,7 +159,7 @@ class TabSpecificContentSettings : public TabContentsObserver,
   }
 
   // TabContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
@@ -255,7 +256,7 @@ class TabSpecificContentSettings : public TabContentsObserver,
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Stores which content setting types actually have blocked content.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];

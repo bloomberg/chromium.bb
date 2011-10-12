@@ -8,9 +8,6 @@
 
 // A content settings provider that takes its settings out of the pref service.
 
-#include <map>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -22,8 +19,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class ContentSettingsDetails;
-class HostContentSettingsMap;
 class PrefService;
 
 namespace base {
@@ -49,34 +44,34 @@ class PrefProvider : public ObservableProvider,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting content_setting);
+      ContentSetting content_setting) OVERRIDE;
 
   virtual ContentSetting GetContentSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const;
+      const ResourceIdentifier& resource_identifier) const OVERRIDE;
 
   virtual Value* GetContentSettingValue(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const;
+      const ResourceIdentifier& resource_identifier) const OVERRIDE;
 
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      std::vector<Rule>* content_setting_rules) const;
+      std::vector<Rule>* content_setting_rules) const OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(
-      ContentSettingsType content_type);
+      ContentSettingsType content_type) OVERRIDE;
 
-  virtual void ShutdownOnUIThread();
+  virtual void ShutdownOnUIThread() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   // Reads all content settings exceptions from the preference and load them

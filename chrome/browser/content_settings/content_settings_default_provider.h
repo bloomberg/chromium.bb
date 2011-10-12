@@ -15,6 +15,8 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
+class PrefService;
+
 namespace content_settings {
 
 // Provider that provides default content settings based on

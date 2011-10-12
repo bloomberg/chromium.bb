@@ -4,10 +4,10 @@
 
 #include "chrome/browser/content_settings/content_settings_utils.h"
 
-#include <string>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/string_split.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"

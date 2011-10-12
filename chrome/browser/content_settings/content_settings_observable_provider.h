@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_OBSERVABLE_PROVIDER_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_OBSERVABLE_PROVIDER_H_
 
-#include <set>
 #include <string>
 
 #include "base/observer_list.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/content_settings_observer.h"
+#include "chrome/common/content_settings_pattern.h"
 
 namespace content_settings {
 

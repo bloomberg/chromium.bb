@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "chrome/common/content_settings_types.h"
 
 class TabContents;
@@ -51,6 +52,8 @@ class ContentSettingImageModel {
   int icon_;
   int explanatory_string_id_;
   std::string tooltip_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModel);
 };
 
 #endif  // CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_

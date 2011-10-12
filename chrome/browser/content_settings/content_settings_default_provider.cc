@@ -10,7 +10,6 @@
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -24,7 +23,6 @@
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/net_util.h"
 
 namespace {
 
@@ -317,4 +315,4 @@ void DefaultProvider::MigrateObsoleteGeolocationPref() {
   }
 }
 
-}  // namespace
+}  // namespace content_settings

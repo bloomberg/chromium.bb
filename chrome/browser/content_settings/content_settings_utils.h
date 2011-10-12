@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/content_settings_types.h"

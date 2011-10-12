@@ -328,6 +328,7 @@ PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
   return g_tab_contents_wrapper_property_accessor.Pointer();
 }
 
+// static
 void TabContentsWrapper::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kAlternateErrorPagesEnabled,
                              true,

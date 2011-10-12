@@ -7,8 +7,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings_pattern.h"
 
 namespace content_settings {

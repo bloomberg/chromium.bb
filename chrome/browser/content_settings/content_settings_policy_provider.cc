@@ -7,21 +7,17 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "webkit/plugins/npapi/plugin_group.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
 
@@ -284,6 +280,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
   //      "ISSUER": {
   //        "CN": "some name"
   //      }
+  //   }
   // }
   for (size_t j = 0; j < pattern_filter_str_list->GetSize(); ++j) {
     std::string pattern_filter_json;

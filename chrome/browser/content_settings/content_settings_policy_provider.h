@@ -12,20 +12,16 @@
 
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
-#include "base/tuple.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 
-class ContentSettingsDetails;
-class HostContentSettingsMap;
 class PrefService;
 
 namespace content_settings {
 
-// PolicyProvider that provider managed content-settings.
+// PolicyProvider that provides managed content-settings.
 class PolicyProvider : public ObservableProvider,
                        public NotificationObserver {
  public:
@@ -39,34 +35,34 @@ class PolicyProvider : public ObservableProvider,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting content_setting);
+      ContentSetting content_setting) OVERRIDE;
 
   virtual ContentSetting GetContentSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const;
+      const ResourceIdentifier& resource_identifier) const OVERRIDE;
 
   virtual Value* GetContentSettingValue(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const;
+      const ResourceIdentifier& resource_identifier) const OVERRIDE;
 
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      std::vector<Rule>* content_setting_rules) const;
+      std::vector<Rule>* content_setting_rules) const OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(
-      ContentSettingsType content_type);
+      ContentSettingsType content_type) OVERRIDE;
 
-  virtual void ShutdownOnUIThread();
+  virtual void ShutdownOnUIThread() OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
  private:
   // Reads the policy managed default settings.
   void ReadManagedDefaultSettings();
@@ -89,7 +85,7 @@ class PolicyProvider : public ObservableProvider,
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Used around accesses to the content_settings_ object to guarantee
+  // Used around accesses to the |value_map_| object to guarantee
   // thread safety.
   mutable base::Lock lock_;
 
