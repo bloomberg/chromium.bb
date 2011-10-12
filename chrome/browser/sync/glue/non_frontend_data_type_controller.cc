@@ -153,6 +153,13 @@ void NonFrontendDataTypeController::StartDoneImpl(
     DataTypeController::State new_state,
     const SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (state_ == NOT_RUNNING) {
+    // During stop it is possible startdoneimpl can be called twice. Once from
+    // the |StartDone| method and once from the |Stop| method.
+    DCHECK(!start_callback_.get());
+    return;
+  }
   state_ = new_state;
   if (state_ != RUNNING) {
     // Start failed.
