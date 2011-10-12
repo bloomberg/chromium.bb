@@ -27,8 +27,6 @@
         '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'sources': [
-        'accelerated_surface_linux.cc',
-        'accelerated_surface_linux.h',
         'accelerated_surface_mac.cc',
         'accelerated_surface_mac.h',
         'accelerated_surface_wayland.cc',
@@ -44,14 +42,6 @@
       ],
       'defines': [
         'SURFACE_IMPLEMENTATION',
-      ],
-      'conditions': [
-        ['use_wayland == 1', {
-          'sources/': [
-            ['exclude', 'accelerated_surface_linux.cc'],
-            ['exclude', 'accelerated_surface_linux.h'],
-          ],
-        }],
       ],
     },
   ],

@@ -27,9 +27,29 @@
 #include "ui/gfx/gl/gl_surface_egl.h"
 #include "ui/gfx/gl/gl_surface_glx.h"
 #include "ui/gfx/gl/gl_surface_osmesa.h"
-#include "ui/gfx/surface/accelerated_surface_linux.h"
 
 namespace {
+
+// The GL context associated with the surface must be current when
+// an instance is created or destroyed.
+class EGLAcceleratedSurface : public base::RefCounted<EGLAcceleratedSurface> {
+ public:
+  EGLAcceleratedSurface(const gfx::Size& size);
+  const gfx::Size& size() const { return size_; }
+  uint32 pixmap() const { return pixmap_; }
+  uint32 texture() const { return texture_; }
+
+ private:
+  ~EGLAcceleratedSurface();
+
+  gfx::Size size_;
+  void* image_;
+  uint32 pixmap_;
+  uint32 texture_;
+
+  friend class base::RefCounted<EGLAcceleratedSurface>;
+  DISALLOW_COPY_AND_ASSIGN(EGLAcceleratedSurface);
+};
 
 // We are backed by an Pbuffer offscreen surface for the purposes of creating a
 // context, but use FBOs to render to X Pixmap backed EGLImages.
@@ -59,12 +79,12 @@ class EGLImageTransportSurface : public ImageTransportSurface,
 
  private:
   virtual ~EGLImageTransportSurface() OVERRIDE;
-  void ReleaseSurface(scoped_refptr<AcceleratedSurface>* surface);
+  void ReleaseSurface(scoped_refptr<EGLAcceleratedSurface>* surface);
 
   uint32 fbo_id_;
 
-  scoped_refptr<AcceleratedSurface> back_surface_;
-  scoped_refptr<AcceleratedSurface> front_surface_;
+  scoped_refptr<EGLAcceleratedSurface> back_surface_;
+  scoped_refptr<EGLAcceleratedSurface> front_surface_;
 
   scoped_ptr<ImageTransportHelper> helper_;
 
@@ -155,6 +175,42 @@ class OSMesaImageTransportSurface : public ImageTransportSurface,
   DISALLOW_COPY_AND_ASSIGN(OSMesaImageTransportSurface);
 };
 
+EGLAcceleratedSurface::EGLAcceleratedSurface(const gfx::Size& size)
+    : size_(size), texture_(0) {
+  Display* dpy = gfx::GLSurfaceEGL::GetNativeDisplay();
+  EGLDisplay edpy = gfx::GLSurfaceEGL::GetHardwareDisplay();
+
+  XID window = XDefaultRootWindow(dpy);
+  XWindowAttributes gwa;
+  XGetWindowAttributes(dpy, window, &gwa);
+  pixmap_ = XCreatePixmap(
+      dpy, window, size_.width(), size_.height(), gwa.depth);
+
+  image_ = eglCreateImageKHR(
+      edpy, EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
+      reinterpret_cast<void*>(pixmap_), NULL);
+
+  glGenTextures(1, &texture_);
+
+  GLint current_texture = 0;
+  glGetIntegerv(GL_TEXTURE_BINDING_2D, &current_texture);
+
+  glBindTexture(GL_TEXTURE_2D, texture_);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image_);
+
+  glBindTexture(GL_TEXTURE_2D, current_texture);
+}
+
+EGLAcceleratedSurface::~EGLAcceleratedSurface() {
+  glDeleteTextures(1, &texture_);
+  eglDestroyImageKHR(gfx::GLSurfaceEGL::GetHardwareDisplay(), image_);
+  XFreePixmap(gfx::GLSurfaceEGL::GetNativeDisplay(), pixmap_);
+}
+
 EGLImageTransportSurface::EGLImageTransportSurface(
     GpuChannelManager* manager,
     int32 render_view_id,
@@ -215,7 +271,7 @@ unsigned int EGLImageTransportSurface::GetBackingFrameBufferObject() {
 }
 
 void EGLImageTransportSurface::ReleaseSurface(
-    scoped_refptr<AcceleratedSurface>* surface) {
+    scoped_refptr<EGLAcceleratedSurface>* surface) {
   if (surface->get()) {
     GpuHostMsg_AcceleratedSurfaceRelease_Params params;
     params.identifier = (*surface)->pixmap();
@@ -228,13 +284,20 @@ void EGLImageTransportSurface::OnResize(gfx::Size size) {
   if (back_surface_.get())
     ReleaseSurface(&back_surface_);
 
-  back_surface_ = new AcceleratedSurface(size);
+  back_surface_ = new EGLAcceleratedSurface(size);
+
+  GLint previous_fbo_id = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previous_fbo_id);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
                             GL_COLOR_ATTACHMENT0,
                             GL_TEXTURE_2D,
                             back_surface_->texture(),
                             0);
   glFlush();
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previous_fbo_id);
 
   GpuHostMsg_AcceleratedSurfaceNew_Params params;
   params.width = size.width();
@@ -247,7 +310,7 @@ void EGLImageTransportSurface::OnResize(gfx::Size size) {
 
 bool EGLImageTransportSurface::SwapBuffers() {
   front_surface_.swap(back_surface_);
-  DCHECK_NE(front_surface_.get(), static_cast<AcceleratedSurface*>(NULL));
+  DCHECK_NE(front_surface_.get(), static_cast<EGLAcceleratedSurface*>(NULL));
   glFlush();
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
