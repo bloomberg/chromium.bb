@@ -330,6 +330,9 @@ const char kDisableSpdy[] = "spdy.disabled";
 // Prefs for server names that support SPDY protocol.
 const char kSpdyServers[] = "spdy.servers";
 
+// Prefs for servers that support Alternate-Protocol.
+const char kAlternateProtocolServers[] = "spdy.alternate_protocol";
+
 // Disables the listed protocol schemes.
 const char kDisabledSchemes[] = "protocol.disabled_schemes";
 

@@ -129,6 +129,7 @@ extern const char kDnsHostReferralList[];  // OBSOLETE
 extern const char kDnsPrefetchingHostReferralList[];
 extern const char kDisableSpdy[];
 extern const char kSpdyServers[];
+extern const char kAlternateProtocolServers[];
 extern const char kDisabledSchemes[];
 extern const char kUrlBlacklist[];
 extern const char kUrlWhitelist[];

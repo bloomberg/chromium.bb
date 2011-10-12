@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
+#include "base/timer.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
@@ -75,7 +75,7 @@ class HttpServerPropertiesManager
   // ----------------------------------
 
   // Deletes all data.
-  virtual void DeleteAll() OVERRIDE;
+  virtual void Clear() OVERRIDE;
 
   // Returns true if |server| supports SPDY. Should only be called from IO
   // thread.
@@ -111,39 +111,83 @@ class HttpServerPropertiesManager
 
  protected:
   typedef base::RefCountedData<base::ListValue> RefCountedListValue;
+  typedef base::RefCountedData<net::AlternateProtocolMap>
+      RefCountedAlternateProtocolMap;
+
+  // --------------------
+  // SPDY related methods
 
   // These are used to delay updating the spdy servers in
   // |http_server_properties_impl_| while the preferences are changing, and
   // execute only one update per simultaneous prefs changes.
-  void ScheduleUpdateCacheOnUI();
+  void ScheduleUpdateSpdyCacheOnUI();
 
   // Update spdy servers (the cached data in |http_server_properties_impl_|)
   // with data from preferences. Virtual for testing.
-  virtual void UpdateCacheFromPrefs();
+  virtual void UpdateSpdyCacheFromPrefs();
 
   // Starts the |spdy_servers| update on the IO thread. Protected for testing.
-  void UpdateCacheFromPrefsOnIO(std::vector<std::string>* spdy_servers,
-                                bool support_spdy);
+  void UpdateSpdyCacheFromPrefsOnIO(std::vector<std::string>* spdy_servers,
+                                    bool support_spdy);
 
   // These are used to delay updating the preferences when spdy servers_ are
   // changing, and execute only one update per simultaneous spdy server changes.
-  void ScheduleUpdatePrefsOnIO();
+  void ScheduleUpdateSpdyPrefsOnIO();
 
   // Update spdy servers in preferences with the cached data from
   // |http_server_properties_impl_|. Virtual for testing.
-  virtual void UpdatePrefsFromCache();  // Virtual for testing.
+  virtual void UpdateSpdyPrefsFromCache();  // Virtual for testing.
 
   // Update |prefs::kSpdyServers| preferences with |spdy_server_list| on UI
   // thread. Protected for testing.
   void SetSpdyServersInPrefsOnUI(
       scoped_refptr<RefCountedListValue> spdy_server_list);
 
- private:
-  // Post the tasks with the delay. These are overridden in tests to post the
-  // task without the delay.
-  virtual void PostUpdateTaskOnUI(Task* task);  // Virtual for testing.
-  virtual void PostUpdateTaskOnIO(Task* task);  // Virtual for testing.
+  // Starts the timers to update the cache/prefs. This are overridden in tests
+  // to prevent the delay.
+  virtual void StartSpdyCacheUpdateTimerOnUI(base::TimeDelta delay);
+  virtual void StartSpdyPrefsUpdateTimerOnIO(base::TimeDelta delay);
 
+  // ----------------------------------
+  // Alternate-Protocol related methods
+
+  // These are used to delay updating the Alternate-Protocol servers in
+  // |http_server_properties_impl_| while the preferences are changing, and
+  // execute only one update per simultaneous prefs changes.
+  void ScheduleUpdateAlternateProtocolCacheOnUI();
+
+  // Update Alternate-Protocol servers (the cached data in
+  // |http_server_properties_impl_|) with data from preferences. Virtual for
+  // testing.
+  virtual void UpdateAlternateProtocolCacheFromPrefs();
+
+  // Starts the |alternate_protocol_servers| update on the IO thread. Protected
+  // for testing.
+  void UpdateAlternateProtocolCacheFromPrefsOnIO(
+      RefCountedAlternateProtocolMap* alternate_protocol_map);
+
+  // These are used to delay updating the preferences when Alternate-Protocol
+  // servers_ are changing, and execute only one update per simultaneous
+  // Alternate-Protocol server changes.
+  void ScheduleUpdateAlternateProtocolPrefsOnIO();
+
+  // Update Alternate-Protocol servers in preferences with the cached data from
+  // |http_server_properties_impl_|. Virtual for testing.
+  virtual void UpdateAlternateProtocolPrefsFromCache();  // Virtual for testing.
+
+  // Update |prefs::kAlternateProtocolServers| preferences with
+  // |alternate_protocol_server_list| on UI thread. Protected for testing.
+  void SetAlternateProtocolServersInPrefsOnUI(
+      RefCountedAlternateProtocolMap* alternate_protocol_map);
+
+  // Starts the timers to update the cache/prefs. This are overridden in tests
+  // to prevent the delay.
+  virtual void StartAlternateProtocolCacheUpdateTimerOnUI(
+      base::TimeDelta delay);
+  virtual void StartAlternateProtocolPrefsUpdateTimerOnIO(
+      base::TimeDelta delay);
+
+ private:
   // Callback for preference changes.
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -153,26 +197,37 @@ class HttpServerPropertiesManager
   // UI thread
   // ---------
 
-  // Used to post update tasks to the UI thread.
-  ScopedRunnableMethodFactory<HttpServerPropertiesManager> ui_method_factory_;
-
   // Used to get |weak_ptr_| to self on the UI thread.
   scoped_ptr<base::WeakPtrFactory<HttpServerPropertiesManager> >
       ui_weak_ptr_factory_;
 
   base::WeakPtr<HttpServerPropertiesManager> ui_weak_ptr_;
 
+  // Used to post SPDY cache update tasks.
+  scoped_ptr<base::OneShotTimer<HttpServerPropertiesManager> >
+      ui_spdy_cache_update_timer_;
+
+  // Used to post Alternate-Protocol cache update tasks.
+  scoped_ptr<base::OneShotTimer<HttpServerPropertiesManager> >
+      ui_alternate_protocol_cache_update_timer_;
+
   // Used to track the spdy servers changes.
   PrefChangeRegistrar pref_change_registrar_;
   PrefService* pref_service_;  // Weak.
+  bool setting_spdy_servers_;
+  bool setting_alternate_protocol_servers_;
 
   // ---------
   // IO thread
   // ---------
 
-  // Used to post update tasks to the IO thread.
-  scoped_ptr<ScopedRunnableMethodFactory<HttpServerPropertiesManager> >
-      io_method_factory_;
+  // Used to post SPDY pref update tasks.
+  scoped_ptr<base::OneShotTimer<HttpServerPropertiesManager> >
+      io_spdy_prefs_update_timer_;
+
+  // Used to post Alternate-Protocol pref update tasks.
+  scoped_ptr<base::OneShotTimer<HttpServerPropertiesManager> >
+      io_alternate_protocol_prefs_update_timer_;
 
   scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_impl_;
 

@@ -22,6 +22,7 @@ namespace {
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Mock;
+using ::testing::StrictMock;
 
 class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
  public:
@@ -33,54 +34,67 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
   virtual ~TestingHttpServerPropertiesManager() {
   }
 
-  // Make this method public for testing.
-  using HttpServerPropertiesManager::ScheduleUpdateCacheOnUI;
-  using HttpServerPropertiesManager::ScheduleUpdatePrefsOnIO;
+  // Make these method public for testing.
+  using HttpServerPropertiesManager::ScheduleUpdateSpdyCacheOnUI;
+  using HttpServerPropertiesManager::ScheduleUpdateSpdyPrefsOnIO;
+  using HttpServerPropertiesManager::ScheduleUpdateAlternateProtocolCacheOnUI;
+  using HttpServerPropertiesManager::ScheduleUpdateAlternateProtocolPrefsOnIO;
 
   // Post tasks without a delay during tests.
-  virtual void PostUpdateTaskOnUI(Task* task) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE, task);
-  }
-
-  // Makes a direct call to UpdateCacheFromPrefsOnIO during tests.
-  void UpdateCacheFromPrefsOnIO() {
-    std::vector<std::string>* spdy_servers = new std::vector<std::string>;
-    spdy_servers->push_back("www.google.com:443");
-    HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(spdy_servers, true);
-  }
-
-  void UpdateCacheFromPrefsConcrete() {
-    HttpServerPropertiesManager::UpdateCacheFromPrefs();
+  virtual void StartSpdyPrefsUpdateTimerOnIO(base::TimeDelta delay) OVERRIDE {
+    HttpServerPropertiesManager::StartSpdyPrefsUpdateTimerOnIO(
+        base::TimeDelta());
   }
 
   // Post tasks without a delay during tests.
-  virtual void PostUpdateTaskOnIO(Task* task) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE, task);
+  virtual void StartAlternateProtocolPrefsUpdateTimerOnIO(
+      base::TimeDelta delay) OVERRIDE {
+    HttpServerPropertiesManager::StartAlternateProtocolPrefsUpdateTimerOnIO(
+        base::TimeDelta());
   }
 
-  // Makes a direct call to SetSpdyServersInPrefsOnUI during tests.
-  void SetSpdyServersInPrefsOnUI() {
-    net::HostPortPair spdy_server_mail("mail.google.com", 443);
-    std::string spdy_server_m =
-      net::HttpServerPropertiesImpl::GetFlattenedSpdyServer(spdy_server_mail);
-
-    scoped_refptr<RefCountedListValue> spdy_server_list =
-        new RefCountedListValue();
-    spdy_server_list->data.Append(new StringValue(spdy_server_m));
-
-    HttpServerPropertiesManager::SetSpdyServersInPrefsOnUI(spdy_server_list);
+  void UpdateSpdyCacheFromPrefsConcrete() {
+    HttpServerPropertiesManager::UpdateSpdyCacheFromPrefs();
   }
 
-  void UpdatePrefsFromCacheConcrete() {
-    HttpServerPropertiesManager::UpdatePrefsFromCache();
+  void UpdateAlternateProtocolCacheFromPrefsConcrete() {
+    HttpServerPropertiesManager::UpdateAlternateProtocolCacheFromPrefs();
   }
 
-  MOCK_METHOD0(UpdateCacheFromPrefs, void());
-  MOCK_METHOD0(UpdatePrefsFromCache, void());
-  MOCK_METHOD2(UpdateCacheFromPrefsOnIO,
+  // Post tasks without a delay during tests.
+  virtual void StartSpdyCacheUpdateTimerOnUI(base::TimeDelta delay) OVERRIDE {
+    HttpServerPropertiesManager::StartSpdyCacheUpdateTimerOnUI(
+        base::TimeDelta());
+  }
+
+  // Post tasks without a delay during tests.
+  virtual void StartAlternateProtocolCacheUpdateTimerOnUI(
+      base::TimeDelta delay) OVERRIDE {
+    HttpServerPropertiesManager::StartAlternateProtocolCacheUpdateTimerOnUI(
+        base::TimeDelta());
+  }
+
+  void UpdateSpdyPrefsFromCacheConcrete() {
+    HttpServerPropertiesManager::UpdateSpdyPrefsFromCache();
+  }
+
+  void UpdateAlternateProtocolPrefsFromCacheConcrete() {
+    HttpServerPropertiesManager::UpdateAlternateProtocolPrefsFromCache();
+  }
+
+  MOCK_METHOD0(UpdateSpdyCacheFromPrefs, void());
+  MOCK_METHOD0(UpdateSpdyPrefsFromCache, void());
+  MOCK_METHOD2(UpdateSpdyCacheFromPrefsOnIO,
                void(std::vector<std::string>* spdy_servers, bool support_spdy));
   MOCK_METHOD1(SetSpdyServersInPrefsOnUI,
                void(scoped_refptr<RefCountedListValue> spdy_server_list));
+
+  MOCK_METHOD0(UpdateAlternateProtocolCacheFromPrefs, void());
+  MOCK_METHOD0(UpdateAlternateProtocolPrefsFromCache, void());
+  MOCK_METHOD1(UpdateAlternateProtocolCacheFromPrefsOnIO,
+               void(RefCountedAlternateProtocolMap*));
+  MOCK_METHOD1(SetAlternateProtocolServersInPrefsOnUI,
+               void(RefCountedAlternateProtocolMap*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingHttpServerPropertiesManager);
@@ -95,8 +109,11 @@ class HttpServerPropertiesManagerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     pref_service_.RegisterListPref(prefs::kSpdyServers);
+    pref_service_.RegisterDictionaryPref(prefs::kAlternateProtocolServers);
     http_server_props_manager_.reset(
-        new TestingHttpServerPropertiesManager(&pref_service_));
+        new StrictMock<TestingHttpServerPropertiesManager>(&pref_service_));
+    ExpectSpdyCacheUpdate();
+    ExpectAlternateProtocolCacheUpdate();
     loop_.RunAllPending();
   }
 
@@ -109,18 +126,38 @@ class HttpServerPropertiesManagerTest : public testing::Test {
     http_server_props_manager_.reset();
   }
 
-  void ExpectCacheUpdate() {
-    EXPECT_CALL(*http_server_props_manager_, UpdateCacheFromPrefs())
+  void ExpectSpdyCacheUpdate() {
+    EXPECT_CALL(*http_server_props_manager_, UpdateSpdyCacheFromPrefs())
         .WillOnce(
             Invoke(http_server_props_manager_.get(),
-            &TestingHttpServerPropertiesManager::UpdateCacheFromPrefsConcrete));
+                   &TestingHttpServerPropertiesManager::
+                   UpdateSpdyCacheFromPrefsConcrete));
   }
 
-  void ExpectPrefsUpdate() {
-    EXPECT_CALL(*http_server_props_manager_, UpdatePrefsFromCache())
+  void ExpectSpdyPrefsUpdate() {
+    EXPECT_CALL(*http_server_props_manager_, UpdateSpdyPrefsFromCache())
         .WillOnce(
             Invoke(http_server_props_manager_.get(),
-            &TestingHttpServerPropertiesManager::UpdatePrefsFromCacheConcrete));
+                   &TestingHttpServerPropertiesManager::
+                   UpdateSpdyPrefsFromCacheConcrete));
+  }
+
+  void ExpectAlternateProtocolCacheUpdate() {
+    EXPECT_CALL(*http_server_props_manager_,
+                UpdateAlternateProtocolCacheFromPrefs())
+        .WillOnce(
+            Invoke(http_server_props_manager_.get(),
+                   &TestingHttpServerPropertiesManager::
+                   UpdateAlternateProtocolCacheFromPrefsConcrete));
+  }
+
+  void ExpectAlternateProtocolPrefsUpdate() {
+    EXPECT_CALL(*http_server_props_manager_,
+                UpdateAlternateProtocolPrefsFromCache())
+        .WillOnce(
+            Invoke(http_server_props_manager_.get(),
+                   &TestingHttpServerPropertiesManager::
+                   UpdateAlternateProtocolPrefsFromCacheConcrete));
   }
 
   MessageLoop loop_;
@@ -134,23 +171,32 @@ class HttpServerPropertiesManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HttpServerPropertiesManagerTest);
 };
 
-TEST_F(HttpServerPropertiesManagerTest, SingleUpdateForTwoPrefChanges) {
-  ExpectCacheUpdate();
+TEST_F(HttpServerPropertiesManagerTest, SingleUpdateForTwoSpdyPrefChanges) {
+  ExpectSpdyCacheUpdate();
 
-  ListValue* http_server_props = new ListValue;
-  http_server_props->Append(new StringValue("www.google.com:443"));
-  http_server_props->Append(new StringValue("mail.google.com:443"));
+  // Set up the pref and then set it twice. Only expect a single cache update.
+  base::ListValue* http_server_props = new base::ListValue;
+  http_server_props->Append(new base::StringValue("www.google.com:443"));
+  pref_service_.SetManagedPref(prefs::kSpdyServers, http_server_props);
+  http_server_props = http_server_props->DeepCopy();
+  http_server_props->Append(new base::StringValue("mail.google.com:443"));
   pref_service_.SetManagedPref(prefs::kSpdyServers, http_server_props);
   loop_.RunAllPending();
-
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(
+      net::HostPortPair::FromString("www.google.com:443")));
+  EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(
+      net::HostPortPair::FromString("mail.google.com:443")));
+  EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(
+      net::HostPortPair::FromString("foo.google.com:1337")));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
-  ExpectPrefsUpdate();
+  ExpectSpdyPrefsUpdate();
 
   // Post an update task to the IO thread. SetSupportsSpdy calls
-  // ScheduleUpdatePrefsOnIO.
+  // ScheduleUpdateSpdyPrefsOnIO.
 
   // Add mail.google.com:443 as a supporting spdy server.
   net::HostPortPair spdy_server_mail("mail.google.com", 443);
@@ -164,37 +210,40 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }
 
-TEST_F(HttpServerPropertiesManagerTest, DeleteAll) {
-  ExpectPrefsUpdate();
+TEST_F(HttpServerPropertiesManagerTest, Clear) {
+  ExpectSpdyPrefsUpdate();
+  ExpectAlternateProtocolPrefsUpdate();
 
-  // Add mail.google.com:443 as a supporting spdy server.
   net::HostPortPair spdy_server_mail("mail.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
+  http_server_props_manager_->SetAlternateProtocol(
+      spdy_server_mail, 443, net::NPN_SPDY_2);
 
   // Run the task.
   loop_.RunAllPending();
 
   EXPECT_TRUE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
+  EXPECT_TRUE(
+      http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
-  // DeleteAll http server data.
-  http_server_props_manager_->DeleteAll();
+  ExpectSpdyPrefsUpdate();
+  ExpectAlternateProtocolPrefsUpdate();
+  // Clear http server data.
+  http_server_props_manager_->Clear();
 
   // Run the task.
   loop_.RunAllPending();
 
   EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
+  EXPECT_FALSE(
+      http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }
 
-//
-// Tests for shutdown when updating cache.
-//
-TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {
-  EXPECT_CALL(*http_server_props_manager_,
-              UpdateCacheFromPrefsOnIO(_, _)).Times(0);
+TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateSpdyCache0) {
   // Post an update task to the UI thread.
-  http_server_props_manager_->ScheduleUpdateCacheOnUI();
+  http_server_props_manager_->ScheduleUpdateSpdyCacheOnUI();
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnUIThread();
   http_server_props_manager_.reset();
@@ -202,10 +251,9 @@ TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {
   loop_.RunAllPending();
 }
 
-TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache1) {
-  EXPECT_CALL(*http_server_props_manager_, UpdateCacheFromPrefs()).Times(0);
+TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateSpdyCache1) {
   // Post an update task.
-  http_server_props_manager_->ScheduleUpdateCacheOnUI();
+  http_server_props_manager_->ScheduleUpdateSpdyCacheOnUI();
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnUIThread();
   // Run the task after shutdown, but before deletion.
@@ -215,10 +263,8 @@ TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache1) {
   loop_.RunAllPending();
 }
 
-TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache2) {
-  EXPECT_CALL(*http_server_props_manager_,
-              UpdateCacheFromPrefsOnIO(_, _)).Times(0);
-  http_server_props_manager_->UpdateCacheFromPrefsConcrete();
+TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateSpdyCache2) {
+  http_server_props_manager_->UpdateSpdyCacheFromPrefsConcrete();
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnUIThread();
   // Run the task after shutdown, but before deletion.
@@ -231,11 +277,9 @@ TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache2) {
 //
 // Tests for shutdown when updating prefs.
 //
-TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs0) {
-  EXPECT_CALL(*http_server_props_manager_,
-              SetSpdyServersInPrefsOnUI(_)).Times(0);
+TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateSpdyPrefs0) {
   // Post an update task to the IO thread.
-  http_server_props_manager_->ScheduleUpdatePrefsOnIO();
+  http_server_props_manager_->ScheduleUpdateSpdyPrefsOnIO();
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnUIThread();
   http_server_props_manager_.reset();
@@ -243,11 +287,10 @@ TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs0) {
   loop_.RunAllPending();
 }
 
-TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs1) {
-  EXPECT_CALL(*http_server_props_manager_,
-              SetSpdyServersInPrefsOnUI(_)).Times(0);
+TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateSpdyPrefs1) {
+  ExpectSpdyPrefsUpdate();
   // Post an update task.
-  http_server_props_manager_->ScheduleUpdatePrefsOnIO();
+  http_server_props_manager_->ScheduleUpdateSpdyPrefsOnIO();
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnUIThread();
   // Run the task after shutdown, but before deletion.
@@ -257,11 +300,148 @@ TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs1) {
   loop_.RunAllPending();
 }
 
-TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs2) {
-  EXPECT_CALL(*http_server_props_manager_,
-              SetSpdyServersInPrefsOnUI(_)).Times(0);
+TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateSpdyPrefs2) {
   // This posts a task to the UI thread.
-  http_server_props_manager_->UpdatePrefsFromCacheConcrete();
+  http_server_props_manager_->UpdateSpdyPrefsFromCacheConcrete();
+  // Shutdown comes before the task is executed.
+  http_server_props_manager_->ShutdownOnUIThread();
+  // Run the task after shutdown, but before deletion.
+  loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+  http_server_props_manager_.reset();
+  loop_.RunAllPending();
+}
+
+TEST_F(HttpServerPropertiesManagerTest,
+       SingleUpdateForTwoAlternateProtocolPrefChanges) {
+  ExpectAlternateProtocolCacheUpdate();
+
+  // Set up the pref and then set it twice. Only expect a single cache update.
+  base::DictionaryValue* alternate_protocol_servers = new base::DictionaryValue;
+  base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
+  alternate_protocol->SetInteger("port", 443);
+  alternate_protocol->SetInteger("protocol", static_cast<int>(net::NPN_SPDY_1));
+  alternate_protocol_servers->SetWithoutPathExpansion(
+      "www.google.com:80", alternate_protocol);
+  alternate_protocol = new base::DictionaryValue;
+  alternate_protocol->SetInteger("port", 444);
+  alternate_protocol->SetInteger("protocol", static_cast<int>(net::NPN_SPDY_2));
+  alternate_protocol_servers->SetWithoutPathExpansion(
+      "mail.google.com:80", alternate_protocol);
+  pref_service_.SetManagedPref(prefs::kAlternateProtocolServers,
+                               alternate_protocol_servers);
+  alternate_protocol_servers = alternate_protocol_servers->DeepCopy();
+  pref_service_.SetManagedPref(prefs::kAlternateProtocolServers,
+                               alternate_protocol_servers);
+  loop_.RunAllPending();
+
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(
+      net::HostPortPair::FromString("www.google.com:80")));
+  ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(
+      net::HostPortPair::FromString("mail.google.com:80")));
+  net::PortAlternateProtocolPair port_alternate_protocol =
+      http_server_props_manager_->GetAlternateProtocol(
+          net::HostPortPair::FromString("www.google.com:80"));
+  EXPECT_EQ(443, port_alternate_protocol.port);
+  EXPECT_EQ(net::NPN_SPDY_1, port_alternate_protocol.protocol);
+  port_alternate_protocol =
+      http_server_props_manager_->GetAlternateProtocol(
+          net::HostPortPair::FromString("mail.google.com:80"));
+  EXPECT_EQ(444, port_alternate_protocol.port);
+  EXPECT_EQ(net::NPN_SPDY_2, port_alternate_protocol.protocol);
+}
+
+TEST_F(HttpServerPropertiesManagerTest, HasAlternateProtocol) {
+  ExpectAlternateProtocolPrefsUpdate();
+
+  net::HostPortPair spdy_server_mail("mail.google.com", 80);
+  EXPECT_FALSE(
+      http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
+  http_server_props_manager_->SetAlternateProtocol(
+      spdy_server_mail, 443, net::NPN_SPDY_2);
+
+  // Run the task.
+  loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  ASSERT_TRUE(
+      http_server_props_manager_->HasAlternateProtocol(spdy_server_mail));
+  net::PortAlternateProtocolPair port_alternate_protocol =
+      http_server_props_manager_->GetAlternateProtocol(spdy_server_mail);
+  EXPECT_EQ(443, port_alternate_protocol.port);
+  EXPECT_EQ(net::NPN_SPDY_2, port_alternate_protocol.protocol);
+}
+
+TEST_F(HttpServerPropertiesManagerTest,
+       ShutdownWithPendingUpdateAlternateProtocolCache0) {
+  // Post an update task to the UI thread.
+  http_server_props_manager_->ScheduleUpdateAlternateProtocolCacheOnUI();
+  // Shutdown comes before the task is executed.
+  http_server_props_manager_->ShutdownOnUIThread();
+  http_server_props_manager_.reset();
+  // Run the task after shutdown and deletion.
+  loop_.RunAllPending();
+}
+
+TEST_F(HttpServerPropertiesManagerTest,
+       ShutdownWithPendingUpdateAlternateProtocolCache1) {
+  // Post an update task.
+  http_server_props_manager_->ScheduleUpdateAlternateProtocolCacheOnUI();
+  // Shutdown comes before the task is executed.
+  http_server_props_manager_->ShutdownOnUIThread();
+  // Run the task after shutdown, but before deletion.
+  loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+  http_server_props_manager_.reset();
+  loop_.RunAllPending();
+}
+
+TEST_F(HttpServerPropertiesManagerTest,
+       ShutdownWithPendingUpdateAlternateProtocolCache2) {
+  http_server_props_manager_->UpdateAlternateProtocolCacheFromPrefsConcrete();
+  // Shutdown comes before the task is executed.
+  http_server_props_manager_->ShutdownOnUIThread();
+  // Run the task after shutdown, but before deletion.
+  loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+  http_server_props_manager_.reset();
+  loop_.RunAllPending();
+}
+
+//
+// Tests for shutdown when updating prefs.
+//
+TEST_F(HttpServerPropertiesManagerTest,
+       ShutdownWithPendingUpdateAlternateProtocolPrefs0) {
+  // Post an update task to the IO thread.
+  http_server_props_manager_->ScheduleUpdateAlternateProtocolPrefsOnIO();
+  // Shutdown comes before the task is executed.
+  http_server_props_manager_->ShutdownOnUIThread();
+  http_server_props_manager_.reset();
+  // Run the task after shutdown and deletion.
+  loop_.RunAllPending();
+}
+
+TEST_F(HttpServerPropertiesManagerTest,
+       ShutdownWithPendingUpdateAlternateProtocolPrefs1) {
+  ExpectAlternateProtocolPrefsUpdate();
+  // Post an update task.
+  http_server_props_manager_->ScheduleUpdateAlternateProtocolPrefsOnIO();
+  // Shutdown comes before the task is executed.
+  http_server_props_manager_->ShutdownOnUIThread();
+  // Run the task after shutdown, but before deletion.
+  loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+  http_server_props_manager_.reset();
+  loop_.RunAllPending();
+}
+
+TEST_F(HttpServerPropertiesManagerTest,
+       ShutdownWithPendingUpdateAlternateProtocolPrefs2) {
+  // This posts a task to the UI thread.
+  http_server_props_manager_->UpdateAlternateProtocolPrefsFromCacheConcrete();
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnUIThread();
   // Run the task after shutdown, but before deletion.
