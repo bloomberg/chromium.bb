@@ -481,7 +481,14 @@ class WorkItem(object):
   def __init__(self, name):
     # A unique string representing this work item.
     self._name = name
-    self.lock = threading.RLock()
+    try:
+      self.lock = threading.Lock()
+    except:  # pylint: disable=W0702
+      if sys.platform != 'cygwin':
+        raise
+      # On cygwin, it's throwing randomly. Hack and reuse the single
+      # sys.stdout.lock. Yep you read it right. Single lock.
+      self.lock = sys.stdout.lock
 
   def run(self, work_queue):
     """work_queue is passed as keyword argument so it should be
