@@ -80,6 +80,8 @@ struct wlsc_wm {
 		xcb_atom_t		 net_wm_icon;
 		xcb_atom_t		 net_wm_state;
 		xcb_atom_t		 net_wm_state_fullscreen;
+		xcb_atom_t		 net_wm_user_time;
+		xcb_atom_t		 net_wm_icon_name;
 		xcb_atom_t		 utf8_string;
 	} atom;
 };
@@ -240,8 +242,6 @@ wlsc_wm_handle_property_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	xcb_property_notify_event_t *property_notify =
 		(xcb_property_notify_event_t *) event;
 
-	fprintf(stderr, "XCB_PROPERTY_NOTIFY\n");
-
 	if (property_notify->atom == XCB_ATOM_WM_CLASS) {
 		fprintf(stderr, "wm_class changed\n");
 	} else if (property_notify->atom == XCB_ATOM_WM_TRANSIENT_FOR) {
@@ -249,9 +249,18 @@ wlsc_wm_handle_property_notify(struct wlsc_wm *wm, xcb_generic_event_t *event)
 	} else if (property_notify->atom == wm->atom.wm_protocols) {
 		fprintf(stderr, "wm_protocols changed\n");
 	} else if (property_notify->atom == wm->atom.net_wm_name) {
-		fprintf(stderr, "wm_class changed\n");
+		fprintf(stderr, "_net_wm_name changed\n");
+	} else if (property_notify->atom == wm->atom.net_wm_user_time) {
+		fprintf(stderr, "_net_wm_user_time changed\n");
+	} else if (property_notify->atom == wm->atom.net_wm_icon_name) {
+		fprintf(stderr, "_net_wm_icon_name changed\n");
+	} else if (property_notify->atom == XCB_ATOM_WM_NAME) {
+		fprintf(stderr, "wm_name changed\n");
+	} else if (property_notify->atom == XCB_ATOM_WM_ICON_NAME) {
+		fprintf(stderr, "wm_icon_name changed\n");
 	} else {
-		fprintf(stderr, "unhandled property change: %s\n",
+		fprintf(stderr, "XCB_PROPERTY_NOTIFY: "
+			"unhandled property change: %s\n",
 			get_atom_name(wm->conn, property_notify->atom));
 	}
 }
@@ -363,6 +372,8 @@ wxs_wm_get_resources(struct wlsc_wm *wm)
 		{ "_NET_WM_ICON",	F(atom.net_wm_icon) },
 		{ "_NET_WM_STATE",	F(atom.net_wm_state) },
 		{ "_NET_WM_STATE_FULLSCREEN", F(atom.net_wm_state_fullscreen) },
+		{ "_NET_WM_USER_TIME", F(atom.net_wm_user_time) },
+		{ "_NET_WM_ICON_NAME", F(atom.net_wm_icon_name) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
 	};
 
