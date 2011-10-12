@@ -208,6 +208,7 @@ surface_handle_buffer_destroy(struct wl_listener *listener,
 					       buffer_destroy_listener);
 	struct wl_buffer *buffer = (struct wl_buffer *) resource;
 
+	wl_list_init(&es->buffer_destroy_listener.link);
 	if (es->buffer == buffer)
 		es->buffer = NULL;
 }
@@ -256,6 +257,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->width = width;
 	surface->height = height;
 
+	surface->fullscreen_output = NULL;
 	surface->buffer = NULL;
 	surface->output = NULL;
 
