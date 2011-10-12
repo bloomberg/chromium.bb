@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -20,9 +19,18 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace {
+
+// Extracted from: ui/base/keycode/keyboard_codes.h
+enum {
+  VKEY_BACK = 0x08,
+  VKEY_DELETE = 0x2E,
+  VKEY_LEFT = 0x25,
+  VKEY_UP = 0x26,
+  VKEY_RIGHT = 0x27,
+  VKEY_DOWN = 0x28,
+};
 
 const uint32_t kTextfieldBgColor = 0xffffffff;
 const uint32_t kTextfieldTextColor = 0xff000000;
@@ -315,6 +323,10 @@ class MyInstance : public pp::Instance {
         status_handler_(new TextFieldStatusHandler) {
   }
 
+  ~MyInstance() {
+    delete status_handler_;
+  }
+
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
     RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
     RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
@@ -344,23 +356,25 @@ class MyInstance : public pp::Instance {
           // compositions. By using the notified information. the browser can,
           // say, show virtual keyboards or IMEs only at appropriate timing
           // that the plugin does need to accept text input.
-          status_handler_.reset(new TextFieldStatusNotifyingHanlder(this));
+          delete status_handler_;
+          status_handler_ = new TextFieldStatusNotifyingHanlder(this);
         } else if (argv[i] == std::string("full")) {
           // Demonstrating the behavior of plugins fully supporting IME.
           //
           // It notifies updates of caret positions to the browser,
           // and handles all text input events by itself.
-          status_handler_.reset(new TextFieldStatusNotifyingHanlder(this));
+          delete status_handler_;
+          status_handler_ = new TextFieldStatusNotifyingHanlder(this);
           RequestInputEvents(PP_INPUTEVENT_CLASS_IME);
         }
         break;
       }
     }
 
-    textfield_.push_back(MyTextField(this, status_handler_.get(),
+    textfield_.push_back(MyTextField(this, status_handler_,
                                      10, 10, 300, 20));
     textfield_.back().SetText("Hello");
-    textfield_.push_back(MyTextField(this, status_handler_.get(),
+    textfield_.push_back(MyTextField(this, status_handler_,
                                      30, 100, 300, 20));
     textfield_.back().SetText("World");
     return true;
@@ -508,16 +522,16 @@ class MyInstance : public pp::Instance {
          ++it) {
       if (it->Focused()) {
         switch (ev.GetKeyCode()) {
-          case ui::VKEY_LEFT:
+          case VKEY_LEFT:
             it->KeyLeft();
             break;
-          case ui::VKEY_RIGHT:
+          case VKEY_RIGHT:
             it->KeyRight();
             break;
-          case ui::VKEY_DELETE:
+          case VKEY_DELETE:
             it->KeyDelete();
             break;
-          case ui::VKEY_BACK:
+          case VKEY_BACK:
             it->KeyBackspace();
             break;
         }
@@ -585,7 +599,7 @@ class MyInstance : public pp::Instance {
   }
 
   // IME Control interface.
-  scoped_ptr<TextFieldStatusHandler> status_handler_;
+  TextFieldStatusHandler* status_handler_;
 
   // Remembers the size of this instance.
   pp::Size last_size_;
