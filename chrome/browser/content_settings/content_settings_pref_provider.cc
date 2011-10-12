@@ -361,6 +361,13 @@ void PrefProvider::UpdatePref(
 }
 
 void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
+  // |DictionaryPrefUpdate| sends out notifications when destructed. This
+  // construction order ensures |AutoLock| gets destroyed first and |lock_| is
+  // not held when the notifications are sent. Also, |auto_reset| must be still
+  // valid when the notifications are sent, so that |Observe| skips the
+  // notification.
+  AutoReset<bool> auto_reset(&updating_preferences_, true);
+  DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatternPairs);
   base::AutoLock auto_lock(lock_);
 
   const DictionaryValue* all_settings_dictionary =
@@ -369,85 +376,84 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
   if (overwrite)
     value_map_.clear();
 
-  AutoReset<bool> auto_reset(&updating_preferences_, true);
   // Careful: The returned value could be NULL if the pref has never been set.
-  if (all_settings_dictionary != NULL) {
-    DictionaryPrefUpdate update(prefs_, prefs::kContentSettingsPatternPairs);
-    DictionaryValue* mutable_settings;
-    scoped_ptr<DictionaryValue> mutable_settings_scope;
+  if (!all_settings_dictionary)
+    return;
 
-    if (!is_incognito_) {
-      mutable_settings = update.Get();
-    } else {
-      // Create copy as we do not want to persist anything in OTR prefs.
-      mutable_settings = all_settings_dictionary->DeepCopy();
-      mutable_settings_scope.reset(mutable_settings);
+  DictionaryValue* mutable_settings;
+  scoped_ptr<DictionaryValue> mutable_settings_scope;
+
+  if (!is_incognito_) {
+    mutable_settings = update.Get();
+  } else {
+    // Create copy as we do not want to persist anything in OTR prefs.
+    mutable_settings = all_settings_dictionary->DeepCopy();
+    mutable_settings_scope.reset(mutable_settings);
+  }
+  // Convert all Unicode patterns into punycode form, then read.
+  CanonicalizeContentSettingsExceptions(mutable_settings);
+
+  for (DictionaryValue::key_iterator i(mutable_settings->begin_keys());
+       i != mutable_settings->end_keys(); ++i) {
+    const std::string& pattern_str(*i);
+    std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
+        ParsePatternString(pattern_str);
+    if (!pattern_pair.first.IsValid() ||
+        !pattern_pair.second.IsValid()) {
+      LOG(DFATAL) << "Invalid pattern strings: " << pattern_str;
+      continue;
     }
-    // Convert all Unicode patterns into punycode form, then read.
-    CanonicalizeContentSettingsExceptions(mutable_settings);
 
-    for (DictionaryValue::key_iterator i(mutable_settings->begin_keys());
-         i != mutable_settings->end_keys(); ++i) {
-      const std::string& pattern_str(*i);
-      std::pair<ContentSettingsPattern, ContentSettingsPattern> pattern_pair =
-         ParsePatternString(pattern_str);
-      if (!pattern_pair.first.IsValid() ||
-          !pattern_pair.second.IsValid()) {
-        LOG(DFATAL) << "Invalid pattern strings: " << pattern_str;
-        continue;
-      }
+    // Get settings dictionary for the current pattern string, and read
+    // settings from the dictionary.
+    DictionaryValue* settings_dictionary = NULL;
+    bool found = mutable_settings->GetDictionaryWithoutPathExpansion(
+        pattern_str, &settings_dictionary);
+    DCHECK(found);
 
-      // Get settings dictionary for the current pattern string, and read
-      // settings from the dictionary.
-      DictionaryValue* settings_dictionary = NULL;
-      bool found = mutable_settings->GetDictionaryWithoutPathExpansion(
-          pattern_str, &settings_dictionary);
-      DCHECK(found);
+    for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+      ContentSettingsType content_type = static_cast<ContentSettingsType>(i);
 
-      for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-        ContentSettingsType content_type = static_cast<ContentSettingsType>(i);
-
-        if (SupportsResourceIdentifier(content_type)) {
-          const std::string content_type_str =
-              GetResourceTypeName(ContentSettingsType(i));
-          DictionaryValue* resource_dictionary = NULL;
-          if (settings_dictionary->GetDictionary(
-                  content_type_str, &resource_dictionary)) {
-            for (DictionaryValue::key_iterator j(
-                     resource_dictionary->begin_keys());
-                 j != resource_dictionary->end_keys();
-                 ++j) {
-              const std::string& resource_identifier(*j);
-              int setting = CONTENT_SETTING_DEFAULT;
-              found = resource_dictionary->GetIntegerWithoutPathExpansion(
-                  resource_identifier, &setting);
-              DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-              setting = ClickToPlayFixup(content_type,
-                                         ContentSetting(setting));
-              value_map_.SetValue(pattern_pair.first,
-                                  pattern_pair.second,
-                                  content_type,
-                                  resource_identifier,
-                                  Value::CreateIntegerValue(setting));
-            }
-          }
-        } else {
-          const std::string content_type_str =
-              GetTypeName(ContentSettingsType(i));
-          int setting = CONTENT_SETTING_DEFAULT;
-          if (settings_dictionary->GetIntegerWithoutPathExpansion(
-                  content_type_str, &setting)) {
+      if (SupportsResourceIdentifier(content_type)) {
+        const std::string content_type_str =
+            GetResourceTypeName(ContentSettingsType(i));
+        DictionaryValue* resource_dictionary = NULL;
+        if (settings_dictionary->GetDictionary(
+                content_type_str, &resource_dictionary)) {
+          for (DictionaryValue::key_iterator j(
+                   resource_dictionary->begin_keys());
+               j != resource_dictionary->end_keys();
+               ++j) {
+            const std::string& resource_identifier(*j);
+            int setting = CONTENT_SETTING_DEFAULT;
+            found = resource_dictionary->GetIntegerWithoutPathExpansion(
+                resource_identifier, &setting);
             DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-            setting = FixObsoleteCookiePromptMode(content_type,
-                                                  ContentSetting(setting));
             setting = ClickToPlayFixup(content_type,
                                        ContentSetting(setting));
             value_map_.SetValue(pattern_pair.first,
                                 pattern_pair.second,
                                 content_type,
-                                ResourceIdentifier(""),
+                                resource_identifier,
                                 Value::CreateIntegerValue(setting));
           }
+        }
+      } else {
+        const std::string content_type_str =
+            GetTypeName(ContentSettingsType(i));
+        int setting = CONTENT_SETTING_DEFAULT;
+        if (settings_dictionary->GetIntegerWithoutPathExpansion(
+                content_type_str, &setting)) {
+          DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
+          setting = FixObsoleteCookiePromptMode(content_type,
+                                                ContentSetting(setting));
+          setting = ClickToPlayFixup(content_type,
+                                     ContentSetting(setting));
+          value_map_.SetValue(pattern_pair.first,
+                              pattern_pair.second,
+                              content_type,
+                              ResourceIdentifier(""),
+                              Value::CreateIntegerValue(setting));
         }
       }
     }
