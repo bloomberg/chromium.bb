@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "base/time.h"
 #include "ui/gfx/font.h"
 #include "views/background.h"
@@ -28,12 +29,11 @@ class ViewMenuDelegate;
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT MenuButton : public TextButton {
  public:
-  // The menu button's class name.
   static const char kViewClassName[];
 
   // Create a Button.
   MenuButton(ButtonListener* listener,
-             const std::wstring& text,
+             const string16& text,
              ViewMenuDelegate* menu_delegate,
              bool show_menu_marker);
   virtual ~MenuButton();

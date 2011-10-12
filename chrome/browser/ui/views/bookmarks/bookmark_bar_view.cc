@@ -183,7 +183,7 @@ const char BookmarkButton::kViewClassName[] =
 class BookmarkFolderButton : public views::MenuButton {
  public:
   BookmarkFolderButton(views::ButtonListener* listener,
-                       const std::wstring& title,
+                       const string16& title,
                        views::ViewMenuDelegate* menu_delegate,
                        bool show_menu_marker)
       : MenuButton(listener, title, menu_delegate, show_menu_marker) {
@@ -231,7 +231,7 @@ class BookmarkFolderButton : public views::MenuButton {
 class OverFlowButton : public views::MenuButton {
  public:
   explicit OverFlowButton(BookmarkBarView* owner)
-      : MenuButton(NULL, std::wstring(), owner, false),
+      : MenuButton(NULL, string16(), owner, false),
         owner_(owner) {}
 
   virtual bool OnMousePressed(const views::MouseEvent& e) {
@@ -1207,7 +1207,7 @@ int BookmarkBarView::GetFirstHiddenNodeIndex() {
 MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   MenuButton* button = new BookmarkFolderButton(
       this,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED)),
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED),
       this,
       false);
   button->set_id(VIEW_ID_OTHER_BOOKMARKS);
@@ -1265,8 +1265,8 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
     ConfigureButton(node, button);
     return button;
   } else {
-    views::MenuButton* button = new BookmarkFolderButton(this,
-        UTF16ToWide(node->GetTitle()), this, false);
+    views::MenuButton* button = new BookmarkFolderButton(
+        this, node->GetTitle(), this, false);
     button->SetIcon(GetFolderIcon());
     ConfigureButton(node, button);
     return button;

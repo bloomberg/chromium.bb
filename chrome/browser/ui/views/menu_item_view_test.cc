@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/test/base/view_event_test_base.h"
 #include "views/controls/button/menu_button.h"
@@ -43,7 +44,8 @@ class MenuItemViewTestBase : public ViewEventTestBase,
   // ViewEventTestBase implementation.
 
   virtual void SetUp() OVERRIDE {
-    button_ = new views::MenuButton(NULL, L"Menu Test", this, true);
+    button_ = new views::MenuButton(
+        NULL, ASCIIToUTF16("Menu Test"), this, true);
     menu_ = new views::MenuItemView(this);
     BuildMenu(menu_);
     menu_runner_.reset(new views::MenuRunner(menu_));

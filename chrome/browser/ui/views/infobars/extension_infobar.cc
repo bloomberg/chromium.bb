@@ -74,7 +74,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
     return;
   }
 
-  menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  menu_ = new views::MenuButton(NULL, string16(), this, false);
   menu_->SetVisible(false);
   AddChildView(menu_);
 

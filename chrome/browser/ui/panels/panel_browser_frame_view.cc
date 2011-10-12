@@ -247,7 +247,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   EnsureResourcesInitialized();
   frame_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
-  settings_button_ =  new views::MenuButton(NULL, std::wstring(), this, false);
+  settings_button_ =  new views::MenuButton(NULL, string16(), this, false);
   settings_button_->SetIcon(*(settings_button_resources.normal_image));
   settings_button_->SetHoverIcon(*(settings_button_resources.hover_image));
   settings_button_->SetPushedIcon(*(settings_button_resources.pushed_image));

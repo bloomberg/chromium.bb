@@ -66,7 +66,7 @@ bool BrowserActionsContainer::disable_animations_during_testing_ = false;
 BrowserActionButton::BrowserActionButton(const Extension* extension,
                                          BrowserActionsContainer* panel)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          MenuButton(this, std::wstring(), NULL, false)),
+          MenuButton(this, string16(), NULL, false)),
       browser_action_(extension->browser_action()),
       extension_(extension),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
@@ -216,8 +216,8 @@ bool BrowserActionButton::Activate() {
 
 bool BrowserActionButton::OnMousePressed(const views::MouseEvent& event) {
   if (!event.IsRightMouseButton()) {
-    return IsPopup() ?
-        MenuButton::OnMousePressed(event) : TextButton::OnMousePressed(event);
+    return IsPopup() ? MenuButton::OnMousePressed(event)
+                     : TextButton::OnMousePressed(event);
   }
 
   ShowContextMenu(gfx::Point(), true);
@@ -242,8 +242,8 @@ void BrowserActionButton::OnMouseExited(const views::MouseEvent& event) {
 }
 
 bool BrowserActionButton::OnKeyReleased(const views::KeyEvent& event) {
-  return IsPopup() ?
-      MenuButton::OnKeyReleased(event) : TextButton::OnKeyReleased(event);
+  return IsPopup() ? MenuButton::OnKeyReleased(event)
+                   : TextButton::OnKeyReleased(event);
 }
 
 void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
@@ -377,7 +377,7 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
   resize_area_ = new views::ResizeArea(this);
   AddChildView(resize_area_);
 
-  chevron_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  chevron_ = new views::MenuButton(NULL, string16(), this, false);
   chevron_->set_border(NULL);
   chevron_->EnableCanvasFlippingForRTLUI(true);
   chevron_->SetAccessibleName(

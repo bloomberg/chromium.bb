@@ -37,7 +37,7 @@ namespace chromeos {
 
 StatusAreaButton::StatusAreaButton(StatusAreaHost* host,
                                    views::ViewMenuDelegate* menu_delegate)
-    : MenuButton(NULL, std::wstring(), menu_delegate, false),
+    : MenuButton(NULL, string16(), menu_delegate, false),
       use_menu_button_paint_(false),
       active_(true),
       host_(host) {

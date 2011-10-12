@@ -8,7 +8,7 @@
 #include "views/widget/widget.h"
 
 AppMenuButtonWin::AppMenuButtonWin(views::ViewMenuDelegate* menu_delegate)
-    : views::MenuButton(NULL, std::wstring(), menu_delegate, false) {
+    : views::MenuButton(NULL, string16(), menu_delegate, false) {
 }
 
 bool AppMenuButtonWin::OnKeyPressed(const views::KeyEvent& event) {

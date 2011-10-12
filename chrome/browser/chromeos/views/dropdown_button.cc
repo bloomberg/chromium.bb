@@ -61,7 +61,7 @@ DropDownButtonBorder::DropDownButtonBorder() {
 namespace chromeos {
 
 DropDownButton::DropDownButton(views::ButtonListener* listener,
-                               const std::wstring& text,
+                               const string16& text,
                                views::ViewMenuDelegate* menu_delegate,
                                bool show_menu_marker)
     : MenuButton(listener, text, menu_delegate, show_menu_marker) {

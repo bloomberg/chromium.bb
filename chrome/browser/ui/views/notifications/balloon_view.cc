@@ -302,7 +302,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   source_label_ = new views::Label(source_label_text);
   AddChildView(source_label_);
-  options_menu_button_ = new views::MenuButton(NULL, L"", this, false);
+  options_menu_button_ = new views::MenuButton(NULL, string16(), this, false);
   AddChildView(options_menu_button_);
   close_button_ = new views::ImageButton(this);
   close_button_->SetTooltipText(l10n_util::GetStringUTF16(

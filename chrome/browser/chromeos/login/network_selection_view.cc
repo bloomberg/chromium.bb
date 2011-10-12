@@ -25,9 +25,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/size.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
-#include "views/controls/button/text_button.h"
 #include "views/controls/throbber.h"
 #include "views/layout/fill_layout.h"
 #include "views/layout/grid_layout.h"
@@ -126,7 +126,7 @@ class NetworkControlReportOnActivate : public NetworkDropdownButton {
 class NotifyingMenuButton : public DropDownButton {
  public:
   NotifyingMenuButton(views::ButtonListener* listener,
-                      const std::wstring& text,
+                      const string16& text,
                       views::ViewMenuDelegate* menu_delegate,
                       bool show_menu_marker,
                       ViewsNetworkScreenActor* actor)
@@ -303,14 +303,14 @@ void NetworkSelectionView::Init() {
   select_language_label_->SetBackgroundColor(background_color);
 
   languages_menubutton_ = new NotifyingMenuButton(
-      NULL, std::wstring(), actor_->language_switch_menu(), true, actor_);
+      NULL, string16(), actor_->language_switch_menu(), true, actor_);
   InitMenuButtonProperties(languages_menubutton_);
 
   select_keyboard_label_ = new views::Label();
   select_keyboard_label_->SetBackgroundColor(background_color);
 
   keyboards_menubutton_ = new DropDownButton(
-      NULL /* listener */, L"", actor_->keyboard_switch_menu(),
+      NULL /* listener */, string16(), actor_->keyboard_switch_menu(),
       true /* show_menu_marker */);
   InitMenuButtonProperties(keyboards_menubutton_);
 

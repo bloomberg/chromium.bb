@@ -230,7 +230,7 @@ void NewUserView::RecreatePeculiarControls() {
   // to shrink, only grow; so recreate on text change.
   delete languages_menubutton_;
   languages_menubutton_ = new views::MenuButton(
-      NULL, std::wstring(), &language_switch_menu_, true);
+      NULL, string16(), &language_switch_menu_, true);
   languages_menubutton_->set_menu_marker(
       ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_MENU_DROPARROW_SHARP));

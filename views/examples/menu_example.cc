@@ -9,9 +9,9 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/controls/button/text_button.h"
 #include "views/layout/fill_layout.h"
 #include "views/view.h"
 
@@ -59,7 +59,7 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
 class ExampleMenuButton : public views::MenuButton,
                           public views::ViewMenuDelegate {
  public:
-  ExampleMenuButton(const std::wstring& test, bool show_menu_marker);
+  ExampleMenuButton(const string16& test, bool show_menu_marker);
   virtual ~ExampleMenuButton();
 
  private:
@@ -176,7 +176,7 @@ void ExampleMenuModel::ExecuteCommand(int command_id) {
 
 // ExampleMenuButton -----------------------------------------------------------
 
-ExampleMenuButton::ExampleMenuButton(const std::wstring& test,
+ExampleMenuButton::ExampleMenuButton(const string16& test,
                                      bool show_menu_marker)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           views::MenuButton(NULL, test, this, show_menu_marker)) {
@@ -186,9 +186,9 @@ ExampleMenuButton::~ExampleMenuButton() {
 }
 
 void ExampleMenuButton::RunMenu(views::View* source, const gfx::Point& point) {
-  if (menu_model_ == NULL) {
+  if (!menu_model_.get())
     menu_model_.reset(new ExampleMenuModel);
-  }
+
   menu_model_->RunMenuAt(point);
 }
 
@@ -207,8 +207,8 @@ void MenuExample::CreateExampleView(views::View* container) {
   // views::Menu2 is not a sub class of View, hence we cannot directly
   // add to the continer. Instead, we add a button to open a menu.
   const bool show_menu_marker = true;
-  ExampleMenuButton* menu_button = new ExampleMenuButton(L"Open a menu",
-                                                         show_menu_marker);
+  ExampleMenuButton* menu_button = new ExampleMenuButton(
+      ASCIIToUTF16("Open a menu"), show_menu_marker);
   container->SetLayoutManager(new views::FillLayout);
   container->AddChildView(menu_button);
 }

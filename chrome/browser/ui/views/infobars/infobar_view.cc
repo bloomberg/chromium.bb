@@ -101,8 +101,8 @@ views::Link* InfoBarView::CreateLink(const string16& text,
 views::MenuButton* InfoBarView::CreateMenuButton(
     const string16& text,
     views::ViewMenuDelegate* menu_delegate) {
-  views::MenuButton* menu_button =
-      new views::MenuButton(NULL, UTF16ToWideHack(text), menu_delegate, true);
+  views::MenuButton* menu_button = new views::MenuButton(
+      NULL, text, menu_delegate, true);
   menu_button->set_border(new InfoBarButtonBorder);
   menu_button->set_animate_on_state_change(false);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();

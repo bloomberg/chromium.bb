@@ -85,8 +85,8 @@ class NotificationControlView : public views::View,
 
     AddChildView(close_button_);
 
-    options_menu_button_
-        = new views::MenuButton(NULL, std::wstring(), this, false);
+    options_menu_button_ = new views::MenuButton(
+        NULL, string16(), this, false);
     options_menu_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
     options_menu_button_->SetIcon(*rb.GetBitmapNamed(IDR_NOTIFICATION_MENU));
     options_menu_button_->set_border(NULL);

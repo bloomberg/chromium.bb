@@ -75,7 +75,7 @@ void DrawTaskBarDecoration(const Browser* browser, const SkBitmap* bitmap) {
 }
 
 AvatarMenuButton::AvatarMenuButton(Browser* browser, bool has_menu)
-    : MenuButton(NULL, std::wstring(), this, false),
+    : MenuButton(NULL, string16(), this, false),
       browser_(browser),
       bubble_(NULL),
       has_menu_(has_menu),

@@ -177,7 +177,7 @@ void ToolbarView::Init() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   app_menu_ = new AppMenuButtonWin(this);
 #else
-  app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  app_menu_ = new views::MenuButton(NULL, string16(), this, false);
 #endif
   app_menu_->set_border(NULL);
   app_menu_->EnableCanvasFlippingForRTLUI(true);

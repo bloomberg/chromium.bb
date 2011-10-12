@@ -259,7 +259,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   // ViewEventTestBase implementation.
 
   virtual void SetUp() OVERRIDE {
-    button_ = new views::MenuButton(NULL, L"Menu Adapter Test", this, true);
+    button_ = new views::MenuButton(
+        NULL, ASCIIToUTF16("Menu Adapter Test"), this, true);
 
     menu_ = menu_model_adapter_.CreateMenu();
     menu_runner_.reset(new views::MenuRunner(menu_));

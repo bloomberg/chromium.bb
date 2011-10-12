@@ -22,11 +22,11 @@ namespace chromeos {
 NetworkDropdownButton::NetworkDropdownButton(bool is_browser_mode,
                                              gfx::NativeWindow parent_window,
                                              bool should_show_options)
-    : DropDownButton(NULL,
-                     UTF16ToWide(l10n_util::GetStringUTF16(
-                         IDS_STATUSBAR_NO_NETWORKS_MESSAGE)),
-                     this,
-                     true),
+    : DropDownButton(
+          NULL,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE),
+          this,
+          true),
       parent_window_(parent_window),
       should_show_options_(should_show_options) {
   network_menu_.reset(new NetworkMenu(this, is_browser_mode));

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ namespace chromeos {
 class DropDownButton : public views::MenuButton {
  public:
   DropDownButton(views::ButtonListener* listener,
-                 const std::wstring& text,
+                 const string16& text,
                  views::ViewMenuDelegate* menu_delegate,
                  bool show_menu_marker);
   virtual ~DropDownButton();
