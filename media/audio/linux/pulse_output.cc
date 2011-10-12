@@ -4,6 +4,7 @@
 
 #include "media/audio/linux/pulse_output.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/audio_util.h"
@@ -67,7 +68,8 @@ static pa_channel_position ChromiumToPAChannelPosition(Channels channel) {
     case CHANNELS_MAX:
       return PA_CHANNEL_POSITION_INVALID;
   }
-  NOTREACHED();
+  NOTREACHED() << "Invalid channel " << channel;
+  return PA_CHANNEL_POSITION_INVALID;
 }
 
 static pa_channel_map ChannelLayoutToPAChannelMap(
