@@ -80,7 +80,7 @@ base::Time ConfigDirPolicyProviderDelegate::GetLastModification() {
 }
 
 ConfigDirPolicyProvider::ConfigDirPolicyProvider(
-    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
+    const PolicyDefinitionList* policy_list,
     const FilePath& config_dir)
     : FileBasedPolicyProvider(
         policy_list,

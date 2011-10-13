@@ -126,9 +126,9 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "policy/policy_constants.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -5867,8 +5867,8 @@ void TestingAutomationProvider::SetPolicies(
 #if !defined(ENABLE_CONFIGURATION_POLICY) || defined(OFFICIAL_BUILD)
   reply.SendError("Configuration Policy disabled");
 #else
-  const policy::ConfigurationPolicyProvider::PolicyDefinitionList* list =
-      policy::ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+  const policy::PolicyDefinitionList* list =
+      policy::GetChromePolicyDefinitionList();
   policy::BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
   struct {
@@ -5913,8 +5913,8 @@ void TestingAutomationProvider::GetPolicyDefinitionList(
 #else
   DictionaryValue response;
 
-  const policy::ConfigurationPolicyProvider::PolicyDefinitionList* list =
-      policy::ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+  const policy::PolicyDefinitionList* list =
+      policy::GetChromePolicyDefinitionList();
   // Value::Type to python type.
   std::map<Value::Type, std::string> types;
   types[Value::TYPE_BOOLEAN] = "bool";
@@ -5922,7 +5922,7 @@ void TestingAutomationProvider::GetPolicyDefinitionList(
   types[Value::TYPE_STRING] = "str";
   types[Value::TYPE_LIST] = "list";
 
-  const policy::ConfigurationPolicyProvider::PolicyDefinitionList::Entry* entry;
+  const policy::PolicyDefinitionList::Entry* entry;
   for (entry = list->begin; entry != list->end; ++entry) {
     if (types.find(entry->value_type) == types.end()) {
       std::string error("Unrecognized policy type for policy ");

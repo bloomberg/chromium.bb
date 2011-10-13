@@ -5,12 +5,12 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "policy/policy_constants.h"
 
 namespace policy {
 
 MockConfigurationPolicyProvider::MockConfigurationPolicyProvider()
-    : ConfigurationPolicyProvider(
-          ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()),
+    : ConfigurationPolicyProvider(GetChromePolicyDefinitionList()),
       initialization_complete_(false) {
 }
 

@@ -69,17 +69,23 @@
 #   platform name, e.g.: 'chrome.win' is read as 'Chrome on Windows'. Version
 #   numbers can be any string that does not contain ':' or '-' characters.
 #
-# Currently supported product names:
-#     'chrome_frame', 'chrome_os'
-#     'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.*'
-#   For example if 'chrome.*:5-10' is specified for a policy, then it should
-#   be read as:
-#     'chrome.linux:5-10', 'chrome.mac:5-10', 'chrome.win:5-10'
-#   The product name also affects in which templates will the policy be included.
-#     chrome.*, chrome.win, chrome_frame -> ADM,ADMX,ADML,doc
-#     chrome.*, chrome.linux -> JSON,doc
-#     chrome.*, chrome.mac -> plist, plist_strings,doc
+#   Currently supported product names:
+#       'chrome_frame', 'chrome_os'
+#       'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.*'
+#     For example if 'chrome.*:5-10' is specified for a policy, then it should
+#     be read as:
+#       'chrome.linux:5-10', 'chrome.mac:5-10', 'chrome.win:5-10'
+#
+#   The product name also affects in which templates the policy is included:
+#     chrome.*, chrome.win, chrome_frame -> ADM, ADMX, ADML, doc
+#     chrome.*, chrome.linux -> JSON, doc
+#     chrome.*, chrome.mac -> plist, plist_strings, doc
 #     everything else -> doc
+#
+#   The default list of policies supported by Chrome is also generated based
+#   on the product names:
+#     chrome.* -> Chrome policy definition list
+#     chrome_os -> Chrome policy definition list, when building OS_CHROMEOS
 #
 # Annotations:
 #   Additional information is specified under keys 'features' and
@@ -384,7 +390,7 @@
     {
       'name': 'CloudPrintProxyEnabled',
       'type': 'main',
-      'supported_on': [],
+      'supported_on': ['chrome.*:X-'],
       'features': {'dynamic_refresh': 1},
       'future': True,
       'example_value': True,

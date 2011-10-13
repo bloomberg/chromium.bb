@@ -71,10 +71,6 @@ class ConfigurationPolicyPrefStore
   // Creates a ConfigurationPolicyPrefStore that reads recommended cloud policy.
   static ConfigurationPolicyPrefStore* CreateRecommendedCloudPolicyPrefStore();
 
-  // Returns the default policy definition list for Chrome.
-  static const ConfigurationPolicyProvider::PolicyDefinitionList*
-      GetChromePolicyDefinitionList();
-
   // Returns true if the given policy is a proxy policy.
   static bool IsProxyPolicy(ConfigurationPolicyType policy);
 
@@ -82,9 +78,6 @@ class ConfigurationPolicyPrefStore
   // Refreshes policy information, rereading policy from the provider and
   // sending out change notifications as appropriate.
   void Refresh();
-
-  static const ConfigurationPolicyProvider::PolicyDefinitionList
-      kPolicyDefinitionList;
 
   // The policy provider from which policy settings are read.
   ConfigurationPolicyProvider* provider_;

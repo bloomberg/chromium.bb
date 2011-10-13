@@ -20,7 +20,7 @@ class MacPreferencesPolicyProviderDelegate
   // Takes ownership of |preferences|.
   MacPreferencesPolicyProviderDelegate(
       MacPreferences* preferences,
-      const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list);
+      const PolicyDefinitionList* policy_list);
   virtual ~MacPreferencesPolicyProviderDelegate();
 
   // FileBasedPolicyLoader::Delegate implementation.
@@ -33,7 +33,7 @@ class MacPreferencesPolicyProviderDelegate
   // Unfortunately, we cannot get the policy list at load time from the
   // provider, because the loader may outlive the provider, so we store our own
   // pointer to the list.
-  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list_;
+  const PolicyDefinitionList* policy_list_;
 
   scoped_ptr<MacPreferences> preferences_;
 
@@ -45,11 +45,10 @@ class MacPreferencesPolicyProviderDelegate
 class ConfigurationPolicyProviderMac : public FileBasedPolicyProvider {
  public:
   explicit ConfigurationPolicyProviderMac(
-      const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list);
+      const PolicyDefinitionList* policy_list);
   // For testing; takes ownership of |preferences|.
-  ConfigurationPolicyProviderMac(
-      const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
-      MacPreferences* preferences);
+  ConfigurationPolicyProviderMac(const PolicyDefinitionList* policy_list,
+                                 MacPreferences* preferences);
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderMac);
 };

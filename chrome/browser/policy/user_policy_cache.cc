@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/proto/old_generic_format.pb.h"
 #include "policy/configuration_policy_type.h"
+#include "policy/policy_constants.h"
 
 namespace policy {
 
@@ -139,9 +140,7 @@ void UserPolicyCache::MaybeDecodeOldstylePolicy(
         result.Set(named_value->name(), decoded_value);
     }
   }
-  mandatory->LoadFrom(
-      &result,
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList());
+  mandatory->LoadFrom(&result, GetChromePolicyDefinitionList());
 }
 
 Value* UserPolicyCache::DecodeIntegerValue(

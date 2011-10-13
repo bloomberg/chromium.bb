@@ -8,10 +8,11 @@
 #include <map>
 
 #include "base/values.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "policy/configuration_policy_type.h"
 
 namespace policy {
+
+struct PolicyDefinitionList;
 
 // Wrapper class around a std::map<ConfigurationPolicyType, Value*> that
 // properly cleans up after itself when going out of scope.
@@ -41,7 +42,7 @@ class PolicyMap {
   // corresponding policy type. The policies to load, and their types, are
   // listed in |list|.
   void LoadFrom(const DictionaryValue* policies,
-                const ConfigurationPolicyProvider::PolicyDefinitionList* list);
+                const PolicyDefinitionList* list);
 
   bool Equals(const PolicyMap& other) const;
   bool empty() const;

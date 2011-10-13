@@ -17,6 +17,15 @@ import sys;
 CHROME_SUBKEY = 'SOFTWARE\\\\Policies\\\\Google\\\\Chrome';
 CHROMIUM_SUBKEY = 'SOFTWARE\\\\Policies\\\\Chromium';
 
+TYPE_MAP = {
+  'int': 'TYPE_INTEGER',
+  'int-enum': 'TYPE_INTEGER',
+  'list': 'TYPE_LIST',
+  'main': 'TYPE_BOOLEAN',
+  'string': 'TYPE_STRING',
+  'string-enum': 'TYPE_STRING',
+}
+
 
 def main():
   parser = OptionParser(usage=__doc__);
@@ -64,16 +73,48 @@ def _OutputGeneratedWarningForC(f, template_file_path):
             '//\n\n')
 
 
-def _GetPolicyNameList(template_file_contents):
-  policy_names = [];
+# Returns a tuple with details about the given policy:
+# (name, type, list_of_platforms, is_device_policy)
+def _GetPolicyDetails(policy):
+  if not TYPE_MAP.has_key(policy['type']):
+    print "Unknown policy type for %s: %s" % (policy['name'], policy['type'])
+    sys.exit(3)
+  # platforms is a list of "chrome", "chrome_os" and/or "chrome_frame".
+  platforms = [ x.split('.')[0].split(':')[0] for x in policy['supported_on'] ]
+  is_device_policy = policy.get('device_only', False)
+  return (policy['name'], TYPE_MAP[policy['type']], platforms, is_device_policy)
+
+
+def _GetPolicyList(template_file_contents):
+  policies = [];
   for policy in template_file_contents['policy_definitions']:
     if policy['type'] == 'group':
       for sub_policy in policy['policies']:
-        policy_names.append(sub_policy['name'])
+        policies.append(_GetPolicyDetails(sub_policy))
     else:
-      policy_names.append(policy['name'])
-  policy_names.sort()
-  return policy_names
+      policies.append(_GetPolicyDetails(policy))
+  # Tuples are sorted in lexicographical order, which will sort by policy name
+  # in this case.
+  policies.sort()
+  return policies
+
+
+def _GetPolicyNameList(template_file_contents):
+  return [name for (name, _, _, _) in _GetPolicyList(template_file_contents)]
+
+
+def _GetChromePolicyList(template_file_contents):
+  return [(name, vtype) for (name, vtype, platforms, is_device_only)
+                        in _GetPolicyList(template_file_contents)
+                        if 'chrome' in platforms and not is_device_only]
+
+
+def _GetChromeOSPolicyList(template_file_contents):
+  return [(name, vtype) for (name, vtype, platforms, is_device_only)
+                        in _GetPolicyList(template_file_contents)
+                        if 'chrome_os' in platforms
+                          and not 'chrome' in platforms
+                          and not is_device_only]
 
 
 def _LoadJSONFile(json_file):
@@ -87,20 +128,43 @@ def _WritePolicyConstantHeader(template_file_contents, args, opts):
   platform = args[0];
   with open(opts.header_path, "w") as f:
     _OutputGeneratedWarningForC(f, args[1])
+
     f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
             '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
             '#pragma once\n'
             '\n'
+            '#include "base/values.h"\n'
+            '#include "policy/configuration_policy_type.h"\n'
+            '\n'
             'namespace policy {\n\n')
+
     if platform == "win":
       f.write('// The windows registry path where policy configuration '
-              'resides.\nextern const wchar_t kRegistrySubKey[];\n\n')
+              'resides.\n'
+              'extern const wchar_t kRegistrySubKey[];\n\n')
+
+    f.write('// Lists policy types mapped to their names and expected types.\n'
+            '// Used to initialize ConfigurationPolicyProviders.\n'
+            'struct PolicyDefinitionList {\n'
+            '  struct Entry {\n'
+            '    ConfigurationPolicyType policy_type;\n'
+            '    base::Value::Type value_type;\n'
+            '    const char* name;\n'
+            '  };\n'
+            '\n'
+            '  const Entry* begin;\n'
+            '  const Entry* end;\n'
+            '};\n'
+            '\n'
+            '// Gets the policy name for the given policy type.\n'
+            'const char* GetPolicyName(ConfigurationPolicyType type);\n'
+            '\n'
+            '// Returns the default policy definition list for Chrome.\n'
+            'const PolicyDefinitionList* GetChromePolicyDefinitionList();\n\n')
     f.write('// Key names for the policy settings.\n'
             'namespace key {\n\n')
     for policy_name in _GetPolicyNameList(template_file_contents):
       f.write('extern const char k' + policy_name + '[];\n')
-    f.write('\n// Only used in testing.'
-            '\nextern const char* kMapPolicyString[];\n')
     f.write('\n}  // namespace key\n\n'
             '}  // namespace policy\n\n'
             '#endif  // CHROME_COMMON_POLICY_CONSTANTS_H_\n')
@@ -111,10 +175,37 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
   platform = args[0];
   with open(opts.source_path, "w") as f:
     _OutputGeneratedWarningForC(f, args[1])
-    f.write('#include "policy/policy_constants.h"\n'
+
+    f.write('#include "base/basictypes.h"\n'
+            '#include "base/logging.h"\n'
+            '#include "policy/policy_constants.h"\n'
             '\n'
-            'namespace policy {\n'
-            '\n')
+            'namespace policy {\n\n')
+
+    f.write('namespace {\n\n')
+
+    f.write('PolicyDefinitionList::Entry entries[] = {\n')
+    for (name, vtype) in _GetChromePolicyList(template_file_contents):
+      f.write('  { kPolicy%s, Value::%s, key::k%s },\n' % (name, vtype, name))
+    f.write('\n#if defined(OS_CHROMEOS)\n')
+    for (name, vtype) in _GetChromeOSPolicyList(template_file_contents):
+      f.write('  { kPolicy%s, Value::%s, key::k%s },\n' % (name, vtype, name))
+    f.write('#endif\n'
+            '};\n\n')
+
+    f.write('PolicyDefinitionList chrome_policy_list = {\n'
+            '  entries,\n'
+            '  entries + arraysize(entries),\n'
+            '};\n\n')
+
+    f.write('// Maps a policy-type enum value to the policy name.\n'
+            'const char* policy_name_map[] = {\n');
+    for name in _GetPolicyNameList(template_file_contents):
+      f.write('  key::k%s,\n' % name)
+    f.write('};\n\n')
+
+    f.write('}  // namespace\n\n')
+
     if platform == "win":
       f.write('#if defined(GOOGLE_CHROME_BUILD)\n'
               'const wchar_t kRegistrySubKey[] = '
@@ -123,14 +214,20 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
               'const wchar_t kRegistrySubKey[] = '
               'L"' + CHROMIUM_SUBKEY + '";\n'
               '#endif\n\n')
+
+    f.write('const char* GetPolicyName(ConfigurationPolicyType type) {\n'
+            '  CHECK(type >= 0 && '
+              'static_cast<size_t>(type) < arraysize(policy_name_map));\n'
+            '  return policy_name_map[type];\n'
+            '}\n'
+            '\n'
+            'const PolicyDefinitionList* GetChromePolicyDefinitionList() {\n'
+            '  return &chrome_policy_list;\n'
+            '}\n\n')
+
     f.write('namespace key {\n\n')
     for policy_name in _GetPolicyNameList(template_file_contents):
       f.write('const char k%s[] = "%s";\n' % (policy_name, policy_name))
-    f.write('\n// Only used in testing.'
-            '\nconst char* kMapPolicyString[] = {\n    ')
-    for policy_name in _GetPolicyNameList(template_file_contents):
-      f.write('\n    "%s",' % policy_name)
-    f.write('\n};\n')
     f.write('\n}  // namespace key\n\n'
             '}  // namespace policy\n')
 

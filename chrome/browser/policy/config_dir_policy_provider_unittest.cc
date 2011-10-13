@@ -186,9 +186,7 @@ class ConfigDirPolicyProviderValueTest
 };
 
 TEST_P(ConfigDirPolicyProviderValueTest, Default) {
-  ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
-      test_dir());
+  ConfigDirPolicyProvider provider(GetChromePolicyDefinitionList(), test_dir());
   PolicyMap policy_map;
   EXPECT_TRUE(provider.Provide(&policy_map));
   EXPECT_TRUE(policy_map.empty());
@@ -198,9 +196,7 @@ TEST_P(ConfigDirPolicyProviderValueTest, NullValue) {
   DictionaryValue dict;
   dict.Set(GetParam().policy_key(), Value::CreateNullValue());
   WriteConfigFile(dict, "empty");
-  ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
-      test_dir());
+  ConfigDirPolicyProvider provider(GetChromePolicyDefinitionList(), test_dir());
   PolicyMap policy_map;
   EXPECT_TRUE(provider.Provide(&policy_map));
   EXPECT_TRUE(policy_map.empty());
@@ -210,9 +206,7 @@ TEST_P(ConfigDirPolicyProviderValueTest, TestValue) {
   DictionaryValue dict;
   dict.Set(GetParam().policy_key(), GetParam().test_value()->DeepCopy());
   WriteConfigFile(dict, "policy");
-  ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
-      test_dir());
+  ConfigDirPolicyProvider provider(GetChromePolicyDefinitionList(), test_dir());
   PolicyMap policy_map;
   EXPECT_TRUE(provider.Provide(&policy_map));
   EXPECT_EQ(1U, policy_map.size());
@@ -221,7 +215,9 @@ TEST_P(ConfigDirPolicyProviderValueTest, TestValue) {
   EXPECT_TRUE(GetParam().test_value()->Equals(value));
 }
 
-// Test parameters for all supported policies.
+// Test parameters for all supported policies. testing::Values() has a limit of
+// 50 parameters which is reached in this instantiation; new policies should go
+// in a new instantiation.
 INSTANTIATE_TEST_CASE_P(
     ConfigDirPolicyProviderValueTestInstance,
     ConfigDirPolicyProviderValueTest,
@@ -328,12 +324,6 @@ INSTANTIATE_TEST_CASE_P(
         ValueTestParams::ForBooleanPolicy(
             kPolicyPrintingEnabled,
             key::kPrintingEnabled),
-        ValueTestParams::ForIntegerPolicy(
-            kPolicyDevicePolicyRefreshRate,
-            key::kDevicePolicyRefreshRate),
-        ValueTestParams::ForIntegerPolicy(
-            kPolicyPolicyRefreshRate,
-            key::kPolicyRefreshRate),
         ValueTestParams::ForBooleanPolicy(
             kPolicyInstantEnabled,
             key::kInstantEnabled),
@@ -375,19 +365,23 @@ INSTANTIATE_TEST_CASE_P(
             key::kDisabledSchemes),
         ValueTestParams::ForStringPolicy(
             kPolicyDiskCacheDir,
-            key::kDiskCacheDir)));
-
-// testing::Values has a limit of 50 test templates, which is reached by the
-// instantiations above. Add tests for new policies here:
-INSTANTIATE_TEST_CASE_P(
-    ConfigDirPolicyProviderValueTestInstance2,
-    ConfigDirPolicyProviderValueTest,
-    testing::Values(
+            key::kDiskCacheDir),
         ValueTestParams::ForListPolicy(
             kPolicyURLBlacklist,
             key::kURLBlacklist),
         ValueTestParams::ForListPolicy(
             kPolicyURLWhitelist,
             key::kURLWhitelist)));
+
+// Test parameters for all policies that are supported on ChromeOS only.
+#if defined(OS_CHROMEOS)
+INSTANTIATE_TEST_CASE_P(
+    ConfigDirPolicyProviderValueTestChromeOSInstance,
+    ConfigDirPolicyProviderValueTest,
+    testing::Values(
+        ValueTestParams::ForIntegerPolicy(
+            kPolicyPolicyRefreshRate,
+            key::kPolicyRefreshRate)));
+#endif
 
 }  // namespace policy

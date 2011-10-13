@@ -193,7 +193,7 @@ void ConfigurationPolicyProviderWinTest::SetUp() {
   ActivateOverrides();
 
   provider_.reset(new ConfigurationPolicyProviderWin(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()));
+      GetChromePolicyDefinitionList()));
 }
 
 void ConfigurationPolicyProviderWinTest::TearDown() {
@@ -355,7 +355,9 @@ TEST_P(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
   EXPECT_TRUE(value->Equals(GetParam().hklm_value()));
 }
 
-// Instantiate the test case for all supported policies.
+// Test parameters for all supported policies. testing::Values() has a limit of
+// 50 parameters which is reached in this instantiation; new policies should go
+// in the next instantiation after this one.
 INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyProviderWinTestInstance,
     ConfigurationPolicyProviderWinTest,
@@ -459,9 +461,6 @@ INSTANTIATE_TEST_CASE_P(
         PolicyTestParams::ForBooleanPolicy(
             kPolicyPrintingEnabled,
             key::kPrintingEnabled),
-        PolicyTestParams::ForIntegerPolicy(
-            kPolicyPolicyRefreshRate,
-            key::kPolicyRefreshRate),
         PolicyTestParams::ForBooleanPolicy(
             kPolicyInstantEnabled,
             key::kInstantEnabled),
@@ -509,7 +508,10 @@ INSTANTIATE_TEST_CASE_P(
             key::kDiskCacheDir),
         PolicyTestParams::ForIntegerPolicy(
             kPolicyMaxConnectionsPerProxy,
-            key::kMaxConnectionsPerProxy)));
+            key::kMaxConnectionsPerProxy),
+        PolicyTestParams::ForListPolicy(
+            kPolicyURLBlacklist,
+            key::kURLBlacklist)));
 
 // testing::Values has a limit of 50 test templates, which is reached by the
 // instantiations above. Add tests for new policies here:
@@ -517,9 +519,6 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyProviderWinTestInstance2,
     ConfigurationPolicyProviderWinTest,
     testing::Values(
-        PolicyTestParams::ForListPolicy(
-            kPolicyURLBlacklist,
-            key::kURLBlacklist),
         PolicyTestParams::ForListPolicy(
             kPolicyURLWhitelist,
             key::kURLWhitelist)));

@@ -41,9 +41,8 @@ TEST_F(AsynchronousPolicyTestBase, ProviderInit) {
   // when the file watcher is initialized, since this file may have changed
   // between the initial load and creating watcher.
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(policies));
-  FileBasedPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
-      provider_delegate);
+  FileBasedPolicyProvider provider(GetChromePolicyDefinitionList(),
+                                   provider_delegate);
   loop_.RunAllPending();
   PolicyMap policy_map;
   provider.Provide(&policy_map);
@@ -60,9 +59,8 @@ TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
   InSequence s;
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(
       new DictionaryValue));
-  FileBasedPolicyProvider file_based_provider(
-          ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
-          provider_delegate);
+  FileBasedPolicyProvider file_based_provider(GetChromePolicyDefinitionList(),
+                                              provider_delegate);
   // A second call to Load gets triggered during the provider's construction
   // when the file watcher is initialized, since this file may have changed
   // between the initial load and creating watcher.

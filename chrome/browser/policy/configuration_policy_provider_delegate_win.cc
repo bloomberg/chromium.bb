@@ -46,14 +46,13 @@ bool ReadRegistryStringValue(RegKey* key, const string16& name,
 namespace policy {
 
 ConfigurationPolicyProviderDelegateWin::ConfigurationPolicyProviderDelegateWin(
-    const ConfigurationPolicyProvider::PolicyDefinitionList*
-        policy_definition_list)
+    const PolicyDefinitionList* policy_definition_list)
     : policy_definition_list_(policy_definition_list) {
 }
 
 DictionaryValue* ConfigurationPolicyProviderDelegateWin::Load() {
   DictionaryValue* result = new DictionaryValue();
-  const ConfigurationPolicyProvider::PolicyDefinitionList::Entry* current;
+  const PolicyDefinitionList::Entry* current;
   for (current = policy_definition_list_->begin;
        current != policy_definition_list_->end;
        ++current) {

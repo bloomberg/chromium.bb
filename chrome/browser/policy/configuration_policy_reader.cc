@@ -15,6 +15,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "policy/policy_constants.h"
 
 namespace policy {
 
@@ -34,9 +35,6 @@ class ConfigurationPolicyStatusKeeper {
 
  private:
   typedef std::map<ConfigurationPolicyType, PolicyStatusInfo*> PolicyStatusMap;
-  typedef std::map<ConfigurationPolicyType, string16> PolicyNameMap;
-  typedef ConfigurationPolicyProvider::PolicyDefinitionList
-      PolicyDefinitionList;
 
   // Calls Provide() on the passed in |provider| to get policy values.
   void GetPoliciesFromProvider(ConfigurationPolicyProvider* provider);
@@ -78,8 +76,7 @@ void ConfigurationPolicyStatusKeeper::GetPoliciesFromProvider(
 
   PolicyMap::const_iterator policy = policies->begin();
   for ( ; policy != policies->end(); ++policy) {
-    string16 name = PolicyStatus::GetPolicyName(policy->first);
-    DCHECK(!name.empty());
+    string16 name = ASCIIToUTF16(GetPolicyName(policy->first));
 
     // TODO(simo) actually determine whether the policy is a user or a device
     // one and whether the policy could be enforced or not once this information
@@ -221,7 +218,7 @@ ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_set) const {
 
   *any_policies_set = false;
   const PolicyDefinitionList* supported_policies =
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+      GetChromePolicyDefinitionList();
   const PolicyDefinitionList::Entry* policy = supported_policies->begin;
   for ( ; policy != supported_policies->end; ++policy) {
     if (!AddPolicyFromReaders(policy->policy_type, result)) {
@@ -243,32 +240,6 @@ ListValue* PolicyStatus::GetPolicyStatusList(bool* any_policies_set) const {
     result->Append(*info);
 
   return result;
-}
-
-// static
-string16 PolicyStatus::GetPolicyName(ConfigurationPolicyType policy_type) {
-  static std::map<ConfigurationPolicyType, string16> name_map;
-  static const ConfigurationPolicyProvider::PolicyDefinitionList*
-      supported_policies = NULL;
-
-  if (!supported_policies) {
-    supported_policies =
-        ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
-
-    // Create mapping from ConfigurationPolicyTypes to actual policy names.
-    const ConfigurationPolicyProvider::PolicyDefinitionList::Entry* entry =
-        supported_policies->begin;
-    for ( ; entry != supported_policies->end; ++entry)
-      name_map[entry->policy_type] = ASCIIToUTF16(entry->name);
-  }
-
-  std::map<ConfigurationPolicyType, string16>::const_iterator entry =
-      name_map.find(policy_type);
-
-  if (entry == name_map.end())
-    return string16();
-
-  return entry->second;
 }
 
 bool PolicyStatus::AddPolicyFromReaders(

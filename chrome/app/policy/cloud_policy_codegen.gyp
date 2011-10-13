@@ -181,6 +181,9 @@
             '<(policy_constant_source_path)',
             '<(configuration_policy_type_header_path)',
           ],
+          'include_dirs': [
+            '<(DEPTH)',
+          ],
           'direct_dependent_settings':  {
             'include_dirs': [
               '<(policy_out_dir)'

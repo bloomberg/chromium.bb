@@ -9,7 +9,7 @@
 namespace policy {
 
 CloudPolicyProviderImpl::CloudPolicyProviderImpl(
-    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
+    const PolicyDefinitionList* policy_list,
     CloudPolicyCacheBase::PolicyLevel level)
     : CloudPolicyProvider(policy_list),
       level_(level),

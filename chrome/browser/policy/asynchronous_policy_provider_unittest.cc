@@ -24,7 +24,7 @@ TEST_F(AsynchronousPolicyTestBase, Provide) {
   policies->SetBoolean(policy::key::kSyncDisabled, true);
   EXPECT_CALL(*delegate_, Load()).WillOnce(Return(policies));
   AsynchronousPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+      GetChromePolicyDefinitionList(),
       new AsynchronousPolicyLoader(delegate_.release(), 10));
   PolicyMap policy_map;
   provider.Provide(&policy_map);
@@ -46,9 +46,7 @@ TEST_F(AsynchronousPolicyTestBase, ProvideAfterRefresh) {
   EXPECT_CALL(*delegate_, Load()).WillOnce(Return(refresh_policies));
   AsynchronousPolicyLoader* loader =
       new AsynchronousPolicyLoader(delegate_.release(), 10);
-  AsynchronousPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
-      loader);
+  AsynchronousPolicyProvider provider(GetChromePolicyDefinitionList(), loader);
   loop_.RunAllPending();
   loader->Reload();
   PolicyMap policy_map;

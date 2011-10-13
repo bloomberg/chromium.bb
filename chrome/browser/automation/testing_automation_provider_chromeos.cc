@@ -201,7 +201,7 @@ DictionaryValue* CreateDictionaryWithPolicies(
     if (policy_map) {
       policy::PolicyMap::const_iterator i;
       for (i = policy_map->begin(); i != policy_map->end(); i++)
-        dict->Set(policy::key::kMapPolicyString[i->first],
+        dict->Set(policy::GetPolicyName(i->first),
                   i->second->DeepCopy());
     }
   }

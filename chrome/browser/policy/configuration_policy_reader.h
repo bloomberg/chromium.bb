@@ -116,15 +116,7 @@ class PolicyStatus {
   // it is set to false. This is for the about:policy UI to display.
   ListValue* GetPolicyStatusList(bool* any_policies_set) const;
 
-  // Returns a string16 containing the actual name of the policy corresponding
-  // to |policy_type|. Returns an empty string if there is no such policy_type
-  // among the policies supported by the client.
-  static string16 GetPolicyName(ConfigurationPolicyType policy_type);
-
  private:
-  typedef ConfigurationPolicyProvider::PolicyDefinitionList
-      PolicyDefinitionList;
-
   // Add the policy information for |policy| to the ListValue pointed to be
   // |list| as it is returned by the different ConfigurationPolicyReader
   // objects. Returns true if a policy was added and false otherwise.

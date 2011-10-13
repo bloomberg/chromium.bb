@@ -9,6 +9,7 @@
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::AnyNumber;
@@ -58,7 +59,7 @@ class CloudPolicyProviderTest : public testing::Test {
  protected:
   void CreateCloudPolicyProvider(CloudPolicyCacheBase::PolicyLevel level) {
     cloud_policy_provider_.reset(new CloudPolicyProviderImpl(
-        ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(), level));
+        GetChromePolicyDefinitionList(), level));
   }
 
   // Appends the caches to a provider and then provides the policies to
@@ -66,7 +67,7 @@ class CloudPolicyProviderTest : public testing::Test {
   void RunCachesThroughProvider(MockCloudPolicyCache caches[], int n,
                                 CloudPolicyCacheBase::PolicyLevel level) {
     CloudPolicyProviderImpl provider(
-        policy::ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+        GetChromePolicyDefinitionList(),
         level);
     for (int i = 0; i < n; i++) {
       provider.AppendCache(&caches[i]);
@@ -222,12 +223,12 @@ TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsProxies) {
   PolicyMap A, B, C;
   CreateCloudPolicyProvider(CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED);
 
-  A.Set(policy::kPolicyProxyMode, Value::CreateIntegerValue(a_value));
+  A.Set(kPolicyProxyMode, Value::CreateIntegerValue(a_value));
 
-  B.Set(policy::kPolicyProxyServerMode, Value::CreateIntegerValue(b_value));
-  B.Set(policy::kPolicyProxyServer, Value::CreateIntegerValue(b_value));
-  B.Set(policy::kPolicyProxyPacUrl, Value::CreateIntegerValue(b_value));
-  B.Set(policy::kPolicyProxyBypassList, Value::CreateIntegerValue(b_value));
+  B.Set(kPolicyProxyServerMode, Value::CreateIntegerValue(b_value));
+  B.Set(kPolicyProxyServer, Value::CreateIntegerValue(b_value));
+  B.Set(kPolicyProxyPacUrl, Value::CreateIntegerValue(b_value));
+  B.Set(kPolicyProxyBypassList, Value::CreateIntegerValue(b_value));
 
   CombineTwoPolicyMaps(A, B, &C);
 

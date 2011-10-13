@@ -17,9 +17,8 @@ namespace policy {
 // Policy provider backed by JSON files in a configuration directory.
 class ConfigDirPolicyProvider : public FileBasedPolicyProvider {
  public:
-  ConfigDirPolicyProvider(
-      const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
-      const FilePath& config_dir);
+  ConfigDirPolicyProvider(const PolicyDefinitionList* policy_list,
+                          const FilePath& config_dir);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigDirPolicyProvider);

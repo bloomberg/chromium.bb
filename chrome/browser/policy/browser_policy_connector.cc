@@ -23,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "policy/policy_constants.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
@@ -313,10 +314,10 @@ BrowserPolicyConnector::BrowserPolicyConnector()
   recommended_platform_provider_.reset(CreateRecommendedPlatformProvider());
 
   managed_cloud_provider_.reset(new CloudPolicyProviderImpl(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+      GetChromePolicyDefinitionList(),
       CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
   recommended_cloud_provider_.reset(new CloudPolicyProviderImpl(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+      GetChromePolicyDefinitionList(),
       CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
 
 #if defined(OS_CHROMEOS)
@@ -421,8 +422,7 @@ BrowserPolicyConnector* BrowserPolicyConnector::CreateForTests() {
 // static
 ConfigurationPolicyProvider*
     BrowserPolicyConnector::CreateManagedPlatformProvider() {
-  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+  const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
 #if defined(OS_WIN)
   return new ConfigurationPolicyProviderWin(policy_list);
 #elif defined(OS_MACOSX)
@@ -445,8 +445,7 @@ ConfigurationPolicyProvider*
 ConfigurationPolicyProvider*
     BrowserPolicyConnector::CreateRecommendedPlatformProvider() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+  const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
   FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     return new ConfigDirPolicyProvider(

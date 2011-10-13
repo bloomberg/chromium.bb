@@ -25,8 +25,7 @@ class CloudPolicyCacheBase;
 //   AppendCache(cache):  adds |cache| to the back (i.e. least important cache).
 class CloudPolicyProvider : public ConfigurationPolicyProvider {
  public:
-  explicit CloudPolicyProvider(
-      const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list);
+  explicit CloudPolicyProvider(const PolicyDefinitionList* policy_list);
   virtual ~CloudPolicyProvider();
 
   // Adds a new instance of CloudPolicyCacheBase to the end of |caches_|.

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
+#include "policy/policy_constants.h"
 
 namespace policy {
 
@@ -48,8 +49,8 @@ void PolicyMap::CopyFrom(const PolicyMap& other) {
 
 void PolicyMap::LoadFrom(
     const DictionaryValue* policies,
-    const ConfigurationPolicyProvider::PolicyDefinitionList* list) {
-  const ConfigurationPolicyProvider::PolicyDefinitionList::Entry* entry;
+    const PolicyDefinitionList* list) {
+  const PolicyDefinitionList::Entry* entry;
   for (entry = list->begin; entry != list->end; ++entry) {
     Value* value;
     if (policies->Get(entry->name, &value) && value->IsType(entry->value_type))

@@ -7,7 +7,7 @@
 namespace policy {
 
 CloudPolicyProvider::CloudPolicyProvider(
-    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list)
+    const PolicyDefinitionList* policy_list)
     : ConfigurationPolicyProvider(policy_list) {
 }
 

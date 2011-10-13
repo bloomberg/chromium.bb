@@ -148,9 +148,6 @@ TEST_F(ConfigurationPolicyReaderTest, SetIntegerValue) {
 
 class PolicyStatusTest : public testing::Test {
  protected:
-  typedef ConfigurationPolicyProvider::PolicyDefinitionList
-      PolicyDefinitionList;
-
   PolicyStatusTest() {
     managed_platform_ = new MockConfigurationPolicyReader();
     managed_cloud_ = new MockConfigurationPolicyReader();
@@ -163,8 +160,7 @@ class PolicyStatusTest : public testing::Test {
                                           recommended_cloud_));
     status_ok_ = ASCIIToUTF16("ok");
 
-    policy_list_ =
-        ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+    policy_list_ = GetChromePolicyDefinitionList();
     policy_list_size_ =
       static_cast<size_t>(policy_list_->end - policy_list_->begin);
   }
@@ -344,14 +340,6 @@ TEST_F(PolicyStatusTest, GetPolicyStatusListSetPolicies) {
         EXPECT_TRUE(undefined_dict->Equals(status_dict));
         break;
     }
-  }
-}
-
-TEST_F(PolicyStatusTest, GetPolicyName) {
-  for (const PolicyDefinitionList::Entry* entry = policy_list_->begin;
-       entry != policy_list_->end; ++entry) {
-    EXPECT_EQ(ASCIIToUTF16(entry->name),
-              PolicyStatus::GetPolicyName(entry->policy_type));
   }
 }
 

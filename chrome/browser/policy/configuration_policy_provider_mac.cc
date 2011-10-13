@@ -12,6 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/preferences_mac.h"
 #include "chrome/common/chrome_paths.h"
+#include "policy/policy_constants.h"
 
 namespace policy {
 
@@ -42,7 +43,7 @@ FilePath GetManagedPolicyPath() {
 
 MacPreferencesPolicyProviderDelegate::MacPreferencesPolicyProviderDelegate(
     MacPreferences* preferences,
-    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list)
+    const PolicyDefinitionList* policy_list)
     : FileBasedPolicyProvider::ProviderDelegate(GetManagedPolicyPath()),
       policy_list_(policy_list),
       preferences_(preferences) {
@@ -54,7 +55,7 @@ DictionaryValue* MacPreferencesPolicyProviderDelegate::Load() {
   preferences_->AppSynchronize(kCFPreferencesCurrentApplication);
   DictionaryValue* policy = new DictionaryValue;
 
-  const ConfigurationPolicyProvider::PolicyDefinitionList::Entry* current;
+  const PolicyDefinitionList::Entry* current;
   for (current = policy_list_->begin; current != policy_list_->end; ++current) {
     base::mac::ScopedCFTypeRef<CFStringRef> name(
         base::SysUTF8ToCFStringRef(current->name));
@@ -129,14 +130,14 @@ base::Time MacPreferencesPolicyProviderDelegate::GetLastModification() {
 }
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
-    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list)
+    const PolicyDefinitionList* policy_list)
     : FileBasedPolicyProvider(policy_list,
           new MacPreferencesPolicyProviderDelegate(new MacPreferences,
                                                    policy_list)) {
 }
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
-    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
+    const PolicyDefinitionList* policy_list,
     MacPreferences* preferences)
     : FileBasedPolicyProvider(policy_list,
           new MacPreferencesPolicyProviderDelegate(preferences,

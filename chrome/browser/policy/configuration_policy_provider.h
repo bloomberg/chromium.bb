@@ -17,6 +17,7 @@
 
 namespace policy {
 
+struct PolicyDefinitionList;
 class PolicyMap;
 
 // A mostly-abstract super class for platform-specific policy providers.
@@ -29,19 +30,6 @@ class ConfigurationPolicyProvider {
     virtual ~Observer() {}
     virtual void OnUpdatePolicy() = 0;
     virtual void OnProviderGoingAway() = 0;
-  };
-
-  // Used for static arrays of policy values that is used to initialize an
-  // instance of the ConfigurationPolicyProvider.
-  struct PolicyDefinitionList {
-    struct Entry {
-      ConfigurationPolicyType policy_type;
-      base::Value::Type value_type;
-      const char* name;
-    };
-
-    const Entry* begin;
-    const Entry* end;
   };
 
   explicit ConfigurationPolicyProvider(const PolicyDefinitionList* policy_list);

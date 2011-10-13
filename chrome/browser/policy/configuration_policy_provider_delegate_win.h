@@ -14,8 +14,7 @@ class ConfigurationPolicyProviderDelegateWin
     : public AsynchronousPolicyProvider::Delegate {
  public:
   explicit ConfigurationPolicyProviderDelegateWin(
-      const ConfigurationPolicyProvider::PolicyDefinitionList*
-          policy_definition_list);
+      const PolicyDefinitionList* policy_definition_list);
   virtual ~ConfigurationPolicyProviderDelegateWin() {}
 
   // AsynchronousPolicyProvider::Delegate overrides:
@@ -36,8 +35,7 @@ class ConfigurationPolicyProviderDelegateWin
   bool GetRegistryPolicyInteger(const string16& value_name,
                                 uint32* result) const;
 
-  const ConfigurationPolicyProvider::PolicyDefinitionList*
-      policy_definition_list_;
+  const PolicyDefinitionList* policy_definition_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderDelegateWin);
 };
