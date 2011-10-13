@@ -430,8 +430,18 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormWithRepeatedField) {
   ExpectFieldValue(L"state_freeform", "");
 }
 
+#if defined(OS_WIN)
+// Has been observed to fail on windows.  crbug.com/100062
+#define MAYBE_AutofillFormWithNonAutofillableField \
+    FLAKY_AutofillFormWithNonAutofillableField
+#else
+#define MAYBE_AutofillFormWithNonAutofillableField \
+    AutofillFormWithNonAutofillableField
+#endif
+
 // Test that we properly autofill forms with non-autofillable fields.
-IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillFormWithNonAutofillableField) {
+IN_PROC_BROWSER_TEST_F(AutofillTest,
+                       MAYBE_AutofillFormWithNonAutofillableField) {
   CreateTestProfile();
 
   // Load the test page.
