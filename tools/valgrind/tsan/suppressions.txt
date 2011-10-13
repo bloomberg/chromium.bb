@@ -344,6 +344,14 @@
    fun:base::SimpleThread::SetThreadPriority
    fun:AudioRendererImpl::Run
 }
+{
+   bug_100143
+   ThreadSanitizer:Race
+   ...
+   fun:GpuDataManager::Initialize
+   fun:GpuDataManager::GetInstance
+   fun:GpuBlacklistUpdater::SetupOnFileThread
+}
 
 ############################
 # 2.2 Benign races in Chromium
