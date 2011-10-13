@@ -38,7 +38,7 @@ TEST(UserStyleSheetWatcherTest, StyleLoad) {
   // creation of |browser_ui_thread| because UserStyleSheetWatchers are
   // restricted to being deleted only on UI browser threads.
   scoped_refptr<UserStyleSheetWatcher> style_sheet_watcher(
-      new UserStyleSheetWatcher(dir.path()));
+      new UserStyleSheetWatcher(NULL, dir.path()));
   style_sheet_watcher->Init();
 
   io_thread.Stop();

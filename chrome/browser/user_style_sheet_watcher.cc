@@ -6,7 +6,9 @@
 
 #include "base/base64.h"
 #include "base/file_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 
@@ -126,14 +128,16 @@ void UserStyleSheetLoader::SetStyleSheet(const GURL& url) {
   NotifyLoaded();
 }
 
-UserStyleSheetWatcher::UserStyleSheetWatcher(const FilePath& profile_path)
-    : profile_path_(profile_path),
+UserStyleSheetWatcher::UserStyleSheetWatcher(Profile* profile,
+                                             const FilePath& profile_path)
+    : profile_(profile),
+      profile_path_(profile_path),
       loader_(new UserStyleSheetLoader) {
   // Listen for when the first render view host is created.  If we load
   // too fast, the first tab won't hear the notification and won't get
   // the user style sheet.
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                 NotificationService::AllSources());
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 UserStyleSheetWatcher::~UserStyleSheetWatcher() {
@@ -166,7 +170,11 @@ GURL UserStyleSheetWatcher::user_style_sheet() const {
 
 void UserStyleSheetWatcher::Observe(int type,
     const NotificationSource& source, const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB);
-  loader_->NotifyLoaded();
-  registrar_.RemoveAll();
+  if (profile_->IsSameProfile(Profile::FromBrowserContext(
+          Source<TabContents>(source)->browser_context()))) {
+    loader_->NotifyLoaded();
+    registrar_.RemoveAll();
+  }
 }

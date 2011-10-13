@@ -15,6 +15,7 @@
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+class Profile;
 class UserStyleSheetLoader;
 
 // Watches the user style sheet file and triggers reloads on the file thread
@@ -24,7 +25,7 @@ class UserStyleSheetWatcher
                                         BrowserThread::DeleteOnUIThread>,
       public NotificationObserver {
  public:
-  explicit UserStyleSheetWatcher(const FilePath& profile_path);
+  UserStyleSheetWatcher(Profile* profile, const FilePath& profile_path);
 
   void Init();
 
@@ -40,6 +41,9 @@ class UserStyleSheetWatcher
   friend class DeleteTask<UserStyleSheetWatcher>;
 
   virtual ~UserStyleSheetWatcher();
+
+  // The profile owning us.
+  Profile* profile_;
 
   // The directory containing User StyleSheets/Custom.css.
   FilePath profile_path_;
