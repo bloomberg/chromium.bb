@@ -30,16 +30,16 @@
     "description": "Label for the continue button on the pre-authorization page. Clicking this button takes the user to the standard Google Accounts authorization page."
   },
   "CONTINUE_PROMPT": {
-    "message": "You are currently sharing this machine with another user. Please confirm that you want to continue sharing.",
+    "message": "You are currently sharing this machine with another user. Do you want to continue sharing?",
     "description": "Message displayed when the session has lasted longer than five minutes, explaining that the host computer is being shared and asking whether or not the user wants to continue sharing it."
   },
   "DESCRIPTION_AUTHORIZE": {
-    "message": "In order to use Chromoting you must first grant extended access permissions to your computer. Click Continue to view the required permissions. You only have to do this once.",
+    "message": "To use Chromoting you must grant extended access permissions to your computer. You only have to do this once.",
     "description": "Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use."
   },
   "DESCRIPTION_CONNECT": {
-    "message": "Ask the user whose computer you wish to access to click \u2018Share This Computer\u2019 and give you the access code.",
-    "description": "Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share This Computer' quote should be copied verbatim from the corresponding translation."
+    "message": "Ask the user whose computer you wish to access to click \u2018Share Now\u2019 and give you the access code.",
+    "description": "Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share Now' quote should be copied verbatim from the corresponding translation."
   },
   "DESCRIPTION_HOME": {
     "message": "Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at $url$.",
@@ -182,7 +182,7 @@
     "description": "Label for general-purpose OK buttons."
   },
   "PRODUCT_DESCRIPTION": {
-    "message": "Allow another user to access your computer securely over the Internet. Ideal for remote technical support.",
+    "message": "Access other computers or allow another user to access your computer securely over the Internet.",
     "description": "Web-app description. Displayed in Chromium's extensions page."
   },
   "PRODUCT_NAME": {

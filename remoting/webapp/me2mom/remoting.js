@@ -662,7 +662,7 @@ function getAppStartupMode() {
  * @return {boolean} True if Host mode is supported.
  */
 function isHostModeSupported() {
-  // Currently, hosting on Chromebooks is not supported.
+  // Currently, sharing on Chromebooks is not supported.
   return !navigator.userAgent.match(/\bCrOS\b/);
 }
 
