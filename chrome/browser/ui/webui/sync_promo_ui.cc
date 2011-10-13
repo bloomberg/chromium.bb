@@ -99,6 +99,8 @@ void SyncPromoUI::RegisterUserPrefs(PrefService* prefs) {
       prefs::kSyncPromoStartupCount, 0, PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(
       prefs::kSyncPromoUserSkipped, false, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSyncPromoShowOnFirstRunAllowed, true,
+      PrefService::UNSYNCABLE_PREF);
 
   SyncPromoHandler::RegisterUserPrefs(prefs);
 }
@@ -108,20 +110,26 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   if (!ShouldShowSyncPromo(profile))
     return false;
 
+  // This pref can be set in the master preferences file to disallow showing
+  // the sync promo at startup.
+  PrefService *prefs = profile->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kSyncPromoShowOnFirstRunAllowed)) {
+    return false;
+  }
+
   const CommandLine& command_line  = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kNoFirstRun))
     is_new_profile = false;
 
   if (!is_new_profile) {
-    if (!profile->GetPrefs()->HasPrefPath(prefs::kSyncPromoStartupCount))
+    if (!prefs->HasPrefPath(prefs::kSyncPromoStartupCount))
       return false;
   }
 
   if (HasUserSkippedSyncPromo(profile))
     return false;
 
-  int show_count = profile->GetPrefs()->GetInteger(
-      prefs::kSyncPromoStartupCount);
+  int show_count = prefs->GetInteger(prefs::kSyncPromoStartupCount);
   return show_count < kSyncPromoShowAtStartupMaxiumum;
 }
 

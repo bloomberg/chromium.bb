@@ -1412,6 +1412,12 @@ const char kSyncPromoViewCount[] = "sync_promo.view_count";
 // Boolean tracking whether the user chose to skip the sync promo.
 const char kSyncPromoUserSkipped[] = "sync_promo.user_skipped";
 
+// Boolean that specifies if the sync promo is allowed to show on first run.
+// This preference is specified in the master preference file to suppress the
+// sync promo for some installations.
+const char kSyncPromoShowOnFirstRunAllowed[] =
+    "sync_promo.show_on_first_run_allowed";
+
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";
 const char kWebAppCreateInAppsMenu[] = "browser.web_app.create_in_apps_menu";
