@@ -2979,14 +2979,16 @@ def GetLinkerScriptBaseName(env):
     return 'elf_nacl'
 
 if (nacl_env.Bit('nacl_glibc') and
-    nacl_env.Bit('nacl_static_link') and
-    not nacl_env.Bit('bitcode')):
-  # The "-lc" is necessary because libgcc_eh depends on libc but for
-  # some reason nacl-gcc is not linking with "--start-group/--end-group".
-  nacl_env.Append(LINKFLAGS=[
-      '-static',
-      '-T', 'ldscripts/%s.x.static' % GetLinkerScriptBaseName(nacl_env),
-      '-lc'])
+    nacl_env.Bit('nacl_static_link')):
+  if nacl_env.Bit('bitcode'):
+    nacl_env.Append(LINKFLAGS=['-static'])
+  else:
+    # The "-lc" is necessary because libgcc_eh depends on libc but for
+    # some reason nacl-gcc is not linking with "--start-group/--end-group".
+    nacl_env.Append(LINKFLAGS=[
+        '-static',
+        '-T', 'ldscripts/%s.x.static' % GetLinkerScriptBaseName(nacl_env),
+        '-lc'])
 
 if nacl_env.Bit('running_on_valgrind'):
   nacl_env.Append(CCFLAGS = ['-g', '-Wno-overlength-strings',
