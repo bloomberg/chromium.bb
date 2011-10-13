@@ -67,7 +67,7 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
     { "13.0", "14.0", "13.4.0", true }  // Snow Leopard
 };
 static const VersionRangeDefinition kFlip4MacVersionRange[] = {
-    { "", "", "2.2.1", false }
+    { "", "", "2.2.1", true }
 };
 // Note: The Adobe Reader browser plug-in is not supported in Chrome.
 // Note: The Real Player plugin for mac doesn't expose a version at all.
