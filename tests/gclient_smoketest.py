@@ -922,7 +922,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
 
   def testRevertAndStatus(self):
-    """TODO(maruel): Remove this line once this test is fixed."""
     if not self.enabled:
       return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
@@ -933,7 +932,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     expected1 = ('running', os.path.join(self.root_dir, 'src'))
     expected2 = ('running', os.path.join(expected1[1], 'repo2'))
     expected3 = ('running', os.path.join(expected2[1], 'repo_renamed'))
-    out = self.parseGclient(['status', '--deps', 'mac'],
+    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'],
                             [expected1, expected2, expected3])
     # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
     # files.
