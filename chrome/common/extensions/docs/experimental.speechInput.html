@@ -305,13 +305,13 @@
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#type-StartOptions">StartOptions</a>
+                        <a href="#type-SpeechInputStartOptions">SpeechInputStartOptions</a>
                       </li><li>
-                        <a href="#type-Error">Error</a>
+                        <a href="#type-SpeechInputError">SpeechInputError</a>
                       </li><li>
-                        <a href="#type-ResultHypothesis">ResultHypothesis</a>
+                        <a href="#type-SpeechInputResultHypothesis">SpeechInputResultHypothesis</a>
                       </li><li>
-                        <a href="#type-SpeechResultEvent">SpeechResultEvent</a>
+                        <a href="#type-SpeechInputResultEvent">SpeechInputResultEvent</a>
                       </li>
                     </ol>
                   </li>
@@ -369,7 +369,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Determine if the API is currently recording audio as part of a speech recognition session.</p>
+                <p>Determine if audio recording is currently in process in Chrome, not limited to this API.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -503,7 +503,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Flag set to true if the API is currently recording for speech recognition.</dd>
+          <dd>Flag set to true if recording is in process in Chrome, false otherwise.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -560,7 +560,7 @@
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.speechInput.start</span>(<span class="optional"><span style="display: none; ">, </span><span>StartOptions</span>
+                  <span>chrome.experimental.speechInput.start</span>(<span class="optional"><span style="display: none; ">, </span><span>SpeechInputStartOptions</span>
                       <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -584,7 +584,7 @@
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.speechInput.html#type-StartOptions">StartOptions</a>
+                        <a href="experimental.speechInput.html#type-SpeechInputStartOptions">SpeechInputStartOptions</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -896,7 +896,7 @@
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.speechInput.</span><span>onError</span><span class="subdued">.addListener</span>(function(<span>Error error</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.speechInput.</span><span>onError</span><span class="subdued">.addListener</span>(function(<span>SpeechInputError error</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
@@ -920,7 +920,7 @@
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.speechInput.html#type-Error">Error</a>
+                        <a href="experimental.speechInput.html#type-SpeechInputError">SpeechInputError</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1006,7 +1006,7 @@
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.speechInput.</span><span>onResult</span><span class="subdued">.addListener</span>(function(<span>SpeechResultEvent event</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.speechInput.</span><span>onResult</span><span class="subdued">.addListener</span>(function(<span>SpeechInputResultEvent event</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
@@ -1030,7 +1030,7 @@
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.speechInput.html#type-SpeechResultEvent">SpeechResultEvent</a>
+                        <a href="experimental.speechInput.html#type-SpeechInputResultEvent">SpeechInputResultEvent</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1121,7 +1121,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Called when the system detects enough silence to consider the ongoing input has ended.</p>
+                <p>Called when the system detects enough silence to consider the ongoing speech has ended.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div style="display: none; ">
@@ -1211,8 +1211,8 @@
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-StartOptions"></a>
-              <h4>StartOptions</h4>
+              <a name="type-SpeechInputStartOptions"></a>
+              <h4>SpeechInputStartOptions</h4>
 
               <div>
           <dt>
@@ -1425,7 +1425,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Enable or disable profanity filtering. Will use the default Chrome filtering settings if not provided.</dd>
+          <dd>Enable or disable profanity filtering. Will use the default Chrome filtering settings if not set.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1484,8 +1484,8 @@
         </div>
 
             </div><div class="apiItem">
-              <a name="type-Error"></a>
-              <h4>Error</h4>
+              <a name="type-SpeechInputError"></a>
+              <h4>SpeechInputError</h4>
 
               <div>
           <dt>
@@ -1551,7 +1551,7 @@
                           array of <span><span></span></span>
                         </span>
                         <span>string</span>
-                        <span>["noDevicesAvailable", "unableToStart", "noSpeechHeard", "noResults", "captureError", "networkError", "internalError", "requestDenied"]</span>
+                        <span>["noSpeechHeard", "noResults", "captureError", "networkError"]</span>
                       </span>
                     </span>
                   )
@@ -1621,8 +1621,8 @@
         </div>
 
             </div><div class="apiItem">
-              <a name="type-ResultHypothesis"></a>
-              <h4>ResultHypothesis</h4>
+              <a name="type-SpeechInputResultHypothesis"></a>
+              <h4>SpeechInputResultHypothesis</h4>
 
               <div>
           <dt>
@@ -1826,8 +1826,8 @@
         </div>
 
             </div><div class="apiItem">
-              <a name="type-SpeechResultEvent"></a>
-              <h4>SpeechResultEvent</h4>
+              <a name="type-SpeechInputResultEvent"></a>
+              <h4>SpeechInputResultEvent</h4>
 
               <div>
           <dt>
@@ -1892,7 +1892,7 @@
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="experimental.speechInput.html#type-ResultHypothesis">ResultHypothesis</a>
+                        <a href="experimental.speechInput.html#type-SpeechInputResultHypothesis">SpeechInputResultHypothesis</a>
                       </span>
                       <span style="display: none; ">
                         <span>

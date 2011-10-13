@@ -531,7 +531,7 @@
     "namespace": "experimental.speechInput",
     "types": [
       {
-        "id": "StartOptions",
+        "id": "SpeechInputStartOptions",
         "type": "object",
         "description": "Object describing the options used for speech recognition.",
         "properties": {
@@ -548,24 +548,24 @@
           "filterProfanities": {
             "type": "boolean",
             "optional": true,
-            "description": "Enable or disable profanity filtering. Will use the default Chrome filtering settings if not provided."
+            "description": "Enable or disable profanity filtering. Will use the default Chrome filtering settings if not set."
           }
         }
       },
       {
-        "id": "Error",
+        "id": "SpeechInputError",
         "type": "object",
         "description": "Object describing a speech input error.",
         "properties": {
           "code": {
             "type": "string",
-            "enum": ["noDevicesAvailable", "unableToStart", "noSpeechHeard", "noResults", "captureError", "networkError", "internalError", "requestDenied"],
+            "enum": ["noSpeechHeard", "noResults", "captureError", "networkError"],
             "description": "Code identifying the error case."
           }
         }
       },
       {
-        "id": "ResultHypothesis",
+        "id": "SpeechInputResultHypothesis",
         "type": "object",
         "description": "Object describing a speech recognition hypothesis.",
         "properties": {
@@ -580,7 +580,7 @@
         }
       },
       {
-        "id": "SpeechResultEvent",
+        "id": "SpeechInputResultEvent",
         "type": "object",
         "description": "Object containing the recognition results.",
         "properties": {
@@ -588,7 +588,7 @@
             "type": "array",
             "optional": true,
             "description": "Array of zero or more objects describing the stable candidate hypotheses sorted by decreasing likelihood.",
-            "items": { "$ref": "ResultHypothesis" }
+            "items": { "$ref": "SpeechInputResultHypothesis" }
           }
         }
       }
@@ -601,7 +601,7 @@
         "parameters": [
           {
             "name": "options",
-            "$ref": "StartOptions",
+            "$ref": "SpeechInputStartOptions",
             "optional": true,
             "description": "Options used for this speech recognition session."
           },
@@ -631,7 +631,7 @@
       {
         "name": "isRecording",
         "type": "function",
-        "description": "Determine if the API is currently recording audio as part of a speech recognition session.",
+        "description": "Determine if audio recording is currently in process in Chrome, not limited to this API.",
         "parameters": [
           {
             "name": "callback",
@@ -641,7 +641,7 @@
               {
                 "name": "result",
                 "type": "boolean",
-                "description": "Flag set to true if the API is currently recording for speech recognition."
+                "description": "Flag set to true if recording is in process in Chrome, false otherwise."
               }
             ]
           }
@@ -656,7 +656,7 @@
         "parameters": [
           {
             "name": "error",
-            "$ref": "Error",
+            "$ref": "SpeechInputError",
             "description": "Error being reported."
           }
         ]
@@ -670,7 +670,7 @@
       {
         "name": "onSoundEnd",
         "type": "function",
-        "description": "Called when the system detects enough silence to consider the ongoing input has ended.",
+        "description": "Called when the system detects enough silence to consider the ongoing speech has ended.",
         "parameters": []
       },
       {
@@ -680,7 +680,7 @@
         "parameters": [
           {
             "name": "event",
-            "$ref": "SpeechResultEvent",
+            "$ref": "SpeechInputResultEvent",
             "description": "Object containing the speech recognition results."
           }
         ]
