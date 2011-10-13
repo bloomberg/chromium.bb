@@ -125,7 +125,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void ShowCompositorHostWindow(bool show) OVERRIDE;
 #endif
 #if defined(OS_POSIX)
-  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {};
+  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
 #endif
   virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate) { }
@@ -136,7 +136,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) { }
 
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(
       int32 width, int32 height, uint64* surface_id,
       TransportDIB::Handle* surface_handle) { }
