@@ -15,7 +15,6 @@
 #include "crypto/signature_creator.h"
 #include "crypto/signature_verifier.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/common/extensions/extension_constants.h"
 
 using extension_misc::kSignatureAlgorithm;

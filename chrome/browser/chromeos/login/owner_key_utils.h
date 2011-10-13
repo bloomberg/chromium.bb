@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_OWNER_KEY_UTILS_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 
 class FilePath;
 
