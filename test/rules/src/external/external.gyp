@@ -10,33 +10,18 @@
   },
   'targets': [
     {
-      'target_name': 'cygwin',
-      'type': 'none',
-      'actions': [
-        {
-          'action_name': 'setup_mount',
-          'msvs_cygwin_shell': 0,
-          'inputs': [
-            '../../../../../../<(DEPTH)/third_party/cygwin/setup_mount.bat',
-          ],
-          # Visual Studio requires an output file, or else the
-          # custom build step won't run.
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/_always_run_setup_mount.marker',
-          ],
-          'action': ['', '<@(_inputs)'],
-        },
-      ],
-    },
-    {
       'target_name': 'external_rules',
       'type': 'none',
       'sources': [
         'file1.in',
         'file2.in',
       ],
-      'dependencies': [
-        'cygwin',
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            'cygwin',
+          ],
+        }],
       ],
       'rules': [
         {
@@ -52,5 +37,30 @@
         },
       ],
     },
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'cygwin',
+          'type': 'none',
+          'actions': [
+            {
+              'action_name': 'setup_mount',
+              'msvs_cygwin_shell': 0,
+              'inputs': [
+                '../../../../../../<(DEPTH)/third_party/cygwin/setup_mount.bat',
+              ],
+              # Visual Studio requires an output file, or else the
+              # custom build step won't run.
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/_always_run_setup_mount.marker',
+              ],
+              'action': ['', '<@(_inputs)'],
+            },
+          ],
+        },
+      ],
+    }],
   ],
 }
