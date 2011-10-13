@@ -58,9 +58,7 @@ class ReverseInterface : public RefCountBase {
 
   // The low-order 8 bits of the |exit_status| should be reported to
   // any interested parties.
-  virtual void ReportExitStatus(int exit_status) {
-    UNREFERENCED_PARAMETER(exit_status);
-  } // = 0;
+  virtual void ReportExitStatus(int exit_status) = 0;
 
   // covariant impl of Ref()
   ReverseInterface* Ref() {  // down_cast
