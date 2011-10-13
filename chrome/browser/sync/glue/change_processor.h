@@ -75,9 +75,9 @@ class ChangeProcessor {
   virtual void StartImpl(Profile* profile) = 0;
   virtual void StopImpl() = 0;
 
-  bool running() { return running_; }
-  UnrecoverableErrorHandler* error_handler();
-  virtual sync_api::UserShare* share_handle();
+  bool running() const { return running_; }
+  UnrecoverableErrorHandler* error_handler() const;
+  virtual sync_api::UserShare* share_handle() const;
 
  private:
   bool running_;  // True if we have been told it is safe to process changes.

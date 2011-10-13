@@ -130,7 +130,7 @@ class AutofillProfileSyncableService
   // For unit-tests.
   AutofillProfileSyncableService();
   void set_sync_processor(SyncChangeProcessor* sync_processor) {
-    sync_processor_ = sync_processor;
+    sync_processor_.reset(sync_processor);
   }
 
   WebDataService* web_data_service_;  // WEAK
@@ -141,7 +141,7 @@ class AutofillProfileSyncableService
   ScopedVector<AutofillProfile> profiles_;
   GUIDToProfileMap profiles_map_;
 
-  SyncChangeProcessor* sync_processor_;
+  scoped_ptr<SyncChangeProcessor> sync_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileSyncableService);
 };

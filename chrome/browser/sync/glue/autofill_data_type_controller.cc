@@ -102,8 +102,7 @@ void AutofillDataTypeController::CreateSyncComponents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK_EQ(state(), ASSOCIATING);
   ProfileSyncFactory::SyncComponents sync_components =
-      profile_sync_factory()->
-          CreateAutofillSyncComponents(
+      profile_sync_factory()->CreateAutofillSyncComponents(
           profile_sync_service(),
           web_data_service_->GetDatabase(),
           this);

@@ -39,6 +39,10 @@ bool SyncableServiceAdapter::AssociateModels(SyncError* error) {
     *error = temp_error;
     return false;
   }
+
+  // TODO(zea): Have all datatypes take ownership of the sync_processor_.
+  // Further, refactor the DTC's to not need this class at all
+  // (crbug.com/100114).
   temp_error = service_->MergeDataAndStartSyncing(type_,
                                                   initial_sync_data,
                                                   sync_processor_);
@@ -60,8 +64,7 @@ bool SyncableServiceAdapter::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 }
 
 void SyncableServiceAdapter::AbortAssociation() {
-  service_->StopSyncing(type_);
-  syncing_ = false;
+  NOTIMPLEMENTED();
 }
 
 bool SyncableServiceAdapter::CryptoReadyIfNecessary() {

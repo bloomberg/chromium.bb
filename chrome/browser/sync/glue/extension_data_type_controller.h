@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 
 namespace browser_sync {
@@ -23,6 +24,9 @@ class ExtensionDataTypeController : public FrontendDataTypeController {
   // DataTypeController implementation.
   virtual syncable::ModelType type() const;
 
+ protected:
+  virtual GenericChangeProcessor* change_processor() const OVERRIDE;
+
  private:
   // DataTypeController implementations.
   virtual bool StartModels();
@@ -32,6 +36,8 @@ class ExtensionDataTypeController : public FrontendDataTypeController {
       const std::string& message);
   virtual void RecordAssociationTime(base::TimeDelta time);
   virtual void RecordStartFailure(StartResult result);
+
+  scoped_ptr<GenericChangeProcessor> generic_change_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDataTypeController);
 };

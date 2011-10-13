@@ -16,27 +16,28 @@
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
+#include "content/browser/browser_thread.h"
 
 namespace browser_sync {
 
 GenericChangeProcessor::GenericChangeProcessor(
-    SyncableService* local_service,
     UnrecoverableErrorHandler* error_handler,
+    const base::WeakPtr<SyncableService>& local_service,
     sync_api::UserShare* user_share)
     : ChangeProcessor(error_handler),
       local_service_(local_service),
-      user_share_(user_share) {
-  DCHECK(local_service_);
+      share_handle_(user_share) {
+  DCHECK(CalledOnValidThread());
 }
 
 GenericChangeProcessor::~GenericChangeProcessor() {
-  // Set to null to ensure it's not used after destruction.
-  local_service_ = NULL;
+  DCHECK(CalledOnValidThread());
 }
 
 void GenericChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
     const sync_api::ImmutableChangeRecordList& changes) {
+  DCHECK(CalledOnValidThread());
   DCHECK(running());
   DCHECK(syncer_changes_.empty());
   for (sync_api::ChangeRecordList::const_iterator it =
@@ -65,12 +66,18 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
 }
 
 void GenericChangeProcessor::CommitChangesFromSyncModel() {
+  DCHECK(CalledOnValidThread());
   if (!running())
     return;
   if (syncer_changes_.empty())
     return;
+  if (!local_service_) {
+    syncable::ModelType type = syncer_changes_[0].sync_data().GetDataType();
+    SyncError error(FROM_HERE, "Local service destroyed.", type);
+    error_handler()->OnUnrecoverableError(error.location(), error.message());
+  }
   SyncError error = local_service_->ProcessSyncChanges(FROM_HERE,
-                                                        syncer_changes_);
+                                                       syncer_changes_);
   syncer_changes_.clear();
   if (error.IsSet()) {
     error_handler()->OnUnrecoverableError(error.location(), error.message());
@@ -80,6 +87,7 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
 SyncError GenericChangeProcessor::GetSyncDataForType(
     syncable::ModelType type,
     SyncDataList* current_sync_data) {
+  DCHECK(CalledOnValidThread());
   std::string type_name = syncable::ModelTypeToString(type);
   sync_api::ReadTransaction trans(FROM_HERE, share_handle());
   sync_api::ReadNode root(&trans);
@@ -137,6 +145,7 @@ bool AttemptDelete(const SyncChange& change, sync_api::WriteNode* node) {
 SyncError GenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& list_of_changes) {
+  DCHECK(CalledOnValidThread());
   sync_api::WriteTransaction trans(from_here, share_handle());
 
   for (SyncChangeList::const_iterator iter = list_of_changes.begin();
@@ -216,6 +225,7 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
 bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
     syncable::ModelType type,
     bool* has_nodes) {
+  DCHECK(CalledOnValidThread());
   DCHECK(has_nodes);
   DCHECK_NE(type, syncable::UNSPECIFIED);
   std::string type_name = syncable::ModelTypeToString(type);
@@ -236,6 +246,7 @@ bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
 }
 
 bool GenericChangeProcessor::CryptoReadyIfNecessary(syncable::ModelType type) {
+  DCHECK(CalledOnValidThread());
   DCHECK_NE(type, syncable::UNSPECIFIED);
   // We only access the cryptographer while holding a transaction.
   sync_api::ReadTransaction trans(FROM_HERE, share_handle());
@@ -245,12 +256,17 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary(syncable::ModelType type) {
          trans.GetCryptographer()->is_ready();
 }
 
-void GenericChangeProcessor::StartImpl(Profile* profile) {}
+void GenericChangeProcessor::StartImpl(Profile* profile) {
+  DCHECK(CalledOnValidThread());
+}
 
-void GenericChangeProcessor::StopImpl() {}
+void GenericChangeProcessor::StopImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
 
-sync_api::UserShare* GenericChangeProcessor::share_handle() {
-  return user_share_;
+sync_api::UserShare* GenericChangeProcessor::share_handle() const {
+  DCHECK(CalledOnValidThread());
+  return share_handle_;
 }
 
 }  // namespace browser_sync

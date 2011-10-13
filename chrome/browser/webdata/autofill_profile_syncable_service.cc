@@ -38,8 +38,7 @@ const char kAutofillProfileTag[] = "google_chrome_autofill_profiles";
 
 AutofillProfileSyncableService::AutofillProfileSyncableService(
     WebDataService* web_data_service)
-    : web_data_service_(web_data_service),
-      sync_processor_(NULL) {
+    : web_data_service_(web_data_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(web_data_service_);
   notification_registrar_.Add(this,
@@ -52,8 +51,7 @@ AutofillProfileSyncableService::~AutofillProfileSyncableService() {
 }
 
 AutofillProfileSyncableService::AutofillProfileSyncableService()
-    : web_data_service_(NULL),
-      sync_processor_(NULL) {
+    : web_data_service_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
@@ -62,7 +60,7 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     const SyncDataList& initial_sync_data,
     SyncChangeProcessor* sync_processor) {
   DCHECK(CalledOnValidThread());
-  DCHECK(sync_processor_ == NULL);
+  DCHECK(!sync_processor_.get());
   VLOG(1) << "Associating Autofill: MergeDataAndStartSyncing";
 
   if (!LoadAutofillData(&profiles_.get())) {
@@ -85,7 +83,7 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     }
   }
 
-  sync_processor_ = sync_processor;
+  sync_processor_.reset(sync_processor);
 
   GUIDToProfileMap remaining_profiles;
   CreateGUIDToProfileMap(profiles_.get(), &remaining_profiles);
@@ -112,7 +110,9 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     profiles_map_[i->first] = i->second;
   }
 
-  SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
+  SyncError error;
+  if (!new_changes.empty())
+    error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
 
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 
@@ -121,10 +121,9 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
 
 void AutofillProfileSyncableService::StopSyncing(syncable::ModelType type) {
   DCHECK(CalledOnValidThread());
-  DCHECK(sync_processor_ != NULL);
   DCHECK_EQ(type, syncable::AUTOFILL_PROFILE);
 
-  sync_processor_ = NULL;
+  sync_processor_.reset();
   profiles_.reset();
   profiles_map_.clear();
 }
@@ -132,7 +131,7 @@ void AutofillProfileSyncableService::StopSyncing(syncable::ModelType type) {
 SyncDataList AutofillProfileSyncableService::GetAllSyncData(
     syncable::ModelType type) const {
   DCHECK(CalledOnValidThread());
-  DCHECK(sync_processor_ != NULL);
+  DCHECK(sync_processor_.get());
   DCHECK_EQ(type, syncable::AUTOFILL_PROFILE);
 
   SyncDataList current_data;
@@ -148,8 +147,7 @@ SyncError AutofillProfileSyncableService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& change_list) {
   DCHECK(CalledOnValidThread());
-  DCHECK(sync_processor_ != NULL);
-  if (sync_processor_ == NULL) {
+  if (!sync_processor_.get()) {
     SyncError error(FROM_HERE, "Models not yet associated.",
                     syncable::AUTOFILL_PROFILE);
     return error;
@@ -196,7 +194,7 @@ void AutofillProfileSyncableService::Observe(int type,
   // up we are going to process all when MergeData..() is called. If we receive
   // notification after the sync exited, it will be sinced next time Chrome
   // starts.
-  if (!sync_processor_)
+  if (!sync_processor_.get())
     return;
 
   AutofillProfileChange* change = Details<AutofillProfileChange>(details).ptr();
@@ -351,7 +349,7 @@ void AutofillProfileSyncableService::ActOnChange(
   DCHECK((change.type() == AutofillProfileChange::REMOVE &&
           !change.profile()) ||
          (change.type() != AutofillProfileChange::REMOVE && change.profile()));
-  DCHECK(sync_processor_);
+  DCHECK(sync_processor_.get());
   SyncChangeList new_changes;
   DataBundle bundle;
   switch (change.type()) {
