@@ -96,7 +96,7 @@ class SCM(object):
   def __init__(self, options, path, file_list):
     items = path.split('@')
     assert len(items) <= 2
-    self.checkout_root = items[0]
+    self.checkout_root = os.path.abspath(items[0])
     items.append(None)
     self.diff_against = items[1]
     self.options = options
@@ -109,7 +109,7 @@ class SCM(object):
     self.options.files = None
     self.codereview_settings = None
     self.codereview_settings_file = 'codereview.settings'
-    self.gclient_root = None
+    self.toplevel_root = None
 
   def GetFileNames(self):
     """Return the list of files in the diff."""
@@ -152,36 +152,32 @@ class SCM(object):
       if v and getattr(self.options, k) is None:
         setattr(self.options, k, v)
 
-  def _GclientStyleSettings(self):
-    """Find the root, assuming a gclient-style checkout."""
-    if not self.options.no_gclient and not self.options.root:
-      root = self.checkout_root
-      self.gclient_root = gclient_utils.FindGclientRoot(root)
-      if self.gclient_root:
-        logging.info('Found .gclient at %s' % self.gclient_root)
-        self.options.root = gclient_utils.PathDifference(self.gclient_root,
-                                                         root)
-
   def AutomagicalSettings(self):
     """Determines settings based on supported code review and checkout tools.
     """
-    self._GclientStyleSettings()
+    # Try to find gclient or repo root first.
+    if not self.options.no_search:
+      self.toplevel_root = gclient_utils.FindGclientRoot(self.checkout_root)
+      if self.toplevel_root:
+        logging.info('Found .gclient at %s' % self.toplevel_root)
+      else:
+        self.toplevel_root = gclient_utils.FindFileUpwards(
+            os.path.join('..', '.repo'), self.checkout_root)
+        if self.toplevel_root:
+          logging.info('Found .repo dir at %s'
+                       % os.path.dirname(self.toplevel_root))
+
+      if self.toplevel_root and not self.options.root:
+        assert os.path.abspath(self.toplevel_root) == self.toplevel_root
+        self.options.root = gclient_utils.PathDifference(self.toplevel_root,
+                                                         self.checkout_root)
+
     self._GclStyleSettings()
 
   def ReadRootFile(self, filename):
-    if not self.options.root:
-      filepath = os.path.join(self.checkout_root, filename)
-      if os.path.isfile(filepath):
-        logging.info('Found %s at %s' % (filename, self.checkout_root))
-        return gclient_utils.FileRead(filepath)
-      return None
-    cur = os.path.abspath(self.checkout_root)
-    if self.gclient_root:
-      root = os.path.abspath(self.gclient_root)
-    else:
-      root = gclient_utils.FindGclientRoot(cur)
-    if not root:
-      root = cur
+    cur = self.checkout_root
+    root = self.toplevel_root or self.checkout_root
+
     assert cur.startswith(root), (root, cur)
     while cur.startswith(root):
       filepath = os.path.join(cur, filename)
@@ -594,8 +590,9 @@ def TryChange(argv,
                         "given the diff will be against the upstream branch. "
                         "If @branch then the diff is branch..HEAD. "
                         "All edits must be checked in.")
-  group.add_option("--no_gclient", action="store_true",
-                   help="Disable automatic search for gclient checkout.")
+  group.add_option("--no_search", action="store_true",
+                   help=("Disable automatic search for gclient or repo "
+                        "checkout root."))
   group.add_option("-E", "--exclude", action="append",
                    default=['ChangeLog'], metavar='REGEXP',
                    help="Regexp patterns to exclude files. Default: %default")

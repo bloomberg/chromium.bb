@@ -432,14 +432,17 @@ def PathDifference(root, subpath):
 
 
 def FindFileUpwards(filename, path=None):
-  """Search upwards from the a directory (default: current) to find a file."""
+  """Search upwards from the a directory (default: current) to find a file.
+  
+  Returns nearest upper-level directory with the passed in file.
+  """
   if not path:
     path = os.getcwd()
   path = os.path.realpath(path)
   while True:
     file_path = os.path.join(path, filename)
-    if os.path.isfile(file_path):
-      return file_path
+    if os.path.exists(file_path):
+      return path
     (new_path, _) = os.path.split(path)
     if new_path == path:
       return None
@@ -449,7 +452,7 @@ def FindFileUpwards(filename, path=None):
 def GetGClientRootAndEntries(path=None):
   """Returns the gclient root and the dict of entries."""
   config_file = '.gclient_entries'
-  config_path = FindFileUpwards(config_file, path)
+  config_path = os.path.join(FindFileUpwards(config_file, path), config_file)
 
   if not config_path:
     print "Can't find %s" % config_file

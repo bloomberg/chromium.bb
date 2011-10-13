@@ -66,6 +66,7 @@ class SVNUnittest(TryChangeTestsBase):
     self.compareMembers(trychange.SVN, members)
 
   def testBasic(self):
+    trychange.os.path.abspath(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.SVN.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.SVN.GenerateDiff(['foo.txt', 'bar.txt'],
                                    self.fake_root,
@@ -90,6 +91,7 @@ class GITUnittest(TryChangeTestsBase):
     self.compareMembers(trychange.GIT, members)
 
   def testBasic(self):
+    trychange.os.path.abspath(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GetUpstreamBranch(self.fake_root).AndReturn('somewhere')
     trychange.scm.GIT.GenerateDiff(self.fake_root,
