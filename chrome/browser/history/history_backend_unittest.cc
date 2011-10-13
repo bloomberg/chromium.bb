@@ -19,6 +19,7 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
+#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
@@ -146,7 +147,6 @@ class HistoryBackendTest : public testing::Test {
 
   BookmarkModel bookmark_model_;
 
- protected:
   bool loaded_;
 
  private:
@@ -157,7 +157,8 @@ class HistoryBackendTest : public testing::Test {
     if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
                                            &test_dir_))
       return;
-    backend_ = new HistoryBackend(test_dir_,
+    backend_ = new HistoryBackend(NULL,
+                                  test_dir_,
                                   0,
                                   new HistoryBackendTestDelegate(this),
                                   &bookmark_model_);
@@ -955,7 +956,8 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   FilePath new_history_file = new_history_path.Append(chrome::kHistoryFilename);
   ASSERT_TRUE(file_util::CopyFile(old_history_path, new_history_file));
 
-  backend_ = new HistoryBackend(new_history_path,
+  backend_ = new HistoryBackend(NULL,
+                                new_history_path,
                                 0,
                                 new HistoryBackendTestDelegate(this),
                                 &bookmark_model_);

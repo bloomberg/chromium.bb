@@ -27,6 +27,7 @@
 
 class BookmarkService;
 struct DownloadPersistentStoreInfo;
+class Profile;
 class TestingProfile;
 struct ThumbnailScore;
 
@@ -104,7 +105,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // may be NULL.
   //
   // This constructor is fast and does no I/O, so can be called at any time.
-  HistoryBackend(const FilePath& history_dir,
+  HistoryBackend(Profile* profile,
+                 const FilePath& history_dir,
                  int id,
                  Delegate* delegate,
                  BookmarkService* bookmark_service);
@@ -113,9 +115,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // fails, all other functions will fail as well. (Since this runs on another
   // thread, we don't bother returning failure.)
   //
-  // |languages| gives a list of language encodings with which the history
-  // URLs and omnibox searches are interpreted.
-  // |force_fail| can be set during unittests to unconditionally fail to init.
+  // |languages| gives the languages used to break search terms and history
+  // page titles into separate words. |force_fail| can be set during unittests
+  // to unconditionally fail to init.
   void Init(const std::string& languages, bool force_fail);
 
   // Notification that the history system is shutting down. This will break
@@ -256,6 +258,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void RemoveDownloadsBetween(const base::Time remove_begin,
                               const base::Time remove_end);
   void RemoveDownloads(const base::Time remove_end);
+
+  // InMemoryURLIndex ----------------------------------------------------------
+
+  // Returns the quick history index.
+  history::InMemoryURLIndex* InMemoryIndex() const {
+    return in_memory_url_index_.get();
+  }
 
   // Segment usage -------------------------------------------------------------
 
@@ -568,6 +577,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Full text database manager, possibly NULL if the database could not be
   // created.
   scoped_ptr<TextDatabaseManager> text_database_;
+
+  // The index used for quick history lookups.
+  scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
   // Manages expiration between the various databases.
   ExpireHistoryBackend expirer_;

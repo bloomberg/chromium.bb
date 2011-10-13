@@ -21,15 +21,14 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 #include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class Profile;
-
-namespace base {
-class Time;
-}
 
 namespace in_memory_url_index {
 class InMemoryURLIndexCacheItem;
@@ -40,39 +39,9 @@ namespace history {
 namespace imui = in_memory_url_index;
 
 class URLDatabase;
-
-// Specifies where an omnibox term occurs within a string. Used for specifying
-// highlights in AutocompleteMatches (ACMatchClassifications) and to assist in
-// scoring a result.
-struct TermMatch {
-  TermMatch(int term_num, size_t offset, size_t length)
-      : term_num(term_num),
-        offset(offset),
-        length(length) {}
-
-  int term_num;  // The index of the term in the original search string.
-  size_t offset;  // The starting offset of the substring match.
-  size_t length;  // The length of the substring match.
-};
-typedef std::vector<TermMatch> TermMatches;
-
-// Used for intermediate history result operations.
-struct ScoredHistoryMatch : public HistoryMatch {
-  ScoredHistoryMatch();  // Required by STL.
-  explicit ScoredHistoryMatch(const URLRow& url_info);
-  ~ScoredHistoryMatch();
-
-  static bool MatchScoreGreater(const ScoredHistoryMatch& m1,
-                                const ScoredHistoryMatch& m2);
-
-  // An interim score taking into consideration location and completeness
-  // of the match.
-  int raw_score;
-  TermMatches url_matches;  // Term matches within the URL.
-  TermMatches title_matches;  // Term matches within the page title.
-  bool can_inline;  // True if this is a candidate for in-line autocompletion.
-};
-typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
+struct URLsDeletedDetails;
+struct URLsModifiedDetails;
+struct URLVisitedDetails;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
@@ -93,16 +62,14 @@ typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 // will eliminate such words except in the case where a single character
 // is being searched on and which character occurs as the second char16 of a
 // multi-char16 instance.
-class InMemoryURLIndex {
+class InMemoryURLIndex : public NotificationObserver {
  public:
   // |history_dir| is a path to the directory containing the history database
   // within the profile wherein the cache and transaction journals will be
   // stored.
-  explicit InMemoryURLIndex(const FilePath& history_dir);
-  ~InMemoryURLIndex();
-
-  // Convenience types
-  typedef std::vector<string16> String16Vector;
+  explicit InMemoryURLIndex(Profile* profile,
+                            const FilePath& history_dir);
+  virtual ~InMemoryURLIndex();
 
   // Opens and indexes the URL history database.
   // |languages| gives a list of language encodings with which the history
@@ -143,36 +110,17 @@ class InMemoryURLIndex {
 
   // Updates or adds an history item to the index if it meets the minimum
   // 'quick' criteria.
-  void UpdateURL(URLID row_id, const URLRow& row);
+  void UpdateURL(const URLRow& row);
 
   // Deletes indexing data for an history item. The item may not have actually
   // been indexed (which is the case if it did not previously meet minimum
   // 'quick' criteria).
-  void DeleteURL(URLID row_id);
+  void DeleteURL(const URLRow& row);
 
-  // Breaks the |uni_string| string down into individual words and return
-  // a vector with the individual words in their original order. If
-  // |break_on_space| is false then the resulting list will contain only words
-  // containing alpha-numeric characters. If |break_on_space| is true then the
-  // resulting list will contain strings broken at whitespace.
-  //
-  // Example:
-  //   Given: |uni_string|: "http://www.google.com/ harry the rabbit."
-  //   With |break_on_space| false the returned list will contain:
-  //    "http", "www", "google", "com", "harry", "the", "rabbit"
-  //   With |break_on_space| true the returned list will contain:
-  //    "http://", "www.google.com/", "harry", "the", "rabbit."
-  static String16Vector WordVectorFromString16(const string16& uni_string,
-                                               bool break_on_space);
-
-  // Extract and return the offsets from |matches|.
-  static std::vector<size_t> OffsetsFromTermMatches(const TermMatches& matches);
-
-  // Replace the offsets in |matches| with those given in |offsets|, deleting
-  // any which are npos, and return the updated list of matches.
-  static TermMatches ReplaceOffsetsInTermMatches(
-      const TermMatches& matches,
-      const std::vector<size_t>& offsets);
+  // Notification callback.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   friend class AddHistoryMatch;
@@ -193,29 +141,6 @@ class InMemoryURLIndex {
 
   // Creating one of me without a history path is not allowed (tests excepted).
   InMemoryURLIndex();
-
-  // Convenience types.
-  typedef std::set<string16> String16Set;
-  typedef std::set<char16> Char16Set;
-  typedef std::vector<char16> Char16Vector;
-
-  // An index into list of all of the words we have indexed.
-  typedef int WordID;
-
-  // A map allowing a WordID to be determined given a word.
-  typedef std::map<string16, WordID> WordMap;
-
-  // A map from character to word_ids.
-  typedef std::set<WordID> WordIDSet;  // An index into the WordList.
-  typedef std::map<char16, WordIDSet> CharWordIDMap;
-
-  // A map from word_id to history item.
-  // TODO(mrossetti): URLID is 64 bit: a memory bloat and performance hit.
-  // Consider using a smaller type.
-  typedef URLID HistoryID;
-  typedef std::set<HistoryID> HistoryIDSet;
-  typedef std::map<WordID, HistoryIDSet> WordIDHistoryMap;
-
 
   // Support caching of term results so that we can optimize searches which
   // build upon a previous search. Each entry in this map represents one
@@ -248,12 +173,6 @@ class InMemoryURLIndex {
   };
   typedef std::map<string16, SearchTermCacheItem> SearchTermCacheMap;
 
-  // TODO(rohitrao): Probably replace this with QueryResults.
-  typedef std::vector<URLRow> URLRowVector;
-
-  // A map from history_id to the history's URL and title.
-  typedef std::map<HistoryID, URLRow> HistoryInfoMap;
-
   // A helper class which performs the final filter on each candidate
   // history URL match, inserting accepted matches into |scored_matches_|
   // and trimming the maximum number of matches to 10.
@@ -280,34 +199,19 @@ class InMemoryURLIndex {
   // Initializes the whitelist of URL schemes.
   static void InitializeSchemeWhitelist(std::set<std::string>* whitelist);
 
-  // Breaks a string down into individual words.
-  static String16Set WordSetFromString16(const string16& uni_string);
-
-  // Given a set of Char16s, finds words containing those characters.
-  WordIDSet WordIDSetForTermChars(const Char16Set& term_chars);
-
-  // Creates a TermMatches which has an entry for each occurrence of the string
-  // |term| found in the string |string|. Mark each match with |term_num| so
-  // that the resulting TermMatches can be merged with other TermMatches for
-  // other terms.
-  static TermMatches MatchTermInString(const string16& term,
-                                       const string16& string,
-                                       int term_num);
-
   // URL History indexing support functions.
 
   // Indexes one URL history item.
   bool IndexRow(const URLRow& row);
 
-  // Breaks the |uni_word| string down into its individual characters.
-  // Note that this is temporarily intended to work on a single word, but
-  // _will_ work on a string of words, perhaps with unexpected results.
-  // TODO(mrossetti): Lots of optimizations possible here for not restarting
-  // a search if the user is just typing along. Also, change this to uniString
-  // and properly handle substring matches, scoring and sorting the results
-  // by score. Also, provide the metrics for where the matches occur so that
-  // the UI can highlight the matched sections.
-  static Char16Set Char16SetFromString16(const string16& uni_word);
+  // Parses and indexes the words in the URL and page title of |row|.
+  void AddRowWordsToIndex(const URLRow& row);
+
+  // Removes |row| and all associated words and characters from the index.
+  void RemoveRowFromIndex(const URLRow& row);
+
+  // Removes all words and characters associated with |row| from the index.
+  void RemoveRowWordsFromIndex(const URLRow& row);
 
   // Given a single word in |uni_word|, adds a reference for the containing
   // history item identified by |history_id| to the index.
@@ -352,12 +256,13 @@ class InMemoryURLIndex {
   static int ScoreComponentForMatches(const TermMatches& matches,
                                       size_t max_length);
 
-  // Sorts and removes overlapping substring matches from |matches| and
-  // returns the cleaned up matches.
-  static TermMatches SortAndDeoverlap(const TermMatches& matches);
-
   // Determines if |gurl| has a whitelisted scheme and returns true if so.
   bool URLSchemeIsWhitelisted(const GURL& gurl) const;
+
+  // Notification handlers.
+  void OnURLVisited(const URLVisitedDetails* details);
+  void OnURLsModified(const URLsModifiedDetails* details);
+  void OnURLsDeleted(const URLsDeletedDetails* details);
 
   // Utility functions supporting RestoreFromCache and SaveToCache.
 
@@ -384,6 +289,8 @@ class InMemoryURLIndex {
   bool RestoreWordIDHistoryMap(const imui::InMemoryURLIndexCacheItem& cache);
   bool RestoreHistoryInfoMap(const imui::InMemoryURLIndexCacheItem& cache);
 
+  NotificationRegistrar registrar_;
+
   // Directory where cache file resides. This is, except when unit testing,
   // the same directory in which the profile's history database is found. It
   // should never be empty.
@@ -395,21 +302,8 @@ class InMemoryURLIndex {
   // the InMemoryURLIndex was last populated.
   base::Time last_saved_;
 
-  // A list of all of indexed words. The index of a word in this list is the
-  // ID of the word in the word_map_. It reduces the memory overhead by
-  // replacing a potentially long and repeated string with a simple index.
-  // NOTE: A word will _never_ be removed from this vector thus insuring
-  // the immutability of the word_id throughout the session, reducing
-  // maintenance complexity.
-  // TODO(mrossetti): Profile the vector allocation and determine if judicious
-  // 'reserve' calls are called for.
-  String16Vector word_list_;
-
-  int history_item_count_;
-  WordMap word_map_;
-  CharWordIDMap char_word_map_;
-  WordIDHistoryMap word_id_history_map_;
-  HistoryInfoMap history_info_map_;
+  // The index's durable private data.
+  scoped_ptr<URLIndexPrivateData> private_data_;
 
   // Cache of search terms.
   SearchTermCacheMap search_term_cache_;
