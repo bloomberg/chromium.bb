@@ -87,8 +87,6 @@ from portage.versions import vercmp
 import portage
 import portage.debug
 
-NEW_PORTAGE = (0 <= vercmp(portage.VERSION, "2.1.9.46-r2"))
-
 def Usage():
   """Print usage."""
   print "Usage:"
@@ -247,18 +245,15 @@ class DepGraphGenerator(object):
         self.board = arg.replace("--board=", "")
       elif arg.startswith("--workon="):
         workon_str = arg.replace("--workon=", "")
-        if NEW_PORTAGE:
-          emerge_args.append("--reinstall-atoms=%s" % workon_str)
-          emerge_args.append("--usepkg-exclude=%s" % workon_str)
+        emerge_args.append("--reinstall-atoms=%s" % workon_str)
+        emerge_args.append("--usepkg-exclude=%s" % workon_str)
       elif arg.startswith("--force-remote-binary="):
         force_remote_binary = arg.replace("--force-remote-binary=", "")
-        if NEW_PORTAGE:
-          emerge_args.append("--useoldpkg-atoms=%s" % force_remote_binary)
+        emerge_args.append("--useoldpkg-atoms=%s" % force_remote_binary)
       elif arg == "--show-output":
         self.show_output = True
       elif arg == "--rebuild":
-        if NEW_PORTAGE:
-          emerge_args.append("--rebuild-if-unbuilt")
+        emerge_args.append("--rebuild-if-unbuilt")
       else:
         # Not one of our options, so pass through to emerge.
         emerge_args.append(arg)
@@ -268,8 +263,7 @@ class DepGraphGenerator(object):
     # dependencies needs to be recompiled.
     for pkg in ("chromeos-base/chromeos-chrome", "media-plugins/o3d",
                 "dev-java/icedtea"):
-      if NEW_PORTAGE:
-        emerge_args.append("--rebuild-exclude=%s" % pkg)
+      emerge_args.append("--rebuild-exclude=%s" % pkg)
 
     return emerge_args
 
@@ -989,10 +983,9 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db):
   settings, trees, mtimedb = emerge.settings, emerge.trees, emerge.mtimedb
 
   # Disable flushing of caches to save on I/O.
-  if 0 <= vercmp(portage.VERSION, "2.1.9.48"):
-    root = emerge.settings["ROOT"]
-    vardb = emerge.trees[root]["vartree"].dbapi
-    vardb._flush_cache_enabled = False
+  root = emerge.settings["ROOT"]
+  vardb = emerge.trees[root]["vartree"].dbapi
+  vardb._flush_cache_enabled = False
 
   opts, spinner = emerge.opts, emerge.spinner
   opts["--nodeps"] = True
