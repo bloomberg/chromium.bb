@@ -539,3 +539,31 @@ TEST_F(ProfileSyncServicePreferenceTest,
   // Sync value should be picked up.
   EXPECT_TRUE(sync_value->Equals(&GetPreferenceValue(prefs::kHomePage)));
 }
+
+TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedDefaultPreferences) {
+  const PrefService::Preference* pref =
+      prefs_->FindPreference(prefs::kHomePage);
+  EXPECT_TRUE(pref->IsDefaultValue());
+  CreateRootTask task(this, syncable::PREFERENCES);
+  ASSERT_TRUE(StartSyncService(&task, false));
+  ASSERT_TRUE(task.success());
+  EXPECT_TRUE(IsSynced(prefs::kHomePage));
+  EXPECT_TRUE(pref->IsDefaultValue());
+  EXPECT_TRUE(GetSyncedValue(prefs::kHomePage) == NULL);
+  // Switch kHomePage to managed and set a different value.
+  scoped_ptr<Value> managed_value(
+      Value::CreateStringValue("http://example.com/managed"));
+  profile_->GetTestingPrefService()->SetManagedPref(
+      prefs::kHomePage, managed_value->DeepCopy());
+  // The pref value should be the one dictated by policy.
+  EXPECT_TRUE(managed_value->Equals(&GetPreferenceValue(prefs::kHomePage)));
+  EXPECT_FALSE(pref->IsDefaultValue());
+  // There should be no synced value.
+  EXPECT_TRUE(GetSyncedValue(prefs::kHomePage) == NULL);
+  // Switch kHomePage back to unmanaged.
+  profile_->GetTestingPrefService()->RemoveManagedPref(prefs::kHomePage);
+  // The original value should be picked up.
+  EXPECT_TRUE(pref->IsDefaultValue());
+  // There should still be no synced value.
+  EXPECT_TRUE(GetSyncedValue(prefs::kHomePage) == NULL);
+}

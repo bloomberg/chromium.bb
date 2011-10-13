@@ -412,10 +412,9 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
   if (synced_preferences_.count(name) == 0) {
-    DCHECK(preference->IsUserControlled());
-    // This preference was previously not user controlled and there was no sync
-    // data, but is now user controlled. We must associate it and create a sync
-    // node for it.
+    // Not in synced_preferences_ means no synced data. InitPrefAndAssociate(..)
+    // will determine if we care about its data (e.g. if it has a default value
+    // and hasn't been changed yet we don't) and take care syncing any new data.
     InitPrefAndAssociate(SyncData(), name, &changes);
   } else {
     // We are already syncing this preference, just update it's sync node.
