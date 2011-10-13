@@ -59,12 +59,19 @@
 
 #if NACL_WINDOWS
 /*
- * from Cr base/compiler_specific.h
+ * Cribbed from Cr base/compiler_specific.h so NaCl does not depend on base/
  */
+
+#define NACL_MSVC_PUSH_DISABLE_WARNING(n) \
+  __pragma(warning(push))                 \
+  __pragma(warning(disable:n))
+
+#define NACL_MSVC_POP_WARNING() __pragma(warning(pop))
+
 # define NACL_ALLOW_THIS_IN_INITIALIZER_LIST(code) \
-  MSVC_PUSH_DISABLE_WARNING(4355) \
-  code \
-  MSVC_POP_WARNING()
+  NACL_MSVC_PUSH_DISABLE_WARNING(4355)             \
+  code                                             \
+  NACL_MSVC_POP_WARNING()
 #else
 # define NACL_ALLOW_THIS_IN_INITIALIZER_LIST(code) code
 #endif
