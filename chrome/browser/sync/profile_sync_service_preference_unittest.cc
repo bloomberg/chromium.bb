@@ -50,10 +50,9 @@ typedef std::map<const std::string, const Value*> PreferenceValues;
 ACTION_P4(BuildPrefSyncComponents, profile_sync_service, pref_sync_service,
     model_associator_ptr, change_processor_ptr) {
   sync_api::UserShare* user_share = profile_sync_service->GetUserShare();
-  *change_processor_ptr = new GenericChangeProcessor(
-      profile_sync_service,
-      pref_sync_service->AsWeakPtr(),
-      user_share);
+  *change_processor_ptr = new GenericChangeProcessor(pref_sync_service,
+                                 profile_sync_service,
+                                 user_share);
   *model_associator_ptr = new browser_sync::SyncableServiceAdapter(
       syncable::PREFERENCES,
       pref_sync_service,

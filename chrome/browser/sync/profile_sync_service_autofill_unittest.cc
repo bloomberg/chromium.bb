@@ -30,7 +30,6 @@
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
-#include "chrome/browser/sync/glue/shared_change_processor.h"
 #include "chrome/browser/sync/glue/syncable_service_adapter.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
@@ -64,7 +63,6 @@ using browser_sync::AutofillModelAssociator;
 using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::DataTypeController;
 using browser_sync::GenericChangeProcessor;
-using browser_sync::SharedChangeProcessor;
 using browser_sync::SyncableServiceAdapter;
 using browser_sync::GROUP_DB;
 using browser_sync::kAutofillTag;
@@ -228,25 +226,26 @@ ACTION_P3(MakeAutofillSyncComponents, service, wd, dtc) {
                                             change_processor);
 }
 
-ACTION(MakeGenericChangeProcessor) {
-  sync_api::UserShare* user_share = arg0->GetUserShare();
-  return new GenericChangeProcessor(arg1, arg2, user_share);
-}
-
-ACTION(MakeSharedChangeProcessor) {
-  return new SharedChangeProcessor();
-}
-
-ACTION_P(MakeAutofillProfileSyncComponents, wds) {
+ACTION_P3(MakeAutofillProfileSyncComponents, service, wds, dtc) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
-    return base::WeakPtr<SyncableService>();;
-  return wds->GetAutofillProfileSyncableService()->AsWeakPtr();
+    return ProfileSyncFactory::SyncComponents(NULL, NULL);
+  AutofillProfileSyncableService* sync_service =
+      wds->GetAutofillProfileSyncableService();
+  sync_api::UserShare* user_share = service->GetUserShare();
+  GenericChangeProcessor* change_processor =
+      new GenericChangeProcessor(sync_service, dtc, user_share);
+  SyncableServiceAdapter* sync_service_adapter =
+      new SyncableServiceAdapter(syncable::AUTOFILL_PROFILE,
+                                 sync_service,
+                                 change_processor);
+  return ProfileSyncFactory::SyncComponents(sync_service_adapter,
+                                            change_processor);
 }
 
 class AbstractAutofillFactory {
  public:
-  virtual DataTypeController* CreateDataTypeController(
+  virtual AutofillDataTypeController* CreateDataTypeController(
       ProfileSyncFactory* factory,
       ProfileMock* profile,
       ProfileSyncService* service) = 0;
@@ -259,7 +258,7 @@ class AbstractAutofillFactory {
 
 class AutofillEntryFactory : public AbstractAutofillFactory {
  public:
-  browser_sync::DataTypeController* CreateDataTypeController(
+  browser_sync::AutofillDataTypeController* CreateDataTypeController(
       ProfileSyncFactory* factory,
       ProfileMock* profile,
       ProfileSyncService* service) {
@@ -277,7 +276,7 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
 
 class AutofillProfileFactory : public AbstractAutofillFactory {
  public:
-  browser_sync::DataTypeController* CreateDataTypeController(
+  browser_sync::AutofillDataTypeController* CreateDataTypeController(
       ProfileSyncFactory* factory,
       ProfileMock* profile,
       ProfileSyncService* service) {
@@ -288,12 +287,8 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
                       ProfileSyncService* service,
                       WebDataService* wds,
                       DataTypeController* dtc) {
-    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_)).
-        WillOnce(MakeGenericChangeProcessor());
-    EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
-        WillOnce(MakeSharedChangeProcessor());
-    EXPECT_CALL(*factory, GetAutofillProfileSyncableService(_)).
-        WillOnce(MakeAutofillProfileSyncComponents(wds));
+    EXPECT_CALL(*factory, CreateAutofillProfileSyncComponents(_,_,_)).
+        WillOnce(MakeAutofillProfileSyncComponents(service, wds, dtc));
   }
 };
 
@@ -372,7 +367,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
                                    task));
     EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
         Return(service_.get()));
-    DataTypeController* data_type_controller =
+    AutofillDataTypeController* data_type_controller =
         factory->CreateDataTypeController(&factory_,
             &profile_,
             service_.get());

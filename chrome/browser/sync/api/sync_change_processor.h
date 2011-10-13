@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,9 +21,6 @@ typedef std::vector<SyncChange> SyncChangeList;
 // An interface for services that handle receiving SyncChanges.
 class SyncChangeProcessor {
  public:
-  SyncChangeProcessor();
-  virtual ~SyncChangeProcessor();
-
   // Process a list of SyncChanges.
   // Returns: A default SyncError (IsSet() == false) if no errors were
   //          encountered, and a filled SyncError (IsSet() == true)
@@ -35,6 +32,8 @@ class SyncChangeProcessor {
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) = 0;
  protected:
+  virtual ~SyncChangeProcessor();
 };
+
 
 #endif  // CHROME_BROWSER_SYNC_API_SYNC_CHANGE_PROCESSOR_H_

@@ -6,64 +6,27 @@
 #define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
 #pragma once
 
-#include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
-#include "chrome/browser/autofill/personal_data_manager_observer.h"
-#include "chrome/browser/sync/glue/new_non_frontend_data_type_controller.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
-
-class NotificationDetails;
-class NotificationSource;
-class PersonalDataManager;
-class WebDataService;
+#include "chrome/browser/sync/glue/autofill_data_type_controller.h"
+#include "chrome/browser/sync/profile_sync_factory.h"
 
 namespace browser_sync {
 
-class AutofillProfileDataTypeController
-    : public NewNonFrontendDataTypeController,
-      public NotificationObserver,
-      public PersonalDataManagerObserver {
+class AutofillProfileDataTypeController : public AutofillDataTypeController {
  public:
   AutofillProfileDataTypeController(
       ProfileSyncFactory* profile_sync_factory,
       Profile* profile);
   virtual ~AutofillProfileDataTypeController();
 
-  // NewNonFrontendDataTypeController implementation.
-  virtual syncable::ModelType type() const OVERRIDE;
-  virtual browser_sync::ModelSafeGroup model_safe_group() const OVERRIDE;
-
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
-  // PersonalDataManagerObserver implementation:
-  virtual void OnPersonalDataChanged() OVERRIDE;
+  virtual syncable::ModelType type() const;
 
  protected:
-   // NewNonFrontendDataTypeController implementation.
-   virtual bool StartModels() OVERRIDE;
-   virtual bool StartAssociationAsync() OVERRIDE;
-   virtual base::WeakPtr<SyncableService> GetWeakPtrToSyncableService()
-      const OVERRIDE;
-   virtual void StopModels() OVERRIDE;
-   virtual void StopLocalServiceAsync() OVERRIDE;
+   virtual void CreateSyncComponents();
    virtual void RecordUnrecoverableError(
        const tracked_objects::Location& from_here,
-       const std::string& message) OVERRIDE;
-   virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
-   virtual void RecordStartFailure(StartResult result) OVERRIDE;
-
-   void DoStartAssociationAsync();
-
- private:
-   PersonalDataManager* personal_data_;
-   scoped_refptr<WebDataService> web_data_service_;
-   NotificationRegistrar notification_registrar_;
-
-   DISALLOW_COPY_AND_ASSIGN(AutofillProfileDataTypeController);
+       const std::string& message);
+   virtual void RecordAssociationTime(base::TimeDelta time);
+   virtual void RecordStartFailure(StartResult result);
 };
 
 }  // namespace browser_sync

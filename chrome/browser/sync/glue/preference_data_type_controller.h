@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 
 namespace browser_sync {
@@ -25,9 +24,6 @@ class PreferenceDataTypeController : public FrontendDataTypeController {
   // FrontendDataTypeController implementation.
   virtual syncable::ModelType type() const OVERRIDE;
 
- protected:
-  virtual GenericChangeProcessor* change_processor() const OVERRIDE;
-
  private:
   // FrontendDataTypeController implementations.
   virtual void CreateSyncComponents() OVERRIDE;
@@ -36,8 +32,6 @@ class PreferenceDataTypeController : public FrontendDataTypeController {
       const std::string& message) OVERRIDE;
   virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
   virtual void RecordStartFailure(StartResult result) OVERRIDE;
-
-  scoped_ptr<GenericChangeProcessor> generic_change_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(PreferenceDataTypeController);
 };

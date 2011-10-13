@@ -39,11 +39,11 @@ bool ChangeProcessor::IsRunning() const {
 // Not implemented by default.
 void ChangeProcessor::CommitChangesFromSyncModel() {}
 
-UnrecoverableErrorHandler* ChangeProcessor::error_handler() const {
+UnrecoverableErrorHandler* ChangeProcessor::error_handler() {
   return error_handler_;
 }
 
-sync_api::UserShare* ChangeProcessor::share_handle() const {
+sync_api::UserShare* ChangeProcessor::share_handle() {
   return share_handle_;
 }
 

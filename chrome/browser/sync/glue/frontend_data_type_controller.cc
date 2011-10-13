@@ -102,7 +102,7 @@ bool FrontendDataTypeController::Associate() {
   }
 
   sync_service_->ActivateDataType(type(), model_safe_group(),
-                                  change_processor());
+                                  change_processor_.get());
   state_ = RUNNING;
   // FinishStart() invokes the DataTypeManager callback, which can lead to a
   // call to Stop() if one of the other data types being started generates an

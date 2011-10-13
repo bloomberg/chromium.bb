@@ -365,7 +365,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // tests.  Figure out how to pass the handle to the ModelAssociators
   // directly, figure out how to expose this to tests, and remove this
   // function.
-  virtual sync_api::UserShare* GetUserShare() const;
+  sync_api::UserShare* GetUserShare() const;
 
   // TODO(akalin): These two functions are used only by
   // ProfileSyncServiceHarness.  Figure out a different way to expose

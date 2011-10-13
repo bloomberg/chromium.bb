@@ -19,14 +19,11 @@ class ExtensionSettingsBackend;
 class PasswordStore;
 class PersonalDataManager;
 class ProfileSyncService;
-class SyncableService;
 class WebDatabase;
 class WebDataService;
 
 namespace browser_sync {
 class DataTypeManager;
-class GenericChangeProcessor;
-class SharedChangeProcessor;
 class SyncBackendHost;
 class UnrecoverableErrorHandler;
 }
@@ -42,15 +39,6 @@ class ProfileSyncFactory {
   // and change processors all return this struct.  This is needed
   // because the change processors typically require a type-specific
   // model associator at construction time.
-  //
-  // Note: This interface is deprecated in favor of the SyncableService API.
-  // New datatypes that do not live on the UI thread should directly return a
-  // weak pointer to a SyncableService. All others continue to return
-  // SyncComponents. It is safe to assume that the factory methods below are
-  // called on the same thread in which the datatype resides.
-  //
-  // TODO(zea): Have all datatypes using the new API switch to returning
-  // SyncableService weak pointers instead of SyncComponents (crbug.com/100114).
   struct SyncComponents {
     browser_sync::AssociatorInterface* model_associator;
     browser_sync::ChangeProcessor* change_processor;
@@ -77,15 +65,6 @@ class ProfileSyncFactory {
       browser_sync::SyncBackendHost* backend,
       const browser_sync::DataTypeController::TypeMap* controllers) = 0;
 
-  // Creating this in the factory helps us mock it out in testing.
-  virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::UnrecoverableErrorHandler* error_handler,
-      const base::WeakPtr<SyncableService>& local_service) = 0;
-
-  virtual browser_sync::SharedChangeProcessor*
-      CreateSharedChangeProcessor() = 0;
-
   // Instantiates both a model associator and change processor for the
   // app data type.  The pointers in the return struct are
   // owned by the caller.
@@ -101,11 +80,13 @@ class ProfileSyncFactory {
       WebDatabase* web_database,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
-  // Returns a weak pointer to the SyncableService associated with the datatype.
-  // The SyncableService is not owned by Sync, but by the backend service
-  // itself.
-  virtual base::WeakPtr<SyncableService> GetAutofillProfileSyncableService(
-      WebDataService* web_data_service) const = 0;
+  // Instantiates both a model associator and change processor for the
+  // autofill data type.  The pointers in the return struct are owned
+  // by the caller.
+  virtual SyncComponents CreateAutofillProfileSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      WebDataService* web_data_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the
   // bookmark data type.  The pointers in the return struct are owned

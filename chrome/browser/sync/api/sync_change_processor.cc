@@ -4,6 +4,4 @@
 
 #include "chrome/browser/sync/api/sync_change_processor.h"
 
-SyncChangeProcessor::SyncChangeProcessor() {}
-
 SyncChangeProcessor::~SyncChangeProcessor() {}

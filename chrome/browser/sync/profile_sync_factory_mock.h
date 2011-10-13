@@ -33,13 +33,6 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
                browser_sync::DataTypeManager*(
                    browser_sync::SyncBackendHost*,
                    const browser_sync::DataTypeController::TypeMap*));
-  MOCK_METHOD3(CreateGenericChangeProcessor,
-      browser_sync::GenericChangeProcessor*(
-          ProfileSyncService* profile_sync_service,
-          browser_sync::UnrecoverableErrorHandler* error_handler,
-          const base::WeakPtr<SyncableService>& local_service));
-  MOCK_METHOD0(CreateSharedChangeProcessor,
-      browser_sync::SharedChangeProcessor*());
   MOCK_METHOD2(CreateAppSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::UnrecoverableErrorHandler* error_handler));
@@ -48,9 +41,11 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
                    ProfileSyncService* profile_sync_service,
                    WebDatabase* web_database,
                    browser_sync::UnrecoverableErrorHandler* error_handler));
-  MOCK_CONST_METHOD1(GetAutofillProfileSyncableService,
-                     base::WeakPtr<SyncableService>(
-                         WebDataService* web_data_service));
+  MOCK_METHOD3(CreateAutofillProfileSyncComponents,
+               SyncComponents(
+                   ProfileSyncService* profile_sync_service,
+                   WebDataService* web_data_service,
+                   browser_sync::UnrecoverableErrorHandler* error_handler));
   MOCK_METHOD2(CreateBookmarkSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::UnrecoverableErrorHandler* error_handler));

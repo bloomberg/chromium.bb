@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/browser/sync/api/sync_data.h"
@@ -19,11 +18,7 @@ class SyncData;
 
 typedef std::vector<SyncData> SyncDataList;
 
-// TODO(zea): remove SupportsWeakPtr in favor of having all SyncableService
-// implementers provide a way of getting a weak pointer to themselves.
-// See crbug.com/100114.
-class SyncableService : public SyncChangeProcessor,
-                        public base::SupportsWeakPtr<SyncableService> {
+class SyncableService : public SyncChangeProcessor {
  public:
   // Informs the service to begin syncing the specified synced datatype |type|.
   // The service should then merge |initial_sync_data| into it's local data,

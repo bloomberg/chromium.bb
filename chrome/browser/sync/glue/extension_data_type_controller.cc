@@ -36,12 +36,7 @@ void ExtensionDataTypeController::CreateSyncComponents() {
       profile_sync_factory_->CreateExtensionSyncComponents(sync_service_,
                                                      this);
   set_model_associator(sync_components.model_associator);
-  generic_change_processor_.reset(static_cast<GenericChangeProcessor*>(
-      sync_components.change_processor));
-}
-
-GenericChangeProcessor* ExtensionDataTypeController::change_processor() const {
-  return generic_change_processor_.get();
+  set_change_processor(sync_components.change_processor);
 }
 
 void ExtensionDataTypeController::RecordUnrecoverableError(

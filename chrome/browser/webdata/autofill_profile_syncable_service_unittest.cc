@@ -32,6 +32,21 @@ class MockAutofillProfileSyncableService
   MOCK_METHOD1(LoadAutofillData, bool(std::vector<AutofillProfile*>*));
   MOCK_METHOD1(SaveChangesToWebData,
                bool(const AutofillProfileSyncableService::DataBundle&));
+
+  // Helper for tests that do not need to setup service completely through the
+  // MergeDataAndStartSyncing().
+  class AutoSetSyncProcessor {
+   public:
+    AutoSetSyncProcessor(MockAutofillProfileSyncableService* service,
+                         SyncChangeProcessor* sync_processor)
+         : service_(service) {
+      service->set_sync_processor(sync_processor);
+    }
+    ~AutoSetSyncProcessor() {
+      service_->set_sync_processor(NULL);
+    }
+    MockAutofillProfileSyncableService* service_;
+  };
 };
 
 ACTION_P(CopyData, data) {
@@ -97,23 +112,11 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
   AutofillProfileSyncableServiceTest()
     : db_thread_(BrowserThread::DB, &message_loop_) {}
 
-  virtual void SetUp() OVERRIDE {
-    sync_processor_.reset(new MockSyncChangeProcessor);
-  }
-
-  virtual void TearDown() OVERRIDE {
-    // Each test passes ownership of the sync processor to the SyncableService.
-    // We don't release it immediately so we can verify the mock calls, so
-    // release it at teardown. Any test that doesn't call
-    // MergeDataAndStartSyncing or set_sync_processor must ensure the
-    // sync_processor_ gets properly reset.
-    ignore_result(sync_processor_.release());
-  }
  protected:
   MessageLoop message_loop_;
   BrowserThread db_thread_;
   MockAutofillProfileSyncableService autofill_syncable_service_;
-  scoped_ptr<MockSyncChangeProcessor> sync_processor_;
+  MockSyncChangeProcessor sync_processor_;
 };
 
 TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
@@ -158,16 +161,15 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
               SaveChangesToWebData(DataBundleCheck(expected_bundle)))
       .Times(1)
       .WillOnce(Return(true));
-  ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
+  ON_CALL(sync_processor_, ProcessSyncChanges(_, _))
       .WillByDefault(Return(SyncError()));
-  EXPECT_CALL(*sync_processor_,
+  EXPECT_CALL(sync_processor_,
               ProcessSyncChanges(_, CheckSyncChanges(expected_change_list)))
       .Times(1)
       .WillOnce(Return(SyncError()));
 
-  // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncable::AUTOFILL_PROFILE, data_list, sync_processor_.get());
+      syncable::AUTOFILL_PROFILE, data_list, &sync_processor_);
   autofill_syncable_service_.StopSyncing(syncable::AUTOFILL_PROFILE);
 }
 
@@ -187,17 +189,16 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   EXPECT_CALL(autofill_syncable_service_, SaveChangesToWebData(_))
       .Times(1)
       .WillOnce(Return(true));
-  ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
+  ON_CALL(sync_processor_, ProcessSyncChanges(_, _))
       .WillByDefault(Return(SyncError()));
-  EXPECT_CALL(*sync_processor_,
+  EXPECT_CALL(sync_processor_,
               ProcessSyncChanges(_, Property(&SyncChangeList::size, Eq(2U))))
       .Times(1)
       .WillOnce(Return(SyncError()));
 
   SyncDataList data_list;
-  // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncable::AUTOFILL_PROFILE, data_list, sync_processor_.get());
+      syncable::AUTOFILL_PROFILE, data_list, &sync_processor_);
 
   SyncDataList data =
       autofill_syncable_service_.GetAllSyncData(syncable::AUTOFILL_PROFILE);
@@ -234,7 +235,8 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
       .Times(1)
       .WillOnce(Return(true));
 
-  autofill_syncable_service_.set_sync_processor(sync_processor_.get());
+  MockAutofillProfileSyncableService::AutoSetSyncProcessor temp(
+      &autofill_syncable_service_, &sync_processor_);
   SyncError error = autofill_syncable_service_.ProcessSyncChanges(
       FROM_HERE, change_list);
 
@@ -249,11 +251,12 @@ TEST_F(AutofillProfileSyncableServiceTest, ActOnChange) {
   profile.SetInfo(NAME_FIRST, UTF8ToUTF16("Jane"));
   AutofillProfileChange change1(AutofillProfileChange::ADD, guid1, &profile);
   AutofillProfileChange change2(AutofillProfileChange::REMOVE, guid2, NULL);
-  ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
+  ON_CALL(sync_processor_, ProcessSyncChanges(_, _))
       .WillByDefault(Return(SyncError(FROM_HERE, std::string("an error"),
                                       syncable::AUTOFILL_PROFILE)));
 
-  autofill_syncable_service_.set_sync_processor(sync_processor_.get());
+  MockAutofillProfileSyncableService::AutoSetSyncProcessor temp(
+      &autofill_syncable_service_, &sync_processor_);
   autofill_syncable_service_.ActOnChange(change1);
   autofill_syncable_service_.ActOnChange(change2);
 }

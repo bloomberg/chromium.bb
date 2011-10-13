@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
@@ -62,7 +60,8 @@ void NonFrontendDataTypeController::Start(StartCallback* start_callback) {
   state_ = MODEL_STARTING;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
-    // or we failed to start the models, we exit early.
+    // or we failed to start the models, we exit early. state_ will control
+    // what we perform next.
     DCHECK(state_ == NOT_RUNNING || state_ == MODEL_STARTING);
     return;
   }
@@ -117,7 +116,7 @@ void NonFrontendDataTypeController::StartAssociation() {
   }
 
   profile_sync_service_->ActivateDataType(type(), model_safe_group(),
-                                          change_processor());
+                                          change_processor_.get());
   StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, SyncError());
 }
 
@@ -140,11 +139,12 @@ void NonFrontendDataTypeController::StartDone(
   base::AutoLock lock(abort_association_lock_);
   if (!abort_association_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&NonFrontendDataTypeController::StartDoneImpl,
-                   this,
-                   result,
-                   new_state,
-                   error));
+        NewRunnableMethod(
+            this,
+            &NonFrontendDataTypeController::StartDoneImpl,
+            result,
+            new_state,
+            error));
   }
 }
 
@@ -153,14 +153,13 @@ void NonFrontendDataTypeController::StartDoneImpl(
     DataTypeController::State new_state,
     const SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // It's possible to have StartDoneImpl called first from the UI thread
-  // (due to Stop being called) and then posted from the non-UI thread. In
-  // this case, we drop the second call because we've already been stopped.
+
   if (state_ == NOT_RUNNING) {
+    // During stop it is possible startdoneimpl can be called twice. Once from
+    // the |StartDone| method and once from the |Stop| method.
     DCHECK(!start_callback_.get());
     return;
   }
-
   state_ = new_state;
   if (state_ != RUNNING) {
     // Start failed.
@@ -175,9 +174,9 @@ void NonFrontendDataTypeController::StartDoneImpl(
   callback->Run(result, error);
 }
 
-// TODO(sync): Blocking the UI thread at shutdown is bad. The new API avoids
-// this. Once all non-frontend datatypes use the new API, we can get rid of this
-// locking (see implementation in AutofillProfileDataTypeController).
+// TODO(sync): Blocking the UI thread at shutdown is bad. If we had a way of
+// distinguishing chrome shutdown from sync shutdown, we should be able to avoid
+// this (http://crbug.com/55662).
 void NonFrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If Stop() is called while Start() is waiting for association to
@@ -254,11 +253,9 @@ void NonFrontendDataTypeController::OnUnrecoverableError(
     const std::string& message) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   RecordUnrecoverableError(from_here, message);
-  BrowserThread::PostTask(BrowserThread::UI, from_here,
-      base::Bind(&NonFrontendDataTypeController::OnUnrecoverableErrorImpl,
-                 this,
-                 from_here,
-                 message));
+  BrowserThread::PostTask(BrowserThread::UI, from_here, NewRunnableMethod(this,
+      &NonFrontendDataTypeController::OnUnrecoverableErrorImpl, from_here,
+      message));
 }
 
 void NonFrontendDataTypeController::OnUnrecoverableErrorImpl(
@@ -282,25 +279,13 @@ ProfileSyncService* NonFrontendDataTypeController::profile_sync_service()
   return profile_sync_service_;
 }
 
-void NonFrontendDataTypeController::set_start_callback(
-    StartCallback* callback) {
-  start_callback_.reset(callback);
-}
 void NonFrontendDataTypeController::set_state(State state) {
   state_ = state;
-}
-
-AssociatorInterface* NonFrontendDataTypeController::associator() const {
-  return model_associator_.get();
 }
 
 void NonFrontendDataTypeController::set_model_associator(
     AssociatorInterface* associator) {
   model_associator_.reset(associator);
-}
-
-ChangeProcessor* NonFrontendDataTypeController::change_processor() const {
-  return change_processor_.get();
 }
 
 void NonFrontendDataTypeController::set_change_processor(

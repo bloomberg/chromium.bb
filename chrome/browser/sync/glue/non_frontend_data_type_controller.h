@@ -133,13 +133,9 @@ class NonFrontendDataTypeController : public DataTypeController {
   ProfileSyncFactory* profile_sync_factory() const;
   Profile* profile() const;
   ProfileSyncService* profile_sync_service() const;
-  void set_start_callback(StartCallback* callback);
   void set_state(State state);
-
-  virtual AssociatorInterface* associator() const;
-  virtual void set_model_associator(AssociatorInterface* associator);
-  virtual ChangeProcessor* change_processor() const;
-  virtual void set_change_processor(ChangeProcessor* change_processor);
+  void set_model_associator(AssociatorInterface* associator);
+  void set_change_processor(ChangeProcessor* change_processor);
 
  private:
   ProfileSyncFactory* const profile_sync_factory_;

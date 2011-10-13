@@ -9,6 +9,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/api/syncable_service.h"
+#include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -69,13 +70,7 @@ void SearchEngineDataTypeController::CreateSyncComponents() {
       profile_sync_factory_->CreateSearchEngineSyncComponents(sync_service_,
                                                               this);
   set_model_associator(sync_components.model_associator);
-  generic_change_processor_.reset(static_cast<GenericChangeProcessor*>(
-      sync_components.change_processor));
-}
-
-GenericChangeProcessor* SearchEngineDataTypeController::change_processor()
-    const {
-  return generic_change_processor_.get();
+  set_change_processor(sync_components.change_processor);
 }
 
 void SearchEngineDataTypeController::RecordUnrecoverableError(
