@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "base/task.h"
 #include "views/widget/tooltip_manager_win.h"
 
 namespace views {

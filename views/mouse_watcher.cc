@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "ui/base/events.h"
 #include "ui/gfx/screen.h"
 #include "views/view.h"
@@ -22,7 +21,7 @@ namespace views {
 
 // Amount of time between when the mouse moves outside the view's zone and when
 // the listener is notified.
-static const int kNotifyListenerTimeMs = 300;
+const int kNotifyListenerTimeMs = 300;
 
 class MouseWatcher::Observer : public MessageLoopForUI::Observer {
  public:

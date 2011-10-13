@@ -6,7 +6,6 @@
 #define VIEWS_WINDOW_NON_CLIENT_VIEW_H_
 #pragma once
 
-#include "base/task.h"
 #include "views/view.h"
 #include "views/window/client_view.h"
 
