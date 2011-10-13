@@ -3016,6 +3016,9 @@ bool GLES2DecoderImpl::GetHelper(
         *params = group_->max_vertex_uniform_vectors();
       }
       return true;
+    }
+  }
+  switch (pname) {
     case GL_MAX_VIEWPORT_DIMS:
       if (offscreen_target_frame_buffer_.get()) {
         *num_written = 2;
@@ -3025,9 +3028,19 @@ bool GLES2DecoderImpl::GetHelper(
         }
         return true;
       }
-    }
-  }
-  switch (pname) {
+      return false;
+    case GL_MAX_TEXTURE_SIZE:
+      *num_written = 1;
+      if (params) {
+        params[0] = texture_manager()->MaxSizeForTarget(GL_TEXTURE_2D);
+      }
+      return true;
+    case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
+      *num_written = 1;
+      if (params) {
+        params[0] = texture_manager()->MaxSizeForTarget(GL_TEXTURE_CUBE_MAP);
+      }
+      return true;
     case GL_COLOR_WRITEMASK:
       *num_written = 4;
       if (params) {

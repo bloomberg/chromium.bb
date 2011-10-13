@@ -1075,6 +1075,37 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderInfoLogInvalidArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest, GetIntegervTextureSize) {
+  struct TestInfo {
+    GLenum pname;
+    GLint expected;
+  };
+  TestInfo tests[] = {
+    { GL_MAX_TEXTURE_SIZE, TestHelper::kMaxTextureSize, },
+    { GL_MAX_CUBE_MAP_TEXTURE_SIZE, TestHelper::kMaxCubeMapTextureSize, },
+  };
+  typedef GetIntegerv::Result Result;
+  for (size_t ii = 0; ii < 2; ++ii) {
+    const TestInfo& test = tests[ii];
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetIntegerv(test.pname, _))
+      .Times(0);
+  result->size = 0;
+  GetIntegerv cmd2;
+  cmd2.Init(test.pname, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
+  EXPECT_EQ(
+      decoder_->GetGLES2Util()->GLGetNumValuesReturned(test.pname),
+      result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(test.expected, result->GetData()[0]);
+  }
+}
+
 TEST_F(GLES2DecoderTest, CompileShaderValidArgs) {
   EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
   EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));

@@ -145,6 +145,12 @@ void TestHelper::SetupContextGroupInitExpectations(
       .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
       .RetiresOnSaturation();
 
+#if defined(OS_MACOSX)
+  EXPECT_CALL(*gl, GetString(GL_VENDOR))
+      .WillOnce(Return(reinterpret_cast<const uint8*>("")))
+      .RetiresOnSaturation();
+#endif
+
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, _))
       .WillOnce(SetArgumentPointee<1>(kMaxTextureImageUnits))
       .RetiresOnSaturation();

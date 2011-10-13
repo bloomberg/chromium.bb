@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/context_group.h"
+
+#include <string>
+
+#include "base/string_util.h"
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
@@ -87,6 +91,23 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
   GLint max_cube_map_texture_size = 0;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &max_cube_map_texture_size);
+
+  // Limit Intel on Mac to 512.
+  // TODO(gman): Update this code to check for a specific version of
+  // the drivers above which we no longer need this fix.
+#if defined(OS_MACOSX)
+  const char* vendor_str = reinterpret_cast<const char*>(
+      glGetString(GL_VENDOR));
+  if (vendor_str) {
+    std::string lc_str(::StringToLowerASCII(std::string(vendor_str)));
+    bool intel_on_mac = strstr(lc_str.c_str(), "intel");
+    if (intel_on_mac) {
+      max_cube_map_texture_size = std::min(
+        static_cast<GLint>(512), max_cube_map_texture_size);
+    }
+  }
+#endif
+
   texture_manager_.reset(new TextureManager(max_texture_size,
                                             max_cube_map_texture_size));
 
