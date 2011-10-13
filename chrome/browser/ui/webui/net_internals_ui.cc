@@ -162,7 +162,7 @@ class NetInternalsMessageHandler
   // Calls g_browser.receive in the renderer, passing in |command| and |arg|.
   // Takes ownership of |arg|.  If the renderer is displaying a log file, the
   // message will be ignored.
-  void SendJavascriptCommand(const std::wstring& command, Value* arg);
+  void SendJavascriptCommand(const std::string& command, Value* arg);
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -349,7 +349,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   // and |arg|.  Takes ownership of |arg|.  If the renderer is displaying a log
   // file, the message will be ignored.  Note that this can be called from any
   // thread.
-  void SendJavascriptCommand(const std::wstring& command, Value* arg);
+  void SendJavascriptCommand(const std::string& command, Value* arg);
 
   // Helper that runs |method| with |arg|, and deletes |arg| on completion.
   void DispatchToMessageHandler(ListValue* arg, MessageHandler method);
@@ -555,10 +555,9 @@ void NetInternalsMessageHandler::RegisterMessages() {
 }
 
 void NetInternalsMessageHandler::SendJavascriptCommand(
-    const std::wstring& command,
+    const std::string& command,
     Value* arg) {
-  scoped_ptr<Value> command_value(
-      Value::CreateStringValue(WideToASCII(command)));
+  scoped_ptr<Value> command_value(Value::CreateStringValue(command));
   scoped_ptr<Value> value(arg);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (value.get()) {
@@ -580,7 +579,7 @@ void NetInternalsMessageHandler::Observe(int type,
   std::string* pref_name = Details<std::string>(details).ptr();
   if (*pref_name == prefs::kHttpThrottlingEnabled) {
     SendJavascriptCommand(
-        L"receivedHttpThrottlingEnabledPrefChanged",
+        "receivedHttpThrottlingEnabledPrefChanged",
         Value::CreateBooleanValue(*http_throttling_enabled_));
   }
 }
@@ -589,7 +588,7 @@ void NetInternalsMessageHandler::OnRendererReady(const ListValue* list) {
   IOThreadImpl::CallbackHelper(&IOThreadImpl::OnRendererReady, proxy_, list);
 
   SendJavascriptCommand(
-      L"receivedHttpThrottlingEnabledPrefChanged",
+      "receivedHttpThrottlingEnabledPrefChanged",
       Value::CreateBooleanValue(*http_throttling_enabled_));
 }
 
@@ -625,7 +624,7 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
   } else {
     value = prerender_manager->GetAsValue();
   }
-  SendJavascriptCommand(L"receivedPrerenderInfo", value);
+  SendJavascriptCommand("receivedPrerenderInfo", value);
 }
 
 
@@ -721,7 +720,7 @@ void NetInternalsMessageHandler::SystemLogsGetter::SendLogs(
   }
   result->SetString("cellId", request.cell_id);
 
-  handler_->SendJavascriptCommand(L"getSystemLogCallback", result);
+  handler_->SendJavascriptCommand("getSystemLogCallback", result);
 }
 #endif
 ////////////////////////////////////////////////////////////////////////////////
@@ -792,7 +791,7 @@ void NetInternalsMessageHandler::IOThreadImpl::SendPassiveLogEntries(
                                                           false));
   }
 
-  SendJavascriptCommand(L"receivedPassiveLogEntries", dict_list);
+  SendJavascriptCommand("receivedPassiveLogEntries", dict_list);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnWebUIDeleted() {
@@ -805,7 +804,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!is_observing_log_) << "notifyReady called twice";
 
-  SendJavascriptCommand(L"receivedConstants",
+  SendJavascriptCommand("receivedConstants",
                         NetInternalsUI::GetConstants());
 
   // Register with network stack to observe events.
@@ -827,7 +826,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
   if (proxy_service->config().is_valid())
     dict->Set("effective", proxy_service->config().ToValue());
 
-  SendJavascriptCommand(L"receivedProxySettings", dict);
+  SendJavascriptCommand("receivedProxySettings", dict);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
@@ -861,7 +860,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
     dict_list->Append(dict);
   }
 
-  SendJavascriptCommand(L"receivedBadProxies", dict_list);
+  SendJavascriptCommand("receivedBadProxies", dict_list);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
@@ -879,7 +878,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
   net::HostCache* cache = GetHostResolverCache(context);
 
   if (!cache) {
-    SendJavascriptCommand(L"receivedHostResolverInfo", NULL);
+    SendJavascriptCommand("receivedHostResolverInfo", NULL);
     return;
   }
 
@@ -938,7 +937,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
   cache_info_dict->Set("entries", entry_list);
   dict->Set("cache", cache_info_dict);
 
-  SendJavascriptCommand(L"receivedHostResolverInfo", dict);
+  SendJavascriptCommand("receivedHostResolverInfo", dict);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
@@ -1022,7 +1021,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
     }
   }
 
-  SendJavascriptCommand(L"receivedHSTSResult", result);
+  SendJavascriptCommand("receivedHSTSResult", result);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
@@ -1110,7 +1109,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
 
   info_dict->Set("stats", stats_dict);
 
-  SendJavascriptCommand(L"receivedHttpCacheInfo", info_dict);
+  SendJavascriptCommand("receivedHttpCacheInfo", info_dict);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
@@ -1122,7 +1121,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
   if (http_network_session)
     socket_pool_info = http_network_session->SocketPoolInfoToValue();
 
-  SendJavascriptCommand(L"receivedSocketPoolInfo", socket_pool_info);
+  SendJavascriptCommand("receivedSocketPoolInfo", socket_pool_info);
 }
 
 
@@ -1154,7 +1153,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdySessionInfo(
     spdy_info = http_network_session->SpdySessionPoolInfoToValue();
   }
 
-  SendJavascriptCommand(L"receivedSpdySessionInfo", spdy_info);
+  SendJavascriptCommand("receivedSpdySessionInfo", spdy_info);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
@@ -1181,7 +1180,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
 
   status_dict->Set("next_protos", next_protos_value);
 
-  SendJavascriptCommand(L"receivedSpdyStatus", status_dict);
+  SendJavascriptCommand("receivedSpdyStatus", status_dict);
 }
 
 void
@@ -1203,7 +1202,7 @@ NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyAlternateProtocolMappings(
     dict_list->Append(dict);
   }
 
-  SendJavascriptCommand(L"receivedSpdyAlternateProtocolMappings", dict_list);
+  SendJavascriptCommand("receivedSpdyAlternateProtocolMappings", dict_list);
 }
 
 #ifdef OS_WIN
@@ -1243,7 +1242,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetServiceProviders(
   }
   service_providers->Set("namespace_providers", namespace_list);
 
-  SendJavascriptCommand(L"receivedServiceProviders", service_providers);
+  SendJavascriptCommand("receivedServiceProviders", service_providers);
 }
 #endif
 
@@ -1304,17 +1303,17 @@ void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(Value* entry) {
 
 void NetInternalsMessageHandler::IOThreadImpl::PostPendingEntries() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  SendJavascriptCommand(L"receivedLogEntries", pending_entries_.release());
+  SendJavascriptCommand("receivedLogEntries", pending_entries_.release());
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTestSuite() {
-  SendJavascriptCommand(L"receivedStartConnectionTestSuite", NULL);
+  SendJavascriptCommand("receivedStartConnectionTestSuite", NULL);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTestExperiment(
     const ConnectionTester::Experiment& experiment) {
   SendJavascriptCommand(
-      L"receivedStartConnectionTestExperiment",
+      "receivedStartConnectionTestExperiment",
       ExperimentToValue(experiment));
 }
 
@@ -1328,14 +1327,14 @@ NetInternalsMessageHandler::IOThreadImpl::OnCompletedConnectionTestExperiment(
   dict->SetInteger("result", result);
 
   SendJavascriptCommand(
-      L"receivedCompletedConnectionTestExperiment",
+      "receivedCompletedConnectionTestExperiment",
       dict);
 }
 
 void
 NetInternalsMessageHandler::IOThreadImpl::OnCompletedConnectionTestSuite() {
   SendJavascriptCommand(
-      L"receivedCompletedConnectionTestSuite",
+      "receivedCompletedConnectionTestSuite",
       NULL);
 }
 
@@ -1348,7 +1347,7 @@ void NetInternalsMessageHandler::IOThreadImpl::DispatchToMessageHandler(
 
 // Note that this can be called from ANY THREAD.
 void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
-    const std::wstring& command,
+    const std::string& command,
     Value* arg) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     if (handler_ && !was_webui_deleted_) {
