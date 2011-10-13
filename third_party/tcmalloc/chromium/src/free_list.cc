@@ -59,10 +59,10 @@
 // head to NULL.
 
 
-#ifdef TCMALLOC_USE_DOUBLYLINKED_FREELIST
-
 #include <stddef.h>
 #include "free_list.h"
+
+#if defined(TCMALLOC_USE_DOUBLYLINKED_FREELIST)
 
 // TODO(jar): We should use C++ rather than a macro here.
 #define MEMORY_CHECK(v1, v2) \

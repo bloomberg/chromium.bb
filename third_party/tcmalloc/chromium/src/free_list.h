@@ -43,9 +43,12 @@
 #include "internal_logging.h"  // For CRASH() macro.
 #include "linked_list.h"
 
+// Remove to enable singly linked lists (the default for open source tcmalloc).
+#define TCMALLOC_USE_DOUBLYLINKED_FREELIST
+
 namespace tcmalloc {
 
-#ifdef TCMALLOC_USE_DOUBLYLINKED_FREELIST
+#if defined(TCMALLOC_USE_DOUBLYLINKED_FREELIST)
 
 // size class information for common.h.
 static const bool kSupportsDoublyLinkedList = true;
