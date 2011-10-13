@@ -85,6 +85,8 @@ class PrintingMessageFilter : public BrowserMessageFilter {
 
   printing::PrintJobManager* print_job_manager_;
 
+  bool cloud_print_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(PrintingMessageFilter);
 };
 

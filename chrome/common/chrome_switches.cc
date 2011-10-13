@@ -427,6 +427,9 @@ const char kEnableClickToPlay[]             = "enable-click-to-play";
 // Cloud Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 
+// Enables the Cloud Print dialog hosting code.
+const char kEnableCloudPrint[]              = "enable-cloud-print";
+
 // Enables compositing to texture instead of display.
 const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
 

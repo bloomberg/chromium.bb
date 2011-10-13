@@ -296,10 +296,11 @@ function updateWithPrinterCapabilities(settingInfo) {
 
 /**
  * Turn on the integration of Cloud Print.
+ * @param {boolean} enable True if cloud print should be used.
  * @param {string} cloudPrintUrl The URL to use for cloud print servers.
  */
-function setUseCloudPrint(cloudPrintURL) {
-  useCloudPrint = true;
+function setUseCloudPrint(enable, cloudPrintURL) {
+  useCloudPrint = enable;
   cloudprint.setBaseURL(cloudPrintURL);
 }
 
