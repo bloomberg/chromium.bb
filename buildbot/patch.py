@@ -8,6 +8,7 @@ import constants
 import glob
 import json
 import os
+import re
 import shutil
 import tempfile
 
@@ -36,6 +37,11 @@ class ApplyPatchException(Exception):
 
   def __str__(self):
     return 'Failed to apply patch ' + str(self.patch)
+
+
+class MissingChangeIDException(Exception):
+  """Raised if a patch is missing a Change-ID."""
+  pass
 
 
 class Patch(object):
@@ -67,6 +73,7 @@ class Patch(object):
 class GerritPatch(Patch):
   """Object that represents a Gerrit CL."""
   _PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
+  _GIT_CHANGE_ID_RE = re.compile('^\s*Change-Id:\s*(\w+)\s*$', re.MULTILINE)
 
   def __init__(self, patch_dict, internal):
     """Construct a GerritPatch object from Gerrit query results.
@@ -99,6 +106,15 @@ class GerritPatch(Patch):
     """Returns whether the patch has already been merged in Gerrit."""
     return self.status == 'MERGED'
 
+  def _GetProjectUrl(self):
+    """Returns the url to the gerrit project."""
+    if self.internal:
+      url_prefix = constants.GERRIT_INT_SSH_URL
+    else:
+      url_prefix = self._PUBLIC_URL
+
+    return os.path.join(url_prefix, self.project)
+
   def _RebasePatch(self, buildroot, project_dir, trivial):
     """Rebase patch fetched from gerrit onto constants.PATCH_BRANCH.
 
@@ -111,12 +127,7 @@ class GerritPatch(Patch):
       trivial: Use trivial logic that only allows trivial merges.  Note:
         Requires Git >= 1.7.6 -- bug <.  Bots have 1.7.6 installed.
     """
-    if self.internal:
-      url_prefix = constants.GERRIT_INT_SSH_URL
-    else:
-      url_prefix = self._PUBLIC_URL
-
-    url = os.path.join(url_prefix, self.project)
+    url = self._GetProjectUrl()
     upstream = _GetProjectManifestBranch(buildroot, self.project)
     cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
     try:
@@ -230,6 +241,26 @@ class GerritPatch(Patch):
                                                          self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
 
+  def GerritDependencies(self, buildroot):
+    """Returns an ordered list of revisions that this patch depends on.
+
+    The list of changes are in order from FETCH_HEAD back to m/master.
+
+    Arguments:
+      buildroot: The buildroot.
+    Returns:
+      An ordered list of Gerrit revisions that this patch depends on.
+    """
+    url = self._GetProjectUrl()
+    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
+    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
+    raw_hashes_return_obj = cros_lib.RunCommand(
+        ['git', 'rev-list', '%s..FETCH_HEAD^' %
+         _GetProjectManifestBranch(buildroot, self.project)],
+        cwd=project_dir, redirect_stdout=True)
+
+    return raw_hashes_return_obj.output.splitlines()
+
   def Submit(self, helper, dryrun=False):
     """Submits patch using Gerrit Review.
 
@@ -245,6 +276,14 @@ class GerritPatch(Patch):
   def __str__(self):
     """Returns custom string to identify this patch."""
     return '%s:%s' % (self.owner, self.gerrit_number)
+
+  # Define methods to use patches in sets.  We uniquely identify patches
+  # by Gerrit Change-ID.
+  def __hash__(self):
+    return hash(self.revision)
+
+  def __eq__(self, other):
+    return self.revision == other.revision
 
 
 def RemovePatchRoot(patch_root):

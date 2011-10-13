@@ -78,6 +78,9 @@ class GerritHelper():
       changes_to_commit.append(cros_patch.GerritPatch(result_dict,
                                                       self.internal))
 
+    # Change to commit are ordered in descending order by last update.
+    # To be fair it makes sense to do apply changes eldest to newest.
+    changes_to_commit.reverse()
     return changes_to_commit
 
   def GrabPatchFromGerrit(self, project, change, commit):

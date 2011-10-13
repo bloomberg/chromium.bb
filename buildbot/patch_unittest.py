@@ -145,7 +145,6 @@ class GerritPatchTest(mox.MoxTestBase):
 
   def testGerritHandleApplyError(self):
     """Tests review string looks correct."""
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     helper = gerrit_helper.GerritHelper(False)
     self.mox.ReplayAll()
@@ -154,7 +153,6 @@ class GerritPatchTest(mox.MoxTestBase):
 
   def testGerritHandleSubmitError(self):
     """Tests review string looks correct."""
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     helper = gerrit_helper.GerritHelper(False)
     self.mox.ReplayAll()
@@ -163,12 +161,45 @@ class GerritPatchTest(mox.MoxTestBase):
 
   def testGerritHandleVerifyError(self):
     """Tests review string looks correct."""
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     helper = gerrit_helper.GerritHelper(False)
     self.mox.ReplayAll()
     my_patch.HandleCouldNotVerify(helper, 'http://fake%20url/1234', True)
     self.mox.VerifyAll()
+
+  def GerritDepenedenciesHelper(self, git_rev_list, expected_return_tuple):
+    build_root = 'fake_build_root'
+    project_dir = 'fake_build_root/fake_project_dir'
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_patch, '_GetProjectManifestBranch')
+    self.mox.StubOutWithMock(cros_lib, 'GetProjectDir')
+
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    cros_lib.GetProjectDir(build_root, 'tacos/chromite').AndReturn(project_dir)
+    # Ignore git fetch.
+    cros_lib.RunCommand(mox.IgnoreArg(), cwd=project_dir)
+    cros_patch._GetProjectManifestBranch(
+        build_root, 'tacos/chromite').AndReturn('m/master')
+    cros_lib.RunCommand(
+        ['git', 'rev-list', 'm/master..FETCH_HEAD^'], cwd=project_dir,
+        redirect_stdout=True).AndReturn(git_rev_list)
+
+    self.mox.ReplayAll()
+    deps = my_patch.GerritDependencies(build_root)
+    self.mox.VerifyAll()
+
+    self.assertEqual(deps, expected_return_tuple)
+
+  def testGerritDependencies(self):
+    """Tests that we can get dependencies from a commit with 2 dependencies."""
+    git_rev_list = '\n'.join(['1234abcd', '1234abce'])
+    self.GerritDepenedenciesHelper(git_rev_list, ['1234abcd', '1234abce'])
+
+
+  def testGerritNoDependencies(self):
+    """Tests that we return an empty tuple if the commit has no deps."""
+    git_rev_list = ''
+    self.GerritDepenedenciesHelper(git_rev_list, [])
 
 
 class PrepareLocalPatchesTests(mox.MoxTestBase):

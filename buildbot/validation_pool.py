@@ -159,25 +159,72 @@ class ValidationPool(object):
     return pool
 
   def ApplyPoolIntoRepo(self, directory):
-    """Cherry picks changes from pool into repository.
+    """Applies changes from pool into the repository.
+
+    This method applies changes in the order specified.  It also respects
+    dependency order.
 
     Returns:
       True if we managed to apply some changes.
     """
-    non_applied_changes = []
+    changes_that_failed_to_apply = set()
+    changes_applied = set()
+
+    # Change map maps Change-Id to GerritPatch object for lookup of dependent
+    # change-ids.
+    change_map = dict((change.revision, change) for change in self.changes)
     for change in self.changes:
-      try:
-        change.Apply(directory, trivial=True)
-      except cros_patch.ApplyPatchException:
-        non_applied_changes.append(change)
-      else:
-        lkgm_manager.PrintLink(str(change), change.url)
+      logging.debug('Trying change %s', change.revision)
+      # We've already attempted this change because it was a dependent change
+      # of another change that was ready.
+      if change in changes_that_failed_to_apply or change in changes_applied:
+        continue
 
-    if non_applied_changes:
+      # Change stacks consists of the change plus its dependencies in the order
+      # that they should be applied.
+      change_stack = [change]
+      deps = change.GerritDependencies(directory)
+
+      # Put the dependent changes on the stack.
+      apply_chain = True
+      for dep in deps:
+        dep_change = change_map.get(dep)
+        if not dep_change:
+          logging.info('Cannot apply change %s because dependent change %s '
+                       'is not ready to be committed.', change, dep)
+          apply_chain = False
+          break
+        else:
+          change_stack.insert(0, dep_change)
+
+      # Should we apply the chain -- i.e. all deps are ready.
+      if not apply_chain:
+        continue
+
+      # Apply changes in change_stack.  For chains that were aborted early,
+      # we still want to apply changes in change_stack because they were
+      # ready to be committed (o/w wouldn't have been in the change_map).
+      for change in change_stack:
+        try:
+          if change in changes_applied:
+            continue
+          if change in changes_that_failed_to_apply:
+            break
+
+          change.Apply(directory, trivial=True)
+          changes_applied.add(change)
+        except cros_patch.ApplyPatchException:
+          # Abort the chain if we fail to apply any dependent changes.
+          changes_that_failed_to_apply.add(change)
+          break
+        else:
+          lkgm_manager.PrintLink(str(change), change.url)
+
+    if changes_that_failed_to_apply:
       logging.debug('Some changes could not be applied cleanly.')
-      self.HandleApplicationFailure(non_applied_changes)
-      self.changes = list(set(self.changes) - set(non_applied_changes))
+      self.HandleApplicationFailure(changes_that_failed_to_apply)
 
+    self.changes = changes_applied
     return len(self.changes) > 0
 
   def SubmitPool(self):
