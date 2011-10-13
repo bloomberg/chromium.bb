@@ -209,6 +209,8 @@
       '-omnibox.OmniboxTest.testBasicAppSearch',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
+      # Plugin block exception broken.  crbug.com/100273
+      '-plugins.PluginsTest.testBlockPluginException',
       # crbug.com/97140
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
       # crbug.com/79263
@@ -266,6 +268,8 @@
       '-instant',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
+      # Plugin block exception broken.  crbug.com/100273
+      '-plugins.PluginsTest.testBlockPluginException',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
       # crbug.com/87837
