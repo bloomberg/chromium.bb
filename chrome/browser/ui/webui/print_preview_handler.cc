@@ -964,17 +964,10 @@ void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
-#if defined(OS_MACOSX)
-  bool enable_cloud_print_integration =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableCloudPrint);
-#else
-  bool enable_cloud_print_integration = true;
-#endif
   GURL gcp_url(CloudPrintURL(BrowserList::GetLastActive()->profile()).
                GetCloudPrintServiceURL());
-  base::FundamentalValue enable(enable_cloud_print_integration);
   base::StringValue gcp_url_value(gcp_url.spec());
-  web_ui_->CallJavascriptFunction("setUseCloudPrint", enable, gcp_url_value);
+  web_ui_->CallJavascriptFunction("setUseCloudPrint", gcp_url_value);
 }
 
 void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
