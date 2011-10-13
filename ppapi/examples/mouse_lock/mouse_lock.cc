@@ -160,7 +160,7 @@ class MyInstance : public pp::Instance, public pp::MouseLock_Dev {
       RIGHT = 1,
       UP = 2,
       DOWN = 3
-    } direction;
+    } direction = LEFT;
     bool draw_needle = GetDistance(mouse_movement_.x(), mouse_movement_.y(),
                                    0, 0) > kCenteralSpotRadius;
     if (draw_needle) {
