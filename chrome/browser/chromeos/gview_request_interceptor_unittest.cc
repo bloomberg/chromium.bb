@@ -168,7 +168,7 @@ class GViewRequestInterceptorTest : public testing::Test {
                                               false,       // is_main_frame
                                               -1,          // frame_id
                                               ResourceType::MAIN_FRAME,
-                                              PageTransition::LINK,
+                                              content::PAGE_TRANSITION_LINK,
                                               0,           // upload_size
                                               false,       // is_download
                                               true,        // allow_download
