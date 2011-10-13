@@ -510,6 +510,9 @@ if pre_base_env.Bit('werror'):
 else:
   werror_flags = []
 
+# Allow variadic macros
+werror_flags = werror_flags + ['-Wno-variadic-macros']
+
 # ----------------------------------------------------------
 # Method to make sure -pedantic, etc, are not stripped from the
 # default env, since occasionally an engineer will be tempted down the
@@ -2577,6 +2580,7 @@ def MakeUnixLikeEnv():
   # of our code is portable and primarily initially tested on Linux,
   # it'd be nice to get the build error earlier rather than later
   # (building and testing on Linux is faster).
+  # TODO(nfullagar): should we consider switching to -std=c99 ?
   unix_like_env.Prepend(
     CFLAGS = ['-std=gnu99', '-Wdeclaration-after-statement' ],
     CCFLAGS = [
