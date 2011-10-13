@@ -125,6 +125,8 @@ cr.define('options', function() {
         case ButtonImages.CHOOSE_FILE:
           this.handleChooseFile_();
           break;
+        case ButtonImages.PROFILE_PICTURE:
+          break;
         default:
           this.closePage_();
           break;
@@ -136,9 +138,16 @@ cr.define('options', function() {
      * @param {Event} e Double click Event.
      */
     handleImageDblClick_: function(e) {
-      // If an image is double-clicked and not the grid itself, close the page.
-      if (e.target.id != 'images-grid')
-        this.closePage_();
+      // Close page unless the click target is the grid itself,
+      // any of the buttons or the Profile image until it's not loaded.
+      var url = e.target.src;
+      if (!url)
+        return;
+      for (var k in ButtonImages) {
+        if (url == ButtonImages[k])
+          return;
+      }
+      this.closePage_();
     },
 
     /**
@@ -176,7 +185,6 @@ cr.define('options', function() {
       var imageGrid = $('images-grid');
       this.profileImage_ = imageGrid.updateItem(
           this.profileImage_, imageUrl, localStrings.getString('profilePhoto'));
-      // If there is no previous selection, select it.
       if (select)
         imageGrid.selectedItem = this.profileImage_;
     },

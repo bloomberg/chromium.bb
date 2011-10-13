@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
+#include "content/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -55,7 +56,9 @@ SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
 
 }  // namespace
 
-ChangePictureOptionsHandler::ChangePictureOptionsHandler() {
+ChangePictureOptionsHandler::ChangePictureOptionsHandler()
+    : previous_image_data_url_(chrome::kAboutBlankURL),
+      profile_image_data_url_(chrome::kAboutBlankURL) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
       NotificationService::AllSources());
 }
@@ -206,6 +209,8 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     NOTREACHED();
     return;
   }
+  if (image_url.empty())
+    return;
 
   UserManager* user_manager = UserManager::Get();
   const UserManager::User& user = user_manager->logged_in_user();
