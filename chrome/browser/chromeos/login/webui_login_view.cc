@@ -182,6 +182,8 @@ void WebUILoginView::OnWindowCreated() {
       GetWidget()->native_widget())->SuppressFreezeUpdates();
 #else
   // TODO(saintlou): Unclear if we need this for the !gtk case.
+  // According to nkostylev it prevents the renderer from flashing with a
+  // white solid background until the content is fully rendered.
 #endif
 }
 
