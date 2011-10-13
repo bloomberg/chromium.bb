@@ -1251,8 +1251,9 @@ void NativeWidgetGtk::Maximize() {
   // top-left corner and resize to the entire bounds of the screen.
   gfx::Rect screen = gfx::Screen::GetMonitorAreaNearestWindow(GetNativeView());
   gtk_window_move(GTK_WINDOW(GetNativeWindow()), screen.x(), screen.y());
+  // TODO(backer): Remove this driver bug workaround once it is fixed.
   gtk_window_resize(GTK_WINDOW(GetNativeWindow()),
-                    screen.width(), screen.height());
+                    screen.width() - 1, screen.height());
 #else
   gtk_window_maximize(GetNativeWindow());
 #endif

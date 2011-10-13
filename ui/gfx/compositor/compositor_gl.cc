@@ -483,6 +483,7 @@ CompositorGL::CompositorGL(CompositorDelegate* delegate,
   gl_context_ = SharedResources::GetInstance()->
       CreateContext(gl_surface_.get());
   gl_context_->MakeCurrent(gl_surface_.get());
+  gl_context_->SetSwapInterval(1);
   glColorMask(true, true, true, true);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
