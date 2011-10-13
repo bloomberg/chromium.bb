@@ -156,6 +156,9 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
 
   internal::NativeWidgetDelegate* delegate_;
 
+  // Parent Widget (can be NULL).
+  Widget* parent_;
+
   internal::NativeWidgetView* view_;
 
   bool active_;

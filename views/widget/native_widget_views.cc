@@ -22,6 +22,21 @@
 #include "views/window/hit_test.h"
 #endif
 
+namespace {
+
+gfx::Rect AdjustRectOriginForParentWidget(const gfx::Rect& rect,
+                                          const views::Widget* parent) {
+  if (!parent)
+    return rect;
+
+  gfx::Rect adjusted = rect;
+  gfx::Rect parent_bounds = parent->GetWindowScreenBounds();
+  adjusted.Offset(-parent_bounds.x(), -parent_bounds.y());
+  return adjusted;
+}
+
+}  // namespace
+
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +44,7 @@ namespace views {
 
 NativeWidgetViews::NativeWidgetViews(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
+      parent_(NULL),
       view_(NULL),
       active_(false),
       window_state_(ui::SHOW_STATE_DEFAULT),
@@ -116,6 +132,7 @@ bool NativeWidgetViews::OnMouseEvent(const MouseEvent& event) {
 // NativeWidgetViews, NativeWidget implementation:
 
 void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
+  parent_ = params.parent_widget;
   ownership_ = params.ownership;
   always_on_top_ = params.keep_on_top;
   View* parent_view = NULL;
@@ -130,8 +147,10 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
     parent_view = widget->GetChildViewParent();
   }
 
+  gfx::Rect bounds = AdjustRectOriginForParentWidget(params.bounds,
+                                                     parent_);
   view_ = new internal::NativeWidgetView(this);
-  view_->SetBoundsRect(params.bounds);
+  view_->SetBoundsRect(bounds);
   view_->SetVisible(params.type == Widget::InitParams::TYPE_CONTROL);
 
   // With the default NATIVE_WIDGET_OWNS_WIDGET ownership, the
@@ -147,7 +166,6 @@ void NativeWidgetViews::InitNativeWidget(const Widget::InitParams& params) {
   view_->SetPaintToLayer(true);
   if (View::get_use_acceleration_when_possible())
     view_->SetFillsBoundsOpaquely(!params.transparent);
-  view_->SetBoundsRect(params.bounds);
   // TODO(beng): SetInitParams().
 }
 
@@ -310,7 +328,8 @@ void NativeWidgetViews::BecomeModal() {
 }
 
 gfx::Rect NativeWidgetViews::GetWindowScreenBounds() const {
-  if (GetWidget() == GetWidget()->GetTopLevelWidget())
+  if (GetWidget() == GetWidget()->GetTopLevelWidget() &&
+      !parent_)
     return view_->bounds();
   gfx::Point origin = view_->bounds().origin();
   View::ConvertPointToScreen(view_->parent(), &origin);
@@ -327,7 +346,7 @@ gfx::Rect NativeWidgetViews::GetRestoredBounds() const {
 
 void NativeWidgetViews::SetBounds(const gfx::Rect& bounds) {
   // |bounds| are supplied in the coordinates of the parent.
-  view_->SetBoundsRect(bounds);
+  view_->SetBoundsRect(AdjustRectOriginForParentWidget(bounds, parent_));
 }
 
 void NativeWidgetViews::SetSize(const gfx::Size& size) {
