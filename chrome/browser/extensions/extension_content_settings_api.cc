@@ -262,9 +262,7 @@ bool GetResourceIdentifiersFunction::RunImpl() {
       helpers::StringToContentSettingsType(content_type_str);
   EXTENSION_FUNCTION_VALIDATE(content_type != CONTENT_SETTINGS_TYPE_DEFAULT);
 
-  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableResourceContentSettings)) {
+  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     if (g_testing_plugin_groups_) {
       OnGotPluginGroups(*g_testing_plugin_groups_);
     } else {

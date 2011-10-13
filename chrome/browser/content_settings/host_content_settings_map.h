@@ -87,10 +87,8 @@ class HostContentSettingsMap
       const std::string& resource_identifier) const;
 
   // Returns a content setting |Value| which applies to the given URLs. Note
-  // that certain internal schemes are whitelisted. For ContentSettingsTypes
-  // that require a resource identifier to be specified, the
-  // |resource_identifier| must be non-empty. Ownership of the returned |Value|
-  // is transfered to the caller.
+  // that certain internal schemes are whitelisted. Ownership of the returned
+  // |Value| is transfered to the caller.
   //
   // This may be called on any thread.
   base::Value* GetContentSettingValue(

@@ -22,12 +22,8 @@ typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 
 std::string GetTypeName(ContentSettingsType type);
 
-std::string GetResourceTypeName(ContentSettingsType type);
-
-ContentSettingsType StringToContentSettingsType(
-    const std::string& content_type_str);
-
 // Returns true if the |content_type| supports a resource identifier.
+// Resource identifiers are supported (but not required) for plug-ins.
 bool SupportsResourceIdentifier(ContentSettingsType content_type);
 
 // Maps CONTENT_SETTING_ASK for the CONTENT_SETTINGS_TYPE_PLUGINS to

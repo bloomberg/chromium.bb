@@ -339,9 +339,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
   ContentSettingsType content_type = CONTENT_SETTINGS_TYPE_PLUGINS;
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
-  std::string resource;
-  if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
-    resource = group->identifier();
+  std::string resource = group->identifier();
   render_view->Send(new ChromeViewHostMsg_GetPluginContentSetting(
       frame->top()->document().url(), resource, &plugin_setting));
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);

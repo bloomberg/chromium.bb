@@ -8176,7 +8176,7 @@
             "description": "A human readable description of the resource."
           }
         },
-        "description": "Currently, no content types use resource identifiers."
+        "description": "The only content type using resource identifiers is <var>plugins</var>. Using a resource identifier allows an extension to specify content settings applying only to a specific plug-in. If no rule for the specific plug-in is found, the rules without resource identifiers are applied."
       },
       {
         "id": "ContentSetting",

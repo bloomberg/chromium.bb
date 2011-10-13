@@ -6,6 +6,7 @@
 
 #include <list>
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -215,8 +217,17 @@ void TabSpecificContentSettings::OnContentBlocked(
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   content_accessed_[type] = true;
-  if (!resource_identifier.empty())
-    AddBlockedResource(type, resource_identifier);
+  // Unless UI for resource content settings is enabled, ignore the resource
+  // identifier.
+  // TODO(bauerb): The UI to unblock content should be disabled if the content
+  // setting was not set by the user.
+  std::string identifier;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableResourceContentSettings)) {
+    identifier = resource_identifier;
+  }
+  if (!identifier.empty())
+    AddBlockedResource(type, identifier);
   if (!content_blocked_[type]) {
     content_blocked_[type] = true;
     // TODO: it would be nice to have a way of mocking this in tests.

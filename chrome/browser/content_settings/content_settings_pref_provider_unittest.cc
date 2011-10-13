@@ -304,11 +304,6 @@ TEST_F(PrefProviderTest, Patterns) {
 }
 
 TEST_F(PrefProviderTest, ResourceIdentifier) {
-  // This feature is currently behind a flag.
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
-  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
-
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
                                               false);

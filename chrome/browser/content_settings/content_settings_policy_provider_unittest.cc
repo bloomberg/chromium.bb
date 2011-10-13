@@ -89,11 +89,6 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
 }
 
 TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
-  // This feature is currently behind a flag.
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
-  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
-
   TestingProfile profile;
   TestingPrefService* prefs = profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
@@ -193,10 +188,6 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
 }
 
 TEST_F(PolicyProviderTest, ResourceIdentifier) {
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
-  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
-
   TestingProfile profile;
   TestingPrefService* prefs = profile.GetTestingPrefService();
 
@@ -217,9 +208,8 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
                 CONTENT_SETTINGS_TYPE_PLUGINS,
                 "someplugin"));
 
-  // There is no policy support for resource content settings until the feature
-  // is enabled by default. Resource identifiers are simply ignored by the
-  // PolicyProvider.
+  // There is currently no policy support for resource content settings.
+  // Resource identifiers are simply ignored by the PolicyProvider.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             provider.GetContentSetting(
                 google_url,

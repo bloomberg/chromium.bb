@@ -453,7 +453,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableIPCFuzzing,
       switches::kEnableNaCl,
       switches::kEnablePrintPreview,
-      switches::kEnableResourceContentSettings,
       switches::kEnableSearchProviderApiV2,
       switches::kEnableWatchdog,
       switches::kExperimentalSpellcheckerFeatures,

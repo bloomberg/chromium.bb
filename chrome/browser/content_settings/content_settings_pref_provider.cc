@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
@@ -29,6 +31,8 @@ namespace {
 
 typedef std::pair<std::string, std::string> StringPair;
 typedef std::map<std::string, std::string> StringMap;
+
+const char kPerPluginPrefName[] = "per_plugin";
 
 ContentSetting FixObsoleteCookiePromptMode(ContentSettingsType content_type,
                                            ContentSetting setting) {
@@ -55,6 +59,21 @@ void ClearSettings(ContentSettingsType type,
 
     settings->RemoveWithoutPathExpansion(type_name, NULL);
   }
+}
+
+// If the given content type supports resource identifiers in user preferences,
+// returns true and sets |pref_key| to the key in the content settings
+// dictionary under which per-resource content settings are stored.
+// Otherwise, returns false.
+bool GetResourceTypeName(ContentSettingsType content_type,
+                         std::string* pref_key) {
+  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableResourceContentSettings)) {
+    *pref_key = kPerPluginPrefName;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -414,12 +433,11 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
     for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
       ContentSettingsType content_type = static_cast<ContentSettingsType>(i);
 
-      if (SupportsResourceIdentifier(content_type)) {
-        const std::string content_type_str =
-            GetResourceTypeName(ContentSettingsType(i));
+      std::string res_dictionary_path;
+      if (GetResourceTypeName(content_type, &res_dictionary_path)) {
         DictionaryValue* resource_dictionary = NULL;
         if (settings_dictionary->GetDictionary(
-                content_type_str, &resource_dictionary)) {
+                res_dictionary_path, &resource_dictionary)) {
           for (DictionaryValue::key_iterator j(
                    resource_dictionary->begin_keys());
                j != resource_dictionary->end_keys();
@@ -439,11 +457,9 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
           }
         }
       } else {
-        const std::string content_type_str =
-            GetTypeName(ContentSettingsType(i));
         int setting = CONTENT_SETTING_DEFAULT;
         if (settings_dictionary->GetIntegerWithoutPathExpansion(
-                content_type_str, &setting)) {
+                GetTypeName(ContentSettingsType(i)), &setting)) {
           DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
           setting = FixObsoleteCookiePromptMode(content_type,
                                                 ContentSetting(setting));
@@ -483,9 +499,8 @@ void PrefProvider::UpdateObsoletePatternsPref(
   }
 
   if (settings_dictionary) {
-    if (SupportsResourceIdentifier(content_type)) {
-      // Get resource dictionary.
-      std::string res_dictionary_path(GetResourceTypeName(content_type));
+    std::string res_dictionary_path;
+    if (GetResourceTypeName(content_type, &res_dictionary_path)) {
       DictionaryValue* resource_dictionary = NULL;
       found = settings_dictionary->GetDictionary(
           res_dictionary_path, &resource_dictionary);
@@ -517,11 +532,11 @@ void PrefProvider::UpdateObsoletePatternsPref(
         settings_dictionary->SetWithoutPathExpansion(
             setting_path, Value::CreateIntegerValue(setting));
       }
-    }
-    // Remove the settings dictionary if it is empty.
-    if (settings_dictionary->empty()) {
-      all_settings_dictionary->RemoveWithoutPathExpansion(
-          pattern_str, NULL);
+      // Remove the settings dictionary if it is empty.
+      if (settings_dictionary->empty()) {
+        all_settings_dictionary->RemoveWithoutPathExpansion(
+            pattern_str, NULL);
+      }
     }
   }
 }
@@ -547,9 +562,8 @@ void PrefProvider::UpdatePatternPairsSettings(
   }
 
   if (settings_dictionary) {
-    if (SupportsResourceIdentifier(content_type)) {
-      // Get resource dictionary.
-      std::string res_dictionary_path = GetResourceTypeName(content_type);
+    std::string res_dictionary_path;
+    if (GetResourceTypeName(content_type, &res_dictionary_path)) {
       DictionaryValue* resource_dictionary = NULL;
       found = settings_dictionary->GetDictionary(
           res_dictionary_path, &resource_dictionary);
@@ -721,9 +735,9 @@ void PrefProvider::MigrateObsoletePerhostPref() {
         prefs_->GetDictionary(prefs::kPerHostContentSettings);
     DCHECK(all_settings_dictionary);
     for (DictionaryValue::key_iterator
-         i(all_settings_dictionary->begin_keys());
-         i != all_settings_dictionary->end_keys(); ++i) {
-      const std::string& host(*i);
+         host_it(all_settings_dictionary->begin_keys());
+         host_it != all_settings_dictionary->end_keys(); ++host_it) {
+      const std::string& host(*host_it);
       ContentSettingsPattern pattern =
           ContentSettingsPattern::FromString(
               std::string(ContentSettingsPattern::kDomainWildcard) + host);
@@ -732,27 +746,12 @@ void PrefProvider::MigrateObsoletePerhostPref() {
           host, &host_settings_dictionary);
       DCHECK(found);
 
-      for (DictionaryValue::key_iterator i(
-               host_settings_dictionary->begin_keys());
-           i != host_settings_dictionary->end_keys();
-           ++i) {
-        const std::string& content_type_str(*i);
-        ContentSettingsType content_type =
-            StringToContentSettingsType(content_type_str);
+      for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+        ContentSettingsType content_type = static_cast<ContentSettingsType>(i);
 
-        if (content_type == CONTENT_SETTINGS_TYPE_DEFAULT) {
-          NOTREACHED();
-          LOG(DFATAL) << "Skip settings for invalid content settings type '"
-                      << content_type_str << "'";
-          continue;
-        }
-
-        if (!SupportsResourceIdentifier(content_type)) {
-          int setting_int_value = CONTENT_SETTING_DEFAULT;
-          bool found =
-              host_settings_dictionary->GetIntegerWithoutPathExpansion(
-                  content_type_str, &setting_int_value);
-          DCHECK(found);
+        int setting_int_value = CONTENT_SETTING_DEFAULT;
+        if (host_settings_dictionary->GetIntegerWithoutPathExpansion(
+                GetTypeName(content_type), &setting_int_value)) {
           ContentSetting setting = IntToContentSetting(setting_int_value);
 
           setting = FixObsoleteCookiePromptMode(content_type, setting);

@@ -680,11 +680,6 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
 }
 
 TEST_F(HostContentSettingsMapTest, MigrateObsoletePrefs) {
-  // This feature is currently behind a flag.
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
-  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
-
   TestingProfile profile;
   PrefService* prefs = profile.GetPrefs();
 
@@ -764,20 +759,15 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 // If both Unicode and its punycode pattern exist, make sure we don't touch the
 // settings for the punycode, and that Unicode pattern gets deleted.
 TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
-  // This feature is currently behind a flag.
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  AutoReset<CommandLine> auto_reset(cmd, *cmd);
-  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
-
   TestingProfile profile;
 
   scoped_ptr<Value> value(base::JSONReader::Read(
-      "{\"[*.]\\xC4\\x87ira.com,*\":{\"per_plugin\":{\"pluginx\":2}}}", false));
+      "{\"[*.]\\xC4\\x87ira.com,*\":{\"images\":1}}", false));
   profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *value);
 
   // Set punycode equivalent, with different setting.
   scoped_ptr<Value> puny_value(base::JSONReader::Read(
-      "{\"[*.]xn--ira-ppa.com,*\":{\"per_plugin\":{\"pluginy\":2}}}", false));
+      "{\"[*.]xn--ira-ppa.com,*\":{\"images\":2}}", false));
   profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *puny_value);
 
   // Initialize the content map.
@@ -787,7 +777,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
       profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatternPairs);
   std::string prefs_as_json;
   base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
-  EXPECT_STREQ("{\"[*.]xn--ira-ppa.com,*\":{\"per_plugin\":{\"pluginy\":2}}}",
+  EXPECT_STREQ("{\"[*.]xn--ira-ppa.com,*\":{\"images\":2}}",
                prefs_as_json.c_str());
 }
 
@@ -871,7 +861,7 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
       profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatternPairs);
   std::string prefs_as_json;
   base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
-  EXPECT_STREQ("{}", prefs_as_json.c_str());
+  EXPECT_EQ("{}", prefs_as_json);
 
   host_content_settings_map->SetContentSetting(
       item_pattern,
@@ -883,8 +873,8 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
   content_setting_prefs =
       profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatternPairs);
   base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
-  EXPECT_STREQ("{\"[*.]example.com,*\":{\"per_plugin\":{\"otherplugin\":2}}}",
-               prefs_as_json.c_str());
+  EXPECT_EQ("{\"[*.]example.com,*\":{\"per_plugin\":{\"otherplugin\":2}}}",
+            prefs_as_json);
 }
 
 // If a default-content-setting is managed, the managed value should be used

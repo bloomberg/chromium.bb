@@ -93,8 +93,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        FLAKY_ContentSettingsGetResourceIdentifiers) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableResourceContentSettings);
 
   FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
   FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
