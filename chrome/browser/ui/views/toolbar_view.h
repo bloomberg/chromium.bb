@@ -7,6 +7,7 @@
 #pragma once
 
 #include <set>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -166,6 +167,9 @@ class ToolbarView : public AccessiblePaneView,
   bool IsDisplayModeNormal() const {
     return display_mode_ == DISPLAYMODE_NORMAL;
   }
+
+  // Shows the critical notification bubble against the wrench menu.
+  void ShowCriticalNotification();
 
   // Updates the badge on the app menu (Wrench).
   void UpdateAppMenuBadge();

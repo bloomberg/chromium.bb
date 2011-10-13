@@ -6,8 +6,8 @@
 // for putting these functions in installer\util library is so that we can
 // separate out the critical logic and write unit tests for it.
 
-#ifndef CHROME_INSTALLER_UTIL_INSTALL_UTIL_H__
-#define CHROME_INSTALLER_UTIL_INSTALL_UTIL_H__
+#ifndef CHROME_INSTALLER_UTIL_INSTALL_UTIL_H_
+#define CHROME_INSTALLER_UTIL_INSTALL_UTIL_H_
 #pragma once
 
 #include <tchar.h>
@@ -44,6 +44,11 @@ class InstallUtil {
   //                 otherwise looks under the HKCU.
   static Version* GetChromeVersion(BrowserDistribution* dist,
                                    bool system_install);
+
+  // Find the last critical update (version) of Chrome. Returns the version or
+  // NULL if no such version is found. A critical update is a specially flagged
+  // version (by Google Update) that contains an important security fix.
+  static Version* GetCriticalUpdateVersion(BrowserDistribution* dist);
 
   // This function checks if the current OS is supported for Chromium.
   static bool IsOSSupported();
@@ -166,4 +171,4 @@ class InstallUtil {
 };
 
 
-#endif  // CHROME_INSTALLER_UTIL_INSTALL_UTIL_H__
+#endif  // CHROME_INSTALLER_UTIL_INSTALL_UTIL_H_

@@ -63,9 +63,12 @@ int GetCheckForUpgradeEveryMs() {
 // callback task. Otherwise it just deletes the task.
 class DetectUpgradeTask : public Task {
  public:
-  DetectUpgradeTask(Task* upgrade_detected_task, bool* is_unstable_channel)
+  DetectUpgradeTask(Task* upgrade_detected_task,
+                    bool* is_unstable_channel,
+                    bool* is_critical_upgrade)
       : upgrade_detected_task_(upgrade_detected_task),
-        is_unstable_channel_(is_unstable_channel) {
+        is_unstable_channel_(is_unstable_channel),
+        is_critical_upgrade_(is_critical_upgrade) {
   }
 
   virtual ~DetectUpgradeTask() {
@@ -80,6 +83,7 @@ class DetectUpgradeTask : public Task {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
     scoped_ptr<Version> installed_version;
+    scoped_ptr<Version> critical_update;
 
 #if defined(OS_WIN)
     // Get the version of the currently *installed* instance of Chrome,
@@ -89,8 +93,16 @@ class DetectUpgradeTask : public Task {
     // thing to do.
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     installed_version.reset(InstallUtil::GetChromeVersion(dist, false));
-    if (!installed_version.get()) {
-      // User level Chrome is not installed, check system level.
+
+    if (installed_version.get()) {
+#if defined(OS_WIN)
+      // Critical version detection is only supported for user-level Chrome
+      // since elevation is needed for system-level Chrome (and this runs in
+      // the background -- don't want to prompt).
+      critical_update.reset(InstallUtil::GetCriticalUpdateVersion(dist));
+#endif
+    } else {
+      // User-level Chrome is not installed, check system-level.
       installed_version.reset(InstallUtil::GetChromeVersion(dist, true));
     }
 #elif defined(OS_MACOSX)
@@ -132,6 +144,13 @@ class DetectUpgradeTask : public Task {
     // restart in this case as well. See http://crbug.com/46547
     if (!installed_version.get() ||
         (installed_version->CompareTo(*running_version) > 0)) {
+      // If a more recent version is available, it might be that we are lacking
+      // a critical update, such as a zero-day fix.
+      *is_critical_upgrade_ =
+          critical_update.get() &&
+          (critical_update->CompareTo(*running_version) > 0);
+
+      // Fire off the upgrade detected task.
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                               upgrade_detected_task_);
       upgrade_detected_task_ = NULL;
@@ -141,6 +160,7 @@ class DetectUpgradeTask : public Task {
  private:
   Task* upgrade_detected_task_;
   bool* is_unstable_channel_;
+  bool* is_critical_upgrade_;
 };
 
 }  // namespace
@@ -179,7 +199,8 @@ void UpgradeDetectorImpl::CheckForUpgrade() {
   // on Windows checking for an upgrade requires reading a file.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           new DetectUpgradeTask(callback_task,
-                                                &is_unstable_channel_));
+                                                &is_unstable_channel_,
+                                                &is_critical_upgrade_));
 }
 
 void UpgradeDetectorImpl::UpgradeDetected() {
@@ -216,7 +237,9 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
     // minute.
     const int kUnstableThreshold = 1;
 
-    if (time_passed >= kUnstableThreshold) {
+    if (is_critical_upgrade_)
+      set_upgrade_notification_stage(UPGRADE_ANNOYANCE_CRITICAL);
+    else if (time_passed >= kUnstableThreshold) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
 
       // That's as high as it goes.
@@ -233,8 +256,10 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
     const int kLowThreshold = 2 * kMultiplier;
 
     // These if statements must be sorted (highest interval first).
-    if (time_passed >= kSevereThreshold) {
-      set_upgrade_notification_stage(UPGRADE_ANNOYANCE_SEVERE);
+    if (time_passed >= kSevereThreshold || is_critical_upgrade_) {
+      set_upgrade_notification_stage(
+          is_critical_upgrade_ ? UPGRADE_ANNOYANCE_CRITICAL :
+                                 UPGRADE_ANNOYANCE_SEVERE);
 
       // We can't get any higher, baby.
       upgrade_notification_timer_.Stop();

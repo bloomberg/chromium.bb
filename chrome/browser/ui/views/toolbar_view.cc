@@ -43,6 +43,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
+#include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #if !defined(USE_AURA)
 #include "chrome/browser/ui/views/app_menu_button_win.h"
 #endif
@@ -115,6 +116,10 @@ ToolbarView::ToolbarView(Browser* browser)
 
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  NotificationService::AllSources());
+#if defined(OS_WIN) && !defined(USE_AURA)
+  registrar_.Add(this, chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
+                 NotificationService::AllSources());
+#endif
   registrar_.Add(this,
                  chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
                  NotificationService::AllSources());
@@ -421,6 +426,11 @@ void ToolbarView::Observe(int type,
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
       UpdateAppMenuBadge();
       break;
+#if defined(OS_WIN) && !defined(USE_AURA)
+    case chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED:
+      ShowCriticalNotification();
+      break;
+#endif
     default:
       NOTREACHED();
   }
@@ -709,6 +719,23 @@ void ToolbarView::LoadImages() {
   app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::BS_NORMAL));
   app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
   app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
+}
+
+void ToolbarView::ShowCriticalNotification() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  gfx::Point screen_loc;
+  views::View::ConvertPointToScreen(app_menu_, &screen_loc);
+
+  CriticalNotificationBubbleView* critical_notification_bubble =
+      new CriticalNotificationBubbleView();
+  Bubble* bubble = Bubble::Show(GetWidget(),
+                                gfx::Rect(screen_loc, app_menu_->size()),
+                                views::BubbleBorder::TOP_RIGHT,
+                                critical_notification_bubble,
+                                critical_notification_bubble);
+  bubble->set_close_on_deactivate(false);
+  critical_notification_bubble->set_bubble(bubble);
+#endif
 }
 
 void ToolbarView::UpdateAppMenuBadge() {

@@ -3264,6 +3264,8 @@
         'browser/ui/views/cookie_info_view.h',
         'browser/ui/views/create_application_shortcut_view.cc',
         'browser/ui/views/create_application_shortcut_view.h',
+        'browser/ui/views/critical_notification_bubble_view.cc',
+        'browser/ui/views/critical_notification_bubble_view.h',
         'browser/ui/views/database_info_view.cc',
         'browser/ui/views/database_info_view.h',
         'browser/ui/views/database_open_info_view.cc',

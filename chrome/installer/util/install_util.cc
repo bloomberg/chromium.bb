@@ -193,6 +193,31 @@ Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   return ret;
 }
 
+Version* InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist) {
+  DCHECK(dist);
+  RegKey key;
+  LONG result =
+      key.Open(HKEY_CURRENT_USER, dist->GetVersionKey().c_str(), KEY_READ);
+
+  string16 version_str;
+  if (result == ERROR_SUCCESS)
+    result = key.ReadValue(google_update::kRegCriticalUpdateField,
+                           &version_str);
+
+  Version* ret = NULL;
+  if (result == ERROR_SUCCESS && !version_str.empty()) {
+    VLOG(1) << "Critical Update version for " << dist->GetApplicationName()
+            << " found " << version_str;
+    ret = Version::GetVersionFromString(WideToASCII(version_str));
+  } else {
+    DCHECK_EQ(ERROR_FILE_NOT_FOUND, result);
+    VLOG(1) << "No existing " << dist->GetApplicationName()
+            << " install found.";
+  }
+
+  return ret;
+}
+
 bool InstallUtil::IsOSSupported() {
   // We do not support Win2K or older, or XP without service pack 2.
   VLOG(1) << base::SysInfo::OperatingSystemName() << ' '

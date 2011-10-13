@@ -7225,6 +7225,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Site information
       </message>
 
+      <!-- Critical Notification Bubble -->
+      <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE" desc="The headline for the critical notification">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will restart in <ph name="SECONDS">$2<ex>10</ex></ph> seconds.
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_TEXT" desc="The text of the critical update notification">
+        A special security update for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was just applied; you should restart now for it to take effect (we'll restore your tabs).
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_RESTART" desc="The restart button label">
+        OK - Restart now
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_DISMISS" desc="The dismiss button label">
+        Don't restart
+      </message>
+
       <!-- SSL Blocking Page -->
       <message name="IDS_SSL_BLOCKING_PAGE_TITLE" desc="The title of the SSL blocking page.">
         SSL Error
