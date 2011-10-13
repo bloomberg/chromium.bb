@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,23 +8,14 @@
 
 #include "content/browser/browser_thread.h"
 
-// Called only from UI thread.
-// static
-void PowerSaveBlocker::ApplyBlock(PowerSaveBlockerType type) {
+// Runs on UI thread only.
+void PowerSaveBlocker::ApplyBlock(bool blocking) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DWORD flags = ES_CONTINUOUS;
 
-  switch (type) {
-    case kPowerSaveBlockPreventSystemSleep:
-      flags |= ES_SYSTEM_REQUIRED;
-      break;
-    case kPowerSaveBlockPreventDisplaySleep:
-      flags |= ES_DISPLAY_REQUIRED;
-      break;
-    case kPowerSaveBlockPreventNone:
-      break;
-  }
+  if (blocking)
+    flags |= ES_SYSTEM_REQUIRED;
 
   SetThreadExecutionState(flags);
 }

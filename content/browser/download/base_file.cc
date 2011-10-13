@@ -194,7 +194,7 @@ BaseFile::BaseFile(const FilePath& full_path,
       referrer_url_(referrer_url),
       file_stream_(file_stream),
       bytes_so_far_(received_bytes),
-      power_save_blocker_(PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep),
+      power_save_blocker_(true),
       calculate_hash_(false),
       detached_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
