@@ -30,10 +30,10 @@
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/session_data_type_controller.h"
-#include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
+#include "chrome/browser/sync/glue/session_data_type_controller.h"
+#include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/js/js_arg_list.h"
@@ -68,8 +68,8 @@ using browser_sync::JsController;
 using browser_sync::JsEventDetails;
 using browser_sync::JsEventHandler;
 using browser_sync::SyncBackendHost;
-using browser_sync::WeakHandle;
 using browser_sync::SyncProtocolError;
+using browser_sync::WeakHandle;
 using sync_api::SyncCredentials;
 
 typedef GoogleServiceAuthError AuthError;
@@ -440,6 +440,9 @@ void ProfileSyncService::ClearServerData() {
 }
 
 void ProfileSyncService::DisableForUser() {
+  if (SetupInProgress())
+    wizard_.Step(SyncSetupWizard::ABORT);
+
   // Clear prefs (including SyncSetupHasCompleted) before shutting down so
   // PSS clients don't think we're set up while we're shutting down.
   sync_prefs_.ClearPreferences();
