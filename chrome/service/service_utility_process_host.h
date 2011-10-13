@@ -81,7 +81,6 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
     friend class base::RefCountedThreadSafe<Client>;
     friend class ServiceUtilityProcessHost;
 
-    bool OnMessageReceived(const IPC::Message& message);
     // Invoked when a metafile file is ready.
     void MetafileAvailable(const FilePath& metafile_path,
                            int highest_rendered_page_number);
@@ -126,8 +125,16 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   // Called when at least one page in the specified PDF has been rendered
   // successfully into metafile_path_;
   void OnRenderPDFPagesToMetafileSucceeded(int highest_rendered_page_number);
-  // Any other messages to be handled by the client.
-  bool MessageForClient(const IPC::Message& message);
+  // Called when PDF rendering failed.
+  void OnRenderPDFPagesToMetafileFailed();
+  // Called when the printer capabilities and defaults have been
+  // retrieved successfully.
+  void OnGetPrinterCapsAndDefaultsSucceeded(
+      const std::string& printer_name,
+      const printing::PrinterCapsAndDefaults& caps_and_defaults);
+  // Called when the printer capabilities and defaults could not be
+  // retrieved successfully.
+  void OnGetPrinterCapsAndDefaultsFailed(const std::string& printer_name);
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
   void OnPreCacheFont(const LOGFONT& font);
