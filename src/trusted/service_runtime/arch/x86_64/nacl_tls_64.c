@@ -201,9 +201,9 @@ void NaClTlsSetIdx(uint32_t tls_idx) {
    * knowledge of Mac OS X's TLS internals gives us the correct value.
    * This checks that we inferred _PTHREAD_TSD_OFFSET correctly earlier.
    */
-  asm("movl %%gs:(%1), %0"
-      : "=r"(tls_idx_check)
-      : "r"(nacl_thread_index_tls_offset));
+  __asm__("movl %%gs:(%1), %0"
+          : "=r"(tls_idx_check)
+          : "r"(nacl_thread_index_tls_offset));
   if (tls_idx_check != tls_idx) {
     NaClLog(LOG_FATAL, "NaClTlsSetIdx: Sanity check failed: "
             "TLS offset must be wrong\n");
