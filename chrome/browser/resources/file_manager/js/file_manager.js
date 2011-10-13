@@ -1894,7 +1894,8 @@ FileManager.prototype = {
         taskId: this.getExtensionId_() + '|unmount-archive',
         iconUrl:
             chrome.extension.getURL('images/icon_unmount_archive_16x16.png'),
-        title: str('UNMOUNT_ARCHIVE')
+        title: str('UNMOUNT_ARCHIVE'),
+        internal: true
     });
    };
 
@@ -1922,7 +1923,8 @@ FileManager.prototype = {
           var task = {
             taskId: self.getExtensionId_() + '|format-device',
             iconUrl: chrome.extension.getURL('images/filetype_generic.png'),
-            title: str('FORMAT_DEVICE')
+            title: str('FORMAT_DEVICE'),
+            internal: true
           };
           self.renderTaskButton_(task);
         }
