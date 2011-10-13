@@ -77,9 +77,9 @@ class DrMemoryAnalyze:
       if re.search("SUPPRESSIONS USED:", self.line_):
         self.ReadLine()
         while self.line_.strip() != "":
-          # TODO(timurrrr): use Valgrind format so the suppression dashboard
-          # counts used DrM suppressions too.
-          self.used_suppressions.append(self.line_.strip())
+          line = self.line_.strip()
+          (count, name) = re.match(" *([0-9]+)x: (.*)", line).groups()
+          self.used_suppressions.append("%7s %s" % (count, name))
           self.ReadLine()
         break
 
@@ -93,8 +93,8 @@ class DrMemoryAnalyze:
       print "-----------------------------------------------------"
       # TODO(timurrrr): sum up the counts from different wrappers (e.g. ui_tests)
       # or does it work now already? Or add the memcheck-like per-test printing.
-      print "Suppressions used:\n  count name\n ",  # , adds ' ' instead of '\n'
-      print "\n  ".join(self.used_suppressions)
+      print "Suppressions used:\n  count name\n%s" % (
+                "\n".join(self.used_suppressions))
       print "-----------------------------------------------------"
       sys.stdout.flush()
 
