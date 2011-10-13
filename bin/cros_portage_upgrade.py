@@ -5,6 +5,7 @@
 
 """Perform various tasks related to updating Portage packages."""
 
+import cStringIO
 import filecmp
 import logging
 import optparse
@@ -145,6 +146,10 @@ class Upgrader(object):
     self._outdated_eclass_re = re.compile(r'Call stack:\n'
                                           '(?:.*?\s+\S+,\sline.*?\n)*'
                                           '.*?\s+(\S+\.eclass),\s+line')
+
+  def _IsInUpgradeMode(self):
+    """Return True if running in upgrade mode."""
+    return self._upgrade or self._upgrade_deep
 
   def _GetPkgKeywordsFile(self):
     """Return the path to the package.keywords file in chromiumos-overlay."""
@@ -899,8 +904,9 @@ class Upgrader(object):
 
     info['state'] = self._GetPackageUpgradeState(info)
 
-    # Print a quick summary of package status.
-    self._PrintPackageLine(info)
+    if self._verbose:
+      # Print a quick summary of package status.
+      self._PrintPackageLine(info)
 
     # Add a row to status table for this package
     self._AppendPackageRow(info)
@@ -1110,14 +1116,23 @@ class Upgrader(object):
     emerge_args = [info['package'] for info in target_infolist]
     argv = self._GenParallelEmergeArgv(emerge_args)
 
+    # Except in verbose mode, turn off stdout/stderr while parallel_emerge
+    # finds dependencies, which can be very noisy.
+    out_and_err = (sys.stdout, sys.stderr)
+    if not self._verbose:
+      (sys.stdout, sys.stderr) = (cStringIO.StringIO(), cStringIO.StringIO())
+
     deps = parallel_emerge.DepGraphGenerator()
     deps.Initialize(argv)
 
     deps_tree, deps_info = deps.GenDependencyTree()
-
     self._SetPortTree(deps.emerge.settings, deps.emerge.trees)
-
     self._deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
+
+    if not self._verbose:
+      # Re-enable stdout/stderr.
+      (sys.stdout, sys.stderr) = out_and_err
+
     cpvlist = Upgrader._GetPreOrderDepGraph(self._deps_graph)
     cpvlist.reverse()
 
@@ -1250,16 +1265,16 @@ class Upgrader(object):
           self._FillInfoFromCPV(info, any_cpv)
 
         if local_cpv and upstream_cpv:
-          oper.Info("Resolved '%s' to '%s' (local) and '%s' (upstream)" %
+          oper.Info("Resolved '%s' to '%s' (local) and '%s' (upstream)." %
                     (arg, local_cpv, upstream_cpv))
           info['cpv'] = local_cpv
           info['upstream_cpv'] = upstream_cpv
         elif local_cpv:
-          oper.Info("Resolved '%s' to '%s' (local)" %
+          oper.Info("Resolved '%s' to '%s' (local)." %
                     (arg, local_cpv))
           info['cpv'] = local_cpv
         elif upstream_cpv:
-          oper.Info("Resolved '%s' to '%s' (upstream)" %
+          oper.Info("Resolved '%s' to '%s' (upstream)." %
                     (arg, upstream_cpv))
           info['upstream_cpv'] = upstream_cpv
         else:
@@ -1476,7 +1491,7 @@ class Upgrader(object):
 
     self._curr_board = board
     self._curr_arch = Upgrader._FindBoardArch(board)
-    upgrade_mode = self._upgrade or self._upgrade_deep
+    upgrade_mode = self._IsInUpgradeMode()
     self._curr_table = utable.UpgradeTable(self._curr_arch,
                                            upgrade=upgrade_mode,
                                            name=board)
@@ -1495,6 +1510,7 @@ class Upgrader(object):
                '\n'.join([info['arg'] for info in upstream_only_infolist]))
         raise RuntimeError(msg)
 
+      oper.Info("Assembling package dependencies.")
       local_target_infolist = [i for i in target_infolist if i['cpv']]
       full_infolist = self._GetCurrentVersions(local_target_infolist)
       full_infolist = self._FinalizeLocalInfolist(full_infolist)
@@ -1532,9 +1548,19 @@ class Upgrader(object):
 
     if csv:
       filehandle = open(csv, 'w')
-      oper.Info('Writing package status as csv to %s' % csv)
+      oper.Info('Writing package status as csv to %s.' % csv)
       self._master_table.WriteCSV(filehandle)
       filehandle.close()
+    elif not self._IsInUpgradeMode():
+      oper.Info('Package status report file not requested (--to-csv).')
+
+  def SayGoodbye(self):
+    """Print any final messages to user."""
+    if not self._IsInUpgradeMode():
+      # Without this message users are confused why running a script
+      # with 'upgrade' in the name does not actually do an upgrade.
+      oper.Warning("Completed status report run.  To run in 'upgrade'"
+                   " mode include the --upgrade option.")
 
 def _BoardIsSetUp(board):
   """Return true if |board| has been setup."""
@@ -1696,7 +1722,7 @@ def main():
     upgrader.PrepareToRun()
 
     for board in boards:
-      oper.Info('Running with board %s' % board)
+      oper.Info('Running with board %s.' % board)
       upgrader.RunBoard(board)
   except RuntimeError as ex:
     passed = False
@@ -1717,6 +1743,7 @@ def main():
 
   upgrader.WriteTableFiles(csv=options.csv_file)
 
+  upgrader.SayGoodbye()
 
 if __name__ == '__main__':
   main()
