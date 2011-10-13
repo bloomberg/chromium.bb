@@ -15,6 +15,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -690,9 +692,14 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
           extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
 
-  // Track launches of the webstore specifically.
-  if (extension->id() == extension_misc::kWebStoreAppId)
-    UserMetrics::RecordAction(UserMetricsAction("Extensions.WebStoreLaunch"));
+  static bool default_apps_trial_exists =
+      base::FieldTrialList::TrialExists(kDefaultAppsTrial_Name);
+  if (default_apps_trial_exists) {
+    UMA_HISTOGRAM_ENUMERATION(
+        base::FieldTrial::MakeName("Extensions.AppTabLaunchType",
+                                   kDefaultAppsTrial_Name),
+        launch_type, 100);
+  }
 
   int add_type = TabStripModel::ADD_ACTIVE;
   if (launch_type == ExtensionPrefs::LAUNCH_PINNED)

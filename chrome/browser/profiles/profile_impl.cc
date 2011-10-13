@@ -10,7 +10,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -219,59 +218,6 @@ FilePath GetMediaCachePath(const FilePath& base) {
   return base.Append(chrome::kMediaCacheDirname);
 }
 
-// Simple task to log the size of the current profile.
-class ProfileSizeTask : public Task {
- public:
-  explicit ProfileSizeTask(const FilePath& path) : path_(path) {}
-  virtual ~ProfileSizeTask() {}
-
-  virtual void Run();
- private:
-  FilePath path_;
-};
-
-void ProfileSizeTask::Run() {
-  int64 size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("*"));
-  int size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.TotalSize", size_MB);
-
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("History"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.HistorySize", size_MB);
-
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("History*"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.TotalHistorySize", size_MB);
-
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Cookies"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.CookiesSize", size_MB);
-
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Bookmarks"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.BookmarksSize", size_MB);
-
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Favicons"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.FaviconsSize", size_MB);
-
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Top Sites"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.TopSitesSize", size_MB);
-
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Visited Links"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.VisitedLinksSize", size_MB);
-
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Web Data"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.WebDataSize", size_MB);
-
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Extension*"));
-  size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.ExtensionSize", size_MB);
-}
-
 }  // namespace
 
 // static
@@ -435,10 +381,6 @@ void ProfileImpl::DoFinalInit() {
     UserMetrics::RecordAction(
         UserMetricsAction("ClearSiteDataOnExitDisabled"));
   }
-
-  // Log the profile size after a reasonable startup delay.
-  BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
-                                 new ProfileSizeTask(path_), 112000);
 
   InstantController::RecordMetrics(this);
 

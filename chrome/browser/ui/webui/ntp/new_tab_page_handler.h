@@ -19,6 +19,7 @@ class NewTabPageHandler : public WebUIMessageHandler {
   virtual ~NewTabPageHandler() {}
 
   // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for "closeNotificationPromo".
@@ -52,11 +53,13 @@ class NewTabPageHandler : public WebUIMessageHandler {
   // The lower 10 bits of kNTPShownPage are used for the index within the page
   // group, and the rest of the bits are used for the page group ID (defined
   // here).
+  static const int kPageIdOffset = 10;
   enum {
-    INDEX_MASK = (1 << 10) - 1,
-    MOST_VISITED_PAGE_ID = 1 << 10,
-    APPS_PAGE_ID = 2 << 10,
-    BOOKMARKS_PAGE_ID = 3 << 10,
+    INDEX_MASK = (1 << kPageIdOffset) - 1,
+    MOST_VISITED_PAGE_ID = 1 << kPageIdOffset,
+    APPS_PAGE_ID = 2 << kPageIdOffset,
+    BOOKMARKS_PAGE_ID = 3 << kPageIdOffset,
+    LAST_PAGE_ID = BOOKMARKS_PAGE_ID
   };
 
   // Helper to send out promo resource change notification.
