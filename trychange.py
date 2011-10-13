@@ -656,6 +656,11 @@ def TryChange(argv,
 
   logging.debug(argv)
 
+  if (options.patchlevel is not None and
+      (options.patchlevel < 0 or options.patchlevel > 10)):
+    parser.error(
+        'Have you tried --port instead? You probably confused -p and -P.')
+
   # Strip off any @ in the user, otherwise svn gets confused.
   options.user = options.user.split('@', 1)[0]
 
