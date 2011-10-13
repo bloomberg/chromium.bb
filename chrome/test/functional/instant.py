@@ -140,7 +140,9 @@ class InstantTest(pyauto.PyUITest):
 
   def testInstantLoadsFor100CharsLongQuery(self):
     """Test that instant loads for search query of 100 characters."""
-    query = '#' * 100
+    query = 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz' \
+            'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv'
+    self.assertEqual(100, len(query))
     self.SetOmniboxText(query)
     self.assertTrue(self.WaitUntil(self._DoneLoadingGoogleQuery, args=[query]))
 
