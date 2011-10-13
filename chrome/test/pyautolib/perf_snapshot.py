@@ -90,6 +90,8 @@ class _V8HeapSnapshotParser(object):
     total_shallow_size = 0
     constructors = {}
 
+    # TODO(dennisjeffrey): The following line might be slow, especially on
+    # ChromeOS.  Investigate faster alternatives.
     heap = simplejson.loads(raw_data)
 
     index = 1  # Bypass the special first node list item.
@@ -563,6 +565,13 @@ class _PerformanceSnapshotterThread(threading.Thread):
 
     socket_url = result[tab_index]['webSocketDebuggerUrl']
     parsed = urlparse.urlparse(socket_url)
+    # On ChromeOS, the "ws://" scheme may not be recognized, leading to an
+    # incorrect netloc (and empty hostname and port attributes) in |parsed|.
+    # Change the scheme to "http://" to fix this.
+    if not parsed.hostname or not parsed.port:
+      socket_url = 'http' + socket_url[socket_url.find(':'):]
+      parsed = urlparse.urlparse(socket_url)
+      # Warning: |parsed.scheme| is incorrect after this point.
     return ({'host': parsed.hostname,
              'port': parsed.port,
              'path': parsed.path})
