@@ -276,7 +276,7 @@ void HtmlDialogView::Observe(int type,
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT:
       if (state_ == LOADED) {
         state_ = PAINTED;
-#if defined(OS_CHROMEOS) && defined(USE_TOOLKIT_GTK)
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
         views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
             GTK_WINDOW(GetWidget()->GetNativeView()), false);
 #endif
