@@ -7,7 +7,6 @@ var chrome = chrome || {};
   native function GetChromeHidden();
   native function AttachEvent(eventName);
   native function DetachEvent(eventName);
-  native function GetExternalFileEntry(fileDefinition);
   native function Print();
 
   var chromeHidden = GetChromeHidden();
@@ -81,7 +80,17 @@ var chrome = chrome || {};
   // An array of all attached event objects, used for detaching on unload.
   var allAttachedEvents = [];
 
+  // A map of functions that massage event arguments before they are dispatched.
+  // Key is event name, value is function.
+  var eventArgumentMassagers = {};
+
   chromeHidden.Event = {};
+
+  chromeHidden.Event.registerArgumentMassager = function(name, fn) {
+    if (eventArgumentMassagers[name])
+      throw new Error("Massager already registered for event: " + name);
+    eventArgumentMassagers[name] = fn;
+  };
 
   // Dispatches a named event with the given JSON array, which is deserialized
   // before dispatch. The JSON array is the list of arguments that will be
@@ -90,20 +99,8 @@ var chrome = chrome || {};
     if (attachedNamedEvents[name]) {
       if (args) {
         args = chromeHidden.JSON.parse(args);
-        // TODO(zelidrag|aa): Remove this hack from here once we enable event
-        // JSON payload unpacking on C++ side.
-        if (name == "fileBrowserHandler.onExecute") {
-          if (args.length < 2)
-            return;
-          var fileList = args[1].entries;
-          if (!fileList)
-            return;
-          // The second parameter for this event's payload is file definition
-          // dictionary that we used to reconstruct File API's Entry instance
-          // here.
-          for (var i = 0; i < fileList.length; i++)
-            fileList[i] = GetExternalFileEntry(fileList[i]);
-        }
+        if (eventArgumentMassagers[name])
+          eventArgumentMassagers[name](args);
       }
       return attachedNamedEvents[name].dispatch.apply(
           attachedNamedEvents[name], args);

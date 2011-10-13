@@ -19,6 +19,7 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/file_browser_private_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_thread.h"
@@ -96,6 +97,7 @@ void ExtensionDispatcher::WebKitInitialized() {
   RegisterExtension(new ChromeV8Extension(
       "extensions/json_schema.js", IDR_JSON_SCHEMA_JS, NULL), true);
   RegisterExtension(EventBindings::Get(this), true);
+  RegisterExtension(new FileBrowserPrivateBindings(), true);
   RegisterExtension(RendererExtensionBindings::Get(this), true);
   RegisterExtension(ExtensionProcessBindings::Get(this), true);
   RegisterExtension(new ChromeV8Extension(

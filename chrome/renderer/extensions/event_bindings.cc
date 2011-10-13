@@ -68,8 +68,6 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::FunctionTemplate::New(AttachEvent, v8::External::New(this));
     } else if (name->Equals(v8::String::New("DetachEvent"))) {
       return v8::FunctionTemplate::New(DetachEvent, v8::External::New(this));
-    } else if (name->Equals(v8::String::New("GetExternalFileEntry"))) {
-      return v8::FunctionTemplate::New(GetExternalFileEntry);
     }
     return ChromeV8Extension::GetNativeFunction(name);
   }
@@ -127,38 +125,6 @@ class ExtensionImpl : public ChromeV8Extension {
     }
 
     return v8::Undefined();
-  }
-
-  // Attach an event name to an object.
-  static v8::Handle<v8::Value> GetExternalFileEntry(
-      const v8::Arguments& args) {
-  // TODO(zelidrag): Make this magic work on other platforms when file browser
-  // matures enough on ChromeOS.
-#if defined(OS_CHROMEOS)
-    DCHECK(args.Length() == 1);
-    DCHECK(args[0]->IsObject());
-    v8::Local<v8::Object> file_def = args[0]->ToObject();
-    std::string file_system_name(
-        *v8::String::Utf8Value(file_def->Get(
-            v8::String::New("fileSystemName"))));
-    std::string file_system_path(
-        *v8::String::Utf8Value(file_def->Get(
-            v8::String::New("fileSystemRoot"))));
-    std::string file_full_path(
-        *v8::String::Utf8Value(file_def->Get(
-            v8::String::New("fileFullPath"))));
-    bool is_directory =
-        file_def->Get(v8::String::New("fileIsDirectory"))->ToBoolean()->Value();
-    WebFrame* webframe = WebFrame::frameForCurrentContext();
-    return webframe->createFileEntry(
-        WebKit::WebFileSystem::TypeExternal,
-        WebKit::WebString::fromUTF8(file_system_name.c_str()),
-        WebKit::WebString::fromUTF8(file_system_path.c_str()),
-        WebKit::WebString::fromUTF8(file_full_path.c_str()),
-        is_directory);
-#else
-    return v8::Undefined();
-#endif
   }
 };
 
