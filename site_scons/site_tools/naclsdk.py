@@ -181,6 +181,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
               CCFLAGS=['-O3',
                        '-Werror',
                        '-Wall',
+                       '-Wno-variadic-macros',
                        '-Wswitch-enum',
                        '-g',
                        '-fno-stack-protector',
