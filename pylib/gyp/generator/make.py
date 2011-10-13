@@ -2013,7 +2013,19 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         postbuilds.append(gyp.common.EncodePOSIXShellList(shell_list))
 
     if postbuilds:
-      self.WriteXcodeEnv(self.output, spec)  # For postbuilds
+      # Write envvars for postbuilds.
+      extra_settings = {}
+
+      # CHROMIUM_STRIP_SAVE_FILE is a chromium-specific hack.
+      # TODO(thakis): It would be nice to have some general mechanism instead.
+      strip_save_file = self.xcode_settings.GetPerTargetSetting(
+          'CHROMIUM_STRIP_SAVE_FILE')
+      if strip_save_file:
+        strip_save_file = self.Absolutify(strip_save_file)
+        extra_settings['CHROMIUM_STRIP_SAVE_FILE'] = strip_save_file
+
+      self.WriteXcodeEnv(self.output, spec, additional_settings=extra_settings)
+
       for i in xrange(len(postbuilds)):
         if not postbuilds[i].startswith('$'):
           postbuilds[i] = EscapeShellArgument(postbuilds[i])
