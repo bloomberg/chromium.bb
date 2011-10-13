@@ -5,6 +5,8 @@
 #include "chrome/browser/history/in_memory_url_index_types.h"
 
 #include <algorithm>
+#include <functional>
+#include <iterator>
 
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
