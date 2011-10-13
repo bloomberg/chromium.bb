@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogBrowserTest,
 
   // Open a singleton tab in background.
   browser::NavigateParams p(browser(), GURL("www.google.com"),
-                            PageTransition::LINK);
+                            content::PAGE_TRANSITION_LINK);
   p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.disposition = SINGLETON_TAB;
   browser::Navigate(&p);

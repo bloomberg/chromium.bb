@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardManagerTest, TestVisibility) {
       content::NOTIFICATION_LOAD_STOP,
       NotificationService::AllSources());
   browser()->AddSelectedTabWithURL(base_url.Resolve("blank.html"),
-                                   PageTransition::LINK);
+                                   content::PAGE_TRANSITION_LINK);
   load_stop_observer.Wait();
 
   // Focus the first tab where the textfield has the focus.

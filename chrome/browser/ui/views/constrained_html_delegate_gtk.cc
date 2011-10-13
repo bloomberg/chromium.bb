@@ -89,7 +89,7 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
       html_tab_contents_.property_bag(), this);
   html_tab_contents_.controller().LoadURL(delegate->GetDialogContentURL(),
                                           GURL(),
-                                          PageTransition::START_PAGE,
+                                          content::PAGE_TRANSITION_START_PAGE,
                                           std::string());
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
