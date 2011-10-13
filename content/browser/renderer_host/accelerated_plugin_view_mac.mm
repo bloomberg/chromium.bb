@@ -72,6 +72,7 @@
       swapInterval = 1;
     [glContext_ setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
+    handlingGlobalFrameDidChange_ = NO;
     [[NSNotificationCenter defaultCenter]
          addObserver:self
             selector:@selector(globalFrameDidChange:)
@@ -151,6 +152,12 @@
 }
 
 - (void)globalFrameDidChange:(NSNotification*)notification {
+  // Short-circuit recursive calls.
+  if (handlingGlobalFrameDidChange_)
+    return;
+
+  handlingGlobalFrameDidChange_ = YES;
+
   // This call to -update can call -globalFrameDidChange: again, see
   // http://crbug.com/55754 comments 22 and 24.
   [glContext_ update];
@@ -160,6 +167,8 @@
   NSSize size = [self frame].size;
   glViewport(0, 0, size.width, size.height);
   CGLSetCurrentContext(0);
+
+  handlingGlobalFrameDidChange_ = NO;
 }
 
 - (void)prepareForGLRendering {

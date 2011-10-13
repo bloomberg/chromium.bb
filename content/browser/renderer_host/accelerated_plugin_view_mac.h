@@ -33,6 +33,8 @@ class RenderWidgetHostViewMac;
 
   // Rects that should show web content rather than plugin content.
   scoped_nsobject<NSArray> cutoutRects_;
+
+  BOOL handlingGlobalFrameDidChange_;
 }
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r
