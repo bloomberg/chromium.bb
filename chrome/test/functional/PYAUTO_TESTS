@@ -131,8 +131,6 @@
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
-      # crbug.com/96934
-      '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/91225
