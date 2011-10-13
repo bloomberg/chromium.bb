@@ -31,6 +31,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -437,6 +438,14 @@ bool BrowserView::ShouldShowAvatar() const {
     return false;
   if (IsOffTheRecord())
     return true;
+
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  if (cache.GetIndexOfProfileWithPath(browser_->profile()->GetPath()) ==
+      std::string::npos) {
+    return false;
+  }
+
   return AvatarMenuModel::ShouldShowAvatarMenu();
 }
 

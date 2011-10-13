@@ -18,6 +18,7 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
@@ -1361,6 +1362,14 @@ enum {
     return NO;
   if (browser_->profile()->IsOffTheRecord())
     return YES;
+
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  if (cache.GetIndexOfProfileWithPath(browser_->profile()->GetPath()) ==
+      std::string::npos) {
+    return NO;
+  }
+
   return AvatarMenuModel::ShouldShowAvatarMenu();
 }
 

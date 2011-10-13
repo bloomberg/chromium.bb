@@ -276,8 +276,11 @@ string16 TaskManagerTabContentsResource::GetProfileName() const {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   Profile* profile = tab_contents_->profile()->GetOriginalProfile();
-  return cache.GetNameOfProfileAtIndex(
-      cache.GetIndexOfProfileWithPath(profile->GetPath()));
+  size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (index == std::string::npos)
+    return string16();
+  else
+    return cache.GetNameOfProfileAtIndex(index);
 }
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {
@@ -1060,8 +1063,11 @@ string16 TaskManagerExtensionProcessResource::GetProfileName() const {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   Profile* profile = extension_host_->profile()->GetOriginalProfile();
-  return cache.GetNameOfProfileAtIndex(
-      cache.GetIndexOfProfileWithPath(profile->GetPath()));
+  size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (index == std::string::npos)
+    return string16();
+  else
+    return cache.GetNameOfProfileAtIndex(index);
 }
 
 SkBitmap TaskManagerExtensionProcessResource::GetIcon() const {
