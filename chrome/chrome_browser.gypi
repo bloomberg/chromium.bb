@@ -1987,6 +1987,8 @@
         'browser/safe_browsing/client_side_detection_host.h',
         'browser/safe_browsing/client_side_detection_service.cc',
         'browser/safe_browsing/client_side_detection_service.h',
+        'browser/safe_browsing/download_protection_service.cc',
+        'browser/safe_browsing/download_protection_service.h',
         'browser/safe_browsing/malware_details.cc',
         'browser/safe_browsing/malware_details.h',
         'browser/safe_browsing/malware_details_cache.cc',

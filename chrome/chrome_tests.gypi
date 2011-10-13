@@ -1483,6 +1483,7 @@
         'browser/safe_browsing/chunk_range_unittest.cc',
         'browser/safe_browsing/client_side_detection_host_unittest.cc',
         'browser/safe_browsing/client_side_detection_service_unittest.cc',
+        'browser/safe_browsing/download_protection_service_unittest.cc',
         'browser/safe_browsing/malware_details_unittest.cc',
         'browser/safe_browsing/prefix_set_unittest.cc',
         'browser/safe_browsing/protocol_manager_unittest.cc',

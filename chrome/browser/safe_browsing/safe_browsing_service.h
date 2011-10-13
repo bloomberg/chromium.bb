@@ -44,6 +44,7 @@ class URLRequestContextGetter;
 
 namespace safe_browsing {
 class ClientSideDetectionService;
+class DownloadProtectionService;
 }
 
 // Construction needs to happen on the main thread.
@@ -198,6 +199,12 @@ class SafeBrowsingService
   // thread.
   virtual bool MatchCsdWhitelistUrl(const GURL& url);
 
+  // Check if the |url| matches any of the full-length hashes from the
+  // download whitelist.  Returns true if there was a match and false otherwise.
+  // To make sure we are conservative we will return true if an error occurs.
+  // This method is expected to be called on the IO thread.
+  virtual bool MatchDownloadWhitelistUrl(const GURL& url);
+
   // Called on the IO thread to cancel a pending check if the result is no
   // longer needed.
   void CancelCheck(Client* client);
@@ -258,6 +265,11 @@ class SafeBrowsingService
   safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service() const {
     return csd_service_.get();
+  }
+
+  safe_browsing::DownloadProtectionService*
+      download_protection_service() const {
+    return download_service_.get();
   }
 
   // Preference handling.
@@ -541,6 +553,10 @@ class SafeBrowsingService
   // The ClientSideDetectionService is managed by the SafeBrowsingService,
   // since its running state and lifecycle depends on SafeBrowsingService's.
   scoped_ptr<safe_browsing::ClientSideDetectionService> csd_service_;
+
+  // The DownloadProtectionService is managed by the SafeBrowsingService,
+  // since its running state and lifecycle depends on SafeBrowsingService's.
+  scoped_refptr<safe_browsing::DownloadProtectionService> download_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

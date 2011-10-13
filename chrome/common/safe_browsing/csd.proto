@@ -79,3 +79,70 @@ message ClientPhishingResponse {
   // situations.
   repeated string whitelist_expression = 2;
 }
+
+message ClientDownloadRequest {
+  // The final URL of the download (after all redirects).
+  required string url = 1;
+
+  // This message contains various binary digests of the download payload.
+  message Digests {
+    optional bytes sha256 = 1;
+    optional bytes sha1 = 2;
+    optional bytes md5 = 3;
+  }
+  required Digests digests = 2;
+
+  // This is the length in bytes of the download payload.
+  required int64 length = 3;
+
+  // Type of the resources stored below.
+  enum ResourceType {
+    // The final URL of the download payload.  The resource URL should
+    // correspond to the URL field above.
+    DOWNLOAD_URL = 0;
+    // A redirect URL that was fetched before hitting the final DOWNLOAD_URL.
+    DOWNLOAD_REDIRECT = 1;
+    // The final top-level URL of the tab that triggered the download.
+    TAB_URL = 2;
+    // A redirect URL thas was fetched before hitting the final TAB_URL.
+    TAB_REDIRECT = 3;
+  }
+
+  message Resource {
+    required string url = 1;
+    required ResourceType type = 2;
+    optional bytes remote_ip = 3;
+    // This will only be set if the referrer is available and if the
+    // resource type is either TAB_URL or DOWNLOAD_URL.
+    optional string referrer = 4;
+
+    // TODO(noelutz): add the transition type?
+  }
+
+  // This repeated field will store all the redirects as well as the
+  // final URLs for the top-level tab URL (i.e., the URL that
+  // triggered the download) as well as for the download URL itself.
+  repeated Resource resources = 4;
+
+  message SignatureInfo {
+    // If the binary is signed this will contain the name of the certificate
+    // authority that signed the binary.  The format of that field is TBD.
+    optional bytes certificate_issuer = 1;
+
+    // Serial number of the certificate autority.  This value uniquely
+    // identifies the certificate authority.
+    optional bytes certificate_serial_number = 2;
+
+    // Name of the company / organization the ceritificate was issued to.
+    optional bytes certificate_subject = 3;
+
+    // The full DER-encoded X.509 certificate extracted from the binary.
+    optional bytes certificate_contents = 4;
+  }
+
+  // This field will only be set if the binary is signed.
+  optional SignatureInfo signature = 5;
+
+  // True if the download was user initiated.
+  optional bool user_initiated = 6;
+}
