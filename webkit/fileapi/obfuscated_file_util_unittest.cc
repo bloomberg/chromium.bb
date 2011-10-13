@@ -1283,8 +1283,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
       ASSERT_TRUE(type() == kFileSystemTypeTemporary);
       EXPECT_EQ(true,
           enumerator->HasFileSystemType(kFileSystemTypeTemporary));
-      EXPECT_EQ(false,
-          enumerator->HasFileSystemType(kFileSystemTypePersistent));
+      EXPECT_FALSE(enumerator->HasFileSystemType(kFileSystemTypePersistent));
       found = true;
     }
     EXPECT_TRUE(found);
