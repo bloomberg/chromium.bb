@@ -8,35 +8,44 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/url_constants.h"
 
-typedef BrowserWithTestWindowTest ToolbarModelTest;
+class ToolbarModelTest : public BrowserWithTestWindowTest {
+ public:
+  ToolbarModelTest() {}
 
+ protected:
+  void NavigateAndCheckText(const std::string& url,
+                            const std::string& expected_text,
+                            bool should_display) {
+    TabContents* contents = browser()->GetTabContentsAt(0);
+    browser()->OpenURL(GURL(url), GURL(), CURRENT_TAB,
+                       content::PAGE_TRANSITION_TYPED);
+
+    // Check while loading.
+    EXPECT_EQ(should_display, browser()->toolbar_model()->ShouldDisplayURL());
+    EXPECT_EQ(ASCIIToUTF16(expected_text),
+              browser()->toolbar_model()->GetText());
+
+    // Check after commit.
+    CommitPendingLoad(&contents->controller());
+    EXPECT_EQ(should_display, browser()->toolbar_model()->ShouldDisplayURL());
+    EXPECT_EQ(ASCIIToUTF16(expected_text),
+              browser()->toolbar_model()->GetText());
+  }
+};
+
+// Test that URLs are correctly shown or hidden both during navigation and
+// after commit.
 TEST_F(ToolbarModelTest, ShouldDisplayURL) {
-  browser()->OpenURL(GURL("view-source:http://www.google.com"),
-                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
-  EXPECT_TRUE(browser()->toolbar_model()->ShouldDisplayURL());
-  EXPECT_EQ(ASCIIToUTF16("view-source:www.google.com"),
-            browser()->toolbar_model()->GetText());
+  AddTab(browser(), GURL(chrome::kAboutBlankURL));
 
-  browser()->OpenURL(GURL("view-source:chrome://newtab/"),
-                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
-  EXPECT_TRUE(browser()->toolbar_model()->ShouldDisplayURL());
-  EXPECT_EQ(ASCIIToUTF16("view-source:chrome://newtab"),
-            browser()->toolbar_model()->GetText());
-
-  browser()->OpenURL(GURL("chrome-extension://monkey/balls.html"),
-                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
-  EXPECT_FALSE(browser()->toolbar_model()->ShouldDisplayURL());
-  EXPECT_EQ(ASCIIToUTF16(""), browser()->toolbar_model()->GetText());
-
-  browser()->OpenURL(GURL("chrome://newtab/"),
-                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
-  EXPECT_FALSE(browser()->toolbar_model()->ShouldDisplayURL());
-  EXPECT_EQ(ASCIIToUTF16(""), browser()->toolbar_model()->GetText());
-
-  browser()->OpenURL(GURL("about:blank"),
-                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
-  EXPECT_TRUE(browser()->toolbar_model()->ShouldDisplayURL());
-  EXPECT_EQ(ASCIIToUTF16("about:blank"),
-            browser()->toolbar_model()->GetText());
+  NavigateAndCheckText("view-source:http://www.google.com",
+                       "view-source:www.google.com", true);
+  NavigateAndCheckText("view-source:chrome://newtab/",
+                       "view-source:chrome://newtab", true);
+  NavigateAndCheckText("chrome-extension://monkey/balls.html", "", false);
+  NavigateAndCheckText("chrome://newtab/", "", false);
+  NavigateAndCheckText(chrome::kAboutBlankURL, chrome::kAboutBlankURL, true);
 }

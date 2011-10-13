@@ -127,6 +127,9 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
     return render_manager_.web_ui();
   }
 
+  // Returns the committed WebUI if one exists, otherwise the pending one.
+  // Callers who want to use the pending WebUI for the pending navigation entry
+  // should use GetWebUIForCurrentState instead.
   WebUI* web_ui() const {
     return render_manager_.web_ui() ? render_manager_.web_ui()
         : render_manager_.pending_web_ui();

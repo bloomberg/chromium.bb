@@ -19,13 +19,13 @@ class NavigationController;
 
 // Base class for browser based unit tests. BrowserWithTestWindowTest creates a
 // Browser with a TestingProfile and TestBrowserWindow. To add a tab use
-// AddTestingTab. For example, the following adds a tab and navigates to
+// AddTab. For example, the following adds a tab and navigates to
 // two URLs that target the TestTabContents:
 //
 //   // Add a new tab and navigate it. This will be at index 0.
 //   AddTab(browser(), GURL("http://foo/1"));
 //   NavigationController* controller =
-//       browser()->GetTabContentsAt(0)->controller();
+//       &browser()->GetTabContentsAt(0)->controller();
 //
 //   // Navigate somewhere else.
 //   GURL url2("http://foo/2");
@@ -34,7 +34,8 @@ class NavigationController;
 //   // This is equivalent to the above, and lets you test pending navigations.
 //   browser()->OpenURL(GURL("http://foo/2"), GURL(), CURRENT_TAB,
 //                      content::PAGE_TRANSITION_TYPED);
-//   CommitPendingLoadAsNewNavigation(controller, url2);
+//                      PageTransition::TYPED);
+//   CommitPendingLoad(controller);
 //
 // Subclasses must invoke BrowserWithTestWindowTest::SetUp as it is responsible
 // for creating the various objects of this class.
