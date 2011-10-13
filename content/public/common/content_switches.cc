@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 
 namespace switches {
 

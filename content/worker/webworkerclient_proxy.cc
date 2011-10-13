@@ -6,11 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "content/common/content_switches.h"
 #include "content/common/file_system/file_system_dispatcher.h"
 #include "content/common/file_system/webfilesystem_callback_dispatcher.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
+#include "content/public/common/content_switches.h"
 // TODO(jam): uncomment this and WebWorkerClientProxy::createWorker when the
 // renderer worker code moves to content. This code isn't used now since we
 // don't support nested workers anyways.

@@ -23,7 +23,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"

@@ -11,7 +11,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/test/test_suite.h"
 #include "content/app/content_main.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/shell_main_delegate.h"
 
 #if defined(OS_WIN)

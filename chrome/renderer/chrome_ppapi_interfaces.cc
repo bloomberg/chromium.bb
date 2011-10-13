@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_ppb_pdf_impl.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_pdf.h"

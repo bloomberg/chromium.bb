@@ -14,7 +14,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"

@@ -32,8 +32,8 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/content_switches.h"
 #include "content/common/sandbox_init_wrapper.h"
+#include "content/public/common/content_switches.h"
 #include "printing/emf_win.h"
 #endif  // defined(OS_WIN)
 

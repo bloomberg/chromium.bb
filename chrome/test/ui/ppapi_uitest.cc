@@ -6,7 +6,7 @@
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"

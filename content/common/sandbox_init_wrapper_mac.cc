@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "content/common/content_switches.h"
 #include "content/common/sandbox_mac.h"
+#include "content/public/common/content_switches.h"
 
 bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
                                            const std::string& process_type) {

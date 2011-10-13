@@ -6,9 +6,9 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"
-#include "content/common/content_switches.h"
 #include "content/common/main_function_params.h"
 #include "content/ppapi_plugin/ppapi_thread.h"
+#include "content/public/common/content_switches.h"
 
 // Main function for starting the PPAPI broker process.
 int PpapiBrokerMain(const MainFunctionParams& parameters) {

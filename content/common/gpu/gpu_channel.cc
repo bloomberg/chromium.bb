@@ -14,10 +14,10 @@
 #include "base/string_util.h"
 #include "content/common/child_process.h"
 #include "content/common/content_client.h"
-#include "content/common/content_switches.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/transport_texture.h"
+#include "content/public/common/content_switches.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
 

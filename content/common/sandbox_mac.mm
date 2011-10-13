@@ -28,7 +28,7 @@ extern "C" {
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/chrome_application_mac.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "unicode/uchar.h"
 #include "ui/gfx/gl/gl_surface.h"
 

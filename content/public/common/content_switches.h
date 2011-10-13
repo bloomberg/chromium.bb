@@ -4,8 +4,8 @@
 
 // Defines all the "content" command-line switches.
 
-#ifndef CONTENT_COMMON_CONTENT_SWITCHES_H_
-#define CONTENT_COMMON_CONTENT_SWITCHES_H_
+#ifndef CONTENT_PUBLIC_COMMON_CONTENT_SWITCHES_H_
+#define CONTENT_PUBLIC_COMMON_CONTENT_SWITCHES_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -170,4 +170,4 @@ CONTENT_EXPORT extern const char kRendererCheckFalseTest[];
 
 }  // namespace switches
 
-#endif  // CONTENT_COMMON_CONTENT_SWITCHES_H_
+#endif  // CONTENT_PUBLIC_COMMON_CONTENT_SWITCHES_H_

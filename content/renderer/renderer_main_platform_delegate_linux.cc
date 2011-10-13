@@ -5,8 +5,8 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 
 #include "base/command_line.h"
-#include "content/common/content_switches.h"
 #include "content/common/seccomp_sandbox.h"
+#include "content/public/common/content_switches.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
     const MainFunctionParams& parameters)

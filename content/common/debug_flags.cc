@@ -7,7 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "ipc/ipc_switches.h"
 
 bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,

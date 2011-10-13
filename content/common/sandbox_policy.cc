@@ -17,9 +17,9 @@
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
 #include "content/common/content_client.h"
-#include "content/common/content_switches.h"
 #include "content/common/child_process_info.h"
 #include "content/common/debug_flags.h"
+#include "content/public/common/content_switches.h"
 #include "sandbox/src/sandbox.h"
 #include "ui/gfx/gl/gl_switches.h"
 

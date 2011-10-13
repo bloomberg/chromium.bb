@@ -11,7 +11,7 @@
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 
 namespace device_orientation {
 

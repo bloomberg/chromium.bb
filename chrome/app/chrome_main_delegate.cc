@@ -35,7 +35,7 @@
 #include "content/common/content_client.h"
 #include "content/common/content_counters.h"
 #include "content/common/content_paths.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/media.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"

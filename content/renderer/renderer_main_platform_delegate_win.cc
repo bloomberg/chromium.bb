@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/content_switches.h"
 #include "content/common/injection_test_dll.h"
+#include "content/public/common/content_switches.h"
 #include "sandbox/src/sandbox.h"
 #include "unicode/timezone.h"
 

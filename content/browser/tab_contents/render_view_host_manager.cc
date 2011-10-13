@@ -18,11 +18,11 @@
 #include "content/browser/webui/web_ui.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/common/content_client.h"
-#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 
 namespace base {
 class WaitableEvent;

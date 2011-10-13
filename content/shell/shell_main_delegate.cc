@@ -5,7 +5,7 @@
 #include "content/shell/shell_main_delegate.h"
 
 #include "base/command_line.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_plugin_client.h"
 #include "content/shell/shell_content_renderer_client.h"

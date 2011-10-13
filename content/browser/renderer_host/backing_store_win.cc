@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/surface/transport_dib.h"

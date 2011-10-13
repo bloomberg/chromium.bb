@@ -11,7 +11,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_test.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/gl/gl_implementation.h"
 

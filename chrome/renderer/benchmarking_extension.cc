@@ -8,7 +8,7 @@
 #include "base/metrics/stats_table.h"
 #include "base/time.h"
 #include "chrome/common/benchmarking_messages.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "v8/include/v8.h"

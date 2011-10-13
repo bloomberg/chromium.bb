@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "content/common/content_switches.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_accessibility.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"

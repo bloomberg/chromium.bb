@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/command_line.h"
 #include "content/browser/geolocation/core_location_data_provider_mac.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 
 CoreLocationProviderMac::CoreLocationProviderMac()
     : is_updating_(false) {

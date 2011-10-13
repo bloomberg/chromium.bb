@@ -15,8 +15,8 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/child_process_info.h"
-#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
+#include "content/public/common/content_switches.h"
 
 namespace {
 // Prints a string representation of a Mach error code.

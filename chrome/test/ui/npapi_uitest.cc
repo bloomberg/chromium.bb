@@ -29,7 +29,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "content/browser/net/url_request_mock_http_job.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 
 using npapi_test::kTestCompleteCookie;
 using npapi_test::kTestCompleteSuccess;

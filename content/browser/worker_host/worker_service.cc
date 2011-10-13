@@ -14,9 +14,9 @@
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service_observer.h"
-#include "content/common/content_switches.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domain.h"
 
 const int WorkerService::kMaxWorkerProcessesWhenSharing = 10;

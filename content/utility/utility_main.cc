@@ -7,9 +7,9 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/child_process.h"
-#include "content/common/content_switches.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/main_function_params.h"
+#include "content/public/common/content_switches.h"
 #include "content/utility/utility_thread.h"
 
 #if defined(OS_WIN)

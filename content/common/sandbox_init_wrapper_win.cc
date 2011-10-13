@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 
 void SandboxInitWrapper::SetServices(sandbox::SandboxInterfaceInfo* info) {
   if (!info)

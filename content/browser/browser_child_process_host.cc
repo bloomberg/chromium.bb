@@ -17,11 +17,11 @@
 #include "content/browser/content_browser_client.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/trace_message_filter.h"
-#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/process_watcher.h"
 #include "content/common/result_codes.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(OS_WIN)
 #include "base/synchronization/waitable_event.h"

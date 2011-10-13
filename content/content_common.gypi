@@ -29,6 +29,8 @@
   ],
   'sources': [
     'public/common/bindings_policy.h',
+    'public/common/content_switches.cc',
+    'public/common/content_switches.h',
     'public/common/page_transition_types.cc',
     'public/common/page_transition_types.h',
     'public/common/resource_dispatcher_delegate.h',
@@ -72,8 +74,6 @@
     'common/content_paths.cc',
     'common/content_paths.h',
     'common/content_restriction.h',
-    'common/content_switches.cc',
-    'common/content_switches.h',
     'common/css_colors.h',
     'common/database_messages.h',
     'common/database_util.cc',

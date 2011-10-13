@@ -15,7 +15,7 @@
 //   release.
 
 #include "build/build_config.h"
-#include "content/common/content_switches.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX) && \
   !defined(__clang__) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_VIEWS)
