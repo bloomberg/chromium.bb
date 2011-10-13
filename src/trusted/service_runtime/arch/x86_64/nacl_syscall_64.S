@@ -215,6 +215,7 @@ IDENTIFIER(NaClGetTlsFastPath):
         leaq    IDENTIFIER(nacl_tls)(%rip), %rdx
         leaq    (%rdx,%rax,4), %rdx
         movl    0x0(%rdx), %eax
+        xorl    %edx, %edx  /* do not leak nacl_tls[thread_id] address */
         /* sandbox the return, straight off the untrusted stack */
         movq    0x8(%rsp), %rcx
         addq    $0x10, %rsp
