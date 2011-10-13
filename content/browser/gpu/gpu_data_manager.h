@@ -166,7 +166,7 @@ class CONTENT_EXPORT GpuDataManager {
 
   // Check if we should go ahead and use gpu blacklist.
   // If not, return NULL; otherwise, update and return the current list.
-  GpuBlacklist* GetGpuBlacklist();
+  GpuBlacklist* GetGpuBlacklist() const;
 
   // If flags hasn't been set and GPUInfo is available, run through blacklist
   // and compute the flags.

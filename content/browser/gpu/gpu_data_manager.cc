@@ -376,10 +376,10 @@ Value* GpuDataManager::GetFeatureStatus() {
 }
 
 std::string GpuDataManager::GetBlacklistVersion() const {
-  if (gpu_blacklist_.get() != NULL) {
+  GpuBlacklist* blacklist = GetGpuBlacklist();
+  if (blacklist != NULL) {
     uint16 version_major, version_minor;
-    if (gpu_blacklist_->GetVersion(&version_major,
-                                   &version_minor)) {
+    if (blacklist->GetVersion(&version_major, &version_minor)) {
       std::string version_string =
           base::UintToString(static_cast<unsigned>(version_major)) +
           "." +
@@ -690,7 +690,7 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
   }
 }
 
-GpuBlacklist* GpuDataManager::GetGpuBlacklist() {
+GpuBlacklist* GpuDataManager::GetGpuBlacklist() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (user_flags_.ignore_gpu_blacklist())
     return NULL;
