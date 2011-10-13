@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
+#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -22,6 +23,10 @@ class WebstorePrivateApi {
   // Allows you to set the ProfileSyncService the function will use for
   // testing purposes.
   static void SetTestingProfileSyncService(ProfileSyncService* service);
+
+  // Allows you to override the WebstoreInstaller delegate for testing.
+  static void SetWebstoreInstallerDelegateForTesting(
+      WebstoreInstaller::Delegate* delegate);
 };
 
 // TODO(asargent): this is being deprecated in favor of

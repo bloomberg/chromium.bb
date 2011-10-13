@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
+#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/syncable_service.h"
@@ -206,6 +207,7 @@ class ExtensionService
   const FilePath& install_directory() const { return install_directory_; }
 
   AppsPromo* apps_promo() { return &apps_promo_; }
+  WebstoreInstaller* webstore_installer() { return &webstore_installer_; }
 
   // Whether this extension can run in an incognito window.
   virtual bool IsIncognitoEnabled(const std::string& extension_id) const;
@@ -484,7 +486,6 @@ class ExtensionService
   // This method is public because ExtensionServiceBackend can post to here.
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error,
-                                int type,
                                 bool be_noisy);
 
   // ExtensionHost of background page calls this method right after its render
@@ -786,6 +787,9 @@ class ExtensionService
 
   // Manages the promotion of the web store.
   AppsPromo apps_promo_;
+
+  // Coordinates the extension download and install process from the gallery.
+  WebstoreInstaller webstore_installer_;
 
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;

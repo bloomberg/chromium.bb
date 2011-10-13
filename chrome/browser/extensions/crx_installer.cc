@@ -125,6 +125,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       create_app_shortcut_(false),
       page_index_(-1),
       frontend_weak_(frontend_weak),
+      profile_(frontend_weak->profile()),
       client_(client),
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false),
@@ -173,11 +174,11 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
 }
 
 void CrxInstaller::InstallUserScript(const FilePath& source_file,
-                                     const GURL& original_url) {
-  DCHECK(!original_url.is_empty());
+                                     const GURL& download_url) {
+  DCHECK(!download_url.is_empty());
 
   source_file_ = source_file;
-  original_url_ = original_url;
+  download_url_ = download_url;
 
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
@@ -189,7 +190,7 @@ void CrxInstaller::InstallUserScript(const FilePath& source_file,
 void CrxInstaller::ConvertUserScriptOnFileThread() {
   std::string error;
   scoped_refptr<Extension> extension =
-      ConvertUserScriptToExtension(source_file_, original_url_, &error);
+      ConvertUserScriptToExtension(source_file_, download_url_, &error);
   if (!extension) {
     ReportFailureFromFileThread(error);
     return;
@@ -261,7 +262,7 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
     // will be set.  In this case, check that it was served with the
     // right mime type.  Make an exception for file URLs, which come
     // from the users computer and have no headers.
-    if (!original_url_.SchemeIsFile() &&
+    if (!download_url_.SchemeIsFile() &&
         apps_require_extension_mime_type_ &&
         original_mime_type_ != Extension::kMimeType) {
       *error = base::StringPrintf(
@@ -288,7 +289,7 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
       // host (or a subdomain of the host) the download happened from.  There's
       // no way for us to verify that the app controls any other hosts.
       URLPattern pattern(UserScript::kValidUserScriptSchemes);
-      pattern.SetHost(original_url_.host());
+      pattern.SetHost(download_url_.host());
       pattern.SetMatchSubdomains(true);
 
       URLPatternSet patterns = extension_->web_extent();

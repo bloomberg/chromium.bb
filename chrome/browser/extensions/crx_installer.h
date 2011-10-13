@@ -102,7 +102,7 @@ class CrxInstaller
 
   // Convert the specified user script into an extension and install it.
   void InstallUserScript(const FilePath& source_file,
-                         const GURL& original_url);
+                         const GURL& download_url);
 
   // Convert the specified web app into an extension and install it.
   void InstallWebApp(const WebApplicationInfo& web_app);
@@ -111,8 +111,8 @@ class CrxInstaller
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
-  const GURL& original_url() const { return original_url_; }
-  void set_original_url(const GURL& val) { original_url_ = val; }
+  const GURL& download_url() const { return download_url_; }
+  void set_download_url(const GURL& val) { download_url_ = val; }
 
   Extension::Location install_source() const { return install_source_; }
   void set_install_source(Extension::Location source) {
@@ -134,6 +134,14 @@ class CrxInstaller
 
   bool is_gallery_install() const { return is_gallery_install_; }
   void set_is_gallery_install(bool val) { is_gallery_install_ = val; }
+
+  // The original download URL should be set when the WebstoreInstaller is
+  // tracking the installation. The WebstoreInstaller uses this URL to match
+  // failure notifications to the extension.
+  const GURL& original_download_url() const { return original_download_url_; }
+  void set_original_download_url(const GURL& url) {
+    original_download_url_ = url;
+  }
 
   // If |apps_require_extension_mime_type_| is set to true, be sure to set
   // |original_mime_type_| as well.
@@ -157,6 +165,8 @@ class CrxInstaller
   void set_page_index(int page_index) {
     page_index_ = page_index;
   }
+
+  Profile* profile() { return profile_; }
 
  private:
   friend class ExtensionUpdaterTest;
@@ -203,7 +213,7 @@ class CrxInstaller
   FilePath source_file_;
 
   // The URL the file was downloaded from.
-  GURL original_url_;
+  GURL download_url_;
 
   // The directory extensions are installed to.
   FilePath install_directory_;
@@ -235,6 +245,9 @@ class CrxInstaller
   // Whether the install originated from the gallery.
   bool is_gallery_install_;
 
+  // The download URL, before redirects, if this is a gallery install.
+  GURL original_download_url_;
+
   // Whether to create an app shortcut after successful installation. This is
   // set based on the user's selection in the UI and can only ever be true for
   // apps.
@@ -264,6 +277,9 @@ class CrxInstaller
 
   // The frontend we will report results back to.
   base::WeakPtr<ExtensionService> frontend_weak_;
+
+  // The Profile where the extension is being installed in.
+  Profile* profile_;
 
   // The client we will work with to do the installation. This can be NULL, in
   // which case the install is silent.

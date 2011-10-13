@@ -11,6 +11,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
@@ -375,22 +377,17 @@ void WebstoreInlineInstaller::InstallUIProceed() {
   entry->use_app_installed_bubble = true;
   CrxInstaller::SetWhitelistEntry(id_, entry);
 
-  GURL install_url(extension_urls::GetWebstoreInstallUrl(
-      id_, g_browser_process->GetApplicationLocale()));
+  Profile* profile = Profile::FromBrowserContext(
+      tab_contents()->browser_context());
 
-  NavigationController& controller = tab_contents()->controller();
-  // TODO(mihaip): we pretend like the referrer is the gallery in order to pass
-  // the checks in ExtensionService::IsDownloadFromGallery. We should instead
-  // pass the real referrer, track that this is an inline install in the
-  // whitelist entry and look that up when checking that this is a valid
-  // download.
-  GURL referrer(extension_urls::GetWebstoreItemDetailURLPrefix() + id_);
-  controller.LoadURL(install_url, referrer, content::PAGE_TRANSITION_LINK,
-                     std::string());
+  WebstoreInstaller* installer =
+      profile->GetExtensionService()->webstore_installer();
+  installer->InstallExtension(id_, NULL,
+                              WebstoreInstaller::FLAG_OVERRIDE_REFERRER);
 
   // TODO(mihaip): the success message should happen later, when the extension
-  // is actually downloaded and installed (when NOTIFICATION_EXTENSION_INSTALLED
-  // or NOTIFICATION_EXTENSION_INSTALL_ERROR fire).
+  // is actually downloaded and installed (by using the callbacks on
+  // ExtensionInstaller::Delegate).
   CompleteInstall("");
 }
 

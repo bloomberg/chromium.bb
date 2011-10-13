@@ -367,6 +367,10 @@ enum NotificationType {
   // the source is a Profile.
   NOTIFICATION_EXTENSION_LOADED,
 
+  // An error occured while attempting to load an extension. The details are a
+  // string with details about why the load failed.
+  NOTIFICATION_EXTENSION_LOAD_ERROR,
+
   // Sent when attempting to load a new extension, but they are disabled. The
   // details are an Extension*, and the source is a Profile*.
   NOTIFICATION_EXTENSION_UPDATE_DISABLED,

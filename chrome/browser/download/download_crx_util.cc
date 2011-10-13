@@ -72,8 +72,10 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
         download_item.GetURL(), download_item.referrer_url());
     installer->set_original_mime_type(download_item.original_mime_type());
     installer->set_apps_require_extension_mime_type(true);
-    installer->set_original_url(download_item.GetURL());
+    installer->set_download_url(download_item.GetURL());
     installer->set_is_gallery_install(is_gallery_download);
+    if (is_gallery_download)
+      installer->set_original_download_url(download_item.original_url());
     installer->set_allow_silent_install(is_gallery_download);
     installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
     installer->InstallCrx(download_item.full_path());

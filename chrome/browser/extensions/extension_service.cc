@@ -378,8 +378,7 @@ void ExtensionServiceBackend::ReportExtensionLoadError(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (frontend_.get())
     frontend_->ReportExtensionLoadError(
-        extension_path, error, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-        true /* alert_on_error */);
+        extension_path, error, true /* alert_on_error */);
 }
 
 void ExtensionServiceBackend::OnLoadSingleExtension(
@@ -606,6 +605,7 @@ ExtensionService::ExtensionService(Profile* profile,
       app_notification_manager_(new AppNotificationManager(profile)),
       permissions_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       apps_promo_(profile->GetPrefs()),
+      webstore_installer_(profile),
       event_routers_initialized_(false),
       extension_warnings_(profile) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -819,7 +819,7 @@ bool ExtensionService::UpdateExtension(
   if (extension && extension->from_webstore())
     installer->set_is_gallery_install(true);
   installer->set_delete_source(true);
-  installer->set_original_url(download_url);
+  installer->set_download_url(download_url);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
   installer->InstallCrx(extension_path);
 
@@ -1168,11 +1168,7 @@ void ExtensionService::LoadExtensionFromCommandLine(
       &error));
 
   if (!extension) {
-    ReportExtensionLoadError(
-        extension_path,
-        error,
-        chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-        true);
+    ReportExtensionLoadError(extension_path, error, true);
     return;
   }
 
@@ -1470,10 +1466,7 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
   }
 
   if (!extension) {
-    ReportExtensionLoadError(info.extension_path,
-                             error,
-                             chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                             false);
+    ReportExtensionLoadError(info.extension_path, error, false);
     return;
   }
 
@@ -2796,10 +2789,9 @@ void ExtensionService::OnExternalExtensionFileFound(
 void ExtensionService::ReportExtensionLoadError(
     const FilePath& extension_path,
     const std::string &error,
-    int type,
     bool be_noisy) {
   NotificationService* service = NotificationService::current();
-  service->Notify(type,
+  service->Notify(chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
                   Source<Profile>(profile_),
                   Details<const std::string>(&error));
 

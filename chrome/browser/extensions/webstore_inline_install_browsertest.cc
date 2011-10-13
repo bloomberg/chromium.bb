@@ -57,8 +57,8 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
  protected:
   GURL GenerateTestServerUrl(const std::string& domain,
                              const std::string& page_filename) {
-   GURL page_url = test_server()->GetURL(
-          "files/extensions/api_test/webstore_inline_install/" + page_filename);
+    GURL page_url = test_server()->GetURL(
+        "files/extensions/api_test/webstore_inline_install/" + page_filename);
 
     GURL::Replacements replace_host;
     replace_host.SetHostStr(domain);

@@ -1233,6 +1233,8 @@
         'browser/extensions/webstore_inline_installer.h',
         'browser/extensions/webstore_install_helper.cc',
         'browser/extensions/webstore_install_helper.h',
+        'browser/extensions/webstore_installer.cc',
+        'browser/extensions/webstore_installer.h',
         'browser/external_protocol/external_protocol_handler.cc',
         'browser/external_protocol/external_protocol_handler.h',
         'browser/external_protocol/external_protocol_observer.cc',

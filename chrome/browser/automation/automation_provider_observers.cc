@@ -571,6 +571,8 @@ ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
+                 NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
@@ -607,6 +609,7 @@ void ExtensionReadyNotificationObserver::Observe(
         return;
       break;
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
+    case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR:
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
       break;
     default:

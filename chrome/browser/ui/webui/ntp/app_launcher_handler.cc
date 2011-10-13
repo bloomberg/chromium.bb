@@ -371,6 +371,12 @@ void AppLauncherHandler::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
+      CrxInstaller* crx_installer = Source<CrxInstaller>(source).ptr();
+      if (!Profile::FromWebUI(web_ui_)->IsSameProfile(crx_installer->profile()))
+        return;
+      // Fall Through.
+    }
+    case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR: {
       attempted_bookmark_app_install_ = false;
       break;
     }
@@ -536,6 +542,8 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     registrar_.Add(this, chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
         Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+        Source<CrxInstaller>(NULL));
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
         Source<Profile>(profile));
   }
 

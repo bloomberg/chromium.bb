@@ -95,12 +95,20 @@ DictionaryValue* CreateLoginResult(Profile* profile) {
   return dictionary;
 }
 
+WebstoreInstaller::Delegate* test_webstore_installer_delegate = NULL;
+
 }  // namespace
 
 // static
 void WebstorePrivateApi::SetTestingProfileSyncService(
     ProfileSyncService* service) {
   test_sync_service = service;
+}
+
+// static
+void WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(
+    WebstoreInstaller::Delegate* delegate) {
+  test_webstore_installer_delegate = delegate;
 }
 
 // static
@@ -361,18 +369,13 @@ bool CompleteInstallFunction::RunImpl() {
     return false;
   }
 
-  GURL install_url(extension_urls::GetWebstoreInstallUrl(
-      id, g_browser_process->GetApplicationLocale()));
-
-  // The download url for the given |id| is now contained in |url|. We
-  // navigate the current (calling) tab to this url which will result in a
-  // download starting. Once completed it will go through the normal extension
-  // install flow. The above call to SetWhitelistedInstallId will bypass the
-  // normal permissions install dialog.
-  NavigationController& controller =
-      dispatcher()->delegate()->GetAssociatedTabContents()->controller();
-  controller.LoadURL(install_url, source_url(), content::PAGE_TRANSITION_LINK,
-                     std::string());
+  // The extension will install through the normal extension install flow, but
+  // the above call to SetWhitelistedInstallId will bypass the normal
+  // permissions install dialog.
+  WebstoreInstaller* installer =
+      profile()->GetExtensionService()->webstore_installer();
+  installer->InstallExtension(
+      id, test_webstore_installer_delegate, WebstoreInstaller::FLAG_NONE);
 
   return true;
 }
