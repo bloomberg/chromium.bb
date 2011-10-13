@@ -355,7 +355,7 @@ def SetUpArgumentBits(env):
                   'within ChromeOS chroot')
   if env.Bit('cros_chroot'):
     sysroot = os.environ.get('SYSROOT')
-    if sysroot is None or not os.path.exists(sysroot)):
+    if sysroot is None or not os.path.exists(sysroot):
       print "Running inside  ChromiumOS chroot.\n"\
           "You need to export a valid SYSROOT env var\n"
       sys.exit(-1)
