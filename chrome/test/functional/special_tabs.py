@@ -164,8 +164,8 @@ class SpecialTabsTest(pyauto.PyUITest):
     # OVERRIDE - different title for Google Chrome vs. Chromium.
     'chrome://terms': {
       'title': 'Google Chrome Terms of Service',
-      'CSP': False
     },
+    'chrome://tasks': { 'title': 'Task Manager - Google Chrome' },
   }
   broken_google_special_url_tabs = {}
 
@@ -173,7 +173,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     # OVERRIDE - different title for Google Chrome OS vs. Chromium OS.
     'chrome://terms': {
       'title': 'Google Chrome OS Terms',
-      'CSP': False
     },
   }
   broken_google_chromeos_special_url_tabs = {}
@@ -303,7 +302,8 @@ class SpecialTabsTest(pyauto.PyUITest):
         """)
       logging.debug('has csp %s, result %s.' % (not no_csp, result))
       if no_csp:
-        self.assertEqual(result, 'executed');
+        self.assertEqual(result, 'executed',
+                         msg='Got %s for %s' % (result, url))
       else:
         self.assertEqual(result, 'blocked');
 
