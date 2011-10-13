@@ -35,6 +35,7 @@ class ExtensionMenuManagerTest : public testing::Test {
   ExtensionMenuManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
+        manager_(&profile_),
         next_id_(1) {
   }
 
@@ -55,6 +56,7 @@ class ExtensionMenuManagerTest : public testing::Test {
   }
 
  protected:
+  TestingProfile profile_;
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
@@ -333,7 +335,7 @@ TEST_F(ExtensionMenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   UnloadedExtensionInfo details(
       extension1, extension_misc::UNLOAD_REASON_DISABLE);
   notifier->Notify(chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                   Source<Profile>(NULL),
+                   Source<Profile>(&profile_),
                    Details<UnloadedExtensionInfo>(&details));
   ASSERT_EQ(NULL, manager_.MenuItems(extension1->id()));
   ASSERT_EQ(1u, manager_.MenuItems(extension2->id())->size());

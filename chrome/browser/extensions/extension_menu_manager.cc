@@ -92,9 +92,9 @@ void ExtensionMenuItem::AddChild(ExtensionMenuItem* item) {
   children_.push_back(item);
 }
 
-ExtensionMenuManager::ExtensionMenuManager() {
+ExtensionMenuManager::ExtensionMenuManager(Profile* profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile));
 }
 
 ExtensionMenuManager::~ExtensionMenuManager() {
@@ -449,11 +449,9 @@ void ExtensionMenuManager::ExecuteCommand(
 void ExtensionMenuManager::Observe(int type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
+
   // Remove menu items for disabled/uninstalled extensions.
-  if (type != chrome::NOTIFICATION_EXTENSION_UNLOADED) {
-    NOTREACHED();
-    return;
-  }
   const Extension* extension =
       Details<UnloadedExtensionInfo>(details)->extension;
   if (ContainsKey(context_items_, extension->id())) {

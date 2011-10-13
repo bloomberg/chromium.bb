@@ -194,7 +194,7 @@ class ExtensionMenuItem {
 // This class keeps track of menu items added by extensions.
 class ExtensionMenuManager : public NotificationObserver {
  public:
-  ExtensionMenuManager();
+  explicit ExtensionMenuManager(Profile* profile);
   virtual ~ExtensionMenuManager();
 
   // Returns the ids of extensions which have menu items registered.
