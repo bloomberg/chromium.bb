@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ class FileChooser_Dev : public Resource {
   ///
   /// @return PP_OK_COMPLETIONPENDING if request to show the dialog was
   /// successful, another error code from pp_errors.h on failure.
-  int32_t Show(const CompletionCallback& cc);
+  virtual int32_t Show(const CompletionCallback& cc);
 
   /// After a successful completion callback call from Show, this method may be
   /// used to query the chosen files.  It should be called in a loop until it
@@ -65,7 +65,7 @@ class FileChooser_Dev : public Resource {
   /// PP_FileSystemType_External.  If the user chose no files or cancelled the
   /// dialog, then this method will simply return an is_null() FileRef the
   /// first time it is called.
-  FileRef GetNextChosenFile() const;
+  virtual FileRef GetNextChosenFile() const;
 };
 
 }  // namespace pp

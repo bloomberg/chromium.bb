@@ -252,6 +252,10 @@
         'cpp/private/instance_private.h',
         'cpp/private/var_private.cc',
         'cpp/private/var_private.h',
+
+        # Trusted interfaces.
+        'cpp/trusted/file_chooser_trusted.cc',
+        'cpp/trusted/file_chooser_trusted.h',
       ],
       'conditions': [
         ['OS=="win"', {
