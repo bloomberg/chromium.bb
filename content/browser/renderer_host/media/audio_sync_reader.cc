@@ -21,8 +21,21 @@ AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory)
 AudioSyncReader::~AudioSyncReader() {
 }
 
+bool AudioSyncReader::DataReady() {
+  return !media::IsUnknownDataSize(
+      shared_memory_,
+      media::PacketSizeSizeInBytes(shared_memory_->created_size()));
+}
+
 // media::AudioOutputController::SyncReader implementations.
 void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
+  if (bytes != static_cast<uint32>(media::AudioOutputController::kPauseMark)) {
+    // Store unknown length of data into buffer, so we later
+    // can find out if data became available.
+    media::SetUnknownDataSize(
+        shared_memory_,
+        media::PacketSizeSizeInBytes(shared_memory_->created_size()));
+  }
   socket_->Send(&bytes, sizeof(bytes));
 }
 
@@ -38,7 +51,7 @@ uint32 AudioSyncReader::Read(void* data, uint32 size) {
   // Optimization: if renderer is "new" one that writes length of data we can
   // stop yielding the moment length is written -- not ideal solution,
   // but better than nothing.
-  while (media::IsUnknownDataSize(shared_memory_, max_size) &&
+  while (!DataReady() &&
          ((base::Time::Now() - previous_call_time_).InMilliseconds() <
           kMinIntervalBetweenReadCallsInMs)) {
     base::PlatformThread::YieldCurrentThread();

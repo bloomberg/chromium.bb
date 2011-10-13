@@ -30,6 +30,7 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   virtual void UpdatePendingBytes(uint32 bytes);
   virtual uint32 Read(void* data, uint32 size);
   virtual void Close();
+  virtual bool DataReady();
 
   bool Init();
   bool PrepareForeignSocketHandle(base::ProcessHandle process_handle,
