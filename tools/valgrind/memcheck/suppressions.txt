@@ -4622,6 +4622,19 @@
    fun:_ZN22AppNotificationStorage6CreateERK8FilePath
 }
 {
+   bug_99304
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2v88internal8SkipList6UpdateEPhi
+   fun:_ZN2v88internal10PagedSpace11AllocateRawEi
+   fun:_ZN2v88internal12Deserializer8AllocateEiPNS0_5SpaceEi
+   fun:_ZN2v88internal12Deserializer10ReadObjectEiPNS0_5SpaceEPPNS0_6ObjectE
+   fun:_ZN2v88internal12Deserializer9ReadChunkEPPNS0_6ObjectES4_iPh
+   fun:_ZN2v88internal12Deserializer10ReadObjectEiPNS0_5SpaceEPPNS0_6ObjectE
+   fun:_ZN2v88internal12Deserializer9ReadChunkEPPNS0_6ObjectES4_iPh
+   fun:_ZN2v88internal12Deserializer13VisitPointersEPPNS0_6ObjectES4_
+}
+{
    bug_99307
    Memcheck:Value4
    fun:modp_b64_encode
