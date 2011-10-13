@@ -99,7 +99,7 @@
 									<reference key="NSMenu" ref="110575045"/>
 									<bool key="NSIsDisabled">YES</bool>
 									<bool key="NSIsHidden">YES</bool>
-									<string key="NSTitle">^IDS_SYNC_START_SYNC_BUTTON_LABEL</string>
+									<string key="NSTitle">^IDS_SYNC_MENU_PRE_SYNCED_LABEL$IDS_PRODUCT_NAME</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="353210768"/>
