@@ -64,7 +64,6 @@ class ChromeURLContentSecurityPolicyExceptionSet
 #if defined(OS_CHROMEOS)
     insert(chrome::kChromeUIActiveDownloadsHost);
     insert(chrome::kChromeUIEnterpriseEnrollmentHost);
-    insert(chrome::kChromeUIImageBurnerHost);
     insert(chrome::kChromeUIKeyboardOverlayHost);
     insert(chrome::kChromeUIOobeHost);
     insert(chrome::kChromeUIMobileSetupHost);

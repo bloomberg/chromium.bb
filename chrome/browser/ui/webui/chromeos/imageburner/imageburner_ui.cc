@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
@@ -25,114 +26,75 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 
-namespace imageburner {
+namespace {
 
-static const char kPropertyDevicePath[] = "devicePath";
-static const char kPropertyFilePath[] = "filePath";
-static const char kPropertyLabel[] = "label";
-static const char kPropertyPath[] = "path";
+const char kPropertyDevicePath[] = "devicePath";
+const char kPropertyFilePath[] = "filePath";
+const char kPropertyLabel[] = "label";
+const char kPropertyPath[] = "path";
 
 // Name for hwid in machine statistics.
 const std::string kHwidStatistic = "hardware_class";
 
-
-static const char kImageZipFileName[] = "chromeos_image.bin.zip";
+const char kImageZipFileName[] = "chromeos_image.bin.zip";
 
 // 3.9GB. It is less than 4GB because true device size ussually varies a little.
-static const uint64 kMinDeviceSize =
-    static_cast<uint64>(3.9) * 1000 * 1000 * 1000;
+const uint64 kMinDeviceSize = static_cast<uint64>(3.9) * 1000 * 1000 * 1000;
 
 // Link displayed on imageburner ui.
-static const std::string kMoreInfoLink =
+const std::string kMoreInfoLink =
     "http://www.chromium.org/chromium-os/chromiumos-design-docs/recovery-mode";
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// UIHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
+ChromeWebUIDataSource *CreateImageburnerUIHTMLSource() {
+  ChromeWebUIDataSource *source =
+      new ChromeWebUIDataSource(chrome::kChromeUIImageBurnerHost);
 
-class UIHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  UIHTMLSource()
-      : DataSource(chrome::kChromeUIImageBurnerHost, MessageLoop::current()) {
-  }
+    source->AddLocalizedString("headerTitle", IDS_IMAGEBURN_HEADER_TITLE);
+    source->AddLocalizedString("headerDescription",
+                               IDS_IMAGEBURN_HEADER_DESCRIPTION);
+    source->AddLocalizedString("headerLink", IDS_IMAGEBURN_HEADER_LINK);
+    source->AddLocalizedString("statusDevicesNone",
+                               IDS_IMAGEBURN_NO_DEVICES_STATUS);
+    source->AddLocalizedString("warningDevicesNone",
+                               IDS_IMAGEBURN_NO_DEVICES_WARNING);
+    source->AddLocalizedString("statusDevicesMultiple",
+                               IDS_IMAGEBURN_MUL_DEVICES_STATUS);
+    source->AddLocalizedString("statusDeviceUSB",
+                               IDS_IMAGEBURN_USB_DEVICE_STATUS);
+    source->AddLocalizedString("statusDeviceSD",
+                               IDS_IMAGEBURN_SD_DEVICE_STATUS);
+    source->AddLocalizedString("warningDevices",
+                               IDS_IMAGEBURN_DEVICES_WARNING);
+    source->AddLocalizedString("statusNoConnection",
+                               IDS_IMAGEBURN_NO_CONNECTION_STATUS);
+    source->AddLocalizedString("warningNoConnection",
+                               IDS_IMAGEBURN_NO_CONNECTION_WARNING);
+    source->AddLocalizedString("statusNoSpace",
+                               IDS_IMAGEBURN_INSUFFICIENT_SPACE_STATUS);
+    source->AddLocalizedString("warningNoSpace",
+                               IDS_IMAGEBURN_INSUFFICIENT_SPACE_WARNING);
+    source->AddLocalizedString("statusDownloading",
+                               IDS_IMAGEBURN_DOWNLOADING_STATUS);
+    source->AddLocalizedString("statusUnzip", IDS_IMAGEBURN_UNZIP_STATUS);
+    source->AddLocalizedString("statusBurn", IDS_IMAGEBURN_BURN_STATUS);
+    source->AddLocalizedString("statusError", IDS_IMAGEBURN_ERROR_STATUS);
+    source->AddLocalizedString("statusSuccess", IDS_IMAGEBURN_SUCCESS_STATUS);
+    source->AddLocalizedString("warningSuccess", IDS_IMAGEBURN_SUCCESS_DESC);
+    source->AddLocalizedString("title", IDS_IMAGEBURN_PAGE_TITLE);
+    source->AddLocalizedString("confirmButton", IDS_IMAGEBURN_CONFIRM_BUTTON);
+    source->AddLocalizedString("cancelButton", IDS_IMAGEBURN_CANCEL_BUTTON);
+    source->AddLocalizedString("retryButton", IDS_IMAGEBURN_RETRY_BUTTON);
+    source->AddString("moreInfoLink", ASCIIToUTF16(kMoreInfoLink));
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) {
-    DictionaryValue localized_strings;
-    localized_strings.SetString("headerTitle",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_HEADER_TITLE));
-    localized_strings.SetString("headerDescription",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_HEADER_DESCRIPTION));
-    localized_strings.SetString("headerLink",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_HEADER_LINK));
-    localized_strings.SetString("statusDevicesNone",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_NO_DEVICES_STATUS));
-    localized_strings.SetString("warningDevicesNone",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_NO_DEVICES_WARNING));
-    localized_strings.SetString("statusDevicesMultiple",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_MUL_DEVICES_STATUS));
-    localized_strings.SetString("statusDeviceUSB",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_USB_DEVICE_STATUS));
-    localized_strings.SetString("statusDeviceSD",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_SD_DEVICE_STATUS));
-    localized_strings.SetString("warningDevices",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_DEVICES_WARNING));
-    localized_strings.SetString("statusNoConnection",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_NO_CONNECTION_STATUS));
-    localized_strings.SetString("warningNoConnection",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_NO_CONNECTION_WARNING));
-    localized_strings.SetString("statusNoSpace",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_INSUFFICIENT_SPACE_STATUS));
-    localized_strings.SetString("warningNoSpace",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_INSUFFICIENT_SPACE_WARNING));
-    localized_strings.SetString("statusDownloading",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_DOWNLOADING_STATUS));
-    localized_strings.SetString("statusUnzip",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_UNZIP_STATUS));
-    localized_strings.SetString("statusBurn",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_BURN_STATUS));
-    localized_strings.SetString("statusError",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_ERROR_STATUS));
-    localized_strings.SetString("statusSuccess",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_SUCCESS_STATUS));
-    localized_strings.SetString("warningSuccess",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_SUCCESS_DESC));
-    localized_strings.SetString("title",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_PAGE_TITLE));
-    localized_strings.SetString("confirmButton",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_CONFIRM_BUTTON));
-    localized_strings.SetString("cancelButton",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_CANCEL_BUTTON));
-    localized_strings.SetString("retryButton",
-        l10n_util::GetStringUTF16(IDS_IMAGEBURN_RETRY_BUTTON));
+    source->set_json_path("strings.js");
+    source->add_resource_path("image_burner.js", IDR_IMAGEBURNER_JS);
+    source->set_default_resource(IDR_IMAGEBURNER_HTML);
+    return source;
+}
 
-    localized_strings.SetString("moreInfoLink", kMoreInfoLink);
+}  // namespace
 
-    SetFontAndTextDirection(&localized_strings);
-
-    static const base::StringPiece imageburn_html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_IMAGEBURNER_HTML));
-    std::string full_html = jstemplate_builder::GetTemplatesHtml(
-        imageburn_html, &localized_strings, "more-info-link");
-
-    SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
-  }
-
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
-
- private:
-  virtual ~UIHTMLSource() {}
-
-  DISALLOW_COPY_AND_ASSIGN(UIHTMLSource);
-};
+namespace imageburner {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -670,7 +632,8 @@ bool WebUIHandler::CheckNetwork() {
 ImageBurnUI::ImageBurnUI(TabContents* contents) : ChromeWebUI(contents) {
   imageburner::WebUIHandler* handler = new imageburner::WebUIHandler(contents);
   AddMessageHandler((handler)->Attach(this));
-  imageburner::UIHTMLSource* html_source = new imageburner::UIHTMLSource();
+
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  profile->GetChromeURLDataManager()->AddDataSource(
+      CreateImageburnerUIHTMLSource());
 }
