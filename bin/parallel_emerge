@@ -456,11 +456,6 @@ class DepGraphGenerator(object):
     emerge.depgraph = depgraph
     emerge.favorites = favorites
 
-    # Is it impossible to honor the user's request? Bail!
-    if not success:
-      depgraph.display_problems()
-      sys.exit(1)
-
     # Prime and flush emerge caches.
     root = emerge.settings["ROOT"]
     vardb = emerge.trees[root]["vartree"].dbapi
