@@ -376,8 +376,8 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
 
   // Sent when an extension is about to be installed so we can (in the case of
-  // themes) alert the user with a loading dialog. The source is the download
-  // manager and the details are the download url.
+  // themes) alert the user with a loading dialog. The source is a Profile
+  // and the details are the download url.
   NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
 
   // Sent when an extension install turns out to not be a theme.

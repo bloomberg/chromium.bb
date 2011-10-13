@@ -4,8 +4,6 @@
 //
 // Download code which handles CRX files (extensions, themes, apps, ...).
 
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -57,10 +55,8 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
   CHECK(service);
   NotificationService* nservice = NotificationService::current();
   GURL nonconst_download_url = download_item.GetURL();
-  DownloadManager* download_manager =
-      DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager();
   nservice->Notify(chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL,
-                   Source<DownloadManager>(download_manager),
+                   Source<Profile>(profile),
                    Details<GURL>(&nonconst_download_url));
 
   scoped_refptr<CrxInstaller> installer(

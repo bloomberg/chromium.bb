@@ -27,7 +27,7 @@ ExtensionToolbarModel::ExtensionToolbarModel(ExtensionService* service)
                  Source<Profile>(service_->profile()));
   registrar_.Add(
       this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      NotificationService::AllSources());
+      Source<ExtensionPrefs>(service_->extension_prefs()));
 
   visible_icon_count_ = prefs_->GetInteger(prefs::kExtensionToolbarSize);
 }

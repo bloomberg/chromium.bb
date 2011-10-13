@@ -4035,17 +4035,19 @@ void Browser::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_EXTENSION_READY_FOR_INSTALL: {
-      // Handle EXTENSION_READY_FOR_INSTALL for last active tabbed browser.
-      if (BrowserList::FindTabbedBrowser(profile(), true) != this)
-        break;
-
-      // We only want to show the loading dialog for themes, but we don't want
-      // to wait until unpack to find out an extension is a theme, so we test
-      // the download_url GURL instead. This means that themes in the extensions
-      // gallery won't get the loading dialog.
-      GURL download_url = *(Details<GURL>(details).ptr());
-      if (ExtensionService::IsDownloadFromMiniGallery(download_url))
-        window()->ShowThemeInstallBubble();
+      Profile* profile = Source<Profile>(source).ptr();
+      if (profile_->IsSameProfile(profile)) {
+        // Handle EXTENSION_READY_FOR_INSTALL for last active tabbed browser.
+        if (BrowserList::FindTabbedBrowser(profile, true) == this) {
+          // We only want to show the loading dialog for themes, but we don't
+          // want to wait until unpack to find out an extension is a theme, so
+          // we test the download_url GURL instead. This means that themes in
+          // the extensions gallery won't get the loading dialog.
+          GURL download_url = *(Details<GURL>(details).ptr());
+          if (ExtensionService::IsDownloadFromMiniGallery(download_url))
+            window()->ShowThemeInstallBubble();
+        }
+      }
       break;
     }
 
