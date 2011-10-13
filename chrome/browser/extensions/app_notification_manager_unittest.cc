@@ -89,7 +89,13 @@ TEST_F(AppNotificationManagerTest, Simple) {
 
 // Test that AppNotificationManager correctly listens to EXTENSION_UNINSTALLED
 // notifications and removes associated data when that happens.
-TEST_F(AppNotificationManagerTest, ExtensionUninstall) {
+#ifdef ADDRESS_SANITIZER
+// This test crashes under ASan, see http://crbug.com/100156
+#define MAYBE_ExtensionUninstall DISABLED_ExtensionUninstall
+#else
+#define MAYBE_ExtensionUninstall ExtensionUninstall
+#endif
+TEST_F(AppNotificationManagerTest, MAYBE_ExtensionUninstall) {
   // Add some items from two test extension ids.
   std::string id1 = extension_test_util::MakeId("id1");
   std::string id2 = extension_test_util::MakeId("id2");
