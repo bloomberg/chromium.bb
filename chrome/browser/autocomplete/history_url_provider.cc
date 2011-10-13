@@ -381,8 +381,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
       ((params->input.type() != AutocompleteInput::UNKNOWN) ||
        (classifier.type() == VisitClassifier::UNVISITED_INTRANET) ||
        !params->trim_http ||
-       url_util::FindAndCompareScheme(UTF16ToUTF8(params->input.text()),
-                                      chrome::kHttpsScheme, NULL));
+       (AutocompleteInput::NumNonHostComponents(params->input.parts()) > 0));
   AutocompleteMatch what_you_typed_match(SuggestExactInput(params->input,
                                                            params->trim_http));
 

@@ -324,13 +324,9 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // thus mean this can't be navigated to (e.g. "1.2.3.4:garbage"), and we save
   // handling legal port numbers until after the "IP address" determination
   // below.
-  if (parts->port.is_nonempty()) {
-    int port;
-    if (!base::StringToInt(text.substr(parts->port.begin, parts->port.len),
-                           &port) ||
-        (port < 0) || (port > 65535))
-      return QUERY;
-  }
+  if (url_parse::ParsePort(text.c_str(), parts->port) ==
+      url_parse::PORT_INVALID)
+    return QUERY;
 
   // Now that we've ruled out all schemes other than http or https and done a
   // little more sanity checking, the presence of a scheme means this is likely
@@ -339,18 +335,20 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     return URL;
 
   // See if the host is an IP address.
-  if (host_info.family == url_canon::CanonHostInfo::IPV4) {
-    // If the user originally typed a host that looks like an IP address (a
-    // dotted quad), they probably want to open it.  If the original input was
-    // something else (like a single number), they probably wanted to search for
-    // it, unless they explicitly typed a scheme.  This is true even if the URL
-    // appears to have a path: "1.2/45" is more likely a search (for the answer
-    // to a math problem) than a URL.
-    if (host_info.num_ipv4_components == 4)
-      return URL;
-    return desired_tld.empty() ? UNKNOWN : REQUESTED_URL;
-  }
   if (host_info.family == url_canon::CanonHostInfo::IPV6)
+    return URL;
+  // If the user originally typed a host that looks like an IP address (a
+  // dotted quad), they probably want to open it.  If the original input was
+  // something else (like a single number), they probably wanted to search for
+  // it, unless they explicitly typed a scheme.  This is true even if the URL
+  // appears to have a path: "1.2/45" is more likely a search (for the answer
+  // to a math problem) than a URL.  However, if there are more non-host
+  // components, then maybe this really was intended to be a navigation.  For
+  // this reason we only check the dotted-quad case here, and save the "other
+  // IP addresses" case for after we check the number of non-host components
+  // below.
+  if ((host_info.family == url_canon::CanonHostInfo::IPV4) &&
+      (host_info.num_ipv4_components == 4))
     return URL;
 
   // Presence of a password means this is likely a URL.  Note that unless the
@@ -364,18 +362,24 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (parts->path.len == 1)
     return URL;
 
-  // If we reach here with a username, but no port or path, our input looks like
-  // "user@host".  Because there is no scheme explicitly specified, we think
-  // this is more likely an email address than an HTTP auth attempt.  Hence, we
-  // search by default and let users correct us on a case-by-case basis.
-  if (parts->username.is_nonempty() && !parts->port.is_nonempty() &&
-      !parts->path.is_nonempty())
-    return UNKNOWN;
-
-  // If the host has a known TLD, it's probably a URL.  Also special-case
-  // "localhost" as a known hostname.
-  if ((registry_length != 0) || (host == ASCIIToUTF16("localhost")))
+  // If there is more than one recognized non-host component, this is likely to
+  // be a URL, even if the TLD is unknown (in which case this is likely an
+  // intranet URL).
+  if (NumNonHostComponents(*parts) > 1)
     return URL;
+
+  // If the host has a known TLD, it's probably a URL, with the following
+  // exceptions:
+  // * Any "IP addresses" that make it here are more likely searches
+  //   (see above).
+  // * If we reach here with a username, our input looks like "user@host[.tld]".
+  //   Because there is no scheme explicitly specified, we think this is more
+  //   likely an email address than an HTTP auth attempt.  Hence, we search by
+  //   default and let users correct us on a case-by-case basis.
+  // Note that we special-case "localhost" as a known hostname.
+  if ((host_info.family != url_canon::CanonHostInfo::IPV4) &&
+      ((registry_length != 0) || (host == ASCIIToUTF16("localhost"))))
+    return parts->username.is_nonempty() ? UNKNOWN : URL;
 
   // If we reach this point, we know there's no known TLD on the input, so if
   // the user wishes to add a desired_tld, the fixup code will oblige; thus this
@@ -383,8 +387,11 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (!desired_tld.empty())
     return REQUESTED_URL;
 
-  // No scheme, username, password, port, path, and no known TLD on the host.
+  // No scheme, password, port, path, and no known TLD on the host.
   // This could be:
+  // * An "incomplete IP address"; likely a search (see above).
+  // * An email-like input like "user@host", where "host" has no known TLD.
+  //   It's not clear what the user means here and searching seems reasonable.
   // * A single word "foo"; possibly an intranet site, but more likely a search.
   //   This is ideally an UNKNOWN, and we can let the Alternate Nav URL code
   //   catch our mistakes.
@@ -454,6 +461,26 @@ string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
           AutocompleteInput::Parse(url_with_path, string16(), NULL, NULL,
                                    NULL)) ?
       formatted_url : url_with_path;
+}
+
+// static
+int AutocompleteInput::NumNonHostComponents(const url_parse::Parsed& parts) {
+  int num_nonhost_components = 0;
+  if (parts.scheme.is_nonempty())
+    ++num_nonhost_components;
+  if (parts.username.is_nonempty())
+    ++num_nonhost_components;
+  if (parts.password.is_nonempty())
+    ++num_nonhost_components;
+  if (parts.port.is_nonempty())
+    ++num_nonhost_components;
+  if (parts.path.is_nonempty())
+    ++num_nonhost_components;
+  if (parts.query.is_nonempty())
+    ++num_nonhost_components;
+  if (parts.ref.is_nonempty())
+    ++num_nonhost_components;
+  return num_nonhost_components;
 }
 
 void AutocompleteInput::UpdateText(const string16& text,

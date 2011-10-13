@@ -445,7 +445,9 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   RunTest(ASCIIToUTF16("\\"), string16(), false, NULL, 0);
   RunTest(ASCIIToUTF16("#"), string16(), false, NULL, 0);
   RunTest(ASCIIToUTF16("%20"), string16(), false, NULL, 0);
-  RunTest(WideToUTF16(L"\uff65@s"), string16(), false, NULL, 0);
+  const std::string fixup_crash[] = {"http://%EF%BD%A5@s/"};
+  RunTest(WideToUTF16(L"\uff65@s"), string16(), false, fixup_crash,
+          arraysize(fixup_crash));
   RunTest(WideToUTF16(L"\u2015\u2015@ \uff7c"), string16(), false, NULL, 0);
 
   // Fixing up "file:" should result in an inline autocomplete offset of just
@@ -548,30 +550,40 @@ TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
 
 TEST_F(HistoryURLProviderTest, TreatEmailsAsSearches) {
   // Visiting foo.com should not make this string be treated as a navigation.
-  RunTest(ASCIIToUTF16("user@foo.com"), string16(), false, NULL, 0);
+  // That means the result should be scored at 1200 ("what you typed") and not
+  // 1400+.
+  const std::string expected[] = {"http://user@foo.com/"};
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("user@foo.com"), string16(),
+                                  false, expected, arraysize(expected)));
+  EXPECT_EQ(1200, matches_[0].relevance);
 }
 
 TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
   struct TestCase {
     const char* input;
-    bool has_output;
+    int relevance;
   } test_cases[] = {
-    { "fooey", false },
-    { "fooey/", true },
-    { "fooey/a", false },
-    { "fooey/a b", false },
-    { "gooey", true },
-    { "gooey/", true },
-    { "gooey/a", true },
-    { "gooey/a b", true },
+    { "fooey", 0 },
+    { "fooey/", 1200 },     // 1200 for URL would still navigate by default.
+    { "fooey/a", 1200 },    // 1200 for UNKNOWN would not.
+    { "fooey/a b", 1200 },  // Also UNKNOWN.
+    { "gooey", 1410 },
+    { "gooey/", 1410 },
+    { "gooey/a", 1400 },
+    { "gooey/a b", 1400 },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
-    const std::string output[1] = {
-      URLFixerUpper::FixupURL(test_cases[i].input, std::string()).spec()
-    };
-    RunTest(ASCIIToUTF16(test_cases[i].input), string16(), false,
-        test_cases[i].has_output ? output : NULL,
-        test_cases[i].has_output ? 1 : 0);
+    SCOPED_TRACE(test_cases[i].input);
+    if (test_cases[i].relevance == 0) {
+      RunTest(ASCIIToUTF16(test_cases[i].input), string16(), false, NULL, 0);
+    } else {
+      const std::string output[] = {
+        URLFixerUpper::FixupURL(test_cases[i].input, std::string()).spec()
+      };
+      ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16(test_cases[i].input),
+                              string16(), false, output, arraysize(output)));
+      EXPECT_EQ(test_cases[i].relevance, matches_[0].relevance);
+    }
   }
 }
 

@@ -264,6 +264,9 @@ class AutocompleteInput {
       const GURL& url,
       const string16& formatted_url);
 
+  // Returns the number of non-empty components in |parts| besides the host.
+  static int NumNonHostComponents(const url_parse::Parsed& parts);
+
   // User-provided text to be completed.
   const string16& text() const { return text_; }
 
