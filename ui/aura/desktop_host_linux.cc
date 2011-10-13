@@ -98,8 +98,14 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       DCHECK_EQ(xdisplay_, xev->xconfigure.display);
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
       DCHECK_EQ(xwindow_, xev->xconfigure.event);
-      desktop_->OnHostResized(gfx::Size(xev->xconfigure.width,
-                                        xev->xconfigure.height));
+
+      // It's possible that the X window may be resized by some other means than
+      // from within aura (e.g. the X window manager can change the size). Make
+      // sure the desktop size is maintained properly.
+      gfx::Size size(xev->xconfigure.width, xev->xconfigure.height);
+      if (bounds_.size() != size)
+        bounds_.set_size(size);
+      desktop_->OnHostResized(size);
       handled = true;
       break;
     }

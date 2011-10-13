@@ -26,6 +26,7 @@ namespace aura {
 
 class DesktopDelegate;
 class DesktopHost;
+class DesktopObserver;
 class MouseEvent;
 
 // Desktop is responsible for hosting a set of windows.
@@ -100,6 +101,10 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   // It must never be stored.
   MessageLoop::Dispatcher* GetDispatcher();
 
+  // Add/remove observer.
+  void AddObserver(DesktopObserver* observer);
+  void RemoveObserver(DesktopObserver* observer);
+
   static Desktop* GetInstance();
 
  private:
@@ -127,6 +132,8 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate {
   // Are we in the process of being destroyed? Used to avoid processing during
   // destruction.
   bool in_destructor_;
+
+  ObserverList<DesktopObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Desktop);
 };

@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/desktop_delegate.h"
 #include "ui/aura/desktop_host.h"
+#include "ui/aura/desktop_observer.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
@@ -98,6 +99,7 @@ void Desktop::OnHostResized(const gfx::Size& size) {
   gfx::Rect bounds(0, 0, size.width(), size.height());
   compositor_->WidgetSizeChanged(size);
   window_->SetBounds(bounds);
+  FOR_EACH_OBSERVER(DesktopObserver, observers_, OnDesktopResized(size));
 }
 
 void Desktop::ScheduleDraw() {
@@ -127,6 +129,8 @@ void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
     active_window_->GetFocusManager()->SetFocusedWindow(
         to_focus ? to_focus : active_window_);
   }
+  FOR_EACH_OBSERVER(DesktopObserver, observers_,
+                    OnActiveWindowChanged(active_window_));
 }
 
 void Desktop::ActivateTopmostWindow() {
@@ -162,6 +166,14 @@ void Desktop::WindowDestroying(Window* window) {
 
 MessageLoop::Dispatcher* Desktop::GetDispatcher() {
   return host_.get();
+}
+
+void Desktop::AddObserver(DesktopObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Desktop::RemoveObserver(DesktopObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 // static

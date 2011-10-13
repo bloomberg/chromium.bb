@@ -37,6 +37,8 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/desktop.h"
+#include "ui/aura/desktop_observer.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #endif
@@ -72,6 +74,9 @@ class KeyboardWidget
       public ExtensionFunctionDispatcher::Delegate,
 #if defined(OS_CHROMEOS)
       public chromeos::input_method::InputMethodManager::VirtualKeyboardObserver,
+#endif
+#if defined(USE_AURA)
+      public aura::DesktopObserver,
 #endif
       public NotificationObserver,
       public views::Widget::Observer,
@@ -124,6 +129,11 @@ class KeyboardWidget
       chromeos::input_method::InputMethodManager* manager,
       const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
       const std::string& virtual_keyboard_layout);
+#endif
+
+#if defined(USE_AURA)
+  // Overridden from aura::DesktopObserver.
+  virtual void OnDesktopResized(const gfx::Size& new_size) OVERRIDE;
 #endif
 
   // Overridden from NotificationObserver.
@@ -213,6 +223,10 @@ KeyboardWidget::KeyboardWidget()
       chromeos::input_method::InputMethodManager::GetInstance();
   manager->AddVirtualKeyboardObserver(this);
 #endif
+
+#if defined(USE_AURA)
+  aura::Desktop::GetInstance()->AddObserver(this);
+#endif
 }
 
 KeyboardWidget::~KeyboardWidget() {
@@ -225,6 +239,9 @@ KeyboardWidget::~KeyboardWidget() {
   manager->RemoveVirtualKeyboardObserver(this);
 #endif
 
+#if defined(USE_AURA)
+  aura::Desktop::GetInstance()->RemoveObserver(this);
+#endif
   // TODO(sad): Do anything else?
 }
 
@@ -406,6 +423,12 @@ void KeyboardWidget::VirtualKeyboardChanged(
   const GURL& url = virtual_keyboard.GetURLForLayout(virtual_keyboard_layout);
   dom_view_->LoadURL(url);
   VLOG(1) << "VirtualKeyboardChanged: Switched to " << url.spec();
+}
+#endif
+
+#if defined(USE_AURA)
+void KeyboardWidget::OnDesktopResized(const gfx::Size& new_size) {
+  ResetBounds();
 }
 #endif
 

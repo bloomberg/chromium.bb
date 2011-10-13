@@ -6,6 +6,7 @@
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/desktop.h"
+#include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/hit_test.h"
@@ -758,6 +759,58 @@ TEST_F(WindowTest, Deactivate) {
   EXPECT_FALSE(w1->IsActive());
   EXPECT_TRUE(w2->IsActive());
   EXPECT_EQ(w2.get(), parent->children()[1]);
+}
+
+class ObserverTest : public WindowTest,
+                     public DesktopObserver {
+ public:
+  ObserverTest()
+      : active_(NULL) {
+  }
+
+  virtual ~ObserverTest() {}
+
+  Window* active() const { return active_; }
+
+  void Reset() {
+    active_ = NULL;
+  }
+
+ private:
+  virtual void SetUp() OVERRIDE {
+    WindowTest::SetUp();
+    Desktop::GetInstance()->AddObserver(this);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    Desktop::GetInstance()->RemoveObserver(this);
+    WindowTest::TearDown();
+  }
+
+  virtual void OnActiveWindowChanged(Window* active) OVERRIDE {
+    active_ = active;
+  }
+
+  Window* active_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObserverTest);
+};
+
+TEST_F(ObserverTest, WindowActivationObserve) {
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> w2(CreateTestWindowWithId(2, NULL));
+  scoped_ptr<Window> w3(CreateTestWindowWithId(3, w1.get()));
+
+  EXPECT_EQ(NULL, active());
+
+  w2->Activate();
+  EXPECT_EQ(w2.get(), active());
+
+  w3->Activate();
+  EXPECT_EQ(w2.get(), active());
+
+  w1->Activate();
+  EXPECT_EQ(w1.get(), active());
 }
 
 }  // namespace test
