@@ -172,24 +172,24 @@ cr.define('print_preview', function() {
 
     /**
      * @return {number} The value of the selected margin option.
-     * @private
      */
-    get selectedMarginsValue_() {
-      return this.marginList_.options[this.marginList_.selectedIndex].value;
+    get selectedMarginsValue() {
+      var val = this.marginList_.options[this.marginList_.selectedIndex].value;
+      return parseInt(val, 10);
     },
 
     /**
      * @return {boolean} True if default margins are selected.
      */
     isDefaultMarginsSelected: function() {
-      return this.selectedMarginsValue_ == MarginSettings.MARGINS_VALUE_DEFAULT;
+      return this.selectedMarginsValue == MarginSettings.MARGINS_VALUE_DEFAULT;
     },
 
     /**
      * @return {boolean} True if no margins are selected.
      */
     isNoMarginsSelected: function() {
-      return this.selectedMarginsValue_ ==
+      return this.selectedMarginsValue ==
           MarginSettings.MARGINS_VALUE_NO_MARGINS;
     },
 
@@ -197,7 +197,7 @@ cr.define('print_preview', function() {
      * @return {boolean} True if custom margins are selected.
      */
     isCustomMarginsSelected: function() {
-      return this.selectedMarginsValue_ == MarginSettings.MARGINS_VALUE_CUSTOM;
+      return this.selectedMarginsValue == MarginSettings.MARGINS_VALUE_CUSTOM;
     },
 
     /**
@@ -360,7 +360,7 @@ cr.define('print_preview', function() {
       else if (this.isCustomMarginsSelected())
         this.onCustomMarginsSelected_();
 
-      this.lastSelectedOption_ = this.selectedMarginsValue_;
+      this.lastSelectedOption_ = this.selectedMarginsValue;
     },
 
     /**

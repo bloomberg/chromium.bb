@@ -355,10 +355,12 @@ function getSettings() {
        'printWithCloudPrint': printWithCloudPrint,
        'isFirstRequest' : false,
        'headerFooterEnabled': headerFooterSettings.hasHeaderFooter(),
-       'defaultMarginsSelected': marginSettings.isDefaultMarginsSelected(),
-       'margins': marginSettings.customMargins,
+       'marginsType': marginSettings.selectedMarginsValue,
        'requestID': -1,
        'generateDraftData': generateDraftData};
+
+  if (marginSettings.isCustomMarginsSelected())
+    settings['marginsCustom'] = marginSettings.customMargins;
 
   var printerList = $('printer-list');
   var selectedPrinter = printerList.selectedIndex;

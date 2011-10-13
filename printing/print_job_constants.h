@@ -19,7 +19,6 @@ PRINTING_EXPORT extern const char kSettingColor[];
 PRINTING_EXPORT extern const char kSettingContentHeight[];
 PRINTING_EXPORT extern const char kSettingContentWidth[];
 PRINTING_EXPORT extern const char kSettingCopies[];
-PRINTING_EXPORT extern const char kSettingDefaultMarginsSelected[];
 PRINTING_EXPORT extern const char kSettingDeviceName[];
 PRINTING_EXPORT extern const char kSettingDuplexMode[];
 PRINTING_EXPORT extern const char kSettingGenerateDraftData[];
@@ -38,7 +37,8 @@ PRINTING_EXPORT extern const char kSettingMarginBottom[];
 PRINTING_EXPORT extern const char kSettingMarginLeft[];
 PRINTING_EXPORT extern const char kSettingMarginRight[];
 PRINTING_EXPORT extern const char kSettingMarginTop[];
-PRINTING_EXPORT extern const char kSettingMargins[];
+PRINTING_EXPORT extern const char kSettingMarginsCustom[];
+PRINTING_EXPORT extern const char kSettingMarginsType[];
 PRINTING_EXPORT extern const char kSettingPageRange[];
 PRINTING_EXPORT extern const char kSettingPageRangeFrom[];
 PRINTING_EXPORT extern const char kSettingPageRangeTo[];
@@ -110,6 +110,14 @@ enum ColorModels {
   PROCESSCOLORMODEL_CMYK,  // Used in canon printer ppds.
   PROCESSCOLORMODEL_GREYSCALE,  // Used in canon printer ppds.
   PROCESSCOLORMODEL_RGB,  // Used in canon printer ppds
+};
+
+// What kind of margins to use.
+enum MarginType {
+  DEFAULT_MARGINS,  // Default varies depending on headers being enabled or not
+  NO_MARGINS,
+  CUSTOM_MARGINS,
+  PRINTABLE_AREA_MARGINS,
 };
 
 }  // namespace printing

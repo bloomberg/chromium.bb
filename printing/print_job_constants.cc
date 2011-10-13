@@ -36,10 +36,6 @@ const char kSettingContentWidth[] = "contentWidth";
 // Number of copies.
 const char kSettingCopies[] = "copies";
 
-// Key that specifies if the default margins have been selected or not.
-// True if selected, false if not.
-const char kSettingDefaultMarginsSelected[] = "defaultMarginsSelected";
-
 // Device name: Unique printer identifier.
 const char kSettingDeviceName[] = "deviceName";
 
@@ -99,8 +95,12 @@ const char kSettingMarginRight[] = "marginRight";
 // Key that specifies the top margin of the page.
 const char kSettingMarginTop[] = "marginTop";
 
-// Key that specifies the array of custom margins as set by the user.
-const char kSettingMargins[] = "margins";
+// Key that specifies the dictionary of custom margins as set by the user.
+const char kSettingMarginsCustom[] = "marginsCustom";
+
+// Key that specifies the type of margins to use.  Value is an int from the
+// MarginType enum.
+const char kSettingMarginsType[] = "marginsType";
 
 // A page range.
 const char kSettingPageRange[] = "pageRange";

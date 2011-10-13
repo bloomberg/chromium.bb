@@ -164,37 +164,36 @@ void SetMarginsForPDF(PrintMsg_Print_Params* settings) {
 // Get the margins option selected and set custom margins appropriately.
 void SetCustomMarginsIfSelected(const DictionaryValue& job_settings,
                                 PrintMsg_PrintPages_Params* settings) {
-  bool default_margins_selected;
-  if (!job_settings.GetBoolean(printing::kSettingDefaultMarginsSelected,
-                               &default_margins_selected)) {
+  int margin_type = printing::DEFAULT_MARGINS;
+  if (!job_settings.GetInteger(printing::kSettingMarginsType, &margin_type)) {
     NOTREACHED();
-    default_margins_selected = true;
   }
 
-  if (default_margins_selected)
+  if (margin_type == printing::DEFAULT_MARGINS)
     return;
-
-  DictionaryValue* custom_margins;
-  if (!job_settings.GetDictionary(printing::kSettingMargins,
-                                  &custom_margins)) {
-    NOTREACHED();
-    return;
-  }
 
   double custom_margin_top_in_points = 0;
   double custom_margin_left_in_points = 0;
   double custom_margin_right_in_points = 0;
   double custom_margin_bottom_in_points = 0;
-  if (!custom_margins->GetDouble(printing::kSettingMarginTop,
-                                 &custom_margin_top_in_points) ||
-      !custom_margins->GetDouble(printing::kSettingMarginLeft,
-                                 &custom_margin_left_in_points) ||
-      !custom_margins->GetDouble(printing::kSettingMarginRight,
-                                 &custom_margin_right_in_points) ||
-      !custom_margins->GetDouble(printing::kSettingMarginBottom,
-                                 &custom_margin_bottom_in_points)) {
-    NOTREACHED();
-    return;
+  if (margin_type == printing::CUSTOM_MARGINS) {
+    DictionaryValue* custom_margins;
+    if (!job_settings.GetDictionary(printing::kSettingMarginsCustom,
+                                    &custom_margins)) {
+      NOTREACHED();
+      return;
+    }
+    if (!custom_margins->GetDouble(printing::kSettingMarginTop,
+                                   &custom_margin_top_in_points) ||
+        !custom_margins->GetDouble(printing::kSettingMarginLeft,
+                                   &custom_margin_left_in_points) ||
+        !custom_margins->GetDouble(printing::kSettingMarginRight,
+                                   &custom_margin_right_in_points) ||
+        !custom_margins->GetDouble(printing::kSettingMarginBottom,
+                                   &custom_margin_bottom_in_points)) {
+      NOTREACHED();
+      return;
+    }
   }
 
   int dpi = GetDPI(&settings->params);
