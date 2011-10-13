@@ -5083,7 +5083,7 @@ TabContentsWrapper* Browser::TabContentsFactory(
 }
 
 bool Browser::OpenInstant(WindowOpenDisposition disposition) {
-  if (!instant() || !instant()->is_active() || !instant()->IsCurrent() ||
+  if (!instant() || !instant()->is_active() || !instant()->PrepareForCommit() ||
       disposition == NEW_BACKGROUND_TAB) {
     // NEW_BACKGROUND_TAB results in leaving the omnibox open, so we don't
     // attempt to use the instant preview.

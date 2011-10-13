@@ -189,6 +189,7 @@ extern const char kImport[];
 extern const char kImportFromFile[];
 extern const char kIncognito[];
 extern const char kInstantFieldTrial[];
+extern const char kInstantFieldTrialHidden[];
 extern const char kInstantFieldTrialInstant[];
 extern const char kInstantURL[];
 extern const char kKeepAliveForTest[];

@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -58,6 +59,23 @@ const int kUpdateBoundsDelayMS = 1000;
 
 // If this status code is seen instant is disabled for the specified host.
 const int kHostBlacklistStatusCode = 403;
+
+enum PreviewUsageType {
+  PREVIEW_CREATED,
+  PREVIEW_DELETED,
+  PREVIEW_LOADED,
+  PREVIEW_SHOWN,
+  PREVIEW_COMMITTED,
+  PREVIEW_NUM_TYPES,
+};
+
+void AddPreviewUsageForHistogram(TemplateURLID template_url_id,
+                                 PreviewUsageType usage) {
+  DCHECK(0 <= usage && usage < PREVIEW_NUM_TYPES);
+  // Only track the histogram for the instant loaders, for now.
+  if (template_url_id)
+    UMA_HISTOGRAM_ENUMERATION("Instant.Previews", usage, PREVIEW_NUM_TYPES);
+}
 
 }  // namespace
 
@@ -553,6 +571,8 @@ void InstantLoader::TabContentsDelegateImpl::OnInstantSupportDetermined(
     loader_->PageFinishedLoading();
   else
     loader_->PageDoesntSupportInstant(user_typed_before_load_);
+
+  AddPreviewUsageForHistogram(loader_->template_url_id(), PREVIEW_LOADED);
 }
 
 void InstantLoader::TabContentsDelegateImpl
@@ -580,6 +600,8 @@ InstantLoader::~InstantLoader() {
 
   // Delete the TabContents before the delegate as the TabContents holds a
   // reference to the delegate.
+  if (preview_contents())
+    AddPreviewUsageForHistogram(template_url_id_, PREVIEW_DELETED);
   preview_contents_.reset();
 }
 
@@ -633,7 +655,7 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
   if (template_url) {
     DCHECK(template_url_id_ == template_url->id());
     if (!created_preview_contents) {
-      if (is_waiting_for_load()) {
+      if (is_determining_if_page_supports_instant()) {
         // The page hasn't loaded yet. We'll send the script down when it does.
         frame_load_observer_->set_text(user_text_);
         frame_load_observer_->set_verbatim(verbatim);
@@ -680,7 +702,7 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
 
   omnibox_bounds_ = bounds;
   if (preview_contents_.get() && is_showing_instant() &&
-      !is_waiting_for_load()) {
+      !is_determining_if_page_supports_instant()) {
     // Updating the bounds is rather expensive, and because of the async nature
     // of the omnibox the bounds can dance around a bit. Delay the update in
     // hopes of things settling down. To avoid hiding results we grow
@@ -750,6 +772,8 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
     ready_ = false;
   }
   update_bounds_timer_.Stop();
+  AddPreviewUsageForHistogram(template_url_id_,
+      type == INSTANT_COMMIT_DESTROY ? PREVIEW_DELETED : PREVIEW_COMMITTED);
   return preview_contents_.release();
 }
 
@@ -877,6 +901,7 @@ void InstantLoader::ShowPreview() {
   if (!ready_) {
     ready_ = true;
     delegate_->InstantStatusChanged(this);
+    AddPreviewUsageForHistogram(template_url_id_, PREVIEW_SHOWN);
   }
 }
 
@@ -930,7 +955,7 @@ void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
     return;
 
   if (preview_contents_.get() && is_showing_instant() &&
-      (force_if_waiting || !is_waiting_for_load())) {
+      (force_if_waiting || !is_determining_if_page_supports_instant())) {
     last_omnibox_bounds_ = omnibox_bounds_;
     RenderViewHost* host = preview_contents_->render_view_host();
     host->Send(new ChromeViewMsg_SearchBoxResize(
@@ -1015,6 +1040,7 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
       new TabContents(
           tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   preview_contents_.reset(new TabContentsWrapper(new_contents));
+  AddPreviewUsageForHistogram(template_url_id_, PREVIEW_CREATED);
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   SetupPreviewContents(tab_contents);
 
@@ -1044,8 +1070,21 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
   preview_contents_->controller().LoadURL(instant_url, GURL(), transition_type,
                                           std::string());
   RenderViewHost* host = preview_contents_->render_view_host();
-  host->Send(new ChromeViewMsg_SearchBoxChange(
-      host->routing_id(), user_text, verbatim, 0, 0));
+
+  // If user_text is empty, this must be a preload of the search homepage. In
+  // that case, send down a SearchBoxResize message, which will switch the page
+  // to "search results" UI. This avoids flicker when the page is shown with
+  // results. In addition, we don't want the page accidentally causing the
+  // preloaded page to be displayed yet (by calling setSuggestions), so don't
+  // send a SearchBoxChange message.
+  if (user_text.empty()) {
+    host->Send(new ChromeViewMsg_SearchBoxResize(
+        host->routing_id(), GetOmniboxBoundsInTermsOfPreview()));
+  } else {
+    host->Send(new ChromeViewMsg_SearchBoxChange(
+        host->routing_id(), user_text, verbatim, 0, 0));
+  }
+
   frame_load_observer_.reset(new FrameLoadObserver(
       this, preview_contents()->tab_contents(), user_text, verbatim));
 }

@@ -15,28 +15,39 @@
 namespace {
 
 // Field trial IDs of the control and experiment groups. Though they are not
-// literally "const", they are set only once, in Activate() below.
-int g_control_group_id_1 = 0;
-int g_control_group_id_2 = 0;
-int g_experiment_group_id_1 = 0;
-int g_experiment_group_id_2 = 0;
+// literally "const", they are set only once, in Activate() below. See the .h
+// file for what these groups represent.
+int g_instant_control_a = 0;
+int g_instant_control_b = 0;
+int g_instant_experiment_a = 0;
+int g_instant_experiment_b = 0;
+
+int g_hidden_control_a = 0;
+int g_hidden_control_b = 0;
+int g_hidden_experiment_a = 0;
+int g_hidden_experiment_b = 0;
 
 }
 
 // static
 void InstantFieldTrial::Activate() {
   scoped_refptr<base::FieldTrial> trial(
-      new base::FieldTrial("Instant", 1000, "InstantInactive", 2012, 1, 1));
+      new base::FieldTrial("Instant", 1000, "Inactive", 2012, 7, 1));
 
-  // One-time randomization is disabled if the user hasn't opted-in to UMA.
-  if (!base::FieldTrialList::IsOneTimeRandomizationEnabled())
-    return;
-  trial->UseOneTimeRandomization();
+  // Try to give the user a consistent experience, if possible.
+  if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
+    trial->UseOneTimeRandomization();
 
-  g_control_group_id_1 = trial->AppendGroup("InstantControl1", 450);  // 45%
-  g_control_group_id_2 = trial->AppendGroup("InstantControl2", 450);  // 45%
-  g_experiment_group_id_1 = trial->AppendGroup("InstantExperiment1", 50);  // 5%
-  g_experiment_group_id_2 = trial->AppendGroup("InstantExperiment2", 50);  // 5%
+  // Each group is of size 5%.
+  g_instant_control_a = trial->AppendGroup("InstantControlA", 50);
+  g_instant_control_b = trial->AppendGroup("InstantControlB", 50);
+  g_instant_experiment_a = trial->AppendGroup("InstantExperimentA", 50);
+  g_instant_experiment_b = trial->AppendGroup("InstantExperimentB", 50);
+
+  g_hidden_control_a = trial->AppendGroup("HiddenControlA", 50);
+  g_hidden_control_b = trial->AppendGroup("HiddenControlB", 50);
+  g_hidden_experiment_a = trial->AppendGroup("HiddenExperimentA", 50);
+  g_hidden_experiment_b = trial->AppendGroup("HiddenExperimentB", 50);
 }
 
 // static
@@ -46,52 +57,95 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
     std::string switch_value =
         command_line->GetSwitchValueASCII(switches::kInstantFieldTrial);
     if (switch_value == switches::kInstantFieldTrialInstant)
-      return EXPERIMENT1;
+      return INSTANT_EXPERIMENT_A;
+    else if (switch_value == switches::kInstantFieldTrialHidden)
+      return HIDDEN_EXPERIMENT_A;
     else
       return INACTIVE;
   }
 
-  if (!profile || profile->IsOffTheRecord())
-    return INACTIVE;
-
-  const PrefService* prefs = profile->GetPrefs();
-  if (!prefs ||
-      !MetricsServiceHelper::IsMetricsReportingEnabled() ||
-      !prefs->GetBoolean(prefs::kSearchSuggestEnabled) ||
-      prefs->GetBoolean(prefs::kInstantEnabledOnce) ||
-      prefs->IsManagedPreference(prefs::kInstantEnabled)) {
-    return INACTIVE;
-  }
-
   const int group = base::FieldTrialList::FindValue("Instant");
-
   if (group == base::FieldTrial::kNotFinalized ||
       group == base::FieldTrial::kDefaultGroupNumber) {
     return INACTIVE;
   }
 
-  return group == g_control_group_id_1    ? CONTROL1 :
-         group == g_control_group_id_2    ? CONTROL2 :
-         group == g_experiment_group_id_1 ? EXPERIMENT1 :
-         group == g_experiment_group_id_2 ? EXPERIMENT2
-                                          : INACTIVE;
+  if (!profile)
+    return INACTIVE;
+
+  const PrefService* prefs = profile->GetPrefs();
+  if (!prefs ||
+      prefs->GetBoolean(prefs::kInstantEnabledOnce) ||
+      prefs->IsManagedPreference(prefs::kInstantEnabled)) {
+    return INACTIVE;
+  }
+
+  // HIDDEN groups.
+  if (group == g_hidden_control_a)
+    return HIDDEN_CONTROL_A;
+  if (group == g_hidden_control_b)
+    return HIDDEN_CONTROL_B;
+  if (group == g_hidden_experiment_a)
+    return HIDDEN_EXPERIMENT_A;
+  if (group == g_hidden_experiment_b)
+    return HIDDEN_EXPERIMENT_B;
+
+  // INSTANT group users must meet some extra requirements.
+  if (profile->IsOffTheRecord() ||
+      !MetricsServiceHelper::IsMetricsReportingEnabled() ||
+      !prefs->GetBoolean(prefs::kSearchSuggestEnabled)) {
+    return INACTIVE;
+  }
+
+  // INSTANT groups.
+  if (group == g_instant_control_a)
+    return INSTANT_CONTROL_A;
+  if (group == g_instant_control_b)
+    return INSTANT_CONTROL_B;
+  if (group == g_instant_experiment_a)
+    return INSTANT_EXPERIMENT_A;
+  if (group == g_instant_experiment_b)
+    return INSTANT_EXPERIMENT_B;
+
+  NOTREACHED();
+  return INACTIVE;
 }
 
 // static
 bool InstantFieldTrial::IsExperimentGroup(Profile* profile) {
   Group group = GetGroup(profile);
-  return group == EXPERIMENT1 || group == EXPERIMENT2;
+  return group == INSTANT_EXPERIMENT_A || group == INSTANT_EXPERIMENT_B ||
+         group == HIDDEN_EXPERIMENT_A || group == HIDDEN_EXPERIMENT_B;
+}
+
+// static
+bool InstantFieldTrial::IsInstantExperiment(Profile* profile) {
+  Group group = GetGroup(profile);
+  return group == INSTANT_EXPERIMENT_A || group == INSTANT_EXPERIMENT_B;
+}
+
+// static
+bool InstantFieldTrial::IsHiddenExperiment(Profile* profile) {
+  Group group = GetGroup(profile);
+  return group == HIDDEN_EXPERIMENT_A || group == HIDDEN_EXPERIMENT_B;
 }
 
 // static
 std::string InstantFieldTrial::GetGroupName(Profile* profile) {
   switch (GetGroup(profile)) {
-    case INACTIVE:    return std::string();
-    case CONTROL1:    return "_InstantControl1";
-    case CONTROL2:    return "_InstantControl2";
-    case EXPERIMENT1: return "_InstantExperiment1";
-    case EXPERIMENT2: return "_InstantExperiment2";
+    case INACTIVE: return std::string();
+
+    case INSTANT_CONTROL_A: return "_InstantControlA";
+    case INSTANT_CONTROL_B: return "_InstantControlB";
+    case INSTANT_EXPERIMENT_A: return "_InstantExperimentA";
+    case INSTANT_EXPERIMENT_B: return "_InstantExperimentB";
+
+    case HIDDEN_CONTROL_A: return "_HiddenControlA";
+    case HIDDEN_CONTROL_B: return "_HiddenControlB";
+    case HIDDEN_EXPERIMENT_A: return "_HiddenExperimentA";
+    case HIDDEN_EXPERIMENT_B: return "_HiddenExperimentB";
   }
+
   NOTREACHED();
   return std::string();
 }
@@ -99,12 +153,19 @@ std::string InstantFieldTrial::GetGroupName(Profile* profile) {
 // static
 std::string InstantFieldTrial::GetGroupAsUrlParam(Profile* profile) {
   switch (GetGroup(profile)) {
-    case INACTIVE:    return std::string();
-    case CONTROL1:    return "ix=c1&";
-    case CONTROL2:    return "ix=c2&";
-    case EXPERIMENT1: return "ix=e1&";
-    case EXPERIMENT2: return "ix=e2&";
+    case INACTIVE: return std::string();
+
+    case INSTANT_CONTROL_A: return "ix=ica&";
+    case INSTANT_CONTROL_B: return "ix=icb&";
+    case INSTANT_EXPERIMENT_A: return "ix=iea&";
+    case INSTANT_EXPERIMENT_B: return "ix=ieb&";
+
+    case HIDDEN_CONTROL_A: return "ix=hca&";
+    case HIDDEN_CONTROL_B: return "ix=hcb&";
+    case HIDDEN_EXPERIMENT_A: return "ix=hea&";
+    case HIDDEN_EXPERIMENT_B: return "ix=heb&";
   }
+
   NOTREACHED();
   return std::string();
 }

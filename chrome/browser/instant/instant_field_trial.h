@@ -11,29 +11,47 @@
 
 class Profile;
 
-// This class manages the Instant field trial. Each user is in exactly one of
-// three field trial groups: Inactive, Control or Experiment.
-// - Inactive users are those who have played with the Instant option in the
-//   Preferences page, or those for whom group policy provides an override, or
-//   those with an incognito profile, etc. The field trial is inactive for such
-//   users, so their Instant preference setting is respected. The field trial is
-//   also initially inactive (until activated in BrowserMain), so testing is not
-//   affected by the field trial.
-// - Control and Experiment are all the other users, i.e., those who have never
-//   touched the Preferences option. Some percentage of these users are chosen
-//   into the Experiment group and get Instant enabled automatically. The rest
-//   fall into the Control group; for them, Instant remains disabled by default.
-// - Control and Experiment are further split into two subgroups each, in order
-//   to detect bias between them (when analyzing metrics). The subgroups are
-//   treated identically for all other purposes.
+// This class manages the Instant field trial.
+//
+// If a user (profile) has an explicit preference for Instant, having disabled
+// or enabled it in the Preferences page, or by having a group policy override,
+// the field trial is INACTIVE for them. There is no change in behaviour. Their
+// Instant preference is respected. Incognito profiles are also INACTIVE.
+//
+// The following mutually exclusive groups each select a small random sample of
+// the remaining users:
+//
+// INSTANT_EXPERIMENT: Instant is enabled, but only for search. Instant is also
+//     preloaded. If the user hasn't opted to send metrics (UMA) data, they are
+//     bounced back to INACTIVE.
+//
+// INSTANT_CONTROL: Instant remains disabled, as is default. If the user hasn't
+//     opted to send metrics (UMA) data, they are bounced back to INACTIVE.
+//
+// HIDDEN_EXPERIMENT: Instant is enabled in "search only" mode, but queries are
+//     issued only when the user presses <Enter>. No previews are shown.
+//
+// HIDDEN_CONTROL: Instant remains disabled, as is default.
+//
+// Users not chosen into any of the above groups are INACTIVE.
+//
+// Each non-INACTIVE group is split into two equal subgroups, to detect bias
+// between them when analyzing metrics. The subgroups are denoted by "_A" and
+// "_B" suffixes, and are treated identically for all other purposes.
 class InstantFieldTrial {
  public:
   enum Group {
     INACTIVE,
-    CONTROL1,
-    CONTROL2,
-    EXPERIMENT1,
-    EXPERIMENT2,
+
+    INSTANT_CONTROL_A,
+    INSTANT_CONTROL_B,
+    INSTANT_EXPERIMENT_A,
+    INSTANT_EXPERIMENT_B,
+
+    HIDDEN_CONTROL_A,
+    HIDDEN_CONTROL_B,
+    HIDDEN_EXPERIMENT_A,
+    HIDDEN_EXPERIMENT_B,
   };
 
   // Activate the field trial. Before this call, all calls to GetGroup will
@@ -43,8 +61,14 @@ class InstantFieldTrial {
   // Return the field trial group this profile belongs to.
   static Group GetGroup(Profile* profile);
 
-  // Check if the group is either of the two experiment subgroups.
+  // Check if the user is in one of the EXPERIMENT groups.
   static bool IsExperimentGroup(Profile* profile);
+
+  // Check if the user is in the INSTANT_EXPERIMENT group.
+  static bool IsInstantExperiment(Profile* profile);
+
+  // Check if the user is in the HIDDEN_EXPERIMENT group.
+  static bool IsHiddenExperiment(Profile* profile);
 
   // Returns a string describing the user's group. Can be added to histogram
   // names, to split histograms by field trial groups.

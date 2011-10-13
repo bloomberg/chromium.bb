@@ -676,6 +676,8 @@ const char kIncognito[]                     = "incognito";
 // Control the Instant field trial. Valid values are defined below. If an
 // unknown value is supplied on the command line, the field trial is disabled.
 const char kInstantFieldTrial[]             = "instant-field-trial";
+// The field trial is forced into the HIDDEN_EXPERIMENT group.
+const char kInstantFieldTrialHidden[]       = "hidden";
 // The field trial is forced into the INSTANT_EXPERIMENT group.
 const char kInstantFieldTrialInstant[]      = "instant";
 

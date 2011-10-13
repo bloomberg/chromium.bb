@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_loader.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -54,6 +56,7 @@
 #define MAYBE_DontCrashOnBlockedJS DISABLED_DontCrashOnBlockedJS
 #define MAYBE_DontPersistSearchbox DISABLED_DontPersistSearchbox
 #define MAYBE_PreloadsInstant DISABLED_PreloadsInstant
+#define MAYBE_ExperimentEnabled DISABLED_ExperimentEnabled
 #else
 #define MAYBE_OnChangeEvent OnChangeEvent
 #define MAYBE_SetSuggestionsArrayOfStrings SetSuggestionsArrayOfStrings
@@ -73,6 +76,7 @@
 #define MAYBE_DontCrashOnBlockedJS DontCrashOnBlockedJS
 #define MAYBE_DontPersistSearchbox DontPersistSearchbox
 #define MAYBE_PreloadsInstant PreloadsInstant
+#define MAYBE_ExperimentEnabled ExperimentEnabled
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
@@ -837,8 +841,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_PreloadsInstant) {
   location_bar_->FocusLocation(false);
   TabContentsWrapper* tab_contents = browser()->instant()->GetPreviewContents();
   EXPECT_TRUE(tab_contents);
-  EXPECT_FALSE(browser()->instant()->is_active());
-  EXPECT_FALSE(browser()->instant()->is_displayable());
 
   instant_support_observer.Wait();
 
@@ -858,4 +860,79 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_PreloadsInstant) {
   EXPECT_TRUE(browser()->instant()->is_active());
   EXPECT_TRUE(browser()->instant()->is_displayable());
   EXPECT_TRUE(browser()->instant()->IsCurrent());
+}
+
+// Tests the INSTANT experiment of the field trial.
+class InstantFieldTrialInstantTest : public InstantTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitchASCII(switches::kInstantFieldTrial,
+                                    switches::kInstantFieldTrialInstant);
+  }
+};
+
+// Tests that instant is active, even without calling EnableInstant().
+IN_PROC_BROWSER_TEST_F(InstantFieldTrialInstantTest, MAYBE_ExperimentEnabled) {
+  // Check that instant is enabled, despite not setting the preference.
+  Profile* profile = browser()->profile();
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled));
+  EXPECT_TRUE(InstantController::IsEnabled(profile));
+
+  ASSERT_TRUE(test_server()->Start());
+  SetupInstantProvider("search.html");
+  SetupLocationBar();
+  SetupPreview();
+  SetLocationBarText("def");
+
+  // Check that instant is active and showing a preview.
+  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_TRUE(browser()->instant()->is_displayable());
+  EXPECT_TRUE(browser()->instant()->IsCurrent());
+}
+
+// Tests the HIDDEN experiment of the field trial.
+class InstantFieldTrialHiddenTest : public InstantTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitchASCII(switches::kInstantFieldTrial,
+                                    switches::kInstantFieldTrialHidden);
+  }
+};
+
+// Tests that instant is active, even without calling EnableInstant().
+IN_PROC_BROWSER_TEST_F(InstantFieldTrialHiddenTest, MAYBE_ExperimentEnabled) {
+  // Check that instant is enabled, despite not setting the preference.
+  Profile* profile = browser()->profile();
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled));
+  EXPECT_TRUE(InstantController::IsEnabled(profile));
+
+  ASSERT_TRUE(test_server()->Start());
+  SetupInstantProvider("search.html");
+  ui_test_utils::WindowedNotificationObserver instant_support_observer(
+      chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
+      NotificationService::AllSources());
+  SetupLocationBar();
+  WaitForPreviewToNavigate();
+  instant_support_observer.Wait();
+
+  // Type into the omnibox, but don't press <Enter> yet.
+  location_bar_->location_entry()->SetUserText(UTF8ToUTF16("def"));
+
+  // Check that instant is active, but the preview is not showing.
+  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(browser()->instant()->IsCurrent());
+
+  TabContentsWrapper* tab_contents = browser()->instant()->GetPreviewContents();
+  EXPECT_TRUE(tab_contents);
+
+  // Press <Enter> in the omnibox, causing the preview to be committed.
+  SendKey(ui::VKEY_RETURN);
+
+  // The preview contents should now be the active tab contents.
+  EXPECT_FALSE(browser()->instant()->GetPreviewContents());
+  EXPECT_FALSE(browser()->instant()->is_active());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_FALSE(browser()->instant()->IsCurrent());
+  EXPECT_EQ(tab_contents, browser()->GetSelectedTabContentsWrapper());
 }

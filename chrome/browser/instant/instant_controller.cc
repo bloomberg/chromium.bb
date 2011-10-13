@@ -45,8 +45,7 @@ InstantController::InstantController(Profile* profile,
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
   PrefService* service = profile->GetPrefs();
-  if (service &&
-      InstantFieldTrial::GetGroup(profile) == InstantFieldTrial::INACTIVE) {
+  if (service && !InstantFieldTrial::IsExperimentGroup(profile)) {
     // kInstantEnabledOnce was added after instant, set it now to make sure it
     // is correctly set.
     service->SetBoolean(prefs::kInstantEnabledOnce, true);
@@ -159,6 +158,9 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
   tab_contents_ = tab_contents;
   commit_on_mouse_up_ = false;
   last_transition_type_ = match.transition;
+  last_url_ = match.destination_url;
+  last_user_text_ = user_text;
+
   if (!ShouldUseInstant(match)) {
     DestroyPreviewContentsAndLeaveActive();
     return false;
@@ -168,9 +170,16 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
   DCHECK(template_url);  // ShouldUseInstant returns false if no turl.
   if (!loader_.get())
     loader_.reset(new InstantLoader(this, template_url->id()));
+  is_active_ = true;
 
-  if (!is_active_)
-    is_active_ = true;
+  // In some rare cases (involving group policy), Instant can go from the field
+  // trial to normal mode, with no intervening call to DestroyPreviewContents()
+  // This would leave the loader in a weird state, which would manifest if the
+  // user pressed <Enter> without calling Update(). TODO(sreeram): Handle it.
+  if (InstantFieldTrial::IsHiddenExperiment(tab_contents->profile())) {
+    loader_->MaybeLoadInstantURL(tab_contents, template_url);
+    return true;
+  }
 
   UpdateLoader(template_url, match.destination_url, match.transition, user_text,
                verbatim, suggested_text);
@@ -213,6 +222,7 @@ void InstantController::DestroyPreviewContentsAndLeaveActive() {
     is_displayable_ = false;
     delegate_->HideInstant();
   }
+  last_user_text_.clear();
 }
 
 bool InstantController::IsCurrent() {
@@ -220,6 +230,33 @@ bool InstantController::IsCurrent() {
   //                navigation pending case.
   return is_displayable_ && !loader_->IsNavigationPending() &&
       !loader_->needs_reload();
+}
+
+bool InstantController::PrepareForCommit() {
+  // If we are not in the HIDDEN field trial, return the status of the preview.
+  if (!InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()))
+    return IsCurrent();
+
+  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
+      tab_contents_->profile());
+  if (!model)
+    return false;
+
+  const TemplateURL* template_url = model->GetDefaultSearchProvider();
+  if (last_user_text_.empty() ||
+      !IsValidInstantTemplateURL(template_url) ||
+      !loader_.get() ||
+      loader_->template_url_id() != template_url->id() ||
+      loader_->IsNavigationPending() ||
+      loader_->is_determining_if_page_supports_instant()) {
+    return false;
+  }
+
+  // Ignore the suggested text, as we are about to commit the verbatim query.
+  string16 suggested_text;
+  UpdateLoader(template_url, last_url_, last_transition_type_, last_user_text_,
+               true, &suggested_text);
+  return true;
 }
 
 TabContentsWrapper* InstantController::CommitCurrentPreview(

@@ -117,6 +117,12 @@ class InstantLoader : public NotificationObserver {
   // See description above field.
   const string16& user_text() const { return user_text_; }
 
+  // Are we waiting for the preview page to finish loading and to determine if
+  // it supports instant?
+  bool is_determining_if_page_supports_instant() const {
+    return frame_load_observer_.get() != NULL;
+  }
+
  private:
   friend class InstantLoaderManagerTest;
   friend class InstantTest;
@@ -146,11 +152,6 @@ class InstantLoader : public NotificationObserver {
 
   // Returns the bounds of the omnibox in terms of the preview tab contents.
   gfx::Rect GetOmniboxBoundsInTermsOfPreview();
-
-  // Are we waiting for the preview page to finish loading?
-  bool is_waiting_for_load() const {
-    return frame_load_observer_.get() != NULL;
-  }
 
   // Invoked if it the page doesn't really support instant when we thought it
   // did. If |needs_reload| is true, the text changed since the first load and

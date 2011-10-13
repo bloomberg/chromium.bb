@@ -40,7 +40,7 @@ class TemplateURL;
 // by way of |DestroyPreviewContents|, which results in |HideInstant| being
 // invoked on the delegate. Similarly the preview may be committed at any time
 // by invoking |CommitCurrentPreview|, which results in |CommitInstant|
-// being invoked on the delegate.
+// being invoked on the delegate. Also see |PrepareForCommit| below.
 class InstantController : public InstantLoaderDelegate {
  public:
   // Amount of time to wait before starting the instant animation.
@@ -100,6 +100,14 @@ class InstantController : public InstantLoaderDelegate {
   // A return value of false happens if we're in the process of determining if
   // the page supports instant.
   bool IsCurrent();
+
+  // Returns true if the caller should proceed with committing the preview. A
+  // return value of false means that there is no valid preview to commit. This
+  // is used by Browser, when the user presses <Enter>, to decide whether to
+  // load the omnibox contents through Instant or otherwise. This is needed
+  // because calls to |Update| don't necessarily result in a preview being
+  // shown, such as in the HIDDEN field trial.
+  bool PrepareForCommit();
 
   // Invoked when the user does some gesture that should trigger making the
   // current previewed page the permanent page.  Returns the TCW that contains
@@ -245,6 +253,12 @@ class InstantController : public InstantLoaderDelegate {
 
   // List of InstantLoaders to destroy. See ScheduleForDestroy for details.
   ScopedVector<InstantLoader> loaders_to_destroy_;
+
+  // The URL of the most recent match passed to |Update|.
+  GURL last_url_;
+
+  // The most recent user_text passed to |Update|.
+  string16 last_user_text_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };
