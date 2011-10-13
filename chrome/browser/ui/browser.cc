@@ -2878,7 +2878,8 @@ TabContents* Browser::OpenURL(const GURL& url,
                               WindowOpenDisposition disposition,
                               content::PageTransition transition) {
   return OpenURLFromTab(NULL,
-                        OpenURLParams(url, referrer, disposition, transition));
+                        OpenURLParams(url, referrer, disposition, transition,
+                                      false));
 }
 
 TabContents* Browser::OpenURL(const OpenURLParams& params) {
@@ -3304,7 +3305,7 @@ TabContents* Browser::OpenURLFromTab(TabContents* source,
                                      WindowOpenDisposition disposition,
                                      content::PageTransition transition) {
   return OpenURLFromTab(source, OpenURLParams(url, referrer, disposition,
-                                              transition));
+                                              transition, false));
 }
 
 TabContents* Browser::OpenURLFromTab(TabContents* source,
@@ -3319,6 +3320,7 @@ TabContents* Browser::OpenURLFromTab(TabContents* source,
   nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = true;
   nav_params.override_encoding = params.override_encoding;
+  nav_params.is_renderer_initiated = params.is_renderer_initiated;
   browser::Navigate(&nav_params);
 
   return nav_params.target_contents ?

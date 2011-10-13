@@ -226,7 +226,8 @@ void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
   GURL store_url(
       extension_urls::GetWebstoreItemDetailURLPrefix() + extension_->id());
   BrowserList::GetLastActive()->OpenURL(OpenURLParams(
-      store_url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK));
+      store_url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
+      false));
 
   OnResponse(dialog_, GTK_RESPONSE_CLOSE);
 }

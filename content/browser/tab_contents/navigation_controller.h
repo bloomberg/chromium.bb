@@ -180,6 +180,13 @@ class CONTENT_EXPORT NavigationController {
                content::PageTransition type,
                const std::string& extra_headers);
 
+  // Same as LoadURL, but for renderer-initiated navigations.  This state is
+  // important for tracking whether to display pending URLs.
+  void LoadURLFromRenderer(const GURL& url,
+                           const GURL& referrer,
+                           content::PageTransition type,
+                           const std::string& extra_headers);
+
   // Loads the current page if this NavigationController was restored from
   // history and the current page has not loaded yet.
   void LoadIfNecessary();
@@ -331,6 +338,7 @@ class CONTENT_EXPORT NavigationController {
       const GURL& url,
       const GURL& referrer,
       content::PageTransition transition,
+      bool is_renderer_initiated,
       const std::string& extra_headers,
       content::BrowserContext* browser_context);
 

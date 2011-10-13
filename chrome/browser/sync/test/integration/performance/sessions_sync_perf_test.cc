@@ -63,7 +63,7 @@ void SessionsSyncPerfTest::UpdateTabs(int profile) {
     url = NextURL();
     browser->OpenURL(
         OpenURLParams(url, GURL("http://localhost"), CURRENT_TAB,
-        content::PageTransitionFromInt(0)));
+        content::PageTransitionFromInt(0), false));
     urls.push_back(url);
   }
   WaitForTabsToLoad(profile, urls);

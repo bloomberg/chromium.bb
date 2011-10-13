@@ -412,7 +412,8 @@ TabContents* DraggedTabController::OpenURLFromTab(
     WindowOpenDisposition disposition,
     content::PageTransition transition) {
   return OpenURLFromTab(source,
-                        OpenURLParams(url, referrer, disposition, transition));
+                        OpenURLParams(url, referrer, disposition, transition,
+                                      false));
 }
 
 TabContents* DraggedTabController::OpenURLFromTab(TabContents* source,

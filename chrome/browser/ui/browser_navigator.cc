@@ -495,9 +495,15 @@ void Navigate(NavigateParams* params) {
     // Try to handle non-navigational URLs that popup dialogs and such, these
     // should not actually navigate.
     if (!HandleNonNavigationAboutURL(url)) {
-      // Perform the actual navigation.
-      params->target_contents->controller().LoadURL(
-          url, params->referrer, params->transition, extra_headers);
+      // Perform the actual navigation, tracking whether it came from the
+      // renderer.
+      if (params->is_renderer_initiated) {
+        params->target_contents->controller().LoadURLFromRenderer(
+            url, params->referrer, params->transition, extra_headers);
+      } else {
+        params->target_contents->controller().LoadURL(
+            url, params->referrer, params->transition, extra_headers);
+      }
     }
   } else {
     // |target_contents| was specified non-NULL, and so we assume it has already
@@ -545,8 +551,13 @@ void Navigate(NavigateParams* params) {
     } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
         target->GetURL() != params->url) {
       InitializeExtraHeaders(params, NULL, &extra_headers);
-      target->controller().LoadURL(
-          params->url, params->referrer, params->transition, extra_headers);
+      if (params->is_renderer_initiated) {
+        target->controller().LoadURLFromRenderer(
+            params->url, params->referrer, params->transition, extra_headers);
+      } else {
+        target->controller().LoadURL(
+            params->url, params->referrer, params->transition, extra_headers);
+      }
     }
 
     // If the singleton tab isn't already selected, select it.

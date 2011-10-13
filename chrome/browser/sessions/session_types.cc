@@ -66,6 +66,7 @@ NavigationEntry* TabNavigation::ToNavigationEntry(int page_id,
       // Use a transition type of reload so that we don't incorrectly
       // increase the typed count.
       content::PAGE_TRANSITION_RELOAD,
+      false,
       // The extra headers are not sync'ed across sessions.
       std::string(),
       profile);

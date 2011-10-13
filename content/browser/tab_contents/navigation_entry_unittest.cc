@@ -22,7 +22,8 @@ class NavigationEntryTest : public testing::Test {
                                       GURL("test:url"),
                                       GURL("from"),
                                       ASCIIToUTF16("title"),
-                                      content::PAGE_TRANSITION_TYPED));
+                                      content::PAGE_TRANSITION_TYPED,
+                                      false));
   }
 
   virtual void TearDown() {
@@ -174,6 +175,12 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(content::PAGE_TRANSITION_TYPED, entry2_.get()->transition_type());
   entry2_.get()->set_transition_type(content::PAGE_TRANSITION_RELOAD);
   EXPECT_EQ(content::PAGE_TRANSITION_RELOAD, entry2_.get()->transition_type());
+
+  // Is renderer initiated
+  EXPECT_FALSE(entry1_.get()->is_renderer_initiated());
+  EXPECT_FALSE(entry2_.get()->is_renderer_initiated());
+  entry2_.get()->set_is_renderer_initiated(true);
+  EXPECT_TRUE(entry2_.get()->is_renderer_initiated());
 
   // Post Data
   EXPECT_FALSE(entry1_.get()->has_post_data());

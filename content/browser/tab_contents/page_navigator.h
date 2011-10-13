@@ -23,7 +23,8 @@ struct CONTENT_EXPORT OpenURLParams {
   OpenURLParams(const GURL& url,
                 const GURL& referrer,
                 WindowOpenDisposition disposition,
-                content::PageTransition transition);
+                content::PageTransition transition,
+                bool is_renderer_initiated);
   ~OpenURLParams();
 class TabContents;
 
@@ -36,6 +37,9 @@ class TabContents;
 
   // The transition type of navigation.
   content::PageTransition transition;
+
+  // Whether this navigation is initiated by the renderer process.
+  bool is_renderer_initiated;
 
   // The override encoding of the URL contents to be opened.
   std::string override_encoding;

@@ -94,6 +94,9 @@ struct NavigateParams {
   // when target_contents is specified in the constructor.
   content::PageTransition transition;
 
+  // Whether this navigation was initiated by the renderer process.
+  bool is_renderer_initiated;
+
   // The index the caller would like the tab to be positioned at in the
   // TabStrip. The actual index will be determined by the TabHandler in
   // accordance with |add_types|. Defaults to -1 (allows the TabHandler to

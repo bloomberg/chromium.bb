@@ -186,7 +186,8 @@ class CONTENT_EXPORT NavigationEntry {
                   const GURL& url,
                   const GURL& referrer,
                   const string16& title,
-                  content::PageTransition transition_type);
+                  content::PageTransition transition_type,
+                  bool is_renderer_initiated);
   ~NavigationEntry();
 
   // Page-related stuff --------------------------------------------------------
@@ -351,6 +352,15 @@ class CONTENT_EXPORT NavigationEntry {
     return transition_type_;
   }
 
+  // Whether this (pending) navigation is renderer-initiated.  Resets to false
+  // for all types of navigations after commit.
+  void set_is_renderer_initiated(bool is_renderer_initiated) {
+    is_renderer_initiated_ = is_renderer_initiated;
+  }
+  bool is_renderer_initiated() const {
+    return is_renderer_initiated_;
+  }
+
   // The user typed URL was the URL that the user initiated the navigation
   // with, regardless of any redirects. This is used to generate keywords, for
   // example, based on "what the user thinks the site is called" rather than
@@ -429,6 +439,11 @@ class CONTENT_EXPORT NavigationEntry {
 
   // This member is not persisted with sesssion restore.
   std::string extra_headers_;
+
+  // Whether the entry, while loading, was created for a renderer-initiated
+  // navigation.  This dictates whether the URL should be displayed before the
+  // navigation commits.  It is cleared on commit and not persisted.
+  bool is_renderer_initiated_;
 
   // This is a cached version of the result of GetTitleForDisplay. It prevents
   // us from having to do URL formatting on the URL every time the title is

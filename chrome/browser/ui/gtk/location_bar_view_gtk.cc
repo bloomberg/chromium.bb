@@ -1055,7 +1055,7 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
       return FALSE;
 
     tab->OpenURL(OpenURLParams(
-        url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED));
+        url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
     return TRUE;
   }
 

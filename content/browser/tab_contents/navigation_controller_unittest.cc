@@ -1469,7 +1469,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
-      url, GURL(), content::PAGE_TRANSITION_RELOAD, std::string(), profile());
+      url, GURL(), content::PAGE_TRANSITION_RELOAD, false, std::string(),
+      profile());
   entry->set_page_id(0);
   entry->set_title(ASCIIToUTF16("Title"));
   entry->set_content_state("state");
@@ -1527,7 +1528,8 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
-      url, GURL(), content::PAGE_TRANSITION_RELOAD, std::string(), profile());
+      url, GURL(), content::PAGE_TRANSITION_RELOAD, false, std::string(),
+      profile());
   entry->set_page_id(0);
   entry->set_title(ASCIIToUTF16("Title"));
   entry->set_content_state("state");
@@ -1809,6 +1811,42 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   EXPECT_EQ(controller().GetEntryAtIndex(2)->url(), url2);
   EXPECT_EQ(controller().GetEntryAtIndex(3)->url(), url3);
   EXPECT_EQ(controller().GetEntryAtIndex(4)->url(), url4);
+}
+
+// Tests that the URLs for renderer-initiated navigations are not displayed to
+// the user until the navigation commits, to prevent URL spoof attacks.
+// See http://crbug.com/99016.
+TEST_F(NavigationControllerTest, DontShowRendererURLUntilCommit) {
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller());
+
+  const GURL url0("http://foo/0");
+  const GURL url1("http://foo/1");
+
+  // For typed navigations (browser-initiated), both active and visible entries
+  // should update before commit.
+  controller().LoadURL(url0, GURL(), content::PAGE_TRANSITION_TYPED,
+                       std::string());
+  EXPECT_EQ(url0, controller().GetActiveEntry()->url());
+  EXPECT_EQ(url0, controller().GetVisibleEntry()->url());
+  rvh()->SendNavigate(0, url0);
+
+  // For link clicks (renderer-initiated navigations), the active entry should
+  // update before commit but the visible should not.
+  controller().LoadURLFromRenderer(url1, GURL(), content::PAGE_TRANSITION_LINK,
+                                   std::string());
+  EXPECT_EQ(url1, controller().GetActiveEntry()->url());
+  EXPECT_EQ(url0, controller().GetVisibleEntry()->url());
+  EXPECT_TRUE(controller().pending_entry()->is_renderer_initiated());
+
+  // After commit, both should be updated, and we should no longer treat the
+  // entry as renderer-initiated.
+  rvh()->SendNavigate(1, url1);
+  EXPECT_EQ(url1, controller().GetActiveEntry()->url());
+  EXPECT_EQ(url1, controller().GetVisibleEntry()->url());
+  EXPECT_FALSE(controller().GetLastCommittedEntry()->is_renderer_initiated());
+
+  notifications.Reset();
 }
 
 // Tests that IsInPageNavigation returns appropriate results.  Prevents

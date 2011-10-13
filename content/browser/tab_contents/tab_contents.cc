@@ -536,7 +536,8 @@ TabContents* TabContents::OpenURL(const GURL& url,
                                   const GURL& referrer,
                                   WindowOpenDisposition disposition,
                                   content::PageTransition transition) {
-  return OpenURL(OpenURLParams(url, referrer, disposition, transition));
+  return OpenURL(OpenURLParams(url, referrer, disposition, transition,
+                               false));
 }
 
 TabContents* TabContents::OpenURL(const OpenURLParams& params) {
@@ -1685,8 +1686,9 @@ void TabContents::RequestOpenURL(const GURL& url,
             render_manager_.web_ui()->link_transition_type());
     transition_type = render_manager_.web_ui()->link_transition_type();
   } else {
-    new_contents = OpenURL(
-        url, referrer, disposition, content::PAGE_TRANSITION_LINK);
+    new_contents = OpenURL(OpenURLParams(
+        url, referrer, disposition, content::PAGE_TRANSITION_LINK,
+        true /* is_renderer_initiated */));
   }
   if (new_contents) {
     // Notify observers.

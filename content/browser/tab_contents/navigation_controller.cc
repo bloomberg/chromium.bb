@@ -222,7 +222,7 @@ bool NavigationController::IsInitialNavigation() {
 // static
 NavigationEntry* NavigationController::CreateNavigationEntry(
     const GURL& url, const GURL& referrer, content::PageTransition transition,
-    const std::string& extra_headers,
+    bool is_renderer_initiated, const std::string& extra_headers,
     content::BrowserContext* browser_context) {
   // Allow the browser URL handler to rewrite the URL. This will, for example,
   // remove "view-source:" from the beginning of the URL to get the URL that
@@ -240,7 +240,8 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
       loaded_url,
       referrer,
       string16(),
-      transition);
+      transition,
+      is_renderer_initiated);
   entry->set_virtual_url(url);
   entry->set_user_typed_url(url);
   entry->set_update_virtual_url_with_url(reverse_on_redirect);
@@ -291,8 +292,15 @@ NavigationEntry* NavigationController::GetActiveEntry() const {
 NavigationEntry* NavigationController::GetVisibleEntry() const {
   if (transient_entry_index_ != -1)
     return entries_[transient_entry_index_].get();
-  // Only return pending_entry for new navigations.
-  if (pending_entry_ && pending_entry_->page_id() == -1)
+  // Only return the pending_entry for new (non-history), browser-initiated
+  // navigations, in order to prevent URL spoof attacks.
+  // Ideally we would also show the pending entry's URL for new renderer-
+  // initiated navigations with no last committed entry (e.g., a link opening
+  // in a new tab), but an attacker can insert content into the about:blank
+  // page while the pending URL loads in that case.
+  if (pending_entry_ &&
+      pending_entry_->page_id() == -1 &&
+      !pending_entry_->is_renderer_initiated())
     return pending_entry_;
   return GetLastCommittedEntry();
 }
@@ -496,6 +504,23 @@ void NavigationController::LoadURL(
   needs_reload_ = false;
 
   NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
+                                                 false,
+                                                 extra_headers,
+                                                 browser_context_);
+
+  LoadEntry(entry);
+}
+
+void NavigationController::LoadURLFromRenderer(
+    const GURL& url,
+    const GURL& referrer,
+    content::PageTransition transition,
+    const std::string& extra_headers) {
+  // The user initiated a load, we don't need to reload anymore.
+  needs_reload_ = false;
+
+  NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
+                                                 true,
                                                  extra_headers,
                                                  browser_context_);
 
@@ -570,6 +595,10 @@ bool NavigationController::RendererDidNavigate(
   DCHECK(!params.content_state.empty());
   NavigationEntry* active_entry = GetActiveEntry();
   active_entry->set_content_state(params.content_state);
+
+  // Once committed, we do not need to track if the entry was initiated by
+  // the renderer.
+  active_entry->set_is_renderer_initiated(false);
 
   // The active entry's SiteInstance should match our SiteInstance.
   DCHECK(active_entry->site_instance() == tab_contents_->GetSiteInstance());

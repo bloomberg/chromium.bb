@@ -234,7 +234,8 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
         GURL(redirect_url),
         tab_contents()->GetURL(),
         NEW_FOREGROUND_TAB,
-        content::PAGE_TRANSITION_AUTO_BOOKMARK));
+        content::PAGE_TRANSITION_AUTO_BOOKMARK,
+        false));
     CompleteInstall(kInlineInstallSupportedError);
     return;
   }

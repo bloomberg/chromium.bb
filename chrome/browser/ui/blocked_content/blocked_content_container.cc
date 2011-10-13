@@ -117,7 +117,8 @@ TabContents* BlockedContentContainer::OpenURLFromTab(
   return owner_->tab_contents()->OpenURL(OpenURLParams(url,
                                                        referrer,
                                                        disposition,
-                                                       transition));
+                                                       transition,
+                                                       false));
 }
 
 TabContents* BlockedContentContainer::OpenURLFromTab(

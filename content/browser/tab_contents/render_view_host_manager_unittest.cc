@@ -206,7 +206,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   const GURL kUrl1("http://www.google.com/");
   NavigationEntry entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
                          GURL() /* referrer */, string16() /* title */,
-                         content::PAGE_TRANSITION_TYPED);
+                         content::PAGE_TRANSITION_TYPED,
+                         false /* is_renderer_init */);
   host = manager.Navigate(entry1);
 
   // The RenderViewHost created in Init will be reused.
@@ -225,7 +226,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   const GURL kUrl2("http://www.google.com/foo");
   NavigationEntry entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
                          kUrl1 /* referrer */, string16() /* title */,
-                         content::PAGE_TRANSITION_LINK);
+                         content::PAGE_TRANSITION_LINK,
+                         true /* is_renderer_init */);
   host = manager.Navigate(entry2);
 
   // The RenderViewHost created in Init will be reused.
@@ -242,7 +244,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   const GURL kUrl3("http://webkit.org/");
   NavigationEntry entry3(NULL /* instance */, -1 /* page_id */, kUrl3,
                          kUrl2 /* referrer */, string16() /* title */,
-                         content::PAGE_TRANSITION_LINK);
+                         content::PAGE_TRANSITION_LINK,
+                         false /* is_renderer_init */);
   host = manager.Navigate(entry3);
 
   // A new RenderViewHost should be created.
@@ -277,7 +280,8 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
   const GURL kUrl(chrome::kTestNewTabURL);
   NavigationEntry entry(NULL /* instance */, -1 /* page_id */, kUrl,
                         GURL() /* referrer */, string16() /* title */,
-                        content::PAGE_TRANSITION_TYPED);
+                        content::PAGE_TRANSITION_TYPED,
+                        false /* is_renderer_init */);
   RenderViewHost* host = manager.Navigate(entry);
 
   EXPECT_TRUE(host);
@@ -315,7 +319,8 @@ TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   const GURL kNtpUrl(chrome::kTestNewTabURL);
   NavigationEntry ntp_entry(NULL /* instance */, -1 /* page_id */, kNtpUrl,
                             GURL() /* referrer */, string16() /* title */,
-                            content::PAGE_TRANSITION_TYPED);
+                            content::PAGE_TRANSITION_TYPED,
+                            false /* is_renderer_init */);
 
   // about: URLs are not Web UI pages.
   GURL about_url(chrome::kTestMemoryURL);
@@ -325,7 +330,8 @@ TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
       &about_url, profile(), &reverse_on_redirect);
   NavigationEntry about_entry(NULL /* instance */, -1 /* page_id */, about_url,
                               GURL() /* referrer */, string16() /* title */,
-                              content::PAGE_TRANSITION_TYPED);
+                              content::PAGE_TRANSITION_TYPED,
+                              false /* is_renderer_init */);
 
   EXPECT_TRUE(ShouldSwapProcesses(&manager, &ntp_entry, &about_entry));
 }

@@ -13,16 +13,19 @@ OpenURLParams::OpenURLParams(
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
-    content::PageTransition transition)
+    content::PageTransition transition,
+    bool is_renderer_initiated)
     : url(url),
       referrer(referrer),
       disposition(disposition),
-      transition(transition) {
+      transition(transition),
+      is_renderer_initiated(is_renderer_initiated) {
 }
 
 OpenURLParams::OpenURLParams()
     : disposition(UNKNOWN),
-      transition(content::PageTransitionFromInt(0)) {
+      transition(content::PageTransitionFromInt(0)),
+      is_renderer_initiated(false) {
 }
 
 OpenURLParams::~OpenURLParams() {

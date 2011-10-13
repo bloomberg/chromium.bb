@@ -403,7 +403,7 @@ ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
 TabContents* ActiveDownloadsUI::OpenPopup(Profile* profile) {
   Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
   OpenURLParams params(GURL(chrome::kChromeUIActiveDownloadsURL), GURL(),
-                      SINGLETON_TAB, content::PAGE_TRANSITION_LINK);
+                      SINGLETON_TAB, content::PAGE_TRANSITION_LINK, false);
   TabContents* download_contents = browser->OpenURL(params);
   browser->window()->Show();
   return download_contents;

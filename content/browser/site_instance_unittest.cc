@@ -188,7 +188,8 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
 
   NavigationEntry* e1 = new NavigationEntry(instance, 0, url, GURL(),
                                             string16(),
-                                            content::PAGE_TRANSITION_LINK);
+                                            content::PAGE_TRANSITION_LINK,
+                                            false);
 
   // Redundantly setting e1's SiteInstance shouldn't affect the ref count.
   e1->set_site_instance(instance);
@@ -197,7 +198,8 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   // Add a second reference
   NavigationEntry* e2 = new NavigationEntry(instance, 0, url,
                                             GURL(), string16(),
-                                            content::PAGE_TRANSITION_LINK);
+                                            content::PAGE_TRANSITION_LINK,
+                                            false);
 
   // Now delete both entries and be sure the SiteInstance goes away.
   delete e1;
@@ -252,7 +254,8 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
 
   NavigationEntry* e1 = new NavigationEntry(instance1, 0, url, GURL(),
                                             string16(),
-                                            content::PAGE_TRANSITION_LINK);
+                                            content::PAGE_TRANSITION_LINK,
+                                            false);
   // Clone the entry
   NavigationEntry* e2 = new NavigationEntry(*e1);
 
