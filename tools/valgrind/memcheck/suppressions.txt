@@ -4672,6 +4672,12 @@
    ...
    fun:_ZNSt6vectorIN6webkit13WebPluginInfoESaIS1*
 }
+{
+   bug_100133
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z25RegisterRecoveryComponentP22ComponentUpdateServicePKc
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
