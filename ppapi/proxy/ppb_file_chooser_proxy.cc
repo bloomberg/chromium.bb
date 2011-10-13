@@ -37,6 +37,10 @@ class FileChooser : public Resource,
   // PPB_FileChooser_API implementation.
   virtual int32_t Show(const PP_CompletionCallback& callback) OVERRIDE;
   virtual PP_Resource GetNextChosenFile() OVERRIDE;
+  virtual int32_t ShowWithoutUserGesture(
+      bool save_as,
+      const char* suggested_file_name,
+      const PP_CompletionCallback& callback) OVERRIDE;
 
   // Handles the choose complete notification from the host.
   void ChooseComplete(
@@ -44,6 +48,11 @@ class FileChooser : public Resource,
     const std::vector<PPB_FileRef_CreateInfo>& chosen_files);
 
  private:
+  int32_t Show(bool require_user_gesture,
+               bool save_as,
+               const char* suggested_file_name,
+               const PP_CompletionCallback& callback);
+
   PP_CompletionCallback current_show_callback_;
 
   // All files returned by the current show callback that haven't yet been
@@ -84,6 +93,20 @@ PPB_FileChooser_API* FileChooser::AsPPB_FileChooser_API() {
 }
 
 int32_t FileChooser::Show(const PP_CompletionCallback& callback) {
+  return Show(true, false, NULL, callback);
+}
+
+int32_t FileChooser::ShowWithoutUserGesture(
+    bool save_as,
+    const char* suggested_file_name,
+    const PP_CompletionCallback& callback) {
+  return Show(false, save_as, suggested_file_name, callback);
+}
+
+int32_t FileChooser::Show(bool require_user_gesture,
+                          bool save_as,
+                          const char* suggested_file_name,
+                          const PP_CompletionCallback& callback) {
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
@@ -93,7 +116,11 @@ int32_t FileChooser::Show(const PP_CompletionCallback& callback) {
   current_show_callback_ = callback;
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBFileChooser_Show(
-          INTERFACE_ID_PPB_FILE_CHOOSER, host_resource()));
+          INTERFACE_ID_PPB_FILE_CHOOSER,
+          host_resource(),
+          save_as,
+          suggested_file_name,
+          require_user_gesture));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -135,7 +162,7 @@ PPB_FileChooser_Proxy::~PPB_FileChooser_Proxy() {
 PP_Resource PPB_FileChooser_Proxy::CreateProxyResource(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
-    const PP_Var& accept_mime_types) {
+    const char* accept_mime_types) {
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
@@ -143,7 +170,8 @@ PP_Resource PPB_FileChooser_Proxy::CreateProxyResource(
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBFileChooser_Create(
       INTERFACE_ID_PPB_FILE_CHOOSER, instance,
-      mode, SerializedVarSendInput(dispatcher, accept_mime_types),
+      mode,
+      accept_mime_types,
       &result));
 
   if (result.is_null())
@@ -169,22 +197,35 @@ bool PPB_FileChooser_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_FileChooser_Proxy::OnMsgCreate(
     PP_Instance instance,
     int mode,
-    SerializedVarReceiveInput accept_mime_types,
+    std::string accept_mime_types,
     HostResource* result) {
   thunk::EnterResourceCreation enter(instance);
   if (enter.succeeded()) {
     result->SetHostResource(instance, enter.functions()->CreateFileChooser(
-        instance, static_cast<PP_FileChooserMode_Dev>(mode),
-        accept_mime_types.Get(dispatcher())));
+        instance,
+        static_cast<PP_FileChooserMode_Dev>(mode),
+        accept_mime_types.c_str()));
   }
 }
 
-void PPB_FileChooser_Proxy::OnMsgShow(const HostResource& chooser) {
+void PPB_FileChooser_Proxy::OnMsgShow(
+    const HostResource& chooser,
+    bool save_as,
+    std::string suggested_file_name,
+    bool require_user_gesture) {
   EnterHostFromHostResourceForceCallback<PPB_FileChooser_API> enter(
       chooser, callback_factory_, &PPB_FileChooser_Proxy::OnShowCallback,
       chooser);
-  if (enter.succeeded())
-    enter.SetResult(enter.object()->Show(enter.callback()));
+  if (enter.succeeded()) {
+    if (require_user_gesture) {
+      enter.SetResult(enter.object()->Show(enter.callback()));
+    } else {
+      enter.SetResult(enter.object()->ShowWithoutUserGesture(
+          save_as,
+          suggested_file_name.c_str(),
+          enter.callback()));
+    }
+  }
 }
 
 void PPB_FileChooser_Proxy::OnMsgChooseComplete(

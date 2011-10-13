@@ -1558,6 +1558,8 @@ bool RenderViewImpl::runFileChooser(
     ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::OpenFolder;
   else if (params.multiSelect)
     ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::OpenMultiple;
+  else if (params.saveAs)
+    ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::Save;
   else
     ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::Open;
   ipc_params.title = params.title;

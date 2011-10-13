@@ -16,6 +16,12 @@ class PPB_FileChooser_API {
 
   virtual int32_t Show(const PP_CompletionCallback& callback) = 0;
   virtual PP_Resource GetNextChosenFile() = 0;
+
+  // Trusted API.
+  virtual int32_t ShowWithoutUserGesture(
+      bool save_as,
+      const char* suggested_file_name,
+      const PP_CompletionCallback& callback) = 0;
 };
 
 }  // namespace thunk

@@ -20,6 +20,7 @@ struct PPB_FileChooser_Dev;
 namespace ppapi {
 
 class HostResource;
+struct PPB_FileChooserTrusted;
 struct PPB_FileRef_CreateInfo;
 
 namespace proxy {
@@ -34,7 +35,7 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   static PP_Resource CreateProxyResource(
       PP_Instance instance,
       PP_FileChooserMode_Dev mode,
-      const PP_Var& accept_mime_types);
+      const char* accept_mime_types);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -45,9 +46,12 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   // Plugin -> host message handlers.
   void OnMsgCreate(PP_Instance instance,
                    int mode,
-                   SerializedVarReceiveInput accept_mime_types,
+                   std::string accept_mime_types,
                    ppapi::HostResource* result);
-  void OnMsgShow(const ppapi::HostResource& chooser);
+  void OnMsgShow(const ppapi::HostResource& chooser,
+                 bool save_as,
+                 std::string suggested_file_name,
+                 bool require_user_gesture);
 
   // Host -> plugin message handlers.
   void OnMsgChooseComplete(

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/platform_file.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -31,7 +32,28 @@ namespace {
 // There is only one file-selection happening at any given time,
 // so we allocate an enumeration ID for that purpose.  All IDs from
 // the renderer must start at 0 and increase.
-static const int kFileSelectEnumerationId = -1;
+const int kFileSelectEnumerationId = -1;
+
+void NotifyRenderViewHost(RenderViewHost* render_view_host,
+                          const std::vector<FilePath>& files,
+                          SelectFileDialog::Type dialog_type) {
+  const int kReadFilePermissions =
+      base::PLATFORM_FILE_OPEN |
+      base::PLATFORM_FILE_READ |
+      base::PLATFORM_FILE_EXCLUSIVE_READ |
+      base::PLATFORM_FILE_ASYNC;
+
+  const int kWriteFilePermissions =
+      base::PLATFORM_FILE_OPEN_ALWAYS |
+      base::PLATFORM_FILE_WRITE |
+      base::PLATFORM_FILE_WRITE_ATTRIBUTES |
+      base::PLATFORM_FILE_ASYNC;
+
+  int permissions = kReadFilePermissions;
+  if (dialog_type == SelectFileDialog::SELECT_SAVEAS_FILE)
+    permissions = kWriteFilePermissions;
+  render_view_host->FilesSelectedInChooser(files, permissions);
+}
 }
 
 struct FileSelectHelper::ActiveDirectoryEnumeration {
@@ -83,7 +105,7 @@ void FileSelectHelper::FileSelected(const FilePath& path,
 
   std::vector<FilePath> files;
   files.push_back(path);
-  render_view_host_->FilesSelectedInChooser(files);
+  NotifyRenderViewHost(render_view_host_, files, dialog_type_);
 
   // No members should be accessed from here on.
   RunFileChooserEnd();
@@ -96,7 +118,7 @@ void FileSelectHelper::MultiFilesSelected(const std::vector<FilePath>& files,
   if (!render_view_host_)
     return;
 
-  render_view_host_->FilesSelectedInChooser(files);
+  NotifyRenderViewHost(render_view_host_, files, dialog_type_);
 
   // No members should be accessed from here on.
   RunFileChooserEnd();
@@ -108,7 +130,8 @@ void FileSelectHelper::FileSelectionCanceled(void* params) {
 
   // If the user cancels choosing a file to upload we pass back an
   // empty vector.
-  render_view_host_->FilesSelectedInChooser(std::vector<FilePath>());
+  NotifyRenderViewHost(
+      render_view_host_, std::vector<FilePath>(), dialog_type_);
 
   // No members should be accessed from here on.
   RunFileChooserEnd();
@@ -160,7 +183,7 @@ void FileSelectHelper::OnListDone(int id, int error) {
     return;
   }
   if (id == kFileSelectEnumerationId)
-    entry->rvh_->FilesSelectedInChooser(entry->results_);
+    NotifyRenderViewHost(entry->rvh_, entry->results_, dialog_type_);
   else
     entry->rvh_->DirectoryEnumerationFinished(id, entry->results_);
 

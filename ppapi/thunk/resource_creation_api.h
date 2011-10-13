@@ -62,7 +62,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFileChooser(
       PP_Instance instance,
       PP_FileChooserMode_Dev mode,
-      const PP_Var& accept_mime_types) = 0;
+      const char* accept_mime_types) = 0;
   virtual PP_Resource CreateFileIO(PP_Instance instance) = 0;
   virtual PP_Resource CreateFileRef(PP_Resource file_system,
                                     const char* path) = 0;

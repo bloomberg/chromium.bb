@@ -5,6 +5,8 @@
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
+#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -22,8 +24,10 @@ PP_Resource Create(PP_Instance instance,
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateFileChooser(instance, mode,
-                                              accept_mime_types);
+  scoped_refptr<StringVar> string_var =
+      StringVar::FromPPVar(accept_mime_types);
+  std::string str = string_var ? string_var->value() : std::string();
+  return enter.functions()->CreateFileChooser(instance, mode, str.c_str());
 }
 
 PP_Bool IsFileChooser(PP_Resource resource) {
@@ -46,6 +50,21 @@ PP_Resource GetNextChosenFile(PP_Resource chooser) {
   return enter.object()->GetNextChosenFile();
 }
 
+int32_t ShowWithoutUserGesture(PP_Resource chooser,
+                               PP_Bool save_as,
+                               PP_Var suggested_file_name,
+                               PP_CompletionCallback callback) {
+  EnterResource<PPB_FileChooser_API> enter(chooser, true);
+  if (enter.failed())
+    return MayForceCallback(callback, PP_ERROR_BADRESOURCE);
+  scoped_refptr<StringVar> string_var =
+      StringVar::FromPPVar(suggested_file_name);
+  std::string str = string_var ? string_var->value() : std::string();
+  int32_t result = enter.object()->ShowWithoutUserGesture(
+      save_as == PP_TRUE, str.c_str(), callback);
+  return MayForceCallback(callback, result);
+}
+
 const PPB_FileChooser_Dev g_ppb_file_chooser_thunk = {
   &Create,
   &IsFileChooser,
@@ -53,10 +72,18 @@ const PPB_FileChooser_Dev g_ppb_file_chooser_thunk = {
   &GetNextChosenFile
 };
 
+const PPB_FileChooserTrusted g_ppb_file_chooser_trusted_thunk = {
+  &ShowWithoutUserGesture
+};
+
 }  // namespace
 
 const PPB_FileChooser_Dev* GetPPB_FileChooser_Dev_Thunk() {
   return &g_ppb_file_chooser_thunk;
+}
+
+const PPB_FileChooserTrusted* GetPPB_FileChooser_Trusted_Thunk() {
+  return &g_ppb_file_chooser_trusted_thunk;
 }
 
 }  // namespace thunk

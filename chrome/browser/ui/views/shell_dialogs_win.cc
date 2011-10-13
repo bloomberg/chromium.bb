@@ -242,6 +242,10 @@ bool SaveFileAsWithFilter(HWND owner,
   // specify a filter when saving.
   DCHECK(!filter.empty());
   std::wstring file_part = FilePath(suggested_name).BaseName().value();
+  // If the suggested_name is a root directory, file_part will be '\', and the
+  // call to GetSaveFileName below will fail.
+  if (file_part.size() == 1 && file_part[0] == L'\\')
+    file_part.clear();
 
   // The size of the in/out buffer in number of characters we pass to win32
   // GetSaveFileName.  From MSDN "The buffer must be large enough to store the

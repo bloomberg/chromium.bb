@@ -307,8 +307,11 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
       const FilePath& local_directory_name);
 
   // Notifies the Listener that one or more files have been chosen by the user
-  // from an Open File dialog for the form.
-  void FilesSelectedInChooser(const std::vector<FilePath>& files);
+  // from a file chooser dialog for the form. |permissions| are flags from the
+  // base::PlatformFileFlags enum which specify which file permissions should
+  // be granted to the renderer.
+  void FilesSelectedInChooser(const std::vector<FilePath>& files,
+                              int permissions);
 
   // Notifies the listener that a directory enumeration is complete.
   void DirectoryEnumerationFinished(int request_id,

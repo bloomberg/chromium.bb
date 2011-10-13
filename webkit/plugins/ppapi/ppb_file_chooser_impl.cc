@@ -65,13 +65,12 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
 PPB_FileChooser_Impl::PPB_FileChooser_Impl(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
-    const PP_Var& accept_mime_types)
+    const char* accept_mime_types)
     : Resource(instance),
       mode_(mode),
       next_chosen_file_index_(0) {
-  scoped_refptr<StringVar> accept = StringVar::FromPPVar(accept_mime_types);
-  if (accept)
-    accept_mime_types_ = accept->value();
+  if (accept_mime_types)
+    accept_mime_types_ = std::string(accept_mime_types);
 }
 
 PPB_FileChooser_Impl::~PPB_FileChooser_Impl() {
@@ -81,7 +80,7 @@ PPB_FileChooser_Impl::~PPB_FileChooser_Impl() {
 PP_Resource PPB_FileChooser_Impl::Create(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
-    const PP_Var& accept_mime_types) {
+    const char* accept_mime_types) {
   if (mode != PP_FILECHOOSERMODE_OPEN &&
       mode != PP_FILECHOOSERMODE_OPENMULTIPLE)
     return 0;
@@ -148,6 +147,13 @@ void PPB_FileChooser_Impl::RunCallback(int32_t result) {
 }
 
 int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {
+  return ShowWithoutUserGesture(false, NULL, callback);
+}
+
+int32_t PPB_FileChooser_Impl::ShowWithoutUserGesture(
+    bool save_as,
+    const char* suggested_file_name,
+    const PP_CompletionCallback& callback) {
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;
@@ -156,7 +162,13 @@ int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {
          (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE));
 
   WebFileChooserParams params;
-  params.multiSelect = (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE);
+  if (save_as) {
+    params.saveAs = true;
+    if (suggested_file_name)
+      params.initialValue = WebString::fromUTF8(suggested_file_name);
+  } else {
+    params.multiSelect = (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE);
+  }
   params.acceptTypes = WebString::fromUTF8(accept_mime_types_);
   params.directory = false;
 

@@ -27,12 +27,12 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
  public:
   PPB_FileChooser_Impl(PP_Instance instance,
                        PP_FileChooserMode_Dev mode,
-                       const PP_Var& accept_mime_types);
+                       const char* accept_mime_types);
   virtual ~PPB_FileChooser_Impl();
 
   static PP_Resource Create(PP_Instance instance,
                             PP_FileChooserMode_Dev mode,
-                            const PP_Var& accept_mime_types);
+                            const char* accept_mime_types);
 
   // Resource overrides.
   virtual PPB_FileChooser_Impl* AsPPB_FileChooser_Impl();
@@ -57,6 +57,11 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
   // PPB_FileChooser_API implementation.
   virtual int32_t Show(const PP_CompletionCallback& callback) OVERRIDE;
   virtual PP_Resource GetNextChosenFile() OVERRIDE;
+
+  virtual int32_t ShowWithoutUserGesture(
+      bool save_as,
+      const char* suggested_file_name,
+      const PP_CompletionCallback& callback) OVERRIDE;
 
  private:
   PP_FileChooserMode_Dev mode_;

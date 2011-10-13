@@ -77,6 +77,7 @@
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_buffer_trusted.h"
+#include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
@@ -256,6 +257,8 @@ const void* GetInterface(const char* name) {
     return &core_interface;
   if (strcmp(name, PPB_FILEIOTRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_FileIOTrusted_Thunk();
+  if (strcmp(name, PPB_FILECHOOSER_TRUSTED_INTERFACE) == 0)
+    return ::ppapi::thunk::GetPPB_FileChooser_Trusted_Thunk();
   if (strcmp(name, PPB_FLASH_INTERFACE) == 0)
     return PPB_Flash_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE) == 0)

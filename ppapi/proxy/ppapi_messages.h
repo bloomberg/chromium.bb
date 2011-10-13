@@ -570,10 +570,13 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_CanLockCursor,
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileChooser_Create,
                            PP_Instance /* instance */,
                            int /* mode */,
-                           ppapi::proxy::SerializedVar /* accept_mime_types */,
+                           std::string /* accept_mime_types */,
                            ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFileChooser_Show,
-                    ppapi::HostResource /* file_chooser */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileChooser_Show,
+                    ppapi::HostResource /* file_chooser */,
+                    bool /* save_as */,
+                    std::string /* suggested_file_name */,
+                    bool /* require_user_gesture */)
 
 
 // PPB_FileRef.
