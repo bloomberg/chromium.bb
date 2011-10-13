@@ -420,6 +420,12 @@ void RootView::OnPaint(gfx::Canvas* canvas) {
 #if !defined(TOUCH_UI)
   canvas->GetSkCanvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
 #endif
+
+  // TODO (pkotwicz): Remove this once we switch over to Aura desktop.
+  // This is needed so that we can set the background behind the RWHV when the
+  // RWHV is not visible. Not needed once there is a view between the RootView
+  // and RWHV.
+  View::OnPaint(canvas);
 }
 
 void RootView::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,

@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "views/background.h"
 #include "views/widget/widget.h"
 
 // TODO(beng): HiddenTabHostWindow??
@@ -59,6 +60,10 @@ void NativeTabContentsViewViews::InitNativeTabContentsView() {
   params.native_widget = this;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   GetWidget()->Init(params);
+  // Set root view to be white such that the user sees white instead of black
+  // when the RWHV is destroyed as a result of navigating to a new URL.
+  GetWidget()->GetRootView()->set_background(
+      views::Background::CreateSolidBackground(SK_ColorWHITE));
 }
 
 void NativeTabContentsViewViews::Unparent() {
