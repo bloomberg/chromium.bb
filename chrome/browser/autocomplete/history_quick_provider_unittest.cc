@@ -142,13 +142,6 @@ void HistoryQuickProviderTest::OnProviderUpdate(bool updated_matches) {
 void HistoryQuickProviderTest::FillData() {
   history::URLDatabase* db = history_service_->InMemoryDatabase();
   ASSERT_TRUE(db != NULL);
-
-  history::InMemoryURLIndex* index =
-      new history::InMemoryURLIndex(profile_.get(),
-                                    FilePath(FILE_PATH_LITERAL("/dummy")));
-  PrefService* prefs = profile_->GetPrefs();
-  std::string languages(prefs->GetString(prefs::kAcceptLanguages));
-  index->Init(db, languages);
   for (size_t i = 0; i < arraysize(quick_test_db); ++i) {
     const TestURLInfo& cur = quick_test_db[i];
     const GURL current_url(cur.url);
@@ -160,11 +153,20 @@ void HistoryQuickProviderTest::FillData() {
     url_info.set_typed_count(cur.typed_count);
     url_info.set_last_visit(visit_time);
     url_info.set_hidden(false);
-    url_info.set_id(i);
-    index->UpdateURL(url_info);
+    EXPECT_TRUE(db->AddURL(url_info));
+
+    history_service_->AddPageWithDetails(current_url, UTF8ToUTF16(cur.title),
+                                         cur.visit_count, cur.typed_count,
+                                         visit_time, false,
+                                         history::SOURCE_BROWSED);
   }
 
-  provider_->set_index(index);
+  history::InMemoryURLIndex* index =
+      new history::InMemoryURLIndex(FilePath(FILE_PATH_LITERAL("/dummy")));
+  PrefService* prefs = profile_->GetPrefs();
+  std::string languages(prefs->GetString(prefs::kAcceptLanguages));
+  index->Init(db, languages);
+  provider_->SetIndexForTesting(index);
 }
 
 HistoryQuickProviderTest::SetShouldContain::SetShouldContain(

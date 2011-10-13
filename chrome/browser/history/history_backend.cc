@@ -23,13 +23,10 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
-#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/download/download_persistent_store_info.h"
@@ -202,8 +199,7 @@ class HistoryBackend::URLQuerier {
 
 // HistoryBackend --------------------------------------------------------------
 
-HistoryBackend::HistoryBackend(Profile* profile,
-                               const FilePath& history_dir,
+HistoryBackend::HistoryBackend(const FilePath& history_dir,
                                int id,
                                Delegate* delegate,
                                BookmarkService* bookmark_service)
@@ -216,9 +212,6 @@ HistoryBackend::HistoryBackend(Profile* profile,
       backend_destroy_task_(NULL),
       segment_queried_(false),
       bookmark_service_(bookmark_service) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHistoryQuickProvider))
-    in_memory_url_index_.reset(new InMemoryURLIndex(profile, history_dir_));
 }
 
 HistoryBackend::~HistoryBackend() {
@@ -637,9 +630,6 @@ void HistoryBackend::InitImpl(const std::string& languages) {
     archived_db_.reset();
   }
 
-  if (in_memory_url_index_.get())
-    in_memory_url_index_->Init(db_.get(), languages);
-
   // Tell the expiration module about all the nice databases we made. This must
   // happen before db_->Init() is called since the callback ForceArchiveHistory
   // may need to expire stuff.
@@ -787,6 +777,7 @@ void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls,
         NOTREACHED() << "Could not add row to DB";
         return;
       }
+
       if (i->typed_count() > 0)
         modified->changed_urls.push_back(*i);
     }
@@ -873,7 +864,6 @@ void HistoryBackend::SetPageTitle(const GURL& url,
     if (row_id && row.title() != title) {
       row.set_title(title);
       db_->UpdateURLRow(row_id, row);
-      row.id_ = row_id;
       changed_urls.push_back(row);
       if (row.typed_count() > 0)
         typed_url_changed = true;
