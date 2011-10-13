@@ -369,8 +369,6 @@ void ProfileImpl::DoFinalInit() {
       g_browser_process->background_mode_manager()->RegisterProfile(this);
   }
 
-  extension_info_map_ = new ExtensionInfoMap();
-
   InitRegisteredProtocolHandlers();
 
   clear_local_state_on_exit_ = prefs->GetBoolean(prefs::kClearSiteDataOnExit);
@@ -443,6 +441,9 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
     extension_devtools_manager_ = new ExtensionDevToolsManager(this);
   }
 
+  // The ExtensionInfoMap needs to be created before the
+  // ExtensionProcessManager.
+  extension_info_map_ = new ExtensionInfoMap();
   extension_process_manager_.reset(ExtensionProcessManager::Create(this));
   extension_event_router_.reset(new ExtensionEventRouter(this));
   extension_message_service_ = new ExtensionMessageService(this);
