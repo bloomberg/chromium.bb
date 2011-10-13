@@ -39,20 +39,20 @@ class LoginLibrary {
   // |user_email|.  |unique_id| is meant to be used when we have a non-human-
   // readable unique identifier by which we distinguish users (to deal with
   // potential email address changes over time).
-  virtual bool StartSession(const std::string& user_email,
+  virtual void StartSession(const std::string& user_email,
                             const std::string& unique_id /* unused */) = 0;
 
   // Tells the session manager to terminate the current logged-in session.
   // In the event that we ever support multiple simultaneous user sessions,
   // This will tell the session manager to terminate the session for the user
   // indicated by |unique_id|.
-  virtual bool StopSession(const std::string& unique_id /* unused */) = 0;
+  virtual void StopSession(const std::string& unique_id /* unused */) = 0;
 
   // Restarts the Enterprise Daemon.
-  virtual bool RestartEntd() = 0;
+  virtual void RestartEntd() = 0;
 
   // Restarts the job with specified command line string.
-  virtual bool RestartJob(int pid, const std::string& command_line) = 0;
+  virtual void RestartJob(int pid, const std::string& command_line) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().

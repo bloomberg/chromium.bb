@@ -65,32 +65,30 @@ class LoginLibraryImpl : public LoginLibrary {
     chromeos::StorePolicy(policy.c_str(), policy.length(), callback, delegate);
   }
 
-  virtual bool StartSession(
+  virtual void StartSession(
       const std::string& user_email,
       const std::string& unique_id /* unused */) OVERRIDE {
     // only pass unique_id through once we use it for something.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    return chromeos::StartSession(user_email.c_str(), "");
+    chromeos::StartSession(user_email.c_str(), "");
   }
 
-  virtual bool StopSession(const std::string& unique_id /* unused */) OVERRIDE {
+  virtual void StopSession(const std::string& unique_id /* unused */) OVERRIDE {
     // only pass unique_id through once we use it for something.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    return chromeos::StopSession("");
+    chromeos::StopSession("");
   }
 
-  virtual bool RestartEntd() OVERRIDE {
+  virtual void RestartEntd() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    return chromeos::RestartEntd();
+    chromeos::RestartEntd();
   }
 
-  virtual bool RestartJob(int pid, const std::string& command_line) OVERRIDE {
+  virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE {
     if (job_restart_request_) {
       NOTREACHED();
-      return false;
     }
     job_restart_request_ = new JobRestartRequest(pid, command_line);
-    return true;
   }
 
  private:
@@ -240,18 +238,15 @@ class LoginLibraryStubImpl : public LoginLibrary {
                                   void* delegate) OVERRIDE {
     callback(delegate, true);
   }
-  virtual bool StartSession(
+  virtual void StartSession(
       const std::string& user_email,
       const std::string& unique_id /* unused */) OVERRIDE {
-    return true;
   }
-  virtual bool StopSession(const std::string& unique_id /* unused */) OVERRIDE {
-    return true;
+  virtual void StopSession(const std::string& unique_id /* unused */) OVERRIDE {
   }
-  virtual bool RestartJob(int pid, const std::string& command_line) OVERRIDE {
-    return true;
+  virtual void RestartJob(int pid, const std::string& command_line) OVERRIDE {
   }
-  virtual bool RestartEntd() OVERRIDE { return true; }
+  virtual void RestartEntd() OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginLibraryStubImpl);
