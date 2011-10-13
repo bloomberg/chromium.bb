@@ -2022,7 +2022,11 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           'CHROMIUM_STRIP_SAVE_FILE')
       if strip_save_file:
         strip_save_file = self.Absolutify(strip_save_file)
-        extra_settings['CHROMIUM_STRIP_SAVE_FILE'] = strip_save_file
+      else:
+        # Explicitly clear this out, else a postbuild might pick up an export
+        # from an earlier target.
+        strip_save_file = ''
+      extra_settings['CHROMIUM_STRIP_SAVE_FILE'] = strip_save_file
 
       self.WriteXcodeEnv(self.output, spec, additional_settings=extra_settings)
 
