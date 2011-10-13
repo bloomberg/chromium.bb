@@ -355,6 +355,52 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
   DISALLOW_COPY_AND_ASSIGN(PolicyOAuthFetcher);
 };
 
+// Used to request a restart to switch to the guest mode.
+class JobRestartRequest
+    : public base::RefCountedThreadSafe<JobRestartRequest> {
+ public:
+  JobRestartRequest(int pid, const std::string& command_line)
+      : pid_(pid),
+        command_line_(command_line),
+        local_state_(g_browser_process->local_state()) {
+    AddRef();
+    if (local_state_) {
+      // XXX: normally this call must not be needed, however RestartJob
+      // just kills us so settings may be lost. See http://crosbug.com/13102
+      local_state_->CommitPendingWrite();
+      timer_.Start(
+          FROM_HERE, base::TimeDelta::FromSeconds(3), this,
+          &JobRestartRequest::RestartJob);
+      // Post task on FILE thread thus it occurs last on task queue, so it
+      // would be executed after committing pending write on file thread.
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&JobRestartRequest::RestartJob, this));
+    } else {
+      RestartJob();
+    }
+  }
+
+ private:
+  void RestartJob() {
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      CrosLibrary::Get()->GetLoginLibrary()->RestartJob(
+          pid_, command_line_);
+    } else {
+      // This function can be called on FILE thread. See PostTask in the
+      // constructor.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &JobRestartRequest::RestartJob));
+      MessageLoop::current()->AssertIdle();
+    }
+  }
+
+  int pid_;
+  std::string command_line_;
+  PrefService* local_state_;
+  base::OneShotTimer<JobRestartRequest> timer_;
+};
 
 class LoginUtilsImpl : public LoginUtils,
                        public ProfileManagerObserver,
@@ -366,7 +412,8 @@ class LoginUtilsImpl : public LoginUtils,
         pending_requests_(false),
         using_oauth_(false),
         has_cookies_(false),
-        delegate_(NULL) {
+        delegate_(NULL),
+        job_restart_request_(NULL) {
     net::NetworkChangeNotifier::AddOnlineStateObserver(this);
   }
 
@@ -481,6 +528,9 @@ class LoginUtilsImpl : public LoginUtils,
 
   // Delegate to be fired when the profile will be prepared.
   LoginUtils::Delegate* delegate_;
+
+  // Used to restart Chrome to switch to the guest mode.
+  JobRestartRequest* job_restart_request_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
@@ -791,7 +841,12 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
                                    browser_command_line,
                                    &command_line);
 
-    CrosLibrary::Get()->GetLoginLibrary()->RestartJob(getpid(), cmd_line_str);
+    if (job_restart_request_) {
+      NOTREACHED();
+    }
+    VLOG(1) << "Requesting a restart with PID " << getpid()
+            << " and command line: " << cmd_line_str;
+    job_restart_request_ = new JobRestartRequest(getpid(), cmd_line_str);
   }
 }
 
