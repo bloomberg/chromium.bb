@@ -36,6 +36,7 @@
 #include "v8/include/v8.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/user_agent.h"
 
 namespace {
 

@@ -5060,7 +5060,6 @@
             ['exclude', '^browser/chromeos/wm_ipc.cc'],
             ['exclude', '^browser/chromeos/wm_message_listener.cc'],
             ['exclude', '^browser/chromeos/xinput_hierarchy_changed_event_listener.cc'],
-            ['exclude', '^browser/notifications/notification_ui_manager.cc'],
             ['include', '^browser/ui/views/frame/browser_non_client_frame_view_factory_x11.cc'],
             ['include', '^browser/ui/views/handle_web_keyboard_event_aura.cc'],
             ['include', '^browser/ui/views/handle_web_keyboard_event.h'],

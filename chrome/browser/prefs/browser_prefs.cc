@@ -117,12 +117,7 @@ void RegisterLocalState(PrefService* local_state) {
   TaskManager::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
   BackgroundModeManager::RegisterPrefs(local_state);
-#if defined(USE_AURA) && defined(OS_CHROMEOS)
-  // TODO(saintlou): Implement notifications.
-  NOTIMPLEMENTED();
-#else
   NotificationUIManager::RegisterPrefs(local_state);
-#endif
   PrefProxyConfigService::RegisterPrefs(local_state);
   SSLConfigServiceManager::RegisterPrefs(local_state);
 #if defined(ENABLE_CONFIGURATION_POLICY)

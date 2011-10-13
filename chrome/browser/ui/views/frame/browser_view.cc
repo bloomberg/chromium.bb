@@ -2533,7 +2533,7 @@ void BrowserView::SetToolbar(ToolbarView* toolbar) {
   }
 }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
 // static
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // Create the view and the frame. The frame will attach itself via the view

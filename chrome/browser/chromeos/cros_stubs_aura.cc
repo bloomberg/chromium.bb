@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "chrome/browser/notifications/balloon_collection.h"
 
 namespace chromeos {
 
@@ -221,10 +222,26 @@ void ScreenLocker::InitClass() {
 
 }  // namespace chromeos
 
+class BalloonCollectionStub : public BalloonCollection {
+ public:
+  BalloonCollectionStub() {}
+  virtual ~BalloonCollectionStub() {}
+ private:
+  void Add(const Notification& notification, Profile* profile) {}
+  bool RemoveById(const std::string& id) { return true; }
+  bool RemoveBySourceOrigin(const GURL& source_origin) { return true; }
+  void RemoveAll() {}
+  bool HasSpace() const { return true; }
+  void ResizeBalloon(Balloon* balloon, const gfx::Size& size) {}
+  void SetPositionPreference(PositionPreference position) {}
+  void DisplayChanged() {}
+  void OnBalloonClosed(Balloon* source) {}
+  const Balloons& GetActiveBalloons() { return balloons_; }
+
+  Balloons balloons_;
+};
+
 // static
-BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
-  // TODO(saintlou): As per Ben there is no need for this in Aura.
-  BrowserView* view = new BrowserView(browser);
-  (new BrowserFrame(view))->InitBrowserFrame();
-  return view;
+BalloonCollection* BalloonCollection::Create() {
+  return new BalloonCollectionStub;
 }
