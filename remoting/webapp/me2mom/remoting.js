@@ -20,6 +20,7 @@ function pluginLostFocus_() {
 
 /** @enum {string} */
 remoting.AppMode = {
+  HOME: 'home',
   UNAUTHENTICATED: 'auth',
   CLIENT: 'client',
     CLIENT_UNCONNECTED: 'client.unconnected',
@@ -27,7 +28,6 @@ remoting.AppMode = {
     CLIENT_CONNECT_FAILED: 'client.connect-failed',
     CLIENT_SESSION_FINISHED: 'client.session-finished',
   HOST: 'host',
-    HOST_UNSHARED: 'host.unshared',
     HOST_WAITING_FOR_CODE: 'host.waiting-for-code',
     HOST_WAITING_FOR_CONNECTION: 'host.waiting-for-connection',
     HOST_SHARED: 'host.shared',
@@ -220,6 +220,7 @@ remoting.getMajorMode = function() {
 
 remoting.tryShare = function() {
   remoting.debug.log('Attempting to share...');
+  remoting.lastShareWasCancelled = false;
   if (remoting.oauth2.needsNewAccessToken()) {
     remoting.debug.log('Refreshing token...');
     remoting.oauth2.refreshAccessToken(function() {
@@ -360,8 +361,12 @@ function onStateChanged_() {
     if (remoting.currentMode != remoting.AppMode.HOST_SHARE_FAILED) {
       // If an error is being displayed, then the plugin should not be able to
       // hide it by setting the state. Errors must be dismissed by the user
-      // clicking OK, which puts the app into mode HOST_UNSHARED.
-      remoting.setMode(remoting.AppMode.HOST_SHARE_FINISHED);
+      // clicking OK, which puts the app into mode HOME.
+      if (remoting.lastShareWasCancelled) {
+        remoting.setMode(remoting.AppMode.HOME);
+      } else {
+        remoting.setMode(remoting.AppMode.HOST_SHARE_FINISHED);
+      }
     }
     plugin.parentNode.removeChild(plugin);
   } else if (state == plugin.ERROR) {
@@ -396,6 +401,7 @@ function showShareError_(errorTag) {
 
 remoting.cancelShare = function() {
   remoting.debug.log('Canceling share...');
+  remoting.lastShareWasCancelled = true;
   var plugin = /** @type {remoting.HostPlugin} */
       document.getElementById(remoting.HOST_PLUGIN_ID);
   try {
@@ -635,31 +641,16 @@ remoting.cancelPendingOperation = function() {
 }
 
 /**
- * Changes the major-mode of the application (Eg., client or host).
- *
- * @param {remoting.AppMode} mode The mode to shift the application into.
- * @return {void} Nothing.
- */
-remoting.setAppMode = function(mode) {
-  window.localStorage.setItem(KEY_APP_MODE_, mode);
-  remoting.setMode(getAppStartupMode());
-}
-
-/**
  * Gets the major-mode that this application should start up in.
  *
- * @return {remoting.AppMode} The mode (client or host) to start in.
+ * @return {remoting.AppMode} The mode to start in.
  */
 function getAppStartupMode() {
   if (!remoting.oauth2.isAuthenticated()) {
     return remoting.AppMode.UNAUTHENTICATED;
   }
   if (isHostModeSupported()) {
-    var mode = window.localStorage.getItem(KEY_APP_MODE_);
-    if (mode == remoting.AppMode.CLIENT) {
-      return remoting.AppMode.CLIENT_UNCONNECTED;
-    }
-    return remoting.AppMode.HOST_UNSHARED;
+    return remoting.AppMode.HOME;
   } else {
     return remoting.AppMode.CLIENT_UNCONNECTED;
   }
@@ -671,7 +662,7 @@ function getAppStartupMode() {
  * @return {boolean} True if Host mode is supported.
  */
 function isHostModeSupported() {
-  // Currently, ChromeOS is not supported.
+  // Currently, hosting on Chromebooks is not supported.
   return !navigator.userAgent.match(/\bCrOS\b/);
 }
 

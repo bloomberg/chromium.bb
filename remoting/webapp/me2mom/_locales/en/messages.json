@@ -41,9 +41,15 @@
     "message": "Ask the user whose computer you wish to access to click \u2018Share This Computer\u2019 and give you the access code.",
     "description": "Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share This Computer' quote should be copied verbatim from the corresponding translation."
   },
-  "DESCRIPTION_SHARE": {
-    "message": "With Chromoting you can easily and securely let another Chromium user see and control your computer.",
-    "description": "Description for the host app. This is shown to the host above the 'Share This Computer' button user before the client connects."
+  "DESCRIPTION_HOME": {
+    "message": "Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at $url$.",
+    "description": "Description for the home screen. This is shown when the app starts up, above buttons to share or connect.",
+    "placeholders": {
+      "url": {
+        "content": "$1",
+        "example": "<a href=http://g.co/remote>g.co/remote</a>"
+      }
+    }
   },
   "DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX": {
     "message": "Disconnect (Ctrl+Alt+Esc)",
@@ -97,37 +103,9 @@
     "message": "There was a problem accessing the server. Please try again.",
     "description": "Error message displayed if an access token could not be generated."
   },
-  "FOOTER_CLIENT": {
-    "message": "Click here to $linkBegin$share this computer$linkEnd$ with another user.",
-    "description": "Instructions and hyperlink to switch from client mode to host mode.",
-    "placeholders": {
-      "linkBegin": {
-        "content": "$1",
-        "example": "<a href=...>"
-      },
-      "linkEnd": {
-        "content": "$2",
-        "example": "</a>"
-      }
-    }
-  },
   "FOOTER_CHROME_OS": {
     "message": "Sharing your Chromebook will be supported in a future update\u2026 stay tuned.",
     "description": "Footer text displayed on ChromeOS in lieu of the mode switch hyperlink."
-  },
-  "FOOTER_HOST": {
-    "message": "Click here to $linkBegin$access a shared computer$linkEnd$.",
-    "description": "Instructions and hyperlink to switch from host mode to client mode.",
-    "placeholders": {
-      "linkBegin": {
-        "content": "$1",
-        "example": "<a href=...>"
-      },
-      "linkEnd": {
-        "content": "$2",
-        "example": "</a>"
-      }
-    }
   },
   "FOOTER_WAITING": {
     "message": "waiting for connection\u2026",
@@ -136,6 +114,22 @@
   "HELP": {
     "message": "Help",
     "description": "Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ."
+  },
+  "HOME_ACCESS_BUTTON": {
+    "message": "Access Now",
+    "description": "Clicking this button starts the desktop access process."
+  },
+  "HOME_ACCESS_DESCRIPTION": {
+    "message": "See and control a shared computer.",
+    "description": "Description of the 'access' or 'client' functionality, displayed next to a button that instigates an access operation."
+  },
+  "HOME_SHARE_BUTTON": {
+    "message": "Share Now",
+    "description": "Clicking this button starts the desktop sharing process."
+  },
+  "HOME_SHARE_DESCRIPTION": {
+    "message": "Share this computer for another user to see and control.",
+    "description": "Description of the 'share' or 'host' functionality, displayed next to a button that instigates a share operation."
   },
   "INSTRUCTIONS_SHARE_ABOVE": {
     "message": "To begin sharing your desktop, give the access code below to the person who will be assisting you.",
@@ -194,10 +188,6 @@
   "PRODUCT_NAME": {
     "message": "Chromoting",
     "description": "The product name. Displayed in various Chromium pages, including the New Tab page, and displayed prominently on the app's main page."
-  },
-  "SHARE_BUTTON": {
-    "message": "Share This Computer",
-    "description": "Label for the share button on the host-side. Clicking this button generates an access code to be conveyed to the client."
   },
   "STOP_SHARING_BUTTON": {
     "message": "Stop Sharing",

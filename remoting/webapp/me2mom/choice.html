@@ -35,25 +35,23 @@ found in the LICENSE file.
     <!-- loading-mode is initially visible, but becomes hidden as soon as an
          AppMode is selected by remoting.init. All other divs are initially
          hidden, but are shown appropriately when the mode changes. -->
-    <!-- TODO(jamiewalch): This string is not localized because by the time we
-         get around to running localize(), it's hidden anyway. -->
     <section id="loading-mode" data-ui-mode="">
       <em>Loading&hellip;</em>
     </section> <!-- loading-mode -->
 
     <div class="top-primary"
-         data-ui-mode="client host"
+         data-ui-mode="home client host"
          hidden>
       <span id="email-status">
         <span id="current-email"></span>
-        <span data-ui-mode="client.unconnected host.unshared">
+        <span data-ui-mode="home client.unconnected">
         (<a href="#" onclick="remoting.clearOAuth2();"
-                i18n-content="SIGN_OUT_BUTTON"></a>)
+            i18n-content="SIGN_OUT_BUTTON"></a>)
         </span>
       </span>
     </div>
 
-    <div class="top-secondary" data-ui-mode="auth client host">
+    <div class="top-secondary" data-ui-mode="auth home client host">
       <a href="https://www.google.com/support/chrome/bin/answer.py?answer=1649523"
          target="_blank" i18n-content="HELP"></a>
     </div>
@@ -79,17 +77,16 @@ found in the LICENSE file.
       </div>
     </div> <!-- session-toolbar -->
 
-    <div id="main" data-ui-mode="auth host client" hidden>
+    <div id="main" data-ui-mode="auth home host client" hidden>
 
       <header class="choice-header">
         <img id="icon" src="chromoting128.png">
         <h1 class="icon-label">
-          <span i18n-content="PRODUCT_NAME">
-          </span>&nbsp;&rsaquo;&nbsp;<span i18n-content="MODE_AUTHORIZE"
-                                           data-ui-mode="auth">
-          </span><span i18n-content="MODE_CONNECT" data-ui-mode="client">
-          </span><span i18n-content="MODE_SHARE" data-ui-mode="host">
-          </span>
+          <span i18n-content="PRODUCT_NAME"></span>
+          <span data-ui-mode="auth client host">&nbsp;&rsaquo;&nbsp;</span>
+          <span i18n-content="MODE_AUTHORIZE" data-ui-mode="auth"></span>
+          <span i18n-content="MODE_CONNECT" data-ui-mode="client"></span>
+          <span i18n-content="MODE_SHARE" data-ui-mode="host"></span>
         </h1>
       </header>
 
@@ -104,32 +101,58 @@ found in the LICENSE file.
         </div>
       </div> <!-- auth-panel -->
 
-      <div id="host-panel" data-ui-mode="host">
+      <div data-ui-mode="home">
+        <div class="description"
+             i18n-content="DESCRIPTION_HOME"
+             i18n-value-1="<a href='http://g.co/remote'>g.co/remote</a>"></div>
+        <table class="mode-select-table">
+          <tr>
+            <td i18n-content="HOME_SHARE_DESCRIPTION"
+                class="mode-select-label"></td>
+            <td>
+              <button i18n-content="HOME_SHARE_BUTTON"
+                      onclick="remoting.tryShare();"
+                      class="mode-select-button"
+                      type="button"></button>
+            </td>
+          </tr>
+          <tr class="mode-select-table-underline mode-select-table-spacer">
+            <td></td><td></td>
+          </tr>
+          <tr class="mode-select-table-spacer">
+          </tr>
+          <tr>
+            <td i18n-content="HOME_ACCESS_DESCRIPTION"
+                class="mode-select-label"></td>
+            <td>
+              <button i18n-content="HOME_ACCESS_BUTTON"
+                      onclick="remoting.setMode(
+                                   remoting.AppMode.CLIENT_UNCONNECTED);"
+                      class="mode-select-button"
+                      type="button"></button>
+            </td>
+          </tr>
+        </table>
+      </div> <!-- home -->
 
-        <div data-ui-mode="host.unshared">
-          <div class="description" i18n-content="DESCRIPTION_SHARE"></div>
-          <div class="centered-button">
-            <button class="big-button"
-                    type="button"
-                    onclick="remoting.tryShare();"
-                    autofocus="autofocus"
-                    i18n-content="SHARE_BUTTON"></button>
-          </div>
-        </div> <!-- host.unshared -->
+      <div id="host-panel" data-ui-mode="host">
 
         <div data-ui-mode="host.waiting-for-code" class="message"
              i18n-content="MESSAGE_GENERATING">
         </div> <!-- host.waiting-for-code -->
 
         <div data-ui-mode="host.waiting-for-connection">
-          <div class="description" i18n-content="INSTRUCTIONS_SHARE_ABOVE"></div>
+          <div class="description"
+               i18n-content="INSTRUCTIONS_SHARE_ABOVE"></div>
           <div id="access-code-display" dir="ltr"></div>
           <div id="access-code-countdown-container">
             <div id="access-code-countdown" class="expiring" hidden>
-              <span id="seconds-remaining" i18n-content="ACCESS_CODE_TIMER"></span>
+              <span id="seconds-remaining"
+                    i18n-content="ACCESS_CODE_TIMER"></span>
             </div>
           </div>
-          <div class="description" i18n-content="INSTRUCTIONS_SHARE_BELOW"></div>
+          <div class="description"
+               i18n-content="INSTRUCTIONS_SHARE_BELOW"></div>
         </div> <!-- host.waiting-for-connection -->
 
         <div data-ui-mode="host.shared">
@@ -156,7 +179,7 @@ found in the LICENSE file.
           <button type="button"
                   class="big-button"
                   autofocus="autofocus"
-                  onclick="remoting.setMode('host.unshared');"
+                  onclick="remoting.setMode(remoting.AppMode.HOME);"
                   i18n-content="OK">
           </button>
         </div>
@@ -174,6 +197,10 @@ found in the LICENSE file.
               <input id="access-code-entry" type="text" autofocus="autofocus"/>
               <button id="connect-button" class="big-button"
                       type="submit" i18n-content="CONNECT_BUTTON"></button>
+              <button class="big-button" type="button"
+                      i18n-content="CANCEL"
+                      onclick="remoting.setMode(remoting.AppMode.HOME);">
+              </button>
             </form>
           </div> <!-- code-entry-row -->
         </div> <!-- client.unconnected -->
@@ -205,28 +232,19 @@ found in the LICENSE file.
                   onclick="remoting.setMode(
                                remoting.AppMode.CLIENT_UNCONNECTED);">
           </button>
-        </div>
+        </div> <!-- client.connect-failed client.session-finished -->
 
       </div> <!-- client-panel -->
 
-      <img id="divider-bottom" src="dividerbottom.png">
+      <img id="divider-bottom"
+           src="dividerbottom.png"
+           data-ui-mode="auth host client">
 
       <footer class="choice-footer">
-        <div id="client-footer-text" data-ui-mode="client.unconnected">
-          <span i18n-content="FOOTER_CLIENT"
-                i18n-value-1="<a href='#' onclick='remoting.setAppMode(remoting.AppMode.HOST);'>"
-                i18n-value-2="</a>"></span>
-        </div> <!-- client-footer-text -->
 
         <div id="client-footer-text-cros" data-ui-mode="client.unconnected"
              i18n-content="FOOTER_CHROME_OS">
         </div> <!-- client-footer-text-cros -->
-
-        <div id="host-footer-text" data-ui-mode="host.unshared">
-          <span i18n-content="FOOTER_HOST"
-                i18n-value-1="<a href='#' onclick='remoting.setAppMode(remoting.AppMode.CLIENT);'>"
-                i18n-value-2="</a>"></span>
-        </div> <!-- host-footer-text -->
 
         <div id="waiting-footer"
              data-ui-mode="host.waiting-for-connection host.waiting-for-code">
