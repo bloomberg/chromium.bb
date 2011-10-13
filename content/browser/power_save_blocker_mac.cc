@@ -6,6 +6,7 @@
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
+#include "base/bind.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread.h"
@@ -19,35 +20,44 @@ namespace {
 base::Thread* g_power_thread;
 IOPMAssertionID g_power_assertion;
 
-void CreateSleepAssertion() {
+void CreateSleepAssertion(PowerSaveBlocker::PowerSaveBlockerType type) {
   DCHECK_EQ(base::PlatformThread::CurrentId(), g_power_thread->thread_id());
   IOReturn result;
-  DCHECK_EQ(g_power_assertion, kIOPMNullAssertionID);
 
-  // Block just idle sleep; allow display sleep.
-  // See QA1340 <http://developer.apple.com/library/mac/#qa/qa2004/qa1340.html>
-  // for more details.
-  result = IOPMAssertionCreate(kIOPMAssertionTypeNoIdleSleep,
-                               kIOPMAssertionLevelOn,
-                               &g_power_assertion);
-  LOG_IF(ERROR, result != kIOReturnSuccess)
-      << "IOPMAssertionCreate: " << result;
-}
+  if (g_power_assertion != kIOPMNullAssertionID) {
+    result = IOPMAssertionRelease(g_power_assertion);
+    g_power_assertion = kIOPMNullAssertionID;
+    LOG_IF(ERROR, result != kIOReturnSuccess)
+        << "IOPMAssertionRelease: " << result;
+  }
 
-void ReleaseSleepAssertion() {
-  DCHECK_EQ(base::PlatformThread::CurrentId(), g_power_thread->thread_id());
-  IOReturn result;
-  DCHECK_NE(g_power_assertion, kIOPMNullAssertionID);
-  result = IOPMAssertionRelease(g_power_assertion);
-  g_power_assertion = kIOPMNullAssertionID;
-  LOG_IF(ERROR, result != kIOReturnSuccess)
-      << "IOPMAssertionRelease: " << result;
+  CFStringRef level = NULL;
+  // See QA1340 <http://developer.apple.com/library/mac/#qa/qa1340/> for more
+  // details.
+  switch (type) {
+    case PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep:
+      level = kIOPMAssertionTypeNoIdleSleep;
+      break;
+    case PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep:
+      level = kIOPMAssertionTypeNoDisplaySleep;
+      break;
+    case PowerSaveBlocker::kPowerSaveBlockPreventNone:
+      break;
+  }
+  if (level) {
+    result = IOPMAssertionCreate(level,
+                                 kIOPMAssertionLevelOn,
+                                 &g_power_assertion);
+    LOG_IF(ERROR, result != kIOReturnSuccess)
+        << "IOPMAssertionCreate: " << result;
+  }
 }
 
 }  // namespace
 
 // Called only from UI thread.
-void PowerSaveBlocker::ApplyBlock(bool blocking) {
+// static
+void PowerSaveBlocker::ApplyBlock(PowerSaveBlockerType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!g_power_thread) {
@@ -56,9 +66,6 @@ void PowerSaveBlocker::ApplyBlock(bool blocking) {
     g_power_thread->Start();
   }
 
-  MessageLoop* loop = g_power_thread->message_loop();
-  if (blocking)
-    loop->PostTask(FROM_HERE, NewRunnableFunction(CreateSleepAssertion));
-  else
-    loop->PostTask(FROM_HERE, NewRunnableFunction(ReleaseSleepAssertion));
+  g_power_thread->message_loop()->
+      PostTask(FROM_HERE, base::Bind(CreateSleepAssertion, type));
 }

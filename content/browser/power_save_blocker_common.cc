@@ -1,58 +1,62 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/power_save_blocker.h"
 
+#include "base/bind.h"
 #include "content/browser/browser_thread.h"
 
 // Accessed only from the UI thread.
-int PowerSaveBlocker::blocker_count_ = 0;
+int PowerSaveBlocker::blocker_count_[kPowerSaveBlockPreventStateCount];
 
-PowerSaveBlocker::PowerSaveBlocker(bool enable) : enabled_(false) {
-  if (enable)
-    Enable();
+PowerSaveBlocker::PowerSaveBlocker(PowerSaveBlockerType type) : type_(type) {
+  DCHECK_LT(kPowerSaveBlockPreventNone, type);
+  DCHECK_GT(kPowerSaveBlockPreventStateCount, type);
+  std::vector<int> change(kPowerSaveBlockPreventStateCount);
+  ++change[type_];
+  PostAdjustBlockCount(change);
 }
 
 PowerSaveBlocker::~PowerSaveBlocker(void) {
-  Disable();
+  std::vector<int> change(kPowerSaveBlockPreventStateCount);
+  --change[type_];
+  PostAdjustBlockCount(change);
 }
 
-void PowerSaveBlocker::Enable() {
-  if (enabled_)
-    return;
-
-  enabled_ = true;
-  PostAdjustBlockCount(1);
-}
-
-void PowerSaveBlocker::Disable() {
-  if (!enabled_)
-    return;
-
-  enabled_ = false;
-  PostAdjustBlockCount(-1);
-}
-
-
-void PowerSaveBlocker::PostAdjustBlockCount(int delta) {
+// static
+void PowerSaveBlocker::PostAdjustBlockCount(const std::vector<int>& deltas) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&PowerSaveBlocker::AdjustBlockCount, delta));
+      base::Bind(&PowerSaveBlocker::AdjustBlockCount, deltas));
 }
 
 // Called only from UI thread.
-void PowerSaveBlocker::AdjustBlockCount(int delta) {
+// static
+void PowerSaveBlocker::AdjustBlockCount(const std::vector<int>& deltas) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  bool was_blocking = (blocker_count_ != 0);
+  PowerSaveBlockerType old_block = HighestBlockType();
 
-  blocker_count_ += delta;
+  for (size_t i = 0; i < deltas.size(); ++i)
+    blocker_count_[i] += deltas[i];
 
-  bool is_blocking = (blocker_count_ != 0);
+  PowerSaveBlockerType new_block = HighestBlockType();
 
-  DCHECK_GE(blocker_count_, 0);
+  if (new_block != old_block)
+    ApplyBlock(new_block);
+}
 
-  if (is_blocking != was_blocking)
-    ApplyBlock(is_blocking);
+// Called only from UI thread.
+PowerSaveBlocker::PowerSaveBlockerType PowerSaveBlocker::HighestBlockType() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (PowerSaveBlockerType t = kPowerSaveBlockPreventDisplaySleep;
+       t >= kPowerSaveBlockPreventSystemSleep;
+       t = static_cast<PowerSaveBlockerType>(t - 1)) {
+    if (blocker_count_[t])
+      return t;
+  }
+
+  return kPowerSaveBlockPreventNone;
 }
