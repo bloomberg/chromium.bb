@@ -249,7 +249,7 @@ function updateControlsWithSelectedPrinterCapabilities() {
         'disableColorOption': true,
         'setColorAsDefault': true,
         'setDuplexAsDefault': false,
-        'printerColorModelForColor': colorSettings.COLOR,
+        'printerColorModelForColor': print_preview.ColorSettings.COLOR,
         'printerDefaultDuplexValue': copiesSettings.UNKNOWN_DUPLEX_MODE,
         'disableCopiesOption': true});
   } else {
@@ -974,7 +974,8 @@ function createPDFPlugin(srcDataIndex) {
     pdfViewer.goToPage('0');
     pdfViewer.resetPrintPreviewUrl(srcURL);
     pdfViewer.reload();
-    pdfViewer.grayscale(colorSettings.colorMode == colorSettings.GRAY);
+    pdfViewer.grayscale(
+        colorSettings.colorMode == print_preview.ColorSettings.GRAY);
     return;
   }
 

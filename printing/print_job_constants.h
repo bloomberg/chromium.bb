@@ -48,6 +48,25 @@ PRINTING_EXPORT extern const char kSettingPrintToPDF[];
 PRINTING_EXPORT extern const int FIRST_PAGE_INDEX;
 PRINTING_EXPORT extern const int COMPLETE_PREVIEW_DOCUMENT_INDEX;
 
+#if defined (USE_CUPS)
+// Printer color models
+PRINTING_EXPORT extern const char kBlack[];
+PRINTING_EXPORT extern const char kCMYK[];
+PRINTING_EXPORT extern const char kKCMY[];
+PRINTING_EXPORT extern const char kCMY_K[];
+PRINTING_EXPORT extern const char kCMY[];
+PRINTING_EXPORT extern const char kColor[];
+PRINTING_EXPORT extern const char kGray[];
+PRINTING_EXPORT extern const char kGrayscale[];
+PRINTING_EXPORT extern const char kGreyscale[];
+PRINTING_EXPORT extern const char kMonochrome[];
+PRINTING_EXPORT extern const char kNormal[];
+PRINTING_EXPORT extern const char kNormalGray[];
+PRINTING_EXPORT extern const char kRGB[];
+PRINTING_EXPORT extern const char kRGBA[];
+PRINTING_EXPORT extern const char kRGB16[];
+#endif
+
 // Print job duplex mode values.
 enum DuplexMode {
   UNKNOWN_DUPLEX_MODE = -1,
@@ -70,10 +89,27 @@ enum VerticalHeaderFooterPosition {
 };
 
 // Print job color mode values.
-enum ColorMode {
-  GRAY = 1,
+enum ColorModels {
+  UNKNOWN_COLOR_MODEL,
+  GRAY,
   COLOR,
   CMYK,
+  CMY,
+  KCMY,
+  CMY_K,  // CMY_K represents CMY+K.
+  BLACK,
+  RGB,
+  RGB16,
+  RGBA,
+  COLORMODE_COLOR,  // Used in samsung printer ppds.
+  COLORMODE_MONOCHROME,  // Used in samsung printer ppds.
+  HP_COLOR_COLOR, // Used in HP color printer ppds.
+  HP_COLOR_BLACK, // Used in HP color printer ppds.
+  PRINTOUTMODE_NORMAL,  // Used in foomatic ppds.
+  PRINTOUTMODE_NORMAL_GRAY,  // Used in foomatic ppds.
+  PROCESSCOLORMODEL_CMYK,  // Used in canon printer ppds.
+  PROCESSCOLORMODEL_GREYSCALE,  // Used in canon printer ppds.
+  PROCESSCOLORMODEL_RGB,  // Used in canon printer ppds
 };
 
 }  // namespace printing

@@ -2191,7 +2191,7 @@
             'USE_CUPS',
           ],
           'sources': [
-            'browser/ui/webui/print_preview_handler_unittest.cc',
+            'browser/printing/print_system_task_proxy_unittest.cc',
           ],
         }],
       ],

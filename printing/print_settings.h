@@ -11,9 +11,20 @@
 #include "base/string16.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
+#include "printing/printing_export.h"
 #include "ui/gfx/rect.h"
 
 namespace printing {
+
+// Returns true if color model is selected.
+PRINTING_EXPORT bool isColorModelSelected(int model);
+
+#if defined (USE_CUPS)
+  // Get the color model setting name and value for the |color_mode|.
+  PRINTING_EXPORT  void GetColorModelForMode(int color_mode,
+                                             std::string* color_setting_name,
+                                             std::string* color_value);
+#endif
 
 // OS-independent print settings.
 class PRINTING_EXPORT PrintSettings {
