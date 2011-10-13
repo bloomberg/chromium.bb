@@ -221,17 +221,6 @@ void ScreenLocker::InitClass() {
 
 }  // namespace chromeos
 
-namespace browser {
-
-BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
-    BrowserFrame* frame, BrowserView* browser_view) {
-  // TODO(saintlou):u
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-}  // browser
-
 // static
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // TODO(saintlou): As per Ben there is no need for this in Aura.
