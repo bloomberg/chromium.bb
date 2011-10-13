@@ -940,7 +940,7 @@ class GClientSmokeGIT(GClientSmokeBase):
 
     # Revert implies --force implies running hooks without looking at pattern
     # matching.
-    results = self.gclient(['revert', '--deps', 'mac'])
+    results = self.gclient(['revert', '--deps', 'mac', '--jobs', '1'])
     out = results[0].splitlines(False)
     # TODO(maruel): http://crosbug.com/3583 It just runs the hooks right now.
     self.assertEquals(13, len(out))
@@ -955,7 +955,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
 
-    results = self.gclient(['status', '--deps', 'mac'])
+    results = self.gclient(['status', '--deps', 'mac', '--jobs', '1'])
     out = results[0].splitlines(False)
     # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
     # files.
