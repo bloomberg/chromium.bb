@@ -33,6 +33,8 @@ function TEST_F(testFixture, testFunction, testBody) {
   var testGenPostamble = this[testFixture].prototype.testGenPostamble;
   var typedefCppFixture = this[testFixture].prototype.typedefCppFixture;
   var isAsync = this[testFixture].prototype.isAsync;
+  var testShouldFail = this[testFixture].prototype.testShouldFail;
+  var testPredicate = testShouldFail ? 'ASSERT_FALSE' : 'ASSERT_TRUE';
 
   if (typedefCppFixture && !(testFixture in typedeffedCppFixtures)) {
     print('typedef ' + typedefCppFixture + ' ' + testFixture + ';');
@@ -52,7 +54,7 @@ function TEST_F(testFixture, testFunction, testBody) {
           '      FILE_PATH_LITERAL("' + browsePrintPreload + '"))),\n' +
           '      "' + testFixture + '", "' + testFunction + '");');
   }
-  print('  ASSERT_TRUE(RunJavascriptTestF(' + isAsync + ', ' +
+  print('  ' + testPredicate + '(RunJavascriptTestF(' + isAsync + ', ' +
         '"' + testFixture + '", ' +
         '"' + testFunction + '"));');
   if (testGenPostamble)

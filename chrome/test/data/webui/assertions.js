@@ -57,3 +57,25 @@ TEST_F('WebUIAssertionsTest', 'testConstructedMessage', function() {
   expectEquals(
       1, result[1].match(/assertTrue\(false, message\): 1 2: false/g).length);
 });
+
+/**
+ * Async version of WebUIAssertionsTest.
+ * @extends WebUIAssertionsTest
+ * @constructor
+ */
+function WebUIAssertionsTestAsyncFail() {}
+
+WebUIAssertionsTestAsyncFail.prototype = {
+  __proto__: WebUIAssertionsTest.prototype,
+
+  /** @inheritDoc */
+  isAsync: true,
+
+  /** @inheritDoc */
+  testShouldFail: true,
+};
+
+// Test that an assertion failure doesn't hang forever.
+TEST_F('WebUIAssertionsTestAsyncFail', 'testAsyncFailCallsDone', function() {
+  assertNotReached();
+});

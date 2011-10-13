@@ -76,33 +76,30 @@ TEST_F('CertificateViewerUITestAsync', 'MAYBE_testDetails', function() {
   var certFields = $('cert-fields');
   var certFieldVal = $('cert-field-value');
 
-  // TODO(scr): Fix TEST_F to call testDone when assertions fail in async mode.
-  this.continueTest(WhenTestDone.DEFAULT, function() {
-    // There must be at least one certificate in the hierarchy.
-    assertLT(0, certHierarchy.childNodes.length);
+  // There must be at least one certificate in the hierarchy.
+  assertLT(0, certHierarchy.childNodes.length);
 
-    // Select the first certificate on the chain and ensure the details show up.
-    // Override the receive certificate function to catch when fields are
-    // loaded.
-    var getCertificateFields = cert_viewer.getCertificateFields;
-    cert_viewer.getCertificateFields = this.continueTest(WhenTestDone.ALWAYS,
-        function(certFieldDetails) {
-      getCertificateFields(certFieldDetails);
-      cert_viewer.getCertificateFields = getCertificateFields;
-      assertLT(0, certFields.childNodes.length);
+  // Select the first certificate on the chain and ensure the details show up.
+  // Override the receive certificate function to catch when fields are
+  // loaded.
+  var getCertificateFields = cert_viewer.getCertificateFields;
+  cert_viewer.getCertificateFields = this.continueTest(WhenTestDone.ALWAYS,
+      function(certFieldDetails) {
+    getCertificateFields(certFieldDetails);
+    cert_viewer.getCertificateFields = getCertificateFields;
+    assertLT(0, certFields.childNodes.length);
 
-      // Test that a field can be selected to see the details for that field.
-      var item = getElementWithValue(certFields);
-      assertNotEquals(null, item);
-      certFields.selectedItem = item;
-      assertEquals(item.detail.payload.val, certFieldVal.textContent);
+    // Test that a field can be selected to see the details for that field.
+    var item = getElementWithValue(certFields);
+    assertNotEquals(null, item);
+    certFields.selectedItem = item;
+    assertEquals(item.detail.payload.val, certFieldVal.textContent);
 
-      // Test that selecting an item without a value empties the field.
-      certFields.selectedItem = certFields.childNodes[0];
-      assertEquals('', certFieldVal.textContent);
-    });
-    certHierarchy.selectedItem = certHierarchy.childNodes[0];
-  })();
+    // Test that selecting an item without a value empties the field.
+    certFields.selectedItem = certFields.childNodes[0];
+    assertEquals('', certFieldVal.textContent);
+  });
+  certHierarchy.selectedItem = certHierarchy.childNodes[0];
 });
 
 ////////////////////////////////////////////////////////////////////////////////

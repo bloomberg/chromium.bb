@@ -104,6 +104,12 @@ var testing = {};
     isAsync: false,
 
     /**
+     * True when the test is expected to fail for testing the test framework.
+     * @type {boolean}
+     */
+    testShouldFail: false,
+
+    /**
      * Override this method to perform initialization during preload (such as
      * creating mocks and registering handlers).
      * @type {Function}
@@ -557,9 +563,10 @@ var testing = {};
 
   /**
    * Returns [success, message] & clears |errors|.
+   * @param {boolean} errorsOk When true, errors are ok.
    * @return {Array.<boolean, string>}
    */
-  function testResult() {
+  function testResult(errorsOk) {
     var result = [true, ''];
     if (errors.length) {
       var message = '';
@@ -568,7 +575,7 @@ var testing = {};
                    currentTestArguments.map(JSON.stringify) +
                    ')\n' + errors[i].stack;
       }
-      result = [false, message];
+      result = [!!errorsOk, message];
     }
     return result;
   }
@@ -713,9 +720,10 @@ var testing = {};
    * checking by runTest. This allows tests to continue running other checks,
    * while failing the overall test if any errors occurrred.
    * @param {Function} assertFunc The function which may throw an Error.
-   * @return {Function} A function that applies its arguments to |assertFunc|.
+   * @return {function(...*):bool} A function that applies its arguments to
+   *     |assertFunc| and returns true if |assertFunc| passes.
    * @see errors
-   * @see runTest
+   * @see runTestFunction
    */
   function createExpect(assertFunc) {
     var expectFunc = function() {
@@ -723,7 +731,9 @@ var testing = {};
         assertFunc.apply(null, arguments);
       } catch (e) {
         errors.push(e);
+        return false;
       }
+      return true;
     };
     expectFunc.isExpect = true;
     expectFunc.expectName = assertFunc.name.replace(/^assert/, 'expect');
@@ -736,14 +746,14 @@ var testing = {};
    * error messages. This supports sync tests and async tests by calling
    * testDone() when |isAsync| is not true, relying on async tests to call
    * testDone() when they complete.
-   * @param {boolean} isAsync When false, call testDone() with the test result.
+   * @param {boolean} isAsync When false, call testDone() with the test result
+   *     otherwise only when assertions are caught.
    * @param {string} testFunction The function name to call.
    * @param {Array} testArguments The arguments to call |testFunction| with.
    * @return {boolean} true always to signal successful execution (but not
    *     necessarily successful results) of this test.
    * @see errors
    * @see runTestFunction
-   * TODO(scr): Fix TEST_F to call testDone when assertions fail in async mode.
    */
   function runTest(isAsync, testFunction, testArguments) {
     // Avoid eval() if at all possible, since it will not work on pages
@@ -757,8 +767,8 @@ var testing = {};
     if (testBody != RUN_TEST_F) {
       console.log('Running test ' + testName);
     }
-    var result = runTestFunction(testFunction, testBody, testArguments);
-    if (!isAsync)
+    var result = runTestFunction(testFunction, testBody, testArguments, true);
+    if (!isAsync || !result[0])
       testDone(result);
     return true;
   }
@@ -772,15 +782,18 @@ var testing = {};
    * @param {string} testFunction The function name to report on failure.
    * @param {Function} testBody The function to call.
    * @param {Array} testArguments The arguments to call |testBody| with.
+   * @param {boolean} onlyAssertFails When true, only assertions cause failing
+   *     testResult.
    * @return {Array.<boolean, string>} [test-succeeded, message-if-failed]
    * @see createExpect
-   * @see testDone
+   * @see testResult
    */
-  function runTestFunction(testFunction, testBody, testArguments) {
+  function runTestFunction(testFunction, testBody, testArguments,
+                           onlyAssertFails) {
     currentTestFunction = testFunction;
     currentTestArguments = testArguments;
-    createExpect(testBody).apply(null, testArguments);
-    return testResult();
+    var ok = createExpect(testBody).apply(null, testArguments);
+    return testResult(onlyAssertFails && ok);
   }
 
   /**
