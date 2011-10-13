@@ -49,6 +49,7 @@
         'window.cc',
         'window.h',
         'window_delegate.h',
+        'window_observer.h',
         'window_types.h',
       ],
     },

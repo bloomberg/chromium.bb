@@ -38,8 +38,7 @@ void DesktopLayoutManager::OnWindowResized() {
 
   gfx::Rect launcher_bounds = launcher_widget_->GetWindowScreenBounds();
   launcher_widget_->SetBounds(
-      gfx::Rect(owner_->bounds().width() / 2 - launcher_bounds.width() / 2,
-                owner_->bounds().bottom() - launcher_bounds.height(),
+      gfx::Rect(0, owner_->bounds().bottom() - launcher_bounds.height(),
                 launcher_bounds.width(),
                 launcher_bounds.height()));
 

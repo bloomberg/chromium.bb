@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/string16.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/aura_export.h"
@@ -34,6 +35,7 @@ class LayoutManager;
 class MouseEvent;
 class ToplevelWindowContainer;
 class WindowDelegate;
+class WindowObserver;
 
 namespace internal {
 class FocusManager;
@@ -119,6 +121,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // the desktop's window.
   void SetParent(Window* parent);
   Window* parent() { return parent_; }
+  const Window* parent() const { return parent_; }
 
   // Move the specified child of this Window to the front of the z-order.
   // TODO(beng): this is (obviously) feeble.
@@ -157,6 +160,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   bool OnKeyEvent(KeyEvent* event);
 
   WindowDelegate* delegate() { return delegate_; }
+
+  // Add/remove observer.
+  void AddObserver(WindowObserver* observer);
+  void RemoveObserver(WindowObserver* observer);
 
   // When set to true, this Window will stop propagation of all events targeted
   // at Windows below it in the z-order, but only if this Window has children.
@@ -266,6 +273,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // When true, events are not sent to windows behind this one in the z-order,
   // provided this window has children. See set_stops_event_propagation().
   bool stops_event_propagation_;
+
+  ObserverList<WindowObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

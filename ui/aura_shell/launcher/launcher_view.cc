@@ -5,13 +5,13 @@
 #include "ui/aura_shell/launcher/launcher_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "ui/aura/desktop.h"
-#include "ui/aura_shell/aura_shell_export.h"
+#include "grit/ui_resources.h"
 #include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_window_ids.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/aura_shell/shell_delegate.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
+#include "views/controls/button/image_button.h"
 #include "views/widget/widget.h"
 
 using views::View;
@@ -26,27 +26,56 @@ static const int kHorizontalPadding = 12;
 // added/removed.
 static const int kPreferredHeight = 64;
 
-LauncherView::LauncherView() : model_(NULL) {
+LauncherView::LauncherView(LauncherModel* model)
+    : model_(model),
+      new_browser_button_(NULL),
+      show_apps_button_(NULL) {
+  DCHECK(model_);
 }
 
 LauncherView::~LauncherView() {
-  // The model owns the views.
-  RemoveAllChildViews(false);
-
   model_->RemoveObserver(this);
 }
 
-void LauncherView::Init(LauncherModel* model) {
-  DCHECK(!model_);
-  model_ = model;
+void LauncherView::Init() {
   model_->AddObserver(this);
-  for (int i = 0; i < model_->item_count(); ++i)
-    AddChildView(model_->view_at(i));
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  new_browser_button_ = new views::ImageButton(this);
+  new_browser_button_->SetImage(
+      views::CustomButton::BS_NORMAL,
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_CHROME).ToSkBitmap());
+  AddChildView(new_browser_button_);
+
+  const LauncherItems& items(model_->items());
+  for (LauncherItems::const_iterator i = items.begin(); i != items.end(); ++i)
+    AddChildView(CreateViewForItem(*i));
+
+  show_apps_button_ = new views::ImageButton(this);
+  show_apps_button_->SetImage(
+      views::CustomButton::BS_NORMAL,
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToSkBitmap());
+  AddChildView(show_apps_button_);
+}
+
+views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
+  // TODO: need to support images.
+  views::ImageButton* button = new views::ImageButton(this);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  button->SetImage(
+      views::CustomButton::BS_NORMAL,
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_TABBED_BROWSER).ToSkBitmap());
+  return button;
+}
+
+void LauncherView::Resize() {
+  int y = GetWidget()->GetClientAreaScreenBounds().y();
+  gfx::Size pref(GetPreferredSize());
+  GetWidget()->SetBounds(gfx::Rect(0, y, pref.width(), pref.height()));
 }
 
 void LauncherView::Layout() {
   // TODO: need to deal with overflow.
-  int x = 0;
+  int x = kHorizontalPadding;
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
     if (child->IsVisible()) {
@@ -59,7 +88,7 @@ void LauncherView::Layout() {
 }
 
 gfx::Size LauncherView::GetPreferredSize() {
-  int x = 0;
+  int x = kHorizontalPadding;
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
     if (child->IsVisible()) {
@@ -67,41 +96,40 @@ gfx::Size LauncherView::GetPreferredSize() {
       x += pref_size.width() + kHorizontalPadding;
     }
   }
-  if (x > 0)
-    x -= kHorizontalPadding;
   return gfx::Size(x, kPreferredHeight);
 }
 
 void LauncherView::LauncherItemAdded(int index) {
   // TODO: to support animations is going to require coordinate conversions.
-  AddChildViewAt(model_->view_at(index), index);
+  AddChildViewAt(CreateViewForItem(model_->items()[index]), index + 1);
+  Resize();
 }
 
 void LauncherView::LauncherItemRemoved(int index) {
   // TODO: to support animations is going to require coordinate conversions.
-  RemoveChildView(child_at(index));
+  RemoveChildView(child_at(index + 1));
+  Resize();
 }
 
-void LauncherView::LauncherSelectionChanged() {
+void LauncherView::LauncherItemImagesChanged(int index) {
+  // TODO: implement me.
 }
 
-views::Widget* CreateLauncher(LauncherModel* model) {
-  views::Widget* launcher_widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-  params.bounds = gfx::Rect(0, 0, 300, kPreferredHeight);
-  params.parent = Shell::GetInstance()->GetContainer(
-      aura_shell::internal::kShellWindowId_LauncherContainer);
-  LauncherView* launcher_view = new LauncherView;
-  launcher_view->Init(model);
-  params.delegate = launcher_view;
-  launcher_widget->Init(params);
-  launcher_widget->GetNativeWindow()->layer()->SetOpacity(0.8f);
-  gfx::Size pref = static_cast<views::View*>(launcher_view)->GetPreferredSize();
-  launcher_widget->SetBounds(gfx::Rect(0, 0, pref.width(), pref.height()));
-  launcher_widget->SetContentsView(launcher_view);
-  launcher_widget->Show();
-  launcher_widget->GetNativeView()->set_name("LauncherView");
-  return launcher_widget;
+void LauncherView::ButtonPressed(views::Button* sender,
+                                 const views::Event& event) {
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+  if (!delegate)
+    return;
+  if (sender == new_browser_button_) {
+    delegate->CreateNewWindow();
+  } else if (sender == show_apps_button_) {
+    delegate->ShowApps();
+  } else {
+    int index = GetIndexOf(sender);
+    DCHECK_NE(-1, index);
+    // TODO: animations will require coordinate transforms.
+    delegate->LauncherItemClicked(model_->items()[index - 1]);
+  }
 }
 
 }  // namespace internal

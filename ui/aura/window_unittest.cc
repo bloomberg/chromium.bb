@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/aura/window.h"
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/desktop_observer.h"
@@ -15,6 +18,7 @@
 #include "ui/aura/test/test_desktop_delegate.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -761,14 +765,68 @@ TEST_F(WindowTest, Deactivate) {
   EXPECT_EQ(w2.get(), parent->children()[1]);
 }
 
-class ObserverTest : public WindowTest,
-                     public DesktopObserver {
+class WindowObserverTest : public WindowTest,
+                     public WindowObserver {
  public:
-  ObserverTest()
-      : active_(NULL) {
+  WindowObserverTest() : added_count_(0), removed_count_(0) {}
+
+  virtual ~WindowObserverTest() {}
+
+  // Returns a description of the WindowObserver methods that have been invoked.
+  std::string WindowObserverCountStateAndClear() {
+    std::string result(
+        base::StringPrintf("added=%d removed=%d",
+        added_count_, removed_count_));
+    added_count_ = removed_count_ = 0;
+    return result;
   }
 
-  virtual ~ObserverTest() {}
+ private:
+  virtual void OnWindowAdded(Window* new_window) OVERRIDE {
+    added_count_++;
+  }
+
+  virtual void OnWillRemoveWindow(Window* window) OVERRIDE {
+    removed_count_++;
+  }
+
+  int added_count_;
+  int removed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
+};
+
+// Various assertions for WindowObserver.
+TEST_F(WindowObserverTest, WindowObserver) {
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
+  w1->AddObserver(this);
+
+  // Create a new window as a child of w1, our observer should be notified.
+  scoped_ptr<Window> w2(CreateTestWindowWithId(2, w1.get()));
+  EXPECT_EQ("added=1 removed=0", WindowObserverCountStateAndClear());
+
+  // Delete w2, which should result in the remove notification.
+  w2.reset();
+  EXPECT_EQ("added=0 removed=1", WindowObserverCountStateAndClear());
+
+  // Create a window that isn't parented to w1, we shouldn't get any
+  // notification.
+  scoped_ptr<Window> w3(CreateTestWindowWithId(3, NULL));
+  EXPECT_EQ("added=0 removed=0", WindowObserverCountStateAndClear());
+
+  // Similarly destroying w3 shouldn't notify us either.
+  w3.reset();
+  EXPECT_EQ("added=0 removed=0", WindowObserverCountStateAndClear());
+  w1->RemoveObserver(this);
+}
+
+class DesktopObserverTest : public WindowTest,
+                            public DesktopObserver {
+ public:
+  DesktopObserverTest() : active_(NULL) {
+  }
+
+  virtual ~DesktopObserverTest() {}
 
   Window* active() const { return active_; }
 
@@ -793,10 +851,10 @@ class ObserverTest : public WindowTest,
 
   Window* active_;
 
-  DISALLOW_COPY_AND_ASSIGN(ObserverTest);
+  DISALLOW_COPY_AND_ASSIGN(DesktopObserverTest);
 };
 
-TEST_F(ObserverTest, WindowActivationObserve) {
+TEST_F(DesktopObserverTest, WindowActivationObserve) {
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
   scoped_ptr<Window> w2(CreateTestWindowWithId(2, NULL));
   scoped_ptr<Window> w3(CreateTestWindowWithId(3, w1.get()));

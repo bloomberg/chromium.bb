@@ -19,8 +19,8 @@ class AURA_SHELL_EXPORT LauncherModelObserver {
   // at.
   virtual void LauncherItemRemoved(int index) = 0;
 
-  // Invoked when the selection changes.
-  virtual void LauncherSelectionChanged() = 0;
+  // Invoked when the images of an item change.
+  virtual void LauncherItemImagesChanged(int index) = 0;
 
  protected:
   virtual ~LauncherModelObserver() {}

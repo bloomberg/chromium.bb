@@ -13,6 +13,7 @@
 #include "ui/aura/event_filter.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_types.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/gfx/canvas_skia.h"
@@ -205,11 +206,13 @@ void Window::AddChild(Window* child) {
   child->parent_ = this;
   layer_->Add(child->layer_.get());
   children_.push_back(child);
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowAdded(child));
 }
 
 void Window::RemoveChild(Window* child) {
   Windows::iterator i = std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
   child->parent_ = NULL;
   layer_->Remove(child->layer_.get());
   children_.erase(i);
@@ -257,6 +260,14 @@ bool Window::OnMouseEvent(MouseEvent* event) {
 
 bool Window::OnKeyEvent(KeyEvent* event) {
   return IsVisible() && delegate_->OnKeyEvent(event);
+}
+
+void Window::AddObserver(WindowObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Window::RemoveObserver(WindowObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool Window::HitTest(const gfx::Point& point) {

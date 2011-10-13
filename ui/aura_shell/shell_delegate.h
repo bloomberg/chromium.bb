@@ -10,6 +10,8 @@
 
 namespace aura_shell {
 
+struct LauncherItem;
+
 // Delegate of the Shell.
 class AURA_SHELL_EXPORT ShellDelegate {
  public:
@@ -22,6 +24,14 @@ class AURA_SHELL_EXPORT ShellDelegate {
 
   // Invoked when the user clicks the app list button on the launcher.
   virtual void ShowApps() = 0;
+
+  // Invoked when the user clicks on a window entry in the launcher.
+  virtual void LauncherItemClicked(const LauncherItem& item) = 0;
+
+  // Invoked when a window is added. If the delegate wants the launcher to show
+  // an entry for |item->window| it should configure |item| appropriately and
+  // return true.
+  virtual bool ConfigureLauncherItem(LauncherItem* item) = 0;
 };
 
 }  // namespace aura_shell

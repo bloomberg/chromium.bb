@@ -7,26 +7,36 @@
 #pragma once
 
 #include "ui/aura_shell/launcher/launcher_model_observer.h"
+#include "views/controls/button/button.h"
 #include "views/widget/widget_delegate.h"
+
+namespace views {
+class ImageButton;
+}
 
 namespace aura_shell {
 
+struct LauncherItem;
 class LauncherModel;
 
 namespace internal {
 
-class LauncherButton;
-
 class LauncherView : public views::WidgetDelegateView,
-                     public LauncherModelObserver {
+                     public LauncherModelObserver,
+                     public views::ButtonListener {
  public:
-  LauncherView();
+  explicit LauncherView(LauncherModel* model);
   virtual ~LauncherView();
 
-  // Populates this LauncherView from the contents of |model|.
-  void Init(LauncherModel* model);
+  void Init();
 
  private:
+  // Creates the view used to represent |item|.
+  views::View* CreateViewForItem(const LauncherItem& item);
+
+  // Resizes the widget to fit the view.
+  void Resize();
+
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -34,10 +44,18 @@ class LauncherView : public views::WidgetDelegateView,
   // Overridden from LauncherModelObserver:
   virtual void LauncherItemAdded(int index) OVERRIDE;
   virtual void LauncherItemRemoved(int index) OVERRIDE;
-  virtual void LauncherSelectionChanged() OVERRIDE;
+  virtual void LauncherItemImagesChanged(int index) OVERRIDE;
 
-  // The model, we don't own it.
+  // Overriden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
+
+  // The model; owned by Launcher.
   LauncherModel* model_;
+
+  views::ImageButton* new_browser_button_;
+
+  views::ImageButton* show_apps_button_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/examples/toplevel_window.h"
+#include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
@@ -31,6 +32,15 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
 
   virtual void ShowApps() OVERRIDE {
     NOTIMPLEMENTED();
+  }
+
+  virtual void LauncherItemClicked(
+      const aura_shell::LauncherItem& item) OVERRIDE {
+    item.window->Activate();
+  }
+
+  virtual bool ConfigureLauncherItem(aura_shell::LauncherItem* item) OVERRIDE {
+    return true;  // Makes the entry show up in the launcher.
   }
 };
 

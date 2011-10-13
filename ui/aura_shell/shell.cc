@@ -5,25 +5,22 @@
 #include "ui/aura_shell/shell.h"
 
 #include "base/bind.h"
-#include "grit/ui_resources.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/toplevel_window_container.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
-#include "ui/aura_shell/launcher/launcher_model.h"
+#include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/image/image.h"
-#include "views/controls/button/image_button.h"
 #include "views/widget/widget.h"
 
 namespace aura_shell {
 
 namespace {
+
 // Creates each of the special window containers that holds windows of various
 // types in the shell UI. They are added to |containers| from back to front in
 // the z-index.
@@ -123,9 +120,7 @@ Shell* Shell::instance_ = NULL;
 // Shell, public:
 
 Shell::Shell()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      new_browser_button_(NULL),
-      show_apps_button_(NULL) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   aura::Desktop::GetInstance()->SetDelegate(this);
 }
 
@@ -142,8 +137,6 @@ Shell* Shell::GetInstance() {
 }
 
 void Shell::Init() {
-  InitLauncherModel();
-
   aura::Window::Windows containers;
   CreateSpecialContainers(&containers);
   aura::Window::Windows::const_iterator i;
@@ -159,8 +152,11 @@ void Shell::Init() {
   root_window->SetLayoutManager(desktop_layout);
 
   desktop_layout->set_background_widget(internal::CreateDesktopBackground());
-  desktop_layout->set_launcher_widget(
-      internal::CreateLauncher(launcher_model_.get()));
+  aura::ToplevelWindowContainer* toplevel_container =
+      GetContainer(internal::kShellWindowId_DefaultContainer)->
+          AsToplevelWindowContainer();
+  launcher_.reset(new Launcher(toplevel_container));
+  desktop_layout->set_launcher_widget(launcher_->widget());
   desktop_layout->set_status_area_widget(internal::CreateStatusArea());
 }
 
@@ -222,23 +218,6 @@ void Shell::RestoreTiledWindows() {
   to_restore_.clear();
 }
 
-void Shell::InitLauncherModel() {
-  launcher_model_.reset(new LauncherModel);
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  new_browser_button_ = new views::ImageButton(this);
-  new_browser_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_CHROME).ToSkBitmap());
-  launcher_model_->AddItem(new_browser_button_, 0, false);
-
-  show_apps_button_ = new views::ImageButton(this);
-  show_apps_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToSkBitmap());
-  launcher_model_->AddItem(show_apps_button_, 1, false);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, aura::DesktopDelegate implementation:
 
@@ -265,14 +244,6 @@ aura::Window* Shell::GetTopmostWindowToActivate(aura::Window* ignore) const {
       GetContainer(internal::kShellWindowId_DefaultContainer)->
           AsToplevelWindowContainer();
   return container->GetTopmostWindowToActivate(ignore);
-}
-
-void Shell::ButtonPressed(views::Button* sender,
-                          const views::Event& event) {
-  if (sender == new_browser_button_ && delegate_.get())
-    delegate_->CreateNewWindow();
-  else if (sender == show_apps_button_ && delegate_.get())
-    delegate_->ShowApps();
 }
 
 }  // namespace aura_shell

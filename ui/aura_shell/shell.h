@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/desktop_delegate.h"
 #include "ui/aura_shell/aura_shell_export.h"
-#include "views/controls/button/button.h"
 
 namespace aura {
 class Window;
@@ -24,19 +23,15 @@ class Window;
 namespace gfx {
 class Rect;
 }
-namespace views {
-class ImageButton;
-}
 
 namespace aura_shell {
 
-class LauncherModel;
+class Launcher;
 class ShellDelegate;
 
 // Shell is a singleton object that presents the Shell API and implements the
 // Desktop's delegate interface.
-class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate,
-                                public views::ButtonListener {
+class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate {
  public:
   // Upon creation, the Shell sets itself as the Desktop's delegate, which takes
   // ownership of the Shell.
@@ -49,6 +44,7 @@ class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate,
 
   // Sets the delegate. Shell owns its delegate.
   void SetDelegate(ShellDelegate* delegate);
+  ShellDelegate* delegate() { return delegate_.get(); }
 
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
@@ -56,19 +52,15 @@ class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate,
   void TileWindows();
   void RestoreTiledWindows();
 
+  Launcher* launcher() { return launcher_.get(); }
+
  private:
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
-
-  void InitLauncherModel();
 
   // Overridden from aura::DesktopDelegate:
   virtual void AddChildToDefaultParent(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetTopmostWindowToActivate(
       aura::Window* ignore) const OVERRIDE;
-
-  // Overriden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
 
   static Shell* instance_;
 
@@ -76,11 +68,9 @@ class AURA_SHELL_EXPORT Shell : public aura::DesktopDelegate,
 
   base::WeakPtrFactory<Shell> method_factory_;
 
-  scoped_ptr<LauncherModel> launcher_model_;
-  views::ImageButton* new_browser_button_;
-  views::ImageButton* show_apps_button_;
-
   scoped_ptr<ShellDelegate> delegate_;
+
+  scoped_ptr<Launcher> launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };
