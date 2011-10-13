@@ -37,9 +37,11 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
 #if defined(OS_WIN)
     case AutomationMsg_BrowserMove::ID:
     case AutomationMsg_ProcessUnhandledAccelerator::ID:
-    case AutomationMsg_TabReposition::ID:
     case AutomationMsg_ForwardContextMenuCommandToChrome::ID:
 #endif  // defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
+    case AutomationMsg_TabReposition::ID:
+#endif
     case AutomationMsg_NavigateInExternalTab::ID:
     case AutomationMsg_NavigateExternalTabAtIndex::ID:
     case AutomationMsg_Find::ID:

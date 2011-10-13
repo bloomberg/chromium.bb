@@ -2005,11 +2005,6 @@
                   'dependencies': [
                     '../build/linux/system.gyp:gnome_keyring_direct',
                   ],
-                }, {
-                  # Disable the GNOME Keyring tests if we are not using it.
-                  'sources!': [
-                    'browser/password_manager/native_backend_gnome_x_unittest.cc',
-                  ],
                 }],
               ],
             }],
@@ -2029,6 +2024,18 @@
             'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
             '../views/focus/accelerator_handler_gtk_unittest.cc',
+          ],
+        }],
+        ['use_gnome_keyring == 0', {
+          # Disable the GNOME Keyring tests if we are not using it.
+          'sources!': [
+            'browser/password_manager/native_backend_gnome_x_unittest.cc',
+          ],
+        }],
+        ['OS=="linux" and use_aura==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:dbus',
+            '../dbus/dbus.gyp:dbus_test_support',
           ],
         }],
         ['os_posix == 1 and OS != "mac"', {
