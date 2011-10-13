@@ -670,11 +670,6 @@ enum NotificationType {
   // details are None.
   NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
 
-  // Sent when the geolocation settings change. The source is the
-  // GeolocationContentSettingsMap object, the details are
-  // ContentSettingsNotificationsDetails.
-  NOTIFICATION_GEOLOCATION_SETTINGS_CHANGED,
-
   // Sent when content settings change for a tab. The source is a TabContents
   // object, the details are None.
   NOTIFICATION_TAB_CONTENT_SETTINGS_CHANGED,
