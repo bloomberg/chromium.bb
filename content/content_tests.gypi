@@ -100,6 +100,7 @@
         '../ipc/ipc.gyp:test_support_ipc',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net_test_support',
+        '../sandbox/sandbox.gyp:sandbox',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -114,6 +115,7 @@
         '..',
       ],
       'sources': [
+        'app/startup_helper_win.cc',
         'browser/appcache/chrome_appcache_service_unittest.cc',
         'browser/browser_thread_unittest.cc',
         'browser/browser_url_handler_unittest.cc',
@@ -229,6 +231,7 @@
         'test_support_content',
         '../base/base.gyp:test_support_base',
         '../net/net.gyp:net_test_support',
+        '../sandbox/sandbox.gyp:sandbox',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
@@ -241,6 +244,7 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        'app/startup_helper_win.cc',
         'test/content_browser_test.h',
         'test/content_browser_test.cc',
         'test/content_test_launcher.cc',

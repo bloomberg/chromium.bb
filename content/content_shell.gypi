@@ -113,11 +113,13 @@
       },
       'dependencies': [
         'content_shell_lib',
+        '../sandbox/sandbox.gyp:sandbox',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
+        'app/startup_helper_win.cc',
         'shell/shell_main.cc',
       ],
       'msvs_settings': {
