@@ -66,17 +66,12 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   // won't be run in that case.
   virtual void DidBecomeActiveForReusedRenderView() {}
 
-  // Used by WebUIMessageHandlers. RegisterMessageCallback takes ownership of
-  // the passed callback. If the given message is already registered, the call
-  // has no effect unless |register_callback_overwrites_| is set to true.
-  typedef base::Callback<void(const base::ListValue*)> NewMessageCallback;
+  // Used by WebUIMessageHandlers. If the given message is already registered,
+  // the call has no effect unless |register_callback_overwrites_| is set to
+  // true.
+  typedef base::Callback<void(const base::ListValue*)> MessageCallback;
   void RegisterMessageCallback(const std::string& message,
-                               const NewMessageCallback& callback);
-
-  // TODO(csilv): Remove legacy callback support
-  typedef Callback1<const base::ListValue*>::Type MessageCallback;
-  void RegisterMessageCallback(const std::string& message,
-                               MessageCallback* callback);
+                               const MessageCallback& callback);
 
   // Returns true if the favicon should be hidden for the current tab.
   bool hide_favicon() const {
@@ -196,11 +191,7 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
 
  private:
   // A map of message name -> message handling callback.
-  typedef std::map<std::string, NewMessageCallback> NewMessageCallbackMap;
-  NewMessageCallbackMap new_message_callbacks_;
-
-  // TODO(csilv): Remove legacy callback support.
-  typedef std::map<std::string, MessageCallback*> MessageCallbackMap;
+  typedef std::map<std::string, MessageCallback> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUI);

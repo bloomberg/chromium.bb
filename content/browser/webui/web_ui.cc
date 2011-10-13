@@ -52,9 +52,6 @@ WebUI::WebUI(TabContents* contents)
 }
 
 WebUI::~WebUI() {
-  // TODO(csilv): Remove legacy callback support.
-  STLDeleteContainerPairSecondPointers(message_callbacks_.begin(),
-                                       message_callbacks_.end());
   STLDeleteContainerPointers(handlers_.begin(), handlers_.end());
 }
 
@@ -81,21 +78,11 @@ void WebUI::OnWebUISend(const GURL& source_url,
   }
 
   // Look up the callback for this message.
-  NewMessageCallbackMap::const_iterator new_callback =
-      new_message_callbacks_.find(message);
-  if (new_callback != new_message_callbacks_.end()) {
-    // Forward this message and content on.
-    new_callback->second.Run(&args);
-    return;
-  }
-
-  // TODO(csilv): Remove legacy callback support.
-  // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =
       message_callbacks_.find(message);
   if (callback != message_callbacks_.end()) {
     // Forward this message and content on.
-    callback->second->Run(&args);
+    callback->second.Run(&args);
   }
 }
 
@@ -170,30 +157,13 @@ void WebUI::CallJavascriptFunction(
 }
 
 void WebUI::RegisterMessageCallback(const std::string &message,
-                                    const NewMessageCallback& callback) {
-  std::pair<NewMessageCallbackMap::iterator, bool> result =
-      new_message_callbacks_.insert(std::make_pair(message, callback));
-
-  // Overwrite preexisting message callback mappings.
-  if (!result.second && register_callback_overwrites())
-    result.first->second = callback;
-}
-
-// TODO(csilv): Remove legacy callback support.
-void WebUI::RegisterMessageCallback(const std::string& message,
-                                    MessageCallback* callback) {
+                                    const MessageCallback& callback) {
   std::pair<MessageCallbackMap::iterator, bool> result =
       message_callbacks_.insert(std::make_pair(message, callback));
 
   // Overwrite preexisting message callback mappings.
-  if (!result.second) {
-    if (register_callback_overwrites()) {
-      delete result.first->second;
-      result.first->second = callback;
-    } else {
-      delete callback;
-    }
-  }
+  if (!result.second && register_callback_overwrites())
+    result.first->second = callback;
 }
 
 bool WebUI::IsLoading() const {
