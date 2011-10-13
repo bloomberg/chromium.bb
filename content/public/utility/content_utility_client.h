@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_UTILITY_CONTENT_UTILITY_CLIENT_H_
-#define CONTENT_UTILITY_CONTENT_UTILITY_CLIENT_H_
+#ifndef CONTENT_PUBLIC_UTILITY_CONTENT_UTILITY_CLIENT_H_
+#define CONTENT_PUBLIC_UTILITY_CONTENT_UTILITY_CLIENT_H_
 #pragma once
 
 #include "content/common/content_client.h"
@@ -22,4 +22,4 @@ class ContentUtilityClient {
 
 }  // namespace content
 
-#endif  // CONTENT_UTILITY_CONTENT_UTILITY_CLIENT_H_
+#endif  // CONTENT_PUBLIC_UTILITY_CONTENT_UTILITY_CLIENT_H_

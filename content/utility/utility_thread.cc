@@ -10,7 +10,7 @@
 #include "content/common/child_process.h"
 #include "content/common/indexed_db_key.h"
 #include "content/common/utility_messages.h"
-#include "content/utility/content_utility_client.h"
+#include "content/public/utility/content_utility_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"

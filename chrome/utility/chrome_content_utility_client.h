@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "content/utility/content_utility_client.h"
+#include "content/public/utility/content_utility_client.h"
 #include "printing/pdf_render_settings.h"
 
 class ExternalProcessImporterBridge;
