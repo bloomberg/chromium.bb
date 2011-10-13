@@ -326,6 +326,10 @@ void OmniboxViewGtk::Init() {
   // version after the normal call has happened.
   g_signal_connect_after(text_view_, "drag-data-get",
                    G_CALLBACK(&HandleDragDataGetThunk), this);
+  g_signal_connect_after(text_view_, "drag-begin",
+                   G_CALLBACK(&HandleDragBeginThunk), this);
+  g_signal_connect_after(text_view_, "drag-end",
+                   G_CALLBACK(&HandleDragEndThunk), this);
   g_signal_connect(text_view_, "backspace",
                    G_CALLBACK(&HandleBackSpaceThunk), this);
   g_signal_connect(text_view_, "copy-clipboard",
@@ -1605,9 +1609,19 @@ void OmniboxViewGtk::HandleDragDataGet(GtkWidget* widget,
   // statement (no set of casts fixes this).
   switch (target_type) {
     case GTK_TEXT_BUFFER_TARGET_INFO_TEXT: {
-      gtk_selection_data_set_text(selection_data, selected_text_.c_str(), -1);
+      gtk_selection_data_set_text(selection_data, dragged_text_.c_str(), -1);
     }
   }
+}
+
+void OmniboxViewGtk::HandleDragBegin(GtkWidget* widget,
+                                       GdkDragContext* context) {
+  dragged_text_ = selected_text_;
+}
+
+void OmniboxViewGtk::HandleDragEnd(GtkWidget* widget,
+                                       GdkDragContext* context) {
+  dragged_text_.clear();
 }
 
 void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,

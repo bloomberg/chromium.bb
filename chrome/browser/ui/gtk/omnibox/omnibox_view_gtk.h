@@ -229,6 +229,10 @@ class OmniboxViewGtk : public OmniboxView,
                        guint, guint);
   CHROMEGTK_CALLBACK_4(OmniboxViewGtk, void, HandleDragDataGet,
                        GdkDragContext*, GtkSelectionData*, guint, guint);
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandleDragBegin,
+                       GdkDragContext*);
+  CHROMEGTK_CALLBACK_1(OmniboxViewGtk, void, HandleDragEnd,
+                       GdkDragContext*);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleBackSpace);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCopyClipboard);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCutClipboard);
@@ -430,6 +434,7 @@ class OmniboxViewGtk : public OmniboxView,
   // pass this string to SavePrimarySelection()).
   std::string selected_text_;
 
+  std::string dragged_text_;
   // When we own the X clipboard, this is the text for it.
   std::string primary_selection_text_;
 
