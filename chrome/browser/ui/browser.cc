@@ -4193,6 +4193,7 @@ void Browser::SetTabContentBlocked(TabContentsWrapper* wrapper, bool blocked) {
     return;
   }
   tabstrip_model()->SetTabBlocked(index, blocked);
+  UpdatePrintingState(wrapper->tab_contents()->content_restrictions());
 }
 
 void Browser::SetSuggestedText(const string16& text,
@@ -4500,21 +4501,37 @@ void Browser::UpdateCommandsForContentRestrictionState() {
 }
 
 void Browser::UpdatePrintingState(int content_restrictions) {
-  bool enabled = true;
-  bool selected_tab_is_preview_tab = false;
-  if (content_restrictions & CONTENT_RESTRICTION_PRINT) {
-    enabled = false;
-    selected_tab_is_preview_tab =
-        printing::PrintPreviewTabController::IsPrintPreviewTab(
-            GetSelectedTabContentsWrapper());
-  } else if (g_browser_process->local_state()) {
-    enabled = g_browser_process->local_state()->
-        GetBoolean(prefs::kPrintingEnabled);
+  bool print_enabled = true;
+  bool advanced_print_enabled = true;
+  if (g_browser_process->local_state()) {
+    print_enabled =
+        g_browser_process->local_state()->GetBoolean(prefs::kPrintingEnabled);
+    advanced_print_enabled = print_enabled;
   }
-  command_updater_.UpdateCommandEnabled(IDC_PRINT, enabled);
+  if (print_enabled) {
+    // Do not print when a constrained window is showing. It's confusing.
+    TabContentsWrapper* wrapper = GetSelectedTabContentsWrapper();
+    bool has_constrained_window = (wrapper &&
+        wrapper->constrained_window_tab_helper()->constrained_window_count());
+    if (has_constrained_window ||
+        content_restrictions & CONTENT_RESTRICTION_PRINT) {
+      print_enabled = false;
+      advanced_print_enabled = false;
+    }
+
+    // The exception is print preview,
+    // where advanced printing is always enabled.
+    printing::PrintPreviewTabController* controller =
+        printing::PrintPreviewTabController::GetInstance();
+    if (controller &&
+        wrapper &&
+        wrapper == controller->GetPrintPreviewForTab(wrapper)) {
+      advanced_print_enabled = true;
+    }
+  }
+  command_updater_.UpdateCommandEnabled(IDC_PRINT, print_enabled);
   command_updater_.UpdateCommandEnabled(IDC_ADVANCED_PRINT,
-                                        selected_tab_is_preview_tab ? true :
-                                                                      enabled);
+                                        advanced_print_enabled);
 }
 
 void Browser::UpdateReloadStopState(bool is_loading, bool force) {
