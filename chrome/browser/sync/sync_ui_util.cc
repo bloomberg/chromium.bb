@@ -569,9 +569,14 @@ void ConstructAboutInformation(ProfileSyncService* service,
     sync_ui_util::AddIntSyncDetail(details,
                                    "Useful Sync Cycles",
                                    full_status.useful_sync_cycles);
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Explicit Passphrase",
-                                    service->IsUsingSecondaryPassphrase());
+    // Only safe to call IsUsingSecondaryPassphrase() if the backend is
+    // initialized already - otherwise, we have no idea whether we are
+    // using a secondary passphrase or not.
+    if (service->sync_initialized()) {
+      sync_ui_util::AddBoolSyncDetail(details,
+                                      "Explicit Passphrase",
+                                      service->IsUsingSecondaryPassphrase());
+    }
     sync_ui_util::AddBoolSyncDetail(details,
                                     "Passphrase Required",
                                     service->IsPassphraseRequired());

@@ -1150,7 +1150,15 @@ void ProfileSyncService::GetRegisteredDataTypes(
 }
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
-  return backend_.get() && backend_->IsUsingExplicitPassphrase();
+  // Should never be called when the backend is not initialized, since at that
+  // time we have no idea whether we have an explicit passphrase or not because
+  // the nigori node has not been downloaded yet.
+  if (!sync_initialized()) {
+    NOTREACHED() << "Cannot call IsUsingSecondaryPassphrase() before the sync "
+                 << "backend has downloaded the nigori node";
+    return false;
+  }
+  return backend_->IsUsingExplicitPassphrase();
 }
 
 bool ProfileSyncService::IsCryptographerReady(

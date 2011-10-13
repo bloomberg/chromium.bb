@@ -434,7 +434,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual bool IsCryptographerReady(
       const sync_api::BaseTransaction* trans) const;
 
-  // Returns true if a secondary passphrase is being used.
+  // Returns true if a secondary passphrase is being used. It is not legal
+  // to call this method before the backend is initialized.
   virtual bool IsUsingSecondaryPassphrase() const;
 
   // Sets the Cryptographer's passphrase, or caches it until that is possible.

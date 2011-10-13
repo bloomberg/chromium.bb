@@ -375,8 +375,15 @@ bool SyncBackendHost::IsNigoriEnabled() const {
 }
 
 bool SyncBackendHost::IsUsingExplicitPassphrase() {
-  return initialized() && IsNigoriEnabled() &&
-      core_->sync_manager()->InitialSyncEndedForAllEnabledTypes() &&
+  // This should only be called once we're initialized (and the nigori node has
+  // therefore been downloaded) as otherwise we have no idea what kind of
+  // passphrase we are using.
+  if (!initialized()) {
+    NOTREACHED() << "IsUsingExplicitPassphrase() should not be called "
+                 << "before the nigori node is downloaded";
+    return false;
+  }
+  return IsNigoriEnabled() &&
       core_->sync_manager()->IsUsingExplicitPassphrase();
 }
 

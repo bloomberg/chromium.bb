@@ -97,12 +97,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   }
 
   virtual bool IsUsingSecondaryPassphrase() const {
-    // The only value of |is_using_secondary_passphrase_| we current care about
-    // is when it's true.
-    if (!is_using_secondary_passphrase_)
-      return ProfileSyncService::IsUsingSecondaryPassphrase();
-    else
-      return is_using_secondary_passphrase_;
+    return is_using_secondary_passphrase_;
   }
 
   void set_auth_state(const std::string& last_email,
