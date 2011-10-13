@@ -590,10 +590,9 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
 }
 
 bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
-  // Extensions and apps always allowed to create unrequested popups. The second
-  // check is necessary to include content scripts.
-  return extension_dispatcher_->extensions()->GetByURL(creator) ||
+  ChromeV8Context* current_context =
       extension_dispatcher_->v8_context_set().GetCurrent();
+  return current_context && !current_context->extension_id().empty();
 }
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
