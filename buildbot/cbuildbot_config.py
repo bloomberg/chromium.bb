@@ -423,6 +423,12 @@ add_config('arm-tegra2-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
   'board' : 'tegra2',
 }])
 
+# arm- doesn't really matter, but cycles faster
+add_config('patch-tot-chrome-pfq-informational', [chrome_pfq_info, arm, {
+  'board' : 'arm-generic',
+  'useflags' : ['touchui_patches'],
+}])
+
 
 # TODO(sosa): Remove x86-pineview bin.
 add_config('x86-pineview-bin', [{
