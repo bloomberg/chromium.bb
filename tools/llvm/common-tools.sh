@@ -35,6 +35,15 @@ SetLogDirectory() {
 }
 
 ######################################################################
+# Detect if we are in a ChromiumOS chroot
+######################################################################
+if [ -e /etc/debian_chroot ] then
+  readonly UTMAN_IN_CROS_CHROOT=true
+else
+  readonly UTMAN_IN_CROS_CHROOT=false
+fi
+
+######################################################################
 # Detect system type
 ######################################################################
 

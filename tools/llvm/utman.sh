@@ -842,11 +842,16 @@ everything() {
 #@ everything            - Checkout everything from the repositories
 everything-hg() {
   mkdir -p "${INSTALL_ROOT}"
-
-  checkout-all
-
-  StepBanner "Updating upstreaming repository"
-  update-all
+  if ${UTMAN_IN_CROS_CHROOT}; then
+    # TODO: http://code.google.com/p/nativeclient/issues/detail?id=2295
+    Banner "You are running in a ChromiumOS Chroot." \
+      " You should make sure that the PNaCl sources are properly checked out " \
+      " And updated outside of the chroot"
+  else
+    checkout-all
+    StepBanner "Updating upstreaming repository"
+    update-all
+  fi
 }
 
 #@ everything-post-hg does everything AFTER hg setup

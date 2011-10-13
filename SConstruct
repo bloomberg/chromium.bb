@@ -343,19 +343,24 @@ def SetUpArgumentBits(env):
 
   #########################################################################
   # EXPERIMENTAL
-  # This is only for testing within an artificial CrOS hook for ARM/thumb2
+  # This is only for testing within an artificial cros_chroot hook for ARM/thumb2
   #
   # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
   # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
   # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
   #
-  BitFromArgument(env, 'CrOS', default=False,
+  BitFromArgument(env, 'cros_chroot',
+                  default=os.path.exists("/etc/debian_chroot"),
                   desc='EXPERIMENTAL: Set to 1 if compiling '
                   'within ChromeOS chroot')
-  if env.Bit('CrOS'):
-    env['ENV']['SYSROOT'] = os.environ.get('SYSROOT',
-                                           '/build/arm-generic')
-    print "pre_base_env['ENV']['SYSROOT']=", env['ENV']['SYSROOT']
+  if env.Bit('cros_chroot'):
+    sysroot = os.environ.get('SYSROOT')
+    if sysroot is None or not os.path.exists(sysroot)):
+      print "Running inside  ChromiumOS chroot.\n"\
+          "You need to export a valid SYSROOT env var\n"
+      sys.exit(-1)
+    env['ENV']['SYSROOT'] = sysroot
+    print "pre_base_env['ENV']['SYSROOT']=", sysroot
   #########################################################################
 
 
@@ -2713,12 +2718,12 @@ def MakeLinuxEnv():
       ###############################################################
       # EXPERIMENTAL
       # This is needed to switch to a different trusted cross
-      # toolchain when compiling within the CrOS chroot
+      # toolchain when compiling within the cros_chroot
       # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
       # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
       # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
       #
-      if linux_env.Bit('CrOS'):
+      if linux_env.Bit('cros_chroot'):
         from setup_arm_cros_toolchain import arm_env
       else:
       ##############################################################

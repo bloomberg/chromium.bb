@@ -135,7 +135,17 @@ $(IT).gcc.opt.x8664: $(SRC) $(CPPSRC)
 
 
 ######################################################################
+# EXPERIMENTAL
+# this is only for testing within an artificial CrOS hook for ARM/thumb2
+# BUG=http://code.google.com/p/chromium/issues/detail?id=61695
+# BUG=http://code.google.com/p/chromium/issues/detail?id=38909
+# BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
+#########################################################################
+ifneq ($(wildcard /etc/debian_chroot),)
+ARM_GCC=armv7a-cros-linux-gnueabi-gcc
+else
 ARM_GCC=$(ARM_ROOT)/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
+endif
 LOCAL_CROSS_GCC=$(ARM_GCC)
 
 # straight arm gcc (code sourcery)
