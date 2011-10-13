@@ -68,7 +68,7 @@ static base::LazyInstance<MessageLoopObserver> g_message_loop_observer(
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const MainFunctionParams& parameters)
-    : ChromeBrowserMainPartsGtk(parameters) {
+    : ChromeBrowserMainPartsBase(parameters) {
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
@@ -85,7 +85,7 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
 }
 
 void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
-  ChromeBrowserMainPartsGtk::PreEarlyInitialization();
+  ChromeBrowserMainPartsBase::PreEarlyInitialization();
   if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
     CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
@@ -96,7 +96,7 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
 }
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
-  ChromeBrowserMainPartsGtk::PreMainMessageLoopStart();
+  ChromeBrowserMainPartsBase::PreMainMessageLoopStart();
   // Initialize CrosLibrary only for the browser, unless running tests
   // (which do their own CrosLibrary setup).
   if (!parameters().ui_task) {
@@ -111,7 +111,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // FILE thread is created in ChromeBrowserMainParts::PreMainMessageLoopRun().
-  ChromeBrowserMainPartsGtk::PreMainMessageLoopRun();
+  ChromeBrowserMainPartsBase::PreMainMessageLoopRun();
   // Get the statistics provider instance here to start loading statistcs
   // on the background FILE thread.
   chromeos::system::StatisticsProvider::GetInstance();

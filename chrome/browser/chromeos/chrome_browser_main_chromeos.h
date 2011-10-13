@@ -6,13 +6,20 @@
 #define CHROME_BROWSER_CHROMEOS_CHROME_BROWSER_MAIN_CHROMEOS_H_
 
 #include "base/memory/ref_counted.h"
+#if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chrome_browser_main_gtk.h"
+typedef ChromeBrowserMainPartsGtk ChromeBrowserMainPartsBase;
+#else
+#include "chrome/browser/chrome_browser_main_posix.h"
+#include "chrome/browser/chrome_browser_main_x11.h"
+typedef ChromeBrowserMainPartsPosix ChromeBrowserMainPartsBase;
+#endif
 
 namespace sensors {
 class SensorsSourceChromeos;
 }  // namespace sensors
 
-class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsGtk {
+class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsBase {
  public:
   explicit ChromeBrowserMainPartsChromeos(const MainFunctionParams& parameters);
 

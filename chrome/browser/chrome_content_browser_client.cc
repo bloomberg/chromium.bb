@@ -72,14 +72,14 @@
 #include "net/base/cookie_options.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#elif defined(USE_AURA)
 #include "chrome/browser/chrome_browser_main_aura.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_gtk.h"
 #endif
@@ -186,14 +186,14 @@ namespace chrome {
 
 content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
+  return new ChromeBrowserMainPartsChromeos(parameters);
+#elif defined(USE_AURA)
   return new ChromeBrowserMainPartsAura(parameters);
 #elif defined(OS_WIN)
   return new ChromeBrowserMainPartsWin(parameters);
 #elif defined(OS_MACOSX)
   return new ChromeBrowserMainPartsMac(parameters);
-#elif defined(OS_CHROMEOS)
-  return new ChromeBrowserMainPartsChromeos(parameters);
 #elif defined(OS_LINUX)
   return new ChromeBrowserMainPartsGtk(parameters);
 #else
