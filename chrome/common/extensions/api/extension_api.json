@@ -8160,7 +8160,7 @@
     ]
   },
   {
-    "namespace": "experimental.contentSettings",
+    "namespace": "contentSettings",
     "types": [
       {
         "id": "ResourceIdentifier",

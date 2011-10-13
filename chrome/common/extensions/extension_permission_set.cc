@@ -271,8 +271,9 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
       IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
       ExtensionPermissionMessage::kBookmarks, optional);
   RegisterPermission(
-      ExtensionAPIPermission::kContentSettings, "contentSettings", 0,
-      ExtensionPermissionMessage::kNone, none);
+      ExtensionAPIPermission::kContentSettings, "contentSettings",
+      IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,
+      ExtensionPermissionMessage::kContentSettings, none);
   RegisterPermission(
       ExtensionAPIPermission::kContextMenus, "contextMenus", 0,
       ExtensionPermissionMessage::kNone, optional);

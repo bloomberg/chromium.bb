@@ -2,6 +2,6 @@
   "name" : "Content Settings API Test Extension",
   "version" : "0.1",
   "description" : "Content Settings API Test Extension",
-  "permissions": [ "experimental", "contentSettings" ],
+  "permissions": [ "contentSettings" ],
   "background_page": "test.html"
 }

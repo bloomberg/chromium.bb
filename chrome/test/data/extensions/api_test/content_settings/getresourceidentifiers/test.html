@@ -10,7 +10,7 @@ Object.prototype.forEach = function(f) {
   }
 }
 
-var cs = chrome.experimental.contentSettings;
+var cs = chrome.contentSettings;
 chrome.test.runTests([
   function getResourceIdentifiers() {
     var contentTypes = {

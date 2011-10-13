@@ -46,6 +46,7 @@ class ExtensionPermissionMessage {
     kFullAccess,
     kClipboard,
     kTtsEngine,
+    kContentSettings,
     kEnumBoundary
   };
 

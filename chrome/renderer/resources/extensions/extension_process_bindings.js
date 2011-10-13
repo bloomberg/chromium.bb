@@ -339,7 +339,7 @@ var chrome = chrome || {};
       this.get = function(details, callback) {
         var getSchema = this.parameters.get;
         chromeHidden.validate([details, callback], getSchema);
-        return sendRequest('experimental.contentSettings.get',
+        return sendRequest('contentSettings.get',
                            [contentType, details, callback],
                            extendSchema(getSchema));
       };
@@ -347,14 +347,14 @@ var chrome = chrome || {};
         var setSchema = this.parameters.set.slice();
         setSchema[0].properties.setting = settingSchema;
         chromeHidden.validate([details, callback], setSchema);
-        return sendRequest('experimental.contentSettings.set',
+        return sendRequest('contentSettings.set',
                            [contentType, details, callback],
                            extendSchema(setSchema));
       };
       this.clear = function(details, callback) {
         var clearSchema = this.parameters.clear;
         chromeHidden.validate([details, callback], clearSchema);
-        return sendRequest('experimental.contentSettings.clear',
+        return sendRequest('contentSettings.clear',
                            [contentType, details, callback],
                            extendSchema(clearSchema));
       };
@@ -362,7 +362,7 @@ var chrome = chrome || {};
         var schema = this.parameters.getResourceIdentifiers;
         chromeHidden.validate([callback], schema);
         return sendRequest(
-            'experimental.contentSettings.getResourceIdentifiers',
+            'contentSettings.getResourceIdentifiers',
             [contentType, callback],
             extendSchema(schema));
       };

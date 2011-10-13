@@ -12,7 +12,7 @@ function init() {
     var types = ["cookies", "images", "javascript", "plugins", "popups",
                  "notifications"];
     types.forEach(function(type) {
-      chrome.experimental.contentSettings[type].get({
+      chrome.contentSettings[type].get({
             'primaryUrl': url,
             'incognito': incognito
           },
@@ -28,7 +28,7 @@ function settingChanged(element) {
   var setting = element.value;
   var pattern = /^file:/.test(url) ? url : url.replace(/\/[^\/]*?$/, '/*');
   console.log(type+" setting for "+pattern+": "+setting);
-  chrome.experimental.contentSettings[type].set({
+  chrome.contentSettings[type].set({
         'primaryPattern': pattern,
         'setting': setting,
         'scope': (incognito ? 'incognito_session_only' : 'regular')

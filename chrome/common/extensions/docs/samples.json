@@ -685,7 +685,6 @@
       "features": [
         "browser_action",
         "contentSettings",
-        "experimental",
         "popup",
         "tabs"
       ],
@@ -695,12 +694,12 @@
       "packaged_app": false,
       "path": "examples\/api\/contentSettings\/",
       "protocols": [],
-      "search_string": "CONTENT SETTINGS SHOWS THE CONTENT SETTINGS FOR THE CURRENT SITE. BROWSER_ACTION CONTENTSETTINGS EXPERIMENTAL POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED",
+      "search_string": "CONTENT SETTINGS SHOWS THE CONTENT SETTINGS FOR THE CURRENT SITE. BROWSER_ACTION CONTENTSETTINGS POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED",
       "source_files": [
         "manifest.json",
         "popup.html"
       ],
-      "source_hash": "aab21662d31c6d61f2304eacce32a3b6ca8bb207",
+      "source_hash": "14d647a5ea1fa8551089fdb8810b6acaf16530cf",
       "zip_path": "examples\/api\/contentSettings.zip"
     },
     {
