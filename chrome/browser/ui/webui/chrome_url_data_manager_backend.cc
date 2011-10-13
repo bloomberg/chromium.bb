@@ -60,7 +60,6 @@ class ChromeURLContentSecurityPolicyExceptionSet
     insert(chrome::kChromeUIDevToolsHost);
     insert(chrome::kChromeUIDialogHost);
     insert(chrome::kChromeUINewTabHost);
-    insert(chrome::kChromeUITextfieldsHost);
 #if defined(OS_CHROMEOS)
     insert(chrome::kChromeUIActiveDownloadsHost);
     insert(chrome::kChromeUIEnterpriseEnrollmentHost);

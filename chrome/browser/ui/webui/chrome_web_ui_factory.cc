@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/webui/sessions_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_factory.h"
-#include "chrome/browser/ui/webui/textfields_ui.h"
 #include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/browser/ui/webui/workers_ui.h"
 #include "chrome/common/chrome_switches.h"
@@ -167,8 +166,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<DownloadsUI>;
   if (url.host() == chrome::kChromeUITaskManagerHost)
     return &NewWebUI<TaskManagerUI>;
-  if (url.host() == chrome::kChromeUITextfieldsHost)
-    return &NewWebUI<TextfieldsUI>;
   if (url.host() == chrome::kChromeUIHistoryHost)
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHistory2Host)

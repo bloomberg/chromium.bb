@@ -67,7 +67,6 @@ const char kChromeUIShorthangURL[] = "chrome://shorthang/";
 const char kChromeUISyncPromoURL[] = "chrome://syncpromo/";
 const char kChromeUITaskManagerURL[] = "chrome://tasks/";
 const char kChromeUITermsURL[] = "chrome://terms/";
-const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 const char kChromeUIWorkersURL[] = "chrome://workers/";
 
@@ -168,7 +167,6 @@ const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUITaskManagerHost[] = "tasks";
 const char kChromeUITCMallocHost[] = "tcmalloc";
-const char kChromeUITextfieldsHost[] = "textfields";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUITouchIconHost[] = "touch-icon";
 const char kChromeUITracingHost[] = "tracing";

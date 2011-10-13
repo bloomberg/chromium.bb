@@ -62,7 +62,6 @@ extern const char kChromeUIShorthangURL[];
 extern const char kChromeUISyncPromoURL[];
 extern const char kChromeUITaskManagerURL[];
 extern const char kChromeUITermsURL[];
-extern const char kChromeUITextfieldsURL[];
 extern const char kChromeUIVersionURL[];
 extern const char kChromeUIWorkersURL[];
 
@@ -160,7 +159,6 @@ extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUITaskManagerHost[];
 extern const char kChromeUITCMallocHost[];
 extern const char kChromeUITermsHost[];
-extern const char kChromeUITextfieldsHost[];
 extern const char kChromeUITouchIconHost[];
 extern const char kChromeUITracingHost[];
 extern const char kChromeUITrackingHost[];
