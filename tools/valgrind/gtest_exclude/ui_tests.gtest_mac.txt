@@ -80,6 +80,7 @@ ChromeMainTest.AppLaunch
 
 # See http://crbug.com/46783
 SessionHistoryTest.LocationReplace
+SessionHistoryTest.FragmentBackForward
 
 # UNIMPLEMENTED reached, see http://crbug.com/51387
 AutomatedUITestBase.CloseTab
@@ -292,7 +293,6 @@ LocaleTestsHe.TestStart
 NewTabUITest.ChromeHangInNTP
 
 # http://crbug.com/88244
-NoStartupWindowTest.NoStartupWindowBasicTest
 RunInBackgroundTest.RunInBackgroundBasicTest
 
 # http://crbug.com/88254
