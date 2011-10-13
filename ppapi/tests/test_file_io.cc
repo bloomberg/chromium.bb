@@ -754,8 +754,8 @@ std::string TestFileIO::TestParallelReads() {
   }
 
   // Make sure every read operation writes into the correct buffer.
-  const char* expected_result_1 = "__border__abc__border__";
-  const char* expected_result_2 = "__border__defghijkl__border__";
+  const char expected_result_1[] = "__border__abc__border__";
+  const char expected_result_2[] = "__border__defghijkl__border__";
   if (strncmp(extended_buf_1, expected_result_1,
               sizeof(expected_result_1)) != 0 ||
       strncmp(extended_buf_2, expected_result_2,
