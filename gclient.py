@@ -847,6 +847,17 @@ solutions = [
     client = GClient(path, options)
     client.SetConfig(gclient_utils.FileRead(
         os.path.join(path, options.config_filename)))
+
+    if (options.revisions and
+        len(client.dependencies) > 1 and
+        any('@' not in r for r in options.revisions)):
+      print >> sys.stderr, (
+          'You must specify the full solution name like --revision %s@%s\n'
+          'when you have multiple solutions setup in your .gclient file.\n'
+          'Other solutions present are: %s.') % (
+              client.dependencies[0].name,
+              options.revisions[0],
+              ', '.join(s.name for s in client.dependencies[1:]))
     return client
 
   def SetDefaultConfig(self, solution_name, deps_file, solution_url,

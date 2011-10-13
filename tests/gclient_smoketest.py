@@ -1093,7 +1093,11 @@ class GClientSmokeBoth(GClientSmokeBase):
         ['sync', '--deps', 'mac', '--jobs', '1', '--revision', '1',
          '-r', 'src-git@' + self.githash('repo_1', 1)],
         ['running', 'running', 'running', 'running',
-         'running', 'running', 'running', 'running'])
+         'running', 'running', 'running', 'running'],
+        expected_stderr=
+            'You must specify the full solution name like --revision src@1\n'
+            'when you have multiple solutions setup in your .gclient file.\n'
+            'Other solutions present are: src-git.\n')
     tree = self.mangle_git_tree(('repo_1@1', 'src-git'),
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
