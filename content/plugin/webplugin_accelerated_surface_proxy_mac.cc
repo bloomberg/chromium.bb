@@ -12,13 +12,14 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 WebPluginAcceleratedSurfaceProxy::WebPluginAcceleratedSurfaceProxy(
-    WebPluginProxy* plugin_proxy)
+    WebPluginProxy* plugin_proxy,
+    gfx::GpuPreference gpu_preference)
         : plugin_proxy_(plugin_proxy),
           window_handle_(NULL) {
   surface_ = new AcceleratedSurface;
   // It's possible for OpenGL to fail to initialze (e.g., if an incompatible
   // mode is forced via flags), so handle that gracefully.
-  if (!surface_->Initialize(NULL, true)) {
+  if (!surface_->Initialize(NULL, true, gpu_preference)) {
     delete surface_;
     surface_ = NULL;
     return;

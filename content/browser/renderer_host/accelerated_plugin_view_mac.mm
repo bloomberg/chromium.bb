@@ -4,10 +4,13 @@
 
 #import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -35,14 +38,18 @@
 
     [self setAutoresizingMask:NSViewMaxXMargin|NSViewMinYMargin];
 
-    NSOpenGLPixelFormatAttribute attributes[] =
-        { NSOpenGLPFAAccelerated, NSOpenGLPFADoubleBuffer, 0};
+    std::vector<NSOpenGLPixelFormatAttribute> attributes;
+    attributes.push_back(NSOpenGLPFAAccelerated);
+    attributes.push_back(NSOpenGLPFADoubleBuffer);
+    if (gfx::GLContext::SupportsDualGpus())
+      attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
+    attributes.push_back(0);
 
     // TODO(zmo): remove the diagnostic error messages once we figure out the
     // cause of the failure and a fix.
 
     glPixelFormat_.reset([[NSOpenGLPixelFormat alloc]
-        initWithAttributes:attributes]);
+        initWithAttributes:&attributes.front()]);
     if (!glPixelFormat_)
       LOG(ERROR) << "NSOpenGLPixelFormat initWithAttributes failed";
 

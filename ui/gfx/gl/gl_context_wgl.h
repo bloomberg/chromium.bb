@@ -21,7 +21,8 @@ class GLContextWGL : public GLContext {
   virtual ~GLContextWGL();
 
   // Implement GLContext.
-  virtual bool Initialize(GLSurface* compatible_surface);
+  virtual bool Initialize(
+      GLSurface* compatible_surface, GpuPreference gpu_preference);
   virtual void Destroy();
   virtual bool MakeCurrent(GLSurface* surface);
   virtual void ReleaseCurrent(GLSurface* surface);

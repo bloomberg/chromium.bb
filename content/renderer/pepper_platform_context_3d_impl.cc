@@ -12,6 +12,7 @@
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "ui/gfx/gl/gpu_preference.h"
 
 #ifdef ENABLE_GPU
 
@@ -99,7 +100,8 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
       NULL,
       "*",
       attribs,
-      GURL::EmptyGURL());
+      GURL::EmptyGURL(),
+      gfx::PreferDiscreteGpu);
   if (!command_buffer_)
     return false;
 

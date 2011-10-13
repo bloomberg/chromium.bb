@@ -85,7 +85,8 @@ RendererGLContext* RendererGLContext::CreateViewContext(
     RendererGLContext* share_group,
     const char* allowed_extensions,
     const int32* attrib_list,
-    const GURL& active_url) {
+    const GURL& active_url,
+    gfx::GpuPreference gpu_preference) {
 #if defined(ENABLE_GPU)
   scoped_ptr<RendererGLContext> context(new RendererGLContext(channel));
   if (!context->Initialize(
@@ -95,7 +96,8 @@ RendererGLContext* RendererGLContext::CreateViewContext(
       share_group,
       allowed_extensions,
       attrib_list,
-      active_url))
+      active_url,
+      gpu_preference))
     return NULL;
 
   return context.release();
@@ -110,7 +112,8 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
     RendererGLContext* share_group,
     const char* allowed_extensions,
     const int32* attrib_list,
-    const GURL& active_url) {
+    const GURL& active_url,
+    gfx::GpuPreference gpu_preference) {
 #if defined(ENABLE_GPU)
   scoped_ptr<RendererGLContext> context(new RendererGLContext(channel));
   if (!context->Initialize(
@@ -120,7 +123,8 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
       share_group,
       allowed_extensions,
       attrib_list,
-      active_url))
+      active_url,
+      gpu_preference))
     return NULL;
 
   return context.release();
@@ -290,7 +294,8 @@ bool RendererGLContext::Initialize(bool onscreen,
                                    RendererGLContext* share_group,
                                    const char* allowed_extensions,
                                    const int32* attrib_list,
-                                   const GURL& active_url) {
+                                   const GURL& active_url,
+                                   gfx::GpuPreference gpu_preference) {
   DCHECK(CalledOnValidThread());
   DCHECK(size.width() >= 0 && size.height() >= 0);
   TRACE_EVENT2("gpu", "RendererGLContext::Initialize",
@@ -347,14 +352,16 @@ bool RendererGLContext::Initialize(bool onscreen,
         share_group ? share_group->command_buffer_ : NULL,
         allowed_extensions,
         attribs,
-        active_url);
+        active_url,
+        gpu_preference);
   } else {
     command_buffer_ = channel_->CreateOffscreenCommandBuffer(
         size,
         share_group ? share_group->command_buffer_ : NULL,
         allowed_extensions,
         attribs,
-        active_url);
+        active_url,
+        gpu_preference);
   }
   if (!command_buffer_) {
     Destroy();

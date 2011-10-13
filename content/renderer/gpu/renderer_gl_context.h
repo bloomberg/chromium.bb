@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
+#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -107,7 +108,8 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
       RendererGLContext* share_group,
       const char* allowed_extensions,
       const int32* attrib_list,
-      const GURL& active_arl);
+      const GURL& active_url,
+      gfx::GpuPreference gpu_preference);
 
   // Create a RendererGLContext that renders to an offscreen frame buffer. If
   // parent is not NULL, that RendererGLContext can access a copy of the created
@@ -123,7 +125,8 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
       RendererGLContext* share_group,
       const char* allowed_extensions,
       const int32* attrib_list,
-      const GURL& active_url);
+      const GURL& active_url,
+      gfx::GpuPreference gpu_preference);
 
   // Sets the parent context. If any parent textures have been created for
   // another parent, it is important to delete them before changing the parent.
@@ -185,7 +188,8 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
                   RendererGLContext* share_group,
                   const char* allowed_extensions,
                   const int32* attrib_list,
-                  const GURL& active_url);
+                  const GURL& active_url,
+                  gfx::GpuPreference gpu_preference);
   void Destroy();
 
   void OnContextLost();

@@ -6,7 +6,9 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_context.h"
 
 namespace gfx {
 
@@ -25,26 +27,31 @@ bool GLSurfaceCGL::InitializeOneOff() {
   if (initialized)
     return true;
 
-  static const CGLPixelFormatAttribute attribs[] = {
-    (CGLPixelFormatAttribute) kCGLPFAPBuffer,
-    (CGLPixelFormatAttribute) 0
-  };
+  // This is called from the sandbox warmup code on Mac OS X.
+  // GPU-related stuff is very slow without this, probably because
+  // the sandbox prevents loading graphics drivers or some such.
+  std::vector<CGLPixelFormatAttribute> attribs;
+  if (GLContext::SupportsDualGpus()) {
+    // Avoid switching to the discrete GPU just for this pixel
+    // format selection.
+    attribs.push_back(kCGLPFAAllowOfflineRenderers);
+  }
+  attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
+
+  CGLPixelFormatObj format;
   GLint num_pixel_formats;
-  if (CGLChoosePixelFormat(attribs,
-                           &g_pixel_format,
+  if (CGLChoosePixelFormat(&attribs.front(),
+                           &format,
                            &num_pixel_formats) != kCGLNoError) {
     LOG(ERROR) << "Error choosing pixel format.";
     return false;
   }
-  if (num_pixel_formats == 0) {
-    LOG(ERROR) << "num_pixel_formats == 0.";
+  if (!format) {
+    LOG(ERROR) << "format == 0.";
     return false;
   }
-  if (!g_pixel_format) {
-    LOG(ERROR) << "pixel_format == 0.";
-    return false;
-  }
-
+  CGLReleasePixelFormat(format);
+  DCHECK_NE(num_pixel_formats, 0);
   initialized = true;
   return true;
 }

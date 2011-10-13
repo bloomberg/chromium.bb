@@ -20,6 +20,7 @@
 #include "content/common/message_router.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/gl/gl_share_group.h"
+#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -117,6 +118,10 @@ class GpuChannel : public IPC::Channel::Listener,
   void AddRoute(int32 route_id, IPC::Channel::Listener* listener);
   void RemoveRoute(int32 route_id);
 
+  // Indicates whether newly created contexts should prefer the
+  // discrete GPU even if they would otherwise use the integrated GPU.
+  bool ShouldPreferDiscreteGpu() const;
+
  private:
   void OnDestroy();
 
@@ -135,6 +140,14 @@ class GpuChannel : public IPC::Channel::Listener,
   void OnCreateTransportTexture(int32 context_route_id, int32 host_id);
 
   void OnEcho(const IPC::Message& message);
+
+  void OnWillGpuSwitchOccur(bool is_creating_context,
+                            gfx::GpuPreference gpu_preference,
+                            IPC::Message* reply_message);
+  void OnCloseChannel();
+
+  void WillCreateCommandBuffer(gfx::GpuPreference gpu_preference);
+  void DidDestroyCommandBuffer(gfx::GpuPreference gpu_preference);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
@@ -175,6 +188,7 @@ class GpuChannel : public IPC::Channel::Listener,
   GpuWatchdog* watchdog_;
   bool software_;
   bool handle_messages_scheduled_;
+  int32 num_contexts_preferring_discrete_gpu_;
 
   ScopedRunnableMethodFactory<GpuChannel> task_factory_;
 

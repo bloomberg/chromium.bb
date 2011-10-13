@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if !defined(OS_MACOSX)
@@ -478,6 +479,7 @@ class WebGraphicsContext3DCommandBufferImpl
       swapbuffers_complete_callback_;
 
   WebKit::WebGraphicsContext3D::Attributes attributes_;
+  gfx::GpuPreference gpu_preference_;
   int cached_width_, cached_height_;
 
   // For tracking which FBO is bound.

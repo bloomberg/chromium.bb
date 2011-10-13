@@ -22,25 +22,26 @@ namespace gfx {
 
 scoped_refptr<GLContext> GLContext::CreateGLContext(
     GLShareGroup* share_group,
-    GLSurface* compatible_surface) {
+    GLSurface* compatible_surface,
+    GpuPreference gpu_preference) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLContext> context(new GLContextOSMesa(share_group));
-      if (!context->Initialize(compatible_surface))
+      if (!context->Initialize(compatible_surface, gpu_preference))
         return NULL;
 
       return context;
     }
     case kGLImplementationEGLGLES2: {
       scoped_refptr<GLContext> context(new GLContextEGL(share_group));
-      if (!context->Initialize(compatible_surface))
+      if (!context->Initialize(compatible_surface, gpu_preference))
         return NULL;
 
       return context;
     }
     case kGLImplementationDesktopGL: {
       scoped_refptr<GLContext> context(new GLContextWGL(share_group));
-      if (!context->Initialize(compatible_surface))
+      if (!context->Initialize(compatible_surface, gpu_preference))
         return NULL;
 
       return context;
@@ -51,6 +52,10 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
       NOTREACHED();
       return NULL;
   }
+}
+
+bool GLContext::SupportsDualGpus() {
+  return false;
 }
 
 }  // namespace gfx

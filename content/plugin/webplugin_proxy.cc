@@ -673,9 +673,11 @@ void WebPluginProxy::BindFakePluginWindowHandle(bool opaque) {
   Send(new PluginHostMsg_BindFakePluginWindowHandle(route_id_, opaque));
 }
 
-WebPluginAcceleratedSurface* WebPluginProxy::GetAcceleratedSurface() {
+WebPluginAcceleratedSurface* WebPluginProxy::GetAcceleratedSurface(
+    gfx::GpuPreference gpu_preference) {
   if (!accelerated_surface_.get())
-    accelerated_surface_.reset(new WebPluginAcceleratedSurfaceProxy(this));
+    accelerated_surface_.reset(new WebPluginAcceleratedSurfaceProxy(
+        this, gpu_preference));
   return accelerated_surface_.get();
 }
 

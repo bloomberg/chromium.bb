@@ -5,7 +5,6 @@
 #include "content/common/sandbox_mac.h"
 
 #import <Cocoa/Cocoa.h>
-#import <OpenGL/OpenGL.h>
 
 extern "C" {
 #include <sandbox.h>
@@ -250,16 +249,6 @@ void Sandbox::SandboxWarmup(SandboxProcessType sandbox_type) {
   // Process-type dependent warm-up.
   switch (sandbox_type) {
     case SANDBOX_TYPE_GPU:
-      {  // GPU-related stuff is very slow without this, probably because
-         // the sandbox prevents loading graphics drivers or some such.
-         CGLPixelFormatAttribute attribs[] = { (CGLPixelFormatAttribute)0 };
-         CGLPixelFormatObj format;
-         GLint n;
-         CGLChoosePixelFormat(attribs, &format, &n);
-         if (format)
-           CGLReleasePixelFormat(format);
-      }
-
       {
          // Preload either the desktop GL or the osmesa so, depending on the
          // --use-gl flag.

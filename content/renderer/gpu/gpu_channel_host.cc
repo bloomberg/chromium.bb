@@ -205,7 +205,8 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
     CommandBufferProxy* share_group,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
-    const GURL& active_url) {
+    const GURL& active_url,
+    gfx::GpuPreference gpu_preference) {
   DCHECK(ChildThread::current());
 #if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
@@ -219,6 +220,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
   init_params.allowed_extensions = allowed_extensions;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
+  init_params.gpu_preference = gpu_preference;
   int32 route_id;
   if (!ChildThread::current()->Send(
       new GpuHostMsg_CreateViewCommandBuffer(
@@ -256,7 +258,8 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
     CommandBufferProxy* share_group,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
-    const GURL& active_url) {
+    const GURL& active_url,
+    gfx::GpuPreference gpu_preference) {
 #if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
@@ -269,6 +272,7 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
   init_params.allowed_extensions = allowed_extensions;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
+  init_params.gpu_preference = gpu_preference;
   int32 route_id;
   if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(size,
                                                            init_params,
@@ -321,4 +325,20 @@ void GpuChannelHost::RemoveRoute(int route_id) {
                         channel_filter_.get(),
                         &GpuChannelHost::MessageFilter::RemoveRoute,
                         route_id));
+}
+
+bool GpuChannelHost::WillGpuSwitchOccur(
+    bool is_creating_context, gfx::GpuPreference gpu_preference) {
+  bool result = false;
+  if (!Send(new GpuChannelMsg_WillGpuSwitchOccur(is_creating_context,
+                                                 gpu_preference,
+                                                 &result))) {
+    return false;
+  }
+  return result;
+}
+
+void GpuChannelHost::ForciblyCloseChannel() {
+  Send(new GpuChannelMsg_CloseChannel());
+  SetStateLost();
 }

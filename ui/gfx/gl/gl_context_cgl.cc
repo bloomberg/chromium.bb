@@ -4,6 +4,8 @@
 
 #include "ui/gfx/gl/gl_context_cgl.h"
 
+#include <vector>
+
 #include "base/logging.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_surface_cgl.h"
@@ -12,27 +14,61 @@ namespace gfx {
 
 GLContextCGL::GLContextCGL(GLShareGroup* share_group)
   : GLContext(share_group),
-    context_(NULL) {
+    context_(NULL),
+    gpu_preference_(PreferIntegratedGpu) {
 }
 
 GLContextCGL::~GLContextCGL() {
   Destroy();
 }
 
-bool GLContextCGL::Initialize(GLSurface* compatible_surface) {
+bool GLContextCGL::Initialize(
+    GLSurface* compatible_surface, GpuPreference gpu_preference) {
   DCHECK(compatible_surface);
 
+  // Ensure the GPU preference is compatible with contexts already in the
+  // share group.
+  GLContextCGL* share_context = share_group() ?
+      static_cast<GLContextCGL*>(share_group()->GetContext()) : NULL;
+  if (share_context && gpu_preference != share_context->GetGpuPreference())
+    return false;
+
+  std::vector<CGLPixelFormatAttribute> attribs;
+  attribs.push_back(kCGLPFAPBuffer);
+  bool using_offline_renderer =
+      SupportsDualGpus() && gpu_preference == PreferIntegratedGpu;
+  if (using_offline_renderer) {
+    attribs.push_back(kCGLPFAAllowOfflineRenderers);
+  }
+  attribs.push_back((CGLPixelFormatAttribute) 0);
+
+  CGLPixelFormatObj format;
+  GLint num_pixel_formats;
+  if (CGLChoosePixelFormat(&attribs.front(),
+                           &format,
+                           &num_pixel_formats) != kCGLNoError) {
+    LOG(ERROR) << "Error choosing pixel format.";
+    return false;
+  }
+  if (!format) {
+    LOG(ERROR) << "format == 0.";
+    return false;
+  }
+  DCHECK_NE(num_pixel_formats, 0);
+
   CGLError res = CGLCreateContext(
-      static_cast<CGLPixelFormatObj>(GLSurfaceCGL::GetPixelFormat()),
-      share_group() ?
-          static_cast<CGLContextObj>(share_group()->GetHandle()) : NULL,
+      format,
+      share_context ?
+          static_cast<CGLContextObj>(share_context->GetHandle()) : NULL,
       reinterpret_cast<CGLContextObj*>(&context_));
+  CGLReleasePixelFormat(format);
   if (res != kCGLNoError) {
     LOG(ERROR) << "Error creating context.";
     Destroy();
     return false;
   }
 
+  gpu_preference_ = gpu_preference;
   return true;
 }
 
@@ -113,6 +149,10 @@ void* GLContextCGL::GetHandle() {
 void GLContextCGL::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
   LOG(WARNING) << "GLContex: GLContextCGL::SetSwapInterval is ignored.";
+}
+
+GpuPreference GLContextCGL::GetGpuPreference() {
+  return gpu_preference_;
 }
 
 }  // namespace gfx

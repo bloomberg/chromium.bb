@@ -103,7 +103,8 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
       GLInProcessContext* context_group,
       const char* allowed_extensions,
       const int32* attrib_list,
-      const GURL& active_arl);
+      const GURL& active_url,
+      gfx::GpuPreference gpu_preference);
 
   // Create a GLInProcessContext that renders to an offscreen frame buffer. If
   // parent is not NULL, that GLInProcessContext can access a copy of the
@@ -119,7 +120,8 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
       GLInProcessContext* context_group,
       const char* allowed_extensions,
       const int32* attrib_list,
-      const GURL& active_url);
+      const GURL& active_url,
+      gfx::GpuPreference gpu_preference);
 
   // For an offscreen frame buffer GLInProcessContext, return the texture ID
   // with respect to the parent GLInProcessContext. Returns zero if
@@ -173,7 +175,8 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
                   GLInProcessContext* context_group,
                   const char* allowed_extensions,
                   const int32* attrib_list,
-                  const GURL& active_url);
+                  const GURL& active_url,
+                  gfx::GpuPreference gpu_preference);
   void Destroy();
 
   void OnSwapBuffers();
@@ -240,7 +243,8 @@ GLInProcessContext* GLInProcessContext::CreateViewContext(
     GLInProcessContext* context_group,
     const char* allowed_extensions,
     const int32* attrib_list,
-    const GURL& active_url) {
+    const GURL& active_url,
+    gfx::GpuPreference gpu_preference) {
 #if defined(ENABLE_GPU)
   scoped_ptr<GLInProcessContext> context(new GLInProcessContext(NULL));
   if (!context->Initialize(
@@ -250,7 +254,8 @@ GLInProcessContext* GLInProcessContext::CreateViewContext(
       context_group,
       allowed_extensions,
       attrib_list,
-      active_url))
+      active_url,
+      gpu_preference))
     return NULL;
 
   return context.release();
@@ -265,7 +270,8 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
     GLInProcessContext* context_group,
     const char* allowed_extensions,
     const int32* attrib_list,
-    const GURL& active_url) {
+    const GURL& active_url,
+    gfx::GpuPreference gpu_preference) {
 #if defined(ENABLE_GPU)
   scoped_ptr<GLInProcessContext> context(new GLInProcessContext(parent));
   if (!context->Initialize(
@@ -275,7 +281,8 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
       context_group,
       allowed_extensions,
       attrib_list,
-      active_url))
+      active_url,
+      gpu_preference))
     return NULL;
 
   return context.release();
@@ -397,7 +404,8 @@ bool GLInProcessContext::Initialize(bool onscreen,
                                     GLInProcessContext* context_group,
                                     const char* allowed_extensions,
                                     const int32* attrib_list,
-                                    const GURL& active_url) {
+                                    const GURL& active_url,
+                                    gfx::GpuPreference gpu_preference) {
   // Use one share group for all contexts.
   static scoped_refptr<gfx::GLShareGroup> share_group(new gfx::GLShareGroup);
 
@@ -480,7 +488,9 @@ bool GLInProcessContext::Initialize(bool onscreen,
     return false;
   }
 
-  context_ = gfx::GLContext::CreateGLContext(share_group.get(), surface_.get());
+  context_ = gfx::GLContext::CreateGLContext(share_group.get(),
+                                             surface_.get(),
+                                             gpu_preference);
   if (!context_.get()) {
     LOG(ERROR) << "Could not create GLContext.";
     Destroy();
@@ -625,6 +635,13 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
 
   const char* preferred_extensions = "*";
 
+  // TODO(kbr): More work will be needed in this implementation to
+  // properly support GPU switching. Like in the out-of-process
+  // command buffer implementation, all previously created contexts
+  // will need to be lost either when the first context requesting the
+  // discrete GPU is created, or the last one is destroyed.
+  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+
   GURL active_url;
   if (web_view && web_view->mainFrame())
     active_url = GURL(web_view->mainFrame()->document().url());
@@ -653,7 +670,8 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
       context_group ? context_group->context_ : NULL,
       preferred_extensions,
       attribs,
-      active_url);
+      active_url,
+      gpu_preference);
   web_view_ = NULL;
 
   if (!context_)

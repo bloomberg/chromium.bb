@@ -20,11 +20,19 @@ void GLShareGroup::RemoveContext(GLContext* context) {
 }
 
 void* GLShareGroup::GetHandle() {
+  GLContext* context = GetContext();
+  if (context)
+    return context->GetHandle();
+
+  return NULL;
+}
+
+GLContext* GLShareGroup::GetContext() {
   for (ContextSet::iterator it = contexts_.begin();
        it != contexts_.end();
        ++it) {
-     if ((*it)->GetHandle())
-       return (*it)->GetHandle();
+    if ((*it)->GetHandle())
+      return *it;
   }
 
   return NULL;

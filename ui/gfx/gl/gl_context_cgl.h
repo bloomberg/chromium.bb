@@ -15,7 +15,8 @@ class GLContextCGL : public GLContext {
   virtual ~GLContextCGL();
 
   // Implement GLContext.
-  virtual bool Initialize(GLSurface* compatible_surface);
+  virtual bool Initialize(
+      GLSurface* compatible_surface, GpuPreference gpu_preference);
   virtual void Destroy();
   virtual bool MakeCurrent(GLSurface* surface);
   virtual void ReleaseCurrent(GLSurface* surface);
@@ -25,6 +26,9 @@ class GLContextCGL : public GLContext {
 
  private:
   void* context_;
+  GpuPreference gpu_preference_;
+
+  GpuPreference GetGpuPreference();
 
   DISALLOW_COPY_AND_ASSIGN(GLContextCGL);
 };

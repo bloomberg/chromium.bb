@@ -50,6 +50,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
       context_lost_callback_(0),
       context_lost_reason_(GL_NO_ERROR),
       swapbuffers_complete_callback_(0),
+      gpu_preference_(gfx::PreferIntegratedGpu),
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0),
@@ -58,6 +59,12 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
+  if (host_) {
+    if (host_->WillGpuSwitchOccur(false, gpu_preference_)) {
+      host_->ForciblyCloseChannel();
+    }
+  }
+
   {
     base::AutoLock lock(g_all_shared_contexts_lock.Get());
     g_all_shared_contexts.Pointer()->erase(this);
@@ -74,12 +81,35 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (!render_thread)
     return false;
-  host_ = render_thread->EstablishGpuChannelSync(
-    content::
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
-  if (!host_)
-    return false;
-  DCHECK(host_->state() == GpuChannelHost::kConnected);
+
+  // The noExtensions and canRecoverFromContextLoss flags are
+  // currently used as hints that we are creating a context on
+  // behalf of WebGL or accelerated 2D canvas, respectively.
+  if (attributes.noExtensions || !attributes.canRecoverFromContextLoss)
+    gpu_preference_ = gfx::PreferDiscreteGpu;
+
+  bool retry = false;
+
+  do {
+    host_ = render_thread->EstablishGpuChannelSync(
+        content::
+        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
+    if (!host_)
+      return false;
+    DCHECK(host_->state() == GpuChannelHost::kConnected);
+
+    if (!retry) {
+      // If the creation of this context requires all contexts for this
+      // renderer to be destroyed on the GPU process side, then drop the
+      // channel and recreate it.
+      if (host_->WillGpuSwitchOccur(true, gpu_preference_)) {
+        host_->ForciblyCloseChannel();
+        retry = true;
+      }
+    } else {
+      retry = false;
+    }
+  } while (retry);
 
   const GPUInfo& gpu_info = host_->gpu_info();
   UMA_HISTOGRAM_ENUMERATION(
@@ -152,7 +182,8 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
           share_group,
           preferred_extensions,
           attribs,
-          active_url_);
+          active_url_,
+          gpu_preference_);
     } else {
       context_ = RendererGLContext::CreateOffscreenContext(
           host_,
@@ -160,7 +191,8 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
           share_group,
           preferred_extensions,
           attribs,
-          active_url_);
+          active_url_,
+          gpu_preference_);
     }
   }
 

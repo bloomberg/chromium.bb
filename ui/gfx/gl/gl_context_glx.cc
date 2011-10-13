@@ -53,7 +53,8 @@ GLContextGLX::~GLContextGLX() {
   Destroy();
 }
 
-bool GLContextGLX::Initialize(GLSurface* compatible_surface) {
+bool GLContextGLX::Initialize(
+    GLSurface* compatible_surface, GpuPreference gpu_preference) {
   GLSurfaceGLX* surface_glx = static_cast<GLSurfaceGLX*>(compatible_surface);
 
   GLXContext share_handle = static_cast<GLXContext>(

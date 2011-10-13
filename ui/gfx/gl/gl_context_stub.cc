@@ -12,7 +12,8 @@ GLContextStub::GLContextStub() : GLContext(NULL) {
 GLContextStub::~GLContextStub() {
 }
 
-bool GLContextStub::Initialize(GLSurface* compatible_surface) {
+bool GLContextStub::Initialize(
+    GLSurface* compatible_surface, GpuPreference gpu_preference) {
   return true;
 }
 

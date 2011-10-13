@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
@@ -22,6 +23,7 @@
 #include "ipc/ipc_message.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
+#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -46,6 +48,7 @@ class GpuCommandBufferStub
       const gpu::gles2::DisallowedFeatures& disallowed_features,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
+      gfx::GpuPreference gpu_preference,
       int32 route_id,
       int32 renderer_id,
       int32 render_view_id,
@@ -77,6 +80,8 @@ class GpuCommandBufferStub
   int32 route_id() const { return route_id_; }
 
   void ViewResized();
+
+  gfx::GpuPreference gpu_preference() { return gpu_preference_; }
 
  private:
   void Destroy();
@@ -140,6 +145,7 @@ class GpuCommandBufferStub
   gpu::gles2::DisallowedFeatures disallowed_features_;
   std::string allowed_extensions_;
   std::vector<int32> requested_attribs_;
+  gfx::GpuPreference gpu_preference_;
   int32 route_id_;
   bool software_;
   uint32 last_flush_count_;

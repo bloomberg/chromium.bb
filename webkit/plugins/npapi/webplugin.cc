@@ -26,7 +26,8 @@ bool WebPluginGeometry::Equals(const WebPluginGeometry& rhs) const {
 }
 
 #if defined(OS_MACOSX)
-WebPluginAcceleratedSurface* WebPlugin::GetAcceleratedSurface() {
+WebPluginAcceleratedSurface* WebPlugin::GetAcceleratedSurface(
+    gfx::GpuPreference gpu_preference) {
   return NULL;
 }
 #endif

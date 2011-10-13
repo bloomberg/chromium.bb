@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -159,7 +160,8 @@ class WebPlugin {
   virtual void BindFakePluginWindowHandle(bool opaque) {}
 
   // Returns the accelerated surface abstraction for accelerated plugins.
-  virtual WebPluginAcceleratedSurface* GetAcceleratedSurface();
+  virtual WebPluginAcceleratedSurface* GetAcceleratedSurface(
+      gfx::GpuPreference gpu_preference);
 #endif
 
   // Handles NPN_URLRedirectResponse calls issued by plugins in response to

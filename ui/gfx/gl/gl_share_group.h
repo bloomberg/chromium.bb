@@ -30,6 +30,10 @@ class GL_EXPORT GLShareGroup : public base::RefCounted<GLShareGroup> {
   // there are no initialized contexts in the share group.
   void* GetHandle();
 
+  // Returns a pointer to any initialized context in the share group
+  // or NULL if there are no initialized contexts in the share group.
+  GLContext* GetContext();
+
  private:
   friend class base::RefCounted<GLShareGroup>;
   ~GLShareGroup();

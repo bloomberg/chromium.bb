@@ -11,10 +11,11 @@
 #include "base/callback_old.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
+#include "ui/gfx/gl/gpu_preference.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 #include "ui/gfx/surface/surface_export.h"
 #include "ui/gfx/surface/transport_dib.h"
 
@@ -46,9 +47,14 @@ class SURFACE_EXPORT AcceleratedSurface {
   // an FBO internally does NOT work properly with client code which uses
   // OpenGL (i.e., via GLES2 command buffers), because the GLES2
   // implementation does not know to bind the accelerated surface's
-  // internal FBO when the default FBO is bound. Returns false upon
+  // internal FBO when the default FBO is bound. |gpu_preference| indicates
+  // the GPU preference for the internally allocated GLContext. If
+  // |share_context| is non-NULL, then on platforms supporting dual GPUs,
+  // its GPU preference must match the passed one. Returns false upon
   // failure.
-  bool Initialize(gfx::GLContext* share_context, bool allocate_fbo);
+  bool Initialize(gfx::GLContext* share_context,
+                  bool allocate_fbo,
+                  gfx::GpuPreference gpu_preference);
   // Tear down. Must be called before destructor to prevent leaks.
   void Destroy();
 

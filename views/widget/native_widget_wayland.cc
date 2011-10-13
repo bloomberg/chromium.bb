@@ -94,7 +94,10 @@ void NativeWidgetWayland::InitNativeWidget(const Widget::InitParams& params) {
       delegate_->AsWidget()->GetRootView()->SetPaintToLayer(true);
   } else {
     surface_ = gfx::GLSurface::CreateViewGLSurface(false, egl_window_);
-    context_ = gfx::GLContext::CreateGLContext(NULL, surface_.get());
+    context_ = gfx::GLContext::CreateGLContext(
+        NULL,
+        surface_.get(),
+        gfx::PreferIntegratedGpu);
 
     if (!context_->MakeCurrent(surface_.get()))
       DLOG(ERROR) << "Failed to make surface current";

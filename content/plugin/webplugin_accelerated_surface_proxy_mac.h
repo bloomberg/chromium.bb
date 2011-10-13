@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
 #pragma once
 
+#include "ui/gfx/gl/gpu_preference.h"
 #include "webkit/plugins/npapi/webplugin_accelerated_surface_mac.h"
 
 class WebPluginProxy;
@@ -18,7 +19,8 @@ class WebPluginAcceleratedSurfaceProxy
  public:
   // Creates a new WebPluginAcceleratedSurfaceProxy that uses plugin_proxy
   // to proxy calls. plugin_proxy must outlive this object.
-  WebPluginAcceleratedSurfaceProxy(WebPluginProxy* plugin_proxy);
+  WebPluginAcceleratedSurfaceProxy(WebPluginProxy* plugin_proxy,
+                                   gfx::GpuPreference gpu_preference);
   virtual ~WebPluginAcceleratedSurfaceProxy();
 
   // WebPluginAcceleratedSurface implementation.

@@ -22,6 +22,7 @@
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
 #endif
+#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/surface/transport_dib.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
@@ -135,7 +136,8 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   virtual void BindFakePluginWindowHandle(bool opaque);
 
-  virtual webkit::npapi::WebPluginAcceleratedSurface* GetAcceleratedSurface();
+  virtual webkit::npapi::WebPluginAcceleratedSurface*
+      GetAcceleratedSurface(gfx::GpuPreference gpu_preference);
 
   // Tell the browser (via the renderer) to invalidate because the
   // accelerated buffers have changed.

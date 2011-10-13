@@ -251,7 +251,10 @@ bool SharedResources::Initialize() {
     return false;
   }
 
-  context_ = gfx::GLContext::CreateGLContext(NULL, surface_.get());
+  context_ = gfx::GLContext::CreateGLContext(
+      NULL,
+      surface_.get(),
+      gfx::PreferIntegratedGpu);
   if (!context_.get()) {
     LOG(ERROR) << "Unable to create GL context.";
     return false;
@@ -303,7 +306,10 @@ bool SharedResources::MakeSharedContextCurrent() {
 scoped_refptr<gfx::GLContext> SharedResources::CreateContext(
     gfx::GLSurface* surface) {
   if (initialized_)
-    return gfx::GLContext::CreateGLContext(context_->share_group(), surface);
+    return gfx::GLContext::CreateGLContext(
+        context_->share_group(),
+        surface,
+        gfx::PreferIntegratedGpu);
   else
     return NULL;
 }

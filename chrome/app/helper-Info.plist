@@ -24,5 +24,7 @@
 	<string>10.5.0</string>
 	<key>LSUIElement</key>
 	<string>1</string>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
 </dict>
 </plist>

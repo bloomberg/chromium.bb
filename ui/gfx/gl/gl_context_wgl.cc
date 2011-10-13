@@ -37,7 +37,8 @@ std::string GLContextWGL::GetExtensions() {
   return GLContext::GetExtensions();
 }
 
-bool GLContextWGL::Initialize(GLSurface* compatible_surface) {
+bool GLContextWGL::Initialize(
+    GLSurface* compatible_surface, GpuPreference gpu_preference) {
   GLSurfaceWGL* surface_wgl = static_cast<GLSurfaceWGL*>(compatible_surface);
 
   // TODO(apatrick): When contexts and surfaces are separated, we won't be

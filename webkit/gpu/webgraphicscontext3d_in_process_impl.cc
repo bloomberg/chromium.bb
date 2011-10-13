@@ -164,8 +164,13 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
       return false;
   }
 
+  // TODO(kbr): This implementation doesn't yet support lost contexts
+  // and therefore can't yet properly support GPU switching.
+  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+
   gl_context_ = gfx::GLContext::CreateGLContext(share_group,
-                                                gl_surface_.get());
+                                                gl_surface_.get(),
+                                                gpu_preference);
   if (!gl_context_.get()) {
     if (!is_gles2_)
       return false;
@@ -180,7 +185,8 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     if (webView) webView->mainFrame()->collectGarbage();
 
     gl_context_ = gfx::GLContext::CreateGLContext(share_group,
-                                                  gl_surface_.get());
+                                                  gl_surface_.get(),
+                                                  gpu_preference);
     if (!gl_context_.get())
       return false;
   }

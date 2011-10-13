@@ -17,7 +17,8 @@ class GL_EXPORT GLContextStub : public GLContext {
   virtual ~GLContextStub();
 
   // Implement GLContext.
-  virtual bool Initialize(GLSurface* compatible_surface);
+  virtual bool Initialize(
+      GLSurface* compatible_surface, GpuPreference gpu_preference);
   virtual void Destroy();
   virtual bool MakeCurrent(GLSurface* surface);
   virtual void ReleaseCurrent(GLSurface* surface);

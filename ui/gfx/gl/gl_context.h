@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/gl/gl_share_group.h"
+#include "ui/gfx/gl/gpu_preference.h"
 
 namespace gfx {
 
@@ -25,7 +26,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // context can be made with other surface's of the same type. The compatible
   // surface is only needed for certain platforms like WGL, OSMesa and GLX. It
   // should be specific for all platforms though.
-  virtual bool Initialize(GLSurface* compatible_surface) = 0;
+  virtual bool Initialize(
+      GLSurface* compatible_surface, GpuPreference gpu_preference) = 0;
 
   // Destroys the GL context.
   virtual void Destroy() = 0;
@@ -60,9 +62,12 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // internally created OpenGL context shares textures and other resources.
   static scoped_refptr<GLContext> CreateGLContext(
       GLShareGroup* share_group,
-      GLSurface* compatible_surface);
+      GLSurface* compatible_surface,
+      GpuPreference gpu_preference);
 
   static bool LosesAllContextsOnContextLost();
+
+  static bool SupportsDualGpus();
 
   static GLContext* GetCurrent();
 

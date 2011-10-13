@@ -133,7 +133,10 @@ int main(int argc, char** argv) {
   scoped_ptr<media::Window> window(new media::Window(width, height));
   gfx::GLSurface* surface =
       gfx::GLSurface::CreateViewGLSurface(false, window->PluginWindow());
-  gfx::GLContext* context = gfx::GLContext::CreateGLContext(NULL, surface);
+  gfx::GLContext* context = gfx::GLContext::CreateGLContext(
+      NULL,
+      surface,
+      gfx::PreferDiscreteGpu);
   context->MakeCurrent(surface);
   // This sets D3DPRESENT_INTERVAL_IMMEDIATE on Windows.
   context->SetSwapInterval(0);

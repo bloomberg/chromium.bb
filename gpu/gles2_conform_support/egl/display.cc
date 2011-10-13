@@ -117,7 +117,9 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   if (!gl_surface_.get())
     return EGL_NO_SURFACE;
 
-  gl_context_ = gfx::GLContext::CreateGLContext(NULL, gl_surface_.get());
+  gl_context_ = gfx::GLContext::CreateGLContext(NULL,
+                                                gl_surface_.get(),
+                                                gfx::PreferDiscreteGpu);
   if (!gl_context_.get())
     return EGL_NO_SURFACE;
 

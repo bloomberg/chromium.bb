@@ -42,7 +42,8 @@ GLContextEGL::~GLContextEGL() {
   Destroy();
 }
 
-bool GLContextEGL::Initialize(GLSurface* compatible_surface) {
+bool GLContextEGL::Initialize(
+    GLSurface* compatible_surface, GpuPreference gpu_preference) {
   DCHECK(compatible_surface);
   DCHECK(!context_);
 

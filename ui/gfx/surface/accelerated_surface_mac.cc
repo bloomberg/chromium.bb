@@ -24,8 +24,10 @@ AcceleratedSurface::AcceleratedSurface()
 
 AcceleratedSurface::~AcceleratedSurface() {}
 
-bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
-                                    bool allocate_fbo) {
+bool AcceleratedSurface::Initialize(
+    gfx::GLContext* share_context,
+    bool allocate_fbo,
+    gfx::GpuPreference gpu_preference) {
   allocate_fbo_ = allocate_fbo;
 
   // Ensure GL is initialized before trying to create an offscreen GL context.
@@ -47,8 +49,10 @@ bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
   gfx::GLShareGroup* share_group =
       share_context ? share_context->share_group() : NULL;
 
-  gl_context_ = gfx::GLContext::CreateGLContext(share_group,
-                                                gl_surface_.get());
+  gl_context_ = gfx::GLContext::CreateGLContext(
+      share_group,
+      gl_surface_.get(),
+      gpu_preference);
   if (!gl_context_.get()) {
     Destroy();
     return false;

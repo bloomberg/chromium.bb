@@ -21,7 +21,8 @@ GLContextOSMesa::~GLContextOSMesa() {
   Destroy();
 }
 
-bool GLContextOSMesa::Initialize(GLSurface* compatible_surface) {
+bool GLContextOSMesa::Initialize(
+    GLSurface* compatible_surface, GpuPreference gpu_preference) {
   DCHECK(!context_);
 
   OSMesaContext share_handle = static_cast<OSMesaContext>(

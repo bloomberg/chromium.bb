@@ -18,6 +18,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/video/video_decode_accelerator.h"
+#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -29,6 +30,7 @@ IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(std::string, allowed_extensions)
   IPC_STRUCT_MEMBER(std::vector<int>, attribs)
   IPC_STRUCT_MEMBER(GURL, active_url)
+  IPC_STRUCT_MEMBER(gfx::GpuPreference, gpu_preference)
 IPC_STRUCT_END()
 
 #if defined(OS_MACOSX)
@@ -112,6 +114,7 @@ IPC_STRUCT_TRAITS_BEGIN(GPUInfo)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
+IPC_ENUM_TRAITS(gfx::GpuPreference)
 IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
 
 IPC_ENUM_TRAITS(media::VideoDecodeAccelerator::Profile)
@@ -295,6 +298,20 @@ IPC_MESSAGE_CONTROL2(GpuChannelMsg_CreateTransportTexture,
 // Request that the GPU process reply with the given message.
 IPC_MESSAGE_CONTROL1(GpuChannelMsg_Echo,
                      IPC::Message /* reply */)
+
+// Asks the GPU process whether the creation or destruction of a
+// command buffer on the given GPU (integrated or discrete) will cause
+// the system to switch which GPU it is using. All contexts that share
+// resources need to be created on the same GPU.
+IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_WillGpuSwitchOccur,
+                            bool /* is_creating_context */,
+                            gfx::GpuPreference /* preference */,
+                            bool /* will_cause_switch */)
+
+// Forcibly closes the channel on the GPU process side, in order to
+// have the side effect that all contexts associated with this
+// renderer go into the lost state.
+IPC_MESSAGE_CONTROL0(GpuChannelMsg_CloseChannel)
 
 //------------------------------------------------------------------------------
 // GPU Command Buffer Messages

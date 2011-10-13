@@ -73,7 +73,8 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   if (!surface_.get())
     return false;
 
-  context_ = gfx::GLContext::CreateGLContext(NULL, surface_.get());
+  context_ = gfx::GLContext::CreateGLContext(
+      NULL, surface_.get(), gfx::PreferDiscreteGpu);
   if (!context_.get())
     return false;
 

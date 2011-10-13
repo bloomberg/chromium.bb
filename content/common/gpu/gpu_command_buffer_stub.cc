@@ -29,6 +29,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     const gpu::gles2::DisallowedFeatures& disallowed_features,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
+    gfx::GpuPreference gpu_preference,
     int32 route_id,
     int32 renderer_id,
     int32 render_view_id,
@@ -40,6 +41,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       disallowed_features_(disallowed_features),
       allowed_extensions_(allowed_extensions),
       requested_attribs_(attribs),
+      gpu_preference_(gpu_preference),
       route_id_(route_id),
       software_(software),
       last_flush_count_(0),
@@ -203,8 +205,14 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
-  context_ = gfx::GLContext::CreateGLContext(channel_->share_group(),
-                                             surface_.get());
+  gfx::GpuPreference gpu_preference =
+      channel_->ShouldPreferDiscreteGpu() ?
+          gfx::PreferDiscreteGpu : gpu_preference_;
+
+  context_ = gfx::GLContext::CreateGLContext(
+      channel_->share_group(),
+      surface_.get(),
+      gpu_preference);
   if (!context_.get()) {
     LOG(ERROR) << "Failed to create context.\n";
     OnInitializeFailed(reply_message);

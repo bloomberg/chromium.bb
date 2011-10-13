@@ -384,7 +384,19 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
           redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
         }
         layer_ = layer;
-        surface_ = plugin_->GetAcceleratedSurface();
+
+        gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+        // On dual GPU systems, force the use of the discrete GPU for
+        // the CARenderer underlying our Core Animation backend for
+        // all plugins except Flash. For some reason Unity3D's output
+        // doesn't show up if the integrated GPU is used. Safari keeps
+        // even Flash 11 with Stage3D on the integrated GPU, so mirror
+        // that behavior here.
+        const WebPluginInfo& plugin_info =
+            instance_->plugin_lib()->plugin_info();
+        if (plugin_info.name.find(ASCIIToUTF16("Flash")) != string16::npos)
+          gpu_preference = gfx::PreferIntegratedGpu;
+        surface_ = plugin_->GetAcceleratedSurface(gpu_preference);
 
         // If surface initialization fails for some reason, just continue
         // without any drawing; returning false would be a more confusing user

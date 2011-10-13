@@ -21,6 +21,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -80,7 +81,8 @@ class GpuChannelHost : public IPC::Message::Sender,
       CommandBufferProxy* share_group,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
-      const GURL& active_url);
+      const GURL& active_url,
+      gfx::GpuPreference gpu_preference);
 
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxy* CreateOffscreenCommandBuffer(
@@ -88,7 +90,8 @@ class GpuChannelHost : public IPC::Message::Sender,
       CommandBufferProxy* share_group,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
-      const GURL& active_url);
+      const GURL& active_url,
+      gfx::GpuPreference gpu_preference);
 
   // Creates a video decoder in the GPU process.
   // Returned pointer is owned by the CommandBufferProxy for |route_id|.
@@ -107,6 +110,20 @@ class GpuChannelHost : public IPC::Message::Sender,
   // Add a route for the current message loop.
   void AddRoute(int route_id, base::WeakPtr<IPC::Channel::Listener> listener);
   void RemoveRoute(int route_id);
+
+  // Asks the GPU process whether the creation or destruction of the
+  // given command buffer on the given GPU will provoke a switch of
+  // the GPU from integrated to discrete or vice versa. This requires
+  // all of the GL contexts in the same share group in the GPU process
+  // to be dropped.
+  bool WillGpuSwitchOccur(bool is_creating_context,
+                          gfx::GpuPreference gpu_preference);
+
+  // Forcibly close the channel on the GPU process side. This will
+  // cause all command buffers on this side to soon afterward start
+  // registering lost contexts. It also has the side effect of setting
+  // the state on this side to lost.
+  void ForciblyCloseChannel();
 
  private:
   // An shim class for working with listeners between threads.
