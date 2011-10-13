@@ -2505,7 +2505,9 @@ def MakeWindowsEnv():
           ['NOMINMAX', '1'],
       ],
       LIBS = ['wsock32', 'advapi32'],
-      CCFLAGS = ['/EHsc', '/WX'],
+      # TODO(bsy) remove 4355 once cross-repo
+      # NACL_ALLOW_THIS_IN_INITIALIZER_LIST changes go in.
+      CCFLAGS = ['/EHsc', '/WX', '/wd4355'],
   )
 
   # This linker option allows us to ensure our builds are compatible with

@@ -57,4 +57,16 @@
 # define NACL_WUR __attribute__((__warn_unused_result__))
 #endif
 
+#if NACL_WINDOWS
+/*
+ * from Cr base/compiler_specific.h
+ */
+# define NACL_ALLOW_THIS_IN_INITIALIZER_LIST(code) \
+  MSVC_PUSH_DISABLE_WARNING(4355) \
+  code \
+  MSVC_POP_WARNING()
+#else
+# define NACL_ALLOW_THIS_IN_INITIALIZER_LIST(code) code
+#endif
+
 #endif

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -9,6 +9,7 @@
  * Bound IMC descriptors.
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -75,8 +76,10 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
   struct msghdr               accept_msg;
   struct cmsghdr              *cmsg;
   char                        data_buf[1];
-  char                        control_buf[CMSG_SPACE(sizeof(int))];
+  char                        control_buf[CMSG_SPACE_KHANDLE_COUNT_MAX_INTS];
   int                         received;
+
+  assert(CMSG_SPACE(sizeof(int)) <= CMSG_SPACE_KHANDLE_COUNT_MAX_INTS);
 
   peer = malloc(sizeof(*peer));
   if (peer == NULL) {

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -73,6 +73,44 @@ typedef struct NaClIOVec {
 
 /* The maximum number of handles to be passed by NaClSendDatagram() */
 #define NACL_HANDLE_COUNT_MAX 8     /* TBD */
+/*
+ * If you are going to touch OSX code, read this!
+ *
+ * CMSG_SPACE() is supposed to be a constant expression, and most
+ * BSD-ish code uses it to determine the size of buffers used to
+ * send/receive descriptors in the control message for
+ * sendmsg/recvmsg.  Such buffers are often automatic variables.
+ *
+ * In Darwin, CMSG_SPACE uses __DARWIN_ALIGN.  And __DARWIN_ALIGN(p)
+ * expands to
+ *
+ * ((__darwin_size_t)((char *)(__darwin_size_t)(p) + __DARNWIN_ALIGNBYTES)
+ *  &~ __DARWIN_ALIGNBYTES)
+ *
+ * which Clang (to which many Apple employees contribute!) complains
+ * about when invoked with -pedantic -- and with our -Werror, causes
+ * Clang-based builds to fail.  Clang says this is not a constant
+ * expression:
+ *
+ * error: variable length array folded to constant array as an
+ * extension [-Werror,-pedantic]
+ *
+ * Possibly true per standard definition, since that cast to (char *)
+ * is ugly, but actually Clang was able to convert to a compile-time
+ * constant... it just had to work harder.
+ *
+ * As a ugly workaround, we define the following constant for use in
+ * automatic array declarations, and in all cases have an assert to
+ * verify that the value is of sufficient size.  (The assert should
+ * constant propagate and be dead-code eliminated in normal compiles
+ * and should cause a quick death if ever violated, since NaCl startup
+ * code involves the use of descriptor passing through the affected
+ * code.)
+ *
+ * TODO(bsy,ncbray): Constants are duplicated between this file and
+ * nacl_imc.h and refactoring is needed to clean these files up.
+ */
+#define CMSG_SPACE_KHANDLE_COUNT_MAX_INTS (8 * 4 + 16)
 
 /*
  * NaClMessageHeader flags set by NaClReceiveDatagram()

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -9,6 +9,7 @@
  * Connection capabilities.
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <poll.h>
 #include <stdlib.h>
@@ -89,12 +90,14 @@ static int NaClDescConnCapFdConnectAddr(struct NaClDesc *vself,
   struct NaClDescConnCapFd  *self = (struct NaClDescConnCapFd *) vself;
   NaClHandle                sock_pair[2];
   struct NaClDescImcDesc    *connected_socket;
-  char                      control_buf[CMSG_SPACE(sizeof(int))];
+  char                      control_buf[CMSG_SPACE_KHANDLE_COUNT_MAX_INTS];
   struct iovec              iovec;
   struct msghdr             connect_msg;
   struct cmsghdr            *cmsg;
   int                       sent;
   int                       retval;
+
+  assert(CMSG_SPACE(sizeof(int)) <= CMSG_SPACE_KHANDLE_COUNT_MAX_INTS);
 
   sock_pair[0] = NACL_INVALID_HANDLE;
   sock_pair[1] = NACL_INVALID_HANDLE;

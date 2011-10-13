@@ -24,6 +24,7 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 
+
 /*
  * TODO(bsy,bradnelson): remove SIGPIPE_FIX.  It is needed for future
  * testing because our test framework appears to not see the SIGPIPE
@@ -186,10 +187,13 @@ int Close(Handle handle) {
 int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   struct msghdr msg;
   struct iovec vec[kIovLengthMax + 1];
-  unsigned char buf[CMSG_SPACE(kHandleCountMax * sizeof(int))];
+  unsigned char buf[CMSG_SPACE_KHANDLE_COUNT_MAX_INTS];
   Header header = { 0, 0 };
 
   (void) flags;  /* BUG(shiki): unused parameter */
+
+  assert(CMSG_SPACE(kHandleCountMax * sizeof(int))
+         <= CMSG_SPACE_KHANDLE_COUNT_MAX_INTS);
 
   /*
    * The following assert was an earlier attempt to remember/check the
@@ -261,7 +265,10 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
 int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   struct msghdr msg;
   struct iovec vec[kIovLengthMax];
-  unsigned char buf[CMSG_SPACE(kHandleCountMax * sizeof(int))];
+  unsigned char buf[CMSG_SPACE_KHANDLE_COUNT_MAX_INTS];
+
+  assert(CMSG_SPACE(kHandleCountMax * sizeof(int))
+         <= CMSG_SPACE_KHANDLE_COUNT_MAX_INTS);
 
   if (kHandleCountMax < message->handle_count ||
       kIovLengthMax < message->iov_length) {
