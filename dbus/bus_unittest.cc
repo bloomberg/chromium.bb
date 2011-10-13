@@ -46,6 +46,8 @@ TEST(BusTest, GetObjectProxy) {
                           "/org/chromium/DifferentTestObject");
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
+
+  bus->ShutdownAndBlock();
 }
 
 TEST(BusTest, GetExportedObject) {
@@ -70,6 +72,8 @@ TEST(BusTest, GetExportedObject) {
                              "/org/chromium/DifferentTestObject");
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
+
+  bus->ShutdownAndBlock();
 }
 
 TEST(BusTest, ShutdownAndBlock) {

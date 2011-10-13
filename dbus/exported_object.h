@@ -144,7 +144,7 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
   static void OnUnregisteredThunk(DBusConnection* connection,
                                   void* user_data);
 
-  Bus* bus_;
+  scoped_refptr<Bus> bus_;
   std::string service_name_;
   std::string object_path_;
   bool object_is_registered_;

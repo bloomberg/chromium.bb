@@ -293,6 +293,12 @@ void Bus::ShutdownAndBlock() {
     iter->second->Detach();
   }
 
+  // Release object proxies and exported objects here. We should do this
+  // here rather than in the destructor to avoid memory leaks due to
+  // cyclic references.
+  object_proxy_table_.clear();
+  exported_object_table_.clear();
+
   // Private connection should be closed.
   if (connection_) {
     if (connection_type_ == PRIVATE)

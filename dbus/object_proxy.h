@@ -175,7 +175,7 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
                                               DBusMessage* raw_message,
                                               void* user_data);
 
-  Bus* bus_;
+  scoped_refptr<Bus> bus_;
   std::string service_name_;
   std::string object_path_;
 
