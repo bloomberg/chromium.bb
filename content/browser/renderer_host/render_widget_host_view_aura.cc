@@ -201,6 +201,7 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
   return new BackingStoreSkia(host_, size);
 }
 
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 width,
       int32 height,
@@ -216,6 +217,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(uint64 surface_id) {
 }
+#endif
 
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
