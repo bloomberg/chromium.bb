@@ -75,8 +75,8 @@ WebPluginProxy::WebPluginProxy(
   Display* display = ui::GetXDisplay();
   if (ui::QuerySharedMemorySupport(display) == ui::SHARED_MEMORY_PIXMAP &&
       ui::BitsPerPixelForPixmapDepth(
-          display, DefaultDepth(display, 0)) == 32) {
-    Visual* vis = DefaultVisual(display, 0);
+          display, DefaultDepth(display, DefaultScreen(display))) == 32) {
+    Visual* vis = DefaultVisual(display, DefaultScreen(display));
 
     if (vis->red_mask == 0xff0000 &&
         vis->green_mask == 0xff00 &&
@@ -603,7 +603,8 @@ void WebPluginProxy::CreateShmPixmapFromDIB(
     *pixmap_out = XShmCreatePixmap(display, root_window,
                                    NULL, &shminfo,
                                    window_rect.width(), window_rect.height(),
-                                   DefaultDepth(display, 0));
+                                   DefaultDepth(display,
+                                                DefaultScreen(display)));
   }
 }
 

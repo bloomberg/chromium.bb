@@ -155,9 +155,10 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
       static_cast<NPSetWindowCallbackStruct*>(window_.ws_info);
   extra->type = NP_SETWINDOW;
   extra->display = GDK_DISPLAY();
-  extra->visual = DefaultVisual(GDK_DISPLAY(), 0);
-  extra->depth = DefaultDepth(GDK_DISPLAY(), 0);
-  extra->colormap = DefaultColormap(GDK_DISPLAY(), 0);
+  int screen = DefaultScreen(GDK_DISPLAY());
+  extra->visual = DefaultVisual(GDK_DISPLAY(), screen);
+  extra->depth = DefaultDepth(GDK_DISPLAY(), screen);
+  extra->colormap = DefaultColormap(GDK_DISPLAY(), screen);
 
   return true;
 }
@@ -425,7 +426,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
       pixmap = XCreatePixmap(display, windowless_shm_pixmap_,
                              std::max(1, pixmap_rect.width()),
                              std::max(1, pixmap_rect.height()),
-                             DefaultDepth(display, 0));
+                             DefaultDepth(display, DefaultScreen(display)));
       xgc = XCreateGC(display, windowless_shm_pixmap_, 0, NULL);
       // Copy the current image into the pixmap, so the plugin can draw over it.
       XCopyArea(display, windowless_shm_pixmap_, pixmap, xgc,
@@ -523,9 +524,10 @@ void WebPluginDelegateImpl::WindowlessSetWindow() {
   NPSetWindowCallbackStruct* extra =
       static_cast<NPSetWindowCallbackStruct*>(window_.ws_info);
   extra->display = GDK_DISPLAY();
-  extra->visual = DefaultVisual(GDK_DISPLAY(), 0);
-  extra->depth = DefaultDepth(GDK_DISPLAY(), 0);
-  extra->colormap = DefaultColormap(GDK_DISPLAY(), 0);
+  int screen = DefaultScreen(GDK_DISPLAY());
+  extra->visual = DefaultVisual(GDK_DISPLAY(), screen);
+  extra->depth = DefaultDepth(GDK_DISPLAY(), screen);
+  extra->colormap = DefaultColormap(GDK_DISPLAY(), screen);
 
   NPError err = instance()->NPP_SetWindow(&window_);
   DCHECK(err == NPERR_NO_ERROR);
