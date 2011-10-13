@@ -328,8 +328,15 @@ void Layer::RecomputeHole() {
         !IsApproximateMultilpleOf(degrees, 90.0f))
       continue;
 
-    gfx::Rect candidate_hole = children_[i]->bounds();
-    children_[i]->transform().TransformRect(&candidate_hole);
+    // The reason why we don't just take the bounds and apply the transform is
+    // that the bounds encodes a position, too, so the effective transformation
+    // matrix is actually different that the one reported. As well, the bounds
+    // will not necessarily be at the origin.
+    gfx::Rect candidate_hole(children_[i]->bounds_.size());
+    ui::Transform transform = children_[i]->transform();
+    transform.ConcatTranslate(static_cast<float>(children_[i]->bounds_.x()),
+                              static_cast<float>(children_[i]->bounds_.y()));
+    transform.TransformRect(&candidate_hole);
 
     // This layer might not contain the child (e.g., a portion of the child may
     // be offscreen). Only the portion of the child that overlaps this layer is

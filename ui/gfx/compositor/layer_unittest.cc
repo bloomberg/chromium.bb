@@ -539,9 +539,9 @@ TEST_F(LayerWithNullDelegateTest, NoHoleWithTransform) {
   EXPECT_TRUE(!parent->hole_rect().IsEmpty());
 
   ui::Transform t;
-  t.SetTranslate(-75, -75);
+  t.SetTranslate(-50, -50);
   t.ConcatRotate(45.0f);
-  t.ConcatTranslate(75, 75);
+  t.ConcatTranslate(50, 50);
   child->SetTransform(t);
 
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), parent->hole_rect());
@@ -558,13 +558,16 @@ TEST_F(LayerWithNullDelegateTest, HoleWithNinetyDegreeTransforms) {
 
   for (int i = -4; i <= 4; ++i) {
     ui::Transform t;
-    t.SetTranslate(-75, -75);
+    // Need to rotate in local coordinates.
+    t.SetTranslate(-25, -25);
     t.ConcatRotate(90.0f * i);
-    t.ConcatTranslate(75, 75);
+    t.ConcatTranslate(25, 25);
     child->SetTransform(t);
 
-    gfx::Rect target_rect = child->bounds();
-    child->transform().TransformRect(&target_rect);
+    gfx::Rect target_rect(child->bounds().size());
+    t.ConcatTranslate(child->bounds().x(), child->bounds().y());
+    t.TransformRect(&target_rect);
+
     EXPECT_EQ(target_rect, parent->hole_rect());
   }
 }
