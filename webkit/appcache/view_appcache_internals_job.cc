@@ -71,17 +71,17 @@ void EmitListItem(const std::string& label,
                   const std::string& data,
                   std::string* out) {
   out->append("<li>");
-  out->append(EscapeForHTML(label));
-  out->append(EscapeForHTML(data));
+  out->append(net::EscapeForHTML(label));
+  out->append(net::EscapeForHTML(data));
   out->append("</li>\n");
 }
 
 void EmitAnchor(const std::string& url, const std::string& text,
                 std::string* out) {
   out->append("<a href=\"");
-  out->append(EscapeForHTML(url));
+  out->append(net::EscapeForHTML(url));
   out->append("\">");
-  out->append(EscapeForHTML(text));
+  out->append(net::EscapeForHTML(text));
   out->append("</a>");
 }
 
@@ -239,15 +239,15 @@ void EmitAppCacheResourceInfoVector(
 
 void EmitResponseHeaders(net::HttpResponseHeaders* headers, std::string* out) {
   out->append("<hr><pre>");
-  out->append(EscapeForHTML(headers->GetStatusLine()));
+  out->append(net::EscapeForHTML(headers->GetStatusLine()));
   out->push_back('\n');
 
   void* iter = NULL;
   std::string name, value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    out->append(EscapeForHTML(name));
+    out->append(net::EscapeForHTML(name));
     out->append(": ");
-    out->append(EscapeForHTML(value));
+    out->append(net::EscapeForHTML(value));
     out->push_back('\n');
   }
   out->append("</pre>");

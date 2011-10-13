@@ -210,7 +210,7 @@ class Writer : public Task {
         break;
 
       case CONTENT:
-        utf8_string = EscapeForHTML(text);
+        utf8_string = net::EscapeForHTML(text);
         break;
 
       default:

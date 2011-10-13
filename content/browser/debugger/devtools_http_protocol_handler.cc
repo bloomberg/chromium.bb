@@ -10,8 +10,8 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -291,7 +291,7 @@ static PageList GeneratePageList(
     page_info.id = TabContentsIDHelper::GetID(tab_contents);
     page_info.attached = client_host != NULL;
     page_info.url = entry->url().spec();
-    page_info.title = UTF16ToUTF8(EscapeForHTML(entry->title()));
+    page_info.title = UTF16ToUTF8(net::EscapeForHTML(entry->title()));
     page_info.thumbnail_url = "/thumb/" + entry->url().spec();
     page_info.favicon_url = entry->favicon().url().spec();
     page_list.push_back(page_info);
@@ -317,14 +317,14 @@ void DevToolsHttpProtocolHandler::OnJsonRequestUI(
     page_info->SetString("faviconUrl", i->favicon_url);
     if (!i->attached) {
       page_info->SetString("webSocketDebuggerUrl",
-                           StringPrintf("ws://%s/devtools/page/%d",
-                                        host.c_str(),
-                                        i->id));
+                           base::StringPrintf("ws://%s/devtools/page/%d",
+                                              host.c_str(),
+                                              i->id));
       page_info->SetString("devtoolsFrontendUrl",
-                           StringPrintf("%s?host=%s&page=%d",
-                                        overridden_frontend_url_.c_str(),
-                                        host.c_str(),
-                                        i->id));
+                           base::StringPrintf("%s?host=%s&page=%d",
+                                              overridden_frontend_url_.c_str(),
+                                              host.c_str(),
+                                              i->id));
     }
   }
 
@@ -412,11 +412,12 @@ void DevToolsHttpProtocolHandler::OnResponseStarted(net::URLRequest* request) {
   request->GetMimeType(&content_type);
 
   if (request->status().is_success()) {
-    server_->Send(connection_id, StringPrintf("HTTP/1.1 200 OK\r\n"
-                                              "Content-Type:%s\r\n"
-                                              "Transfer-Encoding: chunked\r\n"
-                                              "\r\n",
-                                              content_type.c_str()));
+    server_->Send(connection_id,
+                  base::StringPrintf("HTTP/1.1 200 OK\r\n"
+                                     "Content-Type:%s\r\n"
+                                     "Transfer-Encoding: chunked\r\n"
+                                     "\r\n",
+                                     content_type.c_str()));
   } else {
     server_->Send404(connection_id);
   }
@@ -444,7 +445,7 @@ void DevToolsHttpProtocolHandler::OnReadCompleted(net::URLRequest* request,
   do {
     if (!request->status().is_success() || bytes_read <= 0)
       break;
-    std::string chunk_size = StringPrintf("%X\r\n", bytes_read);
+    std::string chunk_size = base::StringPrintf("%X\r\n", bytes_read);
     server_->Send(connection_id, chunk_size);
     server_->Send(connection_id, buffer->data(), bytes_read);
     server_->Send(connection_id, "\r\n");

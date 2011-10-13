@@ -170,8 +170,8 @@ string16 DesktopNotificationService::CreateDataUrl(
   if (icon_url.is_valid()) {
     resource = IDR_NOTIFICATION_ICON_HTML;
     subst.push_back(icon_url.spec());
-    subst.push_back(EscapeForHTML(UTF16ToUTF8(title)));
-    subst.push_back(EscapeForHTML(UTF16ToUTF8(body)));
+    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(title)));
+    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(body)));
     // icon float position
     subst.push_back(dir == WebKit::WebTextDirectionRightToLeft ?
                     "right" : "left");
@@ -181,12 +181,12 @@ string16 DesktopNotificationService::CreateDataUrl(
     // Strings are div names in the template file.
     string16 line_name = title.empty() ? ASCIIToUTF16("description")
                                        : ASCIIToUTF16("title");
-    subst.push_back(EscapeForHTML(UTF16ToUTF8(line_name)));
-    subst.push_back(EscapeForHTML(UTF16ToUTF8(line)));
+    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(line_name)));
+    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(line)));
   } else {
     resource = IDR_NOTIFICATION_2LINE_HTML;
-    subst.push_back(EscapeForHTML(UTF16ToUTF8(title)));
-    subst.push_back(EscapeForHTML(UTF16ToUTF8(body)));
+    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(title)));
+    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(body)));
   }
   // body text direction
   subst.push_back(dir == WebKit::WebTextDirectionRightToLeft ?

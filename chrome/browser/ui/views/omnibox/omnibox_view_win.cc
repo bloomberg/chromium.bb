@@ -1323,7 +1323,7 @@ void OmniboxViewWin::OnCopy() {
   scw.WriteText(text);
   if (write_url) {
     scw.WriteBookmark(text, url.spec());
-    scw.WriteHyperlink(EscapeForHTML(text), url.spec());
+    scw.WriteHyperlink(net::EscapeForHTML(text), url.spec());
   }
 }
 

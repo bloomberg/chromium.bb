@@ -55,7 +55,7 @@ void EndHTML(std::string* out) {
 
 void AddHTMLBoldText(const std::string& text, std::string* out) {
   out->append("<b>");
-  out->append(EscapeForHTML(text));
+  out->append(net::EscapeForHTML(text));
   out->append("</b>");
 }
 
@@ -73,7 +73,7 @@ void AddHTMLListItem(const std::string& element_title,
   out->append("<li>");
   // No need to escape element_title since constant string is passed.
   out->append(element_title);
-  out->append(EscapeForHTML(element_data));
+  out->append(net::EscapeForHTML(element_data));
   out->append("</li>");
 }
 
@@ -81,7 +81,7 @@ void AddHTMLButton(const std::string& title,
                    const std::string& command,
                    std::string* out) {
   // No need to escape title since constant string is passed.
-  std::string escaped_command = EscapeForHTML(command.c_str());
+  std::string escaped_command = net::EscapeForHTML(command.c_str());
   base::StringAppendF(out,
                       "<form action=\"\" method=\"GET\">\n"
                       "<input type=\"hidden\" name=\"remove\" value=\"%s\">\n"
@@ -198,9 +198,9 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,
         AddHTMLListItem(kType, "file", out);
         AddHTMLListItem(kPath,
 #if defined(OS_WIN)
-                 EscapeForHTML(WideToUTF8(item.file_path().value())),
+                 net::EscapeForHTML(WideToUTF8(item.file_path().value())),
 #else
-                 EscapeForHTML(item.file_path().value()),
+                 net::EscapeForHTML(item.file_path().value()),
 #endif
                  out);
         if (!item.expected_modification_time().is_null()) {

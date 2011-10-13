@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,8 +35,8 @@ Notification SystemNotificationFactory::Create(
   std::vector<std::string> subst;
   int resource = IDR_NOTIFICATION_ICON_HTML;
   subst.push_back(icon.spec());
-  subst.push_back(EscapeForHTML(UTF16ToUTF8(title)));
-  subst.push_back(EscapeForHTML(UTF16ToUTF8(text)));
+  subst.push_back(net::EscapeForHTML(UTF16ToUTF8(title)));
+  subst.push_back(net::EscapeForHTML(UTF16ToUTF8(text)));
   // icon float position
   subst.push_back(dir == WebKit::WebTextDirectionRightToLeft ?
                   "right" : "left");
@@ -46,7 +46,7 @@ Notification SystemNotificationFactory::Create(
   // if link is not empty, then use template with link
   if (!link.empty()) {
     resource = IDR_NOTIFICATION_ICON_LINK_HTML;
-    subst.push_back(EscapeForHTML(UTF16ToUTF8(link)));
+    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(link)));
   }
 
   string16 content_url = DesktopNotificationService::CreateDataUrl(resource,

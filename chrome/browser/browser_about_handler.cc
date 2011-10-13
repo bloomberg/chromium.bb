@@ -402,7 +402,7 @@ void AppendHeader(std::string* output, int refresh,
   output->append("<!DOCTYPE HTML>\n<html>\n<head>\n");
   if (!unescaped_title.empty()) {
     output->append("<title>");
-    output->append(EscapeForHTML(unescaped_title));
+    output->append(net::EscapeForHTML(unescaped_title));
     output->append("</title>\n");
   }
   output->append("<meta charset=\"utf-8\">\n");

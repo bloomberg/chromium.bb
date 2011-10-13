@@ -149,7 +149,7 @@ void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
     const std::string url = elements[0].url.spec();
 
     scw.WriteBookmark(title, url);
-    scw.WriteHyperlink(EscapeForHTML(title), url);
+    scw.WriteHyperlink(net::EscapeForHTML(title), url);
 
     // Also write the URL to the clipboard as text so that it can be pasted
     // into text fields. We use WriteText instead of WriteURL because we don't

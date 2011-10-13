@@ -40,7 +40,7 @@ std::string WebClipboardImpl::URLToMarkup(const WebURL& url,
   markup.append(url.spec());
   markup.append("\">");
   // TODO(darin): HTML escape this
-  markup.append(EscapeForHTML(UTF16ToUTF8(title)));
+  markup.append(net::EscapeForHTML(UTF16ToUTF8(title)));
   markup.append("</a>");
   return markup;
 }
@@ -53,7 +53,7 @@ std::string WebClipboardImpl::URLToImageMarkup(const WebURL& url,
   markup.append("\"");
   if (!title.isEmpty()) {
     markup.append(" alt=\"");
-    markup.append(EscapeForHTML(UTF16ToUTF8(title)));
+    markup.append(net::EscapeForHTML(UTF16ToUTF8(title)));
     markup.append("\"");
   }
   markup.append("/>");
