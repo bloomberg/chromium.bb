@@ -136,11 +136,8 @@ int main(int argc, char* argv[]) {
   {
     // Listen for notifications for all known types.
     syncable::ModelTypeSet types;
-    // TODO(akalin): There is a server bug where unrecognized data
-    // types mean no invalidations are sent.  Change
-    // EXTENSION_SETTINGS back to MODEL_TYPE_COUNT when this is fixed.
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-         i < syncable::EXTENSION_SETTINGS; ++i) {
+         i < syncable::MODEL_TYPE_COUNT; ++i) {
       types.insert(syncable::ModelTypeFromInt(i));
     }
     sync_notifier->UpdateEnabledTypes(types);
