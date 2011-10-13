@@ -131,7 +131,9 @@ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url) {
   uint32 fragment_end = 0;
   ClipboardReadHTML(buffer_type, &html_stdstr, &gurl, &fragment_start,
                     &fragment_end);
-  return html_stdstr.substr(fragment_start, fragment_end - fragment_start);
+  if (fragment_start != std::string::npos && fragment_end != std::string::npos)
+    return html_stdstr.substr(fragment_start, fragment_end - fragment_start);
+  return WebString();
 }
 
 WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
