@@ -30,6 +30,9 @@
 namespace ui {
 enum TouchStatus;
 }
+#endif
+
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 class AcceleratedSurfaceContainerTouch;
 #endif
 
@@ -40,7 +43,7 @@ struct NativeWebKeyboardEvent;
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
 class RenderWidgetHostViewViews : public RenderWidgetHostView,
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
                                   public ui::CompositorObserver,
 #endif
                                   public views::TouchSelectionClientView,
@@ -181,7 +184,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
       base::i18n::TextDirection direction) OVERRIDE;
   virtual views::View* GetOwnerViewOfTextInputClient() OVERRIDE;
 
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(
       int32 width,
       int32 height,
@@ -294,7 +297,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   string16 tooltip_text_;
 
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   std::vector< base::Callback<void(void)> > on_compositing_ended_callbacks_;
 #endif
 
@@ -308,6 +311,9 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // used to register for keyboard visiblity notificatons.
   NotificationRegistrar registrar_;
   gfx::Rect keyboard_rect_;
+#endif
+
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerTouch> >
       accelerated_surface_containers_;
 #endif

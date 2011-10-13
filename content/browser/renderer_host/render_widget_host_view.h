@@ -256,7 +256,7 @@ class RenderWidgetHostView {
   virtual void GpuRenderingStateDidChange() = 0;
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(
       int32 width,
       int32 height,

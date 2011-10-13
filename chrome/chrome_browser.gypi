@@ -4069,17 +4069,11 @@
             ['exclude', '^browser/chromeos/login/touch_*'],
             ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
             ['exclude', '^browser/extensions/extension_input_ui_api.h'],
-            ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.cc'],
-            ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.h'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views_touch.cc'],
             ['exclude', '^browser/ui/touch/*'],
           ],
         }],
         ['touchui==1', {
-          'dependencies': [
-            '../ui/gfx/compositor/compositor.gyp:compositor',
-            '../ui/gfx/gl/gl.gyp:gl',
-          ],
           'sources/': [
             ['include', '^browser/ui/touch/*'],
             ['exclude', '^browser/chromeos/frame/browser_non_client_frame_view_factory_chromeos.cc'],
@@ -4091,14 +4085,6 @@
             ['exclude', '^browser/chromeos/input_method/candidate_window.cc'],
             ['exclude', '^browser/chromeos/input_method/candidate_window.h'],
           ],
-          'include_dirs': [
-            '../third_party/angle/include',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lXcomposite',
-            ],
-          },
         }],
         ['use_aura==1', {
           'sources/': [
@@ -4171,6 +4157,26 @@
           ],
           'dependencies': [
             '../ui/aura_shell/aura_shell.gyp:aura_shell',
+          ],
+        }],
+        ['views_gpu_image_transport==0', {
+          'sources/': [
+            ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.cc'],
+            ['exclude', '^browser/renderer_host/accelerated_surface_container_touch.h'],
+          ],
+        }],
+        ['views_gpu_image_transport==1', {
+          'dependencies': [
+            '../ui/gfx/compositor/compositor.gyp:compositor',
+            '../ui/gfx/gl/gl.gyp:gl',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lXcomposite',
+            ],
+          },
+          'include_dirs': [
+            '../third_party/angle/include',
           ],
         }],
         ['use_virtual_keyboard==0', {

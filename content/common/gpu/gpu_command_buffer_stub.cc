@@ -17,7 +17,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 #include "content/common/gpu/image_transport_surface.h"
 #endif
 
@@ -177,7 +177,7 @@ void GpuCommandBufferStub::OnInitialize(
   decoder_->set_engine(scheduler_.get());
 
   if (handle_) {
-#if defined(TOUCH_UI) || defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
     if (software_) {
       OnInitializeFailed(reply_message);
       return;
@@ -241,7 +241,7 @@ void GpuCommandBufferStub::OnInitialize(
   // On platforms that use an ImageTransportSurface, the surface
   // handles co-ordinating the resize with the browser process. The
   // surface sets it's own resize callback, so we shouldn't do it here.
-#if !defined(TOUCH_UI) && !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   if (handle_ != gfx::kNullPluginWindow) {
     decoder_->SetResizeCallback(
         NewCallback(this, &GpuCommandBufferStub::OnResize));
@@ -418,7 +418,8 @@ void GpuCommandBufferStub::OnResize(gfx::Size size) {
   if (handle_ == gfx::kNullPluginWindow)
     return;
 
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT) || \
+    defined(OS_WIN)
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
 
   // On Windows, Linux, we need to coordinate resizing of onscreen
@@ -433,11 +434,12 @@ void GpuCommandBufferStub::OnResize(gfx::Size size) {
                                 size));
 
   scheduler_->SetScheduled(false);
-#endif  // defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+#endif
 }
 
 void GpuCommandBufferStub::ViewResized() {
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT) || \
+    defined(OS_WIN)
   DCHECK(handle_ != gfx::kNullPluginWindow);
   scheduler_->SetScheduled(true);
 #endif
@@ -467,7 +469,7 @@ void GpuCommandBufferStub::ReportState() {
 }
 
 void GpuCommandBufferStub::SetSwapInterval() {
-#if !defined(OS_MACOSX) && !defined(TOUCH_UI)
+#if !defined(OS_MACOSX) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // Set up swap interval for onscreen contexts.
   if (!surface_->IsOffscreen()) {
     decoder_->MakeCurrent();

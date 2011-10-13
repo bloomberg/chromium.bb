@@ -145,7 +145,7 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   return OnControlMessageReceived(message);
 }
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 
 void GpuProcessHostUIShim::SendToGpuHost(int host_id, IPC::Message* msg) {
   GpuProcessHostUIShim* ui_shim = FromID(host_id);
@@ -175,14 +175,14 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #endif
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
                         OnAcceleratedSurfaceNew)
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
                         OnAcceleratedSurfaceRelease)
 #endif
@@ -253,7 +253,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
 
 #endif
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
     const GpuHostMsg_AcceleratedSurfaceNew_Params& params) {
@@ -303,7 +303,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
                                          params.height,
                                          surface_id);
   }
-#elif defined(TOUCH_UI)
+#else  // defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   view->AcceleratedSurfaceNew(
       params.width, params.height, &surface_id, &surface_handle);
 #endif
@@ -341,7 +341,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       params.renderer_id,
       params.route_id,
       host_id_);
-#elif defined(TOUCH_UI)
+#else  // defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // view must send ACK message after next composite
   view->AcceleratedSurfaceBuffersSwapped(
       params.surface_id, params.route_id, host_id_);
@@ -350,7 +350,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params) {

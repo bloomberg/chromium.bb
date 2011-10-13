@@ -4,14 +4,9 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/renderer_host/accelerated_surface_container_touch.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
-#include "ui/gfx/gl/gl_bindings.h"
 #include "views/widget/widget.h"
 
 static const char kRenderWidgetHostViewKey[] = "__RENDER_WIDGET_HOST_VIEW__";
@@ -69,13 +64,6 @@ void UpdateTouchPointPosition(const views::TouchEvent* event,
 
   tpoint->screenPosition.x = tpoint->position.x + origin.x();
   tpoint->screenPosition.y = tpoint->position.y + origin.y();
-}
-
-void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id) {
-  // It's possible that gpu_host_id is no longer valid at this point (like if
-  // gpu process was restarted after a crash).  SendToGpuHost handles this.
-  GpuProcessHostUIShim::SendToGpuHost(gpu_host_id,
-      new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
 }
 
 }  // namespace
@@ -183,62 +171,3 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
 
   return status;
 }
-
-gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
-  // On TOUCH_UI builds, the GPU process renders to an offscreen surface
-  // (created by the GPU process), which is later displayed by the browser.
-  // As the GPU process creates this surface, we can return any non-zero value.
-  return 1;
-}
-
-void RenderWidgetHostViewViews::AcceleratedSurfaceNew(
-    int32 width,
-    int32 height,
-    uint64* surface_id,
-    TransportDIB::Handle* surface_handle) {
-  scoped_ptr<AcceleratedSurfaceContainerTouch> surface(
-      AcceleratedSurfaceContainerTouch::CreateAcceleratedSurfaceContainer(
-          gfx::Size(width, height)));
-  if (!surface->Initialize(surface_id)) {
-    LOG(ERROR) << "Failed to create AcceleratedSurfaceContainer";
-    return;
-  }
-  *surface_handle = surface->Handle();
-
-  accelerated_surface_containers_[*surface_id] = surface.release();
-}
-
-void RenderWidgetHostViewViews::AcceleratedSurfaceRelease(uint64 surface_id) {
-  accelerated_surface_containers_.erase(surface_id);
-}
-
-void RenderWidgetHostViewViews::AcceleratedSurfaceBuffersSwapped(
-    uint64 surface_id,
-    int32 route_id,
-    int gpu_host_id) {
-  SetExternalTexture(accelerated_surface_containers_[surface_id].get());
-  glFlush();
-
-  if (!GetWidget() || !GetWidget()->GetCompositor()) {
-    // We have no compositor, so we have no way to display the surface
-    AcknowledgeSwapBuffers(route_id, gpu_host_id);  // Must still send the ACK
-  } else {
-    // Add sending an ACK to the list of things to do OnCompositingEnded
-    on_compositing_ended_callbacks_.push_back(
-        base::Bind(AcknowledgeSwapBuffers, route_id, gpu_host_id));
-    ui::Compositor *compositor = GetWidget()->GetCompositor();
-    if (!compositor->HasObserver(this))
-      compositor->AddObserver(this);
-  }
-}
-
-void RenderWidgetHostViewViews::OnCompositingEnded(ui::Compositor* compositor) {
-  for (std::vector< base::Callback<void(void)> >::const_iterator
-      it = on_compositing_ended_callbacks_.begin();
-      it != on_compositing_ended_callbacks_.end(); ++it) {
-    it->Run();
-  }
-  on_compositing_ended_callbacks_.clear();
-  compositor->RemoveObserver(this);
-}
-

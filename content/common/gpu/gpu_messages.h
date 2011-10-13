@@ -60,7 +60,7 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
 IPC_STRUCT_END()
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
   IPC_STRUCT_MEMBER(int32, renderer_id)
   IPC_STRUCT_MEMBER(int32, render_view_id)
@@ -157,7 +157,8 @@ IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
 // information.
 IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT) || \
+    defined(OS_WIN)
 // Tells the GPU process that the browser process has finished resizing the
 // view.
 IPC_MESSAGE_CONTROL2(GpuMsg_ResizeViewACK,
@@ -165,7 +166,7 @@ IPC_MESSAGE_CONTROL2(GpuMsg_ResizeViewACK,
                      int32 /* command_buffer_id */)
 #endif
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 // Tells the GPU process that it's safe to start rendering to the surface.
 IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
                     uint64 /* surface_id */,
@@ -230,7 +231,8 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
                      std::string /* header */,
                      std::string /* message */)
 
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT) || \
+    defined(OS_WIN)
 // Resize the window that is being drawn into. It's important that this
 // resize be synchronized with the swapping of the front and back buffers.
 IPC_MESSAGE_CONTROL4(GpuHostMsg_ResizeView,
@@ -240,7 +242,7 @@ IPC_MESSAGE_CONTROL4(GpuHostMsg_ResizeView,
                      gfx::Size /* size */)
 #endif
 
-#if defined(OS_MACOSX) || defined(TOUCH_UI)
+#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 // This message is sent from the GPU process to the browser to notify about a
 // new or resized surface in the GPU.  The browser allocates any resources
 // needed for it on its end and replies with an ACK containing any shared
