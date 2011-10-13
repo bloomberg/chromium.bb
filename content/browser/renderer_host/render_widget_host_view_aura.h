@@ -53,6 +53,16 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void AcceleratedSurfaceNew(
+      int32 width,
+      int32 height,
+      uint64* surface_id,
+      TransportDIB::Handle* surface_handle) OVERRIDE;
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      uint64 surface_id,
+      int32 route_id,
+      int gpu_host_id) OVERRIDE;
+  virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 #if defined(OS_POSIX)
   virtual void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);

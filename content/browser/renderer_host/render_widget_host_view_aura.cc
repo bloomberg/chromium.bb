@@ -201,6 +201,22 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
   return new BackingStoreSkia(host_, size);
 }
 
+void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
+      int32 width,
+      int32 height,
+      uint64* surface_id,
+      TransportDIB::Handle* surface_handle) {
+}
+
+void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
+      uint64 surface_id,
+      int32 route_id,
+      int gpu_host_id) {
+}
+
+void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(uint64 surface_id) {
+}
+
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   host_->SetBackground(background);
