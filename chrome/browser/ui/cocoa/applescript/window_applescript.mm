@@ -175,7 +175,7 @@
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
   TabContentsWrapper* contents =
       browser_->AddSelectedTabWithURL(GURL(chrome::kChromeUINewTabURL),
-                                      PageTransition::TYPED);
+                                      content::PAGE_TRANSITION_TYPED);
   contents->tab_contents()->set_new_tab_start_time(newTabStartTime);
   [aTab setTabContent:contents];
 }
@@ -190,7 +190,7 @@
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
   browser::NavigateParams params(browser_,
                                  GURL(chrome::kChromeUINewTabURL),
-                                 PageTransition::TYPED);
+                                 content::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
   browser::Navigate(&params);

@@ -257,7 +257,7 @@ void RenderViewHost::NavigateToURL(const GURL& url) {
   params.current_history_list_offset = -1;
   params.current_history_list_length = 0;
   params.url = url;
-  params.transition = PageTransition::LINK;
+  params.transition = content::PAGE_TRANSITION_LINK;
   params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
   Navigate(params);
 }
@@ -816,7 +816,7 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
   // to allow the pending navigation to continue.
   if (is_waiting_for_beforeunload_ack_ &&
       unload_ack_is_for_cross_site_transition_ &&
-      PageTransition::IsMainFrame(validated_params.transition)) {
+      content::PageTransitionIsMainFrame(validated_params.transition)) {
     OnMsgShouldCloseACK(true);
     return;
   }

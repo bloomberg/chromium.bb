@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   const int kTabCount = 4;
   // Create kTabCount - 1 tabs since we start with 1 tab already.
   for (int i = 0; i < kTabCount - 1; ++i) {
-    browser::NavigateParams p(browser(), GURL(), PageTransition::LINK);
+    browser::NavigateParams p(browser(), GURL(), content::PAGE_TRANSITION_LINK);
     p.disposition = NEW_FOREGROUND_TAB;
     browser::Navigate(&p);
   }
@@ -208,14 +208,14 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   const int kTabCount = 4;
   // Create kTabCount - 1 tabs since we start with 1 tab already.
   for (int i = 0; i < kTabCount - 1; ++i) {
-    browser::NavigateParams p(browser(), GURL(), PageTransition::LINK);
+    browser::NavigateParams p(browser(), GURL(), content::PAGE_TRANSITION_LINK);
     p.disposition = NEW_FOREGROUND_TAB;
     browser::Navigate(&p);
   }
   EXPECT_EQ(kTabCount, browser()->tab_count());
 
   // Create a popup
-  browser::NavigateParams p(browser(), GURL(), PageTransition::LINK);
+  browser::NavigateParams p(browser(), GURL(), content::PAGE_TRANSITION_LINK);
   p.disposition = NEW_POPUP;
   ui_test_utils::NavigateToURL(&p);
 

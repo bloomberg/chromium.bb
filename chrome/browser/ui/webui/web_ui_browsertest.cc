@@ -186,7 +186,7 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to,
           &browser()->GetSelectedTabContentsWrapper()->controller()),
       this, 1);
   browser::NavigateParams params(
-      browser(), GURL(browse_to), PageTransition::TYPED);
+      browser(), GURL(browse_to), content::PAGE_TRANSITION_TYPED);
   params.disposition = CURRENT_TAB;
   browser::Navigate(&params);
   navigation_observer.WaitForObservation();

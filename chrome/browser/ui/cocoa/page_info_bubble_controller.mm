@@ -211,7 +211,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->OpenURL(
+      url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
 }
 
 // This will create the subviews for the page info window. The general layout

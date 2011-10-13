@@ -584,7 +584,7 @@ void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
   }
 
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(url, GURL(), NEW_WINDOW, PageTransition::LINK);
+  browser->OpenURL(url, GURL(), NEW_WINDOW, content::PAGE_TRANSITION_LINK);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

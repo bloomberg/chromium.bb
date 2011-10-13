@@ -112,7 +112,7 @@ class HistoryQueryTest : public testing::Test {
       GURL url(test_entries[i].url);
 
       history_->AddPage(url, test_entries[i].time, id_scope, page_id, GURL(),
-                        PageTransition::LINK, history::RedirectList(),
+                        content::PAGE_TRANSITION_LINK, history::RedirectList(),
                         history::SOURCE_BROWSED, false);
       history_->SetPageTitle(url, UTF8ToUTF16(test_entries[i].title));
       history_->SetPageContents(url, UTF8ToUTF16(test_entries[i].body));

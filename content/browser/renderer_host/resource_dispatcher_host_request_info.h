@@ -12,7 +12,7 @@
 #include "base/time.h"
 #include "content/common/child_process_info.h"
 #include "content/common/content_export.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "net/base/load_states.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
@@ -47,7 +47,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       bool is_main_frame,
       int64 frame_id,
       ResourceType::Type resource_type,
-      PageTransition::Type transition_type,
+      content::PageTransition transition_type,
       uint64 upload_size,
       bool is_download,
       bool allow_download,
@@ -134,7 +134,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   // Identifies the type of resource, such as subframe, media, etc.
   ResourceType::Type resource_type() const { return resource_type_; }
 
-  PageTransition::Type transition_type() const { return transition_type_; }
+  content::PageTransition transition_type() const { return transition_type_; }
 
   // When there is upload data, this is the byte count of that data. When there
   // is no upload, this will be 0.
@@ -226,7 +226,7 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   bool has_user_gesture_;
   int pause_count_;
   ResourceType::Type resource_type_;
-  PageTransition::Type transition_type_;
+  content::PageTransition transition_type_;
   uint64 upload_size_;
   uint64 last_upload_position_;
   base::TimeTicks last_upload_ticks_;

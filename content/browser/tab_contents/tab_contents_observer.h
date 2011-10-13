@@ -7,7 +7,7 @@
 
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/common/content_export.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -43,7 +43,7 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
       int64 frame_id,
       bool is_main_frame,
       const GURL& url,
-      PageTransition::Type transition_type);
+      content::PageTransition transition_type);
   virtual void DidFailProvisionalLoad(int64 frame_id,
                                       bool is_main_frame,
                                       const GURL& validated_url,
@@ -63,13 +63,13 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
   virtual void DidOpenURL(const GURL& url,
                           const GURL& referrer,
                           WindowOpenDisposition disposition,
-                          PageTransition::Type transition);
+                          content::PageTransition transition);
 
   virtual void DidOpenRequestedURL(TabContents* new_contents,
                                    const GURL& url,
                                    const GURL& referrer,
                                    WindowOpenDisposition disposition,
-                                   PageTransition::Type transition,
+                                   content::PageTransition transition,
                                    int64 source_frame_id);
 
   virtual void AppCacheAccessed(const GURL& manifest_url,

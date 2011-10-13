@@ -23,7 +23,7 @@
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "sql/init_status.h"
 
 class BookmarkService;
@@ -189,7 +189,7 @@ class HistoryService : public CancelableRequestProvider,
                const void* id_scope,
                int32 page_id,
                const GURL& referrer,
-               PageTransition::Type transition,
+               content::PageTransition transition,
                const history::RedirectList& redirects,
                history::VisitSource visit_source,
                bool did_replace_entry);
@@ -201,14 +201,14 @@ class HistoryService : public CancelableRequestProvider,
                const void* id_scope,
                int32 page_id,
                const GURL& referrer,
-               PageTransition::Type transition,
+               content::PageTransition transition,
                const history::RedirectList& redirects,
                history::VisitSource visit_source,
                bool did_replace_entry);
 
   // For adding pages to history where no tracking information can be done.
   void AddPage(const GURL& url, history::VisitSource visit_source) {
-    AddPage(url, NULL, 0, GURL(), PageTransition::LINK,
+    AddPage(url, NULL, 0, GURL(), content::PAGE_TRANSITION_LINK,
             history::RedirectList(), visit_source, false);
   }
 

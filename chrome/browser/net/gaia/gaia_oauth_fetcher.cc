@@ -284,11 +284,11 @@ void OpenGetOAuthTokenURL(Browser* browser,
                           const GURL& url,
                           const GURL& referrer,
                           WindowOpenDisposition disposition,
-                          PageTransition::Type transition) {
+                          content::PageTransition transition) {
   browser::NavigateParams params(
       browser,
       url,
-      PageTransition::AUTO_BOOKMARK);
+      content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.source_contents =
       browser->tabstrip_model()->GetTabContentsAt(
           browser->tabstrip_model()->GetWrapperIndex(NULL));
@@ -319,7 +319,7 @@ void GaiaOAuthFetcher::StartGetOAuthToken() {
                            l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)),
       GURL("chrome://settings/personal"),
       NEW_POPUP,
-      PageTransition::AUTO_BOOKMARK);
+      content::PAGE_TRANSITION_AUTO_BOOKMARK);
   popup_ = BrowserList::GetLastActiveWithProfile(profile_);
   DCHECK(popup_ && popup_ != browser);
   registrar_.Add(this,

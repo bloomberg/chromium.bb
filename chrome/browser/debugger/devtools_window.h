@@ -98,7 +98,7 @@ class DevToolsWindow
       const GURL& url,
       const GURL& referrer,
       WindowOpenDisposition disposition,
-      PageTransition::Type transition) OVERRIDE;
+      content::PageTransition transition) OVERRIDE;
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void AddNewContents(TabContents* source,

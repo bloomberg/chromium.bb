@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
 
   // Create several tabs.
   for (int i = 0; i < 4; ++i)
-    browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
+    browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
 
   // Alternate focus for the tab.
   const bool kFocusPage[3][5] = {
@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   browser()->FocusLocationBar();
 
   // Create a 2nd tab.
-  browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
+  browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
 
   // Focus should be on the recently opened tab page.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
@@ -836,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
 
   // Open about:blank, focus should be on the location bar.
   browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
-                                   PageTransition::LINK);
+                                   content::PAGE_TRANSITION_LINK);
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
       browser()->GetSelectedTabContents()));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));

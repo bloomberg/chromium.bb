@@ -783,7 +783,7 @@ class NotificationBridge : public NotificationObserver {
     return;
   }
   browser_->GetSelectedTabContents()->OpenURL(url, GURL(), CURRENT_TAB,
-                                              PageTransition::TYPED);
+                                              content::PAGE_TRANSITION_TYPED);
 }
 
 // (URLDropTargetController protocol)
@@ -799,7 +799,7 @@ class NotificationBridge : public NotificationObserver {
   GURL url(match.destination_url);
 
   browser_->GetSelectedTabContents()->OpenURL(url, GURL(), CURRENT_TAB,
-                                              PageTransition::TYPED);
+                                              content::PAGE_TRANSITION_TYPED);
 }
 
 // (URLDropTargetController protocol)

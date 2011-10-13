@@ -372,63 +372,63 @@ void SessionModelAssociator::PopulateSessionSpecificsNavigation(
   tab_navigation->set_referrer(navigation->referrer().spec());
   tab_navigation->set_title(UTF16ToUTF8(navigation->title()));
   switch (navigation->transition()) {
-    case PageTransition::LINK:
+    case content::PAGE_TRANSITION_LINK:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_LINK);
       break;
-    case PageTransition::TYPED:
+    case content::PAGE_TRANSITION_TYPED:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_TYPED);
       break;
-    case PageTransition::AUTO_BOOKMARK:
+    case content::PAGE_TRANSITION_AUTO_BOOKMARK:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_AUTO_BOOKMARK);
       break;
-    case PageTransition::AUTO_SUBFRAME:
+    case content::PAGE_TRANSITION_AUTO_SUBFRAME:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_AUTO_SUBFRAME);
       break;
-    case PageTransition::MANUAL_SUBFRAME:
+    case content::PAGE_TRANSITION_MANUAL_SUBFRAME:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_MANUAL_SUBFRAME);
       break;
-    case PageTransition::GENERATED:
+    case content::PAGE_TRANSITION_GENERATED:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_GENERATED);
       break;
-    case PageTransition::START_PAGE:
+    case content::PAGE_TRANSITION_START_PAGE:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_START_PAGE);
       break;
-    case PageTransition::FORM_SUBMIT:
+    case content::PAGE_TRANSITION_FORM_SUBMIT:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_FORM_SUBMIT);
       break;
-    case PageTransition::RELOAD:
+    case content::PAGE_TRANSITION_RELOAD:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_RELOAD);
       break;
-    case PageTransition::KEYWORD:
+    case content::PAGE_TRANSITION_KEYWORD:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_KEYWORD);
       break;
-    case PageTransition::KEYWORD_GENERATED:
+    case content::PAGE_TRANSITION_KEYWORD_GENERATED:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_KEYWORD_GENERATED);
       break;
-    case PageTransition::CHAIN_START:
+    case content::PAGE_TRANSITION_CHAIN_START:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_CHAIN_START);
       break;
-    case PageTransition::CHAIN_END:
+    case content::PAGE_TRANSITION_CHAIN_END:
       tab_navigation->set_page_transition(
         sync_pb::TabNavigation_PageTransition_CHAIN_END);
       break;
-    case PageTransition::CLIENT_REDIRECT:
+    case content::PAGE_TRANSITION_CLIENT_REDIRECT:
       tab_navigation->set_navigation_qualifier(
         sync_pb::TabNavigation_PageTransitionQualifier_CLIENT_REDIRECT);
       break;
-    case PageTransition::SERVER_REDIRECT:
+    case content::PAGE_TRANSITION_SERVER_REDIRECT:
       tab_navigation->set_navigation_qualifier(
         sync_pb::TabNavigation_PageTransitionQualifier_SERVER_REDIRECT);
       break;
@@ -815,7 +815,7 @@ void SessionModelAssociator::AppendSessionTabNavigation(
   GURL referrer;
   string16 title;
   std::string state;
-  PageTransition::Type transition(PageTransition::LINK);
+  content::PageTransition transition(content::PAGE_TRANSITION_LINK);
   if (specifics.has_index())
     index = specifics.index();
   if (specifics.has_virtual_url()) {
@@ -834,56 +834,56 @@ void SessionModelAssociator::AppendSessionTabNavigation(
       specifics.has_navigation_qualifier()) {
     switch (specifics.page_transition()) {
       case sync_pb::TabNavigation_PageTransition_LINK:
-        transition = PageTransition::LINK;
+        transition = content::PAGE_TRANSITION_LINK;
         break;
       case sync_pb::TabNavigation_PageTransition_TYPED:
-        transition = PageTransition::TYPED;
+        transition = content::PAGE_TRANSITION_TYPED;
         break;
       case sync_pb::TabNavigation_PageTransition_AUTO_BOOKMARK:
-        transition = PageTransition::AUTO_BOOKMARK;
+        transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
         break;
       case sync_pb::TabNavigation_PageTransition_AUTO_SUBFRAME:
-        transition = PageTransition::AUTO_SUBFRAME;
+        transition = content::PAGE_TRANSITION_AUTO_SUBFRAME;
         break;
       case sync_pb::TabNavigation_PageTransition_MANUAL_SUBFRAME:
-        transition = PageTransition::MANUAL_SUBFRAME;
+        transition = content::PAGE_TRANSITION_MANUAL_SUBFRAME;
         break;
       case sync_pb::TabNavigation_PageTransition_GENERATED:
-        transition = PageTransition::GENERATED;
+        transition = content::PAGE_TRANSITION_GENERATED;
         break;
       case sync_pb::TabNavigation_PageTransition_START_PAGE:
-        transition = PageTransition::START_PAGE;
+        transition = content::PAGE_TRANSITION_START_PAGE;
         break;
       case sync_pb::TabNavigation_PageTransition_FORM_SUBMIT:
-        transition = PageTransition::FORM_SUBMIT;
+        transition = content::PAGE_TRANSITION_FORM_SUBMIT;
         break;
       case sync_pb::TabNavigation_PageTransition_RELOAD:
-        transition = PageTransition::RELOAD;
+        transition = content::PAGE_TRANSITION_RELOAD;
         break;
       case sync_pb::TabNavigation_PageTransition_KEYWORD:
-        transition = PageTransition::KEYWORD;
+        transition = content::PAGE_TRANSITION_KEYWORD;
         break;
       case sync_pb::TabNavigation_PageTransition_KEYWORD_GENERATED:
-        transition = PageTransition::KEYWORD_GENERATED;
+        transition = content::PAGE_TRANSITION_KEYWORD_GENERATED;
         break;
       case sync_pb::TabNavigation_PageTransition_CHAIN_START:
-        transition = sync_pb::TabNavigation_PageTransition_CHAIN_START;
+        transition = content::PAGE_TRANSITION_CHAIN_START;
         break;
       case sync_pb::TabNavigation_PageTransition_CHAIN_END:
-        transition = PageTransition::CHAIN_END;
+        transition = content::PAGE_TRANSITION_CHAIN_END;
         break;
       default:
         switch (specifics.navigation_qualifier()) {
           case sync_pb::
               TabNavigation_PageTransitionQualifier_CLIENT_REDIRECT:
-            transition = PageTransition::CLIENT_REDIRECT;
+            transition = content::PAGE_TRANSITION_CLIENT_REDIRECT;
             break;
             case sync_pb::
                 TabNavigation_PageTransitionQualifier_SERVER_REDIRECT:
-            transition = PageTransition::SERVER_REDIRECT;
+            transition = content::PAGE_TRANSITION_SERVER_REDIRECT;
               break;
             default:
-            transition = PageTransition::TYPED;
+            transition = content::PAGE_TRANSITION_TYPED;
         }
     }
   }

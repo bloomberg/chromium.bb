@@ -1,3 +1,4 @@
+
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -22,7 +23,7 @@ using webkit_glue::PasswordForm;
 void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         int page_id,
                         const GURL& url,
-                        PageTransition::Type transition) {
+                        content::PageTransition transition) {
   params->page_id = page_id;
   params->url = url;
   params->referrer = GURL();
@@ -77,11 +78,11 @@ bool TestRenderViewHost::TestOnMessageReceived(const IPC::Message& msg) {
 }
 
 void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
-  SendNavigateWithTransition(page_id, url, PageTransition::LINK);
+  SendNavigateWithTransition(page_id, url, content::PAGE_TRANSITION_LINK);
 }
 
 void TestRenderViewHost::SendNavigateWithTransition(
-    int page_id, const GURL& url, PageTransition::Type transition) {
+    int page_id, const GURL& url, content::PageTransition transition) {
   ViewHostMsg_FrameNavigate_Params params;
 
   params.page_id = page_id;

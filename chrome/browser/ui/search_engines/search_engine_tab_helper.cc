@@ -18,8 +18,8 @@ namespace {
 
 // Returns true if the entry's transition type is FORM_SUBMIT.
 bool IsFormSubmit(const NavigationEntry* entry) {
-  return (PageTransition::StripQualifier(entry->transition_type()) ==
-          PageTransition::FORM_SUBMIT);
+  return (content::PageTransitionStripQualifier(entry->transition_type()) ==
+          content::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
 }  // namespace

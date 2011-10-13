@@ -196,11 +196,11 @@ void PrintPreviewTabController::OnNavEntryCommitted(
   TabContentsWrapper* preview_tab = GetPrintPreviewForTab(tab);
   bool source_tab_is_preview_tab = (tab == preview_tab);
   if (details) {
-    PageTransition::Type transition_type = details->entry->transition_type();
+    content::PageTransition transition_type = details->entry->transition_type();
     NavigationType::Type nav_type = details->type;
 
     // Don't update/erase the map entry if the page has not changed.
-    if (transition_type == PageTransition::RELOAD ||
+    if (transition_type == content::PAGE_TRANSITION_RELOAD ||
         nav_type == NavigationType::SAME_PAGE) {
       if (source_tab_is_preview_tab)
         SetInitiatorTabURLAndTitle(preview_tab);
@@ -209,7 +209,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
 
     // New |preview_tab| is created. Don't update/erase map entry.
     if (waiting_for_new_preview_page_ &&
-        transition_type == PageTransition::LINK &&
+        transition_type == content::PAGE_TRANSITION_LINK &&
         nav_type == NavigationType::NEW_PAGE &&
         source_tab_is_preview_tab) {
       waiting_for_new_preview_page_ = false;
@@ -219,7 +219,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
 
     // User navigated to a preview tab using forward/back button.
     if (source_tab_is_preview_tab &&
-        transition_type == PageTransition::FORWARD_BACK &&
+        transition_type == content::PAGE_TRANSITION_FORWARD_BACK &&
         nav_type == NavigationType::EXISTING_PAGE) {
       return;
     }
@@ -296,7 +296,7 @@ TabContentsWrapper* PrintPreviewTabController::CreatePrintPreviewTab(
   // Add a new tab next to initiator tab.
   browser::NavigateParams params(current_browser,
                                  GURL(chrome::kChromeUIPrintURL),
-                                 PageTransition::LINK);
+                                 content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame))
     params.disposition = NEW_POPUP;

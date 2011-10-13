@@ -113,7 +113,7 @@ TabContents* BlockedContentContainer::OpenURLFromTab(
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
-    PageTransition::Type transition) {
+    content::PageTransition transition) {
   return owner_->tab_contents()->OpenURL(OpenURLParams(url,
                                                        referrer,
                                                        disposition,

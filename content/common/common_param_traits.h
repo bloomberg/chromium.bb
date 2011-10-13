@@ -18,6 +18,7 @@
 #include "base/platform_file.h"
 #include "content/common/content_export.h"
 #include "content/common/dom_storage_common.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/ip_endpoint.h"
@@ -233,6 +234,11 @@ struct SimilarTypeTraits<base::PlatformFileError> {
 
 template <>
 struct SimilarTypeTraits<DOMStorageType> {
+  typedef int Type;
+};
+
+template <>
+struct SimilarTypeTraits<content::PageTransition> {
   typedef int Type;
 };
 

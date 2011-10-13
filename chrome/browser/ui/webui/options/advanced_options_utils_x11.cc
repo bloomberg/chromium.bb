@@ -42,7 +42,7 @@ void ShowLinuxProxyConfigUrl(TabContents* tab_contents) {
   if (name)
     LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
   tab_contents->OpenURL(GURL(kLinuxProxyConfigUrl), GURL(),
-                        NEW_FOREGROUND_TAB, PageTransition::LINK);
+                        NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
 }
 
 // Start the given proxy configuration utility.

@@ -75,7 +75,7 @@ void AddToHistory(HistoryService* service,
                    NULL, // scope
                    1234, // page_id
                    GURL(),  // referrer
-                   PageTransition::TYPED,
+                   content::PAGE_TRANSITION_TYPED,
                    history::RedirectList(),
                    history::SOURCE_BROWSED,
                    false);

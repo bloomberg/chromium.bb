@@ -188,7 +188,7 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
     Browser* browser,
     int index,
     const GURL& url,
-    PageTransition::Type transition) {
+    content::PageTransition transition) {
   browser::NavigateParams params(browser, url, transition);
   params.tabstrip_index = index;
   params.disposition = NEW_FOREGROUND_TAB;
@@ -198,7 +198,7 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
 void InProcessBrowserTest::AddTabAtIndex(
     int index,
     const GURL& url,
-    PageTransition::Type transition) {
+    content::PageTransition transition) {
   AddTabAtIndexToBrowser(browser(), index, url, transition);
 }
 
@@ -233,7 +233,7 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
       content::NOTIFICATION_LOAD_STOP,
       NotificationService::AllSources());
   browser->AddSelectedTabWithURL(
-      GURL(chrome::kAboutBlankURL), PageTransition::START_PAGE);
+      GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();
 
   browser->window()->Show();

@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/metrics_helpers.h"
-#include "content/common/page_transition_types.h"
 
 struct AutocompleteLog;
 class GURL;

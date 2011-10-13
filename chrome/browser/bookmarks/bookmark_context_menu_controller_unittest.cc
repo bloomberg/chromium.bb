@@ -30,7 +30,7 @@ class TestingPageNavigator : public PageNavigator {
   virtual TabContents* OpenURL(const GURL& url,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
-                               PageTransition::Type transition) OVERRIDE {
+                               content::PageTransition transition) OVERRIDE {
     return OpenURL(OpenURLParams(url, referrer, disposition, transition));
   }
 

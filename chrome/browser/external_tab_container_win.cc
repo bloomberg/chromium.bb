@@ -45,10 +45,10 @@
 #include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -113,7 +113,8 @@ class ExternalTabPageInfoBubbleView : public PageInfoBubbleView {
     GURL url = google_util::AppendGoogleLocaleParam(
         GURL(chrome::kPageInfoHelpCenterURL));
     container_->OpenURLFromTab(container_->tab_contents(), url, GURL(),
-                               NEW_FOREGROUND_TAB, PageTransition::LINK);
+                               NEW_FOREGROUND_TAB,
+                               content::PAGE_TRANSITION_LINK);
   }
  private:
   scoped_refptr<ExternalTabContainer> container_;
@@ -364,7 +365,7 @@ TabContents* ExternalTabContainer::OpenURLFromTab(
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
-    PageTransition::Type transition) {
+    content::PageTransition transition) {
   return OpenURLFromTab(source,
                         OpenURLParams(url, referrer, disposition, transition));
 }
@@ -397,7 +398,7 @@ TabContents* ExternalTabContainer::OpenURLFromTab(TabContents* source,
         nav_params.referrer = params.referrer;
         nav_params.url = params.url;
         nav_params.page_id = -1;
-        nav_params.transition = PageTransition::LINK;
+        nav_params.transition = content::PAGE_TRANSITION_LINK;
 
         content::LoadCommittedDetails details;
         details.did_replace_entry = false;
@@ -827,7 +828,8 @@ void ExternalTabContainer::Observe(int type,
     case content::NOTIFICATION_LOAD_STOP: {
         const LoadNotificationDetails* load =
             Details<LoadNotificationDetails>(details).ptr();
-        if (load != NULL && PageTransition::IsMainFrame(load->origin())) {
+        if (load != NULL &&
+            content::PageTransitionIsMainFrame(load->origin())) {
           TRACE_EVENT_END_ETW("ExternalTabContainer::Navigate", 0,
                               load->url().spec());
           automation_->Send(new AutomationMsg_TabLoaded(tab_handle_,
@@ -1074,7 +1076,7 @@ void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
   TRACE_EVENT_BEGIN_ETW("ExternalTabContainer::Navigate", 0, url.spec());
 
   tab_contents_->controller().LoadURL(url, referrer,
-                                      PageTransition::START_PAGE,
+                                      content::PAGE_TRANSITION_START_PAGE,
                                       std::string());
 }
 
@@ -1196,7 +1198,7 @@ TemporaryPopupExternalTabContainer::~TemporaryPopupExternalTabContainer() {
 
 TabContents* TemporaryPopupExternalTabContainer::OpenURLFromTab(
     TabContents* source, const GURL& url, const GURL& referrer,
-    WindowOpenDisposition disposition, PageTransition::Type transition) {
+    WindowOpenDisposition disposition, content::PageTransition transition) {
   return OpenURLFromTab(source,
                         OpenURLParams(url, referrer, disposition, transition));
 }

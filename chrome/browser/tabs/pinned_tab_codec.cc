@@ -15,7 +15,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/page_transition_types.h"
 
 typedef BrowserInit::LaunchWithProfile::Tab Tab;
 

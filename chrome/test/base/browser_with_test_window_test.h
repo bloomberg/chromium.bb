@@ -33,7 +33,7 @@ class NavigationController;
 //
 //   // This is equivalent to the above, and lets you test pending navigations.
 //   browser()->OpenURL(GURL("http://foo/2"), GURL(), CURRENT_TAB,
-//                      PageTransition::TYPED);
+//                      content::PAGE_TRANSITION_TYPED);
 //   CommitPendingLoadAsNewNavigation(controller, url2);
 //
 // Subclasses must invoke BrowserWithTestWindowTest::SetUp as it is responsible

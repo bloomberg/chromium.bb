@@ -1045,11 +1045,11 @@ void TaskManager::OpenAboutMemory() {
       return;
     browser = Browser::Create(profile);
     browser->OpenURL(GURL(chrome::kChromeUIMemoryURL), GURL(),
-                     NEW_FOREGROUND_TAB, PageTransition::LINK);
+                     NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
     browser->window()->Show();
   } else {
     browser->OpenURL(GURL(chrome::kChromeUIMemoryURL), GURL(),
-                     NEW_FOREGROUND_TAB, PageTransition::LINK);
+                     NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
 
     // In case the browser window is minimzed, show it. If |browser| is a
     // non-tabbed window, the call to OpenURL above will have opened a

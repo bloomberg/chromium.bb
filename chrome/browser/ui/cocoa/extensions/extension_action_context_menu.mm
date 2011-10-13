@@ -240,7 +240,8 @@ int CurrentTabId() {
     case kExtensionContextName: {
       GURL url(std::string(extension_urls::kGalleryBrowsePrefix) +
                std::string("/detail/") + extension_->id());
-      browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      browser->OpenURL(
+          url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
       break;
     }
     case kExtensionContextOptions: {

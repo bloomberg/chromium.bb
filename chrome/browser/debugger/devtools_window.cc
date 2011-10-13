@@ -126,7 +126,7 @@ DevToolsWindow* DevToolsWindow::Create(
   tab_contents->controller().LoadURL(
       GetDevToolsUrl(profile, docked, shared_worker_frontend),
       GURL(),
-      PageTransition::START_PAGE,
+      content::PAGE_TRANSITION_START_PAGE,
       std::string());
   return new DevToolsWindow(tab_contents, profile, inspected_rvh, docked);
 }
@@ -341,7 +341,8 @@ void DevToolsWindow::CreateDevToolsBrowser() {
 
   browser_ = Browser::CreateForDevTools(profile_);
   browser_->tabstrip_model()->AddTabContents(
-      tab_contents_, -1, PageTransition::START_PAGE, TabStripModel::ADD_ACTIVE);
+      tab_contents_, -1, content::PAGE_TRANSITION_START_PAGE,
+      TabStripModel::ADD_ACTIVE);
 }
 
 bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
@@ -414,11 +415,12 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
 }
 
 // TODO(adriansc): Remove this method once refactoring changed all call sites.
-TabContents* DevToolsWindow::OpenURLFromTab(TabContents* source,
-                                            const GURL& url,
-                                            const GURL& referrer,
-                                            WindowOpenDisposition disposition,
-                                            PageTransition::Type transition) {
+TabContents* DevToolsWindow::OpenURLFromTab(
+    TabContents* source,
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    content::PageTransition transition) {
   return OpenURLFromTab(source,
                         OpenURLParams(url, referrer, disposition, transition));
 }
@@ -428,7 +430,7 @@ TabContents* DevToolsWindow::OpenURLFromTab(TabContents* source,
   if (inspected_tab_) {
     OpenURLParams forward_params = params;
     forward_params.disposition = NEW_FOREGROUND_TAB;
-    forward_params.transition = PageTransition::LINK;
+    forward_params.transition = content::PAGE_TRANSITION_LINK;
     return inspected_tab_->tab_contents()->OpenURL(forward_params);
   }
   return NULL;

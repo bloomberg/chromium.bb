@@ -40,7 +40,7 @@ NavigationEntry::NavigationEntry()
       page_type_(NORMAL_PAGE),
       update_virtual_url_with_url_(false),
       page_id_(-1),
-      transition_type_(PageTransition::LINK),
+      transition_type_(content::PAGE_TRANSITION_LINK),
       has_post_data_(false),
       restore_type_(RESTORE_NONE) {
 }
@@ -50,7 +50,7 @@ NavigationEntry::NavigationEntry(SiteInstance* instance,
                                  const GURL& url,
                                  const GURL& referrer,
                                  const string16& title,
-                                 PageTransition::Type transition_type)
+                                 content::PageTransition transition_type)
     : unique_id_(GetUniqueID()),
       site_instance_(instance),
       page_type_(NORMAL_PAGE),

@@ -166,7 +166,8 @@ gfx::NativeWindow HtmlDialogGtk::InitDialog() {
       tab_->tab_contents()->property_bag(), this);
 
   tab_->controller().LoadURL(GetDialogContentURL(),
-                             GURL(), PageTransition::START_PAGE, std::string());
+                             GURL(), content::PAGE_TRANSITION_START_PAGE,
+                             std::string());
   GtkDialogFlags flags = GTK_DIALOG_NO_SEPARATOR;
   if (delegate_->IsDialogModal())
     flags = static_cast<GtkDialogFlags>(flags | GTK_DIALOG_MODAL);

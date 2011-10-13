@@ -9,7 +9,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -82,6 +82,6 @@ bool InsecureContentInfoBarDelegate::LinkClicked(
       google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=1342714")),
       GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      PageTransition::LINK);
+      content::PAGE_TRANSITION_LINK);
   return false;
 }

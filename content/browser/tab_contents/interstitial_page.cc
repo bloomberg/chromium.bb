@@ -25,9 +25,9 @@
 #include "content/common/dom_storage_common.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/common/view_types.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -335,7 +335,7 @@ void InterstitialPage::DidNavigate(
     DontProceed();
     return;
   }
-  if (params.transition == PageTransition::AUTO_SUBFRAME) {
+  if (params.transition == content::PAGE_TRANSITION_AUTO_SUBFRAME) {
     // No need to handle navigate message from iframe in the interstitial page.
     return;
   }

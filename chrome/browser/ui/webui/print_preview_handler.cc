@@ -537,7 +537,7 @@ void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
                    GetCloudPrintServiceManageURL(),
                    GURL(),
                    NEW_FOREGROUND_TAB,
-                   PageTransition::LINK);
+                   content::PAGE_TRANSITION_LINK);
 }
 
 void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {
@@ -573,7 +573,7 @@ void PrintPreviewHandler::HandleReloadCrashedInitiatorTab(
 
   TabContents* contents = initiator_tab->tab_contents();
   contents->OpenURL(contents->GetURL(), GURL(), CURRENT_TAB,
-                    PageTransition::RELOAD);
+                    content::PAGE_TRANSITION_RELOAD);
   ActivateInitiatorTabAndClosePreviewTab();
 }
 

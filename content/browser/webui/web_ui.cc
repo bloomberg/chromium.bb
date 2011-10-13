@@ -42,7 +42,7 @@ WebUI::WebUI(TabContents* contents)
     : hide_favicon_(false),
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
-      link_transition_type_(PageTransition::LINK),
+      link_transition_type_(content::PAGE_TRANSITION_LINK),
       bindings_(content::BINDINGS_POLICY_WEB_UI),
       register_callback_overwrites_(false),
       tab_contents_(contents) {

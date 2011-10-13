@@ -77,7 +77,7 @@ void PanelSettingsMenuModel::ExecuteCommand(int command_id) {
      browser->OpenURL(extension->GetHomepageURL(),
                       GURL(),
                       NEW_FOREGROUND_TAB,
-                      PageTransition::LINK);
+                      content::PAGE_TRANSITION_LINK);
       break;
     case COMMAND_CONFIGURE:
       DCHECK(!extension->options_url().is_empty());

@@ -125,7 +125,8 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
   GURL store_url(
       extension_urls::GetWebstoreItemDetailURLPrefix() + extension_->id());
   BrowserList::GetLastActiveWithProfile(profile_)->
-      OpenURL(store_url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      OpenURL(store_url, GURL(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK);
 
   delegate_->InstallUIAbort(/*user_initiated=*/true);
   [NSApp endSheet:[self window]];

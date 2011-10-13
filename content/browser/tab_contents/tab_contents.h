@@ -255,7 +255,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual TabContents* OpenURL(const GURL& url,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
-                               PageTransition::Type transition) OVERRIDE;
+                               content::PageTransition transition) OVERRIDE;
 
   virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE;
 

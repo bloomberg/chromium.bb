@@ -13,7 +13,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_types.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -68,7 +68,7 @@ class CONTENT_EXPORT TabContentsDelegate {
                                       const GURL& url,
                                       const GURL& referrer,
                                       WindowOpenDisposition disposition,
-                                      PageTransition::Type transition);
+                                      content::PageTransition transition);
 
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params);

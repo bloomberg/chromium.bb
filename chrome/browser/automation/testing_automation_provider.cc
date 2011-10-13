@@ -505,7 +505,7 @@ void TestingAutomationProvider::AppendTab(int handle,
     observer = new TabAppendedNotificationObserver(browser, this,
                                                    reply_message);
     TabContentsWrapper* contents =
-        browser->AddSelectedTabWithURL(url, PageTransition::TYPED);
+        browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
     if (contents) {
       append_tab_response =
           GetIndexForNavigationController(&contents->controller(), browser);
@@ -603,7 +603,8 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
                                          number_of_navigations, false, false);
 
       // TODO(darin): avoid conversion to GURL.
-      browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+      browser->OpenURL(
+          url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
       return;
     }
   }
@@ -636,7 +637,8 @@ void TestingAutomationProvider::NavigationAsyncWithDisposition(
     if (browser) {
       // Don't add any listener unless a callback mechanism is desired.
       // TODO(vibhor): Do this if such a requirement arises in future.
-      browser->OpenURL(url, GURL(), disposition, PageTransition::TYPED);
+      browser->OpenURL(
+          url, GURL(), disposition, content::PAGE_TRANSITION_TYPED);
       *status = true;
     }
   }
@@ -3070,7 +3072,7 @@ void TestingAutomationProvider::AddHistoryItem(Browser* browser,
               id_scope,
               0,
               GURL(),
-              PageTransition::LINK,
+              content::PAGE_TRANSITION_LINK,
               history::RedirectList(),
               history::SOURCE_BROWSED,
               false);
@@ -6010,7 +6012,8 @@ void TestingAutomationProvider::NavigateToURL(
       &tab_contents->controller(), this, reply_message,
       navigation_count, false, true);
   browser->OpenURLFromTab(
-      tab_contents, GURL(url), GURL(), CURRENT_TAB, PageTransition::TYPED);
+      tab_contents, GURL(url), GURL(), CURRENT_TAB,
+      content::PAGE_TRANSITION_TYPED);
 }
 
 void TestingAutomationProvider::ExecuteJavascriptJSON(

@@ -98,7 +98,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     TabNavigation nav1(0, GURL("http://google.com"),
                        GURL("http://www.referrer.com"),
                        ASCIIToUTF16("abc"), "def",
-                       PageTransition::QUALIFIER_MASK);
+                       content::PAGE_TRANSITION_QUALIFIER_MASK);
 
     helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
     UpdateNavigation(window_id, tab_id, nav1, 0, true);
@@ -146,7 +146,7 @@ TEST_F(SessionServiceTest, Basic) {
   TabNavigation nav1(0, GURL("http://google.com"),
                      GURL("http://www.referrer.com"),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);
@@ -174,7 +174,7 @@ TEST_F(SessionServiceTest, PersistPostData) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), std::string(),
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
   nav1.set_type_mask(TabNavigation::HAS_POST_DATA);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
@@ -193,10 +193,10 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
   TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
                      ASCIIToUTF16("abcd"), "defg",
-                     PageTransition::AUTO_BOOKMARK);
+                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);
@@ -224,10 +224,10 @@ TEST_F(SessionServiceTest, Pruning) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
   TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
                      ASCIIToUTF16("abcd"), "defg",
-                     PageTransition::AUTO_BOOKMARK);
+                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   for (int i = 0; i < 6; ++i) {
@@ -260,10 +260,10 @@ TEST_F(SessionServiceTest, TwoWindows) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
   TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
                      ASCIIToUTF16("abcd"), "defg",
-                     PageTransition::AUTO_BOOKMARK);
+                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   helper_.PrepareTabInWindow(window_id, tab1_id, 0, true);
   UpdateNavigation(window_id, tab1_id, nav1, 0, true);
@@ -317,7 +317,7 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
 
   helper_.PrepareTabInWindow(window_id, tab1_id, 0, true);
   UpdateNavigation(window_id, tab1_id, nav1, 0, true);
@@ -349,10 +349,10 @@ TEST_F(SessionServiceTest, ClosingWindowDoesntCloseTabs) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
   TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
                      ASCIIToUTF16("abcd"), "defg",
-                     PageTransition::AUTO_BOOKMARK);
+                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);
@@ -392,10 +392,10 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
   TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
                      ASCIIToUTF16("abcd"), "defg",
-                     PageTransition::AUTO_BOOKMARK);
+                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);
@@ -437,10 +437,10 @@ TEST_F(SessionServiceTest, IgnorePopups) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
   TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
                      ASCIIToUTF16("abcd"), "defg",
-                     PageTransition::AUTO_BOOKMARK);
+                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);
@@ -478,10 +478,10 @@ TEST_F(SessionServiceTest, RestorePopup) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
   TabNavigation nav2(0, GURL("http://google2.com"), GURL(),
                      ASCIIToUTF16("abcd"), "defg",
-                     PageTransition::AUTO_BOOKMARK);
+                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);
@@ -523,7 +523,8 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   // Add 5 navigations, with the 4th selected.
   for (int i = 0; i < 5; ++i) {
     TabNavigation nav(0, GURL(base_url + base::IntToString(i)), GURL(),
-                      ASCIIToUTF16("a"), "b", PageTransition::QUALIFIER_MASK);
+                      ASCIIToUTF16("a"), "b",
+                      content::PAGE_TRANSITION_QUALIFIER_MASK);
     UpdateNavigation(window_id, tab_id, nav, i, (i == 3));
   }
 
@@ -564,7 +565,8 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
   // Add 5 navigations, with the 4th selected.
   for (int i = 0; i < 5; ++i) {
     TabNavigation nav(0, GURL(base_url + base::IntToString(i)), GURL(),
-                      ASCIIToUTF16("a"), "b", PageTransition::QUALIFIER_MASK);
+                      ASCIIToUTF16("a"), "b",
+                      content::PAGE_TRANSITION_QUALIFIER_MASK);
     UpdateNavigation(window_id, tab_id, nav, i, (i == 3));
   }
 
@@ -596,7 +598,7 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), std::string(),
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);
@@ -661,7 +663,7 @@ TEST_F(SessionServiceTest, CloseTabUserGesture) {
   TabNavigation nav1(0, GURL("http://google.com"),
                      GURL("http://www.referrer.com"),
                      ASCIIToUTF16("abc"), "def",
-                     PageTransition::QUALIFIER_MASK);
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);

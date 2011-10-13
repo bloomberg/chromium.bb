@@ -142,9 +142,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingHostedApp) {
           .ReplaceComponents(replace_host);
 
   browser()->OpenURL(open_tab, GURL(), NEW_FOREGROUND_TAB,
-                     PageTransition::TYPED);
+                     content::PAGE_TRANSITION_TYPED);
   browser()->OpenURL(open_popup, GURL(), NEW_FOREGROUND_TAB,
-                     PageTransition::TYPED);
+                     content::PAGE_TRANSITION_TYPED);
 
   WaitForTabsAndPopups(browser(), 3, 1);
 }

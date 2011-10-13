@@ -17,7 +17,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -215,7 +215,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // independent of that frame (e.g. protocol handler settings).
   void OpenURL(const GURL& url, const GURL& referrer, int64 frame_id,
                WindowOpenDisposition disposition,
-               PageTransition::Type transition);
+               content::PageTransition transition);
 
   // Copy to the clipboard an image located at a point in the RenderView
   void CopyImageAt(int x, int y);

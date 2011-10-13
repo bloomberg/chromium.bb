@@ -19,7 +19,7 @@ class TabNavigationMock : public TabNavigation {
                       GURL(),                             // referrer
                       string16(ASCIIToUTF16(title)),      // title
                       "",                                 // state
-                      PageTransition::FROM_ADDRESS_BAR) {
+                      content::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
   }
 };
 

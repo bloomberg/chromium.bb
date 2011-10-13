@@ -6,7 +6,7 @@
 
 TestLocationBar::TestLocationBar()
     : disposition_(CURRENT_TAB),
-      transition_(PageTransition::LINK) {
+      transition_(content::PAGE_TRANSITION_LINK) {
 }
 
 TestLocationBar::~TestLocationBar() {}
@@ -19,7 +19,7 @@ WindowOpenDisposition TestLocationBar::GetWindowOpenDisposition() const {
   return disposition_;
 }
 
-PageTransition::Type TestLocationBar::GetPageTransition() const {
+content::PageTransition TestLocationBar::GetPageTransition() const {
   return transition_;
 }
 

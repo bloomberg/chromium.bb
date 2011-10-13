@@ -42,7 +42,7 @@ InstantController::InstantController(Profile* profile,
       is_active_(false),
       is_displayable_(false),
       commit_on_mouse_up_(false),
-      last_transition_type_(PageTransition::LINK),
+      last_transition_type_(content::PAGE_TRANSITION_LINK),
       ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
   PrefService* service = profile->GetPrefs();
   if (service &&
@@ -445,7 +445,7 @@ void InstantController::UpdateIsDisplayable() {
 
 void InstantController::UpdateLoader(const TemplateURL* template_url,
                                      const GURL& url,
-                                     PageTransition::Type transition_type,
+                                     content::PageTransition transition_type,
                                      const string16& user_text,
                                      bool verbatim,
                                      string16* suggested_text) {

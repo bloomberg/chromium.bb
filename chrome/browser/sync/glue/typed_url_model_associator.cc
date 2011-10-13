@@ -84,7 +84,7 @@ bool TypedUrlModelAssociator::FixupURLAndGetVisits(
   // This is a workaround for http://crbug.com/84258.
   if (visits->empty()) {
     history::VisitRow visit(
-        url->id(), url->last_visit(), 0, PageTransition::TYPED, 0);
+        url->id(), url->last_visit(), 0, content::PAGE_TRANSITION_TYPED, 0);
     visits->push_back(visit);
   }
 
@@ -289,11 +289,12 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
                           typed_url.visits(c) == typed_url.visits(c - 1)))
               << "Duplicate visit for url: " << typed_url.url();
           DCHECK(c == 0 || typed_url.visits(c) >= typed_url.visits(c - 1));
-          DCHECK_LE(typed_url.visit_transitions(c) & PageTransition::CORE_MASK,
-                    PageTransition::LAST_CORE);
+          DCHECK_LE(typed_url.visit_transitions(c) &
+                        content::PAGE_TRANSITION_CORE_MASK,
+                    content::PAGE_TRANSITION_LAST_CORE);
           visits.push_back(history::VisitInfo(
               base::Time::FromInternalValue(typed_url.visits(c)),
-              static_cast<PageTransition::Type>(
+              static_cast<content::PageTransition>(
                   typed_url.visit_transitions(c))));
         }
 
@@ -576,7 +577,9 @@ TypedUrlModelAssociator::MergeResult TypedUrlModelAssociator::MergeUrls(
       // caller will update the history DB.
       different |= DIFF_LOCAL_VISITS_ADDED;
       new_visits->push_back(history::VisitInfo(
-          node_time, node.visit_transitions(node_visit_index)));
+          node_time,
+          content::PageTransitionFromInt(
+              node.visit_transitions(node_visit_index))));
       // This visit is added to visits below.
       ++node_visit_index;
     } else {
@@ -644,13 +647,13 @@ void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
     // Walk the passed-in visit vector and count the # of typed visits.
     for (history::VisitVector::const_iterator visit = visits.begin();
          visit != visits.end(); ++visit) {
-      PageTransition::Type transition = static_cast<PageTransition::Type>(
-          visit->transition) & PageTransition::CORE_MASK;
+      content::PageTransition transition = content::PageTransitionFromInt(
+          visit->transition & content::PAGE_TRANSITION_CORE_MASK);
       // We ignore reload visits.
-      if (transition == PageTransition::RELOAD)
+      if (transition == content::PAGE_TRANSITION_RELOAD)
         continue;
       ++total;
-      if (transition == PageTransition::TYPED)
+      if (transition == content::PAGE_TRANSITION_TYPED)
         ++typed_count;
     }
     // We should have at least one typed visit. This can sometimes happen if
@@ -670,20 +673,20 @@ void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
 
   for (history::VisitVector::const_iterator visit = visits.begin();
        visit != visits.end(); ++visit) {
-    PageTransition::Type transition = static_cast<PageTransition::Type>(
-        visit->transition) & PageTransition::CORE_MASK;
+    content::PageTransition transition = content::PageTransitionFromInt(
+        visit->transition & content::PAGE_TRANSITION_CORE_MASK);
     // Skip reload visits.
-    if (transition == PageTransition::RELOAD)
+    if (transition == content::PAGE_TRANSITION_RELOAD)
       continue;
 
     // If we only have room for typed visits, then only add typed visits.
-    if (only_typed && transition != PageTransition::TYPED)
+    if (only_typed && transition != content::PAGE_TRANSITION_TYPED)
       continue;
 
     if (skip_count > 0) {
       // We have too many entries to fit, so we need to skip the oldest ones.
       // Only skip typed URLs if there are too many typed URLs to fit.
-      if (only_typed || transition != PageTransition::TYPED) {
+      if (only_typed || transition != content::PAGE_TRANSITION_TYPED) {
         --skip_count;
         continue;
       }
@@ -700,7 +703,7 @@ void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
     // it's not legal to have an empty visit array (yet another workaround
     // for http://crbug.com/84258).
     typed_url->add_visits(url.last_visit().ToInternalValue());
-    typed_url->add_visit_transitions(PageTransition::RELOAD);
+    typed_url->add_visit_transitions(content::PAGE_TRANSITION_RELOAD);
   }
   CHECK_GT(typed_url->visits_size(), 0);
   CHECK_LE(typed_url->visits_size(), kMaxTypedUrlVisits);
@@ -725,7 +728,9 @@ void TypedUrlModelAssociator::DiffVisits(
       ++old_index;
     } else if (old_visits[old_index].visit_time > new_visit_time) {
       new_visits->push_back(history::VisitInfo(
-          new_visit_time, new_url.visit_transitions(new_index)));
+          new_visit_time,
+          content::PageTransitionFromInt(
+              new_url.visit_transitions(new_index))));
       ++new_index;
     } else {
       ++old_index;
@@ -740,7 +745,7 @@ void TypedUrlModelAssociator::DiffVisits(
   for ( ; new_index < new_visit_count; ++new_index) {
     new_visits->push_back(history::VisitInfo(
         base::Time::FromInternalValue(new_url.visits(new_index)),
-        new_url.visit_transitions(new_index)));
+        content::PageTransitionFromInt(new_url.visit_transitions(new_index))));
   }
 }
 

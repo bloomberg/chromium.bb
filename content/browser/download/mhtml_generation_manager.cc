@@ -10,7 +10,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/view_messages.h"
 
 MHTMLGenerationManager::Job::Job()

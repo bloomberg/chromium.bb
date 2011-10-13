@@ -136,7 +136,7 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   } else {
     web_ui_->tab_contents()->OpenURL(GURL(chrome::kChromeUINewTabURL),
                                      GURL(), CURRENT_TAB,
-                                     PageTransition::LINK);
+                                     content::PAGE_TRANSITION_LINK);
   }
 }
 
@@ -158,7 +158,7 @@ void SyncPromoHandler::HandleShowAdvancedSettings(
   std::string url(chrome::kChromeUISettingsURL);
   url += chrome::kSyncSetupSubPage;
   web_ui_->tab_contents()->OpenURL(GURL(url), GURL(), CURRENT_TAB,
-                                   PageTransition::LINK);
+                                   content::PAGE_TRANSITION_LINK);
 }
 
 void SyncPromoHandler::HandleUserFlowAction(const base::ListValue* args) {

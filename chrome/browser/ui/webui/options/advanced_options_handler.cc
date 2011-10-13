@@ -433,7 +433,7 @@ void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   web_ui_->tab_contents()->OpenURL(
       CloudPrintURL(profile).GetCloudPrintServiceManageURL(),
-      GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -444,7 +444,7 @@ void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
   web_ui_->tab_contents()->OpenURL(
       CloudPrintURL(profile).GetCloudPrintServiceEnableURL(
           CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
-      GURL(), CURRENT_TAB, PageTransition::LINK);
+      GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
 }
 
 void AdvancedOptionsHandler::HandleDisableCloudPrintProxy(

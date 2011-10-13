@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
-                                   PageTransition::START_PAGE);
+                                   content::PAGE_TRANSITION_START_PAGE);
   observer.Wait();
   EXPECT_EQ(UTF8ToUTF16(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());

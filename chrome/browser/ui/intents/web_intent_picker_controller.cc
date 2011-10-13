@@ -189,7 +189,7 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
   // the lifetime of the service url context, and that may mean we need to pass
   // more information into the injector to find the picker again and close it.
   browser::NavigateParams params(NULL, urls_[index],
-                                 PageTransition::AUTO_BOOKMARK);
+                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = NEW_FOREGROUND_TAB;
   params.profile = wrapper_->profile();
   browser::Navigate(&params);

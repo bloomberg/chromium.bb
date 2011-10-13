@@ -435,14 +435,14 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     } else {
       NOTREACHED();
     }
-    tab()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::LINK);
+    tab()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
     return;
   }
 
   if (command == kShowPrivacyCommand) {
     // User pressed "Safe Browsing privacy policy".
     GURL url(kSbPrivacyPolicyUrl);
-    tab()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::LINK);
+    tab()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
     return;
   }
 
@@ -490,7 +490,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
             kSbReportPhishingErrorUrl,
             bad_url_spec,
             threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL);
-    tab()->OpenURL(report_url, GURL(), CURRENT_TAB, PageTransition::LINK);
+    tab()->OpenURL(
+        report_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
     return;
   }
 
@@ -503,7 +504,8 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     diagnostic_url = google_util::AppendGoogleLocaleParam(diagnostic_url);
     DCHECK(unsafe_resources_[element_index].threat_type ==
            SafeBrowsingService::URL_MALWARE);
-    tab()->OpenURL(diagnostic_url, GURL(), CURRENT_TAB, PageTransition::LINK);
+    tab()->OpenURL(
+        diagnostic_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
     return;
   }
 

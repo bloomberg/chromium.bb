@@ -151,7 +151,6 @@
 #include "content/common/content_switches.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -558,7 +557,7 @@ void Browser::OpenWindowWithRestoredTabs(Profile* profile) {
 void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   Browser* browser = GetOrCreateTabbedBrowser(
       profile->GetOffTheRecordProfile());
-  browser->AddSelectedTabWithURL(url, PageTransition::LINK);
+  browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_LINK);
   browser->window()->Show();
 }
 
@@ -631,7 +630,7 @@ TabContents* Browser::OpenApplicationWindow(
     *app_browser = browser;
 
   TabContentsWrapper* wrapper =
-      browser->AddSelectedTabWithURL(url, PageTransition::START_PAGE);
+      browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_START_PAGE);
   TabContents* contents = wrapper->tab_contents();
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   contents->render_view_host()->SyncRendererPrefs();
@@ -717,7 +716,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   // TODO(erikkay): START_PAGE doesn't seem like the right transition in all
   // cases.
   browser::NavigateParams params(browser, extension_url,
-                                 PageTransition::START_PAGE);
+                                 content::PAGE_TRANSITION_START_PAGE);
   params.tabstrip_add_types = add_type;
   params.disposition = disposition;
 
@@ -727,7 +726,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
     int tab_index = model->GetWrapperIndex(existing_tab);
 
     existing_tab->OpenURL(extension->GetFullLaunchURL(), existing_tab->GetURL(),
-                          disposition, PageTransition::LINK);
+                          disposition, content::PAGE_TRANSITION_LINK);
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {
       model->SetTabPinned(tab_index, true);
       tab_index = model->GetWrapperIndex(existing_tab);
@@ -1106,7 +1105,7 @@ int Browser::GetIndexForInsertionDuringRestore(int relative_index) {
 
 TabContentsWrapper* Browser::AddSelectedTabWithURL(
     const GURL& url,
-    PageTransition::Type transition) {
+    content::PageTransition transition) {
   browser::NavigateParams params(this, url, transition);
   params.disposition = NEW_FOREGROUND_TAB;
   browser::Navigate(&params);
@@ -1114,7 +1113,7 @@ TabContentsWrapper* Browser::AddSelectedTabWithURL(
 }
 
 TabContents* Browser::AddTab(TabContentsWrapper* tab_contents,
-                             PageTransition::Type type) {
+                             content::PageTransition type) {
   tab_handler_->GetTabStripModel()->AddTabContents(
       tab_contents, -1, type, TabStripModel::ADD_ACTIVE);
   return tab_contents->tab_contents();
@@ -1254,7 +1253,8 @@ bool Browser::NavigateToIndexWithDisposition(int index,
 
 browser::NavigateParams Browser::GetSingletonTabNavigateParams(
     const GURL& url) {
-  browser::NavigateParams params(this, url, PageTransition::AUTO_BOOKMARK);
+  browser::NavigateParams params(
+      this, url, content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = SINGLETON_TAB;
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
   params.user_gesture = true;
@@ -1322,7 +1322,7 @@ TabContents* Browser::GetOrCloneTabForDisposition(
     case NEW_BACKGROUND_TAB: {
       current_tab = current_tab->Clone();
       tab_handler_->GetTabStripModel()->AddTabContents(
-          current_tab, -1, PageTransition::LINK,
+          current_tab, -1, content::PAGE_TRANSITION_LINK,
           disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_ACTIVE :
                                               TabStripModel::ADD_NONE);
       break;
@@ -1331,7 +1331,8 @@ TabContents* Browser::GetOrCloneTabForDisposition(
       current_tab = current_tab->Clone();
       Browser* browser = Browser::Create(profile_);
       browser->tabstrip_model()->AddTabContents(
-          current_tab, -1, PageTransition::LINK, TabStripModel::ADD_ACTIVE);
+          current_tab, -1, content::PAGE_TRANSITION_LINK,
+          TabStripModel::ADD_ACTIVE);
       browser->window()->Show();
       break;
     }
@@ -1433,7 +1434,7 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
   if (current_tab && current_tab->showing_interstitial_page()) {
     NavigationEntry* entry = current_tab->controller().GetActiveEntry();
     DCHECK(entry);  // Should exist if interstitial is showing.
-    OpenURL(entry->url(), GURL(), disposition, PageTransition::RELOAD);
+    OpenURL(entry->url(), GURL(), disposition, content::PAGE_TRANSITION_RELOAD);
     return;
   }
 
@@ -1449,8 +1450,11 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
 
 void Browser::Home(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(UserMetricsAction("Home"));
-  OpenURL(GetHomePage(), GURL(), disposition,
-          PageTransition::AUTO_BOOKMARK | PageTransition::HOME_PAGE);
+  OpenURL(
+      GetHomePage(), GURL(), disposition,
+      content::PageTransitionFromInt(
+          content::PAGE_TRANSITION_AUTO_BOOKMARK |
+          content::PAGE_TRANSITION_HOME_PAGE));
 }
 
 void Browser::OpenCurrentURL() {
@@ -2125,13 +2129,13 @@ void Browser::ShowHelpTab() {
 
 void Browser::OpenPrivacyDashboardTabAndActivate() {
   OpenURL(GURL(kPrivacyDashboardUrl), GURL(),
-          NEW_FOREGROUND_TAB, PageTransition::LINK);
+          NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
   window_->Activate();
 }
 
 void Browser::OpenAutofillHelpTabAndActivate() {
   GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kAutofillHelpUrl));
-  AddSelectedTabWithURL(help_url, PageTransition::LINK);
+  AddSelectedTabWithURL(help_url, content::PAGE_TRANSITION_LINK);
 }
 
 void Browser::OpenSearchEngineOptionsDialog() {
@@ -2164,20 +2168,20 @@ void Browser::OpenLanguageOptionsDialog() {
 
 void Browser::OpenSystemTabAndActivate() {
   OpenURL(GURL(chrome::kChromeUISystemInfoURL), GURL(),
-          NEW_FOREGROUND_TAB, PageTransition::LINK);
+          NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
   window_->Activate();
 }
 
 void Browser::OpenMobilePlanTabAndActivate() {
   OpenURL(GURL(chrome::kChromeUIMobileSetupURL), GURL(),
-          NEW_FOREGROUND_TAB, PageTransition::LINK);
+          NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
   window_->Activate();
 }
 #endif
 
 void Browser::OpenPluginsTabAndActivate() {
   OpenURL(GURL(chrome::kChromeUIPluginsURL), GURL(),
-          NEW_FOREGROUND_TAB, PageTransition::LINK);
+          NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
   window_->Activate();
 }
 
@@ -2811,7 +2815,7 @@ int Browser::GetLastBlockedCommand(WindowOpenDisposition* disposition) {
 }
 
 void Browser::UpdateUIForNavigationInTab(TabContentsWrapper* contents,
-                                         PageTransition::Type transition,
+                                         content::PageTransition transition,
                                          bool user_initiated) {
   tabstrip_model()->TabNavigating(contents, transition);
 
@@ -2872,7 +2876,7 @@ GURL Browser::GetHomePage() const {
 TabContents* Browser::OpenURL(const GURL& url,
                               const GURL& referrer,
                               WindowOpenDisposition disposition,
-                              PageTransition::Type transition) {
+                              content::PageTransition transition) {
   return OpenURLFromTab(NULL,
                         OpenURLParams(url, referrer, disposition, transition));
 }
@@ -2915,7 +2919,7 @@ TabContentsWrapper* Browser::AddBlankTabAt(int index, bool foreground) {
   // TabContents object too.
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
   browser::NavigateParams params(this, GURL(chrome::kChromeUINewTabURL),
-                                 PageTransition::TYPED);
+                                 content::PAGE_TRANSITION_TYPED);
   params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
   browser::Navigate(&params);
@@ -2955,7 +2959,7 @@ int Browser::GetDragActions() const {
 
 TabContentsWrapper* Browser::CreateTabContentsForURL(
     const GURL& url, const GURL& referrer, Profile* profile,
-    PageTransition::Type transition, bool defer_load,
+    content::PageTransition transition, bool defer_load,
     SiteInstance* instance) const {
   TabContentsWrapper* contents = TabContentsFactory(profile, instance,
       MSG_ROUTING_NONE,
@@ -3014,7 +3018,7 @@ void Browser::DuplicateContentsAt(int index) {
     browser->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
-    browser->AddTab(contents_dupe, PageTransition::LINK);
+    browser->AddTab(contents_dupe, content::PAGE_TRANSITION_LINK);
   }
 
   SessionService* session_service =
@@ -3298,7 +3302,7 @@ TabContents* Browser::OpenURLFromTab(TabContents* source,
                                      const GURL& url,
                                      const GURL& referrer,
                                      WindowOpenDisposition disposition,
-                                     PageTransition::Type transition) {
+                                     content::PageTransition transition) {
   return OpenURLFromTab(source, OpenURLParams(url, referrer, disposition,
                                               transition));
 }
@@ -3955,7 +3959,7 @@ void Browser::FileSelected(const FilePath& path, int index, void* params) {
   profile_->set_last_selected_directory(path.DirName());
   GURL file_url = net::FilePathToFileURL(path);
   if (!file_url.is_empty())
-    OpenURL(file_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    OpenURL(file_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5187,7 +5191,7 @@ void Browser::ViewSource(TabContentsWrapper* contents,
     browser->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
-    browser->AddTab(view_source_contents, PageTransition::LINK);
+    browser->AddTab(view_source_contents, content::PAGE_TRANSITION_LINK);
   }
 
   SessionService* session_service =

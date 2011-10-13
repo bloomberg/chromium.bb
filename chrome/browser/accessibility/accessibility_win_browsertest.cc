@@ -352,7 +352,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       "data:text/html,<html><head><title>Accessibility Win Test</title></head>"
       "<body><input type='button' value='push' /><input type='checkbox' />"
       "</body></html>");
-  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      tree_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   tree_updated_observer2.Wait();
 
   // Check the browser's copy of the renderer accessibility tree.
@@ -393,7 +394,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationService::AllSources());
   GURL tree_url("data:text/html,<ul tabindex='-1' role='radiogroup'><li id='li'"
       ">li</li></ul>");
-  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      tree_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   GetRendererAccessible();
   tree_updated_observer1.Wait();
 
@@ -445,7 +447,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       NotificationService::AllSources());
   GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
-  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      tree_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   GetRendererAccessible();
   tree_updated_observer1.Wait();
 
@@ -479,7 +482,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
       "data:text/html,<body role=group></body>");
-  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      tree_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   GetRendererAccessible();
   tree_updated_observer1.Wait();
 
@@ -511,7 +515,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   GURL tree_url(
       "data:text/html,<div role=group style='visibility: hidden'>text"
       "</div>");
-  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      tree_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   GetRendererAccessible();
   tree_updated_observer1.Wait();
 
@@ -542,7 +547,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
       "data:text/html,<div role=group tabindex='-1'></div>");
-  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      tree_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   GetRendererAccessible();
   tree_updated_observer1.Wait();
 
@@ -591,7 +597,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationService::AllSources());
   GURL tree_url("data:text/html,<body><input type='text' value='old value'/>"
       "</body>");
-  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      tree_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   GetRendererAccessible();
   tree_updated_observer1.Wait();
 
@@ -632,7 +639,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationService::AllSources());
   GURL tree_url("data:text/html,<html><head><title>MyDocument</title></head>"
                 "<body>Content</body></html>");
-  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      tree_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   GetRendererAccessible();
   tree_updated_observer1.Wait();
 
@@ -658,7 +666,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       NotificationService::AllSources());
   GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
-  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      tree_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   GetRendererAccessible();
   tree_updated_observer1.Wait();
 

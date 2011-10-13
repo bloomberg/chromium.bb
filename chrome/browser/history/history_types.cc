@@ -67,7 +67,7 @@ VisitRow::VisitRow()
     : visit_id(0),
       url_id(0),
       referring_visit(0),
-      transition(PageTransition::LINK),
+      transition(content::PAGE_TRANSITION_LINK),
       segment_id(0),
       is_indexed(false) {
 }
@@ -75,7 +75,7 @@ VisitRow::VisitRow()
 VisitRow::VisitRow(URLID arg_url_id,
                    base::Time arg_visit_time,
                    VisitID arg_referring_visit,
-                   PageTransition::Type arg_transition,
+                   content::PageTransition arg_transition,
                    SegmentID arg_segment_id)
     : visit_id(0),
       url_id(arg_url_id),
@@ -350,7 +350,7 @@ HistoryAddPageArgs::HistoryAddPageArgs(
     int32 arg_page_id,
     const GURL& arg_referrer,
     const history::RedirectList& arg_redirects,
-    PageTransition::Type arg_transition,
+    content::PageTransition arg_transition,
     VisitSource arg_source,
     bool arg_did_replace_entry)
       : url(arg_url),

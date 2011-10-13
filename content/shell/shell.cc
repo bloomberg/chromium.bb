@@ -77,7 +77,7 @@ void Shell::LoadURL(const GURL& url) {
   tab_contents_->controller().LoadURL(
       url,
       GURL(),
-      PageTransition::TYPED,
+      content::PAGE_TRANSITION_TYPED,
       std::string());
   tab_contents_->Focus();
 }

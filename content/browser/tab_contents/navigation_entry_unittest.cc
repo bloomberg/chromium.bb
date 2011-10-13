@@ -22,7 +22,7 @@ class NavigationEntryTest : public testing::Test {
                                       GURL("test:url"),
                                       GURL("from"),
                                       ASCIIToUTF16("title"),
-                                      PageTransition::TYPED));
+                                      content::PAGE_TRANSITION_TYPED));
   }
 
   virtual void TearDown() {
@@ -170,10 +170,10 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(2, entry2_.get()->page_id());
 
   // Transition type
-  EXPECT_EQ(PageTransition::LINK, entry1_.get()->transition_type());
-  EXPECT_EQ(PageTransition::TYPED, entry2_.get()->transition_type());
-  entry2_.get()->set_transition_type(PageTransition::RELOAD);
-  EXPECT_EQ(PageTransition::RELOAD, entry2_.get()->transition_type());
+  EXPECT_EQ(content::PAGE_TRANSITION_LINK, entry1_.get()->transition_type());
+  EXPECT_EQ(content::PAGE_TRANSITION_TYPED, entry2_.get()->transition_type());
+  entry2_.get()->set_transition_type(content::PAGE_TRANSITION_RELOAD);
+  EXPECT_EQ(content::PAGE_TRANSITION_RELOAD, entry2_.get()->transition_type());
 
   // Post Data
   EXPECT_FALSE(entry1_.get()->has_post_data());

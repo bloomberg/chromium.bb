@@ -93,7 +93,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   browser->OpenURL(node->url(), GURL(), disposition,
-                   PageTransition::AUTO_BOOKMARK);
+                   content::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
 // Open sites under BookmarkNode with the specified disposition.

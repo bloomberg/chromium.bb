@@ -130,13 +130,13 @@ void FindBarController::Observe(int type,
     if (source_controller == &tab_contents_->controller()) {
       content::LoadCommittedDetails* commit_details =
           Details<content::LoadCommittedDetails>(details).ptr();
-      PageTransition::Type transition_type =
+      content::PageTransition transition_type =
           commit_details->entry->transition_type();
       // We hide the FindInPage window when the user navigates away, except on
       // reload.
       if (find_bar_->IsFindBarVisible()) {
-        if (PageTransition::StripQualifier(transition_type) !=
-            PageTransition::RELOAD) {
+        if (content::PageTransitionStripQualifier(transition_type) !=
+            content::PAGE_TRANSITION_RELOAD) {
           EndFindSession(kKeepSelection);
         } else {
           // On Reload we want to make sure FindNext is converted to a full Find

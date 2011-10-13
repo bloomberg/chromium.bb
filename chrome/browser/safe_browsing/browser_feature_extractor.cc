@@ -22,10 +22,10 @@
 #include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "content/common/page_transition_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 
@@ -68,7 +68,8 @@ static void AddNavigationFeatures(const std::string& feature_prefix,
              request);
   AddFeature(feature_prefix + features::kPageTransitionType,
              static_cast<double>(
-                 PageTransition::StripQualifier(entry->transition_type())),
+                 content::PageTransitionStripQualifier(
+                    entry->transition_type())),
              request);
   AddFeature(feature_prefix + features::kIsFirstNavigation,
              index == 0 ? 1.0 : 0.0,
@@ -295,17 +296,17 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
   int num_visits_link = 0;
   for (history::VisitVector::const_iterator it = visits->begin();
        it != visits->end(); ++it) {
-    if (!PageTransition::IsMainFrame(it->transition)) {
+    if (!content::PageTransitionIsMainFrame(it->transition)) {
       continue;
     }
     if (it->visit_time < threshold) {
       ++num_visits_24h_ago;
     }
-    PageTransition::Type transition = PageTransition::StripQualifier(
+    content::PageTransition transition = content::PageTransitionStripQualifier(
         it->transition);
-    if (transition == PageTransition::TYPED) {
+    if (transition == content::PAGE_TRANSITION_TYPED) {
       ++num_visits_typed;
-    } else if (transition == PageTransition::LINK) {
+    } else if (transition == content::PAGE_TRANSITION_LINK) {
       ++num_visits_link;
     }
   }

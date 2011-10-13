@@ -29,6 +29,8 @@
   ],
   'sources': [
     'public/common/bindings_policy.h',
+    'public/common/page_transition_types.cc',
+    'public/common/page_transition_types.h',
     'public/common/resource_dispatcher_delegate.h',
     'public/common/view_types.h',
     'common/appcache/appcache_backend_proxy.cc',
@@ -182,8 +184,6 @@
     'common/npobject_util.h',
     'common/p2p_messages.h',
     'common/p2p_sockets.h',
-    'common/page_transition_types.cc',
-    'common/page_transition_types.h',
     'common/page_type.h',
     'common/page_zoom.h',
     'common/pepper_file_messages.cc',

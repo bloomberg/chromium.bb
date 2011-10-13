@@ -48,7 +48,7 @@
   } else {
     DCHECK(node->url.is_valid());
     browser->OpenURL(node->url, GURL(), disposition,
-                     PageTransition::AUTO_BOOKMARK);
+                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
   }
 }
 

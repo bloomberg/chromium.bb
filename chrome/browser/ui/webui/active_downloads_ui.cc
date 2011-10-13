@@ -303,7 +303,8 @@ void ActiveDownloadsHandler::OpenNewFullWindow(const ListValue* args) {
     return;
 
   Browser* browser = BrowserList::GetLastActive();
-  browser::NavigateParams params(browser, GURL(url), PageTransition::LINK);
+  browser::NavigateParams params(
+      browser, GURL(url), content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   browser::Navigate(&params);
   browser->window()->Show();
@@ -402,7 +403,7 @@ ActiveDownloadsUI::ActiveDownloadsUI(TabContents* contents)
 TabContents* ActiveDownloadsUI::OpenPopup(Profile* profile) {
   Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
   OpenURLParams params(GURL(chrome::kChromeUIActiveDownloadsURL), GURL(),
-                      SINGLETON_TAB, PageTransition::LINK);
+                      SINGLETON_TAB, content::PAGE_TRANSITION_LINK);
   TabContents* download_contents = browser->OpenURL(params);
   browser->window()->Show();
   return download_contents;
@@ -435,7 +436,7 @@ Browser* ActiveDownloadsUI::OpenPopup(Profile* profile) {
     browser::NavigateParams params(
         browser,
         GURL(chrome::kChromeUIActiveDownloadsURL),
-        PageTransition::LINK);
+        content::PAGE_TRANSITION_LINK);
     params.disposition = NEW_FOREGROUND_TAB;
     browser::Navigate(&params);
 

@@ -9,7 +9,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -24,7 +24,7 @@ TEST_F(SessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
   ASSERT_TRUE(SessionWindowHasNoTabsToSync(win));
   TabNavigation nav(0, GURL("about:bubba"), GURL("about:referrer"),
                     string16(ASCIIToUTF16("title")),
-                    std::string("state"), 0U);
+                    std::string("state"), content::PageTransitionFromInt(0));
   win.tabs[0]->navigations.push_back(nav);
   ASSERT_FALSE(SessionWindowHasNoTabsToSync(win));
 }
@@ -35,14 +35,14 @@ TEST_F(SessionModelAssociatorTest, IsValidSessionTab) {
   TabNavigation nav(0, GURL(chrome::kChromeUINewTabURL),
                     GURL("about:referrer"),
                     string16(ASCIIToUTF16("title")),
-                    std::string("state"), 0U);
+                    std::string("state"), content::PageTransitionFromInt(0));
   tab.navigations.push_back(nav);
   // NewTab does not count as valid if it's the only navigation.
   ASSERT_FALSE(IsValidSessionTab(tab));
   TabNavigation nav2(0, GURL("about:bubba"),
                     GURL("about:referrer"),
                     string16(ASCIIToUTF16("title")),
-                    std::string("state"), 0U);
+                    std::string("state"), content::PageTransitionFromInt(0));
   tab.navigations.push_back(nav2);
   // Once there's another navigation, the tab is valid.
   ASSERT_TRUE(IsValidSessionTab(tab));
@@ -55,7 +55,7 @@ TEST_F(SessionModelAssociatorTest, IsValidSessionTabIgnoresFragmentForNtp) {
                             "#bookmarks"),
                     GURL("about:referrer"),
                     string16(ASCIIToUTF16("title")),
-                    std::string("state"), 0U);
+                    std::string("state"), content::PageTransitionFromInt(0));
   tab.navigations.push_back(nav);
   // NewTab does not count as valid if it's the only navigation.
   ASSERT_FALSE(IsValidSessionTab(tab));
@@ -118,7 +118,7 @@ TEST_F(SessionModelAssociatorTest, PopulateSessionTab) {
   ASSERT_EQ(12, tab.navigations[0].index());
   ASSERT_EQ(GURL("referrer"), tab.navigations[0].referrer());
   ASSERT_EQ(string16(ASCIIToUTF16("title")), tab.navigations[0].title());
-  ASSERT_EQ(PageTransition::TYPED, tab.navigations[0].transition());
+  ASSERT_EQ(content::PAGE_TRANSITION_TYPED, tab.navigations[0].transition());
   ASSERT_EQ(GURL("http://foo/1"), tab.navigations[0].virtual_url());
 }
 

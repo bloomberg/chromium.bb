@@ -842,7 +842,7 @@ TEST_F(TemplateURLServiceTest, UpdateKeywordSearchTermsForURL) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     history::URLVisitedDetails details;
     details.row = history::URLRow(GURL(data[i].url));
-    details.transition = 0;
+    details.transition = content::PageTransitionFromInt(0);
     model()->UpdateKeywordSearchTermsForURL(details);
     EXPECT_EQ(data[i].term, GetAndClearSearchTerm());
   }
@@ -864,7 +864,7 @@ TEST_F(TemplateURLServiceTest, DontUpdateKeywordSearchForNonReplaceable) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     history::URLVisitedDetails details;
     details.row = history::URLRow(GURL(data[i].url));
-    details.transition = 0;
+    details.transition = content::PageTransitionFromInt(0);
     model()->UpdateKeywordSearchTermsForURL(details);
     ASSERT_EQ(string16(), GetAndClearSearchTerm());
   }
@@ -933,8 +933,8 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   history->AddPage(
       GURL(t_url->url()->ReplaceSearchTerms(*t_url, ASCIIToUTF16("blah"), 0,
                                             string16())),
-      NULL, 0, GURL(), PageTransition::KEYWORD, history::RedirectList(),
-      history::SOURCE_BROWSED, false);
+      NULL, 0, GURL(), content::PAGE_TRANSITION_KEYWORD,
+      history::RedirectList(), history::SOURCE_BROWSED, false);
 
   // Wait for history to finish processing the request.
   profile()->BlockUntilHistoryProcessesPendingRequests();
@@ -953,8 +953,8 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   EXPECT_TRUE(callback.success);
   EXPECT_NE(0, callback.row.id());
   ASSERT_EQ(1U, callback.visits.size());
-  EXPECT_EQ(PageTransition::KEYWORD_GENERATED,
-            PageTransition::StripQualifier(callback.visits[0].transition));
+  EXPECT_EQ(content::PAGE_TRANSITION_KEYWORD_GENERATED,
+      content::PageTransitionStripQualifier(callback.visits[0].transition));
 }
 
 // Make sure that the load routine deletes prepopulated engines that no longer

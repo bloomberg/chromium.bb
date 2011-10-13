@@ -17,7 +17,7 @@
 #include "base/string16.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/instant/instant_delegate.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class ExtensionAction;
@@ -46,7 +46,7 @@ class LocationBar {
 
   // Returns the PageTransition that should be recorded in history when the URL
   // entered in the location bar is loaded.
-  virtual PageTransition::Type GetPageTransition() const = 0;
+  virtual content::PageTransition GetPageTransition() const = 0;
 
   // Accepts the current string of text entered in the location bar.
   virtual void AcceptInput() = 0;

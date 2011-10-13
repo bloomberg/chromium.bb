@@ -499,7 +499,7 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Anything loaded directly from the address bar is OK.
-  if (state.transition_type & PageTransition::FROM_ADDRESS_BAR)
+  if (state.transition_type & content::PAGE_TRANSITION_FROM_ADDRESS_BAR)
     return false;
 
   // Extensions that are not from the gallery are considered dangerous.

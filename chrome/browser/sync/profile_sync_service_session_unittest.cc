@@ -139,7 +139,8 @@ void VerifySyncedSession(
       ASSERT_EQ(tab->navigations[0].virtual_url(), GURL("http://foo/1"));
       ASSERT_EQ(tab->navigations[0].referrer(), GURL("referrer"));
       ASSERT_EQ(tab->navigations[0].title(), string16(ASCIIToUTF16("title")));
-      ASSERT_EQ(tab->navigations[0].transition(), PageTransition::TYPED);
+      ASSERT_EQ(tab->navigations[0].transition(),
+                content::PAGE_TRANSITION_TYPED);
     }
   }
 }

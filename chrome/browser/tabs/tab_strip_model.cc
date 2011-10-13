@@ -40,12 +40,12 @@ namespace {
 // forgotten. This is generally any navigation that isn't a link click (i.e.
 // any navigation that can be considered to be the start of a new task distinct
 // from what had previously occurred in that tab).
-bool ShouldForgetOpenersForTransition(PageTransition::Type transition) {
-  return transition == PageTransition::TYPED ||
-      transition == PageTransition::AUTO_BOOKMARK ||
-      transition == PageTransition::GENERATED ||
-      transition == PageTransition::KEYWORD ||
-      transition == PageTransition::START_PAGE;
+bool ShouldForgetOpenersForTransition(content::PageTransition transition) {
+  return transition == content::PAGE_TRANSITION_TYPED ||
+      transition == content::PAGE_TRANSITION_AUTO_BOOKMARK ||
+      transition == content::PAGE_TRANSITION_GENERATED ||
+      transition == content::PAGE_TRANSITION_KEYWORD ||
+      transition == content::PAGE_TRANSITION_START_PAGE;
 }
 
 }  // namespace
@@ -480,7 +480,7 @@ int TabStripModel::GetIndexOfLastTabContentsOpenedBy(
 }
 
 void TabStripModel::TabNavigating(TabContentsWrapper* contents,
-                                  PageTransition::Type transition) {
+                                  content::PageTransition transition) {
   if (ShouldForgetOpenersForTransition(transition)) {
     // Don't forget the openers if this tab is a New Tab page opened at the
     // end of the TabStrip (e.g. by pressing Ctrl+T). Give the user one
@@ -665,14 +665,14 @@ void TabStripModel::SetSelectionFromModel(
 
 void TabStripModel::AddTabContents(TabContentsWrapper* contents,
                                    int index,
-                                   PageTransition::Type transition,
+                                   content::PageTransition transition,
                                    int add_types) {
   // If the newly-opened tab is part of the same task as the parent tab, we want
   // to inherit the parent's "group" attribute, so that if this tab is then
   // closed we'll jump back to the parent tab.
   bool inherit_group = (add_types & ADD_INHERIT_GROUP) == ADD_INHERIT_GROUP;
 
-  if (transition == PageTransition::LINK &&
+  if (transition == content::PAGE_TRANSITION_LINK &&
       (add_types & ADD_FORCE_INDEX) == 0) {
     // We assume tabs opened via link clicks are part of the same task as their
     // parent.  Note that when |force_index| is true (e.g. when the user
@@ -689,7 +689,7 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
       index = order_controller_->DetermineInsertionIndexForAppending();
   }
 
-  if (transition == PageTransition::TYPED && index == count()) {
+  if (transition == content::PAGE_TRANSITION_TYPED && index == count()) {
     // Also, any tab opened at the end of the TabStrip with a "TYPED"
     // transition inherit group as well. This covers the cases where the user
     // creates a New Tab (e.g. Ctrl+T, or clicks the New Tab button), or types
@@ -704,7 +704,7 @@ void TabStripModel::AddTabContents(TabContentsWrapper* contents,
   // Reset the index, just in case insert ended up moving it on us.
   index = GetIndexOfTabContents(contents);
 
-  if (inherit_group && transition == PageTransition::TYPED)
+  if (inherit_group && transition == content::PAGE_TRANSITION_TYPED)
     contents_data_.at(index)->reset_group_on_select = true;
 
   // TODO(sky): figure out why this is here and not in InsertTabContentsAt. When

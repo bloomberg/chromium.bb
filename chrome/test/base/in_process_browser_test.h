@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/test/browser_test.h"
 #include "content/test/browser_test_base.h"
 #include "net/test/test_server.h"
@@ -92,12 +92,12 @@ class InProcessBrowserTest : public BrowserTestBase {
   void AddTabAtIndexToBrowser(Browser* browser,
                               int index,
                               const GURL& url,
-                              PageTransition::Type transition);
+                              content::PageTransition transition);
   void AddTabAtIndex(int index, const GURL& url,
-                     PageTransition::Type transition);
+                     content::PageTransition transition);
 
   // Adds a selected tab at |index| to |url| with the specified |transition|.
-  void AddTabAt(int index, const GURL& url, PageTransition::Type transition);
+  void AddTabAt(int index, const GURL& url, content::PageTransition transition);
 
   // Override this to add any custom setup code that needs to be done on the
   // main thread after the browser is created and just before calling

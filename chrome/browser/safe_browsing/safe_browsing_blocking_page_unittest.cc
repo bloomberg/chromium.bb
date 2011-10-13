@@ -103,7 +103,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
 
   void Navigate(const char* url, int page_id) {
     ViewHostMsg_FrameNavigate_Params params;
-    InitNavigateParams(&params, page_id, GURL(url), PageTransition::TYPED);
+    InitNavigateParams(
+        &params, page_id, GURL(url), content::PAGE_TRANSITION_TYPED);
     contents()->TestDidNavigate(contents()->render_view_host(), params);
   }
 
@@ -115,7 +116,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness,
     // The navigation should commit in the pending RVH.
     ViewHostMsg_FrameNavigate_Params params;
     InitNavigateParams(&params, entry->page_id(), GURL(entry->url()),
-                       PageTransition::TYPED);
+                       content::PAGE_TRANSITION_TYPED);
     contents()->TestDidNavigate(contents()->pending_rvh(), params);
   }
 
@@ -179,7 +180,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED,
+  controller().LoadURL(GURL(kBadURL), GURL(), content::PAGE_TRANSITION_TYPED,
                        std::string());
 
 
@@ -212,7 +213,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED,
+  controller().LoadURL(GURL(kBadURL), GURL(), content::PAGE_TRANSITION_TYPED,
                        std::string());
 
   // Simulate the load causing a safe browsing interstitial to be shown.
@@ -457,7 +458,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   Navigate(kGoodURL, 1);
 
   // Now navigate to a bad page triggerring an interstitial.
-  controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED,
+  controller().LoadURL(GURL(kBadURL), GURL(), content::PAGE_TRANSITION_TYPED,
                        std::string());
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
@@ -501,7 +502,7 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED,
+  controller().LoadURL(GURL(kBadURL), GURL(), content::PAGE_TRANSITION_TYPED,
                        std::string());
 
   // Simulate the load causing a safe browsing interstitial to be shown.
@@ -535,7 +536,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, false);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED,
+  controller().LoadURL(GURL(kBadURL), GURL(), content::PAGE_TRANSITION_TYPED,
                        std::string());
 
   // Simulate the load causing a safe browsing interstitial to be shown.
@@ -567,7 +568,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReports) {
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, false);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED,
+  controller().LoadURL(GURL(kBadURL), GURL(), content::PAGE_TRANSITION_TYPED,
                        std::string());
 
   // Simulate the load causing a safe browsing interstitial to be shown.

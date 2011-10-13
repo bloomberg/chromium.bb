@@ -1802,7 +1802,8 @@ private:
   switch (disposition) {
     case NEW_FOREGROUND_TAB: {
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
-      browser::NavigateParams params(browser_, *url, PageTransition::TYPED);
+      browser::NavigateParams params(
+          browser_, *url, content::PAGE_TRANSITION_TYPED);
       params.disposition = disposition;
       params.tabstrip_index = index;
       params.tabstrip_add_types =
@@ -1814,7 +1815,7 @@ private:
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"));
       tabStripModel_->GetTabContentsAt(index)
           ->tab_contents()->OpenURL(*url, GURL(), CURRENT_TAB,
-                                    PageTransition::TYPED);
+                                    content::PAGE_TRANSITION_TYPED);
       tabStripModel_->ActivateTabAt(index, true);
       break;
     default:

@@ -6,7 +6,7 @@
 
 RequestExtraData::RequestExtraData(bool is_main_frame,
                                    int64 frame_id,
-                                   PageTransition::Type transition_type)
+                                   content::PageTransition transition_type)
     : is_main_frame_(is_main_frame),
       frame_id_(frame_id),
       transition_type_(transition_type) {

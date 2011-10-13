@@ -21,7 +21,7 @@
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/thumbnail_score.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 namespace history {
@@ -198,7 +198,7 @@ class VisitRow {
   VisitRow(URLID arg_url_id,
            base::Time arg_visit_time,
            VisitID arg_referring_visit,
-           PageTransition::Type arg_transition,
+           content::PageTransition arg_transition,
            SegmentID arg_segment_id);
   ~VisitRow();
 
@@ -215,7 +215,7 @@ class VisitRow {
   VisitID referring_visit;
 
   // A combination of bits from PageTransition.
-  PageTransition::Type transition;
+  content::PageTransition transition;
 
   // The segment id (see visitsegment_database.*).
   // If 0, the segment id is null in the table.
@@ -241,7 +241,7 @@ typedef std::vector<VisitRow> VisitVector;
 
 // The basic information associated with a visit (timestamp, type of visit),
 // used by HistoryBackend::AddVisits() to create new visits for a URL.
-typedef std::pair<base::Time, PageTransition::Type> VisitInfo;
+typedef std::pair<base::Time, content::PageTransition> VisitInfo;
 
 // Favicons -------------------------------------------------------------------
 
@@ -578,7 +578,7 @@ class HistoryAddPageArgs
                      int32 arg_page_id,
                      const GURL& arg_referrer,
                      const history::RedirectList& arg_redirects,
-                     PageTransition::Type arg_transition,
+                     content::PageTransition arg_transition,
                      VisitSource arg_source,
                      bool arg_did_replace_entry);
 
@@ -594,7 +594,7 @@ class HistoryAddPageArgs
 
   GURL referrer;
   history::RedirectList redirects;
-  PageTransition::Type transition;
+  content::PageTransition transition;
   VisitSource visit_source;
   bool did_replace_entry;
 

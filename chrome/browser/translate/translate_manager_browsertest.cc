@@ -688,7 +688,7 @@ TEST_F(TranslateManagerTest, ReloadFromLocationBar) {
   // Create a pending navigation and simulate a page load.  That should be the
   // equivalent of typing the URL again in the location bar.
   NavEntryCommittedObserver nav_observer(contents());
-  contents()->controller().LoadURL(url, GURL(), PageTransition::TYPED,
+  contents()->controller().LoadURL(url, GURL(), content::PAGE_TRANSITION_TYPED,
                                    std::string());
   rvh()->SendNavigate(0, url);
 
@@ -735,12 +735,12 @@ TEST_F(TranslateManagerTest, CloseInfoBarInSubframeNavigation) {
 
   // Simulate a sub-frame auto-navigating.
   rvh()->SendNavigateWithTransition(1, GURL("http://pub.com"),
-                                    PageTransition::AUTO_SUBFRAME);
+                                    content::PAGE_TRANSITION_AUTO_SUBFRAME);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Simulate the user navigating in a sub-frame.
   rvh()->SendNavigateWithTransition(2, GURL("http://pub.com"),
-                                    PageTransition::MANUAL_SUBFRAME);
+                                    content::PAGE_TRANSITION_MANUAL_SUBFRAME);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Navigate out of page, a new infobar should show.

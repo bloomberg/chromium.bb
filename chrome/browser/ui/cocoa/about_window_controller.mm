@@ -608,7 +608,7 @@ static BOOL recentShownUserActionFailedStatus = NO;
   // an existing one just to pass in the NEW_WINDOW disposition.
   Browser* browser = Browser::Create(profile_);
   browser->OpenURL(GURL([link UTF8String]), GURL(), NEW_FOREGROUND_TAB,
-                   PageTransition::LINK);
+                   content::PAGE_TRANSITION_LINK);
   browser->window()->Show();
   return YES;
 }

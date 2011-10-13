@@ -79,7 +79,7 @@ NewTabUI::NewTabUI(TabContents* contents)
   // We count all link clicks as AUTO_BOOKMARK, so that site can be ranked more
   // highly. Note this means we're including clicks on not only most visited
   // thumbnails, but also clicks on recently bookmarked.
-  link_transition_type_ = PageTransition::AUTO_BOOKMARK;
+  link_transition_type_ = content::PAGE_TRANSITION_AUTO_BOOKMARK;
 
   if (!GetProfile()->IsOffTheRecord()) {
     PrefService* pref_service = GetProfile()->GetPrefs();

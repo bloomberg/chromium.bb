@@ -12,7 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/network_action_predictor.h"
 #include "chrome/common/instant_types.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -49,7 +49,7 @@ class AutocompleteEditController {
   // AutocompleteResult::GetAlternateNavURL().
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
-                                    PageTransition::Type transition,
+                                    content::PageTransition transition,
                                     const GURL& alternate_nav_url) = 0;
 
   // Called when anything has changed that might affect the layout or contents
@@ -234,7 +234,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // Returns true if this is a paste-and-search rather than paste-and-go (or
   // nothing).
   bool is_paste_and_search() const {
-    return (paste_and_go_match_.transition != PageTransition::TYPED);
+    return (paste_and_go_match_.transition != content::PAGE_TRANSITION_TYPED);
   }
 
   // Asks the browser to load the popup's currently selected item, using the

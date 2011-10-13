@@ -156,8 +156,9 @@ class RemoveHistoryTester : public BrowsingDataRemoverTester {
   }
 
   void AddHistory(const GURL& url, base::Time time) {
-    history_service_->AddPage(url, time, NULL, 0, GURL(), PageTransition::LINK,
-        history::RedirectList(), history::SOURCE_BROWSED, false);
+    history_service_->AddPage(url, time, NULL, 0, GURL(),
+        content::PAGE_TRANSITION_LINK, history::RedirectList(),
+        history::SOURCE_BROWSED, false);
   }
 
  private:

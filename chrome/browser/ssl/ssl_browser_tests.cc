@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
 
   GURL url = https_server_expired_.GetURL("files/ssl/google.htm");
   TabContentsWrapper* tab2 =
-      browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
+      browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
   ui_test_utils::WaitForLoadStop(tab2->tab_contents());
 
   // Verify our assumption that there was no prior navigation.
@@ -503,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
     browser::NavigateParams navigate_params(browser(), url_dangerous,
-                                            PageTransition::TYPED);
+                                            content::PAGE_TRANSITION_TYPED);
     browser::Navigate(&navigate_params);
     observer.Wait();
   }
@@ -661,7 +661,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
       &replacement_path));
 
   GURL url = https_server_.GetURL(replacement_path);
-  browser::NavigateParams params(browser(), url, PageTransition::TYPED);
+  browser::NavigateParams params(
+      browser(), url, content::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = 0;
   params.source_contents = tab1;
@@ -701,7 +702,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
 
   // Create a new tab.
   GURL url = https_server_.GetURL(replacement_path);
-  browser::NavigateParams params(browser(), url, PageTransition::TYPED);
+  browser::NavigateParams params(
+      browser(), url, content::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
   params.source_contents = tab1;
   ui_test_utils::WindowedNotificationObserver observer(
@@ -881,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   GURL url = test_server()->GetURL("files/ssl/google.html");
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
-  browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
+  browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
   // Close the first tab.

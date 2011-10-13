@@ -43,8 +43,8 @@
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
+#include "content/public/common/page_transition_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
@@ -393,12 +393,12 @@ class Browser : public TabHandlerDelegate,
   // created TabContents.
   TabContentsWrapper* AddSelectedTabWithURL(
       const GURL& url,
-      PageTransition::Type transition);
+      content::PageTransition transition);
 
   // Add a new tab, given a TabContents. A TabContents appropriate to
   // display the last committed entry is created and returned.
   TabContents* AddTab(TabContentsWrapper* tab_contents,
-                      PageTransition::Type type);
+                      content::PageTransition type);
 
   // Add a tab with its session history restored from the SessionRestore
   // system. If select is true, the tab is selected. |tab_index| gives the index
@@ -718,7 +718,7 @@ class Browser : public TabHandlerDelegate,
   // Called by browser::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
   void UpdateUIForNavigationInTab(TabContentsWrapper* contents,
-                                  PageTransition::Type transition,
+                                  content::PageTransition transition,
                                   bool user_initiated);
 
   // Called by browser::Navigate() to retrieve the home page if no URL is
@@ -736,7 +736,7 @@ class Browser : public TabHandlerDelegate,
   virtual TabContents* OpenURL(const GURL& url,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
-                               PageTransition::Type transition) OVERRIDE;
+                               content::PageTransition transition) OVERRIDE;
   virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE;
 
   // Overridden from CommandUpdater::CommandUpdaterDelegate:
@@ -770,12 +770,13 @@ class Browser : public TabHandlerDelegate,
   virtual int GetDragActions() const;
   // Construct a TabContents for a given URL, profile and transition type.
   // If instance is not null, its process will be used to render the tab.
-  virtual TabContentsWrapper* CreateTabContentsForURL(const GURL& url,
-                                               const GURL& referrer,
-                                               Profile* profile,
-                                               PageTransition::Type transition,
-                                               bool defer_load,
-                                               SiteInstance* instance) const;
+  virtual TabContentsWrapper* CreateTabContentsForURL(
+      const GURL& url,
+      const GURL& referrer,
+      Profile* profile,
+      content::PageTransition transition,
+      bool defer_load,
+      SiteInstance* instance) const;
   virtual bool CanDuplicateContentsAt(int index);
   virtual void DuplicateContentsAt(int index);
   virtual void CloseFrameAfterDragSession();
@@ -882,11 +883,12 @@ class Browser : public TabHandlerDelegate,
   // Overridden from TabContentsDelegate:
   // Deprecated. Please use two-argument variant.
   // TODO(adriansc): Remove this method once refactoring changed all call sites.
-  virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const GURL& url,
-                                      const GURL& referrer,
-                                      WindowOpenDisposition disposition,
-                                      PageTransition::Type transition) OVERRIDE;
+  virtual TabContents* OpenURLFromTab(
+      TabContents* source,
+      const GURL& url,
+      const GURL& referrer,
+      WindowOpenDisposition disposition,
+      content::PageTransition transition) OVERRIDE;
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,

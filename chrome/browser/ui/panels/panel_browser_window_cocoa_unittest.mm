@@ -63,7 +63,7 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
 
     TabContentsWrapper* tab_contents = new TabContentsWrapper(
         new TestTabContents(profile(), NULL));
-    panel_browser->AddTab(tab_contents, PageTransition::LINK);
+    panel_browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
 
     // We just created one new panel.
     EXPECT_EQ(panels_count + 1, manager->num_panels());

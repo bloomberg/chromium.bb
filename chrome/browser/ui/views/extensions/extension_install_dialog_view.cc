@@ -300,8 +300,8 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
                                              int event_flags) {
   GURL store_url(
       extension_urls::GetWebstoreItemDetailURLPrefix() + extension_->id());
-  BrowserList::GetLastActive()->
-      OpenURL(store_url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  BrowserList::GetLastActive()->OpenURL(
+      store_url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
   GetWidget()->Close();
 }
 

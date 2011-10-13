@@ -1111,7 +1111,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Actually open the URL.  This is the last chance for a unit test to
 // override.
 - (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition {
-  browser_->OpenURL(url, GURL(), disposition, PageTransition::AUTO_BOOKMARK);
+  browser_->OpenURL(
+      url, GURL(), disposition, content::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
 - (void)clearMenuTagMap {

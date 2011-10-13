@@ -140,7 +140,8 @@ void OptionsMenuModel::ExecuteCommand(int command_id) {
         GURL about_url = google_util::AppendGoogleLocaleParam(
             GURL(kAboutGoogleTranslateUrl));
         tab_contents->OpenURL(
-            about_url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+            about_url, GURL(), NEW_FOREGROUND_TAB,
+            content::PAGE_TRANSITION_LINK);
       }
       break;
     }

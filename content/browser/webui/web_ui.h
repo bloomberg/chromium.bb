@@ -15,7 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_channel.h"
 
 class GURL;
@@ -105,7 +105,7 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
 
   // Returns the transition type that should be used for link clicks on this
   // Web UI. This will default to LINK but may be overridden.
-  PageTransition::Type link_transition_type() const {
+  content::PageTransition link_transition_type() const {
     return link_transition_type_;
   }
 
@@ -181,7 +181,7 @@ class CONTENT_EXPORT WebUI : public IPC::Channel::Listener {
   bool focus_location_bar_by_default_;
   bool should_hide_url_;
   string16 overridden_title_;  // Defaults to empty string.
-  PageTransition::Type link_transition_type_;  // Defaults to LINK.
+  content::PageTransition link_transition_type_;  // Defaults to LINK.
   int bindings_;  // The bindings from BindingsPolicy that should be enabled for
                   // this page.
 

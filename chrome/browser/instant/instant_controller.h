@@ -18,7 +18,7 @@
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/instant_types.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -150,7 +150,7 @@ class InstantController : public InstantLoaderDelegate {
   bool is_displayable() const { return is_displayable_; }
 
   // Returns the transition type of the last AutocompleteMatch passed to Update.
-  PageTransition::Type last_transition_type() const {
+  content::PageTransition last_transition_type() const {
     return last_transition_type_;
   }
 
@@ -180,7 +180,7 @@ class InstantController : public InstantLoaderDelegate {
   // internally from Update.
   void UpdateLoader(const TemplateURL* template_url,
                     const GURL& url,
-                    PageTransition::Type transition_type,
+                    content::PageTransition transition_type,
                     const string16& user_text,
                     bool verbatim,
                     string16* suggested_text);
@@ -232,7 +232,7 @@ class InstantController : public InstantLoaderDelegate {
   bool commit_on_mouse_up_;
 
   // See description above getter.
-  PageTransition::Type last_transition_type_;
+  content::PageTransition last_transition_type_;
 
   // The IDs of any search engines that don't support instant. We assume all
   // search engines support instant, but if we determine an engine doesn't

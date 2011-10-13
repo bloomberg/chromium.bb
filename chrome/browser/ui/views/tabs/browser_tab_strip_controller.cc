@@ -278,7 +278,8 @@ void BrowserTabStripController::OnDropIndexUpdate(int index,
 void BrowserTabStripController::PerformDrop(bool drop_before,
                                             int index,
                                             const GURL& url) {
-  browser::NavigateParams params(browser_, url, PageTransition::LINK);
+  browser::NavigateParams params(
+      browser_, url, content::PAGE_TRANSITION_LINK);
   params.tabstrip_index = index;
 
   if (drop_before) {

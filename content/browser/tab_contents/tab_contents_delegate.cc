@@ -21,7 +21,7 @@ TabContents* TabContentsDelegate::OpenURLFromTab(
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
-    PageTransition::Type transition) {
+    content::PageTransition transition) {
   return OpenURLFromTab(source,
                         OpenURLParams(url, referrer, disposition, transition));
 }
@@ -159,7 +159,7 @@ void TabContentsDelegate::ViewSourceForTab(TabContents* source,
                  url,
                  GURL(),
                  NEW_FOREGROUND_TAB,
-                 PageTransition::LINK);
+                 content::PAGE_TRANSITION_LINK);
 }
 
 void TabContentsDelegate::ViewSourceForFrame(TabContents* source,
@@ -172,7 +172,7 @@ void TabContentsDelegate::ViewSourceForFrame(TabContents* source,
                  url,
                  GURL(),
                  NEW_FOREGROUND_TAB,
-                 PageTransition::LINK);
+                 content::PAGE_TRANSITION_LINK);
 }
 
 bool TabContentsDelegate::PreHandleKeyboardEvent(

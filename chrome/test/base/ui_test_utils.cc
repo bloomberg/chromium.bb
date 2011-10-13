@@ -354,7 +354,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       content::NOTIFICATION_TAB_ADDED,
       NotificationService::AllSources());
 
-  browser->OpenURL(url, GURL(), disposition, PageTransition::TYPED);
+  browser->OpenURL(url, GURL(), disposition, content::PAGE_TRANSITION_TYPED);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)

@@ -74,7 +74,7 @@ bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
   owner()->tab_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
       GURL(), (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      PageTransition::LINK);
+      content::PAGE_TRANSITION_LINK);
   return false;
 }
 
@@ -307,7 +307,7 @@ void GoogleURLTracker::RedoSearch() {
   GURL new_search_url(search_url_.ReplaceComponents(replacements));
   if (new_search_url.is_valid())
     controller_->tab_contents()->OpenURL(new_search_url, GURL(), CURRENT_TAB,
-                                         PageTransition::GENERATED);
+                                         content::PAGE_TRANSITION_GENERATED);
 }
 
 void GoogleURLTracker::Observe(int type,

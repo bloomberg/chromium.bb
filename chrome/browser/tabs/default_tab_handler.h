@@ -39,7 +39,7 @@ class DefaultTabHandler : public TabHandler,
       const GURL& url,
       const GURL& referrer,
       Profile* profile,
-      PageTransition::Type transition,
+      content::PageTransition transition,
       bool defer_load,
       SiteInstance* instance) const;
   virtual bool CanDuplicateContentsAt(int index);

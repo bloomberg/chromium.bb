@@ -86,7 +86,7 @@ AutocompleteMatch AutoCompletePopupModelTest::CreateMatch(
     match.template_url = template_url_service->GetDefaultSearchProvider();
   match.fill_into_edit.append(query_string);
   match.transition = keyword.empty() ?
-      PageTransition::GENERATED : PageTransition::KEYWORD;
+      content::PAGE_TRANSITION_GENERATED : content::PAGE_TRANSITION_KEYWORD;
   return match;
 }
 

@@ -17,7 +17,7 @@
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_types.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 
 class NavigationEntry;
 class SessionStorageNamespace;
@@ -177,7 +177,7 @@ class CONTENT_EXPORT NavigationController {
   // request.  Extra headers are separated by \n.
   void LoadURL(const GURL& url,
                const GURL& referrer,
-               PageTransition::Type type,
+               content::PageTransition type,
                const std::string& extra_headers);
 
   // Loads the current page if this NavigationController was restored from
@@ -330,7 +330,7 @@ class CONTENT_EXPORT NavigationController {
   static NavigationEntry* CreateNavigationEntry(
       const GURL& url,
       const GURL& referrer,
-      PageTransition::Type transition,
+      content::PageTransition transition,
       const std::string& extra_headers,
       content::BrowserContext* browser_context);
 

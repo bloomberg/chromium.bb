@@ -70,7 +70,7 @@ bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   owner()->tab_contents()->OpenURL(
       google_util::AppendGoogleLocaleParam(GURL(GetLearnMoreURL())), GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      PageTransition::LINK);
+      content::PAGE_TRANSITION_LINK);
   return false;
 }
 
@@ -255,7 +255,7 @@ string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
 bool OutdatedPluginInfoBarDelegate::Accept() {
   UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
   owner()->tab_contents()->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
-                                   PageTransition::LINK);
+                                   content::PAGE_TRANSITION_LINK);
   return false;
 }
 

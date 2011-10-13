@@ -442,7 +442,7 @@ bool CreateWindowFunction::RunImpl() {
         window_profile);
   }
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i)
-    new_window->AddSelectedTabWithURL(*i, PageTransition::LINK);
+    new_window->AddSelectedTabWithURL(*i, content::PAGE_TRANSITION_LINK);
   if (contents) {
     TabStripModel* target_tab_strip = new_window->tabstrip_model();
     target_tab_strip->InsertTabContentsAt(urls.size(), contents,
@@ -791,7 +791,7 @@ bool CreateTabFunction::RunImpl() {
   add_types |= TabStripModel::ADD_FORCE_INDEX;
   if (pinned)
     add_types |= TabStripModel::ADD_PINNED;
-  browser::NavigateParams params(browser, url, PageTransition::LINK);
+  browser::NavigateParams params(browser, url, content::PAGE_TRANSITION_LINK);
   params.disposition = active ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
   params.tabstrip_add_types = add_types;
@@ -986,7 +986,8 @@ bool UpdateTabFunction::RunImpl() {
       return true;
     }
 
-    controller.LoadURL(url, GURL(), PageTransition::LINK, std::string());
+    controller.LoadURL(
+        url, GURL(), content::PAGE_TRANSITION_LINK, std::string());
 
     // The URL of a tab contents never actually changes to a JavaScript URL, so
     // this check only makes sense in other cases.
@@ -1241,7 +1242,7 @@ bool ReloadTabFunction::RunImpl() {
     // This does as same as Browser::ReloadInternal.
     NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
     GetCurrentBrowser()->OpenURL(entry->url(), GURL(), CURRENT_TAB,
-                                 PageTransition::RELOAD);
+                                 content::PAGE_TRANSITION_RELOAD);
   } else if (bypass_cache) {
     tab_contents->controller().ReloadIgnoringCache(true);
   } else {

@@ -321,7 +321,8 @@ void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
   GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->OpenURL(
+      url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
 }
 
 void PageInfoBubbleView::AnimationEnded(const ui::Animation* animation) {

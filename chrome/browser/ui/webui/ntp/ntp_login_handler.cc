@@ -74,7 +74,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
         web_ui_->tab_contents()->OpenURL(GURL(chrome::kChromeUISyncPromoURL),
                                          GURL(), CURRENT_TAB,
-                                         PageTransition::LINK);
+                                         content::PAGE_TRANSITION_LINK);
     }
   } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.

@@ -302,7 +302,8 @@ void InitializeExtraHeaders(browser::NavigateParams* params,
   // set to Google and add RLZ HTTP headers to the request.  This is only
   // done if Google was the original home page, and not changed afterwards by
   // the user.
-  if (profile && (params->transition & PageTransition::HOME_PAGE) != 0) {
+  if (profile &&
+      (params->transition & content::PAGE_TRANSITION_HOME_PAGE) != 0) {
     PrefService* pref_service = profile->GetPrefs();
     if (pref_service) {
       if (!pref_service->GetBoolean(prefs::kHomePageChanged)) {
@@ -330,7 +331,7 @@ namespace browser {
 NavigateParams::NavigateParams(
     Browser* a_browser,
     const GURL& a_url,
-    PageTransition::Type a_transition)
+    content::PageTransition a_transition)
     : url(a_url),
       target_contents(NULL),
       source_contents(NULL),
@@ -351,7 +352,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
     : target_contents(a_target_contents),
       source_contents(NULL),
       disposition(CURRENT_TAB),
-      transition(PageTransition::LINK),
+      transition(content::PAGE_TRANSITION_LINK),
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_ACTIVE),
       window_action(NO_ACTION),
@@ -424,15 +425,16 @@ void Navigate(NavigateParams* params) {
 
   // Determine if the navigation was user initiated. If it was, we need to
   // inform the target TabContents, and we may need to update the UI.
-  PageTransition::Type base_transition =
-      PageTransition::StripQualifier(params->transition);
-  bool user_initiated = params->transition & PageTransition::FROM_ADDRESS_BAR ||
-      base_transition == PageTransition::TYPED ||
-      base_transition == PageTransition::AUTO_BOOKMARK ||
-      base_transition == PageTransition::GENERATED ||
-      base_transition == PageTransition::START_PAGE ||
-      base_transition == PageTransition::RELOAD ||
-      base_transition == PageTransition::KEYWORD;
+  content::PageTransition base_transition =
+      content::PageTransitionStripQualifier(params->transition);
+  bool user_initiated =
+      params->transition & content::PAGE_TRANSITION_FROM_ADDRESS_BAR ||
+      base_transition == content::PAGE_TRANSITION_TYPED ||
+      base_transition == content::PAGE_TRANSITION_AUTO_BOOKMARK ||
+      base_transition == content::PAGE_TRANSITION_GENERATED ||
+      base_transition == content::PAGE_TRANSITION_START_PAGE ||
+      base_transition == content::PAGE_TRANSITION_RELOAD ||
+      base_transition == content::PAGE_TRANSITION_KEYWORD;
 
   std::string extra_headers;
 
@@ -445,7 +447,8 @@ void Navigate(NavigateParams* params) {
     GURL url;
     if (params->url.is_empty()) {
       url = params->browser->GetHomePage();
-      params->transition |= PageTransition::HOME_PAGE;
+      params->transition = content::PageTransitionFromInt(
+          params->transition | content::PAGE_TRANSITION_HOME_PAGE);
     } else {
       url = params->url;
     }

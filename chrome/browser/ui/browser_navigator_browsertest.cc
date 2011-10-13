@@ -57,7 +57,7 @@ browser::NavigateParams BrowserNavigatorTest::MakeNavigateParams() const {
 browser::NavigateParams BrowserNavigatorTest::MakeNavigateParams(
     Browser* browser) const {
   browser::NavigateParams params(browser, GetGoogleURL(),
-                                 PageTransition::LINK);
+                                 content::PAGE_TRANSITION_LINK);
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
   return params;
 }
@@ -138,8 +138,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   registrar.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
                 NotificationService::AllSources());
 
-  browser()->AddSelectedTabWithURL(singleton_url1, PageTransition::LINK);
-  browser()->AddSelectedTabWithURL(GetGoogleURL(), PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(
+      singleton_url1, content::PAGE_TRANSITION_LINK);
+  browser()->AddSelectedTabWithURL(
+      GetGoogleURL(), content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, BrowserList::size());
@@ -169,7 +171,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   GURL singleton_ref_url2("http://maps.google.com/#b");
   GURL singleton_ref_url3("http://maps.google.com/");
 
-  browser()->AddSelectedTabWithURL(singleton_ref_url1, PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(
+      singleton_ref_url1, content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, 2nd selected.
   EXPECT_EQ(1u, BrowserList::size());
@@ -700,7 +703,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewWindow) {
 // no previous tab with that URL (minus the path) exists.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabNew_IgnorePath) {
-  browser()->AddSelectedTabWithURL(GetGoogleURL(), PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(
+      GetGoogleURL(), content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, the 2nd selected.
   EXPECT_EQ(1u, BrowserList::size());
@@ -730,8 +734,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExisting_IgnorePath) {
   GURL singleton_url1(GetSettingsURL());
-  browser()->AddSelectedTabWithURL(singleton_url1, PageTransition::LINK);
-  browser()->AddSelectedTabWithURL(GetGoogleURL(), PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(
+      singleton_url1, content::PAGE_TRANSITION_LINK);
+  browser()->AddSelectedTabWithURL(
+      GetGoogleURL(), content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, BrowserList::size());
@@ -761,8 +767,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExistingSubPath_IgnorePath) {
   GURL singleton_url1(GetSettingsAdvancedURL());
-  browser()->AddSelectedTabWithURL(singleton_url1, PageTransition::LINK);
-  browser()->AddSelectedTabWithURL(GetGoogleURL(), PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(
+      singleton_url1, content::PAGE_TRANSITION_LINK);
+  browser()->AddSelectedTabWithURL(
+      GetGoogleURL(), content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, BrowserList::size());
@@ -792,8 +800,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExistingSubPath_IgnorePath2) {
   GURL singleton_url1(GetSettingsAdvancedURL());
-  browser()->AddSelectedTabWithURL(singleton_url1, PageTransition::LINK);
-  browser()->AddSelectedTabWithURL(GetGoogleURL(), PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(
+      singleton_url1, content::PAGE_TRANSITION_LINK);
+  browser()->AddSelectedTabWithURL(
+      GetGoogleURL(), content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
   EXPECT_EQ(1u, BrowserList::size());
@@ -822,7 +832,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabFocused_IgnorePath) {
   GURL singleton_url_current(GetSettingsAdvancedURL());
-  browser()->AddSelectedTabWithURL(singleton_url_current, PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(
+      singleton_url_current, content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, the 2nd selected.
   EXPECT_EQ(1u, BrowserList::size());
@@ -853,7 +864,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExisting_IgnoreQuery) {
   int initial_tab_count = browser()->tab_count();
   GURL singleton_url_current("chrome://settings/internet");
-  browser()->AddSelectedTabWithURL(singleton_url_current, PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(
+      singleton_url_current, content::PAGE_TRANSITION_LINK);
 
   EXPECT_EQ(initial_tab_count + 1, browser()->tab_count());
   EXPECT_EQ(initial_tab_count, browser()->active_index());
@@ -905,7 +917,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_Settings_UseNonIncognitoWindowForBookmark) {
   browser::NavigateParams params(browser(), GURL("chrome://settings"),
-                                 PageTransition::AUTO_BOOKMARK);
+                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = OFF_THE_RECORD;
   {
     ui_test_utils::WindowedNotificationObserver observer(
@@ -948,8 +960,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateToCrashedSingletonTab) {
   GURL singleton_url(GetSettingsAdvancedURL());
-  TabContentsWrapper* wrapper =
-      browser()->AddSelectedTabWithURL(singleton_url, PageTransition::LINK);
+  TabContentsWrapper* wrapper = browser()->AddSelectedTabWithURL(
+      singleton_url, content::PAGE_TRANSITION_LINK);
   TabContents* tab_contents = wrapper->tab_contents();
 
   // We should have one browser with 2 tabs, the 2nd selected.
@@ -1102,7 +1114,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
-    browser()->AddSelectedTabWithURL(GetGoogleURL(), PageTransition::LINK);
+    browser()->AddSelectedTabWithURL(
+        GetGoogleURL(), content::PAGE_TRANSITION_LINK);
     observer.Wait();
   }
 
@@ -1139,7 +1152,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   // Simulate an alt-enter.
   controller->OnAutocompleteAccept(url2, NEW_FOREGROUND_TAB,
-                                   PageTransition::TYPED, GURL());
+                                   content::PAGE_TRANSITION_TYPED, GURL());
 
   // Make sure the second tab is selected.
   EXPECT_EQ(1, browser()->active_index());

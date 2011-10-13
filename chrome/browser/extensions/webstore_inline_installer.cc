@@ -232,7 +232,7 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
         GURL(redirect_url),
         tab_contents()->GetURL(),
         NEW_FOREGROUND_TAB,
-        PageTransition::AUTO_BOOKMARK));
+        content::PAGE_TRANSITION_AUTO_BOOKMARK));
     CompleteInstall(kInlineInstallSupportedError);
     return;
   }
@@ -385,7 +385,7 @@ void WebstoreInlineInstaller::InstallUIProceed() {
   // whitelist entry and look that up when checking that this is a valid
   // download.
   GURL referrer(extension_urls::GetWebstoreItemDetailURLPrefix() + id_);
-  controller.LoadURL(install_url, referrer, PageTransition::LINK,
+  controller.LoadURL(install_url, referrer, content::PAGE_TRANSITION_LINK,
                      std::string());
 
   // TODO(mihaip): the success message should happen later, when the extension

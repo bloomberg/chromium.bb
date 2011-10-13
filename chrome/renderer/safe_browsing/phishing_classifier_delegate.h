@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
@@ -116,7 +116,7 @@ class PhishingClassifierDelegate : public content::RenderViewObserver {
   // to exclude back/forward loads from classification.  Note that this is
   // set in DidCommitProvisionalLoad(); the transition is reset after this
   // call in the RenderView, so we need to save off the value.
-  PageTransition::Type last_main_frame_transition_;
+  content::PageTransition last_main_frame_transition_;
 
   // The URL of the last load that we actually started classification on.
   // This is used to suppress phishing classification on subframe navigation

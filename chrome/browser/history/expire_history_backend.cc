@@ -73,7 +73,7 @@ class AutoSubframeVisitsReader : public ExpiringVisitsReader {
 
     db->GetVisitsInRangeForTransition(begin_time, early_end_time,
                                       max_visits,
-                                      PageTransition::AUTO_SUBFRAME,
+                                      content::PAGE_TRANSITION_AUTO_SUBFRAME,
                                       visits);
     bool more = static_cast<int>(visits->size()) == max_visits;
     if (!more)
@@ -87,22 +87,22 @@ class AutoSubframeVisitsReader : public ExpiringVisitsReader {
 // worth saving (for example, subframe navigations and redirects) and we can
 // just delete it when it gets old.
 bool ShouldArchiveVisit(const VisitRow& visit) {
-  int no_qualifier = PageTransition::StripQualifier(visit.transition);
+  int no_qualifier = content::PageTransitionStripQualifier(visit.transition);
 
   // These types of transitions are always "important" and the user will want
   // to see them.
-  if (no_qualifier == PageTransition::TYPED ||
-      no_qualifier == PageTransition::AUTO_BOOKMARK ||
-      no_qualifier == PageTransition::START_PAGE)
+  if (no_qualifier == content::PAGE_TRANSITION_TYPED ||
+      no_qualifier == content::PAGE_TRANSITION_AUTO_BOOKMARK ||
+      no_qualifier == content::PAGE_TRANSITION_START_PAGE)
     return true;
 
   // Only archive these "less important" transitions when they were the final
   // navigation and not part of a redirect chain.
-  if ((no_qualifier == PageTransition::LINK ||
-       no_qualifier == PageTransition::FORM_SUBMIT ||
-       no_qualifier == PageTransition::KEYWORD ||
-       no_qualifier == PageTransition::GENERATED) &&
-      visit.transition & PageTransition::CHAIN_END)
+  if ((no_qualifier == content::PAGE_TRANSITION_LINK ||
+       no_qualifier == content::PAGE_TRANSITION_FORM_SUBMIT ||
+       no_qualifier == content::PAGE_TRANSITION_KEYWORD ||
+       no_qualifier == content::PAGE_TRANSITION_GENERATED) &&
+      visit.transition & content::PAGE_TRANSITION_CHAIN_END)
     return true;
 
   // The transition types we ignore are AUTO_SUBFRAME and MANUAL_SUBFRAME.
@@ -460,13 +460,13 @@ void ExpireHistoryBackend::ExpireURLsForVisits(
     // TODO(pkasting): http://b/1148304 We shouldn't be marking so many URLs as
     // typed, which would help eliminate the need for this code (we still would
     // need to handle RELOAD transitions specially, though).
-    PageTransition::Type transition =
-        PageTransition::StripQualifier(visits[i].transition);
-    if (transition != PageTransition::RELOAD)
+    content::PageTransition transition =
+        content::PageTransitionStripQualifier(visits[i].transition);
+    if (transition != content::PAGE_TRANSITION_RELOAD)
       cur.visit_count++;
-    if ((transition == PageTransition::TYPED &&
-         !PageTransition::IsRedirect(visits[i].transition)) ||
-        transition == PageTransition::KEYWORD_GENERATED)
+    if ((transition == content::PAGE_TRANSITION_TYPED &&
+        !content::PageTransitionIsRedirect(visits[i].transition)) ||
+        transition == content::PAGE_TRANSITION_KEYWORD_GENERATED)
       cur.typed_count++;
   }
 

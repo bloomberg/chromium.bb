@@ -129,7 +129,7 @@ void PDFEnableAdobeReaderInfoBarDelegate::OnNo() {
 // Launch the url to get the latest Adbobe Reader installer.
 void OpenReaderUpdateURL(TabContents* tab) {
   tab->OpenURL(GURL(kReaderUpdateUrl), GURL(), CURRENT_TAB,
-               PageTransition::LINK);
+               content::PAGE_TRANSITION_LINK);
 }
 
 // Opens the PDF using Adobe Reader.

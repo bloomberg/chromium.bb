@@ -79,10 +79,10 @@ void InMemoryHistoryBackend::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_HISTORY_URL_VISITED: {
       Details<history::URLVisitedDetails> visited_details(details);
-      PageTransition::Type primary_type =
-          PageTransition::StripQualifier(visited_details->transition);
+      content::PageTransition primary_type =
+          content::PageTransitionStripQualifier(visited_details->transition);
       if (visited_details->row.typed_count() > 0 ||
-          primary_type == PageTransition::KEYWORD ||
+          primary_type == content::PAGE_TRANSITION_KEYWORD ||
           HasKeyword(visited_details->row.url())) {
         URLsModifiedDetails modified_details;
         modified_details.changed_urls.push_back(visited_details->row);

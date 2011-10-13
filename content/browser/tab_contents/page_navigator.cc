@@ -4,7 +4,7 @@
 
 #include "content/browser/tab_contents/page_navigator.h"
 
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class GURL;
@@ -13,14 +13,16 @@ OpenURLParams::OpenURLParams(
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
-    PageTransition::Type transition)
+    content::PageTransition transition)
     : url(url),
       referrer(referrer),
       disposition(disposition),
       transition(transition) {
 }
 
-OpenURLParams::OpenURLParams() : disposition(UNKNOWN), transition(0) {
+OpenURLParams::OpenURLParams()
+    : disposition(UNKNOWN),
+      transition(content::PageTransitionFromInt(0)) {
 }
 
 OpenURLParams::~OpenURLParams() {

@@ -395,7 +395,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   std::pair<URLID, VisitID> AddPageVisit(const GURL& url,
                                          base::Time time,
                                          VisitID referring_visit,
-                                         PageTransition::Type transition,
+                                         content::PageTransition transition,
                                          VisitSource visit_source);
 
   // Returns a redirect chain in |redirects| for the VisitID
@@ -461,7 +461,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   SegmentID UpdateSegments(const GURL& url,
                            VisitID from_visit,
                            VisitID visit_id,
-                           PageTransition::Type transition_type,
+                           content::PageTransition transition_type,
                            const base::Time ts);
 
   // Favicons ------------------------------------------------------------------

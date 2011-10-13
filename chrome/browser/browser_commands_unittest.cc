@@ -86,7 +86,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   // Navigate to a url.
   GURL url1("http://foo/1");
   AddTab(browser(), url1);
-  browser()->OpenURL(url1, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url1, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   // TODO(beng): remove this once we can use TabContentses directly in testing
   //             instead of the TestTabContents which causes this command not to

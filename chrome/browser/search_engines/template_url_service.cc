@@ -1262,8 +1262,8 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
       }
       built_terms = true;
 
-      if (PageTransition::StripQualifier(details.transition) ==
-          PageTransition::KEYWORD) {
+      if (content::PageTransitionStripQualifier(details.transition) ==
+          content::PAGE_TRANSITION_KEYWORD) {
         // The visit is the result of the user entering a keyword, generate a
         // KEYWORD_GENERATED visit for the KEYWORD so that the keyword typed
         // count is boosted.
@@ -1306,7 +1306,7 @@ void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
   // Synthesize a visit for the keyword. This ensures the url for the keyword is
   // autocompleted even if the user doesn't type the url in directly.
   history->AddPage(url, NULL, 0, GURL(),
-                   PageTransition::KEYWORD_GENERATED,
+                   content::PAGE_TRANSITION_KEYWORD_GENERATED,
                    history::RedirectList(), history::SOURCE_BROWSED, false);
 }
 

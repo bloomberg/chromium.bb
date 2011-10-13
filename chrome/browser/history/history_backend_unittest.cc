@@ -92,7 +92,8 @@ class HistoryBackendTest : public testing::Test {
     scoped_refptr<history::HistoryAddPageArgs> request(
         new history::HistoryAddPageArgs(
             redirects.back(), Time::Now(), scope, page_id, GURL(),
-            redirects, PageTransition::LINK, history::SOURCE_BROWSED, true));
+            redirects, content::PAGE_TRANSITION_LINK, history::SOURCE_BROWSED,
+            true));
     backend_->AddPage(request);
   }
 
@@ -112,7 +113,7 @@ class HistoryBackendTest : public testing::Test {
       redirects.push_back(url2);
     scoped_refptr<HistoryAddPageArgs> request(
         new HistoryAddPageArgs(url2, base::Time(), dummy_scope, 0, url1,
-            redirects, PageTransition::CLIENT_REDIRECT,
+            redirects, content::PAGE_TRANSITION_CLIENT_REDIRECT,
             history::SOURCE_BROWSED, did_replace));
     backend_->AddPage(request);
 
@@ -363,7 +364,7 @@ TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
   scoped_refptr<HistoryAddPageArgs> request(
       new HistoryAddPageArgs(url, visit_time, NULL, 0, GURL(),
                              history::RedirectList(),
-                             PageTransition::KEYWORD_GENERATED,
+                             content::PAGE_TRANSITION_KEYWORD_GENERATED,
                              history::SOURCE_BROWSED, false));
   backend_->AddPage(request);
 
@@ -515,7 +516,7 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   scoped_refptr<HistoryAddPageArgs> request(
       new HistoryAddPageArgs(url, visit_time, NULL, 0, GURL(),
                              history::RedirectList(),
-                             PageTransition::KEYWORD_GENERATED,
+                             content::PAGE_TRANSITION_KEYWORD_GENERATED,
                              history::SOURCE_BROWSED, false));
   backend_->AddPage(request);
 
@@ -565,19 +566,19 @@ TEST_F(HistoryBackendTest, ClientRedirect) {
   // Initial transition to page A.
   GURL url_a("http://google.com/a");
   AddClientRedirect(GURL(), url_a, false, &transition1, &transition2);
-  EXPECT_TRUE(transition2 & PageTransition::CHAIN_END);
+  EXPECT_TRUE(transition2 & content::PAGE_TRANSITION_CHAIN_END);
 
   // User initiated redirect to page B.
   GURL url_b("http://google.com/b");
   AddClientRedirect(url_a, url_b, false, &transition1, &transition2);
-  EXPECT_TRUE(transition1 & PageTransition::CHAIN_END);
-  EXPECT_TRUE(transition2 & PageTransition::CHAIN_END);
+  EXPECT_TRUE(transition1 & content::PAGE_TRANSITION_CHAIN_END);
+  EXPECT_TRUE(transition2 & content::PAGE_TRANSITION_CHAIN_END);
 
   // Non-user initiated redirect to page C.
   GURL url_c("http://google.com/c");
   AddClientRedirect(url_b, url_c, true, &transition1, &transition2);
-  EXPECT_FALSE(transition1 & PageTransition::CHAIN_END);
-  EXPECT_TRUE(transition2 & PageTransition::CHAIN_END);
+  EXPECT_FALSE(transition1 & content::PAGE_TRANSITION_CHAIN_END);
+  EXPECT_TRUE(transition2 & content::PAGE_TRANSITION_CHAIN_END);
 }
 
 TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
@@ -657,8 +658,9 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
 
   // Visit the url with username, password.
   backend_->AddPageVisit(url, base::Time::Now(), 0,
-    PageTransition::GetQualifier(PageTransition::TYPED),
-    history::SOURCE_BROWSED);
+      content::PageTransitionFromInt(
+          content::PageTransitionGetQualifier(content::PAGE_TRANSITION_TYPED)),
+      history::SOURCE_BROWSED);
 
   // Fetch the row information about stripped url from history db.
   VisitVector visits;
@@ -678,13 +680,16 @@ TEST_F(HistoryBackendTest, AddPageVisitSource) {
   backend_->DeleteAllHistory();
 
   // Assume visiting the url from an externsion.
-  backend_->AddPageVisit(url, base::Time::Now(), 0, PageTransition::TYPED,
-                         history::SOURCE_EXTENSION);
+  backend_->AddPageVisit(
+      url, base::Time::Now(), 0, content::PAGE_TRANSITION_TYPED,
+      history::SOURCE_EXTENSION);
   // Assume the url is imported from Firefox.
-  backend_->AddPageVisit(url, base::Time::Now(), 0, PageTransition::TYPED,
+  backend_->AddPageVisit(url, base::Time::Now(), 0,
+                         content::PAGE_TRANSITION_TYPED,
                          history::SOURCE_FIREFOX_IMPORTED);
   // Assume this url is also synced.
-  backend_->AddPageVisit(url, base::Time::Now(), 0, PageTransition::TYPED,
+  backend_->AddPageVisit(url, base::Time::Now(), 0,
+                         content::PAGE_TRANSITION_TYPED,
                          history::SOURCE_SYNCED);
 
   // Fetch the row information about the url from history db.
@@ -724,21 +729,21 @@ TEST_F(HistoryBackendTest, AddPageArgsSource) {
   scoped_refptr<HistoryAddPageArgs> request1(
       new HistoryAddPageArgs(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
-                             PageTransition::KEYWORD_GENERATED,
+                             content::PAGE_TRANSITION_KEYWORD_GENERATED,
                              history::SOURCE_BROWSED, false));
   backend_->AddPage(request1);
   // Assume this page is synced.
   scoped_refptr<HistoryAddPageArgs> request2(
       new HistoryAddPageArgs(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
-                             PageTransition::LINK,
+                             content::PAGE_TRANSITION_LINK,
                              history::SOURCE_SYNCED, false));
   backend_->AddPage(request2);
   // Assume this page is browsed again.
   scoped_refptr<HistoryAddPageArgs> request3(
       new HistoryAddPageArgs(url, base::Time::Now(), NULL, 0, GURL(),
                              history::RedirectList(),
-                             PageTransition::TYPED,
+                             content::PAGE_TRANSITION_TYPED,
                              history::SOURCE_BROWSED, false));
   backend_->AddPage(request3);
 
@@ -760,16 +765,19 @@ TEST_F(HistoryBackendTest, AddVisitsSource) {
   GURL url1("http://www.cnn.com");
   std::vector<VisitInfo> visits1, visits2;
   visits1.push_back(VisitInfo(
-      Time::Now() - base::TimeDelta::FromDays(5), PageTransition::LINK));
+      Time::Now() - base::TimeDelta::FromDays(5),
+      content::PAGE_TRANSITION_LINK));
   visits1.push_back(VisitInfo(
-      Time::Now() - base::TimeDelta::FromDays(1), PageTransition::LINK));
+      Time::Now() - base::TimeDelta::FromDays(1),
+      content::PAGE_TRANSITION_LINK));
   visits1.push_back(VisitInfo(
-      Time::Now(), PageTransition::LINK));
+      Time::Now(), content::PAGE_TRANSITION_LINK));
 
   GURL url2("http://www.example.com");
   visits2.push_back(VisitInfo(
-      Time::Now() - base::TimeDelta::FromDays(10), PageTransition::LINK));
-  visits2.push_back(VisitInfo(Time::Now(), PageTransition::LINK));
+      Time::Now() - base::TimeDelta::FromDays(10),
+      content::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(Time::Now(), content::PAGE_TRANSITION_LINK));
 
   // Clear all history.
   backend_->DeleteAllHistory();
@@ -804,11 +812,13 @@ TEST_F(HistoryBackendTest, GetMostRecentVisits) {
   GURL url1("http://www.cnn.com");
   std::vector<VisitInfo> visits1;
   visits1.push_back(VisitInfo(
-      Time::Now() - base::TimeDelta::FromDays(5), PageTransition::LINK));
+      Time::Now() - base::TimeDelta::FromDays(5),
+      content::PAGE_TRANSITION_LINK));
   visits1.push_back(VisitInfo(
-      Time::Now() - base::TimeDelta::FromDays(1), PageTransition::LINK));
+      Time::Now() - base::TimeDelta::FromDays(1),
+      content::PAGE_TRANSITION_LINK));
   visits1.push_back(VisitInfo(
-      Time::Now(), PageTransition::LINK));
+      Time::Now(), content::PAGE_TRANSITION_LINK));
 
   // Clear all history.
   backend_->DeleteAllHistory();
@@ -833,11 +843,14 @@ TEST_F(HistoryBackendTest, RemoveVisitsTransitions) {
 
   GURL url1("http://www.cnn.com");
   VisitInfo typed_visit(
-      Time::Now() - base::TimeDelta::FromDays(6), PageTransition::TYPED);
+      Time::Now() - base::TimeDelta::FromDays(6),
+      content::PAGE_TRANSITION_TYPED);
   VisitInfo reload_visit(
-      Time::Now() - base::TimeDelta::FromDays(5), PageTransition::RELOAD);
+      Time::Now() - base::TimeDelta::FromDays(5),
+      content::PAGE_TRANSITION_RELOAD);
   VisitInfo link_visit(
-      Time::Now() - base::TimeDelta::FromDays(4), PageTransition::LINK);
+      Time::Now() - base::TimeDelta::FromDays(4),
+      content::PAGE_TRANSITION_LINK);
   std::vector<VisitInfo> visits_to_add;
   visits_to_add.push_back(typed_visit);
   visits_to_add.push_back(reload_visit);
@@ -883,13 +896,16 @@ TEST_F(HistoryBackendTest, RemoveVisitsSource) {
   GURL url1("http://www.cnn.com");
   std::vector<VisitInfo> visits1, visits2;
   visits1.push_back(VisitInfo(
-      Time::Now() - base::TimeDelta::FromDays(5), PageTransition::LINK));
-  visits1.push_back(VisitInfo(Time::Now(), PageTransition::LINK));
+      Time::Now() - base::TimeDelta::FromDays(5),
+      content::PAGE_TRANSITION_LINK));
+  visits1.push_back(VisitInfo(Time::Now(),
+    content::PAGE_TRANSITION_LINK));
 
   GURL url2("http://www.example.com");
   visits2.push_back(VisitInfo(
-      Time::Now() - base::TimeDelta::FromDays(10), PageTransition::LINK));
-  visits2.push_back(VisitInfo(Time::Now(), PageTransition::LINK));
+      Time::Now() - base::TimeDelta::FromDays(10),
+      content::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(Time::Now(), content::PAGE_TRANSITION_LINK));
 
   // Clear all history.
   backend_->DeleteAllHistory();

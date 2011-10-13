@@ -207,7 +207,7 @@ class LocationBarView : public LocationBar,
   // AutocompleteEditController
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
-                                    PageTransition::Type transition,
+                                    content::PageTransition transition,
                                     const GURL& alternate_nav_url) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
   virtual void OnSelectionBoundsChanged() OVERRIDE;
@@ -241,7 +241,7 @@ class LocationBarView : public LocationBar,
                                 InstantCompleteBehavior behavior) OVERRIDE;
   virtual string16 GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
-  virtual PageTransition::Type GetPageTransition() const OVERRIDE;
+  virtual content::PageTransition GetPageTransition() const OVERRIDE;
   virtual void AcceptInput() OVERRIDE;
   virtual void FocusLocation(bool select_all) OVERRIDE;
   virtual void FocusSearch() OVERRIDE;
@@ -361,7 +361,7 @@ class LocationBarView : public LocationBar,
   WindowOpenDisposition disposition_;
 
   // The transition type to use for the navigation
-  PageTransition::Type transition_;
+  content::PageTransition transition_;
 
   // Font used by edit and some of the hints.
   gfx::Font font_;

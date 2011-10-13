@@ -141,7 +141,7 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
       int64 frame_id,
       bool is_main_frame,
       const GURL& url,
-      PageTransition::Type transition_type) OVERRIDE;
+      content::PageTransition transition_type) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
       bool is_main_frame,
@@ -154,7 +154,7 @@ class ExtensionWebNavigationTabObserver : public TabContentsObserver {
                                    const GURL& url,
                                    const GURL& referrer,
                                    WindowOpenDisposition disposition,
-                                   PageTransition::Type transition,
+                                   content::PageTransition transition,
                                    int64 source_frame_id) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 

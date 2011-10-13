@@ -46,7 +46,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/net/url_request_slow_download_job.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1116,7 +1116,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
 
   // Open a second tab and wait.
   EXPECT_NE(static_cast<TabContentsWrapper*>(NULL),
-            browser()->AddSelectedTabWithURL(GURL(), PageTransition::TYPED));
+            browser()->AddSelectedTabWithURL(
+                GURL(), content::PAGE_TRANSITION_TYPED));
   EXPECT_EQ(2, browser()->tab_count());
   CheckDownloadUI(browser(), true, true, download_file);
 

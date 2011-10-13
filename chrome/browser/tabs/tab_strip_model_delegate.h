@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_TABS_TAB_STRIP_MODEL_DELEGATE_H_
 #pragma once
 
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 
 class Browser;
 class DockInfo;
@@ -65,7 +65,7 @@ class TabStripModelDelegate {
       const GURL& url,
       const GURL& referrer,
       Profile* profile,
-      PageTransition::Type transition,
+      content::PageTransition transition,
       bool defer_load,
       SiteInstance* instance) const = 0;
 

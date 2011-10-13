@@ -21,8 +21,8 @@
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/page_transition_types.h"
 
 class TabFinder::TabContentsObserverImpl : public TabContentsObserver {
  public:
@@ -136,7 +136,7 @@ void TabFinder::DidNavigateAnyFramePostCommit(
     const ViewHostMsg_FrameNavigate_Params& params) {
   CancelRequestsFor(source);
 
-  if (PageTransition::IsRedirect(params.transition)) {
+  if (content::PageTransitionIsRedirect(params.transition)) {
     // If this is a redirect, we need to go to the db to get the start.
     FetchRedirectStart(source);
   } else if (params.redirects.size() > 1 ||

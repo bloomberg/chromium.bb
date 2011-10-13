@@ -58,7 +58,7 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
     disposition = NEW_FOREGROUND_TAB;
 
   web_ui_->tab_contents()->OpenURL(
-      GURL(url_string), GURL(), disposition, PageTransition::LINK);
+      GURL(url_string), GURL(), disposition, content::PAGE_TRANSITION_LINK);
 
   // This may delete us!
 }

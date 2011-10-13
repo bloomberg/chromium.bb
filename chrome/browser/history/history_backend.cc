@@ -310,23 +310,26 @@ SegmentID HistoryBackend::GetLastSegmentID(VisitID from_visit) {
   return 0;
 }
 
-SegmentID HistoryBackend::UpdateSegments(const GURL& url,
-                                         VisitID from_visit,
-                                         VisitID visit_id,
-                                         PageTransition::Type transition_type,
-                                         const Time ts) {
+SegmentID HistoryBackend::UpdateSegments(
+    const GURL& url,
+    VisitID from_visit,
+    VisitID visit_id,
+    content::PageTransition transition_type,
+    const Time ts) {
   if (!db_.get())
     return 0;
 
   // We only consider main frames.
-  if (!PageTransition::IsMainFrame(transition_type))
+  if (!content::PageTransitionIsMainFrame(transition_type))
     return 0;
 
   SegmentID segment_id = 0;
-  PageTransition::Type t = PageTransition::StripQualifier(transition_type);
+  content::PageTransition t =
+      content::PageTransitionStripQualifier(transition_type);
 
   // Are we at the beginning of a new segment?
-  if (t == PageTransition::TYPED || t == PageTransition::AUTO_BOOKMARK) {
+  if (t == content::PAGE_TRANSITION_TYPED ||
+      t == content::PAGE_TRANSITION_AUTO_BOOKMARK) {
     // If so, create or get the segment.
     std::string segment_name = db_->ComputeSegmentName(url);
     URLID url_id = db_->GetRowForURL(url, NULL);
@@ -398,14 +401,17 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
   if (request->time < first_recorded_time_)
     first_recorded_time_ = request->time;
 
-  PageTransition::Type transition =
-      PageTransition::StripQualifier(request->transition);
-  bool is_keyword_generated = (transition == PageTransition::KEYWORD_GENERATED);
+  content::PageTransition transition =
+    content::PageTransitionStripQualifier(request->transition);
+  bool is_keyword_generated =
+      (transition == content::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   if (request->redirects.size() <= 1) {
     // The single entry is both a chain start and end.
-    PageTransition::Type t = request->transition |
-        PageTransition::CHAIN_START | PageTransition::CHAIN_END;
+    content::PageTransition t = content::PageTransitionFromInt(
+        request->transition |
+        content::PAGE_TRANSITION_CHAIN_START |
+        content::PAGE_TRANSITION_CHAIN_END);
 
     // No redirect case (one element means just the page itself).
     last_ids = AddPageVisit(request->url, last_recorded_time_,
@@ -421,7 +427,8 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
   } else {
     // Redirect case. Add the redirect chain.
 
-    PageTransition::Type redirect_info = PageTransition::CHAIN_START;
+    content::PageTransition redirect_info =
+        content::PAGE_TRANSITION_CHAIN_START;
 
     if (request->redirects[0].SchemeIs(chrome::kAboutScheme)) {
       // When the redirect source + referrer is "about" we skip it. This
@@ -434,8 +441,8 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
       // In this case, we just don't bother hooking up the source of the
       // redirects, so we remove it.
       request->redirects.erase(request->redirects.begin());
-    } else if (request->transition & PageTransition::CLIENT_REDIRECT) {
-      redirect_info = PageTransition::CLIENT_REDIRECT;
+    } else if (request->transition & content::PAGE_TRANSITION_CLIENT_REDIRECT) {
+      redirect_info = content::PAGE_TRANSITION_CLIENT_REDIRECT;
       // The first entry in the redirect chain initiated a client redirect.
       // We don't add this to the database since the referrer is already
       // there, so we skip over it but change the transition type of the first
@@ -456,8 +463,9 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
         VisitRow visit_row;
         if (request->did_replace_entry &&
             db_->GetRowForVisit(last_ids.second, &visit_row) &&
-            visit_row.transition | PageTransition::CHAIN_END) {
-          visit_row.transition &= ~PageTransition::CHAIN_END;
+            visit_row.transition | content::PAGE_TRANSITION_CHAIN_END) {
+          visit_row.transition = content::PageTransitionFromInt(
+              visit_row.transition & ~content::PAGE_TRANSITION_CHAIN_END);
           db_->UpdateVisitRow(visit_row);
         }
       }
@@ -465,11 +473,14 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
 
     for (size_t redirect_index = 0; redirect_index < request->redirects.size();
          redirect_index++) {
-      PageTransition::Type t = transition | redirect_info;
+      content::PageTransition t =
+          content::PageTransitionFromInt(transition | redirect_info);
 
       // If this is the last transition, add a CHAIN_END marker
-      if (redirect_index == (request->redirects.size() - 1))
-        t = t | PageTransition::CHAIN_END;
+      if (redirect_index == (request->redirects.size() - 1)) {
+        t = content::PageTransitionFromInt(
+            t | content::PAGE_TRANSITION_CHAIN_END);
+      }
 
       // Record all redirect visits with the same timestamp. We don't display
       // them anyway, and if we ever decide to, we can reconstruct their order
@@ -477,7 +488,7 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
       last_ids = AddPageVisit(request->redirects[redirect_index],
                               last_recorded_time_, last_ids.second,
                               t, request->visit_source);
-      if (t & PageTransition::CHAIN_START) {
+      if (t & content::PAGE_TRANSITION_CHAIN_START) {
         // Update the segment for this visit.
         UpdateSegments(request->redirects[redirect_index],
                        from_visit_id, last_ids.second, t, last_recorded_time_);
@@ -485,7 +496,7 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
 
       // Subsequent transitions in the redirect list must all be sever
       // redirects.
-      redirect_info = PageTransition::SERVER_REDIRECT;
+      redirect_info = content::PAGE_TRANSITION_SERVER_REDIRECT;
     }
 
     // Last, save this redirect chain for later so we can set titles & favicons
@@ -500,8 +511,9 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
   // TODO(evanm): Due to http://b/1194536 we lose the referrers of a subframe
   // navigation anyway, so last_visit_id is always zero for them.  But adding
   // them here confuses main frame history, so we skip them for now.
-  if (transition != PageTransition::AUTO_SUBFRAME &&
-      transition != PageTransition::MANUAL_SUBFRAME && !is_keyword_generated) {
+  if (transition != content::PAGE_TRANSITION_AUTO_SUBFRAME &&
+      transition != content::PAGE_TRANSITION_MANUAL_SUBFRAME &&
+      !is_keyword_generated) {
     tracker_.AddVisit(request->id_scope, request->page_id, request->url,
                       last_ids.second);
   }
@@ -651,21 +663,21 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     const GURL& url,
     Time time,
     VisitID referring_visit,
-    PageTransition::Type transition,
+    content::PageTransition transition,
     VisitSource visit_source) {
   // Top-level frame navigations are visible, everything else is hidden
-  bool new_hidden = !PageTransition::IsMainFrame(transition);
+  bool new_hidden = !content::PageTransitionIsMainFrame(transition);
 
   // NOTE: This code must stay in sync with
   // ExpireHistoryBackend::ExpireURLsForVisits().
   // TODO(pkasting): http://b/1148304 We shouldn't be marking so many URLs as
   // typed, which would eliminate the need for this code.
   int typed_increment = 0;
-  PageTransition::Type transition_type =
-      PageTransition::StripQualifier(transition);
-  if ((transition_type == PageTransition::TYPED &&
-       !PageTransition::IsRedirect(transition)) ||
-      transition_type == PageTransition::KEYWORD_GENERATED)
+  content::PageTransition transition_type =
+      content::PageTransitionStripQualifier(transition);
+  if ((transition_type == content::PAGE_TRANSITION_TYPED &&
+      !content::PageTransitionIsRedirect(transition)) ||
+      transition_type == content::PAGE_TRANSITION_KEYWORD_GENERATED)
     typed_increment = 1;
 
   // See if this URL is already in the DB.
@@ -673,7 +685,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   URLID url_id = db_->GetRowForURL(url, &url_info);
   if (url_id) {
     // Update of an existing row.
-    if (PageTransition::StripQualifier(transition) != PageTransition::RELOAD)
+    if (content::PageTransitionStripQualifier(transition) !=
+        content::PAGE_TRANSITION_RELOAD)
       url_info.set_visit_count(url_info.visit_count() + 1);
     if (typed_increment)
       url_info.set_typed_count(url_info.typed_count() + typed_increment);
@@ -793,8 +806,10 @@ void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls,
     if (visit_source != SOURCE_SYNCED) {
       // Make up a visit to correspond to the last visit to the page.
       VisitRow visit_info(url_id, i->last_visit(), 0,
-                          PageTransition::LINK | PageTransition::CHAIN_START |
-                          PageTransition::CHAIN_END, 0);
+                          content::PageTransitionFromInt(
+                              content::PAGE_TRANSITION_LINK |
+                              content::PAGE_TRANSITION_CHAIN_START |
+                              content::PAGE_TRANSITION_CHAIN_END), 0);
       visit_info.is_indexed = has_indexed;
       if (!visit_database->AddVisit(&visit_info, visit_source)) {
         NOTREACHED() << "Adding visit failed.";

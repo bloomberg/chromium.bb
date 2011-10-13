@@ -30,7 +30,7 @@ struct URLVisitedDetails : public HistoryDetails {
   URLVisitedDetails();
   virtual ~URLVisitedDetails();
 
-  PageTransition::Type transition;
+  content::PageTransition transition;
   URLRow row;
 
   // A list of redirects leading up to the URL represented by this struct. If

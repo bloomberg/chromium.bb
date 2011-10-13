@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 
@@ -46,7 +46,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   static NavigationState* CreateBrowserInitiated(
       int32 pending_page_id,
       int pending_history_list_offset,
-      PageTransition::Type transition_type,
+      content::PageTransition transition_type,
       base::Time request_time) {
     return new NavigationState(transition_type, request_time, false,
                                pending_page_id,
@@ -55,8 +55,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
 
   static NavigationState* CreateContentInitiated() {
     // We assume navigations initiated by content are link clicks.
-    return new NavigationState(PageTransition::LINK, base::Time(), true, -1,
-                               -1);
+    return new NavigationState(
+        content::PAGE_TRANSITION_LINK, base::Time(), true, -1, -1);
   }
 
   static NavigationState* FromDataSource(WebKit::WebDataSource* ds) {
@@ -74,8 +74,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
 
   // Contains the transition type that the browser specified when it
   // initiated the load.
-  PageTransition::Type transition_type() const { return transition_type_; }
-  void set_transition_type(PageTransition::Type type) {
+  content::PageTransition transition_type() const { return transition_type_; }
+  void set_transition_type(content::PageTransition type) {
     transition_type_ = type;
   }
 
@@ -264,13 +264,13 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   }
 
  private:
-  NavigationState(PageTransition::Type transition_type,
+  NavigationState(content::PageTransition transition_type,
                   const base::Time& request_time,
                   bool is_content_initiated,
                   int32 pending_page_id,
                   int pending_history_list_offset);
 
-  PageTransition::Type transition_type_;
+  content::PageTransition transition_type_;
   LoadType load_type_;
   base::Time request_time_;
   base::Time start_load_time_;

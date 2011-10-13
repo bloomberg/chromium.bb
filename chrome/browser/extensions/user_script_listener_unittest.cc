@@ -37,8 +37,9 @@ const char kTestData[] = "Hello, World!";
 ResourceDispatcherHostRequestInfo* CreateRequestInfo(int request_id) {
   return new ResourceDispatcherHostRequestInfo(
       new DummyResourceHandler(), ChildProcessInfo::RENDER_PROCESS, 0, 0, 0,
-      request_id, false, -1, ResourceType::MAIN_FRAME, PageTransition::LINK, 0,
-      false, false, false, content::MockResourceContext::GetInstance());
+      request_id, false, -1, ResourceType::MAIN_FRAME,
+      content::PAGE_TRANSITION_LINK, 0, false, false, false,
+      content::MockResourceContext::GetInstance());
 }
 
 // A simple test net::URLRequestJob. We don't care what it does, only that

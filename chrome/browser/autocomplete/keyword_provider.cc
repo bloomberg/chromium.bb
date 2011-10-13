@@ -435,7 +435,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
 
   if (supports_replacement)
     result.template_url = element;
-  result.transition = PageTransition::KEYWORD;
+  result.transition = content::PAGE_TRANSITION_KEYWORD;
 
   return result;
 }

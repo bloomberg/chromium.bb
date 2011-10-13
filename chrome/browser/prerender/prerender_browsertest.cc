@@ -677,7 +677,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // Since the test needs to wait until the prerendered page has stopped
     // loading, rather than the page directly navigated to, need to
     // handle browser navigation directly.
-    browser()->OpenURL(src_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    browser()->OpenURL(
+        src_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
     ui_test_utils::RunMessageLoop();
 
@@ -1297,7 +1298,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   ASSERT_TRUE(GetPrerenderContents());
   ASSERT_TRUE(GetPrerenderContents()->prerender_contents());
   GetPrerenderContents()->prerender_contents()->controller().LoadURL(
-      GURL(chrome::kAboutCrashURL), GURL(), PageTransition::TYPED,
+      GURL(chrome::kAboutCrashURL), GURL(), content::PAGE_TRANSITION_TYPED,
       std::string());
   ui_test_utils::RunMessageLoop();
 }

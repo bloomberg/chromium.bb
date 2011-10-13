@@ -24,8 +24,9 @@ void LanguageState::DidNavigate(
   if (in_page_navigation_ || !details.is_main_frame)
     return;  // Don't reset our states, the page has not changed.
 
-  bool reload = details.entry->transition_type() == PageTransition::RELOAD ||
-                details.type == NavigationType::SAME_PAGE;
+  bool reload =
+      details.entry->transition_type() == content::PAGE_TRANSITION_RELOAD ||
+      details.type == NavigationType::SAME_PAGE;
   if (reload) {
     // We might not get a LanguageDetermined notifications on reloads. Make sure
     // to keep the original language and to set current_lang_ so
@@ -68,7 +69,7 @@ std::string LanguageState::AutoTranslateTo() const {
       original_lang_ == current_lang_ &&
       navigation_controller_->GetActiveEntry() &&
       navigation_controller_->GetActiveEntry()->transition_type() ==
-          PageTransition::LINK) {
+          content::PAGE_TRANSITION_LINK) {
     return prev_current_lang_;
   }
 

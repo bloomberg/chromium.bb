@@ -13,13 +13,13 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "content/browser/tab_contents/navigation_controller.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 class LoadNotificationDetails {
  public:
   LoadNotificationDetails(const GURL& url,
-                          PageTransition::Type origin,
+                          content::PageTransition origin,
                           base::TimeDelta load_time,
                           NavigationController* controller,
                           int session_index)
@@ -32,7 +32,7 @@ class LoadNotificationDetails {
   ~LoadNotificationDetails() {}
 
   const GURL& url() const { return url_; }
-  PageTransition::Type origin() const { return origin_; }
+  content::PageTransition origin() const { return origin_; }
   base::TimeDelta load_time() const { return load_time_; }
   int session_index() const { return session_index_; }
   NavigationController* controller() const { return controller_; }
@@ -48,7 +48,7 @@ class LoadNotificationDetails {
   int session_index_;
 
   // The type of action that caused the load.
-  PageTransition::Type origin_;
+  content::PageTransition origin_;
 
   // The NavigationController for the load.
   NavigationController* controller_;

@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "<body><input type='button' value='push' /><input type='checkbox' />"
       "</body></html>";
   GURL url(url_str);
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   const WebAccessibility& tree = GetWebAccessibilityTree();
 
   // Check properties of the root element of the tree.
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "<input value=\"Hello, world.\"/>"
       "</body></html>";
   GURL url(url_str);
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   const WebAccessibility& tree = GetWebAccessibilityTree();
   ASSERT_EQ(1U, tree.children.size());
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "<input value=\"Hello, world.\"/>"
       "</body></html>";
   GURL url(url_str);
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   const WebAccessibility& tree = GetWebAccessibilityTree();
   ASSERT_EQ(1U, tree.children.size());
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "<!doctype html>"
       "<table border=1><tr><td>1</td><td>2</td></tr></table>";
   GURL url(url_str);
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   const WebAccessibility& tree = GetWebAccessibilityTree();
   ASSERT_EQ(1U, tree.children.size());
@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "  }, 1);\n"
       "</script>";
   GURL url(url_str);
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   const WebAccessibility& tree = GetWebAccessibilityTree();
   base::hash_set<int> ids;
@@ -311,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "<button>Button 3</button>"
       "</body></html>";
   GURL url(url_str);
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   const WebAccessibility& tree = GetWebAccessibilityTree();
   ASSERT_EQ(1U, tree.children.size());
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "<!doctype html>"
       "<em><code ><h4 ></em>";
   GURL url(url_str);
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   const WebAccessibility& tree = GetWebAccessibilityTree();
   base::hash_set<int> ids;
@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       " </tr>"
       "</table>";
   GURL url(url_str);
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   const WebAccessibility& tree = GetWebAccessibilityTree();
   const WebAccessibility& table = tree.children[0];
@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       " Some text"
       "</div>";
   GURL url(url_str);
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   const WebAccessibility& tree = GetWebAccessibilityTree();
 
   ASSERT_EQ(1U, tree.children.size());

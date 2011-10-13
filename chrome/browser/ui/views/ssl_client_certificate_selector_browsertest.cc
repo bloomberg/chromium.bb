@@ -93,8 +93,8 @@ class SSLClientCertificateSelectorMultiTabTest
     auth_handler_2_ = new StrictMock<SSLClientAuthHandlerMock>(
         static_cast<net::URLRequest*>(NULL), cert_request_info_2_);
 
-    AddTabAtIndex(1, GURL("about:blank"), PageTransition::LINK);
-    AddTabAtIndex(2, GURL("about:blank"), PageTransition::LINK);
+    AddTabAtIndex(1, GURL("about:blank"), content::PAGE_TRANSITION_LINK);
+    AddTabAtIndex(2, GURL("about:blank"), content::PAGE_TRANSITION_LINK);
     ASSERT_TRUE(NULL != browser()->GetTabContentsAt(0));
     ASSERT_TRUE(NULL != browser()->GetTabContentsAt(1));
     ASSERT_TRUE(NULL != browser()->GetTabContentsAt(2));

@@ -17,7 +17,7 @@ DownloadCreateInfo::DownloadCreateInfo(const FilePath& path,
                                        int32 state,
                                        int32 download_id,
                                        bool has_user_gesture,
-                                       PageTransition::Type transition_type)
+                                       content::PageTransition transition_type)
     : path(path),
       url_chain(1, url),
       path_uniquifier(0),
@@ -39,7 +39,7 @@ DownloadCreateInfo::DownloadCreateInfo()
       state(-1),
       download_id(-1),
       has_user_gesture(false),
-      transition_type(PageTransition::LINK),
+      transition_type(content::PAGE_TRANSITION_LINK),
       db_handle(0),
       prompt_user_for_save_location(false) {
 }

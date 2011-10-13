@@ -16,7 +16,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
     : ui_thread_(BrowserThread::UI, message_loop()),
@@ -58,7 +58,7 @@ TestRenderViewHost* BrowserWithTestWindowTest::TestRenderViewHostForTab(
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
-  browser::NavigateParams params(browser, url, PageTransition::TYPED);
+  browser::NavigateParams params(browser, url, content::PAGE_TRANSITION_TYPED);
   params.tabstrip_index = 0;
   params.disposition = NEW_FOREGROUND_TAB;
   browser::Navigate(&params);
@@ -91,7 +91,8 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
 void BrowserWithTestWindowTest::NavigateAndCommit(
     NavigationController* controller,
     const GURL& url) {
-  controller->LoadURL(url, GURL(), PageTransition::LINK, std::string());
+  controller->LoadURL(
+      url, GURL(), content::PAGE_TRANSITION_LINK, std::string());
   CommitPendingLoad(controller);
 }
 

@@ -137,17 +137,17 @@ void InsertURLBatch(Profile* profile,
 
   printf("Inserting %d URLs...\n", batch_size);
   GURL previous_url;
-  PageTransition::Type transition = PageTransition::TYPED;
+  content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
   const int end_page_id = page_id + batch_size;
   history::TopSites* top_sites = profile->GetTopSites();
   for (; page_id < end_page_id; ++page_id) {
     // Randomly decide whether this new URL simulates following a link or
     // whether it's a jump to a new URL.
     if (!previous_url.is_empty() && RandomFloat() < kFollowLinkProbability) {
-      transition = PageTransition::LINK;
+      transition = content::PAGE_TRANSITION_LINK;
     } else {
       previous_url = GURL();
-      transition = PageTransition::TYPED;
+      transition = content::PAGE_TRANSITION_TYPED;
     }
 
     // Pick a URL, either newly at random or from our list of previously

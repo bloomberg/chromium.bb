@@ -973,7 +973,7 @@ TEST_F(BookmarkModelTestWithProfile2, RemoveNotification) {
   bookmark_utils::AddIfNotBookmarked(bb_model_, url, string16());
 
   profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(
-      url, NULL, 1, GURL(), PageTransition::TYPED,
+      url, NULL, 1, GURL(), content::PAGE_TRANSITION_TYPED,
       history::RedirectList(), history::SOURCE_BROWSED, false);
 
   // This won't actually delete the URL, rather it'll empty out the visits.

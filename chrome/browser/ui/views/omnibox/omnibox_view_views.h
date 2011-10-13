@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/common/notification_observer.h"
-#include "content/common/page_transition_types.h"
 #include "ui/base/range/range.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"

@@ -226,10 +226,10 @@ void MetricsLogBase::RecordUserAction(const char* key) {
 }
 
 void MetricsLogBase::RecordLoadEvent(int window_id,
-                                 const GURL& url,
-                                 PageTransition::Type origin,
-                                 int session_index,
-                                 TimeDelta load_time) {
+                                     const GURL& url,
+                                     content::PageTransition origin,
+                                     int session_index,
+                                     TimeDelta load_time) {
   DCHECK(!locked_);
 
   OPEN_ELEMENT_FOR_SCOPE("document");
@@ -240,43 +240,43 @@ void MetricsLogBase::RecordLoadEvent(int window_id,
 
   std::string origin_string;
 
-  switch (PageTransition::StripQualifier(origin)) {
+  switch (content::PageTransitionStripQualifier(origin)) {
     // TODO(jhughes): Some of these mappings aren't right... we need to add
     // some values to the server's enum.
-    case PageTransition::LINK:
-    case PageTransition::MANUAL_SUBFRAME:
+    case content::PAGE_TRANSITION_LINK:
+    case content::PAGE_TRANSITION_MANUAL_SUBFRAME:
       origin_string = "link";
       break;
 
-    case PageTransition::TYPED:
+    case content::PAGE_TRANSITION_TYPED:
       origin_string = "typed";
       break;
 
-    case PageTransition::AUTO_BOOKMARK:
+    case content::PAGE_TRANSITION_AUTO_BOOKMARK:
       origin_string = "bookmark";
       break;
 
-    case PageTransition::AUTO_SUBFRAME:
-    case PageTransition::RELOAD:
+    case content::PAGE_TRANSITION_AUTO_SUBFRAME:
+    case content::PAGE_TRANSITION_RELOAD:
       origin_string = "refresh";
       break;
 
-    case PageTransition::GENERATED:
-    case PageTransition::KEYWORD:
+    case content::PAGE_TRANSITION_GENERATED:
+    case content::PAGE_TRANSITION_KEYWORD:
       origin_string = "global-history";
       break;
 
-    case PageTransition::START_PAGE:
+    case content::PAGE_TRANSITION_START_PAGE:
       origin_string = "start-page";
       break;
 
-    case PageTransition::FORM_SUBMIT:
+    case content::PAGE_TRANSITION_FORM_SUBMIT:
       origin_string = "form-submit";
       break;
 
     default:
       NOTREACHED() << "Received an unknown page transition type: " <<
-                       PageTransition::StripQualifier(origin);
+                      content::PageTransitionStripQualifier(origin);
   }
   if (!origin_string.empty())
     WriteAttribute("origin", origin_string);

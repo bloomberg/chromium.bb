@@ -94,7 +94,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, TitleAfterReload) {
   // Simulate a reload event on |preview_tab|.
   scoped_ptr<NavigationEntry> entry;
   entry.reset(new NavigationEntry());
-  entry->set_transition_type(PageTransition::RELOAD);
+  entry->set_transition_type(content::PAGE_TRANSITION_RELOAD);
   content::LoadCommittedDetails details;
   details.type = NavigationType::SAME_PAGE;
   details.entry = entry.get();

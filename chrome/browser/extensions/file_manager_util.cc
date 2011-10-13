@@ -238,7 +238,7 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
     }
     Browser* browser = BrowserList::GetLastActive();
     if (browser)
-      browser->AddSelectedTabWithURL(GURL(path), PageTransition::LINK);
+      browser->AddSelectedTabWithURL(GURL(path), content::PAGE_TRANSITION_LINK);
     return;
   }
 #if defined(OS_CHROMEOS)

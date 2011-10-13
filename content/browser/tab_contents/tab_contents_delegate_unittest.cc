@@ -22,7 +22,7 @@ class MockTabContentsDelegate : public TabContentsDelegate {
       const GURL& url,
       const GURL& referrer,
       WindowOpenDisposition disposition,
-      PageTransition::Type transition) OVERRIDE {
+      content::PageTransition transition) OVERRIDE {
     return NULL;
   }
 

@@ -22,19 +22,19 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   WindowedNotificationObserver load1(content::NOTIFICATION_LOAD_STOP,
                                      NotificationService::AllSources());
   OpenURLParams open1(GURL("chrome://about"), GURL(),
-                      CURRENT_TAB, PageTransition::TYPED);
+                      CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   browser()->OpenURL(open1);
 
   WindowedNotificationObserver load2(content::NOTIFICATION_LOAD_STOP,
                                      NotificationService::AllSources());
   OpenURLParams open2(GURL("chrome://credits"), GURL(),
-                      NEW_FOREGROUND_TAB, PageTransition::TYPED);
+                      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED);
   browser()->OpenURL(open2);
 
   WindowedNotificationObserver load3(content::NOTIFICATION_LOAD_STOP,
                                      NotificationService::AllSources());
   OpenURLParams open3(GURL("chrome://terms"), GURL(),
-                      NEW_FOREGROUND_TAB, PageTransition::TYPED);
+                      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_TYPED);
   browser()->OpenURL(open3);
 
   load1.Wait();

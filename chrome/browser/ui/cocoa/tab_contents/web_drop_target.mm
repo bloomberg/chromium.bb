@@ -170,7 +170,7 @@ using WebKit::WebDragOperationsMask;
       GURL url;
       drag_util::PopulateURLAndTitleFromPasteBoard(&url, NULL, pboard, YES);
       tabContents_->OpenURL(url, GURL(), CURRENT_TAB,
-                            PageTransition::AUTO_BOOKMARK);
+                            content::PAGE_TRANSITION_AUTO_BOOKMARK);
       return YES;
     }
     return NO;

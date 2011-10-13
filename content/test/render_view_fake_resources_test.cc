@@ -198,7 +198,7 @@ void RenderViewFakeResourcesTest::GoToOffset(
   params.current_history_list_length = (impl->historyBackListCount() +
                                         impl->historyForwardListCount() + 1);
   params.url = GURL(history_item.urlString());
-  params.transition = PageTransition::FORWARD_BACK;
+  params.transition = content::PAGE_TRANSITION_FORWARD_BACK;
   params.state = webkit_glue::HistoryItemToString(history_item);
   params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
   params.request_time = base::Time::Now();

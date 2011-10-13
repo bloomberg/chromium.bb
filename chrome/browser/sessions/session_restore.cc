@@ -751,7 +751,7 @@ class SessionRestoreImpl : public NotificationObserver {
         add_types |= TabStripModel::ADD_ACTIVE;
       int index = browser->GetIndexForInsertionDuringRestore(i);
       browser::NavigateParams params(browser, urls[i],
-                                     PageTransition::START_PAGE);
+                                     content::PAGE_TRANSITION_START_PAGE);
       params.disposition = i == 0 ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
       params.tabstrip_index = index;
       params.tabstrip_add_types = add_types;

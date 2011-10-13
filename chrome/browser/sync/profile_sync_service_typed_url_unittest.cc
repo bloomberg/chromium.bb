@@ -275,8 +275,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
         base::Time::FromInternalValue(last_visit));
     history_url.set_hidden(hidden);
     visits->push_back(history::VisitRow(
-        history_url.id(), history_url.last_visit(), 0, PageTransition::TYPED,
-        0));
+        history_url.id(), history_url.last_visit(), 0,
+        content::PAGE_TRANSITION_TYPED, 0));
     history_url.set_visit_count(visits->size());
     return history_url;
   }
@@ -305,7 +305,8 @@ class AddTypedUrlEntriesTask : public Task {
     for (size_t i = 0; i < entries_.size(); ++i) {
       history::VisitVector visits;
       visits.push_back(history::VisitRow(
-          entries_[i].id(), entries_[i].last_visit(), 0, 0, 0));
+          entries_[i].id(), entries_[i].last_visit(), 0,
+          content::PageTransitionFromInt(0), 0));
       test_->AddTypedUrlSyncNode(entries_[i], visits);
     }
   }
@@ -393,7 +394,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncMerge) {
                                                1, 17, false, &sync_visits));
   history::VisitVector merged_visits;
   merged_visits.push_back(history::VisitRow(
-      sync_entry.id(), base::Time::FromInternalValue(15), 0, 0, 0));
+      sync_entry.id(), base::Time::FromInternalValue(15), 0,
+      content::PageTransitionFromInt(0), 0));
 
   history::URLRow merged_entry(MakeTypedUrlEntry("http://native.com", "name",
                                                  2, 17, false, &merged_visits));
@@ -503,7 +505,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
 
   history::URLVisitedDetails details;
   details.row = added_entry;
-  details.transition = PageTransition::TYPED;
+  details.transition = content::PAGE_TRANSITION_TYPED;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Source<Profile>(&profile_),
@@ -541,7 +543,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
 
   history::URLVisitedDetails details;
   details.row = updated_entry;
-  details.transition = PageTransition::TYPED;
+  details.transition = content::PAGE_TRANSITION_TYPED;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Source<Profile>(&profile_),
@@ -581,7 +583,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   details.row = updated_entry;
 
   // Should ignore this change because it's not TYPED.
-  details.transition = PageTransition::RELOAD;
+  details.transition = content::PAGE_TRANSITION_RELOAD;
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Source<Profile>(&profile_),
@@ -599,7 +601,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
                                                   12, 15, false,
                                                   &updated_visits));
   details.row = twelve_visits;
-  details.transition = PageTransition::TYPED;
+  details.transition = content::PAGE_TRANSITION_TYPED;
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Source<Profile>(&profile_),
                    Details<history::URLVisitedDetails>(&details));
@@ -614,7 +616,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
                                                   20, 15, false,
                                                   &updated_visits));
   details.row = twenty_visits;
-  details.transition = PageTransition::TYPED;
+  details.transition = content::PAGE_TRANSITION_TYPED;
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URL_VISITED,
                    Source<Profile>(&profile_),
                    Details<history::URLVisitedDetails>(&details));

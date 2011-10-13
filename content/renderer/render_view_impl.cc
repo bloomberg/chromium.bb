@@ -1122,7 +1122,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     params.contents_mime_type = ds->response().mimeType().utf8();
 
     params.transition = navigation_state->transition_type();
-    if (!PageTransition::IsMainFrame(params.transition)) {
+    if (!content::PageTransitionIsMainFrame(params.transition)) {
       // If the main frame does a load, it should not be reported as a subframe
       // navigation.  This can occur in the following case:
       // 1. You're on a site with frames.
@@ -1134,7 +1134,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
       // We don't want that, because any navigation that changes the toplevel
       // frame should be tracked as a toplevel navigation (this allows us to
       // update the URL bar, etc).
-      params.transition = PageTransition::LINK;
+      params.transition = content::PAGE_TRANSITION_LINK;
     }
 
     // If we have a valid consumed client redirect source,
@@ -1143,8 +1143,8 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     if (completed_client_redirect_src_.is_valid()) {
       DCHECK(completed_client_redirect_src_ == params.redirects[0]);
       params.referrer = completed_client_redirect_src_;
-      params.transition = static_cast<PageTransition::Type>(
-          params.transition | PageTransition::CLIENT_REDIRECT);
+      params.transition = static_cast<content::PageTransition>(
+          params.transition | content::PAGE_TRANSITION_CLIENT_REDIRECT);
     } else {
       // Bug 654101: the referrer will be empty on https->http transitions. It
       // would be nice if we could get the real referrer from somewhere.
@@ -1173,9 +1173,9 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     // mark it as such. This test checks if this is the first time UpdateURL
     // has been called since WillNavigateToURL was called to initiate the load.
     if (page_id_ > last_page_id_sent_to_browser_)
-      params.transition = PageTransition::MANUAL_SUBFRAME;
+      params.transition = content::PAGE_TRANSITION_MANUAL_SUBFRAME;
     else
-      params.transition = PageTransition::AUTO_SUBFRAME;
+      params.transition = content::PAGE_TRANSITION_AUTO_SUBFRAME;
 
     Send(new ViewHostMsg_FrameNavigate(routing_id_, params));
   }
@@ -1185,7 +1185,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
-  navigation_state->set_transition_type(PageTransition::LINK);
+  navigation_state->set_transition_type(content::PAGE_TRANSITION_LINK);
 }
 
 // Tell the embedding application that the title of the active page has changed
@@ -2179,8 +2179,8 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->provisionalDataSource());
 
-  if (navigation_state->transition_type() == PageTransition::LINK)
-    navigation_state->set_transition_type(PageTransition::FORM_SUBMIT);
+  if (navigation_state->transition_type() == content::PAGE_TRANSITION_LINK)
+    navigation_state->set_transition_type(content::PAGE_TRANSITION_FORM_SUBMIT);
 
   // Save these to be processed when the ensuing navigation is committed.
   WebSearchableFormData web_searchable_form_data(form);
@@ -2313,7 +2313,8 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
   } else if (frame->parent()->isLoading()) {
     // Take note of AUTO_SUBFRAME loads here, so that we can know how to
     // load an error page.  See didFailProvisionalLoad.
-    navigation_state->set_transition_type(PageTransition::AUTO_SUBFRAME);
+    navigation_state->set_transition_type(
+        content::PAGE_TRANSITION_AUTO_SUBFRAME);
   }
 
   FOR_EACH_OBSERVER(
@@ -2397,7 +2398,8 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   //
   bool replace =
       navigation_state->pending_page_id() != -1 ||
-      navigation_state->transition_type() == PageTransition::AUTO_SUBFRAME;
+      navigation_state->transition_type() ==
+          content::PAGE_TRANSITION_AUTO_SUBFRAME;
 
   // If we failed on a browser initiated request, then make sure that our error
   // page load is regarded as the same browser initiated request.
@@ -2618,7 +2620,7 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
     request.setURL(WebURL(new_url));
   }
 
-  PageTransition::Type transition_type = PageTransition::LINK;
+  content::PageTransition transition_type = content::PAGE_TRANSITION_LINK;
   NavigationState* data_state = NavigationState::FromDataSource(data_source);
   if (data_state) {
     if (data_state->is_cache_policy_override_set())

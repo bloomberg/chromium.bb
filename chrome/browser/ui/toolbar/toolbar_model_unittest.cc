@@ -13,29 +13,29 @@ typedef BrowserWithTestWindowTest ToolbarModelTest;
 
 TEST_F(ToolbarModelTest, ShouldDisplayURL) {
   browser()->OpenURL(GURL("view-source:http://www.google.com"),
-                     GURL(), CURRENT_TAB, PageTransition::TYPED);
+                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   EXPECT_TRUE(browser()->toolbar_model()->ShouldDisplayURL());
   EXPECT_EQ(ASCIIToUTF16("view-source:www.google.com"),
             browser()->toolbar_model()->GetText());
 
   browser()->OpenURL(GURL("view-source:chrome://newtab/"),
-                     GURL(), CURRENT_TAB, PageTransition::TYPED);
+                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   EXPECT_TRUE(browser()->toolbar_model()->ShouldDisplayURL());
   EXPECT_EQ(ASCIIToUTF16("view-source:chrome://newtab"),
             browser()->toolbar_model()->GetText());
 
   browser()->OpenURL(GURL("chrome-extension://monkey/balls.html"),
-                     GURL(), CURRENT_TAB, PageTransition::TYPED);
+                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(browser()->toolbar_model()->ShouldDisplayURL());
   EXPECT_EQ(ASCIIToUTF16(""), browser()->toolbar_model()->GetText());
 
   browser()->OpenURL(GURL("chrome://newtab/"),
-                     GURL(), CURRENT_TAB, PageTransition::TYPED);
+                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(browser()->toolbar_model()->ShouldDisplayURL());
   EXPECT_EQ(ASCIIToUTF16(""), browser()->toolbar_model()->GetText());
 
   browser()->OpenURL(GURL("about:blank"),
-                     GURL(), CURRENT_TAB, PageTransition::TYPED);
+                     GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   EXPECT_TRUE(browser()->toolbar_model()->ShouldDisplayURL());
   EXPECT_EQ(ASCIIToUTF16("about:blank"),
             browser()->toolbar_model()->GetText());

@@ -13,7 +13,7 @@
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 
 class NavigationController;
 class Profile;
@@ -320,7 +320,7 @@ class TabStripModel : public NotificationObserver {
   // navigation, the TabStripModel may adjust its selection and grouping
   // behavior.
   void TabNavigating(TabContentsWrapper* contents,
-                     PageTransition::Type transition);
+                     content::PageTransition transition);
 
   // Forget all Opener relationships that are stored (but _not_ group
   // relationships!) This is to reduce unpredictable tab switching behavior
@@ -407,7 +407,7 @@ class TabStripModel : public NotificationObserver {
   // InsertTabContentsAt to do the actual inertion.
   void AddTabContents(TabContentsWrapper* contents,
                       int index,
-                      PageTransition::Type transition,
+                      content::PageTransition transition,
                       int add_types);
 
   // Closes the selected tabs.

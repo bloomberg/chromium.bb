@@ -119,7 +119,7 @@
   tabContents_->tab_contents()->OpenURL(url,
                                         previousURL,
                                         CURRENT_TAB,
-                                        PageTransition::TYPED);
+                                        content::PAGE_TRANSITION_TYPED);
 }
 
 - (NSString*)title {
@@ -288,7 +288,7 @@
              entry->url().spec()),
         GURL(),
         NEW_FOREGROUND_TAB,
-        PageTransition::LINK);
+        content::PAGE_TRANSITION_LINK);
   }
 }
 

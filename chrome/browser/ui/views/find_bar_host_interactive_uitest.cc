@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CrashEscHandlers) {
   browser()->Find();
 
   // Open another tab (tab B).
-  browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
+  browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
 
   browser()->Find();
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
   // Open another tab (tab B).
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
-  browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
+  browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
   // Make sure Find box is open.

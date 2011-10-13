@@ -82,7 +82,7 @@ void BackgroundContents::DidNavigate(
     RenderViewHost* render_view_host,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // We only care when the outer frame changes.
-  if (!PageTransition::IsMainFrame(params.transition))
+  if (!content::PageTransitionIsMainFrame(params.transition))
     return;
 
   // Note: because BackgroundContents are only available to extension apps,

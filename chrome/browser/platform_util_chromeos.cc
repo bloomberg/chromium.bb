@@ -65,7 +65,7 @@ void OpenItem(const FilePath& full_path) {
 
 static void OpenURL(const std::string& url) {
   Browser* browser = BrowserList::GetLastActive();
-  browser->AddSelectedTabWithURL(GURL(url), PageTransition::LINK);
+  browser->AddSelectedTabWithURL(GURL(url), content::PAGE_TRANSITION_LINK);
 }
 
 void OpenExternal(const GURL& url) {

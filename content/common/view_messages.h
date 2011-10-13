@@ -12,7 +12,6 @@
 #include "content/common/css_colors.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
 #include "content/common/renderer_preferences.h"
 #include "content/common/view_message_enums.h"
@@ -390,7 +389,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_FrameNavigate_Params)
   IPC_STRUCT_MEMBER(GURL, referrer)
 
   // The type of transition.
-  IPC_STRUCT_MEMBER(PageTransition::Type, transition)
+  IPC_STRUCT_MEMBER(content::PageTransition, transition)
 
   // Lists the redirects that occurred on the way to the current page. This
   // vector has the same format as reported by the WebDataSource in the glue,
@@ -617,7 +616,7 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   IPC_STRUCT_MEMBER(GURL, referrer)
 
   // The type of transition.
-  IPC_STRUCT_MEMBER(PageTransition::Type, transition)
+  IPC_STRUCT_MEMBER(content::PageTransition, transition)
 
   // Opaque history state (received by ViewHostMsg_UpdateState).
   IPC_STRUCT_MEMBER(std::string, state)

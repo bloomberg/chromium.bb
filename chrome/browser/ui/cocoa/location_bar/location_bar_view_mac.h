@@ -60,7 +60,7 @@ class LocationBarViewMac : public AutocompleteEditController,
                                 InstantCompleteBehavior behavior) OVERRIDE;
   virtual string16 GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
-  virtual PageTransition::Type GetPageTransition() const OVERRIDE;
+  virtual content::PageTransition GetPageTransition() const OVERRIDE;
   virtual void AcceptInput() OVERRIDE;
   virtual void FocusLocation(bool select_all) OVERRIDE;
   virtual void FocusSearch() OVERRIDE;
@@ -130,7 +130,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   // AutocompleteEditController implementation.
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,
-      PageTransition::Type transition,
+      content::PageTransition transition,
       const GURL& alternate_nav_url);
   virtual void OnChanged();
   virtual void OnSelectionBoundsChanged();
@@ -218,7 +218,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   ToolbarModel* toolbar_model_;  // Weak, owned by Browser.
 
   // The transition type to use for the navigation.
-  PageTransition::Type transition_;
+  content::PageTransition transition_;
 
   // Used to register for notifications received by NotificationObserver.
   NotificationRegistrar registrar_;

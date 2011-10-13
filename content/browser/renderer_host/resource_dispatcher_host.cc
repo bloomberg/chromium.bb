@@ -754,7 +754,7 @@ ResourceDispatcherHostRequestInfo* ResourceDispatcherHost::CreateRequestInfo(
                                                false,     // is_main_frame
                                                -1,        // frame_id
                                                ResourceType::SUB_RESOURCE,
-                                               PageTransition::LINK,
+                                               content::PAGE_TRANSITION_LINK,
                                                0,         // upload_size
                                                download,  // is_download
                                                download,  // allow_download

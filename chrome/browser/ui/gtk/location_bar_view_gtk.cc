@@ -55,7 +55,6 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
-#include "content/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -167,7 +166,9 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       toolbar_model_(browser->toolbar_model()),
       browser_(browser),
       disposition_(CURRENT_TAB),
-      transition_(PageTransition::TYPED | PageTransition::FROM_ADDRESS_BAR),
+      transition_(content::PageTransitionFromInt(
+          content::PAGE_TRANSITION_TYPED |
+          content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       first_run_bubble_(this),
       popup_window_mode_(false),
       theme_service_(NULL),
@@ -463,12 +464,13 @@ void LocationBarViewGtk::Update(const TabContents* contents) {
 
 void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
     WindowOpenDisposition disposition,
-    PageTransition::Type transition,
+    content::PageTransition transition,
     const GURL& alternate_nav_url) {
   if (url.is_valid()) {
     location_input_ = UTF8ToUTF16(url.spec());
     disposition_ = disposition;
-    transition_ = transition | PageTransition::FROM_ADDRESS_BAR;
+    transition_ = content::PageTransitionFromInt(
+        transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
 
     if (command_updater_) {
       if (!alternate_nav_url.is_valid()) {
@@ -598,7 +600,7 @@ WindowOpenDisposition LocationBarViewGtk::GetWindowOpenDisposition() const {
   return disposition_;
 }
 
-PageTransition::Type LocationBarViewGtk::GetPageTransition() const {
+content::PageTransition LocationBarViewGtk::GetPageTransition() const {
   return transition_;
 }
 
@@ -1053,7 +1055,7 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
       return FALSE;
 
     tab->OpenURL(OpenURLParams(
-        url, GURL(), CURRENT_TAB, PageTransition::TYPED));
+        url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED));
     return TRUE;
   }
 

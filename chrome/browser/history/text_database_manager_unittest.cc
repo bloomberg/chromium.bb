@@ -76,7 +76,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_row.url_id = 1;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
   visit_row.referring_visit = 0;
-  visit_row.transition = 0;
+  visit_row.transition = content::PageTransitionFromInt(0);
   visit_row.segment_id = 0;
   visit_row.is_indexed = false;
   visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
@@ -239,7 +239,7 @@ TEST_F(TextDatabaseManagerTest, InsertCompleteVisit) {
   visit.url_id = 1;
   visit.visit_time = Time::Now();
   visit.referring_visit = 0;
-  visit.transition = PageTransition::LINK;
+  visit.transition = content::PAGE_TRANSITION_LINK;
   visit.segment_id = 0;
   visit.is_indexed = false;
   visit_db.AddVisit(&visit, SOURCE_BROWSED);

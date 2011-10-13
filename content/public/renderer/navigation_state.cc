@@ -20,7 +20,7 @@ void NavigationState::set_alt_error_page_fetcher(
   alt_error_page_fetcher_.reset(f);
 }
 
-NavigationState::NavigationState(PageTransition::Type transition_type,
+NavigationState::NavigationState(content::PageTransition transition_type,
                                  const base::Time& request_time,
                                  bool is_content_initiated,
                                  int32 pending_page_id,

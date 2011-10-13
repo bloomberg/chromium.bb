@@ -74,7 +74,8 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
 
   void Navigate(const char* url, int page_id) {
     ViewHostMsg_FrameNavigate_Params params;
-    InitNavigateParams(&params, page_id, GURL(url), PageTransition::TYPED);
+    InitNavigateParams(
+        &params, page_id, GURL(url), content::PAGE_TRANSITION_TYPED);
     contents()->TestDidNavigate(contents()->render_view_host(), params);
   }
 
@@ -110,7 +111,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
   // Start a load.
   Navigate(kURL1, 1);
   // Load next page.
-  controller().LoadURL(GURL(kURL2), GURL(), PageTransition::TYPED,
+  controller().LoadURL(GURL(kURL2), GURL(), content::PAGE_TRANSITION_TYPED,
                        std::string());
 
   // Simulate the load causing an offline browsing interstitial page
@@ -138,7 +139,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
 TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
   // Start a load.
   Navigate(kURL1, 1);
-  controller().LoadURL(GURL(kURL2), GURL(), PageTransition::TYPED,
+  controller().LoadURL(GURL(kURL2), GURL(), content::PAGE_TRANSITION_TYPED,
                        std::string());
 
   // Simulate the load causing an offline interstitial page to be shown.

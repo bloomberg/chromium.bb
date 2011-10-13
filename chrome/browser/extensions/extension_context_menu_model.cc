@@ -111,7 +111,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
   switch (command_id) {
     case NAME: {
       browser_->OpenURL(extension->GetHomepageURL(), GURL(),
-                        NEW_FOREGROUND_TAB, PageTransition::LINK);
+                        NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
       break;
     }
     case CONFIGURE:

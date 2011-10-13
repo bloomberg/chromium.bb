@@ -134,7 +134,7 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
 
   if (match.template_url &&
       TemplateURL::SupportsReplacement(match.template_url) &&
-      match.transition == PageTransition::KEYWORD) {
+      match.transition == content::PAGE_TRANSITION_KEYWORD) {
     // The current match is a keyword, return that as the selected keyword.
     keyword->assign(match.template_url->keyword());
     return false;

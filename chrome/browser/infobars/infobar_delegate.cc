@@ -91,8 +91,8 @@ void InfoBarDelegate::StoreActiveEntryUniqueID(
 bool InfoBarDelegate::ShouldExpireInternal(
     const content::LoadCommittedDetails& details) const {
   return (contents_unique_id_ != details.entry->unique_id()) ||
-      (PageTransition::StripQualifier(details.entry->transition_type()) ==
-          PageTransition::RELOAD);
+      (content::PageTransitionStripQualifier(
+          details.entry->transition_type()) == content::PAGE_TRANSITION_RELOAD);
 }
 
 void InfoBarDelegate::RemoveSelf() {

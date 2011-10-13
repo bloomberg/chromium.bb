@@ -99,10 +99,11 @@ ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
   // Set |this| as a property so the ConstrainedHtmlUI can retrieve it.
   ConstrainedHtmlUI::GetPropertyAccessor().SetProperty(
       html_tab_contents_.property_bag(), this);
-  html_tab_contents_.controller().LoadURL(delegate->GetDialogContentURL(),
-                                          GURL(),
-                                          PageTransition::START_PAGE,
-                                          std::string());
+  html_tab_contents_.controller().LoadURL(
+      delegate->GetDialogContentURL(),
+      GURL(),
+      content::PAGE_TRANSITION_START_PAGE,
+      std::string());
 }
 
 ConstrainedHtmlDelegateViews::~ConstrainedHtmlDelegateViews() {

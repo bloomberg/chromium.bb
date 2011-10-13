@@ -103,7 +103,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   } else {
     request_.is_main_frame = false;
     request_.frame_id = -1;
-    request_.transition_type = PageTransition::LINK;
+    request_.transition_type = content::PAGE_TRANSITION_LINK;
   }
 }
 

@@ -44,7 +44,6 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/renderer_preferences.h"
 #include "net/http/http_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -571,7 +570,7 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
       template_url_id_(id),
       ready_(false),
       http_status_ok_(true),
-      last_transition_type_(PageTransition::LINK),
+      last_transition_type_(content::PAGE_TRANSITION_LINK),
       verbatim_(false),
       needs_reload_(false) {
 }
@@ -587,7 +586,7 @@ InstantLoader::~InstantLoader() {
 bool InstantLoader::Update(TabContentsWrapper* tab_contents,
                            const TemplateURL* template_url,
                            const GURL& url,
-                           PageTransition::Type transition_type,
+                           content::PageTransition transition_type,
                            const string16& user_text,
                            bool verbatim,
                            string16* suggested_text) {
@@ -773,7 +772,7 @@ void InstantLoader::MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
     return;
 
   CreatePreviewContents(tab_contents);
-  LoadInstantURL(tab_contents, template_url, PageTransition::GENERATED,
+  LoadInstantURL(tab_contents, template_url, content::PAGE_TRANSITION_GENERATED,
                  string16(), true);
 }
 
@@ -1024,7 +1023,7 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
 
 void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
                                    const TemplateURL* template_url,
-                                   PageTransition::Type transition_type,
+                                   content::PageTransition transition_type,
                                    const string16& user_text,
                                    bool verbatim) {
   preview_tab_contents_delegate_->PrepareForNewLoad();

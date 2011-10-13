@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Tab) {
   for (int i = 1; i <= 9; ++i) {
     CheckViewID(static_cast<ViewID>(VIEW_ID_TAB_0 + i), false);
     browser()->OpenURL(GURL(chrome::kAboutBlankURL), GURL(),
-                       NEW_BACKGROUND_TAB, PageTransition::TYPED);
+                       NEW_BACKGROUND_TAB, content::PAGE_TRANSITION_TYPED);
     CheckViewID(static_cast<ViewID>(VIEW_ID_TAB_0 + i), true);
     // VIEW_ID_TAB_LAST should always be available.
     CheckViewID(VIEW_ID_TAB_LAST, true);
@@ -115,6 +115,6 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Tab) {
 
   // Open the 11th tab.
   browser()->OpenURL(GURL(chrome::kAboutBlankURL), GURL(),
-                     NEW_BACKGROUND_TAB, PageTransition::TYPED);
+                     NEW_BACKGROUND_TAB, content::PAGE_TRANSITION_TYPED);
   CheckViewID(VIEW_ID_TAB_LAST, true);
 }

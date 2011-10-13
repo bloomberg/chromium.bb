@@ -206,7 +206,7 @@ void RlzLibTest::SimulateOmniboxUsage() {
 
 void RlzLibTest::SimulateHomepageUsage() {
   NavigationEntry entry(NULL, 0, GURL(), GURL(), string16(),
-                        PageTransition::HOME_PAGE);
+                        content::PAGE_TRANSITION_HOME_PAGE);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    NotificationService::AllSources(),
                    Details<NavigationEntry>(&entry));
@@ -541,7 +541,7 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
 
 TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
   NavigationEntry entry(NULL, 0, GURL(), GURL(), string16(),
-                        PageTransition::LINK);
+                        content::PAGE_TRANSITION_LINK);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    NotificationService::AllSources(),
                    Details<NavigationEntry>(NULL));

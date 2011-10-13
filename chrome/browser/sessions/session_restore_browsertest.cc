@@ -14,7 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 
 namespace {
 
@@ -124,13 +124,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
-    browser()->AddSelectedTabWithURL(url2, PageTransition::LINK);
+    browser()->AddSelectedTabWithURL(url2, content::PAGE_TRANSITION_LINK);
     observer.Wait();
   }
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
-    browser()->AddSelectedTabWithURL(url3, PageTransition::LINK);
+    browser()->AddSelectedTabWithURL(url3, content::PAGE_TRANSITION_LINK);
     observer.Wait();
   }
 

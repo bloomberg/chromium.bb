@@ -65,7 +65,8 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
         google_util::AppendGoogleLocaleParam(GURL(kind_ == CRASHED ?
                                                   chrome::kCrashReasonURL :
                                                   chrome::kKillReasonURL));
-    tab_contents_->OpenURL(help_url, GURL(), CURRENT_TAB, PageTransition::LINK);
+    tab_contents_->OpenURL(
+        help_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
   } else if (tab_contents_ != NULL && source == feedback_link_) {
     browser::ShowHtmlBugReportView(
         Browser::GetBrowserForController(&tab_contents_->controller(), NULL),

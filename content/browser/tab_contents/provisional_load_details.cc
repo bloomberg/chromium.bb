@@ -14,7 +14,7 @@ ProvisionalLoadDetails::ProvisionalLoadDetails(bool is_main_frame,
                                                bool is_error_page,
                                                int64 frame_id)
       : error_code_(net::OK),
-        transition_type_(PageTransition::LINK),
+        transition_type_(content::PAGE_TRANSITION_LINK),
         url_(url),
         is_main_frame_(is_main_frame),
         is_in_page_navigation_(is_in_page_navigation),

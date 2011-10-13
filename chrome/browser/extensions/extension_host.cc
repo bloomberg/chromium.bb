@@ -334,7 +334,7 @@ void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host,
 void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
     const ViewHostMsg_FrameNavigate_Params& params) {
   // We only care when the outer frame changes.
-  if (!PageTransition::IsMainFrame(params.transition))
+  if (!content::PageTransitionIsMainFrame(params.transition))
     return;
 
   url_ = params.url;

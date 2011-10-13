@@ -261,13 +261,13 @@ void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
 void CloudPrintSetupFlow::OnUserClickedLearnMore() {
   web_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintLearnMoreURL(),
                                    GURL(), NEW_FOREGROUND_TAB,
-                                   PageTransition::LINK);
+                                   content::PAGE_TRANSITION_LINK);
 }
 
 void CloudPrintSetupFlow::OnUserClickedPrintTestPage() {
   web_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintTestPageURL(),
                                    GURL(), NEW_FOREGROUND_TAB,
-                                   PageTransition::LINK);
+                                   content::PAGE_TRANSITION_LINK);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

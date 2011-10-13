@@ -79,7 +79,7 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
       // Pretend the user typed this URL, so that navigating to
       // it will be the default action when it's typed again in
       // the future.
-      PageTransition::TYPED);
+      content::PAGE_TRANSITION_TYPED);
 
   // We should always close, even if the navigation did not occur within this
   // TabContents.

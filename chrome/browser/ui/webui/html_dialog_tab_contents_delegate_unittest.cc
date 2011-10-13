@@ -57,7 +57,7 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
   scoped_refptr<history::HistoryAddPageArgs> should_add_args(
       new history::HistoryAddPageArgs(
           GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
-          PageTransition::TYPED, history::SOURCE_SYNCED, false));
+          content::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false));
   EXPECT_FALSE(test_tab_contents_delegate_->ShouldAddNavigationToHistory(
                    *should_add_args, NavigationType::NEW_PAGE));
   test_tab_contents_delegate_->NavigationStateChanged(NULL, 0);
@@ -73,7 +73,7 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
 TEST_F(HtmlDialogTabContentsDelegateTest, OpenURLFromTabTest) {
   test_tab_contents_delegate_->OpenURLFromTab(
     NULL, GURL(chrome::kAboutBlankURL), GURL(),
-    NEW_FOREGROUND_TAB, PageTransition::LINK);
+    NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
   // This should create a new foreground tab in the existing browser.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1U, BrowserList::size());
@@ -96,7 +96,7 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DetachTest) {
   // Now, none of the following calls should do anything.
   test_tab_contents_delegate_->OpenURLFromTab(
       NULL, GURL(chrome::kAboutBlankURL), GURL(),
-      NEW_FOREGROUND_TAB, PageTransition::LINK);
+      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
   test_tab_contents_delegate_->AddNewContents(NULL, NULL, NEW_FOREGROUND_TAB,
                                               gfx::Rect(), false);
   EXPECT_EQ(0, browser()->tab_count());

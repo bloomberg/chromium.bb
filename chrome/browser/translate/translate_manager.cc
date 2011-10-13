@@ -280,7 +280,7 @@ void TranslateManager::Observe(int type,
         // infobar if the user already dismissed one in that case.
         return;
       }
-      if (entry->transition_type() != PageTransition::RELOAD &&
+      if (entry->transition_type() != content::PAGE_TRANSITION_RELOAD &&
           load_details->type != NavigationType::SAME_PAGE) {
         return;
       }
@@ -619,7 +619,7 @@ void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
     return;
   }
   browser->AddSelectedTabWithURL(GURL(report_error_url),
-                                 PageTransition::AUTO_BOOKMARK);
+                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
 void TranslateManager::DoTranslatePage(TabContents* tab,

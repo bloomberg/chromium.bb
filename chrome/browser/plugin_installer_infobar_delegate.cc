@@ -73,6 +73,6 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
       "http://www.google.com/support/chrome/bin/answer.py?answer=95697&topic="
       "14687")), GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      PageTransition::LINK);
+      content::PAGE_TRANSITION_LINK);
   return false;
 }

@@ -240,10 +240,10 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   if (params.url.is_empty()) {
     TabContentsWrapper* tab_contents =
         new TabContentsWrapper(new TestTabContents(browser()->profile(), NULL));
-    panel_browser->AddTab(tab_contents, PageTransition::LINK);
+    panel_browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
   } else {
     panel_browser->AddSelectedTabWithURL(params.url,
-                                         PageTransition::START_PAGE);
+                                         content::PAGE_TRANSITION_START_PAGE);
     ui_test_utils::WaitForNavigation(
         &panel_browser->GetSelectedTabContents()->controller());
   }

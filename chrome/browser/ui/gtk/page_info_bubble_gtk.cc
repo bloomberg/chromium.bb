@@ -229,7 +229,7 @@ void PageInfoBubbleGtk::OnHelpLinkClicked(GtkWidget* widget) {
       GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   browser->OpenURL(OpenURLParams(
-      url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK));
+      url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK));
   bubble_->Close();
 }
 

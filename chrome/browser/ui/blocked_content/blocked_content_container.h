@@ -63,7 +63,7 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
       TabContents* source,
       const GURL& url, const GURL& referrer,
       WindowOpenDisposition disposition,
-      PageTransition::Type transition) OVERRIDE;
+      content::PageTransition transition) OVERRIDE;
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params);
 

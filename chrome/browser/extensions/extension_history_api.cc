@@ -53,7 +53,8 @@ void GetVisitInfoDictionary(const history::VisitRow& row,
   value->SetString(keys::kReferringVisitId,
                    base::Int64ToString(row.referring_visit));
 
-  const char* trans = PageTransition::CoreTransitionString(row.transition);
+  const char* trans =
+      content::PageTransitionGetCoreTransitionString(row.transition);
   DCHECK(trans) << "Invalid transition.";
   value->SetString(keys::kTransition, trans);
 }

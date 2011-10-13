@@ -319,7 +319,7 @@ bool AutocompleteEditModel::CurrentTextIsURL() const {
 
   AutocompleteMatch match;
   GetInfoForCurrentText(&match, NULL);
-  return match.transition == PageTransition::TYPED;
+  return match.transition == content::PAGE_TRANSITION_TYPED;
 }
 
 AutocompleteMatch::Type AutocompleteEditModel::CurrentTextType() const {
@@ -354,7 +354,7 @@ void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
   AutocompleteMatch match;
   profile_->GetAutocompleteClassifier()->Classify(*text, string16(),
         KeywordIsSelected(), true, &match, NULL);
-  if (match.transition != PageTransition::TYPED)
+  if (match.transition != content::PAGE_TRANSITION_TYPED)
     return;
   *url = match.destination_url;
 
@@ -448,8 +448,9 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
   if (!match.destination_url.is_valid())
     return;
 
-  if ((match.transition == PageTransition::TYPED) && (match.destination_url ==
-      URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_), std::string()))) {
+  if ((match.transition == content::PAGE_TRANSITION_TYPED) &&
+      (match.destination_url ==
+       URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_), std::string()))) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
     // user_input_in_progress_, but it seems better to treat "edits" that end
@@ -459,13 +460,13 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
     // different from the current URL, even if it wound up at the same place
     // (e.g. manually retyping the same search query), and it seems wrong to
     // treat this as a reload.
-    match.transition = PageTransition::RELOAD;
+    match.transition = content::PAGE_TRANSITION_RELOAD;
   } else if (for_drop || ((paste_state_ != NONE) &&
                           match.is_history_what_you_typed_match)) {
     // When the user pasted in a URL and hit enter, score it like a link click
     // rather than a normal typed URL, so it doesn't get inline autocompleted
     // as aggressively later.
-    match.transition = PageTransition::LINK;
+    match.transition = content::PAGE_TRANSITION_LINK;
   }
 
   if (match.template_url && match.template_url->url() &&
@@ -532,8 +533,8 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
       UserMetrics::RecordAction(UserMetricsAction("AcceptedKeyword"));
       template_url_service->IncrementUsageCount(template_url);
 
-      if (match.transition == PageTransition::KEYWORD ||
-          match.transition == PageTransition::KEYWORD_GENERATED) {
+      if (match.transition == content::PAGE_TRANSITION_KEYWORD ||
+          match.transition == content::PAGE_TRANSITION_KEYWORD_GENERATED) {
         // NOTE: Non-prepopulated engines will all have ID 0, which is fine as
         // the prepopulate IDs start at 1.  Distribution-specific engines will
         // all have IDs above the maximum, and will be automatically lumped
@@ -548,7 +549,8 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
     // search engine, if applicable; see comments in template_url.h.
   }
 
-  if (match.transition == PageTransition::GENERATED && match.template_url) {
+  if (match.transition == content::PAGE_TRANSITION_GENERATED &&
+      match.template_url) {
     // See comment above.
     UMA_HISTOGRAM_ENUMERATION(
         "Omnibox.SearchEngine", match.template_url->prepopulate_id(),

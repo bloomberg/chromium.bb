@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
       NotificationService::AllSources());
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   tab_added_observer.Wait();
 
   // Find the new browser.
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenLarge) {
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
       NotificationService::AllSources());
-  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
   tab_added_observer.Wait();
 
   // Shouldn't find a new browser.

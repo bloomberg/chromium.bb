@@ -19,7 +19,7 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
     bool is_main_frame,
     int64 frame_id,
     ResourceType::Type resource_type,
-    PageTransition::Type transition_type,
+    content::PageTransition transition_type,
     uint64 upload_size,
     bool is_download,
     bool allow_download,

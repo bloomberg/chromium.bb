@@ -17,7 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/common/metrics_log_manager.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 
 class GURL;
 class MetricsLog;
@@ -51,7 +51,7 @@ class MetricsLogBase {
   // load_time - how long it took to load the page
   void RecordLoadEvent(int window_id,
                        const GURL& url,
-                       PageTransition::Type origin,
+                       content::PageTransition origin,
                        int session_index,
                        base::TimeDelta load_time);
 

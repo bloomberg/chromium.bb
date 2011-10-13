@@ -148,8 +148,9 @@ TEST(MetricsLogTest, LoadEvent) {
       "</log>", MetricsLog::GetVersionString().c_str());
 
   NoTimeMetricsLog log("bogus client ID", 0);
-  log.RecordLoadEvent(3, GURL("http://google.com"), PageTransition::LINK,
-                      1, TimeDelta::FromMilliseconds(7219));
+  log.RecordLoadEvent(3, GURL("http://google.com"),
+                      content::PAGE_TRANSITION_LINK, 1,
+                      TimeDelta::FromMilliseconds(7219));
 
   log.CloseLog();
 
@@ -178,8 +179,9 @@ TEST(MetricsLogTest, ChromeOSLoadEvent) {
       "</log>", MetricsLog::GetVersionString().c_str());
 
   NoTimeMetricsLog log("bogus client ID", 0);
-  log.RecordLoadEvent(3, GURL("http://google.com"), PageTransition::LINK,
-                      1, TimeDelta::FromMilliseconds(7219));
+  log.RecordLoadEvent(3, GURL("http://google.com"),
+                      content::PAGE_TRANSITION_LINK, 1,
+                      TimeDelta::FromMilliseconds(7219));
   log.set_hardware_class("sample-class");
   log.CloseLog();
 

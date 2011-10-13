@@ -70,7 +70,7 @@ void ConfigureEntriesForRestore(
   for (size_t i = 0; i < entries->size(); ++i) {
     // Use a transition type of reload so that we don't incorrectly increase
     // the typed count.
-    (*entries)[i]->set_transition_type(PageTransition::RELOAD);
+    (*entries)[i]->set_transition_type(content::PAGE_TRANSITION_RELOAD);
     (*entries)[i]->set_restore_type(from_last_session ?
         NavigationEntry::RESTORE_LAST_SESSION :
         NavigationEntry::RESTORE_CURRENT_SESSION);
@@ -195,7 +195,8 @@ void NavigationController::ReloadInternal(bool check_for_repost,
     DiscardNonCommittedEntriesInternal();
 
     pending_entry_index_ = current_index;
-    entries_[pending_entry_index_]->set_transition_type(PageTransition::RELOAD);
+    entries_[pending_entry_index_]->set_transition_type(
+        content::PAGE_TRANSITION_RELOAD);
     NavigateToPendingEntry(reload_type);
   }
 }
@@ -220,7 +221,7 @@ bool NavigationController::IsInitialNavigation() {
 
 // static
 NavigationEntry* NavigationController::CreateNavigationEntry(
-    const GURL& url, const GURL& referrer, PageTransition::Type transition,
+    const GURL& url, const GURL& referrer, content::PageTransition transition,
     const std::string& extra_headers,
     content::BrowserContext* browser_context) {
   // Allow the browser URL handler to rewrite the URL. This will, for example,
@@ -357,8 +358,9 @@ void NavigationController::GoBack() {
 
   pending_entry_index_ = current_index - 1;
   entries_[pending_entry_index_]->set_transition_type(
-      entries_[pending_entry_index_]->transition_type() |
-      PageTransition::FORWARD_BACK);
+      content::PageTransitionFromInt(
+          entries_[pending_entry_index_]->transition_type() |
+          content::PAGE_TRANSITION_FORWARD_BACK));
   NavigateToPendingEntry(NO_RELOAD);
 }
 
@@ -390,8 +392,9 @@ void NavigationController::GoForward() {
     pending_entry_index_++;
 
   entries_[pending_entry_index_]->set_transition_type(
-      entries_[pending_entry_index_]->transition_type() |
-      PageTransition::FORWARD_BACK);
+      content::PageTransitionFromInt(
+          entries_[pending_entry_index_]->transition_type() |
+          content::PAGE_TRANSITION_FORWARD_BACK));
   NavigateToPendingEntry(NO_RELOAD);
 }
 
@@ -431,8 +434,9 @@ void NavigationController::GoToIndex(int index) {
 
   pending_entry_index_ = index;
   entries_[pending_entry_index_]->set_transition_type(
-      entries_[pending_entry_index_]->transition_type() |
-      PageTransition::FORWARD_BACK);
+      content::PageTransitionFromInt(
+          entries_[pending_entry_index_]->transition_type() |
+          content::PAGE_TRANSITION_FORWARD_BACK));
   NavigateToPendingEntry(NO_RELOAD);
 }
 
@@ -458,7 +462,7 @@ void NavigationController::RemoveEntryAtIndex(int index,
     } else {
       // If there is nothing to show, show a default page.
       LoadURL(default_url.is_empty() ? GURL("about:blank") : default_url,
-              GURL(), PageTransition::START_PAGE, std::string());
+              GURL(), content::PAGE_TRANSITION_START_PAGE, std::string());
     }
   }
 }
@@ -486,7 +490,7 @@ void NavigationController::AddTransientEntry(NavigationEntry* entry) {
 void NavigationController::LoadURL(
     const GURL& url,
     const GURL& referrer,
-    PageTransition::Type transition,
+    content::PageTransition transition,
     const std::string& extra_headers) {
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
@@ -572,7 +576,8 @@ bool NavigationController::RendererDidNavigate(
 
   // Now prep the rest of the details for the notification and broadcast.
   details->entry = active_entry;
-  details->is_main_frame = PageTransition::IsMainFrame(params.transition);
+  details->is_main_frame =
+      content::PageTransitionIsMainFrame(params.transition);
   details->serialized_security_info = params.security_info;
   details->http_status_code = params.http_status_code;
   NotifyNavigationEntryCommitted(details);
@@ -608,7 +613,7 @@ NavigationType::Type NavigationController::ClassifyNavigation(
     // Greater page IDs than we've ever seen before are new pages. We may or may
     // not have a pending entry for the page, and this may or may not be the
     // main frame.
-    if (PageTransition::IsMainFrame(params.transition))
+    if (content::PageTransitionIsMainFrame(params.transition))
       return NavigationType::NEW_PAGE;
 
     // When this is a new subframe navigation, we should have a committed page
@@ -643,7 +648,7 @@ NavigationType::Type NavigationController::ClassifyNavigation(
   }
   NavigationEntry* existing_entry = entries_[existing_entry_index].get();
 
-  if (!PageTransition::IsMainFrame(params.transition)) {
+  if (!content::PageTransitionIsMainFrame(params.transition)) {
     // All manual subframes would get new IDs and were handled above, so we
     // know this is auto. Since the current page was found in the navigation
     // entry list, we're guaranteed to have a last committed entry.
@@ -683,8 +688,8 @@ bool NavigationController::IsRedirect(
   const ViewHostMsg_FrameNavigate_Params& params) {
   // For main frame transition, we judge by params.transition.
   // Otherwise, by params.redirects.
-  if (PageTransition::IsMainFrame(params.transition)) {
-    return PageTransition::IsRedirect(params.transition);
+  if (content::PageTransitionIsMainFrame(params.transition)) {
+    return content::PageTransitionIsRedirect(params.transition);
   }
   return params.redirects.size() > 1;
 }
@@ -728,7 +733,7 @@ void NavigationController::RendererDidNavigateToNewPage(
 void NavigationController::RendererDidNavigateToExistingPage(
     const ViewHostMsg_FrameNavigate_Params& params) {
   // We should only get here for main frame navigations.
-  DCHECK(PageTransition::IsMainFrame(params.transition));
+  DCHECK(content::PageTransitionIsMainFrame(params.transition));
 
   // This is a back/forward navigation. The existing page for the ID is
   // guaranteed to exist by ClassifyNavigation, and we just need to update it
@@ -793,7 +798,7 @@ void NavigationController::RendererDidNavigateToSamePage(
 
 void NavigationController::RendererDidNavigateInPage(
     const ViewHostMsg_FrameNavigate_Params& params, bool* did_replace_entry) {
-  DCHECK(PageTransition::IsMainFrame(params.transition)) <<
+  DCHECK(content::PageTransitionIsMainFrame(params.transition)) <<
       "WebKit should only tell us about in-page navs for the main frame.";
   // We're guaranteed to have an entry for this one.
   NavigationEntry* existing_entry = GetEntryWithPageID(
@@ -822,8 +827,8 @@ void NavigationController::RendererDidNavigateInPage(
 
 void NavigationController::RendererDidNavigateNewSubframe(
     const ViewHostMsg_FrameNavigate_Params& params) {
-  if (PageTransition::StripQualifier(params.transition) ==
-      PageTransition::AUTO_SUBFRAME) {
+  if (content::PageTransitionStripQualifier(params.transition) ==
+      content::PAGE_TRANSITION_AUTO_SUBFRAME) {
     // This is not user-initiated. Ignore.
     return;
   }
@@ -1005,7 +1010,7 @@ void NavigationController::DiscardNonCommittedEntries() {
 
 void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
                                                 bool replace) {
-  DCHECK(entry->transition_type() != PageTransition::AUTO_SUBFRAME);
+  DCHECK(entry->transition_type() != content::PAGE_TRANSITION_AUTO_SUBFRAME);
 
   // Copy the pending entry's unique ID to the committed entry.
   // I don't know if pending_entry_index_ can be other than -1 here.
@@ -1063,7 +1068,7 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
       (entries_[pending_entry_index_]->restore_type() ==
           NavigationEntry::RESTORE_NONE) &&
       (entries_[pending_entry_index_]->transition_type() &
-          PageTransition::FORWARD_BACK)) {
+          content::PAGE_TRANSITION_FORWARD_BACK)) {
     tab_contents_->Stop();
     DiscardNonCommittedEntries();
     return;

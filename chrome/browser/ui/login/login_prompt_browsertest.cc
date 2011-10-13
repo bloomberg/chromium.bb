@@ -220,7 +220,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
   observer.Register(Source<NavigationController>(controller));
 
   WindowedLoadStopObserver load_stop_waiter(controller);
-  browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(
+      test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   load_stop_waiter.Wait();
   EXPECT_TRUE(observer.handlers_.empty());
@@ -249,7 +250,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmCancellation) {
 
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    browser()->OpenURL(
+        test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
     auth_needed_waiter.Wait();
   }
 
@@ -309,7 +311,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller);
 
-    browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    browser()->OpenURL(
+        test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
     auth_needed_waiter.Wait();
   }
 
@@ -356,7 +359,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
 
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    browser()->OpenURL(
+        test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
     auth_needed_waiter.Wait();
   }
 
@@ -429,7 +433,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
   {
     GURL test_page = test_server()->GetURL(kFaviconTestPage);
     WindowedLoadStopObserver load_stop_waiter(controller);
-    browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    browser()->OpenURL(
+        test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
     load_stop_waiter.Wait();
   }
 
@@ -439,7 +444,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
     GURL test_page = test_server()->GetURL(kFaviconResource);
     WindowedLoadStopObserver load_stop_waiter(controller);
     WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    browser()->OpenURL(
+        test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
     auth_needed_waiter.Wait();
     ASSERT_EQ(1u, observer.handlers_.size());
 
@@ -490,7 +496,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, BlockCrossdomainPrompt) {
     test_page = test_page.ReplaceComponents(replacements);
 
     WindowedLoadStopObserver load_stop_waiter(controller);
-    browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    browser()->OpenURL(
+        test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
     load_stop_waiter.Wait();
   }
 
@@ -510,7 +517,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, BlockCrossdomainPrompt) {
     test_page = test_page.ReplaceComponents(replacements);
 
     WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(test_page, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    browser()->OpenURL(
+        test_page, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
     auth_needed_waiter.Wait();
     ASSERT_EQ(1u, observer.handlers_.size());
 

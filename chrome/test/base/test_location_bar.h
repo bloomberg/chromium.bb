@@ -9,7 +9,7 @@
 #include "base/string16.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class TestLocationBar : public LocationBar {
@@ -23,7 +23,7 @@ class TestLocationBar : public LocationBar {
   void set_disposition(WindowOpenDisposition disposition) {
     disposition_ = disposition;
   }
-  void set_transition(PageTransition::Type transition) {
+  void set_transition(content::PageTransition transition) {
     transition_ = transition;
   }
 
@@ -33,7 +33,7 @@ class TestLocationBar : public LocationBar {
                                 InstantCompleteBehavior behavior) OVERRIDE {}
   virtual string16 GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
-  virtual PageTransition::Type GetPageTransition() const OVERRIDE;
+  virtual content::PageTransition GetPageTransition() const OVERRIDE;
   virtual void AcceptInput() OVERRIDE {}
   virtual void FocusLocation(bool select_all) OVERRIDE {}
   virtual void FocusSearch() OVERRIDE {}
@@ -52,7 +52,7 @@ class TestLocationBar : public LocationBar {
   // interface.
   string16 input_string_;
   WindowOpenDisposition disposition_;
-  PageTransition::Type transition_;
+  content::PageTransition transition_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLocationBar);
 };

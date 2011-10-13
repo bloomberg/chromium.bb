@@ -13,7 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/url_constants.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "sql/statement.h"
 
 // Rows, in order, of the visit table.
@@ -91,7 +91,7 @@ void VisitDatabase::FillVisitRow(sql::Statement& statement, VisitRow* visit) {
   visit->url_id = statement.ColumnInt64(1);
   visit->visit_time = base::Time::FromInternalValue(statement.ColumnInt64(2));
   visit->referring_visit = statement.ColumnInt64(3);
-  visit->transition = PageTransition::FromInt(statement.ColumnInt(4));
+  visit->transition = content::PageTransitionFromInt(statement.ColumnInt(4));
   visit->segment_id = statement.ColumnInt64(5);
   visit->is_indexed = !!statement.ColumnInt(6);
 }
@@ -285,7 +285,7 @@ void VisitDatabase::GetVisitsInRangeForTransition(
     base::Time begin_time,
     base::Time end_time,
     int max_results,
-    PageTransition::Type transition,
+    content::PageTransition transition,
     VisitVector* visits) {
   DCHECK(visits);
   visits->clear();
@@ -302,7 +302,7 @@ void VisitDatabase::GetVisitsInRangeForTransition(
   int64 end = end_time.ToInternalValue();
   statement.BindInt64(0, begin_time.ToInternalValue());
   statement.BindInt64(1, end ? end : std::numeric_limits<int64>::max());
-  statement.BindInt(2, PageTransition::CORE_MASK);
+  statement.BindInt(2, content::PAGE_TRANSITION_CORE_MASK);
   statement.BindInt(3, transition);
   statement.BindInt64(4,
       max_results ? max_results : std::numeric_limits<int64>::max());
@@ -333,11 +333,11 @@ void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
   int64 end = end_time.ToInternalValue();
   statement.BindInt64(0, begin_time.ToInternalValue());
   statement.BindInt64(1, end ? end : std::numeric_limits<int64>::max());
-  statement.BindInt(2, PageTransition::CHAIN_END);
-  statement.BindInt(3, PageTransition::CORE_MASK);
-  statement.BindInt(4, PageTransition::AUTO_SUBFRAME);
-  statement.BindInt(5, PageTransition::MANUAL_SUBFRAME);
-  statement.BindInt(6, PageTransition::KEYWORD_GENERATED);
+  statement.BindInt(2, content::PAGE_TRANSITION_CHAIN_END);
+  statement.BindInt(3, content::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt(4, content::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt(5, content::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt(6, content::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   std::set<URLID> found_urls;
   while (statement.Step()) {
@@ -411,7 +411,7 @@ bool VisitDatabase::GetRedirectFromVisit(VisitID from_visit,
     return false;
 
   statement.BindInt64(0, from_visit);
-  statement.BindInt(1, PageTransition::IS_REDIRECT_MASK);
+  statement.BindInt(1, content::PAGE_TRANSITION_IS_REDIRECT_MASK);
 
   if (!statement.Step())
     return false;  // No redirect from this visit.
@@ -478,11 +478,11 @@ bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
   statement.BindString(0, host_query_min);
   statement.BindString(1,
       host_query_min.substr(0, host_query_min.size() - 1) + '0');
-  statement.BindInt(2, PageTransition::CHAIN_END);
-  statement.BindInt(3, PageTransition::CORE_MASK);
-  statement.BindInt(4, PageTransition::AUTO_SUBFRAME);
-  statement.BindInt(5, PageTransition::MANUAL_SUBFRAME);
-  statement.BindInt(6, PageTransition::KEYWORD_GENERATED);
+  statement.BindInt(2, content::PAGE_TRANSITION_CHAIN_END);
+  statement.BindInt(3, content::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt(4, content::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt(5, content::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt(6, content::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   if (!statement.Step()) {
     // We've never been to this page before.

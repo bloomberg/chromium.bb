@@ -14,7 +14,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -36,7 +36,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         int page_id,
                         const GURL& url,
-                        PageTransition::Type transition_type);
+                        content::PageTransition transition_type);
 
 // This file provides a testing framework for mocking out the RenderProcessHost
 // layer. It allows you to test RenderViewHost, TabContents,
@@ -189,11 +189,11 @@ class TestRenderViewHost : public RenderViewHost {
   void SendNavigate(int page_id, const GURL& url);
 
   // Calls OnMsgNavigate on the RenderViewHost with the given information,
-  // including a custom PageTransition::Type.  Sets the rest of the parameters
-  // in the message to the "typical" values.
-  // This is a helper function for simulating the most common types of loads.
+  // including a custom content::PageTransition.  Sets the rest of the
+  // parameters in the message to the "typical" values. This is a helper
+  // function for simulating the most common types of loads.
   void SendNavigateWithTransition(int page_id, const GURL& url,
-                                  PageTransition::Type transition);
+                                  content::PageTransition transition);
 
   // Calls OnMsgShouldCloseACK on the RenderViewHost with the given parameter.
   void SendShouldCloseACK(bool proceed);

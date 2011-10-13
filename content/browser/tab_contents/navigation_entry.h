@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/page_type.h"
 #include "content/common/security_style.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cert_status_flags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -186,7 +186,7 @@ class CONTENT_EXPORT NavigationEntry {
                   const GURL& url,
                   const GURL& referrer,
                   const string16& title,
-                  PageTransition::Type transition_type);
+                  content::PageTransition transition_type);
   ~NavigationEntry();
 
   // Page-related stuff --------------------------------------------------------
@@ -344,10 +344,10 @@ class CONTENT_EXPORT NavigationEntry {
 
   // The transition type indicates what the user did to move to this page from
   // the previous page.
-  void set_transition_type(PageTransition::Type transition_type) {
+  void set_transition_type(content::PageTransition transition_type) {
     transition_type_ = transition_type;
   }
-  PageTransition::Type transition_type() const {
+  content::PageTransition transition_type() const {
     return transition_type_;
   }
 
@@ -422,7 +422,7 @@ class CONTENT_EXPORT NavigationEntry {
   std::string content_state_;
   int32 page_id_;
   SSLStatus ssl_;
-  PageTransition::Type transition_type_;
+  content::PageTransition transition_type_;
   GURL user_typed_url_;
   bool has_post_data_;
   RestoreType restore_type_;

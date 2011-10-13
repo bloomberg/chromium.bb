@@ -28,7 +28,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   // Open a new tab and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
-  AddTabAtIndex(0, url, PageTransition::TYPED);
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   TaskManagerBrowserTestUtil::WaitForResourceChange(3);
 
   // Check that the third entry is a tab contents resource whose title starts
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
 
   // Open a new tab to an extension URL and make sure we notice that.
   GURL url("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html");
-  AddTabAtIndex(0, url, PageTransition::TYPED);
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   TaskManagerBrowserTestUtil::WaitForResourceChange(4);
 
   // Check that the third entry (background) is an extension resource whose
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
 
   // Open a new tab to the app's launch URL and make sure we notice that.
   GURL url(extension->GetResourceURL("main.html"));
-  AddTabAtIndex(0, url, PageTransition::TYPED);
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   TaskManagerBrowserTestUtil::WaitForResourceChange(3);
 
   // Check that the third entry (main.html) is of type extension and has both
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
 
   // Open a new tab to an app URL before the app is loaded.
   GURL url(base_url.Resolve("path1/empty.html"));
-  AddTabAtIndex(0, url, PageTransition::TYPED);
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   ui_test_utils::WaitForNavigation(
       &browser()->GetSelectedTabContents()->controller());
 
@@ -447,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // Open a new tab and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
-  AddTabAtIndex(0, url, PageTransition::TYPED);
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   TaskManagerBrowserTestUtil::WaitForResourceChange(3);
 
   // Check that we get some value for the cache columns.

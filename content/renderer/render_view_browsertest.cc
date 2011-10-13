@@ -105,7 +105,7 @@ TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
   // Go back to C and commit, preparing for our real test.
   ViewMsg_Navigate_Params params_C;
   params_C.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  params_C.transition = PageTransition::FORWARD_BACK;
+  params_C.transition = content::PAGE_TRANSITION_FORWARD_BACK;
   params_C.current_history_list_length = 4;
   params_C.current_history_list_offset = 3;
   params_C.pending_history_list_offset = 2;
@@ -122,7 +122,7 @@ TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
   // Back to page B (page_id 2), without committing.
   ViewMsg_Navigate_Params params_B;
   params_B.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  params_B.transition = PageTransition::FORWARD_BACK;
+  params_B.transition = content::PAGE_TRANSITION_FORWARD_BACK;
   params_B.current_history_list_length = 4;
   params_B.current_history_list_offset = 2;
   params_B.pending_history_list_offset = 1;
@@ -133,7 +133,7 @@ TEST_F(RenderViewImplTest, LastCommittedUpdateState) {
   // Back to page A (page_id 1) and commit.
   ViewMsg_Navigate_Params params;
   params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  params.transition = PageTransition::FORWARD_BACK;
+  params.transition = content::PAGE_TRANSITION_FORWARD_BACK;
   params_B.current_history_list_length = 4;
   params_B.current_history_list_offset = 2;
   params_B.pending_history_list_offset = 0;
@@ -185,7 +185,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   // Back to page A (page_id 1) and commit.
   ViewMsg_Navigate_Params params_A;
   params_A.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  params_A.transition = PageTransition::FORWARD_BACK;
+  params_A.transition = content::PAGE_TRANSITION_FORWARD_BACK;
   params_A.current_history_list_length = 2;
   params_A.current_history_list_offset = 1;
   params_A.pending_history_list_offset = 0;
@@ -203,7 +203,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   // The browser then sends a stale navigation to B, which should be ignored.
   ViewMsg_Navigate_Params params_B;
   params_B.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  params_B.transition = PageTransition::FORWARD_BACK;
+  params_B.transition = content::PAGE_TRANSITION_FORWARD_BACK;
   params_B.current_history_list_length = 2;
   params_B.current_history_list_offset = 0;
   params_B.pending_history_list_offset = 1;
@@ -267,7 +267,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   // Ensure that going back to page B (page_id 2) at offset 0 is successful.
   ViewMsg_Navigate_Params params_B;
   params_B.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  params_B.transition = PageTransition::FORWARD_BACK;
+  params_B.transition = content::PAGE_TRANSITION_FORWARD_BACK;
   params_B.current_history_list_length = 2;
   params_B.current_history_list_offset = 1;
   params_B.pending_history_list_offset = 0;

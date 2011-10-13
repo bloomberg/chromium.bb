@@ -40,8 +40,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/url_constants.h"
+#include "content/public/common/page_transition_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
-  AddTabAtIndex(0, url, PageTransition::TYPED);
+  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, browser()->active_index());
   TabContents* second_tab = browser()->GetTabContentsAt(1);
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ThirtyFourTabs) {
 
   // There is one initial tab.
   for (int ix = 0; ix != 33; ++ix)
-    browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
+    browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(34, browser()->tab_count());
 
   // See browser\renderer_host\render_process_host.cc for the algorithm to
@@ -294,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   // Navigate to a page that triggers a cross-site transition.
   ASSERT_TRUE(test_server()->Start());
   GURL url2(test_server()->GetURL("files/title1.html"));
-  browser()->OpenURL(url2, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  browser()->OpenURL(url2, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED);
 
   ui_test_utils::WindowedNotificationObserver host_destroyed_observer(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
@@ -601,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   ASSERT_EQ(1, browser()->tab_count());
   TabContents* initial_tab = browser()->GetTabContentsAt(0);
   TabContents* app_tab = browser()->AddSelectedTabWithURL(
-      http_url, PageTransition::TYPED)->tab_contents();
+      http_url, content::PAGE_TRANSITION_TYPED)->tab_contents();
   ASSERT_EQ(2, browser()->tab_count());
   ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
 
@@ -701,7 +701,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
                                   MSG_ROUTING_NONE, NULL, NULL);
   app_contents->extension_tab_helper()->SetExtensionApp(extension_app);
 
-  model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
+  model->AddTabContents(app_contents, 0, content::PageTransitionFromInt(0),
+                        TabStripModel::ADD_NONE);
   model->SetTabPinned(0, true);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -773,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
 
   // Open a new tab with a page in English.
   AddTabAtIndex(0, GURL(test_server()->GetURL("files/english_page.html")),
-                PageTransition::TYPED);
+                content::PAGE_TRANSITION_TYPED);
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
   TabContentsWrapper* wrapper = browser()->GetSelectedTabContentsWrapper();
@@ -807,7 +808,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, TestNewTabExitsFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL), PageTransition::TYPED);
+  AddTabAtIndex(
+      0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
   TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
 
@@ -824,7 +826,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestNewTabExitsFullscreen) {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
         NotificationService::AllSources());
-    AddTabAtIndex(1, GURL(chrome::kAboutBlankURL), PageTransition::TYPED);
+    AddTabAtIndex(
+        1, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
   }
@@ -833,7 +836,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestNewTabExitsFullscreen) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, TestTabExitsItselfFromFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL), PageTransition::TYPED);
+  AddTabAtIndex(
+      0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
   TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
 
@@ -860,7 +864,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestTabExitsItselfFromFullscreen) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, TabEntersPresentationModeFromWindowed) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL), PageTransition::TYPED);
+  AddTabAtIndex(
+      0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
   TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
 
@@ -922,7 +927,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
     Browser::TabContentsFactory(browser()->profile(), NULL,
                                 MSG_ROUTING_NONE, NULL, NULL);
   app_contents->extension_tab_helper()->SetExtensionApp(extension_app);
-  model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
+  model->AddTabContents(app_contents, 0, content::PageTransitionFromInt(0),
+                        TabStripModel::ADD_NONE);
   model->SetTabPinned(0, true);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -1127,7 +1133,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(1, popup_browser->tab_count());
 
   // Now try opening another tab in the popup browser.
-  AddTabWithURLParams params1(url, PageTransition::TYPED);
+  AddTabWithURLParams params1(url, content::PAGE_TRANSITION_TYPED);
   popup_browser->AddTabWithURL(&params1);
   EXPECT_EQ(popup_browser, params1.target);
 
@@ -1145,7 +1151,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
 
   // Now try opening another tab in the app browser.
   AddTabWithURLParams params2(GURL(chrome::kAboutBlankURL),
-                              PageTransition::TYPED);
+                              content::PAGE_TRANSITION_TYPED);
   app_browser->AddTabWithURL(&params2);
   EXPECT_EQ(app_browser, params2.target);
 
@@ -1163,7 +1169,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
 
   // Now try opening another tab in the app popup browser.
   AddTabWithURLParams params3(GURL(chrome::kAboutBlankURL),
-                              PageTransition::TYPED);
+                              content::PAGE_TRANSITION_TYPED);
   app_popup_browser->AddTabWithURL(&params3);
   EXPECT_EQ(app_popup_browser, params3.target);
 

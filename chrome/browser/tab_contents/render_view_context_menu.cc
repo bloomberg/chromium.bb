@@ -809,7 +809,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
        i = printable_selection_text.find('&', i + 2))
     printable_selection_text.insert(i, 1, '&');
 
-  if (match.transition == PageTransition::TYPED) {
+  if (match.transition == content::PAGE_TRANSITION_TYPED) {
     if (ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
         selection_navigation_url_.scheme())) {
       menu_model_.AddItem(
@@ -1465,7 +1465,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
         params_.frame_id,
         disposition,
-        PageTransition::LINK);
+        content::PAGE_TRANSITION_LINK);
     return;
   }
 
@@ -1478,7 +1478,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           source_tab_contents_->delegate() &&
               source_tab_contents_->delegate()->IsApplication() ?
                   NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
-          PageTransition::LINK);
+          content::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
@@ -1486,7 +1486,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           params_.link_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
           params_.frame_id,
-          NEW_WINDOW, PageTransition::LINK);
+          NEW_WINDOW, content::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
@@ -1494,7 +1494,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
               GURL(),
               params_.frame_id,
               OFF_THE_RECORD,
-              PageTransition::LINK);
+              content::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
@@ -1533,7 +1533,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           params_.src_url,
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
           params_.frame_id,
-          NEW_BACKGROUND_TAB, PageTransition::LINK);
+          NEW_BACKGROUND_TAB, content::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_PLAYPAUSE: {
@@ -1730,7 +1730,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
               GURL(),
               params_.frame_id,
               disposition,
-              PageTransition::LINK);
+              content::PAGE_TRANSITION_LINK);
       break;
     }
 
@@ -1767,7 +1767,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           ForceNewTabDispositionFromEventFlags(event_flags);
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kLanguageOptionsSubPage;
-      OpenURL(GURL(url), GURL(), 0, disposition, PageTransition::LINK);
+      OpenURL(GURL(url), GURL(), 0, disposition, content::PAGE_TRANSITION_LINK);
       break;
     }
 
@@ -1802,7 +1802,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           ForceNewTabDispositionFromEventFlags(event_flags);
       std::string url = std::string(chrome::kChromeUISettingsURL) +
           chrome::kHandlerSettingsSubPage;
-      OpenURL(GURL(url), GURL(), 0, disposition, PageTransition::LINK);
+      OpenURL(GURL(url), GURL(), 0, disposition, content::PAGE_TRANSITION_LINK);
       break;
     }
 
@@ -1850,7 +1850,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       GURL localized_url = google_util::AppendGoogleLocaleParam(url);
       // Open URL with no referrer field (because user clicked on menu item).
       OpenURL(localized_url, GURL(), 0, NEW_FOREGROUND_TAB,
-              PageTransition::LINK);
+          content::PAGE_TRANSITION_LINK);
       break;
     }
 
@@ -1918,7 +1918,7 @@ string16 RenderViewContextMenu::PrintableSelectionText() {
 void RenderViewContextMenu::OpenURL(
     const GURL& url, const GURL& referrer, int64 frame_id,
     WindowOpenDisposition disposition,
-    PageTransition::Type transition) {
+    content::PageTransition transition) {
   TabContents* new_contents =
       source_tab_contents_->OpenURL(url, referrer, disposition, transition);
 

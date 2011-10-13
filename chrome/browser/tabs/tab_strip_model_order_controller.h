@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 
 class TabContentsWrapper;
 
@@ -33,7 +33,7 @@ class TabStripModelOrderController : public TabStripModelObserver {
   // Determine where to place a newly opened tab by using the supplied
   // transition and foreground flag to figure out how it was opened.
   int DetermineInsertionIndex(TabContentsWrapper* new_contents,
-                              PageTransition::Type transition,
+                              content::PageTransition transition,
                               bool foreground);
 
   // Returns the index to append tabs at.

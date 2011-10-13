@@ -686,7 +686,8 @@ SearchProvider::ScoredTerms SearchProvider::ScoreHistoryTerms(
     if (!prevent_inline_autocomplete && classifier && (i->term != input_text)) {
       AutocompleteMatch match;
       classifier->Classify(i->term, string16(), false, false, &match, NULL);
-      prevent_inline_autocomplete = match.transition == PageTransition::TYPED;
+      prevent_inline_autocomplete =
+          match.transition == content::PAGE_TRANSITION_TYPED;
     }
 
     int relevance = CalculateRelevanceForHistory(i->time, is_keyword,
@@ -887,8 +888,8 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
       profile_, provider, query_string, accepted_suggestion, input_text));
 
   // Search results don't look like URLs.
-  match.transition =
-      is_keyword ? PageTransition::KEYWORD : PageTransition::GENERATED;
+  match.transition = is_keyword ?
+      content::PAGE_TRANSITION_KEYWORD : content::PAGE_TRANSITION_GENERATED;
 
   // Try to add |match| to |map|.  If a match for |query_string| is already in
   // |map|, replace it if |match| is more relevant.

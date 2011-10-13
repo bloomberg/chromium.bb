@@ -535,7 +535,7 @@ bool TabContents::NeedToFireBeforeUnload() {
 TabContents* TabContents::OpenURL(const GURL& url,
                                   const GURL& referrer,
                                   WindowOpenDisposition disposition,
-                                  PageTransition::Type transition) {
+                                  content::PageTransition transition) {
   return OpenURL(OpenURLParams(url, referrer, disposition, transition));
 }
 
@@ -1048,8 +1048,10 @@ void TabContents::OnGoToEntryAtOffset(int offset) {
     // Note that we don't call NavigationController::GotToOffset() as we don't
     // want to create a pending navigation entry (it might end up lingering
     // http://crbug.com/51680).
-    entry->set_transition_type(entry->transition_type() |
-                               PageTransition::FORWARD_BACK);
+    entry->set_transition_type(
+        content::PageTransitionFromInt(
+            entry->transition_type() |
+            content::PAGE_TRANSITION_FORWARD_BACK));
     NavigateToEntry(*entry, NavigationController::NO_RELOAD);
 
     // If the entry is being restored and doesn't have a SiteInstance yet, fill
@@ -1455,7 +1457,7 @@ void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
 
 void TabContents::DidNavigate(RenderViewHost* rvh,
                               const ViewHostMsg_FrameNavigate_Params& params) {
-  if (PageTransition::IsMainFrame(params.transition))
+  if (content::PageTransitionIsMainFrame(params.transition))
     render_manager_.DidNavigateMainFrame(rvh);
 
   // Update the site of the SiteInstance if it doesn't have one yet.
@@ -1470,7 +1472,7 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   // (see http://code.google.com/p/chromium/issues/detail?id=2929 )
   // TODO(jungshik): Add a test for the encoding menu to avoid
   // regressing it again.
-  if (PageTransition::IsMainFrame(params.transition))
+  if (content::PageTransitionIsMainFrame(params.transition))
     contents_mime_type_ = params.contents_mime_type;
 
   content::LoadCommittedDetails details;
@@ -1485,14 +1487,15 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
     // tracking navigation events, we treat this event as a sub frame navigation
     // event.
     bool is_main_frame = did_navigate ? details.is_main_frame : false;
-    PageTransition::Type transition_type = params.transition;
+    content::PageTransition transition_type = params.transition;
     // Whether or not a page transition was triggered by going backward or
     // forward in the history is only stored in the navigation controller's
     // entry list.
     if (did_navigate &&
         (controller_.GetActiveEntry()->transition_type() &
-            PageTransition::FORWARD_BACK)) {
-      transition_type = params.transition | PageTransition::FORWARD_BACK;
+            content::PAGE_TRANSITION_FORWARD_BACK)) {
+      transition_type = content::PageTransitionFromInt(
+          params.transition | content::PAGE_TRANSITION_FORWARD_BACK);
     }
     // Notify observers about the commit of the provisional load.
     FOR_EACH_OBSERVER(TabContentsObserver, observers_,
@@ -1668,7 +1671,7 @@ void TabContents::RequestOpenURL(const GURL& url,
                                  WindowOpenDisposition disposition,
                                  int64 source_frame_id) {
   TabContents* new_contents = NULL;
-  PageTransition::Type transition_type = PageTransition::LINK;
+  content::PageTransition transition_type = content::PAGE_TRANSITION_LINK;
   if (render_manager_.web_ui()) {
     // When we're a Web UI, it will provide a page transition type for us (this
     // is so the new tab page can specify AUTO_BOOKMARK for automatically
@@ -1682,7 +1685,8 @@ void TabContents::RequestOpenURL(const GURL& url,
             render_manager_.web_ui()->link_transition_type());
     transition_type = render_manager_.web_ui()->link_transition_type();
   } else {
-    new_contents = OpenURL(url, referrer, disposition, PageTransition::LINK);
+    new_contents = OpenURL(
+        url, referrer, disposition, content::PAGE_TRANSITION_LINK);
   }
   if (new_contents) {
     // Notify observers.

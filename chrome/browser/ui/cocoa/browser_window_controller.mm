@@ -1754,7 +1754,8 @@ enum {
     if (tab_contents) {
       GURL helpUrl =
           google_util::AppendGoogleLocaleParam(GURL(chrome::kCrashReasonURL));
-      tab_contents->OpenURL(helpUrl, GURL(), CURRENT_TAB, PageTransition::LINK);
+      tab_contents->OpenURL(
+          helpUrl, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
     }
   }
 }

@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 
 // The RenderView stores an instance of this class in the "extra data" of each
@@ -18,17 +18,17 @@ class CONTENT_EXPORT RequestExtraData
  public:
   RequestExtraData(bool is_main_frame,
                    int64 frame_id,
-                   PageTransition::Type transition_type);
+                   content::PageTransition transition_type);
   virtual ~RequestExtraData();
 
   bool is_main_frame() const { return is_main_frame_; }
   int64 frame_id() const { return frame_id_; }
-  PageTransition::Type transition_type() const { return transition_type_; }
+  content::PageTransition transition_type() const { return transition_type_; }
 
  private:
   bool is_main_frame_;
   int64 frame_id_;
-  PageTransition::Type transition_type_;
+  content::PageTransition transition_type_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

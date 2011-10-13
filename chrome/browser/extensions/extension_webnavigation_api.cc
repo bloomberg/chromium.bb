@@ -94,23 +94,24 @@ void DispatchOnCommitted(const char* event_name,
                          int64 frame_id,
                          bool is_main_frame,
                          const GURL& url,
-                         PageTransition::Type transition_type) {
+                         content::PageTransition transition_type) {
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(tab_contents));
   dict->SetString(keys::kUrlKey, url.spec());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
-  dict->SetString(keys::kTransitionTypeKey,
-                  PageTransition::CoreTransitionString(transition_type));
+  dict->SetString(
+      keys::kTransitionTypeKey,
+      content::PageTransitionGetCoreTransitionString(transition_type));
   ListValue* qualifiers = new ListValue();
-  if (transition_type & PageTransition::CLIENT_REDIRECT)
+  if (transition_type & content::PAGE_TRANSITION_CLIENT_REDIRECT)
     qualifiers->Append(Value::CreateStringValue("client_redirect"));
-  if (transition_type & PageTransition::SERVER_REDIRECT)
+  if (transition_type & content::PAGE_TRANSITION_SERVER_REDIRECT)
     qualifiers->Append(Value::CreateStringValue("server_redirect"));
-  if (transition_type & PageTransition::FORWARD_BACK)
+  if (transition_type & content::PAGE_TRANSITION_FORWARD_BACK)
     qualifiers->Append(Value::CreateStringValue("forward_back"));
-  if (transition_type & PageTransition::FROM_ADDRESS_BAR)
+  if (transition_type & content::PAGE_TRANSITION_FROM_ADDRESS_BAR)
     qualifiers->Append(Value::CreateStringValue("from_address_bar"));
   dict->Set(keys::kTransitionQualifiersKey, qualifiers);
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
@@ -509,7 +510,7 @@ void ExtensionWebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
     const GURL& url,
-    PageTransition::Type transition_type) {
+    content::PageTransition transition_type) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
 
@@ -582,7 +583,7 @@ void ExtensionWebNavigationTabObserver::DidOpenRequestedURL(
     const GURL& url,
     const GURL& referrer,
     WindowOpenDisposition disposition,
-    PageTransition::Type transition,
+    content::PageTransition transition,
     int64 source_frame_id) {
   if (!navigation_state_.CanSendEvents(source_frame_id))
     return;

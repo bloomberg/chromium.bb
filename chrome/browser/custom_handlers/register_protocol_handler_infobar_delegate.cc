@@ -94,6 +94,6 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
   owner()->tab_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
       chrome::kLearnMoreRegisterProtocolHandlerURL)), GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      PageTransition::LINK);
+      content::PAGE_TRANSITION_LINK);
   return false;
 }

@@ -27,7 +27,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
@@ -96,7 +96,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Implement the AutocompleteEditController interface.
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
-                                    PageTransition::Type transition,
+                                    content::PageTransition transition,
                                     const GURL& alternate_nav_url) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
   virtual void OnSelectionBoundsChanged() OVERRIDE;
@@ -114,7 +114,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
                                 InstantCompleteBehavior behavior) OVERRIDE;
   virtual string16 GetInputString() const OVERRIDE;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
-  virtual PageTransition::Type GetPageTransition() const OVERRIDE;
+  virtual content::PageTransition GetPageTransition() const OVERRIDE;
   virtual void AcceptInput() OVERRIDE;
   virtual void FocusLocation(bool select_all) OVERRIDE;
   virtual void FocusSearch() OVERRIDE;
@@ -410,7 +410,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   WindowOpenDisposition disposition_;
 
   // The transition type to use for the navigation.
-  PageTransition::Type transition_;
+  content::PageTransition transition_;
 
   // Used to schedule a task for the first run bubble.
   base::WeakPtrFactory<LocationBarViewGtk> first_run_bubble_;

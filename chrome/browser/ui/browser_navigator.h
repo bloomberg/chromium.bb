@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -43,7 +43,7 @@ namespace browser {
 struct NavigateParams {
   NavigateParams(Browser* browser,
                  const GURL& a_url,
-                 PageTransition::Type a_transition);
+                 content::PageTransition a_transition);
   NavigateParams(Browser* browser, TabContentsWrapper* a_target_contents);
   ~NavigateParams();
 
@@ -92,7 +92,7 @@ struct NavigateParams {
 
   // The transition type of the navigation. Default is PageTransition::LINK
   // when target_contents is specified in the constructor.
-  PageTransition::Type transition;
+  content::PageTransition transition;
 
   // The index the caller would like the tab to be positioned at in the
   // TabStrip. The actual index will be determined by the TabHandler in

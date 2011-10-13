@@ -43,7 +43,7 @@ void TabContentsObserver::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
     const GURL& url,
-    PageTransition::Type transition_type) {
+    content::PageTransition transition_type) {
 }
 
 void TabContentsObserver::DidFailProvisionalLoad(
@@ -84,15 +84,16 @@ void TabContentsObserver::StopNavigation() {
 void TabContentsObserver::DidOpenURL(const GURL& url,
                                      const GURL& referrer,
                                      WindowOpenDisposition disposition,
-                                     PageTransition::Type transition) {
+                                     content::PageTransition transition) {
 }
 
-void TabContentsObserver::DidOpenRequestedURL(TabContents* new_contents,
-                                              const GURL& url,
-                                              const GURL& referrer,
-                                              WindowOpenDisposition disposition,
-                                              PageTransition::Type transition,
-                                              int64 source_frame_id) {
+void TabContentsObserver::DidOpenRequestedURL(
+    TabContents* new_contents,
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    content::PageTransition transition,
+    int64 source_frame_id) {
 }
 
 void TabContentsObserver::AppCacheAccessed(const GURL& manifest_url,

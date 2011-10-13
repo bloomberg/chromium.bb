@@ -1089,7 +1089,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     int index = browser->GetIndexForInsertionDuringRestore(i);
 
     browser::NavigateParams params(browser, tabs[i].url,
-                                   PageTransition::START_PAGE);
+                                   content::PAGE_TRANSITION_START_PAGE);
     params.disposition = first_tab ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
     params.tabstrip_index = index;
     params.tabstrip_add_types = add_types;
@@ -1204,7 +1204,7 @@ string16 LearnMoreInfoBar::GetLinkText() const {
 
 bool LearnMoreInfoBar::LinkClicked(WindowOpenDisposition disposition) {
   owner()->tab_contents()->OpenURL(learn_more_url_, GURL(), disposition,
-                                   PageTransition::LINK);
+                                   content::PAGE_TRANSITION_LINK);
   return false;
 }
 

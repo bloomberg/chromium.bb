@@ -64,7 +64,7 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   tab->navigations.push_back(TabNavigation(
       0, GURL("valid_url"), GURL("referrer"),
       string16(ASCIIToUTF16("title")),
-      std::string("state"), 0U));
+      std::string("state"), content::PageTransitionFromInt(0)));
   ASSERT_TRUE(tracker.LookupAllForeignSessions(&sessions));
   // Only the session with a valid window and tab gets returned.
   ASSERT_EQ(1U, sessions.size());

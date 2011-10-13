@@ -13,7 +13,7 @@
 // TabNavigation --------------------------------------------------------------
 
 TabNavigation::TabNavigation()
-    : transition_(PageTransition::TYPED),
+    : transition_(content::PAGE_TRANSITION_TYPED),
       type_mask_(0),
       index_(-1) {
 }
@@ -23,7 +23,7 @@ TabNavigation::TabNavigation(int index,
                              const GURL& referrer,
                              const string16& title,
                              const std::string& state,
-                             PageTransition::Type transition)
+                             content::PageTransition transition)
     : virtual_url_(virtual_url),
       referrer_(referrer),
       title_(title),
@@ -65,7 +65,7 @@ NavigationEntry* TabNavigation::ToNavigationEntry(int page_id,
       referrer_,
       // Use a transition type of reload so that we don't incorrectly
       // increase the typed count.
-      PageTransition::RELOAD,
+      content::PAGE_TRANSITION_RELOAD,
       // The extra headers are not sync'ed across sessions.
       std::string(),
       profile);

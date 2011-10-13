@@ -194,7 +194,7 @@ void MediaPlayer::PopupPlaylist(Browser* creator) {
                  chrome::NOTIFICATION_BROWSER_CLOSED,
                  Source<Browser>(playlist_browser_));
   playlist_browser_->AddSelectedTabWithURL(GetMediaplayerPlaylistUrl(),
-                                           PageTransition::LINK);
+                                           content::PAGE_TRANSITION_LINK);
   playlist_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
                                                    kPopupTop,
                                                    kPopupWidth,
@@ -235,7 +235,7 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
   }
 #endif
   mediaplayer_browser_->AddSelectedTabWithURL(GetMediaPlayerUrl(),
-                                              PageTransition::LINK);
+                                              content::PAGE_TRANSITION_LINK);
   mediaplayer_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
                                                       kPopupTop,
                                                       kPopupWidth,

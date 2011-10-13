@@ -1767,7 +1767,7 @@ bool TabStripGtk::CompleteDrop(guchar* data, bool is_plain_text) {
     return false;
 
   browser::NavigateParams params(window()->browser(), url,
-                                 PageTransition::LINK);
+                                 content::PAGE_TRANSITION_LINK);
   params.tabstrip_index = drop_index;
 
   if (drop_before) {
@@ -2138,7 +2138,7 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget) {
 
       Browser* browser = window_->browser();
       DCHECK(browser);
-      browser->AddSelectedTabWithURL(url, PageTransition::TYPED);
+      browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
       break;
     }
     default:

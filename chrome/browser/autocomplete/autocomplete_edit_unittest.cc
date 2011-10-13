@@ -75,7 +75,7 @@ class TestingAutocompleteEditController : public AutocompleteEditController {
   TestingAutocompleteEditController() {}
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
-                                    PageTransition::Type transition,
+                                    content::PageTransition transition,
                                     const GURL& alternate_nav_url) OVERRIDE {}
   virtual void OnChanged() OVERRIDE {}
   virtual void OnSelectionBoundsChanged() OVERRIDE {}

@@ -6,8 +6,8 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
-#include "content/common/page_transition_types.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/page_transition_types.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -48,7 +48,8 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   //     fires the tab gets closed.
 
   NavigateAndCommit(url1);
-  controller().LoadURL(url2, GURL(), PageTransition::LINK, std::string());
+  controller().LoadURL(
+      url2, GURL(), content::PAGE_TRANSITION_LINK, std::string());
   // Simulate the ClosePage call which is normally sent by the net::URLRequest.
   rvh()->ClosePage();
   // Needed so that navigations are not suspended on the RVH.

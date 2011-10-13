@@ -13,7 +13,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
@@ -39,7 +39,7 @@ class TabNavigation {
                 const GURL& referrer,
                 const string16& title,
                 const std::string& state,
-                PageTransition::Type transition);
+                content::PageTransition transition);
   TabNavigation(const TabNavigation& tab);
   ~TabNavigation();
   TabNavigation& operator=(const TabNavigation& tab);
@@ -65,10 +65,10 @@ class TabNavigation {
   const std::string& state() const { return state_; }
 
   // Transition type.
-  void set_transition(PageTransition::Type transition) {
+  void set_transition(content::PageTransition transition) {
     transition_ = transition;
   }
-  PageTransition::Type transition() const { return transition_; }
+  content::PageTransition transition() const { return transition_; }
 
   // A mask used for arbitrary boolean values needed to represent a
   // NavigationEntry. Currently only contains HAS_POST_DATA or 0.
@@ -97,7 +97,7 @@ class TabNavigation {
   GURL referrer_;
   string16 title_;
   std::string state_;
-  PageTransition::Type transition_;
+  content::PageTransition transition_;
   int type_mask_;
 
   int index_;

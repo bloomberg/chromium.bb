@@ -40,7 +40,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -1064,7 +1064,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   if (node->is_url()) {
     RecordAppLaunch(profile, node->url());
     page_navigator_->OpenURL(node->url(), GURL(),
-        disposition_from_event_flags, PageTransition::AUTO_BOOKMARK);
+        disposition_from_event_flags, content::PAGE_TRANSITION_AUTO_BOOKMARK);
   } else {
     bookmark_utils::OpenAll(GetWidget()->GetNativeWindow(), profile,
         page_navigator_, node, disposition_from_event_flags);

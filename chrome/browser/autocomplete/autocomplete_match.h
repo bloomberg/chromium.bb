@@ -9,11 +9,10 @@
 #include <vector>
 #include <string>
 
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 class AutocompleteProvider;
-class PageTransition;
 class TemplateURL;
 
 // AutocompleteMatch ----------------------------------------------------------
@@ -168,7 +167,7 @@ struct AutocompleteMatch {
   // The transition type to use when the user opens this match.  By default
   // this is TYPED.  Providers whose matches do not look like URLs should set
   // it to GENERATED.
-  PageTransition::Type transition;
+  content::PageTransition transition;
 
   // True when this match is the "what you typed" match from the history
   // system.

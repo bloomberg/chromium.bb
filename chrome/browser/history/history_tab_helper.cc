@@ -49,7 +49,7 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
           params.url, base::Time::Now(), tab_contents(), params.page_id,
           params.referrer, params.redirects, params.transition,
           history::SOURCE_BROWSED, details.did_replace_entry));
-  if (PageTransition::IsMainFrame(params.transition) &&
+  if (content::PageTransitionIsMainFrame(params.transition) &&
       virtual_url != params.url) {
     // Hack on the "virtual" URL so that it will appear in history. For some
     // types of URLs, we will display a magic URL that is different from where

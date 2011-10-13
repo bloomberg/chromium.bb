@@ -11,7 +11,6 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/common/page_transition_types.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"

@@ -75,7 +75,7 @@ class NewBrowserPageNavigator : public PageNavigator {
   virtual TabContents* OpenURL(const GURL& url,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
-                               PageTransition::Type transition) OVERRIDE {
+                               content::PageTransition transition) OVERRIDE {
     return OpenURL(OpenURLParams(url, referrer, disposition, transition));
   }
 
@@ -154,7 +154,7 @@ void OpenAllImpl(const BookmarkNode* node,
     else
       disposition = initial_disposition;
     (*navigator)->OpenURL(OpenURLParams(node->url(), GURL(), disposition,
-                          PageTransition::AUTO_BOOKMARK));
+                          content::PAGE_TRANSITION_AUTO_BOOKMARK));
     if (!*opened_url) {
       *opened_url = true;
       // We opened the first URL which may have opened a new window or clobbered

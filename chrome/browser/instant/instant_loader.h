@@ -15,7 +15,7 @@
 #include "chrome/common/instant_types.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
@@ -50,7 +50,7 @@ class InstantLoader : public NotificationObserver {
   bool Update(TabContentsWrapper* tab_contents,
               const TemplateURL* template_url,
               const GURL& url,
-              PageTransition::Type transition_type,
+              content::PageTransition transition_type,
               const string16& user_text,
               bool verbatim,
               string16* suggested_text);
@@ -180,7 +180,7 @@ class InstantLoader : public NotificationObserver {
   // Creates and loads the |template_url|'s instant URL.
   void LoadInstantURL(TabContentsWrapper* tab_contents,
                       const TemplateURL* template_url,
-                      PageTransition::Type transition_type,
+                      content::PageTransition transition_type,
                       const string16& user_text,
                       bool verbatim);
 
@@ -224,7 +224,7 @@ class InstantLoader : public NotificationObserver {
   scoped_ptr<FrameLoadObserver> frame_load_observer_;
 
   // Transition type of the match last passed to Update.
-  PageTransition::Type last_transition_type_;
+  content::PageTransition last_transition_type_;
 
   // Timer used to update the bounds of the omnibox.
   base::OneShotTimer<InstantLoader> update_bounds_timer_;

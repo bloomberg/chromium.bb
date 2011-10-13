@@ -13,7 +13,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -23,7 +23,7 @@ struct CONTENT_EXPORT OpenURLParams {
   OpenURLParams(const GURL& url,
                 const GURL& referrer,
                 WindowOpenDisposition disposition,
-                PageTransition::Type transition);
+                content::PageTransition transition);
   ~OpenURLParams();
 class TabContents;
 
@@ -35,7 +35,7 @@ class TabContents;
   WindowOpenDisposition disposition;
 
   // The transition type of navigation.
-  PageTransition::Type transition;
+  content::PageTransition transition;
 
   // The override encoding of the URL contents to be opened.
   std::string override_encoding;
@@ -51,7 +51,7 @@ class CONTENT_EXPORT PageNavigator {
   virtual TabContents* OpenURL(const GURL& url,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
-                               PageTransition::Type transition) = 0;
+                               content::PageTransition transition) = 0;
 
   // Opens a URL with the given disposition.  The transition specifies how this
   // navigation should be recorded in the history system (for example, typed).

@@ -76,6 +76,6 @@ void InstantConfirmDialogGtk::OnLinkButtonClicked(GtkWidget* button) {
   // other windows.
   Browser* browser = Browser::Create(profile_);
   browser->AddSelectedTabWithURL(browser::InstantLearnMoreURL(),
-                                 PageTransition::LINK);
+                                 content::PAGE_TRANSITION_LINK);
   browser->window()->Show();
 }

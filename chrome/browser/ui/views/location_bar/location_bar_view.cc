@@ -118,7 +118,9 @@ LocationBarView::LocationBarView(Browser* browser,
       model_(model),
       delegate_(delegate),
       disposition_(CURRENT_TAB),
-      transition_(PageTransition::TYPED | PageTransition::FROM_ADDRESS_BAR),
+      transition_(content::PageTransitionFromInt(
+          content::PAGE_TRANSITION_TYPED |
+          content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       location_icon_view_(NULL),
       ev_bubble_view_(NULL),
       location_entry_view_(NULL),
@@ -817,14 +819,15 @@ void LocationBarView::OnMouseCaptureLost() {
 void LocationBarView::OnAutocompleteAccept(
     const GURL& url,
     WindowOpenDisposition disposition,
-    PageTransition::Type transition,
+    content::PageTransition transition,
     const GURL& alternate_nav_url) {
   // WARNING: don't add an early return here. The calls after the if must
   // happen.
   if (url.is_valid()) {
     location_input_ = UTF8ToUTF16(url.spec());
     disposition_ = disposition;
-    transition_ = transition | PageTransition::FROM_ADDRESS_BAR;
+    transition_ = content::PageTransitionFromInt(
+        transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
 
     if (browser_->command_updater()) {
       if (!alternate_nav_url.is_valid()) {
@@ -1149,7 +1152,7 @@ WindowOpenDisposition LocationBarView::GetWindowOpenDisposition() const {
   return disposition_;
 }
 
-PageTransition::Type LocationBarView::GetPageTransition() const {
+content::PageTransition LocationBarView::GetPageTransition() const {
   return transition_;
 }
 

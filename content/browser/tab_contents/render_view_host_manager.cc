@@ -408,7 +408,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   //       RenderViews in response to a link click.
   //
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerSite) &&
-      entry.transition_type() == PageTransition::GENERATED)
+      entry.transition_type() == content::PAGE_TRANSITION_GENERATED)
     return curr_instance;
 
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it

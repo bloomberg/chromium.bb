@@ -13,7 +13,6 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
-#include "content/common/page_transition_types.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

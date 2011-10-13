@@ -11,7 +11,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
-#include "content/common/page_transition_types.h"
+#include "content/public/common/page_transition_types.h"
 
 TestTabContents::TestTabContents(content::BrowserContext* browser_context,
                                  SiteInstance* instance)
@@ -47,7 +47,8 @@ TabContents* TestTabContents::Clone() {
 }
 
 void TestTabContents::NavigateAndCommit(const GURL& url) {
-  controller().LoadURL(url, GURL(), PageTransition::LINK, std::string());
+  controller().LoadURL(
+      url, GURL(), content::PAGE_TRANSITION_LINK, std::string());
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
   BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(

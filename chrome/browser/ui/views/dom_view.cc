@@ -54,7 +54,7 @@ TabContents* DOMView::CreateTabContents(Profile* profile,
 void DOMView::LoadURL(const GURL& url) {
   DCHECK(initialized_);
   dom_contents_->tab_contents()->controller().LoadURL(
-      url, GURL(), PageTransition::START_PAGE, std::string());
+      url, GURL(), content::PAGE_TRANSITION_START_PAGE, std::string());
 }
 
 bool DOMView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
