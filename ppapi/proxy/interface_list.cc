@@ -174,6 +174,7 @@ InterfaceList::InterfaceList() {
          GetPPB_Var_Interface());
 
   // PPB (browser) interfaces.
+  AddPPB(PPB_FileChooser_Proxy::GetTrustedInfo());
   AddPPB(PPB_Flash_Clipboard_Proxy::GetInfo());
   AddPPB(PPB_Flash_File_FileRef_Proxy::GetInfo());
   AddPPB(PPB_Flash_File_ModuleLocal_Proxy::GetInfo());

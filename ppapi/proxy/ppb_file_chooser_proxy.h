@@ -16,11 +16,11 @@
 #include "ppapi/thunk/ppb_file_chooser_api.h"
 
 struct PPB_FileChooser_Dev;
+struct PPB_FileChooserTrusted;
 
 namespace ppapi {
 
 class HostResource;
-struct PPB_FileChooserTrusted;
 struct PPB_FileRef_CreateInfo;
 
 namespace proxy {
@@ -31,6 +31,8 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
  public:
   PPB_FileChooser_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_FileChooser_Proxy();
+
+  static const Info* GetTrustedInfo();
 
   static PP_Resource CreateProxyResource(
       PP_Instance instance,

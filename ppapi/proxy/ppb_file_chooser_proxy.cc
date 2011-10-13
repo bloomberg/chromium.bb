@@ -10,6 +10,7 @@
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
+#include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -24,6 +25,11 @@ using ppapi::thunk::PPB_FileChooser_API;
 
 namespace ppapi {
 namespace proxy {
+
+namespace {
+InterfaceProxy* CreateFileChooserProxy(Dispatcher* dispatcher) {
+  return new PPB_FileChooser_Proxy(dispatcher);
+}
 
 class FileChooser : public Resource,
                     public PPB_FileChooser_API {
@@ -150,12 +156,26 @@ void FileChooser::ChooseComplete(
   // DANGER: May delete |this|!
 }
 
+}  // namespace
+
 PPB_FileChooser_Proxy::PPB_FileChooser_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_FileChooser_Proxy::~PPB_FileChooser_Proxy() {
+}
+
+// static
+const InterfaceProxy::Info* PPB_FileChooser_Proxy::GetTrustedInfo() {
+  static const Info info = {
+    thunk::GetPPB_FileChooser_Trusted_Thunk(),
+    PPB_FILECHOOSER_TRUSTED_INTERFACE,
+    INTERFACE_ID_NONE,  // FILE_CHOOSER is the canonical one.
+    false,
+    &CreateFileChooserProxy
+  };
+  return &info;
 }
 
 // static
