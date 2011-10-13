@@ -2169,7 +2169,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       f.close()
       return all_data
     finally:
-      shutil.rmtree(tempdir)
+      shutil.rmtree(tempdir, ignore_errors=True)
 
   def ImportSettings(self, import_from, first_run, import_items):
     """Import the specified import items from the specified browser.
