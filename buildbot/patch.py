@@ -30,10 +30,14 @@ class PatchException(Exception):
 
 class ApplyPatchException(Exception):
   """Exception thrown if we fail to apply a patch."""
+  # Types used to denote what we failed to apply against.
+  TYPE_REBASE_TO_TOT = 1
+  TYPE_REBASE_TO_PATCH_INFLIGHT = 2
 
-  def __init__(self, patch):
+  def __init__(self, patch, type=TYPE_REBASE_TO_TOT):
     super(ApplyPatchException, self).__init__()
     self.patch = patch
+    self.type = type
 
   def __str__(self):
     return 'Failed to apply patch ' + str(self.patch)
@@ -115,6 +119,25 @@ class GerritPatch(Patch):
 
     return os.path.join(url_prefix, self.project)
 
+  def _RebaseOnto(self, branch, upstream, project_dir, trivial):
+    """Attempts to rebase FETCH_HEAD onto branch -- while not on a branch.
+
+    Raises:
+      cros_lib.RunCommandError:  If the rebase operation returns an error code.
+        In this case, we still rebase --abort before returning.
+    """
+    try:
+      git_rb = ['git', 'rebase']
+      if trivial: git_rb.extend(['--strategy', 'resolve', '-X', 'trivial'])
+      git_rb.extend(['--onto', branch, upstream, 'FETCH_HEAD'])
+
+      # Run the rebase command.
+      cros_lib.RunCommand(git_rb, cwd=project_dir)
+    except cros_lib.RunCommandError:
+      cros_lib.RunCommand(['git', 'rebase', '--abort'], cwd=project_dir,
+                          error_ok=True)
+      raise
+
   def _RebasePatch(self, buildroot, project_dir, trivial):
     """Rebase patch fetched from gerrit onto constants.PATCH_BRANCH.
 
@@ -126,39 +149,47 @@ class GerritPatch(Patch):
       project_dir: Directory of the project that is being patched.
       trivial: Use trivial logic that only allows trivial merges.  Note:
         Requires Git >= 1.7.6 -- bug <.  Bots have 1.7.6 installed.
+
+    Raises:
+      ApplyPatchException: If the patch failed to apply.
     """
     url = self._GetProjectUrl()
     upstream = _GetProjectManifestBranch(buildroot, self.project)
     cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
     try:
-      git_rb = ['git', 'rebase']
-      if trivial: git_rb.extend(['--strategy', 'resolve', '-X', 'trivial'])
-      git_rb.extend(['--onto', constants.PATCH_BRANCH, upstream, 'FETCH_HEAD'])
-
-      # Run the rebase command.
-      cros_lib.RunCommand(git_rb, cwd=project_dir)
+      self._RebaseOnto(constants.PATCH_BRANCH, upstream, project_dir, trivial)
       cros_lib.RunCommand(['git', 'checkout', '-B', constants.PATCH_BRANCH],
                           cwd=project_dir)
     except cros_lib.RunCommandError:
-      cros_lib.RunCommand(['git', 'rebase', '--abort'], cwd=project_dir,
-                          error_ok=True)
+      try:
+        # Failed to rebase against branch, try TOT.
+        self._RebaseOnto(upstream, upstream, project_dir, trivial)
+      except cros_lib.RunCommandError:
+        raise ApplyPatchException(
+            self, type=ApplyPatchException.TYPE_REBASE_TO_TOT)
+      else:
+        # We failed to apply to patch_branch but succeeded against TOT.
+        # We should pass a different type of exception in this case.
+        raise ApplyPatchException(
+            self, type=ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT)
+
+    finally:
       cros_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
                           cwd=project_dir)
-      raise
 
   def Apply(self, buildroot, trivial=False):
-    """Implementation of Patch.Apply()."""
-    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
-    try:
-      if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
-        upstream = cros_lib.GetManifestDefaultBranch(buildroot)
-        cros_lib.RunCommand(['git', 'checkout', '-b', constants.PATCH_BRANCH,
-                             '-t', 'm/' + upstream],
-                            cwd=project_dir)
+    """Implementation of Patch.Apply().
 
-      self._RebasePatch(buildroot, project_dir, trivial)
-    except cros_lib.RunCommandError:
-      raise ApplyPatchException(self)
+    Raises:
+      ApplyPatchException: If the patch failed to apply.
+    """
+    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
+    if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
+      upstream = cros_lib.GetManifestDefaultBranch(buildroot)
+      cros_lib.RunCommand(['git', 'checkout', '-b', constants.PATCH_BRANCH,
+                           '-t', 'm/' + upstream],
+                          cwd=project_dir)
+    self._RebasePatch(buildroot, project_dir, trivial)
 
   # --------------------- Gerrit Operations --------------------------------- #
 
@@ -175,7 +206,7 @@ class GerritPatch(Patch):
     return msg + (' Please see %s for more information.' %
                   _PALADIN_DOCUMENTATION_URL)
 
-  def HandleCouldNotSubmit(self, helper, dryrun=False):
+  def HandleCouldNotSubmit(self, helper, build_log, dryrun=False):
     """Handler that is called when the Commit Queue can't submit a change.
 
     This should be rare, but if an admin overrides the commit queue and commits
@@ -187,10 +218,10 @@ class GerritPatch(Patch):
       dryrun: If true, do not actually commit anything to Gerrit.
 
     """
-    msg = ('The Commit Queue failed to submit your change. '
+    msg = ('The Commit Queue failed to submit your change in %s . '
            'This is most likely due to an owner of your repo overriding the '
            'Commit Queue and committing a change that conflicts with yours. '
-           'Please rebase and re-upload your change to re-submit.')
+           'Please rebase and re-upload your change to re-submit.' % build_log)
     msg = self.ConstructErrorMessage(msg)
 
     cmd = helper.GetGerritReviewCommand(
@@ -212,7 +243,7 @@ class GerritPatch(Patch):
       dryrun: If true, do not actually commit anything to Gerrit.
 
     """
-    msg = ('The Commit Queue failed to verify your change in %s. '
+    msg = ('The Commit Queue failed to verify your change in %s . '
            'If you believe this happened in error, you can remove the '
            'chrome-bot reviewer from your review by hitting the |X| next to '
            'its name.  Your change will then get automatically retried.' %
@@ -223,7 +254,7 @@ class GerritPatch(Patch):
                                                          self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
 
-  def HandleCouldNotApply(self, helper, dryrun=False):
+  def HandleCouldNotApply(self, helper, build_log, dryrun=False):
     """Handler for when the Commit Queue fails to apply a change.
 
     This handler notifies set CodeReview-2 to the review forcing the developer
@@ -233,8 +264,8 @@ class GerritPatch(Patch):
       helper: Instance of gerrit_helper for the gerrit instance.
       dryrun: If true, do not actually commit anything to Gerrit.
     """
-    msg = ('The Commit Queue failed to apply your change cleanly. '
-           'Please re-sync, rebase, and re-upload your change.')
+    msg = ('The Commit Queue failed to apply your change cleanly in %s . '
+           'Please re-sync, rebase, and re-upload your change.' % build_log)
     msg = self.ConstructErrorMessage(msg)
     cmd = helper.GetGerritReviewCommand(
         ['--verified=-1', '-m', '"%s"' % msg, '%s,%s' % (self.gerrit_number,

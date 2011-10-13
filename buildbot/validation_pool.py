@@ -65,6 +65,7 @@ class ValidationPool(object):
                         str(build_number))
 
     self.changes = []
+    self.changes_that_failed_to_apply_earlier = []
     self.gerrit_helper = None
     self.dryrun = dryrun | self.GLOBAL_DRYRUN
 
@@ -167,7 +168,8 @@ class ValidationPool(object):
     Returns:
       True if we managed to apply some changes.
     """
-    changes_that_failed_to_apply = set()
+    changes_that_failed_to_apply_against_other_changes = set()
+    changes_that_failed_to_apply_to_tot = set()
     changes_applied = set()
 
     # Change map maps Change-Id to GerritPatch object for lookup of dependent
@@ -177,7 +179,8 @@ class ValidationPool(object):
       logging.debug('Trying change %s', change.revision)
       # We've already attempted this change because it was a dependent change
       # of another change that was ready.
-      if change in changes_that_failed_to_apply or change in changes_applied:
+      if (change in changes_that_failed_to_apply_to_tot or
+          change in changes_applied):
         continue
 
       # Change stacks consists of the change plus its dependencies in the order
@@ -208,23 +211,28 @@ class ValidationPool(object):
         try:
           if change in changes_applied:
             continue
-          if change in changes_that_failed_to_apply:
+          if change in changes_that_failed_to_apply_to_tot:
             break
 
           change.Apply(directory, trivial=True)
           changes_applied.add(change)
-        except cros_patch.ApplyPatchException:
-          # Abort the chain if we fail to apply any dependent changes.
-          changes_that_failed_to_apply.add(change)
+        except cros_patch.ApplyPatchException as e:
+          if e.type == cros_patch.ApplyPatchException.TYPE_REBASE_TO_TOT:
+            changes_that_failed_to_apply_to_tot.add(change)
+          else:
+            changes_that_failed_to_apply_against_other_changes.add(change)
+
           break
         else:
           lkgm_manager.PrintLink(str(change), change.url)
 
-    if changes_that_failed_to_apply:
+    if changes_that_failed_to_apply_to_tot:
       logging.debug('Some changes could not be applied cleanly.')
-      self.HandleApplicationFailure(changes_that_failed_to_apply)
+      self.HandleApplicationFailure(changes_that_failed_to_apply_to_tot)
 
     self.changes = changes_applied
+    self.changes_that_failed_to_apply_earlier = list(
+        changes_that_failed_to_apply_against_other_changes)
     return len(self.changes) > 0
 
   def SubmitPool(self):
@@ -239,9 +247,12 @@ class ValidationPool(object):
         try:
           change.Submit(self.gerrit_helper, dryrun=self.dryrun)
         except cros_build_lib.RunCommandError:
-          change.HandleCouldNotSubmit(self.gerrit_helper,
+          change.HandleCouldNotSubmit(self.gerrit_helper, self.build_log,
                                       dryrun=self.dryrun)
           # TODO(sosa): Do we re-raise?
+      if self.changes_that_failed_to_apply_earlier:
+        self.HandleApplicationFailure(self.changes_that_failed_to_apply_earlier)
+
     else:
       raise TreeIsClosedException()
 
@@ -249,7 +260,8 @@ class ValidationPool(object):
     """Handles changes that were not able to be applied cleanly."""
     for change in changes:
       logging.info('Change %s did not apply cleanly.', change)
-      change.HandleCouldNotApply(self.gerrit_helper, dryrun=self.dryrun)
+      change.HandleCouldNotApply(self.gerrit_helper, self.build_log,
+                                 dryrun=self.dryrun)
 
   def HandleValidationFailure(self):
     """Handles failed changes by removing them from next Validation Pools."""

@@ -148,7 +148,7 @@ class GerritPatchTest(mox.MoxTestBase):
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     helper = gerrit_helper.GerritHelper(False)
     self.mox.ReplayAll()
-    my_patch.HandleCouldNotApply(helper, True)
+    my_patch.HandleCouldNotApply(helper, 'http://fake%20url/1234', True)
     self.mox.VerifyAll()
 
   def testGerritHandleSubmitError(self):
@@ -156,7 +156,7 @@ class GerritPatchTest(mox.MoxTestBase):
     my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
     helper = gerrit_helper.GerritHelper(False)
     self.mox.ReplayAll()
-    my_patch.HandleCouldNotSubmit(helper, True)
+    my_patch.HandleCouldNotSubmit(helper, 'http://fake%20url/1234', True)
     self.mox.VerifyAll()
 
   def testGerritHandleVerifyError(self):
@@ -192,14 +192,16 @@ class GerritPatchTest(mox.MoxTestBase):
 
   def testGerritDependencies(self):
     """Tests that we can get dependencies from a commit with 2 dependencies."""
-    git_rev_list = '\n'.join(['1234abcd', '1234abce'])
-    self.GerritDepenedenciesHelper(git_rev_list, ['1234abcd', '1234abce'])
+    git_rev_list_obj = self.mox.CreateMock(cros_lib.CommandResult)
+    git_rev_list_obj.output = '\n'.join(['1234abcd', '1234abce'])
+    self.GerritDepenedenciesHelper(git_rev_list_obj, ['1234abcd', '1234abce'])
 
 
   def testGerritNoDependencies(self):
     """Tests that we return an empty tuple if the commit has no deps."""
-    git_rev_list = ''
-    self.GerritDepenedenciesHelper(git_rev_list, [])
+    git_rev_list_obj = self.mox.CreateMock(cros_lib.CommandResult)
+    git_rev_list_obj.output = ''
+    self.GerritDepenedenciesHelper(git_rev_list_obj, [])
 
 
 class PrepareLocalPatchesTests(mox.MoxTestBase):

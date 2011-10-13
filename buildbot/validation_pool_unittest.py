@@ -134,17 +134,21 @@ class TestValidationPool(mox.MoxTestBase):
     patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch3 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch4 = self.mox.CreateMock(cros_patch.GerritPatch)
 
     patch1.revision = 'ChangeId1'
     patch2.revision = 'ChangeId2'
     patch3.revision = 'ChangeId3'
+    patch4.revision = 'ChangeId4'
     patch1.url = 'fake_url/1'
     patch2.url = 'fake_url/2'
     patch3.url = 'fake_url/3'
+    patch4.url = 'fake_url/4'
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, False)
-    pool.changes = [patch1, patch2, patch3]
+    pool.changes = [patch1, patch2, patch3, patch4]
+    pool.build_log = 'log'
 
     self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
     self.mox.StubOutWithMock(cros_patch.GerritPatch, 'HandleCouldNotApply')
@@ -156,10 +160,18 @@ class TestValidationPool(mox.MoxTestBase):
     patch3.GerritDependencies(build_root).AndReturn([])
     patch3.Apply(build_root, trivial=True)
 
-    patch1.HandleCouldNotApply(None, dryrun=False)
+    # This one should be handled later (not where patch1 is handled.
+    patch4.GerritDependencies(build_root).AndReturn([])
+    patch4.Apply(build_root, trivial=True).AndRaise(
+        cros_patch.ApplyPatchException(
+            patch1,
+            type=cros_patch.ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT))
+
+    patch1.HandleCouldNotApply(None, pool.build_log, dryrun=False)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
+    self.assertTrue(patch4 in pool.changes_that_failed_to_apply_earlier)
     self.mox.VerifyAll()
 
   def testMoreComplexDepApplyPoolIntoRepo(self):
