@@ -182,12 +182,16 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void Focus();
   void Blur();
 
+  // Returns true if the Window is currently the focused window.
+  bool HasFocus() const;
+
   // Returns true if the Window can be focused.
   virtual bool CanFocus() const;
 
   // Returns the FocusManager for the Window, which may be attached to a parent
   // Window. Can return NULL if the Window has no FocusManager.
   virtual internal::FocusManager* GetFocusManager();
+  virtual const internal::FocusManager* GetFocusManager() const;
 
   // The Window does not own this object.
   void set_user_data(void* user_data) { user_data_ = user_data; }

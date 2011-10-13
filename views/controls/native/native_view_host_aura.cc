@@ -23,7 +23,6 @@ NativeViewHostAura::~NativeViewHostAura() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostAura, NativeViewHostWrapper implementation:
 void NativeViewHostAura::NativeViewAttached() {
-  host_->native_view()->Hide();
   host_->GetWidget()->GetNativeView()->AddChild(host_->native_view());
   host_->Layout();
 }

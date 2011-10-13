@@ -246,6 +246,7 @@ void Shell::AddChildToDefaultParent(aura::Window* window) {
   aura::Window* parent = NULL;
   switch (window->type()) {
     case aura::kWindowType_Toplevel:
+    case aura::kWindowType_Control:
       parent = GetContainer(internal::kShellWindowId_DefaultContainer);
       break;
     case aura::kWindowType_Menu:

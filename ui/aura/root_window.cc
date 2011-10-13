@@ -118,6 +118,10 @@ Window* RootWindow::GetFocusedWindow() {
   return focused_window_;
 }
 
+bool RootWindow::IsFocusedWindow(const Window* window) const {
+  return focused_window_ == window;
+}
+
 bool RootWindow::CanFocus() const {
   return IsVisible();
 }

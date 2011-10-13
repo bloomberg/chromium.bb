@@ -123,7 +123,7 @@ views::NativeWidget* NativeTabContentsViewViews::AsNativeWidget() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsView, public:
-#if defined(USE_AURA) || defined(TOUCH_UI)
+#if defined(TOUCH_UI)
 // TODO(oshima): The above implies pure views only
 // static
 NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(

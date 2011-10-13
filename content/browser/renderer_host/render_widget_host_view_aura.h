@@ -8,12 +8,15 @@
 
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "ui/aura/window_delegate.h"
+#include "webkit/glue/webcursor.h"
 
 class RenderWidgetHostViewAura : public RenderWidgetHostView,
                                  public aura::WindowDelegate {
  public:
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
   virtual ~RenderWidgetHostViewAura();
+
+  void Init();
 
   // Overridden from RenderWidgetHostView:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -29,6 +32,8 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void Blur() OVERRIDE;
   virtual bool HasFocus() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -47,11 +52,6 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
-  virtual void SelectionChanged(const std::string& text,
-                                const ui::Range& range,
-                                const gfx::Point& start,
-                                const gfx::Point& end) OVERRIDE;
-  virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 #if defined(OS_POSIX)
@@ -91,12 +91,21 @@ class RenderWidgetHostViewAura : public RenderWidgetHostView,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
+  virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
  private:
+  void UpdateCursorIfOverSelf();
+
   // The model object.
   RenderWidgetHost* host_;
 
   aura::Window* window_;
+
+  // True when content is being loaded. Used to show an hourglass cursor.
+  bool is_loading_;
+
+  // The cursor for the page. This is passed up from the renderer.
+  WebCursor current_cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

@@ -7,9 +7,11 @@
 #include "chrome/browser/tab_contents/web_drop_target_win.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_views.h"
-#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "ui/aura/event.h"
+#include "ui/aura/window.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
 
@@ -56,9 +58,12 @@ void NativeTabContentsViewAura::Unparent() {
 
 RenderWidgetHostView* NativeTabContentsViewAura::CreateRenderWidgetHostView(
     RenderWidgetHost* render_widget_host) {
-  // TODO(beng): probably return RenderWidgetHostViewViews.
-  NOTIMPLEMENTED();
-  return NULL;
+  RenderWidgetHostViewAura* view =
+      new RenderWidgetHostViewAura(render_widget_host);
+  view->Init();
+  GetNativeView()->AddChild(view->GetNativeView());
+  view->Show();
+  return view;
 }
 
 gfx::NativeWindow NativeTabContentsViewAura::GetTopLevelNativeWindow() const {
@@ -102,7 +107,31 @@ views::NativeWidget* NativeTabContentsViewAura::AsNativeWidget() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeTabContentsViewWin, views::NativeWidgetWin overrides:
+// NativeTabContentsViewAura, views::NativeWidgetAura overrides:
+
+void NativeTabContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
+                                                const gfx::Rect& new_bounds) {
+  delegate_->OnNativeTabContentsViewSized(new_bounds.size());
+  views::NativeWidgetAura::OnBoundsChanged(old_bounds, new_bounds);
+}
+
+bool NativeTabContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
+  if (!delegate_->IsShowingSadTab()) {
+    switch (event->type()) {
+      case ui::ET_MOUSE_EXITED:
+        delegate_->OnNativeTabContentsViewMouseMove(false);
+        break;
+      case ui::ET_MOUSE_MOVED:
+        delegate_->OnNativeTabContentsViewMouseMove(true);
+        break;
+      default:
+        // TODO(oshima): mouse wheel
+        break;
+    }
+  }
+  // Pass all mouse event to renderer.
+  return views::NativeWidgetAura::OnMouseEvent(event);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsView, public:
@@ -111,5 +140,6 @@ views::NativeWidget* NativeTabContentsViewAura::AsNativeWidget() {
 NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
     internal::NativeTabContentsViewDelegate* delegate) {
   return new NativeTabContentsViewViews(delegate);
+  // TODO(beng): switch over to this.
   // return new NativeTabContentsViewAura(delegate);
 }

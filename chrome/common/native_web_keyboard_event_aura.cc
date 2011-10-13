@@ -4,6 +4,8 @@
 
 #include "content/common/native_web_keyboard_event.h"
 
+#if !defined(OS_WIN)
+
 NativeWebKeyboardEvent::NativeWebKeyboardEvent()
     : skip_in_browser(false) {
 }
@@ -21,3 +23,5 @@ NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
 
 NativeWebKeyboardEvent::~NativeWebKeyboardEvent() {
 }
+
+#endif

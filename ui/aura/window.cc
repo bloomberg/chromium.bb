@@ -64,8 +64,8 @@ void Window::Init() {
   if (delegate_)
     type = ui::Layer::LAYER_HAS_TEXTURE;
   layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor(), type));
-  // Windows (and therefore the layer) should initially be hidden.
-  // Control window is visible by default.
+  // Windows (and therefore their layers) should initially be hidden, except for
+  // controls.
   layer_->SetVisible(type_ == kWindowType_Control);
   layer_->set_delegate(this);
 }
@@ -294,6 +294,11 @@ void Window::Blur() {
   GetFocusManager()->SetFocusedWindow(NULL);
 }
 
+bool Window::HasFocus() const {
+  const internal::FocusManager* focus_manager = GetFocusManager();
+  return focus_manager ? focus_manager->IsFocusedWindow(this) : false;
+}
+
 // For a given window, we determine its focusability by inspecting each sibling
 // after it (i.e. drawn in front of it in the z-order) to see if it stops
 // propagation of events that would otherwise be targeted at windows behind it.
@@ -314,6 +319,11 @@ bool Window::CanFocus() const {
 }
 
 internal::FocusManager* Window::GetFocusManager() {
+  return const_cast<internal::FocusManager*>(
+      const_cast<const Window*>(this)->GetFocusManager());
+}
+
+const internal::FocusManager* Window::GetFocusManager() const {
   return parent_ ? parent_->GetFocusManager() : NULL;
 }
 

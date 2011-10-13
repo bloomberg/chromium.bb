@@ -130,12 +130,3 @@ gfx::NativeViewAccessible
   return View::GetNativeViewAccessible();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeTabContentsContainer, public:
-#if defined(USE_AURA)
-// static
-NativeTabContentsContainer* NativeTabContentsContainer::CreateNativeContainer(
-    TabContentsContainer* container) {
-  return new NativeTabContentsContainerViews(container);
-}
-#endif

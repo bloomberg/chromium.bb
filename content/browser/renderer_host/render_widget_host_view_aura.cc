@@ -5,17 +5,70 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
 #include "base/logging.h"
+#include "content/browser/renderer_host/backing_store_skia.h"
+#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/common/native_web_keyboard_event.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/aura/desktop.h"
+#include "ui/aura/event.h"
 #include "ui/aura/hit_test.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/canvas.h"
+
+namespace {
+
+int WebInputEventFlagsFromAuraEvent(const aura::Event& event) {
+  int modifiers = 0;
+  if (event.flags() & ui::EF_SHIFT_DOWN)
+    modifiers |= WebKit::WebInputEvent::ShiftKey;
+  if (event.flags() & ui::EF_CONTROL_DOWN)
+    modifiers |= WebKit::WebInputEvent::ControlKey;
+  if (event.flags() & ui::EF_ALT_DOWN)
+    modifiers |= WebKit::WebInputEvent::AltKey;
+  if (event.flags() & ui::EF_CAPS_LOCK_DOWN)
+    modifiers |= WebKit::WebInputEvent::CapsLockOn;
+  return modifiers;
+}
+
+WebKit::WebInputEvent::Type WebInputEventTypeFromAuraEvent(
+    const aura::Event& event) {
+  switch (event.type()) {
+    case ui::ET_MOUSE_PRESSED:
+      return WebKit::WebInputEvent::MouseDown;
+    case ui::ET_MOUSE_RELEASED:
+      return WebKit::WebInputEvent::MouseUp;
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_EXITED:
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED:
+      // Drags are treated as moves by WebKit, which does its own drag handling.
+      return WebKit::WebInputEvent::MouseMove;
+    case ui::ET_MOUSEWHEEL:
+      return WebKit::WebInputEvent::MouseWheel;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return WebKit::WebInputEvent::Undefined;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, public:
 
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
-    : host_(host) {
+    : host_(host),
+      ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
+      is_loading_(false) {
+  host_->SetView(this);
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
+}
+
+void RenderWidgetHostViewAura::Init() {
+  window_->Init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,19 +90,20 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewAura::DidBecomeSelected() {
-  NOTIMPLEMENTED();
+  host_->WasRestored();
 }
 
 void RenderWidgetHostViewAura::WasHidden() {
-  NOTIMPLEMENTED();
+  host_->WasHidden();
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
-  NOTIMPLEMENTED();
+  SetBounds(gfx::Rect(window_->bounds().origin(), size));
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  NOTIMPLEMENTED();
+  window_->SetBounds(rect);
+  host_->WasResized();
 }
 
 gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
@@ -57,44 +111,50 @@ gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
 }
 
 gfx::NativeViewId RenderWidgetHostViewAura::GetNativeViewId() const {
-  NOTIMPLEMENTED();
   return NULL;
 }
 
 void RenderWidgetHostViewAura::MovePluginWindows(
     const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
-  NOTIMPLEMENTED();
+  // We don't support windowed plugins.
+}
+
+void RenderWidgetHostViewAura::Focus() {
+  window_->Focus();
+}
+
+void RenderWidgetHostViewAura::Blur() {
+  window_->Blur();
 }
 
 bool RenderWidgetHostViewAura::HasFocus() {
-  NOTIMPLEMENTED();
-  return false;
+  return window_->HasFocus();
 }
 
 void RenderWidgetHostViewAura::Show() {
-  NOTIMPLEMENTED();
+  window_->Show();
 }
 
 void RenderWidgetHostViewAura::Hide() {
-  NOTIMPLEMENTED();
+  window_->Hide();
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {
-  NOTIMPLEMENTED();
-  return false;
+  return window_->IsVisible();
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  return window_->bounds();
 }
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
-  NOTIMPLEMENTED();
+  current_cursor_ = cursor;
+  UpdateCursorIfOverSelf();
 }
 
 void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
-  NOTIMPLEMENTED();
+  is_loading_ = is_loading;
+  UpdateCursorIfOverSelf();
 }
 
 void RenderWidgetHostViewAura::ImeUpdateTextInputState(
@@ -111,40 +171,39 @@ void RenderWidgetHostViewAura::ImeCancelComposition() {
 void RenderWidgetHostViewAura::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
     const std::vector<gfx::Rect>& copy_rects) {
-  NOTIMPLEMENTED();
+  window_->SchedulePaintInRect(scroll_rect);
+
+  for (size_t i = 0; i < copy_rects.size(); ++i) {
+    gfx::Rect rect = copy_rects[i].Subtract(scroll_rect);
+    if (rect.IsEmpty())
+      continue;
+
+    window_->SchedulePaintInRect(rect);
+  }
 }
 
 void RenderWidgetHostViewAura::RenderViewGone(base::TerminationStatus status,
                                               int error_code) {
-  NOTIMPLEMENTED();
+  UpdateCursorIfOverSelf();
+  Destroy();
 }
+
 void RenderWidgetHostViewAura::Destroy() {
-  NOTIMPLEMENTED();
+  delete window_;
 }
 
 void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
-  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewAura::SelectionChanged(const std::string& text,
-                                                const ui::Range& range,
-                                                const gfx::Point& start,
-                                                const gfx::Point& end) {
-                                                  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewAura::ShowingContextMenu(bool showing) {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
     const gfx::Size& size) {
-  NOTIMPLEMENTED();
-  return NULL;
+  return new BackingStoreSkia(host_, size);
 }
 
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
-  NOTIMPLEMENTED();
+  RenderWidgetHostView::SetBackground(background);
+  host_->SetBackground(background);
 }
 
 #if defined(OS_POSIX)
@@ -185,16 +244,15 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
 
 #if defined(OS_WIN)
 void RenderWidgetHostViewAura::WillWmDestroy() {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewAura::ShowCompositorHostWindow(bool show) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 #endif
 
 gfx::PluginWindowHandle RenderWidgetHostViewAura::GetCompositingSurface() {
-  NOTIMPLEMENTED();
   return NULL;
 }
 
@@ -205,6 +263,7 @@ bool RenderWidgetHostViewAura::LockMouse() {
 
 void RenderWidgetHostViewAura::UnlockMouse() {
   NOTIMPLEMENTED();
+  host_->LostMouseLock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,67 +271,120 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 
 void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                                const gfx::Rect& new_bounds) {
-  NOTIMPLEMENTED();
+  // We don't care about this one, we are always sized via SetSize() or
+  // SetBounds().
 }
 
 void RenderWidgetHostViewAura::OnFocus() {
-  NOTIMPLEMENTED();
+  host_->GotFocus();
 }
 
 void RenderWidgetHostViewAura::OnBlur() {
-  NOTIMPLEMENTED();
+  host_->Blur();
 }
 
 bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
-  NOTIMPLEMENTED();
-  return false;
+  host_->ForwardKeyboardEvent(
+      NativeWebKeyboardEvent(
+#if defined(OS_WIN)
+          event->native_event().hwnd,
+          event->native_event().message,
+          event->native_event().wParam,
+          event->native_event().lParam
+#endif
+      ));
+  return true;
 }
 
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
-  NOTIMPLEMENTED();
+  // TODO(beng): talk to beng before implementing this.
+  //NOTIMPLEMENTED();
   return NULL;
 }
 
 int RenderWidgetHostViewAura::GetNonClientComponent(
     const gfx::Point& point) const {
-  NOTIMPLEMENTED();
   return HTCLIENT;
 }
 
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
-  NOTIMPLEMENTED();
-  return false;
+  // TODO(beng): replace with construction using WebInputEventFactories for
+  //             Windows/X using |event|'s native_event() field.
+
+  WebKit::WebMouseEvent webkit_event;
+  webkit_event.timeStampSeconds = base::Time::Now().ToDoubleT();
+  webkit_event.modifiers = WebInputEventFlagsFromAuraEvent(*event);
+  webkit_event.windowX = webkit_event.x = event->x();
+  webkit_event.windowY = webkit_event.y = event->y();
+
+  webkit_event.globalX = webkit_event.x;
+  webkit_event.globalY = webkit_event.y;
+
+  if (event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_MOUSE_RELEASED) {
+    webkit_event.clickCount = 1;
+  }
+
+  if (event->flags() & ui::EF_MIDDLE_BUTTON_DOWN) {
+    webkit_event.modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
+    webkit_event.button = WebKit::WebMouseEvent::ButtonMiddle;
+  }
+  if (event->flags() & ui::EF_LEFT_BUTTON_DOWN) {
+    webkit_event.modifiers |= WebKit::WebInputEvent::LeftButtonDown;
+    webkit_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  }
+  if (event->flags() & ui::EF_RIGHT_BUTTON_DOWN) {
+    webkit_event.modifiers |= WebKit::WebInputEvent::RightButtonDown;
+    webkit_event.button = WebKit::WebMouseEvent::ButtonRight;
+  }
+
+  webkit_event.type = WebInputEventTypeFromAuraEvent(*event);
+  host_->ForwardMouseEvent(webkit_event);
+
+  // Return true so that we receive released/drag events.
+  return true;
 }
 
 bool RenderWidgetHostViewAura::ShouldActivate(aura::MouseEvent* event) {
-  NOTIMPLEMENTED();
   return false;
 }
 
 void RenderWidgetHostViewAura::OnActivated() {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewAura::OnLostActive() {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewAura::OnCaptureLost() {
-  NOTIMPLEMENTED();
+  host_->LostCapture();
 }
 
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
-  NOTIMPLEMENTED();
+  BackingStore* backing_store = host_->GetBackingStore(true);
+  if (backing_store) {
+    static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(gfx::Point(),
+                                                                canvas);
+  } else {
+    canvas->FillRectInt(SK_ColorWHITE, 0, 0, window_->bounds().width(),
+                        window_->bounds().height());
+  }
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroying() {
-  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroyed() {
-  NOTIMPLEMENTED();
+  host_->ViewDestroyed();
+  delete this;
+}
+
+void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, private:
 
+void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
+  //NOTIMPLEMENTED();
+  // TODO(beng): See RenderWidgetHostViewWin.
+}

@@ -39,7 +39,10 @@ class NativeTabContentsViewAura : public views::NativeWidgetAura,
   virtual void SetDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
 
-  // Overridden from views::NativeWidgetWin:
+  // Overridden from views::NativeWidgetAura:
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE;
+  virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
 
   internal::NativeTabContentsViewDelegate* delegate_;
 

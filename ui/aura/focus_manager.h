@@ -27,6 +27,9 @@ class FocusManager {
   // Returns the currently focused window or NULL if there is none.
   virtual Window* GetFocusedWindow() = 0;
 
+  // Returns true if |window| is the focused window.
+  virtual bool IsFocusedWindow(const Window* window) const = 0;
+
  protected:
   virtual ~FocusManager() {}
 };
