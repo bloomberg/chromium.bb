@@ -109,7 +109,10 @@ void CriticalNotificationBubbleView::OnCountdown() {
   } else {
     // Update the counter.
     UpdateBubbleHeadline(seconds);
+    // TODO(msw): figure out why SchedulePaint doesn't work here.
+#if !defined(USE_AURA)
     bubble_->ScheduleDraw();
+#endif
   }
 }
 
