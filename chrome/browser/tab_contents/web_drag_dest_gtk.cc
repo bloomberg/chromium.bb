@@ -9,48 +9,24 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/browser/tab_contents/web_drag_dest_delegate_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/drag_utils_gtk.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/gtk/gtk_screen_utils.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 
-namespace {
-
-// Returns the bookmark target atom, based on the underlying toolkit.
-//
-// For GTK, bookmark drag data is encoded as pickle and associated with
-// ui::CHROME_BOOKMARK_ITEM. See // bookmark_utils::WriteBookmarksToSelection()
-// for details.
-// For Views, bookmark drag data is encoded in the same format, and
-// associated with a custom format. See BookmarkNodeData::Write() for
-// details.
-GdkAtom GetBookmarkTargetAtom() {
-#if defined(TOOLKIT_VIEWS)
-  return BookmarkNodeData::GetBookmarkCustomFormat();
-#else
-  return ui::GetAtomForTarget(ui::CHROME_BOOKMARK_ITEM);
-#endif
-}
-
-}  // namespace
-
 WebDragDestGtk::WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget)
     : tab_contents_(tab_contents),
-      tab_(NULL),
       widget_(widget),
       context_(NULL),
+      data_requests_(0),
+      delegate_(NULL),
       method_factory_(this) {
   gtk_drag_dest_set(widget, static_cast<GtkDestDefaults>(0),
                     NULL, 0,
@@ -82,7 +58,7 @@ WebDragDestGtk::~WebDragDestGtk() {
 void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
   if (context_) {
     is_drop_target_ = operation != WebDragOperationNone;
-    gdk_drag_status(context_, gtk_util::WebDragOpToGdkDragAction(operation),
+    gdk_drag_status(context_, content::WebDragOpToGdkDragAction(operation),
                     drag_over_time_);
   }
 }
@@ -90,27 +66,21 @@ void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
 void WebDragDestGtk::DragLeave() {
   tab_contents_->render_view_host()->DragTargetDragLeave();
 
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
-    tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragLeave(
-        bookmark_drag_data_);
+  if (delegate())
+    delegate()->OnDragLeave();
 }
 
 gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
                                       GdkDragContext* context,
                                       gint x, gint y,
                                       guint time) {
-  // Ideally we would want to initialize the the TabContentsWrapper member in
-  // the constructor. We cannot do that as the WebDragDestGtk object is
-  // created during the construction of the TabContents object.
-  // The TabContentsWrapper is created much later.
-  if (!tab_)
-    tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
-
   if (context_ != context) {
     context_ = context;
     drop_data_.reset(new WebDropData);
-    bookmark_drag_data_.Clear();
     is_drop_target_ = false;
+
+    if (delegate())
+      delegate()->DragInitialize(tab_contents_);
 
     // text/plain must come before text/uri-list. This is a hack that works in
     // conjunction with OnDragDataReceived. Since some file managers populate
@@ -126,24 +96,29 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
       // TODO(estade): support image drags?
     };
 
-    // Add the bookmark target as well.
-    data_requests_ = arraysize(supported_targets) + 1;
+    // Add the delegate's requested target if applicable. Need to do this here
+    // since gtk_drag_get_data will dispatch to our drag-data-received.
+    data_requests_ = arraysize(supported_targets) + (delegate() ? 1 : 0);
     for (size_t i = 0; i < arraysize(supported_targets); ++i) {
       gtk_drag_get_data(widget_, context,
                         ui::GetAtomForTarget(supported_targets[i]),
                         time);
     }
 
-    gtk_drag_get_data(widget_, context, GetBookmarkTargetAtom(), time);
+    if (delegate()) {
+      gtk_drag_get_data(widget_, context, delegate()->GetBookmarkTargetAtom(),
+                        time);
+    }
   } else if (data_requests_ == 0) {
     tab_contents_->render_view_host()->
         DragTargetDragOver(
-            gtk_util::ClientPoint(widget_),
-            gtk_util::ScreenPoint(widget_),
-            gtk_util::GdkDragActionToWebDragOp(context->actions));
-    if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragOver(
-          bookmark_drag_data_);
+            ui::ClientPoint(widget_),
+            ui::ScreenPoint(widget_),
+            content::GdkDragActionToWebDragOp(context->actions));
+
+    if (delegate())
+      delegate()->OnDragOver();
+
     drag_over_time_ = time;
   }
 
@@ -223,19 +198,12 @@ void WebDragDestGtk::OnDragDataReceived(
   // URL bookmark.
   // Note that bookmark drag data is encoded in the same format for both
   // GTK and Views, hence we can share the same logic here.
-  if (data->target == GetBookmarkTargetAtom()) {
+  if (delegate() && data->target == delegate()->GetBookmarkTargetAtom()) {
     if (data->data && data->length > 0) {
-      Profile* profile =
-          Profile::FromBrowserContext(tab_contents_->browser_context());
-      bookmark_drag_data_.ReadFromVector(
-          bookmark_utils::GetNodesFromSelection(
-              NULL, data,
-              ui::CHROME_BOOKMARK_ITEM,
-              profile, NULL, NULL));
-      bookmark_drag_data_.SetOriginatingProfile(profile);
+      delegate()->OnReceiveDataFromGtk(data);
     } else {
-      bookmark_drag_data_.ReadFromTuple(drop_data_->url,
-                                        drop_data_->url_title);
+      delegate()->OnReceiveProcessedData(drop_data_->url,
+                                         drop_data_->url_title);
     }
   }
 
@@ -244,15 +212,13 @@ void WebDragDestGtk::OnDragDataReceived(
     // |x| and |y| are seemingly arbitrary at this point.
     tab_contents_->render_view_host()->
         DragTargetDragEnter(*drop_data_.get(),
-            gtk_util::ClientPoint(widget_),
-            gtk_util::ScreenPoint(widget_),
-            gtk_util::GdkDragActionToWebDragOp(context->actions));
+            ui::ClientPoint(widget_),
+            ui::ScreenPoint(widget_),
+            content::GdkDragActionToWebDragOp(context->actions));
 
-    // This is non-null if tab_contents_ is showing an ExtensionWebUI with
-    // support for (at the moment experimental) drag and drop extensions.
-    if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragEnter(
-          bookmark_drag_data_);
+    if (delegate())
+      delegate()->OnDragEnter();
+
     drag_over_time_ = time;
   }
 }
@@ -279,20 +245,10 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
   method_factory_.RevokeAll();
 
   tab_contents_->render_view_host()->
-      DragTargetDrop(gtk_util::ClientPoint(widget_),
-                     gtk_util::ScreenPoint(widget_));
+      DragTargetDrop(ui::ClientPoint(widget_), ui::ScreenPoint(widget_));
 
-  // This is non-null if tab_contents_ is showing an ExtensionWebUI with
-  // support for (at the moment experimental) drag and drop extensions.
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate())
-    tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDrop(
-        bookmark_drag_data_);
-
-  // Focus the target browser.
-  Browser* browser = Browser::GetBrowserForController(
-      &tab_contents_->controller(), NULL);
-  if (browser)
-    browser->window()->Show();
+  if (delegate())
+    delegate()->OnDrop();
 
   // The second parameter is just an educated guess as to whether or not the
   // drag succeeded, but at least we will get the drag-end animation right

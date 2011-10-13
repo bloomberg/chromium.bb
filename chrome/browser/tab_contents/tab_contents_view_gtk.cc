@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_gtk.h"
+#include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -154,6 +155,8 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
 
   // Renderer target DnD.
   drag_dest_.reset(new WebDragDestGtk(tab_contents_, content_view));
+  bookmark_handler_gtk_.reset(new WebDragBookmarkHandlerGtk);
+  drag_dest_->set_delegate(bookmark_handler_gtk_.get());
 
   return view;
 }

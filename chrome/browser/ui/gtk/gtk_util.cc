@@ -52,13 +52,6 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #endif
 
-using WebKit::WebDragOperationsMask;
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationNone;
-using WebKit::WebDragOperationCopy;
-using WebKit::WebDragOperationLink;
-using WebKit::WebDragOperationMove;
-
 namespace {
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -508,11 +501,6 @@ GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
   return centering_vbox;
 }
 
-bool IsScreenComposited() {
-  GdkScreen* screen = gdk_screen_get_default();
-  return gdk_screen_is_composited(screen) == TRUE;
-}
-
 void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate) {
   std::vector<XID> stack;
   if (!ui::GetXWindowStack(ui::GetX11RootWindow(), &stack)) {
@@ -718,19 +706,6 @@ void UpdateGtkFontSettings(RendererPreferences* prefs) {
     g_free(hint_style);
   if (rgba_style)
     g_free(rgba_style);
-}
-
-gfx::Point ScreenPoint(GtkWidget* widget) {
-  int x, y;
-  gdk_display_get_pointer(gtk_widget_get_display(widget), NULL, &x, &y,
-                          NULL);
-  return gfx::Point(x, y);
-}
-
-gfx::Point ClientPoint(GtkWidget* widget) {
-  int x, y;
-  gtk_widget_get_pointer(widget, &x, &y);
-  return gfx::Point(x, y);
 }
 
 GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
@@ -1181,28 +1156,6 @@ void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label) {
   gtk_widget_size_request(label, &size);
   gtk_widget_set_size_request(label, size.width, size.height);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-}
-
-GdkDragAction WebDragOpToGdkDragAction(WebDragOperationsMask op) {
-  GdkDragAction action = static_cast<GdkDragAction>(0);
-  if (op & WebDragOperationCopy)
-    action = static_cast<GdkDragAction>(action | GDK_ACTION_COPY);
-  if (op & WebDragOperationLink)
-    action = static_cast<GdkDragAction>(action | GDK_ACTION_LINK);
-  if (op & WebDragOperationMove)
-    action = static_cast<GdkDragAction>(action | GDK_ACTION_MOVE);
-  return action;
-}
-
-WebDragOperationsMask GdkDragActionToWebDragOp(GdkDragAction action) {
-  WebDragOperationsMask op = WebDragOperationNone;
-  if (action & GDK_ACTION_COPY)
-    op = static_cast<WebDragOperationsMask>(op | WebDragOperationCopy);
-  if (action & GDK_ACTION_LINK)
-    op = static_cast<WebDragOperationsMask>(op | WebDragOperationLink);
-  if (action & GDK_ACTION_MOVE)
-    op = static_cast<WebDragOperationsMask>(op | WebDragOperationMove);
-  return op;
 }
 
 void ApplyMessageDialogQuirks(GtkWidget* dialog) {

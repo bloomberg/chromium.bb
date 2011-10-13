@@ -11,13 +11,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "webkit/glue/webdropdata.h"
 
 class TabContents;
-class TabContentsWrapper;
+class WebDragDestDelegateGtk;
 
 // A helper class that handles DnD for drops in the renderer. In GTK parlance,
 // this handles destination-side DnD, but not source-side DnD.
@@ -34,9 +33,10 @@ class WebDragDestGtk {
   // See OnDragLeave().
   void DragLeave();
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(WebDragDestGtkTest, NoTabContentsWrapper);
+  WebDragDestDelegateGtk* delegate() const { return delegate_; }
+  void set_delegate(WebDragDestDelegateGtk* delegate) { delegate_ = delegate; }
 
+ private:
   // Called when a system drag crosses over the render view. As there is no drag
   // enter event, we treat it as an enter event (and not a regular motion event)
   // when |context_| is NULL.
@@ -61,11 +61,6 @@ class WebDragDestGtk {
                        gint, gint, guint);
 
   TabContents* tab_contents_;
-
-  // The TabContentsWrapper for |tab_contents_|.
-  // Weak reference; may be NULL if the contents aren't contained in a wrapper
-  // (e.g. WebUI dialogs).
-  TabContentsWrapper* tab_;
 
   // The render view.
   GtkWidget* widget_;
@@ -94,9 +89,8 @@ class WebDragDestGtk {
   // |widget_| is.
   int destroy_handler_;
 
-  // The bookmark data for the current tab. This will be empty if there is not
-  // a native bookmark drag (or we haven't gotten the data from the source yet).
-  BookmarkNodeData bookmark_drag_data_;
+  // A delegate that can receive drag information about drag events.
+  WebDragDestDelegateGtk* delegate_;
 
   ScopedRunnableMethodFactory<WebDragDestGtk> method_factory_;
 

@@ -12,6 +12,7 @@
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_screen_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // Roundedness of bubble.
@@ -106,7 +107,7 @@ void ThemeInstallBubbleViewGtk::InitWidgets() {
   gtk_widget_show_all(label);
 
   bool composited = false;
-  if (gtk_util::IsScreenComposited()) {
+  if (ui::IsScreenComposited()) {
     composited = true;
     GdkScreen* screen = gtk_widget_get_screen(widget_);
     GdkColormap* colormap = gdk_screen_get_rgba_colormap(screen);

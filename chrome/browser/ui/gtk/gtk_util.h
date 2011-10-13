@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -134,9 +133,6 @@ void ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p);
 GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
                               bool pack_at_end, int padding);
 
-// Returns true if the screen is composited, false otherwise.
-bool IsScreenComposited();
-
 // Enumerates the top-level gdk windows of the current display.
 void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate);
 
@@ -196,12 +192,6 @@ GtkWidget* IndentWidget(GtkWidget* content);
 // Sets (or resets) the font settings in |prefs| (used when creating new
 // renderers) based on GtkSettings (which itself comes from XSETTINGS).
 void UpdateGtkFontSettings(RendererPreferences* prefs);
-
-// Get the current location of the mouse cursor relative to the screen.
-gfx::Point ScreenPoint(GtkWidget* widget);
-
-// Get the current location of the mouse cursor relative to the widget.
-gfx::Point ClientPoint(GtkWidget* widget);
 
 // Reverses a point in RTL mode. Used in making vectors of GdkPoints for window
 // shapes.
@@ -328,11 +318,6 @@ void SetLabelWidth(GtkWidget* label, int pixel_width);
 // It must be done when the label is mapped (become visible on the screen),
 // to make sure the pango can get correct font information for the calculation.
 void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label);
-
-// Convenience methods for converting between web drag operations and the GDK
-// equivalent.
-GdkDragAction WebDragOpToGdkDragAction(WebKit::WebDragOperationsMask op);
-WebKit::WebDragOperationsMask GdkDragActionToWebDragOp(GdkDragAction action);
 
 // A helper function for gtk_message_dialog_new() to work around a few KDE 3
 // window manager bugs. You should always call it after creating a dialog with

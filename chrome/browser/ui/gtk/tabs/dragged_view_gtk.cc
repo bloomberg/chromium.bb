@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/gtk/gtk_screen_utils.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_util.h"
 
@@ -138,7 +139,7 @@ void DraggedViewGtk::Attach(
 
   Resize(dragged_tab_width);
 
-  if (gtk_util::IsScreenComposited())
+  if (ui::IsScreenComposited())
     gdk_window_set_opacity(container_->window, kOpaqueAlpha);
 }
 
@@ -151,7 +152,7 @@ void DraggedViewGtk::Detach() {
   attached_ = false;
   ResizeContainer();
 
-  if (gtk_util::IsScreenComposited())
+  if (ui::IsScreenComposited())
     gdk_window_set_opacity(container_->window, kTransparentAlpha);
 }
 
@@ -369,7 +370,7 @@ void DraggedViewGtk::SetContainerShapeMask() {
 }
 
 gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
-  if (gtk_util::IsScreenComposited())
+  if (ui::IsScreenComposited())
     SetContainerTransparency();
   else
     SetContainerShapeMask();

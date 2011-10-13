@@ -12,6 +12,7 @@
 class ConstrainedWindowGtk;
 class TabContents;
 class TabContentsDragSource;
+class WebDragBookmarkHandlerGtk;
 class WebDragDestGtk;
 
 class NativeTabContentsViewGtk : public views::NativeWidgetGtk,
@@ -72,6 +73,9 @@ class NativeTabContentsViewGtk : public views::NativeWidgetGtk,
   // The helper object that handles drag destination related interactions with
   // GTK.
   scoped_ptr<WebDragDestGtk> drag_dest_;
+
+  // The chrome specific delegate that receives events from WebDragDestGtk.
+  scoped_ptr<WebDragBookmarkHandlerGtk> bookmark_handler_gtk_;
 
   // Current size. See comment in NativeWidgetGtk as to why this is cached.
   gfx::Size size_;

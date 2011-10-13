@@ -8,6 +8,7 @@
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_drag_source.h"
+#include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_views.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
@@ -62,6 +63,17 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
 
   return FALSE;
 }
+
+// Our dragging needs to use views datatypes instead of the default GTK ones.
+class WebDragBookmarkHandlerViewGtk : public WebDragBookmarkHandlerGtk {
+ public:
+  virtual GdkAtom GetBookmarkTargetAtom() const {
+    // For Views, bookmark drag data is encoded in the same format, and
+    // associated with a custom format. See BookmarkNodeData::Write() for
+    // details.
+    return BookmarkNodeData::GetBookmarkCustomFormat();
+  }
+};
 
 }  // namespace
 
@@ -135,9 +147,12 @@ RenderWidgetHostView* NativeTabContentsViewGtk::CreateRenderWidgetHostView(
   views::NativeWidgetGtk::RegisterChildExposeHandler(view->native_view());
 
   // Renderer target DnD.
-  if (delegate_->GetTabContents()->ShouldAcceptDragAndDrop())
+  if (delegate_->GetTabContents()->ShouldAcceptDragAndDrop()) {
     drag_dest_.reset(new WebDragDestGtk(delegate_->GetTabContents(),
                                         view->native_view()));
+    bookmark_handler_gtk_.reset(new WebDragBookmarkHandlerGtk);
+    drag_dest_->set_delegate(bookmark_handler_gtk_.get());
+  }
 
   gtk_fixed_put(GTK_FIXED(GetWidget()->GetNativeView()), view->native_view(), 0,
                 0);

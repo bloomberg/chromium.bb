@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_screen_utils.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -182,7 +183,7 @@ GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
                                  GtkThemeService* provider) {
   GtkWidget* window = gtk_window_new(GTK_WINDOW_POPUP);
 
-  if (gtk_util::IsScreenComposited() &&
+  if (ui::IsScreenComposited() &&
       gtk_util::AddWindowAlphaChannel(window)) {
     DragRepresentationData* data = new DragRepresentationData(
         pixbuf, title,

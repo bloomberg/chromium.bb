@@ -11,16 +11,17 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/tab_contents/drag_utils_gtk.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/gtk/gtk_screen_utils.h"
 #include "ui/gfx/gtk_util.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -102,7 +103,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
 
   // The image we get from WebKit makes heavy use of alpha-shading. This looks
   // bad on non-compositing WMs. Fall back to the default drag icon.
-  if (!image.isNull() && gtk_util::IsScreenComposited())
+  if (!image.isNull() && ui::IsScreenComposited())
     drag_pixbuf_ = gfx::GdkPixbufFromSkBitmap(&image);
   image_offset_ = image_offset;
 
@@ -126,7 +127,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   // much, but we should probably look into the possibility of getting the
   // initiating event from webkit.
   drag_context_ = gtk_drag_begin(drag_widget_, list,
-      gtk_util::WebDragOpToGdkDragAction(allowed_ops),
+      content::WebDragOpToGdkDragAction(allowed_ops),
       1,  // Drags are always initiated by the left button.
       reinterpret_cast<GdkEvent*>(last_mouse_down));
   // The drag adds a ref; let it own the list.
@@ -153,7 +154,7 @@ void TabContentsDragSource::DidProcessEvent(GdkEvent* event) {
     return;
 
   GdkEventMotion* event_motion = reinterpret_cast<GdkEventMotion*>(event);
-  gfx::Point client = gtk_util::ClientPoint(GetContentNativeView());
+  gfx::Point client = ui::ClientPoint(GetContentNativeView());
 
   if (tab_contents_->render_view_host()) {
     tab_contents_->render_view_host()->DragSourceMovedTo(
@@ -271,8 +272,8 @@ gboolean TabContentsDragSource::OnDragFailed(GtkWidget* sender,
                                              GtkDragResult result) {
   drag_failed_ = true;
 
-  gfx::Point root = gtk_util::ScreenPoint(GetContentNativeView());
-  gfx::Point client = gtk_util::ClientPoint(GetContentNativeView());
+  gfx::Point root = ui::ScreenPoint(GetContentNativeView());
+  gfx::Point client = ui::ClientPoint(GetContentNativeView());
 
   if (tab_contents_->render_view_host()) {
     tab_contents_->render_view_host()->DragSourceEndedAt(
@@ -340,13 +341,13 @@ void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
   }
 
   if (!drag_failed_) {
-    gfx::Point root = gtk_util::ScreenPoint(GetContentNativeView());
-    gfx::Point client = gtk_util::ClientPoint(GetContentNativeView());
+    gfx::Point root = ui::ScreenPoint(GetContentNativeView());
+    gfx::Point client = ui::ClientPoint(GetContentNativeView());
 
     if (tab_contents_->render_view_host()) {
       tab_contents_->render_view_host()->DragSourceEndedAt(
           client.x(), client.y(), root.x(), root.y(),
-          gtk_util::GdkDragActionToWebDragOp(drag_context->action));
+          content::GdkDragActionToWebDragOp(drag_context->action));
     }
   }
 

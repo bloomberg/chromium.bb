@@ -23,6 +23,7 @@ class ConstrainedWindowGtk;
 class RenderViewContextMenuGtk;
 class SadTabGtk;
 class TabContentsDragSource;
+class WebDragBookmarkHandlerGtk;
 class WebDragDestGtk;
 
 class TabContentsViewGtk : public TabContentsView,
@@ -158,6 +159,9 @@ class TabContentsViewGtk : public TabContentsView,
   // The helper object that handles drag destination related interactions with
   // GTK.
   scoped_ptr<WebDragDestGtk> drag_dest_;
+
+  // The chrome specific delegate that receives events from WebDragDestGtk.
+  scoped_ptr<WebDragBookmarkHandlerGtk> bookmark_handler_gtk_;
 
   // Object responsible for handling drags from the page for us.
   scoped_ptr<TabContentsDragSource> drag_source_;

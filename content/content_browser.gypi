@@ -482,6 +482,8 @@
     'browser/ssl/ssl_policy_backend.h',
     'browser/ssl/ssl_request_info.cc',
     'browser/ssl/ssl_request_info.h',
+    'browser/tab_contents/drag_utils_gtk.cc',
+    'browser/tab_contents/drag_utils_gtk.h',
     'browser/tab_contents/interstitial_page.cc',
     'browser/tab_contents/interstitial_page.h',
     'browser/tab_contents/navigation_controller.cc',
