@@ -118,6 +118,15 @@
           ],
         }],
         ['OS=="win"', {
+          'conditions': [
+            ['use_aura==1', {
+              'sources!': [
+                'image_aura.cc',
+                'printed_document_aura.cc',
+                'printing_context_aura.cc',
+              ],
+            }],
+          ],
           'defines': [
             # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
             # of the print backend and enables a custom implementation instead.
