@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "content/browser/download/interrupt_reasons.h"
 
 namespace base {
 class TimeTicks;
@@ -76,8 +77,10 @@ CONTENT_EXPORT void RecordDownloadCount(DownloadCountTypes type);
 // Record COMPLETED_COUNT and how long the download took.
 void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len);
 
-// Record INTERRUPTED_COUNT, |error|, |received| and |total| bytes.
-void RecordDownloadInterrupted(int error, int64 received, int64 total);
+// Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
+void RecordDownloadInterrupted(InterruptReason reason,
+                               int64 received,
+                               int64 total);
 
 // Records the mime type of the download.
 void RecordDownloadMimeType(const std::string& mime_type);

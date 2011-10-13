@@ -26,6 +26,7 @@
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/interrupt_reasons.h"
 
 // A DownloadItem normally goes through the following states:
 //      * Created (when download starts)
@@ -169,7 +170,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       referrer_charset_(info.referrer_charset),
       total_bytes_(info.total_bytes),
       received_bytes_(0),
-      last_error_(net::OK),
+      last_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(info.start_time),
@@ -201,7 +202,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       referrer_url_(GURL()),
       total_bytes_(0),
       received_bytes_(0),
-      last_error_(net::OK),
+      last_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(base::Time::Now()),
@@ -361,9 +362,13 @@ void DownloadItem::Update(int64 bytes_so_far) {
 }
 
 // Triggered by a user action.
-void DownloadItem::Cancel(bool update_history) {
+void DownloadItem::Cancel(bool user_cancel) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  last_reason_ = user_cancel ?
+      DOWNLOAD_INTERRUPT_REASON_USER_CANCELED :
+      DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
 
   VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   if (!IsPartialDownload()) {
@@ -376,7 +381,7 @@ void DownloadItem::Cancel(bool update_history) {
 
   TransitionTo(CANCELLED);
   StopProgressTimer();
-  if (update_history)
+  if (user_cancel)
     download_manager_->DownloadCancelledInternal(this);
 }
 
@@ -461,17 +466,17 @@ void DownloadItem::UpdateTarget() {
     state_info_.target_name = full_path_.BaseName();
 }
 
-void DownloadItem::Interrupted(int64 size, net::Error net_error) {
+void DownloadItem::Interrupted(int64 size, InterruptReason reason) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!IsInProgress())
     return;
 
-  last_error_ = net_error;
+  last_reason_ = reason;
   UpdateSize(size);
   StopProgressTimer();
-  download_stats::RecordDownloadInterrupted(net_error,
+  download_stats::RecordDownloadInterrupted(reason,
                                             received_bytes_,
                                             total_bytes_);
   TransitionTo(INTERRUPTED);

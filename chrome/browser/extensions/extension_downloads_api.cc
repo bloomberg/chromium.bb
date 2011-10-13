@@ -34,6 +34,7 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_types.h"
+#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -405,7 +406,7 @@ base::DictionaryValue* DownloadItemToJSON(DownloadItem* item) {
   json->SetInteger(constants::kTotalBytesKey, item->total_bytes());
   if (item->state() == DownloadItem::INTERRUPTED)
     json->SetInteger(constants::kErrorKey,
-                     static_cast<int>(item->last_error()));
+                     static_cast<int>(item->last_reason()));
   // TODO(benjhayden): Implement endTime and fileSize.
   // json->SetInteger(constants::kEndTimeKey, -1);
   json->SetInteger(constants::kFileSizeKey, item->total_bytes());

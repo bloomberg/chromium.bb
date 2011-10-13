@@ -6,15 +6,16 @@
 
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "content/browser/download/interrupt_reasons.h"
 
 namespace download_stats {
 
 // All possible error codes from the network module. Note that the error codes
 // are all positive (since histograms expect positive sample values).
-const int kAllNetErrorCodes[] = {
-#define NET_ERROR(label, value) -(value),
-#include "net/base/net_error_list.h"
-#undef NET_ERROR
+const int kAllInterruptReasonCodes[] = {
+#define INTERRUPT_REASON(label, value) (value),
+#include "content/browser/download/interrupt_reason_values.h"
+#undef INTERRUPT_REASON
 };
 
 void RecordDownloadCount(DownloadCountTypes type) {
@@ -34,13 +35,15 @@ void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len) {
                               256);
 }
 
-void RecordDownloadInterrupted(int error, int64 received, int64 total) {
+void RecordDownloadInterrupted(InterruptReason reason,
+                               int64 received,
+                               int64 total) {
   RecordDownloadCount(INTERRUPTED_COUNT);
   UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-      "Download.InterruptedError",
-      -error,
+      "Download.InterruptedReason",
+      reason,
       base::CustomHistogram::ArrayToCustomRanges(
-          kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+          kAllInterruptReasonCodes, arraysize(kAllInterruptReasonCodes)));
 
   // The maximum should be 2^kBuckets, to have the logarithmic bucket
   // boundaries fall on powers of 2.
@@ -64,10 +67,11 @@ void RecordDownloadInterrupted(int error, int64 received, int64 total) {
     if (delta_bytes == 0) {
       RecordDownloadCount(INTERRUPTED_AT_END_COUNT);
       UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-          "Download.InterruptedAtEndError",
-          -error,
+          "Download.InterruptedAtEndReason",
+          reason,
           base::CustomHistogram::ArrayToCustomRanges(
-              kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+              kAllInterruptReasonCodes,
+              arraysize(kAllInterruptReasonCodes)));
     } else if (delta_bytes > 0) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedOverrunBytes",
                                   delta_bytes,

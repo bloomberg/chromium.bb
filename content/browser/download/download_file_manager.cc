@@ -14,6 +14,7 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_manager_delegate.h"
+#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
@@ -176,10 +177,12 @@ void DownloadFileManager::UpdateDownload(
               FROM_HERE,
               NewRunnableMethod(
                   download_manager,
-                  &DownloadManager::OnDownloadError,
+                  &DownloadManager::OnDownloadInterrupted,
                   global_id.local(),
                   bytes_downloaded,
-                  write_result));
+                  ConvertNetErrorToInterruptReason(
+                      write_result,
+                      DOWNLOAD_INTERRUPT_FROM_DISK)));
         }
       }
     }
@@ -234,10 +237,12 @@ void DownloadFileManager::OnResponseCompleted(
         FROM_HERE,
         NewRunnableMethod(
             download_manager,
-            &DownloadManager::OnDownloadError,
+            &DownloadManager::OnDownloadInterrupted,
             global_id.local(),
             download_file->bytes_so_far(),
-            net_error));
+            ConvertNetErrorToInterruptReason(
+                net_error,
+                DOWNLOAD_INTERRUPT_FROM_NETWORK)));
   }
   // We need to keep the download around until the UI thread has finalized
   // the name.
@@ -415,10 +420,12 @@ void DownloadFileManager::CancelDownloadOnRename(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(download_manager,
-                        &DownloadManager::OnDownloadError,
+                        &DownloadManager::OnDownloadInterrupted,
                         global_id.local(),
                         download_file->bytes_so_far(),
-                        rename_error));
+                        ConvertNetErrorToInterruptReason(
+                            rename_error,
+                            DOWNLOAD_INTERRUPT_FROM_DISK)));
 }
 
 void DownloadFileManager::EraseDownload(DownloadId global_id) {

@@ -48,6 +48,7 @@
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater_delegate.h"
+#include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
 #include "net/base/net_errors.h"
 
@@ -149,8 +150,9 @@ class CONTENT_EXPORT DownloadManager
   // Called when there is an error in the download.
   // |download_id| is the ID of the download.
   // |size| is the number of bytes that are currently downloaded.
-  // |error| is a download error code.  Indicates what caused the interruption.
-  void OnDownloadError(int32 download_id, int64 size, net::Error error);
+  // |reason| is a download interrupt reason code.
+  void OnDownloadInterrupted(int32 download_id, int64 size,
+                             InterruptReason reason);
 
   // Called from DownloadItem to handle the DownloadManager portion of a
   // Cancel; should not be called from other locations.

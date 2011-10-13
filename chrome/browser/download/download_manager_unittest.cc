@@ -29,6 +29,7 @@
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_status_updater.h"
+#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/download/mock_download_manager.h"
 #include "grit/generated_resources.h"
 #include "net/base/io_buffer.h"
@@ -106,8 +107,9 @@ class DownloadManagerTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  void OnDownloadError(int32 download_id, int64 size, net::Error os_error) {
-    download_manager_->OnDownloadError(download_id, size, os_error);
+  void OnDownloadInterrupted(int32 download_id, int64 size,
+                             InterruptReason reason) {
+    download_manager_->OnDownloadInterrupted(download_id, size, reason);
   }
 
   // Get the download item with ID |id|.
@@ -511,7 +513,8 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
   int64 error_size = 3;
-  OnDownloadError(0, error_size, net::ERR_FILE_NOT_FOUND);
+  OnDownloadInterrupted(0, error_size,
+                        DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
   message_loop_.RunAllPending();
 
   EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);

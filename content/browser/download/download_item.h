@@ -27,6 +27,7 @@
 #include "base/timer.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_state_info.h"
+#include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
@@ -162,12 +163,12 @@ class CONTENT_EXPORT DownloadItem {
   // exit (DownloadManager destructor) from user interface initiated cancels
   // because at exit, the history system may not exist, and any updates to it
   // require AddRef'ing the DownloadManager in the destructor which results in
-  // a DCHECK failure. Set 'update_history' to false when canceling from at
+  // a DCHECK failure. Set |user_cancel| to false when canceling from at
   // exit to prevent this crash. This may result in a difference between the
   // downloaded file's size on disk, and what the history system's last record
   // of it is. At worst, we'll end up re-downloading a small portion of the file
   // when resuming a download (assuming the server supports byte ranges).
-  void Cancel(bool update_history);
+  void Cancel(bool user_cancel);
 
   // Called by external code (SavePackage) using the DownloadItem interface
   // to display progress when the DownloadItem should be considered complete.
@@ -185,8 +186,8 @@ class CONTENT_EXPORT DownloadItem {
 
   // Download operation had an error.
   // |size| is the amount of data received at interruption.
-  // |error| is the network error code that the operation received.
-  void Interrupted(int64 size, net::Error error);
+  // |reason| is the download interrupt reason code that the operation received.
+  void Interrupted(int64 size, InterruptReason reason);
 
   // Deletes the file from disk and removes the download from the views and
   // history.  |user| should be true if this is the result of the user clicking
@@ -303,7 +304,7 @@ class CONTENT_EXPORT DownloadItem {
   void set_opened(bool opened) { opened_ = opened; }
   bool opened() const { return opened_; }
 
-  net::Error last_error() const { return last_error_; }
+  InterruptReason last_reason() const { return last_reason_; }
 
   DownloadPersistentStoreInfo GetPersistentStoreInfo() const;
   DownloadStateInfo state_info() const { return state_info_; }
@@ -417,8 +418,8 @@ class CONTENT_EXPORT DownloadItem {
   // Current received bytes
   int64 received_bytes_;
 
-  // Last error.
-  net::Error last_error_;
+  // Last reason.
+  InterruptReason last_reason_;
 
   // Start time for calculating remaining time
   base::TimeTicks start_tick_;

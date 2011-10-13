@@ -26,6 +26,7 @@
 #include "content/browser/download/download_manager_delegate.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_status_updater.h"
+#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -566,22 +567,23 @@ void DownloadManager::DownloadCancelledInternal(DownloadItem* download) {
   download->OffThreadCancel(file_manager_);
 }
 
-void DownloadManager::OnDownloadError(int32 download_id,
-                                      int64 size,
-                                      net::Error error) {
+void DownloadManager::OnDownloadInterrupted(int32 download_id,
+                                            int64 size,
+                                            InterruptReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download = GetActiveDownload(download_id);
   if (!download)
     return;
 
-  VLOG(20) << __FUNCTION__ << "()" << " Error " << error
+  VLOG(20) << __FUNCTION__ << "()"
+           << " reason " << InterruptReasonDebugString(reason)
            << " at offset " << download->received_bytes()
            << " size = " << size
            << " download = " << download->DebugString(true);
 
   RemoveFromActiveList(download);
-  download->Interrupted(size, error);
+  download->Interrupted(size, reason);
   download->OffThreadCancel(file_manager_);
 }
 
